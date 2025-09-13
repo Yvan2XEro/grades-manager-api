@@ -22,7 +22,7 @@ import { user } from "./auth";
 export const faculties = pgTable(
   "faculties",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
@@ -37,7 +37,7 @@ export const faculties = pgTable(
 export const academicYears = pgTable(
   "academic_years",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
@@ -56,7 +56,7 @@ export const academicYears = pgTable(
 export const profiles = pgTable(
   "profiles",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .references(() => user.id, { onDelete: "cascade" }),
     firstName: text("first_name").notNull(),
@@ -73,12 +73,12 @@ export const profiles = pgTable(
 export const programs = pgTable(
   "programs",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
     description: text("description"),
-    faculty: uuid("faculty_id")
+    faculty: text("faculty_id")
       .notNull()
       .references(() => faculties.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -94,14 +94,14 @@ export const programs = pgTable(
 export const classes = pgTable(
   "classes",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
-    program: uuid("program_id")
+    program: text("program_id")
       .notNull()
       .references(() => programs.id, { onDelete: "cascade" }),
-    academicYear: uuid("academic_year_id")
+    academicYear: text("academic_year_id")
       .notNull()
       .references(() => academicYears.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -122,16 +122,16 @@ export const classes = pgTable(
 export const courses = pgTable(
   "courses",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
     credits: integer("credits").notNull(),
     hours: integer("hours").notNull(),
-    program: uuid("program_id")
+    program: text("program_id")
       .notNull()
       .references(() => programs.id, { onDelete: "cascade" }),
-    defaultTeacher: uuid("default_teacher_id")
+    defaultTeacher: text("default_teacher_id")
       .notNull()
       .references(() => profiles.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -150,16 +150,16 @@ export const courses = pgTable(
 export const classCourses = pgTable(
   "class_courses",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
-    class: uuid("class_id")
+    class: text("class_id")
       .notNull()
       .references(() => classes.id, { onDelete: "cascade" }),
-    course: uuid("course_id")
+    course: text("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
-    teacher: uuid("teacher_id")
+    teacher: text("teacher_id")
       .notNull()
       .references(() => profiles.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -177,14 +177,14 @@ export const classCourses = pgTable(
 export const exams = pgTable(
   "exams",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
     type: text("type").notNull(),
     date: timestamp("date", { withTimezone: true }).notNull(),
     percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull(),
-    classCourse: uuid("class_course_id")
+    classCourse: text("class_course_id")
       .notNull()
       .references(() => classCourses.id, { onDelete: "cascade" }),
     isLocked: boolean("is_locked").notNull().default(false),
@@ -205,14 +205,14 @@ export const exams = pgTable(
 export const students = pgTable(
   "students",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
     email: text("email").notNull(),
     registrationNumber: text("registration_number").notNull(),
-    class: uuid("class_id")
+    class: text("class_id")
       .notNull()
       .references(() => classes.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -229,13 +229,13 @@ export const students = pgTable(
 export const grades = pgTable(
   "grades",
   {
-    id: uuid("id")
+    id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
-    student: uuid("student_id")
+    student: text("student_id")
       .notNull()
       .references(() => students.id, { onDelete: "cascade" }),
-    exam: uuid("exam_id")
+    exam: text("exam_id")
       .notNull()
       .references(() => exams.id, { onDelete: "cascade" }),
     score: numeric("score", { precision: 5, scale: 2 }).notNull(),
