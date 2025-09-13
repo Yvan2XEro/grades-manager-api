@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import * as examsRepo from "../modules/exams/exams.repo";
-import * as repo from "../repositories/grades.repo";
+import { notFound } from "../_shared/errors";
+import * as examsRepo from "../exams/exams.repo";
+import * as repo from "./grades.repo";
 
 export async function upsertNote(
 	studentId: string,
@@ -8,7 +9,7 @@ export async function upsertNote(
 	score: number,
 ) {
 	const exam = await examsRepo.findById(examId);
-	if (!exam) throw new TRPCError({ code: "NOT_FOUND" });
+	if (!exam) throw notFound();
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
 	try {
 		return await repo.upsert({
@@ -23,7 +24,7 @@ export async function upsertNote(
 
 export async function updateNote(id: string, score: number) {
 	const grade = await repo.findById(id);
-	if (!grade) throw new TRPCError({ code: "NOT_FOUND" });
+	if (!grade) throw notFound();
 	const exam = await examsRepo.findById(grade.exam);
 	if (exam?.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
 	return repo.update(id, score.toString());
@@ -31,7 +32,7 @@ export async function updateNote(id: string, score: number) {
 
 export async function deleteNote(id: string) {
 	const grade = await repo.findById(id);
-	if (!grade) throw new TRPCError({ code: "NOT_FOUND" });
+	if (!grade) throw notFound();
 	const exam = await examsRepo.findById(grade.exam);
 	if (exam?.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
 	await repo.remove(id);
