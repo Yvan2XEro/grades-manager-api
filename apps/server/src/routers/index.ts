@@ -5,11 +5,10 @@ import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
+import { gradesRouter } from "../modules/grades";
+import { profilesRouter } from "../modules/profiles";
+import { programsRouter } from "../modules/programs";
 import { studentsRouter } from "../modules/students";
-import { coursesRouter } from "./courses.router";
-import { gradesRouter } from "./grades.router";
-import { profilesRouter } from "./profiles.router";
-import { programsRouter } from "./programs.router";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
