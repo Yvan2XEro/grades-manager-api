@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import * as repo from "../repositories/students.repo";
+import * as repo from "./students.repo";
 
 export async function createStudent(data: Parameters<typeof repo.create>[0]) {
   try {
