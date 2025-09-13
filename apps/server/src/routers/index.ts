@@ -1,7 +1,7 @@
 import { router, publicProcedure, protectedProcedure } from "../lib/trpc";
 import { facultiesRouter } from "./faculties.router";
 import { programsRouter } from "./programs.router";
-import { academicYearsRouter } from "./academicYears.router";
+import { academicYearsRouter } from "../modules/academic-years";
 import { classesRouter } from "./classes.router";
 import { profilesRouter } from "./profiles.router";
 import { coursesRouter } from "./courses.router";

@@ -1,14 +1,8 @@
-import { z } from "zod";
-import { router, protectedProcedure, adminProcedure, superAdminProcedure } from "../lib/trpc";
-import * as service from "../services/academicYears.service";
+import { router as createRouter, protectedProcedure, adminProcedure, superAdminProcedure } from "../../lib/trpc";
+import * as service from "./academic-years.service";
+import { baseSchema, updateSchema, idSchema, listSchema, setActiveSchema } from "./academic-years.zod";
 
-const baseSchema = z.object({ name: z.string(), startDate: z.coerce.date(), endDate: z.coerce.date() });
-const updateSchema = baseSchema.partial().extend({ id: z.string() });
-const idSchema = z.object({ id: z.string() });
-const listSchema = z.object({ cursor: z.string().optional(), limit: z.number().optional() });
-const setActiveSchema = z.object({ id: z.string(), isActive: z.boolean() });
-
-export const academicYearsRouter = router({
+export const router = createRouter({
   create: adminProcedure.input(baseSchema).mutation(({ input }) =>
     service.createAcademicYear({
       ...input,

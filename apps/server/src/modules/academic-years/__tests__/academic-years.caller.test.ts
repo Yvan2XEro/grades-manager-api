@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { createCallerFactory } from "@trpc/server";
-import { appRouter } from "../index";
-import { makeTestContext, asAdmin, asSuperAdmin } from "../../lib/test-utils";
+import { appRouter } from "../../../routers";
+import { makeTestContext, asAdmin, asSuperAdmin } from "../../../lib/test-utils";
 
 const createCaller = createCallerFactory(appRouter);
 
