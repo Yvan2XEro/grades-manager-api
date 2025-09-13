@@ -1,0 +1,4 @@
+[test]
+root = "."
+preload = "./src/lib/test-setup.ts"
+coverage = true
