@@ -23,5 +23,8 @@ export const auth = betterAuth({
 			secure: true,
 			httpOnly: true,
 		},
-	},
+        },
 });
+
+export const adminRoles = ["ADMIN", "SUPER_ADMIN"] as const;
+export const superAdminRoles = ["SUPER_ADMIN"] as const;
