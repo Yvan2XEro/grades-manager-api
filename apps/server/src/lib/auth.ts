@@ -9,7 +9,6 @@ export const adminRoles = ["admin", ...superadminRoles];
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "pg",
-
 		schema: schema,
 	}),
 	plugins: [admin({ adminRoles })],
