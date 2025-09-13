@@ -1,6 +1,7 @@
-import { db } from "../db";
-import * as schema from "../db/schema/app-schema";
+import { db } from "../../db";
+import * as schema from "../../db/schema/app-schema";
 import { eq, gt } from "drizzle-orm";
+import { paginate } from "../_shared/pagination";
 
 export async function create(data: schema.NewAcademicYear) {
   const [item] = await db.insert(schema.academicYears).values(data).returning();
@@ -32,6 +33,5 @@ export async function list(opts: { cursor?: string; limit?: number }) {
     .where(condition)
     .orderBy(schema.academicYears.id)
     .limit(limit);
-  const nextCursor = items.length === limit ? items[items.length - 1].id : undefined;
-  return { items, nextCursor };
+  return paginate(items, limit);
 }
