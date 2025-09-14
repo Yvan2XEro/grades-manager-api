@@ -5,14 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "../../lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 const schema = z
   .object({
     password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z
-      .string()
-      .min(6, "Please confirm your password"),
+    confirmPassword: z.string().min(6, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -100,10 +98,17 @@ const ResetPassword: React.FC = () => {
             "Reset Password"
           )}
         </button>
+        <div className="mt-1 text-right">
+          <Link
+            to="/auth/login"
+            className="text-sm text-primary-600 hover:text-primary-500"
+          >
+            Back to Login
+          </Link>
+        </div>
       </form>
     </div>
   );
 };
 
 export default ResetPassword;
-

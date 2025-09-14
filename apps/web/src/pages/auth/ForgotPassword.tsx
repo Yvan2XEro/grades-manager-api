@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "../../lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -33,7 +34,9 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-center mb-6">Forgot Password</h2>
+      <h2 className="text-xl font-semibold text-center mb-6">
+        Forgot Password
+      </h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label
@@ -67,10 +70,17 @@ const ForgotPassword: React.FC = () => {
             "Send Reset Link"
           )}
         </button>
+        <div className="mt-1 text-right">
+          <Link
+            to="/auth/login"
+            className="text-sm text-primary-600 hover:text-primary-500"
+          >
+            Back to Login
+          </Link>
+        </div>
       </form>
     </div>
   );
 };
 
 export default ForgotPassword;
-
