@@ -1,15 +1,15 @@
 import { describe, expect, it } from "bun:test";
-import { createCallerFactory } from "@trpc/server";
 import {
 	asAdmin,
 	createClassCourse,
 	createStudent,
 	makeTestContext,
-} from "../../../lib/test-utils";
-import { appRouter } from "../../../routers";
+} from "@/lib/test-utils";
 
-const createCaller = createCallerFactory(appRouter);
+import { appRouter } from "@/routers";
+import type { Context } from "@/lib/context";
 
+const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 describe("exams router", () => {
 	it("requires auth", async () => {
 		const caller = createCaller(makeTestContext());
@@ -39,6 +39,9 @@ describe("exams router", () => {
 			}),
 		).rejects.toHaveProperty("code", "BAD_REQUEST");
 
+		if (!exam) {
+			throw new Error("Failed to create exam");
+		}
 		await admin.exams.lock({ examId: exam.id, lock: true });
 		await expect(
 			admin.exams.update({ id: exam.id, name: "M" }),

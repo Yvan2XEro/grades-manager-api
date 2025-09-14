@@ -1,4 +1,4 @@
-import { PGlite } from "pglite";
+import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../db/schema/app-schema";
@@ -46,7 +46,9 @@ export async function seed() {
 }
 
 export async function reset() {
-  await db.execute(sql`TRUNCATE TABLE grades, exams, class_courses, courses, classes, programs, faculties, academic_years, profiles, students RESTART IDENTITY CASCADE`);
+  await db.execute(
+    sql`TRUNCATE TABLE grades, exams, class_courses, courses, classes, programs, faculties, academic_years, profiles, students RESTART IDENTITY CASCADE`,
+  );
 }
 
 export async function close() {
