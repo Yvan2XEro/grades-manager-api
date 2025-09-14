@@ -64,12 +64,12 @@ export default function CourseManagement() {
 		},
 	});
 
-        const { data: teachers } = useQuery({
-                queryKey: ["teachers"],
-                queryFn: async () => {
-                        return [] as Teacher[];
-                },
-        });
+	const { data: teachers } = useQuery({
+		queryKey: ["teachers"],
+		queryFn: async () => {
+			return [] as Teacher[];
+		},
+	});
 
 	const {
 		register,

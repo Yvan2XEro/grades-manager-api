@@ -8,6 +8,13 @@
       "when": 1757779538650,
       "tag": "0000_curly_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757856274617,
+      "tag": "0001_living_riptide",
+      "breakpoints": true
     }
   ]
 }
