@@ -1,5 +1,5 @@
 {
-  "id": "19ea1ed5-1c5e-4bdc-aa9b-c8fb16bb412b",
+  "id": "9ed35220-b375-41dd-a242-0f3f50b39c90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -172,10 +172,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "class_courses_teacher_id_profiles_id_fk": {
-          "name": "class_courses_teacher_id_profiles_id_fk",
+        "class_courses_teacher_id_user_id_fk": {
+          "name": "class_courses_teacher_id_user_id_fk",
           "tableFrom": "class_courses",
-          "tableTo": "profiles",
+          "tableTo": "user",
           "columnsFrom": [
             "teacher_id"
           ],
@@ -409,10 +409,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "courses_default_teacher_id_profiles_id_fk": {
-          "name": "courses_default_teacher_id_profiles_id_fk",
+        "courses_default_teacher_id_user_id_fk": {
+          "name": "courses_default_teacher_id_user_id_fk",
           "tableFrom": "courses",
-          "tableTo": "profiles",
+          "tableTo": "user",
           "columnsFrom": [
             "default_teacher_id"
           ],
@@ -720,78 +720,6 @@
           "columns": [
             "student_id",
             "exam_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.profiles": {
-      "name": "profiles",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "first_name": {
-          "name": "first_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "last_name": {
-          "name": "last_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role": {
-          "name": "role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "profiles_id_user_id_fk": {
-          "name": "profiles_id_user_id_fk",
-          "tableFrom": "profiles",
-          "tableTo": "user",
-          "columnsFrom": [
-            "id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "uq_profiles_email": {
-          "name": "uq_profiles_email",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
           ]
         }
       },
