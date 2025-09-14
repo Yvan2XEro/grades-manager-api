@@ -70,19 +70,19 @@ function App() {
 					<Route path="class-courses" element={<ClassCourseManagement />} />
 					<Route path="students" element={<StudentManagement />} />
 					<Route path="exams" element={<ExamManagement />} />
+					<Route path="faculties" element={<FacultyManagement />} />
+					<Route path="student-promotion" element={<StudentPromotion />} />
+					<Route path="programs" element={<ProgramManagement />} />
 					<Route path="grade-export" element={<GradeExport />} />
 				</Route>
 			)}
 
 			{/* Teacher Routes */}
-			{user && user.role === "teacher" && (
+			{user && user.role !== "admin" && (
 				<Route path="/teacher" element={<DashboardLayout />}>
 					<Route index element={<TeacherDashboard />} />
 					<Route path="courses" element={<CourseList />} />
 					<Route path="grades/:courseId" element={<GradeEntry />} />
-					<Route path="faculties" element={<FacultyManagement />} />
-					<Route path="programs" element={<ProgramManagement />} />
-					<Route path="student-promotion" element={<StudentPromotion />} />
 				</Route>
 			)}
 

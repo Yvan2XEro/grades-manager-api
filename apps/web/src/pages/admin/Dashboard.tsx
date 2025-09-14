@@ -1,11 +1,23 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { trpcClient } from '../../utils/trpc';
-import { 
-  Users, BookOpen, GraduationCap, ClipboardCheck, 
-  Building2, School, Calendar 
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { trpcClient } from "../../utils/trpc";
+import {
+  Users,
+  BookOpen,
+  GraduationCap,
+  ClipboardCheck,
+  Building2,
+  School,
+  Calendar,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 type StatCard = {
   title: string;
@@ -21,7 +33,7 @@ type ProgramStats = {
 
 const AdminDashboard: React.FC = () => {
   const { data, isLoading } = useQuery({
-    queryKey: ['adminDashboard'],
+    queryKey: ["adminDashboard"],
     queryFn: async () => {
       const [
         facultiesRes,
@@ -47,69 +59,73 @@ const AdminDashboard: React.FC = () => {
       const coursesCount = coursesRes.items.length;
       const examsCount = examsRes.items.length;
       const studentsCount = studentsRes.items.length;
-      const teachersCount = profilesRes.items.filter((p) => p.role === 'teacher').length;
+      const teachersCount = profilesRes.items.filter(
+        (p) => p.role !== "admin",
+      ).length;
 
       const activeYear = yearsRes.items.find((y) => y.isActive);
 
       const programStats: ProgramStats[] = activeYear
         ? await Promise.all(
-            programs.map(async (program) => {
-              const { items: classes } = await trpcClient.classes.list.query({
-                programId: program.id,
-                academicYearId: activeYear.id,
+          programs.map(async (program) => {
+            const { items: classes } = await trpcClient.classes.list.query({
+              programId: program.id,
+              academicYearId: activeYear.id,
+            });
+            let total = 0;
+            for (const cls of classes) {
+              const { items: studs } = await trpcClient.students.list.query({
+                classId: cls.id,
               });
-              let total = 0;
-              for (const cls of classes) {
-                const { items: studs } = await trpcClient.students.list.query({ classId: cls.id });
-                total += studs.length;
-              }
-              return { name: program.name, students: total };
-            }),
-          )
+              total += studs.length;
+            }
+            return { name: program.name, students: total };
+          }),
+        )
         : [];
 
       const stats: StatCard[] = [
         {
-          title: 'Faculties',
+          title: "Faculties",
           count: facultiesCount,
           icon: <Building2 className="h-8 w-8" />,
-          color: 'bg-blue-100 text-blue-600',
+          color: "bg-blue-100 text-blue-600",
         },
         {
-          title: 'Programs',
+          title: "Programs",
           count: programsCount,
           icon: <School className="h-8 w-8" />,
-          color: 'bg-purple-100 text-purple-600',
+          color: "bg-purple-100 text-purple-600",
         },
         {
-          title: 'Courses',
+          title: "Courses",
           count: coursesCount,
           icon: <BookOpen className="h-8 w-8" />,
-          color: 'bg-emerald-100 text-emerald-600',
+          color: "bg-emerald-100 text-emerald-600",
         },
         {
-          title: 'Exams',
+          title: "Exams",
           count: examsCount,
           icon: <ClipboardCheck className="h-8 w-8" />,
-          color: 'bg-amber-100 text-amber-600',
+          color: "bg-amber-100 text-amber-600",
         },
         {
-          title: 'Students',
+          title: "Students",
           count: studentsCount,
           icon: <Users className="h-8 w-8" />,
-          color: 'bg-rose-100 text-rose-600',
+          color: "bg-rose-100 text-rose-600",
         },
         {
-          title: 'Teachers',
+          title: "Teachers",
           count: teachersCount,
           icon: <GraduationCap className="h-8 w-8" />,
-          color: 'bg-indigo-100 text-indigo-600',
+          color: "bg-indigo-100 text-indigo-600",
         },
       ];
 
       return {
         stats,
-        activeYear: activeYear?.name ?? 'No active year',
+        activeYear: activeYear?.name ?? "No active year",
         programStats,
       };
     },
@@ -125,7 +141,7 @@ const AdminDashboard: React.FC = () => {
 
   const stats = data?.stats ?? [];
   const programStats = data?.programStats ?? [];
-  const activeYear = data?.activeYear ?? 'No active year';
+  const activeYear = data?.activeYear ?? "No active year";
 
   return (
     <div className="space-y-6">
@@ -151,7 +167,9 @@ const AdminDashboard: React.FC = () => {
                 {stat.icon}
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-700">{stat.title}</h3>
+                <h3 className="text-lg font-medium text-gray-700">
+                  {stat.title}
+                </h3>
                 <p className="text-2xl font-bold text-gray-900">{stat.count}</p>
               </div>
             </div>
@@ -161,7 +179,9 @@ const AdminDashboard: React.FC = () => {
 
       {/* Program Stats */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-800 mb-4">Students per Program</h3>
+        <h3 className="text-lg font-medium text-gray-800 mb-4">
+          Students per Program
+        </h3>
 
         <div className="h-80">
           {programStats.length > 0 ? (

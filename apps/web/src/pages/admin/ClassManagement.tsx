@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Plus, Pencil, Trash2, Users } from 'lucide-react';
-import { toast } from 'sonner';
-import FormModal from '../../components/modals/FormModal';
-import ConfirmModal from '../../components/modals/ConfirmModal';
-import { trpcClient } from '../../utils/trpc';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Plus, Pencil, Trash2, Users } from "lucide-react";
+import { toast } from "sonner";
+import FormModal from "../../components/modals/FormModal";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import { trpcClient } from "../../utils/trpc";
 
 const classSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  programId: z.string().uuid('Please select a program'),
-  academicYearId: z.string().uuid('Please select an academic year'),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  programId: z.string().uuid("Please select a program"),
+  academicYearId: z.string().uuid("Please select an academic year"),
 });
 
 type ClassFormData = z.infer<typeof classSchema>;
@@ -36,7 +36,7 @@ export default function ClassManagement() {
   const queryClient = useQueryClient();
 
   const { data: classes, isLoading } = useQuery({
-    queryKey: ['classes'],
+    queryKey: ["classes"],
     queryFn: async () => {
       const { items } = await trpcClient.classes.list.query({});
       return Promise.all(
@@ -61,7 +61,7 @@ export default function ClassManagement() {
   });
 
   const { data: programs } = useQuery({
-    queryKey: ['programs'],
+    queryKey: ["programs"],
     queryFn: async () => {
       const { items } = await trpcClient.programs.list.query({});
       return items;
@@ -69,7 +69,7 @@ export default function ClassManagement() {
   });
 
   const { data: academicYears } = useQuery({
-    queryKey: ['academicYears'],
+    queryKey: ["academicYears"],
     queryFn: async () => {
       const { items } = await trpcClient.academicYears.list.query({});
       return items;
@@ -94,8 +94,8 @@ export default function ClassManagement() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      toast.success('Class created successfully');
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast.success("Class created successfully");
       setIsFormOpen(false);
       reset();
     },
@@ -114,8 +114,8 @@ export default function ClassManagement() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      toast.success('Class updated successfully');
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast.success("Class updated successfully");
       setIsFormOpen(false);
       setEditingClass(null);
       reset();
@@ -130,8 +130,8 @@ export default function ClassManagement() {
       await trpcClient.classes.delete.mutate({ id });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      toast.success('Class deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast.success("Class deleted successfully");
       setIsDeleteOpen(false);
       setDeleteId(null);
     },
@@ -172,7 +172,9 @@ export default function ClassManagement() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Class Management</h1>
-          <p className="text-base-content/60">Manage student classes and assignments</p>
+          <p className="text-base-content/60">
+            Manage student classes and assignments
+          </p>
         </div>
         <button
           onClick={() => {
@@ -192,7 +194,9 @@ export default function ClassManagement() {
           <div className="card-body items-center text-center py-12">
             <Users className="w-16 h-16 text-base-content/20" />
             <h2 className="card-title mt-4">No Classes Found</h2>
-            <p className="text-base-content/60">Get started by adding your first class.</p>
+            <p className="text-base-content/60">
+              Get started by adding your first class.
+            </p>
             <button
               onClick={() => {
                 setEditingClass(null);
@@ -268,7 +272,7 @@ export default function ClassManagement() {
           setEditingClass(null);
           reset();
         }}
-        title={editingClass ? 'Edit Class' : 'Add New Class'}
+        title={editingClass ? "Edit Class" : "Add New Class"}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="form-control">
@@ -277,13 +281,15 @@ export default function ClassManagement() {
             </label>
             <input
               type="text"
-              {...register('name')}
+              {...register("name")}
               className="input input-bordered"
               placeholder="Enter class name"
             />
             {errors.name && (
               <label className="label">
-                <span className="label-text-alt text-error">{errors.name.message}</span>
+                <span className="label-text-alt text-error">
+                  {errors.name.message}
+                </span>
               </label>
             )}
           </div>
@@ -293,7 +299,7 @@ export default function ClassManagement() {
               <span className="label-text">Program</span>
             </label>
             <select
-              {...register('programId')}
+              {...register("programId")}
               className="select select-bordered w-full"
             >
               <option value="">Select a program</option>
@@ -317,7 +323,7 @@ export default function ClassManagement() {
               <span className="label-text">Academic Year</span>
             </label>
             <select
-              {...register('academicYearId')}
+              {...register("academicYearId")}
               className="select select-bordered w-full"
             >
               <option value="">Select an academic year</option>
@@ -356,9 +362,9 @@ export default function ClassManagement() {
               {isSubmitting ? (
                 <span className="loading loading-spinner loading-sm"></span>
               ) : editingClass ? (
-                'Save Changes'
+                "Save Changes"
               ) : (
-                'Create Class'
+                "Create Class"
               )}
             </button>
           </div>

@@ -12,7 +12,7 @@ import { trpcClient } from "../../utils/trpc";
 const programSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
 	description: z.string().optional(),
-	faculty_id: z.string().uuid("Please select a faculty"),
+	faculty: z.string().uuid("Please select a faculty"),
 });
 
 type ProgramFormData = z.infer<typeof programSchema>;
@@ -176,9 +176,9 @@ export default function ProgramManagement() {
 						<p className="text-base-content/60">
 							Get started by adding your first program.
 						</p>
-                                                <button
-                                                        type="button"
-                                                        onClick={() => {
+						<button
+							type="button"
+							onClick={() => {
 								setEditingProgram(null);
 								reset();
 								setIsFormOpen(true);
@@ -214,14 +214,14 @@ export default function ProgramManagement() {
 										</td>
 										<td>
 											<div className="flex gap-2">
-                                                                                                <button
-                                                                                                        type="button"
-                                                                                                        onClick={() => {
+												<button
+													type="button"
+													onClick={() => {
 														setEditingProgram(program);
 														reset({
 															name: program.name,
 															description: program.description || "",
-															faculty_id: program.faculty_id,
+															faculty: program.faculty_id,
 														});
 														setIsFormOpen(true);
 													}}
@@ -278,7 +278,7 @@ export default function ProgramManagement() {
 						</label>
 						<select
 							id={facultyId}
-							{...register("faculty_id")}
+							{...register("faculty")}
 							className="select select-bordered w-full"
 						>
 							<option value="">Select a faculty</option>
@@ -288,9 +288,9 @@ export default function ProgramManagement() {
 								</option>
 							))}
 						</select>
-						{errors.faculty_id && (
+						{errors.faculty && (
 							<p className="label-text-alt text-error">
-								{errors.faculty_id.message}
+								{errors.faculty.message}
 							</p>
 						)}
 					</div>
