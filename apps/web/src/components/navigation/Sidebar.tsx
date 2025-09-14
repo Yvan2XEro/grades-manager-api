@@ -8,6 +8,7 @@ import {
   GraduationCap,
   Calendar,
   Users,
+  UserCog,
   ClipboardList,
   School,
   BookOpenCheck,
@@ -59,6 +60,11 @@ const Sidebar: React.FC = () => {
       to: "/admin/students",
       icon: <GraduationCap className="h-5 w-5" />,
       text: "Students",
+    },
+    {
+      to: "/admin/users",
+      icon: <UserCog className="h-5 w-5" />,
+      text: "Users",
     },
     {
       to: "/admin/student-promotion",
