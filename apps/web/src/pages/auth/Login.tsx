@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,8 +15,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
-  
   const {
     register,
     handleSubmit,
@@ -74,6 +72,11 @@ const Login: React.FC = () => {
           {errors.password && (
             <p className="mt-1 text-sm text-error-600">{errors.password.message}</p>
           )}
+          <div className="mt-1 text-right">
+            <Link to="/auth/forgot" className="text-sm text-primary-600 hover:text-primary-500">
+              Forgot password?
+            </Link>
+          </div>
         </div>
         
         <button
@@ -94,7 +97,7 @@ const Login: React.FC = () => {
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Need an account?{' '}
-          <Link to="/register" className="text-primary-600 hover:text-primary-500 font-medium">
+          <Link to="/auth/register" className="text-primary-600 hover:text-primary-500 font-medium">
             Register
           </Link>
         </p>

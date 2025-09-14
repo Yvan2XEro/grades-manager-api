@@ -54,8 +54,8 @@ function App() {
     <Routes>
       {/* Auth Routes */}
       <Route element={<AuthLayout />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/auth/login" element={<Login />} />
+        <Route path="/auth/register" element={<Register />} />
         <Route path="/auth/forgot" element={<ForgotPassword />} />
         <Route path="/auth/reset" element={<ResetPassword />} />
       </Route>
@@ -97,7 +97,7 @@ function App() {
               <Navigate to="/teacher" replace />
             )
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/auth/login" replace />
           )
         }
       />

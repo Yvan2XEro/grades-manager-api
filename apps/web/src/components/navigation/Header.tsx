@@ -13,7 +13,7 @@ const Header: React.FC = () => {
     try {
       await authClient.signOut();
       clearUser();
-      navigate('/login');
+      navigate('/auth/login');
       toast.success('Logged out successfully');
     } catch (error) {
       console.error('Error logging out:', error);

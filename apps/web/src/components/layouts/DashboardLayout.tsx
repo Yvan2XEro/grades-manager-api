@@ -13,7 +13,7 @@ const DashboardLayout: React.FC = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!user) {
-      navigate('/login', { replace: true });
+      navigate('/auth/login', { replace: true });
     }
   }, [user, navigate]);
 

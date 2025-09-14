@@ -39,7 +39,7 @@ const ResetPassword: React.FC = () => {
         newPassword: data.password,
       });
       toast.success("Password reset successfully");
-      navigate("/login");
+      navigate("/auth/login");
     } catch (error: any) {
       toast.error(error.message || "Failed to reset password");
     }
