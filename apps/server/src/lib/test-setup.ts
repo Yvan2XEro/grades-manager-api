@@ -9,8 +9,8 @@ try {
 mock.module("../db", () => ({ db }));
 
 beforeAll(async () => {
-  await reset();
   await pushSchema();
+  await reset();
   await seed();
 });
 
