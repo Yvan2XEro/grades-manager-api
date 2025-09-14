@@ -62,17 +62,31 @@ export default function UserManagement() {
 	const roleId = useId();
 	const passwordId = useId();
 
-	const { data: users = [] } = useQuery({
-		queryKey: ["users", debouncedSearch],
+	const { data } = useQuery({
+		queryKey: ["users", debouncedSearch, page],
 		queryFn: async () => {
+			const query: Record<string, unknown> = {
+				limit: pageSize,
+				offset: (page - 1) * pageSize,
+			};
+			if (debouncedSearch) {
+				query.searchValue = debouncedSearch;
+				query.searchField = "name";
+				query.searchOperator = "contains";
+			}
 			const res = (await authClient.admin.listUsers({
-				query: { searchValue: debouncedSearch || undefined },
-			})) as { users?: User[]; data?: { users?: User[] } };
-			return res.users ?? res.data?.users ?? [];
+				query,
+			})) as {
+				users?: User[];
+				total?: number;
+				data?: { users?: User[]; total?: number };
+			};
+			return res.users ? res : res.data;
 		},
 	});
-	const totalPages = Math.max(Math.ceil(users.length / pageSize), 1);
-	const paginatedUsers = users.slice((page - 1) * pageSize, page * pageSize);
+	const users = data?.users ?? [];
+	const total = data?.total ?? 0;
+	const totalPages = Math.max(Math.ceil(total / pageSize), 1);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when search changes
 	useEffect(() => {
@@ -250,7 +264,7 @@ export default function UserManagement() {
 						</tr>
 					</thead>
 					<tbody>
-						{paginatedUsers.map((u: User) => (
+						{users.map((u: User) => (
 							<tr key={u.id}>
 								<td>{u.name}</td>
 								<td>{u.email}</td>
@@ -310,7 +324,7 @@ export default function UserManagement() {
 								</td>
 							</tr>
 						))}
-						{paginatedUsers.length === 0 && (
+						{users.length === 0 && (
 							<tr>
 								<td colSpan={5} className="py-4 text-center">
 									No users found
