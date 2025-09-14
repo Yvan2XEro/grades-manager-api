@@ -8,7 +8,7 @@ import {
 	PlusIcon,
 	Search,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -55,6 +55,8 @@ export default function UserManagement() {
 		action: "delete" | "ban" | "unban";
 	} | null>(null);
 	const [showPassword, setShowPassword] = useState(false);
+	const [page, setPage] = useState(1);
+	const pageSize = 10;
 	const nameId = useId();
 	const emailId = useId();
 	const roleId = useId();
@@ -69,6 +71,17 @@ export default function UserManagement() {
 			return res.users ?? res.data?.users ?? [];
 		},
 	});
+	const totalPages = Math.max(Math.ceil(users.length / pageSize), 1);
+	const paginatedUsers = users.slice((page - 1) * pageSize, page * pageSize);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when search changes
+	useEffect(() => {
+		setPage(1);
+	}, [debouncedSearch]);
+
+	useEffect(() => {
+		if (page > totalPages) setPage(totalPages);
+	}, [totalPages, page]);
 
 	const {
 		register,
@@ -225,8 +238,8 @@ export default function UserManagement() {
 				</div>
 			</div>
 
-			<div className="overflow-x-auto">
-				<table className="table">
+			<div className="overflow-x-auto overflow-y-hidden">
+				<table className="table w-full">
 					<thead>
 						<tr>
 							<th>Name</th>
@@ -237,7 +250,7 @@ export default function UserManagement() {
 						</tr>
 					</thead>
 					<tbody>
-						{users.map((u: User) => (
+						{paginatedUsers.map((u: User) => (
 							<tr key={u.id}>
 								<td>{u.name}</td>
 								<td>{u.email}</td>
@@ -297,7 +310,7 @@ export default function UserManagement() {
 								</td>
 							</tr>
 						))}
-						{users.length === 0 && (
+						{paginatedUsers.length === 0 && (
 							<tr>
 								<td colSpan={5} className="py-4 text-center">
 									No users found
@@ -307,6 +320,30 @@ export default function UserManagement() {
 					</tbody>
 				</table>
 			</div>
+
+			{totalPages > 1 && (
+				<div className="mt-4 flex items-center justify-center gap-2">
+					<button
+						type="button"
+						className="btn btn-sm"
+						onClick={() => setPage((p) => p - 1)}
+						disabled={page === 1}
+					>
+						Previous
+					</button>
+					<span className="text-sm">
+						Page {page} of {totalPages}
+					</span>
+					<button
+						type="button"
+						className="btn btn-sm"
+						onClick={() => setPage((p) => p + 1)}
+						disabled={page === totalPages}
+					>
+						Next
+					</button>
+				</div>
+			)}
 
 			<FormModal
 				isOpen={isModalOpen}
