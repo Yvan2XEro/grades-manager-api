@@ -17,6 +17,9 @@ export const router = createRouter({
       endDate: input.endDate?.toISOString(),
     })
   ),
+  delete: adminProcedure
+    .input(idSchema)
+    .mutation(({ input }) => service.deleteAcademicYear(input.id)),
   setActive: superAdminProcedure.input(setActiveSchema).mutation(({ input }) => service.setActive(input.id, input.isActive)),
   list: protectedProcedure.input(listSchema).query(({ input }) => service.listAcademicYears(input)),
   getById: protectedProcedure.input(idSchema).query(({ input }) => service.getAcademicYearById(input.id)),

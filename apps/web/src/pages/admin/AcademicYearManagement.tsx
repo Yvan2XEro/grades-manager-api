@@ -1,34 +1,38 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Pencil, Trash2, X, Check, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isValid, parseISO } from 'date-fns';
+import { trpcClient } from '../../utils/trpc';
 
-const academicYearSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
-  is_active: z.boolean().optional(),
-}).refine((data) => {
-  const start = new Date(data.start_date);
-  const end = new Date(data.end_date);
-  return end > start;
-}, {
-  message: "End date must be after start date",
-  path: ["end_date"],
-});
+const academicYearSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    startDate: z.string().min(1, 'Start date is required'),
+    endDate: z.string().min(1, 'End date is required'),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      return end > start;
+    },
+    {
+      message: 'End date must be after start date',
+      path: ['endDate'],
+    },
+  );
 
 type AcademicYear = {
   id: string;
   name: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  created_at: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  createdAt: string;
 };
 
 type FormData = z.infer<typeof academicYearSchema>;
@@ -51,22 +55,18 @@ const AcademicYearManagement: React.FC = () => {
   const { data: academicYears, isLoading } = useQuery({
     queryKey: ['academicYears'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('academic_years')
-        .select('*')
-        .order('start_date', { ascending: false });
-
-      if (error) throw error;
-      return data as AcademicYear[];
+      const { items } = await trpcClient.academicYears.list.query({});
+      return items as AcademicYear[];
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const { error } = await supabase
-        .from('academic_years')
-        .insert([data]);
-      if (error) throw error;
+      await trpcClient.academicYears.create.mutate({
+        name: data.name,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicYears'] });
@@ -81,11 +81,12 @@ const AcademicYearManagement: React.FC = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
-      const { error } = await supabase
-        .from('academic_years')
-        .update(data)
-        .eq('id', id);
-      if (error) throw error;
+      await trpcClient.academicYears.update.mutate({
+        id,
+        name: data.name,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicYears'] });
@@ -101,11 +102,7 @@ const AcademicYearManagement: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('academic_years')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await trpcClient.academicYears.delete.mutate({ id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicYears'] });
@@ -119,21 +116,7 @@ const AcademicYearManagement: React.FC = () => {
 
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      // First, deactivate all years
-      if (isActive) {
-        await supabase
-          .from('academic_years')
-          .update({ is_active: false })
-          .neq('id', id);
-      }
-      
-      // Then update the selected year
-      const { error } = await supabase
-        .from('academic_years')
-        .update({ is_active: isActive })
-        .eq('id', id);
-      
-      if (error) throw error;
+      await trpcClient.academicYears.setActive.mutate({ id, isActive });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academicYears'] });
@@ -230,19 +213,19 @@ const AcademicYearManagement: React.FC = () => {
                 {academicYears?.map((year) => (
                   <tr key={year.id}>
                     <td>{year.name}</td>
-                    <td>{formatDate(year.start_date)}</td>
-                    <td>{formatDate(year.end_date)}</td>
+                    <td>{formatDate(year.startDate)}</td>
+                    <td>{formatDate(year.endDate)}</td>
                     <td>
                       <div className="form-control">
                         <label className="label cursor-pointer">
                           <input
                             type="checkbox"
                             className="toggle toggle-primary"
-                            checked={year.is_active}
-                            onChange={() => handleToggleActive(year.id, year.is_active)}
+                            checked={year.isActive}
+                            onChange={() => handleToggleActive(year.id, year.isActive)}
                           />
                           <span className="label-text ml-2">
-                            {year.is_active ? 'Active' : 'Inactive'}
+                            {year.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </label>
                       </div>
@@ -334,13 +317,13 @@ const AcademicYearManagement: React.FC = () => {
                 </label>
                 <input
                   type="date"
-                  {...register('start_date')}
-                  defaultValue={editingYear?.start_date}
+                  {...register('startDate')}
+                  defaultValue={editingYear?.startDate.slice(0, 10)}
                   className="input input-bordered"
                 />
-                {errors.start_date && (
+                {errors.startDate && (
                   <label className="label">
-                    <span className="label-text-alt text-error">{errors.start_date.message}</span>
+                    <span className="label-text-alt text-error">{errors.startDate.message}</span>
                   </label>
                 )}
               </div>
@@ -351,13 +334,13 @@ const AcademicYearManagement: React.FC = () => {
                 </label>
                 <input
                   type="date"
-                  {...register('end_date')}
-                  defaultValue={editingYear?.end_date}
+                  {...register('endDate')}
+                  defaultValue={editingYear?.endDate.slice(0, 10)}
                   className="input input-bordered"
                 />
-                {errors.end_date && (
+                {errors.endDate && (
                   <label className="label">
-                    <span className="label-text-alt text-error">{errors.end_date.message}</span>
+                    <span className="label-text-alt text-error">{errors.endDate.message}</span>
                   </label>
                 )}
               </div>

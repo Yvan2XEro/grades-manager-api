@@ -17,6 +17,10 @@ export async function update(id: string, data: Partial<schema.NewAcademicYear>) 
   return item;
 }
 
+export async function remove(id: string) {
+  await db.delete(schema.academicYears).where(eq(schema.academicYears.id, id));
+}
+
 export async function findById(id: string) {
   return db.query.academicYears.findFirst({ where: eq(schema.academicYears.id, id) });
 }

@@ -14,6 +14,12 @@ export async function updateAcademicYear(id: string, data: Parameters<typeof rep
   return repo.update(id, data);
 }
 
+export async function deleteAcademicYear(id: string) {
+  const existing = await repo.findById(id);
+  if (!existing) throw notFound();
+  await repo.remove(id);
+}
+
 export async function listAcademicYears(opts: Parameters<typeof repo.list>[0]) {
   return repo.list(opts);
 }
