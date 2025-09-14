@@ -43,8 +43,10 @@ describe("faculties router", () => {
 		expect(list.items.length).toBe(1);
 
 		const superCaller = createCaller(asSuperAdmin());
-		await superCaller.faculties.delete({ id: faculty.id });
-		const after = await superCaller.faculties.list({});
-		expect(after.items.length).toBe(0);
+            await superCaller.faculties.delete({ id: faculty.id });
+            const after = await superCaller.faculties.list({});
+            // Seed data includes a default faculty, so just ensure the created
+            // faculty is gone rather than expecting an empty list.
+            expect(after.items.some((f) => f.id === faculty.id)).toBe(false);
 	});
 });
