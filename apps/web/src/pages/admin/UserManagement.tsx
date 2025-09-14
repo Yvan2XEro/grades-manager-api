@@ -1,12 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, Search } from "lucide-react";
-import { useState } from "react";
+import {
+	Copy,
+	Eye,
+	EyeOff,
+	MoreVertical,
+	PlusIcon,
+	Search,
+} from "lucide-react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
 
 interface User {
@@ -39,19 +47,25 @@ function generatePassword(length = 12) {
 export default function UserManagement() {
 	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
+	const debouncedSearch = useDebounce(search, 500);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<User | null>(null);
 	const [confirm, setConfirm] = useState<{
 		user: User;
 		action: "delete" | "ban" | "unban";
 	} | null>(null);
+	const [showPassword, setShowPassword] = useState(false);
+	const nameId = useId();
+	const emailId = useId();
+	const roleId = useId();
+	const passwordId = useId();
 
 	const { data: users = [] } = useQuery({
-		queryKey: ["users", search],
+		queryKey: ["users", debouncedSearch],
 		queryFn: async () => {
-			const res: any = await authClient.admin.listUsers({
-				query: { searchValue: search || undefined },
-			});
+			const res = (await authClient.admin.listUsers({
+				query: { searchValue: debouncedSearch || undefined },
+			})) as { users?: User[]; data?: { users?: User[] } };
 			return res.users ?? res.data?.users ?? [];
 		},
 	});
@@ -60,6 +74,8 @@ export default function UserManagement() {
 		register,
 		handleSubmit,
 		reset,
+		setValue,
+		getValues,
 		formState: { errors, isSubmitting },
 	} = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
@@ -69,6 +85,7 @@ export default function UserManagement() {
 	const openCreate = () => {
 		setEditingUser(null);
 		reset({ name: "", email: "", role: "teacher", password: "" });
+		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -80,6 +97,7 @@ export default function UserManagement() {
 			role: (user.role as "admin" | "teacher") || "teacher",
 			password: "",
 		});
+		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -87,21 +105,19 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			const password = generatePassword();
 			await authClient.admin.createUser({
 				email: data.email,
 				name: data.name,
 				role: data.role,
-				password,
+				password: data.password ?? "",
 			});
-			return password;
 		},
-		onSuccess: (password) => {
-			toast.success(`User created. Password: ${password}`);
+		onSuccess: () => {
+			toast.success("User created");
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			closeModal();
 		},
-		onError: (err: any) => toast.error(err.message),
+		onError: (err: unknown) => toast.error((err as Error).message),
 	});
 
 	const updateMutation = useMutation({
@@ -122,7 +138,7 @@ export default function UserManagement() {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			closeModal();
 		},
-		onError: (err: any) => toast.error(err.message),
+		onError: (err: unknown) => toast.error((err as Error).message),
 	});
 
 	const deleteMutation = useMutation({
@@ -133,7 +149,7 @@ export default function UserManagement() {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: any) => toast.error(err.message),
+		onError: (err: unknown) => toast.error((err as Error).message),
 	});
 
 	const banMutation = useMutation({
@@ -148,7 +164,7 @@ export default function UserManagement() {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: any) => toast.error(err.message),
+		onError: (err: unknown) => toast.error((err as Error).message),
 	});
 
 	const unbanMutation = useMutation({
@@ -158,10 +174,28 @@ export default function UserManagement() {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: any) => toast.error(err.message),
+		onError: (err: unknown) => toast.error((err as Error).message),
 	});
 
+	const handleGeneratePassword = () => {
+		const pwd = generatePassword();
+		setValue("password", pwd);
+		setShowPassword(true);
+	};
+
+	const handleCopyPassword = () => {
+		const pwd = getValues("password");
+		if (pwd) {
+			navigator.clipboard.writeText(pwd);
+			toast.success("Password copied");
+		}
+	};
+
 	const onSubmit = (data: UserForm) => {
+		if (!editingUser && !data.password) {
+			toast.error("Password is required");
+			return;
+		}
 		if (editingUser) {
 			updateMutation.mutate({ id: editingUser.id, ...data });
 		} else {
@@ -173,7 +207,7 @@ export default function UserManagement() {
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between">
 				<h1 className="font-semibold text-xl">User Management</h1>
-				<button className="btn btn-primary" onClick={openCreate}>
+				<button type="button" className="btn btn-primary" onClick={openCreate}>
 					<PlusIcon className="mr-2 h-4 w-4" /> Create User
 				</button>
 			</div>
@@ -209,34 +243,57 @@ export default function UserManagement() {
 								<td>{u.email}</td>
 								<td className="capitalize">{u.role}</td>
 								<td>{u.banned ? "Banned" : "Active"}</td>
-								<td className="space-x-2">
-									<button
-										className="btn btn-ghost btn-sm"
-										onClick={() => openEdit(u)}
-									>
-										Edit
-									</button>
-									{u.banned ? (
+								<td className="w-1 text-right">
+									<div className="dropdown dropdown-end">
 										<button
+											type="button"
+											tabIndex={0}
 											className="btn btn-ghost btn-sm"
-											onClick={() => setConfirm({ user: u, action: "unban" })}
 										>
-											Unban
+											<MoreVertical className="h-4 w-4" />
 										</button>
-									) : (
-										<button
-											className="btn btn-ghost btn-sm"
-											onClick={() => setConfirm({ user: u, action: "ban" })}
-										>
-											Ban
-										</button>
-									)}
-									<button
-										className="btn btn-ghost btn-sm text-error"
-										onClick={() => setConfirm({ user: u, action: "delete" })}
-									>
-										Delete
-									</button>
+										<ul className="dropdown-content menu menu-sm z-[1] mt-2 w-40 rounded-box bg-base-100 p-2 shadow">
+											<li>
+												<button type="button" onClick={() => openEdit(u)}>
+													Edit
+												</button>
+											</li>
+											{u.banned ? (
+												<li>
+													<button
+														type="button"
+														onClick={() =>
+															setConfirm({ user: u, action: "unban" })
+														}
+													>
+														Unban
+													</button>
+												</li>
+											) : (
+												<li>
+													<button
+														type="button"
+														onClick={() =>
+															setConfirm({ user: u, action: "ban" })
+														}
+													>
+														Ban
+													</button>
+												</li>
+											)}
+											<li>
+												<button
+													type="button"
+													className="text-error"
+													onClick={() =>
+														setConfirm({ user: u, action: "delete" })
+													}
+												>
+													Delete
+												</button>
+											</li>
+										</ul>
+									</div>
 								</td>
 							</tr>
 						))}
@@ -258,8 +315,11 @@ export default function UserManagement() {
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div>
-						<label className="mb-1 block font-medium text-sm">Name</label>
+						<label htmlFor={nameId} className="mb-1 block font-medium text-sm">
+							Name
+						</label>
 						<input
+							id={nameId}
 							{...register("name")}
 							className="input input-bordered w-full"
 						/>
@@ -268,8 +328,11 @@ export default function UserManagement() {
 						)}
 					</div>
 					<div>
-						<label className="mb-1 block font-medium text-sm">Email</label>
+						<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
+							Email
+						</label>
 						<input
+							id={emailId}
 							type="email"
 							{...register("email")}
 							className="input input-bordered w-full"
@@ -279,8 +342,11 @@ export default function UserManagement() {
 						)}
 					</div>
 					<div>
-						<label className="mb-1 block font-medium text-sm">Role</label>
+						<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
+							Role
+						</label>
 						<select
+							id={roleId}
 							{...register("role")}
 							className="select select-bordered w-full"
 						>
@@ -288,19 +354,57 @@ export default function UserManagement() {
 							<option value="teacher">Teacher</option>
 						</select>
 					</div>
-					{editingUser && (
-						<div>
-							<label className="mb-1 block font-medium text-sm">
-								New Password
-							</label>
+					<div>
+						<label
+							htmlFor={passwordId}
+							className="mb-1 block font-medium text-sm"
+						>
+							{editingUser ? "New Password" : "Password"}
+						</label>
+						<div className="join w-full">
 							<input
-								type="text"
-								{...register("password")}
-								className="input input-bordered w-full"
-								placeholder="Leave blank to keep existing"
+								id={passwordId}
+								type={showPassword ? "text" : "password"}
+								{...register("password", { required: !editingUser })}
+								className="input input-bordered join-item w-full"
+								placeholder={
+									editingUser ? "Leave blank to keep existing" : undefined
+								}
 							/>
+							<button
+								type="button"
+								className="btn btn-ghost join-item"
+								onClick={() => setShowPassword((s) => !s)}
+							>
+								{showPassword ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
+							</button>
+							<button
+								type="button"
+								className="btn btn-ghost join-item"
+								onClick={handleCopyPassword}
+							>
+								<Copy className="h-4 w-4" />
+							</button>
+							{!editingUser && (
+								<button
+									type="button"
+									className="btn btn-ghost join-item"
+									onClick={handleGeneratePassword}
+								>
+									Generate
+								</button>
+							)}
 						</div>
-					)}
+						{errors.password && (
+							<p className="mt-1 text-error text-sm">
+								{errors.password.message}
+							</p>
+						)}
+					</div>
 					<div className="modal-action">
 						<button
 							type="button"
