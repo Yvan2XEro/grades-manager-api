@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import * as schema from "../../db/schema/app-schema";
 import * as studentsRepo from "@/modules/students/students.repo";
 import { transaction } from "../_shared/db-transaction";
-import { notFound } from "../_shared/errors";
+import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./classes.repo";
 
 export async function createClass(data: Parameters<typeof repo.create>[0]) {
@@ -19,7 +19,23 @@ export async function updateClass(
 }
 
 export async function deleteClass(id: string) {
-	await repo.remove(id);
+        const klass = await repo.findById(id);
+        if (!klass) throw notFound();
+
+        const students = await studentsRepo.list({ classId: id });
+        if (students.items.length) {
+                const { items } = await repo.list({
+                        programId: klass.program,
+                        academicYearId: klass.academicYear,
+                });
+                const target = items.find((c) => c.id !== id);
+                if (!target) throw conflict("Cannot delete class with students");
+                for (const s of students.items) {
+                        await studentsRepo.transferStudent(s.id, target.id);
+                }
+        }
+
+        await repo.remove(id);
 }
 
 export async function listClasses(opts: Parameters<typeof repo.list>[0]) {
