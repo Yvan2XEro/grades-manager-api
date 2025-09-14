@@ -7,17 +7,18 @@ import { authClient } from '../../lib/auth-client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
-const loginSchema = z.object({
-  firstName: z.string().min(2, 'First name is required'),
-  lastName: z.string().min(2, 'Last name is required'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Please confirm your password'),
-  role: z.enum(['admin', 'teacher']),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const loginSchema = z
+  .object({
+    firstName: z.string().min(2, 'First name is required'),
+    lastName: z.string().min(2, 'Last name is required'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(6, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type RegisterFormData = z.infer<typeof loginSchema>;
 
@@ -30,9 +31,6 @@ const Register: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      role: 'teacher',
-    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -41,7 +39,7 @@ const Register: React.FC = () => {
         email: data.email,
         password: data.password,
         name: `${data.firstName} ${data.lastName}`,
-        role: data.role.toUpperCase(),
+        role: 'TEACHER',
       });
 
       await authClient.signIn.email({
@@ -50,7 +48,7 @@ const Register: React.FC = () => {
       });
 
       toast.success('Registration successful!');
-      navigate(data.role === 'admin' ? '/admin' : '/teacher');
+      navigate('/teacher');
     } catch (error: any) {
       toast.error(`Registration failed: ${error.message}`);
     }
@@ -138,19 +136,6 @@ const Register: React.FC = () => {
           )}
         </div>
         
-        <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-            Role
-          </label>
-          <select
-            id="role"
-            {...register('role')}
-            className="select select-bordered w-full"
-          >
-            <option value="teacher">Teacher</option>
-            <option value="admin">Administrator</option>
-          </select>
-        </div>
         
         <button
           type="submit"
@@ -170,7 +155,7 @@ const Register: React.FC = () => {
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary-600 hover:text-primary-500 font-medium">
+          <Link to="/auth/login" className="text-primary-600 hover:text-primary-500 font-medium">
             Sign In
           </Link>
         </p>
