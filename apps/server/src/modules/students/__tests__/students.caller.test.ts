@@ -34,4 +34,45 @@ describe("students router", () => {
       }),
     ).rejects.toHaveProperty("code", "CONFLICT");
   });
+
+  it("bulk creates students and reports conflicts", async () => {
+    const admin = createCaller(asAdmin());
+    const klass = await createClass();
+    await admin.students.create({
+      firstName: "A",
+      lastName: "B",
+      email: "existing@example.com",
+      registrationNumber: "1",
+      classId: klass.id,
+    });
+    const res = await admin.students.bulkCreate({
+      classId: klass.id,
+      students: [
+        {
+          firstName: "C",
+          lastName: "D",
+          email: "new@example.com",
+          registrationNumber: "2",
+        },
+        {
+          firstName: "E",
+          lastName: "F",
+          email: "existing@example.com",
+          registrationNumber: "3",
+        },
+      ],
+    });
+    expect(res.createdCount).toBe(1);
+    expect(res.conflicts).toHaveLength(1);
+  });
+
+  it("fails when class does not exist", async () => {
+    const admin = createCaller(asAdmin());
+    await expect(
+      admin.students.bulkCreate({
+        classId: "missing",
+        students: [],
+      }),
+    ).rejects.toHaveProperty("code", "NOT_FOUND");
+  });
 });
