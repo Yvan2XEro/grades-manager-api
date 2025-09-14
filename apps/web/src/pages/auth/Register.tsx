@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '../../lib/supabase';
+import { authClient } from '../../lib/auth-client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -37,42 +37,17 @@ const Register: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // First create the auth user with metadata
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      await authClient.signUp.email({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            role: data.role,
-          },
-        },
+        name: `${data.firstName} ${data.lastName}`,
+        role: data.role.toUpperCase(),
       });
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('No user data returned');
-
-      // Then create the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          email: data.email,
-          role: data.role,
-        })
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Sign in the user
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      await authClient.signIn.email({
         email: data.email,
         password: data.password,
       });
-
-      if (signInError) throw signInError;
 
       toast.success('Registration successful!');
       navigate(data.role === 'admin' ? '/admin' : '/teacher');
