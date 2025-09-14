@@ -64,13 +64,12 @@ export default function CourseManagement() {
 		},
 	});
 
-	const { data: teachers } = useQuery({
-		queryKey: ["teachers"],
-		queryFn: async () => {
-			const { items } = await trpcClient.profiles.list.query({});
-			return items.filter((t: Teacher) => t.role === "teacher") as Teacher[];
-		},
-	});
+        const { data: teachers } = useQuery({
+                queryKey: ["teachers"],
+                queryFn: async () => {
+                        return [] as Teacher[];
+                },
+        });
 
 	const {
 		register,

@@ -72,36 +72,25 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
   return klass;
 }
 
-export async function createProfile(data: Partial<schema.NewProfile> = {}) {
-  const { firstName, lastName, ...rest } = data;
+export async function createUser(
+  data: { name?: string; email?: string; role?: string; password?: string } = {},
+) {
   const u = await auth.api.createUser({
     body: {
-      name: `${firstName} ${lastName}`,
-      email: `user-${randomUUID()}@example.com`,
+      name: data.name ?? "John Doe",
+      email: data.email ?? `user-${randomUUID()}@example.com`,
       role: (data.role as any) ?? "ADMIN",
-      password: "password",
-      ...rest,
+      password: data.password ?? "password",
     },
   });
-  const [profile] = await db
-    .insert(schema.profiles)
-    .values({
-      id: u.user.id,
-      firstName: "John",
-      lastName: "Doe",
-      email: `user-${randomUUID()}@example.com`,
-      role: data.role ?? "ADMIN",
-      ...data,
-    })
-    .returning();
-  return profile;
+  return u.user;
 }
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
   const program = data.program ? { id: data.program } : await createProgram();
   const teacher = data.defaultTeacher
     ? { id: data.defaultTeacher }
-    : await createProfile();
+    : await createUser();
   const [course] = await db
     .insert(schema.courses)
     .values({
@@ -121,7 +110,7 @@ export async function createClassCourse(
 ) {
   const klass = data.class ? { id: data.class } : await createClass();
   const course = data.course ? { id: data.course } : await createCourse();
-  const teacher = data.teacher ? { id: data.teacher } : await createProfile();
+  const teacher = data.teacher ? { id: data.teacher } : await createUser();
   const [cc] = await db
     .insert(schema.classCourses)
     .values({

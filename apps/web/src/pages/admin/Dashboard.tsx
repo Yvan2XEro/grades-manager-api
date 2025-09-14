@@ -41,7 +41,6 @@ const AdminDashboard: React.FC = () => {
         coursesRes,
         examsRes,
         studentsRes,
-        profilesRes,
         yearsRes,
       ] = await Promise.all([
         trpcClient.faculties.list.query({}),
@@ -49,7 +48,6 @@ const AdminDashboard: React.FC = () => {
         trpcClient.courses.list.query({}),
         trpcClient.exams.list.query({}),
         trpcClient.students.list.query({}),
-        trpcClient.profiles.list.query({}),
         trpcClient.academicYears.list.query({}),
       ]);
 
@@ -59,9 +57,7 @@ const AdminDashboard: React.FC = () => {
       const coursesCount = coursesRes.items.length;
       const examsCount = examsRes.items.length;
       const studentsCount = studentsRes.items.length;
-      const teachersCount = profilesRes.items.filter(
-        (p) => p.role !== "admin",
-      ).length;
+      const teachersCount = 0;
 
       const activeYear = yearsRes.items.find((y) => y.isActive);
 

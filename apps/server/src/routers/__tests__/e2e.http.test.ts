@@ -4,7 +4,7 @@ import { trpcServer } from "@hono/trpc-server";
 import { createTRPCProxyClient } from "@trpc/client";
 import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
 import { appRouter, type AppRouter } from "../index";
-import { asAdmin, createProfile } from "../../lib/test-utils";
+import { asAdmin, createUser } from "../../lib/test-utils";
 
 const app = new Hono();
 
@@ -63,7 +63,7 @@ describe("e2e http", () => {
       academicYear: year.id,
     });
 
-    const teacher = await createProfile();
+    const teacher = await createUser();
 
     const course = await client.courses.create.mutate({
       name: "Math",
