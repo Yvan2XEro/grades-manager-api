@@ -79,9 +79,24 @@ export async function seed() {
 }
 
 export async function reset() {
-  await db.execute(
-    sql`TRUNCATE TABLE grades, exams, class_courses, courses, classes, programs, faculties, academic_years, profiles, students RESTART IDENTITY CASCADE`,
-  );
+  await db.execute(sql`
+    TRUNCATE TABLE
+     grades,
+     exams,
+     class_courses,
+     courses,
+     classes,
+     programs,
+     faculties,
+     academic_years,
+     profiles,
+     students,
+     account,
+     session,
+     verification,
+     "user"
+    RESTART IDENTITY CASCADE
+  `);
 }
 
 export async function close() {
