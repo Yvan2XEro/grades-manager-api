@@ -17,15 +17,15 @@ import {
 } from "./grades.zod";
 
 export const router = createRouter({
-	upsertNote: adminProcedure
+	upsertNote: protectedProcedure
 		.input(upsertSchema)
 		.mutation(({ input }) =>
 			service.upsertNote(input.studentId, input.examId, input.score),
 		),
-	updateNote: adminProcedure
+	updateNote: protectedProcedure
 		.input(updateSchema)
 		.mutation(({ input }) => service.updateNote(input.id, input.score)),
-	deleteNote: adminProcedure
+	deleteNote: protectedProcedure
 		.input(idSchema)
 		.mutation(({ input }) => service.deleteNote(input.id)),
 	listByExam: protectedProcedure
