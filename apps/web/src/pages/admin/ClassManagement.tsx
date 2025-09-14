@@ -3,16 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase';
 import { Plus, Pencil, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import FormModal from '../../components/modals/FormModal';
 import ConfirmModal from '../../components/modals/ConfirmModal';
+import { trpcClient } from '../../utils/trpc';
 
 const classSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  program_id: z.string().uuid('Please select a program'),
-  academic_year_id: z.string().uuid('Please select an academic year'),
+  programId: z.string().uuid('Please select a program'),
+  academicYearId: z.string().uuid('Please select an academic year'),
 });
 
 type ClassFormData = z.infer<typeof classSchema>;
@@ -20,10 +20,10 @@ type ClassFormData = z.infer<typeof classSchema>;
 interface Class {
   id: string;
   name: string;
-  program_id: string;
-  academic_year_id: string;
+  programId: string;
+  academicYearId: string;
   program: { name: string };
-  academic_year: { name: string };
+  academicYear: { name: string };
   students: { id: string }[];
 }
 
@@ -38,44 +38,41 @@ export default function ClassManagement() {
   const { data: classes, isLoading } = useQuery({
     queryKey: ['classes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          program:programs(name),
-          academic_year:academic_years(name),
-          students(id)
-        `)
-        .order('name');
-
-      if (error) throw error;
-      return data as Class[];
+      const { items } = await trpcClient.classes.list.query({});
+      return Promise.all(
+        items.map(async (cls) => {
+          const [program, academicYear, students] = await Promise.all([
+            trpcClient.programs.getById.query({ id: cls.program }),
+            trpcClient.academicYears.getById.query({ id: cls.academicYear }),
+            trpcClient.students.list.query({ classId: cls.id }),
+          ]);
+          return {
+            id: cls.id,
+            name: cls.name,
+            programId: cls.program,
+            academicYearId: cls.academicYear,
+            program: { name: program.name },
+            academicYear: { name: academicYear.name },
+            students: students.items.map((s) => ({ id: s.id })),
+          } as Class;
+        }),
+      );
     },
   });
 
   const { data: programs } = useQuery({
     queryKey: ['programs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('programs')
-        .select('id, name')
-        .order('name');
-
-      if (error) throw error;
-      return data;
+      const { items } = await trpcClient.programs.list.query({});
+      return items;
     },
   });
 
   const { data: academicYears } = useQuery({
     queryKey: ['academicYears'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('academic_years')
-        .select('id, name')
-        .order('start_date', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      const { items } = await trpcClient.academicYears.list.query({});
+      return items;
     },
   });
 
@@ -90,8 +87,11 @@ export default function ClassManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (data: ClassFormData) => {
-      const { error } = await supabase.from('classes').insert([data]);
-      if (error) throw error;
+      await trpcClient.classes.create.mutate({
+        name: data.name,
+        program: data.programId,
+        academicYear: data.academicYearId,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] });
@@ -106,12 +106,12 @@ export default function ClassManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ClassFormData & { id: string }) => {
-      const { id, ...updateData } = data;
-      const { error } = await supabase
-        .from('classes')
-        .update(updateData)
-        .eq('id', id);
-      if (error) throw error;
+      await trpcClient.classes.update.mutate({
+        id: data.id,
+        name: data.name,
+        program: data.programId,
+        academicYear: data.academicYearId,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] });
@@ -127,8 +127,7 @@ export default function ClassManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('classes').delete().eq('id', id);
-      if (error) throw error;
+      await trpcClient.classes.delete.mutate({ id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] });
@@ -223,7 +222,7 @@ export default function ClassManagement() {
                   <tr key={cls.id}>
                     <td className="font-medium">{cls.name}</td>
                     <td>{cls.program?.name}</td>
-                    <td>{cls.academic_year?.name}</td>
+                    <td>{cls.academicYear?.name}</td>
                     <td>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
@@ -237,8 +236,8 @@ export default function ClassManagement() {
                             setEditingClass(cls);
                             reset({
                               name: cls.name,
-                              program_id: cls.program_id,
-                              academic_year_id: cls.academic_year_id,
+                              programId: cls.programId,
+                              academicYearId: cls.academicYearId,
                             });
                             setIsFormOpen(true);
                           }}
@@ -294,7 +293,7 @@ export default function ClassManagement() {
               <span className="label-text">Program</span>
             </label>
             <select
-              {...register('program_id')}
+              {...register('programId')}
               className="select select-bordered w-full"
             >
               <option value="">Select a program</option>
@@ -304,10 +303,10 @@ export default function ClassManagement() {
                 </option>
               ))}
             </select>
-            {errors.program_id && (
+            {errors.programId && (
               <label className="label">
                 <span className="label-text-alt text-error">
-                  {errors.program_id.message}
+                  {errors.programId.message}
                 </span>
               </label>
             )}
@@ -318,7 +317,7 @@ export default function ClassManagement() {
               <span className="label-text">Academic Year</span>
             </label>
             <select
-              {...register('academic_year_id')}
+              {...register('academicYearId')}
               className="select select-bordered w-full"
             >
               <option value="">Select an academic year</option>
@@ -328,10 +327,10 @@ export default function ClassManagement() {
                 </option>
               ))}
             </select>
-            {errors.academic_year_id && (
+            {errors.academicYearId && (
               <label className="label">
                 <span className="label-text-alt text-error">
-                  {errors.academic_year_id.message}
+                  {errors.academicYearId.message}
                 </span>
               </label>
             )}
