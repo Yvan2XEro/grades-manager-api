@@ -5,9 +5,32 @@ import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import { sql } from "drizzle-orm";
 import path from "node:path";
+import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { adminRoles } from "./auth";
 
 const pg = new PGlite();
 export const db = drizzle(pg, { schema: { ...schema, ...authSchema } });
+
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: authSchema,
+  }),
+  plugins: [admin({ adminRoles: adminRoles })],
+  trustedOrigins: [process.env.CORS_ORIGIN || ""],
+  emailAndPassword: {
+    enabled: true,
+  },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+    },
+  },
+});
 
 export async function pushSchema() {
   const migrationsFolder = path.resolve(import.meta.dir, "../db/migrations");
@@ -15,10 +38,20 @@ export async function pushSchema() {
 }
 
 export async function seed() {
+  const firstName = "Seed",
+    lastName = "Teacher";
+  const u = await auth.api.createUser({
+    body: {
+      name: `${firstName} ${lastName}`,
+      email: "seed.teacher@example.com",
+      role: "admin",
+      password: "password",
+    },
+  });
   await db.insert(schema.profiles).values({
-    id: "seed-teacher",
-    firstName: "Seed",
-    lastName: "Teacher",
+    id: u.user.id,
+    firstName,
+    lastName,
     email: "seed.teacher@example.com",
     role: "ADMIN",
   });

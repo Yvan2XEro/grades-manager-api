@@ -1,10 +1,16 @@
 import type { Context } from "./context";
-import { db } from "./test-db";
+import { auth, db } from "./test-db";
 import * as schema from "../db/schema/app-schema";
 import { randomUUID } from "node:crypto";
-
-export function makeTestContext(opts: { role?: string; userId?: string } = {}): Context {
-  const { role, userId } = { role: undefined as string | undefined, userId: randomUUID(), ...opts };
+import { adminRoles, superadminRoles } from "./auth";
+export function makeTestContext(
+  opts: { role?: string; userId?: string } = {},
+): Context {
+  const { role, userId } = {
+    role: undefined as string | undefined,
+    userId: randomUUID(),
+    ...opts,
+  };
   if (!role) return { session: null } as unknown as Context;
   return {
     session: {
@@ -13,8 +19,8 @@ export function makeTestContext(opts: { role?: string; userId?: string } = {}): 
   } as Context;
 }
 
-export const asAdmin = () => makeTestContext({ role: "ADMIN" });
-export const asSuperAdmin = () => makeTestContext({ role: "superadmin" });
+export const asAdmin = () => makeTestContext({ role: adminRoles[0] });
+export const asSuperAdmin = () => makeTestContext({ role: superadminRoles[0] });
 export const asUser = () => makeTestContext({ role: "USER" });
 
 export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
@@ -34,7 +40,9 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
   return program;
 }
 
-export async function createAcademicYear(data: Partial<schema.NewAcademicYear> = {}) {
+export async function createAcademicYear(
+  data: Partial<schema.NewAcademicYear> = {},
+) {
   const [year] = await db
     .insert(schema.academicYears)
     .values({
@@ -49,19 +57,36 @@ export async function createAcademicYear(data: Partial<schema.NewAcademicYear> =
 
 export async function createClass(data: Partial<schema.NewKlass> = {}) {
   const program = data.program ? { id: data.program } : await createProgram();
-  const year = data.academicYear ? { id: data.academicYear } : await createAcademicYear();
+  const year = data.academicYear
+    ? { id: data.academicYear }
+    : await createAcademicYear();
   const [klass] = await db
     .insert(schema.classes)
-    .values({ name: `Class-${randomUUID()}`, program: program.id, academicYear: year.id, ...data })
+    .values({
+      name: `Class-${randomUUID()}`,
+      program: program.id,
+      academicYear: year.id,
+      ...data,
+    })
     .returning();
   return klass;
 }
 
 export async function createProfile(data: Partial<schema.NewProfile> = {}) {
+  const { firstName, lastName, ...rest } = data;
+  const u = await auth.api.createUser({
+    body: {
+      name: `${firstName} ${lastName}`,
+      email: `user-${randomUUID()}@example.com`,
+      role: (data.role as any) ?? "ADMIN",
+      password: "password",
+      ...rest,
+    },
+  });
   const [profile] = await db
     .insert(schema.profiles)
     .values({
-      id: randomUUID(),
+      id: u.user.id,
       firstName: "John",
       lastName: "Doe",
       email: `user-${randomUUID()}@example.com`,
@@ -74,7 +99,9 @@ export async function createProfile(data: Partial<schema.NewProfile> = {}) {
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
   const program = data.program ? { id: data.program } : await createProgram();
-  const teacher = data.defaultTeacher ? { id: data.defaultTeacher } : await createProfile();
+  const teacher = data.defaultTeacher
+    ? { id: data.defaultTeacher }
+    : await createProfile();
   const [course] = await db
     .insert(schema.courses)
     .values({
@@ -89,19 +116,28 @@ export async function createCourse(data: Partial<schema.NewCourse> = {}) {
   return course;
 }
 
-export async function createClassCourse(data: Partial<schema.NewClassCourse> = {}) {
+export async function createClassCourse(
+  data: Partial<schema.NewClassCourse> = {},
+) {
   const klass = data.class ? { id: data.class } : await createClass();
   const course = data.course ? { id: data.course } : await createCourse();
   const teacher = data.teacher ? { id: data.teacher } : await createProfile();
   const [cc] = await db
     .insert(schema.classCourses)
-    .values({ class: klass.id, course: course.id, teacher: teacher.id, ...data })
+    .values({
+      class: klass.id,
+      course: course.id,
+      teacher: teacher.id,
+      ...data,
+    })
     .returning();
   return cc;
 }
 
 export async function createExam(data: Partial<schema.NewExam> = {}) {
-  const classCourse = data.classCourse ? { id: data.classCourse } : await createClassCourse();
+  const classCourse = data.classCourse
+    ? { id: data.classCourse }
+    : await createClassCourse();
   const [exam] = await db
     .insert(schema.exams)
     .values({
@@ -137,7 +173,11 @@ export async function createGrade(data: Partial<schema.NewGrade> = {}) {
   const exam = data.exam ? { id: data.exam } : await createExam();
   const [grade] = await db
     .insert(schema.grades)
-    .values({ student: student.id, exam: exam.id, score: data.score?.toString() ?? "50" })
+    .values({
+      student: student.id,
+      exam: exam.id,
+      score: data.score?.toString() ?? "50",
+    })
     .returning();
   return grade;
 }

@@ -4,11 +4,12 @@ import { db, pushSchema, seed, reset, close } from "./test-db";
 
 try {
   config({ path: ".env.test" });
-} catch {}
+} catch { }
 
 mock.module("../db", () => ({ db }));
 
 beforeAll(async () => {
+  await reset();
   await pushSchema();
   await seed();
 });
