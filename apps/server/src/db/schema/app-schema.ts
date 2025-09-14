@@ -52,23 +52,6 @@ export const academicYears = pgTable(
   ],
 );
 
-export const profiles = pgTable(
-  "profiles",
-  {
-    id: text("id")
-      .primaryKey()
-      .references(() => user.id, { onDelete: "cascade" }),
-    firstName: text("first_name").notNull(),
-    lastName: text("last_name").notNull(),
-    email: text("email").notNull(),
-    role: text("role").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (t) => [unique("uq_profiles_email").on(t.email)],
-);
-
 export const programs = pgTable(
   "programs",
   {
@@ -132,7 +115,7 @@ export const courses = pgTable(
       .references(() => programs.id, { onDelete: "cascade" }),
     defaultTeacher: text("default_teacher_id")
       .notNull()
-      .references(() => profiles.id, { onDelete: "restrict" }),
+      .references(() => user.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -160,7 +143,7 @@ export const classCourses = pgTable(
       .references(() => courses.id, { onDelete: "cascade" }),
     teacher: text("teacher_id")
       .notNull()
-      .references(() => profiles.id, { onDelete: "restrict" }),
+      .references(() => user.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -259,11 +242,6 @@ export const academicYearsRelations = relations(academicYears, ({ many }) => ({
   classes: many(classes),
 }));
 
-export const profilesRelations = relations(profiles, ({ many }) => ({
-  defaultCourses: many(courses),
-  classCourses: many(classCourses),
-}));
-
 export const programsRelations = relations(programs, ({ one, many }) => ({
   faculty: one(faculties, {
     fields: [programs.faculty],
@@ -291,9 +269,9 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     fields: [courses.program],
     references: [programs.id],
   }),
-  defaultTeacherRef: one(profiles, {
+  defaultTeacherRef: one(user, {
     fields: [courses.defaultTeacher],
-    references: [profiles.id],
+    references: [user.id],
   }),
   classCourses: many(classCourses),
 }));
@@ -309,9 +287,9 @@ export const classCoursesRelations = relations(
       fields: [classCourses.course],
       references: [courses.id],
     }),
-    teacherRef: one(profiles, {
+    teacherRef: one(user, {
       fields: [classCourses.teacher],
-      references: [profiles.id],
+      references: [user.id],
     }),
     exams: many(exams),
   }),
@@ -353,8 +331,6 @@ export type NewProgram = InferInsertModel<typeof programs>;
 export type AcademicYear = InferSelectModel<typeof academicYears>;
 export type NewAcademicYear = InferInsertModel<typeof academicYears>;
 
-export type Profile = InferSelectModel<typeof profiles>;
-export type NewProfile = InferInsertModel<typeof profiles>;
 
 export type Klass = InferSelectModel<typeof classes>;
 export type NewKlass = InferInsertModel<typeof classes>;

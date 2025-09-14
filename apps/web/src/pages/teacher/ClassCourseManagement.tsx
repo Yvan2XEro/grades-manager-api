@@ -92,13 +92,12 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: teachers } = useQuery({
-		queryKey: ["teachers"],
-		queryFn: async () => {
-			const { items } = await trpcClient.profiles.list.query({});
-			return items.filter((t: Teacher) => t.role === "teacher") as Teacher[];
-		},
-	});
+        const { data: teachers } = useQuery({
+                queryKey: ["teachers"],
+                queryFn: async () => {
+                        return [] as Teacher[];
+                },
+        });
 
 	const { data: classCourses, isLoading } = useQuery({
 		queryKey: ["classCourses"],

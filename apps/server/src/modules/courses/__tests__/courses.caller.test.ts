@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	asAdmin,
-	createProfile,
+        createUser,
 	createProgram,
 	makeTestContext,
 } from "@/lib/test-utils";
@@ -22,7 +22,7 @@ describe("courses router", () => {
 
 	it("supports CRUD", async () => {
 		const program = await createProgram();
-		const teacher = await createProfile();
+                const teacher = await createUser();
 		const admin = createCaller(asAdmin());
 		const course = await admin.courses.create({
 			name: "Math",

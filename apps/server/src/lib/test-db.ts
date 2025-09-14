@@ -40,20 +40,13 @@ export async function pushSchema() {
 export async function seed() {
   const firstName = "Seed",
     lastName = "Teacher";
-  const u = await auth.api.createUser({
+  await auth.api.createUser({
     body: {
       name: `${firstName} ${lastName}`,
       email: "seed.teacher@example.com",
       role: "admin",
       password: "password",
     },
-  });
-  await db.insert(schema.profiles).values({
-    id: u.user.id,
-    firstName,
-    lastName,
-    email: "seed.teacher@example.com",
-    role: "ADMIN",
   });
   const [faculty] = await db
     .insert(schema.faculties)
@@ -89,7 +82,6 @@ export async function reset() {
      programs,
      faculties,
      academic_years,
-     profiles,
      students,
      account,
      session,

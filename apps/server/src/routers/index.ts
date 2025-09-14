@@ -6,7 +6,6 @@ import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
-import { profilesRouter } from "../modules/profiles";
 import { programsRouter } from "../modules/programs";
 import { studentsRouter } from "../modules/students";
 
@@ -20,7 +19,6 @@ export const appRouter = router({
 	programs: programsRouter,
 	academicYears: academicYearsRouter,
 	classes: classesRouter,
-	profiles: profilesRouter,
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
 	exams: examsRouter,
