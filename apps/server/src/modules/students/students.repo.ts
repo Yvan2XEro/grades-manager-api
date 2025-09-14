@@ -1,5 +1,5 @@
-import { db } from "../db";
-import * as schema from "../db/schema/app-schema";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import { eq, ilike, and, gt } from "drizzle-orm";
 
 export async function create(data: schema.NewStudent) {
@@ -20,7 +20,12 @@ export async function findById(id: string) {
   return db.query.students.findFirst({ where: eq(schema.students.id, id) });
 }
 
-export async function list(opts: { classId?: string; q?: string; cursor?: string; limit?: number }) {
+export async function list(opts: {
+  classId?: string;
+  q?: string;
+  cursor?: string;
+  limit?: number;
+}) {
   const limit = opts.limit ?? 50;
   let condition;
   if (opts.classId) {
@@ -40,7 +45,8 @@ export async function list(opts: { classId?: string; q?: string; cursor?: string
     .where(condition)
     .orderBy(schema.students.id)
     .limit(limit);
-  const nextCursor = items.length === limit ? items[items.length - 1].id : undefined;
+  const nextCursor =
+    items.length === limit ? items[items.length - 1].id : undefined;
   return { items, nextCursor };
 }
 

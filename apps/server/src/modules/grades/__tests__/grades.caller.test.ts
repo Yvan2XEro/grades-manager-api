@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { createCallerFactory } from "@trpc/server";
 import {
 	asAdmin,
 	createExam,
 	createStudent,
 	makeTestContext,
 } from "../../../lib/test-utils";
-import { appRouter } from "../../../routers";
+import { appRouter } from "@/routers";
+import type { Context } from "@/lib/context";
 
-const createCaller = createCallerFactory(appRouter);
+const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
 describe("grades router", () => {
 	it("requires auth", async () => {

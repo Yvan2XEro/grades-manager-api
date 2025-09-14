@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import * as schema from "../../db/schema/app-schema";
-import * as studentsRepo from "../../repositories/students.repo";
+import * as studentsRepo from "@/modules/students/students.repo";
 import { transaction } from "../_shared/db-transaction";
 import { notFound } from "../_shared/errors";
 import * as repo from "./classes.repo";
