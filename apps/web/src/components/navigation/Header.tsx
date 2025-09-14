@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Bell, X, LogOut } from 'lucide-react';
 import { useStore } from '../../store';
-import { supabase } from '../../lib/supabase';
+import { authClient } from '../../lib/auth-client';
 import { toast } from 'sonner';
 
 const Header: React.FC = () => {
@@ -11,7 +11,7 @@ const Header: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await authClient.signOut();
       clearUser();
       navigate('/login');
       toast.success('Logged out successfully');

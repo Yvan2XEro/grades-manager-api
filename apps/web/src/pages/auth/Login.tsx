@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '../../lib/supabase';
+import { authClient } from '../../lib/auth-client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -27,14 +27,10 @@ const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      await authClient.signIn.email({
         email: data.email,
         password: data.password,
       });
-
-      if (error) {
-        throw error;
-      }
 
       toast.success('Successfully signed in');
       // Navigation happens automatically through auth state change listener

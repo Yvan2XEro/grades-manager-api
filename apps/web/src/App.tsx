@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { supabase } from "./lib/supabase";
+import { authClient } from "./lib/auth-client";
 import { useStore } from "./store";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import AdminDashboard from "./pages/admin/Dashboard";
 import FacultyManagement from "./pages/admin/FacultyManagement";
 import ProgramManagement from "./pages/admin/ProgramManagement";
@@ -25,74 +27,26 @@ import { useQuery } from "@tanstack/react-query";
 import { trpc } from "./utils/trpc";
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
   const { user, setUser, clearUser } = useStore();
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          try {
-            const { data: profile, error } = await supabase
-              .from("profiles")
-              .select("first_name, last_name, email, role")
-              .eq("id", session.user.id)
-              .single();
+    if (session?.user) {
+      const [firstName, ...rest] = (session.user.name || "").split(" ");
+      setUser({
+        id: session.user.id,
+        email: session.user.email,
+        role: (session.user.role || "").toLowerCase() as "admin" | "teacher",
+        firstName,
+        lastName: rest.join(" "),
+      });
+    } else {
+      clearUser();
+    }
+  }, [session, setUser, clearUser]);
 
-            if (error) throw error;
-
-            if (profile) {
-              setUser({
-                id: session.user.id,
-                email: profile.email,
-                role: profile.role,
-                firstName: profile.first_name,
-                lastName: profile.last_name,
-              });
-            }
-          } catch (error) {
-            console.error("Error fetching profile:", error);
-            clearUser();
-          }
-        } else if (event === "SIGNED_OUT") {
-          clearUser();
-        }
-        setIsLoading(false);
-      },
-    );
-
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        supabase
-          .from("profiles")
-          .select("first_name, last_name, email, role")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data: profile, error }) => {
-            if (!error && profile) {
-              setUser({
-                id: session.user.id,
-                email: profile.email,
-                role: profile.role,
-                firstName: profile.first_name,
-                lastName: profile.last_name,
-              });
-            }
-          })
-          .finally(() => setIsLoading(false));
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [setUser, clearUser]);
-
-  if (isLoading) {
+  if (isPending) {
     return <LoadingScreen />;
   }
 
@@ -102,6 +56,8 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/forgot" element={<ForgotPassword />} />
+        <Route path="/auth/reset" element={<ResetPassword />} />
       </Route>
 
       {/* Admin Routes */}
