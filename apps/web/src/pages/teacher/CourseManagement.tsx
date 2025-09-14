@@ -34,10 +34,9 @@ interface Program {
 }
 
 interface Teacher {
-	id: string;
-	firstName: string;
-	lastName: string;
-	role: string;
+        id: string;
+        name: string;
+        role: string | null;
 }
 
 export default function CourseManagement() {
@@ -67,7 +66,11 @@ export default function CourseManagement() {
         const { data: teachers } = useQuery({
                 queryKey: ["teachers"],
                 queryFn: async () => {
-                        return [] as Teacher[];
+                        const { items } = await trpcClient.users.list.query({
+                                role: "teacher",
+                                limit: 100,
+                        });
+                        return items as Teacher[];
                 },
         });
 
@@ -81,9 +84,7 @@ export default function CourseManagement() {
 	});
 
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-	const teacherMap = new Map(
-		(teachers ?? []).map((t) => [t.id, `${t.firstName} ${t.lastName}`]),
-	);
+        const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
 
 	const createMutation = useMutation({
 		mutationFn: async (data: CourseFormData) => {
@@ -332,11 +333,11 @@ export default function CourseManagement() {
 							className="select select-bordered w-full"
 						>
 							<option value="">Select a teacher</option>
-							{teachers?.map((teacher) => (
-								<option key={teacher.id} value={teacher.id}>
-									{teacher.firstName} {teacher.lastName}
-								</option>
-							))}
+                                                        {teachers?.map((teacher) => (
+                                                                <option key={teacher.id} value={teacher.id}>
+                                                                        {teacher.name}
+                                                                </option>
+                                                        ))}
 						</select>
 						{errors.defaultTeacher && (
 							<label className="label">
