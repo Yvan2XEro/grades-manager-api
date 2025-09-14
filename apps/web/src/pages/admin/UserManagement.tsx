@@ -251,8 +251,7 @@ export default function UserManagement() {
 					/>
 				</div>
 			</div>
-
-			<div className="overflow-x-auto overflow-y-hidden">
+			<div className="overflow-x-auto overflow-y-visible">
 				<table className="table w-full">
 					<thead>
 						<tr>
