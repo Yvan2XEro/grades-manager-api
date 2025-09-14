@@ -41,10 +41,9 @@ interface Program {
 }
 
 interface Teacher {
-	id: string;
-	firstName: string;
-	lastName: string;
-	role: string;
+        id: string;
+        name: string;
+        role: string | null;
 }
 
 export default function ClassCourseManagement() {
@@ -95,7 +94,11 @@ export default function ClassCourseManagement() {
         const { data: teachers } = useQuery({
                 queryKey: ["teachers"],
                 queryFn: async () => {
-                        return [] as Teacher[];
+                        const { items } = await trpcClient.users.list.query({
+                                role: "teacher",
+                                limit: 100,
+                        });
+                        return items as Teacher[];
                 },
         });
 
@@ -119,9 +122,7 @@ export default function ClassCourseManagement() {
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-	const teacherMap = new Map(
-		(teachers ?? []).map((t) => [t.id, `${t.firstName} ${t.lastName}`]),
-	);
+        const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),
@@ -369,11 +370,11 @@ export default function ClassCourseManagement() {
 							className="select select-bordered w-full"
 						>
 							<option value="">Select a teacher</option>
-							{teachers?.map((teacher) => (
-								<option key={teacher.id} value={teacher.id}>
-									{teacher.firstName} {teacher.lastName}
-								</option>
-							))}
+                                                        {teachers?.map((teacher) => (
+                                                                <option key={teacher.id} value={teacher.id}>
+                                                                        {teacher.name}
+                                                                </option>
+                                                        ))}
 						</select>
 						{errors.teacher && (
 							<label className="label">

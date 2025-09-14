@@ -8,6 +8,7 @@ import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { programsRouter } from "../modules/programs";
 import { studentsRouter } from "../modules/students";
+import { usersRouter } from "../modules/users";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
@@ -24,6 +25,7 @@ export const appRouter = router({
 	exams: examsRouter,
 	students: studentsRouter,
 	grades: gradesRouter,
+	users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;
