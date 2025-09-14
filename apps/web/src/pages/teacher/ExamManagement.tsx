@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -18,7 +18,7 @@ const examSchema = z.object({
 		.number()
 		.min(1, "Percentage must be at least 1")
 		.max(100, "Percentage cannot exceed 100"),
-	classCourseId: z.string().uuid("Please select a course"),
+	classCourseId: z.string({ required_error: "Please select a course" }),
 });
 
 type ExamFormData = z.infer<typeof examSchema>;
@@ -257,9 +257,8 @@ export default function ExamManagement() {
 										<td>{exam.percentage}%</td>
 										<td>
 											<span
-												className={`badge ${
-													exam.isLocked ? "badge-warning" : "badge-success"
-												}`}
+												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"
+													}`}
 											>
 												{exam.isLocked ? "Locked" : "Open"}
 											</span>

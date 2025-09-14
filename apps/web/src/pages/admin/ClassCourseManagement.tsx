@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,9 +10,9 @@ import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
 
 const classCourseSchema = z.object({
-	class: z.string().uuid("Please select a class"),
-	course: z.string().uuid("Please select a course"),
-	teacher: z.string().uuid("Please select a teacher"),
+	class: z.string({ required_error: "Please select a class" }),
+	course: z.string({ required_error: "Please select a course" }),
+	teacher: z.string({ required_error: "Please select a teacher" }),
 });
 
 type ClassCourseFormData = z.infer<typeof classCourseSchema>;
@@ -41,9 +41,9 @@ interface Program {
 }
 
 interface Teacher {
-        id: string;
-        name: string;
-        role: string | null;
+	id: string;
+	name: string;
+	role: string | null;
 }
 
 export default function ClassCourseManagement() {
@@ -91,16 +91,16 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-        const { data: teachers } = useQuery({
-                queryKey: ["teachers"],
-                queryFn: async () => {
-                        const { items } = await trpcClient.users.list.query({
-                                role: "teacher",
-                                limit: 100,
-                        });
-                        return items as Teacher[];
-                },
-        });
+	const { data: teachers } = useQuery({
+		queryKey: ["teachers"],
+		queryFn: async () => {
+			const { items } = await trpcClient.users.list.query({
+				role: "teacher",
+				limit: 100,
+			});
+			return items as Teacher[];
+		},
+	});
 
 	const { data: classCourses, isLoading } = useQuery({
 		queryKey: ["classCourses"],
@@ -122,7 +122,7 @@ export default function ClassCourseManagement() {
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-        const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
+	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),
@@ -370,11 +370,11 @@ export default function ClassCourseManagement() {
 							className="select select-bordered w-full"
 						>
 							<option value="">Select a teacher</option>
-                                                        {teachers?.map((teacher) => (
-                                                                <option key={teacher.id} value={teacher.id}>
-                                                                        {teacher.name}
-                                                                </option>
-                                                        ))}
+							{teachers?.map((teacher) => (
+								<option key={teacher.id} value={teacher.id}>
+									{teacher.name}
+								</option>
+							))}
 						</select>
 						{errors.teacher && (
 							<label className="label">

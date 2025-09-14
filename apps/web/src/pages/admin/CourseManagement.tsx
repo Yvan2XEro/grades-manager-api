@@ -13,8 +13,8 @@ const courseSchema = z.object({
 	name: z.string().min(2, "Name must be at least 2 characters"),
 	credits: z.number().min(1, "Credits must be at least 1"),
 	hours: z.number().min(1, "Hours must be at least 1"),
-	program: z.string().uuid("Please select a program"),
-	defaultTeacher: z.string().uuid("Please select a teacher"),
+	program: z.string({ required_error: "Please select a program" }),
+	defaultTeacher: z.string({ required_error: "Please select a teacher" }),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -34,9 +34,9 @@ interface Program {
 }
 
 interface Teacher {
-        id: string;
-        name: string;
-        role: string | null;
+	id: string;
+	name: string;
+	role: string | null;
 }
 
 export default function CourseManagement() {
@@ -63,16 +63,16 @@ export default function CourseManagement() {
 		},
 	});
 
-        const { data: teachers } = useQuery({
-                queryKey: ["teachers"],
-                queryFn: async () => {
-                        const { items } = await trpcClient.users.list.query({
-                                role: "teacher",
-                                limit: 100,
-                        });
-                        return items as Teacher[];
-                },
-        });
+	const { data: teachers } = useQuery({
+		queryKey: ["teachers"],
+		queryFn: async () => {
+			const { items } = await trpcClient.users.list.query({
+				role: "teacher",
+				limit: 100,
+			});
+			return items as Teacher[];
+		},
+	});
 
 	const {
 		register,
@@ -84,7 +84,7 @@ export default function CourseManagement() {
 	});
 
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-        const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
+	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
 
 	const createMutation = useMutation({
 		mutationFn: async (data: CourseFormData) => {
@@ -333,11 +333,11 @@ export default function CourseManagement() {
 							className="select select-bordered w-full"
 						>
 							<option value="">Select a teacher</option>
-                                                        {teachers?.map((teacher) => (
-                                                                <option key={teacher.id} value={teacher.id}>
-                                                                        {teacher.name}
-                                                                </option>
-                                                        ))}
+							{teachers?.map((teacher) => (
+								<option key={teacher.id} value={teacher.id}>
+									{teacher.name}
+								</option>
+							))}
 						</select>
 						{errors.defaultTeacher && (
 							<label className="label">

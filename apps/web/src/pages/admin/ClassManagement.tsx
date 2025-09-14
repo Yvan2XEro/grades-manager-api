@@ -11,8 +11,10 @@ import { trpcClient } from "../../utils/trpc";
 
 const classSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  programId: z.string().uuid("Please select a program"),
-  academicYearId: z.string().uuid("Please select an academic year"),
+  programId: z.string({ required_error: "Please select a program" }),
+  academicYearId: z.string({
+    required_error: "Please select an academic year",
+  }),
 });
 
 type ClassFormData = z.infer<typeof classSchema>;
