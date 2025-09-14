@@ -1,47 +1,107 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { useStore } from '../../store';
-import { 
-  LayoutDashboard, BookOpen, Building2, GraduationCap, 
-  Calendar, Users, ClipboardList, School, BookOpenCheck,
-  FileSpreadsheet, ArrowUpRight
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import { useStore } from "../../store";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Building2,
+  GraduationCap,
+  Calendar,
+  Users,
+  ClipboardList,
+  School,
+  BookOpenCheck,
+  FileSpreadsheet,
+  ArrowUpRight,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Sidebar: React.FC = () => {
   const { user, sidebarOpen } = useStore();
-  
+
   const adminLinks = [
-    { to: '/admin', icon: <LayoutDashboard className="h-5 w-5" />, text: 'Dashboard' },
-    { to: '/admin/faculties', icon: <Building2 className="h-5 w-5" />, text: 'Faculties' },
-    { to: '/admin/programs', icon: <School className="h-5 w-5" />, text: 'Programs' },
-    { to: '/admin/courses', icon: <BookOpen className="h-5 w-5" />, text: 'Courses' },
-    { to: '/admin/academic-years', icon: <Calendar className="h-5 w-5" />, text: 'Academic Years' },
-    { to: '/admin/classes', icon: <Users className="h-5 w-5" />, text: 'Classes' },
-    { to: '/admin/class-courses', icon: <BookOpenCheck className="h-5 w-5" />, text: 'Course Assignments' },
-    { to: '/admin/students', icon: <GraduationCap className="h-5 w-5" />, text: 'Students' },
-    { to: '/admin/student-promotion', icon: <ArrowUpRight className="h-5 w-5" />, text: 'Student Promotion' },
-    { to: '/admin/exams', icon: <ClipboardList className="h-5 w-5" />, text: 'Exams' },
-    { to: '/admin/grade-export', icon: <FileSpreadsheet className="h-5 w-5" />, text: 'Grade Export' },
-  ];
-  
-  const teacherLinks = [
-    { to: '/teacher', icon: <LayoutDashboard className="h-5 w-5" />, text: 'Dashboard' },
-    { to: '/teacher/courses', icon: <BookOpen className="h-5 w-5" />, text: 'My Courses' },
+    {
+      to: "/admin",
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      text: "Dashboard",
+    },
+    {
+      to: "/admin/academic-years",
+      icon: <Calendar className="h-5 w-5" />,
+      text: "Academic Years",
+    },
+    {
+      to: "/admin/faculties",
+      icon: <Building2 className="h-5 w-5" />,
+      text: "Faculties",
+    },
+    {
+      to: "/admin/programs",
+      icon: <School className="h-5 w-5" />,
+      text: "Programs",
+    },
+    {
+      to: "/admin/courses",
+      icon: <BookOpen className="h-5 w-5" />,
+      text: "Courses",
+    },
+    {
+      to: "/admin/classes",
+      icon: <Users className="h-5 w-5" />,
+      text: "Classes",
+    },
+    {
+      to: "/admin/class-courses",
+      icon: <BookOpenCheck className="h-5 w-5" />,
+      text: "Course Assignments",
+    },
+    {
+      to: "/admin/students",
+      icon: <GraduationCap className="h-5 w-5" />,
+      text: "Students",
+    },
+    {
+      to: "/admin/student-promotion",
+      icon: <ArrowUpRight className="h-5 w-5" />,
+      text: "Student Promotion",
+    },
+    {
+      to: "/admin/exams",
+      icon: <ClipboardList className="h-5 w-5" />,
+      text: "Exams",
+    },
+    {
+      to: "/admin/grade-export",
+      icon: <FileSpreadsheet className="h-5 w-5" />,
+      text: "Grade Export",
+    },
   ];
 
-  const links = user?.role === 'admin' ? adminLinks : teacherLinks;
+  const teacherLinks = [
+    {
+      to: "/teacher",
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      text: "Dashboard",
+    },
+    {
+      to: "/teacher/courses",
+      icon: <BookOpen className="h-5 w-5" />,
+      text: "My Courses",
+    },
+  ];
+
+  const links = user?.role === "admin" ? adminLinks : teacherLinks;
 
   return (
     <AnimatePresence>
       {sidebarOpen && (
         <>
           {/* Mobile overlay */}
-          <div 
+          <div
             className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
             onClick={() => useStore.getState().setSidebarOpen(false)}
           />
-          
+
           {/* Sidebar */}
           <motion.aside
             initial={{ x: -280 }}
@@ -54,21 +114,22 @@ const Sidebar: React.FC = () => {
               {/* Logo */}
               <div className="flex items-center justify-center h-16 px-4 py-5 border-b border-gray-200">
                 <GraduationCap className="h-8 w-8 text-primary-700" />
-                <h1 className="ml-2 text-xl font-bold text-primary-900">AcademiSys</h1>
+                <h1 className="ml-2 text-xl font-bold text-primary-900">
+                  AcademiSys
+                </h1>
               </div>
-              
+
               {/* Navigation */}
               <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 {links.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
-                    end={link.to === '/admin' || link.to === '/teacher'}
+                    end={link.to === "/admin" || link.to === "/teacher"}
                     className={({ isActive }) =>
-                      `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                        isActive
-                          ? 'bg-primary-50 text-primary-800'
-                          : 'text-gray-700 hover:bg-gray-100'
+                      `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
+                        ? "bg-primary-50 text-primary-800"
+                        : "text-gray-700 hover:bg-gray-100"
                       }`
                     }
                   >
@@ -77,14 +138,15 @@ const Sidebar: React.FC = () => {
                   </NavLink>
                 ))}
               </nav>
-              
+
               {/* User info (mobile only) */}
               <div className="p-4 border-t border-gray-200 md:hidden">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
                       <span className="text-primary-800 font-medium text-sm">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
                       </span>
                     </div>
                   </div>
@@ -92,7 +154,9 @@ const Sidebar: React.FC = () => {
                     <p className="text-sm font-medium text-gray-700">
                       {user?.firstName} {user?.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                    <p className="text-xs text-gray-500 capitalize">
+                      {user?.role}
+                    </p>
                   </div>
                 </div>
               </div>
