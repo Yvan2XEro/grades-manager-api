@@ -16,6 +16,7 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
+import { trpcClient } from "../../utils/trpc";
 
 interface User {
 	id: string;
@@ -56,7 +57,8 @@ export default function UserManagement() {
 		action: "delete" | "ban" | "unban";
 	} | null>(null);
 	const [showPassword, setShowPassword] = useState(false);
-	const [page, setPage] = useState(1);
+	const [cursor, setCursor] = useState<string | undefined>();
+	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
 	const [roleFilter, setRoleFilter] = useState("");
 	const [banFilter, setBanFilter] = useState("");
@@ -67,69 +69,40 @@ export default function UserManagement() {
 	const passwordId = useId();
 
 	const { data } = useQuery({
-		queryKey: [
-			"users",
-			debouncedSearch,
-			page,
-			roleFilter,
-			banFilter,
-			verifiedFilter,
-		],
-		queryFn: async () => {
-			const query: Record<string, unknown> = {
+		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
+		queryFn: async () =>
+			trpcClient.users.list.query({
+				cursor,
 				limit: pageSize,
-				offset: (page - 1) * pageSize,
-			};
-			if (debouncedSearch) {
-				query.searchValue = debouncedSearch;
-				query.searchField = "name";
-				query.searchOperator = "contains";
-			}
-			const filterField: string[] = [];
-			const filterValue: (string | number | boolean)[] = [];
-			const filterOperator: string[] = [];
-			if (roleFilter) {
-				filterField.push("role");
-				filterValue.push(roleFilter);
-				filterOperator.push("eq");
-			}
-			if (banFilter) {
-				filterField.push("banned");
-				filterValue.push(banFilter === "banned");
-				filterOperator.push("eq");
-			}
-			if (verifiedFilter) {
-				filterField.push("emailVerified");
-				filterValue.push(verifiedFilter === "verified");
-				filterOperator.push("eq");
-			}
-			if (filterField.length) {
-				query.filterField = filterField;
-				query.filterValue = filterValue;
-				query.filterOperator = filterOperator;
-			}
-			const res = (await authClient.admin.listUsers({
-				query,
-			})) as {
-				users?: User[];
-				total?: number;
-				data?: { users?: User[]; total?: number };
-			};
-			return res.users ? res : res.data;
-		},
+				role: roleFilter || undefined,
+				banned:
+					banFilter === "banned"
+						? true
+						: banFilter === "active"
+							? false
+							: undefined,
+				emailVerified:
+					verifiedFilter === "verified"
+						? true
+						: verifiedFilter === "unverified"
+							? false
+							: undefined,
+			}),
 	});
-	const users = data?.users ?? [];
-	const total = data?.total ?? 0;
-	const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+	const users = data?.items ?? [];
+	const nextCursor = data?.nextCursor;
+	const displayedUsers = users.filter((u) =>
+		debouncedSearch
+			? u.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+				u.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+			: true,
+	);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when filters change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
 	useEffect(() => {
-		setPage(1);
+		setCursor(undefined);
+		setPrevCursors([]);
 	}, [debouncedSearch, roleFilter, banFilter, verifiedFilter]);
-
-	useEffect(() => {
-		if (page > totalPages) setPage(totalPages);
-	}, [totalPages, page]);
 
 	const {
 		register,
@@ -327,7 +300,7 @@ export default function UserManagement() {
 						</tr>
 					</thead>
 					<tbody>
-						{users.map((u: User) => (
+						{displayedUsers.map((u: User) => (
 							<tr key={u.id}>
 								<td>{u.name}</td>
 								<td>{u.email}</td>
@@ -400,7 +373,7 @@ export default function UserManagement() {
 								</td>
 							</tr>
 						))}
-						{users.length === 0 && (
+						{displayedUsers.length === 0 && (
 							<tr>
 								<td colSpan={6} className="py-4 text-center">
 									No users found
@@ -411,29 +384,33 @@ export default function UserManagement() {
 				</table>
 			</div>
 
-			{totalPages > 1 && (
-				<div className="mt-4 flex items-center justify-center gap-2">
-					<button
-						type="button"
-						className="btn btn-sm"
-						onClick={() => setPage((p) => p - 1)}
-						disabled={page === 1}
-					>
-						Previous
-					</button>
-					<span className="text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						type="button"
-						className="btn btn-sm"
-						onClick={() => setPage((p) => p + 1)}
-						disabled={page === totalPages}
-					>
-						Next
-					</button>
-				</div>
-			)}
+			<div className="mt-4 flex items-center justify-center gap-2">
+				<button
+					type="button"
+					className="btn btn-sm"
+					onClick={() => {
+						const prev = prevCursors[prevCursors.length - 1];
+						setPrevCursors((p) => p.slice(0, -1));
+						setCursor(prev || undefined);
+					}}
+					disabled={prevCursors.length === 0}
+				>
+					Previous
+				</button>
+				<button
+					type="button"
+					className="btn btn-sm"
+					onClick={() => {
+						if (nextCursor) {
+							setPrevCursors((p) => [...p, cursor || ""]);
+							setCursor(nextCursor);
+						}
+					}}
+					disabled={!nextCursor}
+				>
+					Next
+				</button>
+			</div>
 
 			<FormModal
 				isOpen={isModalOpen}
