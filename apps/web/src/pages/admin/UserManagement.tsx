@@ -16,6 +16,7 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
+import { trpcClient } from "../../utils/trpc";
 
 interface User {
 	id: string;
@@ -23,6 +24,7 @@ interface User {
 	email?: string;
 	role?: string;
 	banned?: boolean | null;
+	emailVerified?: boolean | null;
 }
 
 const userSchema = z.object({
@@ -55,47 +57,52 @@ export default function UserManagement() {
 		action: "delete" | "ban" | "unban";
 	} | null>(null);
 	const [showPassword, setShowPassword] = useState(false);
-	const [page, setPage] = useState(1);
+	const [cursor, setCursor] = useState<string | undefined>();
+	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
+	const [roleFilter, setRoleFilter] = useState("");
+	const [banFilter, setBanFilter] = useState("");
+	const [verifiedFilter, setVerifiedFilter] = useState("");
 	const nameId = useId();
 	const emailId = useId();
 	const roleId = useId();
 	const passwordId = useId();
 
 	const { data } = useQuery({
-		queryKey: ["users", debouncedSearch, page],
-		queryFn: async () => {
-			const query: Record<string, unknown> = {
+		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
+		queryFn: async () =>
+			trpcClient.users.list.query({
+				cursor,
 				limit: pageSize,
-				offset: (page - 1) * pageSize,
-			};
-			if (debouncedSearch) {
-				query.searchValue = debouncedSearch;
-				query.searchField = "name";
-				query.searchOperator = "contains";
-			}
-			const res = (await authClient.admin.listUsers({
-				query,
-			})) as {
-				users?: User[];
-				total?: number;
-				data?: { users?: User[]; total?: number };
-			};
-			return res.users ? res : res.data;
-		},
+				role: roleFilter || undefined,
+				banned:
+					banFilter === "banned"
+						? true
+						: banFilter === "active"
+							? false
+							: undefined,
+				emailVerified:
+					verifiedFilter === "verified"
+						? true
+						: verifiedFilter === "unverified"
+							? false
+							: undefined,
+			}),
 	});
-	const users = data?.users ?? [];
-	const total = data?.total ?? 0;
-	const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+	const users = data?.items ?? [];
+	const nextCursor = data?.nextCursor;
+	const displayedUsers = users.filter((u) =>
+		debouncedSearch
+			? u.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+				u.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+			: true,
+	);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when search changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
 	useEffect(() => {
-		setPage(1);
-	}, [debouncedSearch]);
-
-	useEffect(() => {
-		if (page > totalPages) setPage(totalPages);
-	}, [totalPages, page]);
+		setCursor(undefined);
+		setPrevCursors([]);
+	}, [debouncedSearch, roleFilter, banFilter, verifiedFilter]);
 
 	const {
 		register,
@@ -239,8 +246,8 @@ export default function UserManagement() {
 				</button>
 			</div>
 
-			<div className="mb-4">
-				<div className="relative">
+			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+				<div className="relative w-full sm:max-w-xs">
 					<Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
 					<input
 						type="text"
@@ -250,25 +257,68 @@ export default function UserManagement() {
 						className="input input-bordered w-full pl-9"
 					/>
 				</div>
+				<div className="flex flex-wrap gap-2">
+					<select
+						className="select select-bordered"
+						value={roleFilter}
+						onChange={(e) => setRoleFilter(e.target.value)}
+					>
+						<option value="">All Roles</option>
+						<option value="admin">Admin</option>
+						<option value="teacher">Teacher</option>
+					</select>
+					<select
+						className="select select-bordered"
+						value={banFilter}
+						onChange={(e) => setBanFilter(e.target.value)}
+					>
+						<option value="">All Statuses</option>
+						<option value="active">Active</option>
+						<option value="banned">Banned</option>
+					</select>
+					<select
+						className="select select-bordered"
+						value={verifiedFilter}
+						onChange={(e) => setVerifiedFilter(e.target.value)}
+					>
+						<option value="">All Emails</option>
+						<option value="verified">Verified</option>
+						<option value="unverified">Unverified</option>
+					</select>
+				</div>
 			</div>
-			<div className="overflow-x-auto overflow-y-visible min-h-[50vh]">
+			<div className="min-h-[50vh] overflow-x-auto overflow-y-visible">
 				<table className="table w-full">
 					<thead>
 						<tr>
 							<th>Name</th>
 							<th>Email</th>
 							<th>Role</th>
+							<th>Email Verified</th>
 							<th>Status</th>
 							<th className="w-1" />
 						</tr>
 					</thead>
 					<tbody>
-						{users.map((u: User) => (
+						{displayedUsers.map((u: User) => (
 							<tr key={u.id}>
 								<td>{u.name}</td>
 								<td>{u.email}</td>
 								<td className="capitalize">{u.role}</td>
-								<td>{u.banned ? "Banned" : "Active"}</td>
+								<td>
+									<div
+										className={`badge ${u.emailVerified ? "badge-success" : "badge-warning"}`}
+									>
+										{u.emailVerified ? "Verified" : "Unverified"}
+									</div>
+								</td>
+								<td>
+									<div
+										className={`badge ${u.banned ? "badge-error" : "badge-success"}`}
+									>
+										{u.banned ? "Banned" : "Active"}
+									</div>
+								</td>
 								<td className="w-1 text-right">
 									<div className="dropdown dropdown-end">
 										<button
@@ -323,9 +373,9 @@ export default function UserManagement() {
 								</td>
 							</tr>
 						))}
-						{users.length === 0 && (
+						{displayedUsers.length === 0 && (
 							<tr>
-								<td colSpan={5} className="py-4 text-center">
+								<td colSpan={6} className="py-4 text-center">
 									No users found
 								</td>
 							</tr>
@@ -334,29 +384,33 @@ export default function UserManagement() {
 				</table>
 			</div>
 
-			{totalPages > 1 && (
-				<div className="mt-4 flex items-center justify-center gap-2">
-					<button
-						type="button"
-						className="btn btn-sm"
-						onClick={() => setPage((p) => p - 1)}
-						disabled={page === 1}
-					>
-						Previous
-					</button>
-					<span className="text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						type="button"
-						className="btn btn-sm"
-						onClick={() => setPage((p) => p + 1)}
-						disabled={page === totalPages}
-					>
-						Next
-					</button>
-				</div>
-			)}
+			<div className="mt-4 flex items-center justify-center gap-2">
+				<button
+					type="button"
+					className="btn btn-sm"
+					onClick={() => {
+						const prev = prevCursors[prevCursors.length - 1];
+						setPrevCursors((p) => p.slice(0, -1));
+						setCursor(prev || undefined);
+					}}
+					disabled={prevCursors.length === 0}
+				>
+					Previous
+				</button>
+				<button
+					type="button"
+					className="btn btn-sm"
+					onClick={() => {
+						if (nextCursor) {
+							setPrevCursors((p) => [...p, cursor || ""]);
+							setCursor(nextCursor);
+						}
+					}}
+					disabled={!nextCursor}
+				>
+					Next
+				</button>
+			</div>
 
 			<FormModal
 				isOpen={isModalOpen}
@@ -478,8 +532,8 @@ export default function UserManagement() {
 							}
 						>
 							{isSubmitting ||
-								createMutation.isPending ||
-								updateMutation.isPending ? (
+							createMutation.isPending ||
+							updateMutation.isPending ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : (
 								"Save"

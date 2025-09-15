@@ -6,6 +6,8 @@ const listSchema = z.object({
 	cursor: z.string().nullish(),
 	limit: z.number().min(1).max(100).optional(),
 	role: z.string().optional(),
+	banned: z.boolean().optional(),
+	emailVerified: z.boolean().optional(),
 });
 
 export const usersRouter = router({
