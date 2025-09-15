@@ -251,7 +251,7 @@ export default function UserManagement() {
 					/>
 				</div>
 			</div>
-			<div className="overflow-x-auto overflow-y-visible">
+			<div className="overflow-x-auto overflow-y-visible min-h-[50vh]">
 				<table className="table w-full">
 					<thead>
 						<tr>
@@ -478,8 +478,8 @@ export default function UserManagement() {
 							}
 						>
 							{isSubmitting ||
-							createMutation.isPending ||
-							updateMutation.isPending ? (
+								createMutation.isPending ||
+								updateMutation.isPending ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : (
 								"Save"
