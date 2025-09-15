@@ -23,6 +23,7 @@ interface User {
 	email?: string;
 	role?: string;
 	banned?: boolean | null;
+	emailVerified?: boolean | null;
 }
 
 const userSchema = z.object({
@@ -57,13 +58,23 @@ export default function UserManagement() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [page, setPage] = useState(1);
 	const pageSize = 10;
+	const [roleFilter, setRoleFilter] = useState("");
+	const [banFilter, setBanFilter] = useState("");
+	const [verifiedFilter, setVerifiedFilter] = useState("");
 	const nameId = useId();
 	const emailId = useId();
 	const roleId = useId();
 	const passwordId = useId();
 
 	const { data } = useQuery({
-		queryKey: ["users", debouncedSearch, page],
+		queryKey: [
+			"users",
+			debouncedSearch,
+			page,
+			roleFilter,
+			banFilter,
+			verifiedFilter,
+		],
 		queryFn: async () => {
 			const query: Record<string, unknown> = {
 				limit: pageSize,
@@ -73,6 +84,29 @@ export default function UserManagement() {
 				query.searchValue = debouncedSearch;
 				query.searchField = "name";
 				query.searchOperator = "contains";
+			}
+			const filterField: string[] = [];
+			const filterValue: (string | number | boolean)[] = [];
+			const filterOperator: string[] = [];
+			if (roleFilter) {
+				filterField.push("role");
+				filterValue.push(roleFilter);
+				filterOperator.push("eq");
+			}
+			if (banFilter) {
+				filterField.push("banned");
+				filterValue.push(banFilter === "banned");
+				filterOperator.push("eq");
+			}
+			if (verifiedFilter) {
+				filterField.push("emailVerified");
+				filterValue.push(verifiedFilter === "verified");
+				filterOperator.push("eq");
+			}
+			if (filterField.length) {
+				query.filterField = filterField;
+				query.filterValue = filterValue;
+				query.filterOperator = filterOperator;
 			}
 			const res = (await authClient.admin.listUsers({
 				query,
@@ -88,10 +122,10 @@ export default function UserManagement() {
 	const total = data?.total ?? 0;
 	const totalPages = Math.max(Math.ceil(total / pageSize), 1);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when search changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset page when filters change
 	useEffect(() => {
 		setPage(1);
-	}, [debouncedSearch]);
+	}, [debouncedSearch, roleFilter, banFilter, verifiedFilter]);
 
 	useEffect(() => {
 		if (page > totalPages) setPage(totalPages);
@@ -239,8 +273,8 @@ export default function UserManagement() {
 				</button>
 			</div>
 
-			<div className="mb-4">
-				<div className="relative">
+			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+				<div className="relative w-full sm:max-w-xs">
 					<Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
 					<input
 						type="text"
@@ -250,14 +284,44 @@ export default function UserManagement() {
 						className="input input-bordered w-full pl-9"
 					/>
 				</div>
+				<div className="flex flex-wrap gap-2">
+					<select
+						className="select select-bordered"
+						value={roleFilter}
+						onChange={(e) => setRoleFilter(e.target.value)}
+					>
+						<option value="">All Roles</option>
+						<option value="admin">Admin</option>
+						<option value="teacher">Teacher</option>
+					</select>
+					<select
+						className="select select-bordered"
+						value={banFilter}
+						onChange={(e) => setBanFilter(e.target.value)}
+					>
+						<option value="">All Statuses</option>
+						<option value="active">Active</option>
+						<option value="banned">Banned</option>
+					</select>
+					<select
+						className="select select-bordered"
+						value={verifiedFilter}
+						onChange={(e) => setVerifiedFilter(e.target.value)}
+					>
+						<option value="">All Emails</option>
+						<option value="verified">Verified</option>
+						<option value="unverified">Unverified</option>
+					</select>
+				</div>
 			</div>
-			<div className="overflow-x-auto overflow-y-visible min-h-[50vh]">
+			<div className="min-h-[50vh] overflow-x-auto overflow-y-visible">
 				<table className="table w-full">
 					<thead>
 						<tr>
 							<th>Name</th>
 							<th>Email</th>
 							<th>Role</th>
+							<th>Email Verified</th>
 							<th>Status</th>
 							<th className="w-1" />
 						</tr>
@@ -268,7 +332,20 @@ export default function UserManagement() {
 								<td>{u.name}</td>
 								<td>{u.email}</td>
 								<td className="capitalize">{u.role}</td>
-								<td>{u.banned ? "Banned" : "Active"}</td>
+								<td>
+									<div
+										className={`badge ${u.emailVerified ? "badge-success" : "badge-warning"}`}
+									>
+										{u.emailVerified ? "Verified" : "Unverified"}
+									</div>
+								</td>
+								<td>
+									<div
+										className={`badge ${u.banned ? "badge-error" : "badge-success"}`}
+									>
+										{u.banned ? "Banned" : "Active"}
+									</div>
+								</td>
 								<td className="w-1 text-right">
 									<div className="dropdown dropdown-end">
 										<button
@@ -325,7 +402,7 @@ export default function UserManagement() {
 						))}
 						{users.length === 0 && (
 							<tr>
-								<td colSpan={5} className="py-4 text-center">
+								<td colSpan={6} className="py-4 text-center">
 									No users found
 								</td>
 							</tr>
@@ -478,8 +555,8 @@ export default function UserManagement() {
 							}
 						>
 							{isSubmitting ||
-								createMutation.isPending ||
-								updateMutation.isPending ? (
+							createMutation.isPending ||
+							updateMutation.isPending ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : (
 								"Save"
