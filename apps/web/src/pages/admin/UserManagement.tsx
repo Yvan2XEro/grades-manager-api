@@ -241,7 +241,7 @@ export default function UserManagement() {
 
 			<div className="mb-4">
 				<div className="relative">
-					<Search className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
+					<Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
 					<input
 						type="text"
 						value={search}
