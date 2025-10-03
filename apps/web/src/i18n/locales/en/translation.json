@@ -1,0 +1,9 @@
+{
+  "hi": "Hello",
+  "password": "Password",
+  "forgot_password": "Forgot Password?",
+  "signing_in": "Signing in",
+  "sign_in": "Sign in",
+  "dont_have_account": "Don't have an account?",
+  "sign_up": "Sign up"
+}
