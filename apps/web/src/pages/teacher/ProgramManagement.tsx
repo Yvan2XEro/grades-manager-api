@@ -1,21 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, School, Trash2 } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const programSchema = z.object({
-	name: z.string().min(2, "Name must be at least 2 characters"),
-	description: z.string().optional(),
-	faculty: z.string({ required_error: "Please select a faculty" }),
-});
+const buildProgramSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(2, t("teacher.programs.validation.name")),
+		description: z.string().optional(),
+		faculty: z.string({ required_error: t("teacher.programs.validation.faculty") }),
+	});
 
-type ProgramFormData = z.infer<typeof programSchema>;
+type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
 
 interface Program {
 	id: string;
@@ -37,6 +40,8 @@ export default function ProgramManagement() {
 	const descId = useId();
 
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
 	const { data: programs, isLoading } = useQuery({
 		queryKey: ["programs"],
@@ -79,12 +84,12 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success("Program created successfully");
+			toast.success(t("teacher.programs.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: unknown) => {
-			toast.error(`Error creating program: ${(error as Error).message}`);
+			toast.error((error as Error).message || t("teacher.programs.toast.createError"));
 		},
 	});
 
@@ -95,13 +100,13 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success("Program updated successfully");
+			toast.success(t("teacher.programs.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingProgram(null);
 			reset();
 		},
 		onError: (error: unknown) => {
-			toast.error(`Error updating program: ${(error as Error).message}`);
+			toast.error((error as Error).message || t("teacher.programs.toast.updateError"));
 		},
 	});
 
@@ -111,12 +116,12 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success("Program deleted successfully");
+			toast.success(t("teacher.programs.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
-			toast.error(`Error deleting program: ${(error as Error).message}`);
+			toast.error((error as Error).message || t("teacher.programs.toast.deleteError"));
 		},
 	});
 
@@ -151,8 +156,10 @@ export default function ProgramManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">Program Management</h1>
-					<p className="text-base-content/60">Manage academic programs</p>
+					<h1 className="font-bold text-2xl">{t("teacher.programs.title")}</h1>
+					<p className="text-base-content/60">
+						{t("teacher.programs.subtitle")}
+					</p>
 				</div>
 				<button
 					type="button"
@@ -164,7 +171,7 @@ export default function ProgramManagement() {
 					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
-					Add Program
+					{t("teacher.programs.actions.add")}
 				</button>
 			</div>
 
@@ -172,9 +179,11 @@ export default function ProgramManagement() {
 				{programs?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<School className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">No Programs Found</h2>
+						<h2 className="card-title mt-4">
+							{t("teacher.programs.empty.title")}
+						</h2>
 						<p className="text-base-content/60">
-							Get started by adding your first program.
+							{t("teacher.programs.empty.description")}
 						</p>
 						<button
 							type="button"
@@ -186,7 +195,7 @@ export default function ProgramManagement() {
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							Add Program
+							{t("teacher.programs.actions.add")}
 						</button>
 					</div>
 				) : (
@@ -194,10 +203,10 @@ export default function ProgramManagement() {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Faculty</th>
-									<th>Description</th>
-									<th>Actions</th>
+									<th>{t("teacher.programs.table.name")}</th>
+									<th>{t("teacher.programs.table.faculty")}</th>
+									<th>{t("teacher.programs.table.description")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -208,7 +217,7 @@ export default function ProgramManagement() {
 										<td>
 											{program.description || (
 												<span className="text-base-content/40 italic">
-													No description
+													{t("teacher.programs.table.noDescription")}
 												</span>
 											)}
 										</td>
@@ -322,8 +331,9 @@ export default function ProgramManagement() {
 								reset();
 							}}
 							className="btn btn-ghost"
+							disabled={isSubmitting}
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -333,9 +343,9 @@ export default function ProgramManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingProgram ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Program"
+								t("teacher.programs.form.submit")
 							)}
 						</button>
 					</div>
@@ -349,9 +359,9 @@ export default function ProgramManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Program"
-				message="Are you sure you want to delete this program? This action cannot be undone and will also delete all associated courses and classes."
-				confirmText="Delete"
+				title={t("teacher.programs.delete.title")}
+				message={t("teacher.programs.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

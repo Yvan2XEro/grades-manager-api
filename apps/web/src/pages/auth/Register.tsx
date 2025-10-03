@@ -6,31 +6,46 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "../../lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const loginSchema = z
-  .object({
-    firstName: z.string().min(2, "First name is required"),
-    lastName: z.string().min(2, "Last name is required"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(6, "Please confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+const buildRegisterSchema = (t: TFunction) =>
+  z
+    .object({
+      firstName: z
+        .string()
+        .min(2, t("auth.validation.firstName")),
+      lastName: z
+        .string()
+        .min(2, t("auth.validation.lastName")),
+      email: z
+        .string()
+        .email(t("auth.validation.email")),
+      password: z
+        .string()
+        .min(6, t("auth.validation.passwordMin", { count: 6 })),
+      confirmPassword: z
+        .string()
+        .min(6, t("auth.validation.confirmPassword")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.validation.passwordsMismatch"),
+      path: ["confirmPassword"],
+    });
 
-type RegisterFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<ReturnType<typeof buildRegisterSchema>>;
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const registerSchema = React.useMemo(() => buildRegisterSchema(t), [t]);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -46,17 +61,17 @@ const Register: React.FC = () => {
         password: data.password,
       });
 
-      toast.success("Registration successful!");
+      toast.success(t("auth.register.success"));
       navigate("/teacher");
     } catch (error: any) {
-      toast.error(`Registration failed: ${error.message}`);
+      toast.error(error.message || t("auth.register.error"));
     }
   };
 
   return (
     <div>
       <h2 className="text-xl font-semibold text-center mb-6">
-        Create an Account
+        {t("auth.register.title")}
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -66,13 +81,14 @@ const Register: React.FC = () => {
               htmlFor="firstName"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              First Name
+              {t("common.fields.firstName")}
             </label>
             <input
               id="firstName"
               type="text"
               {...register("firstName")}
               className="input input-bordered w-full"
+              placeholder={t("auth.register.placeholders.firstName")}
             />
             {errors.firstName && (
               <p className="mt-1 text-sm text-error-600">
@@ -86,13 +102,14 @@ const Register: React.FC = () => {
               htmlFor="lastName"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Last Name
+              {t("common.fields.lastName")}
             </label>
             <input
               id="lastName"
               type="text"
               {...register("lastName")}
               className="input input-bordered w-full"
+              placeholder={t("auth.register.placeholders.lastName")}
             />
             {errors.lastName && (
               <p className="mt-1 text-sm text-error-600">
@@ -107,13 +124,14 @@ const Register: React.FC = () => {
             htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email
+            {t("common.fields.email")}
           </label>
           <input
             id="email"
             type="email"
             {...register("email")}
             className="input input-bordered w-full"
+            placeholder={t("auth.register.placeholders.email")}
           />
           {errors.email && (
             <p className="mt-1 text-sm text-error-600">
@@ -127,13 +145,14 @@ const Register: React.FC = () => {
             htmlFor="password"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Password
+            {t("common.fields.password")}
           </label>
           <input
             id="password"
             type="password"
             {...register("password")}
             className="input input-bordered w-full"
+            placeholder={t("auth.register.placeholders.password")}
           />
           {errors.password && (
             <p className="mt-1 text-sm text-error-600">
@@ -147,13 +166,14 @@ const Register: React.FC = () => {
             htmlFor="confirmPassword"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Confirm Password
+            {t("common.fields.confirmPassword")}
           </label>
           <input
             id="confirmPassword"
             type="password"
             {...register("confirmPassword")}
             className="input input-bordered w-full"
+            placeholder={t("auth.register.placeholders.confirmPassword")}
           />
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-error-600">
@@ -169,22 +189,23 @@ const Register: React.FC = () => {
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Registering...
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {t("auth.register.submitting")}
             </>
           ) : (
-            "Register"
+            t("auth.register.submit")
           )}
         </button>
       </form>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Already have an account?{" "}
+          {t("auth.register.haveAccount")}{" "}
           <Link
             to="/auth/login"
             className="text-primary-600 hover:text-primary-500 font-medium"
           >
-            Sign In
+            {t("auth.register.loginLink")}
           </Link>
         </p>
       </div>

@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { BookOpen, Calendar, ClipboardList, Clock, Users } from "lucide-react";
 import type React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -26,6 +27,7 @@ type UpcomingExam = {
 
 const TeacherDashboard: React.FC = () => {
 	const { user } = useStore();
+  const { t } = useTranslation();
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["teacherDashboard", user?.id],
@@ -143,9 +145,13 @@ const TeacherDashboard: React.FC = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold text-2xl text-gray-800">Teacher Dashboard</h2>
+				<h2 className="font-bold text-2xl text-gray-800">
+					{t("teacher.dashboard.title")}
+				</h2>
 				<p className="text-gray-600">
-					Welcome back, {user?.firstName} {user?.lastName}
+					{t("teacher.dashboard.subtitle", {
+						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
+					})}
 				</p>
 			</div>
 
@@ -157,7 +163,9 @@ const TeacherDashboard: React.FC = () => {
 							<BookOpen className="h-6 w-6" />
 						</div>
 						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">My Courses</h3>
+							<h3 className="font-medium text-gray-600 text-sm">
+								{t("teacher.dashboard.stats.courses")}
+							</h3>
 							<p className="font-bold text-2xl text-gray-900">
 								{stats.totalCourses}
 							</p>
@@ -171,7 +179,9 @@ const TeacherDashboard: React.FC = () => {
 							<Users className="h-6 w-6" />
 						</div>
 						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">Classes</h3>
+							<h3 className="font-medium text-gray-600 text-sm">
+								{t("teacher.dashboard.stats.classes")}
+							</h3>
 							<p className="font-bold text-2xl text-gray-900">
 								{stats.totalClasses}
 							</p>
@@ -185,7 +195,9 @@ const TeacherDashboard: React.FC = () => {
 							<Users className="h-6 w-6" />
 						</div>
 						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">Students</h3>
+							<h3 className="font-medium text-gray-600 text-sm">
+								{t("teacher.dashboard.stats.students")}
+							</h3>
 							<p className="font-bold text-2xl text-gray-900">
 								{stats.totalStudents}
 							</p>
@@ -199,7 +211,9 @@ const TeacherDashboard: React.FC = () => {
 							<ClipboardList className="h-6 w-6" />
 						</div>
 						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">Exams</h3>
+							<h3 className="font-medium text-gray-600 text-sm">
+								{t("teacher.dashboard.stats.exams")}
+							</h3>
 							<p className="font-bold text-2xl text-gray-900">
 								{stats.totalExams}
 							</p>
@@ -213,7 +227,9 @@ const TeacherDashboard: React.FC = () => {
 				{/* My Courses */}
 				<div className="overflow-hidden rounded-xl bg-white shadow-sm lg:col-span-2">
 					<div className="border-gray-200 border-b px-6 py-4">
-						<h3 className="font-medium text-gray-800 text-lg">My Courses</h3>
+						<h3 className="font-medium text-gray-800 text-lg">
+							{t("teacher.dashboard.courses.title")}
+						</h3>
 					</div>
 
 					<div className="divide-y divide-gray-200">
@@ -221,10 +237,10 @@ const TeacherDashboard: React.FC = () => {
 							<div className="p-6 text-center">
 								<BookOpen className="mx-auto h-12 w-12 text-gray-400" />
 								<h3 className="mt-2 font-medium text-gray-700 text-lg">
-									No courses found
+									{t("teacher.dashboard.courses.empty.title")}
 								</h3>
 								<p className="mt-1 text-gray-500">
-									You have no assigned courses for the active academic year.
+									{t("teacher.dashboard.courses.empty.description")}
 								</p>
 							</div>
 						) : (
@@ -250,7 +266,7 @@ const TeacherDashboard: React.FC = () => {
 													{course.upcoming_exams}
 												</span>
 												<span className="ml-2 font-medium text-primary-700 hover:text-primary-800">
-													View &rarr;
+													{t("teacher.dashboard.courses.view")}
 												</span>
 											</div>
 										</div>
@@ -265,7 +281,7 @@ const TeacherDashboard: React.FC = () => {
 							to="/teacher/courses"
 							className="font-medium text-primary-700 text-sm hover:text-primary-800"
 						>
-							View all courses &rarr;
+							{t("teacher.dashboard.courses.viewAll")}
 						</Link>
 					</div>
 				</div>
@@ -274,7 +290,7 @@ const TeacherDashboard: React.FC = () => {
 				<div className="overflow-hidden rounded-xl bg-white shadow-sm">
 					<div className="border-gray-200 border-b px-6 py-4">
 						<h3 className="font-medium text-gray-800 text-lg">
-							Upcoming Exams
+							{t("teacher.dashboard.exams.title")}
 						</h3>
 					</div>
 
@@ -283,10 +299,10 @@ const TeacherDashboard: React.FC = () => {
 							<div className="p-6 text-center">
 								<Calendar className="mx-auto h-12 w-12 text-gray-400" />
 								<h3 className="mt-2 font-medium text-gray-700 text-lg">
-									No upcoming exams
+									{t("teacher.dashboard.exams.empty.title")}
 								</h3>
 								<p className="mt-1 text-gray-500">
-									You have no scheduled exams coming up.
+									{t("teacher.dashboard.exams.empty.description")}
 								</p>
 							</div>
 						) : (
@@ -298,7 +314,7 @@ const TeacherDashboard: React.FC = () => {
 												{exam.name}
 											</h4>
 											<span className="rounded-full bg-primary-50 px-2 py-1 text-primary-700 text-sm">
-												{exam.percentage}%
+												{t("teacher.dashboard.exams.percentage", { value: exam.percentage })}
 											</span>
 										</div>
 										<p className="mt-1 text-gray-600 text-sm">

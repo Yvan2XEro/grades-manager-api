@@ -2,13 +2,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, PlusIcon } from "lucide-react";
 import Papa from "papaparse";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 interface Student {
   id: string;
@@ -24,19 +26,29 @@ interface Class {
   name: string;
 }
 
-const studentSchema = z.object({
-  firstName: z.string().min(1, "Required"),
-  lastName: z.string().min(1, "Required"),
-  email: z.string().email(),
-  registrationNumber: z.string().min(1, "Required"),
-  classId: z.string().min(1, "Required"),
-});
+const buildStudentSchema = (t: TFunction) =>
+  z.object({
+    firstName: z
+      .string()
+      .min(1, t("admin.students.validation.firstName")),
+    lastName: z
+      .string()
+      .min(1, t("admin.students.validation.lastName")),
+    email: z.string().email(t("admin.students.validation.email")),
+    registrationNumber: z
+      .string()
+      .min(1, t("admin.students.validation.registration")),
+    classId: z
+      .string()
+      .min(1, t("admin.students.validation.class")),
+  });
 
-type StudentForm = z.infer<typeof studentSchema>;
+type StudentForm = z.infer<ReturnType<typeof buildStudentSchema>>;
 type BulkStudent = Omit<StudentForm, "classId">;
 
 export default function StudentManagement() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const [classFilter, setClassFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -74,6 +86,8 @@ export default function StudentManagement() {
       }),
   });
 
+  const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
+
   const {
     register,
     handleSubmit,
@@ -84,11 +98,11 @@ export default function StudentManagement() {
   const createMutation = useMutation({
     mutationFn: (data: StudentForm) => trpcClient.students.create.mutate(data),
     onSuccess: () => {
-      toast.success("Student created");
+      toast.success(t("admin.students.toast.createSuccess"));
       queryClient.invalidateQueries({ queryKey: ["students"] });
       closeModal();
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error(err.message || t("admin.students.toast.createError")),
   });
 
   const bulkMutation = useMutation({
@@ -97,7 +111,7 @@ export default function StudentManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error(err.message || t("admin.students.toast.importError")),
   });
 
   const onSubmit = (data: StudentForm) => createMutation.mutate(data);
@@ -119,15 +133,15 @@ export default function StudentManagement() {
     const csvBlob = new Blob([header], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(csvBlob);
-    a.download = "students-template.csv";
+    a.download = `${t("admin.students.templates.filePrefix")}.csv`;
     a.click();
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
       ["firstName", "lastName", "email", "registrationNumber"],
     ]);
-    XLSX.utils.book_append_sheet(wb, ws, "Students");
-    XLSX.writeFile(wb, "students-template.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, t("admin.students.templates.sheetName"));
+    XLSX.writeFile(wb, `${t("admin.students.templates.filePrefix")}.xlsx`);
   };
 
   const handleImport = async (file: File) => {
@@ -150,7 +164,10 @@ export default function StudentManagement() {
             registrationNumber: row.registrationNumber,
           });
         } else {
-          formatErrors.push({ row: idx + 2, reason: "Invalid format" });
+          formatErrors.push({
+            row: idx + 2,
+            reason: t("admin.students.import.invalidFormat"),
+          });
         }
       });
     } else {
@@ -167,7 +184,10 @@ export default function StudentManagement() {
             registrationNumber: row.registrationNumber,
           });
         } else {
-          formatErrors.push({ row: idx + 2, reason: "Invalid format" });
+          formatErrors.push({
+            row: idx + 2,
+            reason: t("admin.students.import.invalidFormat"),
+          });
         }
       });
     }
@@ -200,12 +220,13 @@ export default function StudentManagement() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Students</h1>
+        <h1 className="text-2xl font-bold">{t("admin.students.title")}</h1>
         <button
           className="btn btn-primary"
           onClick={() => setIsModalOpen(true)}
         >
-          <PlusIcon className="mr-2 h-5 w-5" /> Add student(s)
+          <PlusIcon className="mr-2 h-5 w-5" />
+          {t("admin.students.actions.openModal")}
         </button>
       </div>
 
@@ -219,7 +240,7 @@ export default function StudentManagement() {
             setPrevCursors([]);
           }}
         >
-          <option value="">All classes</option>
+          <option value="">{t("admin.students.filters.allClasses")}</option>
           {classes?.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -229,7 +250,7 @@ export default function StudentManagement() {
         <input
           type="text"
           className="input input-bordered"
-          placeholder="Search"
+          placeholder={t("admin.students.filters.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -241,7 +262,7 @@ export default function StudentManagement() {
             queryClient.invalidateQueries({ queryKey: ["students"] });
           }}
         >
-          Search
+          {t("common.actions.search")}
         </button>
       </div>
 
@@ -250,9 +271,9 @@ export default function StudentManagement() {
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Registration #</th>
+                <th>{t("admin.students.table.name")}</th>
+                <th>{t("admin.students.table.email")}</th>
+                <th>{t("admin.students.table.registration")}</th>
               </tr>
             </thead>
             <tbody>
@@ -274,33 +295,37 @@ export default function StudentManagement() {
             disabled={prevCursors.length === 0}
             onClick={handlePrev}
           >
-            Previous
+            {t("common.pagination.previous")}
           </button>
           <button
             className="btn"
             disabled={!studentsData?.nextCursor}
             onClick={handleNext}
           >
-            Next
+            {t("common.pagination.next")}
           </button>
         </div>
       </div>
 
-      <FormModal isOpen={isModalOpen} onClose={closeModal} title="Add students">
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={t("admin.students.modal.title")}
+      >
         <div role="tablist" className="tabs tabs-bordered mb-4">
           <a
             role="tab"
             className={`tab ${activeTab === "single" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("single")}
           >
-            Single
+            {t("admin.students.modal.tabs.single")}
           </a>
           <a
             role="tab"
             className={`tab ${activeTab === "import" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("import")}
           >
-            Import
+            {t("admin.students.modal.tabs.import")}
           </a>
         </div>
 
@@ -308,7 +333,9 @@ export default function StudentManagement() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="form-control">
               <label className="label">
-                <span className="label-text">First Name</span>
+                <span className="label-text">
+                  {t("admin.students.form.firstName")}
+                </span>
               </label>
               <input className="input input-bordered" {...register("firstName")} />
               {errors.firstName && (
@@ -321,7 +348,9 @@ export default function StudentManagement() {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Last Name</span>
+                <span className="label-text">
+                  {t("admin.students.form.lastName")}
+                </span>
               </label>
               <input className="input input-bordered" {...register("lastName")} />
               {errors.lastName && (
@@ -334,7 +363,9 @@ export default function StudentManagement() {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Email</span>
+                <span className="label-text">
+                  {t("admin.students.form.email")}
+                </span>
               </label>
               <input className="input input-bordered" {...register("email")} />
               {errors.email && (
@@ -347,7 +378,9 @@ export default function StudentManagement() {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Registration Number</span>
+                <span className="label-text">
+                  {t("admin.students.form.registration")}
+                </span>
               </label>
               <input
                 className="input input-bordered"
@@ -363,10 +396,12 @@ export default function StudentManagement() {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Class</span>
+                <span className="label-text">
+                  {t("admin.students.form.class")}
+                </span>
               </label>
-              <select className="select select-bordered" {...register("classId")}> 
-                <option value="">Select class</option>
+              <select className="select select-bordered" {...register("classId")}>
+                <option value="">{t("admin.students.form.classPlaceholder")}</option>
                 {classes?.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -383,7 +418,7 @@ export default function StudentManagement() {
             </div>
             <div className="modal-action">
               <button type="button" className="btn" onClick={closeModal}>
-                Cancel
+                {t("common.actions.cancel")}
               </button>
               <button
                 type="submit"
@@ -393,7 +428,7 @@ export default function StudentManagement() {
                 {isSubmitting ? (
                   <span className="loading loading-spinner loading-sm" />
                 ) : (
-                  "Create"
+                  t("admin.students.form.submit")
                 )}
               </button>
             </div>
@@ -406,14 +441,18 @@ export default function StudentManagement() {
               <>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Class</span>
+                    <span className="label-text">
+                      {t("admin.students.import.classLabel")}
+                    </span>
                   </label>
                   <select
                     className="select select-bordered"
                     value={importClass}
                     onChange={(e) => setImportClass(e.target.value)}
                   >
-                    <option value="">Select class</option>
+                    <option value="">
+                      {t("admin.students.form.classPlaceholder")}
+                    </option>
                     {classes?.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -436,36 +475,55 @@ export default function StudentManagement() {
                   type="button"
                   onClick={handleDownloadTemplate}
                 >
-                  <Download className="mr-2 h-4 w-4" /> Download template
+                  <Download className="mr-2 h-4 w-4" />
+                  {t("admin.students.import.downloadTemplate")}
                 </button>
               </>
             )}
             {importResult && (
               <div className="space-y-2">
-                <p>{importResult.createdCount} students created</p>
+                <p>
+                  {t("admin.students.import.summary.created", {
+                    count: importResult.createdCount,
+                  })}
+                </p>
                 {importResult.conflicts.length > 0 && (
                   <div>
-                    <p className="font-bold">Conflicts:</p>
+                    <p className="font-bold">
+                      {t("admin.students.import.summary.conflicts.title")}
+                    </p>
                     <ul className="ml-4 list-disc">
                       {importResult.conflicts.map((c, i) => (
-                        <li key={i}>Row {c.row}: {c.reason}</li>
+                        <li key={i}>
+                          {t("admin.students.import.summary.conflicts.item", {
+                            row: c.row,
+                            reason: c.reason,
+                          })}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
                 {importResult.errors.length > 0 && (
                   <div>
-                    <p className="font-bold">Errors:</p>
+                    <p className="font-bold">
+                      {t("admin.students.import.summary.errors.title")}
+                    </p>
                     <ul className="ml-4 list-disc">
                       {importResult.errors.map((c, i) => (
-                        <li key={i}>Row {c.row}: {c.reason}</li>
+                        <li key={i}>
+                          {t("admin.students.import.summary.errors.item", {
+                            row: c.row,
+                            reason: c.reason,
+                          })}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
                 <div className="modal-action">
                   <button className="btn" onClick={closeModal}>
-                    Close
+                    {t("common.actions.close")}
                   </button>
                 </div>
               </div>
@@ -476,4 +534,3 @@ export default function StudentManagement() {
     </div>
   );
 }
-

@@ -1,23 +1,26 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const classSchema = z.object({
-	programId: z.string({ required_error: "Please select a program" }),
-	academicYearId: z.string({
-		required_error: "Please select an academic year",
-	}),
-	name: z.string().min(2, "Name must be at least 2 characters"),
-});
+const buildClassSchema = (t: TFunction) =>
+	z.object({
+		programId: z.string({ required_error: t("admin.classes.validation.program") }),
+		academicYearId: z.string({
+			required_error: t("admin.classes.validation.academicYear"),
+		}),
+		name: z.string().min(2, t("admin.classes.validation.name")),
+	});
 
-type ClassFormData = z.infer<typeof classSchema>;
+type ClassFormData = z.infer<ReturnType<typeof buildClassSchema>>;
 
 interface Class {
 	id: string;
@@ -36,6 +39,8 @@ export default function ClassManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
 	const { data: classes, isLoading } = useQuery({
 		queryKey: ["classes"],
@@ -118,12 +123,12 @@ export default function ClassManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
-			toast.success("Class created successfully");
+			toast.success(t("admin.classes.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating class: ${error.message}`);
+			toast.error(error.message || t("admin.classes.toast.createError"));
 		},
 	});
 
@@ -138,13 +143,13 @@ export default function ClassManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
-			toast.success("Class updated successfully");
+			toast.success(t("admin.classes.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingClass(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating class: ${error.message}`);
+			toast.error(error.message || t("admin.classes.toast.updateError"));
 		},
 	});
 
@@ -154,12 +159,12 @@ export default function ClassManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
-			toast.success("Class deleted successfully");
+			toast.success(t("admin.classes.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting class: ${error.message}`);
+			toast.error(error.message || t("admin.classes.toast.deleteError"));
 		},
 	});
 
@@ -194,9 +199,11 @@ export default function ClassManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">Class Management</h1>
+					<h1 className="font-bold text-2xl">
+						{t("admin.classes.title")}
+					</h1>
 					<p className="text-base-content/60">
-						Manage student classes and assignments
+						{t("admin.classes.subtitle")}
 					</p>
 				</div>
 				<button
@@ -208,7 +215,7 @@ export default function ClassManagement() {
 					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
-					Add Class
+					{t("admin.classes.actions.add")}
 				</button>
 			</div>
 
@@ -216,9 +223,11 @@ export default function ClassManagement() {
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<Users className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">No Classes Found</h2>
+						<h2 className="card-title mt-4">
+							{t("admin.classes.empty.title")}
+						</h2>
 						<p className="text-base-content/60">
-							Get started by adding your first class.
+							{t("admin.classes.empty.description")}
 						</p>
 						<button
 							onClick={() => {
@@ -229,7 +238,7 @@ export default function ClassManagement() {
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							Add Class
+							{t("admin.classes.actions.add")}
 						</button>
 					</div>
 				) : (
@@ -237,11 +246,11 @@ export default function ClassManagement() {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Program</th>
-									<th>Academic Year</th>
-									<th>Students</th>
-									<th>Actions</th>
+									<th>{t("admin.classes.table.name")}</th>
+									<th>{t("admin.classes.table.program")}</th>
+									<th>{t("admin.classes.table.academicYear")}</th>
+									<th>{t("admin.classes.table.students")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -295,18 +304,24 @@ export default function ClassManagement() {
 					setEditingClass(null);
 					reset();
 				}}
-				title={editingClass ? "Edit Class" : "Add New Class"}
+				title={
+					editingClass ? t("admin.classes.form.editTitle") : t("admin.classes.form.createTitle")
+				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Program</span>
+							<span className="label-text">
+								{t("admin.classes.form.programLabel")}
+							</span>
 						</label>
 						<select
 							{...register("programId")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a program</option>
+							<option value="">
+								{t("admin.classes.form.programPlaceholder")}
+							</option>
 							{programs?.map((program) => (
 								<option key={program.id} value={program.id}>
 									{program.name}
@@ -324,13 +339,17 @@ export default function ClassManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Academic Year</span>
+							<span className="label-text">
+								{t("admin.classes.form.academicYearLabel")}
+							</span>
 						</label>
 						<select
 							{...register("academicYearId")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select an academic year</option>
+							<option value="">
+								{t("admin.classes.form.academicYearPlaceholder")}
+							</option>
 							{academicYears?.map((year) => (
 								<option key={year.id} value={year.id}>
 									{year.name}
@@ -348,7 +367,9 @@ export default function ClassManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Label</span>
+							<span className="label-text">
+								{t("admin.classes.form.labelLabel")}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -375,7 +396,7 @@ export default function ClassManagement() {
 							}}
 							className="btn btn-ghost"
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -385,9 +406,9 @@ export default function ClassManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingClass ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Class"
+								t("admin.classes.form.createSubmit")
 							)}
 						</button>
 					</div>
@@ -401,9 +422,9 @@ export default function ClassManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Class"
-				message="Are you sure you want to delete this class? This action cannot be undone and will also delete all associated student records."
-				confirmText="Delete"
+				title={t("admin.classes.delete.title")}
+				message={t("admin.classes.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

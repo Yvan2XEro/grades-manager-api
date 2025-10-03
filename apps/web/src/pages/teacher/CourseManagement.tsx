@@ -1,23 +1,26 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const courseSchema = z.object({
-	name: z.string().min(2, "Name must be at least 2 characters"),
-	credits: z.number().min(1, "Credits must be at least 1"),
-	hours: z.number().min(1, "Hours must be at least 1"),
-	program: z.string({ required_error: "Please select a program" }),
-	defaultTeacher: z.string({ required_error: "Please select a teacher" }),
-});
+const buildCourseSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(2, t("teacher.courses.manage.validation.name")),
+		credits: z.number().min(1, t("teacher.courses.manage.validation.credits")),
+		hours: z.number().min(1, t("teacher.courses.manage.validation.hours")),
+		program: z.string({ required_error: t("teacher.courses.manage.validation.program") }),
+		defaultTeacher: z.string({ required_error: t("teacher.courses.manage.validation.teacher") }),
+	});
 
-type CourseFormData = z.infer<typeof courseSchema>;
+type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 
 interface Course {
 	id: string;
@@ -46,6 +49,8 @@ export default function CourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["courses"],
@@ -92,12 +97,12 @@ export default function CourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
-			toast.success("Course created successfully");
+			toast.success(t("teacher.courses.manage.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating course: ${error.message}`);
+			toast.error(error.message || t("teacher.courses.manage.toast.createError"));
 		},
 	});
 
@@ -108,13 +113,13 @@ export default function CourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
-			toast.success("Course updated successfully");
+			toast.success(t("teacher.courses.manage.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingCourse(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating course: ${error.message}`);
+			toast.error(error.message || t("teacher.courses.manage.toast.updateError"));
 		},
 	});
 
@@ -124,12 +129,12 @@ export default function CourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
-			toast.success("Course deleted successfully");
+			toast.success(t("teacher.courses.manage.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting course: ${error.message}`);
+			toast.error(error.message || t("teacher.courses.manage.toast.deleteError"));
 		},
 	});
 
@@ -163,7 +168,7 @@ export default function CourseManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">Course Management</h1>
+				<h1 className="font-bold text-2xl">{t("teacher.courses.manage.title")}</h1>
 				<button
 					onClick={() => {
 						setEditingCourse(null);
@@ -173,7 +178,7 @@ export default function CourseManagement() {
 					className="btn btn-primary"
 				>
 					<PlusIcon className="mr-2 h-5 w-5" />
-					Add Course
+					{t("teacher.courses.manage.actions.add")}
 				</button>
 			</div>
 
@@ -182,12 +187,12 @@ export default function CourseManagement() {
 					<table className="table">
 						<thead>
 							<tr>
-								<th>Name</th>
-								<th>Program</th>
-								<th>Credits</th>
-								<th>Hours</th>
-								<th>Default Teacher</th>
-								<th>Actions</th>
+								<th>{t("teacher.courses.manage.table.name")}</th>
+								<th>{t("teacher.courses.manage.table.program")}</th>
+								<th>{t("teacher.courses.manage.table.credits")}</th>
+								<th>{t("teacher.courses.manage.table.hours")}</th>
+								<th>{t("teacher.courses.manage.table.teacher")}</th>
+								<th>{t("common.table.actions")}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -262,14 +267,16 @@ export default function CourseManagement() {
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Credits</span>
-							</label>
+						<label className="label">
+							<span className="label-text">
+								{t("teacher.courses.manage.form.creditsLabel")}
+							</span>
+						</label>
 							<input
 								type="number"
 								{...register("credits", { valueAsNumber: true })}
-								className="input input-bordered"
-								placeholder="Enter credits"
+							className="input input-bordered"
+							placeholder={t("teacher.courses.manage.form.creditsPlaceholder")}
 							/>
 							{errors.credits && (
 								<label className="label">
@@ -281,14 +288,16 @@ export default function CourseManagement() {
 						</div>
 
 						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Hours</span>
-							</label>
+						<label className="label">
+							<span className="label-text">
+								{t("teacher.courses.manage.form.hoursLabel")}
+							</span>
+						</label>
 							<input
 								type="number"
 								{...register("hours", { valueAsNumber: true })}
-								className="input input-bordered"
-								placeholder="Enter hours"
+							className="input input-bordered"
+							placeholder={t("teacher.courses.manage.form.hoursPlaceholder")}
 							/>
 							{errors.hours && (
 								<label className="label">
@@ -302,13 +311,17 @@ export default function CourseManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Program</span>
+							<span className="label-text">
+								{t("teacher.courses.manage.form.programLabel")}
+							</span>
 						</label>
 						<select
 							{...register("program")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a program</option>
+							<option value="">
+								{t("teacher.courses.manage.form.programPlaceholder")}
+							</option>
 							{programs?.map((program) => (
 								<option key={program.id} value={program.id}>
 									{program.name}
@@ -326,13 +339,17 @@ export default function CourseManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Default Teacher</span>
+							<span className="label-text">
+								{t("teacher.courses.manage.form.teacherLabel")}
+							</span>
 						</label>
 						<select
 							{...register("defaultTeacher")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a teacher</option>
+							<option value="">
+								{t("teacher.courses.manage.form.teacherPlaceholder")}
+							</option>
 							{teachers?.map((teacher) => (
 								<option key={teacher.id} value={teacher.id}>
 									{teacher.name}
@@ -358,7 +375,7 @@ export default function CourseManagement() {
 							}}
 							className="btn btn-ghost"
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -368,9 +385,9 @@ export default function CourseManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingCourse ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Course"
+								t("teacher.courses.manage.form.submit")
 							)}
 						</button>
 					</div>
@@ -384,9 +401,9 @@ export default function CourseManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Course"
-				message="Are you sure you want to delete this course? This action cannot be undone."
-				confirmText="Delete"
+				title={t("teacher.courses.manage.delete.title")}
+				message={t("teacher.courses.manage.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

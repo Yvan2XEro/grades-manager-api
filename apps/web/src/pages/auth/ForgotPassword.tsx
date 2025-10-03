@@ -6,14 +6,19 @@ import { authClient } from "../../lib/auth-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const schema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
+const buildSchema = (t: TFunction) =>
+  z.object({
+    email: z.string().email(t("auth.validation.email")),
+  });
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<ReturnType<typeof buildSchema>>;
 
 const ForgotPassword: React.FC = () => {
+  const { t } = useTranslation();
+  const schema = React.useMemo(() => buildSchema(t), [t]);
   const {
     register,
     handleSubmit,
@@ -26,16 +31,16 @@ const ForgotPassword: React.FC = () => {
         email: data.email,
         redirectTo: `${window.location.origin}/auth/reset`,
       });
-      toast.success("Password reset link sent");
+      toast.success(t("auth.forgot.success"));
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset link");
+      toast.error(error.message || t("auth.forgot.error"));
     }
   };
 
   return (
     <div>
       <h2 className="text-xl font-semibold text-center mb-6">
-        Forgot Password
+        {t("auth.forgot.title")}
       </h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -43,13 +48,14 @@ const ForgotPassword: React.FC = () => {
             htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email
+            {t("common.fields.email")}
           </label>
           <input
             id="email"
             type="email"
             {...register("email")}
             className="input input-bordered w-full"
+            placeholder={t("auth.forgot.emailPlaceholder")}
           />
           {errors.email && (
             <p className="mt-1 text-sm text-error-600">
@@ -64,10 +70,11 @@ const ForgotPassword: React.FC = () => {
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {t("auth.forgot.submitting")}
             </>
           ) : (
-            "Send Reset Link"
+            t("auth.forgot.submit")
           )}
         </button>
         <div className="mt-1 text-right">
@@ -75,7 +82,7 @@ const ForgotPassword: React.FC = () => {
             to="/auth/login"
             className="text-sm text-primary-600 hover:text-primary-500"
           >
-            Back to Login
+            {t("auth.forgot.backToLogin")}
           </Link>
         </div>
       </form>

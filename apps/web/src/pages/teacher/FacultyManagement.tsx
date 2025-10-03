@@ -1,20 +1,23 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const facultySchema = z.object({
-	name: z.string().min(2, "Name must be at least 2 characters"),
-	description: z.string().optional(),
-});
+const buildFacultySchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(2, t("teacher.faculties.validation.name")),
+		description: z.string().optional(),
+	});
 
-type FacultyFormData = z.infer<typeof facultySchema>;
+type FacultyFormData = z.infer<ReturnType<typeof buildFacultySchema>>;
 
 interface Faculty {
 	id: string;
@@ -29,6 +32,8 @@ export default function FacultyManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const facultySchema = useMemo(() => buildFacultySchema(t), [t]);
 
 	const { data: faculties, isLoading } = useQuery({
 		queryKey: ["faculties"],
@@ -53,12 +58,12 @@ export default function FacultyManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["faculties"] });
-			toast.success("Faculty created successfully");
+			toast.success(t("teacher.faculties.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating faculty: ${error.message}`);
+			toast.error(error.message || t("teacher.faculties.toast.createError"));
 		},
 	});
 
@@ -69,13 +74,13 @@ export default function FacultyManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["faculties"] });
-			toast.success("Faculty updated successfully");
+			toast.success(t("teacher.faculties.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingFaculty(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating faculty: ${error.message}`);
+			toast.error(error.message || t("teacher.faculties.toast.updateError"));
 		},
 	});
 
@@ -85,12 +90,12 @@ export default function FacultyManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["faculties"] });
-			toast.success("Faculty deleted successfully");
+			toast.success(t("teacher.faculties.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting faculty: ${error.message}`);
+			toast.error(error.message || t("teacher.faculties.toast.deleteError"));
 		},
 	});
 
@@ -125,10 +130,8 @@ export default function FacultyManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">Faculty Management</h1>
-					<p className="text-base-content/60">
-						Create and manage academic faculties
-					</p>
+					<h1 className="font-bold text-2xl">{t("teacher.faculties.title")}</h1>
+					<p className="text-base-content/60">{t("teacher.faculties.subtitle")}</p>
 				</div>
 				<button
 					onClick={() => {
@@ -139,7 +142,7 @@ export default function FacultyManagement() {
 					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
-					Add Faculty
+					{t("teacher.faculties.actions.add")}
 				</button>
 			</div>
 
@@ -147,9 +150,11 @@ export default function FacultyManagement() {
 				{faculties?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<Building2 className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">No Faculties Found</h2>
+						<h2 className="card-title mt-4">
+							{t("teacher.faculties.empty.title")}
+						</h2>
 						<p className="text-base-content/60">
-							Get started by adding your first faculty.
+							{t("teacher.faculties.empty.description")}
 						</p>
 						<button
 							onClick={() => {
@@ -160,7 +165,7 @@ export default function FacultyManagement() {
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							Add Faculty
+							{t("teacher.faculties.actions.add")}
 						</button>
 					</div>
 				) : (
@@ -168,9 +173,9 @@ export default function FacultyManagement() {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Actions</th>
+									<th>{t("teacher.faculties.table.name")}</th>
+									<th>{t("teacher.faculties.table.description")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -180,7 +185,7 @@ export default function FacultyManagement() {
 										<td>
 											{faculty.description || (
 												<span className="text-base-content/40 italic">
-													No description
+													{t("teacher.faculties.table.noDescription")}
 												</span>
 											)}
 										</td>
@@ -222,18 +227,24 @@ export default function FacultyManagement() {
 					setEditingFaculty(null);
 					reset();
 				}}
-				title={editingFaculty ? "Edit Faculty" : "Add New Faculty"}
+				title={
+					editingFaculty
+						? t("teacher.faculties.form.editTitle")
+						: t("teacher.faculties.form.createTitle")
+				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Faculty Name</span>
+							<span className="label-text">
+								{t("teacher.faculties.form.nameLabel")}
+							</span>
 						</label>
 						<input
 							type="text"
 							{...register("name")}
 							className="input input-bordered"
-							placeholder="Enter faculty name"
+							placeholder={t("teacher.faculties.form.namePlaceholder")}
 						/>
 						{errors.name && (
 							<label className="label">
@@ -246,12 +257,14 @@ export default function FacultyManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Description</span>
+							<span className="label-text">
+								{t("teacher.faculties.form.descriptionLabel")}
+							</span>
 						</label>
 						<textarea
 							{...register("description")}
 							className="textarea textarea-bordered"
-							placeholder="Enter faculty description"
+							placeholder={t("teacher.faculties.form.descriptionPlaceholder")}
 							rows={3}
 						/>
 						{errors.description && (
@@ -272,8 +285,9 @@ export default function FacultyManagement() {
 								reset();
 							}}
 							className="btn btn-ghost"
+							disabled={isSubmitting}
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -283,9 +297,9 @@ export default function FacultyManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingFaculty ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Faculty"
+								t("teacher.faculties.form.submit")
 							)}
 						</button>
 					</div>
@@ -299,9 +313,9 @@ export default function FacultyManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Faculty"
-				message="Are you sure you want to delete this faculty? This action cannot be undone and will also delete all associated programs and courses."
-				confirmText="Delete"
+				title={t("teacher.faculties.delete.title")}
+				message={t("teacher.faculties.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

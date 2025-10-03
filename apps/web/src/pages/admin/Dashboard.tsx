@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { trpcClient } from "../../utils/trpc";
 import {
   Users,
@@ -20,7 +21,7 @@ import {
 } from "recharts";
 
 type StatCard = {
-  title: string;
+  key: "faculties" | "programs" | "courses" | "exams" | "students" | "teachers";
   count: number;
   icon: JSX.Element;
   color: string;
@@ -82,37 +83,37 @@ const AdminDashboard: React.FC = () => {
 
       const stats: StatCard[] = [
         {
-          title: "Faculties",
+          key: "faculties",
           count: facultiesCount,
           icon: <Building2 className="h-8 w-8" />,
           color: "bg-blue-100 text-blue-600",
         },
         {
-          title: "Programs",
+          key: "programs",
           count: programsCount,
           icon: <School className="h-8 w-8" />,
           color: "bg-purple-100 text-purple-600",
         },
         {
-          title: "Courses",
+          key: "courses",
           count: coursesCount,
           icon: <BookOpen className="h-8 w-8" />,
           color: "bg-emerald-100 text-emerald-600",
         },
         {
-          title: "Exams",
+          key: "exams",
           count: examsCount,
           icon: <ClipboardCheck className="h-8 w-8" />,
           color: "bg-amber-100 text-amber-600",
         },
         {
-          title: "Students",
+          key: "students",
           count: studentsCount,
           icon: <Users className="h-8 w-8" />,
           color: "bg-rose-100 text-rose-600",
         },
         {
-          title: "Teachers",
+          key: "teachers",
           count: teachersCount,
           icon: <GraduationCap className="h-8 w-8" />,
           color: "bg-indigo-100 text-indigo-600",
@@ -121,11 +122,13 @@ const AdminDashboard: React.FC = () => {
 
       return {
         stats,
-        activeYear: activeYear?.name ?? "No active year",
+        activeYear: activeYear?.name,
         programStats,
       };
     },
   });
+
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -135,18 +138,20 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  const stats = data?.stats ?? [];
+  const stats = useMemo(() => data?.stats ?? [], [data?.stats]);
   const programStats = data?.programStats ?? [];
-  const activeYear = data?.activeYear ?? "No active year";
+  const activeYear = data?.activeYear ?? t("admin.dashboard.noActiveYear");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          {t("admin.dashboard.title")}
+        </h2>
         <div className="flex items-center bg-primary-50 rounded-lg px-4 py-2">
           <Calendar className="h-5 w-5 text-primary-700 mr-2" />
           <span className="text-sm font-medium text-primary-900">
-            Active Year: {activeYear}
+            {t("admin.dashboard.activeYear", { year: activeYear })}
           </span>
         </div>
       </div>
@@ -164,7 +169,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-medium text-gray-700">
-                  {stat.title}
+                  {t(`admin.dashboard.stats.${stat.key}`)}
                 </h3>
                 <p className="text-2xl font-bold text-gray-900">{stat.count}</p>
               </div>
@@ -176,7 +181,7 @@ const AdminDashboard: React.FC = () => {
       {/* Program Stats */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-medium text-gray-800 mb-4">
-          Students per Program
+          {t("admin.dashboard.programStats.title")}
         </h3>
 
         <div className="h-80">
@@ -200,7 +205,7 @@ const AdminDashboard: React.FC = () => {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">
-              No program data available for the active academic year
+              {t("admin.dashboard.programStats.empty")}
             </div>
           )}
         </div>

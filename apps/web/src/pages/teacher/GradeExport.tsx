@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
 import * as XLSX from "xlsx";
+import { useTranslation } from "react-i18next";
 import { trpcClient } from "../../utils/trpc";
 
 interface AcademicYear {
@@ -64,6 +65,7 @@ export default function GradeExport() {
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
 	const yearId = useId();
 	const classId = useId();
+  const { t } = useTranslation();
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["academicYears"],
@@ -201,23 +203,23 @@ export default function GradeExport() {
 					}
 				});
 				return {
-					"Last Name": student.last_name,
-					"First Name": student.first_name,
-					"Registration Number": student.registration_number,
-					"Birth Date": student.birth_date
+					[t("teacher.gradeExport.columns.lastName")]: student.last_name,
+					[t("teacher.gradeExport.columns.firstName")]: student.first_name,
+					[t("teacher.gradeExport.columns.registration")]: student.registration_number,
+					[t("teacher.gradeExport.columns.birthDate")]: student.birth_date
 						? format(new Date(student.birth_date), "dd/MM/yyyy")
 						: "",
-					"Birth Place": student.birth_place || "",
-					Gender: student.gender || "",
+					[t("teacher.gradeExport.columns.birthPlace")]: student.birth_place || "",
+					[t("teacher.gradeExport.columns.gender")]: student.gender || "",
 					...Object.fromEntries(courseAverages),
 				};
 			});
 
 			const ws = XLSX.utils.json_to_sheet(exportData);
 			const wb = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(wb, ws, "Grades");
-			const className = classes?.find((c) => c.id === selectedClass)?.name;
-			const filename = `grades_${className}_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+			XLSX.utils.book_append_sheet(wb, ws, t("teacher.gradeExport.sheetName"));
+			const className = classes?.find((c) => c.id === selectedClass)?.name ?? t("teacher.gradeExport.unknownClass");
+			const filename = `${t("teacher.gradeExport.filePrefix")}_${className}_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Export error:", error);
@@ -227,16 +229,16 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">Grade Export</h2>
-				<p className="text-gray-600">
-					Export student grades by class and courses
-				</p>
+				<h2 className="font-bold text-2xl">{t("teacher.gradeExport.title")}</h2>
+				<p className="text-gray-600">{t("teacher.gradeExport.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				<div className="form-control">
 					<label className="label" htmlFor={yearId}>
-						<span className="label-text">Academic Year</span>
+						<span className="label-text">
+							{t("teacher.gradeExport.filters.academicYear")}
+						</span>
 					</label>
 					<select
 						id={yearId}
@@ -248,7 +250,9 @@ export default function GradeExport() {
 							setSelectedExams([]);
 						}}
 					>
-						<option value="">Select academic year</option>
+						<option value="">
+							{t("teacher.gradeExport.filters.academicYearPlaceholder")}
+						</option>
 						{academicYears?.map((year) => (
 							<option key={year.id} value={year.id}>
 								{year.name}
@@ -259,7 +263,9 @@ export default function GradeExport() {
 
 				<div className="form-control">
 					<label className="label" htmlFor={classId}>
-						<span className="label-text">Class</span>
+						<span className="label-text">
+							{t("teacher.gradeExport.filters.class")}
+						</span>
 					</label>
 					<select
 						id={classId}
@@ -271,7 +277,9 @@ export default function GradeExport() {
 						}}
 						disabled={!selectedYear}
 					>
-						<option value="">Select class</option>
+						<option value="">
+							{t("teacher.gradeExport.filters.classPlaceholder")}
+						</option>
 						{classes?.map((cls) => (
 							<option key={cls.id} value={cls.id}>
 								{cls.name} - {cls.program.name}
@@ -281,7 +289,9 @@ export default function GradeExport() {
 				</div>
 
 				<div className="form-control">
-					<span className="label-text mb-2">Export</span>
+					<span className="label-text mb-2">
+						{t("teacher.gradeExport.actions.label")}
+					</span>
 					<button
 						type="button"
 						onClick={handleExport}
@@ -289,14 +299,16 @@ export default function GradeExport() {
 						className="btn btn-primary"
 					>
 						<Download className="mr-2 h-5 w-5" />
-						Export Grades
+						{t("teacher.gradeExport.actions.export")}
 					</button>
 				</div>
 			</div>
 
 			{exams && exams.length > 0 ? (
 				<div className="rounded-lg bg-white p-6 shadow">
-					<h3 className="mb-4 font-medium text-lg">Select Exams to Include</h3>
+					<h3 className="mb-4 font-medium text-lg">
+						{t("teacher.gradeExport.exams.title")}
+					</h3>
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{exams.map((exam) => (
 							<label key={exam.id} className="flex items-center space-x-3">
@@ -329,10 +341,10 @@ export default function GradeExport() {
 				<div className="rounded-lg bg-white p-8 text-center">
 					<FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400" />
 					<h3 className="mt-2 font-medium text-gray-900 text-sm">
-						No exams found
+						{t("teacher.gradeExport.exams.emptyTitle")}
 					</h3>
 					<p className="mt-1 text-gray-500 text-sm">
-						There are no exams created for this class yet.
+						{t("teacher.gradeExport.exams.emptyDescription")}
 					</p>
 				</div>
 			) : null}

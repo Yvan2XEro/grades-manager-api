@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Users } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {
@@ -37,6 +38,7 @@ export default function StudentManagement() {
 	const [isPromoting, setIsPromoting] = useState(false);
 	const sourceId = useId();
 	const targetId = useId();
+  const { t } = useTranslation();
 
 	// Get active academic year
 	const { data: activeYear } = useQuery({
@@ -204,7 +206,7 @@ export default function StudentManagement() {
 	// Handle promotion of selected students
 	const handlePromote = async () => {
 		if (!selectedStudents.length || !targetClass) {
-			toast.error("Please select students and a target class");
+			toast.error(t("teacher.promotion.toast.missingSelection"));
 			return;
 		}
 
@@ -220,11 +222,13 @@ export default function StudentManagement() {
 			);
 
 			toast.success(
-				`Successfully promoted ${selectedStudents.length} students`,
+				t("teacher.promotion.toast.success", {
+					count: selectedStudents.length,
+				}),
 			);
 			setSelectedStudents([]);
 		} catch (error: unknown) {
-			toast.error(`Error promoting students: ${(error as Error).message}`);
+			toast.error((error as Error).message || t("teacher.promotion.toast.error"));
 		} finally {
 			setIsPromoting(false);
 		}
@@ -233,8 +237,8 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">Student Promotion</h2>
-				<p className="text-gray-600">Promote students to their next class</p>
+				<h2 className="font-bold text-2xl">{t("teacher.promotion.title")}</h2>
+				<p className="text-gray-600">{t("teacher.promotion.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2">
@@ -242,7 +246,9 @@ export default function StudentManagement() {
 				<div className="form-control">
 					<label className="label" htmlFor={sourceId}>
 						<span className="label-text">
-							Source Class ({previousYear?.name})
+							{t("teacher.promotion.sourceClassLabel", {
+								year: previousYear?.name ?? t("teacher.promotion.unknownYear"),
+							})}
 						</span>
 					</label>
 					<select
@@ -254,7 +260,9 @@ export default function StudentManagement() {
 							setSelectedStudents([]);
 						}}
 					>
-						<option value="">Select source class</option>
+						<option value="">
+							{t("teacher.promotion.sourceClassPlaceholder")}
+						</option>
 						{sourceClasses?.map((cls) => (
 							<option key={cls.id} value={cls.id}>
 								{cls.name} - {cls.program.name}
@@ -267,7 +275,9 @@ export default function StudentManagement() {
 				<div className="form-control">
 					<label className="label" htmlFor={targetId}>
 						<span className="label-text">
-							Target Class ({activeYear?.name})
+							{t("teacher.promotion.targetClassLabel", {
+								year: activeYear?.name ?? t("teacher.promotion.unknownYear"),
+							})}
 						</span>
 					</label>
 					<select
@@ -277,7 +287,9 @@ export default function StudentManagement() {
 						onChange={(e) => setTargetClass(e.target.value)}
 						disabled={!sourceClass}
 					>
-						<option value="">Select target class</option>
+						<option value="">
+							{t("teacher.promotion.targetClassPlaceholder")}
+						</option>
 						{targetClasses?.map((cls) => (
 							<option key={cls.id} value={cls.id}>
 								{cls.name} - {cls.program.name}
@@ -291,9 +303,13 @@ export default function StudentManagement() {
 				<div className="overflow-hidden rounded-lg bg-white shadow">
 					<div className="flex items-center justify-between border-gray-200 border-b p-4">
 						<div className="flex items-center space-x-2">
-							<span className="font-medium">Students</span>
+							<span className="font-medium">
+								{t("teacher.promotion.students.listTitle")}
+							</span>
 							<span className="text-gray-500 text-sm">
-								({selectedStudents.length} selected)
+								{t("teacher.promotion.students.selectedCount", {
+									count: selectedStudents.length,
+								})}
 							</span>
 						</div>
 						<div className="flex gap-2">
@@ -303,7 +319,7 @@ export default function StudentManagement() {
 								className="btn btn-sm btn-secondary"
 							>
 								<Check className="mr-2 h-4 w-4" />
-								Select Average ≥ 10
+								{t("teacher.promotion.students.autoSelect")}
 							</button>
 							<button
 								type="button"
@@ -316,9 +332,11 @@ export default function StudentManagement() {
 								{isPromoting ? (
 									<span className="loading loading-spinner loading-sm" />
 								) : (
-									<ArrowRight className="mr-2 h-4 w-4" />
+									<span className="flex items-center gap-2">
+										{t("teacher.promotion.actions.promoteSelected")}
+										<ArrowRight className="h-4 w-4" />
+									</span>
 								)}
-								Promote Selected
 							</button>
 						</div>
 					</div>
@@ -326,11 +344,11 @@ export default function StudentManagement() {
 					<div className="overflow-x-auto">
 						<table className="table">
 							<thead>
-								<tr>
-									<th>
-										<input
-											type="checkbox"
-											className="checkbox"
+							<tr>
+								<th>
+									<input
+										type="checkbox"
+										className="checkbox"
 											checked={selectedStudents.length === students.length}
 											onChange={(e) => {
 												if (e.target.checked) {
@@ -341,10 +359,10 @@ export default function StudentManagement() {
 											}}
 										/>
 									</th>
-									<th>Registration #</th>
-									<th>Name</th>
-									<th>Course Averages</th>
-									<th>Overall Average</th>
+								<th>{t("teacher.promotion.table.registration")}</th>
+								<th>{t("teacher.promotion.table.name")}</th>
+								<th>{t("teacher.promotion.table.courseAverages")}</th>
+								<th>{t("teacher.promotion.table.overallAverage")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -419,10 +437,10 @@ export default function StudentManagement() {
 				<div className="rounded-lg bg-white p-8 text-center">
 					<Users className="mx-auto h-12 w-12 text-gray-400" />
 					<h3 className="mt-2 font-medium text-gray-900 text-sm">
-						No students found
+						{t("teacher.promotion.emptyStudents.title")}
 					</h3>
 					<p className="mt-1 text-gray-500 text-sm">
-						There are no students in this class.
+						{t("teacher.promotion.emptyStudents.description")}
 					</p>
 				</div>
 			) : null}

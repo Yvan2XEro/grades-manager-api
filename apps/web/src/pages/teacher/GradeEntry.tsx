@@ -13,6 +13,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
 
 type Student = {
 	id: string;
@@ -46,6 +47,7 @@ const GradeEntry: React.FC = () => {
 	const { courseId } = useParams<{ courseId: string }>();
 	const { user } = useStore();
 	const navigate = useNavigate();
+  const { t } = useTranslation();
 
 	const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
 	const [students, setStudents] = useState<Student[]>([]);
@@ -119,7 +121,7 @@ const GradeEntry: React.FC = () => {
 			if (examsList.length > 0) setSelectedExam(examsList[0].id);
 		} catch (error: any) {
 			console.error("Error fetching course data:", error);
-			toast.error(`Error: ${error.message}`);
+			toast.error(error.message || t("teacher.gradeEntry.toast.fetchCourseError"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -143,7 +145,7 @@ const GradeEntry: React.FC = () => {
 			reset(formData);
 		} catch (error: any) {
 			console.error("Error fetching grades:", error);
-			toast.error(`Error: ${error.message}`);
+			toast.error(error.message || t("teacher.gradeEntry.toast.fetchGradesError"));
 		}
 	};
 
@@ -181,12 +183,12 @@ const GradeEntry: React.FC = () => {
 				await Promise.all(
 					gradesToUpsert.map((g) => trpcClient.grades.upsertNote.mutate(g)),
 				);
-				toast.success("Grades saved successfully");
+				toast.success(t("teacher.gradeEntry.toast.saveSuccess"));
 				fetchGrades(selectedExam);
 			}
 		} catch (error: any) {
 			console.error("Error saving grades:", error);
-			toast.error(`Error: ${error.message}`);
+			toast.error(error.message || t("teacher.gradeEntry.toast.saveError"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -198,9 +200,7 @@ const GradeEntry: React.FC = () => {
 		try {
 			await trpcClient.exams.lock.mutate({ examId: selectedExam, lock: true });
 			setIsExamLocked(true);
-			toast.success(
-				"Exam locked successfully. Grades can no longer be modified.",
-			);
+			toast.success(t("teacher.gradeEntry.toast.lockSuccess"));
 			setExams(
 				exams.map((exam) =>
 					exam.id === selectedExam ? { ...exam, isLocked: true } : exam,
@@ -208,7 +208,7 @@ const GradeEntry: React.FC = () => {
 			);
 		} catch (error: any) {
 			console.error("Error locking exam:", error);
-			toast.error(`Error: ${error.message}`);
+			toast.error(error.message || t("teacher.gradeEntry.toast.lockError"));
 		}
 	};
 
@@ -231,7 +231,9 @@ const GradeEntry: React.FC = () => {
 					<ArrowLeft className="h-5 w-5" />
 				</button>
 				<div>
-					<h2 className="font-bold text-2xl text-gray-800">Grade Entry</h2>
+					<h2 className="font-bold text-2xl text-gray-800">
+						{t("teacher.gradeEntry.title")}
+					</h2>
 					{courseInfo && (
 						<p className="text-gray-600">
 							{courseInfo.course_name} • {courseInfo.class_name} •{" "}
@@ -249,7 +251,7 @@ const GradeEntry: React.FC = () => {
 							htmlFor="exam"
 							className="mb-1 block font-medium text-gray-700 text-sm"
 						>
-							Select Exam
+							{t("teacher.gradeEntry.selectExam.label")}
 						</label>
 						<select
 							id="exam"
@@ -259,12 +261,14 @@ const GradeEntry: React.FC = () => {
 							disabled={exams.length === 0}
 						>
 							{exams.length === 0 ? (
-								<option value="">No exams available</option>
+								<option value="">
+									{t("teacher.gradeEntry.selectExam.empty")}
+								</option>
 							) : (
 								exams.map((exam) => (
 									<option key={exam.id} value={exam.id}>
 										{exam.name} ({exam.percentage}%){" "}
-										{exam.isLocked ? "(Locked)" : ""}
+										{exam.isLocked ? `(${t("teacher.gradeEntry.selectExam.lockedTag")})` : ""}
 									</option>
 								))
 							)}
@@ -276,14 +280,14 @@ const GradeEntry: React.FC = () => {
 							{isExamLocked ? (
 								<div className="flex items-center rounded-md bg-gray-100 px-3 py-2 text-gray-600">
 									<Lock className="mr-2 h-4 w-4" />
-									<span>Grades locked</span>
+									<span>{t("teacher.gradeEntry.lockedChip")}</span>
 								</div>
 							) : (
 								<button
 									onClick={lockExam}
 									className="btn btn-outline btn-warning"
 								>
-									<Lock className="mr-2 h-4 w-4" /> Lock Grades
+									<Lock className="mr-2 h-4 w-4" /> {t("teacher.gradeEntry.actions.lock")}
 								</button>
 							)}
 						</div>
@@ -294,11 +298,11 @@ const GradeEntry: React.FC = () => {
 					<div className="mt-4 flex items-start rounded-lg bg-blue-50 p-4 text-blue-800">
 						<Info className="mt-0.5 mr-2 h-5 w-5 flex-shrink-0" />
 						<div>
-							<p className="font-medium">Grading Information</p>
+							<p className="font-medium">
+								{t("teacher.gradeEntry.info.title")}
+							</p>
 							<p className="text-sm">
-								Grades should be entered on a scale of 0-20. Once grades are
-								locked, they cannot be modified. Please review carefully before
-								locking.
+								{t("teacher.gradeEntry.info.description")}
 							</p>
 						</div>
 					</div>
@@ -314,16 +318,16 @@ const GradeEntry: React.FC = () => {
 								<thead className="bg-gray-50">
 									<tr>
 										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											Registration #
+											{t("teacher.gradeEntry.table.registration")}
 										</th>
 										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											Student Name
+											{t("teacher.gradeEntry.table.student")}
 										</th>
 										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											Score (0-20)
+											{t("teacher.gradeEntry.table.score")}
 										</th>
 										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											Status
+											{t("teacher.gradeEntry.table.status")}
 										</th>
 									</tr>
 								</thead>
@@ -345,8 +349,8 @@ const GradeEntry: React.FC = () => {
 													defaultValue={grades[student.id] || ""}
 													className="input input-bordered input-sm w-24"
 													{...register(`student_${student.id}`, {
-														min: { value: 0, message: "Min 0" },
-														max: { value: 20, message: "Max 20" },
+														min: { value: 0, message: t("teacher.gradeEntry.validation.min") },
+														max: { value: 20, message: t("teacher.gradeEntry.validation.max") },
 													})}
 													disabled={isExamLocked}
 												/>
@@ -359,11 +363,12 @@ const GradeEntry: React.FC = () => {
 											<td className="whitespace-nowrap px-6 py-4 text-sm">
 												{grades[student.id] !== undefined ? (
 													<span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 font-medium text-green-800 text-xs">
-														<Check className="mr-1 h-3 w-3" /> Graded
+														<Check className="mr-1 h-3 w-3" />
+														{t("teacher.gradeEntry.status.graded")}
 													</span>
 												) : (
 													<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-800 text-xs">
-														Not graded
+														{t("teacher.gradeEntry.status.notGraded")}
 													</span>
 												)}
 											</td>
@@ -380,16 +385,16 @@ const GradeEntry: React.FC = () => {
 									disabled={isSaving}
 									className="btn btn-primary"
 								>
-									{isSaving ? (
-										<>
-											<div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-t-2 border-b-2" />
-											Saving...
-										</>
-									) : (
-										<>
-											<Save className="mr-2 h-4 w-4" /> Save Grades
-										</>
-									)}
+										{isSaving ? (
+											<>
+												<div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-t-2 border-b-2" />
+												{t("teacher.gradeEntry.actions.saving")}
+											</>
+										) : (
+											<>
+												<Save className="mr-2 h-4 w-4" /> {t("teacher.gradeEntry.actions.save")}
+											</>
+										)}
 								</button>
 							</div>
 						)}
@@ -399,10 +404,10 @@ const GradeEntry: React.FC = () => {
 				<div className="rounded-xl bg-white p-8 text-center shadow-sm">
 					<AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
 					<h3 className="mt-4 font-medium text-gray-700 text-lg">
-						No students found
+						{t("teacher.gradeEntry.emptyStudents.title")}
 					</h3>
 					<p className="mt-1 text-gray-500">
-						There are no students enrolled in this class.
+						{t("teacher.gradeEntry.emptyStudents.description")}
 					</p>
 				</div>
 			) : null}

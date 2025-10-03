@@ -1,10 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../../store';
 import { motion } from 'framer-motion';
 
 const AuthLayout: React.FC = () => {
   const { user } = useStore();
+  const { t } = useTranslation();
 
   // Redirect if already authenticated
   if (user) {
@@ -25,9 +27,11 @@ const AuthLayout: React.FC = () => {
       >
         <div className="bg-white shadow-xl rounded-xl p-8">
           <div className="flex flex-col items-center mb-6">
-            <h1 className="text-2xl font-bold text-primary-900">Academic Management System</h1>
+            <h1 className="text-2xl font-bold text-primary-900">
+              {t('auth.layout.title')}
+            </h1>
             <p className="text-gray-600 mt-2 text-center">
-              Streamline your institution's academic processes
+              {t('auth.layout.subtitle')}
             </p>
           </div>
           <Outlet />

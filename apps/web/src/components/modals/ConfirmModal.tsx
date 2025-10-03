@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -18,11 +19,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   isLoading = false,
 }) => {
   if (!isOpen) return null;
+  const { t } = useTranslation();
+  const confirmLabel = confirmText ?? t('common.actions.confirm');
+  const cancelLabel = cancelText ?? t('common.actions.cancel');
 
   return (
     <div className="modal modal-open">
@@ -39,7 +43,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         
         <div className="modal-action">
           <button onClick={onClose} className="btn btn-ghost" disabled={isLoading}>
-            {cancelText}
+            {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
@@ -49,7 +53,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {isLoading ? (
               <span className="loading loading-spinner loading-sm"></span>
             ) : (
-              confirmText
+              confirmLabel
             )}
           </button>
         </div>

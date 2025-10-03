@@ -4,6 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
 
 interface Course {
 	id: string;
@@ -16,6 +17,7 @@ interface Course {
 
 export default function CourseList() {
 	const { user } = useStore();
+  const { t } = useTranslation();
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["teacherCourses", user?.id],
@@ -70,9 +72,9 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">My Courses</h2>
+				<h2 className="font-bold text-2xl">{t("teacher.courses.title")}</h2>
 				<p className="text-base-content/60">
-					Manage your assigned courses and grades
+					{t("teacher.courses.subtitle")}
 				</p>
 			</div>
 
@@ -100,7 +102,9 @@ export default function CourseList() {
 										<span>{course.exam_count}</span>
 									</div>
 								</div>
-								<button className="btn btn-primary btn-sm">View Grades</button>
+								<button className="btn btn-primary btn-sm">
+									{t("teacher.courses.actions.viewGrades")}
+								</button>
 							</div>
 						</div>
 					</Link>
@@ -110,10 +114,11 @@ export default function CourseList() {
 					<div className="card col-span-full bg-base-100 shadow-xl">
 						<div className="card-body items-center py-12 text-center">
 							<BookOpen className="h-16 w-16 text-base-content/20" />
-							<h3 className="mt-4 font-bold text-xl">No Courses Assigned</h3>
+							<h3 className="mt-4 font-bold text-xl">
+								{t("teacher.courses.empty.title")}
+							</h3>
 							<p className="text-base-content/60">
-								You don't have any courses assigned for the active academic
-								year.
+								{t("teacher.courses.empty.description")}
 							</p>
 						</div>
 					</div>

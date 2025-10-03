@@ -1,21 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const classCourseSchema = z.object({
-	class: z.string({ required_error: "Please select a class" }),
-	course: z.string({ required_error: "Please select a course" }),
-	teacher: z.string({ required_error: "Please select a teacher" }),
-});
+const buildClassCourseSchema = (t: TFunction) =>
+	z.object({
+		class: z.string({ required_error: t("admin.classCourses.validation.class") }),
+		course: z.string({ required_error: t("admin.classCourses.validation.course") }),
+		teacher: z.string({ required_error: t("admin.classCourses.validation.teacher") }),
+	});
 
-type ClassCourseFormData = z.infer<typeof classCourseSchema>;
+type ClassCourseFormData = z.infer<ReturnType<typeof buildClassCourseSchema>>;
 
 interface ClassCourse {
 	id: string;
@@ -54,6 +57,8 @@ export default function ClassCourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
 
 	const { data: activeYear } = useQuery({
 		queryKey: ["activeYear"],
@@ -134,12 +139,12 @@ export default function ClassCourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
-			toast.success("Course assignment created successfully");
+			toast.success(t("admin.classCourses.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating course assignment: ${error.message}`);
+			toast.error(error.message || t("admin.classCourses.toast.createError"));
 		},
 	});
 
@@ -150,13 +155,13 @@ export default function ClassCourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
-			toast.success("Course assignment updated successfully");
+			toast.success(t("admin.classCourses.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingClassCourse(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating course assignment: ${error.message}`);
+			toast.error(error.message || t("admin.classCourses.toast.updateError"));
 		},
 	});
 
@@ -166,12 +171,12 @@ export default function ClassCourseManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
-			toast.success("Course assignment deleted successfully");
+			toast.success(t("admin.classCourses.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting course assignment: ${error.message}`);
+			toast.error(error.message || t("admin.classCourses.toast.deleteError"));
 		},
 	});
 
@@ -206,9 +211,11 @@ export default function ClassCourseManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">Course Assignments</h1>
+					<h1 className="font-bold text-2xl">
+						{t("admin.classCourses.title")}
+					</h1>
 					<p className="text-base-content/60">
-						Manage course assignments for classes
+						{t("admin.classCourses.subtitle")}
 					</p>
 				</div>
 				<button
@@ -220,7 +227,7 @@ export default function ClassCourseManagement() {
 					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
-					Assign Course
+					{t("admin.classCourses.actions.assign")}
 				</button>
 			</div>
 
@@ -228,9 +235,11 @@ export default function ClassCourseManagement() {
 				{displayedClassCourses.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<BookOpen className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">No Course Assignments</h2>
+						<h2 className="card-title mt-4">
+							{t("admin.classCourses.empty.title")}
+						</h2>
 						<p className="text-base-content/60">
-							Get started by assigning a course to a class.
+							{t("admin.classCourses.empty.description")}
 						</p>
 						<button
 							onClick={() => {
@@ -241,7 +250,7 @@ export default function ClassCourseManagement() {
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							Assign Course
+							{t("admin.classCourses.actions.assign")}
 						</button>
 					</div>
 				) : (
@@ -249,11 +258,11 @@ export default function ClassCourseManagement() {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Class</th>
-									<th>Program</th>
-									<th>Course</th>
-									<th>Teacher</th>
-									<th>Actions</th>
+									<th>{t("admin.classCourses.table.class")}</th>
+									<th>{t("admin.classCourses.table.program")}</th>
+									<th>{t("admin.classCourses.table.course")}</th>
+									<th>{t("admin.classCourses.table.teacher")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -308,20 +317,24 @@ export default function ClassCourseManagement() {
 				}}
 				title={
 					editingClassCourse
-						? "Edit Course Assignment"
-						: "New Course Assignment"
+						? t("admin.classCourses.form.editTitle")
+						: t("admin.classCourses.form.createTitle")
 				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Class</span>
+							<span className="label-text">
+								{t("admin.classCourses.form.classLabel")}
+							</span>
 						</label>
 						<select
 							{...register("class")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a class</option>
+							<option value="">
+								{t("admin.classCourses.form.classPlaceholder")}
+							</option>
 							{classes?.map((cls) => (
 								<option key={cls.id} value={cls.id}>
 									{cls.name} - {programMap.get(cls.program)}
@@ -339,13 +352,17 @@ export default function ClassCourseManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Course</span>
+							<span className="label-text">
+								{t("admin.classCourses.form.courseLabel")}
+							</span>
 						</label>
 						<select
 							{...register("course")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a course</option>
+							<option value="">
+								{t("admin.classCourses.form.coursePlaceholder")}
+							</option>
 							{courses?.map((course) => (
 								<option key={course.id} value={course.id}>
 									{course.name}
@@ -363,13 +380,17 @@ export default function ClassCourseManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Teacher</span>
+							<span className="label-text">
+								{t("admin.classCourses.form.teacherLabel")}
+							</span>
 						</label>
 						<select
 							{...register("teacher")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a teacher</option>
+							<option value="">
+								{t("admin.classCourses.form.teacherPlaceholder")}
+							</option>
 							{teachers?.map((teacher) => (
 								<option key={teacher.id} value={teacher.id}>
 									{teacher.name}
@@ -395,7 +416,7 @@ export default function ClassCourseManagement() {
 							}}
 							className="btn btn-ghost"
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -405,9 +426,9 @@ export default function ClassCourseManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingClassCourse ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Assignment"
+								t("admin.classCourses.form.createSubmit")
 							)}
 						</button>
 					</div>
@@ -421,9 +442,9 @@ export default function ClassCourseManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Course Assignment"
-				message="Are you sure you want to delete this course assignment? This action cannot be undone and will also delete all associated exams and grades."
-				confirmText="Delete"
+				title={t("admin.classCourses.delete.title")}
+				message={t("admin.classCourses.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

@@ -3,29 +3,32 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import { Calendar, Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-const academicYearSchema = z
-	.object({
-		startDate: z.string().min(1, "Start date is required"),
-		endDate: z.string().min(1, "End date is required"),
-		name: z.string().min(2, "Label is required"),
-	})
-	.refine(
-		(data) => {
-			const start = new Date(data.startDate);
-			const end = new Date(data.endDate);
-			return end > start;
-		},
-		{
-			message: "End date must be after start date",
-			path: ["endDate"],
-		},
-	);
+const buildAcademicYearSchema = (t: TFunction) =>
+	z
+		.object({
+			startDate: z.string().min(1, t("admin.academicYears.validation.startDate")),
+			endDate: z.string().min(1, t("admin.academicYears.validation.endDate")),
+			name: z.string().min(2, t("admin.academicYears.validation.name")),
+		})
+		.refine(
+			(data) => {
+				const start = new Date(data.startDate);
+				const end = new Date(data.endDate);
+				return end > start;
+			},
+			{
+				message: t("admin.academicYears.validation.order"),
+				path: ["endDate"],
+			},
+		);
 
 type AcademicYear = {
 	id: string;
@@ -36,13 +39,15 @@ type AcademicYear = {
 	createdAt: string;
 };
 
-type FormData = z.infer<typeof academicYearSchema>;
+type FormData = z.infer<ReturnType<typeof buildAcademicYearSchema>>;
 
 const AcademicYearManagement: React.FC = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
 
 	const {
 		register,
@@ -94,12 +99,12 @@ const AcademicYearManagement: React.FC = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
-			toast.success("Academic year created successfully");
+			toast.success(t("admin.academicYears.toast.createSuccess"));
 			setIsModalOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating academic year: ${error.message}`);
+			toast.error(error.message || t("admin.academicYears.toast.createError"));
 		},
 	});
 
@@ -114,13 +119,13 @@ const AcademicYearManagement: React.FC = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
-			toast.success("Academic year updated successfully");
+			toast.success(t("admin.academicYears.toast.updateSuccess"));
 			setIsModalOpen(false);
 			setEditingYear(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating academic year: ${error.message}`);
+			toast.error(error.message || t("admin.academicYears.toast.updateError"));
 		},
 	});
 
@@ -130,11 +135,11 @@ const AcademicYearManagement: React.FC = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
-			toast.success("Academic year deleted successfully");
+			toast.success(t("admin.academicYears.toast.deleteSuccess"));
 			setDeleteConfirmId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting academic year: ${error.message}`);
+			toast.error(error.message || t("admin.academicYears.toast.deleteError"));
 		},
 	});
 
@@ -144,10 +149,10 @@ const AcademicYearManagement: React.FC = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
-			toast.success("Academic year status updated successfully");
+			toast.success(t("admin.academicYears.toast.statusSuccess"));
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating academic year status: ${error.message}`);
+			toast.error(error.message || t("admin.academicYears.toast.statusError"));
 		},
 	});
 
@@ -171,11 +176,11 @@ const AcademicYearManagement: React.FC = () => {
 		try {
 			const date = parseISO(dateString);
 			if (!isValid(date)) {
-				return "Invalid Date";
+				return t("common.invalidDate");
 			}
 			return format(date, "MMM d, yyyy");
 		} catch {
-			return "Invalid Date";
+			return t("common.invalidDate");
 		}
 	};
 
@@ -192,10 +197,10 @@ const AcademicYearManagement: React.FC = () => {
 			<div className="flex items-center justify-between">
 				<div>
 					<h2 className="font-bold text-2xl text-gray-800">
-						Academic Year Management
+						{t("admin.academicYears.title")}
 					</h2>
 					<p className="text-gray-600">
-						Manage academic years and set active period
+						{t("admin.academicYears.subtitle")}
 					</p>
 				</div>
 				<button
@@ -206,7 +211,7 @@ const AcademicYearManagement: React.FC = () => {
 					}}
 					className="btn btn-primary"
 				>
-					<Plus className="mr-2 h-5 w-5" /> Add Academic Year
+					<Plus className="mr-2 h-5 w-5" /> {t("admin.academicYears.actions.add")}
 				</button>
 			</div>
 
@@ -215,10 +220,10 @@ const AcademicYearManagement: React.FC = () => {
 					<div className="p-8 text-center">
 						<Calendar className="mx-auto h-12 w-12 text-gray-400" />
 						<h3 className="mt-4 font-medium text-gray-700 text-lg">
-							No academic years found
+							{t("admin.academicYears.empty.title")}
 						</h3>
 						<p className="mt-1 text-gray-500">
-							Get started by adding your first academic year.
+							{t("admin.academicYears.empty.description")}
 						</p>
 						<button
 							onClick={() => {
@@ -228,7 +233,7 @@ const AcademicYearManagement: React.FC = () => {
 							}}
 							className="btn btn-primary btn-sm mt-4"
 						>
-							<Plus className="mr-2 h-4 w-4" /> Add Academic Year
+							<Plus className="mr-2 h-4 w-4" /> {t("admin.academicYears.actions.add")}
 						</button>
 					</div>
 				) : (
@@ -236,11 +241,11 @@ const AcademicYearManagement: React.FC = () => {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Start Date</th>
-									<th>End Date</th>
-									<th>Status</th>
-									<th>Actions</th>
+									<th>{t("admin.academicYears.table.name")}</th>
+									<th>{t("admin.academicYears.table.startDate")}</th>
+									<th>{t("admin.academicYears.table.endDate")}</th>
+									<th>{t("admin.academicYears.table.status")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -261,7 +266,9 @@ const AcademicYearManagement: React.FC = () => {
 														}
 													/>
 													<span className="label-text ml-2">
-														{year.isActive ? "Active" : "Inactive"}
+														{year.isActive
+															? t("common.status.active")
+															: t("common.status.inactive")}
 													</span>
 												</label>
 											</div>
@@ -270,7 +277,7 @@ const AcademicYearManagement: React.FC = () => {
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
 													<span className="text-gray-600 text-sm">
-														Confirm delete?
+														{t("admin.academicYears.confirmDelete")}
 													</span>
 													<button
 														onClick={() => handleDelete(year.id)}
@@ -322,7 +329,9 @@ const AcademicYearManagement: React.FC = () => {
 				<div className="modal modal-open">
 					<div className="modal-box">
 						<h3 className="font-bold text-lg">
-							{editingYear ? "Edit Academic Year" : "Add New Academic Year"}
+							{editingYear
+								? t("admin.academicYears.modal.editTitle")
+								: t("admin.academicYears.modal.createTitle")}
 						</h3>
 						<button
 							onClick={() => {
@@ -338,7 +347,9 @@ const AcademicYearManagement: React.FC = () => {
 						<form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
 							<div className="form-control">
 								<label className="label">
-									<span className="label-text">Start Date*</span>
+									<span className="label-text">
+										{t("admin.academicYears.modal.startDate")}
+									</span>
 								</label>
 								<input
 									type="date"
@@ -356,7 +367,9 @@ const AcademicYearManagement: React.FC = () => {
 
 							<div className="form-control">
 								<label className="label">
-									<span className="label-text">End Date*</span>
+									<span className="label-text">
+										{t("admin.academicYears.modal.endDate")}
+									</span>
 								</label>
 								<input
 									type="date"
@@ -374,7 +387,9 @@ const AcademicYearManagement: React.FC = () => {
 
 							<div className="form-control">
 								<label className="label">
-									<span className="label-text">Label*</span>
+									<span className="label-text">
+										{t("admin.academicYears.modal.label")}
+									</span>
 								</label>
 								<input
 									type="text"
@@ -401,7 +416,7 @@ const AcademicYearManagement: React.FC = () => {
 									}}
 									className="btn btn-ghost"
 								>
-									Cancel
+									{t("common.actions.cancel")}
 								</button>
 								<button
 									type="submit"
@@ -411,10 +426,10 @@ const AcademicYearManagement: React.FC = () => {
 									{isSubmitting ? (
 										<>
 											<span className="loading loading-spinner" />
-											Saving...
+											{t("common.actions.saving")}
 										</>
 									) : (
-										"Save"
+										t("common.actions.save")
 									)}
 								</button>
 							</div>

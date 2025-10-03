@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useStore } from "../../store";
 import {
   LayoutDashboard,
@@ -19,67 +20,68 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Sidebar: React.FC = () => {
   const { user, sidebarOpen } = useStore();
+  const { t } = useTranslation();
 
   const adminLinks = [
     {
       to: "/admin",
       icon: <LayoutDashboard className="h-5 w-5" />,
-      text: "Dashboard",
+      labelKey: "navigation.sidebar.admin.dashboard",
     },
     {
       to: "/admin/academic-years",
       icon: <Calendar className="h-5 w-5" />,
-      text: "Academic Years",
+      labelKey: "navigation.sidebar.admin.academicYears",
     },
     {
       to: "/admin/faculties",
       icon: <Building2 className="h-5 w-5" />,
-      text: "Faculties",
+      labelKey: "navigation.sidebar.admin.faculties",
     },
     {
       to: "/admin/programs",
       icon: <School className="h-5 w-5" />,
-      text: "Programs",
+      labelKey: "navigation.sidebar.admin.programs",
     },
     {
       to: "/admin/courses",
       icon: <BookOpen className="h-5 w-5" />,
-      text: "Courses",
+      labelKey: "navigation.sidebar.admin.courses",
     },
     {
       to: "/admin/classes",
       icon: <Users className="h-5 w-5" />,
-      text: "Classes",
+      labelKey: "navigation.sidebar.admin.classes",
     },
     {
       to: "/admin/class-courses",
       icon: <BookOpenCheck className="h-5 w-5" />,
-      text: "Course Assignments",
+      labelKey: "navigation.sidebar.admin.courseAssignments",
     },
     {
       to: "/admin/students",
       icon: <GraduationCap className="h-5 w-5" />,
-      text: "Students",
+      labelKey: "navigation.sidebar.admin.students",
     },
     {
       to: "/admin/users",
       icon: <UserCog className="h-5 w-5" />,
-      text: "Users",
+      labelKey: "navigation.sidebar.admin.users",
     },
     {
       to: "/admin/student-promotion",
       icon: <ArrowUpRight className="h-5 w-5" />,
-      text: "Student Promotion",
+      labelKey: "navigation.sidebar.admin.studentPromotion",
     },
     {
       to: "/admin/exams",
       icon: <ClipboardList className="h-5 w-5" />,
-      text: "Exams",
+      labelKey: "navigation.sidebar.admin.exams",
     },
     {
       to: "/admin/grade-export",
       icon: <FileSpreadsheet className="h-5 w-5" />,
-      text: "Grade Export",
+      labelKey: "navigation.sidebar.admin.gradeExport",
     },
   ];
 
@@ -87,12 +89,12 @@ const Sidebar: React.FC = () => {
     {
       to: "/teacher",
       icon: <LayoutDashboard className="h-5 w-5" />,
-      text: "Dashboard",
+      labelKey: "navigation.sidebar.teacher.dashboard",
     },
     {
       to: "/teacher/courses",
       icon: <BookOpen className="h-5 w-5" />,
-      text: "My Courses",
+      labelKey: "navigation.sidebar.teacher.courses",
     },
   ];
 
@@ -140,7 +142,7 @@ const Sidebar: React.FC = () => {
                     }
                   >
                     {link.icon}
-                    <span className="ml-3">{link.text}</span>
+                    <span className="ml-3">{t(link.labelKey)}</span>
                   </NavLink>
                 ))}
               </nav>
@@ -161,7 +163,7 @@ const Sidebar: React.FC = () => {
                       {user?.firstName} {user?.lastName}
                     </p>
                     <p className="text-xs text-gray-500 capitalize">
-                      {user?.role}
+                      {user?.role ? t(`navigation.roles.${user.role}`) : ""}
                     </p>
                   </div>
                 </div>

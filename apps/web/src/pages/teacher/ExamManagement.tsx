@@ -2,26 +2,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
+import type { TFunction } from "i18next";
 
-const examSchema = z.object({
-	name: z.string().min(2, "Name must be at least 2 characters"),
-	type: z.string().min(2, "Type must be at least 2 characters"),
-	date: z.string().min(1, "Date is required"),
-	percentage: z
-		.number()
-		.min(1, "Percentage must be at least 1")
-		.max(100, "Percentage cannot exceed 100"),
-	classCourseId: z.string({ required_error: "Please select a course" }),
-});
+const buildExamSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(2, t("teacher.exams.validation.name")),
+		type: z.string().min(2, t("teacher.exams.validation.type")),
+		date: z.string().min(1, t("teacher.exams.validation.date")),
+		percentage: z
+			.number()
+			.min(1, t("teacher.exams.validation.percentage.min"))
+			.max(100, t("teacher.exams.validation.percentage.max")),
+		classCourseId: z.string({
+			required_error: t("teacher.exams.validation.classCourse"),
+		}),
+	});
 
-type ExamFormData = z.infer<typeof examSchema>;
+type ExamFormData = z.infer<ReturnType<typeof buildExamSchema>>;
 
 interface Exam {
 	id: string;
@@ -56,9 +61,11 @@ export default function ExamManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
+	const { t } = useTranslation();
+	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
 	const { data: exams, isLoading } = useQuery({
-		queryKey: ["exams"],
+		queryKey: ["teacherExams"],
 		queryFn: async () => {
 			const { items } = await trpcClient.exams.list.query({});
 			return items as Exam[];
@@ -66,7 +73,7 @@ export default function ExamManagement() {
 	});
 
 	const { data: classCourses } = useQuery({
-		queryKey: ["classCourses"],
+		queryKey: ["teacherClassCourses"],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({});
 			return items as ClassCourse[];
@@ -74,7 +81,7 @@ export default function ExamManagement() {
 	});
 
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
+		queryKey: ["teacherClasses"],
 		queryFn: async () => {
 			const { items } = await trpcClient.classes.list.query({});
 			return items as Class[];
@@ -82,7 +89,7 @@ export default function ExamManagement() {
 	});
 
 	const { data: courses } = useQuery({
-		queryKey: ["courses"],
+		queryKey: ["teacherCoursesList"],
 		queryFn: async () => {
 			const { items } = await trpcClient.courses.list.query({});
 			return items as Course[];
@@ -110,34 +117,30 @@ export default function ExamManagement() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
-			toast.success("Exam created successfully");
+			queryClient.invalidateQueries({ queryKey: ["teacherExams"] });
+			toast.success(t("teacher.exams.toast.createSuccess"));
 			setIsFormOpen(false);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error creating exam: ${error.message}`);
+			toast.error(error.message || t("teacher.exams.toast.createError"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: async (data: ExamFormData & { id: string }) => {
 			const { id, ...updateData } = data;
-			await trpcClient.exams.update.mutate({
-				id,
-				...updateData,
-				date: new Date(updateData.date),
-			});
+			await trpcClient.exams.update.mutate({ id, ...updateData });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
-			toast.success("Exam updated successfully");
+			queryClient.invalidateQueries({ queryKey: ["teacherExams"] });
+			toast.success(t("teacher.exams.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingExam(null);
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(`Error updating exam: ${error.message}`);
+			toast.error(error.message || t("teacher.exams.toast.updateError"));
 		},
 	});
 
@@ -146,13 +149,13 @@ export default function ExamManagement() {
 			await trpcClient.exams.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["exams"] });
-			toast.success("Exam deleted successfully");
+			queryClient.invalidateQueries({ queryKey: ["teacherExams"] });
+			toast.success(t("teacher.exams.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(`Error deleting exam: ${error.message}`);
+			toast.error(error.message || t("teacher.exams.toast.deleteError"));
 		},
 	});
 
@@ -187,8 +190,8 @@ export default function ExamManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">Exam Management</h1>
-					<p className="text-base-content/60">Create and manage course exams</p>
+					<h1 className="font-bold text-2xl">{t("teacher.exams.title")}</h1>
+					<p className="text-base-content/60">{t("teacher.exams.subtitle")}</p>
 				</div>
 				<button
 					onClick={() => {
@@ -199,7 +202,7 @@ export default function ExamManagement() {
 					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
-					Add Exam
+					{t("teacher.exams.actions.add")}
 				</button>
 			</div>
 
@@ -207,9 +210,9 @@ export default function ExamManagement() {
 				{exams?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<ClipboardList className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">No Exams Found</h2>
+						<h2 className="card-title mt-4">{t("teacher.exams.empty.title")}</h2>
 						<p className="text-base-content/60">
-							Get started by adding your first exam.
+							{t("teacher.exams.empty.description")}
 						</p>
 						<button
 							onClick={() => {
@@ -220,7 +223,7 @@ export default function ExamManagement() {
 							className="btn btn-primary mt-4"
 						>
 							<Plus className="mr-2 h-4 w-4" />
-							Add Exam
+							{t("teacher.exams.actions.add")}
 						</button>
 					</div>
 				) : (
@@ -228,14 +231,14 @@ export default function ExamManagement() {
 						<table className="table">
 							<thead>
 								<tr>
-									<th>Name</th>
-									<th>Course</th>
-									<th>Class</th>
-									<th>Type</th>
-									<th>Date</th>
-									<th>Percentage</th>
-									<th>Status</th>
-									<th>Actions</th>
+									<th>{t("teacher.exams.table.name")}</th>
+									<th>{t("teacher.exams.table.course")}</th>
+									<th>{t("teacher.exams.table.class")}</th>
+									<th>{t("teacher.exams.table.type")}</th>
+									<th>{t("teacher.exams.table.date")}</th>
+									<th>{t("teacher.exams.table.percentage")}</th>
+									<th>{t("teacher.exams.table.status")}</th>
+									<th>{t("common.table.actions")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -254,13 +257,14 @@ export default function ExamManagement() {
 										</td>
 										<td>{exam.type}</td>
 										<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
-										<td>{exam.percentage}%</td>
+										<td>{t("teacher.exams.table.percentageValue", { value: exam.percentage })}</td>
 										<td>
 											<span
-												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"
-													}`}
+												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"}`}
 											>
-												{exam.isLocked ? "Locked" : "Open"}
+												{exam.isLocked
+													? t("teacher.exams.status.locked")
+													: t("teacher.exams.status.open")}
 											</span>
 										</td>
 										<td>
@@ -290,9 +294,9 @@ export default function ExamManagement() {
 													<Trash2 className="h-4 w-4" />
 												</button>
 											</div>
-										</td>
-									</tr>
-								))}
+									</td>
+								</tr>
+							))}
 							</tbody>
 						</table>
 					</div>
@@ -306,18 +310,26 @@ export default function ExamManagement() {
 					setEditingExam(null);
 					reset();
 				}}
-				title={editingExam ? "Edit Exam" : "Add New Exam"}
+				title={
+					editingExam
+						? t("teacher.exams.form.editTitle")
+						: t("teacher.exams.form.createTitle")
+				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Course</span>
+							<span className="label-text">
+								{t("teacher.exams.form.classCourseLabel")}
+							</span>
 						</label>
 						<select
 							{...register("classCourseId")}
 							className="select select-bordered w-full"
 						>
-							<option value="">Select a course</option>
+							<option value="">
+								{t("teacher.exams.form.classCoursePlaceholder")}
+							</option>
 							{classCourses?.map((cc) => (
 								<option key={cc.id} value={cc.id}>
 									{courseMap.get(cc.course)} - {classMap.get(cc.class)}
@@ -335,13 +347,15 @@ export default function ExamManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Exam Name</span>
+							<span className="label-text">
+								{t("teacher.exams.form.nameLabel")}
+							</span>
 						</label>
 						<input
 							type="text"
 							{...register("name")}
 							className="input input-bordered"
-							placeholder="Enter exam name"
+							placeholder={t("teacher.exams.form.namePlaceholder")}
 						/>
 						{errors.name && (
 							<label className="label">
@@ -354,13 +368,15 @@ export default function ExamManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Type</span>
+							<span className="label-text">
+								{t("teacher.exams.form.typeLabel")}
+							</span>
 						</label>
 						<input
 							type="text"
 							{...register("type")}
 							className="input input-bordered"
-							placeholder="e.g., Midterm, Final"
+							placeholder={t("teacher.exams.form.typePlaceholder")}
 						/>
 						{errors.type && (
 							<label className="label">
@@ -373,7 +389,9 @@ export default function ExamManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Date</span>
+							<span className="label-text">
+								{t("teacher.exams.form.dateLabel")}
+							</span>
 						</label>
 						<input
 							type="date"
@@ -391,13 +409,15 @@ export default function ExamManagement() {
 
 					<div className="form-control">
 						<label className="label">
-							<span className="label-text">Percentage</span>
+							<span className="label-text">
+								{t("teacher.exams.form.percentageLabel")}
+							</span>
 						</label>
 						<input
 							type="number"
 							{...register("percentage", { valueAsNumber: true })}
 							className="input input-bordered"
-							placeholder="Enter percentage (1-100)"
+							placeholder={t("teacher.exams.form.percentagePlaceholder")}
 						/>
 						{errors.percentage && (
 							<label className="label">
@@ -417,8 +437,9 @@ export default function ExamManagement() {
 								reset();
 							}}
 							className="btn btn-ghost"
+							disabled={isSubmitting}
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -428,9 +449,9 @@ export default function ExamManagement() {
 							{isSubmitting ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : editingExam ? (
-								"Save Changes"
+								t("common.actions.saveChanges")
 							) : (
-								"Create Exam"
+								t("teacher.exams.form.submit")
 							)}
 						</button>
 					</div>
@@ -444,9 +465,9 @@ export default function ExamManagement() {
 					setDeleteId(null);
 				}}
 				onConfirm={handleDelete}
-				title="Delete Exam"
-				message="Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades."
-				confirmText="Delete"
+				title={t("teacher.exams.delete.title")}
+				message={t("teacher.exams.delete.message")}
+				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
 		</div>

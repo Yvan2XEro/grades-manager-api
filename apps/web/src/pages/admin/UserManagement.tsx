@@ -8,7 +8,7 @@ import {
 	PlusIcon,
 	Search,
 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -17,6 +17,8 @@ import FormModal from "../../components/modals/FormModal";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
 import { trpcClient } from "../../utils/trpc";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 interface User {
 	id: string;
@@ -27,14 +29,17 @@ interface User {
 	emailVerified?: boolean | null;
 }
 
-const userSchema = z.object({
-	name: z.string().min(1, "Required"),
-	email: z.string().email(),
-	role: z.enum(["admin", "teacher"]),
-	password: z.string().optional(),
-});
+const buildUserSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(1, t("admin.users.validation.name")),
+		email: z.string().email(t("admin.users.validation.email")),
+		role: z.enum(["admin", "teacher"], {
+			errorMap: () => ({ message: t("admin.users.validation.role") }),
+		}),
+		password: z.string().optional(),
+	});
 
-type UserForm = z.infer<typeof userSchema>;
+type UserForm = z.infer<ReturnType<typeof buildUserSchema>>;
 
 function generatePassword(length = 12) {
 	const chars =
@@ -48,6 +53,8 @@ function generatePassword(length = 12) {
 
 export default function UserManagement() {
 	const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const userSchema = useMemo(() => buildUserSchema(t), [t]);
 	const [search, setSearch] = useState("");
 	const debouncedSearch = useDebounce(search, 500);
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,11 +154,12 @@ export default function UserManagement() {
 			});
 		},
 		onSuccess: () => {
-			toast.success("User created");
+			toast.success(t("admin.users.toast.createSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			closeModal();
 		},
-		onError: (err: unknown) => toast.error((err as Error).message),
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.users.toast.createError")),
 	});
 
 	const updateMutation = useMutation({
@@ -168,47 +176,51 @@ export default function UserManagement() {
 			}
 		},
 		onSuccess: () => {
-			toast.success("User updated");
+			toast.success(t("admin.users.toast.updateSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			closeModal();
 		},
-		onError: (err: unknown) => toast.error((err as Error).message),
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.users.toast.updateError")),
 	});
 
 	const deleteMutation = useMutation({
 		mutationFn: (user: User) =>
 			authClient.admin.removeUser({ userId: user.id }),
 		onSuccess: () => {
-			toast.success("User deleted");
+			toast.success(t("admin.users.toast.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: unknown) => toast.error((err as Error).message),
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.users.toast.deleteError")),
 	});
 
 	const banMutation = useMutation({
 		mutationFn: (user: User) =>
 			authClient.admin.banUser({
 				userId: user.id,
-				banReason: "Violation",
+				banReason: t("admin.users.ban.reason"),
 				banExpiresIn: 60 * 60 * 24 * 7,
 			}),
 		onSuccess: () => {
-			toast.success("User banned");
+			toast.success(t("admin.users.toast.banSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: unknown) => toast.error((err as Error).message),
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.users.toast.banError")),
 	});
 
 	const unbanMutation = useMutation({
 		mutationFn: (user: User) => authClient.admin.unbanUser({ userId: user.id }),
 		onSuccess: () => {
-			toast.success("User unbanned");
+			toast.success(t("admin.users.toast.unbanSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			setConfirm(null);
 		},
-		onError: (err: unknown) => toast.error((err as Error).message),
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.users.toast.unbanError")),
 	});
 
 	const handleGeneratePassword = () => {
@@ -221,13 +233,13 @@ export default function UserManagement() {
 		const pwd = getValues("password");
 		if (pwd) {
 			navigator.clipboard.writeText(pwd);
-			toast.success("Password copied");
+			toast.success(t("admin.users.toast.passwordCopied"));
 		}
 	};
 
 	const onSubmit = (data: UserForm) => {
 		if (!editingUser && !data.password) {
-			toast.error("Password is required");
+			toast.error(t("admin.users.validation.passwordRequired"));
 			return;
 		}
 		if (editingUser) {
@@ -240,9 +252,10 @@ export default function UserManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between">
-				<h1 className="font-semibold text-xl">User Management</h1>
+				<h1 className="font-semibold text-xl">{t("admin.users.title")}</h1>
 				<button type="button" className="btn btn-primary" onClick={openCreate}>
-					<PlusIcon className="mr-2 h-4 w-4" /> Create User
+					<PlusIcon className="mr-2 h-4 w-4" />
+					{t("admin.users.actions.create")}
 				</button>
 			</div>
 
@@ -253,7 +266,7 @@ export default function UserManagement() {
 						type="text"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Search users..."
+						placeholder={t("admin.users.filters.searchPlaceholder")}
 						className="input input-bordered w-full pl-9"
 					/>
 				</div>
@@ -263,27 +276,27 @@ export default function UserManagement() {
 						value={roleFilter}
 						onChange={(e) => setRoleFilter(e.target.value)}
 					>
-						<option value="">All Roles</option>
-						<option value="admin">Admin</option>
-						<option value="teacher">Teacher</option>
+						<option value="">{t("admin.users.filters.roles.all")}</option>
+						<option value="admin">{t("admin.users.filters.roles.admin")}</option>
+						<option value="teacher">{t("admin.users.filters.roles.teacher")}</option>
 					</select>
 					<select
 						className="select select-bordered"
 						value={banFilter}
 						onChange={(e) => setBanFilter(e.target.value)}
 					>
-						<option value="">All Statuses</option>
-						<option value="active">Active</option>
-						<option value="banned">Banned</option>
+						<option value="">{t("admin.users.filters.status.all")}</option>
+						<option value="active">{t("admin.users.filters.status.active")}</option>
+						<option value="banned">{t("admin.users.filters.status.banned")}</option>
 					</select>
 					<select
 						className="select select-bordered"
 						value={verifiedFilter}
 						onChange={(e) => setVerifiedFilter(e.target.value)}
 					>
-						<option value="">All Emails</option>
-						<option value="verified">Verified</option>
-						<option value="unverified">Unverified</option>
+						<option value="">{t("admin.users.filters.email.all")}</option>
+						<option value="verified">{t("admin.users.filters.email.verified")}</option>
+						<option value="unverified">{t("admin.users.filters.email.unverified")}</option>
 					</select>
 				</div>
 			</div>
@@ -291,11 +304,11 @@ export default function UserManagement() {
 				<table className="table w-full">
 					<thead>
 						<tr>
-							<th>Name</th>
-							<th>Email</th>
-							<th>Role</th>
-							<th>Email Verified</th>
-							<th>Status</th>
+							<th>{t("admin.users.table.name")}</th>
+							<th>{t("admin.users.table.email")}</th>
+							<th>{t("admin.users.table.role")}</th>
+							<th>{t("admin.users.table.emailVerified")}</th>
+							<th>{t("admin.users.table.status")}</th>
 							<th className="w-1" />
 						</tr>
 					</thead>
@@ -304,19 +317,23 @@ export default function UserManagement() {
 							<tr key={u.id}>
 								<td>{u.name}</td>
 								<td>{u.email}</td>
-								<td className="capitalize">{u.role}</td>
+								<td>{u.role ? t(`admin.users.roles.${u.role}`) : ""}</td>
 								<td>
 									<div
 										className={`badge ${u.emailVerified ? "badge-success" : "badge-warning"}`}
 									>
-										{u.emailVerified ? "Verified" : "Unverified"}
+										{u.emailVerified
+											? t("admin.users.status.emailVerified")
+											: t("admin.users.status.emailUnverified")}
 									</div>
 								</td>
 								<td>
 									<div
 										className={`badge ${u.banned ? "badge-error" : "badge-success"}`}
 									>
-										{u.banned ? "Banned" : "Active"}
+										{u.banned
+											? t("admin.users.status.banned")
+											: t("admin.users.status.active")}
 									</div>
 								</td>
 								<td className="w-1 text-right">
@@ -331,7 +348,7 @@ export default function UserManagement() {
 										<ul className="dropdown-content menu menu-sm z-[1] mt-2 w-40 rounded-box bg-base-100 p-2 shadow">
 											<li>
 												<button type="button" onClick={() => openEdit(u)}>
-													Edit
+													{t("admin.users.actions.edit")}
 												</button>
 											</li>
 											{u.banned ? (
@@ -342,7 +359,7 @@ export default function UserManagement() {
 															setConfirm({ user: u, action: "unban" })
 														}
 													>
-														Unban
+														{t("admin.users.actions.unban")}
 													</button>
 												</li>
 											) : (
@@ -353,7 +370,7 @@ export default function UserManagement() {
 															setConfirm({ user: u, action: "ban" })
 														}
 													>
-														Ban
+														{t("admin.users.actions.ban")}
 													</button>
 												</li>
 											)}
@@ -365,7 +382,7 @@ export default function UserManagement() {
 														setConfirm({ user: u, action: "delete" })
 													}
 												>
-													Delete
+													{t("common.actions.delete")}
 												</button>
 											</li>
 										</ul>
@@ -376,7 +393,7 @@ export default function UserManagement() {
 						{displayedUsers.length === 0 && (
 							<tr>
 								<td colSpan={6} className="py-4 text-center">
-									No users found
+									{t("admin.users.empty")}
 								</td>
 							</tr>
 						)}
@@ -395,7 +412,7 @@ export default function UserManagement() {
 					}}
 					disabled={prevCursors.length === 0}
 				>
-					Previous
+					{t("common.pagination.previous")}
 				</button>
 				<button
 					type="button"
@@ -408,19 +425,23 @@ export default function UserManagement() {
 					}}
 					disabled={!nextCursor}
 				>
-					Next
+					{t("common.pagination.next")}
 				</button>
 			</div>
 
 			<FormModal
 				isOpen={isModalOpen}
 				onClose={closeModal}
-				title={editingUser ? "Update User" : "Create User"}
+				title={
+					editingUser
+						? t("admin.users.form.editTitle")
+						: t("admin.users.form.createTitle")
+				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div>
 						<label htmlFor={nameId} className="mb-1 block font-medium text-sm">
-							Name
+							{t("admin.users.form.nameLabel")}
 						</label>
 						<input
 							id={nameId}
@@ -431,10 +452,10 @@ export default function UserManagement() {
 							<p className="mt-1 text-error text-sm">{errors.name.message}</p>
 						)}
 					</div>
-					<div>
-						<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
-							Email
-						</label>
+						<div>
+							<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
+								{t("admin.users.form.emailLabel")}
+							</label>
 						<input
 							id={emailId}
 							type="email"
@@ -445,17 +466,17 @@ export default function UserManagement() {
 							<p className="mt-1 text-error text-sm">{errors.email.message}</p>
 						)}
 					</div>
-					<div>
-						<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
-							Role
-						</label>
+						<div>
+							<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
+								{t("admin.users.form.roleLabel")}
+							</label>
 						<select
 							id={roleId}
 							{...register("role")}
 							className="select select-bordered w-full"
 						>
-							<option value="admin">Admin</option>
-							<option value="teacher">Teacher</option>
+							<option value="admin">{t("admin.users.filters.roles.admin")}</option>
+							<option value="teacher">{t("admin.users.filters.roles.teacher")}</option>
 						</select>
 					</div>
 					<div>
@@ -463,16 +484,24 @@ export default function UserManagement() {
 							htmlFor={passwordId}
 							className="mb-1 block font-medium text-sm"
 						>
-							{editingUser ? "New Password" : "Password"}
+							{editingUser
+								? t("admin.users.form.newPasswordLabel")
+								: t("admin.users.form.passwordLabel")}
 						</label>
 						<div className="join w-full">
 							<input
 								id={passwordId}
 								type={showPassword ? "text" : "password"}
-								{...register("password", { required: !editingUser })}
+								{...register("password", {
+									required: editingUser
+										? false
+										: t("admin.users.validation.passwordRequired"),
+								})}
 								className="input input-bordered join-item w-full"
 								placeholder={
-									editingUser ? "Leave blank to keep existing" : undefined
+									editingUser
+										? t("admin.users.form.passwordPlaceholder")
+										: undefined
 								}
 							/>
 							<button
@@ -499,7 +528,7 @@ export default function UserManagement() {
 									className="btn btn-ghost join-item"
 									onClick={handleGeneratePassword}
 								>
-									Generate
+									{t("admin.users.form.generatePassword")}
 								</button>
 							)}
 						</div>
@@ -520,7 +549,7 @@ export default function UserManagement() {
 								updateMutation.isPending
 							}
 						>
-							Cancel
+							{t("common.actions.cancel")}
 						</button>
 						<button
 							type="submit"
@@ -536,7 +565,7 @@ export default function UserManagement() {
 							updateMutation.isPending ? (
 								<span className="loading loading-spinner loading-sm" />
 							) : (
-								"Save"
+								t("common.actions.save")
 							)}
 						</button>
 					</div>
@@ -554,24 +583,24 @@ export default function UserManagement() {
 				}}
 				title={
 					confirm?.action === "delete"
-						? "Delete User"
+						? t("admin.users.confirm.delete.title")
 						: confirm?.action === "ban"
-							? "Ban User"
-							: "Unban User"
+							? t("admin.users.confirm.ban.title")
+							: t("admin.users.confirm.unban.title")
 				}
 				message={
 					confirm?.action === "delete"
-						? "Are you sure you want to delete this user?"
+						? t("admin.users.confirm.delete.message")
 						: confirm?.action === "ban"
-							? "Are you sure you want to ban this user?"
-							: "Are you sure you want to unban this user?"
+							? t("admin.users.confirm.ban.message")
+							: t("admin.users.confirm.unban.message")
 				}
 				confirmText={
 					confirm?.action === "delete"
-						? "Delete"
+						? t("common.actions.delete")
 						: confirm?.action === "ban"
-							? "Ban"
-							: "Unban"
+							? t("admin.users.actions.ban")
+							: t("admin.users.actions.unban")
 				}
 				isLoading={
 					deleteMutation.isPending ||
