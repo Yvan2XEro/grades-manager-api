@@ -44,6 +44,11 @@ const Sidebar: React.FC = () => {
       labelKey: "navigation.sidebar.admin.programs",
     },
     {
+      to: "/admin/users",
+      icon: <UserCog className="h-5 w-5" />,
+      labelKey: "navigation.sidebar.admin.users",
+    },
+    {
       to: "/admin/courses",
       icon: <BookOpen className="h-5 w-5" />,
       labelKey: "navigation.sidebar.admin.courses",
@@ -54,29 +59,24 @@ const Sidebar: React.FC = () => {
       labelKey: "navigation.sidebar.admin.classes",
     },
     {
-      to: "/admin/class-courses",
-      icon: <BookOpenCheck className="h-5 w-5" />,
-      labelKey: "navigation.sidebar.admin.courseAssignments",
-    },
-    {
       to: "/admin/students",
       icon: <GraduationCap className="h-5 w-5" />,
       labelKey: "navigation.sidebar.admin.students",
     },
     {
-      to: "/admin/users",
-      icon: <UserCog className="h-5 w-5" />,
-      labelKey: "navigation.sidebar.admin.users",
-    },
-    {
-      to: "/admin/student-promotion",
-      icon: <ArrowUpRight className="h-5 w-5" />,
-      labelKey: "navigation.sidebar.admin.studentPromotion",
+      to: "/admin/class-courses",
+      icon: <BookOpenCheck className="h-5 w-5" />,
+      labelKey: "navigation.sidebar.admin.courseAssignments",
     },
     {
       to: "/admin/exams",
       icon: <ClipboardList className="h-5 w-5" />,
       labelKey: "navigation.sidebar.admin.exams",
+    },
+    {
+      to: "/admin/student-promotion",
+      icon: <ArrowUpRight className="h-5 w-5" />,
+      labelKey: "navigation.sidebar.admin.studentPromotion",
     },
     {
       to: "/admin/grade-export",

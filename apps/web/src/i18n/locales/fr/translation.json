@@ -37,6 +37,30 @@
       "teacherDashboard": "Tableau de bord enseignant",
       "notificationsAria": "Ouvrir les notifications",
       "toggleSidebarAria": "Afficher ou masquer le menu latéral"
+    },
+    "sidebar": {
+      "admin": {
+        "dashboard": "Tableau de bord",
+        "academicYears": "Annees academiques",
+        "exams": "Examens",
+        "users": "Utilisateurs",
+        "classCourses": "Cours de classes",
+        "gradeExport": "Export des notes",
+        "students": "Etudiants",
+        "studentPromotion": "Promotion des etudiants",
+        "courses": "Cours",
+        "classes": "Classes",
+        "faculties": "Facultés",
+        "programs": "Programmes",
+        "teachers": "Enseignants",
+        "courseAssignments": "Affectations de cours"
+      },
+      "teacher": {
+        "dashboard": "Tableau de bord",
+        "exams": "Examens",
+        "grades": "Notes",
+        "courses": "Cours"
+      }
     }
   },
   "auth": {

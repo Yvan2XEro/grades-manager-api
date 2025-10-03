@@ -433,6 +433,30 @@
       "teacherDashboard": "Teacher dashboard",
       "notificationsAria": "Open notifications",
       "toggleSidebarAria": "Toggle sidebar"
+    },
+    "sidebar": {
+      "admin": {
+        "dashboard": "Overview",
+        "academicYears": "Academic years",
+        "exams": "Exams",
+        "users": "Users",
+        "classCourses": "Class courses",
+        "gradeExport": "Grade export",
+        "students": "Students",
+        "studentPromotion": "Student promotion",
+        "courses": "Courses",
+        "classes": "Classes",
+        "faculties": "Faculties",
+        "programs": "Programs",
+        "teachers": "Teachers",
+        "courseAssignments": "Course assignments"
+      },
+      "teacher": {
+        "dashboard": "Overview",
+        "exams": "Exams",
+        "grades": "Grades",
+        "courses": "Courses"
+      }
     }
   },
   "auth": {

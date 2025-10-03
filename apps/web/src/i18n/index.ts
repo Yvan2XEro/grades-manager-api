@@ -11,9 +11,11 @@ const resources = {
   },
 };
 
+const lng = localStorage.getItem("lng") || "en";
+
 i18n.use(initReactI18next).init({
   resources,
-  lng: "en",
+  lng,
 
   interpolation: {
     escapeValue: false,

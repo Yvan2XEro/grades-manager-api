@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { trpcClient } from "../../utils/trpc";
@@ -138,7 +138,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  const stats = useMemo(() => data?.stats ?? [], [data?.stats]);
+  const stats = data?.stats || [];
   const programStats = data?.programStats ?? [];
   const activeYear = data?.activeYear ?? t("admin.dashboard.noActiveYear");
 
