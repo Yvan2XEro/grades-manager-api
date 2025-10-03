@@ -1,11 +1,10 @@
 {
   "name": "grades-manager-api",
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0"
+  },
+  "packageManager": "bun@1.2.21",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "check": "biome check --write .",
     "dev": "bun run --filter '*' dev",
@@ -14,14 +13,15 @@
     "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
+    "start:server": "bun run --filter server start",
     "db:push": "bun run --filter server db:push",
     "db:studio": "bun run --filter server db:studio",
     "db:generate": "bun run --filter server db:generate",
     "db:migrate": "bun run --filter server db:migrate"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@biomejs/biome": "^2.2.0"
-  },
-  "packageManager": "bun@1.2.21"
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
