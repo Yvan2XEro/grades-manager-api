@@ -99,3 +99,10 @@ export async function transferStudent(studentId: string, toClassId: string) {
 	if (!updated) return null;
 	return findById(updated.id);
 }
+
+export async function findByRegistrationNumber(registrationNumber: string) {
+	const [item] = await baseQuery()
+		.where(eq(schema.students.registrationNumber, registrationNumber))
+		.limit(1);
+	return item ?? null;
+}

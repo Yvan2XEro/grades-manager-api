@@ -4,6 +4,7 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import * as classesRepo from "../classes/classes.repo";
+import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as repo from "./students.repo";
 
 type StudentProfileInput = {
@@ -65,6 +66,9 @@ const mapConflict = (error: unknown) => {
 };
 
 export async function createStudent(input: CreateStudentInput) {
+	const klass = await classesRepo.findById(input.classId);
+	if (!klass)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
 	try {
 		const studentId = await transaction(async (tx) => {
 			const [profile] = await tx
@@ -79,6 +83,12 @@ export async function createStudent(input: CreateStudentInput) {
 					domainUserId: profile.id,
 				})
 				.returning();
+			await tx.insert(schema.enrollments).values({
+				studentId: student.id,
+				classId: input.classId,
+				academicYearId: klass.academicYear,
+				status: "active",
+			});
 			return student.id;
 		});
 		const created = await repo.findById(studentId);
@@ -123,10 +133,19 @@ export async function bulkCreateStudents(data: {
 					.values(buildProfilePayload(s.profile))
 					.returning();
 				profileId = profile.id;
-				await tx.insert(schema.students).values({
-					class: data.classId,
-					registrationNumber: s.registrationNumber,
-					domainUserId: profile.id,
+				const [student] = await tx
+					.insert(schema.students)
+					.values({
+						class: data.classId,
+						registrationNumber: s.registrationNumber,
+						domainUserId: profile.id,
+					})
+					.returning();
+				await tx.insert(schema.enrollments).values({
+					studentId: student.id,
+					classId: data.classId,
+					academicYearId: klass.academicYear,
+					status: "active",
 				});
 				createdCount++;
 			} catch (error) {
@@ -196,6 +215,17 @@ export async function updateStudent(
 			payload.registrationNumber = data.registrationNumber;
 		}
 		await repo.update(id, payload);
+		if (data.classId) {
+			const newClass = await classesRepo.findById(data.classId);
+			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
+			await enrollmentsRepo.closeActive(id, "completed");
+			await enrollmentsRepo.create({
+				studentId: id,
+				classId: data.classId,
+				academicYearId: newClass.academicYear,
+				status: "active",
+			});
+		}
 	}
 
 	const updated = await repo.findById(id);

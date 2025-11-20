@@ -4,6 +4,8 @@ export const baseSchema = z.object({
 	class: z.string(),
 	course: z.string(),
 	teacher: z.string(),
+	weeklyHours: z.number().int().positive().default(1),
+	allowTeacherOverride: z.boolean().optional(),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });

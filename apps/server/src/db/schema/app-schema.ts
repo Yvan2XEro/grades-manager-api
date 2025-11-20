@@ -33,6 +33,17 @@ export type Gender = (typeof genders)[number];
 export const domainStatuses = ["active", "inactive", "suspended"] as const;
 export type DomainUserStatus = (typeof domainStatuses)[number];
 
+export const semesters = ["fall", "spring", "annual"] as const;
+export type Semester = (typeof semesters)[number];
+
+export const enrollmentStatuses = [
+	"pending",
+	"active",
+	"completed",
+	"withdrawn",
+] as const;
+export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
+
 export const domainUsers = pgTable(
 	"domain_users",
 	{
@@ -116,6 +127,28 @@ export const programs = pgTable(
 	],
 );
 
+export const teachingUnits = pgTable(
+	"teaching_units",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		code: text("code").notNull(),
+		description: text("description"),
+		credits: integer("credits").notNull().default(0),
+		semester: text("semester").$type<Semester>().notNull().default("annual"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_teaching_units_program_code").on(t.programId, t.code),
+		index("idx_teaching_units_program_id").on(t.programId),
+	],
+);
+
 export const classes = pgTable(
 	"classes",
 	{
@@ -152,6 +185,9 @@ export const courses = pgTable(
 		program: text("program_id")
 			.notNull()
 			.references(() => programs.id, { onDelete: "cascade" }),
+		teachingUnitId: text("teaching_unit_id")
+			.notNull()
+			.references(() => teachingUnits.id, { onDelete: "cascade" }),
 		defaultTeacher: text("default_teacher_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "restrict" }),
@@ -164,6 +200,7 @@ export const courses = pgTable(
 		check("chk_courses_hours", sql`${t.hours} > 0`),
 		unique("uq_courses_name_program").on(t.name, t.program),
 		index("idx_courses_program_id").on(t.program),
+		index("idx_courses_teaching_unit_id").on(t.teachingUnitId),
 		index("idx_courses_default_teacher_id").on(t.defaultTeacher),
 	],
 );
@@ -181,6 +218,7 @@ export const classCourses = pgTable(
 		teacher: text("teacher_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "restrict" }),
+		weeklyHours: integer("weekly_hours").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -205,6 +243,15 @@ export const exams = pgTable(
 			.notNull()
 			.references(() => classCourses.id, { onDelete: "cascade" }),
 		isLocked: boolean("is_locked").notNull().default(false),
+		status: text("status").notNull().default("draft"),
+		scheduledBy: text("scheduled_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		validatedBy: text("validated_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+		validatedAt: timestamp("validated_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -239,6 +286,56 @@ export const students = pgTable(
 		unique("uq_students_domain_user").on(t.domainUserId),
 		index("idx_students_class_id").on(t.class),
 		index("idx_students_domain_user_id").on(t.domainUserId),
+	],
+);
+
+export const coursePrerequisites = pgTable(
+	"course_prerequisites",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		courseId: text("course_id")
+			.notNull()
+			.references(() => courses.id, { onDelete: "cascade" }),
+		prerequisiteCourseId: text("prerequisite_course_id")
+			.notNull()
+			.references(() => courses.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_course_prereq_pair").on(t.courseId, t.prerequisiteCourseId),
+		index("idx_course_prereq_course").on(t.courseId),
+		index("idx_course_prereq_requirement").on(t.prerequisiteCourseId),
+	],
+);
+
+export const enrollments = pgTable(
+	"enrollments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		status: text("status")
+			.$type<EnrollmentStatus>()
+			.notNull()
+			.default("pending"),
+		enrolledAt: timestamp("enrolled_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		exitedAt: timestamp("exited_at", { withTimezone: true }),
+	},
+	(t) => [
+		index("idx_enrollments_student_id").on(t.studentId),
+		index("idx_enrollments_class_id").on(t.classId),
+		index("idx_enrollments_year_id").on(t.academicYearId),
 	],
 );
 
@@ -281,7 +378,19 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 	}),
 	classes: many(classes),
 	courses: many(courses),
+	teachingUnits: many(teachingUnits),
 }));
+
+export const teachingUnitsRelations = relations(
+	teachingUnits,
+	({ one, many }) => ({
+		program: one(programs, {
+			fields: [teachingUnits.programId],
+			references: [programs.id],
+		}),
+		courses: many(courses),
+	}),
+);
 
 export const classesRelations = relations(classes, ({ one, many }) => ({
 	program: one(programs, {
@@ -294,6 +403,7 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 	}),
 	classCourses: many(classCourses),
 	students: many(students),
+	enrollments: many(enrollments),
 }));
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
@@ -301,12 +411,38 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 		fields: [courses.program],
 		references: [programs.id],
 	}),
+	teachingUnit: one(teachingUnits, {
+		fields: [courses.teachingUnitId],
+		references: [teachingUnits.id],
+	}),
 	defaultTeacherRef: one(user, {
 		fields: [courses.defaultTeacher],
 		references: [user.id],
 	}),
 	classCourses: many(classCourses),
+	prerequisites: many(coursePrerequisites, {
+		relationName: "coursePrereqCourse",
+	}),
+	requiredFor: many(coursePrerequisites, {
+		relationName: "coursePrereqRequirement",
+	}),
 }));
+
+export const coursePrerequisitesRelations = relations(
+	coursePrerequisites,
+	({ one }) => ({
+		course: one(courses, {
+			fields: [coursePrerequisites.courseId],
+			references: [courses.id],
+			relationName: "coursePrereqCourse",
+		}),
+		prerequisite: one(courses, {
+			fields: [coursePrerequisites.prerequisiteCourseId],
+			references: [courses.id],
+			relationName: "coursePrereqRequirement",
+		}),
+	}),
+);
 
 export const classCoursesRelations = relations(
 	classCourses,
@@ -345,6 +481,7 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 		references: [domainUsers.id],
 	}),
 	grades: many(grades),
+	enrollments: many(enrollments),
 }));
 
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
@@ -369,6 +506,21 @@ export const gradesRelations = relations(grades, ({ one }) => ({
 	}),
 }));
 
+export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
+	student: one(students, {
+		fields: [enrollments.studentId],
+		references: [students.id],
+	}),
+	classRef: one(classes, {
+		fields: [enrollments.classId],
+		references: [classes.id],
+	}),
+	academicYear: one(academicYears, {
+		fields: [enrollments.academicYearId],
+		references: [academicYears.id],
+	}),
+}));
+
 export type Faculty = InferSelectModel<typeof faculties>;
 export type NewFaculty = InferInsertModel<typeof faculties>;
 
@@ -390,6 +542,9 @@ export type NewClassCourse = InferInsertModel<typeof classCourses>;
 export type Exam = InferSelectModel<typeof exams>;
 export type NewExam = InferInsertModel<typeof exams>;
 
+export type TeachingUnit = InferSelectModel<typeof teachingUnits>;
+export type NewTeachingUnit = InferInsertModel<typeof teachingUnits>;
+
 export type DomainUser = InferSelectModel<typeof domainUsers>;
 export type NewDomainUser = InferInsertModel<typeof domainUsers>;
 
@@ -398,3 +553,11 @@ export type NewStudent = InferInsertModel<typeof students>;
 
 export type Grade = InferSelectModel<typeof grades>;
 export type NewGrade = InferInsertModel<typeof grades>;
+
+export type CoursePrerequisite = InferSelectModel<typeof coursePrerequisites>;
+export type NewCoursePrerequisite = InferInsertModel<
+	typeof coursePrerequisites
+>;
+
+export type Enrollment = InferSelectModel<typeof enrollments>;
+export type NewEnrollment = InferInsertModel<typeof enrollments>;

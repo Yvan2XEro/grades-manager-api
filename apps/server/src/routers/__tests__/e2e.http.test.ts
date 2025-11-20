@@ -64,12 +64,20 @@ describe("e2e http", () => {
 		});
 
 		const teacher = await createUser();
+		const teachingUnit = await client.teachingUnits.create.mutate({
+			name: "UE Core",
+			code: "UE-CORE",
+			programId: program.id,
+			credits: 6,
+			semester: "annual",
+		});
 
 		const course = await client.courses.create.mutate({
 			name: "Math",
 			credits: 3,
 			hours: 30,
 			program: program.id,
+			teachingUnitId: teachingUnit.id,
 			defaultTeacher: teacher.id,
 		});
 
@@ -77,6 +85,7 @@ describe("e2e http", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.id,
+			weeklyHours: 2,
 		});
 
 		const exam = await client.exams.create.mutate({
@@ -86,6 +95,9 @@ describe("e2e http", () => {
 			percentage: 50,
 			classCourseId: cc.id,
 		});
+		if (!exam) throw new Error("Failed to create exam");
+		await client.exams.submit.mutate({ examId: exam.id });
+		await client.exams.validate.mutate({ examId: exam.id, status: "approved" });
 
 		const student = await client.students.create.mutate({
 			classId: klass.id,
