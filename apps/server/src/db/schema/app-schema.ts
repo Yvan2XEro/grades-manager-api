@@ -18,6 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
+/** Business roles available for domain-level RBAC. */
 export const businessRoles = [
 	"super_admin",
 	"administrator",
@@ -27,15 +28,19 @@ export const businessRoles = [
 ] as const;
 export type BusinessRole = (typeof businessRoles)[number];
 
+/** Gender choices stored on domain user profiles. */
 export const genders = ["male", "female", "other"] as const;
 export type Gender = (typeof genders)[number];
 
+/** Lifecycle state for domain user profiles. */
 export const domainStatuses = ["active", "inactive", "suspended"] as const;
 export type DomainUserStatus = (typeof domainStatuses)[number];
 
+/** Semester placement for teaching units (UE). */
 export const semesters = ["fall", "spring", "annual"] as const;
 export type Semester = (typeof semesters)[number];
 
+/** Enrollment lifecycle for student ↔ classe ↔ academic year. */
 export const enrollmentStatuses = [
 	"pending",
 	"active",
@@ -44,6 +49,7 @@ export const enrollmentStatuses = [
 ] as const;
 export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
 
+/** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
 	"domain_users",
 	{
@@ -78,6 +84,7 @@ export const domainUsers = pgTable(
 	],
 );
 
+/** Faculties (schools) grouping programs. */
 export const faculties = pgTable(
 	"faculties",
 	{
@@ -91,6 +98,7 @@ export const faculties = pgTable(
 	(t) => [unique("uq_faculties_name").on(t.name)],
 );
 
+/** Official academic sessions (e.g., 2024–2025). */
 export const academicYears = pgTable(
 	"academic_years",
 	{
@@ -108,6 +116,7 @@ export const academicYears = pgTable(
 	],
 );
 
+/** Programs offered under a faculty. */
 export const programs = pgTable(
 	"programs",
 	{
@@ -127,6 +136,7 @@ export const programs = pgTable(
 	],
 );
 
+/** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
 	"teaching_units",
 	{
@@ -149,6 +159,7 @@ export const teachingUnits = pgTable(
 	],
 );
 
+/** Cohorts/classes tied to a program and academic year. */
 export const classes = pgTable(
 	"classes",
 	{
@@ -175,6 +186,7 @@ export const classes = pgTable(
 	],
 );
 
+/** EC definitions tied to a program and teaching unit. */
 export const courses = pgTable(
 	"courses",
 	{
@@ -205,6 +217,7 @@ export const courses = pgTable(
 	],
 );
 
+/** Assigns a course to a class with a teacher (and workload). */
 export const classCourses = pgTable(
 	"class_courses",
 	{
@@ -231,6 +244,7 @@ export const classCourses = pgTable(
 	],
 );
 
+/** Exams planned for a class-course, with workflow metadata. */
 export const exams = pgTable(
 	"exams",
 	{
@@ -266,6 +280,7 @@ export const exams = pgTable(
 	],
 );
 
+/** Student records referencing domain profiles. */
 export const students = pgTable(
 	"students",
 	{
@@ -289,6 +304,7 @@ export const students = pgTable(
 	],
 );
 
+/** Directed edges capturing course prerequisites. */
 export const coursePrerequisites = pgTable(
 	"course_prerequisites",
 	{
@@ -310,6 +326,7 @@ export const coursePrerequisites = pgTable(
 	],
 );
 
+/** Historical log of student enrollment per academic year. */
 export const enrollments = pgTable(
 	"enrollments",
 	{
@@ -339,6 +356,7 @@ export const enrollments = pgTable(
 	],
 );
 
+/** Scores students obtain on exams (per class-course). */
 export const grades = pgTable(
 	"grades",
 	{
