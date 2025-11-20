@@ -22,12 +22,12 @@
 - [x] Inventory current Drizzle migrations (`apps/server/src/db/migrations`) and define a naming/versioning convention.
 
 ## Phase 1 – Identity, roles, and access governance (Week 1–3)
-- [ ] Create the `domain_users` (or `user_profiles`) table plus Drizzle entities with a mandatory FK to `auth.user`, and store business metadata (academic role, registration identifiers, status).
-- [ ] Refactor `students`, `teachers`, and `administrators` modules to rely on `domain_users` instead of `auth.user.id` directly (touch `modules/users/*.ts`, `modules/students/*.ts`, etc.).
-- [ ] Extend `createContext` (`apps/server/src/lib/context.ts`) to load the business profile, RBAC/ABAC roles, and contextual permissions (zero-trust guidance from `docs/analyze.md`).
-- [ ] Introduce a `modules/authz` package encapsulating RBAC policies, ABAC attributes, and time-bound CBAC checks; enforce it in critical routers (`grades`, `exams`, `programs`).
-- [ ] Add security-focused TRPC tests (protected procedures, unauthorized access cases).
-- [ ] Update the web docs/state (`apps/web/src/store`) to describe which roles can call which routes and prepare guards for future layouts.
+- [x] Create the `domain_users` (or `user_profiles`) table plus Drizzle entities with a mandatory FK to `auth.user`, and store business metadata (academic role, registration identifiers, status).
+- [x] Refactor `students`, `teachers`, and `administrators` modules to rely on `domain_users` instead of `auth.user.id` directly (touch `modules/users/*.ts`, `modules/students/*.ts`, etc.).
+- [x] Extend `createContext` (`apps/server/src/lib/context.ts`) to load the business profile, RBAC/ABAC roles, and contextual permissions (zero-trust guidance from `docs/analyze.md`).
+- [x] Introduce a `modules/authz` package encapsulating RBAC policies, ABAC attributes, and time-bound CBAC checks; enforce it in critical routers (`grades`, `exams`, `programs`).
+- [x] Add security-focused TRPC tests (protected procedures, unauthorized access cases).
+- [x] Update the web docs/state (`apps/web/src/store`) to describe which roles can call which routes and prepare guards for future layouts.
 
 ## Phase 2 – Academic models and orchestration (Week 2–4)
 - [ ] Extend the schema with explicit UEs and ECs (program → UE → EC hierarchy, coefficients, ECTS) per `docs/analyze.md#gestion-des-programmes-ues-et-ecs`.

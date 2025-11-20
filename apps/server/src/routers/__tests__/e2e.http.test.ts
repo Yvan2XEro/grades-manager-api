@@ -88,11 +88,16 @@ describe("e2e http", () => {
     });
 
     const student = await client.students.create.mutate({
-      firstName: "A",
-      lastName: "B",
-      email: "e2e@example.com",
-      registrationNumber: "R1",
       classId: klass.id,
+      registrationNumber: "R1",
+      profile: {
+        firstName: "A",
+        lastName: "B",
+        email: "e2e@example.com",
+        dateOfBirth: new Date("2000-01-01"),
+        placeOfBirth: "Yaoundé",
+        gender: "male",
+      },
     });
 
     if (exam) {

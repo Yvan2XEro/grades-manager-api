@@ -3,15 +3,50 @@ import {
 	domainUsers,
 	type BusinessRole,
 	type DomainUserStatus,
+	type NewDomainUser,
 } from "@/db/schema/app-schema";
+import { eq, inArray, and, gt, type SQL } from "drizzle-orm";
 import { user } from "@/db/schema/auth";
-import { and, eq, gt, type SQL } from "drizzle-orm";
+
+export async function create(data: NewDomainUser) {
+	const [profile] = await db.insert(domainUsers).values(data).returning();
+	return profile;
+}
+
+export async function remove(id: string) {
+	await db.delete(domainUsers).where(eq(domainUsers.id, id));
+}
+
+export async function update(
+	id: string,
+	data: Partial<NewDomainUser>,
+) {
+	const [profile] = await db
+		.update(domainUsers)
+		.set(data)
+		.where(eq(domainUsers.id, id))
+		.returning();
+	return profile;
+}
+
+export async function findById(id: string) {
+	return db.query.domainUsers.findFirst({
+		where: eq(domainUsers.id, id),
+	});
+}
+
+export async function findByAuthUserId(authUserId: string) {
+	return db.query.domainUsers.findFirst({
+		where: eq(domainUsers.authUserId, authUserId),
+	});
+}
 
 type ListOpts = {
 	cursor?: string | null;
 	limit?: number;
 	role?: BusinessRole;
 	status?: DomainUserStatus;
+	roles?: BusinessRole[];
 	banned?: boolean;
 	emailVerified?: boolean;
 };
@@ -21,6 +56,10 @@ export async function list(opts: ListOpts) {
 	let condition: SQL<unknown> | undefined;
 	if (opts.role) {
 		condition = eq(domainUsers.businessRole, opts.role);
+	}
+	if (opts.roles && opts.roles.length > 0) {
+		const rolesCond = inArray(domainUsers.businessRole, opts.roles);
+		condition = condition ? and(condition, rolesCond) : rolesCond;
 	}
 	if (opts.status) {
 		const statusCond = eq(domainUsers.status, opts.status);
@@ -42,17 +81,17 @@ export async function list(opts: ListOpts) {
 	const rows = await db
 		.select({
 			profileId: domainUsers.id,
-			authUserId: domainUsers.authUserId,
 			businessRole: domainUsers.businessRole,
 			firstName: domainUsers.firstName,
 			lastName: domainUsers.lastName,
-			email: domainUsers.primaryEmail,
+			primaryEmail: domainUsers.primaryEmail,
 			phone: domainUsers.phone,
-			status: domainUsers.status,
-			gender: domainUsers.gender,
 			dateOfBirth: domainUsers.dateOfBirth,
 			placeOfBirth: domainUsers.placeOfBirth,
+			gender: domainUsers.gender,
 			nationality: domainUsers.nationality,
+			status: domainUsers.status,
+			authUserId: domainUsers.authUserId,
 			authUser: {
 				id: user.id,
 				email: user.email,

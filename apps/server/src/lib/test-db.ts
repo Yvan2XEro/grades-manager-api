@@ -40,13 +40,26 @@ export async function pushSchema() {
 export async function seed() {
   const firstName = "Seed",
     lastName = "Teacher";
-  await auth.api.createUser({
+  const teacher = await auth.api.createUser({
     body: {
       name: `${firstName} ${lastName}`,
       email: "seed.teacher@example.com",
       role: "admin",
       password: "password",
     },
+  });
+  await db.insert(schema.domainUsers).values({
+    authUserId: teacher.user.id,
+    businessRole: "teacher",
+    firstName,
+    lastName,
+    primaryEmail: "seed.teacher@example.com",
+    phone: null,
+    dateOfBirth: new Date("1990-01-01"),
+    placeOfBirth: "Seed City",
+    gender: "other",
+    nationality: null,
+    status: "active",
   });
   const [faculty] = await db
     .insert(schema.faculties)
@@ -74,6 +87,7 @@ export async function seed() {
 export async function reset() {
   await db.execute(sql`
     TRUNCATE TABLE
+     domain_users,
      grades,
      exams,
      class_courses,

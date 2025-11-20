@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "./context";
-import { adminRoles, superadminRoles } from "./auth";
+import { ADMIN_ROLES, SUPER_ADMIN_ROLES, assertRole } from "../modules/authz";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -32,13 +32,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	if (!ctx.session.user.role || !adminRoles.includes(ctx.session.user.role)) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: "User is not allowed to perform this action",
-			cause: "Not admin",
-		});
-	}
+	assertRole(ctx.profile, ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,
@@ -55,16 +49,7 @@ export const superAdminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	if (
-		!ctx.session.user.role ||
-		!superadminRoles.includes(ctx.session.user.role)
-	) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: "User is not allowed to perform this action",
-			cause: "Not super admin",
-		});
-	}
+	assertRole(ctx.profile, SUPER_ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,

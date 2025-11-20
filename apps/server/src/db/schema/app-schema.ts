@@ -18,6 +18,61 @@ import {
 } from "drizzle-orm";
 import { user } from "./auth";
 
+export const businessRoles = [
+  "super_admin",
+  "administrator",
+  "teacher",
+  "staff",
+  "student",
+] as const;
+export type BusinessRole = (typeof businessRoles)[number];
+
+export const genders = ["male", "female", "other"] as const;
+export type Gender = (typeof genders)[number];
+
+export const domainStatuses = ["active", "inactive", "suspended"] as const;
+export type DomainUserStatus = (typeof domainStatuses)[number];
+
+export const domainUsers = pgTable(
+  "domain_users",
+  {
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    authUserId: text("auth_user_id").references(() => user.id, {
+      onDelete: "cascade",
+    }),
+    businessRole: text("business_role")
+      .$type<BusinessRole>()
+      .notNull(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    primaryEmail: text("primary_email").notNull(),
+    phone: text("phone"),
+    dateOfBirth: date("date_of_birth").notNull(),
+    placeOfBirth: text("place_of_birth").notNull(),
+    gender: text("gender")
+      .$type<Gender>()
+      .notNull(),
+    nationality: text("nationality"),
+    status: text("status")
+      .$type<DomainUserStatus>()
+      .notNull()
+      .default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("uq_domain_users_auth").on(t.authUserId),
+    unique("uq_domain_users_email").on(t.primaryEmail),
+    index("idx_domain_users_role").on(t.businessRole),
+  ],
+);
+
 export const faculties = pgTable(
   "faculties",
   {
@@ -190,9 +245,9 @@ export const students = pgTable(
     id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
-    firstName: text("first_name").notNull(),
-    lastName: text("last_name").notNull(),
-    email: text("email").notNull(),
+    domainUserId: text("domain_user_id")
+      .notNull()
+      .references(() => domainUsers.id, { onDelete: "restrict" }),
     registrationNumber: text("registration_number").notNull(),
     class: text("class_id")
       .notNull()
@@ -202,9 +257,10 @@ export const students = pgTable(
       .defaultNow(),
   },
   (t) => [
-    unique("uq_students_email").on(t.email),
     unique("uq_students_registration").on(t.registrationNumber),
+    unique("uq_students_domain_user").on(t.domainUserId),
     index("idx_students_class_id").on(t.class),
+    index("idx_students_domain_user_id").on(t.domainUserId),
   ],
 );
 
@@ -308,7 +364,22 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
     fields: [students.class],
     references: [classes.id],
   }),
+  profile: one(domainUsers, {
+    fields: [students.domainUserId],
+    references: [domainUsers.id],
+  }),
   grades: many(grades),
+}));
+
+export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
+  authUserRef: one(user, {
+    fields: [domainUsers.authUserId],
+    references: [user.id],
+  }),
+  studentProfile: one(students, {
+    fields: [domainUsers.id],
+    references: [students.domainUserId],
+  }),
 }));
 
 export const gradesRelations = relations(grades, ({ one }) => ({
@@ -343,6 +414,9 @@ export type NewClassCourse = InferInsertModel<typeof classCourses>;
 
 export type Exam = InferSelectModel<typeof exams>;
 export type NewExam = InferInsertModel<typeof exams>;
+
+export type DomainUser = InferSelectModel<typeof domainUsers>;
+export type NewDomainUser = InferInsertModel<typeof domainUsers>;
 
 export type Student = InferSelectModel<typeof students>;
 export type NewStudent = InferInsertModel<typeof students>;
