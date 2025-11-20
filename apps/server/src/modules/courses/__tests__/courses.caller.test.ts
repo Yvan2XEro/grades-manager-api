@@ -1,13 +1,12 @@
 import { describe, expect, it } from "bun:test";
+import type { Context } from "@/lib/context";
 import {
 	asAdmin,
-        createUser,
 	createProgram,
+	createUser,
 	makeTestContext,
 } from "@/lib/test-utils";
-
 import { appRouter } from "@/routers";
-import type { Context } from "@/lib/context";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
@@ -22,7 +21,7 @@ describe("courses router", () => {
 
 	it("supports CRUD", async () => {
 		const program = await createProgram();
-                const teacher = await createUser();
+		const teacher = await createUser();
 		const admin = createCaller(asAdmin());
 		const course = await admin.courses.create({
 			name: "Math",

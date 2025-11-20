@@ -9,9 +9,10 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 describe("users router", () => {
 	it("requires authentication", async () => {
 		const caller = createCaller(makeTestContext());
-		await expect(
-			caller.users.list({ limit: 1 }),
-		).rejects.toHaveProperty("code", "UNAUTHORIZED");
+		await expect(caller.users.list({ limit: 1 })).rejects.toHaveProperty(
+			"code",
+			"UNAUTHORIZED",
+		);
 	});
 
 	it("lists users with cursor pagination", async () => {
@@ -24,10 +25,7 @@ describe("users router", () => {
 			email: `second-${randomUUID()}@example.com`,
 			businessRole: role,
 		});
-		const createdIds = new Set([
-			firstUser.profile.id,
-			secondUser.profile.id,
-		]);
+		const createdIds = new Set([firstUser.profile.id, secondUser.profile.id]);
 
 		const admin = createCaller(asAdmin());
 		const firstPage = await admin.users.list({ limit: 1, role });

@@ -63,7 +63,7 @@ export const useStore = create<StoreState>()(
 						? {
 								...user,
 								permissions: user.permissions ?? defaultPermissions,
-						  }
+							}
 						: null,
 				}),
 			clearUser: () => set({ user: null }),

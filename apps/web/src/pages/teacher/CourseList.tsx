@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ClipboardList, Users } from "lucide-react";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
 
 interface Course {
 	id: string;
@@ -17,7 +17,7 @@ interface Course {
 
 export default function CourseList() {
 	const { user } = useStore();
-  const { t } = useTranslation();
+	const { t } = useTranslation();
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["teacherCourses", user?.id],
@@ -73,9 +73,7 @@ export default function CourseList() {
 		<div className="space-y-6 p-6">
 			<div>
 				<h2 className="font-bold text-2xl">{t("teacher.courses.title")}</h2>
-				<p className="text-base-content/60">
-					{t("teacher.courses.subtitle")}
-				</p>
+				<p className="text-base-content/60">{t("teacher.courses.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

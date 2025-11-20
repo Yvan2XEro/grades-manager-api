@@ -1,25 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import type { TFunction } from "i18next";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
-		name: z
-			.string()
-			.min(2, t("admin.exams.validation.name")),
-		type: z
-			.string()
-			.min(2, t("admin.exams.validation.type")),
+		name: z.string().min(2, t("admin.exams.validation.name")),
+		type: z.string().min(2, t("admin.exams.validation.type")),
 		date: z.string().min(1, t("admin.exams.validation.date")),
 		percentage: z
 			.number()
@@ -65,8 +61,8 @@ export default function ExamManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const examSchema = useMemo(() => buildExamSchema(t), [t]);
+	const { t } = useTranslation();
+	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
 	const { data: exams, isLoading } = useQuery({
 		queryKey: ["exams"],
@@ -271,8 +267,9 @@ export default function ExamManagement() {
 										<td>{exam.percentage}%</td>
 										<td>
 											<span
-												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"
-													}`}
+												className={`badge ${
+													exam.isLocked ? "badge-warning" : "badge-success"
+												}`}
 											>
 												{exam.isLocked
 													? t("admin.exams.status.locked")

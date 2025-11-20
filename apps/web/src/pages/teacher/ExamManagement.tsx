@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import type { TFunction } from "i18next";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +11,6 @@ import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import type { TFunction } from "i18next";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
@@ -210,7 +210,9 @@ export default function ExamManagement() {
 				{exams?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<ClipboardList className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">{t("teacher.exams.empty.title")}</h2>
+						<h2 className="card-title mt-4">
+							{t("teacher.exams.empty.title")}
+						</h2>
 						<p className="text-base-content/60">
 							{t("teacher.exams.empty.description")}
 						</p>
@@ -257,7 +259,11 @@ export default function ExamManagement() {
 										</td>
 										<td>{exam.type}</td>
 										<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
-										<td>{t("teacher.exams.table.percentageValue", { value: exam.percentage })}</td>
+										<td>
+											{t("teacher.exams.table.percentageValue", {
+												value: exam.percentage,
+											})}
+										</td>
 										<td>
 											<span
 												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"}`}
@@ -294,9 +300,9 @@ export default function ExamManagement() {
 													<Trash2 className="h-4 w-4" />
 												</button>
 											</div>
-									</td>
-								</tr>
-							))}
+										</td>
+									</tr>
+								))}
 							</tbody>
 						</table>
 					</div>

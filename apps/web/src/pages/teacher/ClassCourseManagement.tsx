@@ -1,21 +1,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildClassCourseSchema = (t: TFunction) =>
 	z.object({
-		class: z.string({ required_error: t("teacher.classCourses.validation.class") }),
-		course: z.string({ required_error: t("teacher.classCourses.validation.course") }),
-		teacher: z.string({ required_error: t("teacher.classCourses.validation.teacher") }),
+		class: z.string({
+			required_error: t("teacher.classCourses.validation.class"),
+		}),
+		course: z.string({
+			required_error: t("teacher.classCourses.validation.course"),
+		}),
+		teacher: z.string({
+			required_error: t("teacher.classCourses.validation.teacher"),
+		}),
 	});
 
 type ClassCourseFormData = z.infer<ReturnType<typeof buildClassCourseSchema>>;
@@ -57,8 +63,8 @@ export default function ClassCourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
+	const { t } = useTranslation();
+	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
 
 	const { data: activeYear } = useQuery({
 		queryKey: ["activeYear"],
@@ -211,7 +217,9 @@ export default function ClassCourseManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">{t("teacher.classCourses.title")}</h1>
+					<h1 className="font-bold text-2xl">
+						{t("teacher.classCourses.title")}
+					</h1>
 					<p className="text-base-content/60">
 						{t("teacher.classCourses.subtitle")}
 					</p>

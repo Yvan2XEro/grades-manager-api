@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { BookOpen, Calendar, ClipboardList, Clock, Users } from "lucide-react";
 import type React from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -27,7 +27,7 @@ type UpcomingExam = {
 
 const TeacherDashboard: React.FC = () => {
 	const { user } = useStore();
-  const { t } = useTranslation();
+	const { t } = useTranslation();
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["teacherDashboard", user?.id],
@@ -314,7 +314,9 @@ const TeacherDashboard: React.FC = () => {
 												{exam.name}
 											</h4>
 											<span className="rounded-full bg-primary-50 px-2 py-1 text-primary-700 text-sm">
-												{t("teacher.dashboard.exams.percentage", { value: exam.percentage })}
+												{t("teacher.dashboard.exams.percentage", {
+													value: exam.percentage,
+												})}
 											</span>
 										</div>
 										<p className="mt-1 text-gray-600 text-sm">

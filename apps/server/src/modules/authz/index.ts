@@ -2,13 +2,7 @@ import { TRPCError } from "@trpc/server";
 import type { BusinessRole, DomainUser } from "@/db/schema/app-schema";
 
 const roleHierarchy: Record<BusinessRole, BusinessRole[]> = {
-	super_admin: [
-		"super_admin",
-		"administrator",
-		"teacher",
-		"staff",
-		"student",
-	],
+	super_admin: ["super_admin", "administrator", "teacher", "staff", "student"],
 	administrator: ["administrator", "teacher", "staff", "student"],
 	teacher: ["teacher", "staff", "student"],
 	staff: ["staff", "student"],
@@ -26,10 +20,7 @@ export type PermissionSnapshot = {
 export const ADMIN_ROLES: BusinessRole[] = ["administrator", "super_admin"];
 export const SUPER_ADMIN_ROLES: BusinessRole[] = ["super_admin"];
 
-export function roleSatisfies(
-	role: BusinessRole,
-	allowed: BusinessRole[],
-) {
+export function roleSatisfies(role: BusinessRole, allowed: BusinessRole[]) {
 	const expanded = roleHierarchy[role] ?? [];
 	return expanded.some((r) => allowed.includes(r));
 }
@@ -56,13 +47,21 @@ export function buildPermissions(
 	profile: DomainUser | null | undefined,
 ): PermissionSnapshot {
 	const role = profile?.businessRole ?? "guest";
-	const canManageCatalog = !!profile && roleSatisfies(profile.businessRole, ADMIN_ROLES);
+	const canManageCatalog =
+		!!profile && roleSatisfies(profile.businessRole, ADMIN_ROLES);
 	const canManageStudents =
-		!!profile && roleSatisfies(profile.businessRole, ["administrator", "super_admin"]);
+		!!profile &&
+		roleSatisfies(profile.businessRole, ["administrator", "super_admin"]);
 	const canGrade =
-		!!profile && roleSatisfies(profile.businessRole, ["teacher", "administrator", "super_admin"]);
+		!!profile &&
+		roleSatisfies(profile.businessRole, [
+			"teacher",
+			"administrator",
+			"super_admin",
+		]);
 	const canAccessAnalytics =
-		!!profile && roleSatisfies(profile.businessRole, ["administrator", "super_admin"]);
+		!!profile &&
+		roleSatisfies(profile.businessRole, ["administrator", "super_admin"]);
 
 	return {
 		role,

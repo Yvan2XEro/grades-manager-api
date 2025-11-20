@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildFacultySchema = (t: TFunction) =>
 	z.object({
@@ -32,8 +32,8 @@ export default function FacultyManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const facultySchema = useMemo(() => buildFacultySchema(t), [t]);
+	const { t } = useTranslation();
+	const facultySchema = useMemo(() => buildFacultySchema(t), [t]);
 
 	const { data: faculties, isLoading } = useQuery({
 		queryKey: ["faculties"],
@@ -131,7 +131,9 @@ export default function FacultyManagement() {
 			<div className="mb-6 flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-2xl">{t("teacher.faculties.title")}</h1>
-					<p className="text-base-content/60">{t("teacher.faculties.subtitle")}</p>
+					<p className="text-base-content/60">
+						{t("teacher.faculties.subtitle")}
+					</p>
 				</div>
 				<button
 					onClick={() => {

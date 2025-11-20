@@ -69,9 +69,9 @@ function App() {
 					<Route path="academic-years" element={<AcademicYearManagement />} />
 					<Route path="classes" element={<ClassManagement />} />
 					<Route path="class-courses" element={<ClassCourseManagement />} />
-                                        <Route path="students" element={<StudentManagement />} />
-                                        <Route path="users" element={<UserManagement />} />
-                                        <Route path="exams" element={<ExamManagement />} />
+					<Route path="students" element={<StudentManagement />} />
+					<Route path="users" element={<UserManagement />} />
+					<Route path="exams" element={<ExamManagement />} />
 					<Route path="faculties" element={<FacultyManagement />} />
 					<Route path="student-promotion" element={<StudentPromotion />} />
 					<Route path="programs" element={<ProgramManagement />} />

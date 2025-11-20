@@ -1,19 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildClassSchema = (t: TFunction) =>
 	z.object({
-		programId: z.string({ required_error: t("admin.classes.validation.program") }),
+		programId: z.string({
+			required_error: t("admin.classes.validation.program"),
+		}),
 		academicYearId: z.string({
 			required_error: t("admin.classes.validation.academicYear"),
 		}),
@@ -39,8 +41,8 @@ export default function ClassManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const classSchema = useMemo(() => buildClassSchema(t), [t]);
+	const { t } = useTranslation();
+	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
 	const { data: classes, isLoading } = useQuery({
 		queryKey: ["classes"],
@@ -199,12 +201,8 @@ export default function ClassManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">
-						{t("admin.classes.title")}
-					</h1>
-					<p className="text-base-content/60">
-						{t("admin.classes.subtitle")}
-					</p>
+					<h1 className="font-bold text-2xl">{t("admin.classes.title")}</h1>
+					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<button
 					onClick={() => {
@@ -305,7 +303,9 @@ export default function ClassManagement() {
 					reset();
 				}}
 				title={
-					editingClass ? t("admin.classes.form.editTitle") : t("admin.classes.form.createTitle")
+					editingClass
+						? t("admin.classes.form.editTitle")
+						: t("admin.classes.form.createTitle")
 				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

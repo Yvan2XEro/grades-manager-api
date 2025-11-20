@@ -1,6 +1,6 @@
+import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
 
 const studentProjection = {
 	id: schema.students.id,
@@ -33,19 +33,14 @@ const baseQuery = () =>
 			eq(schema.domainUsers.id, schema.students.domainUserId),
 		);
 
-export type StudentWithProfile = Awaited<
-	ReturnType<typeof findById>
->;
+export type StudentWithProfile = Awaited<ReturnType<typeof findById>>;
 
 export async function create(data: schema.NewStudent) {
 	const [created] = await db.insert(schema.students).values(data).returning();
 	return findById(created.id);
 }
 
-export async function update(
-	id: string,
-	data: Partial<schema.NewStudent>,
-) {
+export async function update(id: string, data: Partial<schema.NewStudent>) {
 	const [updated] = await db
 		.update(schema.students)
 		.set(data)

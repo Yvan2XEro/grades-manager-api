@@ -1,23 +1,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("teacher.courses.manage.validation.name")),
 		credits: z.number().min(1, t("teacher.courses.manage.validation.credits")),
 		hours: z.number().min(1, t("teacher.courses.manage.validation.hours")),
-		program: z.string({ required_error: t("teacher.courses.manage.validation.program") }),
-		defaultTeacher: z.string({ required_error: t("teacher.courses.manage.validation.teacher") }),
+		program: z.string({
+			required_error: t("teacher.courses.manage.validation.program"),
+		}),
+		defaultTeacher: z.string({
+			required_error: t("teacher.courses.manage.validation.teacher"),
+		}),
 	});
 
 type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
@@ -49,8 +53,8 @@ export default function CourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
+	const { t } = useTranslation();
+	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["courses"],
@@ -102,7 +106,9 @@ export default function CourseManagement() {
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.courses.manage.toast.createError"));
+			toast.error(
+				error.message || t("teacher.courses.manage.toast.createError"),
+			);
 		},
 	});
 
@@ -119,7 +125,9 @@ export default function CourseManagement() {
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.courses.manage.toast.updateError"));
+			toast.error(
+				error.message || t("teacher.courses.manage.toast.updateError"),
+			);
 		},
 	});
 
@@ -134,7 +142,9 @@ export default function CourseManagement() {
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.courses.manage.toast.deleteError"));
+			toast.error(
+				error.message || t("teacher.courses.manage.toast.deleteError"),
+			);
 		},
 	});
 
@@ -168,7 +178,9 @@ export default function CourseManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">{t("teacher.courses.manage.title")}</h1>
+				<h1 className="font-bold text-2xl">
+					{t("teacher.courses.manage.title")}
+				</h1>
 				<button
 					onClick={() => {
 						setEditingCourse(null);
@@ -267,16 +279,18 @@ export default function CourseManagement() {
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.courses.manage.form.creditsLabel")}
-							</span>
-						</label>
+							<label className="label">
+								<span className="label-text">
+									{t("teacher.courses.manage.form.creditsLabel")}
+								</span>
+							</label>
 							<input
 								type="number"
 								{...register("credits", { valueAsNumber: true })}
-							className="input input-bordered"
-							placeholder={t("teacher.courses.manage.form.creditsPlaceholder")}
+								className="input input-bordered"
+								placeholder={t(
+									"teacher.courses.manage.form.creditsPlaceholder",
+								)}
 							/>
 							{errors.credits && (
 								<label className="label">
@@ -288,16 +302,16 @@ export default function CourseManagement() {
 						</div>
 
 						<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.courses.manage.form.hoursLabel")}
-							</span>
-						</label>
+							<label className="label">
+								<span className="label-text">
+									{t("teacher.courses.manage.form.hoursLabel")}
+								</span>
+							</label>
 							<input
 								type="number"
 								{...register("hours", { valueAsNumber: true })}
-							className="input input-bordered"
-							placeholder={t("teacher.courses.manage.form.hoursPlaceholder")}
+								className="input input-bordered"
+								placeholder={t("teacher.courses.manage.form.hoursPlaceholder")}
 							/>
 							{errors.hours && (
 								<label className="label">

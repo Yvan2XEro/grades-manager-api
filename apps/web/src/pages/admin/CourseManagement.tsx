@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
@@ -53,8 +53,8 @@ export default function CourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
+	const { t } = useTranslation();
+	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["courses"],
@@ -172,9 +172,7 @@ export default function CourseManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">
-					{t("admin.courses.title")}
-				</h1>
+				<h1 className="font-bold text-2xl">{t("admin.courses.title")}</h1>
 				<button
 					onClick={() => {
 						setEditingCourse(null);
@@ -250,7 +248,9 @@ export default function CourseManagement() {
 					reset();
 				}}
 				title={
-					editingCourse ? t("admin.courses.form.editTitle") : t("admin.courses.form.createTitle")
+					editingCourse
+						? t("admin.courses.form.editTitle")
+						: t("admin.courses.form.createTitle")
 				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

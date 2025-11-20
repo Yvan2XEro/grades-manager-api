@@ -1,975 +1,975 @@
 {
-  "common": {
-    "actions": {
-      "cancel": "Annuler",
-      "delete": "Supprimer",
-      "save": "Enregistrer",
-      "saveChanges": "Enregistrer les modifications",
-      "close": "Fermer",
-      "confirm": "Confirmer",
-      "search": "Rechercher",
-      "saving": "Enregistrement..."
-    },
-    "fields": {
-      "email": "E-mail",
-      "password": "Mot de passe",
-      "confirmPassword": "Confirmer le mot de passe",
-      "firstName": "Prénom",
-      "lastName": "Nom"
-    },
-    "status": {
-      "active": "Actif",
-      "inactive": "Inactif"
-    },
-    "table": {
-      "actions": "Actions"
-    },
-    "pagination": {
-      "next": "Suivant",
-      "previous": "Précédent"
-    },
-    "invalidDate": "Date invalide",
-    "loading": "Chargement..."
-  },
-  "navigation": {
-    "header": {
-      "adminDashboard": "Tableau de bord administrateur",
-      "teacherDashboard": "Tableau de bord enseignant",
-      "notificationsAria": "Ouvrir les notifications",
-      "toggleSidebarAria": "Afficher ou masquer le menu latéral"
-    },
-    "sidebar": {
-      "admin": {
-        "dashboard": "Tableau de bord",
-        "academicYears": "Annees academiques",
-        "exams": "Examens",
-        "users": "Utilisateurs",
-        "classCourses": "Cours de classes",
-        "gradeExport": "Export des notes",
-        "students": "Etudiants",
-        "studentPromotion": "Promotion des etudiants",
-        "courses": "Cours",
-        "classes": "Classes",
-        "faculties": "Facultés",
-        "programs": "Programmes",
-        "teachers": "Enseignants",
-        "courseAssignments": "Affectations de cours"
-      },
-      "teacher": {
-        "dashboard": "Tableau de bord",
-        "exams": "Examens",
-        "grades": "Notes",
-        "courses": "Cours"
-      }
-    }
-  },
-  "auth": {
-    "layout": {
-      "title": "Bienvenue",
-      "subtitle": "Connectez-vous pour gérer les dossiers académiques et les notes"
-    },
-    "login": {
-      "title": "Connectez-vous à votre compte",
-      "emailPlaceholder": "vous@example.com",
-      "passwordPlaceholder": "Votre mot de passe",
-      "forgotPassword": "Mot de passe oublié ?",
-      "submit": "Se connecter",
-      "submitting": "Connexion en cours...",
-      "success": "Connexion réussie",
-      "error": "Impossible de vous connecter. Vérifiez vos identifiants.",
-      "noAccount": "Pas de compte ?",
-      "registerLink": "Créer un compte"
-    },
-    "register": {
-      "title": "Créer un compte",
-      "success": "Compte créé avec succès",
-      "error": "Impossible de créer le compte",
-      "submit": "S'inscrire",
-      "submitting": "Création de votre compte...",
-      "haveAccount": "Déjà inscrit ?",
-      "loginLink": "Se connecter",
-      "placeholders": {
-        "firstName": "Prénom",
-        "lastName": "Nom",
-        "email": "vous@example.com",
-        "password": "Choisissez un mot de passe robuste",
-        "confirmPassword": "Répétez votre mot de passe"
-      }
-    },
-    "forgot": {
-      "title": "Réinitialiser votre mot de passe",
-      "emailPlaceholder": "vous@example.com",
-      "submit": "Envoyer le lien de réinitialisation",
-      "submitting": "Envoi de l'e-mail...",
-      "success": "E-mail de réinitialisation envoyé",
-      "error": "Impossible d'envoyer l'e-mail de réinitialisation",
-      "backToLogin": "Retour à la connexion"
-    },
-    "reset": {
-      "title": "Définir un nouveau mot de passe",
-      "newPassword": "Nouveau mot de passe",
-      "passwordPlaceholder": "Saisissez un nouveau mot de passe",
-      "confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
-      "submit": "Mettre à jour le mot de passe",
-      "submitting": "Mise à jour du mot de passe...",
-      "success": "Mot de passe mis à jour avec succès",
-      "error": "Impossible de mettre à jour le mot de passe",
-      "backToLogin": "Retour à la connexion"
-    },
-    "logout": {
-      "success": "Déconnexion réussie",
-      "error": "Impossible de vous déconnecter",
-      "aria": "Se déconnecter"
-    },
-    "validation": {
-      "email": "Saisissez une adresse e-mail valide",
-      "firstName": "Le prénom doit comporter au moins 2 caractères",
-      "lastName": "Le nom doit comporter au moins 2 caractères",
-      "passwordMin": "Le mot de passe doit comporter au moins {{count}} caractères",
-      "confirmPassword": "La confirmation du mot de passe est obligatoire",
-      "passwordsMismatch": "Les mots de passe ne correspondent pas"
-    }
-  },
-  "admin": {
-    "dashboard": {
-      "title": "Tableau de bord administrateur",
-      "activeYear": "Année active : {{year}}",
-      "noActiveYear": "Aucune année active",
-      "programStats": {
-        "title": "Étudiants par programme",
-        "empty": "Aucune donnée disponible pour l'année sélectionnée"
-      },
-      "stats": {
-        "faculties": "Facultés",
-        "programs": "Programmes",
-        "courses": "Cours",
-        "exams": "Évaluations",
-        "students": "Étudiants",
-        "teachers": "Enseignants"
-      }
-    },
-    "academicYears": {
-      "title": "Gestion des années académiques",
-      "subtitle": "Créez et gérez les années académiques, puis définissez celle active",
-      "actions": {
-        "add": "Ajouter une année académique"
-      },
-      "confirmDelete": "Supprimer cette année académique ?",
-      "empty": {
-        "title": "Aucune année académique",
-        "description": "Commencez par créer une année académique pour votre établissement."
-      },
-      "modal": {
-        "createTitle": "Ajouter une année académique",
-        "editTitle": "Modifier une année académique",
-        "startDate": "Date de début",
-        "endDate": "Date de fin",
-        "label": "Libellé de l'année académique"
-      },
-      "table": {
-        "name": "Nom",
-        "startDate": "Date de début",
-        "endDate": "Date de fin",
-        "status": "Statut"
-      },
-      "toast": {
-        "createSuccess": "Année académique créée avec succès",
-        "createError": "Impossible de créer l'année académique",
-        "updateSuccess": "Année académique mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'année académique",
-        "deleteSuccess": "Année académique supprimée avec succès",
-        "deleteError": "Impossible de supprimer l'année académique",
-        "statusSuccess": "Statut de l'année académique mis à jour",
-        "statusError": "Impossible de mettre à jour le statut de l'année académique"
-      },
-      "validation": {
-        "startDate": "La date de début est obligatoire",
-        "endDate": "La date de fin est obligatoire",
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "order": "La date de fin doit être postérieure à la date de début"
-      }
-    },
-    "classCourses": {
-      "title": "Affectations de cours",
-      "subtitle": "Assignez des enseignants et des cours aux classes",
-      "actions": {
-        "assign": "Affecter un cours"
-      },
-      "empty": {
-        "title": "Aucune affectation de cours",
-        "description": "Affectez un cours à une classe pour alimenter cette liste."
-      },
-      "table": {
-        "class": "Classe",
-        "program": "Programme",
-        "course": "Cours",
-        "teacher": "Enseignant"
-      },
-      "form": {
-        "createTitle": "Nouvelle affectation de cours",
-        "editTitle": "Modifier une affectation de cours",
-        "classLabel": "Classe",
-        "classPlaceholder": "Sélectionner une classe",
-        "courseLabel": "Cours",
-        "coursePlaceholder": "Sélectionner un cours",
-        "teacherLabel": "Enseignant",
-        "teacherPlaceholder": "Sélectionner un enseignant",
-        "createSubmit": "Affecter le cours"
-      },
-      "toast": {
-        "createSuccess": "Affectation créée avec succès",
-        "createError": "Impossible de créer l'affectation",
-        "updateSuccess": "Affectation mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'affectation",
-        "deleteSuccess": "Affectation supprimée avec succès",
-        "deleteError": "Impossible de supprimer l'affectation"
-      },
-      "delete": {
-        "title": "Supprimer l'affectation de cours",
-        "message": "La suppression de cette affectation retirera également les évaluations et notes associées. Continuer ?"
-      },
-      "validation": {
-        "class": "Veuillez sélectionner une classe",
-        "course": "Veuillez sélectionner un cours",
-        "teacher": "Veuillez sélectionner un enseignant"
-      }
-    },
-    "classes": {
-      "title": "Gestion des classes",
-      "subtitle": "Créez des classes pour chaque programme et année académique",
-      "actions": {
-        "add": "Ajouter une classe"
-      },
-      "empty": {
-        "title": "Aucune classe",
-        "description": "Créez des classes pour organiser les étudiants par programme et par année."
-      },
-      "table": {
-        "name": "Classe",
-        "program": "Programme",
-        "academicYear": "Année académique",
-        "students": "Étudiants"
-      },
-      "form": {
-        "createTitle": "Ajouter une classe",
-        "editTitle": "Modifier une classe",
-        "createSubmit": "Créer la classe",
-        "programLabel": "Programme",
-        "programPlaceholder": "Sélectionner un programme",
-        "academicYearLabel": "Année académique",
-        "academicYearPlaceholder": "Sélectionner une année académique",
-        "labelLabel": "Libellé généré de la classe"
-      },
-      "toast": {
-        "createSuccess": "Classe créée avec succès",
-        "createError": "Impossible de créer la classe",
-        "updateSuccess": "Classe mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour la classe",
-        "deleteSuccess": "Classe supprimée avec succès",
-        "deleteError": "Impossible de supprimer la classe"
-      },
-      "delete": {
-        "title": "Supprimer la classe",
-        "message": "Cette action est irréversible et peut supprimer les affectations associées."
-      },
-      "validation": {
-        "program": "Veuillez sélectionner un programme",
-        "academicYear": "Veuillez sélectionner une année académique",
-        "name": "Le nom doit comporter au moins 2 caractères"
-      }
-    },
-    "courses": {
-      "title": "Gestion des cours",
-      "actions": {
-        "add": "Ajouter un cours"
-      },
-      "table": {
-        "name": "Cours",
-        "program": "Programme",
-        "credits": "Crédits",
-        "hours": "Heures",
-        "teacher": "Enseignant par défaut"
-      },
-      "form": {
-        "createTitle": "Ajouter un cours",
-        "editTitle": "Modifier un cours",
-        "createSubmit": "Créer le cours",
-        "nameLabel": "Nom du cours",
-        "namePlaceholder": "Saisir le nom du cours",
-        "creditsLabel": "Crédits",
-        "creditsPlaceholder": "Saisir le nombre de crédits",
-        "hoursLabel": "Heures",
-        "hoursPlaceholder": "Saisir le volume horaire",
-        "programLabel": "Programme",
-        "programPlaceholder": "Sélectionner un programme",
-        "teacherLabel": "Enseignant par défaut",
-        "teacherPlaceholder": "Sélectionner un enseignant"
-      },
-      "toast": {
-        "createSuccess": "Cours créé avec succès",
-        "createError": "Impossible de créer le cours",
-        "updateSuccess": "Cours mis à jour avec succès",
-        "updateError": "Impossible de mettre à jour le cours",
-        "deleteSuccess": "Cours supprimé avec succès",
-        "deleteError": "Impossible de supprimer le cours"
-      },
-      "delete": {
-        "title": "Supprimer le cours",
-        "message": "La suppression de ce cours retirera également les affectations et évaluations liées."
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "credits": "Les crédits doivent être supérieurs ou égaux à 1",
-        "hours": "Le nombre d’heures doit être supérieur ou égal à 1",
-        "program": "Veuillez sélectionner un programme",
-        "teacher": "Veuillez sélectionner un enseignant"
-      }
-    },
-    "exams": {
-      "title": "Gestion des évaluations",
-      "subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
-      "actions": {
-        "add": "Ajouter une évaluation"
-      },
-      "empty": {
-        "title": "Aucune évaluation",
-        "description": "Créez une évaluation pour commencer à saisir des notes."
-      },
-      "table": {
-        "name": "Évaluation",
-        "course": "Cours",
-        "class": "Classe",
-        "type": "Type",
-        "date": "Date",
-        "percentage": "Pondération",
-        "percentageValue": "{{value}} %",
-        "status": "Statut"
-      },
-      "status": {
-        "locked": "Verrouillée",
-        "open": "Ouverte"
-      },
-      "form": {
-        "createTitle": "Ajouter une évaluation",
-        "editTitle": "Modifier une évaluation",
-        "classCourseLabel": "Cours lié",
-        "classCoursePlaceholder": "Sélectionner un cours de classe",
-        "nameLabel": "Nom de l'évaluation",
-        "namePlaceholder": "Saisir le nom de l'évaluation",
-        "typeLabel": "Type",
-        "typePlaceholder": "ex. Interro, Finale",
-        "dateLabel": "Date",
-        "percentageLabel": "Pondération (1-100)",
-        "percentagePlaceholder": "Saisir la pondération",
-        "courseLabel": "Cours",
-        "classLabel": "Classe",
-        "submit": "Enregistrer l'évaluation",
-        "coursePlaceholder": "Sélectionner un cours et une classe"
-      },
-      "toast": {
-        "createSuccess": "Évaluation créée avec succès",
-        "createError": "Impossible de créer l'évaluation",
-        "updateSuccess": "Évaluation mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'évaluation",
-        "deleteSuccess": "Évaluation supprimée avec succès",
-        "deleteError": "Impossible de supprimer l'évaluation"
-      },
-      "delete": {
-        "title": "Supprimer l'évaluation",
-        "message": "La suppression de cette évaluation retirera également les notes associées."
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "type": "Le type doit comporter au moins 2 caractères",
-        "date": "La date est obligatoire",
-        "percentage": {
-          "min": "La pondération doit être au minimum de 1",
-          "max": "La pondération ne peut pas dépasser 100"
-        },
-        "classCourse": "Veuillez sélectionner un cours de classe"
-      }
-    },
-    "gradeExport": {
-      "title": "Export des notes",
-      "subtitle": "Exportez les notes des étudiants par classe et par évaluation",
-      "filters": {
-        "academicYear": "Année académique",
-        "academicYearPlaceholder": "Sélectionner une année académique",
-        "class": "Classe",
-        "classPlaceholder": "Sélectionner une classe"
-      },
-      "actions": {
-        "label": "Exporter",
-        "export": "Exporter les notes"
-      },
-      "exams": {
-        "title": "Sélectionnez les évaluations à inclure",
-        "emptyTitle": "Aucune évaluation trouvée",
-        "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe."
-      },
-      "columns": {
-        "lastName": "Nom",
-        "firstName": "Prénom",
-        "registration": "Numéro de matricule",
-        "birthDate": "Date de naissance",
-        "birthPlace": "Lieu de naissance",
-        "gender": "Sexe"
-      },
-      "sheetName": "Notes",
-      "filePrefix": "notes",
-      "unknownClass": "classe-inconnue"
-    },
-    "students": {
-      "title": "Gestion des étudiants",
-      "actions": {
-        "openModal": "Ajouter des étudiants"
-      },
-      "filters": {
-        "allClasses": "Toutes les classes",
-        "searchPlaceholder": "Rechercher par nom ou matricule"
-      },
-      "table": {
-        "name": "Étudiant",
-        "email": "E-mail",
-        "registration": "Numéro de matricule"
-      },
-      "modal": {
-        "title": "Ajouter des étudiants",
-        "tabs": {
-          "single": "Étudiant individuel",
-          "import": "Importer un fichier"
-        }
-      },
-      "form": {
-        "firstName": "Prénom",
-        "lastName": "Nom",
-        "email": "E-mail",
-        "registration": "Numéro de matricule",
-        "class": "Classe",
-        "classPlaceholder": "Sélectionner une classe",
-        "submit": "Ajouter l'étudiant"
-      },
-      "import": {
-        "classLabel": "Classe pour les étudiants importés",
-        "downloadTemplate": "Télécharger le modèle",
-        "invalidFormat": "Champs obligatoires manquants pour cette ligne",
-        "summary": {
-          "created": "{{count}} étudiant(s) importé(s) avec succès",
-          "conflicts": {
-            "title": "Conflits",
-            "item": "Ligne {{row}} : {{reason}}"
-          },
-          "errors": {
-            "title": "Erreurs",
-            "item": "Ligne {{row}} : {{reason}}"
-          }
-        }
-      },
-      "templates": {
-        "sheetName": "Étudiants",
-        "filePrefix": "modele-etudiants"
-      },
-      "toast": {
-        "createSuccess": "Étudiant créé avec succès",
-        "createError": "Impossible de créer l'étudiant",
-        "importError": "Impossible d'importer les étudiants"
-      },
-      "validation": {
-        "firstName": "Le prénom est obligatoire",
-        "lastName": "Le nom est obligatoire",
-        "email": "Saisissez une adresse e-mail valide",
-        "registration": "Le numéro de matricule est obligatoire",
-        "class": "Veuillez sélectionner une classe"
-      }
-    },
-    "users": {
-      "title": "Gestion des utilisateurs",
-      "empty": "Aucun utilisateur ne correspond aux filtres.",
-      "actions": {
-        "create": "Créer un utilisateur",
-        "edit": "Modifier l'utilisateur",
-        "ban": "Bannir l'utilisateur",
-        "unban": "Réactiver l'utilisateur"
-      },
-      "filters": {
-        "searchPlaceholder": "Rechercher par nom ou e-mail",
-        "roles": {
-          "all": "Tous les rôles",
-          "admin": "Administrateurs",
-          "teacher": "Enseignants"
-        },
-        "status": {
-          "all": "Tous les statuts",
-          "active": "Actifs",
-          "banned": "Bannis"
-        },
-        "email": {
-          "all": "Tous les e-mails",
-          "verified": "Vérifiés",
-          "unverified": "Non vérifiés"
-        }
-      },
-      "table": {
-        "name": "Nom",
-        "email": "E-mail",
-        "role": "Rôle",
-        "emailVerified": "E-mail vérifié",
-        "status": "Statut"
-      },
-      "roles": {
-        "admin": "Administrateur",
-        "teacher": "Enseignant"
-      },
-      "status": {
-        "active": "Actif",
-        "banned": "Banni",
-        "emailVerified": "Vérifié",
-        "emailUnverified": "En attente de vérification"
-      },
-      "form": {
-        "createTitle": "Créer un utilisateur",
-        "editTitle": "Modifier un utilisateur",
-        "nameLabel": "Nom complet",
-        "emailLabel": "Adresse e-mail",
-        "roleLabel": "Rôle",
-        "passwordLabel": "Mot de passe",
-        "newPasswordLabel": "Nouveau mot de passe",
-        "passwordPlaceholder": "Laisser vide pour conserver le mot de passe actuel",
-        "generatePassword": "Générer",
-        "createSubmit": "Créer un utilisateur"
-      },
-      "confirm": {
-        "delete": {
-          "title": "Supprimer l'utilisateur",
-          "message": "Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
-        },
-        "ban": {
-          "title": "Bannir l'utilisateur",
-          "message": "L'utilisateur sera empêché de se connecter jusqu'à sa réactivation. Continuer ?"
-        },
-        "unban": {
-          "title": "Réactiver l'utilisateur",
-          "message": "Autoriser de nouveau cet utilisateur à se connecter ?"
-        }
-      },
-      "ban": {
-        "reason": "Banni par un administrateur"
-      },
-      "toast": {
-        "createSuccess": "Utilisateur créé avec succès",
-        "createError": "Impossible de créer l'utilisateur",
-        "updateSuccess": "Utilisateur mis à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'utilisateur",
-        "deleteSuccess": "Utilisateur supprimé avec succès",
-        "deleteError": "Impossible de supprimer l'utilisateur",
-        "banSuccess": "Utilisateur banni avec succès",
-        "banError": "Impossible de bannir l'utilisateur",
-        "unbanSuccess": "Utilisateur réactivé avec succès",
-        "unbanError": "Impossible de réactiver l'utilisateur",
-        "passwordCopied": "Mot de passe copié dans le presse-papiers"
-      },
-      "validation": {
-        "name": "Le nom est obligatoire",
-        "email": "Saisissez une adresse e-mail valide",
-        "role": "Veuillez sélectionner un rôle",
-        "passwordRequired": "Le mot de passe est obligatoire"
-      }
-    }
-  },
-  "teacher": {
-    "courses": {
-      "title": "Mes cours",
-      "subtitle": "Gérez vos cours attribués et les notes",
-      "actions": {
-        "viewGrades": "Voir les notes"
-      },
-      "empty": {
-        "title": "Aucun cours attribué",
-        "description": "Vous n'avez aucun cours attribué pour l'année académique active."
-      }
-    },
-    "courses.manage": {
-      "title": "Gestion des cours",
-      "actions": {
-        "add": "Ajouter un cours"
-      },
-      "table": {
-        "name": "Nom",
-        "program": "Programme",
-        "credits": "Crédits",
-        "hours": "Heures",
-        "teacher": "Enseignant par défaut"
-      },
-      "form": {
-        "createTitle": "Ajouter un cours",
-        "editTitle": "Modifier un cours",
-        "nameLabel": "Nom du cours",
-        "namePlaceholder": "Saisir le nom du cours",
-        "creditsLabel": "Crédits",
-        "creditsPlaceholder": "Saisir le nombre de crédits",
-        "hoursLabel": "Heures",
-        "hoursPlaceholder": "Saisir le volume horaire",
-        "programLabel": "Programme",
-        "programPlaceholder": "Sélectionner un programme",
-        "teacherLabel": "Enseignant par défaut",
-        "teacherPlaceholder": "Sélectionner un enseignant",
-        "submit": "Enregistrer le cours"
-      },
-      "toast": {
-        "createSuccess": "Cours créé avec succès",
-        "createError": "Impossible de créer le cours",
-        "updateSuccess": "Cours mis à jour avec succès",
-        "updateError": "Impossible de mettre à jour le cours",
-        "deleteSuccess": "Cours supprimé avec succès",
-        "deleteError": "Impossible de supprimer le cours"
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "credits": "Les crédits doivent être supérieurs ou égaux à 1",
-        "hours": "Le nombre d'heures doit être supérieur ou égal à 1",
-        "program": "Veuillez sélectionner un programme",
-        "teacher": "Veuillez sélectionner un enseignant"
-      },
-      "delete": {
-        "title": "Supprimer le cours",
-        "message": "Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible."
-      }
-    },
-    "dashboard": {
-      "title": "Tableau de bord enseignant",
-      "subtitle": "Bon retour, {{name}}",
-      "stats": {
-        "courses": "Mes cours",
-        "classes": "Classes",
-        "students": "Étudiants",
-        "exams": "Évaluations"
-      },
-      "courses": {
-        "title": "Mes cours",
-        "empty": {
-          "title": "Aucun cours trouvé",
-          "description": "Vous n'avez aucun cours attribué pour l'année académique active."
-        },
-        "view": "Voir →",
-        "viewAll": "Voir tous les cours →"
-      },
-      "exams": {
-        "title": "Évaluations à venir",
-        "empty": {
-          "title": "Aucune évaluation planifiée",
-          "description": "Vous n'avez aucune évaluation prévue."
-        },
-        "percentage": "{{value}} %"
-      },
-      "programStats": {
-        "title": "Étudiants par programme",
-        "empty": "Aucune donnée disponible pour l'année active"
-      },
-      "activeYear": "Année active : {{year}}",
-      "noActiveYear": "Aucune année active"
-    },
-    "gradeEntry": {
-      "title": "Saisie des notes",
-      "selectExam": {
-        "label": "Sélectionner une évaluation",
-        "empty": "Aucune évaluation disponible",
-        "lockedTag": "Verrouillée"
-      },
-      "lockedChip": "Notes verrouillées",
-      "actions": {
-        "lock": "Verrouiller les notes",
-        "save": "Enregistrer les notes",
-        "saving": "Enregistrement..."
-      },
-      "info": {
-        "title": "Informations de notation",
-        "description": "Les notes doivent être saisies sur 20. Une fois verrouillées, elles ne peuvent plus être modifiées. Vérifiez-les avant de verrouiller."
-      },
-      "table": {
-        "registration": "N° de matricule",
-        "student": "Nom de l'étudiant",
-        "score": "Note (0-20)",
-        "status": "Statut"
-      },
-      "status": {
-        "graded": "Notée",
-        "notGraded": "Non notée"
-      },
-      "validation": {
-        "min": "La note minimale est 0",
-        "max": "La note maximale est 20"
-      },
-      "emptyStudents": {
-        "title": "Aucun étudiant",
-        "description": "Aucun étudiant n’est inscrit dans cette classe."
-      },
-      "toast": {
-        "fetchCourseError": "Impossible de charger les informations du cours",
-        "fetchGradesError": "Impossible de charger les notes",
-        "saveSuccess": "Notes enregistrées avec succès",
-        "saveError": "Impossible d’enregistrer les notes",
-        "lockSuccess": "Évaluation verrouillée. Les notes ne peuvent plus être modifiées.",
-        "lockError": "Impossible de verrouiller l'évaluation"
-      }
-    },
-    "gradeExport": {
-      "title": "Export des notes",
-      "subtitle": "Exportez les notes des étudiants par classe et par cours",
-      "filters": {
-        "academicYear": "Année académique",
-        "academicYearPlaceholder": "Sélectionner une année académique",
-        "class": "Classe",
-        "classPlaceholder": "Sélectionner une classe"
-      },
-      "actions": {
-        "label": "Exporter",
-        "export": "Exporter les notes"
-      },
-      "exams": {
-        "title": "Sélectionnez les évaluations à inclure",
-        "emptyTitle": "Aucune évaluation trouvée",
-        "emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe."
-      },
-      "columns": {
-        "lastName": "Nom",
-        "firstName": "Prénom",
-        "registration": "Numéro de matricule",
-        "birthDate": "Date de naissance",
-        "birthPlace": "Lieu de naissance",
-        "gender": "Sexe"
-      },
-      "sheetName": "Notes",
-      "filePrefix": "notes",
-      "unknownClass": "classe-inconnue"
-    },
-    "programs": {
-      "title": "Gestion des programmes",
-      "subtitle": "Gérez les programmes académiques",
-      "actions": {
-        "add": "Ajouter un programme"
-      },
-      "empty": {
-        "title": "Aucun programme",
-        "description": "Ajoutez votre premier programme pour commencer."
-      },
-      "table": {
-        "name": "Nom",
-        "faculty": "Faculté",
-        "description": "Description",
-        "noDescription": "Aucune description"
-      },
-      "form": {
-        "createTitle": "Ajouter un programme",
-        "editTitle": "Modifier un programme",
-        "nameLabel": "Nom du programme",
-        "namePlaceholder": "Saisir le nom du programme",
-        "facultyLabel": "Faculté",
-        "facultyPlaceholder": "Sélectionner une faculté",
-        "descriptionLabel": "Description",
-        "descriptionPlaceholder": "Description optionnelle (objectifs, axes)",
-        "submit": "Enregistrer le programme"
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "faculty": "Veuillez sélectionner une faculté"
-      },
-      "toast": {
-        "createSuccess": "Programme créé avec succès",
-        "createError": "Impossible de créer le programme",
-        "updateSuccess": "Programme mis à jour avec succès",
-        "updateError": "Impossible de mettre à jour le programme",
-        "deleteSuccess": "Programme supprimé avec succès",
-        "deleteError": "Impossible de supprimer le programme"
-      },
-      "delete": {
-        "title": "Supprimer le programme",
-        "message": "Êtes-vous sûr de vouloir supprimer ce programme ? Cette action est irréversible."
-      }
-    },
-    "faculties": {
-      "title": "Gestion des facultés",
-      "subtitle": "Gérez les facultés et départements",
-      "actions": {
-        "add": "Ajouter une faculté"
-      },
-      "empty": {
-        "title": "Aucune faculté",
-        "description": "Ajoutez votre première faculté pour commencer."
-      },
-      "table": {
-        "name": "Nom",
-        "description": "Description",
-        "noDescription": "Aucune description"
-      },
-      "form": {
-        "createTitle": "Ajouter une faculté",
-        "editTitle": "Modifier une faculté",
-        "nameLabel": "Nom de la faculté",
-        "namePlaceholder": "Saisir le nom de la faculté",
-        "descriptionLabel": "Description",
-        "descriptionPlaceholder": "Description optionnelle",
-        "submit": "Enregistrer la faculté"
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères"
-      },
-      "toast": {
-        "createSuccess": "Faculté créée avec succès",
-        "createError": "Impossible de créer la faculté",
-        "updateSuccess": "Faculté mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour la faculté",
-        "deleteSuccess": "Faculté supprimée avec succès",
-        "deleteError": "Impossible de supprimer la faculté"
-      },
-      "delete": {
-        "title": "Supprimer la faculté",
-        "message": "Êtes-vous sûr de vouloir supprimer cette faculté ? Cette action est irréversible."
-      }
-    },
-    "classCourses": {
-      "title": "Affectations de cours",
-      "subtitle": "Gérez les affectations de cours pour les classes",
-      "actions": {
-        "add": "Affecter un cours"
-      },
-      "empty": {
-        "title": "Aucune affectation de cours",
-        "description": "Affectez un cours à une classe pour commencer."
-      },
-      "table": {
-        "class": "Classe",
-        "program": "Programme",
-        "course": "Cours",
-        "teacher": "Enseignant"
-      },
-      "form": {
-        "createTitle": "Nouvelle affectation de cours",
-        "editTitle": "Modifier une affectation de cours",
-        "classLabel": "Classe",
-        "classPlaceholder": "Sélectionner une classe",
-        "courseLabel": "Cours",
-        "coursePlaceholder": "Sélectionner un cours",
-        "teacherLabel": "Enseignant",
-        "teacherPlaceholder": "Sélectionner un enseignant",
-        "submit": "Enregistrer l'affectation"
-      },
-      "validation": {
-        "class": "Veuillez sélectionner une classe",
-        "course": "Veuillez sélectionner un cours",
-        "teacher": "Veuillez sélectionner un enseignant"
-      },
-      "toast": {
-        "createSuccess": "Affectation créée avec succès",
-        "createError": "Impossible de créer l'affectation",
-        "updateSuccess": "Affectation mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'affectation",
-        "deleteSuccess": "Affectation supprimée avec succès",
-        "deleteError": "Impossible de supprimer l'affectation"
-      },
-      "delete": {
-        "title": "Supprimer l'affectation de cours",
-        "message": "Êtes-vous sûr de vouloir supprimer cette affectation ? Cette action supprimera également les évaluations et notes associées."
-      }
-    },
-    "promotion": {
-      "title": "Promotion des étudiants",
-      "subtitle": "Promouvez les étudiants vers leur prochaine classe",
-      "unknownYear": "Inconnue",
-      "sourceClassLabel": "Classe d'origine ({{year}})",
-      "sourceClassPlaceholder": "Sélectionner la classe d'origine",
-      "targetClassLabel": "Classe cible ({{year}})",
-      "targetClassPlaceholder": "Sélectionner la classe cible",
-      "students": {
-        "title": "Étudiants éligibles",
-        "listTitle": "Étudiants",
-        "selectedCount": "({{count}} sélectionnés)",
-        "autoSelect": "Sélectionner moyenne ≥ 10",
-        "average": "Moyenne : {{value}}"
-      },
-      "summary": {
-        "selected": "{{count}} sélectionnés",
-        "hint": "Les moyennes ≥ 10 sont sélectionnées automatiquement"
-      },
-      "table": {
-        "registration": "N° de matricule",
-        "name": "Nom",
-        "courseAverages": "Moyennes par cours",
-        "overallAverage": "Moyenne générale"
-      },
-      "actions": {
-        "promote": "Promouvoir",
-        "promoteSelected": "Promouvoir la sélection"
-      },
-      "toast": {
-        "missingSelection": "Veuillez sélectionner des étudiants et une classe cible",
-        "success": "{{count}} étudiant(s) promus avec succès",
-        "error": "Impossible de promouvoir les étudiants"
-      },
-      "emptyStudents": {
-        "title": "Aucun étudiant",
-        "description": "Aucun étudiant dans cette classe."
-      }
-    },
-    "exams": {
-      "title": "Gestion des évaluations",
-      "subtitle": "Créez et gérez les évaluations de cours",
-      "actions": {
-        "add": "Ajouter une évaluation"
-      },
-      "empty": {
-        "title": "Aucune évaluation",
-        "description": "Commencez par ajouter votre première évaluation."
-      },
-      "table": {
-        "name": "Nom",
-        "course": "Cours",
-        "class": "Classe",
-        "type": "Type",
-        "date": "Date",
-        "percentage": "Pondération",
-        "percentageValue": "{{value}} %",
-        "status": "Statut"
-      },
-      "status": {
-        "locked": "Verrouillée",
-        "open": "Ouverte"
-      },
-      "form": {
-        "createTitle": "Ajouter une évaluation",
-        "editTitle": "Modifier une évaluation",
-        "classCourseLabel": "Cours associé",
-        "classCoursePlaceholder": "Sélectionner un cours",
-        "nameLabel": "Nom de l'évaluation",
-        "namePlaceholder": "Saisir le nom de l'évaluation",
-        "typeLabel": "Type",
-        "typePlaceholder": "ex. Interro, Finale",
-        "dateLabel": "Date",
-        "percentageLabel": "Pondération (1-100)",
-        "percentagePlaceholder": "Saisir la pondération",
-        "submit": "Enregistrer l'évaluation"
-      },
-      "validation": {
-        "name": "Le nom doit comporter au moins 2 caractères",
-        "type": "Le type doit comporter au moins 2 caractères",
-        "date": "La date est obligatoire",
-        "percentage": {
-          "min": "La pondération doit être au minimum de 1",
-          "max": "La pondération ne peut pas dépasser 100"
-        },
-        "classCourse": "Veuillez sélectionner un cours"
-      },
-      "toast": {
-        "createSuccess": "Évaluation créée avec succès",
-        "createError": "Impossible de créer l'évaluation",
-        "updateSuccess": "Évaluation mise à jour avec succès",
-        "updateError": "Impossible de mettre à jour l'évaluation",
-        "deleteSuccess": "Évaluation supprimée avec succès",
-        "deleteError": "Impossible de supprimer l'évaluation"
-      },
-      "delete": {
-        "title": "Supprimer l'évaluation",
-        "message": "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action retirera également les notes associées."
-      }
-    }
-  }
+	"common": {
+		"actions": {
+			"cancel": "Annuler",
+			"delete": "Supprimer",
+			"save": "Enregistrer",
+			"saveChanges": "Enregistrer les modifications",
+			"close": "Fermer",
+			"confirm": "Confirmer",
+			"search": "Rechercher",
+			"saving": "Enregistrement..."
+		},
+		"fields": {
+			"email": "E-mail",
+			"password": "Mot de passe",
+			"confirmPassword": "Confirmer le mot de passe",
+			"firstName": "Prénom",
+			"lastName": "Nom"
+		},
+		"status": {
+			"active": "Actif",
+			"inactive": "Inactif"
+		},
+		"table": {
+			"actions": "Actions"
+		},
+		"pagination": {
+			"next": "Suivant",
+			"previous": "Précédent"
+		},
+		"invalidDate": "Date invalide",
+		"loading": "Chargement..."
+	},
+	"navigation": {
+		"header": {
+			"adminDashboard": "Tableau de bord administrateur",
+			"teacherDashboard": "Tableau de bord enseignant",
+			"notificationsAria": "Ouvrir les notifications",
+			"toggleSidebarAria": "Afficher ou masquer le menu latéral"
+		},
+		"sidebar": {
+			"admin": {
+				"dashboard": "Tableau de bord",
+				"academicYears": "Annees academiques",
+				"exams": "Examens",
+				"users": "Utilisateurs",
+				"classCourses": "Cours de classes",
+				"gradeExport": "Export des notes",
+				"students": "Etudiants",
+				"studentPromotion": "Promotion des etudiants",
+				"courses": "Cours",
+				"classes": "Classes",
+				"faculties": "Facultés",
+				"programs": "Programmes",
+				"teachers": "Enseignants",
+				"courseAssignments": "Affectations de cours"
+			},
+			"teacher": {
+				"dashboard": "Tableau de bord",
+				"exams": "Examens",
+				"grades": "Notes",
+				"courses": "Cours"
+			}
+		}
+	},
+	"auth": {
+		"layout": {
+			"title": "Bienvenue",
+			"subtitle": "Connectez-vous pour gérer les dossiers académiques et les notes"
+		},
+		"login": {
+			"title": "Connectez-vous à votre compte",
+			"emailPlaceholder": "vous@example.com",
+			"passwordPlaceholder": "Votre mot de passe",
+			"forgotPassword": "Mot de passe oublié ?",
+			"submit": "Se connecter",
+			"submitting": "Connexion en cours...",
+			"success": "Connexion réussie",
+			"error": "Impossible de vous connecter. Vérifiez vos identifiants.",
+			"noAccount": "Pas de compte ?",
+			"registerLink": "Créer un compte"
+		},
+		"register": {
+			"title": "Créer un compte",
+			"success": "Compte créé avec succès",
+			"error": "Impossible de créer le compte",
+			"submit": "S'inscrire",
+			"submitting": "Création de votre compte...",
+			"haveAccount": "Déjà inscrit ?",
+			"loginLink": "Se connecter",
+			"placeholders": {
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"email": "vous@example.com",
+				"password": "Choisissez un mot de passe robuste",
+				"confirmPassword": "Répétez votre mot de passe"
+			}
+		},
+		"forgot": {
+			"title": "Réinitialiser votre mot de passe",
+			"emailPlaceholder": "vous@example.com",
+			"submit": "Envoyer le lien de réinitialisation",
+			"submitting": "Envoi de l'e-mail...",
+			"success": "E-mail de réinitialisation envoyé",
+			"error": "Impossible d'envoyer l'e-mail de réinitialisation",
+			"backToLogin": "Retour à la connexion"
+		},
+		"reset": {
+			"title": "Définir un nouveau mot de passe",
+			"newPassword": "Nouveau mot de passe",
+			"passwordPlaceholder": "Saisissez un nouveau mot de passe",
+			"confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
+			"submit": "Mettre à jour le mot de passe",
+			"submitting": "Mise à jour du mot de passe...",
+			"success": "Mot de passe mis à jour avec succès",
+			"error": "Impossible de mettre à jour le mot de passe",
+			"backToLogin": "Retour à la connexion"
+		},
+		"logout": {
+			"success": "Déconnexion réussie",
+			"error": "Impossible de vous déconnecter",
+			"aria": "Se déconnecter"
+		},
+		"validation": {
+			"email": "Saisissez une adresse e-mail valide",
+			"firstName": "Le prénom doit comporter au moins 2 caractères",
+			"lastName": "Le nom doit comporter au moins 2 caractères",
+			"passwordMin": "Le mot de passe doit comporter au moins {{count}} caractères",
+			"confirmPassword": "La confirmation du mot de passe est obligatoire",
+			"passwordsMismatch": "Les mots de passe ne correspondent pas"
+		}
+	},
+	"admin": {
+		"dashboard": {
+			"title": "Tableau de bord administrateur",
+			"activeYear": "Année active : {{year}}",
+			"noActiveYear": "Aucune année active",
+			"programStats": {
+				"title": "Étudiants par programme",
+				"empty": "Aucune donnée disponible pour l'année sélectionnée"
+			},
+			"stats": {
+				"faculties": "Facultés",
+				"programs": "Programmes",
+				"courses": "Cours",
+				"exams": "Évaluations",
+				"students": "Étudiants",
+				"teachers": "Enseignants"
+			}
+		},
+		"academicYears": {
+			"title": "Gestion des années académiques",
+			"subtitle": "Créez et gérez les années académiques, puis définissez celle active",
+			"actions": {
+				"add": "Ajouter une année académique"
+			},
+			"confirmDelete": "Supprimer cette année académique ?",
+			"empty": {
+				"title": "Aucune année académique",
+				"description": "Commencez par créer une année académique pour votre établissement."
+			},
+			"modal": {
+				"createTitle": "Ajouter une année académique",
+				"editTitle": "Modifier une année académique",
+				"startDate": "Date de début",
+				"endDate": "Date de fin",
+				"label": "Libellé de l'année académique"
+			},
+			"table": {
+				"name": "Nom",
+				"startDate": "Date de début",
+				"endDate": "Date de fin",
+				"status": "Statut"
+			},
+			"toast": {
+				"createSuccess": "Année académique créée avec succès",
+				"createError": "Impossible de créer l'année académique",
+				"updateSuccess": "Année académique mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'année académique",
+				"deleteSuccess": "Année académique supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'année académique",
+				"statusSuccess": "Statut de l'année académique mis à jour",
+				"statusError": "Impossible de mettre à jour le statut de l'année académique"
+			},
+			"validation": {
+				"startDate": "La date de début est obligatoire",
+				"endDate": "La date de fin est obligatoire",
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"order": "La date de fin doit être postérieure à la date de début"
+			}
+		},
+		"classCourses": {
+			"title": "Affectations de cours",
+			"subtitle": "Assignez des enseignants et des cours aux classes",
+			"actions": {
+				"assign": "Affecter un cours"
+			},
+			"empty": {
+				"title": "Aucune affectation de cours",
+				"description": "Affectez un cours à une classe pour alimenter cette liste."
+			},
+			"table": {
+				"class": "Classe",
+				"program": "Programme",
+				"course": "Cours",
+				"teacher": "Enseignant"
+			},
+			"form": {
+				"createTitle": "Nouvelle affectation de cours",
+				"editTitle": "Modifier une affectation de cours",
+				"classLabel": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"courseLabel": "Cours",
+				"coursePlaceholder": "Sélectionner un cours",
+				"teacherLabel": "Enseignant",
+				"teacherPlaceholder": "Sélectionner un enseignant",
+				"createSubmit": "Affecter le cours"
+			},
+			"toast": {
+				"createSuccess": "Affectation créée avec succès",
+				"createError": "Impossible de créer l'affectation",
+				"updateSuccess": "Affectation mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'affectation",
+				"deleteSuccess": "Affectation supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'affectation"
+			},
+			"delete": {
+				"title": "Supprimer l'affectation de cours",
+				"message": "La suppression de cette affectation retirera également les évaluations et notes associées. Continuer ?"
+			},
+			"validation": {
+				"class": "Veuillez sélectionner une classe",
+				"course": "Veuillez sélectionner un cours",
+				"teacher": "Veuillez sélectionner un enseignant"
+			}
+		},
+		"classes": {
+			"title": "Gestion des classes",
+			"subtitle": "Créez des classes pour chaque programme et année académique",
+			"actions": {
+				"add": "Ajouter une classe"
+			},
+			"empty": {
+				"title": "Aucune classe",
+				"description": "Créez des classes pour organiser les étudiants par programme et par année."
+			},
+			"table": {
+				"name": "Classe",
+				"program": "Programme",
+				"academicYear": "Année académique",
+				"students": "Étudiants"
+			},
+			"form": {
+				"createTitle": "Ajouter une classe",
+				"editTitle": "Modifier une classe",
+				"createSubmit": "Créer la classe",
+				"programLabel": "Programme",
+				"programPlaceholder": "Sélectionner un programme",
+				"academicYearLabel": "Année académique",
+				"academicYearPlaceholder": "Sélectionner une année académique",
+				"labelLabel": "Libellé généré de la classe"
+			},
+			"toast": {
+				"createSuccess": "Classe créée avec succès",
+				"createError": "Impossible de créer la classe",
+				"updateSuccess": "Classe mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour la classe",
+				"deleteSuccess": "Classe supprimée avec succès",
+				"deleteError": "Impossible de supprimer la classe"
+			},
+			"delete": {
+				"title": "Supprimer la classe",
+				"message": "Cette action est irréversible et peut supprimer les affectations associées."
+			},
+			"validation": {
+				"program": "Veuillez sélectionner un programme",
+				"academicYear": "Veuillez sélectionner une année académique",
+				"name": "Le nom doit comporter au moins 2 caractères"
+			}
+		},
+		"courses": {
+			"title": "Gestion des cours",
+			"actions": {
+				"add": "Ajouter un cours"
+			},
+			"table": {
+				"name": "Cours",
+				"program": "Programme",
+				"credits": "Crédits",
+				"hours": "Heures",
+				"teacher": "Enseignant par défaut"
+			},
+			"form": {
+				"createTitle": "Ajouter un cours",
+				"editTitle": "Modifier un cours",
+				"createSubmit": "Créer le cours",
+				"nameLabel": "Nom du cours",
+				"namePlaceholder": "Saisir le nom du cours",
+				"creditsLabel": "Crédits",
+				"creditsPlaceholder": "Saisir le nombre de crédits",
+				"hoursLabel": "Heures",
+				"hoursPlaceholder": "Saisir le volume horaire",
+				"programLabel": "Programme",
+				"programPlaceholder": "Sélectionner un programme",
+				"teacherLabel": "Enseignant par défaut",
+				"teacherPlaceholder": "Sélectionner un enseignant"
+			},
+			"toast": {
+				"createSuccess": "Cours créé avec succès",
+				"createError": "Impossible de créer le cours",
+				"updateSuccess": "Cours mis à jour avec succès",
+				"updateError": "Impossible de mettre à jour le cours",
+				"deleteSuccess": "Cours supprimé avec succès",
+				"deleteError": "Impossible de supprimer le cours"
+			},
+			"delete": {
+				"title": "Supprimer le cours",
+				"message": "La suppression de ce cours retirera également les affectations et évaluations liées."
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"credits": "Les crédits doivent être supérieurs ou égaux à 1",
+				"hours": "Le nombre d’heures doit être supérieur ou égal à 1",
+				"program": "Veuillez sélectionner un programme",
+				"teacher": "Veuillez sélectionner un enseignant"
+			}
+		},
+		"exams": {
+			"title": "Gestion des évaluations",
+			"subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
+			"actions": {
+				"add": "Ajouter une évaluation"
+			},
+			"empty": {
+				"title": "Aucune évaluation",
+				"description": "Créez une évaluation pour commencer à saisir des notes."
+			},
+			"table": {
+				"name": "Évaluation",
+				"course": "Cours",
+				"class": "Classe",
+				"type": "Type",
+				"date": "Date",
+				"percentage": "Pondération",
+				"percentageValue": "{{value}} %",
+				"status": "Statut"
+			},
+			"status": {
+				"locked": "Verrouillée",
+				"open": "Ouverte"
+			},
+			"form": {
+				"createTitle": "Ajouter une évaluation",
+				"editTitle": "Modifier une évaluation",
+				"classCourseLabel": "Cours lié",
+				"classCoursePlaceholder": "Sélectionner un cours de classe",
+				"nameLabel": "Nom de l'évaluation",
+				"namePlaceholder": "Saisir le nom de l'évaluation",
+				"typeLabel": "Type",
+				"typePlaceholder": "ex. Interro, Finale",
+				"dateLabel": "Date",
+				"percentageLabel": "Pondération (1-100)",
+				"percentagePlaceholder": "Saisir la pondération",
+				"courseLabel": "Cours",
+				"classLabel": "Classe",
+				"submit": "Enregistrer l'évaluation",
+				"coursePlaceholder": "Sélectionner un cours et une classe"
+			},
+			"toast": {
+				"createSuccess": "Évaluation créée avec succès",
+				"createError": "Impossible de créer l'évaluation",
+				"updateSuccess": "Évaluation mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'évaluation",
+				"deleteSuccess": "Évaluation supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'évaluation"
+			},
+			"delete": {
+				"title": "Supprimer l'évaluation",
+				"message": "La suppression de cette évaluation retirera également les notes associées."
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"type": "Le type doit comporter au moins 2 caractères",
+				"date": "La date est obligatoire",
+				"percentage": {
+					"min": "La pondération doit être au minimum de 1",
+					"max": "La pondération ne peut pas dépasser 100"
+				},
+				"classCourse": "Veuillez sélectionner un cours de classe"
+			}
+		},
+		"gradeExport": {
+			"title": "Export des notes",
+			"subtitle": "Exportez les notes des étudiants par classe et par évaluation",
+			"filters": {
+				"academicYear": "Année académique",
+				"academicYearPlaceholder": "Sélectionner une année académique",
+				"class": "Classe",
+				"classPlaceholder": "Sélectionner une classe"
+			},
+			"actions": {
+				"label": "Exporter",
+				"export": "Exporter les notes"
+			},
+			"exams": {
+				"title": "Sélectionnez les évaluations à inclure",
+				"emptyTitle": "Aucune évaluation trouvée",
+				"emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe."
+			},
+			"columns": {
+				"lastName": "Nom",
+				"firstName": "Prénom",
+				"registration": "Numéro de matricule",
+				"birthDate": "Date de naissance",
+				"birthPlace": "Lieu de naissance",
+				"gender": "Sexe"
+			},
+			"sheetName": "Notes",
+			"filePrefix": "notes",
+			"unknownClass": "classe-inconnue"
+		},
+		"students": {
+			"title": "Gestion des étudiants",
+			"actions": {
+				"openModal": "Ajouter des étudiants"
+			},
+			"filters": {
+				"allClasses": "Toutes les classes",
+				"searchPlaceholder": "Rechercher par nom ou matricule"
+			},
+			"table": {
+				"name": "Étudiant",
+				"email": "E-mail",
+				"registration": "Numéro de matricule"
+			},
+			"modal": {
+				"title": "Ajouter des étudiants",
+				"tabs": {
+					"single": "Étudiant individuel",
+					"import": "Importer un fichier"
+				}
+			},
+			"form": {
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"email": "E-mail",
+				"registration": "Numéro de matricule",
+				"class": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"submit": "Ajouter l'étudiant"
+			},
+			"import": {
+				"classLabel": "Classe pour les étudiants importés",
+				"downloadTemplate": "Télécharger le modèle",
+				"invalidFormat": "Champs obligatoires manquants pour cette ligne",
+				"summary": {
+					"created": "{{count}} étudiant(s) importé(s) avec succès",
+					"conflicts": {
+						"title": "Conflits",
+						"item": "Ligne {{row}} : {{reason}}"
+					},
+					"errors": {
+						"title": "Erreurs",
+						"item": "Ligne {{row}} : {{reason}}"
+					}
+				}
+			},
+			"templates": {
+				"sheetName": "Étudiants",
+				"filePrefix": "modele-etudiants"
+			},
+			"toast": {
+				"createSuccess": "Étudiant créé avec succès",
+				"createError": "Impossible de créer l'étudiant",
+				"importError": "Impossible d'importer les étudiants"
+			},
+			"validation": {
+				"firstName": "Le prénom est obligatoire",
+				"lastName": "Le nom est obligatoire",
+				"email": "Saisissez une adresse e-mail valide",
+				"registration": "Le numéro de matricule est obligatoire",
+				"class": "Veuillez sélectionner une classe"
+			}
+		},
+		"users": {
+			"title": "Gestion des utilisateurs",
+			"empty": "Aucun utilisateur ne correspond aux filtres.",
+			"actions": {
+				"create": "Créer un utilisateur",
+				"edit": "Modifier l'utilisateur",
+				"ban": "Bannir l'utilisateur",
+				"unban": "Réactiver l'utilisateur"
+			},
+			"filters": {
+				"searchPlaceholder": "Rechercher par nom ou e-mail",
+				"roles": {
+					"all": "Tous les rôles",
+					"admin": "Administrateurs",
+					"teacher": "Enseignants"
+				},
+				"status": {
+					"all": "Tous les statuts",
+					"active": "Actifs",
+					"banned": "Bannis"
+				},
+				"email": {
+					"all": "Tous les e-mails",
+					"verified": "Vérifiés",
+					"unverified": "Non vérifiés"
+				}
+			},
+			"table": {
+				"name": "Nom",
+				"email": "E-mail",
+				"role": "Rôle",
+				"emailVerified": "E-mail vérifié",
+				"status": "Statut"
+			},
+			"roles": {
+				"admin": "Administrateur",
+				"teacher": "Enseignant"
+			},
+			"status": {
+				"active": "Actif",
+				"banned": "Banni",
+				"emailVerified": "Vérifié",
+				"emailUnverified": "En attente de vérification"
+			},
+			"form": {
+				"createTitle": "Créer un utilisateur",
+				"editTitle": "Modifier un utilisateur",
+				"nameLabel": "Nom complet",
+				"emailLabel": "Adresse e-mail",
+				"roleLabel": "Rôle",
+				"passwordLabel": "Mot de passe",
+				"newPasswordLabel": "Nouveau mot de passe",
+				"passwordPlaceholder": "Laisser vide pour conserver le mot de passe actuel",
+				"generatePassword": "Générer",
+				"createSubmit": "Créer un utilisateur"
+			},
+			"confirm": {
+				"delete": {
+					"title": "Supprimer l'utilisateur",
+					"message": "Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
+				},
+				"ban": {
+					"title": "Bannir l'utilisateur",
+					"message": "L'utilisateur sera empêché de se connecter jusqu'à sa réactivation. Continuer ?"
+				},
+				"unban": {
+					"title": "Réactiver l'utilisateur",
+					"message": "Autoriser de nouveau cet utilisateur à se connecter ?"
+				}
+			},
+			"ban": {
+				"reason": "Banni par un administrateur"
+			},
+			"toast": {
+				"createSuccess": "Utilisateur créé avec succès",
+				"createError": "Impossible de créer l'utilisateur",
+				"updateSuccess": "Utilisateur mis à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'utilisateur",
+				"deleteSuccess": "Utilisateur supprimé avec succès",
+				"deleteError": "Impossible de supprimer l'utilisateur",
+				"banSuccess": "Utilisateur banni avec succès",
+				"banError": "Impossible de bannir l'utilisateur",
+				"unbanSuccess": "Utilisateur réactivé avec succès",
+				"unbanError": "Impossible de réactiver l'utilisateur",
+				"passwordCopied": "Mot de passe copié dans le presse-papiers"
+			},
+			"validation": {
+				"name": "Le nom est obligatoire",
+				"email": "Saisissez une adresse e-mail valide",
+				"role": "Veuillez sélectionner un rôle",
+				"passwordRequired": "Le mot de passe est obligatoire"
+			}
+		}
+	},
+	"teacher": {
+		"courses": {
+			"title": "Mes cours",
+			"subtitle": "Gérez vos cours attribués et les notes",
+			"actions": {
+				"viewGrades": "Voir les notes"
+			},
+			"empty": {
+				"title": "Aucun cours attribué",
+				"description": "Vous n'avez aucun cours attribué pour l'année académique active."
+			}
+		},
+		"courses.manage": {
+			"title": "Gestion des cours",
+			"actions": {
+				"add": "Ajouter un cours"
+			},
+			"table": {
+				"name": "Nom",
+				"program": "Programme",
+				"credits": "Crédits",
+				"hours": "Heures",
+				"teacher": "Enseignant par défaut"
+			},
+			"form": {
+				"createTitle": "Ajouter un cours",
+				"editTitle": "Modifier un cours",
+				"nameLabel": "Nom du cours",
+				"namePlaceholder": "Saisir le nom du cours",
+				"creditsLabel": "Crédits",
+				"creditsPlaceholder": "Saisir le nombre de crédits",
+				"hoursLabel": "Heures",
+				"hoursPlaceholder": "Saisir le volume horaire",
+				"programLabel": "Programme",
+				"programPlaceholder": "Sélectionner un programme",
+				"teacherLabel": "Enseignant par défaut",
+				"teacherPlaceholder": "Sélectionner un enseignant",
+				"submit": "Enregistrer le cours"
+			},
+			"toast": {
+				"createSuccess": "Cours créé avec succès",
+				"createError": "Impossible de créer le cours",
+				"updateSuccess": "Cours mis à jour avec succès",
+				"updateError": "Impossible de mettre à jour le cours",
+				"deleteSuccess": "Cours supprimé avec succès",
+				"deleteError": "Impossible de supprimer le cours"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"credits": "Les crédits doivent être supérieurs ou égaux à 1",
+				"hours": "Le nombre d'heures doit être supérieur ou égal à 1",
+				"program": "Veuillez sélectionner un programme",
+				"teacher": "Veuillez sélectionner un enseignant"
+			},
+			"delete": {
+				"title": "Supprimer le cours",
+				"message": "Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible."
+			}
+		},
+		"dashboard": {
+			"title": "Tableau de bord enseignant",
+			"subtitle": "Bon retour, {{name}}",
+			"stats": {
+				"courses": "Mes cours",
+				"classes": "Classes",
+				"students": "Étudiants",
+				"exams": "Évaluations"
+			},
+			"courses": {
+				"title": "Mes cours",
+				"empty": {
+					"title": "Aucun cours trouvé",
+					"description": "Vous n'avez aucun cours attribué pour l'année académique active."
+				},
+				"view": "Voir →",
+				"viewAll": "Voir tous les cours →"
+			},
+			"exams": {
+				"title": "Évaluations à venir",
+				"empty": {
+					"title": "Aucune évaluation planifiée",
+					"description": "Vous n'avez aucune évaluation prévue."
+				},
+				"percentage": "{{value}} %"
+			},
+			"programStats": {
+				"title": "Étudiants par programme",
+				"empty": "Aucune donnée disponible pour l'année active"
+			},
+			"activeYear": "Année active : {{year}}",
+			"noActiveYear": "Aucune année active"
+		},
+		"gradeEntry": {
+			"title": "Saisie des notes",
+			"selectExam": {
+				"label": "Sélectionner une évaluation",
+				"empty": "Aucune évaluation disponible",
+				"lockedTag": "Verrouillée"
+			},
+			"lockedChip": "Notes verrouillées",
+			"actions": {
+				"lock": "Verrouiller les notes",
+				"save": "Enregistrer les notes",
+				"saving": "Enregistrement..."
+			},
+			"info": {
+				"title": "Informations de notation",
+				"description": "Les notes doivent être saisies sur 20. Une fois verrouillées, elles ne peuvent plus être modifiées. Vérifiez-les avant de verrouiller."
+			},
+			"table": {
+				"registration": "N° de matricule",
+				"student": "Nom de l'étudiant",
+				"score": "Note (0-20)",
+				"status": "Statut"
+			},
+			"status": {
+				"graded": "Notée",
+				"notGraded": "Non notée"
+			},
+			"validation": {
+				"min": "La note minimale est 0",
+				"max": "La note maximale est 20"
+			},
+			"emptyStudents": {
+				"title": "Aucun étudiant",
+				"description": "Aucun étudiant n’est inscrit dans cette classe."
+			},
+			"toast": {
+				"fetchCourseError": "Impossible de charger les informations du cours",
+				"fetchGradesError": "Impossible de charger les notes",
+				"saveSuccess": "Notes enregistrées avec succès",
+				"saveError": "Impossible d’enregistrer les notes",
+				"lockSuccess": "Évaluation verrouillée. Les notes ne peuvent plus être modifiées.",
+				"lockError": "Impossible de verrouiller l'évaluation"
+			}
+		},
+		"gradeExport": {
+			"title": "Export des notes",
+			"subtitle": "Exportez les notes des étudiants par classe et par cours",
+			"filters": {
+				"academicYear": "Année académique",
+				"academicYearPlaceholder": "Sélectionner une année académique",
+				"class": "Classe",
+				"classPlaceholder": "Sélectionner une classe"
+			},
+			"actions": {
+				"label": "Exporter",
+				"export": "Exporter les notes"
+			},
+			"exams": {
+				"title": "Sélectionnez les évaluations à inclure",
+				"emptyTitle": "Aucune évaluation trouvée",
+				"emptyDescription": "Aucune évaluation n’a encore été créée pour cette classe."
+			},
+			"columns": {
+				"lastName": "Nom",
+				"firstName": "Prénom",
+				"registration": "Numéro de matricule",
+				"birthDate": "Date de naissance",
+				"birthPlace": "Lieu de naissance",
+				"gender": "Sexe"
+			},
+			"sheetName": "Notes",
+			"filePrefix": "notes",
+			"unknownClass": "classe-inconnue"
+		},
+		"programs": {
+			"title": "Gestion des programmes",
+			"subtitle": "Gérez les programmes académiques",
+			"actions": {
+				"add": "Ajouter un programme"
+			},
+			"empty": {
+				"title": "Aucun programme",
+				"description": "Ajoutez votre premier programme pour commencer."
+			},
+			"table": {
+				"name": "Nom",
+				"faculty": "Faculté",
+				"description": "Description",
+				"noDescription": "Aucune description"
+			},
+			"form": {
+				"createTitle": "Ajouter un programme",
+				"editTitle": "Modifier un programme",
+				"nameLabel": "Nom du programme",
+				"namePlaceholder": "Saisir le nom du programme",
+				"facultyLabel": "Faculté",
+				"facultyPlaceholder": "Sélectionner une faculté",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Description optionnelle (objectifs, axes)",
+				"submit": "Enregistrer le programme"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"faculty": "Veuillez sélectionner une faculté"
+			},
+			"toast": {
+				"createSuccess": "Programme créé avec succès",
+				"createError": "Impossible de créer le programme",
+				"updateSuccess": "Programme mis à jour avec succès",
+				"updateError": "Impossible de mettre à jour le programme",
+				"deleteSuccess": "Programme supprimé avec succès",
+				"deleteError": "Impossible de supprimer le programme"
+			},
+			"delete": {
+				"title": "Supprimer le programme",
+				"message": "Êtes-vous sûr de vouloir supprimer ce programme ? Cette action est irréversible."
+			}
+		},
+		"faculties": {
+			"title": "Gestion des facultés",
+			"subtitle": "Gérez les facultés et départements",
+			"actions": {
+				"add": "Ajouter une faculté"
+			},
+			"empty": {
+				"title": "Aucune faculté",
+				"description": "Ajoutez votre première faculté pour commencer."
+			},
+			"table": {
+				"name": "Nom",
+				"description": "Description",
+				"noDescription": "Aucune description"
+			},
+			"form": {
+				"createTitle": "Ajouter une faculté",
+				"editTitle": "Modifier une faculté",
+				"nameLabel": "Nom de la faculté",
+				"namePlaceholder": "Saisir le nom de la faculté",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Description optionnelle",
+				"submit": "Enregistrer la faculté"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères"
+			},
+			"toast": {
+				"createSuccess": "Faculté créée avec succès",
+				"createError": "Impossible de créer la faculté",
+				"updateSuccess": "Faculté mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour la faculté",
+				"deleteSuccess": "Faculté supprimée avec succès",
+				"deleteError": "Impossible de supprimer la faculté"
+			},
+			"delete": {
+				"title": "Supprimer la faculté",
+				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ? Cette action est irréversible."
+			}
+		},
+		"classCourses": {
+			"title": "Affectations de cours",
+			"subtitle": "Gérez les affectations de cours pour les classes",
+			"actions": {
+				"add": "Affecter un cours"
+			},
+			"empty": {
+				"title": "Aucune affectation de cours",
+				"description": "Affectez un cours à une classe pour commencer."
+			},
+			"table": {
+				"class": "Classe",
+				"program": "Programme",
+				"course": "Cours",
+				"teacher": "Enseignant"
+			},
+			"form": {
+				"createTitle": "Nouvelle affectation de cours",
+				"editTitle": "Modifier une affectation de cours",
+				"classLabel": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"courseLabel": "Cours",
+				"coursePlaceholder": "Sélectionner un cours",
+				"teacherLabel": "Enseignant",
+				"teacherPlaceholder": "Sélectionner un enseignant",
+				"submit": "Enregistrer l'affectation"
+			},
+			"validation": {
+				"class": "Veuillez sélectionner une classe",
+				"course": "Veuillez sélectionner un cours",
+				"teacher": "Veuillez sélectionner un enseignant"
+			},
+			"toast": {
+				"createSuccess": "Affectation créée avec succès",
+				"createError": "Impossible de créer l'affectation",
+				"updateSuccess": "Affectation mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'affectation",
+				"deleteSuccess": "Affectation supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'affectation"
+			},
+			"delete": {
+				"title": "Supprimer l'affectation de cours",
+				"message": "Êtes-vous sûr de vouloir supprimer cette affectation ? Cette action supprimera également les évaluations et notes associées."
+			}
+		},
+		"promotion": {
+			"title": "Promotion des étudiants",
+			"subtitle": "Promouvez les étudiants vers leur prochaine classe",
+			"unknownYear": "Inconnue",
+			"sourceClassLabel": "Classe d'origine ({{year}})",
+			"sourceClassPlaceholder": "Sélectionner la classe d'origine",
+			"targetClassLabel": "Classe cible ({{year}})",
+			"targetClassPlaceholder": "Sélectionner la classe cible",
+			"students": {
+				"title": "Étudiants éligibles",
+				"listTitle": "Étudiants",
+				"selectedCount": "({{count}} sélectionnés)",
+				"autoSelect": "Sélectionner moyenne ≥ 10",
+				"average": "Moyenne : {{value}}"
+			},
+			"summary": {
+				"selected": "{{count}} sélectionnés",
+				"hint": "Les moyennes ≥ 10 sont sélectionnées automatiquement"
+			},
+			"table": {
+				"registration": "N° de matricule",
+				"name": "Nom",
+				"courseAverages": "Moyennes par cours",
+				"overallAverage": "Moyenne générale"
+			},
+			"actions": {
+				"promote": "Promouvoir",
+				"promoteSelected": "Promouvoir la sélection"
+			},
+			"toast": {
+				"missingSelection": "Veuillez sélectionner des étudiants et une classe cible",
+				"success": "{{count}} étudiant(s) promus avec succès",
+				"error": "Impossible de promouvoir les étudiants"
+			},
+			"emptyStudents": {
+				"title": "Aucun étudiant",
+				"description": "Aucun étudiant dans cette classe."
+			}
+		},
+		"exams": {
+			"title": "Gestion des évaluations",
+			"subtitle": "Créez et gérez les évaluations de cours",
+			"actions": {
+				"add": "Ajouter une évaluation"
+			},
+			"empty": {
+				"title": "Aucune évaluation",
+				"description": "Commencez par ajouter votre première évaluation."
+			},
+			"table": {
+				"name": "Nom",
+				"course": "Cours",
+				"class": "Classe",
+				"type": "Type",
+				"date": "Date",
+				"percentage": "Pondération",
+				"percentageValue": "{{value}} %",
+				"status": "Statut"
+			},
+			"status": {
+				"locked": "Verrouillée",
+				"open": "Ouverte"
+			},
+			"form": {
+				"createTitle": "Ajouter une évaluation",
+				"editTitle": "Modifier une évaluation",
+				"classCourseLabel": "Cours associé",
+				"classCoursePlaceholder": "Sélectionner un cours",
+				"nameLabel": "Nom de l'évaluation",
+				"namePlaceholder": "Saisir le nom de l'évaluation",
+				"typeLabel": "Type",
+				"typePlaceholder": "ex. Interro, Finale",
+				"dateLabel": "Date",
+				"percentageLabel": "Pondération (1-100)",
+				"percentagePlaceholder": "Saisir la pondération",
+				"submit": "Enregistrer l'évaluation"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"type": "Le type doit comporter au moins 2 caractères",
+				"date": "La date est obligatoire",
+				"percentage": {
+					"min": "La pondération doit être au minimum de 1",
+					"max": "La pondération ne peut pas dépasser 100"
+				},
+				"classCourse": "Veuillez sélectionner un cours"
+			},
+			"toast": {
+				"createSuccess": "Évaluation créée avec succès",
+				"createError": "Impossible de créer l'évaluation",
+				"updateSuccess": "Évaluation mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'évaluation",
+				"deleteSuccess": "Évaluation supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'évaluation"
+			},
+			"delete": {
+				"title": "Supprimer l'évaluation",
+				"message": "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action retirera également les notes associées."
+			}
+		}
+	}
 }

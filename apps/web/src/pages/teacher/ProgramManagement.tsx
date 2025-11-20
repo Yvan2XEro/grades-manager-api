@@ -1,21 +1,23 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { Pencil, Plus, School, Trash2 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildProgramSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("teacher.programs.validation.name")),
 		description: z.string().optional(),
-		faculty: z.string({ required_error: t("teacher.programs.validation.faculty") }),
+		faculty: z.string({
+			required_error: t("teacher.programs.validation.faculty"),
+		}),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
@@ -40,8 +42,8 @@ export default function ProgramManagement() {
 	const descId = useId();
 
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const programSchema = useMemo(() => buildProgramSchema(t), [t]);
+	const { t } = useTranslation();
+	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
 	const { data: programs, isLoading } = useQuery({
 		queryKey: ["programs"],
@@ -89,7 +91,9 @@ export default function ProgramManagement() {
 			reset();
 		},
 		onError: (error: unknown) => {
-			toast.error((error as Error).message || t("teacher.programs.toast.createError"));
+			toast.error(
+				(error as Error).message || t("teacher.programs.toast.createError"),
+			);
 		},
 	});
 
@@ -106,7 +110,9 @@ export default function ProgramManagement() {
 			reset();
 		},
 		onError: (error: unknown) => {
-			toast.error((error as Error).message || t("teacher.programs.toast.updateError"));
+			toast.error(
+				(error as Error).message || t("teacher.programs.toast.updateError"),
+			);
 		},
 	});
 
@@ -121,7 +127,9 @@ export default function ProgramManagement() {
 			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
-			toast.error((error as Error).message || t("teacher.programs.toast.deleteError"));
+			toast.error(
+				(error as Error).message || t("teacher.programs.toast.deleteError"),
+			);
 		},
 	});
 

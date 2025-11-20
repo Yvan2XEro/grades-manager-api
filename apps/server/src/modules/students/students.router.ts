@@ -16,36 +16,32 @@ export const studentsRouter = router({
 			profile: input.profile,
 		}),
 	),
-	update: adminProcedure
-		.input(updateSchema)
-		.mutation(({ input }) =>
-			service.updateStudent(input.id, {
-				classId: input.classId,
-				registrationNumber: input.registrationNumber,
-				profile: input.profile,
-			}),
-		),
-	bulkCreate: adminProcedure
-		.input(bulkCreateSchema)
-		.mutation(({ input }) =>
-			service.bulkCreateStudents({
-				classId: input.classId,
-				students: input.students.map((student) => ({
-					registrationNumber: student.registrationNumber,
-					profile: {
-						firstName: student.firstName,
-						lastName: student.lastName,
-						email: student.email,
-						dateOfBirth: student.dateOfBirth,
-						placeOfBirth: student.placeOfBirth,
-						gender: student.gender,
-						phone: student.phone,
-						nationality: student.nationality,
-						authUserId: student.authUserId,
-					},
-				})),
-			}),
-		),
+	update: adminProcedure.input(updateSchema).mutation(({ input }) =>
+		service.updateStudent(input.id, {
+			classId: input.classId,
+			registrationNumber: input.registrationNumber,
+			profile: input.profile,
+		}),
+	),
+	bulkCreate: adminProcedure.input(bulkCreateSchema).mutation(({ input }) =>
+		service.bulkCreateStudents({
+			classId: input.classId,
+			students: input.students.map((student) => ({
+				registrationNumber: student.registrationNumber,
+				profile: {
+					firstName: student.firstName,
+					lastName: student.lastName,
+					email: student.email,
+					dateOfBirth: student.dateOfBirth,
+					placeOfBirth: student.placeOfBirth,
+					gender: student.gender,
+					phone: student.phone,
+					nationality: student.nationality,
+					authUserId: student.authUserId,
+				},
+			})),
+		}),
+	),
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listStudents(input)),

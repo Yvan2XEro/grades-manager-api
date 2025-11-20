@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
 
 interface AcademicYear {
 	id: string;
@@ -65,7 +65,7 @@ export default function GradeExport() {
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
 	const yearId = useId();
 	const classId = useId();
-  const { t } = useTranslation();
+	const { t } = useTranslation();
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["academicYears"],
@@ -205,11 +205,13 @@ export default function GradeExport() {
 				return {
 					[t("admin.gradeExport.columns.lastName")]: student.last_name,
 					[t("admin.gradeExport.columns.firstName")]: student.first_name,
-					[t("admin.gradeExport.columns.registration")]: student.registration_number,
+					[t("admin.gradeExport.columns.registration")]:
+						student.registration_number,
 					[t("admin.gradeExport.columns.birthDate")]: student.birth_date
 						? format(new Date(student.birth_date), "dd/MM/yyyy")
 						: "",
-					[t("admin.gradeExport.columns.birthPlace")]: student.birth_place || "",
+					[t("admin.gradeExport.columns.birthPlace")]:
+						student.birth_place || "",
 					[t("admin.gradeExport.columns.gender")]: student.gender || "",
 					...Object.fromEntries(courseAverages),
 				};
@@ -218,7 +220,9 @@ export default function GradeExport() {
 			const ws = XLSX.utils.json_to_sheet(exportData);
 			const wb = XLSX.utils.book_new();
 			XLSX.utils.book_append_sheet(wb, ws, t("admin.gradeExport.sheetName"));
-			const className = classes?.find((c) => c.id === selectedClass)?.name ?? t("admin.gradeExport.unknownClass");
+			const className =
+				classes?.find((c) => c.id === selectedClass)?.name ??
+				t("admin.gradeExport.unknownClass");
 			const filename = `${t("admin.gradeExport.filePrefix")}_${className}_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 			XLSX.writeFile(wb, filename);
 		} catch (error) {

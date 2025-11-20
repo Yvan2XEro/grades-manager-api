@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Users } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {
@@ -38,7 +38,7 @@ export default function StudentManagement() {
 	const [isPromoting, setIsPromoting] = useState(false);
 	const sourceId = useId();
 	const targetId = useId();
-  const { t } = useTranslation();
+	const { t } = useTranslation();
 
 	// Get active academic year
 	const { data: activeYear } = useQuery({
@@ -228,7 +228,9 @@ export default function StudentManagement() {
 			);
 			setSelectedStudents([]);
 		} catch (error: unknown) {
-			toast.error((error as Error).message || t("teacher.promotion.toast.error"));
+			toast.error(
+				(error as Error).message || t("teacher.promotion.toast.error"),
+			);
 		} finally {
 			setIsPromoting(false);
 		}
@@ -344,11 +346,11 @@ export default function StudentManagement() {
 					<div className="overflow-x-auto">
 						<table className="table">
 							<thead>
-							<tr>
-								<th>
-									<input
-										type="checkbox"
-										className="checkbox"
+								<tr>
+									<th>
+										<input
+											type="checkbox"
+											className="checkbox"
 											checked={selectedStudents.length === students.length}
 											onChange={(e) => {
 												if (e.target.checked) {
@@ -359,10 +361,10 @@ export default function StudentManagement() {
 											}}
 										/>
 									</th>
-								<th>{t("teacher.promotion.table.registration")}</th>
-								<th>{t("teacher.promotion.table.name")}</th>
-								<th>{t("teacher.promotion.table.courseAverages")}</th>
-								<th>{t("teacher.promotion.table.overallAverage")}</th>
+									<th>{t("teacher.promotion.table.registration")}</th>
+									<th>{t("teacher.promotion.table.name")}</th>
+									<th>{t("teacher.promotion.table.courseAverages")}</th>
+									<th>{t("teacher.promotion.table.overallAverage")}</th>
 								</tr>
 							</thead>
 							<tbody>

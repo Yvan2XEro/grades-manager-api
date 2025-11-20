@@ -9,11 +9,11 @@ import {
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
 
 type Student = {
 	id: string;
@@ -47,7 +47,7 @@ const GradeEntry: React.FC = () => {
 	const { courseId } = useParams<{ courseId: string }>();
 	const { user } = useStore();
 	const navigate = useNavigate();
-  const { t } = useTranslation();
+	const { t } = useTranslation();
 
 	const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
 	const [students, setStudents] = useState<Student[]>([]);
@@ -121,7 +121,9 @@ const GradeEntry: React.FC = () => {
 			if (examsList.length > 0) setSelectedExam(examsList[0].id);
 		} catch (error: any) {
 			console.error("Error fetching course data:", error);
-			toast.error(error.message || t("teacher.gradeEntry.toast.fetchCourseError"));
+			toast.error(
+				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -145,7 +147,9 @@ const GradeEntry: React.FC = () => {
 			reset(formData);
 		} catch (error: any) {
 			console.error("Error fetching grades:", error);
-			toast.error(error.message || t("teacher.gradeEntry.toast.fetchGradesError"));
+			toast.error(
+				error.message || t("teacher.gradeEntry.toast.fetchGradesError"),
+			);
 		}
 	};
 
@@ -268,7 +272,9 @@ const GradeEntry: React.FC = () => {
 								exams.map((exam) => (
 									<option key={exam.id} value={exam.id}>
 										{exam.name} ({exam.percentage}%){" "}
-										{exam.isLocked ? `(${t("teacher.gradeEntry.selectExam.lockedTag")})` : ""}
+										{exam.isLocked
+											? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
+											: ""}
 									</option>
 								))
 							)}
@@ -287,7 +293,8 @@ const GradeEntry: React.FC = () => {
 									onClick={lockExam}
 									className="btn btn-outline btn-warning"
 								>
-									<Lock className="mr-2 h-4 w-4" /> {t("teacher.gradeEntry.actions.lock")}
+									<Lock className="mr-2 h-4 w-4" />{" "}
+									{t("teacher.gradeEntry.actions.lock")}
 								</button>
 							)}
 						</div>
@@ -349,8 +356,14 @@ const GradeEntry: React.FC = () => {
 													defaultValue={grades[student.id] || ""}
 													className="input input-bordered input-sm w-24"
 													{...register(`student_${student.id}`, {
-														min: { value: 0, message: t("teacher.gradeEntry.validation.min") },
-														max: { value: 20, message: t("teacher.gradeEntry.validation.max") },
+														min: {
+															value: 0,
+															message: t("teacher.gradeEntry.validation.min"),
+														},
+														max: {
+															value: 20,
+															message: t("teacher.gradeEntry.validation.max"),
+														},
 													})}
 													disabled={isExamLocked}
 												/>
@@ -385,16 +398,17 @@ const GradeEntry: React.FC = () => {
 									disabled={isSaving}
 									className="btn btn-primary"
 								>
-										{isSaving ? (
-											<>
-												<div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-t-2 border-b-2" />
-												{t("teacher.gradeEntry.actions.saving")}
-											</>
-										) : (
-											<>
-												<Save className="mr-2 h-4 w-4" /> {t("teacher.gradeEntry.actions.save")}
-											</>
-										)}
+									{isSaving ? (
+										<>
+											<div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-t-2 border-b-2" />
+											{t("teacher.gradeEntry.actions.saving")}
+										</>
+									) : (
+										<>
+											<Save className="mr-2 h-4 w-4" />{" "}
+											{t("teacher.gradeEntry.actions.save")}
+										</>
+									)}
 								</button>
 							</div>
 						)}

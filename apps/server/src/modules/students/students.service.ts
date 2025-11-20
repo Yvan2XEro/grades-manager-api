@@ -1,10 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import * as classesRepo from "../classes/classes.repo";
-import { transaction } from "../_shared/db-transaction";
-import * as repo from "./students.repo";
-import * as schema from "../../db/schema/app-schema";
-import { db } from "../../db";
 import { eq } from "drizzle-orm";
+import { db } from "../../db";
+import * as schema from "../../db/schema/app-schema";
+import { transaction } from "../_shared/db-transaction";
+import * as classesRepo from "../classes/classes.repo";
+import * as repo from "./students.repo";
 
 type StudentProfileInput = {
 	firstName: string;
@@ -24,7 +24,11 @@ type CreateStudentInput = {
 	profile: StudentProfileInput;
 };
 
-const conflictMarkers = ["uq_students_registration", "uq_domain_users_email", "duplicate key value"];
+const conflictMarkers = [
+	"uq_students_registration",
+	"uq_domain_users_email",
+	"duplicate key value",
+];
 
 const buildProfilePayload = (p: StudentProfileInput) => ({
 	authUserId: p.authUserId ?? null,

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "bun:test";
+import type { Context } from "@/lib/context";
+import { appRouter } from "@/routers";
 import {
 	asAdmin,
 	createExam,
 	createStudent,
 	makeTestContext,
 } from "../../../lib/test-utils";
-import { appRouter } from "@/routers";
-import type { Context } from "@/lib/context";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 

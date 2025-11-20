@@ -1,11 +1,11 @@
+import { and, eq, gt, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import {
-	domainUsers,
 	type BusinessRole,
 	type DomainUserStatus,
+	domainUsers,
 } from "@/db/schema/app-schema";
 import { user } from "@/db/schema/auth";
-import { and, eq, gt, type SQL } from "drizzle-orm";
 
 type ListOpts = {
 	cursor?: string | null;

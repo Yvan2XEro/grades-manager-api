@@ -1,11 +1,11 @@
+import { and, eq, gt, inArray, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import {
-	domainUsers,
 	type BusinessRole,
 	type DomainUserStatus,
+	domainUsers,
 	type NewDomainUser,
 } from "@/db/schema/app-schema";
-import { eq, inArray, and, gt, type SQL } from "drizzle-orm";
 import { user } from "@/db/schema/auth";
 
 export async function create(data: NewDomainUser) {
@@ -17,10 +17,7 @@ export async function remove(id: string) {
 	await db.delete(domainUsers).where(eq(domainUsers.id, id));
 }
 
-export async function update(
-	id: string,
-	data: Partial<NewDomainUser>,
-) {
+export async function update(id: string, data: Partial<NewDomainUser>) {
 	const [profile] = await db
 		.update(domainUsers)
 		.set(data)

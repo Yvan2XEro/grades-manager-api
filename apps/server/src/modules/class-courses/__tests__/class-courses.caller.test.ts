@@ -1,13 +1,13 @@
 import { describe, expect, it } from "bun:test";
+import type { Context } from "@/lib/context";
+import { appRouter } from "@/routers";
 import {
 	asAdmin,
-        createClass,
-        createCourse,
-        createUser,
+	createClass,
+	createCourse,
+	createUser,
 	makeTestContext,
 } from "../../../lib/test-utils";
-import { appRouter } from "@/routers";
-import type { Context } from "@/lib/context";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
@@ -23,7 +23,7 @@ describe("class courses router", () => {
 	it("supports CRUD", async () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
-                const teacher = await createUser();
+		const teacher = await createUser();
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			class: klass.id,

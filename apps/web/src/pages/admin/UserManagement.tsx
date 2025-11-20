@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import {
 	Copy,
 	Eye,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -17,8 +19,6 @@ import FormModal from "../../components/modals/FormModal";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 interface User {
 	id: string;
@@ -53,8 +53,8 @@ function generatePassword(length = 12) {
 
 export default function UserManagement() {
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const userSchema = useMemo(() => buildUserSchema(t), [t]);
+	const { t } = useTranslation();
+	const userSchema = useMemo(() => buildUserSchema(t), [t]);
 	const [search, setSearch] = useState("");
 	const debouncedSearch = useDebounce(search, 500);
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -277,8 +277,12 @@ export default function UserManagement() {
 						onChange={(e) => setRoleFilter(e.target.value)}
 					>
 						<option value="">{t("admin.users.filters.roles.all")}</option>
-						<option value="admin">{t("admin.users.filters.roles.admin")}</option>
-						<option value="teacher">{t("admin.users.filters.roles.teacher")}</option>
+						<option value="admin">
+							{t("admin.users.filters.roles.admin")}
+						</option>
+						<option value="teacher">
+							{t("admin.users.filters.roles.teacher")}
+						</option>
 					</select>
 					<select
 						className="select select-bordered"
@@ -286,8 +290,12 @@ export default function UserManagement() {
 						onChange={(e) => setBanFilter(e.target.value)}
 					>
 						<option value="">{t("admin.users.filters.status.all")}</option>
-						<option value="active">{t("admin.users.filters.status.active")}</option>
-						<option value="banned">{t("admin.users.filters.status.banned")}</option>
+						<option value="active">
+							{t("admin.users.filters.status.active")}
+						</option>
+						<option value="banned">
+							{t("admin.users.filters.status.banned")}
+						</option>
 					</select>
 					<select
 						className="select select-bordered"
@@ -295,8 +303,12 @@ export default function UserManagement() {
 						onChange={(e) => setVerifiedFilter(e.target.value)}
 					>
 						<option value="">{t("admin.users.filters.email.all")}</option>
-						<option value="verified">{t("admin.users.filters.email.verified")}</option>
-						<option value="unverified">{t("admin.users.filters.email.unverified")}</option>
+						<option value="verified">
+							{t("admin.users.filters.email.verified")}
+						</option>
+						<option value="unverified">
+							{t("admin.users.filters.email.unverified")}
+						</option>
 					</select>
 				</div>
 			</div>
@@ -452,10 +464,10 @@ export default function UserManagement() {
 							<p className="mt-1 text-error text-sm">{errors.name.message}</p>
 						)}
 					</div>
-						<div>
-							<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
-								{t("admin.users.form.emailLabel")}
-							</label>
+					<div>
+						<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
+							{t("admin.users.form.emailLabel")}
+						</label>
 						<input
 							id={emailId}
 							type="email"
@@ -466,17 +478,21 @@ export default function UserManagement() {
 							<p className="mt-1 text-error text-sm">{errors.email.message}</p>
 						)}
 					</div>
-						<div>
-							<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
-								{t("admin.users.form.roleLabel")}
-							</label>
+					<div>
+						<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
+							{t("admin.users.form.roleLabel")}
+						</label>
 						<select
 							id={roleId}
 							{...register("role")}
 							className="select select-bordered w-full"
 						>
-							<option value="admin">{t("admin.users.filters.roles.admin")}</option>
-							<option value="teacher">{t("admin.users.filters.roles.teacher")}</option>
+							<option value="admin">
+								{t("admin.users.filters.roles.admin")}
+							</option>
+							<option value="teacher">
+								{t("admin.users.filters.roles.teacher")}
+							</option>
 						</select>
 					</div>
 					<div>

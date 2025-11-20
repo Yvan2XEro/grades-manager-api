@@ -1,20 +1,22 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
+import type { TFunction } from "i18next";
 import { Calendar, Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import { trpcClient } from "../../utils/trpc";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 const buildAcademicYearSchema = (t: TFunction) =>
 	z
 		.object({
-			startDate: z.string().min(1, t("admin.academicYears.validation.startDate")),
+			startDate: z
+				.string()
+				.min(1, t("admin.academicYears.validation.startDate")),
 			endDate: z.string().min(1, t("admin.academicYears.validation.endDate")),
 			name: z.string().min(2, t("admin.academicYears.validation.name")),
 		})
@@ -46,8 +48,8 @@ const AcademicYearManagement: React.FC = () => {
 	const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 	const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
+	const { t } = useTranslation();
+	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
 
 	const {
 		register,
@@ -199,9 +201,7 @@ const AcademicYearManagement: React.FC = () => {
 					<h2 className="font-bold text-2xl text-gray-800">
 						{t("admin.academicYears.title")}
 					</h2>
-					<p className="text-gray-600">
-						{t("admin.academicYears.subtitle")}
-					</p>
+					<p className="text-gray-600">{t("admin.academicYears.subtitle")}</p>
 				</div>
 				<button
 					onClick={() => {
@@ -211,7 +211,8 @@ const AcademicYearManagement: React.FC = () => {
 					}}
 					className="btn btn-primary"
 				>
-					<Plus className="mr-2 h-5 w-5" /> {t("admin.academicYears.actions.add")}
+					<Plus className="mr-2 h-5 w-5" />{" "}
+					{t("admin.academicYears.actions.add")}
 				</button>
 			</div>
 
@@ -233,7 +234,8 @@ const AcademicYearManagement: React.FC = () => {
 							}}
 							className="btn btn-primary btn-sm mt-4"
 						>
-							<Plus className="mr-2 h-4 w-4" /> {t("admin.academicYears.actions.add")}
+							<Plus className="mr-2 h-4 w-4" />{" "}
+							{t("admin.academicYears.actions.add")}
 						</button>
 					</div>
 				) : (
