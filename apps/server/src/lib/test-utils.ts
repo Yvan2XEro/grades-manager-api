@@ -2,7 +2,23 @@ import type { Context } from "./context";
 import { auth, db } from "./test-db";
 import * as schema from "../db/schema/app-schema";
 import { randomUUID } from "node:crypto";
-import { adminRoles, superadminRoles } from "./auth";
+import type {
+	BusinessRole,
+	DomainUser,
+	Gender,
+	NewDomainUser,
+} from "../db/schema/app-schema";
+import { buildPermissions } from "../modules/authz";
+
+const DEFAULT_DATE = new Date("1990-01-01");
+const DEFAULT_PLACE = "Yaoundé";
+
+type TestContextOptions = {
+	role?: BusinessRole;
+	userId?: string;
+	authRole?: string;
+	profileOverrides?: Partial<DomainUser>;
+};
 
 /**
  * Utility helpers that create fully linked fixtures for tests.
@@ -10,24 +26,79 @@ import { adminRoles, superadminRoles } from "./auth";
  * so we can assert existing behavior before extending the platform.
  */
 export function makeTestContext(
-  opts: { role?: string; userId?: string } = {},
+  opts: TestContextOptions = {},
 ): Context {
   const { role, userId } = {
-    role: undefined as string | undefined,
+    role: undefined as BusinessRole | undefined,
     userId: randomUUID(),
     ...opts,
   };
-  if (!role) return { session: null } as unknown as Context;
+  if (!role) {
+    return {
+      session: null,
+      profile: null,
+      permissions: buildPermissions(null),
+    } as Context;
+  }
+  const profile = {
+    id: opts.profileOverrides?.id ?? randomUUID(),
+    authUserId: opts.profileOverrides?.authUserId ?? userId,
+    businessRole: role,
+    firstName: opts.profileOverrides?.firstName ?? "Test",
+    lastName: opts.profileOverrides?.lastName ?? "User",
+    primaryEmail:
+      opts.profileOverrides?.primaryEmail ??
+      `profile-${randomUUID()}@example.com`,
+    phone: opts.profileOverrides?.phone ?? null,
+    dateOfBirth: opts.profileOverrides?.dateOfBirth ?? DEFAULT_DATE,
+    placeOfBirth: opts.profileOverrides?.placeOfBirth ?? DEFAULT_PLACE,
+    gender: opts.profileOverrides?.gender ?? "other",
+    nationality: opts.profileOverrides?.nationality ?? null,
+    status: opts.profileOverrides?.status ?? "active",
+    createdAt: opts.profileOverrides?.createdAt ?? new Date(),
+    updatedAt: opts.profileOverrides?.updatedAt ?? new Date(),
+  } satisfies DomainUser;
   return {
     session: {
-      user: { id: userId, role },
+      user: { id: userId, role: opts.authRole ?? "admin" },
     },
+    profile,
+    permissions: buildPermissions(profile),
   } as Context;
 }
 
-export const asAdmin = () => makeTestContext({ role: adminRoles[0] });
-export const asSuperAdmin = () => makeTestContext({ role: superadminRoles[0] });
-export const asUser = () => makeTestContext({ role: "USER" });
+export const asAdmin = () => makeTestContext({ role: "administrator" });
+export const asSuperAdmin = () => makeTestContext({ role: "super_admin" });
+export const asUser = () => makeTestContext({ role: "student" });
+
+const defaultProfilePayload = (
+  data: Partial<NewDomainUser> & {
+    businessRole?: BusinessRole;
+    gender?: Gender;
+  } = {},
+) => ({
+  authUserId: data.authUserId ?? null,
+  businessRole: data.businessRole ?? "student",
+  firstName: data.firstName ?? "John",
+  lastName: data.lastName ?? "Doe",
+  primaryEmail: data.primaryEmail ?? `profile-${randomUUID()}@example.com`,
+  phone: data.phone ?? null,
+  dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+  placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
+  gender: data.gender ?? "other",
+  nationality: data.nationality ?? null,
+  status: data.status ?? "active",
+});
+
+export async function createDomainUser(
+  data: Partial<NewDomainUser> & { businessRole?: BusinessRole } = {},
+) {
+  const [profile] = await db
+    .insert(schema.domainUsers)
+    .values(defaultProfilePayload(data))
+    .returning();
+  return profile;
+}
 
 type RecapFixtureOverrides = {
   faculty?: Partial<schema.NewFaculty>;
@@ -37,7 +108,9 @@ type RecapFixtureOverrides = {
   course?: Partial<schema.NewCourse>;
   classCourse?: Partial<schema.NewClassCourse>;
   exam?: Partial<schema.NewExam>;
-  student?: Partial<schema.NewStudent>;
+  student?: Partial<schema.NewStudent> & {
+    profile?: Partial<schema.NewDomainUser>;
+  };
   grade?: Partial<schema.NewGrade>;
 };
 
@@ -70,7 +143,9 @@ export async function createRecapFixture(
   });
   const student = await createStudent({
     class: klass.id,
-    ...overrides.student,
+    registrationNumber: overrides.student?.registrationNumber,
+    domainUserId: overrides.student?.domainUserId,
+    profile: overrides.student?.profile,
   });
   const grade = await createGrade({
     student: student.id,
@@ -140,18 +215,40 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
   return klass;
 }
 
-export async function createUser(
-  data: { name?: string; email?: string; role?: string; password?: string } = {},
-) {
+type CreateUserOptions = {
+  name?: string;
+  email?: string;
+  role?: string;
+  password?: string;
+  businessRole?: BusinessRole;
+  gender?: Gender;
+  dateOfBirth?: Date;
+  placeOfBirth?: string;
+};
+
+export async function createUser(data: CreateUserOptions = {}) {
+  const email = data.email ?? `user-${randomUUID()}@example.com`;
+  const name = data.name ?? "John Doe";
   const u = await auth.api.createUser({
     body: {
-      name: data.name ?? "John Doe",
-      email: data.email ?? `user-${randomUUID()}@example.com`,
+      name,
+      email,
       role: (data.role as any) ?? "ADMIN",
       password: data.password ?? "password",
     },
   });
-  return u.user;
+  const [firstName, ...rest] = name.split(" ");
+  const profile = await createDomainUser({
+    authUserId: u.user.id,
+    businessRole: data.businessRole ?? "administrator",
+    firstName: firstName || "John",
+    lastName: rest.join(" ") || "Doe",
+    primaryEmail: email,
+    gender: data.gender ?? "other",
+    dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+    placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
+  });
+  return { ...u.user, profile };
 }
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
@@ -209,20 +306,37 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
   return exam;
 }
 
-export async function createStudent(data: Partial<schema.NewStudent> = {}) {
+type StudentHelperInput = {
+  class?: string;
+  registrationNumber?: string;
+  domainUserId?: string;
+  profile?: Partial<NewDomainUser>;
+};
+
+export async function createStudent(data: StudentHelperInput = {}) {
   const klass = data.class ? { id: data.class } : await createClass();
+  let profile = null;
+  let profileId = data.domainUserId;
+  if (!profileId) {
+    profile = await createDomainUser({
+      businessRole: "student",
+      ...data.profile,
+    });
+    profileId = profile.id;
+  } else if (!profile) {
+    profile = await db.query.domainUsers.findFirst({
+      where: (du, { eq }) => eq(du.id, profileId as string),
+    });
+  }
   const [student] = await db
     .insert(schema.students)
     .values({
-      firstName: "Stu",
-      lastName: "Dent",
-      email: data.email ?? `student-${randomUUID()}@example.com`,
+      domainUserId: profileId!,
       registrationNumber: data.registrationNumber ?? randomUUID(),
       class: klass.id,
-      ...data,
     })
     .returning();
-  return student;
+  return { ...student, profile };
 }
 
 export async function createGrade(data: Partial<schema.NewGrade> = {}) {

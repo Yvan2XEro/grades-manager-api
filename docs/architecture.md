@@ -5,7 +5,8 @@ This document captures the state of the system before we branch into the full ac
 ## Runtime overview
 - **API** – Bun + Hono + tRPC entrypoint at `apps/server/src/index.ts`. Middlewares: logger + CORS (GET/POST/OPTIONS, credentials, `CORS_ORIGIN` env).
 - **Auth** – Better Auth configured in `apps/server/src/lib/auth.ts` with Drizzle adapter and admin plugin. Trusted origins inherit `CORS_ORIGIN`.
-- **Client shell** – React + Vite app in `apps/web` wired to Better Auth. Login flow demonstrates the required i18next usage.
+- **Domain identity** – `domain_users` decouples business profiles from Better Auth. `apps/server/src/lib/context.ts` stitches session + profile + permission snapshot via `modules/authz`, and the new RBAC helpers back every `adminProcedure`/`superAdminProcedure`.
+- **Client shell** – React + Vite app in `apps/web` wired to Better Auth. Login flow demonstrates the required i18next usage, and the Zustand store now persists the permission snapshot exported by the API so future guards can mirror the server rules.
 
 ## Routers & modules
 
@@ -20,19 +21,19 @@ This document captures the state of the system before we branch into the full ac
 | `courses` | CRUD | Stores credits, hours, and default teacher (Better Auth `user`). |
 | `classCourses` | CRUD | Links a class to a course and teacher. |
 | `exams` | CRUD | Handles weights (`percentage`) and lock flag. |
-| `students` | CRUD + list | Maintains registration number and class assignment. |
+| `students` | CRUD + list | Maintains registration number/class while personal data (names, DoB, birthplace, gender, etc.) lives in `domain_users`. |
 | `grades` | CRUD + list | Stores score per student/exam, enforces uniqueness. |
-| `users` | `list` | Reads Better Auth users with cursor pagination and filters (new smoke test in `modules/users/__tests__`). |
+| `users` | `list` | Lists business profiles (teachers/admins) from `domain_users` joined with Better Auth metadata for pagination/filtering (smoke tests in `modules/users/__tests__`). |
 
-> All routers share the context from `apps/server/src/lib/context.ts`, which today only injects the Better Auth session. Phase 1 will extend this with domain profiles/roles.
+> All routers share the context from `apps/server/src/lib/context.ts`, which now injects both the Better Auth session and the linked domain profile/permission snapshot.
 
 ## Database schema (Drizzle)
-- `faculties`, `programs`, `classes`, `courses`, `class_courses`, `academic_years`, `students`, `exams`, `grades` – defined in `apps/server/src/db/schema/app-schema.ts`.
+- `faculties`, `programs`, `classes`, `courses`, `class_courses`, `academic_years`, `students`, `exams`, `grades`, `domain_users` – defined in `apps/server/src/db/schema/app-schema.ts`.
 - Better Auth tables `user`, `session`, `account`, `verification` – in `apps/server/src/db/schema/auth.ts`.
-- Foreign keys already connect courses/classCourses to Better Auth `user.id`, which is why the Auth ↔ Domain split is the next priority.
+- `domain_users` binds each business profile to an optional `auth.user` and enforces the personal data required by the client (date/place of birth, gender, phone, status). Students reference `domain_users` through `domain_user_id`, and future teacher/admin modules will reuse the same structure.
 
 ## Test fixtures & recap data
-- `apps/server/src/lib/test-utils.ts` centralizes factories for every model plus the new `createRecapFixture` helper that provisions a complete faculty → program → class → course → exam → student → grade chain. This fixture is how we reproduce the recap dataset locally/in CI before extending the feature set.
+- `apps/server/src/lib/test-utils.ts` centralizes factories for every model plus the new `createRecapFixture` helper that provisions a complete faculty → program → class → course → exam → student → grade chain. Students and teachers are now created through `createDomainUser` so FI data (names, DoB, gender, birthplace) is always present when tests run.
 - Seed helpers rely on Better Auth’s testing adapter (`./lib/test-db`) so auth-bound resources are always valid.
 
 ## Environment & security posture

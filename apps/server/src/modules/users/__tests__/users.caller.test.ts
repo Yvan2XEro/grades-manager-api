@@ -15,29 +15,35 @@ describe("users router", () => {
 	});
 
 	it("lists users with cursor pagination", async () => {
-		const role = `TESTER-${randomUUID()}`;
+		const role = "teacher";
 		const firstUser = await createUser({
 			email: `first-${randomUUID()}@example.com`,
-			role,
+			businessRole: role,
 		});
 		const secondUser = await createUser({
 			email: `second-${randomUUID()}@example.com`,
-			role,
+			businessRole: role,
 		});
-		const sortedIds = [firstUser.id, secondUser.id].sort();
+		const createdIds = new Set([
+			firstUser.profile.id,
+			secondUser.profile.id,
+		]);
 
 		const admin = createCaller(asAdmin());
 		const firstPage = await admin.users.list({ limit: 1, role });
 		expect(firstPage.items.length).toBe(1);
-		expect(firstPage.items[0].id).toBe(sortedIds[0]);
+		expect(createdIds.has(firstPage.items[0].profileId)).toBe(true);
+		createdIds.delete(firstPage.items[0].profileId);
 		expect(firstPage.nextCursor).toBeDefined();
 
 		const secondPage = await admin.users.list({
 			limit: 1,
 			role,
-			cursor: sortedIds[0],
+			cursor: firstPage.nextCursor,
 		});
 		expect(secondPage.items.length).toBe(1);
-		expect(secondPage.items[0].id).toBe(sortedIds[1]);
+		expect(createdIds.has(secondPage.items[0].profileId)).toBe(true);
+		createdIds.delete(secondPage.items[0].profileId);
+		expect(createdIds.size).toBe(0);
 	});
 });

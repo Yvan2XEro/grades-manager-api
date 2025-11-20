@@ -19,7 +19,7 @@ describe("faculties router", () => {
 	});
 
 	it("enforces roles", async () => {
-		const caller = createCaller(makeTestContext({ role: "USER" }));
+		const caller = createCaller(makeTestContext({ role: "student" }));
 		await expect(
 			caller.faculties.create({ name: "F1" }),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
