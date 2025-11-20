@@ -16,7 +16,7 @@ describe("users router", () => {
 	});
 
 	it("lists users with cursor pagination", async () => {
-		const role = "teacher";
+		const role = "staff";
 		const firstUser = await createUser({
 			email: `first-${randomUUID()}@example.com`,
 			businessRole: role,

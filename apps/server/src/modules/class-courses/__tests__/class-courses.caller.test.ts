@@ -23,20 +23,21 @@ describe("class courses router", () => {
 	it("supports CRUD", async () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
-		const teacher = await createUser();
+		const teacherId = course.defaultTeacher;
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			class: klass.id,
 			course: course.id,
-			teacher: teacher.id,
+			teacher: teacherId,
+			weeklyHours: 2,
 		});
 		expect(cc.class).toBe(klass.id);
 
 		const updated = await admin.classCourses.update({
 			id: cc.id,
-			teacher: teacher.id,
+			weeklyHours: 3,
 		});
-		expect(updated.teacher).toBe(teacher.id);
+		expect(updated.weeklyHours).toBe(3);
 
 		await admin.classCourses.delete({ id: cc.id });
 		const list = await admin.classCourses.list({ classId: klass.id });

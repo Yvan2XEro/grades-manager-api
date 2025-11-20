@@ -77,6 +77,13 @@ export async function seed() {
 		.insert(schema.programs)
 		.values({ name: "Seed Program", faculty: faculty.id })
 		.returning();
+	await db.insert(schema.teachingUnits).values({
+		name: "Seed UE",
+		code: "UE-SEED",
+		programId: program.id,
+		credits: 3,
+		semester: "annual",
+	});
 	await db.insert(schema.classes).values({
 		name: "Seed Class",
 		program: program.id,
@@ -87,11 +94,14 @@ export async function seed() {
 export async function reset() {
 	await db.execute(sql`
     TRUNCATE TABLE
+     course_prerequisites,
      domain_users,
      grades,
      exams,
      class_courses,
+     enrollments,
      courses,
+     teaching_units,
      classes,
      programs,
      faculties,

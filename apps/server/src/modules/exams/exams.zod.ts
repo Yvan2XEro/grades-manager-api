@@ -21,3 +21,10 @@ export const listSchema = z.object({
 export const idSchema = z.object({ id: z.string() });
 
 export const lockSchema = z.object({ examId: z.string(), lock: z.boolean() });
+
+export const submitSchema = z.object({ examId: z.string() });
+
+export const validateSchema = z.object({
+	examId: z.string(),
+	status: z.enum(["approved", "rejected"]),
+});

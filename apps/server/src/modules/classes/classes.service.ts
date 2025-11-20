@@ -3,6 +3,7 @@ import * as studentsRepo from "@/modules/students/students.repo";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
+import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as repo from "./classes.repo";
 
 export async function createClass(data: Parameters<typeof repo.create>[0]) {
@@ -32,6 +33,13 @@ export async function deleteClass(id: string) {
 		if (!target) throw conflict("Cannot delete class with students");
 		for (const s of students.items) {
 			await studentsRepo.transferStudent(s.id, target.id);
+			await enrollmentsRepo.closeActive(s.id, "completed");
+			await enrollmentsRepo.create({
+				studentId: s.id,
+				classId: target.id,
+				academicYearId: target.academicYear,
+				status: "active",
+			});
 		}
 	}
 
@@ -58,6 +66,13 @@ export async function transferStudent(studentId: string, toClassId: string) {
 			.update(schema.students)
 			.set({ class: toClassId })
 			.where(eq(schema.students.id, studentId));
+	});
+	await enrollmentsRepo.closeActive(studentId, "completed");
+	await enrollmentsRepo.create({
+		studentId,
+		classId: toClassId,
+		academicYearId: target.academicYear,
+		status: "active",
 	});
 	return studentsRepo.findById(studentId);
 }

@@ -4,10 +4,12 @@ import { academicYearsRouter } from "../modules/academic-years";
 import { classCoursesRouter } from "../modules/class-courses";
 import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
+import { enrollmentsRouter } from "../modules/enrollments";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { programsRouter } from "../modules/programs";
 import { studentsRouter } from "../modules/students";
+import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 
 export const appRouter = router({
@@ -18,10 +20,12 @@ export const appRouter = router({
 	})),
 	faculties: facultiesRouter,
 	programs: programsRouter,
+	teachingUnits: teachingUnitsRouter,
 	academicYears: academicYearsRouter,
 	classes: classesRouter,
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
+	enrollments: enrollmentsRouter,
 	exams: examsRouter,
 	students: studentsRouter,
 	grades: gradesRouter,

@@ -18,22 +18,24 @@ This document captures the state of the system before we branch into the full ac
 | `programs` | `list`, `create`, `update`, `delete` | Requires faculty FK, includes pagination support. |
 | `academicYears` | `list`, `create`, `update`, `delete`, `setActive` | Enforces `endDate > startDate`. |
 | `classes` | CRUD + filtering by program/year | Binds programs and academic years. |
-| `courses` | CRUD | Stores credits, hours, and default teacher (Better Auth `user`). |
-| `classCourses` | CRUD | Links a class to a course and teacher. |
-| `exams` | CRUD | Handles weights (`percentage`) and lock flag. |
-| `students` | CRUD + list | Maintains registration number/class while personal data (names, DoB, birthplace, gender, etc.) lives in `domain_users`. |
+| `teachingUnits` | CRUD | Manages the UE layer (code, semester, credits) under a program. |
+| `courses` | CRUD | Stores credits, hours, default teacher, the UE link, and prerequisite graph. |
+| `classCourses` | CRUD | Links a class to a course/teacher, validates prerequisites and workload approvals. |
+| `enrollments` | CRUD + list | Tracks student ↔ class ↔ academic year history. Mutations in `students`/`classes` keep this table in sync. |
+| `exams` | CRUD + workflow (`submit`, `validate`, `lock`) | Handles scheduling, approval, and locking of assessments. |
+| `students` | CRUD + list | Maintains registration number/class while personal data (names, DoB, birthplace, gender, etc.) lives in `domain_users`. Every create/update also touches `enrollments`. |
 | `grades` | CRUD + list | Stores score per student/exam, enforces uniqueness. |
 | `users` | `list` | Lists business profiles (teachers/admins) from `domain_users` joined with Better Auth metadata for pagination/filtering (smoke tests in `modules/users/__tests__`). |
 
 > All routers share the context from `apps/server/src/lib/context.ts`, which now injects both the Better Auth session and the linked domain profile/permission snapshot.
 
 ## Database schema (Drizzle)
-- `faculties`, `programs`, `classes`, `courses`, `class_courses`, `academic_years`, `students`, `exams`, `grades`, `domain_users` – defined in `apps/server/src/db/schema/app-schema.ts`.
+- `faculties`, `programs`, `teaching_units`, `classes`, `courses`, `class_courses`, `academic_years`, `students`, `exams`, `grades`, `course_prerequisites`, `enrollments`, `domain_users` – defined in `apps/server/src/db/schema/app-schema.ts`.
 - Better Auth tables `user`, `session`, `account`, `verification` – in `apps/server/src/db/schema/auth.ts`.
-- `domain_users` binds each business profile to an optional `auth.user` and enforces the personal data required by the client (date/place of birth, gender, phone, status). Students reference `domain_users` through `domain_user_id`, and future teacher/admin modules will reuse the same structure.
+- `domain_users` binds each business profile to an optional `auth.user` and enforces the personal data required by the client (date/place of birth, gender, phone, status). Students reference `domain_users` through `domain_user_id`, and the new `enrollments` table preserves class history per academic year.
 
 ## Test fixtures & recap data
-- `apps/server/src/lib/test-utils.ts` centralizes factories for every model plus the new `createRecapFixture` helper that provisions a complete faculty → program → class → course → exam → student → grade chain. Students and teachers are now created through `createDomainUser` so FI data (names, DoB, gender, birthplace) is always present when tests run.
+- `apps/server/src/lib/test-utils.ts` centralizes factories for every model plus the new `createRecapFixture` helper that provisions a complete faculty → program → teaching unit → class → course → exam → student → enrollment → grade chain. Students and teachers are now created through `createDomainUser` so FI data (names, DoB, gender, birthplace) is always present when tests run.
 - Seed helpers rely on Better Auth’s testing adapter (`./lib/test-db`) so auth-bound resources are always valid.
 
 ## Environment & security posture
@@ -44,6 +46,12 @@ This document captures the state of the system before we branch into the full ac
 - Hono is already configured for credentialed requests (cookies/auth headers). Future clients must use the same origin defined above, so maintain consistency between `.env`, deployment, and reverse proxies.
 
 ## Migrations & conventions
-- Current Drizzle migration: `apps/server/src/db/migrations/0000_tough_ezekiel_stane.sql` (with `meta/` managed by Drizzle).
+- Current Drizzle migrations: `0000_tough_ezekiel_stane.sql`, `0001_domain_users_split.sql`, and `0002_phase2_academic_models.sql` (with `meta/` managed by Drizzle).
 - Naming plan going forward: `YYYYMMDDHHMM_<short-description>.sql` to keep ordering obvious in Git history, stored under the same directory, generated via `bun run --filter server db:generate`.
 - Always commit the SQL migration plus the generated snapshot from Drizzle to avoid drift across environments.
+
+## Notable Phase 2 behaviors
+- Exams follow a workflow: draft/scheduled → submitted → approved/rejected → locked. Grading endpoints now enforce `status === "approved"` before mutating, and locking requires approval.
+- CSV support: `grades.importCsv` ingests `registrationNumber,score` pairs per exam, and `grades.exportClassCourseCsv` dumps the current results for a class-course. These endpoints power the teacher tooling described in `docs/analyze.md`.
+- `grades.getStudentTranscript` consolidates grades per UE and calculates weighted averages using course credits (foundation for the analytics module).
+- Transfers/deletions on classes automatically move students back to a valid class and append enrollment records, keeping the history auditable.

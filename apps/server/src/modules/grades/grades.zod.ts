@@ -39,3 +39,16 @@ export const avgStudentCourseSchema = z.object({
 	studentId: z.string(),
 	courseId: z.string(),
 });
+
+export const exportClassCourseSchema = z.object({
+	classCourseId: z.string(),
+});
+
+export const importCsvSchema = z.object({
+	examId: z.string(),
+	csv: z.string().min(1),
+});
+
+export const consolidatedSchema = z.object({
+	studentId: z.string(),
+});

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import type {
 	BusinessRole,
 	DomainUser,
@@ -103,6 +104,7 @@ type RecapFixtureOverrides = {
 	program?: Partial<schema.NewProgram>;
 	academicYear?: Partial<schema.NewAcademicYear>;
 	klass?: Partial<schema.NewKlass>;
+	teachingUnit?: Partial<schema.NewTeachingUnit>;
 	course?: Partial<schema.NewCourse>;
 	classCourse?: Partial<schema.NewClassCourse>;
 	exam?: Partial<schema.NewExam>;
@@ -121,6 +123,10 @@ export async function createRecapFixture(
 		...overrides.program,
 	});
 	const academicYear = await createAcademicYear(overrides.academicYear);
+	const teachingUnit = await createTeachingUnit({
+		programId: program.id,
+		...overrides.teachingUnit,
+	});
 	const klass = await createClass({
 		program: program.id,
 		academicYear: academicYear.id,
@@ -128,6 +134,7 @@ export async function createRecapFixture(
 	});
 	const course = await createCourse({
 		program: program.id,
+		teachingUnitId: teachingUnit.id,
 		...overrides.course,
 	});
 	const classCourse = await createClassCourse({
@@ -150,16 +157,21 @@ export async function createRecapFixture(
 		exam: exam.id,
 		...overrides.grade,
 	});
+	const enrollment = await db.query.enrollments.findFirst({
+		where: (en, { eq }) => eq(en.studentId, student.id),
+	});
 
 	return {
 		faculty,
 		program,
 		academicYear,
+		teachingUnit,
 		klass,
 		course,
 		classCourse,
 		exam,
 		student,
+		enrollment,
 		grade,
 	};
 }
@@ -179,6 +191,27 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 		.values({ name: `Program-${randomUUID()}`, faculty: faculty.id, ...data })
 		.returning();
 	return program;
+}
+
+export async function createTeachingUnit(
+	data: Partial<schema.NewTeachingUnit> = {},
+) {
+	const program = data.programId
+		? { id: data.programId }
+		: await createProgram();
+	const [unit] = await db
+		.insert(schema.teachingUnits)
+		.values({
+			name: data.name ?? `UE-${randomUUID().slice(0, 6)}`,
+			code: data.code ?? `UE-${randomUUID().slice(0, 6)}`,
+			programId: program.id,
+			credits: data.credits ?? 3,
+			semester: data.semester ?? "annual",
+			description: data.description ?? null,
+			...data,
+		})
+		.returning();
+	return unit;
 }
 
 export async function createAcademicYear(
@@ -251,18 +284,19 @@ export async function createUser(data: CreateUserOptions = {}) {
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
 	const program = data.program ? { id: data.program } : await createProgram();
-	const teacher = data.defaultTeacher
-		? { id: data.defaultTeacher }
-		: await createUser();
+	const teachingUnit = data.teachingUnitId
+		? { id: data.teachingUnitId }
+		: await createTeachingUnit({ programId: program.id });
+	const defaultTeacherId = data.defaultTeacher ?? (await createUser()).id;
 	const [course] = await db
 		.insert(schema.courses)
 		.values({
-			name: `Course-${randomUUID()}`,
+			name: data.name ?? `Course-${randomUUID()}`,
 			credits: data.credits ?? 3,
 			hours: data.hours ?? 30,
 			program: program.id,
-			defaultTeacher: teacher.id,
-			...data,
+			teachingUnitId: data.teachingUnitId ?? teachingUnit.id,
+			defaultTeacher: defaultTeacherId,
 		})
 		.returning();
 	return course;
@@ -280,6 +314,7 @@ export async function createClassCourse(
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.id,
+			weeklyHours: data.weeklyHours ?? 2,
 			...data,
 		})
 		.returning();
@@ -293,12 +328,18 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
 	const [exam] = await db
 		.insert(schema.exams)
 		.values({
-			name: `Exam-${randomUUID()}`,
+			name: data.name ?? `Exam-${randomUUID()}`,
 			type: data.type ?? "WRITTEN",
 			date: data.date ?? new Date(),
 			percentage: data.percentage?.toString() ?? "50",
 			classCourse: classCourse.id,
-			...data,
+			status: data.status ?? "approved",
+			isLocked: data.isLocked ?? false,
+			scheduledBy: data.scheduledBy ?? null,
+			validatedBy: data.validatedBy ?? null,
+			scheduledAt: data.scheduledAt ?? new Date(),
+			validatedAt:
+				data.validatedAt ?? (data.status === "approved" ? new Date() : null),
 		})
 		.returning();
 	return exam;
@@ -312,19 +353,22 @@ type StudentHelperInput = {
 };
 
 export async function createStudent(data: StudentHelperInput = {}) {
-	const klass = data.class ? { id: data.class } : await createClass();
-	let profile = null;
+	const klass =
+		data.class !== undefined
+			? await db.query.classes.findFirst({
+					where: eq(schema.classes.id, data.class),
+				})
+			: await createClass();
+	if (!klass) {
+		throw new Error("Class not found");
+	}
 	let profileId = data.domainUserId;
 	if (!profileId) {
-		profile = await createDomainUser({
+		const profile = await createDomainUser({
 			businessRole: "student",
 			...data.profile,
 		});
 		profileId = profile.id;
-	} else if (!profile) {
-		profile = await db.query.domainUsers.findFirst({
-			where: (du, { eq }) => eq(du.id, profileId as string),
-		});
 	}
 	const [student] = await db
 		.insert(schema.students)
@@ -334,7 +378,13 @@ export async function createStudent(data: StudentHelperInput = {}) {
 			class: klass.id,
 		})
 		.returning();
-	return { ...student, profile };
+	await db.insert(schema.enrollments).values({
+		studentId: student.id,
+		classId: klass.id,
+		academicYearId: klass.academicYear,
+		status: "active",
+	});
+	return student;
 }
 
 export async function createGrade(data: Partial<schema.NewGrade> = {}) {

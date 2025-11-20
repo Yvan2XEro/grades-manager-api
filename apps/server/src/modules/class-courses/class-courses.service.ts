@@ -1,19 +1,83 @@
+import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
+import { db } from "../../db";
+import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
+import * as classesRepo from "../classes/classes.repo";
+import * as coursesRepo from "../courses/courses.repo";
 import * as repo from "./class-courses.repo";
 
-export async function createClassCourse(
-	data: Parameters<typeof repo.create>[0],
+type ClassCourseInput = schema.NewClassCourse & {
+	allowTeacherOverride?: boolean;
+};
+
+async function validateConfig(
+	config: schema.NewClassCourse,
+	allowTeacherOverride = false,
 ) {
-	return repo.create(data);
+	const klass = await classesRepo.findById(config.class);
+	if (!klass) throw notFound("Class not found");
+	const course = await coursesRepo.findById(config.course);
+	if (!course) throw notFound("Course not found");
+	if (klass.program !== course.program) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Class and course must belong to the same program",
+		});
+	}
+	if (config.teacher !== course.defaultTeacher && !allowTeacherOverride) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Teacher override requires approval",
+		});
+	}
+	if (config.weeklyHours > course.hours) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Weekly hours exceed course hours",
+		});
+	}
+
+	const prereqs = await db
+		.select({
+			prerequisiteCourseId: schema.coursePrerequisites.prerequisiteCourseId,
+		})
+		.from(schema.coursePrerequisites)
+		.where(eq(schema.coursePrerequisites.courseId, config.course));
+
+	if (prereqs.length > 0) {
+		const existing = await repo.list({ classId: config.class, limit: 200 });
+		const assigned = new Set(existing.items.map((cc) => cc.course));
+		for (const prereq of prereqs) {
+			if (!assigned.has(prereq.prerequisiteCourseId)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Prerequisite courses must be assigned before this course",
+				});
+			}
+		}
+	}
+}
+
+export async function createClassCourse(data: ClassCourseInput) {
+	const { allowTeacherOverride, ...payload } = data;
+	await validateConfig(payload, allowTeacherOverride);
+	return repo.create(payload);
 }
 
 export async function updateClassCourse(
 	id: string,
-	data: Parameters<typeof repo.update>[1],
+	data: Partial<ClassCourseInput>,
 ) {
 	const existing = await repo.findById(id);
 	if (!existing) throw notFound();
-	return repo.update(id, data);
+	const { allowTeacherOverride, ...payload } = data;
+	const merged = {
+		...existing,
+		...payload,
+	};
+	await validateConfig(merged as schema.NewClassCourse, allowTeacherOverride);
+	return repo.update(id, payload);
 }
 
 export async function deleteClassCourse(id: string) {

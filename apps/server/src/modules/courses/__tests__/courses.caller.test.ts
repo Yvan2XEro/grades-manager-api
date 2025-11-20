@@ -3,6 +3,7 @@ import type { Context } from "@/lib/context";
 import {
 	asAdmin,
 	createProgram,
+	createTeachingUnit,
 	createUser,
 	makeTestContext,
 } from "@/lib/test-utils";
@@ -21,6 +22,7 @@ describe("courses router", () => {
 
 	it("supports CRUD", async () => {
 		const program = await createProgram();
+		const unit = await createTeachingUnit({ programId: program.id });
 		const teacher = await createUser();
 		const admin = createCaller(asAdmin());
 		const course = await admin.courses.create({
@@ -28,6 +30,7 @@ describe("courses router", () => {
 			credits: 3,
 			hours: 30,
 			program: program.id,
+			teachingUnitId: unit.id,
 			defaultTeacher: teacher.id,
 		});
 		expect(course.program).toBe(program.id);

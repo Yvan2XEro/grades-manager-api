@@ -69,10 +69,11 @@ export async function list(opts: ListOpts) {
 		.limit(limit + 1);
 
 	let nextCursor: string | undefined;
+	let items = rows;
 	if (rows.length > limit) {
-		const next = rows.pop();
-		nextCursor = next?.profileId;
+		items = rows.slice(0, limit);
+		nextCursor = items[items.length - 1]?.profileId;
 	}
 
-	return { items: rows, nextCursor };
+	return { items, nextCursor };
 }

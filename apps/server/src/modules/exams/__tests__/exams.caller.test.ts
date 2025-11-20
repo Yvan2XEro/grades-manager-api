@@ -41,6 +41,8 @@ describe("exams router", () => {
 		if (!exam) {
 			throw new Error("Failed to create exam");
 		}
+		await admin.exams.submit({ examId: exam.id });
+		await admin.exams.validate({ examId: exam.id, status: "approved" });
 		await admin.exams.lock({ examId: exam.id, lock: true });
 		await expect(
 			admin.exams.update({ id: exam.id, name: "M" }),

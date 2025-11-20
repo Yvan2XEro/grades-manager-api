@@ -57,3 +57,13 @@ export const superAdminProcedure = t.procedure.use(({ ctx, next }) => {
 		},
 	});
 });
+
+export const gradingProcedure = protectedProcedure.use(({ ctx, next }) => {
+	if (!ctx.permissions?.canGrade) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Insufficient permissions to perform grading actions",
+		});
+	}
+	return next();
+});

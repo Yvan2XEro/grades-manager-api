@@ -2,10 +2,12 @@ import { z } from "zod";
 
 export const baseSchema = z.object({
 	name: z.string(),
-	credits: z.number(),
-	hours: z.number(),
+	credits: z.number().int().nonnegative(),
+	hours: z.number().int().positive(),
 	program: z.string(),
+	teachingUnitId: z.string(),
 	defaultTeacher: z.string(),
+	prerequisiteCourseIds: z.array(z.string()).optional(),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });

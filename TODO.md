@@ -30,13 +30,13 @@
 - [x] Update the web docs/state (`apps/web/src/store`) to describe which roles can call which routes and prepare guards for future layouts.
 
 ## Phase 2 – Academic models and orchestration (Week 2–4)
-- [ ] Extend the schema with explicit UEs and ECs (program → UE → EC hierarchy, coefficients, ECTS) per `docs/analyze.md#gestion-des-programmes-ues-et-ecs`.
-- [ ] Add an `enrollments` table to track student ↔ class ↔ academic year history and support transfers.
-- [ ] Finish `classes`, `courses`, and `classCourses` modules so they validate prerequisites, workloads, and default teacher approvals.
-- [ ] Build out `modules/exams` to manage scheduling, percentages, locking, and dean approvals.
-- [ ] Enhance `modules/grades` to support entry, UE consolidation, weighted averages (`docs/analyze.md#gestion-des-notes-et-résultats`), and instructor feedback loops.
-- [ ] Provide CSV import/export flows for grades and attendance to match teacher workflows (`docs/analyze.md#enseignants`).
-- [ ] Document student/teacher/dean workflows in `docs/workflows.md` to feed Phase 3 UI work.
+- [x] Extend the schema with explicit UEs and ECs (program → UE → EC hierarchy, coefficients, ECTS) per `docs/analyze.md#gestion-des-programmes-ues-et-ecs`.
+- [x] Add an `enrollments` table to track student ↔ class ↔ academic year history and support transfers.
+- [x] Finish `classes`, `courses`, and `classCourses` modules so they validate prerequisites, workloads, and default teacher approvals.
+- [x] Build out `modules/exams` to manage scheduling, percentages, locking, and dean approvals.
+- [x] Enhance `modules/grades` to support entry, UE consolidation, weighted averages (`docs/analyze.md#gestion-des-notes-et-résultats`), and instructor feedback loops.
+- [x] Provide CSV import/export flows for grades and attendance to match teacher workflows (`docs/analyze.md#enseignants`).
+- [x] Document student/teacher/dean workflows in `docs/workflows.md` to feed Phase 3 UI work.
 
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
 - [ ] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
