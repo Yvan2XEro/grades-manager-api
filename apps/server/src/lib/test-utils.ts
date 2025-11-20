@@ -3,6 +3,12 @@ import { auth, db } from "./test-db";
 import * as schema from "../db/schema/app-schema";
 import { randomUUID } from "node:crypto";
 import { adminRoles, superadminRoles } from "./auth";
+
+/**
+ * Utility helpers that create fully linked fixtures for tests.
+ * These factories are designed to reproduce the "recap" dataset quickly
+ * so we can assert existing behavior before extending the platform.
+ */
 export function makeTestContext(
   opts: { role?: string; userId?: string } = {},
 ): Context {
@@ -22,6 +28,68 @@ export function makeTestContext(
 export const asAdmin = () => makeTestContext({ role: adminRoles[0] });
 export const asSuperAdmin = () => makeTestContext({ role: superadminRoles[0] });
 export const asUser = () => makeTestContext({ role: "USER" });
+
+type RecapFixtureOverrides = {
+  faculty?: Partial<schema.NewFaculty>;
+  program?: Partial<schema.NewProgram>;
+  academicYear?: Partial<schema.NewAcademicYear>;
+  klass?: Partial<schema.NewKlass>;
+  course?: Partial<schema.NewCourse>;
+  classCourse?: Partial<schema.NewClassCourse>;
+  exam?: Partial<schema.NewExam>;
+  student?: Partial<schema.NewStudent>;
+  grade?: Partial<schema.NewGrade>;
+};
+
+export async function createRecapFixture(
+  overrides: RecapFixtureOverrides = {},
+) {
+  const faculty = await createFaculty(overrides.faculty);
+  const program = await createProgram({
+    faculty: faculty.id,
+    ...overrides.program,
+  });
+  const academicYear = await createAcademicYear(overrides.academicYear);
+  const klass = await createClass({
+    program: program.id,
+    academicYear: academicYear.id,
+    ...overrides.klass,
+  });
+  const course = await createCourse({
+    program: program.id,
+    ...overrides.course,
+  });
+  const classCourse = await createClassCourse({
+    class: klass.id,
+    course: course.id,
+    ...overrides.classCourse,
+  });
+  const exam = await createExam({
+    classCourse: classCourse.id,
+    ...overrides.exam,
+  });
+  const student = await createStudent({
+    class: klass.id,
+    ...overrides.student,
+  });
+  const grade = await createGrade({
+    student: student.id,
+    exam: exam.id,
+    ...overrides.grade,
+  });
+
+  return {
+    faculty,
+    program,
+    academicYear,
+    klass,
+    course,
+    classCourse,
+    exam,
+    student,
+    grade,
+  };
+}
 
 export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
   const [faculty] = await db
@@ -47,8 +115,8 @@ export async function createAcademicYear(
     .insert(schema.academicYears)
     .values({
       name: `AY-${randomUUID()}`,
-      startDate: data.startDate ?? new Date("2024-01-01").toISOString(),
-      endDate: data.endDate ?? new Date("2024-12-31").toISOString(),
+      startDate: data.startDate ?? new Date("2024-01-01"),
+      endDate: data.endDate ?? new Date("2024-12-31"),
       ...data,
     })
     .returning();

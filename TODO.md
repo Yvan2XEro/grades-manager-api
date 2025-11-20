@@ -15,11 +15,11 @@
 - [ ] Run Biome, `bun run check`, and validate Drizzle migrations before shipping.
 
 ## Phase 0 – Stabilize & map the baseline (Week 0–1)
-- [ ] Document the current modules, tables, and TRPC routes in `docs/architecture.md`.
-- [ ] Add smoke tests for each existing router to lock today’s behavior.
-- [ ] Clean and document seeds/fixtures in `apps/server/src/lib/test-utils.ts` so recaps can be reproduced in any environment.
-- [ ] Define the sensitive-data strategy (`.env`, Better Auth secrets) and review Hono CORS config (`apps/server/src/index.ts`) to ease future web/mobile clients.
-- [ ] Inventory current Drizzle migrations (`apps/server/src/db/migrations`) and define a naming/versioning convention.
+- [x] Document the current modules, tables, and TRPC routes in `docs/architecture.md`.
+- [x] Add smoke tests for each existing router to lock today’s behavior.
+- [x] Clean and document seeds/fixtures in `apps/server/src/lib/test-utils.ts` so recaps can be reproduced in any environment.
+- [x] Define the sensitive-data strategy (`.env`, Better Auth secrets) and review Hono CORS config (`apps/server/src/index.ts`) to ease future web/mobile clients.
+- [x] Inventory current Drizzle migrations (`apps/server/src/db/migrations`) and define a naming/versioning convention.
 
 ## Phase 1 – Identity, roles, and access governance (Week 1–3)
 - [ ] Create the `domain_users` (or `user_profiles`) table plus Drizzle entities with a mandatory FK to `auth.user`, and store business metadata (academic role, registration identifiers, status).
