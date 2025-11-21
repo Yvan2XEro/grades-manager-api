@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type React from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router";
 import { useStore } from "../../store";
 
 const AuthLayout: React.FC = () => {

@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "../../lib/auth-client";

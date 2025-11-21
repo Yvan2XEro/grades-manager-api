@@ -1,21 +1,34 @@
-import { AlertTriangle, BellRing } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AlertTriangle, BellRing, Send } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 const AttendanceAlerts = () => {
 	const { t } = useTranslation();
+	const [message, setMessage] = useState("");
 
-	const alerts = [
-		{
-			title: t("teacher.attendance.atRisk"),
-			description: t("teacher.attendance.atRiskDesc"),
-			tone: "warning" as const,
+	const notificationsQuery = useQuery(
+		trpc.notifications.list.queryOptions({ status: "pending" }),
+	);
+
+	const sendAlert = useMutation({
+		mutationFn: () =>
+			trpcClient.workflows.attendanceAlert.mutate({
+				classCourseId: "",
+				severity: "warning",
+				message,
+			}),
+		onSuccess: () => {
+			toast.success(t("teacher.attendance.toast.sent", { defaultValue: "Alert queued" }));
+			setMessage("");
 		},
-		{
-			title: t("teacher.attendance.lowEngagement"),
-			description: t("teacher.attendance.lowEngagementDesc"),
-			tone: "info" as const,
-		},
-	];
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const alerts =
+		notificationsQuery.data?.filter((notification) => notification.type === "attendance_alert") ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -32,26 +45,28 @@ const AttendanceAlerts = () => {
 						{t("teacher.attendance.openAlerts")}
 					</h2>
 					<div className="mt-4 space-y-3">
-						{alerts.map((alert) => (
-							<div
-								key={alert.title}
-								className="flex items-start space-x-3 rounded-lg bg-gray-50 p-4"
-							>
+						{alerts.length ? (
+							alerts.map((alert) => (
 								<div
-									className={`rounded-full p-2 ${
-										alert.tone === "warning"
-											? "bg-amber-100 text-amber-700"
-											: "bg-blue-100 text-blue-700"
-									}`}
+									key={alert.id}
+									className="flex items-start space-x-3 rounded-lg bg-gray-50 p-4"
 								>
-									<AlertTriangle className="h-5 w-5" />
+									<div className="rounded-full bg-amber-100 p-2 text-amber-700">
+										<AlertTriangle className="h-5 w-5" />
+									</div>
+									<div>
+										<p className="font-medium text-gray-900">{alert.type}</p>
+										<p className="text-gray-600 text-sm">
+											{JSON.stringify(alert.payload)}
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className="font-medium text-gray-900">{alert.title}</p>
-									<p className="text-gray-600 text-sm">{alert.description}</p>
-								</div>
-							</div>
-						))}
+							))
+						) : (
+							<p className="text-sm text-gray-500">
+								{t("teacher.attendance.none", { defaultValue: "No alerts yet." })}
+							</p>
+						)}
 					</div>
 				</div>
 				<div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -61,16 +76,22 @@ const AttendanceAlerts = () => {
 					<p className="text-gray-600 text-sm">
 						{t("teacher.attendance.broadcastDesc")}
 					</p>
-					<div className="mt-4 rounded-lg bg-primary-50 p-4 text-primary-900">
-						<div className="flex items-center space-x-3">
-							<BellRing className="h-5 w-5" />
-							<div>
-								<p className="font-semibold">
-									{t("teacher.attendance.latest")}
-								</p>
-								<p className="text-sm">{t("teacher.attendance.latestDesc")}</p>
-							</div>
-						</div>
+					<div className="mt-4 space-y-3">
+						<textarea
+							className="w-full rounded-lg border px-3 py-2"
+							placeholder={t("teacher.attendance.placeholder", { defaultValue: "Message" })}
+							value={message}
+							onChange={(event) => setMessage(event.target.value)}
+						/>
+						<button
+							type="button"
+							className="flex items-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+							disabled={!message}
+							onClick={() => sendAlert.mutate()}
+						>
+							<BellRing className="mr-2 h-4 w-4" />
+							{t("teacher.attendance.send", { defaultValue: "Send alert" })}
+						</button>
 					</div>
 				</div>
 			</div>

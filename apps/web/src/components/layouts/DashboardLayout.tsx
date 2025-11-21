@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type React from "react";
 import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { useStore } from "../../store";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";

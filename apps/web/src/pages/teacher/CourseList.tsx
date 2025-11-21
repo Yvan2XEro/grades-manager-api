@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ClipboardList, Users } from "lucide-react";
-import React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
