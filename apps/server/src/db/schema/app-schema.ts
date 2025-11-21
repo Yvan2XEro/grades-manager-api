@@ -9,9 +9,9 @@ import {
 	check,
 	date,
 	index,
-integer,
-jsonb,
-numeric,
+	integer,
+	jsonb,
+	numeric,
 	pgTable,
 	text,
 	timestamp,
@@ -22,8 +22,8 @@ import { user } from "./auth";
 /** Business roles available for domain-level RBAC. */
 export const businessRoles = [
 	"super_admin",
-"administrator",
-"dean",
+	"administrator",
+	"dean",
 	"teacher",
 	"staff",
 	"student",
@@ -44,10 +44,10 @@ export type Semester = (typeof semesters)[number];
 
 /** Enrollment lifecycle for student ↔ classe ↔ academic year. */
 export const enrollmentStatuses = [
-"pending",
-"active",
-"completed",
-"withdrawn",
+	"pending",
+	"active",
+	"completed",
+	"withdrawn",
 ] as const;
 export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
 
@@ -339,9 +339,9 @@ export const coursePrerequisites = pgTable(
 
 /** Historical log of student enrollment per academic year. */
 export const enrollments = pgTable(
-        "enrollments",
-        {
-                id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+	"enrollments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		studentId: text("student_id")
 			.notNull()
 			.references(() => students.id, { onDelete: "cascade" }),
@@ -364,36 +364,36 @@ export const enrollments = pgTable(
 		index("idx_enrollments_student_id").on(t.studentId),
 		index("idx_enrollments_class_id").on(t.classId),
 		index("idx_enrollments_year_id").on(t.academicYearId),
-        ],
+	],
 );
 
 /** Enrollment windows controlling when cohorts accept registrations. */
 export const enrollmentWindows = pgTable(
-        "enrollment_windows",
-        {
-                id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-                classId: text("class_id")
-                        .notNull()
-                        .references(() => classes.id, { onDelete: "cascade" }),
-                academicYearId: text("academic_year_id")
-                        .notNull()
-                        .references(() => academicYears.id, { onDelete: "cascade" }),
-                status: text("status")
-                        .$type<EnrollmentWindowStatus>()
-                        .notNull()
-                        .default("closed"),
-                openedAt: timestamp("opened_at", { withTimezone: true }).defaultNow(),
-                closedAt: timestamp("closed_at", { withTimezone: true }),
-        },
-        (t) => [
-                unique("uq_enrollment_window_class_year").on(t.classId, t.academicYearId),
-                index("idx_enrollment_window_status").on(t.status),
-        ],
+	"enrollment_windows",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		status: text("status")
+			.$type<EnrollmentWindowStatus>()
+			.notNull()
+			.default("closed"),
+		openedAt: timestamp("opened_at", { withTimezone: true }).defaultNow(),
+		closedAt: timestamp("closed_at", { withTimezone: true }),
+	},
+	(t) => [
+		unique("uq_enrollment_window_class_year").on(t.classId, t.academicYearId),
+		index("idx_enrollment_window_status").on(t.status),
+	],
 );
 
 /** Scores students obtain on exams (per class-course). */
 export const grades = pgTable(
-        "grades",
+	"grades",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		student: text("student_id")
@@ -414,39 +414,40 @@ export const grades = pgTable(
 		unique("uq_grades_student_exam").on(t.student, t.exam),
 		index("idx_grades_student_id").on(t.student),
 		index("idx_grades_exam_id").on(t.exam),
-        ],
+	],
 );
 
 /** Notification records for workflow events (email/webhooks). */
 export const notifications = pgTable(
-        "notifications",
-        {
-                id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-                recipientId: text("recipient_id")
-                        .references(() => domainUsers.id, { onDelete: "set null" }),
-                channel: text("channel")
-                        .$type<NotificationChannel>()
-                        .notNull()
-                        .default("email"),
-                type: text("type").notNull(),
-                payload: jsonb("payload").$type<Record<string, unknown>>().default({}),
-                status: text("status")
-                        .$type<NotificationStatus>()
-                        .notNull()
-                        .default("pending"),
-                sentAt: timestamp("sent_at", { withTimezone: true }),
-                createdAt: timestamp("created_at", { withTimezone: true })
-                        .notNull()
-                        .defaultNow(),
-        },
-        (t) => [
-                index("idx_notifications_recipient").on(t.recipientId),
-                index("idx_notifications_status").on(t.status),
-        ],
+	"notifications",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		recipientId: text("recipient_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		channel: text("channel")
+			.$type<NotificationChannel>()
+			.notNull()
+			.default("email"),
+		type: text("type").notNull(),
+		payload: jsonb("payload").$type<Record<string, unknown>>().default({}),
+		status: text("status")
+			.$type<NotificationStatus>()
+			.notNull()
+			.default("pending"),
+		sentAt: timestamp("sent_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_notifications_recipient").on(t.recipientId),
+		index("idx_notifications_status").on(t.status),
+	],
 );
 
 export const facultiesRelations = relations(faculties, ({ many }) => ({
-        programs: many(programs),
+	programs: many(programs),
 }));
 
 export const academicYearsRelations = relations(academicYears, ({ many }) => ({
@@ -589,36 +590,39 @@ export const gradesRelations = relations(grades, ({ one }) => ({
 }));
 
 export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
-        student: one(students, {
-                fields: [enrollments.studentId],
-                references: [students.id],
-        }),
-        classRef: one(classes, {
-                fields: [enrollments.classId],
-                references: [classes.id],
-        }),
-        academicYear: one(academicYears, {
-                fields: [enrollments.academicYearId],
-                references: [academicYears.id],
-        }),
+	student: one(students, {
+		fields: [enrollments.studentId],
+		references: [students.id],
+	}),
+	classRef: one(classes, {
+		fields: [enrollments.classId],
+		references: [classes.id],
+	}),
+	academicYear: one(academicYears, {
+		fields: [enrollments.academicYearId],
+		references: [academicYears.id],
+	}),
 }));
 
-export const enrollmentWindowsRelations = relations(enrollmentWindows, ({ one }) => ({
-        classRef: one(classes, {
-                fields: [enrollmentWindows.classId],
-                references: [classes.id],
-        }),
-        academicYear: one(academicYears, {
-                fields: [enrollmentWindows.academicYearId],
-                references: [academicYears.id],
-        }),
-}));
+export const enrollmentWindowsRelations = relations(
+	enrollmentWindows,
+	({ one }) => ({
+		classRef: one(classes, {
+			fields: [enrollmentWindows.classId],
+			references: [classes.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [enrollmentWindows.academicYearId],
+			references: [academicYears.id],
+		}),
+	}),
+);
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
-        recipient: one(domainUsers, {
-                fields: [notifications.recipientId],
-                references: [domainUsers.id],
-        }),
+	recipient: one(domainUsers, {
+		fields: [notifications.recipientId],
+		references: [domainUsers.id],
+	}),
 }));
 
 export type Faculty = InferSelectModel<typeof faculties>;
@@ -656,7 +660,7 @@ export type NewGrade = InferInsertModel<typeof grades>;
 
 export type CoursePrerequisite = InferSelectModel<typeof coursePrerequisites>;
 export type NewCoursePrerequisite = InferInsertModel<
-        typeof coursePrerequisites
+	typeof coursePrerequisites
 >;
 
 export type Enrollment = InferSelectModel<typeof enrollments>;

@@ -158,31 +158,31 @@
 				"title": "No students found",
 				"description": "There are no students enrolled in this class."
 			},
-                        "toast": {
-                                "fetchCourseError": "Could not load course information",
-                                "fetchGradesError": "Could not load grades",
-                                "saveSuccess": "Grades saved successfully",
-                                "saveError": "Could not save grades",
-                                "lockSuccess": "Exam locked successfully. Grades can no longer be modified.",
-                                "lockError": "Could not lock the exam"
-                        }
-                },
-                "attendance": {
-                        "title": "Attendance alerts",
-                        "subtitle": "Flag at-risk cohorts and broadcast updates",
-                        "openAlerts": "Open alerts",
-                        "atRisk": "At-risk cohort",
-                        "atRiskDesc": "Absence rate exceeds threshold for week 6.",
-                        "lowEngagement": "Low engagement",
-                        "lowEngagementDesc": "Quiz participation dropped below 50%.",
-                        "broadcast": "Broadcast",
-                        "broadcastDesc": "Send automated reminders to students and advisors.",
-                        "latest": "Latest broadcast",
-                        "latestDesc": "Attendance reminders scheduled for tomorrow morning."
-                },
-                "gradeExport": {
-                        "title": "Grade Export",
-                        "subtitle": "Export student grades by class and course",
+			"toast": {
+				"fetchCourseError": "Could not load course information",
+				"fetchGradesError": "Could not load grades",
+				"saveSuccess": "Grades saved successfully",
+				"saveError": "Could not save grades",
+				"lockSuccess": "Exam locked successfully. Grades can no longer be modified.",
+				"lockError": "Could not lock the exam"
+			}
+		},
+		"attendance": {
+			"title": "Attendance alerts",
+			"subtitle": "Flag at-risk cohorts and broadcast updates",
+			"openAlerts": "Open alerts",
+			"atRisk": "At-risk cohort",
+			"atRiskDesc": "Absence rate exceeds threshold for week 6.",
+			"lowEngagement": "Low engagement",
+			"lowEngagementDesc": "Quiz participation dropped below 50%.",
+			"broadcast": "Broadcast",
+			"broadcastDesc": "Send automated reminders to students and advisors.",
+			"latest": "Latest broadcast",
+			"latestDesc": "Attendance reminders scheduled for tomorrow morning."
+		},
+		"gradeExport": {
+			"title": "Grade Export",
+			"subtitle": "Export student grades by class and course",
 			"filters": {
 				"academicYear": "Academic year",
 				"academicYearPlaceholder": "Select academic year",
@@ -448,40 +448,40 @@
 			"toggleSidebarAria": "Toggle sidebar"
 		},
 		"sidebar": {
-                        "admin": {
-                                "dashboard": "Overview",
-                                "academicYears": "Academic years",
-                                "exams": "Exams",
-                                "users": "Users",
-                                "classCourses": "Class courses",
-                                "gradeExport": "Grade export",
-                                "monitoring": "Monitoring",
-                                "notifications": "Notifications",
-                                "students": "Students",
-                                "studentPromotion": "Student promotion",
-                                "courses": "Courses",
-                                "classes": "Classes",
-                                "faculties": "Faculties",
-                                "programs": "Programs",
-                                "teachers": "Teachers",
-                                "courseAssignments": "Course assignments"
-                        },
-                        "teacher": {
-                                "dashboard": "Overview",
-                                "exams": "Exams",
-                                "grades": "Grades",
-                                "courses": "Courses",
-                                "attendance": "Attendance alerts"
-                        },
-                        "dean": {
-                                "dashboard": "Overview",
-                                "workflows": "Approvals"
-                        },
-                        "student": {
-                                "dashboard": "My performance"
-                        }
-                }
-        },
+			"admin": {
+				"dashboard": "Overview",
+				"academicYears": "Academic years",
+				"exams": "Exams",
+				"users": "Users",
+				"classCourses": "Class courses",
+				"gradeExport": "Grade export",
+				"monitoring": "Monitoring",
+				"notifications": "Notifications",
+				"students": "Students",
+				"studentPromotion": "Student promotion",
+				"courses": "Courses",
+				"classes": "Classes",
+				"faculties": "Faculties",
+				"programs": "Programs",
+				"teachers": "Teachers",
+				"courseAssignments": "Course assignments"
+			},
+			"teacher": {
+				"dashboard": "Overview",
+				"exams": "Exams",
+				"grades": "Grades",
+				"courses": "Courses",
+				"attendance": "Attendance alerts"
+			},
+			"dean": {
+				"dashboard": "Overview",
+				"workflows": "Approvals"
+			},
+			"student": {
+				"dashboard": "My performance"
+			}
+		}
+	},
 	"auth": {
 		"layout": {
 			"title": "Welcome back",
@@ -550,59 +550,59 @@
 		}
 	},
 	"admin": {
-                "dashboard": {
-                        "title": "Admin Dashboard",
-                        "activeYear": "Active Year: {{year}}",
-                        "noActiveYear": "No active year",
-                        "programStats": {
-                                "title": "Students per program",
-                                "empty": "No data available for the selected year"
-                        },
-                        "stats": {
-                                "faculties": "Faculties",
-                                "programs": "Programs",
-                                "courses": "Courses",
-                                "exams": "Exams",
-                                "students": "Students",
-                                "teachers": "Teachers"
-                        }
-                },
-                "monitoring": {
-                        "title": "Service monitoring",
-                        "subtitle": "Track workflows, notifications, and background jobs",
-                        "gradeWindows": "Open validation windows",
-                        "pendingAlerts": "Pending alerts",
-                        "jobs": "Background jobs",
-                        "jobsValue": "2 active",
-                        "compliance": "Compliance",
-                        "complianceValue": "MFA + RBAC",
-                        "workflows": "Workflow health",
-                        "workflowsDescription": "Validation, enrollments, and attendance checks are synchronized.",
-                        "healthy": "Healthy",
-                        "gradeValidation": "Grade validation",
-                        "gradeValidationDesc": "Approved exams are locked and broadcast to students.",
-                        "enrollments": "Enrollment windows",
-                        "enrollmentsDesc": "Classes respect open/close windows before accepting transfers.",
-                        "backgroundJobs": "Background jobs",
-                        "backgroundJobsDesc": "Recurring tasks run via Bun intervals to keep data fresh.",
-                        "jobExam": "Exam closure",
-                        "jobExamDesc": "Locks approved exams after session deadlines.",
-                        "jobNotifications": "Notification dispatcher",
-                        "jobNotificationsDesc": "Delivers pending email/webhook alerts.",
-                        "active": "Active"
-                },
-                "notifications": {
-                        "title": "Notifications",
-                        "subtitle": "Workflow alerts sent to staff and students",
-                        "gradeValidated": "Grade validation complete",
-                        "gradeValidatedDesc": "An exam was validated and locked for publishing.",
-                        "windowOpened": "Enrollment window opened",
-                        "windowOpenedDesc": "Students can register for the selected class and academic year.",
-                        "justNow": "Just now"
-                },
-                "academicYears": {
-                        "title": "Academic Year Management",
-                        "subtitle": "Create and manage academic years, and choose the active one",
+		"dashboard": {
+			"title": "Admin Dashboard",
+			"activeYear": "Active Year: {{year}}",
+			"noActiveYear": "No active year",
+			"programStats": {
+				"title": "Students per program",
+				"empty": "No data available for the selected year"
+			},
+			"stats": {
+				"faculties": "Faculties",
+				"programs": "Programs",
+				"courses": "Courses",
+				"exams": "Exams",
+				"students": "Students",
+				"teachers": "Teachers"
+			}
+		},
+		"monitoring": {
+			"title": "Service monitoring",
+			"subtitle": "Track workflows, notifications, and background jobs",
+			"gradeWindows": "Open validation windows",
+			"pendingAlerts": "Pending alerts",
+			"jobs": "Background jobs",
+			"jobsValue": "2 active",
+			"compliance": "Compliance",
+			"complianceValue": "MFA + RBAC",
+			"workflows": "Workflow health",
+			"workflowsDescription": "Validation, enrollments, and attendance checks are synchronized.",
+			"healthy": "Healthy",
+			"gradeValidation": "Grade validation",
+			"gradeValidationDesc": "Approved exams are locked and broadcast to students.",
+			"enrollments": "Enrollment windows",
+			"enrollmentsDesc": "Classes respect open/close windows before accepting transfers.",
+			"backgroundJobs": "Background jobs",
+			"backgroundJobsDesc": "Recurring tasks run via Bun intervals to keep data fresh.",
+			"jobExam": "Exam closure",
+			"jobExamDesc": "Locks approved exams after session deadlines.",
+			"jobNotifications": "Notification dispatcher",
+			"jobNotificationsDesc": "Delivers pending email/webhook alerts.",
+			"active": "Active"
+		},
+		"notifications": {
+			"title": "Notifications",
+			"subtitle": "Workflow alerts sent to staff and students",
+			"gradeValidated": "Grade validation complete",
+			"gradeValidatedDesc": "An exam was validated and locked for publishing.",
+			"windowOpened": "Enrollment window opened",
+			"windowOpenedDesc": "Students can register for the selected class and academic year.",
+			"justNow": "Just now"
+		},
+		"academicYears": {
+			"title": "Academic Year Management",
+			"subtitle": "Create and manage academic years, and choose the active one",
 			"actions": {
 				"add": "Add academic year"
 			},
@@ -1020,46 +1020,46 @@
 				"unbanError": "Could not unban the user",
 				"passwordCopied": "Password copied to clipboard"
 			},
-                "validation": {
-                        "name": "Name is required",
-                        "email": "Enter a valid email address",
-                        "role": "Please select a role",
-                        "passwordRequired": "Password is required"
-                }
-        },
-        "dean": {
-                "workflows": {
-                        "title": "Workflow approvals",
-                        "subtitle": "Approve exams, open enrollment windows, and react to alerts",
-                        "queue": "Approval queue",
-                        "queueDesc": "Track submissions that require dean oversight.",
-                        "submitted": "Submitted",
-                        "submittedDesc": "Teachers submitted exams for validation.",
-                        "inReview": "In review",
-                        "inReviewDesc": "Review weights, schedules, and prerequisites.",
-                        "locked": "Locked",
-                        "lockedDesc": "Approved exams are locked and shared with students.",
-                        "notifications": "Notifications",
-                        "notificationsDesc": "Alerts propagate automatically to teachers and students.",
-                        "gradeValidations": "Grade validations",
-                        "realTime": "Real-time",
-                        "enrollmentWindows": "Enrollment windows",
-                        "openClose": "Open/close",
-                        "alerts": "Attendance alerts",
-                        "escalations": "Escalations only"
-                }
-        },
-        "student": {
-                "performance": {
-                        "title": "Performance dashboard",
-                        "subtitle": "Track your averages, credits, and course progress",
-                        "trendTitle": "Progression",
-                        "trendSubtitle": "Weighted averages across enrolled courses",
-                        "overallAverage": "Overall average",
-                        "credits": "Earned credits",
-                        "courseAverages": "Course averages",
-                        "courseSubtitle": "Latest scores for the active academic year"
-                }
-        }
-}
+			"validation": {
+				"name": "Name is required",
+				"email": "Enter a valid email address",
+				"role": "Please select a role",
+				"passwordRequired": "Password is required"
+			}
+		},
+		"dean": {
+			"workflows": {
+				"title": "Workflow approvals",
+				"subtitle": "Approve exams, open enrollment windows, and react to alerts",
+				"queue": "Approval queue",
+				"queueDesc": "Track submissions that require dean oversight.",
+				"submitted": "Submitted",
+				"submittedDesc": "Teachers submitted exams for validation.",
+				"inReview": "In review",
+				"inReviewDesc": "Review weights, schedules, and prerequisites.",
+				"locked": "Locked",
+				"lockedDesc": "Approved exams are locked and shared with students.",
+				"notifications": "Notifications",
+				"notificationsDesc": "Alerts propagate automatically to teachers and students.",
+				"gradeValidations": "Grade validations",
+				"realTime": "Real-time",
+				"enrollmentWindows": "Enrollment windows",
+				"openClose": "Open/close",
+				"alerts": "Attendance alerts",
+				"escalations": "Escalations only"
+			}
+		},
+		"student": {
+			"performance": {
+				"title": "Performance dashboard",
+				"subtitle": "Track your averages, credits, and course progress",
+				"trendTitle": "Progression",
+				"trendSubtitle": "Weighted averages across enrolled courses",
+				"overallAverage": "Overall average",
+				"credits": "Earned credits",
+				"courseAverages": "Course averages",
+				"courseSubtitle": "Latest scores for the active academic year"
+			}
+		}
+	}
 }

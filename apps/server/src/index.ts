@@ -34,7 +34,7 @@ app.use(
 );
 
 app.get("/", (c) => {
-        return c.text("OK");
+	return c.text("OK");
 });
 
 startBackgroundJobs();

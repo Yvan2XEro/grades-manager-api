@@ -1,18 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	ArrowUpRight,
+	Bell,
 	BookOpen,
 	BookOpenCheck,
 	Building2,
 	Calendar,
-ClipboardList,
-FileSpreadsheet,
-GraduationCap,
-LayoutDashboard,
-Bell,
-School,
-UserCog,
-Users,
+	ClipboardList,
+	FileSpreadsheet,
+	GraduationCap,
+	LayoutDashboard,
+	School,
+	UserCog,
+	Users,
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
@@ -23,10 +23,10 @@ const Sidebar: React.FC = () => {
 	const { user, sidebarOpen } = useStore();
 	const { t } = useTranslation();
 
-        const adminLinks = [
-                {
-                        to: "/admin",
-                        icon: <LayoutDashboard className="h-5 w-5" />,
+	const adminLinks = [
+		{
+			to: "/admin",
+			icon: <LayoutDashboard className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.dashboard",
 		},
 		{
@@ -79,78 +79,78 @@ const Sidebar: React.FC = () => {
 			icon: <ArrowUpRight className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.studentPromotion",
 		},
-                {
-                        to: "/admin/grade-export",
-                        icon: <FileSpreadsheet className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.admin.gradeExport",
-                },
-                {
-                        to: "/admin/monitoring",
-                        icon: <LayoutDashboard className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.admin.monitoring",
-                },
-                {
-                        to: "/admin/notifications",
-                        icon: <Bell className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.admin.notifications",
-                },
-        ];
+		{
+			to: "/admin/grade-export",
+			icon: <FileSpreadsheet className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.gradeExport",
+		},
+		{
+			to: "/admin/monitoring",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.monitoring",
+		},
+		{
+			to: "/admin/notifications",
+			icon: <Bell className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.notifications",
+		},
+	];
 
-        const teacherLinks = [
-                {
-                        to: "/teacher",
+	const teacherLinks = [
+		{
+			to: "/teacher",
 			icon: <LayoutDashboard className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.teacher.dashboard",
 		},
-                {
-                        to: "/teacher/courses",
-                        icon: <BookOpen className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.teacher.courses",
-                },
-                {
-                        to: "/teacher/attendance",
-                        icon: <ClipboardList className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.teacher.attendance",
-                },
-        ];
+		{
+			to: "/teacher/courses",
+			icon: <BookOpen className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.teacher.courses",
+		},
+		{
+			to: "/teacher/attendance",
+			icon: <ClipboardList className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.teacher.attendance",
+		},
+	];
 
-        const deanLinks = [
-                {
-                        to: "/dean",
-                        icon: <LayoutDashboard className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.dean.dashboard",
-                },
-                {
-                        to: "/dean/workflows",
-                        icon: <ClipboardList className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.dean.workflows",
-                },
-        ];
+	const deanLinks = [
+		{
+			to: "/dean",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.dean.dashboard",
+		},
+		{
+			to: "/dean/workflows",
+			icon: <ClipboardList className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.dean.workflows",
+		},
+	];
 
-        const studentLinks = [
-                {
-                        to: "/student",
-                        icon: <LayoutDashboard className="h-5 w-5" />,
-                        labelKey: "navigation.sidebar.student.dashboard",
-                },
-        ];
+	const studentLinks = [
+		{
+			to: "/student",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.student.dashboard",
+		},
+	];
 
-        const links = (() => {
-                if (!user) return [];
-                switch (user.role) {
-                        case "administrator":
-                        case "super_admin":
-                                return adminLinks;
-                        case "dean":
-                                return deanLinks;
-                        case "teacher":
-                                return teacherLinks;
-                        case "student":
-                                return studentLinks;
-                        default:
-                                return [];
-                }
-        })();
+	const links = (() => {
+		if (!user) return [];
+		switch (user.role) {
+			case "administrator":
+			case "super_admin":
+				return adminLinks;
+			case "dean":
+				return deanLinks;
+			case "teacher":
+				return teacherLinks;
+			case "student":
+				return studentLinks;
+			default:
+				return [];
+		}
+	})();
 
 	return (
 		<AnimatePresence>

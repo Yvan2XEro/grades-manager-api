@@ -28,12 +28,12 @@ export const appRouter = router({
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
 	enrollments: enrollmentsRouter,
-        exams: examsRouter,
-        students: studentsRouter,
-        grades: gradesRouter,
-        users: usersRouter,
-        workflows: workflowsRouter,
-        notifications: notificationsRouter,
+	exams: examsRouter,
+	students: studentsRouter,
+	grades: gradesRouter,
+	users: usersRouter,
+	workflows: workflowsRouter,
+	notifications: notificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;
