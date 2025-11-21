@@ -48,12 +48,19 @@ const TeachingUnitManagement = () => {
 	});
 
 	const createUnit = useMutation({
-		mutationFn: (payload: UnitForm) => trpcClient.teachingUnits.create.mutate(payload),
+		mutationFn: (payload: UnitForm) =>
+			trpcClient.teachingUnits.create.mutate(payload),
 		onSuccess: () => {
-			toast.success(t("admin.teachingUnits.toast.created", { defaultValue: "Teaching unit created" }));
-			queryClient.invalidateQueries(trpc.teachingUnits.list.queryKey({
-				programId: selectedProgram || undefined,
-			}));
+			toast.success(
+				t("admin.teachingUnits.toast.created", {
+					defaultValue: "Teaching unit created",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.teachingUnits.list.queryKey({
+					programId: selectedProgram || undefined,
+				}),
+			);
 			setForm((prev) => ({ ...defaultForm, programId: prev.programId }));
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -62,10 +69,16 @@ const TeachingUnitManagement = () => {
 	const deleteUnit = useMutation({
 		mutationFn: (id: string) => trpcClient.teachingUnits.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(t("admin.teachingUnits.toast.deleted", { defaultValue: "Teaching unit deleted" }));
-			queryClient.invalidateQueries(trpc.teachingUnits.list.queryKey({
-				programId: selectedProgram || undefined,
-			}));
+			toast.success(
+				t("admin.teachingUnits.toast.deleted", {
+					defaultValue: "Teaching unit deleted",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.teachingUnits.list.queryKey({
+					programId: selectedProgram || undefined,
+				}),
+			);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -84,7 +97,11 @@ const TeachingUnitManagement = () => {
 			});
 		},
 		onSuccess: () => {
-			toast.success(t("admin.teachingUnits.toast.prereqSaved", { defaultValue: "Prerequisites saved" }));
+			toast.success(
+				t("admin.teachingUnits.toast.prereqSaved", {
+					defaultValue: "Prerequisites saved",
+				}),
+			);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -92,7 +109,11 @@ const TeachingUnitManagement = () => {
 	const handleCreateUnit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		if (!form.programId) {
-			toast.error(t("admin.teachingUnits.toast.programRequired", { defaultValue: "Select a program" }));
+			toast.error(
+				t("admin.teachingUnits.toast.programRequired", {
+					defaultValue: "Select a program",
+				}),
+			);
 			return;
 		}
 		createUnit.mutate(form);
@@ -112,11 +133,13 @@ const TeachingUnitManagement = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold text-gray-900">
+					<h1 className="font-semibold text-2xl text-gray-900">
 						{t("admin.teachingUnits.title", { defaultValue: "Teaching Units" })}
 					</h1>
 					<p className="text-gray-600">
-						{t("admin.teachingUnits.subtitle", { defaultValue: "Manage UE catalog, semesters, and prerequisites." })}
+						{t("admin.teachingUnits.subtitle", {
+							defaultValue: "Manage UE catalog, semesters, and prerequisites.",
+						})}
 					</p>
 				</div>
 				<select
@@ -129,7 +152,9 @@ const TeachingUnitManagement = () => {
 					}}
 				>
 					<option value="">
-						{t("admin.teachingUnits.selectProgram", { defaultValue: "Select program" })}
+						{t("admin.teachingUnits.selectProgram", {
+							defaultValue: "Select program",
+						})}
 					</option>
 					{programs?.items?.map((program) => (
 						<option key={program.id} value={program.id}>
@@ -144,13 +169,15 @@ const TeachingUnitManagement = () => {
 					onSubmit={handleCreateUnit}
 					className="rounded-xl border bg-white p-6 shadow-sm"
 				>
-					<h2 className="text-lg font-semibold text-gray-900">
+					<h2 className="font-semibold text-gray-900 text-lg">
 						{t("admin.teachingUnits.new", { defaultValue: "Create new UE" })}
 					</h2>
 					<div className="mt-4 grid gap-4">
 						<input
 							className="rounded-lg border px-3 py-2"
-							placeholder={t("admin.teachingUnits.fields.name", { defaultValue: "Unit name" })}
+							placeholder={t("admin.teachingUnits.fields.name", {
+								defaultValue: "Unit name",
+							})}
 							value={form.name}
 							onChange={(event) =>
 								setForm((prev) => ({ ...prev, name: event.target.value }))
@@ -159,7 +186,9 @@ const TeachingUnitManagement = () => {
 						/>
 						<input
 							className="rounded-lg border px-3 py-2"
-							placeholder={t("admin.teachingUnits.fields.code", { defaultValue: "Code" })}
+							placeholder={t("admin.teachingUnits.fields.code", {
+								defaultValue: "Code",
+							})}
 							value={form.code}
 							onChange={(event) =>
 								setForm((prev) => ({ ...prev, code: event.target.value }))
@@ -168,10 +197,15 @@ const TeachingUnitManagement = () => {
 						/>
 						<textarea
 							className="rounded-lg border px-3 py-2"
-							placeholder={t("admin.teachingUnits.fields.description", { defaultValue: "Description" })}
+							placeholder={t("admin.teachingUnits.fields.description", {
+								defaultValue: "Description",
+							})}
 							value={form.description}
 							onChange={(event) =>
-								setForm((prev) => ({ ...prev, description: event.target.value }))
+								setForm((prev) => ({
+									...prev,
+									description: event.target.value,
+								}))
 							}
 						/>
 						<div className="flex gap-3">
@@ -186,7 +220,9 @@ const TeachingUnitManagement = () => {
 										credits: Number(event.target.value),
 									}))
 								}
-								placeholder={t("admin.teachingUnits.fields.credits", { defaultValue: "ECTS" })}
+								placeholder={t("admin.teachingUnits.fields.credits", {
+									defaultValue: "ECTS",
+								})}
 							/>
 							<select
 								className="flex-1 rounded-lg border px-3 py-2"
@@ -199,13 +235,19 @@ const TeachingUnitManagement = () => {
 								}
 							>
 								<option value="annual">
-									{t("admin.teachingUnits.semesters.annual", { defaultValue: "Annual" })}
+									{t("admin.teachingUnits.semesters.annual", {
+										defaultValue: "Annual",
+									})}
 								</option>
 								<option value="fall">
-									{t("admin.teachingUnits.semesters.fall", { defaultValue: "Fall" })}
+									{t("admin.teachingUnits.semesters.fall", {
+										defaultValue: "Fall",
+									})}
 								</option>
 								<option value="spring">
-									{t("admin.teachingUnits.semesters.spring", { defaultValue: "Spring" })}
+									{t("admin.teachingUnits.semesters.spring", {
+										defaultValue: "Spring",
+									})}
 								</option>
 							</select>
 						</div>
@@ -215,12 +257,14 @@ const TeachingUnitManagement = () => {
 						className="mt-4 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white"
 						disabled={createUnit.isLoading}
 					>
-						{t("admin.teachingUnits.actions.create", { defaultValue: "Create UE" })}
+						{t("admin.teachingUnits.actions.create", {
+							defaultValue: "Create UE",
+						})}
 					</button>
 				</form>
 
 				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<h2 className="text-lg font-semibold text-gray-900">
+					<h2 className="font-semibold text-gray-900 text-lg">
 						{t("admin.teachingUnits.list", { defaultValue: "Units list" })}
 					</h2>
 					<div className="mt-4 space-y-3">
@@ -232,23 +276,27 @@ const TeachingUnitManagement = () => {
 								>
 									<div>
 										<p className="font-medium text-gray-900">{unit.name}</p>
-										<p className="text-sm text-gray-600">
-											{unit.code} • {unit.semester?.toUpperCase()} • {unit.credits}{" "}
-											ECTS
+										<p className="text-gray-600 text-sm">
+											{unit.code} • {unit.semester?.toUpperCase()} •{" "}
+											{unit.credits} ECTS
 										</p>
 									</div>
 									<button
 										type="button"
 										onClick={() => handleDelete(unit.id)}
-										className="text-sm text-red-600 hover:text-red-700"
+										className="text-red-600 text-sm hover:text-red-700"
 									>
-										{t("admin.teachingUnits.actions.delete", { defaultValue: "Remove" })}
+										{t("admin.teachingUnits.actions.delete", {
+											defaultValue: "Remove",
+										})}
 									</button>
 								</div>
 							))
 						) : (
-							<p className="text-sm text-gray-500">
-								{t("admin.teachingUnits.empty", { defaultValue: "No units yet for this program." })}
+							<p className="text-gray-500 text-sm">
+								{t("admin.teachingUnits.empty", {
+									defaultValue: "No units yet for this program.",
+								})}
 							</p>
 						)}
 					</div>
@@ -256,8 +304,10 @@ const TeachingUnitManagement = () => {
 			</div>
 
 			<div className="rounded-xl border bg-white p-6 shadow-sm">
-				<h2 className="text-lg font-semibold text-gray-900">
-					{t("admin.teachingUnits.prereqTitle", { defaultValue: "Manage course prerequisites" })}
+				<h2 className="font-semibold text-gray-900 text-lg">
+					{t("admin.teachingUnits.prereqTitle", {
+						defaultValue: "Manage course prerequisites",
+					})}
 				</h2>
 				<div className="mt-4 grid gap-4 md:grid-cols-2">
 					<select
@@ -271,7 +321,9 @@ const TeachingUnitManagement = () => {
 						disabled={!availableCourses.length}
 					>
 						<option value="">
-							{t("admin.teachingUnits.prereqSelectCourse", { defaultValue: "Choose a course" })}
+							{t("admin.teachingUnits.prereqSelectCourse", {
+								defaultValue: "Choose a course",
+							})}
 						</option>
 						{availableCourses.map((course) => (
 							<option key={course.id} value={course.id}>
@@ -282,12 +334,17 @@ const TeachingUnitManagement = () => {
 
 					{selectedCourse && (
 						<div className="space-y-2">
-							<p className="text-sm text-gray-600">
-								{t("admin.teachingUnits.prereqHint", { defaultValue: "Select prerequisite courses" })}
+							<p className="text-gray-600 text-sm">
+								{t("admin.teachingUnits.prereqHint", {
+									defaultValue: "Select prerequisite courses",
+								})}
 							</p>
 							<div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3">
 								{currentUnitCourses.map((course) => (
-									<label key={course.id} className="flex items-center space-x-2">
+									<label
+										key={course.id}
+										className="flex items-center space-x-2"
+									>
 										<input
 											type="checkbox"
 											checked={prereqSelection.includes(course.id)}
@@ -300,7 +357,7 @@ const TeachingUnitManagement = () => {
 												);
 											}}
 										/>
-										<span className="text-sm text-gray-800">{course.name}</span>
+										<span className="text-gray-800 text-sm">{course.name}</span>
 									</label>
 								))}
 							</div>
@@ -312,9 +369,11 @@ const TeachingUnitManagement = () => {
 										prerequisites: prereqSelection,
 									})
 								}
-								className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white"
+								className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-sm text-white"
 							>
-								{t("admin.teachingUnits.actions.savePrereq", { defaultValue: "Save prerequisites" })}
+								{t("admin.teachingUnits.actions.savePrereq", {
+									defaultValue: "Save prerequisites",
+								})}
 							</button>
 						</div>
 					)}

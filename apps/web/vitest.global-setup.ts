@@ -1,4 +1,4 @@
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
@@ -8,7 +8,11 @@ function ensureLruNamedExport() {
 	const lruPath = require.resolve("lru-cache");
 	const source = readFileSync(lruPath, "utf8");
 	if (!source.includes("module.exports.LRUCache")) {
-		writeFileSync(lruPath, `${source}\nmodule.exports.LRUCache = LRUCache;\n`, "utf8");
+		writeFileSync(
+			lruPath,
+			`${source}\nmodule.exports.LRUCache = LRUCache;\n`,
+			"utf8",
+		);
 	}
 }
 

@@ -6,10 +6,7 @@ const translationPath = path.resolve(
 	process.cwd(),
 	"src/i18n/locales/en/translation.json",
 );
-const resourcesPath = path.resolve(
-	process.cwd(),
-	"src/@types/resources.d.ts",
-);
+const resourcesPath = path.resolve(process.cwd(), "src/@types/resources.d.ts");
 
 const indent = (level) => "\t".repeat(level);
 
@@ -17,9 +14,7 @@ const formatObject = (object, depth = 2) => {
 	const lines = ["{"];
 	for (const [key, value] of Object.entries(object)) {
 		if (value && typeof value === "object" && !Array.isArray(value)) {
-			lines.push(
-				`${indent(depth)}${key}: ${formatObject(value, depth + 1)}`,
-			);
+			lines.push(`${indent(depth)}${key}: ${formatObject(value, depth + 1)}`);
 			continue;
 		}
 		if (Array.isArray(value)) {

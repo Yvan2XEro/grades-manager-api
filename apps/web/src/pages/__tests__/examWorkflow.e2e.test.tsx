@@ -1,10 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-    cleanup,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
 } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
@@ -97,7 +97,12 @@ const buildInitialState = (): MockState => ({
 		},
 	],
 	enrollmentWindows: [
-		{ id: "window-1", classId: CLASS_ID, academicYearId: "2024", status: "open" },
+		{
+			id: "window-1",
+			classId: CLASS_ID,
+			academicYearId: "2024",
+			status: "open",
+		},
 	],
 });
 
@@ -136,37 +141,43 @@ vi.mock("../../utils/trpc", () => {
 			list: {
 				query: vi.fn(async (input: { classCourseId?: string } = {}) => {
 					const filtered = input.classCourseId
-						? mockState.exams.filter((exam) => exam.classCourse === input.classCourseId)
+						? mockState.exams.filter(
+								(exam) => exam.classCourse === input.classCourseId,
+							)
 						: mockState.exams;
 					return { items: filtered };
 				}),
 			},
 			create: {
-				mutate: vi.fn(async (data: {
-					classCourseId: string;
-					name: string;
-					type: string;
-					date: Date;
-					percentage: number;
-				}) => {
-					const exam: MockExam = {
-						id: `exam-${examCounter++}`,
-						name: data.name,
-						type: data.type,
-						date: data.date.toISOString(),
-						percentage: data.percentage,
-						classCourse: data.classCourseId,
-						status: "draft",
-						isLocked: false,
-					};
-					mockState.exams.push(exam);
-					return exam;
-				}),
+				mutate: vi.fn(
+					async (data: {
+						classCourseId: string;
+						name: string;
+						type: string;
+						date: Date;
+						percentage: number;
+					}) => {
+						const exam: MockExam = {
+							id: `exam-${examCounter++}`,
+							name: data.name,
+							type: data.type,
+							date: data.date.toISOString(),
+							percentage: data.percentage,
+							classCourse: data.classCourseId,
+							status: "draft",
+							isLocked: false,
+						};
+						mockState.exams.push(exam);
+						return exam;
+					},
+				),
 			},
 			update: {
-				mutate: vi.fn(async ({ id, ...changes }: { id: string } & Partial<MockExam>) => {
-					Object.assign(findExam(id), changes);
-				}),
+				mutate: vi.fn(
+					async ({ id, ...changes }: { id: string } & Partial<MockExam>) => {
+						Object.assign(findExam(id), changes);
+					},
+				),
 			},
 			delete: {
 				mutate: vi.fn(async ({ id }: { id: string }) => {
@@ -182,9 +193,11 @@ vi.mock("../../utils/trpc", () => {
 				}),
 			},
 			lock: {
-				mutate: vi.fn(async ({ examId, lock }: { examId: string; lock: boolean }) => {
-					findExam(examId).isLocked = lock;
-				}),
+				mutate: vi.fn(
+					async ({ examId, lock }: { examId: string; lock: boolean }) => {
+						findExam(examId).isLocked = lock;
+					},
+				),
 			},
 		},
 		classCourses: {
@@ -192,7 +205,9 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async () => ({ items: mockState.classCourses })),
 			},
 			getById: {
-				query: vi.fn(async ({ id }: { id: string }) => findById(mockState.classCourses, id)),
+				query: vi.fn(async ({ id }: { id: string }) =>
+					findById(mockState.classCourses, id),
+				),
 			},
 		},
 		classes: {
@@ -200,7 +215,9 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async () => ({ items: mockState.classes })),
 			},
 			getById: {
-				query: vi.fn(async ({ id }: { id: string }) => findById(mockState.classes, id)),
+				query: vi.fn(async ({ id }: { id: string }) =>
+					findById(mockState.classes, id),
+				),
 			},
 		},
 		courses: {
@@ -208,18 +225,24 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async () => ({ items: mockState.courses })),
 			},
 			getById: {
-				query: vi.fn(async ({ id }: { id: string }) => findById(mockState.courses, id)),
+				query: vi.fn(async ({ id }: { id: string }) =>
+					findById(mockState.courses, id),
+				),
 			},
 		},
 		programs: {
 			getById: {
-				query: vi.fn(async ({ id }: { id: string }) => findById(mockState.programs, id)),
+				query: vi.fn(async ({ id }: { id: string }) =>
+					findById(mockState.programs, id),
+				),
 			},
 		},
 		students: {
 			list: {
 				query: vi.fn(async ({ classId }: { classId: string }) => ({
-					items: mockState.students.filter((student) => student.classId === classId),
+					items: mockState.students.filter(
+						(student) => student.classId === classId,
+					),
 				})),
 			},
 		},
@@ -230,31 +253,33 @@ vi.mock("../../utils/trpc", () => {
 				})),
 			},
 			upsertNote: {
-				mutate: vi.fn(async ({
-					studentId,
-					examId,
-					score,
-				}: {
-					studentId: string;
-					examId: string;
-					score: number;
-				}) => {
-					const existing = mockState.grades.find(
-						(grade) => grade.examId === examId && grade.student === studentId,
-					);
-					if (existing) {
-						existing.score = score;
-						return existing;
-					}
-					const next: MockGrade = {
-						id: `grade-${gradeCounter++}`,
+				mutate: vi.fn(
+					async ({
+						studentId,
 						examId,
-						student: studentId,
 						score,
-					};
-					mockState.grades.push(next);
-					return next;
-				}),
+					}: {
+						studentId: string;
+						examId: string;
+						score: number;
+					}) => {
+						const existing = mockState.grades.find(
+							(grade) => grade.examId === examId && grade.student === studentId,
+						);
+						if (existing) {
+							existing.score = score;
+							return existing;
+						}
+						const next: MockGrade = {
+							id: `grade-${gradeCounter++}`,
+							examId,
+							student: studentId,
+							score,
+						};
+						mockState.grades.push(next);
+						return next;
+					},
+				),
 			},
 		},
 		workflows: {
@@ -268,7 +293,9 @@ vi.mock("../../utils/trpc", () => {
 			list: {
 				query: vi.fn(async ({ status }: { status?: string } = {}) =>
 					status
-						? mockState.notifications.filter((notification) => notification.status === status)
+						? mockState.notifications.filter(
+								(notification) => notification.status === status,
+							)
 						: mockState.notifications,
 				),
 			},
@@ -288,10 +315,14 @@ vi.mock("../../utils/trpc", () => {
 
 	const trpc = {
 		classCourses: {
-			list: createQueryOptions("classCourses", () => trpcClient.classCourses.list.query({})),
+			list: createQueryOptions("classCourses", () =>
+				trpcClient.classCourses.list.query({}),
+			),
 		},
 		exams: {
-			list: createQueryOptions("exams", (input) => trpcClient.exams.list.query(input)),
+			list: createQueryOptions("exams", (input) =>
+				trpcClient.exams.list.query(input),
+			),
 		},
 		notifications: {
 			list: createQueryOptions("notifications", (input) =>
@@ -418,7 +449,9 @@ describe("exam workflow UI e2e", () => {
 		workflowManager.unmount();
 
 		const approvals = renderWithProviders(<WorkflowApprovals />);
-		const approveButton = await screen.findByRole("button", { name: /Approve & lock/i });
+		const approveButton = await screen.findByRole("button", {
+			name: /Approve & lock/i,
+		});
 		fireEvent.click(approveButton);
 		await waitFor(() => {
 			expect(screen.getByText("No pending exams.")).toBeInTheDocument();

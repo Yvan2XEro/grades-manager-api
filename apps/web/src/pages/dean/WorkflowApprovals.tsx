@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, ClipboardCheck, Clock3, Lock, ShieldCheck } from "lucide-react";
+import {
+	ArrowRight,
+	ClipboardCheck,
+	Clock3,
+	Lock,
+	ShieldCheck,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { trpc, trpcClient } from "../../utils/trpc";
@@ -9,8 +15,12 @@ const WorkflowApprovals = () => {
 	const queryClient = useQueryClient();
 
 	const examsQuery = useQuery(trpc.exams.list.queryOptions({ limit: 100 }));
-	const notificationsQuery = useQuery(trpc.notifications.list.queryOptions({ status: "pending" }));
-	const windowsQuery = useQuery(trpc.workflows.enrollmentWindows.queryOptions());
+	const notificationsQuery = useQuery(
+		trpc.notifications.list.queryOptions({ status: "pending" }),
+	);
+	const windowsQuery = useQuery(
+		trpc.workflows.enrollmentWindows.queryOptions(),
+	);
 
 	const validateExam = useMutation({
 		mutationFn: (examId: string) =>
@@ -19,7 +29,9 @@ const WorkflowApprovals = () => {
 				approverId: undefined,
 			}),
 		onSuccess: () => {
-			toast.success(t("dean.workflows.toast.validated", { defaultValue: "Exam approved" }));
+			toast.success(
+				t("dean.workflows.toast.validated", { defaultValue: "Exam approved" }),
+			);
 			queryClient.invalidateQueries(trpc.exams.list.queryKey({ limit: 100 }));
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -54,30 +66,36 @@ const WorkflowApprovals = () => {
 								>
 									<div>
 										<p className="font-medium text-gray-900">{exam.name}</p>
-										<p className="text-xs text-gray-500">
+										<p className="text-gray-500 text-xs">
 											{exam.classCourse} • {exam.percentage}%
 										</p>
 									</div>
 									<button
 										type="button"
-										className="flex items-center rounded-lg bg-primary-600 px-3 py-2 text-xs font-semibold text-white"
+										className="flex items-center rounded-lg bg-primary-600 px-3 py-2 font-semibold text-white text-xs"
 										onClick={() => validateExam.mutate(exam.id)}
 									>
 										<ShieldCheck className="mr-1 h-4 w-4" />
-										{t("dean.workflows.actions.validate", { defaultValue: "Approve & lock" })}
+										{t("dean.workflows.actions.validate", {
+											defaultValue: "Approve & lock",
+										})}
 									</button>
 								</div>
 							))
 						) : (
-							<p className="text-sm text-gray-500">
-								{t("dean.workflows.empty", { defaultValue: "No pending exams." })}
+							<p className="text-gray-500 text-sm">
+								{t("dean.workflows.empty", {
+									defaultValue: "No pending exams.",
+								})}
 							</p>
 						)}
 					</div>
 				</div>
 				<div className="rounded-xl border bg-white p-6 shadow-sm">
 					<h2 className="font-semibold text-gray-900 text-lg">
-						{t("dean.workflows.notifications", { defaultValue: "Workflow notifications" })}
+						{t("dean.workflows.notifications", {
+							defaultValue: "Workflow notifications",
+						})}
 					</h2>
 					<ul className="mt-4 space-y-2">
 						{pendingNotifications.length ? (
@@ -95,8 +113,10 @@ const WorkflowApprovals = () => {
 											)}
 										</div>
 										<div>
-											<p className="font-medium text-gray-900">{notification.type}</p>
-											<p className="text-xs text-gray-500">
+											<p className="font-medium text-gray-900">
+												{notification.type}
+											</p>
+											<p className="text-gray-500 text-xs">
 												{JSON.stringify(notification.payload)}
 											</p>
 										</div>
@@ -105,8 +125,10 @@ const WorkflowApprovals = () => {
 								</li>
 							))
 						) : (
-							<li className="rounded-lg bg-gray-50 p-3 text-sm text-gray-500">
-								{t("dean.workflows.notificationsEmpty", { defaultValue: "No notifications" })}
+							<li className="rounded-lg bg-gray-50 p-3 text-gray-500 text-sm">
+								{t("dean.workflows.notificationsEmpty", {
+									defaultValue: "No notifications",
+								})}
 							</li>
 						)}
 					</ul>
@@ -114,18 +136,18 @@ const WorkflowApprovals = () => {
 			</div>
 
 			<div className="rounded-xl border bg-white p-6 shadow-sm">
-				<h2 className="mb-3 text-lg font-semibold text-gray-900">
+				<h2 className="mb-3 font-semibold text-gray-900 text-lg">
 					{t("dean.workflows.windows", { defaultValue: "Enrollment windows" })}
 				</h2>
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 					{windowsQuery.data?.map((window) => (
 						<div
 							key={window.id}
-							className="rounded-lg border px-4 py-3 text-sm text-gray-700"
+							className="rounded-lg border px-4 py-3 text-gray-700 text-sm"
 						>
 							<p className="font-semibold">{window.classId}</p>
-							<p className="text-xs text-gray-500">{window.academicYearId}</p>
-							<p className="mt-1 text-xs uppercase text-primary-700">
+							<p className="text-gray-500 text-xs">{window.academicYearId}</p>
+							<p className="mt-1 text-primary-700 text-xs uppercase">
 								{window.status}
 							</p>
 						</div>

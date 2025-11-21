@@ -1,10 +1,10 @@
 import {
-    AlertTriangle,
-    ArrowLeft,
-    Check,
-    Info,
-    Lock,
-    Save,
+	AlertTriangle,
+	ArrowLeft,
+	Check,
+	Info,
+	Lock,
+	Save,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
