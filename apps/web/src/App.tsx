@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import LoadingScreen from "./components/ui/LoadingScreen";
@@ -10,11 +10,13 @@ import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
 import ClassManagement from "./pages/admin/ClassManagement";
 import CourseManagement from "./pages/admin/CourseManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
+import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
 import GradeExport from "./pages/admin/GradeExport";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import StudentManagement from "./pages/admin/StudentManagement";
+import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -29,6 +31,7 @@ import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import StudentPromotion from "./pages/teacher/StudentPromotion";
+import WorkflowManager from "./pages/teacher/WorkflowManager";
 import { useStore } from "./store";
 import { trpc } from "./utils/trpc";
 
@@ -125,6 +128,8 @@ function App() {
 					<Route path="programs" element={<ProgramManagement />} />
 					<Route path="grade-export" element={<GradeExport />} />
 					<Route path="monitoring" element={<MonitoringDashboard />} />
+					<Route path="enrollments" element={<EnrollmentManagement />} />
+					<Route path="teaching-units" element={<TeachingUnitManagement />} />
 					<Route path="notifications" element={<NotificationsCenter />} />
 				</Route>
 			)}
@@ -144,6 +149,7 @@ function App() {
 					<Route path="courses" element={<CourseList />} />
 					<Route path="grades/:courseId" element={<GradeEntry />} />
 					<Route path="attendance" element={<AttendanceAlerts />} />
+					<Route path="workflows" element={<WorkflowManager />} />
 				</Route>
 			)}
 

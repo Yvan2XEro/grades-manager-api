@@ -96,6 +96,40 @@ FROM students s
 JOIN classes c ON c.id = s.class_id
 ON CONFLICT DO NOTHING;
 --> statement-breakpoint
+CREATE TABLE "enrollment_windows" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"class_id" text NOT NULL,
+	"academic_year_id" text NOT NULL,
+	"status" text DEFAULT 'closed' NOT NULL,
+	"opened_at" timestamp with time zone DEFAULT now(),
+	"closed_at" timestamp with time zone
+);
+--> statement-breakpoint
+ALTER TABLE "enrollment_windows" ADD CONSTRAINT "enrollment_windows_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;
+--> statement-breakpoint
+ALTER TABLE "enrollment_windows" ADD CONSTRAINT "enrollment_windows_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE cascade ON UPDATE no action;
+--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_enrollment_window_class_year" ON "enrollment_windows" USING btree ("class_id","academic_year_id");
+--> statement-breakpoint
+CREATE INDEX "idx_enrollment_window_status" ON "enrollment_windows" USING btree ("status");
+--> statement-breakpoint
+CREATE TABLE "notifications" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"recipient_id" text,
+        "channel" text DEFAULT 'email' NOT NULL,
+	"type" text NOT NULL,
+	"payload" jsonb DEFAULT '{}'::jsonb,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"sent_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_domain_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+CREATE INDEX "idx_notifications_recipient" ON "notifications" USING btree ("recipient_id");
+--> statement-breakpoint
+CREATE INDEX "idx_notifications_status" ON "notifications" USING btree ("status");
+--> statement-breakpoint
 ALTER TABLE "exams" ADD COLUMN "status" text DEFAULT 'draft' NOT NULL;
 --> statement-breakpoint
 ALTER TABLE "exams" ADD COLUMN "scheduled_by" text;

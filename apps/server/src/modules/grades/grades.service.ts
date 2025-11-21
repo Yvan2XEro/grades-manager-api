@@ -11,12 +11,6 @@ const CSV_HEADERS = ["registrationNumber", "score"];
 
 function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
-	if (exam.status !== "approved") {
-		throw new TRPCError({
-			code: "PRECONDITION_FAILED",
-			message: "Exam must be approved before grading",
-		});
-	}
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
 }
 

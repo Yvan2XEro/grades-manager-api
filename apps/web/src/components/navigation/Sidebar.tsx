@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import { useStore } from "../../store";
 
 const Sidebar: React.FC = () => {
@@ -75,6 +75,16 @@ const Sidebar: React.FC = () => {
 			labelKey: "navigation.sidebar.admin.exams",
 		},
 		{
+			to: "/admin/teaching-units",
+			icon: <BookOpenCheck className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.teachingUnits",
+		},
+		{
+			to: "/admin/enrollments",
+			icon: <Calendar className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.enrollments",
+		},
+		{
 			to: "/admin/student-promotion",
 			icon: <ArrowUpRight className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.studentPromotion",
@@ -111,6 +121,11 @@ const Sidebar: React.FC = () => {
 			to: "/teacher/attendance",
 			icon: <ClipboardList className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.teacher.attendance",
+		},
+		{
+			to: "/teacher/workflows",
+			icon: <Bell className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.teacher.workflows",
 		},
 	];
 
@@ -186,6 +201,7 @@ const Sidebar: React.FC = () => {
 										key={link.to}
 										to={link.to}
 										end={link.to === "/admin" || link.to === "/teacher"}
+										data-testid={`nav-${link.to}`}
 										className={({ isActive }) =>
 											`flex items-center rounded-lg px-4 py-3 font-medium text-sm transition-colors ${
 												isActive
