@@ -39,12 +39,12 @@
 - [x] Document student/teacher/dean workflows in `docs/workflows.md` to feed Phase 3 UI work.
 
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
-- [ ] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
-- [ ] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.
-- [ ] Structure `apps/web` by role-based layouts (admin/dean/teacher/student) with permission-aware navigation and react-i18next everywhere.
-- [ ] Design pages for grade entry, performance tracking, and monitoring dashboards (tables, charts) aligned with `docs/analyze.md#workflows-utilisateur`.
-- [ ] Stand up a `notifications` module for email/webhook alerts (submission, rejection, closing windows).
-- [ ] Add router E2E tests (`apps/server/src/routers/__tests__`) that simulate the critical flows (teacher submits → dean approves → student views).
+- [x] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
+- [x] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.
+- [x] Structure `apps/web` by role-based layouts (admin/dean/teacher/student) with permission-aware navigation and react-i18next everywhere.
+- [x] Design pages for grade entry, performance tracking, and monitoring dashboards (tables, charts) aligned with `docs/analyze.md#workflows-utilisateur`.
+- [x] Stand up a `notifications` module for email/webhook alerts (submission, rejection, closing windows).
+- [x] Add router E2E tests (`apps/server/src/routers/__tests__`) that simulate the critical flows (teacher submits → dean approves → student views).
 
 ## Phase 4 – Analytics, archiving, and integrations (Week 6+)
 - [ ] Introduce an event bus or publication mechanism (Kafka/RabbitMQ/existing Bun queue) to broadcast enrollments, grades, attendance (`docs/analyze.md` “Bus de messages”).
