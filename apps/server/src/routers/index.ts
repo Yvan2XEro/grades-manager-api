@@ -7,10 +7,12 @@ import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
+import { notificationsRouter } from "../modules/notifications";
 import { programsRouter } from "../modules/programs";
 import { studentsRouter } from "../modules/students";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
+import { workflowsRouter } from "../modules/workflows";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
@@ -26,10 +28,12 @@ export const appRouter = router({
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
 	enrollments: enrollmentsRouter,
-	exams: examsRouter,
-	students: studentsRouter,
-	grades: gradesRouter,
-	users: usersRouter,
+        exams: examsRouter,
+        students: studentsRouter,
+        grades: gradesRouter,
+        users: usersRouter,
+        workflows: workflowsRouter,
+        notifications: notificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;
