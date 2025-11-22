@@ -10,6 +10,25 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../components/ui/form";
+import { Input } from "../../components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
 import { trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
@@ -99,12 +118,7 @@ export default function ExamManagement() {
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<ExamFormData>({
+	const form = useForm<ExamFormData>({
 		resolver: zodResolver(examSchema),
 	});
 
@@ -123,10 +137,14 @@ export default function ExamManagement() {
 			queryClient.invalidateQueries({ queryKey: ["exams"] });
 			toast.success(t("admin.exams.toast.createSuccess"));
 			setIsFormOpen(false);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.exams.toast.createError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.createError");
+			toast.error(message);
 		},
 	});
 
@@ -144,10 +162,14 @@ export default function ExamManagement() {
 			toast.success(t("admin.exams.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingExam(null);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.exams.toast.updateError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.updateError");
+			toast.error(message);
 		},
 	});
 
@@ -161,8 +183,12 @@ export default function ExamManagement() {
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.exams.toast.deleteError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.deleteError");
+			toast.error(message);
 		},
 	});
 
@@ -201,9 +227,10 @@ export default function ExamManagement() {
 					<p className="text-base-content/60">{t("admin.exams.subtitle")}</p>
 				</div>
 				<button
+					type="button"
 					onClick={() => {
 						setEditingExam(null);
-						reset();
+						form.reset();
 						setIsFormOpen(true);
 					}}
 					className="btn btn-primary"
@@ -222,9 +249,10 @@ export default function ExamManagement() {
 							{t("admin.exams.empty.description")}
 						</p>
 						<button
+							type="button"
 							onClick={() => {
 								setEditingExam(null);
-								reset();
+								form.reset();
 								setIsFormOpen(true);
 							}}
 							className="btn btn-primary mt-4"
@@ -279,9 +307,10 @@ export default function ExamManagement() {
 										<td>
 											<div className="flex gap-2">
 												<button
+													type="button"
 													onClick={() => {
 														setEditingExam(exam);
-														reset({
+														form.reset({
 															name: exam.name,
 															type: exam.type,
 															date: exam.date.split("T")[0],
@@ -296,6 +325,7 @@ export default function ExamManagement() {
 													<Pencil className="h-4 w-4" />
 												</button>
 												<button
+													type="button"
 													onClick={() => openDeleteModal(exam.id)}
 													className="btn btn-square btn-sm btn-ghost text-error"
 													disabled={exam.isLocked}
@@ -317,7 +347,7 @@ export default function ExamManagement() {
 				onClose={() => {
 					setIsFormOpen(false);
 					setEditingExam(null);
-					reset();
+					form.reset();
 				}}
 				title={
 					editingExam
@@ -325,145 +355,132 @@ export default function ExamManagement() {
 						: t("admin.exams.form.createTitle")
 				}
 			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.exams.form.courseLabel")}
-							</span>
-						</label>
-						<select
-							{...register("classCourseId")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.exams.form.coursePlaceholder")}
-							</option>
-							{classCourses?.map((cc) => (
-								<option key={cc.id} value={cc.id}>
-									{courseMap.get(cc.course)} - {classMap.get(cc.class)}
-								</option>
-							))}
-						</select>
-						{errors.classCourseId && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.classCourseId.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.exams.form.nameLabel")}
-							</span>
-						</label>
-						<input
-							type="text"
-							{...register("name")}
-							className="input input-bordered"
-							placeholder={t("admin.exams.form.namePlaceholder")}
-						/>
-						{errors.name && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.name.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.exams.form.typeLabel")}
-							</span>
-						</label>
-						<input
-							type="text"
-							{...register("type")}
-							className="input input-bordered"
-							placeholder={t("admin.exams.form.typePlaceholder")}
-						/>
-						{errors.type && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.type.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.exams.form.dateLabel")}
-							</span>
-						</label>
-						<input
-							type="date"
-							{...register("date")}
-							className="input input-bordered"
-						/>
-						{errors.date && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.date.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.exams.form.percentageLabel")}
-							</span>
-						</label>
-						<input
-							type="number"
-							{...register("percentage", { valueAsNumber: true })}
-							className="input input-bordered"
-							placeholder={t("admin.exams.form.percentagePlaceholder")}
-						/>
-						{errors.percentage && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.percentage.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="modal-action">
-						<button
-							type="button"
-							onClick={() => {
-								setIsFormOpen(false);
-								setEditingExam(null);
-								reset();
-							}}
-							className="btn btn-ghost"
-						>
-							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : editingExam ? (
-								t("common.actions.saveChanges")
-							) : (
-								t("admin.exams.form.submit")
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="classCourseId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t("admin.exams.form.coursePlaceholder")}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{classCourses?.map((cc) => (
+												<SelectItem key={cc.id} value={cc.id}>
+													{courseMap.get(cc.course)} - {classMap.get(cc.class)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
 							)}
-						</button>
-					</div>
-				</form>
+						/>
+
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.exams.form.nameLabel")}</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t("admin.exams.form.namePlaceholder")}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="type"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.exams.form.typeLabel")}</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t("admin.exams.form.typePlaceholder")}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="date"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
+									<FormControl>
+										<Input type="date" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="percentage"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.exams.form.percentageLabel")}</FormLabel>
+									<FormControl>
+										<Input
+											type="number"
+											value={field.value ?? ""}
+											onChange={(event) =>
+												field.onChange(
+													event.target.value === ""
+														? undefined
+														: Number(event.target.value),
+												)
+											}
+											placeholder={t("admin.exams.form.percentagePlaceholder")}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<DialogFooter className="gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsFormOpen(false);
+									setEditingExam(null);
+									form.reset();
+								}}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingExam ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.exams.form.submit")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
 			</FormModal>
 
 			<ConfirmModal

@@ -9,6 +9,24 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../components/ui/form";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
 import { trpcClient } from "../../utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
@@ -37,6 +55,11 @@ interface Class {
 	id: string;
 	name: string;
 	program: string;
+}
+
+interface AcademicYear {
+	id: string;
+	isActive: boolean;
 }
 
 interface Course {
@@ -70,7 +93,7 @@ export default function ClassCourseManagement() {
 		queryKey: ["activeYear"],
 		queryFn: async () => {
 			const { items } = await trpcClient.academicYears.list.query({});
-			return items.find((y: any) => y.isActive);
+			return (items as AcademicYear[]).find((year) => year.isActive);
 		},
 	});
 
@@ -121,13 +144,13 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<ClassCourseFormData>({
+	const form = useForm<ClassCourseFormData>({
 		resolver: zodResolver(classCourseSchema),
+		defaultValues: {
+			class: "",
+			course: "",
+			teacher: "",
+		},
 	});
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
@@ -147,10 +170,14 @@ export default function ClassCourseManagement() {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			toast.success(t("admin.classCourses.toast.createSuccess"));
 			setIsFormOpen(false);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classCourses.toast.createError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.createError");
+			toast.error(message);
 		},
 	});
 
@@ -164,10 +191,14 @@ export default function ClassCourseManagement() {
 			toast.success(t("admin.classCourses.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingClassCourse(null);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classCourses.toast.updateError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.updateError");
+			toast.error(message);
 		},
 	});
 
@@ -181,8 +212,12 @@ export default function ClassCourseManagement() {
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classCourses.toast.deleteError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.deleteError");
+			toast.error(message);
 		},
 	});
 
@@ -225,9 +260,10 @@ export default function ClassCourseManagement() {
 					</p>
 				</div>
 				<button
+					type="button"
 					onClick={() => {
 						setEditingClassCourse(null);
-						reset();
+						form.reset();
 						setIsFormOpen(true);
 					}}
 					className="btn btn-primary"
@@ -248,9 +284,10 @@ export default function ClassCourseManagement() {
 							{t("admin.classCourses.empty.description")}
 						</p>
 						<button
+							type="button"
 							onClick={() => {
 								setEditingClassCourse(null);
-								reset();
+								form.reset();
 								setIsFormOpen(true);
 							}}
 							className="btn btn-primary mt-4"
@@ -285,9 +322,10 @@ export default function ClassCourseManagement() {
 										<td>
 											<div className="flex gap-2">
 												<button
+													type="button"
 													onClick={() => {
 														setEditingClassCourse(cc);
-														reset({
+														form.reset({
 															class: cc.class,
 															course: cc.course,
 															teacher: cc.teacher,
@@ -299,6 +337,7 @@ export default function ClassCourseManagement() {
 													<Pencil className="h-4 w-4" />
 												</button>
 												<button
+													type="button"
 													onClick={() => openDeleteModal(cc.id)}
 													className="btn btn-square btn-sm btn-ghost text-error"
 												>
@@ -319,7 +358,7 @@ export default function ClassCourseManagement() {
 				onClose={() => {
 					setIsFormOpen(false);
 					setEditingClassCourse(null);
-					reset();
+					form.reset();
 				}}
 				title={
 					editingClassCourse
@@ -327,118 +366,125 @@ export default function ClassCourseManagement() {
 						: t("admin.classCourses.form.createTitle")
 				}
 			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classCourses.form.classLabel")}
-							</span>
-						</label>
-						<select
-							{...register("class")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.classCourses.form.classPlaceholder")}
-							</option>
-							{classes?.map((cls) => (
-								<option key={cls.id} value={cls.id}>
-									{cls.name} - {programMap.get(cls.program)}
-								</option>
-							))}
-						</select>
-						{errors.class && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.class.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classCourses.form.courseLabel")}
-							</span>
-						</label>
-						<select
-							{...register("course")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.classCourses.form.coursePlaceholder")}
-							</option>
-							{courses?.map((course) => (
-								<option key={course.id} value={course.id}>
-									{course.name}
-								</option>
-							))}
-						</select>
-						{errors.course && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.course.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classCourses.form.teacherLabel")}
-							</span>
-						</label>
-						<select
-							{...register("teacher")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.classCourses.form.teacherPlaceholder")}
-							</option>
-							{teachers?.map((teacher) => (
-								<option key={teacher.id} value={teacher.id}>
-									{teacher.name}
-								</option>
-							))}
-						</select>
-						{errors.teacher && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.teacher.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="modal-action">
-						<button
-							type="button"
-							onClick={() => {
-								setIsFormOpen(false);
-								setEditingClassCourse(null);
-								reset();
-							}}
-							className="btn btn-ghost"
-						>
-							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : editingClassCourse ? (
-								t("common.actions.saveChanges")
-							) : (
-								t("admin.classCourses.form.createSubmit")
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="class"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.classLabel")}
+									</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.classPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{classes?.map((cls) => (
+												<SelectItem key={cls.id} value={cls.id}>
+													{cls.name} - {programMap.get(cls.program)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
 							)}
-						</button>
-					</div>
-				</form>
+						/>
+
+						<FormField
+							control={form.control}
+							name="course"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.courseLabel")}
+									</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.coursePlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{courses?.map((course) => (
+												<SelectItem key={course.id} value={course.id}>
+													{course.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="teacher"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.teacherLabel")}
+									</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.teacherPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{teachers?.map((teacher) => (
+												<SelectItem key={teacher.id} value={teacher.id}>
+													{teacher.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<DialogFooter className="gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsFormOpen(false);
+									setEditingClassCourse(null);
+									form.reset();
+								}}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingClassCourse ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.classCourses.form.createSubmit")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
 			</FormModal>
 
 			<ConfirmModal

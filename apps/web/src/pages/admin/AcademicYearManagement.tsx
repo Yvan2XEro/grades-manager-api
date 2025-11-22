@@ -9,6 +9,20 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../components/ui/form";
+import { Input } from "../../components/ui/input";
+import { Spinner } from "../../components/ui/spinner";
+import { Switch } from "../../components/ui/switch";
 import { trpcClient } from "../../utils/trpc";
 
 const buildAcademicYearSchema = (t: TFunction) =>
@@ -51,16 +65,16 @@ const AcademicYearManagement: React.FC = () => {
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		watch,
-		setValue,
-		formState: { errors, isSubmitting },
-	} = useForm<FormData>({
+	const form = useForm<FormData>({
 		resolver: zodResolver(academicYearSchema),
+		defaultValues: {
+			startDate: "",
+			endDate: "",
+			name: "",
+		},
 	});
+
+	const { watch, setValue } = form;
 
 	const startDate = watch("startDate");
 	const endDate = watch("endDate");
@@ -103,10 +117,14 @@ const AcademicYearManagement: React.FC = () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
 			toast.success(t("admin.academicYears.toast.createSuccess"));
 			setIsModalOpen(false);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.academicYears.toast.createError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.createError");
+			toast.error(message);
 		},
 	});
 
@@ -124,10 +142,14 @@ const AcademicYearManagement: React.FC = () => {
 			toast.success(t("admin.academicYears.toast.updateSuccess"));
 			setIsModalOpen(false);
 			setEditingYear(null);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.academicYears.toast.updateError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.updateError");
+			toast.error(message);
 		},
 	});
 
@@ -140,8 +162,12 @@ const AcademicYearManagement: React.FC = () => {
 			toast.success(t("admin.academicYears.toast.deleteSuccess"));
 			setDeleteConfirmId(null);
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.academicYears.toast.deleteError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.deleteError");
+			toast.error(message);
 		},
 	});
 
@@ -153,8 +179,12 @@ const AcademicYearManagement: React.FC = () => {
 			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
 			toast.success(t("admin.academicYears.toast.statusSuccess"));
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.academicYears.toast.statusError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.statusError");
+			toast.error(message);
 		},
 	});
 
@@ -204,9 +234,10 @@ const AcademicYearManagement: React.FC = () => {
 					<p className="text-gray-600">{t("admin.academicYears.subtitle")}</p>
 				</div>
 				<button
+					type="button"
 					onClick={() => {
 						setEditingYear(null);
-						reset({ startDate: "", endDate: "", name: "" });
+						form.reset({ startDate: "", endDate: "", name: "" });
 						setIsModalOpen(true);
 					}}
 					className="btn btn-primary"
@@ -227,9 +258,10 @@ const AcademicYearManagement: React.FC = () => {
 							{t("admin.academicYears.empty.description")}
 						</p>
 						<button
+							type="button"
 							onClick={() => {
 								setEditingYear(null);
-								reset({ startDate: "", endDate: "", name: "" });
+								form.reset({ startDate: "", endDate: "", name: "" });
 								setIsModalOpen(true);
 							}}
 							className="btn btn-primary btn-sm mt-4"
@@ -257,21 +289,21 @@ const AcademicYearManagement: React.FC = () => {
 										<td>{formatDate(year.startDate)}</td>
 										<td>{formatDate(year.endDate)}</td>
 										<td>
-											<div className="form-control">
-												<label className="label cursor-pointer">
-													<input
-														type="checkbox"
-														className="toggle toggle-primary"
-														checked={year.isActive}
-														onChange={() =>
-															handleToggleActive(year.id, year.isActive)
-														}
-													/>
-													<span className="label-text ml-2">
-														{year.isActive
-															? t("common.status.active")
-															: t("common.status.inactive")}
-													</span>
+											<div className="flex items-center gap-3">
+												<Switch
+													id={`academic-year-${year.id}`}
+													checked={year.isActive}
+													onCheckedChange={() =>
+														handleToggleActive(year.id, year.isActive)
+													}
+												/>
+												<label
+													htmlFor={`academic-year-${year.id}`}
+													className="text-muted-foreground text-sm"
+												>
+													{year.isActive
+														? t("common.status.active")
+														: t("common.status.inactive")}
 												</label>
 											</div>
 										</td>
@@ -282,12 +314,14 @@ const AcademicYearManagement: React.FC = () => {
 														{t("admin.academicYears.confirmDelete")}
 													</span>
 													<button
+														type="button"
 														onClick={() => handleDelete(year.id)}
 														className="btn btn-error btn-sm"
 													>
 														<Check className="h-4 w-4" />
 													</button>
 													<button
+														type="button"
 														onClick={() => setDeleteConfirmId(null)}
 														className="btn btn-ghost btn-sm"
 													>
@@ -297,9 +331,10 @@ const AcademicYearManagement: React.FC = () => {
 											) : (
 												<div className="flex items-center space-x-2">
 													<button
+														type="button"
 														onClick={() => {
 															setEditingYear(year);
-															reset({
+															form.reset({
 																startDate: year.startDate.slice(0, 10),
 																endDate: year.endDate.slice(0, 10),
 																name: year.name,
@@ -311,6 +346,7 @@ const AcademicYearManagement: React.FC = () => {
 														<Pencil className="h-4 w-4" />
 													</button>
 													<button
+														type="button"
 														onClick={() => setDeleteConfirmId(year.id)}
 														className="btn btn-ghost btn-sm"
 													>
@@ -327,122 +363,90 @@ const AcademicYearManagement: React.FC = () => {
 				)}
 			</div>
 
-			{isModalOpen && (
-				<div className="modal modal-open">
-					<div className="modal-box">
-						<h3 className="font-bold text-lg">
-							{editingYear
-								? t("admin.academicYears.modal.editTitle")
-								: t("admin.academicYears.modal.createTitle")}
-						</h3>
-						<button
-							onClick={() => {
-								setIsModalOpen(false);
-								setEditingYear(null);
-								reset();
-							}}
-							className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
-						>
-							✕
-						</button>
-
-						<form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">
+			<FormModal
+				isOpen={isModalOpen}
+				onClose={() => {
+					setIsModalOpen(false);
+					setEditingYear(null);
+					form.reset();
+				}}
+				title={
+					editingYear
+						? t("admin.academicYears.modal.editTitle")
+						: t("admin.academicYears.modal.createTitle")
+				}
+			>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="startDate"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
 										{t("admin.academicYears.modal.startDate")}
-									</span>
-								</label>
-								<input
-									type="date"
-									{...register("startDate")}
-									className="input input-bordered"
-								/>
-								{errors.startDate && (
-									<label className="label">
-										<span className="label-text-alt text-error">
-											{errors.startDate.message}
-										</span>
-									</label>
-								)}
-							</div>
+									</FormLabel>
+									<FormControl>
+										<Input type="date" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">
+						<FormField
+							control={form.control}
+							name="endDate"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
 										{t("admin.academicYears.modal.endDate")}
-									</span>
-								</label>
-								<input
-									type="date"
-									{...register("endDate")}
-									className="input input-bordered"
-								/>
-								{errors.endDate && (
-									<label className="label">
-										<span className="label-text-alt text-error">
-											{errors.endDate.message}
-										</span>
-									</label>
-								)}
-							</div>
+									</FormLabel>
+									<FormControl>
+										<Input type="date" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">
-										{t("admin.academicYears.modal.label")}
-									</span>
-								</label>
-								<input
-									type="text"
-									{...register("name")}
-									className="input input-bordered"
-									readOnly
-								/>
-								{errors.name && (
-									<label className="label">
-										<span className="label-text-alt text-error">
-											{errors.name.message}
-										</span>
-									</label>
-								)}
-							</div>
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.academicYears.modal.label")}</FormLabel>
+									<FormControl>
+										<Input {...field} readOnly />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<div className="modal-action">
-								<button
-									type="button"
-									onClick={() => {
-										setIsModalOpen(false);
-										setEditingYear(null);
-										reset();
-									}}
-									className="btn btn-ghost"
-								>
-									{t("common.actions.cancel")}
-								</button>
-								<button
-									type="submit"
-									disabled={isSubmitting}
-									className="btn btn-primary"
-								>
-									{isSubmitting ? (
-										<>
-											<span className="loading loading-spinner" />
-											{t("common.actions.saving")}
-										</>
-									) : (
-										t("common.actions.save")
-									)}
-								</button>
-							</div>
-						</form>
-					</div>
-					<div
-						className="modal-backdrop"
-						onClick={() => setIsModalOpen(false)}
-					/>
-				</div>
-			)}
+						<DialogFooter className="gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsModalOpen(false);
+									setEditingYear(null);
+									form.reset();
+								}}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : (
+									t("common.actions.save")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
+			</FormModal>
 		</div>
 	);
 };

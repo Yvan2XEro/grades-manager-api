@@ -9,6 +9,25 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../components/ui/form";
+import { Input } from "../../components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
 import { trpcClient } from "../../utils/trpc";
 
 const buildClassSchema = (t: TFunction) =>
@@ -85,16 +104,16 @@ export default function ClassManagement() {
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		watch,
-		setValue,
-		formState: { errors, isSubmitting },
-	} = useForm<ClassFormData>({
+	const form = useForm<ClassFormData>({
 		resolver: zodResolver(classSchema),
+		defaultValues: {
+			programId: "",
+			academicYearId: "",
+			name: "",
+		},
 	});
+
+	const { watch, setValue } = form;
 
 	const selectedProgramId = watch("programId");
 	const selectedAcademicYearId = watch("academicYearId");
@@ -127,10 +146,14 @@ export default function ClassManagement() {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
 			toast.success(t("admin.classes.toast.createSuccess"));
 			setIsFormOpen(false);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classes.toast.createError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classes.toast.createError");
+			toast.error(message);
 		},
 	});
 
@@ -148,10 +171,14 @@ export default function ClassManagement() {
 			toast.success(t("admin.classes.toast.updateSuccess"));
 			setIsFormOpen(false);
 			setEditingClass(null);
-			reset();
+			form.reset();
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classes.toast.updateError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classes.toast.updateError");
+			toast.error(message);
 		},
 	});
 
@@ -165,8 +192,12 @@ export default function ClassManagement() {
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
-		onError: (error: any) => {
-			toast.error(error.message || t("admin.classes.toast.deleteError"));
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classes.toast.deleteError");
+			toast.error(message);
 		},
 	});
 
@@ -205,9 +236,10 @@ export default function ClassManagement() {
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<button
+					type="button"
 					onClick={() => {
 						setEditingClass(null);
-						reset();
+						form.reset();
 						setIsFormOpen(true);
 					}}
 					className="btn btn-primary"
@@ -228,9 +260,10 @@ export default function ClassManagement() {
 							{t("admin.classes.empty.description")}
 						</p>
 						<button
+							type="button"
 							onClick={() => {
 								setEditingClass(null);
-								reset();
+								form.reset();
 								setIsFormOpen(true);
 							}}
 							className="btn btn-primary mt-4"
@@ -266,9 +299,10 @@ export default function ClassManagement() {
 										<td>
 											<div className="flex gap-2">
 												<button
+													type="button"
 													onClick={() => {
 														setEditingClass(cls);
-														reset({
+														form.reset({
 															name: cls.name,
 															programId: cls.programId,
 															academicYearId: cls.academicYearId,
@@ -280,6 +314,7 @@ export default function ClassManagement() {
 													<Pencil className="h-4 w-4" />
 												</button>
 												<button
+													type="button"
 													onClick={() => openDeleteModal(cls.id)}
 													className="btn btn-square btn-sm btn-ghost text-error"
 												>
@@ -300,7 +335,7 @@ export default function ClassManagement() {
 				onClose={() => {
 					setIsFormOpen(false);
 					setEditingClass(null);
-					reset();
+					form.reset();
 				}}
 				title={
 					editingClass
@@ -308,111 +343,106 @@ export default function ClassManagement() {
 						: t("admin.classes.form.createTitle")
 				}
 			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classes.form.programLabel")}
-							</span>
-						</label>
-						<select
-							{...register("programId")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.classes.form.programPlaceholder")}
-							</option>
-							{programs?.map((program) => (
-								<option key={program.id} value={program.id}>
-									{program.name}
-								</option>
-							))}
-						</select>
-						{errors.programId && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.programId.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classes.form.academicYearLabel")}
-							</span>
-						</label>
-						<select
-							{...register("academicYearId")}
-							className="select select-bordered w-full"
-						>
-							<option value="">
-								{t("admin.classes.form.academicYearPlaceholder")}
-							</option>
-							{academicYears?.map((year) => (
-								<option key={year.id} value={year.id}>
-									{year.name}
-								</option>
-							))}
-						</select>
-						{errors.academicYearId && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.academicYearId.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("admin.classes.form.labelLabel")}
-							</span>
-						</label>
-						<input
-							type="text"
-							{...register("name")}
-							className="input input-bordered"
-							readOnly
-						/>
-						{errors.name && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.name.message}
-								</span>
-							</label>
-						)}
-					</div>
-
-					<div className="modal-action">
-						<button
-							type="button"
-							onClick={() => {
-								setIsFormOpen(false);
-								setEditingClass(null);
-								reset();
-							}}
-							className="btn btn-ghost"
-						>
-							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : editingClass ? (
-								t("common.actions.saveChanges")
-							) : (
-								t("admin.classes.form.createSubmit")
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<FormField
+							control={form.control}
+							name="programId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.classes.form.programLabel")}</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classes.form.programPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{programs?.map((program) => (
+												<SelectItem key={program.id} value={program.id}>
+													{program.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
 							)}
-						</button>
-					</div>
-				</form>
+						/>
+
+						<FormField
+							control={form.control}
+							name="academicYearId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classes.form.academicYearLabel")}
+									</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classes.form.academicYearPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{academicYears?.map((year) => (
+												<SelectItem key={year.id} value={year.id}>
+													{year.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
+									<FormControl>
+										<Input {...field} readOnly />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<DialogFooter className="gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsFormOpen(false);
+									setEditingClass(null);
+									form.reset();
+								}}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingClass ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.classes.form.createSubmit")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
 			</FormModal>
 
 			<ConfirmModal
