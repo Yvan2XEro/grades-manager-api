@@ -7,10 +7,30 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
-import { Button } from "../../components/ui/button";
-import { DialogFooter } from "../../components/ui/dialog";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,16 +38,24 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "../../components/ui/form";
+} from "@/components/ui/form";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { trpcClient } from "../../utils/trpc";
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { trpcClient } from "@/utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
 	z.object({
@@ -57,17 +85,12 @@ interface Class {
 	program: string;
 }
 
-interface AcademicYear {
-	id: string;
-	isActive: boolean;
-}
-
-interface Course {
+interface Program {
 	id: string;
 	name: string;
 }
 
-interface Program {
+interface Course {
 	id: string;
 	name: string;
 }
@@ -89,24 +112,12 @@ export default function ClassCourseManagement() {
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
 
-	const { data: activeYear } = useQuery({
-		queryKey: ["activeYear"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return (items as AcademicYear[]).find((year) => year.isActive);
-		},
-	});
-
 	const { data: classes } = useQuery({
-		queryKey: ["activeClasses", activeYear?.id],
+		queryKey: ["classes"],
 		queryFn: async () => {
-			if (!activeYear) return [];
-			const { items } = await trpcClient.classes.list.query({
-				academicYearId: activeYear.id,
-			});
+			const { items } = await trpcClient.classes.list.query({});
 			return items as Class[];
 		},
-		enabled: !!activeYear,
 	});
 
 	const { data: programs } = useQuery({
@@ -154,9 +165,10 @@ export default function ClassCourseManagement() {
 	});
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
-	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
+	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
+
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),
@@ -169,8 +181,7 @@ export default function ClassCourseManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			toast.success(t("admin.classCourses.toast.createSuccess"));
-			setIsFormOpen(false);
-			form.reset();
+			handleCloseForm();
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -189,9 +200,7 @@ export default function ClassCourseManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			toast.success(t("admin.classCourses.toast.updateSuccess"));
-			setIsFormOpen(false);
-			setEditingClassCourse(null);
-			form.reset();
+			handleCloseForm();
 		},
 		onError: (error: unknown) => {
 			const message =
@@ -221,7 +230,7 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const onSubmit = async (data: ClassCourseFormData) => {
+	const onSubmit = (data: ClassCourseFormData) => {
 		if (editingClassCourse) {
 			updateMutation.mutate({ ...data, id: editingClassCourse.id });
 		} else {
@@ -229,7 +238,29 @@ export default function ClassCourseManagement() {
 		}
 	};
 
-	const openDeleteModal = (id: string) => {
+	const startCreate = () => {
+		setEditingClassCourse(null);
+		form.reset({ class: "", course: "", teacher: "" });
+		setIsFormOpen(true);
+	};
+
+	const startEdit = (classCourse: ClassCourse) => {
+		setEditingClassCourse(classCourse);
+		form.reset({
+			class: classCourse.class,
+			course: classCourse.course,
+			teacher: classCourse.teacher,
+		});
+		setIsFormOpen(true);
+	};
+
+	const handleCloseForm = () => {
+		setIsFormOpen(false);
+		setEditingClassCourse(null);
+		form.reset({ class: "", course: "", teacher: "" });
+	};
+
+	const confirmDelete = (id: string) => {
 		setDeleteId(id);
 		setIsDeleteOpen(true);
 	};
@@ -243,262 +274,282 @@ export default function ClassCourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-8 w-8" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold text-2xl">
+					<h1 className="text-2xl font-semibold">
 						{t("admin.classCourses.title")}
 					</h1>
-					<p className="text-base-content/60">
+					<p className="text-muted-foreground">
 						{t("admin.classCourses.subtitle")}
 					</p>
 				</div>
-				<button
-					type="button"
-					onClick={() => {
-						setEditingClassCourse(null);
-						form.reset();
-						setIsFormOpen(true);
-					}}
-					className="btn btn-primary"
-				>
-					<Plus className="mr-2 h-5 w-5" />
+				<Button onClick={startCreate}>
+					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.classCourses.actions.assign")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow-xl">
-				{displayedClassCourses.length === 0 ? (
-					<div className="card-body items-center py-12 text-center">
-						<BookOpen className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">
-							{t("admin.classCourses.empty.title")}
-						</h2>
-						<p className="text-base-content/60">
-							{t("admin.classCourses.empty.description")}
-						</p>
-						<button
-							type="button"
-							onClick={() => {
-								setEditingClassCourse(null);
-								form.reset();
-								setIsFormOpen(true);
-							}}
-							className="btn btn-primary mt-4"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("admin.classCourses.actions.assign")}
-						</button>
-					</div>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("admin.classCourses.table.class")}</th>
-									<th>{t("admin.classCourses.table.program")}</th>
-									<th>{t("admin.classCourses.table.course")}</th>
-									<th>{t("admin.classCourses.table.teacher")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{displayedClassCourses?.map((cc) => (
-									<tr key={cc.id}>
-										<td className="font-medium">
-											{classMap.get(cc.class)?.name}
-										</td>
-										<td>
-											{programMap.get(classMap.get(cc.class)?.program || "")}
-										</td>
-										<td>{courseMap.get(cc.course)}</td>
-										<td>{teacherMap.get(cc.teacher)}</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													type="button"
-													onClick={() => {
-														setEditingClassCourse(cc);
-														form.reset({
-															class: cc.class,
-															course: cc.course,
-															teacher: cc.teacher,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
+					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					{displayedClassCourses.length > 0 ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
+									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
+									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
+									<TableHead>{t("admin.classCourses.table.teacher")}</TableHead>
+									<TableHead className="text-right">
+										{t("common.table.actions")}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{displayedClassCourses.map((classCourse) => (
+									<TableRow key={classCourse.id}>
+										<TableCell className="font-medium">
+											{classMap.get(classCourse.class)?.name}
+										</TableCell>
+										<TableCell>
+											{programMap.get(
+												classMap.get(classCourse.class)?.program ?? "",
+											)}
+										</TableCell>
+										<TableCell>{courseMap.get(classCourse.course)}</TableCell>
+										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
+										<TableCell>
+											<div className="flex justify-end gap-2">
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => startEdit(classCourse)}
+													aria-label={t("admin.classCourses.form.editTitle")}
 												>
 													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													type="button"
-													onClick={() => openDeleteModal(cc.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													className="text-destructive hover:text-destructive"
+													onClick={() => confirmDelete(classCourse.id)}
+													aria-label={t("admin.classCourses.delete.title")}
 												>
 													<Trash2 className="h-4 w-4" />
-												</button>
+												</Button>
 											</div>
-										</td>
-									</tr>
+										</TableCell>
+									</TableRow>
 								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+							</TableBody>
+						</Table>
+					) : (
+						<div className="py-12 text-center">
+							<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+							<p className="mt-4 font-medium">
+								{t("admin.classCourses.empty.title")}
+							</p>
+							<p className="text-muted-foreground text-sm">
+								{t("admin.classCourses.empty.description")}
+							</p>
+							<Button className="mt-4" onClick={startCreate}>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("admin.classCourses.actions.assign")}
+							</Button>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={() => {
-					setIsFormOpen(false);
-					setEditingClassCourse(null);
-					form.reset();
+			<Dialog
+				open={isFormOpen}
+				onOpenChange={(open) => {
+					setIsFormOpen(open);
+					if (!open) handleCloseForm();
 				}}
-				title={
-					editingClassCourse
-						? t("admin.classCourses.form.editTitle")
-						: t("admin.classCourses.form.createTitle")
-				}
 			>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<FormField
-							control={form.control}
-							name="class"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classCourses.form.classLabel")}
-									</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classCourses.form.classPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{classes?.map((cls) => (
-												<SelectItem key={cls.id} value={cls.id}>
-													{cls.name} - {programMap.get(cls.program)}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="course"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classCourses.form.courseLabel")}
-									</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classCourses.form.coursePlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{courses?.map((course) => (
-												<SelectItem key={course.id} value={course.id}>
-													{course.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="teacher"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classCourses.form.teacherLabel")}
-									</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classCourses.form.teacherPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{teachers?.map((teacher) => (
-												<SelectItem key={teacher.id} value={teacher.id}>
-													{teacher.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<DialogFooter className="gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => {
-									setIsFormOpen(false);
-									setEditingClassCourse(null);
-									form.reset();
-								}}
-							>
-								{t("common.actions.cancel")}
-							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<Spinner className="mr-2 h-4 w-4" />
-								) : editingClassCourse ? (
-									t("common.actions.saveChanges")
-								) : (
-									t("admin.classCourses.form.createSubmit")
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{editingClassCourse
+								? t("admin.classCourses.form.editTitle")
+								: t("admin.classCourses.form.createTitle")}
+						</DialogTitle>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="class"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classCourses.form.classLabel")}
+										</FormLabel>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classCourses.form.classPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{classes?.map((cls) => (
+													<SelectItem key={cls.id} value={cls.id}>
+														{cls.name} • {programMap.get(cls.program)}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
 								)}
-							</Button>
-						</DialogFooter>
-					</form>
-				</Form>
-			</FormModal>
+							/>
 
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
+							<FormField
+								control={form.control}
+								name="course"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classCourses.form.courseLabel")}
+										</FormLabel>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classCourses.form.coursePlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{courses?.map((course) => (
+													<SelectItem key={course.id} value={course.id}>
+														{course.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="teacher"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classCourses.form.teacherLabel")}
+										</FormLabel>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classCourses.form.teacherPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{teachers?.map((teacher) => (
+													<SelectItem key={teacher.id} value={teacher.id}>
+														{teacher.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={handleCloseForm}
+									disabled={form.formState.isSubmitting}
+								>
+									{t("common.actions.cancel")}
+								</Button>
+								<Button type="submit" disabled={form.formState.isSubmitting}>
+									{form.formState.isSubmitting ? (
+										<Spinner className="mr-2 h-4 w-4" />
+									) : editingClassCourse ? (
+										t("common.actions.saveChanges")
+									) : (
+										t("admin.classCourses.form.createSubmit")
+									)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
+
+			<AlertDialog
+				open={isDeleteOpen}
+				onOpenChange={(open) => {
+					setIsDeleteOpen(open);
+					if (!open) setDeleteId(null);
 				}}
-				onConfirm={handleDelete}
-				title={t("admin.classCourses.delete.title")}
-				message={t("admin.classCourses.delete.message")}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("admin.classCourses.delete.title")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("admin.classCourses.delete.message")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deleteMutation.isPending}>
+							{t("common.actions.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDelete}
+							disabled={deleteMutation.isPending}
+						>
+							{deleteMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<>
+									<Trash2 className="mr-2 h-4 w-4" />
+									{t("common.actions.delete")}
+								</>
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

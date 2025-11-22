@@ -97,9 +97,9 @@ export default function UserManagement() {
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
-	const [roleFilter, setRoleFilter] = useState("");
-	const [banFilter, setBanFilter] = useState("");
-	const [verifiedFilter, setVerifiedFilter] = useState("");
+	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">("all");
+	const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
+	const [verifiedFilter, setVerifiedFilter] = useState<"all" | "verified" | "unverified">("all");
 
 	const { data } = useQuery({
 		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
@@ -107,7 +107,7 @@ export default function UserManagement() {
 			trpcClient.users.list.query({
 				cursor,
 				limit: pageSize,
-				role: roleFilter || undefined,
+				role: roleFilter === "all" ? undefined : roleFilter,
 				banned:
 					banFilter === "banned"
 						? true
@@ -295,7 +295,7 @@ export default function UserManagement() {
 							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="all">
 								{t("admin.users.filters.roles.all")}
 							</SelectItem>
 							<SelectItem value="admin">
@@ -311,7 +311,7 @@ export default function UserManagement() {
 							<SelectValue placeholder={t("admin.users.filters.status.all")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="all">
 								{t("admin.users.filters.status.all")}
 							</SelectItem>
 							<SelectItem value="active">
@@ -327,7 +327,7 @@ export default function UserManagement() {
 							<SelectValue placeholder={t("admin.users.filters.email.all")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="all">
 								{t("admin.users.filters.email.all")}
 							</SelectItem>
 							<SelectItem value="verified">

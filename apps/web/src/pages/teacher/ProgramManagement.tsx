@@ -2,21 +2,56 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Pencil, Plus, School, Trash2 } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
-import { trpcClient } from "../../utils/trpc";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { trpcClient } from "@/utils/trpc";
 
 const buildProgramSchema = (t: TFunction) =>
 	z.object({
-		name: z.string().min(2, t("teacher.programs.validation.name")),
+		name: z.string().min(2, t("admin.programs.validation.name")),
 		description: z.string().optional(),
 		faculty: z.string({
-			required_error: t("teacher.programs.validation.faculty"),
+			required_error: t("admin.programs.validation.faculty"),
 		}),
 	});
 
@@ -27,9 +62,12 @@ interface Program {
 	name: string;
 	description: string | null;
 	faculty_id: string;
-	faculty: {
-		name: string;
-	};
+	faculty: { name: string };
+}
+
+interface Faculty {
+	id: string;
+	name: string;
 }
 
 export default function ProgramManagement() {
@@ -37,9 +75,6 @@ export default function ProgramManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const nameId = useId();
-	const facultyId = useId();
-	const descId = useId();
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -67,17 +102,17 @@ export default function ProgramManagement() {
 		queryKey: ["faculties"],
 		queryFn: async () => {
 			const { items } = await trpcClient.faculties.list.query({});
-			return items;
+			return items as Faculty[];
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<ProgramFormData>({
+	const form = useForm<ProgramFormData>({
 		resolver: zodResolver(programSchema),
+		defaultValues: {
+			name: "",
+			description: "",
+			faculty: "",
+		},
 	});
 
 	const createMutation = useMutation({
@@ -86,13 +121,12 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success(t("teacher.programs.toast.createSuccess"));
-			setIsFormOpen(false);
-			reset();
+			toast.success(t("admin.programs.toast.createSuccess"));
+			handleCloseForm();
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("teacher.programs.toast.createError"),
+				(error as Error).message || t("admin.programs.toast.createError"),
 			);
 		},
 	});
@@ -104,14 +138,12 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success(t("teacher.programs.toast.updateSuccess"));
-			setIsFormOpen(false);
-			setEditingProgram(null);
-			reset();
+			toast.success(t("admin.programs.toast.updateSuccess"));
+			handleCloseForm();
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("teacher.programs.toast.updateError"),
+				(error as Error).message || t("admin.programs.toast.updateError"),
 			);
 		},
 	});
@@ -122,18 +154,18 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
-			toast.success(t("teacher.programs.toast.deleteSuccess"));
+			toast.success(t("admin.programs.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("teacher.programs.toast.deleteError"),
+				(error as Error).message || t("admin.programs.toast.deleteError"),
 			);
 		},
 	});
 
-	const onSubmit = async (data: ProgramFormData) => {
+	const onSubmit = (data: ProgramFormData) => {
 		if (editingProgram) {
 			updateMutation.mutate({ ...data, id: editingProgram.id });
 		} else {
@@ -141,7 +173,29 @@ export default function ProgramManagement() {
 		}
 	};
 
-	const openDeleteModal = (id: string) => {
+	const startCreate = () => {
+		setEditingProgram(null);
+		form.reset({ name: "", description: "", faculty: "" });
+		setIsFormOpen(true);
+	};
+
+	const startEdit = (program: Program) => {
+		setEditingProgram(program);
+		form.reset({
+			name: program.name,
+			description: program.description ?? "",
+			faculty: program.faculty_id,
+		});
+		setIsFormOpen(true);
+	};
+
+	const handleCloseForm = () => {
+		setIsFormOpen(false);
+		setEditingProgram(null);
+		form.reset({ name: "", description: "", faculty: "" });
+	};
+
+	const confirmDelete = (id: string) => {
 		setDeleteId(id);
 		setIsDeleteOpen(true);
 	};
@@ -155,223 +209,250 @@ export default function ProgramManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-8 w-8" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold text-2xl">{t("teacher.programs.title")}</h1>
-					<p className="text-base-content/60">
-						{t("teacher.programs.subtitle")}
+					<h1 className="text-2xl font-semibold">
+						{t("admin.programs.title")}
+					</h1>
+					<p className="text-muted-foreground">
+						{t("admin.programs.subtitle")}
 					</p>
 				</div>
-				<button
-					type="button"
-					onClick={() => {
-						setEditingProgram(null);
-						reset();
-						setIsFormOpen(true);
-					}}
-					className="btn btn-primary"
-				>
-					<Plus className="mr-2 h-5 w-5" />
-					{t("teacher.programs.actions.add")}
-				</button>
+				<Button onClick={startCreate}>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("admin.programs.actions.add")}
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow-xl">
-				{programs?.length === 0 ? (
-					<div className="card-body items-center py-12 text-center">
-						<School className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">
-							{t("teacher.programs.empty.title")}
-						</h2>
-						<p className="text-base-content/60">
-							{t("teacher.programs.empty.description")}
-						</p>
-						<button
-							type="button"
-							onClick={() => {
-								setEditingProgram(null);
-								reset();
-								setIsFormOpen(true);
-							}}
-							className="btn btn-primary mt-4"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("teacher.programs.actions.add")}
-						</button>
-					</div>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("teacher.programs.table.name")}</th>
-									<th>{t("teacher.programs.table.faculty")}</th>
-									<th>{t("teacher.programs.table.description")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{programs?.map((program) => (
-									<tr key={program.id}>
-										<td className="font-medium">{program.name}</td>
-										<td>{program.faculty?.name}</td>
-										<td>
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("admin.programs.title")}</CardTitle>
+					<CardDescription>{t("admin.programs.subtitle")}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					{programs && programs.length > 0 ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>{t("admin.programs.table.name")}</TableHead>
+									<TableHead>{t("admin.programs.table.faculty")}</TableHead>
+									<TableHead>
+										{t("admin.programs.table.description")}
+									</TableHead>
+									<TableHead className="text-right">
+										{t("common.table.actions")}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{programs.map((program) => (
+									<TableRow key={program.id}>
+										<TableCell className="font-medium">{program.name}</TableCell>
+										<TableCell>{program.faculty?.name}</TableCell>
+										<TableCell>
 											{program.description || (
-												<span className="text-base-content/40 italic">
-													{t("teacher.programs.table.noDescription")}
+												<span className="text-muted-foreground italic">
+													{t("admin.programs.table.noDescription")}
 												</span>
 											)}
-										</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													type="button"
-													onClick={() => {
-														setEditingProgram(program);
-														reset({
-															name: program.name,
-															description: program.description || "",
-															faculty: program.faculty_id,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
+										</TableCell>
+										<TableCell>
+											<div className="flex justify-end gap-2">
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => startEdit(program)}
+													aria-label={t("admin.programs.form.editTitle")}
 												>
 													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													type="button"
-													onClick={() => openDeleteModal(program.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													className="text-destructive hover:text-destructive"
+													onClick={() => confirmDelete(program.id)}
+													aria-label={t("admin.programs.delete.title")}
 												>
 													<Trash2 className="h-4 w-4" />
-												</button>
+												</Button>
 											</div>
-										</td>
-									</tr>
+										</TableCell>
+									</TableRow>
 								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+							</TableBody>
+						</Table>
+					) : (
+						<div className="py-12 text-center">
+							<School className="mx-auto h-12 w-12 text-muted-foreground" />
+							<p className="mt-4 font-medium">
+								{t("admin.programs.empty.title")}
+							</p>
+							<p className="text-muted-foreground text-sm">
+								{t("admin.programs.empty.description")}
+							</p>
+							<Button className="mt-4" onClick={startCreate}>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("admin.programs.actions.add")}
+							</Button>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
-			<FormModal
-				isOpen={isFormOpen}
-				onClose={() => {
-					setIsFormOpen(false);
-					setEditingProgram(null);
-					reset();
+			<Dialog
+				open={isFormOpen}
+				onOpenChange={(open) => {
+					setIsFormOpen(open);
+					if (!open) handleCloseForm();
 				}}
-				title={editingProgram ? "Edit Program" : "Add New Program"}
 			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div className="form-control">
-						<label className="label" htmlFor={nameId}>
-							<span className="label-text">Program Name</span>
-						</label>
-						<input
-							id={nameId}
-							type="text"
-							{...register("name")}
-							className="input input-bordered"
-							placeholder="Enter program name"
-						/>
-						{errors.name && (
-							<p className="label-text-alt text-error">{errors.name.message}</p>
-						)}
-					</div>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{editingProgram
+								? t("admin.programs.form.editTitle")
+								: t("admin.programs.form.createTitle")}
+						</DialogTitle>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.programs.form.nameLabel")}</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t(
+													"admin.programs.form.namePlaceholder",
+												)}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="faculty"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.programs.form.facultyLabel")}</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value || undefined}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.programs.form.facultyPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{faculties?.map((faculty) => (
+													<SelectItem key={faculty.id} value={faculty.id}>
+														{faculty.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.programs.form.descriptionLabel")}
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												rows={4}
+												placeholder={t(
+													"admin.programs.form.descriptionPlaceholder",
+												)}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={handleCloseForm}
+									disabled={form.formState.isSubmitting}
+								>
+									{t("common.actions.cancel")}
+								</Button>
+								<Button type="submit" disabled={form.formState.isSubmitting}>
+									{form.formState.isSubmitting ? (
+										<Spinner className="mr-2 h-4 w-4" />
+									) : editingProgram ? (
+										t("common.actions.saveChanges")
+									) : (
+										t("admin.programs.form.submit")
+									)}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
 
-					<div className="form-control">
-						<label className="label" htmlFor={facultyId}>
-							<span className="label-text">Faculty</span>
-						</label>
-						<select
-							id={facultyId}
-							{...register("faculty")}
-							className="select select-bordered w-full"
-						>
-							<option value="">Select a faculty</option>
-							{faculties?.map((faculty) => (
-								<option key={faculty.id} value={faculty.id}>
-									{faculty.name}
-								</option>
-							))}
-						</select>
-						{errors.faculty && (
-							<p className="label-text-alt text-error">
-								{errors.faculty.message}
-							</p>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label" htmlFor={descId}>
-							<span className="label-text">Description</span>
-						</label>
-						<textarea
-							id={descId}
-							{...register("description")}
-							className="textarea textarea-bordered"
-							placeholder="Enter program description"
-							rows={3}
-						/>
-						{errors.description && (
-							<p className="label-text-alt text-error">
-								{errors.description.message}
-							</p>
-						)}
-					</div>
-
-					<div className="modal-action">
-						<button
-							type="button"
-							onClick={() => {
-								setIsFormOpen(false);
-								setEditingProgram(null);
-								reset();
-							}}
-							className="btn btn-ghost"
-							disabled={isSubmitting}
-						>
-							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : editingProgram ? (
-								t("common.actions.saveChanges")
-							) : (
-								t("teacher.programs.form.submit")
-							)}
-						</button>
-					</div>
-				</form>
-			</FormModal>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
+			<AlertDialog
+				open={isDeleteOpen}
+				onOpenChange={(open) => {
+					setIsDeleteOpen(open);
+					if (!open) setDeleteId(null);
 				}}
-				onConfirm={handleDelete}
-				title={t("teacher.programs.delete.title")}
-				message={t("teacher.programs.delete.message")}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("admin.programs.delete.title")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("admin.programs.delete.message")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deleteMutation.isPending}>
+							{t("common.actions.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleDelete}
+							disabled={deleteMutation.isPending}
+						>
+							{deleteMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<>
+									<Trash2 className="mr-2 h-4 w-4" />
+									{t("common.actions.delete")}
+								</>
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

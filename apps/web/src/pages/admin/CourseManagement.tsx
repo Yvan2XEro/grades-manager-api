@@ -7,28 +7,58 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
-import { Button } from "../../components/ui/button";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
-        Form,
-        FormControl,
-        FormField,
-        FormItem,
-        FormLabel,
-        FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
-        Select,
-        SelectContent,
-        SelectItem,
-        SelectTrigger,
-        SelectValue,
-} from "../../components/ui/select";
-import { Spinner } from "../../components/ui/spinner";
-import { trpcClient } from "../../utils/trpc";
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter as ModalFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { trpcClient } from "@/utils/trpc";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
@@ -102,9 +132,9 @@ export default function CourseManagement() {
 		},
 	});
 
-        const form = useForm<CourseFormData>({
-                resolver: zodResolver(courseSchema),
-        });
+	const form = useForm<CourseFormData>({
+		resolver: zodResolver(courseSchema),
+	});
 
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
 	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
@@ -116,9 +146,8 @@ export default function CourseManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
 			toast.success(t("admin.courses.toast.createSuccess"));
-                        setIsFormOpen(false);
-                        form.reset();
-                },
+			handleCloseForm();
+		},
 		onError: (error: any) => {
 			toast.error(error.message || t("admin.courses.toast.createError"));
 		},
@@ -129,13 +158,11 @@ export default function CourseManagement() {
 			const { id, ...updateData } = data;
 			await trpcClient.courses.update.mutate({ id, ...updateData });
 		},
-                onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ["courses"] });
-                        toast.success(t("admin.courses.toast.updateSuccess"));
-                        setIsFormOpen(false);
-                        setEditingCourse(null);
-                        form.reset();
-                },
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			toast.success(t("admin.courses.toast.updateSuccess"));
+			handleCloseForm();
+		},
 		onError: (error: any) => {
 			toast.error(error.message || t("admin.courses.toast.updateError"));
 		},
@@ -156,7 +183,7 @@ export default function CourseManagement() {
 		},
 	});
 
-	const onSubmit = async (data: CourseFormData) => {
+	const onSubmit = (data: CourseFormData) => {
 		if (editingCourse) {
 			updateMutation.mutate({ ...data, id: editingCourse.id });
 		} else {
@@ -164,7 +191,37 @@ export default function CourseManagement() {
 		}
 	};
 
-	const openDeleteModal = (id: string) => {
+	const startCreate = () => {
+		setEditingCourse(null);
+		form.reset({
+			name: "",
+			credits: undefined as unknown as number,
+			hours: undefined as unknown as number,
+			program: "",
+			defaultTeacher: "",
+		});
+		setIsFormOpen(true);
+	};
+
+	const startEdit = (course: Course) => {
+		setEditingCourse(course);
+		form.reset({
+			name: course.name,
+			credits: course.credits,
+			hours: course.hours,
+			program: course.program,
+			defaultTeacher: course.defaultTeacher,
+		});
+		setIsFormOpen(true);
+	};
+
+	const handleCloseForm = () => {
+		setIsFormOpen(false);
+		setEditingCourse(null);
+		form.reset();
+	};
+
+	const confirmDelete = (id: string) => {
 		setDeleteId(id);
 		setIsDeleteOpen(true);
 	};
@@ -178,293 +235,341 @@ export default function CourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-8 w-8" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">{t("admin.courses.title")}</h1>
-                                <button
-                                        onClick={() => {
-                                                setEditingCourse(null);
-                                                form.reset();
-                                                setIsFormOpen(true);
-                                        }}
-                                        className="btn btn-primary"
-				>
-					<PlusIcon className="mr-2 h-5 w-5" />
-					{t("admin.courses.actions.add")}
-				</button>
-			</div>
-
-			<div className="card bg-base-100 shadow-xl">
-				<div className="overflow-x-auto">
-					<table className="table">
-						<thead>
-							<tr>
-								<th>{t("admin.courses.table.name")}</th>
-								<th>{t("admin.courses.table.program")}</th>
-								<th>{t("admin.courses.table.credits")}</th>
-								<th>{t("admin.courses.table.hours")}</th>
-								<th>{t("admin.courses.table.teacher")}</th>
-								<th>{t("common.table.actions")}</th>
-							</tr>
-						</thead>
-						<tbody>
-							{courses?.map((course) => (
-								<tr key={course.id}>
-									<td>{course.name}</td>
-									<td>{programMap.get(course.program)}</td>
-									<td>{course.credits}</td>
-									<td>{course.hours}</td>
-									<td>{teacherMap.get(course.defaultTeacher)}</td>
-									<td>
-										<div className="flex gap-2">
-                                                                                        <button
-                                                                                                onClick={() => {
-                                                                                                        setEditingCourse(course);
-                                                                                                        form.reset({
-                                                                                                                name: course.name,
-                                                                                                                credits: course.credits,
-                                                                                                                hours: course.hours,
-                                                                                                                program: course.program,
-                                                                                                                defaultTeacher: course.defaultTeacher,
-                                                                                                        });
-                                                                                                        setIsFormOpen(true);
-                                                                                                }}
-												className="btn btn-square btn-sm btn-ghost"
-											>
-												<Pencil className="h-4 w-4" />
-											</button>
-											<button
-												onClick={() => openDeleteModal(course.id)}
-												className="btn btn-square btn-sm btn-ghost text-error"
-											>
-												<Trash2 className="h-4 w-4" />
-											</button>
-										</div>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
+		<div className="space-y-6 p-6">
+			<div className="flex flex-wrap items-center justify-between gap-4">
+				<div>
+					<h1 className="text-2xl font-semibold">
+						{t("admin.courses.title", { defaultValue: "Course management" })}
+					</h1>
+					<p className="text-muted-foreground">
+						{t("admin.courses.subtitle", {
+							defaultValue: "Manage courses, workloads, and default teachers.",
+						})}
+					</p>
 				</div>
+				<Button onClick={startCreate}>
+					<PlusIcon className="mr-2 h-4 w-4" />
+					{t("admin.courses.actions.add")}
+				</Button>
 			</div>
 
-			<FormModal
-                                isOpen={isFormOpen}
-                                onClose={() => {
-                                        setIsFormOpen(false);
-                                        setEditingCourse(null);
-                                        form.reset();
-                                }}
-				title={
-					editingCourse
-						? t("admin.courses.form.editTitle")
-						: t("admin.courses.form.createTitle")
-				}
-			>
-                                <Form {...form}>
-                                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                                <FormField
-                                                        control={form.control}
-                                                        name="name"
-                                                        render={({ field }) => (
-                                                                <FormItem>
-                                                                        <FormLabel>
-                                                                                {t("admin.courses.form.nameLabel")}
-                                                                        </FormLabel>
-                                                                        <FormControl>
-                                                                                <Input
-                                                                                        {...field}
-                                                                                        placeholder={t(
-                                                                                                "admin.courses.form.namePlaceholder",
-                                                                                        )}
-                                                                                />
-                                                                        </FormControl>
-                                                                        <FormMessage />
-                                                                </FormItem>
-                                                        )}
-                                                />
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("admin.courses.title")}</CardTitle>
+					<CardDescription>
+						{t("admin.courses.subtitle", {
+							defaultValue: "Manage courses, workloads, and default teachers.",
+						})}
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					{courses && courses.length > 0 ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>{t("admin.courses.table.name")}</TableHead>
+									<TableHead>{t("admin.courses.table.program")}</TableHead>
+									<TableHead>{t("admin.courses.table.credits")}</TableHead>
+									<TableHead>{t("admin.courses.table.hours")}</TableHead>
+									<TableHead>{t("admin.courses.table.teacher")}</TableHead>
+									<TableHead className="text-right">
+										{t("common.table.actions")}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{courses.map((course) => (
+									<TableRow key={course.id}>
+										<TableCell>{course.name}</TableCell>
+										<TableCell>{programMap.get(course.program)}</TableCell>
+										<TableCell>{course.credits}</TableCell>
+										<TableCell>{course.hours}</TableCell>
+										<TableCell>
+											{teacherMap.get(course.defaultTeacher) ??
+												t("admin.courses.form.teacherPlaceholder")}
+										</TableCell>
+										<TableCell>
+											<div className="flex justify-end gap-2">
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => startEdit(course)}
+													aria-label={t("admin.courses.form.editTitle")}
+												>
+													<Pencil className="h-4 w-4" />
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													className="text-destructive hover:text-destructive"
+													onClick={() => confirmDelete(course.id)}
+													aria-label={t("admin.courses.delete.title")}
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : (
+						<div className="py-12 text-center">
+							<p className="font-semibold">
+								{t("admin.courses.empty.title", {
+									defaultValue: "No courses available",
+								})}
+							</p>
+							<p className="text-muted-foreground text-sm">
+								{t("admin.courses.empty.description", {
+									defaultValue: "Create a course to populate the catalog.",
+								})}
+							</p>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
-                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                        <FormField
-                                                                control={form.control}
-                                                                name="credits"
-                                                                render={({ field }) => (
-                                                                        <FormItem>
-                                                                                <FormLabel>
-                                                                                        {t("admin.courses.form.creditsLabel")}
-                                                                                </FormLabel>
-                                                                                <FormControl>
-                                                                                        <Input
-                                                                                                type="number"
-                                                                                                value={field.value ?? ""}
-                                                                                                onChange={(event) =>
-                                                                                                        field.onChange(
-                                                                                                                event.target.value === ""
-                                                                                                                        ? undefined
-                                                                                                                        : Number(event.target.value),
-                                                                                                        )
-                                                                                                }
-                                                                                                placeholder={t(
-                                                                                                        "admin.courses.form.creditsPlaceholder",
-                                                                                                )}
-                                                                                                {...field}
-                                                                                        />
-                                                                                </FormControl>
-                                                                                <FormMessage />
-                                                                        </FormItem>
-                                                                )}
-                                                        />
-
-                                                        <FormField
-                                                                control={form.control}
-                                                                name="hours"
-                                                                render={({ field }) => (
-                                                                        <FormItem>
-                                                                                <FormLabel>
-                                                                                        {t("admin.courses.form.hoursLabel")}
-                                                                                </FormLabel>
-                                                                                <FormControl>
-                                                                                        <Input
-                                                                                                type="number"
-                                                                                                value={field.value ?? ""}
-                                                                                                onChange={(event) =>
-                                                                                                        field.onChange(
-                                                                                                                event.target.value === ""
-                                                                                                                        ? undefined
-                                                                                                                        : Number(event.target.value),
-                                                                                                        )
-                                                                                                }
-                                                                                                placeholder={t(
-                                                                                                        "admin.courses.form.hoursPlaceholder",
-                                                                                                )}
-                                                                                                {...field}
-                                                                                        />
-                                                                                </FormControl>
-                                                                                <FormMessage />
-                                                                        </FormItem>
-                                                                )}
-                                                        />
-                                                <FormField
-                                                        control={form.control}
-                                                        name="program"
-                                                        render={({ field }) => (
-                                                                <FormItem>
-                                                                        <FormLabel>
-                                                                                {t("admin.courses.form.programLabel")}
-                                                                        </FormLabel>
-                                                                        <Select
-                                                                                onValueChange={field.onChange}
-                                                                                value={field.value}
-                                                                        >
-                                                                                <FormControl>
-                                                                                        <SelectTrigger>
-                                                                                                <SelectValue
-                                                                                                        placeholder={t(
-                                                                                                                "admin.courses.form.programPlaceholder",
-                                                                                                        )}
-                                                                                                />
-                                                                                        </SelectTrigger>
-                                                                                </FormControl>
-                                                                                <SelectContent>
-                                                                                        {programs?.map((program) => (
-                                                                                                <SelectItem
-                                                                                                        key={program.id}
-                                                                                                        value={program.id}
-                                                                                                >
-                                                                                                        {program.name}
-                                                                                                </SelectItem>
-                                                                                        ))}
-                                                                                </SelectContent>
-                                                                        </Select>
-                                                                        <FormMessage />
-                                                                </FormItem>
-                                                        )}
-                                                />
-
-                                                <FormField
-                                                        control={form.control}
-                                                        name="defaultTeacher"
-                                                        render={({ field }) => (
-                                                                <FormItem>
-                                                                        <FormLabel>
-                                                                                {t("admin.courses.form.teacherLabel")}
-                                                                        </FormLabel>
-                                                                        <Select
-                                                                                onValueChange={field.onChange}
-                                                                                value={field.value}
-                                                                        >
-                                                                                <FormControl>
-                                                                                        <SelectTrigger>
-                                                                                                <SelectValue
-                                                                                                        placeholder={t(
-                                                                                                                "admin.courses.form.teacherPlaceholder",
-                                                                                                        )}
-                                                                                                />
-                                                                                        </SelectTrigger>
-                                                                                </FormControl>
-                                                                                <SelectContent>
-                                                                                        {teachers?.map((teacher) => (
-                                                                                                <SelectItem
-                                                                                                        key={teacher.id}
-                                                                                                        value={teacher.id}
-                                                                                                >
-                                                                                                        {teacher.name}
-                                                                                                </SelectItem>
-                                                                                        ))}
-                                                                                </SelectContent>
-                                                                        </Select>
-                                                                        <FormMessage />
-                                                                </FormItem>
-                                                        )}
-                                                />
-
-                                                <DialogFooter className="gap-2">
-                                                        <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                onClick={() => {
-                                                                        setIsFormOpen(false);
-                                                                        setEditingCourse(null);
-                                                                        form.reset();
-                                                                }}
-                                                        >
-                                                                {t("common.actions.cancel")}
-                                                        </Button>
-                                                        <Button
-                                                                type="submit"
-                                                                disabled={form.formState.isSubmitting}
-                                                        >
-                                                                {form.formState.isSubmitting ? (
-                                                                        <Spinner className="mr-2 h-4 w-4" />
-                                                                ) : editingCourse ? (
-                                                                        t("common.actions.saveChanges")
-                                                                ) : (
-                                                                        t("admin.courses.form.createSubmit")
-                                                                )}
-                                                        </Button>
-                                                </DialogFooter>
-                                        </form>
-                                </Form>
-                        </FormModal>
-
-			<ConfirmModal
-				isOpen={isDeleteOpen}
-				onClose={() => {
-					setIsDeleteOpen(false);
-					setDeleteId(null);
+			<Dialog
+				open={isFormOpen}
+				onOpenChange={(open) => {
+					setIsFormOpen(open);
+					if (!open) {
+						handleCloseForm();
+					}
 				}}
-				onConfirm={handleDelete}
-				title={t("admin.courses.delete.title")}
-				message={t("admin.courses.delete.message")}
-				confirmText={t("common.actions.delete")}
-				isLoading={deleteMutation.isPending}
-			/>
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{editingCourse
+								? t("admin.courses.form.editTitle")
+								: t("admin.courses.form.createTitle")}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.courses.subtitle", {
+								defaultValue: "Manage courses, workloads, and default teachers.",
+							})}
+						</DialogDescription>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.courses.form.nameLabel")}</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t(
+													"admin.courses.form.namePlaceholder",
+												)}
+												{...field}
+												value={field.value ?? ""}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="credits"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.courses.form.creditsLabel")}
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="number"
+												value={field.value ?? ""}
+												onChange={(event) =>
+													field.onChange(
+														event.target.value === ""
+															? undefined
+															: Number(event.target.value),
+													)
+												}
+												placeholder={t(
+													"admin.courses.form.creditsPlaceholder",
+												)}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="hours"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.courses.form.hoursLabel")}
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="number"
+												value={field.value ?? ""}
+												onChange={(event) =>
+													field.onChange(
+														event.target.value === ""
+															? undefined
+															: Number(event.target.value),
+													)
+												}
+												placeholder={t(
+													"admin.courses.form.hoursPlaceholder",
+												)}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="program"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.courses.form.programLabel")}
+										</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value || undefined}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.courses.form.programPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{programs?.map((program) => (
+													<SelectItem
+														key={program.id}
+														value={program.id}
+													>
+														{program.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="defaultTeacher"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.courses.form.teacherLabel")}
+										</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value || undefined}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.courses.form.teacherPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{teachers?.map((teacher) => (
+													<SelectItem
+														key={teacher.id}
+														value={teacher.id}
+													>
+														{teacher.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<ModalFooter className="gap-2">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={handleCloseForm}
+								>
+									{t("common.actions.cancel")}
+								</Button>
+								<Button type="submit" disabled={form.formState.isSubmitting}>
+									{form.formState.isSubmitting ? (
+										<Spinner className="mr-2 h-4 w-4" />
+									) : editingCourse ? (
+										t("common.actions.saveChanges")
+									) : (
+										t("admin.courses.form.createSubmit")
+									)}
+								</Button>
+							</ModalFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
+
+			<AlertDialog
+				open={isDeleteOpen}
+				onOpenChange={(open) => {
+					setIsDeleteOpen(open);
+					if (!open) {
+						setDeleteId(null);
+					}
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("admin.courses.delete.title")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t("admin.courses.delete.message")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deleteMutation.isPending}>
+							{t("common.actions.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							disabled={deleteMutation.isPending}
+							onClick={handleDelete}
+						>
+							{deleteMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<>
+									<Trash2 className="mr-2 h-4 w-4" />
+									{t("common.actions.delete")}
+								</>
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

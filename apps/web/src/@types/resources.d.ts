@@ -777,8 +777,93 @@ interface Resources {
 					name: "Name must be at least 2 characters";
 				};
 			};
+			faculties: {
+				title: "Faculty management";
+				subtitle: "Create and manage academic faculties";
+				actions: {
+					add: "Add faculty";
+				};
+				empty: {
+					title: "No faculties found";
+					description: "Get started by adding your first faculty.";
+				};
+				table: {
+					name: "Name";
+					description: "Description";
+					noDescription: "No description";
+				};
+				form: {
+					createTitle: "Add new faculty";
+					editTitle: "Edit faculty";
+					nameLabel: "Faculty name";
+					namePlaceholder: "Enter faculty name";
+					descriptionLabel: "Description";
+					descriptionPlaceholder: "Enter faculty description";
+					submit: "Save faculty";
+				};
+				validation: {
+					name: "Name must be at least 2 characters";
+				};
+				toast: {
+					createSuccess: "Faculty created successfully";
+					createError: "Could not create the faculty";
+					updateSuccess: "Faculty updated successfully";
+					updateError: "Could not update the faculty";
+					deleteSuccess: "Faculty deleted successfully";
+					deleteError: "Could not delete the faculty";
+				};
+				delete: {
+					title: "Delete faculty";
+					message: "Are you sure you want to delete this faculty? This action cannot be undone.";
+				};
+			};
+			programs: {
+				title: "Program management";
+				subtitle: "Organize academic programs and link them to faculties.";
+				actions: {
+					add: "Add program";
+				};
+				empty: {
+					title: "No programs available";
+					description: "Create a program to start organizing curricula.";
+				};
+				table: {
+					name: "Program";
+					faculty: "Faculty";
+					description: "Description";
+					noDescription: "No description";
+				};
+				form: {
+					createTitle: "Add new program";
+					editTitle: "Edit program";
+					nameLabel: "Program name";
+					namePlaceholder: "Enter program name";
+					facultyLabel: "Faculty";
+					facultyPlaceholder: "Select a faculty";
+					descriptionLabel: "Description";
+					descriptionPlaceholder: "Describe this program";
+					submit: "Save program";
+				};
+				validation: {
+					name: "Name must be at least 2 characters";
+					faculty: "Please select a faculty";
+				};
+				toast: {
+					createSuccess: "Program created successfully";
+					createError: "Could not create the program";
+					updateSuccess: "Program updated successfully";
+					updateError: "Could not update the program";
+					deleteSuccess: "Program deleted successfully";
+					deleteError: "Could not delete the program";
+				};
+				delete: {
+					title: "Delete program";
+					message: "Are you sure you want to delete this program? This action cannot be undone.";
+				};
+			};
 			courses: {
 				title: "Course management";
+				subtitle: "Manage courses, workloads, and default teachers.";
 				actions: {
 					add: "Add course";
 				};
@@ -815,6 +900,10 @@ interface Resources {
 				delete: {
 					title: "Delete course";
 					message: "Deleting this course will remove related assignments and exams.";
+				};
+				empty: {
+					title: "No courses available";
+					description: "Create a course to populate the catalog.";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
@@ -950,6 +1039,7 @@ interface Resources {
 				};
 				import: {
 					classLabel: "Class for imported students";
+					fileLabel: "Upload CSV or XLSX file";
 					downloadTemplate: "Download template";
 					invalidFormat: "Missing required fields in this row";
 					summary: {

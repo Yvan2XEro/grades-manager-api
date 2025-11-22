@@ -348,6 +348,7 @@
 		},
 		"courses": {
 			"title": "Gestion des cours",
+			"subtitle": "Gérez les cours, les volumes horaires et les enseignants par défaut.",
 			"actions": {
 				"add": "Ajouter un cours"
 			},
@@ -385,12 +386,100 @@
 				"title": "Supprimer le cours",
 				"message": "La suppression de ce cours retirera également les affectations et évaluations liées."
 			},
+			"empty": {
+				"title": "Aucun cours disponible",
+				"description": "Créez un cours pour alimenter le catalogue."
+			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
 				"credits": "Les crédits doivent être supérieurs ou égaux à 1",
 				"hours": "Le nombre d’heures doit être supérieur ou égal à 1",
 				"program": "Veuillez sélectionner un programme",
 				"teacher": "Veuillez sélectionner un enseignant"
+			}
+		},
+		"faculties": {
+			"title": "Gestion des facultés",
+			"subtitle": "Créez et gérez les facultés de l'établissement",
+			"actions": {
+				"add": "Ajouter une faculté"
+			},
+			"empty": {
+				"title": "Aucune faculté",
+				"description": "Commencez par ajouter votre première faculté."
+			},
+			"table": {
+				"name": "Nom",
+				"description": "Description",
+				"noDescription": "Pas de description"
+			},
+			"form": {
+				"createTitle": "Ajouter une faculté",
+				"editTitle": "Modifier la faculté",
+				"nameLabel": "Nom de la faculté",
+				"namePlaceholder": "Saisir le nom de la faculté",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Décrire la faculté",
+				"submit": "Enregistrer"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères"
+			},
+			"toast": {
+				"createSuccess": "Faculté créée avec succès",
+				"createError": "Impossible de créer la faculté",
+				"updateSuccess": "Faculté mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour la faculté",
+				"deleteSuccess": "Faculté supprimée avec succès",
+				"deleteError": "Impossible de supprimer la faculté"
+			},
+			"delete": {
+				"title": "Supprimer la faculté",
+				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ?"
+			}
+		},
+		"programs": {
+			"title": "Gestion des programmes",
+			"subtitle": "Organisez les programmes académiques et rattachez-les aux facultés.",
+			"actions": {
+				"add": "Ajouter un programme"
+			},
+			"empty": {
+				"title": "Aucun programme disponible",
+				"description": "Créez un programme pour structurer les cursus."
+			},
+			"table": {
+				"name": "Programme",
+				"faculty": "Faculté",
+				"description": "Description",
+				"noDescription": "Pas de description"
+			},
+			"form": {
+				"createTitle": "Ajouter un programme",
+				"editTitle": "Modifier le programme",
+				"nameLabel": "Nom du programme",
+				"namePlaceholder": "Saisir le nom du programme",
+				"facultyLabel": "Faculté",
+				"facultyPlaceholder": "Sélectionner une faculté",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Décrire le programme",
+				"submit": "Enregistrer"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"faculty": "Veuillez sélectionner une faculté"
+			},
+			"toast": {
+				"createSuccess": "Programme créé avec succès",
+				"createError": "Impossible de créer le programme",
+				"updateSuccess": "Programme mis à jour avec succès",
+				"updateError": "Impossible de mettre à jour le programme",
+				"deleteSuccess": "Programme supprimé avec succès",
+				"deleteError": "Impossible de supprimer le programme"
+			},
+			"delete": {
+				"title": "Supprimer le programme",
+				"message": "Êtes-vous sûr de vouloir supprimer ce programme ?"
 			}
 		},
 		"exams": {
@@ -519,6 +608,7 @@
 			},
 			"import": {
 				"classLabel": "Classe pour les étudiants importés",
+				"fileLabel": "Importer un fichier CSV ou XLSX",
 				"downloadTemplate": "Télécharger le modèle",
 				"invalidFormat": "Champs obligatoires manquants pour cette ligne",
 				"summary": {

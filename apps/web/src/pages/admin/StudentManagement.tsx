@@ -77,7 +77,7 @@ export default function StudentManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 
-	const [classFilter, setClassFilter] = useState("");
+	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
@@ -103,7 +103,7 @@ export default function StudentManagement() {
 		queryKey: ["students", classFilter, search, cursor],
 		queryFn: async () =>
 			trpcClient.students.list.query({
-				classId: classFilter || undefined,
+				classId: classFilter === "all" ? undefined : classFilter,
 				q: search || undefined,
 				cursor,
 				limit: 20,
@@ -283,7 +283,7 @@ export default function StudentManagement() {
 						<SelectValue placeholder={t("admin.students.filters.allClasses")} />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">
+						<SelectItem value="all">
 							{t("admin.students.filters.allClasses")}
 						</SelectItem>
 						{classes?.map((c) => (
