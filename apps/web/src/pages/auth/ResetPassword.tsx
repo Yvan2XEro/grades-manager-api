@@ -7,6 +7,9 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import { authClient } from "../../lib/auth-client";
 
 const buildSchema = (t: TFunction) =>
@@ -57,17 +60,14 @@ const ResetPassword: React.FC = () => {
 			</h2>
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 				<div>
-					<label
-						htmlFor="password"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="password" className="mb-1 block">
 						{t("auth.reset.newPassword")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="password"
 						type="password"
 						{...register("password")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.reset.passwordPlaceholder")}
 					/>
 					{errors.password && (
@@ -77,17 +77,14 @@ const ResetPassword: React.FC = () => {
 					)}
 				</div>
 				<div>
-					<label
-						htmlFor="confirmPassword"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="confirmPassword" className="mb-1 block">
 						{t("common.fields.confirmPassword")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="confirmPassword"
 						type="password"
 						{...register("confirmPassword")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.reset.confirmPasswordPlaceholder")}
 					/>
 					{errors.confirmPassword && (
@@ -96,11 +93,7 @@ const ResetPassword: React.FC = () => {
 						</p>
 					)}
 				</div>
-				<button
-					type="submit"
-					disabled={isSubmitting}
-					className="btn btn-primary mt-6 w-full"
-				>
+				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -109,7 +102,7 @@ const ResetPassword: React.FC = () => {
 					) : (
 						t("auth.reset.submit")
 					)}
-				</button>
+				</Button>
 				<div className="mt-1 text-right">
 					<Link
 						to="/auth/login"

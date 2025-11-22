@@ -7,6 +7,9 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import { authClient } from "../../lib/auth-client";
 
 const buildRegisterSchema = (t: TFunction) =>
@@ -69,17 +72,14 @@ const Register: React.FC = () => {
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 				<div className="grid grid-cols-2 gap-4">
 					<div>
-						<label
-							htmlFor="firstName"
-							className="mb-1 block font-medium text-gray-700 text-sm"
-						>
+						<Label htmlFor="firstName" className="mb-1 block">
 							{t("common.fields.firstName")}
-						</label>
-						<input
+						</Label>
+						<Input
 							id="firstName"
 							type="text"
 							{...register("firstName")}
-							className="input input-bordered w-full"
+							className="w-full"
 							placeholder={t("auth.register.placeholders.firstName")}
 						/>
 						{errors.firstName && (
@@ -90,17 +90,14 @@ const Register: React.FC = () => {
 					</div>
 
 					<div>
-						<label
-							htmlFor="lastName"
-							className="mb-1 block font-medium text-gray-700 text-sm"
-						>
+						<Label htmlFor="lastName" className="mb-1 block">
 							{t("common.fields.lastName")}
-						</label>
-						<input
+						</Label>
+						<Input
 							id="lastName"
 							type="text"
 							{...register("lastName")}
-							className="input input-bordered w-full"
+							className="w-full"
 							placeholder={t("auth.register.placeholders.lastName")}
 						/>
 						{errors.lastName && (
@@ -112,17 +109,14 @@ const Register: React.FC = () => {
 				</div>
 
 				<div>
-					<label
-						htmlFor="email"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="email" className="mb-1 block">
 						{t("common.fields.email")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="email"
 						type="email"
 						{...register("email")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.register.placeholders.email")}
 					/>
 					{errors.email && (
@@ -133,17 +127,14 @@ const Register: React.FC = () => {
 				</div>
 
 				<div>
-					<label
-						htmlFor="password"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="password" className="mb-1 block">
 						{t("common.fields.password")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="password"
 						type="password"
 						{...register("password")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.register.placeholders.password")}
 					/>
 					{errors.password && (
@@ -154,17 +145,14 @@ const Register: React.FC = () => {
 				</div>
 
 				<div>
-					<label
-						htmlFor="confirmPassword"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="confirmPassword" className="mb-1 block">
 						{t("common.fields.confirmPassword")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="confirmPassword"
 						type="password"
 						{...register("confirmPassword")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.register.placeholders.confirmPassword")}
 					/>
 					{errors.confirmPassword && (
@@ -174,11 +162,7 @@ const Register: React.FC = () => {
 					)}
 				</div>
 
-				<button
-					type="submit"
-					disabled={isSubmitting}
-					className="btn btn-primary mt-6 w-full"
-				>
+				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -187,7 +171,7 @@ const Register: React.FC = () => {
 					) : (
 						t("auth.register.submit")
 					)}
-				</button>
+				</Button>
 			</form>
 
 			<div className="mt-6 text-center">

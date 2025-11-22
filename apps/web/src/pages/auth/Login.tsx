@@ -7,6 +7,9 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import { authClient } from "../../lib/auth-client";
 
 const buildLoginSchema = (t: TFunction) =>
@@ -50,17 +53,14 @@ const Login: React.FC = () => {
 			</h2>
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 				<div>
-					<label
-						htmlFor="email"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="email" className="mb-1 block">
 						{t("common.fields.email")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="email"
 						type="email"
 						{...register("email")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.login.emailPlaceholder")}
 					/>
 					{errors.email && (
@@ -71,17 +71,14 @@ const Login: React.FC = () => {
 				</div>
 
 				<div>
-					<label
-						htmlFor="password"
-						className="mb-1 block font-medium text-gray-700 text-sm"
-					>
+					<Label htmlFor="password" className="mb-1 block">
 						{t("common.fields.password")}
-					</label>
-					<input
+					</Label>
+					<Input
 						id="password"
 						type="password"
 						{...register("password")}
-						className="input input-bordered w-full"
+						className="w-full"
 						placeholder={t("auth.login.passwordPlaceholder")}
 					/>
 					{errors.password && (
@@ -99,11 +96,7 @@ const Login: React.FC = () => {
 					</div>
 				</div>
 
-				<button
-					type="submit"
-					disabled={isSubmitting}
-					className="btn btn-primary mt-6 w-full"
-				>
+				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -112,7 +105,7 @@ const Login: React.FC = () => {
 					) : (
 						t("auth.login.submit")
 					)}
-				</button>
+				</Button>
 			</form>
 
 			<div className="mt-6 text-center">

@@ -3,8 +3,26 @@ import type React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
 
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
@@ -23,13 +41,18 @@ const Header: React.FC = () => {
 		}
 	};
 
+	const userInitials =
+		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
+
 	return (
-		<header className="sticky top-0 z-30 border-gray-200 border-b bg-white shadow-sm">
+		<header className="sticky top-0 z-30 border-border border-b bg-background/80 backdrop-blur">
 			<div className="flex items-center justify-between px-4 py-3 md:px-6">
-				<div className="flex items-center">
-					<button
+				<div className="flex items-center gap-2">
+					<Button
 						onClick={toggleSidebar}
-						className="mr-2 rounded-md p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+						variant="ghost"
+						size="icon"
+						className="text-muted-foreground"
 						aria-label={t("navigation.header.toggleSidebarAria")}
 					>
 						{sidebarOpen ? (
@@ -37,9 +60,9 @@ const Header: React.FC = () => {
 						) : (
 							<Menu className="h-5 w-5" />
 						)}
-					</button>
+					</Button>
 					<div className="hidden md:block">
-						<h1 className="font-semibold text-primary-900 text-xl">
+						<h1 className="font-semibold text-lg">
 							{user?.role === "admin"
 								? t("navigation.header.adminDashboard")
 								: t("navigation.header.teacherDashboard")}
@@ -47,64 +70,78 @@ const Header: React.FC = () => {
 					</div>
 				</div>
 
-				<div className="flex items-center space-x-3">
-					<select
+				<div className="flex items-center gap-3">
+					<Select
 						value={i18n.language}
-						onChange={(e) => {
-							i18n.changeLanguage(e.target.value);
-							localStorage.setItem("lng", e.target.value);
+						onValueChange={(value) => {
+							i18n.changeLanguage(value);
+							localStorage.setItem("lng", value);
 						}}
-						className="select"
 					>
-						<option value="en">En</option>
-						<option value="fr">Fr</option>
-					</select>
-					<details className="dropdown">
-						<summary className="btn m-1 bg-transparent">
-							<div className="avatar">
-								<div className="w-8 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-base-100">
-									<img src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp" />
-								</div>
-							</div>
-						</summary>
-						<ul className="menu dropdown-content z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
-							<li>
-								<a>
-									{user?.firstName} {user?.lastName}
-								</a>
-							</li>
-							<li>
-								<a onClick={handleLogout}>
-									<LogOut className="h-5 w-5" />
-									{t("auth.logout.aria")}
-								</a>
-							</li>
-						</ul>
-					</details>
+						<SelectTrigger
+							aria-label={t("navigation.header.languageSelectAria")}
+						>
+							<SelectValue
+								placeholder={t("navigation.header.languageSelectPlaceholder")}
+							/>
+						</SelectTrigger>
+						<SelectContent align="end">
+							<SelectItem value="en">En</SelectItem>
+							<SelectItem value="fr">Fr</SelectItem>
+						</SelectContent>
+					</Select>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="size-10 rounded-full p-0"
+								aria-label={t("navigation.header.profileMenuAria")}
+							>
+								<Avatar className="size-10">
+									<AvatarImage
+										src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
+										alt={t("navigation.header.profileMenuAria")}
+									/>
+									<AvatarFallback>{userInitials}</AvatarFallback>
+								</Avatar>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-56">
+							<DropdownMenuLabel>
+								{user?.firstName} {user?.lastName}
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="gap-2"
+								onSelect={(event) => {
+									event.preventDefault();
+									handleLogout();
+								}}
+							>
+								<LogOut className="h-4 w-4" />
+								{t("auth.logout.aria")}
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 
-					<button
-						className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+					<Button
+						variant="ghost"
+						size="icon"
+						className="text-muted-foreground"
 						aria-label={t("navigation.header.notificationsAria")}
 					>
 						<Bell className="h-5 w-5" />
-					</button>
-					{/* <div className="hidden md:flex items-center"> */}
-					{/*   <div className="ml-3 mr-4"> */}
-					{/*     <p className="text-sm font-medium text-gray-700"> */}
-					{/*       {user?.firstName} {user?.lastName} */}
-					{/*     </p> */}
-					{/*     <p className="text-xs text-gray-500 capitalize"> */}
-					{/*       {user?.role ? t(`navigation.roles.${user.role}`) : ""} */}
-					{/*     </p> */}
-					{/*   </div> */}
-					{/* </div> */}
-					<button
+					</Button>
+					<Button
 						onClick={handleLogout}
-						className="rounded-full p-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+						variant="ghost"
+						size="icon"
+						className="text-muted-foreground"
 						aria-label={t("auth.logout.aria")}
 					>
 						<LogOut className="h-5 w-5" />
-					</button>
+					</Button>
 				</div>
 			</div>
 		</header>

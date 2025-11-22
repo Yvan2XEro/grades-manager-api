@@ -1,5 +1,6 @@
-import { X } from "lucide-react";
 import type React from "react";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 interface FormModalProps {
 	isOpen: boolean;
@@ -14,22 +15,15 @@ const FormModal: React.FC<FormModalProps> = ({
 	title,
 	children,
 }) => {
-	if (!isOpen) return null;
-
 	return (
-		<div className="modal modal-open">
-			<div className="modal-box">
-				<button
-					onClick={onClose}
-					className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
-				>
-					<X className="h-4 w-4" />
-				</button>
-
-				<h3 className="mb-4 font-bold text-lg">{title}</h3>
+		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+			<DialogContent className="max-w-2xl">
+				<DialogHeader>
+					<DialogTitle>{title}</DialogTitle>
+				</DialogHeader>
 				{children}
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
