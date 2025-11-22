@@ -9,13 +9,43 @@ import {
 	PlusIcon,
 	Search,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../../components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../components/ui/form";
+import { Input } from "../../components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+} from "../../components/ui/input-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
 import { trpcClient } from "../../utils/trpc";
@@ -70,10 +100,6 @@ export default function UserManagement() {
 	const [roleFilter, setRoleFilter] = useState("");
 	const [banFilter, setBanFilter] = useState("");
 	const [verifiedFilter, setVerifiedFilter] = useState("");
-	const nameId = useId();
-	const emailId = useId();
-	const roleId = useId();
-	const passwordId = useId();
 
 	const { data } = useQuery({
 		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
@@ -111,28 +137,21 @@ export default function UserManagement() {
 		setPrevCursors([]);
 	}, [debouncedSearch, roleFilter, banFilter, verifiedFilter]);
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		setValue,
-		getValues,
-		formState: { errors, isSubmitting },
-	} = useForm<UserForm>({
+	const form = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
 		defaultValues: { role: "teacher" },
 	});
 
 	const openCreate = () => {
 		setEditingUser(null);
-		reset({ name: "", email: "", role: "teacher", password: "" });
+		form.reset({ name: "", email: "", role: "teacher", password: "" });
 		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
 	const openEdit = (user: User) => {
 		setEditingUser(user);
-		reset({
+		form.reset({
 			name: user.name || "",
 			email: user.email || "",
 			role: (user.role as "admin" | "teacher") || "teacher",
@@ -225,12 +244,12 @@ export default function UserManagement() {
 
 	const handleGeneratePassword = () => {
 		const pwd = generatePassword();
-		setValue("password", pwd);
+		form.setValue("password", pwd);
 		setShowPassword(true);
 	};
 
 	const handleCopyPassword = () => {
-		const pwd = getValues("password");
+		const pwd = form.getValues("password");
 		if (pwd) {
 			navigator.clipboard.writeText(pwd);
 			toast.success(t("admin.users.toast.passwordCopied"));
@@ -251,65 +270,74 @@ export default function UserManagement() {
 
 	return (
 		<div className="p-6">
-			<div className="mb-4 flex items-center justify-between">
+			<div className="mb-4 flex items-center justify-between gap-3">
 				<h1 className="font-semibold text-xl">{t("admin.users.title")}</h1>
-				<button type="button" className="btn btn-primary" onClick={openCreate}>
-					<PlusIcon className="mr-2 h-4 w-4" />
+				<Button onClick={openCreate}>
+					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
-				</button>
+				</Button>
 			</div>
 
 			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div className="relative w-full sm:max-w-xs">
-					<Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
-					<input
+					<Search className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+					<Input
 						type="text"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						placeholder={t("admin.users.filters.searchPlaceholder")}
-						className="input input-bordered w-full pl-9"
+						className="pl-9"
 					/>
 				</div>
 				<div className="flex flex-wrap gap-2">
-					<select
-						className="select select-bordered"
-						value={roleFilter}
-						onChange={(e) => setRoleFilter(e.target.value)}
-					>
-						<option value="">{t("admin.users.filters.roles.all")}</option>
-						<option value="admin">
-							{t("admin.users.filters.roles.admin")}
-						</option>
-						<option value="teacher">
-							{t("admin.users.filters.roles.teacher")}
-						</option>
-					</select>
-					<select
-						className="select select-bordered"
-						value={banFilter}
-						onChange={(e) => setBanFilter(e.target.value)}
-					>
-						<option value="">{t("admin.users.filters.status.all")}</option>
-						<option value="active">
-							{t("admin.users.filters.status.active")}
-						</option>
-						<option value="banned">
-							{t("admin.users.filters.status.banned")}
-						</option>
-					</select>
-					<select
-						className="select select-bordered"
-						value={verifiedFilter}
-						onChange={(e) => setVerifiedFilter(e.target.value)}
-					>
-						<option value="">{t("admin.users.filters.email.all")}</option>
-						<option value="verified">
-							{t("admin.users.filters.email.verified")}
-						</option>
-						<option value="unverified">
-							{t("admin.users.filters.email.unverified")}
-						</option>
-					</select>
+					<Select value={roleFilter} onValueChange={setRoleFilter}>
+						<SelectTrigger className="min-w-[180px]">
+							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">
+								{t("admin.users.filters.roles.all")}
+							</SelectItem>
+							<SelectItem value="admin">
+								{t("admin.users.filters.roles.admin")}
+							</SelectItem>
+							<SelectItem value="teacher">
+								{t("admin.users.filters.roles.teacher")}
+							</SelectItem>
+						</SelectContent>
+					</Select>
+					<Select value={banFilter} onValueChange={setBanFilter}>
+						<SelectTrigger className="min-w-[180px]">
+							<SelectValue placeholder={t("admin.users.filters.status.all")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">
+								{t("admin.users.filters.status.all")}
+							</SelectItem>
+							<SelectItem value="active">
+								{t("admin.users.filters.status.active")}
+							</SelectItem>
+							<SelectItem value="banned">
+								{t("admin.users.filters.status.banned")}
+							</SelectItem>
+						</SelectContent>
+					</Select>
+					<Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
+						<SelectTrigger className="min-w-[180px]">
+							<SelectValue placeholder={t("admin.users.filters.email.all")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">
+								{t("admin.users.filters.email.all")}
+							</SelectItem>
+							<SelectItem value="verified">
+								{t("admin.users.filters.email.verified")}
+							</SelectItem>
+							<SelectItem value="unverified">
+								{t("admin.users.filters.email.unverified")}
+							</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 			<div className="min-h-[50vh] overflow-x-auto overflow-y-visible">
@@ -441,152 +469,169 @@ export default function UserManagement() {
 				</button>
 			</div>
 
-			<FormModal
-				isOpen={isModalOpen}
-				onClose={closeModal}
-				title={
-					editingUser
-						? t("admin.users.form.editTitle")
-						: t("admin.users.form.createTitle")
-				}
-			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div>
-						<label htmlFor={nameId} className="mb-1 block font-medium text-sm">
-							{t("admin.users.form.nameLabel")}
-						</label>
-						<input
-							id={nameId}
-							{...register("name")}
-							className="input input-bordered w-full"
-						/>
-						{errors.name && (
-							<p className="mt-1 text-error text-sm">{errors.name.message}</p>
-						)}
-					</div>
-					<div>
-						<label htmlFor={emailId} className="mb-1 block font-medium text-sm">
-							{t("admin.users.form.emailLabel")}
-						</label>
-						<input
-							id={emailId}
-							type="email"
-							{...register("email")}
-							className="input input-bordered w-full"
-						/>
-						{errors.email && (
-							<p className="mt-1 text-error text-sm">{errors.email.message}</p>
-						)}
-					</div>
-					<div>
-						<label htmlFor={roleId} className="mb-1 block font-medium text-sm">
-							{t("admin.users.form.roleLabel")}
-						</label>
-						<select
-							id={roleId}
-							{...register("role")}
-							className="select select-bordered w-full"
-						>
-							<option value="admin">
-								{t("admin.users.filters.roles.admin")}
-							</option>
-							<option value="teacher">
-								{t("admin.users.filters.roles.teacher")}
-							</option>
-						</select>
-					</div>
-					<div>
-						<label
-							htmlFor={passwordId}
-							className="mb-1 block font-medium text-sm"
-						>
+			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
+				<DialogContent className="max-w-xl">
+					<DialogHeader>
+						<DialogTitle>
 							{editingUser
-								? t("admin.users.form.newPasswordLabel")
-								: t("admin.users.form.passwordLabel")}
-						</label>
-						<div className="join w-full">
-							<input
-								id={passwordId}
-								type={showPassword ? "text" : "password"}
-								{...register("password", {
-									required: editingUser
-										? false
-										: t("admin.users.validation.passwordRequired"),
-								})}
-								className="input input-bordered join-item w-full"
-								placeholder={
-									editingUser
-										? t("admin.users.form.passwordPlaceholder")
-										: undefined
-								}
-							/>
-							<button
-								type="button"
-								className="btn btn-ghost join-item"
-								onClick={() => setShowPassword((s) => !s)}
-							>
-								{showPassword ? (
-									<EyeOff className="h-4 w-4" />
-								) : (
-									<Eye className="h-4 w-4" />
+								? t("admin.users.form.editTitle")
+								: t("admin.users.form.createTitle")}
+						</DialogTitle>
+					</DialogHeader>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.users.form.nameLabel")}</FormLabel>
+										<FormControl>
+											<Input {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
 								)}
-							</button>
-							<button
-								type="button"
-								className="btn btn-ghost join-item"
-								onClick={handleCopyPassword}
-							>
-								<Copy className="h-4 w-4" />
-							</button>
-							{!editingUser && (
-								<button
+							/>
+							<FormField
+								control={form.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
+										<FormControl>
+											<Input type="email" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="role"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.users.form.roleLabel")}</FormLabel>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t("admin.users.filters.roles.all")}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="admin">
+													{t("admin.users.filters.roles.admin")}
+												</SelectItem>
+												<SelectItem value="teacher">
+													{t("admin.users.filters.roles.teacher")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{editingUser
+												? t("admin.users.form.newPasswordLabel")
+												: t("admin.users.form.passwordLabel")}
+										</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupInput
+													type={showPassword ? "text" : "password"}
+													placeholder={
+														editingUser
+															? t("admin.users.form.passwordPlaceholder")
+															: undefined
+													}
+													{...field}
+												/>
+												<InputGroupAddon
+													align="inline-end"
+													className="gap-1.5 pr-1.5"
+												>
+													<InputGroupButton
+														type="button"
+														size="sm"
+														variant="ghost"
+														onClick={() => setShowPassword((s) => !s)}
+													>
+														{showPassword ? (
+															<EyeOff className="h-4 w-4" />
+														) : (
+															<Eye className="h-4 w-4" />
+														)}
+													</InputGroupButton>
+													<InputGroupButton
+														type="button"
+														size="sm"
+														variant="ghost"
+														onClick={handleCopyPassword}
+													>
+														<Copy className="h-4 w-4" />
+													</InputGroupButton>
+													{!editingUser && (
+														<InputGroupButton
+															type="button"
+															size="sm"
+															variant="ghost"
+															onClick={handleGeneratePassword}
+														>
+															{t("admin.users.form.generatePassword")}
+														</InputGroupButton>
+													)}
+												</InputGroupAddon>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<DialogFooter>
+								<Button
 									type="button"
-									className="btn btn-ghost join-item"
-									onClick={handleGeneratePassword}
+									variant="outline"
+									onClick={closeModal}
+									disabled={
+										form.formState.isSubmitting ||
+										createMutation.isPending ||
+										updateMutation.isPending
+									}
 								>
-									{t("admin.users.form.generatePassword")}
-								</button>
-							)}
-						</div>
-						{errors.password && (
-							<p className="mt-1 text-error text-sm">
-								{errors.password.message}
-							</p>
-						)}
-					</div>
-					<div className="modal-action">
-						<button
-							type="button"
-							className="btn btn-ghost"
-							onClick={closeModal}
-							disabled={
-								isSubmitting ||
-								createMutation.isPending ||
-								updateMutation.isPending
-							}
-						>
-							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={
-								isSubmitting ||
-								createMutation.isPending ||
-								updateMutation.isPending
-							}
-						>
-							{isSubmitting ||
-							createMutation.isPending ||
-							updateMutation.isPending ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : (
-								t("common.actions.save")
-							)}
-						</button>
-					</div>
-				</form>
-			</FormModal>
+									{t("common.actions.cancel")}
+								</Button>
+								<Button
+									type="submit"
+									disabled={
+										form.formState.isSubmitting ||
+										createMutation.isPending ||
+										updateMutation.isPending
+									}
+								>
+									{form.formState.isSubmitting ||
+									createMutation.isPending ||
+									updateMutation.isPending ? (
+										<>
+											<Spinner className="mr-2" />
+											{t("common.loading")}
+										</>
+									) : (
+										t("common.actions.save")
+									)}
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
 
 			<ConfirmModal
 				isOpen={!!confirm}
