@@ -4,6 +4,23 @@ import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { Button } from "../../components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
+import { Label } from "../../components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
 import { trpcClient } from "../../utils/trpc";
 
 interface AcademicYear {
@@ -234,123 +251,147 @@ export default function GradeExport() {
 		<div className="space-y-6 p-6">
 			<div>
 				<h2 className="font-bold text-2xl">{t("teacher.gradeExport.title")}</h2>
-				<p className="text-gray-600">{t("teacher.gradeExport.subtitle")}</p>
+				<p className="text-muted-foreground">
+					{t("teacher.gradeExport.subtitle")}
+				</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<div className="form-control">
-					<label className="label" htmlFor={yearId}>
-						<span className="label-text">
-							{t("teacher.gradeExport.filters.academicYear")}
-						</span>
-					</label>
-					<select
-						id={yearId}
-						className="select select-bordered"
+				<div className="space-y-2">
+					<Label htmlFor={yearId} className="font-medium text-sm">
+						{t("teacher.gradeExport.filters.academicYear")}
+					</Label>
+					<Select
 						value={selectedYear}
-						onChange={(e) => {
-							setSelectedYear(e.target.value);
+						onValueChange={(value) => {
+							setSelectedYear(value);
 							setSelectedClass("");
 							setSelectedExams([]);
 						}}
 					>
-						<option value="">
-							{t("teacher.gradeExport.filters.academicYearPlaceholder")}
-						</option>
-						{academicYears?.map((year) => (
-							<option key={year.id} value={year.id}>
-								{year.name}
-							</option>
-						))}
-					</select>
+						<SelectTrigger
+							id={yearId}
+							aria-label={t("teacher.gradeExport.filters.academicYear")}
+						>
+							<SelectValue
+								placeholder={t(
+									"teacher.gradeExport.filters.academicYearPlaceholder",
+								)}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							{academicYears?.map((year) => (
+								<SelectItem key={year.id} value={year.id}>
+									{year.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
-				<div className="form-control">
-					<label className="label" htmlFor={classId}>
-						<span className="label-text">
-							{t("teacher.gradeExport.filters.class")}
-						</span>
-					</label>
-					<select
-						id={classId}
-						className="select select-bordered"
+				<div className="space-y-2">
+					<Label htmlFor={classId} className="font-medium text-sm">
+						{t("teacher.gradeExport.filters.class")}
+					</Label>
+					<Select
 						value={selectedClass}
-						onChange={(e) => {
-							setSelectedClass(e.target.value);
+						onValueChange={(value) => {
+							setSelectedClass(value);
 							setSelectedExams([]);
 						}}
 						disabled={!selectedYear}
 					>
-						<option value="">
-							{t("teacher.gradeExport.filters.classPlaceholder")}
-						</option>
-						{classes?.map((cls) => (
-							<option key={cls.id} value={cls.id}>
-								{cls.name} - {cls.program.name}
-							</option>
-						))}
-					</select>
+						<SelectTrigger
+							id={classId}
+							aria-label={t("teacher.gradeExport.filters.class")}
+							className={!selectedYear ? "opacity-70" : undefined}
+						>
+							<SelectValue
+								placeholder={t("teacher.gradeExport.filters.classPlaceholder")}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							{classes?.map((cls) => (
+								<SelectItem key={cls.id} value={cls.id}>
+									{cls.name} - {cls.program.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
-				<div className="form-control">
-					<span className="label-text mb-2">
+				<div className="space-y-2">
+					<Label className="font-medium text-sm">
 						{t("teacher.gradeExport.actions.label")}
-					</span>
-					<button
+					</Label>
+					<Button
 						type="button"
 						onClick={handleExport}
 						disabled={!selectedClass || selectedExams.length === 0}
-						className="btn btn-primary"
 					>
 						<Download className="mr-2 h-5 w-5" />
 						{t("teacher.gradeExport.actions.export")}
-					</button>
+					</Button>
 				</div>
 			</div>
 
 			{exams && exams.length > 0 ? (
-				<div className="rounded-lg bg-white p-6 shadow">
-					<h3 className="mb-4 font-medium text-lg">
-						{t("teacher.gradeExport.exams.title")}
-					</h3>
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{exams.map((exam) => (
-							<label key={exam.id} className="flex items-center space-x-3">
-								<input
-									type="checkbox"
-									className="checkbox"
-									checked={selectedExams.includes(exam.id)}
-									onChange={(e) => {
-										if (e.target.checked) {
-											setSelectedExams([...selectedExams, exam.id]);
-										} else {
-											setSelectedExams(
-												selectedExams.filter((id) => id !== exam.id),
-											);
-										}
-									}}
-								/>
-								<span>
-									{exam.courseName} - {exam.name}
-									<div className="text-gray-500 text-sm">
-										{format(new Date(exam.date), "MMM d, yyyy")} (
-										{exam.percentage}%)
+				<Card>
+					<CardHeader>
+						<CardTitle className="font-semibold text-lg">
+							{t("teacher.gradeExport.exams.title")}
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+							{exams.map((exam) => {
+								const checkboxId = `${exam.id}-checkbox`;
+								const isChecked = selectedExams.includes(exam.id);
+								return (
+									<div
+										key={exam.id}
+										className="flex items-start gap-3 rounded-md border p-3"
+									>
+										<Checkbox
+											id={checkboxId}
+											checked={isChecked}
+											onCheckedChange={(checked) => {
+												if (checked) {
+													setSelectedExams([...selectedExams, exam.id]);
+												} else {
+													setSelectedExams(
+														selectedExams.filter((id) => id !== exam.id),
+													);
+												}
+											}}
+										/>
+										<label htmlFor={checkboxId} className="flex-1 space-y-1">
+											<div className="font-medium">
+												{exam.courseName} - {exam.name}
+											</div>
+											<div className="text-muted-foreground text-sm">
+												{format(new Date(exam.date), "MMM d, yyyy")} (
+												{exam.percentage}%)
+											</div>
+										</label>
 									</div>
-								</span>
-							</label>
-						))}
-					</div>
-				</div>
+								);
+							})}
+						</div>
+					</CardContent>
+				</Card>
 			) : selectedClass ? (
-				<div className="rounded-lg bg-white p-8 text-center">
-					<FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400" />
-					<h3 className="mt-2 font-medium text-gray-900 text-sm">
-						{t("teacher.gradeExport.exams.emptyTitle")}
-					</h3>
-					<p className="mt-1 text-gray-500 text-sm">
-						{t("teacher.gradeExport.exams.emptyDescription")}
-					</p>
-				</div>
+				<Card className="text-center">
+					<CardHeader>
+						<FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground" />
+						<CardTitle className="font-semibold text-sm">
+							{t("teacher.gradeExport.exams.emptyTitle")}
+						</CardTitle>
+						<CardDescription>
+							{t("teacher.gradeExport.exams.emptyDescription")}
+						</CardDescription>
+					</CardHeader>
+				</Card>
 			) : null}
 		</div>
 	);

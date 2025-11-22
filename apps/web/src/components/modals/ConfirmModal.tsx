@@ -1,6 +1,15 @@
-import { X } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
+
+import { Button } from "../ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/dialog";
+import { Spinner } from "../ui/spinner";
 
 interface ConfirmModalProps {
 	isOpen: boolean;
@@ -29,40 +38,27 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	const cancelLabel = cancelText ?? t("common.actions.cancel");
 
 	return (
-		<div className="modal modal-open">
-			<div className="modal-box">
-				<button
-					onClick={onClose}
-					className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
-				>
-					<X className="h-4 w-4" />
-				</button>
-
-				<h3 className="font-bold text-lg">{title}</h3>
-				<p className="py-4">{message}</p>
-
-				<div className="modal-action">
-					<button
-						onClick={onClose}
-						className="btn btn-ghost"
-						disabled={isLoading}
-					>
+		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>{title}</DialogTitle>
+				</DialogHeader>
+				<p className="text-muted-foreground text-sm">{message}</p>
+				<DialogFooter className="gap-2 sm:gap-0">
+					<Button variant="ghost" onClick={onClose} disabled={isLoading}>
 						{cancelLabel}
-					</button>
-					<button
+					</Button>
+					<Button
+						variant="destructive"
 						onClick={onConfirm}
-						className="btn btn-error"
 						disabled={isLoading}
 					>
-						{isLoading ? (
-							<span className="loading loading-spinner loading-sm" />
-						) : (
-							confirmLabel
-						)}
-					</button>
-				</div>
-			</div>
-		</div>
+						{isLoading ? <Spinner className="mr-2" /> : null}
+						{confirmLabel}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

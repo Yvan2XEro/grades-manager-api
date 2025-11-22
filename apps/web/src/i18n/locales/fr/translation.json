@@ -36,7 +36,10 @@
 			"adminDashboard": "Tableau de bord administrateur",
 			"teacherDashboard": "Tableau de bord enseignant",
 			"notificationsAria": "Ouvrir les notifications",
-			"toggleSidebarAria": "Afficher ou masquer le menu latéral"
+			"toggleSidebarAria": "Afficher ou masquer le menu latéral",
+			"languageSelectAria": "Changer de langue",
+			"languageSelectPlaceholder": "Sélectionnez la langue",
+			"profileMenuAria": "Ouvrir le menu profil"
 		},
 		"sidebar": {
 			"admin": {

@@ -466,7 +466,10 @@
 			"adminDashboard": "Admin dashboard",
 			"teacherDashboard": "Teacher dashboard",
 			"notificationsAria": "Open notifications",
-			"toggleSidebarAria": "Toggle sidebar"
+			"toggleSidebarAria": "Toggle sidebar",
+			"languageSelectAria": "Change language",
+			"languageSelectPlaceholder": "Select language",
+			"profileMenuAria": "Open profile menu"
 		},
 		"sidebar": {
 			"admin": {

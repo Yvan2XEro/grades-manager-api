@@ -9,6 +9,31 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "../../components/ui/card";
+import { Empty } from "../../components/ui/empty";
+import { Label } from "../../components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../components/ui/table";
 import { trpcClient } from "../../utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
@@ -122,9 +147,10 @@ export default function ClassCourseManagement() {
 	});
 
 	const {
-		register,
 		handleSubmit,
 		reset,
+		setValue,
+		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<ClassCourseFormData>({
 		resolver: zodResolver(classCourseSchema),
@@ -208,111 +234,119 @@ export default function ClassCourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-6 w-6" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-2xl">
 						{t("teacher.classCourses.title")}
 					</h1>
-					<p className="text-base-content/60">
+					<p className="text-muted-foreground">
 						{t("teacher.classCourses.subtitle")}
 					</p>
 				</div>
-				<button
+				<Button
 					onClick={() => {
 						setEditingClassCourse(null);
 						reset();
 						setIsFormOpen(true);
 					}}
-					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
 					{t("teacher.classCourses.actions.add")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow-xl">
+			<Card>
 				{displayedClassCourses.length === 0 ? (
-					<div className="card-body items-center py-12 text-center">
-						<BookOpen className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">
-							{t("teacher.classCourses.empty.title")}
-						</h2>
-						<p className="text-base-content/60">
-							{t("teacher.classCourses.empty.description")}
-						</p>
-						<button
-							onClick={() => {
-								setEditingClassCourse(null);
-								reset();
-								setIsFormOpen(true);
-							}}
-							className="btn btn-primary mt-4"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("teacher.classCourses.actions.add")}
-						</button>
-					</div>
+					<Empty
+						icon={BookOpen}
+						title={t("teacher.classCourses.empty.title")}
+						description={t("teacher.classCourses.empty.description")}
+						actionLabel={t("teacher.classCourses.actions.add")}
+						onAction={() => {
+							setEditingClassCourse(null);
+							reset();
+							setIsFormOpen(true);
+						}}
+					/>
 				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("teacher.classCourses.table.class")}</th>
-									<th>{t("teacher.classCourses.table.program")}</th>
-									<th>{t("teacher.classCourses.table.course")}</th>
-									<th>{t("teacher.classCourses.table.teacher")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{displayedClassCourses?.map((cc) => (
-									<tr key={cc.id}>
-										<td className="font-medium">
-											{classMap.get(cc.class)?.name}
-										</td>
-										<td>
-											{programMap.get(classMap.get(cc.class)?.program || "")}
-										</td>
-										<td>{courseMap.get(cc.course)}</td>
-										<td>{teacherMap.get(cc.teacher)}</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													onClick={() => {
-														setEditingClassCourse(cc);
-														reset({
-															class: cc.class,
-															course: cc.course,
-															teacher: cc.teacher,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
-												>
-													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													onClick={() => openDeleteModal(cc.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
-												>
-													<Trash2 className="h-4 w-4" />
-												</button>
-											</div>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<>
+						<CardHeader>
+							<CardTitle>{t("teacher.classCourses.title")}</CardTitle>
+						</CardHeader>
+						<CardContent className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>
+											{t("teacher.classCourses.table.class")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.classCourses.table.program")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.classCourses.table.course")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.classCourses.table.teacher")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.table.actions")}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{displayedClassCourses?.map((cc) => (
+										<TableRow key={cc.id}>
+											<TableCell className="font-medium">
+												{classMap.get(cc.class)?.name}
+											</TableCell>
+											<TableCell>
+												{programMap.get(classMap.get(cc.class)?.program || "")}
+											</TableCell>
+											<TableCell>{courseMap.get(cc.course)}</TableCell>
+											<TableCell>{teacherMap.get(cc.teacher)}</TableCell>
+											<TableCell className="text-right">
+												<div className="flex justify-end gap-2">
+													<Button
+														variant="ghost"
+														size="icon"
+														onClick={() => {
+															setEditingClassCourse(cc);
+															reset({
+																class: cc.class,
+																course: cc.course,
+																teacher: cc.teacher,
+															});
+															setIsFormOpen(true);
+														}}
+													>
+														<Pencil className="h-4 w-4" />
+													</Button>
+													<Button
+														variant="ghost"
+														size="icon"
+														className="text-destructive"
+														onClick={() => openDeleteModal(cc.id)}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</CardContent>
+					</>
 				)}
-			</div>
+			</Card>
 
 			<FormModal
 				isOpen={isFormOpen}
@@ -327,117 +361,113 @@ export default function ClassCourseManagement() {
 						: t("teacher.classCourses.form.createTitle")
 				}
 			>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.classCourses.form.classLabel")}
-							</span>
-						</label>
-						<select
-							{...register("class")}
-							className="select select-bordered w-full"
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<div className="space-y-2">
+						<Label htmlFor="class-select">
+							{t("teacher.classCourses.form.classLabel")}
+						</Label>
+						<Select
+							value={watch("class")}
+							onValueChange={(value) => setValue("class", value)}
 						>
-							<option value="">
-								{t("teacher.classCourses.form.classPlaceholder")}
-							</option>
-							{classes?.map((cls) => (
-								<option key={cls.id} value={cls.id}>
-									{cls.name} - {programMap.get(cls.program)}
-								</option>
-							))}
-						</select>
-						{errors.class && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.class.message}
-								</span>
-							</label>
-						)}
+							<SelectTrigger id="class-select">
+								<SelectValue
+									placeholder={t("teacher.classCourses.form.classPlaceholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{classes?.map((cls) => (
+									<SelectItem key={cls.id} value={cls.id}>
+										{cls.name} - {programMap.get(cls.program)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{errors.class ? (
+							<p className="text-destructive text-sm">{errors.class.message}</p>
+						) : null}
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.classCourses.form.courseLabel")}
-							</span>
-						</label>
-						<select
-							{...register("course")}
-							className="select select-bordered w-full"
+					<div className="space-y-2">
+						<Label htmlFor="course-select">
+							{t("teacher.classCourses.form.courseLabel")}
+						</Label>
+						<Select
+							value={watch("course")}
+							onValueChange={(value) => setValue("course", value)}
 						>
-							<option value="">
-								{t("teacher.classCourses.form.coursePlaceholder")}
-							</option>
-							{courses?.map((course) => (
-								<option key={course.id} value={course.id}>
-									{course.name}
-								</option>
-							))}
-						</select>
-						{errors.course && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.course.message}
-								</span>
-							</label>
-						)}
+							<SelectTrigger id="course-select">
+								<SelectValue
+									placeholder={t("teacher.classCourses.form.coursePlaceholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{courses?.map((course) => (
+									<SelectItem key={course.id} value={course.id}>
+										{course.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{errors.course ? (
+							<p className="text-destructive text-sm">
+								{errors.course.message}
+							</p>
+						) : null}
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.classCourses.form.teacherLabel")}
-							</span>
-						</label>
-						<select
-							{...register("teacher")}
-							className="select select-bordered w-full"
+					<div className="space-y-2">
+						<Label htmlFor="teacher-select">
+							{t("teacher.classCourses.form.teacherLabel")}
+						</Label>
+						<Select
+							value={watch("teacher")}
+							onValueChange={(value) => setValue("teacher", value)}
 						>
-							<option value="">
-								{t("teacher.classCourses.form.teacherPlaceholder")}
-							</option>
-							{teachers?.map((teacher) => (
-								<option key={teacher.id} value={teacher.id}>
-									{teacher.name}
-								</option>
-							))}
-						</select>
-						{errors.teacher && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.teacher.message}
-								</span>
-							</label>
-						)}
+							<SelectTrigger id="teacher-select">
+								<SelectValue
+									placeholder={t(
+										"teacher.classCourses.form.teacherPlaceholder",
+									)}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{teachers?.map((teacher) => (
+									<SelectItem key={teacher.id} value={teacher.id}>
+										{teacher.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{errors.teacher ? (
+							<p className="text-destructive text-sm">
+								{errors.teacher.message}
+							</p>
+						) : null}
 					</div>
 
-					<div className="modal-action">
-						<button
+					<div className="flex justify-end gap-3 pt-2">
+						<Button
 							type="button"
+							variant="ghost"
 							onClick={() => {
 								setIsFormOpen(false);
 								setEditingClassCourse(null);
 								reset();
 							}}
-							className="btn btn-ghost"
 							disabled={isSubmitting}
 						>
 							{t("common.actions.cancel")}
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={isSubmitting}
-						>
+						</Button>
+						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? (
-								<span className="loading loading-spinner loading-sm" />
+								<Spinner className="mr-2" />
 							) : editingClassCourse ? (
 								t("common.actions.saveChanges")
 							) : (
 								t("teacher.classCourses.form.submit")
 							)}
-						</button>
+						</Button>
 					</div>
 				</form>
 			</FormModal>
