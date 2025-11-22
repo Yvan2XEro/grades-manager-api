@@ -46,6 +46,8 @@
 				"users": "Utilisateurs",
 				"classCourses": "Cours de classes",
 				"gradeExport": "Export des notes",
+				"monitoring": "Monitoring",
+				"notifications": "Notifications",
 				"students": "Etudiants",
 				"studentPromotion": "Promotion des etudiants",
 				"courses": "Cours",
@@ -53,14 +55,34 @@
 				"faculties": "Facultés",
 				"programs": "Programmes",
 				"teachers": "Enseignants",
-				"courseAssignments": "Affectations de cours"
+				"courseAssignments": "Affectations de cours",
+				"teachingUnits": "Unités d'enseignement",
+				"enrollments": "Inscriptions"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
 				"exams": "Examens",
 				"grades": "Notes",
-				"courses": "Cours"
+				"courses": "Cours",
+				"attendance": "Alertes de présence",
+				"workflows": "Workflows"
+			},
+			"dean": {
+				"dashboard": "Tableau de bord",
+				"workflows": "Workflows"
+			},
+			"student": {
+				"dashboard": "Ma performance"
 			}
+		},
+		"roles": {
+			"guest": "Invité",
+			"student": "Étudiant",
+			"staff": "Personnel",
+			"dean": "Doyen",
+			"teacher": "Enseignant",
+			"administrator": "Administrateur",
+			"super_admin": "Super administrateur"
 		}
 	},
 	"auth": {
@@ -131,6 +153,48 @@
 		}
 	},
 	"admin": {
+		"monitoring": {
+			"title": "Surveillance du service",
+			"subtitle": "Suivez les workflows, les notifications et les tâches planifiées",
+			"gradeWindows": "Fenêtres de validation ouvertes",
+			"pendingAlerts": "Alertes en attente",
+			"jobs": "Tâches planifiées",
+			"jobsValue": "2 actives",
+			"compliance": "Conformité",
+			"complianceValue": "MFA + RBAC",
+			"workflows": "Santé des workflows",
+			"workflowsDescription": "Validations, inscriptions et présences sont synchronisées.",
+			"healthy": "Stable",
+			"gradeValidation": "Validation des notes",
+			"gradeValidationDesc": "Les examens approuvés sont verrouillés et publiés.",
+			"enrollments": "Fenêtres d'inscription",
+			"enrollmentsDesc": "Les classes respectent les périodes d'ouverture/fermeture.",
+			"backgroundJobs": "Tâches d'arrière-plan",
+			"backgroundJobsDesc": "Des intervalles Bun maintiennent les données à jour.",
+			"jobExam": "Clôture des examens",
+			"jobExamDesc": "Verrouille les examens approuvés après les sessions.",
+			"jobNotifications": "Dispatch des notifications",
+			"jobNotificationsDesc": "Diffuse les alertes e-mail/webhook en attente.",
+			"active": "Active"
+		},
+		"notifications": {
+			"title": "Centre de notifications",
+			"subtitle": "Alertes de workflow envoyées au personnel et aux étudiants",
+			"gradeValidated": "Validation des notes terminée",
+			"gradeValidatedDesc": "Un examen a été validé et verrouillé.",
+			"windowOpened": "Fenêtre d'inscription ouverte",
+			"windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
+			"justNow": "À l'instant",
+			"queueTitle": "Dernières notifications",
+			"empty": "Aucune notification pour le moment.",
+			"actions": {
+				"flush": "Vider la file",
+				"ack": "Accuser réception"
+			},
+			"toast": {
+				"flushed": "Notifications en attente supprimées"
+			}
+		},
 		"dashboard": {
 			"title": "Tableau de bord administrateur",
 			"activeYear": "Année active : {{year}}",
@@ -574,6 +638,83 @@
 				"role": "Veuillez sélectionner un rôle",
 				"passwordRequired": "Le mot de passe est obligatoire"
 			}
+		},
+		"enrollments": {
+			"title": "Gestion des inscriptions",
+			"subtitle": "Surveillez les cohortes et contrôlez les fenêtres d'inscription.",
+			"selectYear": "Sélectionner une année académique",
+			"selectClass": "Sélectionner une classe",
+			"listTitle": "Inscriptions",
+			"fields": {
+				"student": "Étudiant",
+				"status": "Statut",
+				"dates": "Dates"
+			},
+			"empty": "Aucune inscription pour cette sélection.",
+			"windowStatus": "Fenêtre : {{status}}",
+			"windowMissing": "Fenêtre non configurée",
+			"windowOpen": "Les étudiants peuvent s'inscrire.",
+			"windowClosed": "Fenêtre actuellement fermée.",
+			"actions": {
+				"open": "Ouvrir la fenêtre",
+				"close": "Fermer la fenêtre",
+				"title": "Ajustements manuels",
+				"description": "Utilisez la page de gestion des étudiants pour transférer ou réinscrire les étudiants entre les classes."
+			},
+			"toast": {
+				"updated": "Fenêtre mise à jour"
+			}
+		},
+		"notifications": {
+			"title": "Centre de notifications",
+			"subtitle": "Alertes de workflow envoyées au personnel et aux étudiants",
+			"queueTitle": "Dernières notifications",
+			"empty": "Aucune notification pour le moment.",
+			"actions": {
+				"flush": "Vider la file",
+				"ack": "Accuser réception"
+			},
+			"toast": {
+				"flushed": "Notifications en attente supprimées"
+			},
+			"gradeValidated": "Validation des notes terminée",
+			"gradeValidatedDesc": "Un examen a été validé et verrouillé pour publication.",
+			"windowOpened": "Fenêtre d'inscription ouverte",
+			"windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
+			"justNow": "À l'instant"
+		},
+		"teachingUnits": {
+			"title": "Unités d'enseignement",
+			"subtitle": "Gérez le catalogue des UE, les semestres et les prérequis.",
+			"selectProgram": "Sélectionner un programme",
+			"new": "Créer une nouvelle UE",
+			"fields": {
+				"name": "Nom de l'unité",
+				"code": "Code",
+				"description": "Description",
+				"credits": "ECTS"
+			},
+			"semesters": {
+				"annual": "Annuel",
+				"fall": "Semestre d'automne",
+				"spring": "Semestre de printemps"
+			},
+			"actions": {
+				"create": "Créer l'UE",
+				"delete": "Supprimer",
+				"savePrereq": "Enregistrer les prérequis"
+			},
+			"list": "Liste des unités",
+			"empty": "Aucune unité pour ce programme.",
+			"prereqTitle": "Gérer les prérequis des cours",
+			"prereqSelectCourse": "Choisir un cours",
+			"prereqHint": "Sélectionnez les cours prérequis",
+			"toast": {
+				"created": "Unité créée avec succès",
+				"deleted": "Unité supprimée avec succès",
+				"prereqSaved": "Prérecquis enregistrés",
+				"programRequired": "Sélectionnez d'abord un programme"
+			}
 		}
 	},
 	"teacher": {
@@ -970,6 +1111,58 @@
 				"title": "Supprimer l'évaluation",
 				"message": "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action retirera également les notes associées."
 			}
+		},
+		"attendance": {
+			"none": "Aucune alerte pour le moment.",
+			"placeholder": "Message",
+			"send": "Envoyer l'alerte",
+			"toast": {
+				"sent": "Alerte programmée"
+			}
+		},
+		"workflow": {
+			"title": "Workflow d'examens",
+			"subtitle": "Soumettez les examens pour validation et suivez leur statut.",
+			"selectCourse": "Sélectionnez un cours de classe",
+			"placeholder": "Choisissez un cours pour voir les examens.",
+			"empty": "Aucun examen pour ce cours.",
+			"actions": {
+				"submit": "Soumettre",
+				"lock": "Verrouiller"
+			},
+			"toast": {
+				"submitted": "Examen soumis",
+				"locked": "Examen verrouillé"
+			}
+		}
+	},
+	"dean": {
+		"workflows": {
+			"title": "Workflow d'approbation",
+			"subtitle": "Validez les examens, gérez les inscriptions et surveillez les alertes.",
+			"queue": "Examens soumis",
+			"empty": "Aucun examen en attente.",
+			"actions": {
+				"validate": "Valider et verrouiller"
+			},
+			"toast": {
+				"validated": "Examen approuvé"
+			},
+			"notifications": "Notifications du workflow",
+			"notificationsEmpty": "Aucune notification",
+			"windows": "Fenêtres d'inscription"
+		}
+	},
+	"student": {
+		"performance": {
+			"title": "Tableau de performance",
+			"subtitle": "Suivez vos moyennes, crédits et progression",
+			"trendTitle": "Progression",
+			"trendSubtitle": "Moyennes pondérées des cours inscrits",
+			"overallAverage": "Moyenne générale",
+			"credits": "Crédits obtenus",
+			"courseAverages": "Moyennes par cours",
+			"courseSubtitle": "Dernières notes pour l'année active"
 		}
 	}
 }

@@ -14,3 +14,11 @@
 - Approve exams via `exams.validate` and lock them once the grades are finalized.
 - Monitor teaching units, prerequisites, and enrollments via the new routers (`teachingUnits`, `enrollments`) to keep the catalog clean.
 - Rely on the `enrollments` history when decommissioning classes (`classes.delete` migrates students forward before removal).
+
+# Phase 3 extensions
+
+- Grade validation is now orchestrated through the `workflows.validateGrades` TRPC endpoint, which approves and locks submitted
+  exams while dispatching notifications.
+- Enrollment windows can be opened or closed per class/year using `workflows.enrollmentWindow`, with history stored in the
+  `enrollment_windows` table.
+- Attendance alerts are queued with `workflows.attendanceAlert` and surfaced through the notifications module.

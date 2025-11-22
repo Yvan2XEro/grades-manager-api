@@ -10,7 +10,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";

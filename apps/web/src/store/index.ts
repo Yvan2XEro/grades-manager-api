@@ -5,6 +5,7 @@ export type BusinessRole =
 	| "guest"
 	| "student"
 	| "staff"
+	| "dean"
 	| "teacher"
 	| "administrator"
 	| "super_admin";
@@ -38,10 +39,10 @@ const defaultPermissions: PermissionSnapshot = {
  * Use these to protect layouts/routes on the client.
  */
 export const roleGuards = {
-	manageCatalog: ["administrator", "super_admin"] as BusinessRole[],
-	manageStudents: ["administrator", "super_admin"] as BusinessRole[],
-	grade: ["teacher", "administrator", "super_admin"] as BusinessRole[],
-	viewAnalytics: ["administrator", "super_admin"] as BusinessRole[],
+	manageCatalog: ["administrator", "dean", "super_admin"] as BusinessRole[],
+	manageStudents: ["administrator", "dean", "super_admin"] as BusinessRole[],
+	grade: ["teacher", "administrator", "dean", "super_admin"] as BusinessRole[],
+	viewAnalytics: ["administrator", "dean", "super_admin"] as BusinessRole[],
 };
 
 type StoreState = {

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	ArrowUpRight,
+	Bell,
 	BookOpen,
 	BookOpenCheck,
 	Building2,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import { useStore } from "../../store";
 
 const Sidebar: React.FC = () => {
@@ -74,6 +75,16 @@ const Sidebar: React.FC = () => {
 			labelKey: "navigation.sidebar.admin.exams",
 		},
 		{
+			to: "/admin/teaching-units",
+			icon: <BookOpenCheck className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.teachingUnits",
+		},
+		{
+			to: "/admin/enrollments",
+			icon: <Calendar className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.enrollments",
+		},
+		{
 			to: "/admin/student-promotion",
 			icon: <ArrowUpRight className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.studentPromotion",
@@ -82,6 +93,16 @@ const Sidebar: React.FC = () => {
 			to: "/admin/grade-export",
 			icon: <FileSpreadsheet className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.gradeExport",
+		},
+		{
+			to: "/admin/monitoring",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.monitoring",
+		},
+		{
+			to: "/admin/notifications",
+			icon: <Bell className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.notifications",
 		},
 	];
 
@@ -96,9 +117,55 @@ const Sidebar: React.FC = () => {
 			icon: <BookOpen className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.teacher.courses",
 		},
+		{
+			to: "/teacher/attendance",
+			icon: <ClipboardList className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.teacher.attendance",
+		},
+		{
+			to: "/teacher/workflows",
+			icon: <Bell className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.teacher.workflows",
+		},
 	];
 
-	const links = user?.role === "admin" ? adminLinks : teacherLinks;
+	const deanLinks = [
+		{
+			to: "/dean",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.dean.dashboard",
+		},
+		{
+			to: "/dean/workflows",
+			icon: <ClipboardList className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.dean.workflows",
+		},
+	];
+
+	const studentLinks = [
+		{
+			to: "/student",
+			icon: <LayoutDashboard className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.student.dashboard",
+		},
+	];
+
+	const links = (() => {
+		if (!user) return [];
+		switch (user.role) {
+			case "administrator":
+			case "super_admin":
+				return adminLinks;
+			case "dean":
+				return deanLinks;
+			case "teacher":
+				return teacherLinks;
+			case "student":
+				return studentLinks;
+			default:
+				return [];
+		}
+	})();
 
 	return (
 		<AnimatePresence>
@@ -134,6 +201,7 @@ const Sidebar: React.FC = () => {
 										key={link.to}
 										to={link.to}
 										end={link.to === "/admin" || link.to === "/teacher"}
+										data-testid={`nav-${link.to}`}
 										className={({ isActive }) =>
 											`flex items-center rounded-lg px-4 py-3 font-medium text-sm transition-colors ${
 												isActive

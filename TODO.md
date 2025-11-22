@@ -39,20 +39,34 @@
 - [x] Document student/teacher/dean workflows in `docs/workflows.md` to feed Phase 3 UI work.
 
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
-- [ ] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
-- [ ] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.
-- [ ] Structure `apps/web` by role-based layouts (admin/dean/teacher/student) with permission-aware navigation and react-i18next everywhere.
-- [ ] Design pages for grade entry, performance tracking, and monitoring dashboards (tables, charts) aligned with `docs/analyze.md#workflows-utilisateur`.
-- [ ] Stand up a `notifications` module for email/webhook alerts (submission, rejection, closing windows).
-- [ ] Add router E2E tests (`apps/server/src/routers/__tests__`) that simulate the critical flows (teacher submits → dean approves → student views).
+- [x] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
+- [x] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.
+- [x] Structure `apps/web` by role-based layouts (admin/dean/teacher/student) with permission-aware navigation and react-i18next everywhere.
+- [x] Design pages for grade entry, performance tracking, and monitoring dashboards (tables, charts) aligned with `docs/analyze.md#workflows-utilisateur`.
+- [x] Stand up a `notifications` module for email/webhook alerts (submission, rejection, closing windows).
+- [x] Add router E2E tests (`apps/server/src/routers/__tests__`) that simulate the critical flows (teacher submits → dean approves → student views).
 
-## Phase 4 – Analytics, archiving, and integrations (Week 6+)
-- [ ] Introduce an event bus or publication mechanism (Kafka/RabbitMQ/existing Bun queue) to broadcast enrollments, grades, attendance (`docs/analyze.md` “Bus de messages”).
-- [ ] Build the `analytics` service: OLAP aggregation, KPIs (success rate, attendance, demand) and dashboard APIs for decision makers.
-- [ ] Implement the `archives` module following the university retention guidelines (`docs/analyze.md#système-d’archivage-robuste`): year-based retention, access policies, retrieval APIs.
-- [ ] Provide regulatory exports (PDF transcripts, accreditation reports) and reuse the current recap pipeline when possible.
-- [ ] Prepare external integrations (finance, LMS) via isolated adapters and document their contracts.
-- [ ] Define SLAs, the scaling/partitioning approach, and monitoring plans (logs, traces, metrics).
+## Phase 4 – UI alignment with backend capabilities (Week 6+)
+- [x] Synchronize TRPC clients and generated types (teaching units, notifications, workflows, enrollments) and expose dedicated React Query hooks.
+- [x] Implement teaching-unit and prerequisite admin screens (CRUD forms, client-side validation, TRPC/i18n error handling).
+- [x] Add the enrollment management module on the UI (visualize enrollments, open/close windows, handle transfers).
+- [x] Wire the exam/alert workflows (teacher/dean) with realtime feedback (toasts + notifications).
+- [x] Integrate notifications (list, ACK, flush) in a shared panel for authorized roles.
+- [x] Complete the dashboards (admin/dean/teacher/student) with consolidated data (transcripts, program stats).
+- [x] Add UI end-to-end tests (Playwright or Vitest+RTL) for the critical flow: schedule exam → submit → validate → enter grades.
+
+## Phase 5 – Analytics & Archival Readiness
+- [ ] Define and ship the `analytics` router (UE aggregations, cohort KPIs, attendance trends).
+- [ ] Build the analytics dashboards (admin/dean) with CSV/PDF export.
+- [ ] Implement the `archives` module (retention policies, access control, search, audit logs).
+- [ ] Prepare regulatory exports (PDF transcripts, accreditation reports) and automate signature/validation workflows.
+- [ ] Strengthen observability (structured logging, metrics dashboards, alerting) and document SLAs.
+
+## Phase 6 – External integrations & hardening
+- [ ] Add adapters for partner systems (LMS, finance, reporting) within the monolith (no microservices).
+- [ ] Cover advanced security scenarios (secure webhooks, audits, alerts) and write `docs/security.md`.
+- [ ] Industrialize CI/CD: lint/format/test automation, mandatory reviews, orchestrated migration/seed scripts.
+- [ ] Plan historical data migration (replay scripts, rollback strategy) and estimate infra/support costs.
 
 ## DevEx, QA & governance
 - [x] Add `CODE_OF_CONDUCT.md` to codify collaboration and reiterate the i18n requirement for UI work.
