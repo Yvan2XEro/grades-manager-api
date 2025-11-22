@@ -283,7 +283,7 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.classCourses.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -396,10 +396,7 @@ export default function ClassCourseManagement() {
 										<FormLabel>
 											{t("admin.classCourses.form.classLabel")}
 										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
+										<Select value={field.value} onValueChange={field.onChange}>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
@@ -430,10 +427,7 @@ export default function ClassCourseManagement() {
 										<FormLabel>
 											{t("admin.classCourses.form.courseLabel")}
 										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
+										<Select value={field.value} onValueChange={field.onChange}>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
@@ -464,10 +458,7 @@ export default function ClassCourseManagement() {
 										<FormLabel>
 											{t("admin.classCourses.form.teacherLabel")}
 										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
+										<Select value={field.value} onValueChange={field.onChange}>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue

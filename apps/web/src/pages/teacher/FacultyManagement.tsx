@@ -41,7 +41,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
 
@@ -184,7 +191,7 @@ export default function FacultyManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.faculties.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -219,7 +226,9 @@ export default function FacultyManagement() {
 							<TableBody>
 								{faculties.map((faculty) => (
 									<TableRow key={faculty.id}>
-										<TableCell className="font-medium">{faculty.name}</TableCell>
+										<TableCell className="font-medium">
+											{faculty.name}
+										</TableCell>
 										<TableCell>
 											{faculty.description || (
 												<span className="text-muted-foreground italic">
@@ -295,9 +304,7 @@ export default function FacultyManagement() {
 										<FormLabel>{t("admin.faculties.form.nameLabel")}</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t(
-													"admin.faculties.form.namePlaceholder",
-												)}
+												placeholder={t("admin.faculties.form.namePlaceholder")}
 												{...field}
 											/>
 										</FormControl>

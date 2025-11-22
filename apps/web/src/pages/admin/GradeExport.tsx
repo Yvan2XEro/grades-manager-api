@@ -13,6 +13,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -20,7 +21,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { trpcClient } from "../../utils/trpc";
 
 interface AcademicYear {
@@ -259,9 +259,7 @@ export default function GradeExport() {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.gradeExport.actions.label")}</CardTitle>
-					<CardDescription>
-						{t("admin.gradeExport.subtitle")}
-					</CardDescription>
+					<CardDescription>{t("admin.gradeExport.subtitle")}</CardDescription>
 				</CardHeader>
 				<CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					<div className="space-y-2">
@@ -307,9 +305,7 @@ export default function GradeExport() {
 						>
 							<SelectTrigger id={classId}>
 								<SelectValue
-									placeholder={t(
-										"admin.gradeExport.filters.classPlaceholder",
-									)}
+									placeholder={t("admin.gradeExport.filters.classPlaceholder")}
 								/>
 							</SelectTrigger>
 							<SelectContent>
@@ -363,7 +359,7 @@ export default function GradeExport() {
 								/>
 								<label
 									htmlFor={`exam-${exam.id}`}
-									className="flex flex-col text-sm font-medium leading-5"
+									className="flex flex-col font-medium text-sm leading-5"
 								>
 									<span className="text-foreground">
 										{exam.courseName} • {exam.name}

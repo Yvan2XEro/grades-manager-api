@@ -40,9 +40,22 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
 
@@ -218,7 +231,7 @@ export default function ProgramManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.programs.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -243,9 +256,7 @@ export default function ProgramManagement() {
 								<TableRow>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.faculty")}</TableHead>
-									<TableHead>
-										{t("admin.programs.table.description")}
-									</TableHead>
+									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -254,7 +265,9 @@ export default function ProgramManagement() {
 							<TableBody>
 								{programs.map((program) => (
 									<TableRow key={program.id}>
-										<TableCell className="font-medium">{program.name}</TableCell>
+										<TableCell className="font-medium">
+											{program.name}
+										</TableCell>
 										<TableCell>{program.faculty?.name}</TableCell>
 										<TableCell>
 											{program.description || (
@@ -331,9 +344,7 @@ export default function ProgramManagement() {
 										<FormLabel>{t("admin.programs.form.nameLabel")}</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t(
-													"admin.programs.form.namePlaceholder",
-												)}
+												placeholder={t("admin.programs.form.namePlaceholder")}
 												{...field}
 											/>
 										</FormControl>
@@ -346,7 +357,9 @@ export default function ProgramManagement() {
 								name="faculty"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t("admin.programs.form.facultyLabel")}</FormLabel>
+										<FormLabel>
+											{t("admin.programs.form.facultyLabel")}
+										</FormLabel>
 										<Select
 											onValueChange={field.onChange}
 											value={field.value || undefined}

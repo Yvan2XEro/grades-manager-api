@@ -148,7 +148,7 @@ const TeachingUnitManagement = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.teachingUnits.title", { defaultValue: "Teaching Units" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -203,7 +203,9 @@ const TeachingUnitManagement = () => {
 					<form onSubmit={handleCreateUnit}>
 						<CardHeader>
 							<CardTitle>
-								{t("admin.teachingUnits.new", { defaultValue: "Create new UE" })}
+								{t("admin.teachingUnits.new", {
+									defaultValue: "Create new UE",
+								})}
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="grid gap-4">
@@ -224,7 +226,9 @@ const TeachingUnitManagement = () => {
 							</div>
 							<div className="space-y-2">
 								<Label htmlFor="unit-code">
-									{t("admin.teachingUnits.fields.code", { defaultValue: "Code" })}
+									{t("admin.teachingUnits.fields.code", {
+										defaultValue: "Code",
+									})}
 								</Label>
 								<Input
 									id="unit-code"
@@ -335,8 +339,8 @@ const TeachingUnitManagement = () => {
 									<div>
 										<p className="font-medium">{unit.name}</p>
 										<p className="text-muted-foreground text-sm">
-											{unit.code} • {unit.semester?.toUpperCase()} • {unit.credits}{" "}
-											ECTS
+											{unit.code} • {unit.semester?.toUpperCase()} •{" "}
+											{unit.credits} ECTS
 										</p>
 									</div>
 									<Button
@@ -353,7 +357,7 @@ const TeachingUnitManagement = () => {
 								</div>
 							))
 						) : (
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.teachingUnits.empty", {
 									defaultValue: "No units yet for this program.",
 								})}
@@ -441,7 +445,7 @@ const TeachingUnitManagement = () => {
 							</Button>
 						</div>
 					) : (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{t("admin.teachingUnits.prereqSelectCourse", {
 								defaultValue: "Choose a course",
 							})}

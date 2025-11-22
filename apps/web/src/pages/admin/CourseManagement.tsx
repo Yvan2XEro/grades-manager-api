@@ -29,9 +29,9 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
-	DialogFooter as ModalFooter,
 	DialogHeader,
 	DialogTitle,
+	DialogFooter as ModalFooter,
 } from "@/components/ui/dialog";
 import {
 	Form,
@@ -244,7 +244,7 @@ export default function CourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.courses.title", { defaultValue: "Course management" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -354,7 +354,8 @@ export default function CourseManagement() {
 						</DialogTitle>
 						<DialogDescription>
 							{t("admin.courses.subtitle", {
-								defaultValue: "Manage courses, workloads, and default teachers.",
+								defaultValue:
+									"Manage courses, workloads, and default teachers.",
 							})}
 						</DialogDescription>
 					</DialogHeader>
@@ -368,9 +369,7 @@ export default function CourseManagement() {
 										<FormLabel>{t("admin.courses.form.nameLabel")}</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t(
-													"admin.courses.form.namePlaceholder",
-												)}
+												placeholder={t("admin.courses.form.namePlaceholder")}
 												{...field}
 												value={field.value ?? ""}
 											/>
@@ -398,9 +397,7 @@ export default function CourseManagement() {
 															: Number(event.target.value),
 													)
 												}
-												placeholder={t(
-													"admin.courses.form.creditsPlaceholder",
-												)}
+												placeholder={t("admin.courses.form.creditsPlaceholder")}
 												{...field}
 											/>
 										</FormControl>
@@ -413,9 +410,7 @@ export default function CourseManagement() {
 								name="hours"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.hoursLabel")}
-										</FormLabel>
+										<FormLabel>{t("admin.courses.form.hoursLabel")}</FormLabel>
 										<FormControl>
 											<Input
 												type="number"
@@ -427,9 +422,7 @@ export default function CourseManagement() {
 															: Number(event.target.value),
 													)
 												}
-												placeholder={t(
-													"admin.courses.form.hoursPlaceholder",
-												)}
+												placeholder={t("admin.courses.form.hoursPlaceholder")}
 												{...field}
 											/>
 										</FormControl>
@@ -460,10 +453,7 @@ export default function CourseManagement() {
 											</FormControl>
 											<SelectContent>
 												{programs?.map((program) => (
-													<SelectItem
-														key={program.id}
-														value={program.id}
-													>
+													<SelectItem key={program.id} value={program.id}>
 														{program.name}
 													</SelectItem>
 												))}
@@ -496,10 +486,7 @@ export default function CourseManagement() {
 											</FormControl>
 											<SelectContent>
 												{teachers?.map((teacher) => (
-													<SelectItem
-														key={teacher.id}
-														value={teacher.id}
-													>
+													<SelectItem key={teacher.id} value={teacher.id}>
 														{teacher.name}
 													</SelectItem>
 												))}

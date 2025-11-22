@@ -97,9 +97,15 @@ export default function UserManagement() {
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
-	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">("all");
-	const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">("all");
-	const [verifiedFilter, setVerifiedFilter] = useState<"all" | "verified" | "unverified">("all");
+	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
+		"all",
+	);
+	const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">(
+		"all",
+	);
+	const [verifiedFilter, setVerifiedFilter] = useState<
+		"all" | "verified" | "unverified"
+	>("all");
 
 	const { data } = useQuery({
 		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
@@ -280,7 +286,7 @@ export default function UserManagement() {
 
 			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div className="relative w-full sm:max-w-xs">
-					<Search className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
+					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 text-muted-foreground" />
 					<Input
 						type="text"
 						value={search}
