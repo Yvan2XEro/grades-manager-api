@@ -9,7 +9,40 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
-import FormModal from "../../components/modals/FormModal";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {
@@ -79,12 +112,7 @@ export default function StudentManagement() {
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm<StudentForm>({ resolver: zodResolver(studentSchema) });
+	const form = useForm<StudentForm>({ resolver: zodResolver(studentSchema) });
 
 	const createMutation = useMutation({
 		mutationFn: (data: StudentForm) => trpcClient.students.create.mutate(data),
@@ -93,8 +121,12 @@ export default function StudentManagement() {
 			queryClient.invalidateQueries({ queryKey: ["students"] });
 			closeModal();
 		},
-		onError: (err: any) =>
-			toast.error(err.message || t("admin.students.toast.createError")),
+		onError: (err: unknown) =>
+			toast.error(
+				err instanceof Error
+					? err.message
+					: t("admin.students.toast.createError"),
+			),
 	});
 
 	const bulkMutation = useMutation({
@@ -103,8 +135,12 @@ export default function StudentManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["students"] });
 		},
-		onError: (err: any) =>
-			toast.error(err.message || t("admin.students.toast.importError")),
+		onError: (err: unknown) =>
+			toast.error(
+				err instanceof Error
+					? err.message
+					: t("admin.students.toast.importError"),
+			),
 	});
 
 	const onSubmit = (data: StudentForm) => createMutation.mutate(data);
@@ -221,48 +257,50 @@ export default function StudentManagement() {
 		setActiveTab("single");
 		setImportClass("");
 		setImportResult(null);
-		reset();
+		form.reset();
 	};
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex items-center justify-between gap-4">
 				<h1 className="font-bold text-2xl">{t("admin.students.title")}</h1>
-				<button
-					className="btn btn-primary"
-					onClick={() => setIsModalOpen(true)}
-				>
+				<Button onClick={() => setIsModalOpen(true)}>
 					<PlusIcon className="mr-2 h-5 w-5" />
 					{t("admin.students.actions.openModal")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="mb-4 flex gap-4">
-				<select
-					className="select select-bordered"
+			<div className="flex flex-wrap items-center gap-3">
+				<Select
 					value={classFilter}
-					onChange={(e) => {
-						setClassFilter(e.target.value);
+					onValueChange={(value) => {
+						setClassFilter(value);
 						setCursor(undefined);
 						setPrevCursors([]);
 					}}
 				>
-					<option value="">{t("admin.students.filters.allClasses")}</option>
-					{classes?.map((c) => (
-						<option key={c.id} value={c.id}>
-							{c.name}
-						</option>
-					))}
-				</select>
-				<input
-					type="text"
-					className="input input-bordered"
-					placeholder={t("admin.students.filters.searchPlaceholder")}
+					<SelectTrigger className="min-w-[200px]">
+						<SelectValue placeholder={t("admin.students.filters.allClasses")} />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="">
+							{t("admin.students.filters.allClasses")}
+						</SelectItem>
+						{classes?.map((c) => (
+							<SelectItem key={c.id} value={c.id}>
+								{c.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Input
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
+					placeholder={t("admin.students.filters.searchPlaceholder")}
+					className="w-full max-w-md"
 				/>
-				<button
-					className="btn"
+				<Button
+					variant="outline"
 					onClick={() => {
 						setCursor(undefined);
 						setPrevCursors([]);
@@ -270,285 +308,291 @@ export default function StudentManagement() {
 					}}
 				>
 					{t("common.actions.search")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow">
-				<div className="overflow-x-auto">
-					<table className="table">
-						<thead>
-							<tr>
-								<th>{t("admin.students.table.name")}</th>
-								<th>{t("admin.students.table.email")}</th>
-								<th>{t("admin.students.table.registration")}</th>
-							</tr>
-						</thead>
-						<tbody>
+			<Card>
+				<CardContent className="pb-0">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>{t("admin.students.table.name")}</TableHead>
+								<TableHead>{t("admin.students.table.email")}</TableHead>
+								<TableHead>{t("admin.students.table.registration")}</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
 							{studentsData?.items.map((s: Student) => (
-								<tr key={s.id}>
-									<td>
+								<TableRow key={s.id}>
+									<TableCell>
 										{s.firstName} {s.lastName}
-									</td>
-									<td>{s.email}</td>
-									<td>{s.registrationNumber}</td>
-								</tr>
+									</TableCell>
+									<TableCell>{s.email}</TableCell>
+									<TableCell>{s.registrationNumber}</TableCell>
+								</TableRow>
 							))}
-						</tbody>
-					</table>
-				</div>
-				<div className="flex justify-between p-4">
-					<button
-						className="btn"
+						</TableBody>
+					</Table>
+				</CardContent>
+				<CardFooter className="flex items-center justify-between gap-3">
+					<Button
+						variant="outline"
 						disabled={prevCursors.length === 0}
 						onClick={handlePrev}
 					>
 						{t("common.pagination.previous")}
-					</button>
-					<button
-						className="btn"
+					</Button>
+					<Button
+						variant="outline"
 						disabled={!studentsData?.nextCursor}
 						onClick={handleNext}
 					>
 						{t("common.pagination.next")}
-					</button>
-				</div>
-			</div>
+					</Button>
+				</CardFooter>
+			</Card>
 
-			<FormModal
-				isOpen={isModalOpen}
-				onClose={closeModal}
-				title={t("admin.students.modal.title")}
-			>
-				<div role="tablist" className="tabs tabs-bordered mb-4">
-					<a
-						role="tab"
-						className={`tab ${activeTab === "single" ? "tab-active" : ""}`}
-						onClick={() => setActiveTab("single")}
+			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
+				<DialogContent className="max-w-3xl">
+					<DialogHeader>
+						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
+					</DialogHeader>
+
+					<Tabs
+						value={activeTab}
+						onValueChange={(value) =>
+							setActiveTab(value as "single" | "import")
+						}
+						className="space-y-4"
 					>
-						{t("admin.students.modal.tabs.single")}
-					</a>
-					<a
-						role="tab"
-						className={`tab ${activeTab === "import" ? "tab-active" : ""}`}
-						onClick={() => setActiveTab("import")}
-					>
-						{t("admin.students.modal.tabs.import")}
-					</a>
-				</div>
+						<TabsList>
+							<TabsTrigger value="single">
+								{t("admin.students.modal.tabs.single")}
+							</TabsTrigger>
+							<TabsTrigger value="import">
+								{t("admin.students.modal.tabs.import")}
+							</TabsTrigger>
+						</TabsList>
 
-				{activeTab === "single" && (
-					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">
-									{t("admin.students.form.firstName")}
-								</span>
-							</label>
-							<input
-								className="input input-bordered"
-								{...register("firstName")}
-							/>
-							{errors.firstName && (
-								<label className="label">
-									<span className="label-text-alt text-error">
-										{errors.firstName.message}
-									</span>
-								</label>
-							)}
-						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">
-									{t("admin.students.form.lastName")}
-								</span>
-							</label>
-							<input
-								className="input input-bordered"
-								{...register("lastName")}
-							/>
-							{errors.lastName && (
-								<label className="label">
-									<span className="label-text-alt text-error">
-										{errors.lastName.message}
-									</span>
-								</label>
-							)}
-						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">
-									{t("admin.students.form.email")}
-								</span>
-							</label>
-							<input className="input input-bordered" {...register("email")} />
-							{errors.email && (
-								<label className="label">
-									<span className="label-text-alt text-error">
-										{errors.email.message}
-									</span>
-								</label>
-							)}
-						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">
-									{t("admin.students.form.registration")}
-								</span>
-							</label>
-							<input
-								className="input input-bordered"
-								{...register("registrationNumber")}
-							/>
-							{errors.registrationNumber && (
-								<label className="label">
-									<span className="label-text-alt text-error">
-										{errors.registrationNumber.message}
-									</span>
-								</label>
-							)}
-						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">
-									{t("admin.students.form.class")}
-								</span>
-							</label>
-							<select
-								className="select select-bordered"
-								{...register("classId")}
-							>
-								<option value="">
-									{t("admin.students.form.classPlaceholder")}
-								</option>
-								{classes?.map((c) => (
-									<option key={c.id} value={c.id}>
-										{c.name}
-									</option>
-								))}
-							</select>
-							{errors.classId && (
-								<label className="label">
-									<span className="label-text-alt text-error">
-										{errors.classId.message}
-									</span>
-								</label>
-							)}
-						</div>
-						<div className="modal-action">
-							<button type="button" className="btn" onClick={closeModal}>
-								{t("common.actions.cancel")}
-							</button>
-							<button
-								type="submit"
-								className="btn btn-primary"
-								disabled={isSubmitting}
-							>
-								{isSubmitting ? (
-									<span className="loading loading-spinner loading-sm" />
-								) : (
-									t("admin.students.form.submit")
-								)}
-							</button>
-						</div>
-					</form>
-				)}
-
-				{activeTab === "import" && (
-					<div className="space-y-4">
-						{!importResult && (
-							<>
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">
-											{t("admin.students.import.classLabel")}
-										</span>
-									</label>
-									<select
-										className="select select-bordered"
-										value={importClass}
-										onChange={(e) => setImportClass(e.target.value)}
-									>
-										<option value="">
-											{t("admin.students.form.classPlaceholder")}
-										</option>
-										{classes?.map((c) => (
-											<option key={c.id} value={c.id}>
-												{c.name}
-											</option>
-										))}
-									</select>
-								</div>
-								<input
-									type="file"
-									accept=".csv,.xlsx"
-									className="file-input file-input-bordered w-full"
-									onChange={(e) => {
-										const f = e.target.files?.[0];
-										if (f) handleImport(f);
-									}}
-									disabled={!importClass || bulkMutation.isPending}
-								/>
-								<button
-									className="btn"
-									type="button"
-									onClick={handleDownloadTemplate}
+						<TabsContent value="single" className="space-y-4">
+							<Form {...form}>
+								<form
+									onSubmit={form.handleSubmit(onSubmit)}
+									className="space-y-4"
 								>
-									<Download className="mr-2 h-4 w-4" />
-									{t("admin.students.import.downloadTemplate")}
-								</button>
-							</>
-						)}
-						{importResult && (
-							<div className="space-y-2">
-								<p>
-									{t("admin.students.import.summary.created", {
-										count: importResult.createdCount,
-									})}
-								</p>
-								{importResult.conflicts.length > 0 && (
-									<div>
-										<p className="font-bold">
-											{t("admin.students.import.summary.conflicts.title")}
-										</p>
-										<ul className="ml-4 list-disc">
-											{importResult.conflicts.map((c, i) => (
-												<li key={i}>
-													{t("admin.students.import.summary.conflicts.item", {
-														row: c.row,
-														reason: c.reason,
-													})}
-												</li>
-											))}
-										</ul>
+									<FormField
+										control={form.control}
+										name="firstName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.firstName")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="lastName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.lastName")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="email"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.students.form.email")}</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="registrationNumber"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.registration")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="classId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.students.form.class")}</FormLabel>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.students.form.classPlaceholder",
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{classes?.map((c) => (
+															<SelectItem key={c.id} value={c.id}>
+																{c.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<div className="flex justify-end gap-3 pt-2">
+										<Button
+											type="button"
+											variant="outline"
+											onClick={closeModal}
+										>
+											{t("common.actions.cancel")}
+										</Button>
+										<Button
+											type="submit"
+											disabled={form.formState.isSubmitting}
+										>
+											{form.formState.isSubmitting
+												? t("common.loading")
+												: t("admin.students.form.submit")}
+										</Button>
 									</div>
-								)}
-								{importResult.errors.length > 0 && (
-									<div>
-										<p className="font-bold">
-											{t("admin.students.import.summary.errors.title")}
-										</p>
-										<ul className="ml-4 list-disc">
-											{importResult.errors.map((c, i) => (
-												<li key={i}>
-													{t("admin.students.import.summary.errors.item", {
-														row: c.row,
-														reason: c.reason,
-													})}
-												</li>
-											))}
-										</ul>
+								</form>
+							</Form>
+						</TabsContent>
+
+						<TabsContent value="import" className="space-y-4">
+							{!importResult && (
+								<>
+									<div className="space-y-2">
+										<Label htmlFor="import-class-select">
+											{t("admin.students.import.classLabel")}
+										</Label>
+										<Select value={importClass} onValueChange={setImportClass}>
+											<SelectTrigger id="import-class-select">
+												<SelectValue
+													placeholder={t(
+														"admin.students.form.classPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{classes?.map((c) => (
+													<SelectItem key={c.id} value={c.id}>
+														{c.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</div>
-								)}
-								<div className="modal-action">
-									<button className="btn" onClick={closeModal}>
-										{t("common.actions.close")}
-									</button>
+									<div className="space-y-2">
+										<Label htmlFor="student-import-file">
+											{t("admin.students.import.fileLabel", {
+												defaultValue: "Upload CSV or XLSX",
+											})}
+										</Label>
+										<Input
+											id="student-import-file"
+											type="file"
+											accept=".csv,.xlsx"
+											onChange={(e) => {
+												const f = e.target.files?.[0];
+												if (f) handleImport(f);
+											}}
+											disabled={!importClass || bulkMutation.isPending}
+										/>
+									</div>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={handleDownloadTemplate}
+									>
+										<Download className="mr-2 h-4 w-4" />
+										{t("admin.students.import.downloadTemplate")}
+									</Button>
+								</>
+							)}
+							{importResult && (
+								<div className="space-y-3 text-sm">
+									<p>
+										{t("admin.students.import.summary.created", {
+											count: importResult.createdCount,
+										})}
+									</p>
+									{importResult.conflicts.length > 0 && (
+										<div className="space-y-1">
+											<p className="font-semibold">
+												{t("admin.students.import.summary.conflicts.title")}
+											</p>
+											<ul className="ml-4 list-disc">
+												{importResult.conflicts.map((c) => (
+													<li key={`${c.row}-${c.reason}`}>
+														{t("admin.students.import.summary.conflicts.item", {
+															row: c.row,
+															reason: c.reason,
+														})}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{importResult.errors.length > 0 && (
+										<div className="space-y-1">
+											<p className="font-semibold">
+												{t("admin.students.import.summary.errors.title")}
+											</p>
+											<ul className="ml-4 list-disc">
+												{importResult.errors.map((c) => (
+													<li key={`${c.row}-${c.reason}`}>
+														{t("admin.students.import.summary.errors.item", {
+															row: c.row,
+															reason: c.reason,
+														})}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									<div className="flex justify-end">
+										<Button variant="outline" onClick={closeModal}>
+											{t("common.actions.close")}
+										</Button>
+									</div>
 								</div>
-							</div>
-						)}
-					</div>
-				)}
-			</FormModal>
+							)}
+						</TabsContent>
+					</Tabs>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
