@@ -8,7 +8,8 @@
 			"close": "Close",
 			"confirm": "Confirm",
 			"search": "Search",
-			"saving": "Saving..."
+			"saving": "Saving...",
+			"reset": "Reset"
 		},
 		"fields": {
 			"email": "Email",

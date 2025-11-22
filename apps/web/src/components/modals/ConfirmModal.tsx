@@ -32,11 +32,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	cancelText,
 	isLoading = false,
 }) => {
-	if (!isOpen) return null;
 	const { t } = useTranslation();
 	const confirmLabel = confirmText ?? t("common.actions.confirm");
 	const cancelLabel = cancelText ?? t("common.actions.cancel");
 
+	if (!isOpen) return null;
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
 			<DialogContent>

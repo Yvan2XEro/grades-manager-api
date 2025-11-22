@@ -4,6 +4,23 @@ import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { trpcClient } from "../../utils/trpc";
 
 interface AcademicYear {
@@ -232,125 +249,146 @@ export default function GradeExport() {
 
 	return (
 		<div className="space-y-6 p-6">
-			<div>
+			<div className="space-y-2">
 				<h2 className="font-bold text-2xl">{t("admin.gradeExport.title")}</h2>
-				<p className="text-gray-600">{t("admin.gradeExport.subtitle")}</p>
+				<p className="text-muted-foreground">
+					{t("admin.gradeExport.subtitle")}
+				</p>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<div className="form-control">
-					<label className="label" htmlFor={yearId}>
-						<span className="label-text">
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("admin.gradeExport.actions.label")}</CardTitle>
+					<CardDescription>
+						{t("admin.gradeExport.subtitle")}
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+					<div className="space-y-2">
+						<Label htmlFor={yearId}>
 							{t("admin.gradeExport.filters.academicYear")}
-						</span>
-					</label>
-					<select
-						id={yearId}
-						className="select select-bordered"
-						value={selectedYear}
-						onChange={(e) => {
-							setSelectedYear(e.target.value);
-							setSelectedClass("");
-							setSelectedExams([]);
-						}}
-					>
-						<option value="">
-							{t("admin.gradeExport.filters.academicYearPlaceholder")}
-						</option>
-						{academicYears?.map((year) => (
-							<option key={year.id} value={year.id}>
-								{year.name}
-							</option>
-						))}
-					</select>
-				</div>
+						</Label>
+						<Select
+							value={selectedYear || undefined}
+							onValueChange={(value) => {
+								setSelectedYear(value);
+								setSelectedClass("");
+								setSelectedExams([]);
+							}}
+						>
+							<SelectTrigger id={yearId}>
+								<SelectValue
+									placeholder={t(
+										"admin.gradeExport.filters.academicYearPlaceholder",
+									)}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{academicYears?.map((year) => (
+									<SelectItem key={year.id} value={year.id}>
+										{year.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 
-				<div className="form-control">
-					<label className="label" htmlFor={classId}>
-						<span className="label-text">
+					<div className="space-y-2">
+						<Label htmlFor={classId}>
 							{t("admin.gradeExport.filters.class")}
-						</span>
-					</label>
-					<select
-						id={classId}
-						className="select select-bordered"
-						value={selectedClass}
-						onChange={(e) => {
-							setSelectedClass(e.target.value);
-							setSelectedExams([]);
-						}}
-						disabled={!selectedYear}
-					>
-						<option value="">
-							{t("admin.gradeExport.filters.classPlaceholder")}
-						</option>
-						{classes?.map((cls) => (
-							<option key={cls.id} value={cls.id}>
-								{cls.name} - {cls.program.name}
-							</option>
-						))}
-					</select>
-				</div>
+						</Label>
+						<Select
+							disabled={!selectedYear}
+							value={selectedClass || undefined}
+							onValueChange={(value) => {
+								setSelectedClass(value);
+								setSelectedExams([]);
+							}}
+						>
+							<SelectTrigger id={classId}>
+								<SelectValue
+									placeholder={t(
+										"admin.gradeExport.filters.classPlaceholder",
+									)}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{classes?.map((cls) => (
+									<SelectItem key={cls.id} value={cls.id}>
+										{cls.name} - {cls.program.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 
-				<div className="form-control">
-					<span className="label-text mb-2">
-						{t("admin.gradeExport.actions.label")}
-					</span>
-					<button
-						type="button"
-						onClick={handleExport}
-						disabled={!selectedClass || selectedExams.length === 0}
-						className="btn btn-primary"
-					>
-						<Download className="mr-2 h-5 w-5" />
-						{t("admin.gradeExport.actions.export")}
-					</button>
-				</div>
-			</div>
+					<div className="space-y-2">
+						<Label>{t("admin.gradeExport.actions.label")}</Label>
+						<Button
+							type="button"
+							onClick={handleExport}
+							disabled={!selectedClass || selectedExams.length === 0}
+							className="w-full"
+						>
+							<Download className="mr-2 h-4 w-4" />
+							{t("admin.gradeExport.actions.export")}
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
 
 			{exams && exams.length > 0 ? (
-				<div className="rounded-lg bg-white p-6 shadow">
-					<h3 className="mb-4 font-medium text-lg">
-						{t("admin.gradeExport.exams.title")}
-					</h3>
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<Card>
+					<CardHeader>
+						<CardTitle>{t("admin.gradeExport.exams.title")}</CardTitle>
+					</CardHeader>
+					<CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{exams.map((exam) => (
-							<label key={exam.id} className="flex items-center space-x-3">
-								<input
-									type="checkbox"
-									className="checkbox"
+							<div
+								key={exam.id}
+								className="flex items-start gap-3 rounded-lg border px-3 py-2"
+							>
+								<Checkbox
+									id={`exam-${exam.id}`}
 									checked={selectedExams.includes(exam.id)}
-									onChange={(e) => {
-										if (e.target.checked) {
-											setSelectedExams([...selectedExams, exam.id]);
+									onCheckedChange={(checked) => {
+										if (checked) {
+											setSelectedExams((prev) => [...prev, exam.id]);
 										} else {
-											setSelectedExams(
-												selectedExams.filter((id) => id !== exam.id),
+											setSelectedExams((prev) =>
+												prev.filter((id) => id !== exam.id),
 											);
 										}
 									}}
 								/>
-								<span>
-									{exam.courseName} - {exam.name}
-									<div className="text-gray-500 text-sm">
+								<label
+									htmlFor={`exam-${exam.id}`}
+									className="flex flex-col text-sm font-medium leading-5"
+								>
+									<span className="text-foreground">
+										{exam.courseName} • {exam.name}
+									</span>
+									<span className="text-muted-foreground text-xs">
 										{format(new Date(exam.date), "MMM d, yyyy")} (
 										{exam.percentage}%)
-									</div>
-								</span>
-							</label>
+									</span>
+								</label>
+							</div>
 						))}
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			) : selectedClass ? (
-				<div className="rounded-lg bg-white p-8 text-center">
-					<FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400" />
-					<h3 className="mt-2 font-medium text-gray-900 text-sm">
-						{t("admin.gradeExport.exams.emptyTitle")}
-					</h3>
-					<p className="mt-1 text-gray-500 text-sm">
-						{t("admin.gradeExport.exams.emptyDescription")}
-					</p>
-				</div>
+				<Card className="items-center text-center">
+					<CardContent className="flex flex-col items-center gap-2 py-10">
+						<FileSpreadsheet className="h-12 w-12 text-muted-foreground" />
+						<h3 className="font-medium text-sm">
+							{t("admin.gradeExport.exams.emptyTitle")}
+						</h3>
+						<p className="text-muted-foreground text-sm">
+							{t("admin.gradeExport.exams.emptyDescription")}
+						</p>
+					</CardContent>
+				</Card>
 			) : null}
 		</div>
 	);

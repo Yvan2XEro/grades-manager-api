@@ -10,6 +10,7 @@ interface Resources {
 				confirm: "Confirm";
 				search: "Search";
 				saving: "Saving...";
+				reset: "Reset";
 			};
 			fields: {
 				email: "Email";
@@ -468,6 +469,9 @@ interface Resources {
 				teacherDashboard: "Teacher dashboard";
 				notificationsAria: "Open notifications";
 				toggleSidebarAria: "Toggle sidebar";
+				languageSelectAria: "Change language";
+				languageSelectPlaceholder: "Select language";
+				profileMenuAria: "Open profile menu";
 			};
 			sidebar: {
 				admin: {
