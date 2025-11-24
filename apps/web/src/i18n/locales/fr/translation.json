@@ -9,7 +9,9 @@
 			"confirm": "Confirmer",
 			"search": "Rechercher",
 			"saving": "Enregistrement...",
-			"reset": "Réinitialiser"
+			"reset": "Réinitialiser",
+			"open": "Ouvrir",
+			"back": "Retour"
 		},
 		"fields": {
 			"email": "E-mail",
@@ -588,7 +590,16 @@
 			"table": {
 				"name": "Étudiant",
 				"email": "E-mail",
-				"registration": "Numéro de matricule"
+				"registration": "Numéro de matricule",
+				"gender": "Sexe",
+				"dateOfBirth": "Date de naissance",
+				"placeOfBirth": "Lieu de naissance",
+				"genderUnknown": "Non renseigné"
+			},
+			"gender": {
+				"male": "Homme",
+				"female": "Femme",
+				"other": "Autre"
 			},
 			"modal": {
 				"title": "Ajouter des étudiants",
@@ -611,6 +622,9 @@
 				"fileLabel": "Importer un fichier CSV ou XLSX",
 				"downloadTemplate": "Télécharger le modèle",
 				"invalidFormat": "Champs obligatoires manquants pour cette ligne",
+				"actions": {
+					"import": "Importer les étudiants"
+				},
 				"summary": {
 					"created": "{{count}} étudiant(s) importé(s) avec succès",
 					"conflicts": {
@@ -680,6 +694,8 @@
 			},
 			"status": {
 				"active": "Actif",
+				"inactive": "Inactif",
+				"suspended": "Suspendu",
 				"banned": "Banni",
 				"emailVerified": "Vérifié",
 				"emailUnverified": "En attente de vérification"
@@ -727,7 +743,8 @@
 				"passwordCopied": "Mot de passe copié dans le presse-papiers"
 			},
 			"validation": {
-				"name": "Le nom est obligatoire",
+				"firstName": "Le prénom est obligatoire",
+				"lastName": "Le nom est obligatoire",
 				"email": "Saisissez une adresse e-mail valide",
 				"role": "Veuillez sélectionner un rôle",
 				"passwordRequired": "Le mot de passe est obligatoire"
@@ -800,11 +817,76 @@
 			},
 			"list": "Liste des unités",
 			"empty": "Aucune unité pour ce programme.",
+			"listDescription": "Consultez les UE et ouvrez-les pour gérer les EC.",
+			"emptyDescription": "Créez une UE pour commencer à gérer les EC.",
+			"table": {
+				"name": "Nom",
+				"code": "Code",
+				"program": "Programme",
+				"semester": "Semestre",
+				"credits": "ECTS"
+			},
+			"deleteTitle": "Supprimer l'unité d'enseignement",
+			"deleteMessage": "Cette action supprimera définitivement l'unité.",
 			"prereqTitle": "Gérer les prérequis des cours",
 			"prereqSelectCourse": "Choisir un cours",
 			"prereqHint": "Sélectionnez les cours prérequis",
+			"detail": {
+				"createTitle": "Créer une unité d'enseignement",
+				"editTitle": "Modifier {{name}}",
+				"subtitle": "Mettez à jour les métadonnées et gérez les éléments constitutifs.",
+				"formTitle": "Détails de l'unité d'enseignement",
+				"formSubtitle": "Modifiez le code, le semestre et la description."
+			},
+			"validation": {
+				"name": "Le nom de l'unité est obligatoire.",
+				"code": "Le code de l'unité est obligatoire.",
+				"credits": "Les crédits doivent être positifs ou nuls.",
+				"program": "Le programme est obligatoire."
+			},
+			"courses": {
+				"title": "Éléments constitutifs",
+				"subtitle": "Gérez les EC rattachés à cette UE.",
+				"actions": {
+					"add": "Ajouter un élément"
+				},
+				"table": {
+					"name": "Nom",
+					"hours": "Heures",
+					"credits": "Crédits",
+					"teacher": "Enseignant référent"
+				},
+				"form": {
+					"createTitle": "Ajouter un élément",
+					"editTitle": "Modifier l'élément",
+					"nameLabel": "Nom de l'élément",
+					"namePlaceholder": "Saisir le nom de l'élément",
+					"creditsLabel": "Crédits",
+					"creditsPlaceholder": "Saisir les crédits",
+					"hoursLabel": "Heures",
+					"hoursPlaceholder": "Saisir le volume horaire",
+					"teacherLabel": "Enseignant référent",
+					"teacherPlaceholder": "Sélectionner un enseignant",
+					"submit": "Enregistrer l'élément"
+				},
+				"empty": "Aucun élément pour le moment.",
+				"deleteTitle": "Supprimer l'élément",
+				"deleteMessage": "Cette action est irréversible.",
+				"validation": {
+					"name": "Le nom de l'élément est obligatoire.",
+					"credits": "Les crédits doivent être positifs.",
+					"hours": "Le volume horaire doit être positif.",
+					"teacher": "Veuillez sélectionner un enseignant."
+				},
+				"toast": {
+					"createSuccess": "Élément créé",
+					"updateSuccess": "Élément mis à jour",
+					"deleteSuccess": "Élément supprimé"
+				}
+			},
 			"toast": {
 				"created": "Unité créée avec succès",
+				"updated": "Unité mise à jour avec succès",
 				"deleted": "Unité supprimée avec succès",
 				"prereqSaved": "Prérecquis enregistrés",
 				"programRequired": "Sélectionnez d'abord un programme"

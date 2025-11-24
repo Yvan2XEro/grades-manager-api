@@ -14,6 +14,15 @@ export async function createContext({ context }: CreateContextOptions) {
 	let profile = null;
 	if (session?.user?.id) {
 		profile = await domainUsersRepo.findByAuthUserId(session.user.id);
+		if (!profile) {
+			profile = await domainUsersRepo.create({
+				authUserId: session.user.id,
+				businessRole: "student",
+				primaryEmail: session.user.email,
+				firstName: session.user.name,
+				lastName: "",
+			});
+		}
 	}
 	return {
 		session,

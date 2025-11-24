@@ -5,9 +5,10 @@ import {
 	Copy,
 	Eye,
 	EyeOff,
-	MoreVertical,
+	Pencil,
 	PlusIcon,
 	Search,
+	Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
+import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
@@ -46,23 +48,64 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../components/ui/table";
 import { useDebounce } from "../../hooks/useDebounce";
 import { authClient } from "../../lib/auth-client";
+import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
-interface User {
-	id: string;
-	name?: string;
-	email?: string;
-	role?: string;
-	banned?: boolean | null;
-	emailVerified?: boolean | null;
-}
+type DomainUser = RouterOutputs["users"]["list"]["items"][number];
+
+const getDisplayName = (user: DomainUser) =>
+	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
+
+const toFormRole = (role?: string | null): "admin" | "teacher" =>
+	role === "administrator" ? "admin" : "teacher";
+
+const toDomainRole = (role: "admin" | "teacher") =>
+	role === "admin" ? "administrator" : role;
+
+const formatDateInput = (value?: string | Date | null) => {
+	if (!value) return "";
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) return "";
+	return date.toISOString().split("T")[0];
+};
+
+const mapFormToProfile = (data: UserForm) => ({
+	firstName: data.firstName.trim(),
+	lastName: data.lastName.trim(),
+	email: data.email.trim(),
+	phone: data.phone?.trim() || undefined,
+	gender: data.gender || undefined,
+	dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+	placeOfBirth: data.placeOfBirth?.trim() || undefined,
+	nationality: data.nationality?.trim() || undefined,
+	status: data.status || "active",
+	role: toDomainRole(data.role),
+});
+
+const buildFullName = (data: Pick<UserForm, "firstName" | "lastName">) =>
+	`${data.firstName} ${data.lastName}`.trim();
 
 const buildUserSchema = (t: TFunction) =>
 	z.object({
-		name: z.string().min(1, t("admin.users.validation.name")),
+		firstName: z.string().min(1, t("admin.users.validation.firstName")),
+		lastName: z.string().min(1, t("admin.users.validation.lastName")),
 		email: z.string().email(t("admin.users.validation.email")),
+		phone: z.string().optional(),
+		gender: z.enum(["male", "female", "other"]).optional(),
+		dateOfBirth: z.string().optional(),
+		placeOfBirth: z.string().optional(),
+		nationality: z.string().optional(),
+		status: z.enum(["active", "inactive", "suspended"]).optional(),
 		role: z.enum(["admin", "teacher"], {
 			errorMap: () => ({ message: t("admin.users.validation.role") }),
 		}),
@@ -88,11 +131,8 @@ export default function UserManagement() {
 	const [search, setSearch] = useState("");
 	const debouncedSearch = useDebounce(search, 500);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [editingUser, setEditingUser] = useState<User | null>(null);
-	const [confirm, setConfirm] = useState<{
-		user: User;
-		action: "delete" | "ban" | "unban";
-	} | null>(null);
+	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
+	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
 	const [showPassword, setShowPassword] = useState(false);
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
@@ -100,67 +140,106 @@ export default function UserManagement() {
 	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
 		"all",
 	);
-	const [banFilter, setBanFilter] = useState<"all" | "active" | "banned">(
-		"all",
+	const genderOptions = useMemo(
+		() => [
+			{
+				value: "male",
+				label: t("admin.users.gender.male", { defaultValue: "Male" }),
+			},
+			{
+				value: "female",
+				label: t("admin.users.gender.female", { defaultValue: "Female" }),
+			},
+			{
+				value: "other",
+				label: t("admin.users.gender.other", { defaultValue: "Other" }),
+			},
+		],
+		[t],
 	);
-	const [verifiedFilter, setVerifiedFilter] = useState<
-		"all" | "verified" | "unverified"
-	>("all");
+	const statusOptions = useMemo(
+		() => [
+			{ value: "active", label: t("admin.users.status.active") },
+			{ value: "inactive", label: t("admin.users.status.inactive") },
+			{ value: "suspended", label: t("admin.users.status.suspended") },
+		],
+		[t],
+	);
 
 	const { data } = useQuery({
-		queryKey: ["users", cursor, roleFilter, banFilter, verifiedFilter],
+		queryKey: ["users", cursor, roleFilter],
 		queryFn: async () =>
 			trpcClient.users.list.query({
 				cursor,
 				limit: pageSize,
-				role: roleFilter === "all" ? undefined : roleFilter,
-				banned:
-					banFilter === "banned"
-						? true
-						: banFilter === "active"
-							? false
-							: undefined,
-				emailVerified:
-					verifiedFilter === "verified"
-						? true
-						: verifiedFilter === "unverified"
-							? false
-							: undefined,
+				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
 			}),
 	});
 	const users = data?.items ?? [];
 	const nextCursor = data?.nextCursor;
-	const displayedUsers = users.filter((u) =>
-		debouncedSearch
-			? u.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-				u.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
-			: true,
-	);
+	const displayedUsers = users.filter((user) => {
+		if (!debouncedSearch) return true;
+		const needle = debouncedSearch.toLowerCase();
+		const name = getDisplayName(user).toLowerCase();
+		const email = (user.email ?? "").toLowerCase();
+		return name.includes(needle) || email.includes(needle);
+	});
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
 	useEffect(() => {
 		setCursor(undefined);
 		setPrevCursors([]);
-	}, [debouncedSearch, roleFilter, banFilter, verifiedFilter]);
+	}, [debouncedSearch, roleFilter]);
 
 	const form = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
-		defaultValues: { role: "teacher" },
+		defaultValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			phone: "",
+			gender: undefined,
+			dateOfBirth: "",
+			placeOfBirth: "",
+			nationality: "",
+			status: "active",
+			role: "teacher",
+			password: "",
+		},
 	});
 
 	const openCreate = () => {
 		setEditingUser(null);
-		form.reset({ name: "", email: "", role: "teacher", password: "" });
+		form.reset({
+			firstName: "",
+			lastName: "",
+			email: "",
+			phone: "",
+			gender: undefined,
+			dateOfBirth: "",
+			placeOfBirth: "",
+			nationality: "",
+			status: "active",
+			role: "teacher",
+			password: "",
+		});
 		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
-	const openEdit = (user: User) => {
+	const openEdit = (user: DomainUser) => {
 		setEditingUser(user);
 		form.reset({
-			name: user.name || "",
+			firstName: user.firstName || "",
+			lastName: user.lastName || "",
 			email: user.email || "",
-			role: (user.role as "admin" | "teacher") || "teacher",
+			phone: user.phone || "",
+			gender: (user.gender as UserForm["gender"]) || undefined,
+			dateOfBirth: formatDateInput(user.dateOfBirth),
+			placeOfBirth: user.placeOfBirth || "",
+			nationality: user.nationality || "",
+			status: (user.status as UserForm["status"]) || "active",
+			role: toFormRole(user.businessRole),
 			password: "",
 		});
 		setShowPassword(false);
@@ -171,11 +250,23 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			await authClient.admin.createUser({
+			if (!data.password) {
+				throw new Error(t("admin.users.validation.passwordRequired"));
+			}
+			const fullName = buildFullName(data);
+			const response = await authClient.admin.createUser({
 				email: data.email,
-				name: data.name,
+				name: fullName,
 				role: data.role,
-				password: data.password ?? "",
+				password: data.password,
+			});
+			const authUserId = response?.user?.id;
+			if (!authUserId) {
+				throw new Error(t("admin.users.toast.createError"));
+			}
+			await trpcClient.users.createProfile.mutate({
+				...mapFormToProfile(data),
+				authUserId,
 			});
 		},
 		onSuccess: () => {
@@ -188,17 +279,28 @@ export default function UserManagement() {
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: async ({ id, ...data }: { id: string } & UserForm) => {
-			await authClient.admin.adminUpdateUser({
-				userId: id,
-				data: { name: data.name, email: data.email, role: data.role },
-			});
-			if (data.password) {
-				await authClient.admin.setUserPassword({
-					userId: id,
-					password: data.password,
+		mutationFn: async ({
+			authUserId,
+			id,
+			...data
+		}: { authUserId?: string | null; id: string } & UserForm) => {
+			if (authUserId) {
+				const fullName = buildFullName(data);
+				await authClient.admin.adminUpdateUser({
+					userId: authUserId,
+					data: { name: fullName, email: data.email, role: data.role },
 				});
+				if (data.password) {
+					await authClient.admin.setUserPassword({
+						userId: authUserId,
+						password: data.password,
+					});
+				}
 			}
+			await trpcClient.users.updateProfile.mutate({
+				id,
+				...mapFormToProfile(data),
+			});
 		},
 		onSuccess: () => {
 			toast.success(t("admin.users.toast.updateSuccess"));
@@ -210,42 +312,23 @@ export default function UserManagement() {
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (user: User) =>
-			authClient.admin.removeUser({ userId: user.id }),
+		mutationFn: (user: DomainUser) => {
+			if (!user.authUserId) {
+				throw new Error(t("admin.users.toast.deleteError"));
+			}
+			return authClient.admin
+				.removeUser({ userId: user.authUserId })
+				.then(async () => {
+					await trpcClient.users.deleteProfile.mutate({ id: user.id });
+				});
+		},
 		onSuccess: () => {
 			toast.success(t("admin.users.toast.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
-			setConfirm(null);
+			setUserToDelete(null);
 		},
 		onError: (err: unknown) =>
 			toast.error((err as Error).message || t("admin.users.toast.deleteError")),
-	});
-
-	const banMutation = useMutation({
-		mutationFn: (user: User) =>
-			authClient.admin.banUser({
-				userId: user.id,
-				banReason: t("admin.users.ban.reason"),
-				banExpiresIn: 60 * 60 * 24 * 7,
-			}),
-		onSuccess: () => {
-			toast.success(t("admin.users.toast.banSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["users"] });
-			setConfirm(null);
-		},
-		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.users.toast.banError")),
-	});
-
-	const unbanMutation = useMutation({
-		mutationFn: (user: User) => authClient.admin.unbanUser({ userId: user.id }),
-		onSuccess: () => {
-			toast.success(t("admin.users.toast.unbanSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["users"] });
-			setConfirm(null);
-		},
-		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.users.toast.unbanError")),
 	});
 
 	const handleGeneratePassword = () => {
@@ -268,7 +351,11 @@ export default function UserManagement() {
 			return;
 		}
 		if (editingUser) {
-			updateMutation.mutate({ id: editingUser.id, ...data });
+			updateMutation.mutate({
+				id: editingUser.id,
+				authUserId: editingUser.authUserId,
+				...data,
+			});
 		} else {
 			createMutation.mutate(data);
 		}
@@ -312,139 +399,83 @@ export default function UserManagement() {
 							</SelectItem>
 						</SelectContent>
 					</Select>
-					<Select value={banFilter} onValueChange={setBanFilter}>
-						<SelectTrigger className="min-w-[180px]">
-							<SelectValue placeholder={t("admin.users.filters.status.all")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{t("admin.users.filters.status.all")}
-							</SelectItem>
-							<SelectItem value="active">
-								{t("admin.users.filters.status.active")}
-							</SelectItem>
-							<SelectItem value="banned">
-								{t("admin.users.filters.status.banned")}
-							</SelectItem>
-						</SelectContent>
-					</Select>
-					<Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
-						<SelectTrigger className="min-w-[180px]">
-							<SelectValue placeholder={t("admin.users.filters.email.all")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{t("admin.users.filters.email.all")}
-							</SelectItem>
-							<SelectItem value="verified">
-								{t("admin.users.filters.email.verified")}
-							</SelectItem>
-							<SelectItem value="unverified">
-								{t("admin.users.filters.email.unverified")}
-							</SelectItem>
-						</SelectContent>
-					</Select>
 				</div>
 			</div>
-			<div className="min-h-[50vh] overflow-x-auto overflow-y-visible">
-				<table className="table w-full">
-					<thead>
-						<tr>
-							<th>{t("admin.users.table.name")}</th>
-							<th>{t("admin.users.table.email")}</th>
-							<th>{t("admin.users.table.role")}</th>
-							<th>{t("admin.users.table.emailVerified")}</th>
-							<th>{t("admin.users.table.status")}</th>
-							<th className="w-1" />
-						</tr>
-					</thead>
-					<tbody>
-						{displayedUsers.map((u: User) => (
-							<tr key={u.id}>
-								<td>{u.name}</td>
-								<td>{u.email}</td>
-								<td>{u.role ? t(`admin.users.roles.${u.role}`) : ""}</td>
-								<td>
-									<div
-										className={`badge ${u.emailVerified ? "badge-success" : "badge-warning"}`}
+			<div className="min-h-[50vh] overflow-x-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>{t("admin.users.table.name")}</TableHead>
+							<TableHead>{t("admin.users.table.email")}</TableHead>
+							<TableHead>{t("admin.users.table.role")}</TableHead>
+							<TableHead>{t("admin.users.table.status")}</TableHead>
+							<TableHead className="w-1 text-right">
+								{t("common.table.actions")}
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{displayedUsers.map((user) => (
+							<TableRow key={user.id}>
+								<TableCell className="font-medium">
+									{getDisplayName(user)}
+								</TableCell>
+								<TableCell>{user.email}</TableCell>
+								<TableCell>
+									{user.businessRole
+										? t(
+												`admin.users.roles.${
+													user.businessRole === "administrator"
+														? "admin"
+														: user.businessRole
+												}`,
+												{ defaultValue: user.businessRole },
+											)
+										: ""}
+								</TableCell>
+								<TableCell>
+									<Badge
+										variant={user.status === "active" ? "default" : "secondary"}
 									>
-										{u.emailVerified
-											? t("admin.users.status.emailVerified")
-											: t("admin.users.status.emailUnverified")}
-									</div>
-								</td>
-								<td>
-									<div
-										className={`badge ${u.banned ? "badge-error" : "badge-success"}`}
-									>
-										{u.banned
-											? t("admin.users.status.banned")
-											: t("admin.users.status.active")}
-									</div>
-								</td>
-								<td className="w-1 text-right">
-									<div className="dropdown dropdown-end">
-										<button
+										{t(`admin.users.status.${user.status}`, {
+											defaultValue: user.status,
+										})}
+									</Badge>
+								</TableCell>
+								<TableCell className="text-right">
+									<div className="flex justify-end gap-2">
+										<Button
 											type="button"
-											tabIndex={0}
-											className="btn btn-ghost btn-sm"
+											variant="ghost"
+											size="icon"
+											onClick={() => openEdit(user)}
+											aria-label={t("admin.users.actions.edit")}
 										>
-											<MoreVertical className="h-4 w-4" />
-										</button>
-										<ul className="dropdown-content menu menu-sm z-[1] mt-2 w-40 rounded-box bg-base-100 p-2 shadow">
-											<li>
-												<button type="button" onClick={() => openEdit(u)}>
-													{t("admin.users.actions.edit")}
-												</button>
-											</li>
-											{u.banned ? (
-												<li>
-													<button
-														type="button"
-														onClick={() =>
-															setConfirm({ user: u, action: "unban" })
-														}
-													>
-														{t("admin.users.actions.unban")}
-													</button>
-												</li>
-											) : (
-												<li>
-													<button
-														type="button"
-														onClick={() =>
-															setConfirm({ user: u, action: "ban" })
-														}
-													>
-														{t("admin.users.actions.ban")}
-													</button>
-												</li>
-											)}
-											<li>
-												<button
-													type="button"
-													className="text-error"
-													onClick={() =>
-														setConfirm({ user: u, action: "delete" })
-													}
-												>
-													{t("common.actions.delete")}
-												</button>
-											</li>
-										</ul>
+											<Pencil className="h-4 w-4" />
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											onClick={() => setUserToDelete(user)}
+											disabled={!user.authUserId}
+											aria-label={t("common.actions.delete")}
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
 									</div>
-								</td>
-							</tr>
+								</TableCell>
+							</TableRow>
 						))}
 						{displayedUsers.length === 0 && (
-							<tr>
-								<td colSpan={6} className="py-4 text-center">
+							<TableRow>
+								<TableCell colSpan={5} className="py-4 text-center">
 									{t("admin.users.empty")}
-								</td>
-							</tr>
+								</TableCell>
+							</TableRow>
 						)}
-					</tbody>
-				</table>
+					</TableBody>
+				</Table>
 			</div>
 
 			<div className="mt-4 flex items-center justify-center gap-2">
@@ -486,19 +517,38 @@ export default function UserManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.users.form.nameLabel")}</FormLabel>
-										<FormControl>
-											<Input {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 md:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="firstName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.users.form.firstNameLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="lastName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.users.form.lastNameLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="email"
@@ -512,6 +562,128 @@ export default function UserManagement() {
 									</FormItem>
 								)}
 							/>
+							<div className="grid gap-4 md:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="phone"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="gender"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
+											<Select
+												value={field.value}
+												onValueChange={field.onChange}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={t(
+																"admin.users.form.genderPlaceholder",
+															)}
+														/>
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{genderOptions.map((option) => (
+														<SelectItem key={option.value} value={option.value}>
+															{option.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid gap-4 md:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="dateOfBirth"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.users.form.dateOfBirthLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input type="date" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="placeOfBirth"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.users.form.placeOfBirthLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid gap-4 md:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="nationality"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.users.form.nationalityLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="status"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
+											<Select
+												value={field.value}
+												onValueChange={field.onChange}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{statusOptions.map((option) => (
+														<SelectItem key={option.value} value={option.value}>
+															{option.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="role"
@@ -640,40 +812,13 @@ export default function UserManagement() {
 			</Dialog>
 
 			<ConfirmModal
-				isOpen={!!confirm}
-				onClose={() => setConfirm(null)}
-				onConfirm={() => {
-					if (!confirm) return;
-					if (confirm.action === "delete") deleteMutation.mutate(confirm.user);
-					if (confirm.action === "ban") banMutation.mutate(confirm.user);
-					if (confirm.action === "unban") unbanMutation.mutate(confirm.user);
-				}}
-				title={
-					confirm?.action === "delete"
-						? t("admin.users.confirm.delete.title")
-						: confirm?.action === "ban"
-							? t("admin.users.confirm.ban.title")
-							: t("admin.users.confirm.unban.title")
-				}
-				message={
-					confirm?.action === "delete"
-						? t("admin.users.confirm.delete.message")
-						: confirm?.action === "ban"
-							? t("admin.users.confirm.ban.message")
-							: t("admin.users.confirm.unban.message")
-				}
-				confirmText={
-					confirm?.action === "delete"
-						? t("common.actions.delete")
-						: confirm?.action === "ban"
-							? t("admin.users.actions.ban")
-							: t("admin.users.actions.unban")
-				}
-				isLoading={
-					deleteMutation.isPending ||
-					banMutation.isPending ||
-					unbanMutation.isPending
-				}
+				isOpen={Boolean(userToDelete)}
+				onClose={() => setUserToDelete(null)}
+				onConfirm={() => userToDelete && deleteMutation.mutate(userToDelete)}
+				title={t("admin.users.confirm.delete.title")}
+				message={t("admin.users.confirm.delete.message")}
+				confirmText={t("common.actions.delete")}
+				isLoading={deleteMutation.isPending}
 			/>
 		</div>
 	);

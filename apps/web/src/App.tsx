@@ -16,6 +16,7 @@ import GradeExport from "./pages/admin/GradeExport";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import StudentManagement from "./pages/admin/StudentManagement";
+import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -30,7 +31,6 @@ import TeacherDashboard from "./pages/teacher/Dashboard";
 import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
-import StudentPromotion from "./pages/teacher/StudentPromotion";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import { useStore } from "./store";
 import { trpc } from "./utils/trpc";
@@ -124,12 +124,16 @@ function App() {
 					<Route path="users" element={<UserManagement />} />
 					<Route path="exams" element={<ExamManagement />} />
 					<Route path="faculties" element={<FacultyManagement />} />
-					<Route path="student-promotion" element={<StudentPromotion />} />
+					<Route path="student-promotion" element={<StudentManagement />} />
 					<Route path="programs" element={<ProgramManagement />} />
 					<Route path="grade-export" element={<GradeExport />} />
 					<Route path="monitoring" element={<MonitoringDashboard />} />
 					<Route path="enrollments" element={<EnrollmentManagement />} />
 					<Route path="teaching-units" element={<TeachingUnitManagement />} />
+					<Route
+						path="teaching-units/:teachingUnitId"
+						element={<TeachingUnitDetail />}
+					/>
 					<Route path="notifications" element={<NotificationsCenter />} />
 				</Route>
 			)}

@@ -6,7 +6,6 @@ import {
 	domainUsers,
 	type NewDomainUser,
 } from "@/db/schema/app-schema";
-import { user } from "@/db/schema/auth";
 
 export async function create(data: NewDomainUser) {
 	const [profile] = await db.insert(domainUsers).values(data).returning();
@@ -44,8 +43,6 @@ type ListOpts = {
 	role?: BusinessRole;
 	status?: DomainUserStatus;
 	roles?: BusinessRole[];
-	banned?: boolean;
-	emailVerified?: boolean;
 };
 
 export async function list(opts: ListOpts) {
@@ -66,22 +63,13 @@ export async function list(opts: ListOpts) {
 		const cursorCond = gt(domainUsers.id, opts.cursor);
 		condition = condition ? and(condition, cursorCond) : cursorCond;
 	}
-	if (opts.banned !== undefined) {
-		const bannedCond = eq(user.banned, opts.banned);
-		condition = condition ? and(condition, bannedCond) : bannedCond;
-	}
-	if (opts.emailVerified !== undefined) {
-		const verifiedCond = eq(user.emailVerified, opts.emailVerified);
-		condition = condition ? and(condition, verifiedCond) : verifiedCond;
-	}
-
 	const rows = await db
 		.select({
-			profileId: domainUsers.id,
+			id: domainUsers.id,
 			businessRole: domainUsers.businessRole,
 			firstName: domainUsers.firstName,
 			lastName: domainUsers.lastName,
-			primaryEmail: domainUsers.primaryEmail,
+			email: domainUsers.primaryEmail,
 			phone: domainUsers.phone,
 			dateOfBirth: domainUsers.dateOfBirth,
 			placeOfBirth: domainUsers.placeOfBirth,
@@ -89,17 +77,8 @@ export async function list(opts: ListOpts) {
 			nationality: domainUsers.nationality,
 			status: domainUsers.status,
 			authUserId: domainUsers.authUserId,
-			authUser: {
-				id: user.id,
-				email: user.email,
-				role: user.role,
-				banned: user.banned,
-				emailVerified: user.emailVerified,
-				createdAt: user.createdAt,
-			},
 		})
 		.from(domainUsers)
-		.leftJoin(user, eq(user.id, domainUsers.authUserId))
 		.where(condition)
 		.orderBy(domainUsers.id)
 		.limit(limit + 1);
@@ -108,7 +87,7 @@ export async function list(opts: ListOpts) {
 	let items = rows;
 	if (rows.length > limit) {
 		items = rows.slice(0, limit);
-		nextCursor = items[items.length - 1]?.profileId;
+		nextCursor = items[items.length - 1]?.id;
 	}
 
 	return { items, nextCursor };

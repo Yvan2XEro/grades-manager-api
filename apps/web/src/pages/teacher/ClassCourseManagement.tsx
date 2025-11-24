@@ -34,6 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
@@ -74,11 +75,7 @@ interface Program {
 	name: string;
 }
 
-interface Teacher {
-	id: string;
-	name: string;
-	role: string | null;
-}
+type Teacher = RouterOutputs["users"]["list"]["items"][number];
 
 export default function ClassCourseManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -134,7 +131,7 @@ export default function ClassCourseManagement() {
 				role: "teacher",
 				limit: 100,
 			});
-			return items as Teacher[];
+			return items;
 		},
 	});
 
@@ -159,7 +156,26 @@ export default function ClassCourseManagement() {
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
+	const formatTeacherName = (teacher: Teacher) =>
+		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
+		teacher.email;
+	const teacherOptions = useMemo(
+		() =>
+			(teachers ?? []).filter(
+				(
+					teacher,
+				): teacher is Teacher & {
+					authUserId: string;
+				} => Boolean(teacher.authUserId),
+			),
+		[teachers],
+	);
+	const teacherMap = new Map(
+		teacherOptions.map((teacher) => [
+			teacher.authUserId,
+			formatTeacherName(teacher),
+		]),
+	);
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),
@@ -432,9 +448,12 @@ export default function ClassCourseManagement() {
 								/>
 							</SelectTrigger>
 							<SelectContent>
-								{teachers?.map((teacher) => (
-									<SelectItem key={teacher.id} value={teacher.id}>
-										{teacher.name}
+								{teacherOptions.map((teacher) => (
+									<SelectItem
+										key={teacher.authUserId}
+										value={teacher.authUserId}
+									>
+										{formatTeacherName(teacher)}
 									</SelectItem>
 								))}
 							</SelectContent>

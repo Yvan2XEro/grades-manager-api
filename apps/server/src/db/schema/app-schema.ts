@@ -73,9 +73,9 @@ export const domainUsers = pgTable(
 		lastName: text("last_name").notNull(),
 		primaryEmail: text("primary_email").notNull(),
 		phone: text("phone"),
-		dateOfBirth: date("date_of_birth").notNull(),
-		placeOfBirth: text("place_of_birth").notNull(),
-		gender: text("gender").$type<Gender>().notNull(),
+		dateOfBirth: date("date_of_birth"),
+		placeOfBirth: text("place_of_birth"),
+		gender: text("gender").$type<Gender>(),
 		nationality: text("nationality"),
 		status: text("status")
 			.$type<DomainUserStatus>()
@@ -211,9 +211,12 @@ export const courses = pgTable(
 		teachingUnitId: text("teaching_unit_id")
 			.notNull()
 			.references(() => teachingUnits.id, { onDelete: "cascade" }),
-		defaultTeacher: text("default_teacher_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "restrict" }),
+		defaultTeacher: text("default_teacher_id").references(
+			() => domainUsers.id,
+			{
+				onDelete: "restrict",
+			},
+		),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -241,7 +244,7 @@ export const classCourses = pgTable(
 			.references(() => courses.id, { onDelete: "cascade" }),
 		teacher: text("teacher_id")
 			.notNull()
-			.references(() => user.id, { onDelete: "restrict" }),
+			.references(() => domainUsers.id, { onDelete: "restrict" }),
 		weeklyHours: integer("weekly_hours").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
@@ -500,7 +503,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 	}),
 	defaultTeacherRef: one(user, {
 		fields: [courses.defaultTeacher],
-		references: [user.id],
+		references: [domainUsers.id],
 	}),
 	classCourses: many(classCourses),
 	prerequisites: many(coursePrerequisites, {
@@ -540,7 +543,7 @@ export const classCoursesRelations = relations(
 		}),
 		teacherRef: one(user, {
 			fields: [classCourses.teacher],
-			references: [user.id],
+			references: [domainUsers.id],
 		}),
 		exams: many(exams),
 	}),
@@ -570,7 +573,7 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
 	authUserRef: one(user, {
 		fields: [domainUsers.authUserId],
-		references: [user.id],
+		references: [domainUsers.id],
 	}),
 	studentProfile: one(students, {
 		fields: [domainUsers.id],

@@ -30,8 +30,8 @@ describe("users router", () => {
 		const admin = createCaller(asAdmin());
 		const firstPage = await admin.users.list({ limit: 1, role });
 		expect(firstPage.items.length).toBe(1);
-		expect(createdIds.has(firstPage.items[0].profileId)).toBe(true);
-		createdIds.delete(firstPage.items[0].profileId);
+		expect(createdIds.has(firstPage.items[0].id)).toBe(true);
+		createdIds.delete(firstPage.items[0].id);
 		expect(firstPage.nextCursor).toBeDefined();
 
 		const secondPage = await admin.users.list({
@@ -40,8 +40,8 @@ describe("users router", () => {
 			cursor: firstPage.nextCursor,
 		});
 		expect(secondPage.items.length).toBe(1);
-		expect(createdIds.has(secondPage.items[0].profileId)).toBe(true);
-		createdIds.delete(secondPage.items[0].profileId);
+		expect(createdIds.has(secondPage.items[0].id)).toBe(true);
+		createdIds.delete(secondPage.items[0].id);
 		expect(createdIds.size).toBe(0);
 	});
 });

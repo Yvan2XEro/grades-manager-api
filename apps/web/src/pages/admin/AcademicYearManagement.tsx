@@ -9,6 +9,21 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import { DialogFooter } from "../../components/ui/dialog";
@@ -225,15 +240,17 @@ const AcademicYearManagement: React.FC = () => {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h2 className="font-bold text-2xl text-gray-800">
+					<h1 className="font-semibold text-2xl">
 						{t("admin.academicYears.title")}
-					</h2>
-					<p className="text-gray-600">{t("admin.academicYears.subtitle")}</p>
+					</h1>
+					<p className="text-muted-foreground">
+						{t("admin.academicYears.subtitle")}
+					</p>
 				</div>
-				<button
+				<Button
 					type="button"
 					onClick={() => {
 						setEditingYear(null);
@@ -242,12 +259,17 @@ const AcademicYearManagement: React.FC = () => {
 					}}
 					className="btn btn-primary"
 				>
-					<Plus className="mr-2 h-5 w-5" />{" "}
+					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.academicYears.actions.add")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="overflow-hidden rounded-xl bg-white shadow-sm">
+			<Card>
+				<CardHeader>
+					<CardTitle>{t("admin.academicYears.title")}</CardTitle>
+					<CardDescription>{t("admin.academicYears.subtitle")}</CardDescription>
+				</CardHeader>
+
 				{academicYears?.length === 0 ? (
 					<div className="p-8 text-center">
 						<Calendar className="mx-auto h-12 w-12 text-gray-400" />
@@ -257,38 +279,41 @@ const AcademicYearManagement: React.FC = () => {
 						<p className="mt-1 text-gray-500">
 							{t("admin.academicYears.empty.description")}
 						</p>
-						<button
+						<Button
 							type="button"
 							onClick={() => {
 								setEditingYear(null);
 								form.reset({ startDate: "", endDate: "", name: "" });
 								setIsModalOpen(true);
 							}}
-							className="btn btn-primary btn-sm mt-4"
 						>
-							<Plus className="mr-2 h-4 w-4" />{" "}
+							<Plus className="mr-2 h-4 w-4" />
 							{t("admin.academicYears.actions.add")}
-						</button>
+						</Button>
 					</div>
 				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("admin.academicYears.table.name")}</th>
-									<th>{t("admin.academicYears.table.startDate")}</th>
-									<th>{t("admin.academicYears.table.endDate")}</th>
-									<th>{t("admin.academicYears.table.status")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
+					<CardContent>
+						<Table className="min-w-full">
+							<TableHeader>
+								<TableRow>
+									<TableHead>{t("admin.academicYears.table.name")}</TableHead>
+									<TableHead>
+										{t("admin.academicYears.table.startDate")}
+									</TableHead>
+									<TableHead>
+										{t("admin.academicYears.table.endDate")}
+									</TableHead>
+									<TableHead>{t("admin.academicYears.table.status")}</TableHead>
+									<TableHead>{t("common.table.actions")}</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
 								{academicYears?.map((year) => (
-									<tr key={year.id}>
-										<td>{year.name}</td>
-										<td>{formatDate(year.startDate)}</td>
-										<td>{formatDate(year.endDate)}</td>
-										<td>
+									<TableRow key={year.id}>
+										<TableCell>{year.name}</TableCell>
+										<TableCell>{formatDate(year.startDate)}</TableCell>
+										<TableCell>{formatDate(year.endDate)}</TableCell>
+										<TableCell>
 											<div className="flex items-center gap-3">
 												<Switch
 													id={`academic-year-${year.id}`}
@@ -306,7 +331,7 @@ const AcademicYearManagement: React.FC = () => {
 														: t("common.status.inactive")}
 												</label>
 											</div>
-										</td>
+										</TableCell>
 										<td>
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
@@ -330,8 +355,10 @@ const AcademicYearManagement: React.FC = () => {
 												</div>
 											) : (
 												<div className="flex items-center space-x-2">
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size={"icon"}
 														onClick={() => {
 															setEditingYear(year);
 															form.reset({
@@ -344,24 +371,26 @@ const AcademicYearManagement: React.FC = () => {
 														className="btn btn-ghost btn-sm"
 													>
 														<Pencil className="h-4 w-4" />
-													</button>
-													<button
+													</Button>
+													<Button
 														type="button"
+														variant="ghost"
+														size={"icon"}
 														onClick={() => setDeleteConfirmId(year.id)}
 														className="btn btn-ghost btn-sm"
 													>
 														<Trash2 className="h-4 w-4" />
-													</button>
+													</Button>
 												</div>
 											)}
 										</td>
-									</tr>
+									</TableRow>
 								))}
-							</tbody>
-						</table>
-					</div>
+							</TableBody>
+						</Table>
+					</CardContent>
 				)}
-			</div>
+			</Card>
 
 			<FormModal
 				isOpen={isModalOpen}

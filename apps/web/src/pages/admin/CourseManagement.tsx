@@ -58,13 +58,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.courses.validation.name")),
-		credits: z.number().min(1, t("admin.courses.validation.credits")),
-		hours: z.number().min(1, t("admin.courses.validation.hours")),
+		credits: z.coerce.number().min(1, t("admin.courses.validation.credits")),
+		hours: z.coerce.number().min(1, t("admin.courses.validation.hours")),
 		program: z.string({
 			required_error: t("admin.courses.validation.program"),
 		}),
@@ -89,11 +90,7 @@ interface Program {
 	name: string;
 }
 
-interface Teacher {
-	id: string;
-	name: string;
-	role: string | null;
-}
+type Teacher = RouterOutputs["users"]["list"]["items"][number];
 
 export default function CourseManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -128,7 +125,7 @@ export default function CourseManagement() {
 				role: "teacher",
 				limit: 100,
 			});
-			return items as Teacher[];
+			return items;
 		},
 	});
 
@@ -136,8 +133,29 @@ export default function CourseManagement() {
 		resolver: zodResolver(courseSchema),
 	});
 
+	const formatTeacherName = (teacher: Teacher) =>
+		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
+		teacher.email;
+
+	const teacherOptions = useMemo(
+		() =>
+			(teachers ?? []).filter(
+				(
+					teacher,
+				): teacher is Teacher & {
+					authUserId: string;
+				} => Boolean(teacher.authUserId),
+			),
+		[teachers],
+	);
+
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-	const teacherMap = new Map((teachers ?? []).map((t) => [t.id, t.name]));
+	const teacherMap = new Map(
+		teacherOptions.map((teacher) => [
+			teacher.authUserId,
+			formatTeacherName(teacher),
+		]),
+	);
 
 	const createMutation = useMutation({
 		mutationFn: async (data: CourseFormData) => {
@@ -485,9 +503,12 @@ export default function CourseManagement() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{teachers?.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{teacher.name}
+												{teacherOptions.map((teacher) => (
+													<SelectItem
+														key={teacher.authUserId}
+														value={teacher.authUserId}
+													>
+														{formatTeacherName(teacher)}
 													</SelectItem>
 												))}
 											</SelectContent>

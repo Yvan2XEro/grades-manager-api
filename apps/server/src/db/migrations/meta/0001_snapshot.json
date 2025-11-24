@@ -1,6 +1,6 @@
 {
-	"id": "36f728a7-c2ab-4329-9eed-386a5e1fe8e4",
-	"prevId": "00000000-0000-0000-0000-000000000000",
+	"id": "cbae5642-69a7-4aa8-a5f7-9260bd0ed33b",
+	"prevId": "36f728a7-c2ab-4329-9eed-386a5e1fe8e4",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -171,10 +171,10 @@
 					"onDelete": "cascade",
 					"onUpdate": "no action"
 				},
-				"class_courses_teacher_id_user_id_fk": {
-					"name": "class_courses_teacher_id_user_id_fk",
+				"class_courses_teacher_id_domain_users_id_fk": {
+					"name": "class_courses_teacher_id_domain_users_id_fk",
 					"tableFrom": "class_courses",
-					"tableTo": "user",
+					"tableTo": "domain_users",
 					"columnsFrom": ["teacher_id"],
 					"columnsTo": ["id"],
 					"onDelete": "restrict",
@@ -434,7 +434,7 @@
 					"name": "default_teacher_id",
 					"type": "text",
 					"primaryKey": false,
-					"notNull": true
+					"notNull": false
 				},
 				"created_at": {
 					"name": "created_at",
@@ -510,10 +510,10 @@
 					"onDelete": "cascade",
 					"onUpdate": "no action"
 				},
-				"courses_default_teacher_id_user_id_fk": {
-					"name": "courses_default_teacher_id_user_id_fk",
+				"courses_default_teacher_id_domain_users_id_fk": {
+					"name": "courses_default_teacher_id_domain_users_id_fk",
 					"tableFrom": "courses",
-					"tableTo": "user",
+					"tableTo": "domain_users",
 					"columnsFrom": ["default_teacher_id"],
 					"columnsTo": ["id"],
 					"onDelete": "restrict",

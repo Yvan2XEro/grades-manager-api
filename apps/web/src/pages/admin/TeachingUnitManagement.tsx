@@ -1,91 +1,70 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import { Button } from "../../components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "../../components/ui/card";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../components/ui/empty";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from "../../components/ui/select";
+import { Spinner } from "../../components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../components/ui/table";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-type UnitForm = {
-	name: string;
-	code: string;
-	credits: number;
-	semester: "fall" | "spring" | "annual";
-	programId: string;
-	description?: string;
-};
-
-const defaultForm: UnitForm = {
-	name: "",
-	code: "",
-	credits: 3,
-	semester: "annual",
-	programId: "",
-	description: "",
-};
 
 const TeachingUnitManagement = () => {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const [form, setForm] = useState<UnitForm>(defaultForm);
-	const [selectedProgram, setSelectedProgram] = useState<string>("");
-	const [selectedCourse, setSelectedCourse] = useState<string>("");
-	const [prereqSelection, setPrereqSelection] = useState<string[]>([]);
 
-	const { data: programs } = useQuery(
-		trpc.programs.list.queryOptions({ limit: 200 }),
-	);
+	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
+	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-	const { data: units } = useQuery(
+	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
+
+	const { data: units, isLoading } = useQuery(
 		trpc.teachingUnits.list.queryOptions({
-			programId: selectedProgram || undefined,
+			programId: selectedProgramId || undefined,
 		}),
 	);
 
-	const { data: courses } = useQuery({
-		...trpc.courses.list.queryOptions({
-			programId: selectedProgram || undefined,
-		}),
-		enabled: Boolean(selectedProgram),
-	});
+	const programMap = useMemo(
+		() =>
+			new Map(
+				(programs?.items ?? []).map((program) => [program.id, program.name]),
+			),
+		[programs],
+	);
 
-	const createUnit = useMutation({
-		mutationFn: (payload: UnitForm) =>
-			trpcClient.teachingUnits.create.mutate(payload),
-		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.toast.created", {
-					defaultValue: "Teaching unit created",
-				}),
-			);
-			queryClient.invalidateQueries(
-				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgram || undefined,
-				}),
-			);
-			setForm((prev) => ({ ...defaultForm, programId: prev.programId }));
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const deleteUnit = useMutation({
+	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.teachingUnits.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(
@@ -95,61 +74,40 @@ const TeachingUnitManagement = () => {
 			);
 			queryClient.invalidateQueries(
 				trpc.teachingUnits.list.queryKey({
-					programId: selectedProgram || undefined,
+					programId: selectedProgramId || undefined,
 				}),
 			);
+			setIsDeleteOpen(false);
+			setDeleteId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const updatePrereqs = useMutation({
-		mutationFn: async ({
-			courseId,
-			prerequisites,
-		}: {
-			courseId: string;
-			prerequisites: string[];
-		}) => {
-			await trpcClient.courses.update.mutate({
-				id: courseId,
-				prerequisiteCourseIds: prerequisites,
-			});
-		},
-		onSuccess: () => {
-			toast.success(
-				t("admin.teachingUnits.toast.prereqSaved", {
-					defaultValue: "Prerequisites saved",
-				}),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const handleCreateUnit = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		if (!form.programId) {
-			toast.error(
-				t("admin.teachingUnits.toast.programRequired", {
-					defaultValue: "Select a program",
-				}),
-			);
-			return;
+	const handleDelete = () => {
+		if (deleteId) {
+			deleteMutation.mutate(deleteId);
 		}
-		createUnit.mutate(form);
 	};
 
-	const availableCourses = useMemo(() => courses?.items ?? [], [courses]);
-	const currentUnitCourses = useMemo(() => {
-		if (!selectedCourse) return [];
-		return availableCourses.filter((course) => course.id !== selectedCourse);
-	}, [availableCourses, selectedCourse]);
+	const handleOpenDelete = (id: string) => {
+		setDeleteId(id);
+		setIsDeleteOpen(true);
+	};
+
+	if (isLoading) {
+		return (
+			<div className="flex h-64 items-center justify-center">
+				<Spinner className="h-8 w-8" />
+			</div>
+		);
+	}
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 className="font-semibold text-2xl">
-						{t("admin.teachingUnits.title", { defaultValue: "Teaching Units" })}
+						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
 					</h1>
 					<p className="text-muted-foreground">
 						{t("admin.teachingUnits.subtitle", {
@@ -157,302 +115,167 @@ const TeachingUnitManagement = () => {
 						})}
 					</p>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
-					<Select
-						value={selectedProgram || undefined}
-						onValueChange={(value) => {
-							setSelectedProgram(value);
-							setSelectedCourse("");
-							setPrereqSelection([]);
-							setForm((prev) => ({ ...prev, programId: value }));
-						}}
-					>
-						<SelectTrigger className="min-w-48">
-							<SelectValue
-								placeholder={t("admin.teachingUnits.selectProgram", {
-									defaultValue: "Select program",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{programs?.items?.map((program) => (
-								<SelectItem key={program.id} value={program.id}>
-									{program.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => {
-							setSelectedProgram("");
-							setSelectedCourse("");
-							setPrereqSelection([]);
-							setForm((prev) => ({ ...prev, programId: "" }));
-						}}
-						disabled={!selectedProgram}
-					>
-						{t("common.actions.reset", { defaultValue: "Reset" })}
-					</Button>
-				</div>
-			</div>
-
-			<div className="grid gap-6 lg:grid-cols-2">
-				<Card asChild>
-					<form onSubmit={handleCreateUnit}>
-						<CardHeader>
-							<CardTitle>
-								{t("admin.teachingUnits.new", {
-									defaultValue: "Create new UE",
-								})}
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="grid gap-4">
-							<div className="space-y-2">
-								<Label htmlFor="unit-name">
-									{t("admin.teachingUnits.fields.name", {
-										defaultValue: "Unit name",
-									})}
-								</Label>
-								<Input
-									id="unit-name"
-									value={form.name}
-									onChange={(event) =>
-										setForm((prev) => ({ ...prev, name: event.target.value }))
-									}
-									required
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="unit-code">
-									{t("admin.teachingUnits.fields.code", {
-										defaultValue: "Code",
-									})}
-								</Label>
-								<Input
-									id="unit-code"
-									value={form.code}
-									onChange={(event) =>
-										setForm((prev) => ({ ...prev, code: event.target.value }))
-									}
-									required
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="unit-description">
-									{t("admin.teachingUnits.fields.description", {
-										defaultValue: "Description",
-									})}
-								</Label>
-								<Textarea
-									id="unit-description"
-									value={form.description}
-									onChange={(event) =>
-										setForm((prev) => ({
-											...prev,
-											description: event.target.value,
-										}))
-									}
-								/>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								<div className="space-y-2">
-									<Label htmlFor="unit-credits">
-										{t("admin.teachingUnits.fields.credits", {
-											defaultValue: "ECTS",
-										})}
-									</Label>
-									<Input
-										id="unit-credits"
-										type="number"
-										min={0}
-										value={form.credits}
-										onChange={(event) =>
-											setForm((prev) => ({
-												...prev,
-												credits: Number(event.target.value),
-											}))
-										}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="unit-semester">
-										{t("admin.teachingUnits.semesters.annual", {
-											defaultValue: "Semester",
-										})}
-									</Label>
-									<Select
-										value={form.semester}
-										onValueChange={(value) =>
-											setForm((prev) => ({
-												...prev,
-												semester: value as UnitForm["semester"],
-											}))
-										}
-									>
-										<SelectTrigger id="unit-semester">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="annual">
-												{t("admin.teachingUnits.semesters.annual", {
-													defaultValue: "Annual",
-												})}
-											</SelectItem>
-											<SelectItem value="fall">
-												{t("admin.teachingUnits.semesters.fall", {
-													defaultValue: "Fall",
-												})}
-											</SelectItem>
-											<SelectItem value="spring">
-												{t("admin.teachingUnits.semesters.spring", {
-													defaultValue: "Spring",
-												})}
-											</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-							<Button type="submit" disabled={createUnit.isLoading}>
-								{t("admin.teachingUnits.actions.create", {
-									defaultValue: "Create UE",
-								})}
-							</Button>
-						</CardContent>
-					</form>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle>
-							{t("admin.teachingUnits.list", { defaultValue: "Units list" })}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-3">
-						{units?.items?.length ? (
-							units.items.map((unit) => (
-								<div
-									key={unit.id}
-									className="flex items-center justify-between rounded-lg border px-3 py-2"
-								>
-									<div>
-										<p className="font-medium">{unit.name}</p>
-										<p className="text-muted-foreground text-sm">
-											{unit.code} • {unit.semester?.toUpperCase()} •{" "}
-											{unit.credits} ECTS
-										</p>
-									</div>
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={() => deleteUnit.mutate(unit.id)}
-										className="text-destructive hover:text-destructive"
-									>
-										{t("admin.teachingUnits.actions.delete", {
-											defaultValue: "Remove",
-										})}
-									</Button>
-								</div>
-							))
-						) : (
-							<p className="text-muted-foreground text-sm">
-								{t("admin.teachingUnits.empty", {
-									defaultValue: "No units yet for this program.",
-								})}
-							</p>
-						)}
-					</CardContent>
-				</Card>
+				<Button onClick={() => navigate("/admin/teaching-units/+")}>
+					<Plus className="mr-2 h-4 w-4" />
+					{t("admin.teachingUnits.actions.create", {
+						defaultValue: "Create UE",
+					})}
+				</Button>
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.teachingUnits.prereqTitle", {
-							defaultValue: "Manage course prerequisites",
-						})}
-					</CardTitle>
-					<CardDescription>
-						{t("admin.teachingUnits.prereqHint", {
-							defaultValue: "Select prerequisite courses",
-						})}
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="grid gap-4 md:grid-cols-2">
-					<Select
-						disabled={!availableCourses.length}
-						value={selectedCourse || undefined}
-						onValueChange={(value) => {
-							setSelectedCourse(value);
-							setPrereqSelection([]);
-						}}
-					>
-						<SelectTrigger>
-							<SelectValue
-								placeholder={t("admin.teachingUnits.prereqSelectCourse", {
-									defaultValue: "Choose a course",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{availableCourses.map((course) => (
-								<SelectItem key={course.id} value={course.id}>
-									{course.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-
-					{selectedCourse ? (
-						<div className="space-y-3">
-							<div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3">
-								{currentUnitCourses.map((course) => (
-									<label
-										key={course.id}
-										className="flex items-center gap-2 text-sm"
-										htmlFor={`prereq-${course.id}`}
-									>
-										<Checkbox
-											id={`prereq-${course.id}`}
-											checked={prereqSelection.includes(course.id)}
-											onCheckedChange={(checked) => {
-												setPrereqSelection((prev) =>
-													checked
-														? [...prev, course.id]
-														: prev.filter((value) => value !== course.id),
-												);
-											}}
-										/>
-										<span>{course.name}</span>
-									</label>
+				<CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+					<div>
+						<CardTitle>
+							{t("admin.teachingUnits.list", {
+								defaultValue: "Units list",
+							})}
+						</CardTitle>
+						<CardDescription>
+							{t("admin.teachingUnits.listDescription", {
+								defaultValue:
+									"Browse teaching units and open them to manage ECs.",
+							})}
+						</CardDescription>
+					</div>
+					<div className="flex flex-wrap items-center gap-2">
+						<Select
+							value={selectedProgramId || undefined}
+							onValueChange={(value) => setSelectedProgramId(value)}
+						>
+							<SelectTrigger className="min-w-48">
+								<SelectValue
+									placeholder={t("admin.teachingUnits.selectProgram", {
+										defaultValue: "Select program",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{programs?.items?.map((program) => (
+									<SelectItem key={program.id} value={program.id}>
+										{program.name}
+									</SelectItem>
 								))}
-							</div>
-							<Button
-								type="button"
-								onClick={() =>
-									updatePrereqs.mutate({
-										courseId: selectedCourse,
-										prerequisites: prereqSelection,
-									})
-								}
-								disabled={!prereqSelection.length}
-							>
-								{t("admin.teachingUnits.actions.savePrereq", {
-									defaultValue: "Save prerequisites",
-								})}
-							</Button>
+							</SelectContent>
+						</Select>
+						<Button
+							variant="outline"
+							onClick={() => setSelectedProgramId("")}
+							disabled={!selectedProgramId}
+						>
+							{t("common.actions.reset", { defaultValue: "Reset" })}
+						</Button>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{units?.items?.length ? (
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>{t("admin.teachingUnits.table.name")}</TableHead>
+										<TableHead>{t("admin.teachingUnits.table.code")}</TableHead>
+										<TableHead>
+											{t("admin.teachingUnits.table.program")}
+										</TableHead>
+										<TableHead>
+											{t("admin.teachingUnits.table.semester")}
+										</TableHead>
+										<TableHead>
+											{t("admin.teachingUnits.table.credits")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.table.actions")}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{units.items.map((unit) => (
+										<TableRow key={unit.id}>
+											<TableCell className="font-medium">{unit.name}</TableCell>
+											<TableCell>{unit.code}</TableCell>
+											<TableCell>
+												{programMap.get(unit.programId) ?? "—"}
+											</TableCell>
+											<TableCell>
+												{t(`admin.teachingUnits.semesters.${unit.semester}`, {
+													defaultValue: unit.semester,
+												})}
+											</TableCell>
+											<TableCell>{unit.credits}</TableCell>
+											<TableCell className="text-right">
+												<div className="flex justify-end gap-2">
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() =>
+															navigate(`/admin/teaching-units/${unit.id}`)
+														}
+													>
+														{t("common.actions.open", { defaultValue: "Open" })}
+													</Button>
+													<Button
+														variant="ghost"
+														size="icon-sm"
+														className="text-destructive hover:text-destructive"
+														onClick={() => handleOpenDelete(unit.id)}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						</div>
 					) : (
-						<p className="text-muted-foreground text-sm">
-							{t("admin.teachingUnits.prereqSelectCourse", {
-								defaultValue: "Choose a course",
-							})}
-						</p>
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<Plus className="h-6 w-6 text-muted-foreground" />
+								</EmptyMedia>
+								<EmptyTitle>
+									{t("admin.teachingUnits.empty", {
+										defaultValue: "No units yet for this program.",
+									})}
+								</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.teachingUnits.emptyDescription", {
+										defaultValue:
+											"Create a teaching unit to start managing ECs.",
+									})}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={() => navigate("/admin/teaching-units/+")}>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.teachingUnits.actions.create", {
+										defaultValue: "Create UE",
+									})}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
+
+			<ConfirmModal
+				isOpen={isDeleteOpen}
+				onClose={() => {
+					setIsDeleteOpen(false);
+					setDeleteId(null);
+				}}
+				onConfirm={handleDelete}
+				title={t("admin.teachingUnits.deleteTitle", {
+					defaultValue: "Delete teaching unit",
+				})}
+				message={t("admin.teachingUnits.deleteMessage", {
+					defaultValue: "Are you sure you want to remove this unit?",
+				})}
+				confirmText={t("common.actions.delete")}
+				isLoading={deleteMutation.isPending}
+			/>
 		</div>
 	);
 };

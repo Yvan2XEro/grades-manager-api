@@ -10,8 +10,24 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "../../components/ui/card";
 import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -29,6 +45,14 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "../../components/ui/table";
 import { trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
@@ -214,133 +238,165 @@ export default function ExamManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-8 w-8" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6 p-6">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold text-2xl">{t("admin.exams.title")}</h1>
-					<p className="text-base-content/60">{t("admin.exams.subtitle")}</p>
+					<h1 className="font-semibold text-2xl">{t("admin.exams.title")}</h1>
+					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
-				<button
-					type="button"
+				<Button
 					onClick={() => {
 						setEditingExam(null);
 						form.reset();
 						setIsFormOpen(true);
 					}}
-					className="btn btn-primary"
 				>
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.exams.actions.add")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow-xl">
-				{exams?.length === 0 ? (
-					<div className="card-body items-center py-12 text-center">
-						<ClipboardList className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">{t("admin.exams.empty.title")}</h2>
-						<p className="text-base-content/60">
-							{t("admin.exams.empty.description")}
-						</p>
-						<button
-							type="button"
-							onClick={() => {
-								setEditingExam(null);
-								form.reset();
-								setIsFormOpen(true);
-							}}
-							className="btn btn-primary mt-4"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("admin.exams.actions.add")}
-						</button>
+			<Card>
+				<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<CardTitle>{t("admin.exams.title")}</CardTitle>
+						<CardDescription>{t("admin.exams.subtitle")}</CardDescription>
 					</div>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("admin.exams.table.name")}</th>
-									<th>{t("admin.exams.table.course")}</th>
-									<th>{t("admin.exams.table.class")}</th>
-									<th>{t("admin.exams.table.type")}</th>
-									<th>{t("admin.exams.table.date")}</th>
-									<th>{t("admin.exams.table.percentage")}</th>
-									<th>{t("admin.exams.table.status")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{exams?.map((exam) => (
-									<tr key={exam.id}>
-										<td className="font-medium">{exam.name}</td>
-										<td>
-											{courseMap.get(
-												classCourseMap.get(exam.classCourse)?.course || "",
-											)}
-										</td>
-										<td>
-											{classMap.get(
-												classCourseMap.get(exam.classCourse)?.class || "",
-											)}
-										</td>
-										<td>{exam.type}</td>
-										<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
-										<td>{exam.percentage}%</td>
-										<td>
-											<span
-												className={`badge ${
-													exam.isLocked ? "badge-warning" : "badge-success"
-												}`}
-											>
-												{exam.isLocked
-													? t("admin.exams.status.locked")
-													: t("admin.exams.status.open")}
-											</span>
-										</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													type="button"
-													onClick={() => {
-														setEditingExam(exam);
-														form.reset({
-															name: exam.name,
-															type: exam.type,
-															date: exam.date.split("T")[0],
-															percentage: exam.percentage,
-															classCourseId: exam.classCourse,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
-													disabled={exam.isLocked}
+					<Button
+						onClick={() => {
+							setEditingExam(null);
+							form.reset();
+							setIsFormOpen(true);
+						}}
+					>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.exams.actions.add")}
+					</Button>
+				</CardHeader>
+				<CardContent>
+					{!exams?.length ? (
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<ClipboardList className="h-8 w-8 text-muted-foreground" />
+								</EmptyMedia>
+								<EmptyTitle>{t("admin.exams.empty.title")}</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.exams.empty.description")}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									onClick={() => {
+										setEditingExam(null);
+										form.reset();
+										setIsFormOpen(true);
+									}}
+								>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.exams.actions.add")}
+								</Button>
+							</EmptyContent>
+						</Empty>
+					) : (
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>{t("admin.exams.table.name")}</TableHead>
+										<TableHead>{t("admin.exams.table.course")}</TableHead>
+										<TableHead>{t("admin.exams.table.class")}</TableHead>
+										<TableHead>{t("admin.exams.table.type")}</TableHead>
+										<TableHead>{t("admin.exams.table.date")}</TableHead>
+										<TableHead>{t("admin.exams.table.percentage")}</TableHead>
+										<TableHead>{t("admin.exams.table.status")}</TableHead>
+										<TableHead className="text-right">
+											{t("common.table.actions")}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{exams?.map((exam) => (
+										<TableRow key={exam.id}>
+											<TableCell className="font-medium">{exam.name}</TableCell>
+											<TableCell>
+												{courseMap.get(
+													classCourseMap.get(exam.classCourse)?.course || "",
+												)}
+											</TableCell>
+											<TableCell>
+												{classMap.get(
+													classCourseMap.get(exam.classCourse)?.class || "",
+												)}
+											</TableCell>
+											<TableCell>{exam.type}</TableCell>
+											<TableCell>
+												{format(new Date(exam.date), "MMM d, yyyy")}
+											</TableCell>
+											<TableCell>{exam.percentage}%</TableCell>
+											<TableCell>
+												<Badge
+													variant={exam.isLocked ? "secondary" : "default"}
+													className={
+														exam.isLocked
+															? "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-400/20 dark:text-amber-100"
+															: "bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-400/20 dark:text-emerald-100"
+													}
 												>
-													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													type="button"
-													onClick={() => openDeleteModal(exam.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
-													disabled={exam.isLocked}
-												>
-													<Trash2 className="h-4 w-4" />
-												</button>
-											</div>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+													{exam.isLocked
+														? t("admin.exams.status.locked")
+														: t("admin.exams.status.open")}
+												</Badge>
+											</TableCell>
+											<TableCell className="text-right">
+												<div className="flex justify-end gap-2">
+													<Button
+														type="button"
+														size="icon-sm"
+														variant="ghost"
+														onClick={() => {
+															setEditingExam(exam);
+															form.reset({
+																name: exam.name,
+																type: exam.type,
+																date: exam.date.split("T")[0],
+																percentage: exam.percentage,
+																classCourseId: exam.classCourse,
+															});
+															setIsFormOpen(true);
+														}}
+														aria-label={t("admin.exams.form.editTitle")}
+														disabled={exam.isLocked}
+													>
+														<Pencil className="h-4 w-4" />
+													</Button>
+													<Button
+														type="button"
+														size="icon-sm"
+														variant="ghost"
+														className="text-destructive hover:text-destructive"
+														onClick={() => openDeleteModal(exam.id)}
+														aria-label={t("admin.exams.delete.title")}
+														disabled={exam.isLocked}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
 			<FormModal
 				isOpen={isFormOpen}

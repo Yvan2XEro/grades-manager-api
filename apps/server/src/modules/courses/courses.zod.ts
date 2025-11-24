@@ -14,6 +14,7 @@ export const updateSchema = baseSchema.partial().extend({ id: z.string() });
 
 export const listSchema = z.object({
 	programId: z.string().optional(),
+	teachingUnitId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

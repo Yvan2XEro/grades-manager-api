@@ -7,6 +7,15 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -235,7 +244,7 @@ export default function ClassManagement() {
 					<h1 className="font-bold text-2xl">{t("admin.classes.title")}</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
-				<button
+				<Button
 					type="button"
 					onClick={() => {
 						setEditingClass(null);
@@ -246,20 +255,20 @@ export default function ClassManagement() {
 				>
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.classes.actions.add")}
-				</button>
+				</Button>
 			</div>
 
-			<div className="card bg-base-100 shadow-xl">
+			<Card className="overflow-x-auto">
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
-						<Users className="h-16 w-16 text-base-content/20" />
+						<Users className="mx-auto h-16 w-16 text-base-content/20" />
 						<h2 className="card-title mt-4">
 							{t("admin.classes.empty.title")}
 						</h2>
 						<p className="text-base-content/60">
 							{t("admin.classes.empty.description")}
 						</p>
-						<button
+						<Button
 							type="button"
 							onClick={() => {
 								setEditingClass(null);
@@ -270,65 +279,67 @@ export default function ClassManagement() {
 						>
 							<Plus className="mr-2 h-4 w-4" />
 							{t("admin.classes.actions.add")}
-						</button>
+						</Button>
 					</div>
 				) : (
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>{t("admin.classes.table.name")}</th>
-									<th>{t("admin.classes.table.program")}</th>
-									<th>{t("admin.classes.table.academicYear")}</th>
-									<th>{t("admin.classes.table.students")}</th>
-									<th>{t("common.table.actions")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{classes?.map((cls) => (
-									<tr key={cls.id}>
-										<td className="font-medium">{cls.name}</td>
-										<td>{cls.program?.name}</td>
-										<td>{cls.academicYear?.name}</td>
-										<td>
-											<div className="flex items-center gap-2">
-												<Users className="h-4 w-4" />
-												<span>{cls.students?.length || 0}</span>
-											</div>
-										</td>
-										<td>
-											<div className="flex gap-2">
-												<button
-													type="button"
-													onClick={() => {
-														setEditingClass(cls);
-														form.reset({
-															name: cls.name,
-															programId: cls.programId,
-															academicYearId: cls.academicYearId,
-														});
-														setIsFormOpen(true);
-													}}
-													className="btn btn-square btn-sm btn-ghost"
-												>
-													<Pencil className="h-4 w-4" />
-												</button>
-												<button
-													type="button"
-													onClick={() => openDeleteModal(cls.id)}
-													className="btn btn-square btn-sm btn-ghost text-error"
-												>
-													<Trash2 className="h-4 w-4" />
-												</button>
-											</div>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>{t("admin.classes.table.name")}</TableHead>
+								<TableHead>{t("admin.classes.table.program")}</TableHead>
+								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
+								<TableHead>{t("admin.classes.table.students")}</TableHead>
+								<TableHead>{t("common.table.actions")}</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{classes?.map((cls) => (
+								<TableRow key={cls.id}>
+									<TableCell className="font-medium">{cls.name}</TableCell>
+									<TableCell>{cls.program?.name}</TableCell>
+									<TableCell>{cls.academicYear?.name}</TableCell>
+									<TableCell>
+										<div className="flex items-center gap-2">
+											<Users className="h-4 w-4" />
+											<span>{cls.students?.length || 0}</span>
+										</div>
+									</TableCell>
+									<TableCell>
+										<div className="flex gap-2">
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												onClick={() => {
+													setEditingClass(cls);
+													form.reset({
+														name: cls.name,
+														programId: cls.programId,
+														academicYearId: cls.academicYearId,
+													});
+													setIsFormOpen(true);
+												}}
+												className="btn btn-square btn-sm btn-ghost"
+											>
+												<Pencil className="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												onClick={() => openDeleteModal(cls.id)}
+												className="btn btn-square btn-sm btn-ghost text-error"
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				)}
-			</div>
+			</Card>
 
 			<FormModal
 				isOpen={isFormOpen}

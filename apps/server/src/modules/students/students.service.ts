@@ -7,17 +7,18 @@ import * as classesRepo from "../classes/classes.repo";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as repo from "./students.repo";
 
-type StudentProfileInput = {
-	firstName: string;
-	lastName: string;
-	email: string;
-	dateOfBirth: Date;
-	placeOfBirth: string;
-	gender: schema.Gender;
-	phone?: string | null;
-	nationality?: string | null;
-	authUserId?: string | null;
-};
+type StudentProfileInput = Pick<
+	schema.NewDomainUser,
+	| "firstName"
+	| "lastName"
+	| "primaryEmail"
+	| "dateOfBirth"
+	| "placeOfBirth"
+	| "gender"
+	| "phone"
+	| "nationality"
+	| "authUserId"
+>;
 
 type CreateStudentInput = {
 	classId: string;
@@ -36,11 +37,11 @@ const buildProfilePayload = (p: StudentProfileInput) => ({
 	businessRole: "student" as schema.BusinessRole,
 	firstName: p.firstName,
 	lastName: p.lastName,
-	primaryEmail: p.email,
+	primaryEmail: p.primaryEmail,
 	phone: p.phone ?? null,
-	dateOfBirth: p.dateOfBirth,
-	placeOfBirth: p.placeOfBirth,
-	gender: p.gender,
+	dateOfBirth: p.dateOfBirth ?? null,
+	placeOfBirth: p.placeOfBirth ?? null,
+	gender: p.gender ?? null,
 	nationality: p.nationality ?? null,
 	status: "active" as schema.DomainUserStatus,
 });
@@ -163,7 +164,7 @@ export async function bulkCreateStudents(data: {
 				}
 				conflicts.push({
 					row: i + 1,
-					email: s.profile.email,
+					email: s.profile.primaryEmail,
 					registrationNumber: s.registrationNumber,
 					reason,
 				});
@@ -191,7 +192,8 @@ export async function updateStudent(
 			.set({
 				firstName: data.profile.firstName ?? existing.profile.firstName,
 				lastName: data.profile.lastName ?? existing.profile.lastName,
-				primaryEmail: data.profile.email ?? existing.profile.primaryEmail,
+				primaryEmail:
+					data.profile.primaryEmail ?? existing.profile.primaryEmail,
 				dateOfBirth: data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
 				placeOfBirth:
 					data.profile.placeOfBirth ?? existing.profile.placeOfBirth,

@@ -26,6 +26,7 @@ export async function findById(id: string) {
 
 export async function list(opts: {
 	programId?: string;
+	teachingUnitId?: string;
 	cursor?: string;
 	limit?: number;
 }) {
@@ -34,6 +35,10 @@ export async function list(opts: {
 	let condition;
 	if (opts.programId) {
 		condition = eq(schema.courses.program, opts.programId);
+	}
+	if (opts.teachingUnitId) {
+		const unitCond = eq(schema.courses.teachingUnitId, opts.teachingUnitId);
+		condition = condition ? and(condition, unitCond) : unitCond;
 	}
 	if (opts.cursor) {
 		const cursorCond = gt(schema.courses.id, opts.cursor);

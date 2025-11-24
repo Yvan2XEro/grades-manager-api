@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { Download, PlusIcon } from "lucide-react";
 import Papa from "papaparse";
@@ -34,6 +35,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -43,16 +45,11 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
-interface Student {
-	id: string;
-	firstName: string;
-	lastName: string;
-	email: string;
-	registrationNumber: string;
-	class: string;
-}
+type StudentsListResponse = RouterOutputs["students"]["list"];
+type StudentRow = StudentsListResponse["items"][number];
 
 interface Class {
 	id: string;
@@ -71,7 +68,73 @@ const buildStudentSchema = (t: TFunction) =>
 	});
 
 type StudentForm = z.infer<ReturnType<typeof buildStudentSchema>>;
-type BulkStudent = Omit<StudentForm, "classId">;
+type BulkStudent = {
+	firstName: string;
+	lastName: string;
+	email: string;
+	registrationNumber: string;
+	phone?: string;
+	gender?: "male" | "female" | "other";
+	dateOfBirth?: string;
+	placeOfBirth?: string;
+	nationality?: string;
+};
+
+const getStudentName = (student: StudentRow) =>
+	[student.profile.firstName, student.profile.lastName]
+		.filter(Boolean)
+		.join(" ");
+
+const normalizeGender = (value?: string | null) => {
+	if (!value) return undefined;
+	const normalized = value.trim().toLowerCase();
+	if (["male", "m", "homme"].includes(normalized)) return "male";
+	if (["female", "f", "femme"].includes(normalized)) return "female";
+	if (["other", "autre", "o"].includes(normalized)) return "other";
+	return undefined;
+};
+
+const formatStudentGender = (
+	t: TFunction,
+	gender?: StudentRow["profile"]["gender"],
+) => {
+	if (!gender) return t("admin.students.table.genderUnknown");
+	return t(`admin.students.gender.${gender}`, { defaultValue: gender });
+};
+
+const formatDate = (value?: Date | string | null) => {
+	if (!value) return "—";
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) return "—";
+	return format(date, "PPP");
+};
+
+const toInputDate = (value?: Date | string | null) => {
+	if (!value) return "";
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) return "";
+	return date.toISOString().split("T")[0];
+};
+
+const toISODateFromInput = (value?: string) => {
+	if (!value) return undefined;
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return undefined;
+	return date.toISOString();
+};
+
+const toISODateFromSheet = (value?: string | number) => {
+	if (value === undefined || value === null || value === "") return undefined;
+	if (typeof value === "number") {
+		const parsed = XLSX.SSF?.parse_date_code?.(value);
+		if (!parsed) return undefined;
+		const jsDate = new Date(Date.UTC(parsed.y, parsed.m - 1, parsed.d));
+		return jsDate.toISOString();
+	}
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return undefined;
+	return date.toISOString();
+};
 
 export default function StudentManagement() {
 	const queryClient = useQueryClient();
@@ -90,6 +153,8 @@ export default function StudentManagement() {
 		conflicts: Array<{ row: number; reason: string }>;
 		errors: Array<{ row: number; reason: string }>;
 	} | null>(null);
+	const [importFile, setImportFile] = useState<File | null>(null);
+	const [importFileKey, setImportFileKey] = useState(0);
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
@@ -99,7 +164,7 @@ export default function StudentManagement() {
 		},
 	});
 
-	const { data: studentsData } = useQuery({
+	const { data: studentsData } = useQuery<StudentsListResponse>({
 		queryKey: ["students", classFilter, search, cursor],
 		queryFn: async () =>
 			trpcClient.students.list.query({
@@ -158,7 +223,8 @@ export default function StudentManagement() {
 	};
 
 	const handleDownloadTemplate = () => {
-		const header = "firstName,lastName,email,registrationNumber\n";
+		const header =
+			"firstName,lastName,email,phone,dateOfBirth,placeOfBirth,gender,nationality,registrationNumber\n";
 		const csvBlob = new Blob([header], { type: "text/csv;charset=utf-8" });
 		const a = document.createElement("a");
 		a.href = URL.createObjectURL(csvBlob);
@@ -167,7 +233,17 @@ export default function StudentManagement() {
 
 		const wb = XLSX.utils.book_new();
 		const ws = XLSX.utils.aoa_to_sheet([
-			["firstName", "lastName", "email", "registrationNumber"],
+			[
+				"firstName",
+				"lastName",
+				"email",
+				"phone",
+				"dateOfBirth",
+				"placeOfBirth",
+				"gender",
+				"nationality",
+				"registrationNumber",
+			],
 		]);
 		XLSX.utils.book_append_sheet(
 			wb,
@@ -178,6 +254,14 @@ export default function StudentManagement() {
 	};
 
 	const handleImport = async (file: File) => {
+		if (!importClass) {
+			toast.error(
+				t("admin.students.import.classLabel", {
+					defaultValue: "Select class",
+				}),
+			);
+			return;
+		}
 		const ext = file.name.split(".").pop()?.toLowerCase();
 		const rows: BulkStudent[] = [];
 		const formatErrors: Array<{ row: number; reason: string }> = [];
@@ -200,6 +284,13 @@ export default function StudentManagement() {
 						lastName: row.lastName,
 						email: row.email,
 						registrationNumber: row.registrationNumber,
+						phone: row.phone || undefined,
+						gender: normalizeGender(row.gender),
+						dateOfBirth: row.dateOfBirth
+							? toISODateFromInput(row.dateOfBirth)
+							: undefined,
+						placeOfBirth: row.placeOfBirth || undefined,
+						nationality: row.nationality || undefined,
 					});
 				} else {
 					formatErrors.push({
@@ -225,6 +316,13 @@ export default function StudentManagement() {
 						lastName: row.lastName,
 						email: row.email,
 						registrationNumber: row.registrationNumber,
+						phone: row.phone || undefined,
+						gender: normalizeGender(row.gender),
+						dateOfBirth: toISODateFromSheet(
+							row.dateOfBirth as string | number | undefined,
+						),
+						placeOfBirth: row.placeOfBirth || undefined,
+						nationality: row.nationality || undefined,
 					});
 				} else {
 					formatErrors.push({
@@ -247,6 +345,11 @@ export default function StudentManagement() {
 						})),
 						errors: [...formatErrors, ...res.errors],
 					});
+					if (formatErrors.length === 0) {
+						toast.success(t("admin.students.toast.createSuccess"));
+					}
+					setImportFile(null);
+					setImportFileKey((key) => key + 1);
 				},
 			},
 		);
@@ -257,6 +360,8 @@ export default function StudentManagement() {
 		setActiveTab("single");
 		setImportClass("");
 		setImportResult(null);
+		setImportFile(null);
+		setImportFileKey((key) => key + 1);
 		form.reset();
 	};
 
@@ -319,16 +424,24 @@ export default function StudentManagement() {
 								<TableHead>{t("admin.students.table.name")}</TableHead>
 								<TableHead>{t("admin.students.table.email")}</TableHead>
 								<TableHead>{t("admin.students.table.registration")}</TableHead>
+								<TableHead>{t("admin.students.table.gender")}</TableHead>
+								<TableHead>{t("admin.students.table.dateOfBirth")}</TableHead>
+								<TableHead>{t("admin.students.table.placeOfBirth")}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{studentsData?.items.map((s: Student) => (
-								<TableRow key={s.id}>
+							{studentsData?.items.map((student) => (
+								<TableRow key={student.id}>
+									<TableCell>{getStudentName(student)}</TableCell>
+									<TableCell>{student.profile.primaryEmail}</TableCell>
+									<TableCell>{student.registrationNumber}</TableCell>
 									<TableCell>
-										{s.firstName} {s.lastName}
+										{formatStudentGender(t, student.profile.gender)}
 									</TableCell>
-									<TableCell>{s.email}</TableCell>
-									<TableCell>{s.registrationNumber}</TableCell>
+									<TableCell>
+										{formatDate(student.profile.dateOfBirth)}
+									</TableCell>
+									<TableCell>{student.profile.placeOfBirth || "—"}</TableCell>
 								</TableRow>
 							))}
 						</TableBody>
@@ -521,24 +634,52 @@ export default function StudentManagement() {
 											})}
 										</Label>
 										<Input
+											key={importFileKey}
 											id="student-import-file"
 											type="file"
 											accept=".csv,.xlsx"
 											onChange={(e) => {
-												const f = e.target.files?.[0];
-												if (f) handleImport(f);
+												const f = e.target.files?.[0] ?? null;
+												setImportFile(f);
+												setImportResult(null);
 											}}
 											disabled={!importClass || bulkMutation.isPending}
 										/>
 									</div>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={handleDownloadTemplate}
-									>
-										<Download className="mr-2 h-4 w-4" />
-										{t("admin.students.import.downloadTemplate")}
-									</Button>
+									<div className="flex flex-wrap gap-2">
+										<Button
+											type="button"
+											variant="outline"
+											onClick={handleDownloadTemplate}
+										>
+											<Download className="mr-2 h-4 w-4" />
+											{t("admin.students.import.downloadTemplate")}
+										</Button>
+										<Button
+											type="button"
+											onClick={() => {
+												if (importFile) {
+													handleImport(importFile);
+												}
+											}}
+											disabled={
+												!importClass || !importFile || bulkMutation.isPending
+											}
+										>
+											{bulkMutation.isPending ? (
+												<>
+													<Spinner className="mr-2 h-4 w-4" />
+													{t("common.actions.saving", {
+														defaultValue: "Saving...",
+													})}
+												</>
+											) : (
+												t("admin.students.import.actions.import", {
+													defaultValue: "Import students",
+												})
+											)}
+										</Button>
+									</div>
 								</>
 							)}
 							{importResult && (

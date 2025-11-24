@@ -11,6 +11,8 @@ interface Resources {
 				search: "Search";
 				saving: "Saving...";
 				reset: "Reset";
+				open: "Open";
+				back: "Back";
 			};
 			fields: {
 				email: "Email";
@@ -1020,6 +1022,15 @@ interface Resources {
 					name: "Student";
 					email: "Email";
 					registration: "Registration number";
+					gender: "Gender";
+					dateOfBirth: "Date of birth";
+					placeOfBirth: "Place of birth";
+					genderUnknown: "Not specified";
+				};
+				gender: {
+					male: "Male";
+					female: "Female";
+					other: "Other";
 				};
 				modal: {
 					title: "Add students";
@@ -1042,6 +1053,9 @@ interface Resources {
 					fileLabel: "Upload CSV or XLSX file";
 					downloadTemplate: "Download template";
 					invalidFormat: "Missing required fields in this row";
+					actions: {
+						import: "Import students";
+					};
 					summary: {
 						created: "{{count}} students imported successfully";
 						conflicts: {
@@ -1111,6 +1125,8 @@ interface Resources {
 				};
 				status: {
 					active: "Active";
+					inactive: "Inactive";
+					suspended: "Suspended";
 					banned: "Banned";
 					emailVerified: "Verified";
 					emailUnverified: "Pending verification";
@@ -1118,14 +1134,27 @@ interface Resources {
 				form: {
 					createTitle: "Create user";
 					editTitle: "Edit user";
-					nameLabel: "Full name";
+					firstNameLabel: "First name";
+					lastNameLabel: "Last name";
 					emailLabel: "Email address";
+					phoneLabel: "Phone number";
+					genderLabel: "Gender";
+					genderPlaceholder: "Select gender";
+					dateOfBirthLabel: "Date of birth";
+					placeOfBirthLabel: "Place of birth";
+					nationalityLabel: "Nationality";
+					statusLabel: "Status";
 					roleLabel: "Role";
 					passwordLabel: "Password";
 					newPasswordLabel: "New password";
 					passwordPlaceholder: "Leave blank to keep current password";
 					generatePassword: "Generate";
 					createSubmit: "Create user";
+				};
+				gender: {
+					male: "Male";
+					female: "Female";
+					other: "Other";
 				};
 				confirm: {
 					delete: {
@@ -1158,7 +1187,8 @@ interface Resources {
 					passwordCopied: "Password copied to clipboard";
 				};
 				validation: {
-					name: "Name is required";
+					firstName: "First name is required";
+					lastName: "Last name is required";
 					email: "Enter a valid email address";
 					role: "Please select a role";
 					passwordRequired: "Password is required";
@@ -1212,12 +1242,77 @@ interface Resources {
 					savePrereq: "Save prerequisites";
 				};
 				list: "Units list";
+				listDescription: "Browse teaching units and open them to manage ECs.";
 				empty: "No units yet for this program.";
+				emptyDescription: "Create a teaching unit to start managing ECs.";
+				table: {
+					name: "Name";
+					code: "Code";
+					program: "Program";
+					semester: "Semester";
+					credits: "ECTS";
+				};
+				deleteTitle: "Delete teaching unit";
+				deleteMessage: "This action permanently removes the teaching unit.";
 				prereqTitle: "Manage course prerequisites";
 				prereqSelectCourse: "Choose a course";
 				prereqHint: "Select prerequisite courses";
+				detail: {
+					createTitle: "Create teaching unit";
+					editTitle: "Edit {{name}}";
+					subtitle: "Update metadata and manage constitutive elements.";
+					formTitle: "Teaching unit details";
+					formSubtitle: "Edit code, semester, and description.";
+				};
+				validation: {
+					name: "Unit name is required.";
+					code: "Unit code is required.";
+					credits: "Credits must be zero or positive.";
+					program: "Program is required.";
+				};
+				courses: {
+					title: "Constitutive elements";
+					subtitle: "Manage ECs tied to this teaching unit.";
+					actions: {
+						add: "Add element";
+					};
+					table: {
+						name: "Name";
+						hours: "Hours";
+						credits: "Credits";
+						teacher: "Default teacher";
+					};
+					form: {
+						createTitle: "Add element";
+						editTitle: "Edit element";
+						nameLabel: "Element name";
+						namePlaceholder: "Enter the element name";
+						creditsLabel: "Credits";
+						creditsPlaceholder: "Enter credits";
+						hoursLabel: "Hours";
+						hoursPlaceholder: "Enter hours";
+						teacherLabel: "Default teacher";
+						teacherPlaceholder: "Select a teacher";
+						submit: "Save element";
+					};
+					empty: "No elements yet.";
+					deleteTitle: "Delete element";
+					deleteMessage: "This action cannot be undone.";
+					validation: {
+						name: "Element name is required.";
+						credits: "Credits must be positive.";
+						hours: "Hours must be positive.";
+						teacher: "A default teacher is required.";
+					};
+					toast: {
+						createSuccess: "Element created";
+						updateSuccess: "Element updated";
+						deleteSuccess: "Element deleted";
+					};
+				};
 				toast: {
 					created: "Teaching unit created";
+					updated: "Teaching unit updated";
 					deleted: "Teaching unit deleted";
 					prereqSaved: "Prerequisites saved";
 					programRequired: "Select a program first";

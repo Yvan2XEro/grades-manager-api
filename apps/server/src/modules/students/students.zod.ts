@@ -7,26 +7,25 @@ export const profileSchema = z.object({
 	firstName: z.string().min(1),
 	lastName: z.string().min(1),
 	email: z.string().email(),
-	dateOfBirth: z.coerce.date(),
-	placeOfBirth: z.string().min(1),
-	gender: genderEnum,
+	dateOfBirth: z.coerce.date().optional(),
+	placeOfBirth: z.string().optional(),
+	gender: genderEnum.optional(),
 	phone: z.string().optional(),
 	nationality: z.string().optional(),
 	authUserId: z.string().optional(),
 });
 
-export const baseSchema = z.object({
+const baseFieldsSchema = z.object({
 	classId: z.string(),
 	registrationNumber: z.string(),
-	profile: profileSchema,
 });
 
-export const updateSchema = z.object({
-	id: z.string(),
-	classId: z.string().optional(),
-	registrationNumber: z.string().optional(),
-	profile: profileSchema.partial().optional(),
-});
+export const baseSchema = baseFieldsSchema.merge(profileSchema);
+
+export const updateSchema = z
+	.object({ id: z.string() })
+	.merge(baseFieldsSchema.partial())
+	.merge(profileSchema.partial());
 
 export const listSchema = z.object({
 	classId: z.string().optional(),
@@ -45,3 +44,5 @@ export const bulkCreateSchema = z.object({
 		}),
 	),
 });
+
+export type StudentProfilePayload = z.infer<typeof profileSchema>;
