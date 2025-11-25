@@ -38,8 +38,8 @@ export async function pushSchema() {
 }
 
 export async function seed() {
-        const firstName = "Seed";
-        const lastName = "Teacher";
+	const firstName = "Seed";
+	const lastName = "Teacher";
 	const teacher = await auth.api.createUser({
 		body: {
 			name: `${firstName} ${lastName}`,

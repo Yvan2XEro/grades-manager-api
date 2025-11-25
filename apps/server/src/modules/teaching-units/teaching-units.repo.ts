@@ -34,20 +34,22 @@ export async function list(opts: {
 	cursor?: string;
 	limit?: number;
 }) {
-        const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
-        const conditions = [
-                opts.programId ? eq(schema.teachingUnits.programId, opts.programId) : undefined,
-                opts.cursor ? gt(schema.teachingUnits.id, opts.cursor) : undefined,
-        ].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
-        const condition =
-                conditions.length === 0
-                        ? undefined
-                        : conditions.length === 1
-                                ? conditions[0]
-                                : and(...conditions);
-        const items = await db
-                .select()
-                .from(schema.teachingUnits)
+	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
+	const conditions = [
+		opts.programId
+			? eq(schema.teachingUnits.programId, opts.programId)
+			: undefined,
+		opts.cursor ? gt(schema.teachingUnits.id, opts.cursor) : undefined,
+	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
+	const condition =
+		conditions.length === 0
+			? undefined
+			: conditions.length === 1
+				? conditions[0]
+				: and(...conditions);
+	const items = await db
+		.select()
+		.from(schema.teachingUnits)
 		.where(condition)
 		.orderBy(schema.teachingUnits.id)
 		.limit(limit + 1);

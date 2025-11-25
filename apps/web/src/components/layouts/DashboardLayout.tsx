@@ -19,11 +19,11 @@ const DashboardLayout: React.FC = () => {
 	}, [user, navigate]);
 
 	// Close sidebar on mobile when navigating
-        useEffect(() => {
-                if (window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                }
-        }, [setSidebarOpen]);
+	useEffect(() => {
+		if (window.innerWidth < 768) {
+			setSidebarOpen(false);
+		}
+	}, [setSidebarOpen]);
 
 	if (!user) {
 		return null;

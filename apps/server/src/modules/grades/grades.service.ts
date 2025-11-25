@@ -115,10 +115,10 @@ export async function importGradesFromCsv(examId: string, csv: string) {
 			message: "CSV is empty",
 		});
 	}
-        const headers = lines
-                .shift()
-                ?.split(",")
-                .map((h) => h.trim()) ?? ["registrationNumber", "score"];
+	const headers = lines
+		.shift()
+		?.split(",")
+		.map((h) => h.trim()) ?? ["registrationNumber", "score"];
 	const regIdx = headers.indexOf("registrationNumber");
 	const scoreIdx = headers.indexOf("score");
 	if (regIdx === -1 || scoreIdx === -1) {
