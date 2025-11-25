@@ -31,14 +31,13 @@ export async function findById(id: string) {
 }
 
 export async function list(opts: { cursor?: string; limit?: number }) {
-	const limit = opts.limit ?? 50;
-	let condition;
-	if (opts.cursor) {
-		condition = gt(schema.academicYears.id, opts.cursor);
-	}
-	const items = await db
-		.select()
-		.from(schema.academicYears)
+        const limit = opts.limit ?? 50;
+        const condition = opts.cursor
+                ? gt(schema.academicYears.id, opts.cursor)
+                : undefined;
+        const items = await db
+                .select()
+                .from(schema.academicYears)
 		.where(condition)
 		.orderBy(schema.academicYears.id)
 		.limit(limit);

@@ -31,22 +31,23 @@ export async function list(opts: {
 	cursor?: string;
 	limit?: number;
 }) {
-	const limit = opts.limit ?? 50;
-	let condition;
-	if (opts.programId) {
-		condition = eq(schema.classes.program, opts.programId);
-	}
-	if (opts.academicYearId) {
-		const ay = eq(schema.classes.academicYear, opts.academicYearId);
-		condition = condition ? and(condition, ay) : ay;
-	}
-	if (opts.cursor) {
-		const cursorCond = gt(schema.classes.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
-	}
-	const items = await db
-		.select()
-		.from(schema.classes)
+        const limit = opts.limit ?? 50;
+        const conditions = [
+                opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
+                opts.academicYearId
+                        ? eq(schema.classes.academicYear, opts.academicYearId)
+                        : undefined,
+                opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
+        ].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
+        const condition =
+                conditions.length === 0
+                        ? undefined
+                        : conditions.length === 1
+                                ? conditions[0]
+                                : and(...conditions);
+        const items = await db
+                .select()
+                .from(schema.classes)
 		.where(condition)
 		.orderBy(schema.classes.id)
 		.limit(limit);

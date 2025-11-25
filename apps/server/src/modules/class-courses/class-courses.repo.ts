@@ -34,26 +34,22 @@ export async function list(opts: {
 	cursor?: string;
 	limit?: number;
 }) {
-	const limit = opts.limit ?? 50;
-	let condition;
-	if (opts.classId) {
-		condition = eq(schema.classCourses.class, opts.classId);
-	}
-	if (opts.courseId) {
-		const cc = eq(schema.classCourses.course, opts.courseId);
-		condition = condition ? and(condition, cc) : cc;
-	}
-	if (opts.teacherId) {
-		const tc = eq(schema.classCourses.teacher, opts.teacherId);
-		condition = condition ? and(condition, tc) : tc;
-	}
-	if (opts.cursor) {
-		const cursorCond = gt(schema.classCourses.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
-	}
-	const items = await db
-		.select()
-		.from(schema.classCourses)
+        const limit = opts.limit ?? 50;
+        const conditions = [
+                opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
+                opts.courseId ? eq(schema.classCourses.course, opts.courseId) : undefined,
+                opts.teacherId ? eq(schema.classCourses.teacher, opts.teacherId) : undefined,
+                opts.cursor ? gt(schema.classCourses.id, opts.cursor) : undefined,
+        ].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
+        const condition =
+                conditions.length === 0
+                        ? undefined
+                        : conditions.length === 1
+                                ? conditions[0]
+                                : and(...conditions);
+        const items = await db
+                .select()
+                .from(schema.classCourses)
 		.where(condition)
 		.orderBy(schema.classCourses.id)
 		.limit(limit);

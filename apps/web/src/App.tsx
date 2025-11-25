@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
@@ -36,14 +36,14 @@ import { useStore } from "./store";
 import { trpc } from "./utils/trpc";
 
 function App() {
-	const { user, setUser, clearUser } = useStore();
-	const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-	const { data: session, isPending } = authClient.useSession();
+        const { user, setUser, clearUser } = useStore();
+        const _healthCheck = useQuery(trpc.healthCheck.queryOptions());
+        const { data: session, isPending } = authClient.useSession();
 
-	const mapRole = (value?: string | null) => {
-		switch ((value || "").toLowerCase()) {
-			case "administrator":
-			case "admin":
+        const mapRole = useCallback((value?: string | null) => {
+                switch ((value || "").toLowerCase()) {
+                        case "administrator":
+                        case "admin":
 				return "administrator" as const;
 			case "dean":
 				return "dean" as const;
@@ -54,10 +54,10 @@ function App() {
 			case "super_admin":
 			case "superadmin":
 				return "super_admin" as const;
-			default:
-				return "guest" as const;
-		}
-	};
+                        default:
+                                return "guest" as const;
+                }
+        }, []);
 
 	useEffect(() => {
 		if (session?.user) {
@@ -90,7 +90,7 @@ function App() {
 		} else {
 			clearUser();
 		}
-	}, [session, setUser, clearUser]);
+        }, [session, setUser, clearUser, mapRole]);
 
 	if (isPending) {
 		return <LoadingScreen />;

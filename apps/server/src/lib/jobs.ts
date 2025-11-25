@@ -21,5 +21,9 @@ export function startBackgroundJobs() {
 		}, 60 * 1000),
 	);
 
-	return () => timers.forEach((timer) => clearInterval(timer));
+        return () => {
+                timers.forEach((timer) => {
+                        clearInterval(timer);
+                });
+        };
 }
