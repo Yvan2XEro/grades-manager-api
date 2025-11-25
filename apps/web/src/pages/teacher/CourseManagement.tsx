@@ -120,22 +120,10 @@ export default function CourseManagement() {
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
 		teacher.email;
-	const teacherOptions = useMemo(
-		() =>
-			(teachers ?? []).filter(
-				(
-					teacher,
-				): teacher is Teacher & {
-					authUserId: string;
-				} => Boolean(teacher.authUserId),
-			),
-		[teachers],
-	);
+	const teacherOptions = teachers ?? [];
+	console.log({ teacherOptions });
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [
-			teacher.authUserId,
-			formatTeacherName(teacher),
-		]),
+		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
 
 	const createMutation = useMutation({
