@@ -31,7 +31,7 @@ describe("courses router", () => {
 			hours: 30,
 			program: program.id,
 			teachingUnitId: unit.id,
-			defaultTeacher: teacher.id,
+			defaultTeacher: teacher.profile.id,
 		});
 		expect(course.program).toBe(program.id);
 

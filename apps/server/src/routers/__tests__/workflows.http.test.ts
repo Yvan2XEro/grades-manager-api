@@ -66,12 +66,12 @@ describe("workflows router", () => {
 			hours: 20,
 			program: program.id,
 			teachingUnitId: teachingUnit.id,
-			defaultTeacher: teacher.id,
+			defaultTeacher: teacher.profile.id,
 		});
 		const classCourse = await client.classCourses.create.mutate({
 			class: klass.id,
 			course: course.id,
-			teacher: teacher.id,
+			teacher: teacher.profile.id,
 			weeklyHours: 2,
 		});
 
@@ -87,14 +87,12 @@ describe("workflows router", () => {
 		const student = await client.students.create.mutate({
 			classId: klass.id,
 			registrationNumber: "WF-001",
-			profile: {
-				firstName: "Workflow",
-				lastName: "Student",
-				email: "workflow.student@example.com",
-				dateOfBirth: new Date("2000-01-01"),
-				placeOfBirth: "Yaoundé",
-				gender: "male",
-			},
+			firstName: "Workflow",
+			lastName: "Student",
+			email: "workflow.student@example.com",
+			dateOfBirth: new Date("2000-01-01"),
+			placeOfBirth: "Yaoundé",
+			gender: "male",
 		});
 
 		await client.workflows.enrollmentWindow.mutate({

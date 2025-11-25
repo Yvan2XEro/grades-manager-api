@@ -1017,6 +1017,7 @@
 				"allClasses": "All classes",
 				"searchPlaceholder": "Search by name or registration number"
 			},
+			"empty": "No students found for this selection.",
 			"table": {
 				"name": "Student",
 				"email": "Email",
@@ -1052,6 +1053,9 @@
 				"fileLabel": "Upload CSV or XLSX file",
 				"downloadTemplate": "Download template",
 				"invalidFormat": "Missing required fields in this row",
+				"actions": {
+					"import": "Import students"
+				},
 				"actions": {
 					"import": "Import students"
 				},

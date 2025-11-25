@@ -126,17 +126,7 @@ export function TeachingUnitCoursesTable({
 		},
 	});
 
-	const teacherOptions = useMemo(
-		() =>
-			(teachers ?? []).filter(
-				(
-					teacher,
-				): teacher is Teacher & {
-					authUserId: string;
-				} => Boolean(teacher.authUserId),
-			),
-		[teachers],
-	);
+	const teacherOptions = teachers ?? [];
 
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
@@ -146,7 +136,7 @@ export function TeachingUnitCoursesTable({
 		() =>
 			new Map(
 				teacherOptions.map((teacher) => [
-					teacher.authUserId,
+					teacher.id,
 					formatTeacherName(teacher),
 				]),
 			),
@@ -470,10 +460,7 @@ export function TeachingUnitCoursesTable({
 										</FormControl>
 										<SelectContent>
 											{teacherOptions.map((teacher) => (
-												<SelectItem
-													key={teacher.authUserId}
-													value={teacher.authUserId}
-												>
+												<SelectItem key={teacher.id} value={teacher.id}>
 													{formatTeacherName(teacher)}
 												</SelectItem>
 											))}

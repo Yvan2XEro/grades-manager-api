@@ -287,7 +287,8 @@ export async function createCourse(data: Partial<schema.NewCourse> = {}) {
 	const teachingUnit = data.teachingUnitId
 		? { id: data.teachingUnitId }
 		: await createTeachingUnit({ programId: program.id });
-	const defaultTeacherId = data.defaultTeacher ?? (await createUser()).id;
+	const defaultTeacherId =
+		data.defaultTeacher ?? (await createUser()).profile.id;
 	const [course] = await db
 		.insert(schema.courses)
 		.values({
@@ -307,7 +308,9 @@ export async function createClassCourse(
 ) {
 	const klass = data.class ? { id: data.class } : await createClass();
 	const course = data.course ? { id: data.course } : await createCourse();
-	const teacher = data.teacher ? { id: data.teacher } : await createUser();
+	const teacher = data.teacher
+		? { id: data.teacher }
+		: { id: (await createUser()).profile.id };
 	const [cc] = await db
 		.insert(schema.classCourses)
 		.values({

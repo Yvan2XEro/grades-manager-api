@@ -78,13 +78,13 @@ describe("e2e http", () => {
 			hours: 30,
 			program: program.id,
 			teachingUnitId: teachingUnit.id,
-			defaultTeacher: teacher.id,
+			defaultTeacher: teacher.profile.id,
 		});
 
 		const cc = await client.classCourses.create.mutate({
 			class: klass.id,
 			course: course.id,
-			teacher: teacher.id,
+			teacher: teacher.profile.id,
 			weeklyHours: 2,
 		});
 
@@ -102,14 +102,12 @@ describe("e2e http", () => {
 		const student = await client.students.create.mutate({
 			classId: klass.id,
 			registrationNumber: "R1",
-			profile: {
-				firstName: "A",
-				lastName: "B",
-				email: "e2e@example.com",
-				dateOfBirth: new Date("2000-01-01"),
-				placeOfBirth: "Yaoundé",
-				gender: "male",
-			},
+			firstName: "A",
+			lastName: "B",
+			email: "e2e@example.com",
+			dateOfBirth: new Date("2000-01-01"),
+			placeOfBirth: "Yaoundé",
+			gender: "male",
 		});
 
 		if (exam) {

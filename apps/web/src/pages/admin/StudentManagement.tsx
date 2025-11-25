@@ -333,6 +333,11 @@ export default function StudentManagement() {
 			});
 		}
 
+		if (!rows.length) {
+			toast.error(t("admin.students.import.invalidFormat"));
+			return;
+		}
+
 		bulkMutation.mutate(
 			{ classId: importClass, students: rows },
 			{
@@ -430,20 +435,30 @@ export default function StudentManagement() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{studentsData?.items.map((student) => (
-								<TableRow key={student.id}>
-									<TableCell>{getStudentName(student)}</TableCell>
-									<TableCell>{student.profile.primaryEmail}</TableCell>
-									<TableCell>{student.registrationNumber}</TableCell>
-									<TableCell>
-										{formatStudentGender(t, student.profile.gender)}
+							{studentsData?.items.length ? (
+								studentsData.items.map((student) => (
+									<TableRow key={student.id}>
+										<TableCell>{getStudentName(student)}</TableCell>
+										<TableCell>{student.profile.primaryEmail}</TableCell>
+										<TableCell>{student.registrationNumber}</TableCell>
+										<TableCell>
+											{formatStudentGender(t, student.profile.gender)}
+										</TableCell>
+										<TableCell>
+											{formatDate(student.profile.dateOfBirth)}
+										</TableCell>
+										<TableCell>{student.profile.placeOfBirth || "—"}</TableCell>
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={6} className="py-6 text-center">
+										{t("admin.students.empty", {
+											defaultValue: "No students yet for this selection.",
+										})}
 									</TableCell>
-									<TableCell>
-										{formatDate(student.profile.dateOfBirth)}
-									</TableCell>
-									<TableCell>{student.profile.placeOfBirth || "—"}</TableCell>
 								</TableRow>
-							))}
+							)}
 						</TableBody>
 					</Table>
 				</CardContent>

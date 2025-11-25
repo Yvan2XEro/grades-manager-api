@@ -312,15 +312,12 @@ export default function UserManagement() {
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (user: DomainUser) => {
+		mutationFn: async (user: DomainUser) => {
 			if (!user.authUserId) {
 				throw new Error(t("admin.users.toast.deleteError"));
 			}
-			return authClient.admin
-				.removeUser({ userId: user.authUserId })
-				.then(async () => {
-					await trpcClient.users.deleteProfile.mutate({ id: user.id });
-				});
+			await authClient.admin.removeUser({ userId: user.authUserId });
+			await trpcClient.users.deleteProfile.mutate({ id: user.id });
 		},
 		onSuccess: () => {
 			toast.success(t("admin.users.toast.deleteSuccess"));

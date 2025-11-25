@@ -121,7 +121,6 @@ export default function CourseManagement() {
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
 		teacher.email;
 	const teacherOptions = teachers ?? [];
-	console.log({ teacherOptions });
 	const teacherMap = new Map(
 		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
@@ -407,10 +406,7 @@ export default function CourseManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								{teacherOptions.map((teacher) => (
-									<SelectItem
-										key={teacher.authUserId}
-										value={teacher.authUserId}
-									>
+									<SelectItem key={teacher.id} value={teacher.id}>
 										{formatTeacherName(teacher)}
 									</SelectItem>
 								))}

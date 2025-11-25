@@ -159,22 +159,9 @@ export default function ClassCourseManagement() {
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
 		teacher.email;
-	const teacherOptions = useMemo(
-		() =>
-			(teachers ?? []).filter(
-				(
-					teacher,
-				): teacher is Teacher & {
-					authUserId: string;
-				} => Boolean(teacher.authUserId),
-			),
-		[teachers],
-	);
+	const teacherOptions = teachers ?? [];
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [
-			teacher.authUserId,
-			formatTeacherName(teacher),
-		]),
+		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
@@ -449,10 +436,7 @@ export default function ClassCourseManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								{teacherOptions.map((teacher) => (
-									<SelectItem
-										key={teacher.authUserId}
-										value={teacher.authUserId}
-									>
+									<SelectItem key={teacher.id} value={teacher.id}>
 										{formatTeacherName(teacher)}
 									</SelectItem>
 								))}

@@ -4,7 +4,7 @@ import { asAdmin, createClass, makeTestContext } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
-const baseProfile = {
+const baseStudent = {
 	firstName: "A",
 	lastName: "B",
 	email: "student@example.com",
@@ -28,13 +28,13 @@ describe("students router", () => {
 		await admin.students.create({
 			classId: klass.id,
 			registrationNumber: "1",
-			profile: { ...baseProfile },
+			...baseStudent,
 		});
 		await expect(
 			admin.students.create({
 				classId: klass.id,
 				registrationNumber: "2",
-				profile: { ...baseProfile },
+				...baseStudent,
 			}),
 		).rejects.toHaveProperty("code", "CONFLICT");
 	});
@@ -45,18 +45,19 @@ describe("students router", () => {
 		await admin.students.create({
 			classId: klass.id,
 			registrationNumber: "1",
-			profile: { ...baseProfile, email: "existing@example.com" },
+			...baseStudent,
+			email: "existing@example.com",
 		});
 		const res = await admin.students.bulkCreate({
 			classId: klass.id,
 			students: [
 				{
-					...baseProfile,
+					...baseStudent,
 					email: "bulk-new@example.com",
 					registrationNumber: "2",
 				},
 				{
-					...baseProfile,
+					...baseStudent,
 					email: "existing@example.com",
 					registrationNumber: "3",
 				},

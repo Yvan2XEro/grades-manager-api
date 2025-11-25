@@ -137,9 +137,7 @@ export default function CourseManagement() {
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
 		teacher.email;
 
-	const teacherOptions = teachers || [];
-
-	console.log({ teacherOptions });
+	const teacherOptions = teachers ?? [];
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
 	const teacherMap = new Map(
 		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),

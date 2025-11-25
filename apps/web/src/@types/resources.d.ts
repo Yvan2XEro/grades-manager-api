@@ -1018,6 +1018,7 @@ interface Resources {
 					allClasses: "All classes";
 					searchPlaceholder: "Search by name or registration number";
 				};
+				empty: "No students found for this selection.";
 				table: {
 					name: "Student";
 					email: "Email";

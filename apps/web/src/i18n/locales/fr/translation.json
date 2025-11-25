@@ -587,6 +587,7 @@
 				"allClasses": "Toutes les classes",
 				"searchPlaceholder": "Rechercher par nom ou matricule"
 			},
+			"empty": "Aucun étudiant pour cette sélection.",
 			"table": {
 				"name": "Étudiant",
 				"email": "E-mail",
@@ -703,14 +704,27 @@
 			"form": {
 				"createTitle": "Créer un utilisateur",
 				"editTitle": "Modifier un utilisateur",
-				"nameLabel": "Nom complet",
+				"firstNameLabel": "Prénom",
+				"lastNameLabel": "Nom",
 				"emailLabel": "Adresse e-mail",
+				"phoneLabel": "Téléphone",
+				"genderLabel": "Sexe",
+				"genderPlaceholder": "Sélectionner un sexe",
+				"dateOfBirthLabel": "Date de naissance",
+				"placeOfBirthLabel": "Lieu de naissance",
+				"nationalityLabel": "Nationalité",
+				"statusLabel": "Statut",
 				"roleLabel": "Rôle",
 				"passwordLabel": "Mot de passe",
 				"newPasswordLabel": "Nouveau mot de passe",
 				"passwordPlaceholder": "Laisser vide pour conserver le mot de passe actuel",
 				"generatePassword": "Générer",
 				"createSubmit": "Créer un utilisateur"
+			},
+			"gender": {
+				"male": "Homme",
+				"female": "Femme",
+				"other": "Autre"
 			},
 			"confirm": {
 				"delete": {
