@@ -42,30 +42,25 @@ export async function list(opts: {
 	cursor?: string;
 	limit?: number;
 }) {
-	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
-	let condition;
-	if (opts.studentId) {
-		condition = eq(schema.enrollments.studentId, opts.studentId);
-	}
-	if (opts.classId) {
-		const classCond = eq(schema.enrollments.classId, opts.classId);
-		condition = condition ? and(condition, classCond) : classCond;
-	}
-	if (opts.academicYearId) {
-		const yearCond = eq(schema.enrollments.academicYearId, opts.academicYearId);
-		condition = condition ? and(condition, yearCond) : yearCond;
-	}
-	if (opts.status) {
-		const statusCond = eq(schema.enrollments.status, opts.status);
-		condition = condition ? and(condition, statusCond) : statusCond;
-	}
-	if (opts.cursor) {
-		const cursorCond = gt(schema.enrollments.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
-	}
-	const items = await db
-		.select()
-		.from(schema.enrollments)
+        const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
+        const conditions = [
+                opts.studentId ? eq(schema.enrollments.studentId, opts.studentId) : undefined,
+                opts.classId ? eq(schema.enrollments.classId, opts.classId) : undefined,
+                opts.academicYearId
+                        ? eq(schema.enrollments.academicYearId, opts.academicYearId)
+                        : undefined,
+                opts.status ? eq(schema.enrollments.status, opts.status) : undefined,
+                opts.cursor ? gt(schema.enrollments.id, opts.cursor) : undefined,
+        ].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
+        const condition =
+                conditions.length === 0
+                        ? undefined
+                        : conditions.length === 1
+                                ? conditions[0]
+                                : and(...conditions);
+        const items = await db
+                .select()
+                .from(schema.enrollments)
 		.where(condition)
 		.orderBy(schema.enrollments.id)
 		.limit(limit + 1);

@@ -260,14 +260,14 @@ type CreateUserOptions = {
 export async function createUser(data: CreateUserOptions = {}) {
 	const email = data.email ?? `user-${randomUUID()}@example.com`;
 	const name = data.name ?? "John Doe";
-	const u = await auth.api.createUser({
-		body: {
-			name,
-			email,
-			role: (data.role as any) ?? "ADMIN",
-			password: data.password ?? "password",
-		},
-	});
+        const u = await auth.api.createUser({
+                body: {
+                        name,
+                        email,
+                        role: data.role ?? "ADMIN",
+                        password: data.password ?? "password",
+                },
+        });
 	const [firstName, ...rest] = name.split(" ");
 	const profile = await createDomainUser({
 		authUserId: u.user.id,
@@ -364,22 +364,25 @@ export async function createStudent(data: StudentHelperInput = {}) {
 			: await createClass();
 	if (!klass) {
 		throw new Error("Class not found");
-	}
-	let profileId = data.domainUserId;
-	if (!profileId) {
+        }
+        let profileId = data.domainUserId;
+        if (!profileId) {
 		const profile = await createDomainUser({
 			businessRole: "student",
 			...data.profile,
 		});
-		profileId = profile.id;
-	}
-	const [student] = await db
-		.insert(schema.students)
-		.values({
-			domainUserId: profileId!,
-			registrationNumber: data.registrationNumber ?? randomUUID(),
-			class: klass.id,
-		})
+                profileId = profile.id;
+        }
+        if (!profileId) {
+                throw new Error("Failed to create domain user");
+        }
+        const [student] = await db
+                .insert(schema.students)
+                .values({
+                        domainUserId: profileId,
+                        registrationNumber: data.registrationNumber ?? randomUUID(),
+                        class: klass.id,
+                })
 		.returning();
 	await db.insert(schema.enrollments).values({
 		studentId: student.id,

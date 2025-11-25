@@ -7,7 +7,7 @@ import * as examsRepo from "../exams/exams.repo";
 import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
 
-const CSV_HEADERS = ["registrationNumber", "score"];
+const _CSV_HEADERS = ["registrationNumber", "score"];
 
 function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
@@ -115,10 +115,10 @@ export async function importGradesFromCsv(examId: string, csv: string) {
 			message: "CSV is empty",
 		});
 	}
-	const headers = lines
-		.shift()!
-		.split(",")
-		.map((h) => h.trim());
+        const headers = lines
+                .shift()
+                ?.split(",")
+                .map((h) => h.trim()) ?? ["registrationNumber", "score"];
 	const regIdx = headers.indexOf("registrationNumber");
 	const scoreIdx = headers.indexOf("score");
 	if (regIdx === -1 || scoreIdx === -1) {
