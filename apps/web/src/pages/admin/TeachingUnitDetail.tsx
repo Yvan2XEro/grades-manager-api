@@ -50,30 +50,24 @@ const buildUnitSchema = (
 	t: (key: string, options?: Record<string, any>) => string,
 ) =>
 	z.object({
-		name: z
-			.string()
-			.min(
-				2,
-				t("admin.teachingUnits.validation.name", {
-					defaultValue: "Name is required",
-				}),
-			),
-		code: z
-			.string()
-			.min(
-				2,
-				t("admin.teachingUnits.validation.code", {
-					defaultValue: "Code is required",
-				}),
-			),
+		name: z.string().min(
+			2,
+			t("admin.teachingUnits.validation.name", {
+				defaultValue: "Name is required",
+			}),
+		),
+		code: z.string().min(
+			2,
+			t("admin.teachingUnits.validation.code", {
+				defaultValue: "Code is required",
+			}),
+		),
 		description: z.string().optional(),
-		credits: z
-			.number()
-			.nonnegative(
-				t("admin.teachingUnits.validation.credits", {
-					defaultValue: "Credits must be positive",
-				}),
-			),
+		credits: z.number().nonnegative(
+			t("admin.teachingUnits.validation.credits", {
+				defaultValue: "Credits must be positive",
+			}),
+		),
 		semester: z.enum(["fall", "spring", "annual"]),
 		programId: z.string({
 			required_error: t("admin.teachingUnits.validation.program", {
