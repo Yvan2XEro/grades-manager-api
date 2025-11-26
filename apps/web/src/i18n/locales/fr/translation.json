@@ -644,6 +644,10 @@
 		"gradeExport": {
 			"title": "Export des notes",
 			"subtitle": "Exportez les notes des étudiants par classe et par évaluation",
+			"filtersCard": {
+				"title": "Configuration",
+				"description": "Choisissez l'année académique et la classe avant d'exporter."
+			},
 			"filters": {
 				"academicYear": "Année académique",
 				"academicYearPlaceholder": "Sélectionner une année académique",
@@ -652,7 +656,42 @@
 			},
 			"actions": {
 				"label": "Exporter",
-				"export": "Exporter les notes"
+				"combinedLabel": "Notes combinées",
+				"combinedExport": "Télécharger le fichier combiné",
+				"pvLabel": "Procès-verbal",
+				"pvExport": "Télécharger le PV (Excel)",
+				"examGroup": {
+					"label": "Exports spécifiques par examen ({{count}})",
+					"sheetName": "Notes examen",
+					"filePrefix": "notes-examen",
+					"scoreColumn": "Note"
+				}
+			},
+			"pv": {
+				"sheetName": "Procès-verbal",
+				"filePrefix": "pv-notes",
+				"table": {
+					"title": "Tableau des résultats",
+					"rank": "Rang",
+					"fullName": "Nom complet",
+					"average": "Moyenne"
+				},
+				"stats": {
+					"title": "Statistiques",
+					"students": "Étudiants",
+					"validated": "Validés",
+					"notValidated": "Non validés",
+					"successRate": "Taux de réussite",
+					"average": "Moyenne de promotion"
+				},
+				"legend": {
+					"title": "Légende des évaluations",
+					"headers": {
+						"course": "Cours",
+						"exam": "Examen",
+						"weight": "Pondération"
+					}
+				}
 			},
 			"exams": {
 				"title": "Sélectionnez les évaluations à inclure",

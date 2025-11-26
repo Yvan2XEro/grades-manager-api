@@ -193,6 +193,10 @@ interface Resources {
 			gradeExport: {
 				title: "Grade Export";
 				subtitle: "Export student grades by class and course";
+				filtersCard: {
+					title: "Configuration";
+					description: "Choose the academic year and class before exporting.";
+				};
 				filters: {
 					academicYear: "Academic year";
 					academicYearPlaceholder: "Select academic year";
@@ -201,7 +205,42 @@ interface Resources {
 				};
 				actions: {
 					label: "Export";
-					export: "Export grades";
+					combinedLabel: "Combined grades";
+					combinedExport: "Download combined workbook";
+					pvLabel: "Verbal report";
+					pvExport: "Download PV (Excel)";
+					examGroup: {
+						label: "Per-exam exports ({{count}})";
+						sheetName: "Exam grades";
+						filePrefix: "exam-grades";
+						scoreColumn: "Score";
+					};
+				};
+				pv: {
+					sheetName: "Verbal report";
+					filePrefix: "pv-grades";
+					table: {
+						title: "Results table";
+						rank: "Rank";
+						fullName: "Full name";
+						average: "Average";
+					};
+					stats: {
+						title: "Statistics";
+						students: "Students";
+						validated: "Passed";
+						notValidated: "Failed";
+						successRate: "Pass rate";
+						average: "Cohort average";
+					};
+					legend: {
+						title: "Legend";
+						headers: {
+							course: "Course";
+							exam: "Exam";
+							weight: "Weight";
+						};
+					};
 				};
 				exams: {
 					title: "Select exams to include";
