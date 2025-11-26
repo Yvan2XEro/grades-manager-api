@@ -4,6 +4,16 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Course {
 	id: string;
@@ -63,7 +73,7 @@ export default function CourseList() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<span className="loading loading-spinner loading-lg" />
+				<Spinner className="h-10 w-10 text-primary" />
 			</div>
 		);
 	}
@@ -71,54 +81,55 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">{t("teacher.courses.title")}</h2>
-				<p className="text-base-content/60">{t("teacher.courses.subtitle")}</p>
+				<h2 className="text-2xl font-bold text-foreground">
+					{t("teacher.courses.title")}
+				</h2>
+				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{courses?.map((course) => (
-					<Link
-						key={course.id}
-						to={`/teacher/grades/${course.id}`}
-						className="card bg-base-100 shadow-xl transition-shadow hover:shadow-2xl"
-					>
-						<div className="card-body">
-							<h3 className="card-title">{course.name}</h3>
-							<p className="text-base-content/60">
-								{course.class_name} • {course.program_name}
-							</p>
-
-							<div className="card-actions mt-4 items-center justify-between">
-								<div className="flex gap-4">
-									<div className="flex items-center gap-1 text-base-content/70">
-										<Users className="h-4 w-4" />
-										<span>{course.student_count}</span>
-									</div>
-									<div className="flex items-center gap-1 text-base-content/70">
-										<ClipboardList className="h-4 w-4" />
-										<span>{course.exam_count}</span>
-									</div>
+				{courses?.length ? (
+					courses.map((course) => (
+						<Card key={course.id} className="h-full">
+							<CardHeader>
+								<CardTitle>{course.name}</CardTitle>
+								<CardDescription>
+									{course.class_name} • {course.program_name}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="flex flex-wrap justify-between gap-4">
+								<div className="flex items-center gap-2 text-muted-foreground">
+									<Users className="h-4 w-4" />
+									<span>{course.student_count}</span>
 								</div>
-								<button className="btn btn-primary btn-sm">
-									{t("teacher.courses.actions.viewGrades")}
-								</button>
+								<div className="flex items-center gap-2 text-muted-foreground">
+									<ClipboardList className="h-4 w-4" />
+									<span>{course.exam_count}</span>
+								</div>
+							</CardContent>
+							<CardFooter className="justify-end">
+								<Button asChild size="sm">
+									<Link to={`/teacher/grades/${course.id}`}>
+										{t("teacher.courses.actions.viewGrades")}
+									</Link>
+								</Button>
+							</CardFooter>
+						</Card>
+					))
+				) : (
+					<Card className="col-span-full">
+						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+							<BookOpen className="h-14 w-14 text-muted-foreground/40" />
+							<div>
+								<p className="text-lg font-semibold">
+									{t("teacher.courses.empty.title")}
+								</p>
+								<p className="text-sm text-muted-foreground">
+									{t("teacher.courses.empty.description")}
+								</p>
 							</div>
-						</div>
-					</Link>
-				))}
-
-				{courses?.length === 0 && (
-					<div className="card col-span-full bg-base-100 shadow-xl">
-						<div className="card-body items-center py-12 text-center">
-							<BookOpen className="h-16 w-16 text-base-content/20" />
-							<h3 className="mt-4 font-bold text-xl">
-								{t("teacher.courses.empty.title")}
-							</h3>
-							<p className="text-base-content/60">
-								{t("teacher.courses.empty.description")}
-							</p>
-						</div>
-					</div>
+						</CardContent>
+					</Card>
 				)}
 			</div>
 		</div>

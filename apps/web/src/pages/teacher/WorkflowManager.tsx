@@ -4,6 +4,23 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { trpc, trpcClient } from "../../utils/trpc";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 const WorkflowManager = () => {
 	const { t } = useTranslation();
@@ -59,10 +76,10 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-semibold text-2xl text-gray-900">
+				<h1 className="text-2xl font-semibold text-foreground">
 					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
-				<p className="text-gray-600">
+				<p className="text-muted-foreground">
 					{t("teacher.workflow.subtitle", {
 						defaultValue:
 							"Submit exams for validation and monitor their status.",
@@ -70,89 +87,113 @@ const WorkflowManager = () => {
 				</p>
 			</div>
 
-			<select
-				className="rounded-lg border px-3 py-2"
-				value={selectedClassCourse}
-				onChange={(event) => setSelectedClassCourse(event.target.value)}
-			>
-				<option value="">
+			<div className="space-y-2">
+				<Label htmlFor="class-course">
 					{t("teacher.workflow.selectCourse", {
 						defaultValue: "Select class course",
 					})}
-				</option>
-				{classCourses?.items?.map((cc) => (
-					<option key={cc.id} value={cc.id}>
-						{cc.class} • {cc.course}
-					</option>
-				))}
-			</select>
-
-			<div className="rounded-xl border bg-white p-6 shadow-sm">
-				{!selectedClassCourse ? (
-					<p className="text-gray-500 text-sm">
-						{t("teacher.workflow.placeholder", {
-							defaultValue: "Choose a class course to view exams.",
-						})}
-					</p>
-				) : examsQuery.isLoading ? (
-					<p className="text-gray-500 text-sm">
-						{t("common.loading", { defaultValue: "Loading..." })}
-					</p>
-				) : exams.length ? (
-					<div className="space-y-3">
-						{exams.map((exam) => (
-							<div
-								key={exam.id}
-								className="flex flex-wrap items-center justify-between rounded-lg border px-4 py-3"
-							>
-								<div>
-									<p className="font-medium text-gray-900">{exam.name}</p>
-									<p className="text-gray-500 text-xs">
-										{exam.type} • {new Date(exam.date).toLocaleDateString()} •{" "}
-										{exam.percentage}%
-									</p>
-								</div>
-								<div className="flex gap-2">
-									<button
-										type="button"
-										className="flex items-center rounded-lg bg-primary-600 px-3 py-2 font-medium text-sm text-white disabled:opacity-50"
-										onClick={() => submitExam.mutate(exam.id)}
-										disabled={
-											exam.status !== "draft" && exam.status !== "scheduled"
-										}
-									>
-										<Send className="mr-1 h-4 w-4" />
-										{t("teacher.workflow.actions.submit", {
-											defaultValue: "Submit",
-										})}
-									</button>
-									<button
-										type="button"
-										className="flex items-center rounded-lg bg-emerald-100 px-3 py-2 font-medium text-emerald-800 text-sm disabled:opacity-50"
-										onClick={() => lockExam.mutate(exam.id)}
-										disabled={exam.isLocked || exam.status !== "approved"}
-									>
-										<ShieldCheck className="mr-1 h-4 w-4" />
-										{t("teacher.workflow.actions.lock", {
-											defaultValue: "Lock",
-										})}
-									</button>
-									<span className="flex items-center font-medium text-gray-600 text-xs uppercase">
-										<CheckCircle2 className="mr-1 h-4 w-4 text-emerald-600" />
-										{exam.status}
-									</span>
-								</div>
-							</div>
+				</Label>
+				<Select
+					value={selectedClassCourse || undefined}
+					onValueChange={(value) => setSelectedClassCourse(value)}
+				>
+					<SelectTrigger id="class-course">
+						<SelectValue
+							placeholder={t("teacher.workflow.selectCourse", {
+								defaultValue: "Select class course",
+							})}
+						/>
+					</SelectTrigger>
+					<SelectContent>
+						{classCourses?.items?.map((cc) => (
+							<SelectItem key={cc.id} value={cc.id}>
+								{cc.class} • {cc.course}
+							</SelectItem>
 						))}
-					</div>
-				) : (
-					<p className="text-gray-500 text-sm">
-						{t("teacher.workflow.empty", {
-							defaultValue: "No exams for this class course.",
-						})}
-					</p>
-				)}
+					</SelectContent>
+				</Select>
 			</div>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>
+						{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
+					</CardTitle>
+					<CardDescription>
+						{t("teacher.workflow.subtitle", {
+							defaultValue:
+								"Submit exams for validation and monitor their status.",
+						})}
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					{!selectedClassCourse ? (
+						<p className="text-sm text-muted-foreground">
+							{t("teacher.workflow.placeholder", {
+								defaultValue: "Choose a class course to view exams.",
+							})}
+						</p>
+					) : examsQuery.isLoading ? (
+						<p className="text-sm text-muted-foreground">
+							{t("common.loading", { defaultValue: "Loading..." })}
+						</p>
+					) : exams.length ? (
+						<div className="space-y-3">
+							{exams.map((exam) => (
+								<div
+									key={exam.id}
+									className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
+								>
+									<div>
+										<p className="font-medium text-foreground">{exam.name}</p>
+										<p className="text-xs text-muted-foreground">
+											{exam.type} • {new Date(exam.date).toLocaleDateString()} •{" "}
+											{exam.percentage}%
+										</p>
+									</div>
+									<div className="flex flex-wrap items-center gap-2">
+										<Button
+											type="button"
+											size="sm"
+											onClick={() => submitExam.mutate(exam.id)}
+											disabled={
+												exam.status !== "draft" && exam.status !== "scheduled"
+											}
+										>
+											<Send className="mr-1 h-4 w-4" />
+											{t("teacher.workflow.actions.submit", {
+												defaultValue: "Submit",
+											})}
+										</Button>
+										<Button
+											type="button"
+											size="sm"
+											variant="secondary"
+											onClick={() => lockExam.mutate(exam.id)}
+											disabled={exam.isLocked || exam.status !== "approved"}
+										>
+											<ShieldCheck className="mr-1 h-4 w-4" />
+											{t("teacher.workflow.actions.lock", {
+												defaultValue: "Lock",
+											})}
+										</Button>
+										<Badge variant="outline" className="uppercase">
+											<CheckCircle2 className="mr-1 h-4 w-4 text-emerald-600" />
+											{exam.status}
+										</Badge>
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<p className="text-sm text-muted-foreground">
+							{t("teacher.workflow.empty", {
+								defaultValue: "No exams for this class course.",
+							})}
+						</p>
+					)}
+				</CardContent>
+			</Card>
 		</div>
 	);
 };

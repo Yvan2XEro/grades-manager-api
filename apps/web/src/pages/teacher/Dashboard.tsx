@@ -6,6 +6,16 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 type CourseInfo = {
 	id: string;
@@ -133,11 +143,37 @@ const TeacherDashboard: React.FC = () => {
 			totalStudents: 0,
 			totalExams: 0,
 		} as const);
+	const statCards = [
+		{
+			label: t("teacher.dashboard.stats.courses"),
+			value: stats.totalCourses,
+			Icon: BookOpen,
+			iconClass: "bg-blue-50 text-blue-600",
+		},
+		{
+			label: t("teacher.dashboard.stats.classes"),
+			value: stats.totalClasses,
+			Icon: Users,
+			iconClass: "bg-emerald-50 text-emerald-600",
+		},
+		{
+			label: t("teacher.dashboard.stats.students"),
+			value: stats.totalStudents,
+			Icon: Users,
+			iconClass: "bg-purple-50 text-purple-600",
+		},
+		{
+			label: t("teacher.dashboard.stats.exams"),
+			value: stats.totalExams,
+			Icon: ClipboardList,
+			iconClass: "bg-amber-50 text-amber-600",
+		},
+	];
 
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<div className="h-12 w-12 animate-spin rounded-full border-primary-600 border-t-2 border-b-2" />
+				<Spinner className="h-10 w-10 text-primary" />
 			</div>
 		);
 	}
@@ -145,193 +181,140 @@ const TeacherDashboard: React.FC = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold text-2xl text-gray-800">
+				<h2 className="text-2xl font-bold text-foreground">
 					{t("teacher.dashboard.title")}
 				</h2>
-				<p className="text-gray-600">
+				<p className="text-muted-foreground">
 					{t("teacher.dashboard.subtitle", {
 						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
 					})}
 				</p>
 			</div>
 
-			{/* Stats Grid */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-				<div className="rounded-xl bg-white p-6 shadow-sm transition-all hover:shadow-md">
-					<div className="flex items-center">
-						<div className="rounded-full bg-blue-100 p-3 text-blue-600">
-							<BookOpen className="h-6 w-6" />
-						</div>
-						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">
-								{t("teacher.dashboard.stats.courses")}
-							</h3>
-							<p className="font-bold text-2xl text-gray-900">
-								{stats.totalCourses}
-							</p>
-						</div>
-					</div>
-				</div>
-
-				<div className="rounded-xl bg-white p-6 shadow-sm transition-all hover:shadow-md">
-					<div className="flex items-center">
-						<div className="rounded-full bg-emerald-100 p-3 text-emerald-600">
-							<Users className="h-6 w-6" />
-						</div>
-						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">
-								{t("teacher.dashboard.stats.classes")}
-							</h3>
-							<p className="font-bold text-2xl text-gray-900">
-								{stats.totalClasses}
-							</p>
-						</div>
-					</div>
-				</div>
-
-				<div className="rounded-xl bg-white p-6 shadow-sm transition-all hover:shadow-md">
-					<div className="flex items-center">
-						<div className="rounded-full bg-purple-100 p-3 text-purple-600">
-							<Users className="h-6 w-6" />
-						</div>
-						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">
-								{t("teacher.dashboard.stats.students")}
-							</h3>
-							<p className="font-bold text-2xl text-gray-900">
-								{stats.totalStudents}
-							</p>
-						</div>
-					</div>
-				</div>
-
-				<div className="rounded-xl bg-white p-6 shadow-sm transition-all hover:shadow-md">
-					<div className="flex items-center">
-						<div className="rounded-full bg-amber-100 p-3 text-amber-600">
-							<ClipboardList className="h-6 w-6" />
-						</div>
-						<div className="ml-4">
-							<h3 className="font-medium text-gray-600 text-sm">
-								{t("teacher.dashboard.stats.exams")}
-							</h3>
-							<p className="font-bold text-2xl text-gray-900">
-								{stats.totalExams}
-							</p>
-						</div>
-					</div>
-				</div>
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+				{statCards.map((stat) => (
+					<Card key={stat.label}>
+						<CardContent className="flex items-center gap-4">
+							<div
+								className={`rounded-full p-3 ${stat.iconClass} [&_svg]:h-6 [&_svg]:w-6`}
+							>
+								<stat.Icon className="h-6 w-6" />
+							</div>
+							<div>
+								<p className="text-sm text-muted-foreground">{stat.label}</p>
+								<p className="text-2xl font-semibold text-foreground">
+									{stat.value}
+								</p>
+							</div>
+						</CardContent>
+					</Card>
+				))}
 			</div>
 
-			{/* Main Content */}
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-				{/* My Courses */}
-				<div className="overflow-hidden rounded-xl bg-white shadow-sm lg:col-span-2">
-					<div className="border-gray-200 border-b px-6 py-4">
-						<h3 className="font-medium text-gray-800 text-lg">
-							{t("teacher.dashboard.courses.title")}
-						</h3>
-					</div>
-
-					<div className="divide-y divide-gray-200">
+				<Card className="lg:col-span-2">
+					<CardHeader className="border-b pb-4">
+						<CardTitle>{t("teacher.dashboard.courses.title")}</CardTitle>
+					</CardHeader>
+					<CardContent className="divide-y">
 						{courses.length === 0 ? (
-							<div className="p-6 text-center">
-								<BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-								<h3 className="mt-2 font-medium text-gray-700 text-lg">
-									{t("teacher.dashboard.courses.empty.title")}
-								</h3>
-								<p className="mt-1 text-gray-500">
-									{t("teacher.dashboard.courses.empty.description")}
-								</p>
+							<div className="flex flex-col items-center gap-3 py-10 text-center">
+								<BookOpen className="h-12 w-12 text-muted-foreground/60" />
+								<div>
+									<p className="text-lg font-medium text-foreground">
+										{t("teacher.dashboard.courses.empty.title")}
+									</p>
+									<p className="text-sm text-muted-foreground">
+										{t("teacher.dashboard.courses.empty.description")}
+									</p>
+								</div>
 							</div>
 						) : (
 							courses.map((course) => (
-								<div key={course.id} className="p-4 hover:bg-gray-50">
-									<Link to={`/teacher/grades/${course.id}`} className="block">
-										<div className="flex items-center justify-between">
-											<div>
-												<h4 className="font-medium text-base text-gray-900">
-													{course.name}
-												</h4>
-												<p className="text-gray-600 text-sm">
-													{course.class_name} • {course.program_name}
-												</p>
-											</div>
-											<div className="flex items-center space-x-3 text-sm">
-												<span className="flex items-center text-gray-600">
-													<Users className="mr-1 h-4 w-4" />
-													{course.student_count}
-												</span>
-												<span className="flex items-center text-gray-600">
-													<ClipboardList className="mr-1 h-4 w-4" />
-													{course.upcoming_exams}
-												</span>
-												<span className="ml-2 font-medium text-primary-700 hover:text-primary-800">
-													{t("teacher.dashboard.courses.view")}
-												</span>
-											</div>
+								<Link
+									key={course.id}
+									to={`/teacher/grades/${course.id}`}
+									className="block px-2 py-4 transition hover:bg-muted/50"
+								>
+									<div className="flex items-center justify-between gap-4">
+										<div>
+											<p className="font-medium text-base text-foreground">
+												{course.name}
+											</p>
+											<p className="text-sm text-muted-foreground">
+												{course.class_name} • {course.program_name}
+											</p>
 										</div>
-									</Link>
-								</div>
+										<div className="flex items-center gap-4 text-sm text-muted-foreground">
+											<span className="flex items-center gap-1">
+												<Users className="h-4 w-4" /> {course.student_count}
+											</span>
+											<span className="flex items-center gap-1">
+												<ClipboardList className="h-4 w-4" />{" "}
+												{course.upcoming_exams}
+											</span>
+											<span className="font-medium text-primary">
+												{t("teacher.dashboard.courses.view")}
+											</span>
+										</div>
+									</div>
+								</Link>
 							))
 						)}
-					</div>
+					</CardContent>
+					<CardFooter className="border-t">
+						<Button variant="link" className="px-0" asChild>
+							<Link to="/teacher/courses">
+								{t("teacher.dashboard.courses.viewAll")}
+							</Link>
+						</Button>
+					</CardFooter>
+				</Card>
 
-					<div className="border-gray-200 border-t bg-gray-50 px-6 py-4">
-						<Link
-							to="/teacher/courses"
-							className="font-medium text-primary-700 text-sm hover:text-primary-800"
-						>
-							{t("teacher.dashboard.courses.viewAll")}
-						</Link>
-					</div>
-				</div>
-
-				{/* Upcoming Exams */}
-				<div className="overflow-hidden rounded-xl bg-white shadow-sm">
-					<div className="border-gray-200 border-b px-6 py-4">
-						<h3 className="font-medium text-gray-800 text-lg">
-							{t("teacher.dashboard.exams.title")}
-						</h3>
-					</div>
-
-					<div className="divide-y divide-gray-200">
+				<Card>
+					<CardHeader className="border-b pb-4">
+						<CardTitle>{t("teacher.dashboard.exams.title")}</CardTitle>
+					</CardHeader>
+					<CardContent className="divide-y">
 						{upcomingExams.length === 0 ? (
-							<div className="p-6 text-center">
-								<Calendar className="mx-auto h-12 w-12 text-gray-400" />
-								<h3 className="mt-2 font-medium text-gray-700 text-lg">
-									{t("teacher.dashboard.exams.empty.title")}
-								</h3>
-								<p className="mt-1 text-gray-500">
-									{t("teacher.dashboard.exams.empty.description")}
-								</p>
+							<div className="flex flex-col items-center gap-3 py-10 text-center">
+								<Calendar className="h-12 w-12 text-muted-foreground/60" />
+								<div>
+									<p className="text-lg font-medium text-foreground">
+										{t("teacher.dashboard.exams.empty.title")}
+									</p>
+									<p className="text-sm text-muted-foreground">
+										{t("teacher.dashboard.exams.empty.description")}
+									</p>
+								</div>
 							</div>
 						) : (
 							upcomingExams.map((exam) => (
-								<div key={exam.id} className="p-4 hover:bg-gray-50">
-									<div>
-										<div className="flex items-center justify-between">
-											<h4 className="font-medium text-base text-gray-900">
+								<div key={exam.id} className="px-2 py-3">
+									<div className="flex items-center justify-between gap-3">
+										<div>
+											<p className="font-medium text-base text-foreground">
 												{exam.name}
-											</h4>
-											<span className="rounded-full bg-primary-50 px-2 py-1 text-primary-700 text-sm">
-												{t("teacher.dashboard.exams.percentage", {
-													value: exam.percentage,
-												})}
-											</span>
+											</p>
+											<p className="text-sm text-muted-foreground">
+												{exam.course_name} • {exam.class_name}
+											</p>
 										</div>
-										<p className="mt-1 text-gray-600 text-sm">
-											{exam.course_name} • {exam.class_name}
-										</p>
-										<div className="mt-2 flex items-center text-gray-500 text-sm">
-											<Clock className="mr-1 h-4 w-4" />
-											<span>{format(new Date(exam.date), "MMMM d, yyyy")}</span>
-										</div>
+										<Badge variant="outline" className="text-primary">
+											{t("teacher.dashboard.exams.percentage", {
+												value: exam.percentage,
+											})}
+										</Badge>
+									</div>
+									<div className="mt-2 flex items-center text-sm text-muted-foreground">
+										<Clock className="mr-1 h-4 w-4" />
+										{format(new Date(exam.date), "MMMM d, yyyy")}
 									</div>
 								</div>
 							))
 						)}
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

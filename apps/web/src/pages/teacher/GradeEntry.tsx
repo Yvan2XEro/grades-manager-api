@@ -14,6 +14,34 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 
 type Student = {
 	id: string;
@@ -153,10 +181,9 @@ const GradeEntry: React.FC = () => {
 		}
 	};
 
-	const handleExamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const examId = e.target.value;
+	const handleExamChange = (examId: string) => {
 		setSelectedExam(examId);
-		setGrades({}); // Clear grades when changing exam
+		setGrades({});
 	};
 
 	const onSubmit = async (data: any) => {
@@ -219,27 +246,24 @@ const GradeEntry: React.FC = () => {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<div className="h-12 w-12 animate-spin rounded-full border-primary-600 border-t-2 border-b-2" />
+				<Spinner className="h-10 w-10 text-primary" />
 			</div>
 		);
 	}
 
 	return (
 		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center space-x-4">
-				<button
-					onClick={() => navigate(-1)}
-					className="rounded-full p-2 hover:bg-gray-100"
-				>
+			<div className="flex items-center gap-4">
+				<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
 					<ArrowLeft className="h-5 w-5" />
-				</button>
+					<span className="sr-only">Back</span>
+				</Button>
 				<div>
-					<h2 className="font-bold text-2xl text-gray-800">
+					<h2 className="text-2xl font-bold text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
-						<p className="text-gray-600">
+						<p className="text-sm text-muted-foreground">
 							{courseInfo.course_name} • {courseInfo.class_name} •{" "}
 							{courseInfo.program_name}
 						</p>
@@ -247,183 +271,183 @@ const GradeEntry: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Select Exam */}
-			<div className="rounded-xl bg-white p-6 shadow-sm">
-				<div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
-					<div className="w-full md:w-1/3">
-						<label
-							htmlFor="exam"
-							className="mb-1 block font-medium text-gray-700 text-sm"
-						>
-							{t("teacher.gradeEntry.selectExam.label")}
-						</label>
-						<select
-							id="exam"
-							value={selectedExam}
-							onChange={handleExamChange}
-							className="select select-bordered w-full"
-							disabled={exams.length === 0}
-						>
-							{exams.length === 0 ? (
-								<option value="">
-									{t("teacher.gradeEntry.selectExam.empty")}
-								</option>
-							) : (
-								exams.map((exam) => (
-									<option key={exam.id} value={exam.id}>
-										{exam.name} ({exam.percentage}%){" "}
-										{exam.isLocked
-											? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
-											: ""}
-									</option>
-								))
-							)}
-						</select>
-					</div>
-
-					{selectedExam && (
-						<div className="flex items-center space-x-3">
-							{isExamLocked ? (
-								<div className="flex items-center rounded-md bg-gray-100 px-3 py-2 text-gray-600">
-									<Lock className="mr-2 h-4 w-4" />
-									<span>{t("teacher.gradeEntry.lockedChip")}</span>
-								</div>
-							) : (
-								<button
-									onClick={lockExam}
-									className="btn btn-outline btn-warning"
-								>
-									<Lock className="mr-2 h-4 w-4" />{" "}
-									{t("teacher.gradeEntry.actions.lock")}
-								</button>
-							)}
-						</div>
-					)}
-				</div>
-
-				{selectedExam && exams.length > 0 && (
-					<div className="mt-4 flex items-start rounded-lg bg-blue-50 p-4 text-blue-800">
-						<Info className="mt-0.5 mr-2 h-5 w-5 flex-shrink-0" />
-						<div>
-							<p className="font-medium">
-								{t("teacher.gradeEntry.info.title")}
-							</p>
-							<p className="text-sm">
-								{t("teacher.gradeEntry.info.description")}
-							</p>
-						</div>
-					</div>
-				)}
-			</div>
-
-			{/* Grade Entry Table */}
-			{selectedExam && students.length > 0 ? (
-				<div className="overflow-hidden rounded-xl bg-white shadow-sm">
-					<form onSubmit={handleSubmit(onSubmit)}>
-						<div className="overflow-x-auto">
-							<table className="w-full">
-								<thead className="bg-gray-50">
-									<tr>
-										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											{t("teacher.gradeEntry.table.registration")}
-										</th>
-										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											{t("teacher.gradeEntry.table.student")}
-										</th>
-										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											{t("teacher.gradeEntry.table.score")}
-										</th>
-										<th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">
-											{t("teacher.gradeEntry.table.status")}
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-200">
-									{students.map((student) => (
-										<tr key={student.id} className="hover:bg-gray-50">
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{student.registrationNumber}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{student.lastName}, {student.firstName}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-sm">
-												<input
-													type="number"
-													min="0"
-													max="20"
-													step="0.25"
-													defaultValue={grades[student.id] || ""}
-													className="input input-bordered input-sm w-24"
-													{...register(`student_${student.id}`, {
-														min: {
-															value: 0,
-															message: t("teacher.gradeEntry.validation.min"),
-														},
-														max: {
-															value: 20,
-															message: t("teacher.gradeEntry.validation.max"),
-														},
-													})}
-													disabled={isExamLocked}
-												/>
-												{errors[`student_${student.id}`] && (
-													<span className="ml-2 text-error-600 text-xs">
-														{(errors[`student_${student.id}`] as any).message}
-													</span>
-												)}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-sm">
-												{grades[student.id] !== undefined ? (
-													<span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 font-medium text-green-800 text-xs">
-														<Check className="mr-1 h-3 w-3" />
-														{t("teacher.gradeEntry.status.graded")}
-													</span>
-												) : (
-													<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-800 text-xs">
-														{t("teacher.gradeEntry.status.notGraded")}
-													</span>
-												)}
-											</td>
-										</tr>
+			<Card>
+				<CardContent className="space-y-4">
+					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+						<div className="w-full space-y-2 md:max-w-sm">
+							<Label htmlFor="exam">
+								{t("teacher.gradeEntry.selectExam.label")}
+							</Label>
+							<Select
+								value={selectedExam || undefined}
+								onValueChange={handleExamChange}
+								disabled={exams.length === 0}
+							>
+								<SelectTrigger id="exam">
+									<SelectValue
+										placeholder={t("teacher.gradeEntry.selectExam.empty")}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{exams.map((exam) => (
+										<SelectItem key={exam.id} value={exam.id}>
+											{exam.name} ({exam.percentage}%){" "}
+											{exam.isLocked
+												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
+												: ""}
+										</SelectItem>
 									))}
-								</tbody>
-							</table>
+								</SelectContent>
+							</Select>
 						</div>
+						{selectedExam && (
+							<div className="flex items-center gap-3">
+								{isExamLocked ? (
+									<Badge variant="secondary" className="flex items-center gap-2">
+										<Lock className="h-4 w-4" />
+										{t("teacher.gradeEntry.lockedChip")}
+									</Badge>
+								) : (
+									<Button
+										type="button"
+										variant="outline"
+										onClick={lockExam}
+										disabled={!selectedExam}
+									>
+										<Lock className="mr-2 h-4 w-4" />
+										{t("teacher.gradeEntry.actions.lock")}
+									</Button>
+								)}
+							</div>
+						)}
+					</div>
 
+					{selectedExam && exams.length > 0 && (
+						<Alert>
+							<Info className="h-4 w-4" />
+							<AlertTitle>{t("teacher.gradeEntry.info.title")}</AlertTitle>
+							<AlertDescription>
+								{t("teacher.gradeEntry.info.description")}
+							</AlertDescription>
+						</Alert>
+					)}
+				</CardContent>
+			</Card>
+
+			{selectedExam && students.length > 0 ? (
+				<Card>
+					<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+						<CardContent className="px-0">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>
+											{t("teacher.gradeEntry.table.registration")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.gradeEntry.table.student")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.gradeEntry.table.score")}
+										</TableHead>
+										<TableHead>
+											{t("teacher.gradeEntry.table.status")}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{students.map((student) => {
+										const fieldError = (
+											errors as Record<string, { message?: string } | undefined>
+										)[`student_${student.id}`];
+										return (
+											<TableRow key={student.id}>
+												<TableCell>{student.registrationNumber}</TableCell>
+												<TableCell>
+													{student.lastName}, {student.firstName}
+												</TableCell>
+												<TableCell>
+													<div className="flex flex-col gap-1">
+														<Input
+															type="number"
+															inputMode="decimal"
+															min="0"
+															max="20"
+															step="0.25"
+															className="w-28"
+															defaultValue={grades[student.id] ?? ""}
+															disabled={isExamLocked}
+															{...register(`student_${student.id}`, {
+																min: {
+																	value: 0,
+																	message: t(
+																		"teacher.gradeEntry.validation.min",
+																	),
+																},
+																max: {
+																	value: 20,
+																	message: t(
+																		"teacher.gradeEntry.validation.max",
+																	),
+																},
+															})}
+														/>
+														{fieldError ? (
+															<p className="text-destructive text-xs">
+																{fieldError.message}
+															</p>
+														) : null}
+													</div>
+												</TableCell>
+												<TableCell>
+													{grades[student.id] !== undefined ? (
+														<Badge variant="secondary" className="gap-1">
+															<Check className="h-3 w-3" />
+															{t("teacher.gradeEntry.status.graded")}
+														</Badge>
+													) : (
+														<Badge variant="outline">
+															{t("teacher.gradeEntry.status.notGraded")}
+														</Badge>
+													)}
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</CardContent>
 						{!isExamLocked && (
-							<div className="flex justify-end border-gray-200 border-t bg-gray-50 px-6 py-4">
-								<button
-									type="submit"
-									disabled={isSaving}
-									className="btn btn-primary"
-								>
+							<CardFooter className="justify-end gap-2 border-t">
+								<Button type="submit" disabled={isSaving}>
 									{isSaving ? (
 										<>
-											<div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-t-2 border-b-2" />
+											<Spinner className="mr-2 h-4 w-4 text-white" />
 											{t("teacher.gradeEntry.actions.saving")}
 										</>
 									) : (
 										<>
-											<Save className="mr-2 h-4 w-4" />{" "}
+											<Save className="mr-2 h-4 w-4" />
 											{t("teacher.gradeEntry.actions.save")}
 										</>
 									)}
-								</button>
-							</div>
+								</Button>
+							</CardFooter>
 						)}
 					</form>
-				</div>
+				</Card>
 			) : selectedExam ? (
-				<div className="rounded-xl bg-white p-8 text-center shadow-sm">
-					<AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
-					<h3 className="mt-4 font-medium text-gray-700 text-lg">
-						{t("teacher.gradeEntry.emptyStudents.title")}
-					</h3>
-					<p className="mt-1 text-gray-500">
-						{t("teacher.gradeEntry.emptyStudents.description")}
-					</p>
-				</div>
+				<Card className="text-center">
+					<CardContent className="py-12">
+						<AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
+						<p className="mt-4 text-lg font-medium text-foreground">
+							{t("teacher.gradeEntry.emptyStudents.title")}
+						</p>
+						<p className="text-sm text-muted-foreground">
+							{t("teacher.gradeEntry.emptyStudents.description")}
+						</p>
+					</CardContent>
+				</Card>
 			) : null}
 		</div>
 	);
