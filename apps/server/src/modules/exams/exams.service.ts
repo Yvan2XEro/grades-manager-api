@@ -163,3 +163,7 @@ export async function setLock(examId: string, lock: boolean) {
 	}
 	return repo.setLock(examId, lock);
 }
+
+export function assignScheduleRun(examIds: string[], runId: string) {
+	return repo.assignScheduleRun(examIds, runId);
+}

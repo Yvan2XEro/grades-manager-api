@@ -63,7 +63,9 @@
 				"teachers": "Enseignants",
 				"courseAssignments": "Affectations de cours",
 				"teachingUnits": "Unités d'enseignement",
-				"enrollments": "Inscriptions"
+				"enrollments": "Inscriptions",
+				"examTypes": "Types d'examen",
+				"examScheduler": "Programmation des examens"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
@@ -546,6 +548,97 @@
 					"max": "La pondération ne peut pas dépasser 100"
 				},
 				"classCourse": "Veuillez sélectionner un cours de classe"
+			}
+		},
+		"examTypes": {
+			"title": "Types d'examen",
+			"subtitle": "Créez des catégories réutilisables (CC, TP, session principale...).",
+			"actions": {
+				"add": "Ajouter un type"
+			},
+			"table": {
+				"title": "Types disponibles",
+				"description": "Les examens planifiés pourront réutiliser ces types.",
+				"name": "Nom",
+				"description": "Description"
+			},
+			"empty": "Aucun type d'examen pour le moment.",
+			"form": {
+				"createTitle": "Créer un type d'examen",
+				"editTitle": "Modifier un type d'examen",
+				"nameLabel": "Nom",
+				"descriptionLabel": "Description",
+				"submit": "Enregistrer le type"
+			},
+			"toast": {
+				"createSuccess": "Type d'examen créé",
+				"createError": "Impossible de créer le type",
+				"updateSuccess": "Type d'examen mis à jour",
+				"updateError": "Impossible de mettre à jour le type",
+				"deleteSuccess": "Type d'examen supprimé",
+				"deleteError": "Impossible de supprimer le type"
+			},
+			"delete": {
+				"title": "Supprimer le type",
+				"message": "Voulez-vous vraiment supprimer ce type d'examen ?"
+			}
+		},
+		"examScheduler": {
+			"title": "Programmation des examens",
+			"subtitle": "Planifiez les examens pour une faculté entière en une seule opération.",
+			"form": {
+				"title": "Paramètres de programmation",
+				"description": "Sélectionnez la faculté, l'année académique, le type d'examen, la pondération et la plage de dates.",
+				"facultyLabel": "Faculté",
+				"facultyPlaceholder": "Sélectionner une faculté",
+				"academicYearLabel": "Année académique",
+				"academicYearPlaceholder": "Sélectionner une année",
+				"examTypeLabel": "Type d'examen",
+				"examTypePlaceholder": "Sélectionner un type",
+				"percentageLabel": "Pondération (%)",
+				"dateStartLabel": "Date de début",
+				"dateEndLabel": "Date de fin"
+			},
+			"classes": {
+				"title": "Classes concernées",
+				"description": "Toutes les classes de l'année sélectionnée sont incluses par défaut. Décochez celles à exclure.",
+				"selectAll": "Sélectionner toutes les classes"
+			},
+			"actions": {
+				"schedule": "Programmer les examens"
+			},
+			"toast": {
+				"success": "Examens programmés",
+				"error": "Impossible de programmer les examens"
+			},
+			"history": {
+				"title": "Historique des programmations",
+				"description": "Consultez les derniers lancements de programmation et leurs résultats.",
+				"emptyTitle": "Aucune programmation enregistrée",
+				"emptyDescription": "Soumettez le formulaire pour créer la première programmation.",
+				"table": {
+					"classes": "Classes",
+					"created": "Créés",
+					"skipped": "Ignorés",
+					"duplicates": "Doublons",
+					"conflicts": "Conflits"
+				},
+				"actions": {
+					"view": "Voir les examens"
+				},
+				"details": {
+					"title": "Examens planifiés",
+					"subtitle": "Programmation exécutée le {{date}}",
+					"table": {
+						"exam": "Examen",
+						"course": "Cours",
+						"class": "Classe",
+						"type": "Type",
+						"date": "Date",
+						"status": "Statut",
+						"locked": "Verrouillé"
+					}
+				}
 			}
 		},
 		"gradeExport": {

@@ -22,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { trpcClient } from "../../utils/trpc";
+import type { RouterOutputs } from "../../utils/trpc";
 
 interface AcademicYear {
 	id: string;
@@ -61,15 +62,7 @@ interface StudentExport {
 	}[];
 }
 
-interface StudentItem {
-	id: string;
-	firstName: string;
-	lastName: string;
-	registrationNumber: string;
-	birthDate: string | null;
-	birthPlace: string | null;
-	gender: string | null;
-}
+type StudentListItem = RouterOutputs["students"]["list"]["items"][number];
 
 interface GradeItem {
 	exam: string;
@@ -162,12 +155,15 @@ export default function GradeExport() {
 		try {
 			const { items: studentItems } = await trpcClient.students.list.query({
 				classId: selectedClass,
+				limit: 1000,
 			});
+			const typedStudents = studentItems as StudentListItem[];
 			const students: StudentExport[] = await Promise.all(
-				studentItems.map(async (s: StudentItem) => {
+				typedStudents.map(async (student) => {
+					const profile = student.profile;
 					const { items: gradeItems } =
 						await trpcClient.grades.listByStudent.query({
-							studentId: s.id,
+							studentId: student.id,
 						});
 					const grades = await Promise.all(
 						gradeItems.map(async (g: GradeItem) => {
@@ -189,13 +185,13 @@ export default function GradeExport() {
 						}),
 					);
 					return {
-						id: s.id,
-						first_name: s.firstName,
-						last_name: s.lastName,
-						registration_number: s.registrationNumber,
-						birth_date: s.birthDate ?? null,
-						birth_place: s.birthPlace ?? null,
-						gender: s.gender ?? null,
+						id: student.id,
+						first_name: profile.firstName,
+						last_name: profile.lastName,
+						registration_number: student.registrationNumber,
+						birth_date: profile.dateOfBirth ?? null,
+						birth_place: profile.placeOfBirth ?? null,
+						gender: profile.gender ?? null,
 						grades,
 					} as StudentExport;
 				}),

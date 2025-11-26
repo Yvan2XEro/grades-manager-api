@@ -12,6 +12,8 @@ import CourseManagement from "./pages/admin/CourseManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
 import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
+import ExamTypes from "./pages/admin/ExamTypes";
+import ExamScheduler from "./pages/admin/ExamScheduler";
 import GradeExport from "./pages/admin/GradeExport";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
@@ -122,7 +124,9 @@ function App() {
 					<Route path="class-courses" element={<ClassCourseManagement />} />
 					<Route path="students" element={<StudentManagement />} />
 					<Route path="users" element={<UserManagement />} />
-					<Route path="exams" element={<ExamManagement />} />
+          <Route path="exams" element={<ExamManagement />} />
+          <Route path="exam-types" element={<ExamTypes />} />
+          <Route path="exam-scheduler" element={<ExamScheduler />} />
 					<Route path="faculties" element={<FacultyManagement />} />
 					<Route path="student-promotion" element={<StudentManagement />} />
 					<Route path="programs" element={<ProgramManagement />} />

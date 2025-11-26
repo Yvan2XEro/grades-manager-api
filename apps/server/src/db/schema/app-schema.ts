@@ -95,6 +95,21 @@ export const domainUsers = pgTable(
 	],
 );
 
+/** Catalog of allowed exam types (CC, TP...). */
+export const examTypes = pgTable(
+	"exam_types",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		name: text("name").notNull(),
+		description: text("description"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [unique("uq_exam_types_name").on(t.name)],
+);
+
+/** Catalog of allowed exam types (CC, TP...). */
 /** Faculties (schools) grouping programs. */
 export const faculties = pgTable(
 	"faculties",
@@ -258,6 +273,44 @@ export const classCourses = pgTable(
 	],
 );
 
+/** Audit trail of bulk scheduling operations. */
+export const examScheduleRuns = pgTable(
+	"exam_schedule_runs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		facultyId: text("faculty_id")
+			.notNull()
+			.references(() => faculties.id, { onDelete: "restrict" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		examTypeId: text("exam_type_id")
+			.notNull()
+			.references(() => examTypes.id, { onDelete: "restrict" }),
+		percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull(),
+		dateStart: timestamp("date_start", { withTimezone: true }).notNull(),
+		dateEnd: timestamp("date_end", { withTimezone: true }).notNull(),
+		classIds: jsonb("class_ids").$type<string[]>().notNull(),
+		classCount: integer("class_count").notNull(),
+		classCourseCount: integer("class_course_count").notNull(),
+		createdCount: integer("created_count").notNull(),
+		skippedCount: integer("skipped_count").notNull(),
+		duplicateCount: integer("duplicate_count").notNull(),
+		conflictCount: integer("conflict_count").notNull(),
+		scheduledBy: text("scheduled_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_exam_schedule_runs_faculty").on(t.facultyId),
+		index("idx_exam_schedule_runs_year").on(t.academicYearId),
+		index("idx_exam_schedule_runs_type").on(t.examTypeId),
+	],
+);
+
 /** Exams planned for a class-course, with workflow metadata. */
 export const exams = pgTable(
 	"exams",
@@ -278,6 +331,10 @@ export const exams = pgTable(
 		validatedBy: text("validated_by").references(() => domainUsers.id, {
 			onDelete: "set null",
 		}),
+		scheduleRunId: text("schedule_run_id").references(
+			() => examScheduleRuns.id,
+			{ onDelete: "set null" },
+		),
 		scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
 		validatedAt: timestamp("validated_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -649,8 +706,14 @@ export type NewClassCourse = InferInsertModel<typeof classCourses>;
 export type Exam = InferSelectModel<typeof exams>;
 export type NewExam = InferInsertModel<typeof exams>;
 
+export type ExamScheduleRun = InferSelectModel<typeof examScheduleRuns>;
+export type NewExamScheduleRun = InferInsertModel<typeof examScheduleRuns>;
+
 export type TeachingUnit = InferSelectModel<typeof teachingUnits>;
 export type NewTeachingUnit = InferInsertModel<typeof teachingUnits>;
+
+export type ExamType = InferSelectModel<typeof examTypes>;
+export type NewExamType = InferInsertModel<typeof examTypes>;
 
 export type DomainUser = InferSelectModel<typeof domainUsers>;
 export type NewDomainUser = InferInsertModel<typeof domainUsers>;

@@ -104,6 +104,7 @@ export async function reset() {
      teaching_units,
      classes,
      programs,
+     exam_schedule_runs,
      faculties,
      academic_years,
      students,

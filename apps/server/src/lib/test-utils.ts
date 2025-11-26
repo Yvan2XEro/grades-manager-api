@@ -348,6 +348,17 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
 	return exam;
 }
 
+export async function createExamType(data: Partial<schema.NewExamType> = {}) {
+	const [examType] = await db
+		.insert(schema.examTypes)
+		.values({
+			name: data.name ?? `ExamType-${randomUUID()}`,
+			description: data.description ?? null,
+		})
+		.returning();
+	return examType;
+}
+
 type StudentHelperInput = {
 	class?: string;
 	registrationNumber?: string;

@@ -1,4 +1,4 @@
-import { and, eq, gt, gte, lte } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lte } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -66,4 +66,12 @@ export async function setLock(examId: string, lock: boolean) {
 		.where(eq(schema.exams.id, examId))
 		.returning();
 	return item;
+}
+
+export async function assignScheduleRun(examIds: string[], runId: string) {
+	if (examIds.length === 0) return;
+	await db
+		.update(schema.exams)
+		.set({ scheduleRunId: runId })
+		.where(inArray(schema.exams.id, examIds));
 }

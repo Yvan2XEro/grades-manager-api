@@ -6,6 +6,7 @@ import {
 	BookOpenCheck,
 	Building2,
 	Calendar,
+	CalendarPlus,
 	ClipboardList,
 	FileSpreadsheet,
 	GraduationCap,
@@ -73,6 +74,16 @@ const Sidebar: React.FC = () => {
 			to: "/admin/exams",
 			icon: <ClipboardList className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.exams",
+		},
+		{
+			to: "/admin/exam-types",
+			icon: <ClipboardList className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.examTypes",
+		},
+		{
+			to: "/admin/exam-scheduler",
+			icon: <CalendarPlus className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.examScheduler",
 		},
 		{
 			to: "/admin/teaching-units",

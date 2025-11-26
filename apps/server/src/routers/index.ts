@@ -5,6 +5,7 @@ import { classCoursesRouter } from "../modules/class-courses";
 import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
+import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { notificationsRouter } from "../modules/notifications";
@@ -13,6 +14,7 @@ import { studentsRouter } from "../modules/students";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
+import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
@@ -29,6 +31,8 @@ export const appRouter = router({
 	classCourses: classCoursesRouter,
 	enrollments: enrollmentsRouter,
 	exams: examsRouter,
+	examTypes: examTypesRouter,
+	examScheduler: examSchedulerRouter,
 	students: studentsRouter,
 	grades: gradesRouter,
 	users: usersRouter,

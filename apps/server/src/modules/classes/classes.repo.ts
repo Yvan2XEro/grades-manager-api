@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -28,14 +28,29 @@ export async function findById(id: string) {
 export async function list(opts: {
 	programId?: string;
 	academicYearId?: string;
+	facultyId?: string;
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
+	let facultyProgramIds: string[] | undefined;
+	if (opts.facultyId) {
+		const programs = await db
+			.select({ id: schema.programs.id })
+			.from(schema.programs)
+			.where(eq(schema.programs.faculty, opts.facultyId));
+		if (!programs.length) {
+			return { items: [], nextCursor: undefined };
+		}
+		facultyProgramIds = programs.map((p) => p.id);
+	}
 	const conditions = [
 		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
 		opts.academicYearId
 			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
+		facultyProgramIds
+			? inArray(schema.classes.program, facultyProgramIds)
 			: undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
