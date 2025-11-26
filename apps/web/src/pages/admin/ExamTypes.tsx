@@ -16,6 +16,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
 	EmptyContent,
@@ -23,7 +24,6 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "../../components/ui/empty";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -164,7 +164,9 @@ export default function ExamTypes() {
 	});
 
 	const isSaving =
-		createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+		createMutation.isPending ||
+		updateMutation.isPending ||
+		deleteMutation.isPending;
 
 	const onSubmit = (values: FormValues) => {
 		if (editingType) {
@@ -178,7 +180,9 @@ export default function ExamTypes() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="text-3xl font-semibold">{t("admin.examTypes.title")}</h1>
+					<h1 className="font-semibold text-3xl">
+						{t("admin.examTypes.title")}
+					</h1>
 					<p className="text-muted-foreground">
 						{t("admin.examTypes.subtitle")}
 					</p>
@@ -192,7 +196,9 @@ export default function ExamTypes() {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.examTypes.table.title")}</CardTitle>
-					<CardDescription>{t("admin.examTypes.table.description")}</CardDescription>
+					<CardDescription>
+						{t("admin.examTypes.table.description")}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
@@ -204,7 +210,9 @@ export default function ExamTypes() {
 							<TableHeader>
 								<TableRow>
 									<TableHead>{t("admin.examTypes.table.name")}</TableHead>
-									<TableHead>{t("admin.examTypes.table.description")}</TableHead>
+									<TableHead>
+										{t("admin.examTypes.table.description")}
+									</TableHead>
 									<TableHead className="w-[120px] text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -239,7 +247,9 @@ export default function ExamTypes() {
 						<Empty>
 							<EmptyHeader>
 								<EmptyTitle>{t("admin.examTypes.title")}</EmptyTitle>
-								<EmptyDescription>{t("admin.examTypes.empty")}</EmptyDescription>
+								<EmptyDescription>
+									{t("admin.examTypes.empty")}
+								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent />
 						</Empty>
@@ -276,7 +286,9 @@ export default function ExamTypes() {
 							name="description"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("admin.examTypes.form.descriptionLabel")}</FormLabel>
+									<FormLabel>
+										{t("admin.examTypes.form.descriptionLabel")}
+									</FormLabel>
 									<FormControl>
 										<Input {...field} />
 									</FormControl>
@@ -289,7 +301,9 @@ export default function ExamTypes() {
 								{t("common.actions.cancel")}
 							</Button>
 							<Button type="submit" disabled={isSaving}>
-								{isSaving ? t("common.actions.saving") : t("admin.examTypes.form.submit")}
+								{isSaving
+									? t("common.actions.saving")
+									: t("admin.examTypes.form.submit")}
 							</Button>
 						</DialogFooter>
 					</form>

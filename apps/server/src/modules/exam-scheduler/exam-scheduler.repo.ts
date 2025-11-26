@@ -78,8 +78,12 @@ export async function getClassesForScheduling(
 					.from(schema.classCourses)
 					.where(inArray(schema.classCourses.class, classIds))
 					.groupBy(schema.classCourses.class);
-	const countMap = new Map(counts.map((item) => [item.classId, Number(item.count)]));
-	const programNames = new Map(programs.map((program) => [program.id, program.name]));
+	const countMap = new Map(
+		counts.map((item) => [item.classId, Number(item.count)]),
+	);
+	const programNames = new Map(
+		programs.map((program) => [program.id, program.name]),
+	);
 	return classes.map((klass) => ({
 		id: klass.id,
 		name: klass.name,
@@ -170,10 +174,7 @@ export async function listRuns(filters: HistoryFilters) {
 			? eq(schema.examScheduleRuns.examTypeId, filters.examTypeId)
 			: undefined,
 		filters.cursor ? gt(schema.examScheduleRuns.id, filters.cursor) : undefined,
-	].filter(Boolean) as (
-		| ReturnType<typeof eq>
-		| ReturnType<typeof gt>
-	)[];
+	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =
 		conditions.length === 0
 			? undefined
@@ -278,14 +279,8 @@ export async function getRunDetails(runId: string) {
 			schema.classCourses,
 			eq(schema.classCourses.id, schema.exams.classCourse),
 		)
-		.leftJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
-		.leftJoin(
-			schema.courses,
-			eq(schema.courses.id, schema.classCourses.course),
-		)
+		.leftJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.leftJoin(schema.courses, eq(schema.courses.id, schema.classCourses.course))
 		.where(eq(schema.exams.scheduleRunId, runId));
 	return { run, exams };
 }

@@ -4,6 +4,7 @@ import { Loader2, Play, TableProperties } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -12,6 +13,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -43,9 +45,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { Checkbox } from "../../components/ui/checkbox";
-import { Badge } from "../../components/ui/badge";
-import { trpcClient, type RouterOutputs } from "../../utils/trpc";
+import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
 type Faculty = { id: string; name: string };
 type AcademicYear = { id: string; name: string };
@@ -111,8 +111,7 @@ export default function ExamScheduler() {
 		},
 	});
 
-	const previewEnabled =
-		isScheduleOpen && Boolean(facultyId && academicYearId);
+	const previewEnabled = isScheduleOpen && Boolean(facultyId && academicYearId);
 	const previewQuery = useQuery({
 		queryKey: ["examSchedulerPreview", facultyId, academicYearId],
 		enabled: previewEnabled,
@@ -125,8 +124,7 @@ export default function ExamScheduler() {
 		},
 	});
 
-	const previewClasses = (previewQuery.data?.classes ??
-		[]) as PreviewClass[];
+	const previewClasses = (previewQuery.data?.classes ?? []) as PreviewClass[];
 	const previewClassIds = useMemo(
 		() => previewClasses.map((klass) => klass.id),
 		[previewClasses],
@@ -239,7 +237,7 @@ export default function ExamScheduler() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="text-3xl font-semibold">
+					<h1 className="font-semibold text-3xl">
 						{t("admin.examScheduler.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -350,16 +348,19 @@ export default function ExamScheduler() {
 				</CardContent>
 			</Card>
 
-			<Dialog open={isScheduleOpen} onOpenChange={(open) => {
-				if (!open) {
-					setIsScheduleOpen(false);
-					resetForm();
-				}
-			}}>
+			<Dialog
+				open={isScheduleOpen}
+				onOpenChange={(open) => {
+					if (!open) {
+						setIsScheduleOpen(false);
+						resetForm();
+					}
+				}}
+			>
 				<DialogContent className="min-w-[80vw] max-w-[90vw]">
 					<DialogHeader>
 						<DialogTitle>{t("admin.examScheduler.form.title")}</DialogTitle>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{t("admin.examScheduler.form.description")}
 						</p>
 					</DialogHeader>
@@ -390,9 +391,7 @@ export default function ExamScheduler() {
 								</Select>
 							</div>
 							<div className="space-y-2">
-								<Label>
-									{t("admin.examScheduler.form.academicYearLabel")}
-								</Label>
+								<Label>{t("admin.examScheduler.form.academicYearLabel")}</Label>
 								<Select
 									value={academicYearId}
 									onValueChange={(value) => {
@@ -478,11 +477,7 @@ export default function ExamScheduler() {
 									) : null}
 									{t("admin.examScheduler.actions.schedule")}
 								</Button>
-								<Button
-									variant="ghost"
-									type="button"
-									onClick={resetForm}
-								>
+								<Button variant="ghost" type="button" onClick={resetForm}>
 									{t("common.actions.reset")}
 								</Button>
 							</div>
@@ -493,7 +488,7 @@ export default function ExamScheduler() {
 									<p className="font-medium">
 										{t("admin.examScheduler.classes.title")}
 									</p>
-									<p className="text-sm text-muted-foreground">
+									<p className="text-muted-foreground text-sm">
 										{t("admin.examScheduler.classes.description")}
 									</p>
 								</div>
@@ -501,9 +496,7 @@ export default function ExamScheduler() {
 									<Checkbox
 										id="select-all-classes"
 										checked={allClassesSelected}
-										onCheckedChange={(value) =>
-											setAllClasses(value === true)
-										}
+										onCheckedChange={(value) => setAllClasses(value === true)}
 										disabled={!previewClasses.length}
 									/>
 									<Label htmlFor="select-all-classes">
@@ -511,7 +504,7 @@ export default function ExamScheduler() {
 									</Label>
 								</div>
 							</div>
-							<div className="border rounded-md">
+							<div className="rounded-md border">
 								{previewQuery.isLoading ? (
 									<div className="flex items-center justify-center py-8">
 										<Spinner />
@@ -529,7 +522,7 @@ export default function ExamScheduler() {
 											>
 												<div>
 													<p className="font-medium">{klass.name}</p>
-													<p className="text-sm text-muted-foreground">
+													<p className="text-muted-foreground text-sm">
 														{klass.programName}
 													</p>
 												</div>
@@ -553,9 +546,12 @@ export default function ExamScheduler() {
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={Boolean(detailsRunId)} onOpenChange={(open) => {
-				if (!open) closeDetails();
-			}}>
+			<Dialog
+				open={Boolean(detailsRunId)}
+				onOpenChange={(open) => {
+					if (!open) closeDetails();
+				}}
+			>
 				<DialogContent className="min-w-[80vw] max-w-[90vw]">
 					<DialogHeader>
 						<DialogTitle>
@@ -572,7 +568,7 @@ export default function ExamScheduler() {
 						</div>
 					) : (
 						<div className="space-y-4">
-							<div className="text-sm text-muted-foreground">
+							<div className="text-muted-foreground text-sm">
 								{t("admin.examScheduler.history.details.subtitle", {
 									date: format(new Date(detailsData.run.createdAt), "PPp"),
 								})}
@@ -618,7 +614,9 @@ export default function ExamScheduler() {
 													<Badge variant="outline">{exam.status}</Badge>
 												</TableCell>
 												<TableCell>
-													<Badge variant={exam.isLocked ? "default" : "secondary"}>
+													<Badge
+														variant={exam.isLocked ? "default" : "secondary"}
+													>
 														{exam.isLocked
 															? t("admin.exams.status.locked")
 															: t("admin.exams.status.open")}

@@ -21,8 +21,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { trpcClient } from "../../utils/trpc";
 import type { RouterOutputs } from "../../utils/trpc";
+import { trpcClient } from "../../utils/trpc";
 
 interface AcademicYear {
 	id: string;

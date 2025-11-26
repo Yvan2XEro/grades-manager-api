@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "bun:test";
+import { randomUUID } from "node:crypto";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
@@ -78,9 +78,10 @@ describe("exam scheduler router", () => {
 				dateEnd: new Date(),
 			}),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
-		await expect(
-			student.examScheduler.history({}),
-		).rejects.toHaveProperty("code", "FORBIDDEN");
+		await expect(student.examScheduler.history({})).rejects.toHaveProperty(
+			"code",
+			"FORBIDDEN",
+		);
 	});
 
 	it("schedules exams across classes and avoids duplicates", async () => {
@@ -140,15 +141,15 @@ describe("exam scheduler router", () => {
 		const fixtures = await bootstrapFixtures();
 		const admin = createCaller(asAdmin());
 		const targetClass = fixtures.classes[0];
-	const subset = await admin.examScheduler.schedule({
-		facultyId: fixtures.faculty.id,
-		academicYearId: fixtures.academicYear.id,
-		examTypeId: fixtures.examType.id,
-		percentage: 25,
-		dateStart: new Date("2025-03-01"),
-		dateEnd: new Date("2025-03-05"),
-		classIds: [targetClass.id],
-	});
+		const subset = await admin.examScheduler.schedule({
+			facultyId: fixtures.faculty.id,
+			academicYearId: fixtures.academicYear.id,
+			examTypeId: fixtures.examType.id,
+			percentage: 25,
+			dateStart: new Date("2025-03-01"),
+			dateEnd: new Date("2025-03-05"),
+			classIds: [targetClass.id],
+		});
 		expect(subset.created).toBe(1);
 		expect(subset.classCount).toBe(1);
 		expect(subset.classCourseCount).toBe(1);

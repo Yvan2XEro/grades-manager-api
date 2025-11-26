@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { notFound } from "@/modules/_shared/errors";
 import * as examsService from "@/modules/exams/exams.service";
+import * as repo from "./exam-scheduler.repo";
 import type {
 	HistoryInput,
 	PreviewInput,
-	ScheduleInput,
 	RunDetailsInput,
+	ScheduleInput,
 } from "./exam-scheduler.zod";
-import * as repo from "./exam-scheduler.repo";
 
 async function resolveContext(input: PreviewInput) {
 	const [faculty, academicYear] = await Promise.all([

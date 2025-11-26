@@ -1,3 +1,4 @@
+import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { gradesRouter } from "@/modules/grades";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -14,7 +15,6 @@ import { studentsRouter } from "../modules/students";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
-import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
