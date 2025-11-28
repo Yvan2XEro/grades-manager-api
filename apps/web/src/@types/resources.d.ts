@@ -47,51 +47,53 @@ interface Resources {
 					description: "You don't have any courses assigned for the active academic year.";
 				};
 			};
-			courses.manage: {
-				title: "Course Management";
-				actions: {
-					add: "Add Course";
-				};
-				table: {
-					name: "Name";
-					program: "Program";
-					credits: "Credits";
-					hours: "Hours";
-					teacher: "Default Teacher";
-				};
-				form: {
-					createTitle: "Add New Course";
-					editTitle: "Edit Course";
-					nameLabel: "Course name";
-					namePlaceholder: "Enter course name";
-					creditsLabel: "Credits";
-					creditsPlaceholder: "Enter credits";
-					hoursLabel: "Hours";
-					hoursPlaceholder: "Enter hours";
-					programLabel: "Program";
-					programPlaceholder: "Select a program";
-					teacherLabel: "Default teacher";
-					teacherPlaceholder: "Select a teacher";
-					submit: "Save course";
-				};
-				toast: {
-					createSuccess: "Course created successfully";
-					createError: "Could not create the course";
-					updateSuccess: "Course updated successfully";
-					updateError: "Could not update the course";
-					deleteSuccess: "Course deleted successfully";
-					deleteError: "Could not delete the course";
-				};
-				validation: {
-					name: "Name must be at least 2 characters";
-					credits: "Credits must be at least 1";
-					hours: "Hours must be at least 1";
-					program: "Please select a program";
-					teacher: "Please select a teacher";
-				};
-				delete: {
-					title: "Delete Course";
-					message: "Are you sure you want to delete this course? This action cannot be undone.";
+			courses: {
+				manage: {
+					title: "Course Management";
+					actions: {
+						add: "Add Course";
+					};
+					table: {
+						name: "Name";
+						program: "Program";
+						credits: "Credits";
+						hours: "Hours";
+						teacher: "Default Teacher";
+					};
+					form: {
+						createTitle: "Add New Course";
+						editTitle: "Edit Course";
+						nameLabel: "Course name";
+						namePlaceholder: "Enter course name";
+						creditsLabel: "Credits";
+						creditsPlaceholder: "Enter credits";
+						hoursLabel: "Hours";
+						hoursPlaceholder: "Enter hours";
+						programLabel: "Program";
+						programPlaceholder: "Select a program";
+						teacherLabel: "Default teacher";
+						teacherPlaceholder: "Select a teacher";
+						submit: "Save course";
+					};
+					toast: {
+						createSuccess: "Course created successfully";
+						createError: "Could not create the course";
+						updateSuccess: "Course updated successfully";
+						updateError: "Could not update the course";
+						deleteSuccess: "Course deleted successfully";
+						deleteError: "Could not delete the course";
+					};
+					validation: {
+						name: "Name must be at least 2 characters";
+						credits: "Credits must be at least 1";
+						hours: "Hours must be at least 1";
+						program: "Please select a program";
+						teacher: "Please select a teacher";
+					};
+					delete: {
+						title: "Delete Course";
+						message: "Are you sure you want to delete this course? This action cannot be undone.";
+					};
 				};
 			};
 			dashboard: {
