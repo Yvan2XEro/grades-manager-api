@@ -38,6 +38,15 @@
 - [x] Provide CSV import/export flows for grades and attendance to match teacher workflows (`docs/analyze.md#enseignants`).
 - [x] Document student/teacher/dean workflows in `docs/workflows.md` to feed Phase 3 UI work.
 
+## Phase 2.1 – Atomic enrollment & cycle hierarchy (current)
+- [ ] Implement the `student_course_enrollments` table + module described in `docs/atomic-enrollment-and-cycles.md` (atomic course registrations, attempts, audit trail).
+- [ ] Enforce roster validation in `modules/exams` and `modules/grades` using the new enrollment records.
+- [ ] Build the credit ledger materialization + promotion helpers (including migrations/backfills and fixtures).
+- [ ] Introduce `study_cycles` and `cycle_levels` with per-faculty ownership, connect programs/classes/enrollments, and expose CRUD routers.
+- [ ] Seed/migrate existing data into cycles/levels, tagging historical classes with the right level reference.
+- [ ] Add scaffolding for `json-rules-engine` (rule registry + config storage) to eventually drive promotion/eligibility checks.
+- [ ] Document admin UX requirements for managing rule sets and cycle hierarchies.
+
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
 - [x] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
 - [x] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.
@@ -77,10 +86,12 @@
 - [ ] Expand observability (structured logs, OpenTelemetry traces) to debug multi-service flows.
 - [ ] Maintain an i18n backlog: translation resources and `bun run --filter web i18n:gen` after every new key.
 - [ ] Document testing strategies (unit, integration, E2E) and quality KPIs (coverage, runtime).
+- [ ] Define the governance process for decision rules (versioning, review, rollout) once `json-rules-engine` powers eligibility logic.
 
 ## References
 - `docs/analyze.md` – Full functional specification.
 - `docs/auth-domain-arch-diagram.md` – Auth ↔ Domain strategy.
+- `docs/atomic-enrollment-and-cycles.md` – Blueprint for atomic enrollments, cycle hierarchy, and rule-engine integration.
 - `apps/server/src` – Current API modules.
 - `apps/web/src` – React + i18next client shell.
 - Useful commands: `bun run dev:server`, `bun run dev:web`, `bun run check`, `bun test apps/server`.
