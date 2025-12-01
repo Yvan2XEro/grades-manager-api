@@ -73,9 +73,29 @@ export async function seed() {
 			endDate: new Date("2024-12-31").toISOString(),
 		})
 		.returning();
+	const [cycle] = await db
+		.insert(schema.studyCycles)
+		.values({
+			facultyId: faculty.id,
+			code: "default",
+			name: "Default Cycle",
+			totalCreditsRequired: 180,
+			durationYears: 3,
+		})
+		.returning();
+	const [level] = await db
+		.insert(schema.cycleLevels)
+		.values({
+			cycleId: cycle.id,
+			orderIndex: 1,
+			code: "L1",
+			name: "Level 1",
+			minCredits: 60,
+		})
+		.returning();
 	const [program] = await db
 		.insert(schema.programs)
-		.values({ name: "Seed Program", faculty: faculty.id })
+		.values({ name: "Seed Program", faculty: faculty.id, cycleId: cycle.id })
 		.returning();
 	await db.insert(schema.teachingUnits).values({
 		name: "Seed UE",
@@ -88,6 +108,7 @@ export async function seed() {
 		name: "Seed Class",
 		program: program.id,
 		academicYear: year.id,
+		cycleLevelId: level.id,
 	});
 }
 
@@ -96,6 +117,8 @@ export async function reset() {
     TRUNCATE TABLE
      course_prerequisites,
      domain_users,
+     student_course_enrollments,
+     student_credit_ledgers,
      grades,
      exams,
      class_courses,
@@ -108,6 +131,8 @@ export async function reset() {
      faculties,
      academic_years,
      students,
+     cycle_levels,
+     study_cycles,
      account,
      session,
      verification,

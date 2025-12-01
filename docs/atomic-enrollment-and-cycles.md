@@ -65,7 +65,7 @@ This layout blocks individualized retakes and cycle-aware workflows.
 2. **`student_credit_ledger` view/table (optional but recommended)**
 	- Either materialized view or table maintained by triggers.
 	- Fields: `student_id`, `academic_year_id`, `cycle_level_id` (after hierarchy work), `credits_earned`, `credits_in_progress`.
-	- Powers promotion logic and analytics without recalculating transcripts on every request.
+	- Powers promotion logic and analytics without recalculating transcripts on every request. ✅ `student_credit_ledgers` now exists with default `required_credits = 60` so totals stay in sync even before cycles/levels arrive.
 3. **Foreign key adjustments**
 	- Keep `grades.exam → exams.id` but augment `grades` inserts to verify that `(student_id, exam.class_course)` matches an active row in `student_course_enrollments`.
 	- `students.class` stays as the “primary cohort” pointer for UI/backoffice screens.
@@ -203,6 +203,8 @@ This layout blocks individualized retakes and cycle-aware workflows.
 - **Docs & Onboarding** – Extend `docs/architecture.md` with diagrams showing `study_cycles → programs → classes → class_courses → student_course_enrollments`. Document promotion workflows and ledger usage so future contributors understand the invariants.
 - **Front-end alignment** – The React shell should be updated to surface cycle tags and to enroll students per course, but that work can land after the API because tRPC contracts will stay backward compatible by adding optional fields first.
 - **Decision rules** – Promotion eligibility, credit thresholds, and future retake caps should be expressed through `json-rules-engine`. Plan a dedicated admin interface to edit rule documents per faculty/cycle so policy tweaking does not require deployments.
+- **Current status** – The backend now seeds a default promotion rule (eligible when `creditsEarned >= requiredCredits`) using `json-rules-engine` and exposes helper services so once the UI surfaces the ledger snapshot, admins can inspect and eventually edit faculty-specific rules.
+- **Admin UX** – Back-office needs: (1) a Study Cycle catalog (filter by faculty, CRUD cycles, show linked programs/classes); (2) a Cycle Level editor (list/reorder levels, edit min-credit thresholds, warn when programs reference a level); (3) a Promotion Rule screen fed by `json-rules-engine` where admins preview defaults, clone them per faculty, and stage overrides with comments; and (4) a Course Enrollment board that combines ledger totals, outstanding retakes, and manual overrides. Capture these flows, strings, and permissions in `apps/web` so the new tRPC endpoints land with clear UI contracts.
 
 ---
 

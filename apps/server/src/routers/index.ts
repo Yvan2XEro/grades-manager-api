@@ -11,7 +11,9 @@ import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { notificationsRouter } from "../modules/notifications";
 import { programsRouter } from "../modules/programs";
+import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
 import { studentsRouter } from "../modules/students";
+import { studyCyclesRouter } from "../modules/study-cycles";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
@@ -24,11 +26,13 @@ export const appRouter = router({
 	})),
 	faculties: facultiesRouter,
 	programs: programsRouter,
+	studyCycles: studyCyclesRouter,
 	teachingUnits: teachingUnitsRouter,
 	academicYears: academicYearsRouter,
 	classes: classesRouter,
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
+	studentCourseEnrollments: studentCourseEnrollmentsRouter,
 	enrollments: enrollmentsRouter,
 	exams: examsRouter,
 	examTypes: examTypesRouter,

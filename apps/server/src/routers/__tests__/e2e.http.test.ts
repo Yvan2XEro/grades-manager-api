@@ -88,17 +88,6 @@ describe("e2e http", () => {
 			weeklyHours: 2,
 		});
 
-		const exam = await client.exams.create.mutate({
-			name: "Mid",
-			type: "WRITTEN",
-			date: new Date().toISOString(), // 👈 as above
-			percentage: 50,
-			classCourseId: cc.id,
-		});
-		if (!exam) throw new Error("Failed to create exam");
-		await client.exams.submit.mutate({ examId: exam.id });
-		await client.exams.validate.mutate({ examId: exam.id, status: "approved" });
-
 		const student = await client.students.create.mutate({
 			classId: klass.id,
 			registrationNumber: "R1",
@@ -109,6 +98,23 @@ describe("e2e http", () => {
 			placeOfBirth: "Yaoundé",
 			gender: "male",
 		});
+
+		await client.studentCourseEnrollments.bulkEnroll.mutate({
+			studentId: student.id,
+			classCourseIds: [cc.id],
+			status: "active",
+		});
+
+		const exam = await client.exams.create.mutate({
+			name: "Mid",
+			type: "WRITTEN",
+			date: new Date().toISOString(), // 👈 as above
+			percentage: 50,
+			classCourseId: cc.id,
+		});
+		if (!exam) throw new Error("Failed to create exam");
+		await client.exams.submit.mutate({ examId: exam.id });
+		await client.exams.validate.mutate({ examId: exam.id, status: "approved" });
 
 		if (exam) {
 			await client.grades.upsertNote.mutate({

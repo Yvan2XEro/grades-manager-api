@@ -3,7 +3,9 @@ import type { Context } from "@/lib/context";
 import {
 	asAdmin,
 	createClassCourse,
+	createRecapFixture,
 	createStudent,
+	ensureStudentCourseEnrollment,
 	makeTestContext,
 } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
@@ -21,6 +23,8 @@ describe("exams router", () => {
 	it("enforces percentage and lock", async () => {
 		const admin = createCaller(asAdmin());
 		const cc = await createClassCourse();
+		const student = await createStudent({ class: cc.class });
+		await ensureStudentCourseEnrollment(student.id, cc.id, "active");
 		const exam = await admin.exams.create({
 			name: "Mid",
 			type: "WRITTEN",
@@ -52,7 +56,6 @@ describe("exams router", () => {
 			"FORBIDDEN",
 		);
 
-		const student = await createStudent({ class: cc.class });
 		await expect(
 			admin.grades.upsertNote({
 				studentId: student.id,
@@ -60,5 +63,30 @@ describe("exams router", () => {
 				score: 80,
 			}),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+
+	it("requires active student roster before scheduling exams", async () => {
+		const admin = createCaller(asAdmin());
+		const { classCourse } = await createRecapFixture();
+		await expect(
+			admin.exams.create({
+				name: "Roster Test",
+				type: "TP",
+				date: new Date(),
+				percentage: 20,
+				classCourseId: classCourse.id,
+			}),
+		).resolves.toBeTruthy();
+
+		const lonelyClassCourse = await createClassCourse();
+		await expect(
+			admin.exams.create({
+				name: "Invalid",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 20,
+				classCourseId: lonelyClassCourse.id,
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
 	});
 });

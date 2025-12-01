@@ -75,15 +75,6 @@ describe("workflows router", () => {
 			weeklyHours: 2,
 		});
 
-		const exam = await client.exams.create.mutate({
-			name: "WF Midterm",
-			type: "WRITTEN",
-			date: new Date().toISOString(),
-			percentage: 40,
-			classCourseId: classCourse.id,
-		});
-		await client.exams.submit.mutate({ examId: exam.id });
-
 		const student = await client.students.create.mutate({
 			classId: klass.id,
 			registrationNumber: "WF-001",
@@ -94,6 +85,21 @@ describe("workflows router", () => {
 			placeOfBirth: "Yaoundé",
 			gender: "male",
 		});
+
+		await client.studentCourseEnrollments.bulkEnroll.mutate({
+			studentId: student.id,
+			classCourseIds: [classCourse.id],
+			status: "active",
+		});
+
+		const exam = await client.exams.create.mutate({
+			name: "WF Midterm",
+			type: "WRITTEN",
+			date: new Date().toISOString(),
+			percentage: 40,
+			classCourseId: classCourse.id,
+		});
+		await client.exams.submit.mutate({ examId: exam.id });
 
 		await client.workflows.enrollmentWindow.mutate({
 			classId: klass.id,

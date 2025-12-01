@@ -40,7 +40,14 @@ const normalizeDate = (value?: Date | null) => {
 };
 
 export async function listUsers(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+	const result = await repo.list(opts);
+	return {
+		...result,
+		items: result.items.map((item) => ({
+			...item,
+			id: item.profileId,
+		})),
+	};
 }
 
 export async function createUserProfile(data: CreateProfileInput) {

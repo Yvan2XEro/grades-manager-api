@@ -4,6 +4,7 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { notFound } from "../_shared/errors";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
 
 type CreateExamInput = {
@@ -57,6 +58,7 @@ export async function createExam(
 ) {
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
+	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
 		const [{ total }] = await tx
 			.select({
@@ -87,6 +89,9 @@ export async function updateExam(id: string, data: Partial<schema.NewExam>) {
 	const existing = await repo.findById(id);
 	if (!existing) throw notFound();
 	assertEditable(existing);
+	if (data.classCourse && data.classCourse !== existing.classCourse) {
+		await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
+	}
 	if (data.percentage !== undefined) {
 		await assertPercentageLimit(existing.classCourse, Number(data.percentage), {
 			id,

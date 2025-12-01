@@ -4,6 +4,7 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
 import * as examsRepo from "../exams/exams.repo";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
 
@@ -21,6 +22,7 @@ export async function upsertNote(
 ) {
 	const exam = await examsRepo.findById(examId);
 	ensureExamEditable(exam);
+	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
 	try {
 		return await repo.upsert({
 			student: studentId,
@@ -37,6 +39,10 @@ export async function updateNote(id: string, score: number) {
 	if (!grade) throw notFound();
 	const exam = await examsRepo.findById(grade.exam);
 	ensureExamEditable(exam);
+	await courseEnrollments.ensureStudentRegistered(
+		grade.student,
+		exam.classCourse,
+	);
 	return repo.update(id, score.toString());
 }
 
@@ -145,6 +151,17 @@ export async function importGradesFromCsv(examId: string, csv: string) {
 			await studentsRepo.findByRegistrationNumber(registrationNumber);
 		if (!student) {
 			result.errors.push(`Unknown registration: ${registrationNumber}`);
+			continue;
+		}
+		try {
+			await courseEnrollments.ensureStudentRegistered(
+				student.id,
+				exam.classCourse,
+			);
+		} catch (_err) {
+			result.errors.push(
+				`Student ${registrationNumber} is not enrolled for this course`,
+			);
 			continue;
 		}
 		await repo.upsert({

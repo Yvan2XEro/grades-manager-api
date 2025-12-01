@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type {
 	BusinessRole,
 	DomainUser,
@@ -8,6 +8,7 @@ import type {
 } from "../db/schema/app-schema";
 import * as schema from "../db/schema/app-schema";
 import { buildPermissions } from "../modules/authz";
+import * as creditLedger from "../modules/student-credit-ledger";
 import type { Context } from "./context";
 import { auth, db } from "./test-db";
 
@@ -152,6 +153,7 @@ export async function createRecapFixture(
 		domainUserId: overrides.student?.domainUserId,
 		profile: overrides.student?.profile,
 	});
+	await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 	const grade = await createGrade({
 		student: student.id,
 		exam: exam.id,
@@ -184,11 +186,63 @@ export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
 	return faculty;
 }
 
+export async function createStudyCycle(
+	data: Partial<schema.NewStudyCycle> = {},
+) {
+	const faculty = data.facultyId
+		? { id: data.facultyId }
+		: await createFaculty();
+	const [cycle] = await db
+		.insert(schema.studyCycles)
+		.values({
+			facultyId: faculty.id,
+			code: data.code ?? `cycle-${randomUUID().slice(0, 6)}`,
+			name: data.name ?? `Cycle-${randomUUID().slice(0, 4)}`,
+			description: data.description ?? null,
+			totalCreditsRequired: data.totalCreditsRequired ?? 180,
+			durationYears: data.durationYears ?? 3,
+		})
+		.returning();
+	return cycle;
+}
+
+export async function createCycleLevel(
+	data: Partial<schema.NewCycleLevel> = {},
+) {
+	const cycle = data.cycleId ? { id: data.cycleId } : await createStudyCycle();
+	const [last] = await db
+		.select({ value: schema.cycleLevels.orderIndex })
+		.from(schema.cycleLevels)
+		.where(eq(schema.cycleLevels.cycleId, cycle.id))
+		.orderBy(desc(schema.cycleLevels.orderIndex))
+		.limit(1);
+	const nextOrder = (last?.value ?? 0) + 1;
+	const [level] = await db
+		.insert(schema.cycleLevels)
+		.values({
+			cycleId: cycle.id,
+			orderIndex: data.orderIndex ?? nextOrder,
+			code: data.code ?? `L${randomUUID().slice(0, 2)}`,
+			name: data.name ?? `Level ${randomUUID().slice(0, 2)}`,
+			minCredits: data.minCredits ?? 60,
+		})
+		.returning();
+	return level;
+}
+
 export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 	const faculty = data.faculty ? { id: data.faculty } : await createFaculty();
+	const cycle = data.cycleId
+		? { id: data.cycleId }
+		: await createStudyCycle({ facultyId: faculty.id });
 	const [program] = await db
 		.insert(schema.programs)
-		.values({ name: `Program-${randomUUID()}`, faculty: faculty.id, ...data })
+		.values({
+			name: data.name ?? `Program-${randomUUID()}`,
+			faculty: faculty.id,
+			description: data.description ?? null,
+			cycleId: cycle.id,
+		})
 		.returning();
 	return program;
 }
@@ -230,17 +284,25 @@ export async function createAcademicYear(
 }
 
 export async function createClass(data: Partial<schema.NewKlass> = {}) {
-	const program = data.program ? { id: data.program } : await createProgram();
+	const program = data.program
+		? await db.query.programs.findFirst({
+				where: eq(schema.programs.id, data.program),
+			})
+		: await createProgram();
+	if (!program) throw new Error("Program not found");
 	const year = data.academicYear
 		? { id: data.academicYear }
 		: await createAcademicYear();
+	const level = data.cycleLevelId
+		? { id: data.cycleLevelId }
+		: await createCycleLevel({ cycleId: program.cycleId });
 	const [klass] = await db
 		.insert(schema.classes)
 		.values({
-			name: `Class-${randomUUID()}`,
+			name: data.name ?? `Class-${randomUUID()}`,
 			program: program.id,
 			academicYear: year.id,
-			...data,
+			cycleLevelId: level.id,
 		})
 		.returning();
 	return klass;
@@ -404,9 +466,74 @@ export async function createStudent(data: StudentHelperInput = {}) {
 	return student;
 }
 
+export async function ensureStudentCourseEnrollment(
+	studentId: string,
+	classCourseId: string,
+	status: schema.StudentCourseEnrollmentStatus = "active",
+) {
+	const classCourse = await db.query.classCourses.findFirst({
+		where: eq(schema.classCourses.id, classCourseId),
+	});
+	if (!classCourse) {
+		throw new Error("Class course not found");
+	}
+	const course = await db.query.courses.findFirst({
+		where: eq(schema.courses.id, classCourse.course),
+	});
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, classCourse.class),
+	});
+	if (!course || !klass) {
+		throw new Error("Missing course or class for class course");
+	}
+	const existing = await db.query.studentCourseEnrollments.findFirst({
+		where: and(
+			eq(schema.studentCourseEnrollments.studentId, studentId),
+			eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
+		),
+	});
+	if (existing) return existing;
+	const [record] = await db
+		.insert(schema.studentCourseEnrollments)
+		.values({
+			studentId,
+			classCourseId,
+			courseId: course.id,
+			sourceClassId: classCourse.class,
+			academicYearId: klass.academicYear,
+			status,
+			attempt: 1,
+			creditsAttempted: course.credits,
+			creditsEarned: status === "completed" ? course.credits : 0,
+		})
+		.returning();
+	const contribution = creditLedger.contributionForStatus(
+		status,
+		course.credits,
+	);
+	await creditLedger.applyDelta(
+		studentId,
+		klass.academicYear,
+		contribution.inProgress,
+		contribution.earned,
+	);
+	return record;
+}
+
 export async function createGrade(data: Partial<schema.NewGrade> = {}) {
 	const student = data.student ? { id: data.student } : await createStudent();
 	const exam = data.exam ? { id: data.exam } : await createExam();
+	const examRecord = await db.query.exams.findFirst({
+		where: eq(schema.exams.id, exam.id),
+	});
+	if (!examRecord) {
+		throw new Error("Exam not found");
+	}
+	await ensureStudentCourseEnrollment(
+		student.id,
+		examRecord.classCourse,
+		"active",
+	);
 	const [grade] = await db
 		.insert(schema.grades)
 		.values({

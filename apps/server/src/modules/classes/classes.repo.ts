@@ -29,6 +29,8 @@ export async function list(opts: {
 	programId?: string;
 	academicYearId?: string;
 	facultyId?: string;
+	cycleId?: string;
+	cycleLevelId?: string;
 	cursor?: string;
 	limit?: number;
 }) {
@@ -44,13 +46,30 @@ export async function list(opts: {
 		}
 		facultyProgramIds = programs.map((p) => p.id);
 	}
+	let cycleProgramIds: string[] | undefined;
+	if (opts.cycleId) {
+		const programs = await db
+			.select({ id: schema.programs.id })
+			.from(schema.programs)
+			.where(eq(schema.programs.cycleId, opts.cycleId));
+		if (!programs.length) {
+			return { items: [], nextCursor: undefined };
+		}
+		cycleProgramIds = programs.map((p) => p.id);
+	}
 	const conditions = [
 		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
 		opts.academicYearId
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,
+		opts.cycleLevelId
+			? eq(schema.classes.cycleLevelId, opts.cycleLevelId)
+			: undefined,
 		facultyProgramIds
 			? inArray(schema.classes.program, facultyProgramIds)
+			: undefined,
+		cycleProgramIds
+			? inArray(schema.classes.program, cycleProgramIds)
 			: undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];

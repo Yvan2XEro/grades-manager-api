@@ -4,6 +4,7 @@ export const baseSchema = z.object({
 	name: z.string(),
 	program: z.string(),
 	academicYear: z.string(),
+	cycleLevelId: z.string().optional(),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });
@@ -12,6 +13,8 @@ export const listSchema = z.object({
 	programId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	facultyId: z.string().optional(),
+	cycleId: z.string().optional(),
+	cycleLevelId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

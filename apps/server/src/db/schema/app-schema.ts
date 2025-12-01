@@ -54,6 +54,17 @@ export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
 export const enrollmentWindowStatuses = ["open", "closed"] as const;
 export type EnrollmentWindowStatus = (typeof enrollmentWindowStatuses)[number];
 
+/** Enrollment lifecycle for student ↔ course attempts. */
+export const studentCourseEnrollmentStatuses = [
+	"planned",
+	"active",
+	"completed",
+	"failed",
+	"withdrawn",
+] as const;
+export type StudentCourseEnrollmentStatus =
+	(typeof studentCourseEnrollmentStatuses)[number];
+
 export const notificationChannels = ["email", "webhook"] as const;
 export type NotificationChannel = (typeof notificationChannels)[number];
 
@@ -124,6 +135,51 @@ export const faculties = pgTable(
 	(t) => [unique("uq_faculties_name").on(t.name)],
 );
 
+/** Study cycles grouping programs inside a faculty (e.g., Bachelor, Master). */
+export const studyCycles = pgTable(
+	"study_cycles",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		facultyId: text("faculty_id")
+			.notNull()
+			.references(() => faculties.id, { onDelete: "cascade" }),
+		code: text("code").notNull(),
+		name: text("name").notNull(),
+		description: text("description"),
+		totalCreditsRequired: integer("total_credits_required")
+			.notNull()
+			.default(180),
+		durationYears: integer("duration_years").notNull().default(3),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_study_cycles_faculty_code").on(t.facultyId, t.code),
+		index("idx_study_cycles_faculty").on(t.facultyId),
+	],
+);
+
+/** Ordered levels within a study cycle (L1, L2, etc.). */
+export const cycleLevels = pgTable(
+	"cycle_levels",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		cycleId: text("cycle_id")
+			.notNull()
+			.references(() => studyCycles.id, { onDelete: "cascade" }),
+		orderIndex: integer("order_index").notNull(),
+		code: text("code").notNull(),
+		name: text("name").notNull(),
+		minCredits: integer("min_credits").notNull().default(60),
+	},
+	(t) => [
+		unique("uq_cycle_levels_code").on(t.cycleId, t.code),
+		unique("uq_cycle_levels_order").on(t.cycleId, t.orderIndex),
+		index("idx_cycle_levels_cycle").on(t.cycleId),
+	],
+);
+
 /** Official academic sessions (e.g., 2024–2025). */
 export const academicYears = pgTable(
 	"academic_years",
@@ -152,6 +208,9 @@ export const programs = pgTable(
 		faculty: text("faculty_id")
 			.notNull()
 			.references(() => faculties.id, { onDelete: "restrict" }),
+		cycleId: text("cycle_id")
+			.notNull()
+			.references(() => studyCycles.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -159,6 +218,7 @@ export const programs = pgTable(
 	(t) => [
 		unique("uq_programs_name_faculty").on(t.name, t.faculty),
 		index("idx_programs_faculty_id").on(t.faculty),
+		index("idx_programs_cycle_id").on(t.cycleId),
 	],
 );
 
@@ -197,6 +257,9 @@ export const classes = pgTable(
 		academicYear: text("academic_year_id")
 			.notNull()
 			.references(() => academicYears.id, { onDelete: "restrict" }),
+		cycleLevelId: text("cycle_level_id")
+			.notNull()
+			.references(() => cycleLevels.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -209,6 +272,7 @@ export const classes = pgTable(
 		),
 		index("idx_classes_program_id").on(t.program),
 		index("idx_classes_academic_year_id").on(t.academicYear),
+		index("idx_classes_cycle_level_id").on(t.cycleLevelId),
 	],
 );
 
@@ -427,6 +491,80 @@ export const enrollments = pgTable(
 	],
 );
 
+/** Student ↔ course attempts per class-course offering. */
+export const studentCourseEnrollments = pgTable(
+	"student_course_enrollments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		courseId: text("course_id")
+			.notNull()
+			.references(() => courses.id, { onDelete: "cascade" }),
+		sourceClassId: text("source_class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "restrict" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		status: text("status")
+			.$type<StudentCourseEnrollmentStatus>()
+			.notNull()
+			.default("planned"),
+		attempt: integer("attempt").notNull().default(1),
+		creditsAttempted: integer("credits_attempted").notNull(),
+		creditsEarned: integer("credits_earned").notNull().default(0),
+		startedAt: timestamp("started_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+	},
+	(t) => [
+		unique("uq_student_course_attempt").on(
+			t.studentId,
+			t.courseId,
+			t.academicYearId,
+			t.attempt,
+		),
+		index("idx_student_course_student").on(t.studentId),
+		index("idx_student_course_class_course").on(t.classCourseId),
+		index("idx_student_course_course").on(t.courseId),
+		index("idx_student_course_year").on(t.academicYearId),
+	],
+);
+
+/** Aggregated credit tracking per student and academic year. */
+export const studentCreditLedgers = pgTable(
+	"student_credit_ledgers",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		creditsInProgress: integer("credits_in_progress").notNull().default(0),
+		creditsEarned: integer("credits_earned").notNull().default(0),
+		requiredCredits: integer("required_credits").notNull().default(60),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_student_credit_ledgers_student_year").on(
+			t.studentId,
+			t.academicYearId,
+		),
+		index("idx_student_credit_ledgers_student").on(t.studentId),
+		index("idx_student_credit_ledgers_year").on(t.academicYearId),
+	],
+);
+
 /** Enrollment windows controlling when cohorts accept registrations. */
 export const enrollmentWindows = pgTable(
 	"enrollment_windows",
@@ -519,6 +657,10 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 		fields: [programs.faculty],
 		references: [faculties.id],
 	}),
+	cycle: one(studyCycles, {
+		fields: [programs.cycleId],
+		references: [studyCycles.id],
+	}),
 	classes: many(classes),
 	courses: many(courses),
 	teachingUnits: many(teachingUnits),
@@ -544,9 +686,30 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 		fields: [classes.academicYear],
 		references: [academicYears.id],
 	}),
+	cycleLevel: one(cycleLevels, {
+		fields: [classes.cycleLevelId],
+		references: [cycleLevels.id],
+	}),
 	classCourses: many(classCourses),
 	students: many(students),
 	enrollments: many(enrollments),
+}));
+
+export const studyCyclesRelations = relations(studyCycles, ({ one, many }) => ({
+	faculty: one(faculties, {
+		fields: [studyCycles.facultyId],
+		references: [faculties.id],
+	}),
+	programs: many(programs),
+	levels: many(cycleLevels),
+}));
+
+export const cycleLevelsRelations = relations(cycleLevels, ({ one, many }) => ({
+	cycle: one(studyCycles, {
+		fields: [cycleLevels.cycleId],
+		references: [studyCycles.id],
+	}),
+	classes: many(classes),
 }));
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
@@ -603,6 +766,7 @@ export const classCoursesRelations = relations(
 			references: [domainUsers.id],
 		}),
 		exams: many(exams),
+		studentCourseEnrollments: many(studentCourseEnrollments),
 	}),
 );
 
@@ -625,6 +789,8 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 	}),
 	grades: many(grades),
 	enrollments: many(enrollments),
+	courseEnrollments: many(studentCourseEnrollments),
+	creditLedgers: many(studentCreditLedgers),
 }));
 
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
@@ -664,6 +830,46 @@ export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
 	}),
 }));
 
+export const studentCreditLedgersRelations = relations(
+	studentCreditLedgers,
+	({ one }) => ({
+		student: one(students, {
+			fields: [studentCreditLedgers.studentId],
+			references: [students.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [studentCreditLedgers.academicYearId],
+			references: [academicYears.id],
+		}),
+	}),
+);
+
+export const studentCourseEnrollmentsRelations = relations(
+	studentCourseEnrollments,
+	({ one }) => ({
+		student: one(students, {
+			fields: [studentCourseEnrollments.studentId],
+			references: [students.id],
+		}),
+		classCourse: one(classCourses, {
+			fields: [studentCourseEnrollments.classCourseId],
+			references: [classCourses.id],
+		}),
+		course: one(courses, {
+			fields: [studentCourseEnrollments.courseId],
+			references: [courses.id],
+		}),
+		sourceClass: one(classes, {
+			fields: [studentCourseEnrollments.sourceClassId],
+			references: [classes.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [studentCourseEnrollments.academicYearId],
+			references: [academicYears.id],
+		}),
+	}),
+);
+
 export const enrollmentWindowsRelations = relations(
 	enrollmentWindows,
 	({ one }) => ({
@@ -687,6 +893,12 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 
 export type Faculty = InferSelectModel<typeof faculties>;
 export type NewFaculty = InferInsertModel<typeof faculties>;
+
+export type StudyCycle = InferSelectModel<typeof studyCycles>;
+export type NewStudyCycle = InferInsertModel<typeof studyCycles>;
+
+export type CycleLevel = InferSelectModel<typeof cycleLevels>;
+export type NewCycleLevel = InferInsertModel<typeof cycleLevels>;
 
 export type Program = InferSelectModel<typeof programs>;
 export type NewProgram = InferInsertModel<typeof programs>;
@@ -731,6 +943,18 @@ export type NewCoursePrerequisite = InferInsertModel<
 
 export type Enrollment = InferSelectModel<typeof enrollments>;
 export type NewEnrollment = InferInsertModel<typeof enrollments>;
+
+export type StudentCourseEnrollment = InferSelectModel<
+	typeof studentCourseEnrollments
+>;
+export type NewStudentCourseEnrollment = InferInsertModel<
+	typeof studentCourseEnrollments
+>;
+
+export type StudentCreditLedger = InferSelectModel<typeof studentCreditLedgers>;
+export type NewStudentCreditLedger = InferInsertModel<
+	typeof studentCreditLedgers
+>;
 
 export type EnrollmentWindow = InferSelectModel<typeof enrollmentWindows>;
 export type NewEnrollmentWindow = InferInsertModel<typeof enrollmentWindows>;

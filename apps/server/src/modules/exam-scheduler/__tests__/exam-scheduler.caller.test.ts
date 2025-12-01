@@ -10,7 +10,9 @@ import {
 	createExamType,
 	createFaculty,
 	createProgram,
+	createStudent,
 	createTeachingUnit,
+	ensureStudentCourseEnrollment,
 	makeTestContext,
 } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
@@ -42,6 +44,10 @@ async function bootstrapFixtures() {
 		await createClassCourse({ class: classOne.id, course: courseA.id }),
 		await createClassCourse({ class: classTwo.id, course: courseB.id }),
 	];
+	for (const classCourse of classCourses) {
+		const student = await createStudent({ class: classCourse.class });
+		await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
+	}
 	const examType = await createExamType({
 		name: `Session normale ${randomUUID()}`,
 	});

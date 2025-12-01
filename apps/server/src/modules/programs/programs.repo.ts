@@ -26,6 +26,7 @@ export async function findById(id: string) {
 
 export async function list(opts: {
 	facultyId?: string;
+	cycleId?: string;
 	q?: string;
 	cursor?: string;
 	limit?: number;
@@ -34,6 +35,10 @@ export async function list(opts: {
 	let condition: unknown;
 	if (opts.facultyId) {
 		condition = eq(schema.programs.faculty, opts.facultyId);
+	}
+	if (opts.cycleId) {
+		const cycleCond = eq(schema.programs.cycleId, opts.cycleId);
+		condition = condition ? and(condition, cycleCond) : cycleCond;
 	}
 	if (opts.q) {
 		const qCond = ilike(schema.programs.name, `%${opts.q}%`);
