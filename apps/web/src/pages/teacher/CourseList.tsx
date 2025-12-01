@@ -2,8 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ClipboardList, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { useStore } from "../../store";
-import { trpcClient } from "../../utils/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -14,6 +12,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useStore } from "../../store";
+import { trpcClient } from "../../utils/trpc";
 
 interface Course {
 	id: string;
@@ -81,7 +81,7 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="text-2xl font-bold text-foreground">
+				<h2 className="font-bold text-2xl text-foreground">
 					{t("teacher.courses.title")}
 				</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
@@ -121,10 +121,10 @@ export default function CourseList() {
 						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
 							<BookOpen className="h-14 w-14 text-muted-foreground/40" />
 							<div>
-								<p className="text-lg font-semibold">
+								<p className="font-semibold text-lg">
 									{t("teacher.courses.empty.title")}
 								</p>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									{t("teacher.courses.empty.description")}
 								</p>
 							</div>

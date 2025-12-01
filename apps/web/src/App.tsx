@@ -1,8 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { Route, Routes } from "react-router";
+import type {
+	BusinessRole,
+	DomainUser,
+} from "../../server/src/db/schema/app-schema";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
+import { Redirector } from "./components/navigation/Redirector";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
@@ -36,136 +41,131 @@ import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import { useStore } from "./store";
 import { trpc } from "./utils/trpc";
-import type {
-  BusinessRole,
-  DomainUser,
-} from "../../server/src/db/schema/app-schema";
-import { Redirector } from "./components/navigation/Redirector";
 
 function App() {
-  const { user, setUser, clearUser } = useStore();
-  const _healthCheck = useQuery(trpc.healthCheck.queryOptions());
-  const { data: session, isPending } = authClient.useSession();
+	const { user, setUser, clearUser } = useStore();
+	const _healthCheck = useQuery(trpc.healthCheck.queryOptions());
+	const { data: session, isPending } = authClient.useSession();
 
-  const memoUser = useMemo(() => {
-    if (!session || !session.user) return null;
-    const [firstName, ...rest] = (session.user.name || "").split(" ");
-    const domainRole: BusinessRole = (session.domainProfiles?.[0] as DomainUser)
-      .businessRole;
-    return {
-      profileId: session.user.id,
-      authUserId: session.user.id,
-      email: session.user.email,
-      role: domainRole,
-      firstName,
-      lastName: rest.join(" "),
-      domainProfiles: session.domainProfiles,
-      permissions: {
-        canManageCatalog: ["administrator", "dean", "super_admin"].includes(
-          domainRole,
-        ),
-        canManageStudents: ["administrator", "dean", "super_admin"].includes(
-          domainRole,
-        ),
-        canGrade: ["teacher", "administrator", "dean", "super_admin"].includes(
-          domainRole,
-        ),
-        canAccessAnalytics: ["administrator", "dean", "super_admin"].includes(
-          domainRole,
-        ),
-      },
-    };
-  }, [session]);
+	const memoUser = useMemo(() => {
+		if (!session || !session.user) return null;
+		const [firstName, ...rest] = (session.user.name || "").split(" ");
+		const domainRole: BusinessRole = (session.domainProfiles?.[0] as DomainUser)
+			.businessRole;
+		return {
+			profileId: session.user.id,
+			authUserId: session.user.id,
+			email: session.user.email,
+			role: domainRole,
+			firstName,
+			lastName: rest.join(" "),
+			domainProfiles: session.domainProfiles,
+			permissions: {
+				canManageCatalog: ["administrator", "dean", "super_admin"].includes(
+					domainRole,
+				),
+				canManageStudents: ["administrator", "dean", "super_admin"].includes(
+					domainRole,
+				),
+				canGrade: ["teacher", "administrator", "dean", "super_admin"].includes(
+					domainRole,
+				),
+				canAccessAnalytics: ["administrator", "dean", "super_admin"].includes(
+					domainRole,
+				),
+			},
+		};
+	}, [session]);
 
-  useEffect(() => {
-    if (memoUser) {
-      setUser(memoUser);
-    } else {
-      clearUser();
-    }
-  }, [memoUser, setUser, clearUser]);
+	useEffect(() => {
+		if (memoUser) {
+			setUser(memoUser);
+		} else {
+			clearUser();
+		}
+	}, [memoUser, setUser, clearUser]);
 
-  if (isPending) {
-    return <LoadingScreen />;
-  }
+	if (isPending) {
+		return <LoadingScreen />;
+	}
 
-  const role = user?.role ?? "guest";
-  const isAdmin = role === "administrator" || role === "super_admin";
-  const isDean = role === "dean";
-  const isTeacher = role === "teacher";
-  const isStudent = role === "student";
+	const role = user?.role ?? "guest";
+	const isAdmin = role === "administrator" || role === "super_admin";
+	const isDean = role === "dean";
+	const isTeacher = role === "teacher";
+	const isStudent = role === "student";
 
-  return (
-    <Routes>
-      {/* Auth Routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/register" element={<Register />} />
-        <Route path="/auth/forgot" element={<ForgotPassword />} />
-        <Route path="/auth/reset" element={<ResetPassword />} />
-      </Route>
+	return (
+		<Routes>
+			{/* Auth Routes */}
+			<Route element={<AuthLayout />}>
+				<Route path="/auth/login" element={<Login />} />
+				<Route path="/auth/register" element={<Register />} />
+				<Route path="/auth/forgot" element={<ForgotPassword />} />
+				<Route path="/auth/reset" element={<ResetPassword />} />
+			</Route>
 
-      {/* Admin Routes */}
-      {!!memoUser && isAdmin && (
-        <Route path="/admin" element={<DashboardLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="courses" element={<CourseManagement />} />
-          <Route path="academic-years" element={<AcademicYearManagement />} />
-          <Route path="classes" element={<ClassManagement />} />
-          <Route path="class-courses" element={<ClassCourseManagement />} />
-          <Route path="students" element={<StudentManagement />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="exams" element={<ExamManagement />} />
-          <Route path="exam-types" element={<ExamTypes />} />
-          <Route path="exam-scheduler" element={<ExamScheduler />} />
-          <Route path="faculties" element={<FacultyManagement />} />
-          <Route path="student-promotion" element={<StudentManagement />} />
-          <Route path="programs" element={<ProgramManagement />} />
-          <Route path="grade-export" element={<GradeExport />} />
-          <Route path="monitoring" element={<MonitoringDashboard />} />
-          <Route path="enrollments" element={<EnrollmentManagement />} />
-          <Route path="teaching-units" element={<TeachingUnitManagement />} />
-          <Route
-            path="teaching-units/:teachingUnitId"
-            element={<TeachingUnitDetail />}
-          />
-          <Route path="notifications" element={<NotificationsCenter />} />
-        </Route>
-      )}
+			{/* Admin Routes */}
+			{!!memoUser && isAdmin && (
+				<Route path="/admin" element={<DashboardLayout />}>
+					<Route index element={<AdminDashboard />} />
+					<Route path="courses" element={<CourseManagement />} />
+					<Route path="academic-years" element={<AcademicYearManagement />} />
+					<Route path="classes" element={<ClassManagement />} />
+					<Route path="class-courses" element={<ClassCourseManagement />} />
+					<Route path="students" element={<StudentManagement />} />
+					<Route path="users" element={<UserManagement />} />
+					<Route path="exams" element={<ExamManagement />} />
+					<Route path="exam-types" element={<ExamTypes />} />
+					<Route path="exam-scheduler" element={<ExamScheduler />} />
+					<Route path="faculties" element={<FacultyManagement />} />
+					<Route path="student-promotion" element={<StudentManagement />} />
+					<Route path="programs" element={<ProgramManagement />} />
+					<Route path="grade-export" element={<GradeExport />} />
+					<Route path="monitoring" element={<MonitoringDashboard />} />
+					<Route path="enrollments" element={<EnrollmentManagement />} />
+					<Route path="teaching-units" element={<TeachingUnitManagement />} />
+					<Route
+						path="teaching-units/:teachingUnitId"
+						element={<TeachingUnitDetail />}
+					/>
+					<Route path="notifications" element={<NotificationsCenter />} />
+				</Route>
+			)}
 
-      {/* Dean Routes */}
-      {memoUser && isDean && (
-        <Route path="/dean" element={<DashboardLayout />}>
-          <Route index element={<MonitoringDashboard />} />
-          <Route path="workflows" element={<WorkflowApprovals />} />
-        </Route>
-      )}
+			{/* Dean Routes */}
+			{memoUser && isDean && (
+				<Route path="/dean" element={<DashboardLayout />}>
+					<Route index element={<MonitoringDashboard />} />
+					<Route path="workflows" element={<WorkflowApprovals />} />
+				</Route>
+			)}
 
-      {/* Teacher Routes */}
-      {memoUser && isTeacher && (
-        <Route path="/teacher" element={<DashboardLayout />}>
-          <Route index element={<TeacherDashboard />} />
-          <Route path="courses" element={<CourseList />} />
-          <Route path="grades/:courseId" element={<GradeEntry />} />
-          <Route path="attendance" element={<AttendanceAlerts />} />
-          <Route path="workflows" element={<WorkflowManager />} />
-        </Route>
-      )}
+			{/* Teacher Routes */}
+			{memoUser && isTeacher && (
+				<Route path="/teacher" element={<DashboardLayout />}>
+					<Route index element={<TeacherDashboard />} />
+					<Route path="courses" element={<CourseList />} />
+					<Route path="grades/:courseId" element={<GradeEntry />} />
+					<Route path="attendance" element={<AttendanceAlerts />} />
+					<Route path="workflows" element={<WorkflowManager />} />
+				</Route>
+			)}
 
-      {/* Student Routes */}
-      {memoUser && isStudent && (
-        <Route path="/student" element={<DashboardLayout />}>
-          <Route index element={<PerformanceDashboard />} />
-        </Route>
-      )}
+			{/* Student Routes */}
+			{memoUser && isStudent && (
+				<Route path="/student" element={<DashboardLayout />}>
+					<Route index element={<PerformanceDashboard />} />
+				</Route>
+			)}
 
-      {/* Redirect based on authentication and role */}
-      <Route
-        path="*"
-        element={<Redirector isPending={isPending} user={memoUser} />}
-      />
-    </Routes>
-  );
+			{/* Redirect based on authentication and role */}
+			<Route
+				path="*"
+				element={<Redirector isPending={isPending} user={memoUser} />}
+			/>
+		</Routes>
+	);
 }
 
 export default App;

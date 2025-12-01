@@ -12,8 +12,6 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { useStore } from "../../store";
-import { trpcClient } from "../../utils/trpc";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +40,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useStore } from "../../store";
+import { trpcClient } from "../../utils/trpc";
 
 type Student = {
 	id: string;
@@ -259,11 +259,11 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="text-2xl font-bold text-foreground">
+					<h2 className="font-bold text-2xl text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{courseInfo.course_name} • {courseInfo.class_name} •{" "}
 							{courseInfo.program_name}
 						</p>
@@ -303,7 +303,10 @@ const GradeEntry: React.FC = () => {
 						{selectedExam && (
 							<div className="flex items-center gap-3">
 								{isExamLocked ? (
-									<Badge variant="secondary" className="flex items-center gap-2">
+									<Badge
+										variant="secondary"
+										className="flex items-center gap-2"
+									>
 										<Lock className="h-4 w-4" />
 										{t("teacher.gradeEntry.lockedChip")}
 									</Badge>
@@ -347,9 +350,7 @@ const GradeEntry: React.FC = () => {
 										<TableHead>
 											{t("teacher.gradeEntry.table.student")}
 										</TableHead>
-										<TableHead>
-											{t("teacher.gradeEntry.table.score")}
-										</TableHead>
+										<TableHead>{t("teacher.gradeEntry.table.score")}</TableHead>
 										<TableHead>
 											{t("teacher.gradeEntry.table.status")}
 										</TableHead>
@@ -440,10 +441,10 @@ const GradeEntry: React.FC = () => {
 				<Card className="text-center">
 					<CardContent className="py-12">
 						<AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
-						<p className="mt-4 text-lg font-medium text-foreground">
+						<p className="mt-4 font-medium text-foreground text-lg">
 							{t("teacher.gradeEntry.emptyStudents.title")}
 						</p>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							{t("teacher.gradeEntry.emptyStudents.description")}
 						</p>
 					</CardContent>
