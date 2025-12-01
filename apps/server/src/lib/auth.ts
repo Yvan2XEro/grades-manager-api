@@ -1,26 +1,39 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin } from "better-auth/plugins";
+import { admin, customSession } from "better-auth/plugins";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
+import { domainUsersRepo } from "@/modules/domain-users";
 
 export const superadminRoles = ["admin"];
 export const adminRoles = ["admin", ...superadminRoles];
 export const auth = betterAuth({
-	database: drizzleAdapter(db, {
-		provider: "pg",
-		schema: schema,
-	}),
-	plugins: [admin({ adminRoles })],
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
-	emailAndPassword: {
-		enabled: true,
-	},
-	advanced: {
-		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
-			httpOnly: true,
-		},
-	},
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: schema,
+  }),
+  plugins: [
+    admin({ adminRoles }),
+    customSession(async ({ session, user }) => {
+      const domainProfiles = await domainUsersRepo.getDomainsByAuthUserId(
+        user.id,
+      );
+      return {
+        user,
+        session,
+        domainProfiles: domainProfiles as typeof domainProfiles,
+      };
+    }),
+  ],
+  trustedOrigins: [process.env.CORS_ORIGIN || ""],
+  emailAndPassword: {
+    enabled: true,
+  },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+    },
+  },
 });
