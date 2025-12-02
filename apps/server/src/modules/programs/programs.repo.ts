@@ -2,6 +2,26 @@ import { and, eq, gt, ilike } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
+const programSelection = {
+	id: schema.programs.id,
+	name: schema.programs.name,
+	description: schema.programs.description,
+	faculty: schema.programs.faculty,
+	cycleId: schema.programs.cycleId,
+	createdAt: schema.programs.createdAt,
+	cycle: {
+		id: schema.studyCycles.id,
+		name: schema.studyCycles.name,
+		code: schema.studyCycles.code,
+		totalCreditsRequired: schema.studyCycles.totalCreditsRequired,
+		durationYears: schema.studyCycles.durationYears,
+	},
+	facultyInfo: {
+		id: schema.faculties.id,
+		name: schema.faculties.name,
+	},
+};
+
 export async function create(data: schema.NewProgram) {
 	const [item] = await db.insert(schema.programs).values(data).returning();
 	return item;
@@ -21,7 +41,17 @@ export async function remove(id: string) {
 }
 
 export async function findById(id: string) {
-	return db.query.programs.findFirst({ where: eq(schema.programs.id, id) });
+	const [program] = await db
+		.select(programSelection)
+		.from(schema.programs)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.programs.cycleId),
+		)
+		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
+		.where(eq(schema.programs.id, id))
+		.limit(1);
+	return program ?? null;
 }
 
 export async function list(opts: {
@@ -49,8 +79,13 @@ export async function list(opts: {
 		condition = condition ? and(condition, cursorCond) : cursorCond;
 	}
 	const items = await db
-		.select()
+		.select(programSelection)
 		.from(schema.programs)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.programs.cycleId),
+		)
+		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
 		.where(condition)
 		.orderBy(schema.programs.id)
 		.limit(limit);

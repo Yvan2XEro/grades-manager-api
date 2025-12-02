@@ -27,6 +27,9 @@
 		"table": {
 			"actions": "Actions"
 		},
+		"labels": {
+			"notAvailable": "Not available"
+		},
 		"pagination": {
 			"next": "Next",
 			"previous": "Previous"
@@ -56,7 +59,8 @@
 				"program": "Program",
 				"credits": "Credits",
 				"hours": "Hours",
-				"teacher": "Default Teacher"
+				"teacher": "Default Teacher",
+				"cycleInfo": "Cycle: {{value}}"
 			},
 			"form": {
 				"createTitle": "Add New Course",
@@ -69,6 +73,7 @@
 				"hoursPlaceholder": "Enter hours",
 				"programLabel": "Program",
 				"programPlaceholder": "Select a program",
+				"programCycleSummary": "Cycle: {{value}}",
 				"teacherLabel": "Default teacher",
 				"teacherPlaceholder": "Select a teacher",
 				"submit": "Save course"
@@ -528,13 +533,15 @@
 				"courses": "Courses",
 				"classes": "Classes",
 				"faculties": "Faculties",
+				"studyCycles": "Study cycles",
 				"programs": "Programs",
 				"teachers": "Teachers",
 				"courseAssignments": "Course assignments",
 				"teachingUnits": "Teaching units",
 				"enrollments": "Enrollments",
 				"examTypes": "Exam types",
-				"examScheduler": "Exam scheduler"
+				"examScheduler": "Exam scheduler",
+				"rules": "Rule center"
 			},
 			"teacher": {
 				"dashboard": "Overview",
@@ -671,6 +678,30 @@
 			"jobNotificationsDesc": "Delivers pending email/webhook alerts.",
 			"active": "Active"
 		},
+		"rules": {
+			"title": "Promotion & Rule Center",
+			"subtitle": "Curate study cycles, tune credit thresholds, and preview upcoming changes.",
+			"actions": {
+				"clone": "Clone defaults",
+				"save": "Save override"
+			},
+			"studyCycles": "Study cycles",
+			"faculty": "Faculty",
+			"selectFaculty": "Select faculty",
+			"cycle": "Study cycle",
+			"selectCycle": "Select cycle",
+			"totalCredits": "Total credits required: {{value}}",
+			"duration": "Duration: {{value}} years",
+			"levels": "Cycle levels",
+			"promotionRules": "Promotion rules",
+			"rulesHint": "Default rules come from the server. Clone them to craft faculty-level overrides.",
+			"selectLevel": "Select level",
+			"minCredits": "Required credits: {{value}}",
+			"toast": {
+				"saved": "Rule saved successfully"
+			},
+			"previewWarning": "Overrides are stored soon. For now, keep a note of exported JSON until persistence arrives."
+		},
 		"notifications": {
 			"title": "Notifications",
 			"subtitle": "Workflow alerts sent to staff and students",
@@ -789,6 +820,8 @@
 				"name": "Class",
 				"program": "Program",
 				"academicYear": "Academic year",
+				"cycle": "Cycle / level",
+				"option": "Option",
 				"students": "Students"
 			},
 			"form": {
@@ -797,8 +830,14 @@
 				"createSubmit": "Create class",
 				"programLabel": "Program",
 				"programPlaceholder": "Select a program",
+				"cycleSummary": "Cycle: {{value}}",
 				"academicYearLabel": "Academic year",
 				"academicYearPlaceholder": "Select an academic year",
+				"cycleLevelLabel": "Cycle level",
+				"cycleLevelPlaceholder": "Select cycle level",
+				"selectProgramFirst": "Select a program to load its cycle levels.",
+				"programOptionLabel": "Program option",
+				"programOptionPlaceholder": "Select option",
 				"labelLabel": "Generated class label"
 			},
 			"toast": {
@@ -816,7 +855,53 @@
 			"validation": {
 				"program": "Please select a program",
 				"academicYear": "Please select an academic year",
+				"cycleLevel": "Please select a cycle level",
+				"programOption": "Please select a program option",
 				"name": "Name must be at least 2 characters"
+			}
+		},
+		"studyCycles": {
+			"title": "Study cycles",
+			"subtitle": "Group programs by cycle and tune credit thresholds per level.",
+			"actions": {
+				"add": "Add cycle",
+				"addLevel": "Add level"
+			},
+			"listTitle": "Cycles",
+			"empty": "No study cycles yet.",
+			"table": {
+				"name": "Name",
+				"faculty": "Faculty",
+				"credits": "Credits",
+				"duration": "Duration",
+				"years": "{{value}} years",
+				"actions": "Actions"
+			},
+			"levelsTitle": "Cycle levels for {{cycle}}",
+			"levelsSubtitle": "Define how students progress across years.",
+			"levelsEmpty": "No levels defined yet.",
+			"levels": {
+				"defaultName": "Level {{value}}"
+			},
+			"levelCredits": "Required credits: {{value}}",
+			"form": {
+				"faculty": "Faculty",
+				"selectFaculty": "Select faculty",
+				"name": "Name",
+				"code": "Code",
+				"description": "Description",
+				"credits": "Credits required",
+				"duration": "Duration (years)"
+			},
+			"toast": {
+				"createSuccess": "Study cycle created",
+				"deleteSuccess": "Study cycle deleted",
+				"levelCreate": "Level added",
+				"levelDelete": "Level removed"
+			},
+			"delete": {
+				"title": "Delete study cycle",
+				"message": "Deleting a cycle will require programs and classes to be reassigned."
 			}
 		},
 		"faculties": {
@@ -872,6 +957,7 @@
 			"table": {
 				"name": "Program",
 				"faculty": "Faculty",
+				"cycle": "Cycle",
 				"description": "Description",
 				"noDescription": "No description"
 			},
@@ -882,13 +968,17 @@
 				"namePlaceholder": "Enter program name",
 				"facultyLabel": "Faculty",
 				"facultyPlaceholder": "Select a faculty",
+				"cycleLabel": "Study cycle",
+				"cyclePlaceholder": "Select cycle",
+				"selectFacultyFirst": "Select a faculty to load available cycles.",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Describe this program",
 				"submit": "Save program"
 			},
 			"validation": {
 				"name": "Name must be at least 2 characters",
-				"faculty": "Please select a faculty"
+				"faculty": "Please select a faculty",
+				"cycle": "Please select a study cycle"
 			},
 			"toast": {
 				"createSuccess": "Program created successfully",
@@ -901,6 +991,25 @@
 			"delete": {
 				"title": "Delete program",
 				"message": "Are you sure you want to delete this program? This action cannot be undone."
+			},
+			"options": {
+				"manage": "Manage options",
+				"title": "Manage options for {{value}}",
+				"subtitle": "Options represent the different tracks/specializations offered within this program.",
+				"empty": "No options yet. Add one below.",
+				"delete": "Delete option",
+				"form": {
+					"name": "Option name",
+					"code": "Code",
+					"description": "Description",
+					"submit": "Add option"
+				},
+				"toast": {
+					"create": "Option added",
+					"createError": "Could not add option",
+					"delete": "Option deleted",
+					"deleteError": "Could not delete option"
+				}
 			}
 		},
 		"courses": {
@@ -914,7 +1023,8 @@
 				"program": "Program",
 				"credits": "Credits",
 				"hours": "Hours",
-				"teacher": "Default teacher"
+				"teacher": "Default teacher",
+				"cycleInfo": "Cycle: {{value}}"
 			},
 			"form": {
 				"createTitle": "Add course",
@@ -928,6 +1038,7 @@
 				"hoursPlaceholder": "Enter total hours",
 				"programLabel": "Program",
 				"programPlaceholder": "Select a program",
+				"programCycleSummary": "Cycle: {{value}}",
 				"teacherLabel": "Default teacher",
 				"teacherPlaceholder": "Select a teacher"
 			},
@@ -1157,7 +1268,9 @@
 				"gender": "Gender",
 				"dateOfBirth": "Date of birth",
 				"placeOfBirth": "Place of birth",
-				"genderUnknown": "Not specified"
+				"genderUnknown": "Not specified",
+				"actions": "Actions",
+				"viewLedger": "Credits"
 			},
 			"gender": {
 				"male": "Male",
@@ -1211,6 +1324,19 @@
 				"createSuccess": "Student created successfully",
 				"createError": "Could not create the student",
 				"importError": "Could not import students"
+			},
+			"ledger": {
+				"title": "Credit overview",
+				"subtitle": "Tracking credits for {{student}}",
+				"loading": "Fetching ledger…",
+				"progressLabel": "Progress toward promotion",
+				"credits": "credits",
+				"required": "Required: {{required}}",
+				"inProgress": "In progress: {{value}}",
+				"ready": "Student is eligible for promotion 🎉",
+				"notReady": "Keep going! You're almost ready for promotion.",
+				"message": "Rules evaluated via json-rules-engine. Overrides will appear here once published.",
+				"entry": "Earned {{earned}} • In progress {{progress}}"
 			},
 			"validation": {
 				"firstName": "First name is required",
@@ -1334,11 +1460,27 @@
 			"subtitle": "Monitor cohorts and control enrollment windows.",
 			"selectYear": "Select academic year",
 			"selectClass": "Select class",
+			"filters": {
+				"year": "Academic year",
+				"class": "Class",
+				"summary": "Snapshot",
+				"studentsCount": "Students: {{value}}",
+				"cycle": "Cycle: {{value}}",
+				"cycleLevel": "Cycle level: {{value}}",
+				"option": "Option: {{value}}",
+				"window": "Window: {{status}}"
+			},
 			"listTitle": "Enrollments",
 			"fields": {
 				"student": "Student",
 				"status": "Status",
-				"dates": "Dates"
+				"dates": "Dates",
+				"actions": "Actions",
+				"statusValue": "{{value}}",
+				"enrolledAt": "Enrolled: {{value}}",
+				"exitedAt": "Exited: {{value}}",
+				"unknownStudent": "Unknown student",
+				"registrationFallback": "ID: {{value}}"
 			},
 			"empty": "No enrollments for this selection.",
 			"windowStatus": "Window: {{status}}",
@@ -1352,19 +1494,41 @@
 				"description": "Use the student management page to transfer or re-enroll students between classes."
 			},
 			"toast": {
-				"updated": "Window updated"
+				"updated": "Window updated",
+				"courseEnrolled": "Student enrolled in course",
+				"courseWithdrawn": "Enrollment updated",
+				"courseReactivated": "Enrollment restored"
+			},
+			"courseRoster": {
+				"title": "Course roster (per student)",
+				"subtitle": "Select a student to review enrollment attempts, retakes, and status per course.",
+				"selected": "Managing: {{value}}",
+				"students": "Students in class",
+				"emptyStudents": "Select a class to view students.",
+				"courses": "Class courses",
+				"selectStudent": "Pick a student to manage course enrollments.",
+				"openModalBtn": "Open roster",
+				"teacher": "Teacher: {{value}}",
+				"notEnrolled": "Not enrolled",
+				"enrollBtn": "Enroll",
+				"reactivateBtn": "Restore enrollment",
+				"withdrawBtn": "Withdraw",
+				"retakeBtn": "Retake",
+				"noCourses": "This class has no courses assigned yet."
 			}
 		},
 		"teachingUnits": {
 			"title": "Teaching units",
 			"subtitle": "Manage UE catalog, semesters, and prerequisites.",
 			"selectProgram": "Select program",
+			"programCycleSummary": "Cycle: {{value}}",
 			"new": "Create new UE",
 			"fields": {
 				"name": "Unit name",
 				"code": "Code",
 				"description": "Description",
-				"credits": "ECTS"
+				"credits": "ECTS",
+				"programCycle": "Cycle: {{value}}"
 			},
 			"semesters": {
 				"annual": "Annual",
@@ -1489,12 +1653,20 @@
 		"performance": {
 			"title": "Performance dashboard",
 			"subtitle": "Track your averages, credits, and course progress",
+			"cycleBadge": "Cycle: {{value}}",
+			"levelBadge": "Level: {{value}}",
+			"cycleBadge": "Cycle: {{value}}",
+			"levelBadge": "Level: {{value}}",
 			"trendTitle": "Progression",
 			"trendSubtitle": "Weighted averages across enrolled courses",
-			"overallAverage": "Overall average",
-			"credits": "Earned credits",
+			"creditsProgress": "Credits earned",
+			"inProgress": "In progress: {{value}} credits",
+			"eligible": "Eligible for next level 🎉",
+			"notEligible": "Keep going! You're almost ready for promotion.",
+			"ruleNotice": "Evaluated with the promotion rules configured by your faculty.",
 			"courseAverages": "Course averages",
-			"courseSubtitle": "Latest scores for the active academic year"
+			"courseSubtitle": "Latest scores for the active academic year",
+			"coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session."
 		}
 	}
 }

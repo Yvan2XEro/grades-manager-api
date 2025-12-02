@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as repo from "./programs.repo";
+import * as programOptionsRepo from "../program-options/program-options.repo";
 
 async function ensureCycleLevelExists(cycleId: string) {
 	const level = await db.query.cycleLevels.findFirst({
@@ -67,7 +68,14 @@ async function ensureCycleForFaculty(facultyId: string, cycleId?: string) {
 
 export async function createProgram(data: Parameters<typeof repo.create>[0]) {
 	const cycleId = await ensureCycleForFaculty(data.faculty, data.cycleId);
-	return repo.create({ ...data, cycleId });
+	const program = await repo.create({ ...data, cycleId });
+	await programOptionsRepo.create({
+		programId: program.id,
+		name: "Default option",
+		code: "default",
+		description: "Auto-generated option",
+	});
+	return program;
 }
 
 export async function updateProgram(

@@ -8,8 +8,10 @@ import {
 	Calendar,
 	CalendarPlus,
 	ClipboardList,
+	FileCog,
 	FileSpreadsheet,
 	GraduationCap,
+	Layers3,
 	LayoutDashboard,
 	School,
 	UserCog,
@@ -39,6 +41,11 @@ const Sidebar: React.FC = () => {
 			to: "/admin/faculties",
 			icon: <Building2 className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.faculties",
+		},
+		{
+			to: "/admin/study-cycles",
+			icon: <Layers3 className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.studyCycles",
 		},
 		{
 			to: "/admin/programs",
@@ -99,6 +106,11 @@ const Sidebar: React.FC = () => {
 			to: "/admin/student-promotion",
 			icon: <ArrowUpRight className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.studentPromotion",
+		},
+		{
+			to: "/admin/rules",
+			icon: <FileCog className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.rules",
 		},
 		{
 			to: "/admin/grade-export",

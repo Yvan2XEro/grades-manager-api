@@ -11,9 +11,12 @@ import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { notificationsRouter } from "../modules/notifications";
 import { programsRouter } from "../modules/programs";
+import { promotionsRouter } from "../modules/promotions";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
+import { studentCreditLedgerRouter } from "../modules/student-credit-ledger";
 import { studentsRouter } from "../modules/students";
 import { studyCyclesRouter } from "../modules/study-cycles";
+import { programOptionsRouter } from "../modules/program-options";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
@@ -27,17 +30,20 @@ export const appRouter = router({
 	faculties: facultiesRouter,
 	programs: programsRouter,
 	studyCycles: studyCyclesRouter,
+	programOptions: programOptionsRouter,
 	teachingUnits: teachingUnitsRouter,
 	academicYears: academicYearsRouter,
 	classes: classesRouter,
 	courses: coursesRouter,
 	classCourses: classCoursesRouter,
 	studentCourseEnrollments: studentCourseEnrollmentsRouter,
+	studentCreditLedger: studentCreditLedgerRouter,
 	enrollments: enrollmentsRouter,
 	exams: examsRouter,
 	examTypes: examTypesRouter,
 	examScheduler: examSchedulerRouter,
 	students: studentsRouter,
+	promotions: promotionsRouter,
 	grades: gradesRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,

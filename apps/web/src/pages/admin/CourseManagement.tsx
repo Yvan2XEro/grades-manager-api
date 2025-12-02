@@ -85,10 +85,7 @@ interface Course {
 	defaultTeacher: string;
 }
 
-interface Program {
-	id: string;
-	name: string;
-}
+type ProgramOption = RouterOutputs["programs"]["list"]["items"][number];
 
 type Teacher = RouterOutputs["users"]["list"]["items"][number];
 
@@ -114,7 +111,7 @@ export default function CourseManagement() {
 		queryKey: ["programs"],
 		queryFn: async () => {
 			const { items } = await trpcClient.programs.list.query({});
-			return items as Program[];
+			return items as ProgramOption[];
 		},
 	});
 
@@ -132,13 +129,25 @@ export default function CourseManagement() {
 	const form = useForm<CourseFormData>({
 		resolver: zodResolver(courseSchema),
 	});
+	const { watch } = form;
+	const selectedProgramId = watch("program");
+	const selectedProgram = useMemo(
+		() => programs?.find((program) => program.id === selectedProgramId),
+		[programs, selectedProgramId],
+	);
 
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
 		teacher.email;
 
 	const teacherOptions = teachers ?? [];
-	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
+	const programMap = useMemo(
+		() =>
+			new Map(
+				(programs ?? []).map((program) => [program.id, program]),
+			),
+		[programs],
+	);
 	const teacherMap = new Map(
 		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
@@ -291,7 +300,29 @@ export default function CourseManagement() {
 								{courses.map((course) => (
 									<TableRow key={course.id}>
 										<TableCell>{course.name}</TableCell>
-										<TableCell>{programMap.get(course.program)}</TableCell>
+										<TableCell>
+											{(() => {
+												const programInfo = programMap.get(course.program);
+												if (!programInfo) {
+													return t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													});
+												}
+												return (
+													<div className="space-y-0.5">
+														<p>{programInfo.name}</p>
+														{programInfo.cycle && (
+															<p className="text-muted-foreground text-xs">
+																{t("admin.courses.table.cycleInfo", {
+																	defaultValue: "Cycle: {{value}}",
+																	value: `${programInfo.cycle.name}${programInfo.cycle.code ? ` (${programInfo.cycle.code})` : ""}`,
+																})}
+															</p>
+														)}
+													</div>
+												);
+											})()}
+										</TableCell>
 										<TableCell>{course.credits}</TableCell>
 										<TableCell>{course.hours}</TableCell>
 										<TableCell>
@@ -458,11 +489,29 @@ export default function CourseManagement() {
 											<SelectContent>
 												{programs?.map((program) => (
 													<SelectItem key={program.id} value={program.id}>
-														{program.name}
+														<div className="flex flex-col">
+															<span>{program.name}</span>
+															{program.cycle && (
+																<span className="text-muted-foreground text-xs">
+																	{program.cycle.name}
+																	{program.cycle.code
+																		? ` (${program.cycle.code})`
+																		: ""}
+																</span>
+															)}
+														</div>
 													</SelectItem>
 												))}
 											</SelectContent>
 										</Select>
+										{selectedProgram?.cycle && (
+											<p className="text-muted-foreground text-xs">
+												{t("admin.courses.form.programCycleSummary", {
+													defaultValue: "Cycle: {{value}}",
+													value: `${selectedProgram.cycle.name}${selectedProgram.cycle.code ? ` (${selectedProgram.cycle.code})` : ""}`,
+												})}
+											</p>
+										)}
 										<FormMessage />
 									</FormItem>
 								)}

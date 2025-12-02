@@ -17,11 +17,18 @@ export const auth = betterAuth({
 		customSession(async ({ session, user }) => {
 			const domainProfiles = await domainUsersRepo.getDomainsByAuthUserId(
 				user.id,
+				{
+					authUserId: user.id,
+					businessRole: "student",
+					primaryEmail: user.email,
+					firstName: user.name,
+					lastName: "",
+				},
 			);
 			return {
 				user,
 				session,
-				domainProfiles: domainProfiles as typeof domainProfiles,
+				domainProfiles: domainProfiles,
 			};
 		}),
 	],

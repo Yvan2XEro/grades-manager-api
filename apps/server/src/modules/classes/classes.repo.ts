@@ -3,6 +3,43 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
 
+const classSelection = {
+	id: schema.classes.id,
+	name: schema.classes.name,
+	program: schema.classes.program,
+	academicYear: schema.classes.academicYear,
+	cycleLevelId: schema.classes.cycleLevelId,
+	programOptionId: schema.classes.programOptionId,
+	createdAt: schema.classes.createdAt,
+	programInfo: {
+		id: schema.programs.id,
+		name: schema.programs.name,
+		cycleId: schema.programs.cycleId,
+		facultyId: schema.programs.faculty,
+	},
+	academicYearInfo: {
+		id: schema.academicYears.id,
+		name: schema.academicYears.name,
+	},
+	cycleLevel: {
+		id: schema.cycleLevels.id,
+		name: schema.cycleLevels.name,
+		code: schema.cycleLevels.code,
+		orderIndex: schema.cycleLevels.orderIndex,
+		minCredits: schema.cycleLevels.minCredits,
+	},
+	cycle: {
+		id: schema.studyCycles.id,
+		name: schema.studyCycles.name,
+		code: schema.studyCycles.code,
+	},
+	programOption: {
+		id: schema.programOptions.id,
+		name: schema.programOptions.name,
+		code: schema.programOptions.code,
+	},
+};
+
 export async function create(data: schema.NewKlass) {
 	const [item] = await db.insert(schema.classes).values(data).returning();
 	return item;
@@ -22,7 +59,29 @@ export async function remove(id: string) {
 }
 
 export async function findById(id: string) {
-	return db.query.classes.findFirst({ where: eq(schema.classes.id, id) });
+	const [klass] = await db
+		.select(classSelection)
+		.from(schema.classes)
+		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.classes.academicYear),
+		)
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.programs.cycleId),
+		)
+		.leftJoin(
+			schema.programOptions,
+			eq(schema.programOptions.id, schema.classes.programOptionId),
+		)
+		.where(eq(schema.classes.id, id))
+		.limit(1);
+	return klass ?? null;
 }
 
 export async function list(opts: {
@@ -31,6 +90,7 @@ export async function list(opts: {
 	facultyId?: string;
 	cycleId?: string;
 	cycleLevelId?: string;
+	programOptionId?: string;
 	cursor?: string;
 	limit?: number;
 }) {
@@ -65,6 +125,9 @@ export async function list(opts: {
 		opts.cycleLevelId
 			? eq(schema.classes.cycleLevelId, opts.cycleLevelId)
 			: undefined,
+		opts.programOptionId
+			? eq(schema.classes.programOptionId, opts.programOptionId)
+			: undefined,
 		facultyProgramIds
 			? inArray(schema.classes.program, facultyProgramIds)
 			: undefined,
@@ -80,8 +143,25 @@ export async function list(opts: {
 				? conditions[0]
 				: and(...conditions);
 	const items = await db
-		.select()
+		.select(classSelection)
 		.from(schema.classes)
+		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.classes.academicYear),
+		)
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.programs.cycleId),
+		)
+		.leftJoin(
+			schema.programOptions,
+			eq(schema.programOptions.id, schema.classes.programOptionId),
+		)
 		.where(condition)
 		.orderBy(schema.classes.id)
 		.limit(limit);

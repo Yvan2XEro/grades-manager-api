@@ -33,7 +33,7 @@ export const listSchema = z.object({
 	courseId: z.string().optional(),
 	status: statusEnum.optional(),
 	cursor: z.string().optional(),
-	limit: z.number().int().min(1).max(100).optional(),
+	limit: z.number().int().min(1).max(200).optional(),
 });
 
 export const idSchema = z.object({ id: z.string() });

@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, LockOpen, Unlock } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -13,7 +16,11 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useStore } from "../../store";
-import { trpc, trpcClient } from "../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+
+type CourseEnrollmentListResponse =
+	RouterOutputs["studentCourseEnrollments"]["list"];
+type CourseEnrollmentRow = CourseEnrollmentListResponse["items"][number];
 
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
@@ -42,6 +49,41 @@ const EnrollmentManagement = () => {
 		enabled: Boolean(selectedAcademicYear && selectedClass),
 	});
 
+	const studentsQuery = useQuery({
+		...trpc.students.list.queryOptions({
+			classId: selectedClass || undefined,
+			limit: 100,
+		}),
+		enabled: Boolean(selectedClass),
+	});
+
+	const classCoursesQuery = useQuery({
+		...trpc.classCourses.list.queryOptions({
+			classId: selectedClass || undefined,
+			limit: 100,
+		}),
+		enabled: Boolean(selectedClass),
+	});
+
+	const [selectedStudent, setSelectedStudent] = useState<string>("");
+	const [rosterModalOpen, setRosterModalOpen] = useState(false);
+
+	const courseEnrollmentQuery = useQuery({
+		...trpc.studentCourseEnrollments.list.queryOptions({
+			studentId: selectedStudent || undefined,
+			limit: 200,
+		}),
+		enabled: Boolean(selectedStudent && rosterModalOpen),
+	});
+
+	const selectedStudentProfile = useMemo(
+		() =>
+			studentsQuery.data?.items?.find(
+				(student) => student.id === selectedStudent,
+			) ?? null,
+		[studentsQuery.data?.items, selectedStudent],
+	);
+
 	const windowsQuery = useQuery(
 		trpc.workflows.enrollmentWindows.queryOptions(),
 	);
@@ -66,6 +108,69 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
+	const rosterByClassCourse = useMemo(() => {
+		const map = new Map<string, CourseEnrollmentRow>();
+		courseEnrollmentQuery.data?.items?.forEach((item) => {
+			map.set(item.classCourseId, item);
+		});
+		return map;
+	}, [courseEnrollmentQuery.data?.items]);
+
+const assignCourse = useMutation({
+		mutationFn: (classCourseId: string) =>
+			trpcClient.studentCourseEnrollments.create.mutate({
+				studentId: selectedStudent,
+				classCourseId,
+				status: "active",
+			}),
+		onSuccess: () => {
+			toast.success(
+				t("admin.enrollments.toast.courseEnrolled", {
+					defaultValue: "Student enrolled in course",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+const withdrawCourse = useMutation({
+	mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
+		trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
+	onSuccess: () => {
+		toast.success(
+			t("admin.enrollments.toast.courseWithdrawn", {
+				defaultValue: "Enrollment updated",
+			}),
+		);
+		queryClient.invalidateQueries(
+			trpc.studentCourseEnrollments.list.queryKey(),
+		);
+	},
+	onError: (error: Error) => toast.error(error.message),
+});
+
+const reactivateCourse = useMutation({
+	mutationFn: (id: string) =>
+		trpcClient.studentCourseEnrollments.updateStatus.mutate({
+			id,
+			status: "active",
+		}),
+	onSuccess: () => {
+		toast.success(
+			t("admin.enrollments.toast.courseReactivated", {
+				defaultValue: "Enrollment restored",
+			}),
+		);
+		queryClient.invalidateQueries(
+			trpc.studentCourseEnrollments.list.queryKey(),
+		);
+	},
+	onError: (error: Error) => toast.error(error.message),
+});
+
 	const enrollments = enrollmentsQuery.data?.items ?? [];
 	const windowStatus = useMemo(() => {
 		if (!selectedClass || !selectedAcademicYear) return null;
@@ -76,22 +181,33 @@ const EnrollmentManagement = () => {
 		);
 	}, [windowsQuery.data, selectedAcademicYear, selectedClass]);
 
+	useEffect(() => {
+		setRosterModalOpen(false);
+		setSelectedStudent("");
+	}, [selectedAcademicYear, selectedClass]);
+
+	const openRosterForStudent = (studentId: string) => {
+		setSelectedStudent(studentId);
+		setRosterModalOpen(true);
+	};
+
+	const handleRosterModalChange = (open: boolean) => {
+		setRosterModalOpen(open);
+	};
+
+	const selectedClassDetails = useMemo(() => {
+		return classes?.items?.find((klass) => klass.id === selectedClass);
+	}, [classes?.items, selectedClass]);
+
 	return (
 		<div className="space-y-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
-						{t("admin.enrollments.title", {
-							defaultValue: "Enrollment management",
-						})}
-					</h1>
-					<p className="text-gray-600">
-						{t("admin.enrollments.subtitle", {
-							defaultValue: "Monitor cohorts and control enrollment windows.",
+			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3">
+				<div className="space-y-1">
+					<p className="text-sm font-medium text-gray-600">
+						{t("admin.enrollments.filters.year", {
+							defaultValue: "Academic year",
 						})}
 					</p>
-				</div>
-				<div className="flex flex-wrap gap-3">
 					<Select
 						value={selectedAcademicYear}
 						onValueChange={(value) => {
@@ -99,7 +215,7 @@ const EnrollmentManagement = () => {
 							setSelectedClass("");
 						}}
 					>
-						<SelectTrigger className="min-w-[200px]">
+						<SelectTrigger className="w-full">
 							<SelectValue
 								placeholder={t("admin.enrollments.selectYear", {
 									defaultValue: "Select academic year",
@@ -114,12 +230,17 @@ const EnrollmentManagement = () => {
 							))}
 						</SelectContent>
 					</Select>
+				</div>
+				<div className="space-y-1">
+					<p className="text-sm font-medium text-gray-600">
+						{t("admin.enrollments.filters.class", { defaultValue: "Class" })}
+					</p>
 					<Select
 						value={selectedClass}
 						onValueChange={(value) => setSelectedClass(value)}
 						disabled={!selectedAcademicYear}
 					>
-						<SelectTrigger className="min-w-[200px]">
+						<SelectTrigger className="w-full">
 							<SelectValue
 								placeholder={t("admin.enrollments.selectClass", {
 									defaultValue: "Select class",
@@ -130,10 +251,58 @@ const EnrollmentManagement = () => {
 							{classes?.items?.map((klass) => (
 								<SelectItem key={klass.id} value={klass.id}>
 									{klass.name}
+									{klass.programOption?.name
+										? ` • ${klass.programOption.name}`
+										: ""}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
+				</div>
+				<div className="space-y-2 rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600">
+					<p className="font-semibold text-gray-900">
+						{t("admin.enrollments.filters.summary", {
+							defaultValue: "Snapshot",
+						})}
+					</p>
+					<ul className="space-y-1 text-sm">
+						<li>
+							{t("admin.enrollments.filters.studentsCount", {
+								defaultValue: "Students: {{value}}",
+								value: studentsQuery.data?.items?.length ?? 0,
+							})}
+						</li>
+						<li>
+							{t("admin.enrollments.filters.cycle", {
+								defaultValue: "Cycle: {{value}}",
+								value:
+									selectedClassDetails?.cycle?.name ??
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
+							})}
+						</li>
+						<li>
+							{t("admin.enrollments.filters.cycleLevel", {
+								defaultValue: "Level: {{value}}",
+								value:
+									selectedClassDetails?.cycleLevel?.name ??
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
+							})}
+						</li>
+						<li>
+							{t("admin.enrollments.filters.option", {
+								defaultValue: "Option: {{value}}",
+								value:
+									selectedClassDetails?.programOption?.name ??
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
+							})}
+						</li>
+						<li>
+							{t("admin.enrollments.filters.window", {
+								defaultValue: "Window: {{status}}",
+								status: windowStatus?.status ?? t("common.labels.notAvailable"),
+							})}
+						</li>
+					</ul>
 				</div>
 			</div>
 
@@ -189,87 +358,329 @@ const EnrollmentManagement = () => {
 				</CardHeader>
 			</Card>
 
-			<Card>
-				<CardHeader className="pb-4">
-					<CardTitle className="font-semibold text-gray-900 text-lg">
-						{t("admin.enrollments.listTitle", { defaultValue: "Enrollments" })}
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{enrollmentsQuery.isLoading ? (
-						<p className="text-gray-500 text-sm">
-							{t("common.loading", { defaultValue: "Loading..." })}
-						</p>
-					) : enrollments.length ? (
-						<div className="overflow-x-auto">
-							<table className="min-w-full divide-y divide-gray-200">
-								<thead className="bg-gray-50">
-									<tr>
-										<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
-											{t("admin.enrollments.fields.student", {
-												defaultValue: "Student",
-											})}
-										</th>
-										<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
-											{t("admin.enrollments.fields.status", {
-												defaultValue: "Status",
-											})}
-										</th>
-										<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
-											{t("admin.enrollments.fields.dates", {
-												defaultValue: "Dates",
-											})}
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-100">
-									{enrollments.map((enrollment) => (
-										<tr key={enrollment.id} className="text-gray-700 text-sm">
-											<td className="px-4 py-3">
-												{enrollment.studentId?.slice(0, 8)}
-											</td>
-											<td className="px-4 py-3 capitalize">
-												{enrollment.status}
-											</td>
-											<td className="px-4 py-3 text-gray-500 text-xs">
-												{enrollment.enrolledAt
-													? new Date(enrollment.enrolledAt).toLocaleDateString()
-													: "—"}
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					) : (
-						<p className="text-gray-500 text-sm">
-							{t("admin.enrollments.empty", {
-								defaultValue: "No enrollments for this selection.",
-							})}
-						</p>
-					)}
-				</CardContent>
-			</Card>
-
-			{user?.permissions?.canManageStudents && (
-				<Card>
-					<CardHeader className="pb-2">
+			<div>
+				<Card className="lg:col-span-2">
+					<CardHeader className="pb-4">
 						<CardTitle className="font-semibold text-gray-900 text-lg">
-							{t("admin.enrollments.actions.title", {
-								defaultValue: "Manual adjustments",
+							{t("admin.enrollments.listTitle", {
+								defaultValue: "Enrollments",
 							})}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<p className="text-gray-600 text-sm">
-							{t("admin.enrollments.actions.description", {
-								defaultValue:
-									"Use the student management page to transfer or re-enroll students between classes.",
-							})}
-						</p>
+						{enrollmentsQuery.isLoading ? (
+							<p className="text-gray-500 text-sm">
+								{t("common.loading", { defaultValue: "Loading..." })}
+							</p>
+						) : enrollments.length ? (
+							<div className="overflow-x-auto">
+								<table className="min-w-full divide-y divide-gray-200">
+									<thead className="bg-gray-50">
+										<tr>
+											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+												{t("admin.enrollments.fields.student", {
+													defaultValue: "Student",
+												})}
+											</th>
+											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+												{t("admin.enrollments.fields.status", {
+													defaultValue: "Status",
+												})}
+											</th>
+											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+												{t("admin.enrollments.fields.dates", {
+													defaultValue: "Dates",
+												})}
+											</th>
+											<th className="px-4 py-2 text-right font-medium text-gray-600 text-xs uppercase tracking-wider">
+												{t("admin.enrollments.fields.actions", {
+													defaultValue: "Actions",
+												})}
+											</th>
+										</tr>
+									</thead>
+									<tbody className="divide-y divide-gray-100">
+										{enrollments.map((enrollment) => {
+											const student = studentsQuery.data?.items?.find(
+												(s) => s.id === enrollment.studentId,
+											);
+											const fullName = student
+												? `${student.profile.firstName} ${student.profile.lastName}`
+												: t("admin.enrollments.fields.unknownStudent", {
+														defaultValue: "Unknown student",
+													});
+											return (
+												<tr key={enrollment.id}>
+													<td className="px-4 py-3">
+														<div className="space-y-0.5">
+															<p className="font-semibold text-gray-900">
+																{fullName}
+															</p>
+															<p className="text-gray-600 text-sm">
+																{student?.registrationNumber ??
+																	t(
+																		"admin.enrollments.fields.registrationFallback",
+																		{
+																			defaultValue: "ID: {{value}}",
+																			value: enrollment.studentId,
+																		},
+																	)}
+															</p>
+														</div>
+													</td>
+													<td className="px-4 py-3">
+														<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+															{t("admin.enrollments.fields.statusValue", {
+																defaultValue: "{{value}}",
+																value: enrollment.status,
+															})}
+														</span>
+													</td>
+													<td className="px-4 py-3 text-sm text-gray-600">
+														<p>
+															{t("admin.enrollments.fields.enrolledAt", {
+																defaultValue: "Enrolled: {{value}}",
+																value: enrollment.enrolledAt
+																	? new Date(
+																			enrollment.enrolledAt,
+																		).toLocaleDateString()
+																	: t("common.labels.notAvailable", {
+																			defaultValue: "N/A",
+																		}),
+															})}
+														</p>
+														{enrollment.exitedAt && (
+															<p>
+																{t("admin.enrollments.fields.exitedAt", {
+																	defaultValue: "Exited: {{value}}",
+																	value: new Date(
+																		enrollment.exitedAt,
+																	).toLocaleDateString(),
+																})}
+															</p>
+														)}
+													</td>
+													<td className="px-4 py-3 text-right">
+														<Button
+															type="button"
+															size="sm"
+															variant="secondary"
+															onClick={() =>
+																openRosterForStudent(enrollment.studentId)
+															}
+														>
+															{t(
+																"admin.enrollments.courseRoster.openModalBtn",
+																{
+																	defaultValue: "View roster",
+																},
+															)}
+														</Button>
+													</td>
+												</tr>
+											);
+										})}
+									</tbody>
+								</table>
+							</div>
+						) : (
+							<p className="text-gray-500 text-sm">
+								{t("admin.enrollments.empty", {
+									defaultValue:
+										"No enrollments found for the selected filters.",
+								})}
+							</p>
+						)}
 					</CardContent>
 				</Card>
-			)}
+
+				<Dialog open={rosterModalOpen} onOpenChange={handleRosterModalChange}>
+					<DialogContent className="min-w-[90vw]">
+						<Card>
+							<CardHeader className="pb-4">
+								<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+									<div>
+										<CardTitle className="font-semibold text-gray-900 text-lg">
+											{t("admin.enrollments.courseRoster.title", {
+												defaultValue: "Course roster (per student)",
+											})}
+										</CardTitle>
+										<p className="text-gray-600 text-sm">
+											{t("admin.enrollments.courseRoster.subtitle", {
+												defaultValue:
+													"Select a student to review enrollment attempts, retakes, and status per course.",
+											})}
+										</p>
+									</div>
+									{selectedStudent && (
+										<Badge variant="outline" className="text-sm">
+											{t("admin.enrollments.courseRoster.selected", {
+												defaultValue: "Managing: {{value}}",
+												value: selectedStudentProfile
+													? `${selectedStudentProfile.profile.firstName} ${selectedStudentProfile.profile.lastName}`
+													: "",
+											})}
+										</Badge>
+									)}
+								</div>
+							</CardHeader>
+							<CardContent className="min-w-[70vw] space-y-4">
+								{selectedStudent ? (
+									<>
+										<p className="font-medium text-gray-700 text-sm">
+											{t("admin.enrollments.courseRoster.courses", {
+												defaultValue: "Class courses",
+											})}
+										</p>
+										<ScrollArea className="max-h-[420px] w-full rounded-md border">
+											<div className="divide-y">
+											{classCoursesQuery.data?.items?.map((course) => {
+												const enrollment = rosterByClassCourse.get(course.id);
+												const status = enrollment?.status ?? "none";
+												const courseName = course.courseName ?? course.course;
+												const teacherName = course.teacherFirstName
+													? `${course.teacherFirstName} ${course.teacherLastName ?? ""}`.trim()
+													: course.teacher;
+												const canReactivate =
+													enrollment && status === "withdrawn";
+												const enrollDisabled =
+													!selectedStudent ||
+													status === "active" ||
+													(canReactivate
+														? reactivateCourse.isPending
+														: assignCourse.isPending);
+												const handlePrimaryAction = () => {
+													if (!selectedStudent) return;
+													if (canReactivate) {
+														reactivateCourse.mutate(enrollment.id);
+													} else {
+														assignCourse.mutate(course.id);
+													}
+												};
+												return (
+													<div
+														key={course.id}
+														className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+													>
+														<div className="space-y-1">
+															<p className="font-semibold text-gray-900 text-sm">
+																{courseName}
+															</p>
+															<p className="text-gray-600 text-xs">
+																{t("admin.enrollments.courseRoster.teacher", {
+																	defaultValue: "Teacher: {{value}}",
+																	value: teacherName,
+																})}
+															</p>
+														</div>
+														<div className="flex flex-col gap-2 sm:items-end">
+															<Badge
+																variant="outline"
+																className={
+																	status === "active"
+																		? "border-emerald-200 bg-emerald-50 text-emerald-800"
+																		: status === "completed"
+																			? "border-blue-200 bg-blue-50 text-blue-800"
+																			: status === "failed"
+																				? "border-rose-200 bg-rose-50 text-rose-800"
+																				: "border-gray-200 bg-gray-50 text-gray-800"
+																}
+															>
+																{status === "none"
+																	? t(
+																			"admin.enrollments.courseRoster.notEnrolled",
+																			{
+																				defaultValue: "Not enrolled",
+																			},
+																		)
+																	: status}
+															</Badge>
+															<div className="flex flex-wrap gap-2">
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="outline"
+																	disabled={enrollDisabled}
+																	onClick={handlePrimaryAction}
+																>
+																	{canReactivate
+																		? t(
+																				"admin.enrollments.courseRoster.reactivateBtn",
+																				{
+																					defaultValue: "Restore enrollment",
+																				},
+																			)
+																		: t(
+																				"admin.enrollments.courseRoster.enrollBtn",
+																				{
+																					defaultValue: "Enroll",
+																				},
+																			)}
+																</Button>
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="secondary"
+																	disabled={
+																		!enrollment || withdrawCourse.isPending
+																	}
+																	onClick={() =>
+																		enrollment &&
+																		withdrawCourse.mutate({
+																			id: enrollment.id,
+																			status: "withdrawn",
+																		})
+																	}
+																>
+																	{t(
+																		"admin.enrollments.courseRoster.withdrawBtn",
+																		{
+																			defaultValue: "Withdraw",
+																		},
+																	)}
+																</Button>
+																<Button
+																	type="button"
+																	size="xs"
+																	variant="ghost"
+																	disabled={!selectedStudent}
+																	onClick={() => assignCourse.mutate(course.id)}
+																>
+																	{t(
+																		"admin.enrollments.courseRoster.retakeBtn",
+																		{
+																			defaultValue: "Retake",
+																		},
+																	)}
+																</Button>
+															</div>
+														</div>
+													</div>
+												);
+											}) ?? (
+												<p className="text-gray-500 text-sm">
+													{t("admin.enrollments.courseRoster.noCourses", {
+														defaultValue:
+															"This class has no courses assigned yet.",
+													})}
+												</p>
+											)}
+											</div>
+										</ScrollArea>
+									</>
+								) : (
+									<p className="text-gray-500 text-sm">
+										{t("admin.enrollments.courseRoster.selectStudent", {
+											defaultValue:
+												"Pick a student to manage course enrollments.",
+										})}
+									</p>
+								)}
+							</CardContent>
+						</Card>
+					</DialogContent>
+				</Dialog>
+			</div>
 		</div>
 	);
 };

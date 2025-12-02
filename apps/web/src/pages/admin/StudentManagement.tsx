@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { Download, PlusIcon } from "lucide-react";
+import { Download, PlusIcon, Sparkles } from "lucide-react";
 import Papa from "papaparse";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+} from "@/components/ui/drawer";
+import {
 	Form,
 	FormControl,
 	FormField,
@@ -28,6 +35,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
 	Select,
 	SelectContent,
@@ -46,7 +54,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { RouterOutputs } from "../../utils/trpc";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 type StudentsListResponse = RouterOutputs["students"]["list"];
 type StudentRow = StudentsListResponse["items"][number];
@@ -155,6 +163,7 @@ export default function StudentManagement() {
 	} | null>(null);
 	const [importFile, setImportFile] = useState<File | null>(null);
 	const [importFileKey, setImportFileKey] = useState(0);
+	const [ledgerStudent, setLedgerStudent] = useState<StudentRow | null>(null);
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
@@ -173,6 +182,20 @@ export default function StudentManagement() {
 				cursor,
 				limit: 20,
 			}),
+	});
+
+	const ledgerSummaryQuery = useQuery({
+		...trpc.studentCreditLedger.summary.queryOptions({
+			studentId: ledgerStudent?.id || "",
+		}),
+		enabled: Boolean(ledgerStudent),
+	});
+
+	const promotionQuery = useQuery({
+		...trpc.promotions.evaluateStudent.queryOptions({
+			studentId: ledgerStudent?.id || "",
+		}),
+		enabled: Boolean(ledgerStudent),
 	});
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
@@ -432,6 +455,11 @@ export default function StudentManagement() {
 								<TableHead>{t("admin.students.table.gender")}</TableHead>
 								<TableHead>{t("admin.students.table.dateOfBirth")}</TableHead>
 								<TableHead>{t("admin.students.table.placeOfBirth")}</TableHead>
+								<TableHead className="text-right">
+									{t("admin.students.table.actions", {
+										defaultValue: "Actions",
+									})}
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -448,11 +476,24 @@ export default function StudentManagement() {
 											{formatDate(student.profile.dateOfBirth)}
 										</TableCell>
 										<TableCell>{student.profile.placeOfBirth || "—"}</TableCell>
+										<TableCell className="text-right">
+											<Button
+												type="button"
+												variant="ghost"
+												className="text-primary-700"
+												onClick={() => setLedgerStudent(student)}
+											>
+												<Sparkles className="mr-2 h-4 w-4" />
+												{t("admin.students.table.viewLedger", {
+													defaultValue: "Credits",
+												})}
+											</Button>
+										</TableCell>
 									</TableRow>
 								))
 							) : (
 								<TableRow>
-									<TableCell colSpan={6} className="py-6 text-center">
+									<TableCell colSpan={7} className="py-6 text-center">
 										{t("admin.students.empty", {
 											defaultValue: "No students yet for this selection.",
 										})}
@@ -479,6 +520,127 @@ export default function StudentManagement() {
 					</Button>
 				</CardFooter>
 			</Card>
+
+			<Drawer
+				open={Boolean(ledgerStudent)}
+				onOpenChange={(open) => !open && setLedgerStudent(null)}
+			>
+				<DrawerContent>
+					<DrawerHeader>
+						<DrawerTitle>
+							{t("admin.students.ledger.title", {
+								defaultValue: "Credit overview",
+							})}
+						</DrawerTitle>
+						<DrawerDescription>
+							{ledgerStudent
+								? t("admin.students.ledger.subtitle", {
+										defaultValue: "Tracking credits for {{student}}",
+										student: getStudentName(ledgerStudent),
+									})
+								: ""}
+						</DrawerDescription>
+					</DrawerHeader>
+					<div className="space-y-6 px-4 pb-6">
+						{ledgerSummaryQuery.isLoading ? (
+							<p className="text-gray-500 text-sm">
+								{t("admin.students.ledger.loading", {
+									defaultValue: "Fetching ledger…",
+								})}
+							</p>
+						) : (
+							<>
+								{ledgerSummaryQuery.data && (
+									<div className="rounded-xl border bg-gray-50 p-4">
+										<p className="font-medium text-gray-700 text-sm">
+											{t("admin.students.ledger.progressLabel", {
+												defaultValue: "Progress toward promotion",
+											})}
+										</p>
+										<div className="mt-3 flex items-end justify-between">
+											<div>
+												<p className="font-semibold text-3xl text-gray-900">
+													{ledgerSummaryQuery.data.creditsEarned}{" "}
+													{t("admin.students.ledger.credits", {
+														defaultValue: "credits",
+													})}
+												</p>
+												<p className="text-gray-600 text-sm">
+													{t("admin.students.ledger.required", {
+														defaultValue: "Required: {{required}}",
+														required: ledgerSummaryQuery.data.requiredCredits,
+													})}
+												</p>
+											</div>
+											<div className="text-right text-sm">
+												<p className="text-gray-600">
+													{t("admin.students.ledger.inProgress", {
+														defaultValue: "In progress: {{value}}",
+														value: ledgerSummaryQuery.data.creditsInProgress,
+													})}
+												</p>
+											</div>
+										</div>
+										<Progress
+											value={Math.min(
+												100,
+												(ledgerSummaryQuery.data.creditsEarned /
+													ledgerSummaryQuery.data.requiredCredits) *
+													100 || 0,
+											)}
+											className="mt-4"
+										/>
+									</div>
+								)}
+								{promotionQuery.data && (
+									<div
+										className={`rounded-xl border p-4 ${promotionQuery.data.eligible ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
+									>
+										<p className="font-semibold text-gray-900">
+											{promotionQuery.data.eligible
+												? t("admin.students.ledger.ready", {
+														defaultValue: "Student is eligible for promotion",
+													})
+												: t("admin.students.ledger.notReady", {
+														defaultValue:
+															"More credits required before promotion",
+													})}
+										</p>
+										<p className="text-gray-700 text-sm">
+											{t("admin.students.ledger.message", {
+												defaultValue:
+													"Rules evaluated via json-rules-engine. Overrides will appear here once published.",
+											})}
+										</p>
+									</div>
+								)}
+								{ledgerSummaryQuery.data?.ledgers?.length ? (
+									<div className="space-y-3">
+										{ledgerSummaryQuery.data.ledgers.map((entry) => (
+											<div
+												key={entry.id}
+												className="rounded-lg border bg-white p-3 shadow-sm"
+											>
+												<p className="font-medium text-gray-900">
+													{entry.academicYearId}
+												</p>
+												<p className="text-gray-600 text-sm">
+													{t("admin.students.ledger.entry", {
+														defaultValue:
+															"Earned {{earned}} • In progress {{progress}}",
+														earned: entry.creditsEarned,
+														progress: entry.creditsInProgress,
+													})}
+												</p>
+											</div>
+										))}
+									</div>
+								) : null}
+							</>
+						)}
+					</div>
+				</DrawerContent>
+			</Drawer>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
 				<DialogContent className="max-w-3xl">

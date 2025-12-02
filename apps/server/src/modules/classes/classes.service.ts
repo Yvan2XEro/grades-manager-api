@@ -5,6 +5,7 @@ import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
+import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./classes.repo";
 
 async function loadProgram(programId: string) {
@@ -47,10 +48,41 @@ async function ensureCycleLevel(
 	return created.id;
 }
 
+async function ensureProgramOption(
+	program: schema.Program,
+	programOptionId?: string,
+) {
+	if (!programOptionId) {
+		const existing = await db.query.programOptions.findFirst({
+			where: eq(schema.programOptions.programId, program.id),
+			orderBy: (options, helpers) => helpers.asc(options.createdAt),
+		});
+		if (existing) return existing.id;
+		const option = await programOptionsRepo.create({
+			programId: program.id,
+			name: "Default option",
+			code: `default-${program.id.slice(0, 4)}`,
+		});
+		return option.id;
+	}
+	const option = await db.query.programOptions.findFirst({
+		where: eq(schema.programOptions.id, programOptionId),
+	});
+	if (!option) throw notFound("Program option not found");
+	if (option.programId !== program.id) {
+		throw conflict("Program option does not belong to program");
+	}
+	return option.id;
+}
+
 export async function createClass(data: Parameters<typeof repo.create>[0]) {
 	const program = await loadProgram(data.program);
 	const cycleLevelId = await ensureCycleLevel(program, data.cycleLevelId);
-	return repo.create({ ...data, cycleLevelId });
+	const programOptionId = await ensureProgramOption(
+		program,
+		data.programOptionId,
+	);
+	return repo.create({ ...data, cycleLevelId, programOptionId });
 }
 
 export async function updateClass(
@@ -63,10 +95,19 @@ export async function updateClass(
 	const desiredLevelId =
 		data.cycleLevelId !== undefined ? data.cycleLevelId : existing.cycleLevelId;
 	const cycleLevelId = await ensureCycleLevel(program, desiredLevelId);
+	const desiredProgramOptionId =
+		data.programOptionId !== undefined
+			? data.programOptionId
+			: existing.programOptionId;
+	const programOptionId = await ensureProgramOption(
+		program,
+		desiredProgramOptionId,
+	);
 	return repo.update(id, {
 		...data,
 		program: program.id,
 		cycleLevelId,
+		programOptionId,
 	});
 }
 

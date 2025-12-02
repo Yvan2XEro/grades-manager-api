@@ -47,6 +47,16 @@ const buildClassSchema = (t: TFunction) =>
 		academicYearId: z.string({
 			required_error: t("admin.classes.validation.academicYear"),
 		}),
+		cycleLevelId: z.string({
+			required_error: t("admin.classes.validation.cycleLevel", {
+				defaultValue: "Please select a cycle level",
+			}),
+		}),
+		programOptionId: z.string({
+			required_error: t("admin.classes.validation.programOption", {
+				defaultValue: "Please select a program option",
+			}),
+		}),
 		name: z.string().min(2, t("admin.classes.validation.name")),
 	});
 
@@ -57,8 +67,13 @@ interface Class {
 	name: string;
 	programId: string;
 	academicYearId: string;
-	program: { name: string };
+	cycleLevelId: string;
+	programOptionId: string;
+	program: { name: string; cycleName?: string | null; cycleCode?: string | null };
 	academicYear: { name: string };
+	cycle?: { id: string; name: string; code: string };
+	cycleLevel?: { id: string; name: string; code: string };
+	programOption?: { id: string; name: string; code: string };
 	students: { id: string }[];
 }
 
@@ -78,18 +93,25 @@ export default function ClassManagement() {
 			const { items } = await trpcClient.classes.list.query({});
 			return Promise.all(
 				items.map(async (cls) => {
-					const [program, academicYear, students] = await Promise.all([
-						trpcClient.programs.getById.query({ id: cls.program }),
-						trpcClient.academicYears.getById.query({ id: cls.academicYear }),
-						trpcClient.students.list.query({ classId: cls.id }),
-					]);
+					const students = await trpcClient.students.list.query({
+						classId: cls.id,
+					});
 					return {
 						id: cls.id,
 						name: cls.name,
 						programId: cls.program,
 						academicYearId: cls.academicYear,
-						program: { name: program.name },
-						academicYear: { name: academicYear.name },
+						cycleLevelId: cls.cycleLevelId,
+						programOptionId: cls.programOptionId,
+						program: {
+							name: cls.programInfo?.name ?? "",
+							cycleName: cls.cycle?.name,
+							cycleCode: cls.cycle?.code,
+						},
+						academicYear: { name: cls.academicYearInfo?.name ?? "" },
+						cycle: cls.cycle ?? undefined,
+						cycleLevel: cls.cycleLevel ?? undefined,
+						programOption: cls.programOption ?? undefined,
 						students: students.items.map((s) => ({ id: s.id })),
 					} as Class;
 				}),
@@ -118,6 +140,8 @@ export default function ClassManagement() {
 		defaultValues: {
 			programId: "",
 			academicYearId: "",
+			cycleLevelId: "",
+			programOptionId: "",
 			name: "",
 		},
 	});
@@ -126,19 +150,77 @@ export default function ClassManagement() {
 
 	const selectedProgramId = watch("programId");
 	const selectedAcademicYearId = watch("academicYearId");
+	const selectedProgram = useMemo(
+		() => programs?.find((p) => p.id === selectedProgramId),
+		[programs, selectedProgramId],
+	);
+
+	const { data: cycleLevelsData } = useQuery({
+		queryKey: ["cycleLevels", selectedProgram?.cycle?.id],
+		queryFn: async () => {
+			if (!selectedProgram?.cycle?.id) return [];
+			return trpcClient.studyCycles.listLevels.query({
+				cycleId: selectedProgram.cycle.id,
+			});
+		},
+		enabled: Boolean(selectedProgram?.cycle?.id),
+	});
+	const cycleLevels = cycleLevelsData ?? [];
+	const cycleLevelId = watch("cycleLevelId");
 
 	useEffect(() => {
-		const program = programs?.find((p) => p.id === selectedProgramId);
+		if (!selectedProgram) {
+			setValue("cycleLevelId", "");
+		}
+	}, [selectedProgram, setValue]);
+
+	useEffect(() => {
+		if (!cycleLevels.length) return;
+		if (!cycleLevelId || !cycleLevels.some((level) => level.id === cycleLevelId)) {
+			setValue("cycleLevelId", cycleLevels[0].id);
+		}
+	}, [cycleLevels, cycleLevelId, setValue]);
+
+	const { data: programOptionsData } = useQuery({
+		queryKey: ["programOptions", selectedProgram?.id],
+		queryFn: async () => {
+			if (!selectedProgram) return [];
+			const { items } = await trpcClient.programOptions.list.query({
+				programId: selectedProgram.id,
+			});
+			return items;
+		},
+		enabled: Boolean(selectedProgram?.id),
+	});
+	const programOptions = programOptionsData ?? [];
+	const programOptionId = watch("programOptionId");
+
+	useEffect(() => {
+		if (!selectedProgram) {
+			setValue("programOptionId", "");
+		}
+	}, [selectedProgram, setValue]);
+
+	useEffect(() => {
+		if (!programOptions.length) return;
+		if (
+			!programOptionId ||
+			!programOptions.some((option) => option.id === programOptionId)
+		) {
+			setValue("programOptionId", programOptions[0].id);
+		}
+	}, [programOptions, programOptionId, setValue]);
+
+	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
-		if (program && year) {
+		if (selectedProgram && year) {
 			const startYear = new Date(year.startDate).getFullYear();
 			const endYear = new Date(year.endDate).getFullYear();
-			setValue("name", `${program.name}(${startYear}-${endYear})`);
+			setValue("name", `${selectedProgram.name}(${startYear}-${endYear})`);
 		}
 	}, [
-		selectedProgramId,
+		selectedProgram,
 		selectedAcademicYearId,
-		programs,
 		academicYears,
 		setValue,
 	]);
@@ -149,6 +231,8 @@ export default function ClassManagement() {
 				name: data.name,
 				program: data.programId,
 				academicYear: data.academicYearId,
+				cycleLevelId: data.cycleLevelId,
+				programOptionId: data.programOptionId,
 			});
 		},
 		onSuccess: () => {
@@ -173,6 +257,8 @@ export default function ClassManagement() {
 				name: data.name,
 				program: data.programId,
 				academicYear: data.academicYearId,
+				cycleLevelId: data.cycleLevelId,
+				programOptionId: data.programOptionId,
 			});
 		},
 		onSuccess: () => {
@@ -288,6 +374,16 @@ export default function ClassManagement() {
 								<TableHead>{t("admin.classes.table.name")}</TableHead>
 								<TableHead>{t("admin.classes.table.program")}</TableHead>
 								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
+								<TableHead>
+									{t("admin.classes.table.cycle", {
+										defaultValue: "Cycle / level",
+									})}
+								</TableHead>
+								<TableHead>
+									{t("admin.classes.table.option", {
+										defaultValue: "Option",
+									})}
+								</TableHead>
 								<TableHead>{t("admin.classes.table.students")}</TableHead>
 								<TableHead>{t("common.table.actions")}</TableHead>
 							</TableRow>
@@ -298,6 +394,35 @@ export default function ClassManagement() {
 									<TableCell className="font-medium">{cls.name}</TableCell>
 									<TableCell>{cls.program?.name}</TableCell>
 									<TableCell>{cls.academicYear?.name}</TableCell>
+									<TableCell>
+										{cls.cycle ? (
+											<div className="space-y-0.5">
+												<p className="font-medium text-sm">{cls.cycle.name}</p>
+												<p className="text-muted-foreground text-xs">
+													{cls.cycleLevel?.name}
+													{cls.cycleLevel?.code ? ` (${cls.cycleLevel.code})` : ""}
+												</p>
+											</div>
+										) : (
+											t("common.labels.notAvailable", { defaultValue: "N/A" })
+										)}
+										</TableCell>
+									<TableCell>
+										{cls.programOption ? (
+											<div className="space-y-0.5">
+												<p className="font-medium text-sm">
+													{cls.programOption.name}
+												</p>
+												<p className="text-muted-foreground text-xs">
+													{cls.programOption.code}
+												</p>
+											</div>
+										) : (
+											t("common.labels.notAvailable", {
+												defaultValue: "N/A",
+											})
+										)}
+									</TableCell>
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4" />
@@ -316,6 +441,8 @@ export default function ClassManagement() {
 														name: cls.name,
 														programId: cls.programId,
 														academicYearId: cls.academicYearId,
+														cycleLevelId: cls.cycleLevelId,
+														programOptionId: cls.programOptionId,
 													});
 													setIsFormOpen(true);
 												}}
@@ -376,10 +503,21 @@ export default function ClassManagement() {
 											{programs?.map((program) => (
 												<SelectItem key={program.id} value={program.id}>
 													{program.name}
+													{program.cycle?.code
+														? ` • ${program.cycle.code}`
+														: ""}
 												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
+									{selectedProgram?.cycle && (
+										<p className="text-muted-foreground text-xs">
+											{t("admin.classes.form.cycleSummary", {
+												defaultValue: "Cycle: {{value}}",
+												value: `${selectedProgram.cycle.name} (${selectedProgram.cycle.code})`,
+											})}
+										</p>
+									)}
 									<FormMessage />
 								</FormItem>
 							)}
@@ -411,6 +549,98 @@ export default function ClassManagement() {
 											))}
 										</SelectContent>
 									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="cycleLevelId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classes.form.cycleLevelLabel", {
+											defaultValue: "Cycle level",
+										})}
+									</FormLabel>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+										disabled={!selectedProgram || cycleLevels.length === 0}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classes.form.cycleLevelPlaceholder",
+														{ defaultValue: "Select cycle level" },
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{cycleLevels.map((level) => (
+												<SelectItem key={level.id} value={level.id}>
+													{level.name} ({level.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{!selectedProgram && (
+										<p className="text-muted-foreground text-xs">
+											{t("admin.classes.form.selectProgramFirst", {
+												defaultValue: "Select a program to load its cycle levels.",
+											})}
+										</p>
+									)}
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="programOptionId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classes.form.programOptionLabel", {
+											defaultValue: "Program option",
+										})}
+									</FormLabel>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+										disabled={
+											!selectedProgram || programOptions.length === 0
+										}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classes.form.programOptionPlaceholder",
+														{ defaultValue: "Select option" },
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{programOptions.map((option) => (
+												<SelectItem key={option.id} value={option.id}>
+													{option.name} ({option.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{!selectedProgram && (
+										<p className="text-muted-foreground text-xs">
+											{t("admin.classes.form.selectProgramFirst", {
+												defaultValue:
+													"Select a program to load its cycle levels.",
+											})}
+										</p>
+									)}
 									<FormMessage />
 								</FormItem>
 							)}

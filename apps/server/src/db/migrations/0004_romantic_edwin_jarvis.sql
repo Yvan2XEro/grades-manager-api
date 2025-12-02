@@ -1,2 +1,0 @@
-ALTER TABLE "exams" ADD COLUMN "schedule_run_id" text;--> statement-breakpoint
-ALTER TABLE "exams" ADD CONSTRAINT "exams_schedule_run_id_exam_schedule_runs_id_fk" FOREIGN KEY ("schedule_run_id") REFERENCES "public"."exam_schedule_runs"("id") ON DELETE set null ON UPDATE no action;

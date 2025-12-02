@@ -38,6 +38,9 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { trpc, trpcClient } from "../../utils/trpc";
+import type { RouterOutputs } from "../../utils/trpc";
+
+type ProgramOption = RouterOutputs["programs"]["list"]["items"][number];
 
 const TeachingUnitManagement = () => {
 	const { t } = useTranslation();
@@ -49,6 +52,11 @@ const TeachingUnitManagement = () => {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
+	const programList = programs?.items ?? [];
+	const selectedProgram = useMemo(
+		() => programList.find((program) => program.id === selectedProgramId),
+		[programList, selectedProgramId],
+	);
 
 	const { data: units, isLoading } = useQuery(
 		trpc.teachingUnits.list.queryOptions({
@@ -57,11 +65,8 @@ const TeachingUnitManagement = () => {
 	);
 
 	const programMap = useMemo(
-		() =>
-			new Map(
-				(programs?.items ?? []).map((program) => [program.id, program.name]),
-			),
-		[programs],
+		() => new Map(programList.map((program) => [program.id, program])),
+		[programList],
 	);
 
 	const deleteMutation = useMutation({
@@ -151,13 +156,29 @@ const TeachingUnitManagement = () => {
 								/>
 							</SelectTrigger>
 							<SelectContent>
-								{programs?.items?.map((program) => (
+								{programList.map((program) => (
 									<SelectItem key={program.id} value={program.id}>
-										{program.name}
+										<div className="flex flex-col">
+											<span>{program.name}</span>
+											{program.cycle && (
+												<span className="text-muted-foreground text-xs">
+													{program.cycle.name}
+													{program.cycle.code ? ` (${program.cycle.code})` : ""}
+												</span>
+											)}
+										</div>
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
+						{selectedProgram?.cycle && (
+							<p className="text-muted-foreground text-xs">
+								{t("admin.teachingUnits.programCycleSummary", {
+									defaultValue: "Cycle: {{value}}",
+									value: `${selectedProgram.cycle.name}${selectedProgram.cycle.code ? ` (${selectedProgram.cycle.code})` : ""}`,
+								})}
+							</p>
+						)}
 						<Button
 							variant="outline"
 							onClick={() => setSelectedProgramId("")}
@@ -195,7 +216,27 @@ const TeachingUnitManagement = () => {
 											<TableCell className="font-medium">{unit.name}</TableCell>
 											<TableCell>{unit.code}</TableCell>
 											<TableCell>
-												{programMap.get(unit.programId) ?? "—"}
+												{(() => {
+													const programInfo = programMap.get(unit.programId);
+													if (!programInfo) {
+														return t("common.labels.notAvailable", {
+															defaultValue: "N/A",
+														});
+													}
+													return (
+														<div className="space-y-0.5">
+															<p>{programInfo.name}</p>
+															{programInfo.cycle && (
+																<p className="text-muted-foreground text-xs">
+																	{t("admin.teachingUnits.table.programCycle", {
+																		defaultValue: "Cycle: {{value}}",
+																		value: `${programInfo.cycle.name}${programInfo.cycle.code ? ` (${programInfo.cycle.code})` : ""}`,
+																	})}
+																</p>
+															)}
+														</div>
+													);
+												})()}
 											</TableCell>
 											<TableCell>
 												{t(`admin.teachingUnits.semesters.${unit.semester}`, {

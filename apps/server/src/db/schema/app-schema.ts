@@ -222,6 +222,26 @@ export const programs = pgTable(
 	],
 );
 
+export const programOptions = pgTable(
+	"program_options",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		code: text("code").notNull(),
+		description: text("description"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_program_options_program_code").on(t.programId, t.code),
+		index("idx_program_options_program_id").on(t.programId),
+	],
+);
+
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
 	"teaching_units",
@@ -260,6 +280,9 @@ export const classes = pgTable(
 		cycleLevelId: text("cycle_level_id")
 			.notNull()
 			.references(() => cycleLevels.id, { onDelete: "restrict" }),
+		programOptionId: text("program_option_id")
+			.notNull()
+			.references(() => programOptions.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -273,6 +296,7 @@ export const classes = pgTable(
 		index("idx_classes_program_id").on(t.program),
 		index("idx_classes_academic_year_id").on(t.academicYear),
 		index("idx_classes_cycle_level_id").on(t.cycleLevelId),
+		index("idx_classes_program_option_id").on(t.programOptionId),
 	],
 );
 
@@ -661,9 +685,18 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 		fields: [programs.cycleId],
 		references: [studyCycles.id],
 	}),
+	options: many(programOptions),
 	classes: many(classes),
 	courses: many(courses),
 	teachingUnits: many(teachingUnits),
+}));
+
+export const programOptionsRelations = relations(programOptions, ({ one, many }) => ({
+	program: one(programs, {
+		fields: [programOptions.programId],
+		references: [programs.id],
+	}),
+	classes: many(classes),
 }));
 
 export const teachingUnitsRelations = relations(
@@ -689,6 +722,10 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 	cycleLevel: one(cycleLevels, {
 		fields: [classes.cycleLevelId],
 		references: [cycleLevels.id],
+	}),
+	programOption: one(programOptions, {
+		fields: [classes.programOptionId],
+		references: [programOptions.id],
 	}),
 	classCourses: many(classCourses),
 	students: many(students),
@@ -902,6 +939,8 @@ export type NewCycleLevel = InferInsertModel<typeof cycleLevels>;
 
 export type Program = InferSelectModel<typeof programs>;
 export type NewProgram = InferInsertModel<typeof programs>;
+export type ProgramOption = InferSelectModel<typeof programOptions>;
+export type NewProgramOption = InferInsertModel<typeof programOptions>;
 
 export type AcademicYear = InferSelectModel<typeof academicYears>;
 export type NewAcademicYear = InferInsertModel<typeof academicYears>;

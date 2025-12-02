@@ -10,11 +10,15 @@ const resourcesPath = path.resolve(process.cwd(), "src/@types/resources.d.ts");
 
 const indent = (level) => "\t".repeat(level);
 
+const escapeKey = (key) => JSON.stringify(key);
+
 const formatObject = (object, depth = 2) => {
 	const lines = ["{"];
 	for (const [key, value] of Object.entries(object)) {
 		if (value && typeof value === "object" && !Array.isArray(value)) {
-			lines.push(`${indent(depth)}${key}: ${formatObject(value, depth + 1)}`);
+			lines.push(
+				`${indent(depth)}${escapeKey(key)}: ${formatObject(value, depth + 1)}`,
+			);
 			continue;
 		}
 		if (Array.isArray(value)) {
@@ -22,7 +26,7 @@ const formatObject = (object, depth = 2) => {
 				`Unexpected array value for key "${key}" in the translation file.`,
 			);
 		}
-		lines.push(`${indent(depth)}${key}: ${JSON.stringify(value)};`);
+		lines.push(`${indent(depth)}${escapeKey(key)}: ${JSON.stringify(value)};`);
 	}
 	lines.push(`${indent(depth - 1)}};`);
 	return lines.join("\n");

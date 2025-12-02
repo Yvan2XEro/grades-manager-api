@@ -24,6 +24,10 @@ type CourseInfo = {
 	program_name: string;
 	upcoming_exams: number;
 	student_count: number;
+	cycle_name?: string | null;
+	cycle_code?: string | null;
+	cycle_level_name?: string | null;
+	cycle_level_code?: string | null;
 };
 
 type UpcomingExam = {
@@ -99,6 +103,10 @@ const TeacherDashboard: React.FC = () => {
 					program_name: program.name,
 					upcoming_exams: exams.items.length,
 					student_count: studentCount,
+					cycle_name: klass.cycle?.name ?? null,
+					cycle_code: klass.cycle?.code ?? null,
+					cycle_level_name: klass.cycleLevel?.name ?? null,
+					cycle_level_code: klass.cycleLevel?.code ?? null,
 				});
 
 				exams.items.forEach((exam) => {
@@ -244,6 +252,26 @@ const TeacherDashboard: React.FC = () => {
 											<p className="text-muted-foreground text-sm">
 												{course.class_name} • {course.program_name}
 											</p>
+											{(course.cycle_name || course.cycle_level_name) && (
+												<div className="mt-1 flex flex-wrap gap-2 text-xs">
+													{course.cycle_name && (
+														<Badge variant="outline">
+															{course.cycle_name}
+															{course.cycle_code
+																? ` (${course.cycle_code})`
+																: ""}
+														</Badge>
+													)}
+													{course.cycle_level_name && (
+														<Badge variant="secondary">
+															{course.cycle_level_name}
+															{course.cycle_level_code
+																? ` (${course.cycle_level_code})`
+																: ""}
+														</Badge>
+													)}
+												</div>
+											)}
 										</div>
 										<div className="flex items-center gap-4 text-muted-foreground text-sm">
 											<span className="flex items-center gap-1">

@@ -32,10 +32,17 @@ export async function findById(id: string) {
 	});
 }
 
-export async function getDomainsByAuthUserId(id: string) {
-	return db.query.domainUsers.findMany({
+export async function getDomainsByAuthUserId(
+	id: string,
+	domainUserPayload?: NewDomainUser,
+) {
+	const data = await db.query.domainUsers.findMany({
 		where: eq(domainUsers.authUserId, id),
 	});
+	if (data.length > 0) return data;
+	if (!domainUserPayload) return [];
+	const domainUser = await create(domainUserPayload);
+	return [domainUser];
 }
 
 export async function findByAuthUserId(authUserId: string) {

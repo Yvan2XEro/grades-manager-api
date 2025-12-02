@@ -114,6 +114,12 @@ const TeachingUnitDetail = () => {
 		resolver: zodResolver(unitSchema),
 		defaultValues,
 	});
+	const selectedProgramId = form.watch("programId");
+	const selectedProgram = useMemo(
+		() =>
+			programs?.items?.find((program) => program.id === selectedProgramId),
+		[programs?.items, selectedProgramId],
+	);
 
 	useEffect(() => {
 		if (teachingUnit) {
@@ -384,11 +390,29 @@ const TeachingUnitDetail = () => {
 											<SelectContent>
 												{programs?.items?.map((program) => (
 													<SelectItem key={program.id} value={program.id}>
-														{program.name}
+														<div className="flex flex-col">
+															<span>{program.name}</span>
+															{program.cycle && (
+																<span className="text-muted-foreground text-xs">
+																	{program.cycle.name}
+																	{program.cycle.code
+																		? ` (${program.cycle.code})`
+																		: ""}
+																</span>
+															)}
+														</div>
 													</SelectItem>
 												))}
 											</SelectContent>
 										</Select>
+										{selectedProgram?.cycle && (
+											<p className="text-muted-foreground text-xs">
+												{t("admin.teachingUnits.programCycleSummary", {
+													defaultValue: "Cycle: {{value}}",
+													value: `${selectedProgram.cycle.name}${selectedProgram.cycle.code ? ` (${selectedProgram.cycle.code})` : ""}`,
+												})}
+											</p>
+										)}
 										<FormMessage />
 									</FormItem>
 								)}

@@ -1,7 +1,6 @@
 import { and, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
-import { paginate } from "../_shared/pagination";
 
 export async function create(data: schema.NewClassCourse) {
 	const [item] = await db.insert(schema.classCourses).values(data).returning();
@@ -49,11 +48,46 @@ export async function list(opts: {
 			: conditions.length === 1
 				? conditions[0]
 				: and(...conditions);
-	const items = await db
-		.select()
-		.from(schema.classCourses)
-		.where(condition)
-		.orderBy(schema.classCourses.id)
-		.limit(limit);
-	return paginate(items, limit);
+	const rows = await db.query.classCourses.findMany({
+		where: condition,
+		orderBy: (classCourses, { asc }) => asc(classCourses.id),
+		limit: limit + 1,
+		with: {
+			courseRef: {
+				columns: {
+					name: true,
+					code: true,
+					credits: true,
+				},
+			},
+			teacherRef: {
+				columns: {
+					firstName: true,
+					lastName: true,
+					primaryEmail: true,
+				},
+			},
+		},
+	});
+
+	let nextCursor: string | undefined;
+	if (rows.length > limit) {
+		const next = rows.pop();
+		nextCursor = next?.id;
+	}
+
+	const items = rows.map((row) => ({
+		id: row.id,
+		class: row.class,
+		course: row.course,
+		teacher: row.teacher,
+		weeklyHours: row.weeklyHours,
+		createdAt: row.createdAt,
+		courseName: row.courseRef?.name,
+		courseCode: row.courseRef?.code,
+		teacherFirstName: row.teacherRef?.firstName,
+		teacherLastName: row.teacherRef?.lastName,
+	}));
+
+	return { items, nextCursor };
 }

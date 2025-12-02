@@ -244,7 +244,33 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 			cycleId: cycle.id,
 		})
 		.returning();
+	await db
+		.insert(schema.programOptions)
+		.values({
+			programId: program.id,
+			name: "Default option",
+			code: "default",
+		})
+		.onConflictDoNothing();
 	return program;
+}
+
+export async function createProgramOption(
+	data: Partial<schema.NewProgramOption> = {},
+) {
+	const program = data.programId
+		? { id: data.programId }
+		: await createProgram();
+	const [option] = await db
+		.insert(schema.programOptions)
+		.values({
+			programId: program.id,
+			name: data.name ?? `Option-${randomUUID().slice(0, 4)}`,
+			code: data.code ?? randomUUID().slice(0, 6),
+			description: data.description ?? null,
+		})
+		.returning();
+	return option;
 }
 
 export async function createTeachingUnit(
@@ -296,6 +322,18 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 	const level = data.cycleLevelId
 		? { id: data.cycleLevelId }
 		: await createCycleLevel({ cycleId: program.cycleId });
+	const option =
+		data.programOptionId ??
+		(
+			await db.query.programOptions.findFirst({
+				where: eq(schema.programOptions.programId, program.id),
+			})
+		)?.id ??
+		(
+			await createProgramOption({
+				programId: program.id,
+			})
+		).id;
 	const [klass] = await db
 		.insert(schema.classes)
 		.values({
@@ -303,6 +341,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 			program: program.id,
 			academicYear: year.id,
 			cycleLevelId: level.id,
+			programOptionId: option,
 		})
 		.returning();
 	return klass;

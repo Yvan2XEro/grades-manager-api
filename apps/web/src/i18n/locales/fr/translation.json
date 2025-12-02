@@ -27,6 +27,9 @@
 		"table": {
 			"actions": "Actions"
 		},
+		"labels": {
+			"notAvailable": "Non disponible"
+		},
 		"pagination": {
 			"next": "Suivant",
 			"previous": "Précédent"
@@ -59,13 +62,15 @@
 				"courses": "Cours",
 				"classes": "Classes",
 				"faculties": "Facultés",
+				"studyCycles": "Cycles d'étude",
 				"programs": "Programmes",
 				"teachers": "Enseignants",
 				"courseAssignments": "Affectations de cours",
 				"teachingUnits": "Unités d'enseignement",
 				"enrollments": "Inscriptions",
 				"examTypes": "Types d'examen",
-				"examScheduler": "Programmation des examens"
+				"examScheduler": "Programmation des examens",
+				"rules": "Centre des règles"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
@@ -184,6 +189,29 @@
 			"jobNotifications": "Dispatch des notifications",
 			"jobNotificationsDesc": "Diffuse les alertes e-mail/webhook en attente.",
 			"active": "Active"
+		},
+		"rules": {
+			"title": "Centre des règles & promotions",
+			"subtitle": "Orchestrez les cycles d'étude, ajustez les seuils de crédits et prévisualisez les changements.",
+			"actions": {
+				"clone": "Cloner les règles par défaut",
+				"save": "Enregistrer la variante"
+			},
+			"studyCycles": "Cycles d'étude",
+			"faculty": "Faculté",
+			"selectFaculty": "Sélectionner une faculté",
+			"cycle": "Cycle",
+			"selectCycle": "Sélectionner un cycle",
+			"totalCredits": "Crédits requis : {{value}}",
+			"duration": "Durée : {{value}} ans",
+			"levels": "Niveaux du cycle",
+			"promotionRules": "Règles de promotion",
+			"rulesHint": "Les règles par défaut viennent du serveur. Dupliquez-les pour créer des variantes par faculté.",
+			"minCredits": "Crédits requis : {{value}}",
+			"toast": {
+				"saved": "Règle enregistrée"
+			},
+			"previewWarning": "La persistance arrive bientôt. Conservez l'export JSON en attendant."
 		},
 		"notifications": {
 			"title": "Centre de notifications",
@@ -320,6 +348,8 @@
 				"name": "Classe",
 				"program": "Programme",
 				"academicYear": "Année académique",
+				"cycle": "Cycle / niveau",
+				"option": "Option",
 				"students": "Étudiants"
 			},
 			"form": {
@@ -328,8 +358,15 @@
 				"createSubmit": "Créer la classe",
 				"programLabel": "Programme",
 				"programPlaceholder": "Sélectionner un programme",
+				"programCycleSummary": "Cycle : {{value}}",
+				"cycleSummary": "Cycle : {{value}}",
 				"academicYearLabel": "Année académique",
 				"academicYearPlaceholder": "Sélectionner une année académique",
+				"cycleLevelLabel": "Niveau du cycle",
+				"cycleLevelPlaceholder": "Sélectionner un niveau",
+				"selectProgramFirst": "Sélectionnez un programme pour charger ses niveaux.",
+				"programOptionLabel": "Option du programme",
+				"programOptionPlaceholder": "Sélectionner une option",
 				"labelLabel": "Libellé généré de la classe"
 			},
 			"toast": {
@@ -347,7 +384,53 @@
 			"validation": {
 				"program": "Veuillez sélectionner un programme",
 				"academicYear": "Veuillez sélectionner une année académique",
+				"cycleLevel": "Veuillez sélectionner un niveau",
+				"programOption": "Veuillez sélectionner une option",
 				"name": "Le nom doit comporter au moins 2 caractères"
+			}
+		},
+		"studyCycles": {
+			"title": "Cycles d'étude",
+			"subtitle": "Regroupez les programmes et configurez les seuils de crédits par niveau.",
+			"actions": {
+				"add": "Ajouter un cycle",
+				"addLevel": "Ajouter un niveau"
+			},
+			"listTitle": "Cycles",
+			"empty": "Aucun cycle pour le moment.",
+			"table": {
+				"name": "Nom",
+				"faculty": "Faculté",
+				"credits": "Crédits",
+				"duration": "Durée",
+				"years": "{{value}} ans",
+				"actions": "Actions"
+			},
+			"levelsTitle": "Niveaux du cycle {{cycle}}",
+			"levelsSubtitle": "Définissez la progression des étudiants par année.",
+			"levelsEmpty": "Aucun niveau configuré.",
+			"levels": {
+				"defaultName": "Niveau {{value}}"
+			},
+			"levelCredits": "Crédits requis : {{value}}",
+			"form": {
+				"faculty": "Faculté",
+				"selectFaculty": "Sélectionner une faculté",
+				"name": "Nom",
+				"code": "Code",
+				"description": "Description",
+				"credits": "Crédits requis",
+				"duration": "Durée (années)"
+			},
+			"toast": {
+				"createSuccess": "Cycle créé",
+				"deleteSuccess": "Cycle supprimé",
+				"levelCreate": "Niveau ajouté",
+				"levelDelete": "Niveau supprimé"
+			},
+			"delete": {
+				"title": "Supprimer le cycle",
+				"message": "Les programmes et classes devront être réaffectés après suppression."
 			}
 		},
 		"courses": {
@@ -361,7 +444,8 @@
 				"program": "Programme",
 				"credits": "Crédits",
 				"hours": "Heures",
-				"teacher": "Enseignant par défaut"
+				"teacher": "Enseignant par défaut",
+				"cycleInfo": "Cycle : {{value}}"
 			},
 			"form": {
 				"createTitle": "Ajouter un cours",
@@ -375,6 +459,7 @@
 				"hoursPlaceholder": "Saisir le volume horaire",
 				"programLabel": "Programme",
 				"programPlaceholder": "Sélectionner un programme",
+				"programCycleSummary": "Cycle : {{value}}",
 				"teacherLabel": "Enseignant par défaut",
 				"teacherPlaceholder": "Sélectionner un enseignant"
 			},
@@ -727,7 +812,9 @@
 				"gender": "Sexe",
 				"dateOfBirth": "Date de naissance",
 				"placeOfBirth": "Lieu de naissance",
-				"genderUnknown": "Non renseigné"
+				"genderUnknown": "Non renseigné",
+				"actions": "Actions",
+				"viewLedger": "Crédits"
 			},
 			"gender": {
 				"male": "Homme",
@@ -778,6 +865,19 @@
 				"createSuccess": "Étudiant créé avec succès",
 				"createError": "Impossible de créer l'étudiant",
 				"importError": "Impossible d'importer les étudiants"
+			},
+			"ledger": {
+				"title": "Vue d'ensemble des crédits",
+				"subtitle": "Suivi des crédits pour {{student}}",
+				"loading": "Récupération du relevé…",
+				"progressLabel": "Progression vers la promotion",
+				"credits": "crédits",
+				"required": "Requis : {{required}}",
+				"inProgress": "En cours : {{value}}",
+				"ready": "Étudiant admissible à la promotion 🎉",
+				"notReady": "Encore un effort avant la promotion.",
+				"message": "Règles évaluées via json-rules-engine. Les dérogations apparaîtront ici dès leur publication.",
+				"entry": "Acquis {{earned}} • En cours {{progress}}"
 			},
 			"validation": {
 				"firstName": "Le prénom est obligatoire",
@@ -901,11 +1001,27 @@
 			"subtitle": "Surveillez les cohortes et contrôlez les fenêtres d'inscription.",
 			"selectYear": "Sélectionner une année académique",
 			"selectClass": "Sélectionner une classe",
+			"filters": {
+				"year": "Année académique",
+				"class": "Classe",
+				"summary": "Instantané",
+				"studentsCount": "Étudiants : {{value}}",
+				"cycle": "Cycle : {{value}}",
+				"cycleLevel": "Niveau : {{value}}",
+				"option": "Option : {{value}}",
+				"window": "Fenêtre : {{status}}"
+			},
 			"listTitle": "Inscriptions",
 			"fields": {
 				"student": "Étudiant",
 				"status": "Statut",
-				"dates": "Dates"
+				"dates": "Dates",
+				"actions": "Actions",
+				"statusValue": "{{value}}",
+				"enrolledAt": "Inscrit : {{value}}",
+				"exitedAt": "Sorti : {{value}}",
+				"unknownStudent": "Étudiant inconnu",
+				"registrationFallback": "ID : {{value}}"
 			},
 			"empty": "Aucune inscription pour cette sélection.",
 			"windowStatus": "Fenêtre : {{status}}",
@@ -919,7 +1035,27 @@
 				"description": "Utilisez la page de gestion des étudiants pour transférer ou réinscrire les étudiants entre les classes."
 			},
 			"toast": {
-				"updated": "Fenêtre mise à jour"
+				"updated": "Fenêtre mise à jour",
+				"courseEnrolled": "Étudiant inscrit au cours",
+				"courseWithdrawn": "Inscription mise à jour",
+				"courseReactivated": "Inscription réactivée"
+			},
+			"courseRoster": {
+				"title": "Roster des cours (par étudiant)",
+				"subtitle": "Sélectionnez un étudiant pour suivre ses tentatives, rattrapages et statuts par cours.",
+				"selected": "Gestion : {{value}}",
+				"students": "Étudiants de la classe",
+				"emptyStudents": "Sélectionnez une classe pour afficher les étudiants.",
+				"courses": "Cours de la classe",
+				"selectStudent": "Choisissez un étudiant pour gérer ses inscriptions.",
+				"openModalBtn": "Voir le roster",
+				"teacher": "Enseignant : {{value}}",
+				"notEnrolled": "Non inscrit",
+				"enrollBtn": "Inscrire",
+				"reactivateBtn": "Réactiver l'inscription",
+				"withdrawBtn": "Retirer",
+				"retakeBtn": "Recomposer",
+				"noCourses": "Cette classe n'a pas encore de cours affectés."
 			}
 		},
 		"notifications": {
@@ -944,12 +1080,14 @@
 			"title": "Unités d'enseignement",
 			"subtitle": "Gérez le catalogue des UE, les semestres et les prérequis.",
 			"selectProgram": "Sélectionner un programme",
+			"programCycleSummary": "Cycle : {{value}}",
 			"new": "Créer une nouvelle UE",
 			"fields": {
 				"name": "Nom de l'unité",
 				"code": "Code",
 				"description": "Description",
-				"credits": "ECTS"
+				"credits": "ECTS",
+				"programCycle": "Cycle : {{value}}"
 			},
 			"semesters": {
 				"annual": "Annuel",
@@ -1218,6 +1356,7 @@
 			"table": {
 				"name": "Nom",
 				"faculty": "Faculté",
+				"cycle": "Cycle",
 				"description": "Description",
 				"noDescription": "Aucune description"
 			},
@@ -1228,13 +1367,17 @@
 				"namePlaceholder": "Saisir le nom du programme",
 				"facultyLabel": "Faculté",
 				"facultyPlaceholder": "Sélectionner une faculté",
+				"cycleLabel": "Cycle d'étude",
+				"cyclePlaceholder": "Sélectionner un cycle",
+				"selectFacultyFirst": "Sélectionnez une faculté pour charger les cycles disponibles.",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Description optionnelle (objectifs, axes)",
 				"submit": "Enregistrer le programme"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
-				"faculty": "Veuillez sélectionner une faculté"
+				"faculty": "Veuillez sélectionner une faculté",
+				"cycle": "Veuillez sélectionner un cycle"
 			},
 			"toast": {
 				"createSuccess": "Programme créé avec succès",
@@ -1247,6 +1390,25 @@
 			"delete": {
 				"title": "Supprimer le programme",
 				"message": "Êtes-vous sûr de vouloir supprimer ce programme ? Cette action est irréversible."
+			},
+			"options": {
+				"manage": "Gérer les options",
+				"title": "Options pour {{value}}",
+				"subtitle": "Les options représentent les parcours ou spécialisations disponibles pour ce programme.",
+				"empty": "Aucune option pour le moment. Ajoutez-en une ci-dessous.",
+				"delete": "Supprimer l'option",
+				"form": {
+					"name": "Nom de l'option",
+					"code": "Code",
+					"description": "Description",
+					"submit": "Ajouter l'option"
+				},
+				"toast": {
+					"create": "Option ajoutée",
+					"createError": "Impossible d'ajouter l'option",
+					"delete": "Option supprimée",
+					"deleteError": "Impossible de supprimer l'option"
+				}
 			}
 		},
 		"faculties": {
@@ -1479,12 +1641,18 @@
 		"performance": {
 			"title": "Tableau de performance",
 			"subtitle": "Suivez vos moyennes, crédits et progression",
+			"cycleBadge": "Cycle : {{value}}",
+			"levelBadge": "Niveau : {{value}}",
 			"trendTitle": "Progression",
 			"trendSubtitle": "Moyennes pondérées des cours inscrits",
-			"overallAverage": "Moyenne générale",
-			"credits": "Crédits obtenus",
+			"creditsProgress": "Crédits obtenus",
+			"inProgress": "En cours : {{value}} crédits",
+			"eligible": "Admissible au niveau suivant 🎉",
+			"notEligible": "Encore un effort avant la promotion.",
+			"ruleNotice": "Évalué avec les règles de promotion configurées par votre faculté.",
 			"courseAverages": "Moyennes par cours",
-			"courseSubtitle": "Dernières notes pour l'année active"
+			"courseSubtitle": "Dernières notes pour l'année active",
+			"coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées."
 		}
 	}
 }

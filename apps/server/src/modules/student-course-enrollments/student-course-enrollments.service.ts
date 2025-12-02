@@ -101,6 +101,21 @@ function resolveCompletionTimestamp(
 	return FINAL_STATUSES.includes(status) ? new Date() : null;
 }
 
+async function findLatestEnrollment(input: {
+	studentId: string;
+	courseId: string;
+	academicYearId: string;
+}) {
+	return db.query.studentCourseEnrollments.findFirst({
+		where: and(
+			eq(schema.studentCourseEnrollments.studentId, input.studentId),
+			eq(schema.studentCourseEnrollments.courseId, input.courseId),
+			eq(schema.studentCourseEnrollments.academicYearId, input.academicYearId),
+		),
+		orderBy: (enrollments, { desc }) => desc(enrollments.attempt),
+	});
+}
+
 async function assertAttemptAvailability(input: {
 	studentId: string;
 	courseId: string;
@@ -125,16 +140,35 @@ async function assertAttemptAvailability(input: {
 
 export async function createEnrollment(input: CreateInput) {
 	const status = input.status ?? "planned";
-	const attempt = input.attempt ?? 1;
 	const student = await fetchStudentContext(input.studentId);
 	const classCourse = await fetchClassCourseContext(input.classCourseId);
 	await ensureSameProgram(student.programId, classCourse.courseProgramId);
-	await assertAttemptAvailability({
-		studentId: student.id,
-		courseId: classCourse.courseId,
-		academicYearId: classCourse.academicYearId,
-		attempt,
-	});
+	let attempt = input.attempt;
+	if (attempt === undefined) {
+		const latest = await findLatestEnrollment({
+			studentId: student.id,
+			courseId: classCourse.courseId,
+			academicYearId: classCourse.academicYearId,
+		});
+		if (!latest) {
+			attempt = 1;
+		} else {
+			if (!FINAL_STATUSES.includes(latest.status)) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "Student already has an active enrollment for this course",
+				});
+			}
+			attempt = latest.attempt + 1;
+		}
+	} else {
+		await assertAttemptAvailability({
+			studentId: student.id,
+			courseId: classCourse.courseId,
+			academicYearId: classCourse.academicYearId,
+			attempt,
+		});
+	}
 	const payload: schema.NewStudentCourseEnrollment = {
 		studentId: student.id,
 		classCourseId: classCourse.id,
@@ -170,7 +204,6 @@ export async function bulkEnroll(input: BulkInput) {
 		});
 	}
 	const status = input.status ?? "active";
-	const attempt = input.attempt ?? 1;
 	const created: schema.StudentCourseEnrollment[] = [];
 	const skipped: { classCourseId: string; reason: string }[] = [];
 	for (const classCourseId of uniqueCourseIds) {
@@ -179,7 +212,7 @@ export async function bulkEnroll(input: BulkInput) {
 				studentId: input.studentId,
 				classCourseId,
 				status,
-				attempt,
+				attempt: input.attempt,
 			});
 			created.push(record);
 		} catch (error) {
