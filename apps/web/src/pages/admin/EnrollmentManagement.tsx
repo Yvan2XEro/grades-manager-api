@@ -15,7 +15,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useStore } from "../../store";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 type CourseEnrollmentListResponse =
@@ -24,7 +23,6 @@ type CourseEnrollmentRow = CourseEnrollmentListResponse["items"][number];
 
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
-	const { user } = useStore();
 	const queryClient = useQueryClient();
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
@@ -116,7 +114,7 @@ const EnrollmentManagement = () => {
 		return map;
 	}, [courseEnrollmentQuery.data?.items]);
 
-const assignCourse = useMutation({
+	const assignCourse = useMutation({
 		mutationFn: (classCourseId: string) =>
 			trpcClient.studentCourseEnrollments.create.mutate({
 				studentId: selectedStudent,
@@ -136,40 +134,40 @@ const assignCourse = useMutation({
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-const withdrawCourse = useMutation({
-	mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
-		trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
-	onSuccess: () => {
-		toast.success(
-			t("admin.enrollments.toast.courseWithdrawn", {
-				defaultValue: "Enrollment updated",
-			}),
-		);
-		queryClient.invalidateQueries(
-			trpc.studentCourseEnrollments.list.queryKey(),
-		);
-	},
-	onError: (error: Error) => toast.error(error.message),
-});
+	const withdrawCourse = useMutation({
+		mutationFn: (payload: { id: string; status: "withdrawn" | "completed" }) =>
+			trpcClient.studentCourseEnrollments.updateStatus.mutate(payload),
+		onSuccess: () => {
+			toast.success(
+				t("admin.enrollments.toast.courseWithdrawn", {
+					defaultValue: "Enrollment updated",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
 
-const reactivateCourse = useMutation({
-	mutationFn: (id: string) =>
-		trpcClient.studentCourseEnrollments.updateStatus.mutate({
-			id,
-			status: "active",
-		}),
-	onSuccess: () => {
-		toast.success(
-			t("admin.enrollments.toast.courseReactivated", {
-				defaultValue: "Enrollment restored",
+	const reactivateCourse = useMutation({
+		mutationFn: (id: string) =>
+			trpcClient.studentCourseEnrollments.updateStatus.mutate({
+				id,
+				status: "active",
 			}),
-		);
-		queryClient.invalidateQueries(
-			trpc.studentCourseEnrollments.list.queryKey(),
-		);
-	},
-	onError: (error: Error) => toast.error(error.message),
-});
+		onSuccess: () => {
+			toast.success(
+				t("admin.enrollments.toast.courseReactivated", {
+					defaultValue: "Enrollment restored",
+				}),
+			);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
 
 	const enrollments = enrollmentsQuery.data?.items ?? [];
 	const windowStatus = useMemo(() => {
@@ -534,137 +532,139 @@ const reactivateCourse = useMutation({
 										</p>
 										<ScrollArea className="max-h-[420px] w-full rounded-md border">
 											<div className="divide-y">
-											{classCoursesQuery.data?.items?.map((course) => {
-												const enrollment = rosterByClassCourse.get(course.id);
-												const status = enrollment?.status ?? "none";
-												const courseName = course.courseName ?? course.course;
-												const teacherName = course.teacherFirstName
-													? `${course.teacherFirstName} ${course.teacherLastName ?? ""}`.trim()
-													: course.teacher;
-												const canReactivate =
-													enrollment && status === "withdrawn";
-												const enrollDisabled =
-													!selectedStudent ||
-													status === "active" ||
-													(canReactivate
-														? reactivateCourse.isPending
-														: assignCourse.isPending);
-												const handlePrimaryAction = () => {
-													if (!selectedStudent) return;
-													if (canReactivate) {
-														reactivateCourse.mutate(enrollment.id);
-													} else {
-														assignCourse.mutate(course.id);
-													}
-												};
-												return (
-													<div
-														key={course.id}
-														className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-													>
-														<div className="space-y-1">
-															<p className="font-semibold text-gray-900 text-sm">
-																{courseName}
-															</p>
-															<p className="text-gray-600 text-xs">
-																{t("admin.enrollments.courseRoster.teacher", {
-																	defaultValue: "Teacher: {{value}}",
-																	value: teacherName,
-																})}
-															</p>
-														</div>
-														<div className="flex flex-col gap-2 sm:items-end">
-															<Badge
-																variant="outline"
-																className={
-																	status === "active"
-																		? "border-emerald-200 bg-emerald-50 text-emerald-800"
-																		: status === "completed"
-																			? "border-blue-200 bg-blue-50 text-blue-800"
-																			: status === "failed"
-																				? "border-rose-200 bg-rose-50 text-rose-800"
-																				: "border-gray-200 bg-gray-50 text-gray-800"
-																}
-															>
-																{status === "none"
-																	? t(
-																			"admin.enrollments.courseRoster.notEnrolled",
-																			{
-																				defaultValue: "Not enrolled",
-																			},
-																		)
-																	: status}
-															</Badge>
-															<div className="flex flex-wrap gap-2">
-																<Button
-																	type="button"
-																	size="xs"
+												{classCoursesQuery.data?.items?.map((course) => {
+													const enrollment = rosterByClassCourse.get(course.id);
+													const status = enrollment?.status ?? "none";
+													const courseName = course.courseName ?? course.course;
+													const teacherName = course.teacherFirstName
+														? `${course.teacherFirstName} ${course.teacherLastName ?? ""}`.trim()
+														: course.teacher;
+													const canReactivate =
+														enrollment && status === "withdrawn";
+													const enrollDisabled =
+														!selectedStudent ||
+														status === "active" ||
+														(canReactivate
+															? reactivateCourse.isPending
+															: assignCourse.isPending);
+													const handlePrimaryAction = () => {
+														if (!selectedStudent) return;
+														if (canReactivate) {
+															reactivateCourse.mutate(enrollment.id);
+														} else {
+															assignCourse.mutate(course.id);
+														}
+													};
+													return (
+														<div
+															key={course.id}
+															className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+														>
+															<div className="space-y-1">
+																<p className="font-semibold text-gray-900 text-sm">
+																	{courseName}
+																</p>
+																<p className="text-gray-600 text-xs">
+																	{t("admin.enrollments.courseRoster.teacher", {
+																		defaultValue: "Teacher: {{value}}",
+																		value: teacherName,
+																	})}
+																</p>
+															</div>
+															<div className="flex flex-col gap-2 sm:items-end">
+																<Badge
 																	variant="outline"
-																	disabled={enrollDisabled}
-																	onClick={handlePrimaryAction}
+																	className={
+																		status === "active"
+																			? "border-emerald-200 bg-emerald-50 text-emerald-800"
+																			: status === "completed"
+																				? "border-blue-200 bg-blue-50 text-blue-800"
+																				: status === "failed"
+																					? "border-rose-200 bg-rose-50 text-rose-800"
+																					: "border-gray-200 bg-gray-50 text-gray-800"
+																	}
 																>
-																	{canReactivate
+																	{status === "none"
 																		? t(
-																				"admin.enrollments.courseRoster.reactivateBtn",
+																				"admin.enrollments.courseRoster.notEnrolled",
 																				{
-																					defaultValue: "Restore enrollment",
+																					defaultValue: "Not enrolled",
 																				},
 																			)
-																		: t(
-																				"admin.enrollments.courseRoster.enrollBtn",
-																				{
-																					defaultValue: "Enroll",
-																				},
-																			)}
-																</Button>
-																<Button
-																	type="button"
-																	size="xs"
-																	variant="secondary"
-																	disabled={
-																		!enrollment || withdrawCourse.isPending
-																	}
-																	onClick={() =>
-																		enrollment &&
-																		withdrawCourse.mutate({
-																			id: enrollment.id,
-																			status: "withdrawn",
-																		})
-																	}
-																>
-																	{t(
-																		"admin.enrollments.courseRoster.withdrawBtn",
-																		{
-																			defaultValue: "Withdraw",
-																		},
-																	)}
-																</Button>
-																<Button
-																	type="button"
-																	size="xs"
-																	variant="ghost"
-																	disabled={!selectedStudent}
-																	onClick={() => assignCourse.mutate(course.id)}
-																>
-																	{t(
-																		"admin.enrollments.courseRoster.retakeBtn",
-																		{
-																			defaultValue: "Retake",
-																		},
-																	)}
-																</Button>
+																		: status}
+																</Badge>
+																<div className="flex flex-wrap gap-2">
+																	<Button
+																		type="button"
+																		size="xs"
+																		variant="outline"
+																		disabled={enrollDisabled}
+																		onClick={handlePrimaryAction}
+																	>
+																		{canReactivate
+																			? t(
+																					"admin.enrollments.courseRoster.reactivateBtn",
+																					{
+																						defaultValue: "Restore enrollment",
+																					},
+																				)
+																			: t(
+																					"admin.enrollments.courseRoster.enrollBtn",
+																					{
+																						defaultValue: "Enroll",
+																					},
+																				)}
+																	</Button>
+																	<Button
+																		type="button"
+																		size="xs"
+																		variant="secondary"
+																		disabled={
+																			!enrollment || withdrawCourse.isPending
+																		}
+																		onClick={() =>
+																			enrollment &&
+																			withdrawCourse.mutate({
+																				id: enrollment.id,
+																				status: "withdrawn",
+																			})
+																		}
+																	>
+																		{t(
+																			"admin.enrollments.courseRoster.withdrawBtn",
+																			{
+																				defaultValue: "Withdraw",
+																			},
+																		)}
+																	</Button>
+																	<Button
+																		type="button"
+																		size="xs"
+																		variant="ghost"
+																		disabled={!selectedStudent}
+																		onClick={() =>
+																			assignCourse.mutate(course.id)
+																		}
+																	>
+																		{t(
+																			"admin.enrollments.courseRoster.retakeBtn",
+																			{
+																				defaultValue: "Retake",
+																			},
+																		)}
+																	</Button>
+																</div>
 															</div>
 														</div>
-													</div>
-												);
-											}) ?? (
-												<p className="text-gray-500 text-sm">
-													{t("admin.enrollments.courseRoster.noCourses", {
-														defaultValue:
-															"This class has no courses assigned yet.",
-													})}
-												</p>
-											)}
+													);
+												}) ?? (
+													<p className="text-gray-500 text-sm">
+														{t("admin.enrollments.courseRoster.noCourses", {
+															defaultValue:
+																"This class has no courses assigned yet.",
+														})}
+													</p>
+												)}
 											</div>
 										</ScrollArea>
 									</>

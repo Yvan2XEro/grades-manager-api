@@ -209,6 +209,20 @@ vi.mock("../../utils/trpc", () => {
 					findById(mockState.classCourses, id),
 				),
 			},
+			roster: {
+				query: vi.fn(async ({ id }: { id: string }) => {
+					const classCourse = findById(mockState.classCourses, id);
+					const students = mockState.students
+						.filter((student) => student.classId === classCourse.class)
+						.map((student) => ({
+							id: student.id,
+							firstName: student.firstName,
+							lastName: student.lastName,
+							registrationNumber: student.registrationNumber,
+						}));
+					return { students };
+				}),
+			},
 		},
 		classes: {
 			list: {

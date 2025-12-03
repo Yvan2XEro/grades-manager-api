@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const baseSchema = z.object({
 	name: z.string(),
-	credits: z.number().int().nonnegative(),
 	hours: z.number().int().positive(),
 	program: z.string(),
 	teachingUnitId: z.string(),

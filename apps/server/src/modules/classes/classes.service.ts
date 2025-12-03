@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as studentsRepo from "@/modules/students/students.repo";
 import * as schema from "../../db/schema/app-schema";
@@ -16,6 +16,26 @@ async function loadProgram(programId: string) {
 	return program;
 }
 
+async function ensurePrimaryCycle(facultyId: string) {
+	const existing = await db.query.studyCycles.findFirst({
+		where: eq(schema.studyCycles.facultyId, facultyId),
+		orderBy: (cycles, helpers) => helpers.asc(cycles.createdAt),
+	});
+	if (existing) return existing;
+	const [created] = await db
+		.insert(schema.studyCycles)
+		.values({
+			facultyId,
+			code: "default",
+			name: "Default Cycle",
+			description: null,
+			totalCreditsRequired: 180,
+			durationYears: 3,
+		})
+		.returning();
+	return created;
+}
+
 async function ensureCycleLevel(
 	program: schema.Program,
 	cycleLevelId?: string,
@@ -25,20 +45,25 @@ async function ensureCycleLevel(
 			where: eq(schema.cycleLevels.id, cycleLevelId),
 		});
 		if (!level) throw notFound("Cycle level not found");
-		if (level.cycleId !== program.cycleId) {
-			throw conflict("Cycle level does not belong to program cycle");
+		const cycle = await db.query.studyCycles.findFirst({
+			where: eq(schema.studyCycles.id, level.cycleId),
+		});
+		if (!cycle) throw notFound("Study cycle not found");
+		if (cycle.facultyId !== program.faculty) {
+			throw conflict("Cycle level does not belong to program faculty");
 		}
 		return level.id;
 	}
+	const cycle = await ensurePrimaryCycle(program.faculty);
 	const existing = await db.query.cycleLevels.findFirst({
-		where: eq(schema.cycleLevels.cycleId, program.cycleId),
+		where: eq(schema.cycleLevels.cycleId, cycle.id),
 		orderBy: (levels, helpers) => helpers.asc(levels.orderIndex),
 	});
 	if (existing) return existing.id;
 	const [created] = await db
 		.insert(schema.cycleLevels)
 		.values({
-			cycleId: program.cycleId,
+			cycleId: cycle.id,
 			orderIndex: 1,
 			code: "L1",
 			name: "Level 1",

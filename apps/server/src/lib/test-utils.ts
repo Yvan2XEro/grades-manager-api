@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import type {
 	BusinessRole,
 	DomainUser,
@@ -8,6 +8,7 @@ import type {
 } from "../db/schema/app-schema";
 import * as schema from "../db/schema/app-schema";
 import { buildPermissions } from "../modules/authz";
+import { slugify } from "./strings";
 import * as creditLedger from "../modules/student-credit-ledger";
 import type { Context } from "./context";
 import { auth, db } from "./test-db";
@@ -232,16 +233,15 @@ export async function createCycleLevel(
 
 export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 	const faculty = data.faculty ? { id: data.faculty } : await createFaculty();
-	const cycle = data.cycleId
-		? { id: data.cycleId }
-		: await createStudyCycle({ facultyId: faculty.id });
+	const name = data.name ?? `Program-${randomUUID()}`;
+	const slug = slugify(name);
 	const [program] = await db
 		.insert(schema.programs)
 		.values({
-			name: data.name ?? `Program-${randomUUID()}`,
+			name,
+			slug,
 			faculty: faculty.id,
 			description: data.description ?? null,
-			cycleId: cycle.id,
 		})
 		.returning();
 	await db
@@ -309,6 +309,38 @@ export async function createAcademicYear(
 	return year;
 }
 
+async function ensureCycleLevelForFaculty(
+	facultyId: string,
+	cycleLevelId?: string,
+) {
+	if (cycleLevelId) {
+		const level = await db.query.cycleLevels.findFirst({
+			where: eq(schema.cycleLevels.id, cycleLevelId),
+		});
+		if (!level) throw new Error("Cycle level not found");
+		const cycle = await db.query.studyCycles.findFirst({
+			where: eq(schema.studyCycles.id, level.cycleId),
+		});
+		if (!cycle || cycle.facultyId !== facultyId) {
+			throw new Error("Cycle level does not belong to faculty");
+		}
+		return level.id;
+	}
+	let cycle = await db.query.studyCycles.findFirst({
+		where: eq(schema.studyCycles.facultyId, facultyId),
+	});
+	if (!cycle) {
+		cycle = await createStudyCycle({ facultyId });
+	}
+	const level = await db.query.cycleLevels.findFirst({
+		where: eq(schema.cycleLevels.cycleId, cycle.id),
+		orderBy: asc(schema.cycleLevels.orderIndex),
+	});
+	if (level) return level.id;
+	const created = await createCycleLevel({ cycleId: cycle.id, orderIndex: 1 });
+	return created.id;
+}
+
 export async function createClass(data: Partial<schema.NewKlass> = {}) {
 	const program = data.program
 		? await db.query.programs.findFirst({
@@ -319,9 +351,10 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 	const year = data.academicYear
 		? { id: data.academicYear }
 		: await createAcademicYear();
-	const level = data.cycleLevelId
-		? { id: data.cycleLevelId }
-		: await createCycleLevel({ cycleId: program.cycleId });
+	const levelId = await ensureCycleLevelForFaculty(
+		program.faculty,
+		data.cycleLevelId,
+	);
 	const option =
 		data.programOptionId ??
 		(
@@ -340,7 +373,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 			name: data.name ?? `Class-${randomUUID()}`,
 			program: program.id,
 			academicYear: year.id,
-			cycleLevelId: level.id,
+			cycleLevelId: levelId,
 			programOptionId: option,
 		})
 		.returning();
@@ -394,7 +427,6 @@ export async function createCourse(data: Partial<schema.NewCourse> = {}) {
 		.insert(schema.courses)
 		.values({
 			name: data.name ?? `Course-${randomUUID()}`,
-			credits: data.credits ?? 3,
 			hours: data.hours ?? 30,
 			program: program.id,
 			teachingUnitId: data.teachingUnitId ?? teachingUnit.id,
@@ -525,6 +557,12 @@ export async function ensureStudentCourseEnrollment(
 	if (!course || !klass) {
 		throw new Error("Missing course or class for class course");
 	}
+	const unit = await db.query.teachingUnits.findFirst({
+		where: eq(schema.teachingUnits.id, course.teachingUnitId),
+	});
+	if (!unit) {
+		throw new Error("Teaching unit not found for course");
+	}
 	const existing = await db.query.studentCourseEnrollments.findFirst({
 		where: and(
 			eq(schema.studentCourseEnrollments.studentId, studentId),
@@ -542,13 +580,13 @@ export async function ensureStudentCourseEnrollment(
 			academicYearId: klass.academicYear,
 			status,
 			attempt: 1,
-			creditsAttempted: course.credits,
-			creditsEarned: status === "completed" ? course.credits : 0,
+			creditsAttempted: unit.credits,
+			creditsEarned: status === "completed" ? unit.credits : 0,
 		})
 		.returning();
 	const contribution = creditLedger.contributionForStatus(
 		status,
-		course.credits,
+		unit.credits,
 	);
 	await creditLedger.applyDelta(
 		studentId,

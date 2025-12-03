@@ -37,6 +37,7 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { Spinner } from "../../components/ui/spinner";
+import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
 const buildClassSchema = (t: TFunction) =>
@@ -76,6 +77,15 @@ interface Class {
 	programOption?: { id: string; name: string; code: string };
 	students: { id: string }[];
 }
+
+type CycleLevelOption =
+	RouterOutputs["studyCycles"]["listLevels"][number] & {
+		cycle: {
+			id: string;
+			name: string;
+			code: string | null;
+		};
+	};
 
 export default function ClassManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -156,17 +166,39 @@ export default function ClassManagement() {
 	);
 
 	const { data: cycleLevelsData } = useQuery({
-		queryKey: ["cycleLevels", selectedProgram?.cycle?.id],
+		queryKey: ["cycleLevelsByFaculty", selectedProgram?.faculty],
 		queryFn: async () => {
-			if (!selectedProgram?.cycle?.id) return [];
-			return trpcClient.studyCycles.listLevels.query({
-				cycleId: selectedProgram.cycle.id,
+			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
+			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
+				facultyId: selectedProgram.faculty,
+				limit: 100,
 			});
+			if (!cycles.length) return [];
+			const levels = await Promise.all(
+				cycles.map(async (cycle) => {
+					const levelList = await trpcClient.studyCycles.listLevels.query({
+						cycleId: cycle.id,
+					});
+					return levelList.map((level) => ({
+						...level,
+						cycle: {
+							id: cycle.id,
+							name: cycle.name,
+							code: cycle.code,
+						},
+					}));
+				}),
+			);
+			return levels.flat() as CycleLevelOption[];
 		},
-		enabled: Boolean(selectedProgram?.cycle?.id),
+		enabled: Boolean(selectedProgram?.faculty),
 	});
 	const cycleLevels = cycleLevelsData ?? [];
 	const cycleLevelId = watch("cycleLevelId");
+	const selectedCycleLevel = useMemo(
+		() => cycleLevels.find((level) => level.id === cycleLevelId),
+		[cycleLevels, cycleLevelId],
+	);
 
 	useEffect(() => {
 		if (!selectedProgram) {
@@ -194,6 +226,10 @@ export default function ClassManagement() {
 	});
 	const programOptions = programOptionsData ?? [];
 	const programOptionId = watch("programOptionId");
+	const selectedProgramOption = useMemo(
+		() => programOptions.find((option) => option.id === programOptionId),
+		[programOptions, programOptionId],
+	);
 
 	useEffect(() => {
 		if (!selectedProgram) {
@@ -213,13 +249,16 @@ export default function ClassManagement() {
 
 	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
-		if (selectedProgram && year) {
+		if (selectedProgramOption && year) {
 			const startYear = new Date(year.startDate).getFullYear();
 			const endYear = new Date(year.endDate).getFullYear();
-			setValue("name", `${selectedProgram.name}(${startYear}-${endYear})`);
+			setValue(
+				"name",
+				`${selectedProgramOption.name} (${startYear}-${endYear})`,
+			);
 		}
 	}, [
-		selectedProgram,
+		selectedProgramOption,
 		selectedAcademicYearId,
 		academicYears,
 		setValue,
@@ -502,19 +541,23 @@ export default function ClassManagement() {
 										<SelectContent>
 											{programs?.map((program) => (
 												<SelectItem key={program.id} value={program.id}>
-													{program.name}
-													{program.cycle?.code
-														? ` • ${program.cycle.code}`
-														: ""}
+													<div className="flex flex-col">
+														<span>{program.name}</span>
+														{program.facultyInfo?.name && (
+															<span className="text-muted-foreground text-xs">
+																{program.facultyInfo.name}
+															</span>
+														)}
+													</div>
 												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
-									{selectedProgram?.cycle && (
+									{selectedCycleLevel && (
 										<p className="text-muted-foreground text-xs">
 											{t("admin.classes.form.cycleSummary", {
 												defaultValue: "Cycle: {{value}}",
-												value: `${selectedProgram.cycle.name} (${selectedProgram.cycle.code})`,
+												value: `${selectedCycleLevel.cycle.name}${selectedCycleLevel.cycle.code ? ` (${selectedCycleLevel.cycle.code})` : ""}`,
 											})}
 										</p>
 									)}
@@ -582,7 +625,7 @@ export default function ClassManagement() {
 										<SelectContent>
 											{cycleLevels.map((level) => (
 												<SelectItem key={level.id} value={level.id}>
-													{level.name} ({level.code})
+													{`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""} • ${level.name}${level.code ? ` (${level.code})` : ""}`}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -591,6 +634,14 @@ export default function ClassManagement() {
 										<p className="text-muted-foreground text-xs">
 											{t("admin.classes.form.selectProgramFirst", {
 												defaultValue: "Select a program to load its cycle levels.",
+											})}
+										</p>
+									)}
+									{selectedProgram && cycleLevels.length === 0 && (
+										<p className="text-muted-foreground text-xs">
+											{t("admin.classes.form.emptyCycleLevels", {
+												defaultValue:
+													"No cycle levels available for the selected faculty.",
 											})}
 										</p>
 									)}

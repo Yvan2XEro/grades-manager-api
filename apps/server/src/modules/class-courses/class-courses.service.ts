@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
@@ -92,4 +92,44 @@ export async function getClassCourseById(id: string) {
 	const item = await repo.findById(id);
 	if (!item) throw notFound();
 	return item;
+}
+
+const ROSTER_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
+	"planned",
+	"active",
+	"completed",
+	"failed",
+];
+
+export async function getClassCourseRoster(classCourseId: string) {
+	const classCourse = await repo.findById(classCourseId);
+	if (!classCourse) throw notFound();
+	const students = await db
+		.select({
+			id: schema.students.id,
+			registrationNumber: schema.students.registrationNumber,
+			status: schema.studentCourseEnrollments.status,
+			firstName: schema.domainUsers.firstName,
+			lastName: schema.domainUsers.lastName,
+		})
+		.from(schema.studentCourseEnrollments)
+		.innerJoin(
+			schema.students,
+			eq(schema.studentCourseEnrollments.studentId, schema.students.id),
+		)
+		.innerJoin(
+			schema.domainUsers,
+			eq(schema.students.domainUserId, schema.domainUsers.id),
+		)
+		.where(
+			and(
+				eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
+				inArray(schema.studentCourseEnrollments.status, ROSTER_STATUSES),
+			),
+		)
+		.orderBy(schema.domainUsers.lastName, schema.domainUsers.firstName);
+	return {
+		classCourseId,
+		students,
+	};
 }

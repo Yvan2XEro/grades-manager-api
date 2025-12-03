@@ -54,6 +54,21 @@
 - [ ] Update transcript/analytics pages to use ledger totals (earned vs. in-progress credits, warnings when credits fall short).
 - [ ] Cover the new UI with RTL/Playwright tests (course enrollment flow, credit overview, rule inspection).
 
+## Phase 2.2 – Program → option → level refactor (next)
+- Reference: [`docs/program-hierarchy-migration.md`](docs/program-hierarchy-migration.md)
+- [x] Drop the mandatory `cycle_id` on `programs` so a filière is tied only to its faculty.
+- [x] Introduce `program_options` (tracks) and expose CRUD/TRPC hooks for them.
+- [x] Add `program_option_id` to `classes`, enforce FK + validations, and backfill existing data with default options per program.
+- [x] Update seed helpers/tests (`lib/test-utils.ts`) so they create default options and wire classes accordingly.
+- [x] Adjust `student_course_enrollments`, `enrollments`, and related services to carry the option context end-to-end.
+
+### Frontend impact (program options)
+- [x] Rework Program Management UI to remove the “cycle” selector and add an Options manager (list/create/delete, per program).
+- [x] Update Class Management form/table to require Program → Option → Level and display the option badge everywhere.
+- [x] Surface option + cycle info in Enrollment Management, Course/UE forms, dashboards, exports, etc.
+- [x] Refresh i18n keys/type generation after the new UI strings land (`bun run --cwd apps/web i18n:gen`).
+- [ ] Add tests (TRPC + RTL/Playwright) covering option workflows (create option, assign class to option, enrollment snapshot).
+
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
 - [x] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.
 - [x] Add background jobs (queue or Bun cron) for recurring tasks (exam session closure, archive notifications) per the workflows in `docs/analyze.md`.

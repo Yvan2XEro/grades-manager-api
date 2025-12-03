@@ -58,7 +58,6 @@ interface Resources {
 				"table": {
 					"name": "Name";
 					"program": "Program";
-					"credits": "Credits";
 					"hours": "Hours";
 					"teacher": "Default Teacher";
 					"cycleInfo": "Cycle: {{value}}";
@@ -68,8 +67,6 @@ interface Resources {
 					"editTitle": "Edit Course";
 					"nameLabel": "Course name";
 					"namePlaceholder": "Enter course name";
-					"creditsLabel": "Credits";
-					"creditsPlaceholder": "Enter credits";
 					"hoursLabel": "Hours";
 					"hoursPlaceholder": "Enter hours";
 					"programLabel": "Program";
@@ -89,7 +86,6 @@ interface Resources {
 				};
 				"validation": {
 					"name": "Name must be at least 2 characters";
-					"credits": "Credits must be at least 1";
 					"hours": "Hours must be at least 1";
 					"program": "Please select a program";
 					"teacher": "Please select a teacher";
@@ -831,12 +827,14 @@ interface Resources {
 					"createSubmit": "Create class";
 					"programLabel": "Program";
 					"programPlaceholder": "Select a program";
+					"programSummary": "Faculty: {{value}}";
 					"cycleSummary": "Cycle: {{value}}";
 					"academicYearLabel": "Academic year";
 					"academicYearPlaceholder": "Select an academic year";
 					"cycleLevelLabel": "Cycle level";
 					"cycleLevelPlaceholder": "Select cycle level";
 					"selectProgramFirst": "Select a program to load its cycle levels.";
+					"emptyCycleLevels": "No cycle levels available for the selected faculty.";
 					"programOptionLabel": "Program option";
 					"programOptionPlaceholder": "Select option";
 					"labelLabel": "Generated class label";
@@ -1022,10 +1020,9 @@ interface Resources {
 				"table": {
 					"name": "Course";
 					"program": "Program";
-					"credits": "Credits";
 					"hours": "Hours";
 					"teacher": "Default teacher";
-					"cycleInfo": "Cycle: {{value}}";
+					"facultyInfo": "Faculty: {{value}}";
 				};
 				"form": {
 					"createTitle": "Add course";
@@ -1033,13 +1030,11 @@ interface Resources {
 					"createSubmit": "Create course";
 					"nameLabel": "Course name";
 					"namePlaceholder": "Enter course name";
-					"creditsLabel": "Credits";
-					"creditsPlaceholder": "Enter credits";
 					"hoursLabel": "Hours";
 					"hoursPlaceholder": "Enter total hours";
 					"programLabel": "Program";
 					"programPlaceholder": "Select a program";
-					"programCycleSummary": "Cycle: {{value}}";
+					"programFacultySummary": "Faculty: {{value}}";
 					"teacherLabel": "Default teacher";
 					"teacherPlaceholder": "Select a teacher";
 				};
@@ -1061,7 +1056,6 @@ interface Resources {
 				};
 				"validation": {
 					"name": "Name must be at least 2 characters";
-					"credits": "Credits must be at least 1";
 					"hours": "Hours must be at least 1";
 					"program": "Please select a program";
 					"teacher": "Please select a teacher";
@@ -1518,14 +1512,14 @@ interface Resources {
 				"title": "Teaching units";
 				"subtitle": "Manage UE catalog, semesters, and prerequisites.";
 				"selectProgram": "Select program";
-				"programCycleSummary": "Cycle: {{value}}";
+				"programFacultySummary": "Faculty: {{value}}";
 				"new": "Create new UE";
 				"fields": {
 					"name": "Unit name";
 					"code": "Code";
 					"description": "Description";
 					"credits": "ECTS";
-					"programCycle": "Cycle: {{value}}";
+					"programFaculty": "Faculty: {{value}}";
 				};
 				"semesters": {
 					"annual": "Annual";
@@ -1575,7 +1569,6 @@ interface Resources {
 					"table": {
 						"name": "Name";
 						"hours": "Hours";
-						"credits": "Credits";
 						"teacher": "Default teacher";
 					};
 					"form": {
@@ -1583,8 +1576,6 @@ interface Resources {
 						"editTitle": "Edit element";
 						"nameLabel": "Element name";
 						"namePlaceholder": "Enter the element name";
-						"creditsLabel": "Credits";
-						"creditsPlaceholder": "Enter credits";
 						"hoursLabel": "Hours";
 						"hoursPlaceholder": "Enter hours";
 						"teacherLabel": "Default teacher";
@@ -1596,7 +1587,6 @@ interface Resources {
 					"deleteMessage": "This action cannot be undone.";
 					"validation": {
 						"name": "Element name is required.";
-						"credits": "Credits must be positive.";
 						"hours": "Hours must be positive.";
 						"teacher": "A default teacher is required.";
 					};

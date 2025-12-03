@@ -40,7 +40,6 @@ import { trpcClient } from "../../utils/trpc";
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("teacher.courses.manage.validation.name")),
-		credits: z.number().min(1, t("teacher.courses.manage.validation.credits")),
 		hours: z.number().min(1, t("teacher.courses.manage.validation.hours")),
 		program: z.string({
 			required_error: t("teacher.courses.manage.validation.program"),
@@ -55,7 +54,6 @@ type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 interface Course {
 	id: string;
 	name: string;
-	credits: number;
 	hours: number;
 	program: string;
 	defaultTeacher: string;
@@ -242,9 +240,6 @@ export default function CourseManagement() {
 								<TableHead>
 									{t("teacher.courses.manage.table.program")}
 								</TableHead>
-								<TableHead>
-									{t("teacher.courses.manage.table.credits")}
-								</TableHead>
 								<TableHead>{t("teacher.courses.manage.table.hours")}</TableHead>
 								<TableHead>
 									{t("teacher.courses.manage.table.teacher")}
@@ -259,7 +254,6 @@ export default function CourseManagement() {
 								<TableRow key={course.id}>
 									<TableCell className="font-medium">{course.name}</TableCell>
 									<TableCell>{programMap.get(course.program)}</TableCell>
-									<TableCell>{course.credits}</TableCell>
 									<TableCell>{course.hours}</TableCell>
 									<TableCell>{teacherMap.get(course.defaultTeacher)}</TableCell>
 									<TableCell className="text-right">
@@ -271,7 +265,6 @@ export default function CourseManagement() {
 													setEditingCourse(course);
 													reset({
 														name: course.name,
-														credits: course.credits,
 														hours: course.hours,
 														program: course.program,
 														defaultTeacher: course.defaultTeacher,
@@ -322,25 +315,6 @@ export default function CourseManagement() {
 					</div>
 
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="course-credits">
-								{t("teacher.courses.manage.form.creditsLabel")}
-							</Label>
-							<Input
-								id="course-credits"
-								type="number"
-								{...register("credits", { valueAsNumber: true })}
-								placeholder={t(
-									"teacher.courses.manage.form.creditsPlaceholder",
-								)}
-							/>
-							{errors.credits ? (
-								<p className="text-destructive text-sm">
-									{errors.credits.message}
-								</p>
-							) : null}
-						</div>
-
 						<div className="space-y-2">
 							<Label htmlFor="course-hours">
 								{t("teacher.courses.manage.form.hoursLabel")}

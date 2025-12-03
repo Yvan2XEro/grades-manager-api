@@ -187,7 +187,7 @@ export async function getStudentTranscript(studentId: string) {
 			teachingUnitId: schema.teachingUnits.id,
 			unitName: schema.teachingUnits.name,
 			unitCode: schema.teachingUnits.code,
-			credits: schema.courses.credits,
+			unitCredits: schema.teachingUnits.credits,
 			score: sql<number>`
 				sum(${schema.grades.score} * (${schema.exams.percentage} / 100.0))
 			`,
@@ -224,10 +224,10 @@ export async function getStudentTranscript(studentId: string) {
 				id: string;
 				name: string;
 				average: number;
-				credits: number;
 			}>;
 			credits: number;
 			scoreSum: number;
+			courseCount: number;
 		}
 	>();
 
@@ -237,17 +237,17 @@ export async function getStudentTranscript(studentId: string) {
 			name: course.unitName,
 			code: course.unitCode,
 			courses: [],
-			credits: 0,
+			credits: Number(course.unitCredits ?? 0),
 			scoreSum: 0,
+			courseCount: 0,
 		};
 		unit.courses.push({
 			id: course.courseId,
 			name: course.courseName,
 			average: Number(course.score ?? 0),
-			credits: course.credits,
 		});
-		unit.credits += course.credits;
-		unit.scoreSum += Number(course.score ?? 0) * course.credits;
+		unit.scoreSum += Number(course.score ?? 0);
+		unit.courseCount += 1;
 		units.set(course.teachingUnitId, unit);
 	}
 
@@ -255,24 +255,19 @@ export async function getStudentTranscript(studentId: string) {
 		id: unit.id,
 		name: unit.name,
 		code: unit.code,
-		average: unit.credits ? unit.scoreSum / unit.credits : 0,
+		average: unit.courseCount ? unit.scoreSum / unit.courseCount : 0,
+		credits: unit.credits,
 		courses: unit.courses,
 	}));
 
 	const totalCredits = unitSummaries.reduce(
-		(sum, unit) =>
-			sum + unit.courses.reduce((c, course) => c + course.credits, 0),
+		(sum, unit) => sum + unit.credits,
 		0,
 	);
-	const weightedSum = unitSummaries.reduce((sum, unit) => {
-		return (
-			sum +
-			unit.courses.reduce(
-				(courseSum, course) => courseSum + course.average * course.credits,
-				0,
-			)
-		);
-	}, 0);
+	const weightedSum = unitSummaries.reduce(
+		(sum, unit) => sum + unit.average * unit.credits,
+		0,
+	);
 
 	return {
 		studentId,

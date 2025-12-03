@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Pencil, Plus, School, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -68,11 +68,6 @@ const buildProgramSchema = (t: TFunction) =>
 		faculty: z.string({
 			required_error: t("admin.programs.validation.faculty"),
 		}),
-		cycleId: z.string({
-			required_error: t("admin.programs.validation.cycle", {
-				defaultValue: "Please select a study cycle",
-			}),
-		}),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
@@ -89,10 +84,7 @@ interface Program {
 	description: string | null;
 	faculty_id: string;
 	faculty: { name: string };
-	cycle?: { id: string; name: string; code: string };
 }
-
-type CycleOption = RouterOutputs["studyCycles"]["listCycles"]["items"][number];
 
 interface Faculty {
 	id: string;
@@ -121,9 +113,6 @@ export default function ProgramManagement() {
 				description: p.description ?? null,
 				faculty_id: p.faculty,
 				faculty: { name: p.facultyInfo?.name ?? "" },
-				cycle: p.cycle
-					? { id: p.cycle.id, name: p.cycle.name, code: p.cycle.code }
-					: undefined,
 			})) as Program[];
 		},
 	});
@@ -142,38 +131,10 @@ export default function ProgramManagement() {
 			name: "",
 			description: "",
 			faculty: "",
-			cycleId: "",
 		},
 	});
 
 	const selectedFacultyId = form.watch("faculty");
-	const selectedCycleId = form.watch("cycleId");
-	const { data: cyclesData } = useQuery({
-		queryKey: ["studyCycles", selectedFacultyId],
-		queryFn: async () => {
-			if (!selectedFacultyId) return [];
-			const { items } = await trpcClient.studyCycles.listCycles.query({
-				facultyId: selectedFacultyId,
-				limit: 100,
-			});
-			return items as CycleOption[];
-		},
-		enabled: Boolean(selectedFacultyId),
-	});
-	const cycleOptions = useMemo(() => cyclesData ?? [], [cyclesData]);
-
-	useEffect(() => {
-		if (!selectedFacultyId) {
-			form.setValue("cycleId", "");
-			return;
-		}
-		if (
-			cycleOptions.length > 0 &&
-			!cycleOptions.some((cycle) => cycle.id === selectedCycleId)
-		) {
-			form.setValue("cycleId", cycleOptions[0].id);
-		}
-	}, [cycleOptions, selectedFacultyId, selectedCycleId, form]);
 
 	const optionForm = useForm<ProgramOptionFormData>({
 		resolver: zodResolver(programOptionSchema),
@@ -314,7 +275,7 @@ export default function ProgramManagement() {
 
 	const startCreate = () => {
 		setEditingProgram(null);
-		form.reset({ name: "", description: "", faculty: "", cycleId: "" });
+		form.reset({ name: "", description: "", faculty: "" });
 		setIsFormOpen(true);
 	};
 
@@ -324,7 +285,6 @@ export default function ProgramManagement() {
 			name: program.name,
 			description: program.description ?? "",
 			faculty: program.faculty_id,
-			cycleId: program.cycle?.id ?? "",
 		});
 		setIsFormOpen(true);
 	};
@@ -332,7 +292,7 @@ export default function ProgramManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingProgram(null);
-		form.reset({ name: "", description: "", faculty: "", cycleId: "" });
+		form.reset({ name: "", description: "", faculty: "" });
 	};
 
 	const confirmDelete = (id: string) => {
@@ -398,11 +358,6 @@ export default function ProgramManagement() {
 								<TableRow>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.faculty")}</TableHead>
-									<TableHead>
-										{t("admin.programs.table.cycle", {
-											defaultValue: "Cycle",
-										})}
-									</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
@@ -416,22 +371,6 @@ export default function ProgramManagement() {
 											{program.name}
 										</TableCell>
 										<TableCell>{program.faculty?.name}</TableCell>
-										<TableCell>
-											{program.cycle ? (
-												<div className="space-y-0.5">
-													<p>{program.cycle.name}</p>
-													{program.cycle.code && (
-														<p className="text-muted-foreground text-xs">
-															{program.cycle.code}
-														</p>
-													)}
-												</div>
-											) : (
-												t("common.labels.notAvailable", {
-													defaultValue: "N/A",
-												})
-											)}
-										</TableCell>
 										<TableCell>
 											{program.description || (
 												<span className="text-muted-foreground italic">
@@ -553,51 +492,6 @@ export default function ProgramManagement() {
 												))}
 											</SelectContent>
 										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="cycleId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.cycleLabel", {
-												defaultValue: "Study cycle",
-											})}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-											disabled={!selectedFacultyId || cycleOptions.length === 0}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.programs.form.cyclePlaceholder",
-															{ defaultValue: "Select cycle" },
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{cycleOptions.map((cycle) => (
-													<SelectItem key={cycle.id} value={cycle.id}>
-														{cycle.name} {cycle.code ? `(${cycle.code})` : ""}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										{!selectedFacultyId && (
-											<p className="text-muted-foreground text-xs">
-												{t("admin.programs.form.selectFacultyFirst", {
-													defaultValue:
-														"Select a faculty to load available cycles.",
-												})}
-											</p>
-										)}
 										<FormMessage />
 									</FormItem>
 								)}

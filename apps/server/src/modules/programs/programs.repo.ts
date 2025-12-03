@@ -7,15 +7,7 @@ const programSelection = {
 	name: schema.programs.name,
 	description: schema.programs.description,
 	faculty: schema.programs.faculty,
-	cycleId: schema.programs.cycleId,
 	createdAt: schema.programs.createdAt,
-	cycle: {
-		id: schema.studyCycles.id,
-		name: schema.studyCycles.name,
-		code: schema.studyCycles.code,
-		totalCreditsRequired: schema.studyCycles.totalCreditsRequired,
-		durationYears: schema.studyCycles.durationYears,
-	},
 	facultyInfo: {
 		id: schema.faculties.id,
 		name: schema.faculties.name,
@@ -44,10 +36,6 @@ export async function findById(id: string) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.studyCycles,
-			eq(schema.studyCycles.id, schema.programs.cycleId),
-		)
 		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
 		.where(eq(schema.programs.id, id))
 		.limit(1);
@@ -56,7 +44,6 @@ export async function findById(id: string) {
 
 export async function list(opts: {
 	facultyId?: string;
-	cycleId?: string;
 	q?: string;
 	cursor?: string;
 	limit?: number;
@@ -65,10 +52,6 @@ export async function list(opts: {
 	let condition: unknown;
 	if (opts.facultyId) {
 		condition = eq(schema.programs.faculty, opts.facultyId);
-	}
-	if (opts.cycleId) {
-		const cycleCond = eq(schema.programs.cycleId, opts.cycleId);
-		condition = condition ? and(condition, cycleCond) : cycleCond;
 	}
 	if (opts.q) {
 		const qCond = ilike(schema.programs.name, `%${opts.q}%`);
@@ -81,10 +64,6 @@ export async function list(opts: {
 	const items = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.studyCycles,
-			eq(schema.studyCycles.id, schema.programs.cycleId),
-		)
 		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
 		.where(condition)
 		.orderBy(schema.programs.id)

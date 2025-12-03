@@ -57,13 +57,17 @@ async function fetchClassCourseContext(classCourseId: string) {
 			classProgramId: schema.classes.program,
 			academicYearId: schema.classes.academicYear,
 			courseProgramId: schema.courses.program,
-			courseCredits: schema.courses.credits,
+			unitCredits: schema.teachingUnits.credits,
 		})
 		.from(schema.classCourses)
 		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
 		.innerJoin(
 			schema.courses,
 			eq(schema.classCourses.course, schema.courses.id),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.courses.teachingUnitId, schema.teachingUnits.id),
 		)
 		.where(eq(schema.classCourses.id, classCourseId))
 		.limit(1);
@@ -177,14 +181,14 @@ export async function createEnrollment(input: CreateInput) {
 		academicYearId: classCourse.academicYearId,
 		status,
 		attempt,
-		creditsAttempted: classCourse.courseCredits,
-		creditsEarned: resolveCreditsEarned(status, classCourse.courseCredits),
+		creditsAttempted: classCourse.unitCredits,
+		creditsEarned: resolveCreditsEarned(status, classCourse.unitCredits),
 		completedAt: resolveCompletionTimestamp(status),
 	};
 	const record = await repo.create(payload);
 	const contribution = creditLedger.contributionForStatus(
 		status,
-		classCourse.courseCredits,
+		classCourse.unitCredits,
 	);
 	await creditLedger.applyDelta(
 		record.studentId,

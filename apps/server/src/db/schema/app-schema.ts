@@ -204,21 +204,19 @@ export const programs = pgTable(
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		name: text("name").notNull(),
+		slug: text("slug").notNull(),
 		description: text("description"),
 		faculty: text("faculty_id")
 			.notNull()
 			.references(() => faculties.id, { onDelete: "restrict" }),
-		cycleId: text("cycle_id")
-			.notNull()
-			.references(() => studyCycles.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
 	},
 	(t) => [
 		unique("uq_programs_name_faculty").on(t.name, t.faculty),
+		unique("uq_programs_slug_faculty").on(t.slug, t.faculty),
 		index("idx_programs_faculty_id").on(t.faculty),
-		index("idx_programs_cycle_id").on(t.cycleId),
 	],
 );
 
@@ -306,7 +304,6 @@ export const courses = pgTable(
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		name: text("name").notNull(),
-		credits: integer("credits").notNull(),
 		hours: integer("hours").notNull(),
 		program: text("program_id")
 			.notNull()
@@ -325,7 +322,6 @@ export const courses = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		check("chk_courses_credits", sql`${t.credits} >= 0`),
 		check("chk_courses_hours", sql`${t.hours} > 0`),
 		unique("uq_courses_name_program").on(t.name, t.program),
 		index("idx_courses_program_id").on(t.program),
@@ -681,23 +677,22 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 		fields: [programs.faculty],
 		references: [faculties.id],
 	}),
-	cycle: one(studyCycles, {
-		fields: [programs.cycleId],
-		references: [studyCycles.id],
-	}),
 	options: many(programOptions),
 	classes: many(classes),
 	courses: many(courses),
 	teachingUnits: many(teachingUnits),
 }));
 
-export const programOptionsRelations = relations(programOptions, ({ one, many }) => ({
-	program: one(programs, {
-		fields: [programOptions.programId],
-		references: [programs.id],
+export const programOptionsRelations = relations(
+	programOptions,
+	({ one, many }) => ({
+		program: one(programs, {
+			fields: [programOptions.programId],
+			references: [programs.id],
+		}),
+		classes: many(classes),
 	}),
-	classes: many(classes),
-}));
+);
 
 export const teachingUnitsRelations = relations(
 	teachingUnits,
@@ -737,7 +732,6 @@ export const studyCyclesRelations = relations(studyCycles, ({ one, many }) => ({
 		fields: [studyCycles.facultyId],
 		references: [faculties.id],
 	}),
-	programs: many(programs),
 	levels: many(cycleLevels),
 }));
 

@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -14,7 +14,6 @@ const classSelection = {
 	programInfo: {
 		id: schema.programs.id,
 		name: schema.programs.name,
-		cycleId: schema.programs.cycleId,
 		facultyId: schema.programs.faculty,
 	},
 	academicYearInfo: {
@@ -67,14 +66,14 @@ export async function findById(id: string) {
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
 		)
-		.leftJoin(
-			schema.cycleLevels,
-			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
-		)
-		.leftJoin(
-			schema.studyCycles,
-			eq(schema.studyCycles.id, schema.programs.cycleId),
-		)
+	.leftJoin(
+		schema.cycleLevels,
+		eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+	)
+	.leftJoin(
+		schema.studyCycles,
+		eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+	)
 		.leftJoin(
 			schema.programOptions,
 			eq(schema.programOptions.id, schema.classes.programOptionId),
@@ -96,27 +95,6 @@ export async function list(opts: {
 }) {
 	const limit = opts.limit ?? 50;
 	let facultyProgramIds: string[] | undefined;
-	if (opts.facultyId) {
-		const programs = await db
-			.select({ id: schema.programs.id })
-			.from(schema.programs)
-			.where(eq(schema.programs.faculty, opts.facultyId));
-		if (!programs.length) {
-			return { items: [], nextCursor: undefined };
-		}
-		facultyProgramIds = programs.map((p) => p.id);
-	}
-	let cycleProgramIds: string[] | undefined;
-	if (opts.cycleId) {
-		const programs = await db
-			.select({ id: schema.programs.id })
-			.from(schema.programs)
-			.where(eq(schema.programs.cycleId, opts.cycleId));
-		if (!programs.length) {
-			return { items: [], nextCursor: undefined };
-		}
-		cycleProgramIds = programs.map((p) => p.id);
-	}
 	const conditions = [
 		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
 		opts.academicYearId
@@ -125,14 +103,14 @@ export async function list(opts: {
 		opts.cycleLevelId
 			? eq(schema.classes.cycleLevelId, opts.cycleLevelId)
 			: undefined,
+		opts.cycleId
+			? eq(schema.cycleLevels.cycleId, opts.cycleId)
+			: undefined,
 		opts.programOptionId
 			? eq(schema.classes.programOptionId, opts.programOptionId)
 			: undefined,
-		facultyProgramIds
-			? inArray(schema.classes.program, facultyProgramIds)
-			: undefined,
-		cycleProgramIds
-			? inArray(schema.classes.program, cycleProgramIds)
+		opts.facultyId
+			? eq(schema.programs.faculty, opts.facultyId)
 			: undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
@@ -156,7 +134,7 @@ export async function list(opts: {
 		)
 		.leftJoin(
 			schema.studyCycles,
-			eq(schema.studyCycles.id, schema.programs.cycleId),
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
 		)
 		.leftJoin(
 			schema.programOptions,

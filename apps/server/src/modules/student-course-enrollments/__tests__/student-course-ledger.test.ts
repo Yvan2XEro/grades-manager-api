@@ -17,7 +17,10 @@ async function setupCourseWithCredits(credits: number) {
 	const faculty = await createFaculty();
 	const program = await createProgram({ faculty: faculty.id });
 	const academicYear = await createAcademicYear();
-	const teachingUnit = await createTeachingUnit({ programId: program.id });
+	const teachingUnit = await createTeachingUnit({
+		programId: program.id,
+		credits,
+	});
 	const klass = await createClass({
 		program: program.id,
 		academicYear: academicYear.id,
@@ -25,7 +28,6 @@ async function setupCourseWithCredits(credits: number) {
 	const course = await createCourse({
 		program: program.id,
 		teachingUnitId: teachingUnit.id,
-		credits,
 	});
 	const classCourse = await createClassCourse({
 		class: klass.id,

@@ -38,9 +38,6 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { trpc, trpcClient } from "../../utils/trpc";
-import type { RouterOutputs } from "../../utils/trpc";
-
-type ProgramOption = RouterOutputs["programs"]["list"]["items"][number];
 
 const TeachingUnitManagement = () => {
 	const { t } = useTranslation();
@@ -160,10 +157,9 @@ const TeachingUnitManagement = () => {
 									<SelectItem key={program.id} value={program.id}>
 										<div className="flex flex-col">
 											<span>{program.name}</span>
-											{program.cycle && (
+											{program.facultyInfo?.name && (
 												<span className="text-muted-foreground text-xs">
-													{program.cycle.name}
-													{program.cycle.code ? ` (${program.cycle.code})` : ""}
+													{program.facultyInfo.name}
 												</span>
 											)}
 										</div>
@@ -171,11 +167,11 @@ const TeachingUnitManagement = () => {
 								))}
 							</SelectContent>
 						</Select>
-						{selectedProgram?.cycle && (
+						{selectedProgram?.facultyInfo?.name && (
 							<p className="text-muted-foreground text-xs">
-								{t("admin.teachingUnits.programCycleSummary", {
-									defaultValue: "Cycle: {{value}}",
-									value: `${selectedProgram.cycle.name}${selectedProgram.cycle.code ? ` (${selectedProgram.cycle.code})` : ""}`,
+								{t("admin.teachingUnits.programFacultySummary", {
+									defaultValue: "Faculty: {{value}}",
+									value: selectedProgram.facultyInfo.name,
 								})}
 							</p>
 						)}
@@ -226,12 +222,15 @@ const TeachingUnitManagement = () => {
 													return (
 														<div className="space-y-0.5">
 															<p>{programInfo.name}</p>
-															{programInfo.cycle && (
+															{programInfo.facultyInfo?.name && (
 																<p className="text-muted-foreground text-xs">
-																	{t("admin.teachingUnits.table.programCycle", {
-																		defaultValue: "Cycle: {{value}}",
-																		value: `${programInfo.cycle.name}${programInfo.cycle.code ? ` (${programInfo.cycle.code})` : ""}`,
-																	})}
+																	{t(
+																		"admin.teachingUnits.table.programFaculty",
+																		{
+																			defaultValue: "Faculty: {{value}}",
+																			value: programInfo.facultyInfo.name,
+																		},
+																	)}
 																</p>
 															)}
 														</div>

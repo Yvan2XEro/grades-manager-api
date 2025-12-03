@@ -27,7 +27,6 @@ describe("courses router", () => {
 		const admin = createCaller(asAdmin());
 		const course = await admin.courses.create({
 			name: "Math",
-			credits: 3,
 			hours: 30,
 			program: program.id,
 			teachingUnitId: unit.id,

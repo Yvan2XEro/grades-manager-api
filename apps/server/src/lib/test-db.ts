@@ -95,7 +95,19 @@ export async function seed() {
 		.returning();
 	const [program] = await db
 		.insert(schema.programs)
-		.values({ name: "Seed Program", faculty: faculty.id, cycleId: cycle.id })
+		.values({
+			name: "Seed Program",
+			slug: "seed-program",
+			faculty: faculty.id,
+		})
+		.returning();
+	const [option] = await db
+		.insert(schema.programOptions)
+		.values({
+			programId: program.id,
+			name: "Default option",
+			code: "default",
+		})
 		.returning();
 	await db.insert(schema.teachingUnits).values({
 		name: "Seed UE",
@@ -109,6 +121,7 @@ export async function seed() {
 		program: program.id,
 		academicYear: year.id,
 		cycleLevelId: level.id,
+		programOptionId: option.id,
 	});
 }
 

@@ -1,4 +1,4 @@
 [test]
-root = "."
+root = "./src"
 preload = "./src/lib/test-setup.ts"
 coverage = true

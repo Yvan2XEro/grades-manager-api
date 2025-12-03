@@ -64,7 +64,6 @@ import { trpcClient } from "@/utils/trpc";
 const buildCourseSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.courses.validation.name")),
-		credits: z.coerce.number().min(1, t("admin.courses.validation.credits")),
 		hours: z.coerce.number().min(1, t("admin.courses.validation.hours")),
 		program: z.string({
 			required_error: t("admin.courses.validation.program"),
@@ -79,7 +78,6 @@ type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 interface Course {
 	id: string;
 	name: string;
-	credits: number;
 	hours: number;
 	program: string;
 	defaultTeacher: string;
@@ -208,7 +206,6 @@ export default function CourseManagement() {
 		setEditingCourse(null);
 		form.reset({
 			name: "",
-			credits: undefined as unknown as number,
 			hours: undefined as unknown as number,
 			program: "",
 			defaultTeacher: "",
@@ -220,7 +217,6 @@ export default function CourseManagement() {
 		setEditingCourse(course);
 		form.reset({
 			name: course.name,
-			credits: course.credits,
 			hours: course.hours,
 			program: course.program,
 			defaultTeacher: course.defaultTeacher,
@@ -288,7 +284,6 @@ export default function CourseManagement() {
 								<TableRow>
 									<TableHead>{t("admin.courses.table.name")}</TableHead>
 									<TableHead>{t("admin.courses.table.program")}</TableHead>
-									<TableHead>{t("admin.courses.table.credits")}</TableHead>
 									<TableHead>{t("admin.courses.table.hours")}</TableHead>
 									<TableHead>{t("admin.courses.table.teacher")}</TableHead>
 									<TableHead className="text-right">
@@ -311,11 +306,11 @@ export default function CourseManagement() {
 												return (
 													<div className="space-y-0.5">
 														<p>{programInfo.name}</p>
-														{programInfo.cycle && (
+														{programInfo.facultyInfo?.name && (
 															<p className="text-muted-foreground text-xs">
-																{t("admin.courses.table.cycleInfo", {
-																	defaultValue: "Cycle: {{value}}",
-																	value: `${programInfo.cycle.name}${programInfo.cycle.code ? ` (${programInfo.cycle.code})` : ""}`,
+																{t("admin.courses.table.facultyInfo", {
+																	defaultValue: "Faculty: {{value}}",
+																	value: programInfo.facultyInfo.name,
 																})}
 															</p>
 														)}
@@ -323,7 +318,6 @@ export default function CourseManagement() {
 												);
 											})()}
 										</TableCell>
-										<TableCell>{course.credits}</TableCell>
 										<TableCell>{course.hours}</TableCell>
 										<TableCell>
 											{teacherMap.get(course.defaultTeacher) ??
@@ -415,33 +409,6 @@ export default function CourseManagement() {
 							/>
 							<FormField
 								control={form.control}
-								name="credits"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.creditsLabel")}
-										</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												value={field.value ?? ""}
-												onChange={(event) =>
-													field.onChange(
-														event.target.value === ""
-															? undefined
-															: Number(event.target.value),
-													)
-												}
-												placeholder={t("admin.courses.form.creditsPlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
 								name="hours"
 								render={({ field }) => (
 									<FormItem>
@@ -491,12 +458,9 @@ export default function CourseManagement() {
 													<SelectItem key={program.id} value={program.id}>
 														<div className="flex flex-col">
 															<span>{program.name}</span>
-															{program.cycle && (
+															{program.facultyInfo?.name && (
 																<span className="text-muted-foreground text-xs">
-																	{program.cycle.name}
-																	{program.cycle.code
-																		? ` (${program.cycle.code})`
-																		: ""}
+																	{program.facultyInfo.name}
 																</span>
 															)}
 														</div>
@@ -504,11 +468,11 @@ export default function CourseManagement() {
 												))}
 											</SelectContent>
 										</Select>
-										{selectedProgram?.cycle && (
+										{selectedProgram?.facultyInfo?.name && (
 											<p className="text-muted-foreground text-xs">
-												{t("admin.courses.form.programCycleSummary", {
-													defaultValue: "Cycle: {{value}}",
-													value: `${selectedProgram.cycle.name}${selectedProgram.cycle.code ? ` (${selectedProgram.cycle.code})` : ""}`,
+												{t("admin.courses.form.programFacultySummary", {
+													defaultValue: "Faculty: {{value}}",
+													value: selectedProgram.facultyInfo.name,
 												})}
 											</p>
 										)}

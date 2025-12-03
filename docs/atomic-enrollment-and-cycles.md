@@ -61,7 +61,7 @@ This layout blocks individualized retakes and cycle-aware workflows.
 	```
 	- `class_course_id` identifies the actual course offering (class + teacher) used for scheduling exams.
 	- `source_class_id` allows a student to register for a previous class’ course even if their current `students.class` points to a more advanced cohort.
-	- `credits_attempted` copies `courses.credits` to preserve history even if the catalog changes later.
+- `credits_attempted` copies `teaching_units.credits` to preserve history even if the catalog changes later.
 2. **`student_credit_ledger` view/table (optional but recommended)**
 	- Either materialized view or table maintained by triggers.
 	- Fields: `student_id`, `academic_year_id`, `cycle_level_id` (after hierarchy work), `credits_earned`, `credits_in_progress`.
@@ -105,7 +105,7 @@ This layout blocks individualized retakes and cycle-aware workflows.
 2. Backfill script (Bun task) to:
 	- Iterate over every active `student`.
 	- Fetch their current `class` and all `class_courses` linked to that class.
-	- Insert `student_course_enrollments` rows with `status = 'active'`, `attempt = 1`, `credits_attempted = courses.credits`, `source_class_id = class.id`, `academic_year_id = class.academicYear`.
+- Insert `student_course_enrollments` rows with `status = 'active'`, `attempt = 1`, `credits_attempted = teaching_units.credits`, `source_class_id = class.id`, `academic_year_id = class.academicYear`.
 	- For completed grades (students with `enrollments.status = completed`), set `status = 'completed'` and `credits_earned = credits_attempted`.
 	- For missing grades, keep `status = 'active'`.
 3. Update factories in `apps/server/src/lib/test-utils.ts` to create the new rows as part of `createRecapFixture`.

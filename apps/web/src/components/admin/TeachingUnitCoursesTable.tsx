@@ -47,7 +47,6 @@ import { trpcClient } from "../../utils/trpc";
 type Course = {
 	id: string;
 	name: string;
-	credits: number;
 	hours: number;
 	defaultTeacher: string;
 };
@@ -62,12 +61,6 @@ const buildCourseSchema = (
 			2,
 			t("admin.teachingUnits.courses.validation.name", {
 				defaultValue: "Name is required",
-			}),
-		),
-		credits: z.number().min(
-			0,
-			t("admin.teachingUnits.courses.validation.credits", {
-				defaultValue: "Credits must be positive",
 			}),
 		),
 		hours: z.number().min(
@@ -151,7 +144,6 @@ export function TeachingUnitCoursesTable({
 		setEditingCourse(null);
 		form.reset({
 			name: "",
-			credits: undefined as unknown as number,
 			hours: undefined as unknown as number,
 			defaultTeacher: "",
 		});
@@ -162,7 +154,6 @@ export function TeachingUnitCoursesTable({
 		setEditingCourse(course);
 		form.reset({
 			name: course.name,
-			credits: course.credits,
 			hours: course.hours,
 			defaultTeacher: course.defaultTeacher,
 		});
@@ -204,7 +195,6 @@ export function TeachingUnitCoursesTable({
 			trpcClient.courses.update.mutate({
 				id: data.id,
 				name: data.name,
-				credits: data.credits,
 				hours: data.hours,
 				defaultTeacher: data.defaultTeacher,
 				program: programId,
@@ -288,9 +278,6 @@ export function TeachingUnitCoursesTable({
 										{t("admin.teachingUnits.courses.table.hours")}
 									</TableHead>
 									<TableHead>
-										{t("admin.teachingUnits.courses.table.credits")}
-									</TableHead>
-									<TableHead>
 										{t("admin.teachingUnits.courses.table.teacher")}
 									</TableHead>
 									<TableHead className="text-right">
@@ -303,7 +290,6 @@ export function TeachingUnitCoursesTable({
 									<TableRow key={course.id}>
 										<TableCell className="font-medium">{course.name}</TableCell>
 										<TableCell>{course.hours}</TableCell>
-										<TableCell>{course.credits}</TableCell>
 										<TableCell>
 											{teacherMap.get(course.defaultTeacher) ?? "—"}
 										</TableCell>
@@ -378,36 +364,6 @@ export function TeachingUnitCoursesTable({
 								</FormItem>
 							)}
 						/>
-
-						<FormField
-							control={form.control}
-							name="credits"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.teachingUnits.courses.form.creditsLabel")}
-									</FormLabel>
-									<FormControl>
-										<Input
-											type="number"
-											value={field.value ?? ""}
-											onChange={(event) =>
-												field.onChange(
-													event.target.value === ""
-														? undefined
-														: Number(event.target.value),
-												)
-											}
-											placeholder={t(
-												"admin.teachingUnits.courses.form.creditsPlaceholder",
-											)}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
 						<FormField
 							control={form.control}
 							name="hours"

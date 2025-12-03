@@ -7,7 +7,7 @@ import {
 	Save,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -15,13 +15,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,7 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useStore } from "../../store";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpcClient } from "../../utils/trpc";
 
 type Student = {
@@ -48,6 +42,7 @@ type Student = {
 	firstName: string;
 	lastName: string;
 	registrationNumber: string;
+	status?: string;
 };
 
 type Exam = {
@@ -73,18 +68,11 @@ type CourseInfo = {
 
 const GradeEntry: React.FC = () => {
 	const { courseId } = useParams<{ courseId: string }>();
-	const { user } = useStore();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 
-	const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
-	const [students, setStudents] = useState<Student[]>([]);
-	const [exams, setExams] = useState<Exam[]>([]);
 	const [selectedExam, setSelectedExam] = useState<string>("");
-	const [grades, setGrades] = useState<Record<string, number>>({});
-	const [isLoading, setIsLoading] = useState(true);
-	const [isSaving, setIsSaving] = useState(false);
-	const [isExamLocked, setIsExamLocked] = useState(false);
 
 	const {
 		register,
@@ -93,157 +81,211 @@ const GradeEntry: React.FC = () => {
 		formState: { errors },
 	} = useForm();
 
-	useEffect(() => {
-		if (user && courseId) {
-			fetchCourseData();
-		}
-	}, [user, courseId]);
-
-	useEffect(() => {
-		if (selectedExam) {
-			fetchGrades(selectedExam);
-
-			// Check if exam is locked
-			const exam = exams.find((e) => e.id === selectedExam);
-			setIsExamLocked(exam?.isLocked || false);
-
-			// Reset form when exam changes
-			reset();
-		}
-	}, [selectedExam, exams, reset]);
-
-	const fetchCourseData = async () => {
-		if (!user || !courseId) return;
-
-		setIsLoading(true);
-		try {
+	const courseContextQuery = useQuery({
+		queryKey: ["grade-entry-context", courseId],
+		enabled: Boolean(courseId),
+		queryFn: async () => {
+			if (!courseId) {
+				throw new Error("Missing class course id");
+			}
 			const classCourse = await trpcClient.classCourses.getById.query({
 				id: courseId,
 			});
 			const klass = await trpcClient.classes.getById.query({
 				id: classCourse.class,
 			});
-			const [course, program, studentsRes, examsRes] = await Promise.all([
+			const [course, program] = await Promise.all([
 				trpcClient.courses.getById.query({ id: classCourse.course }),
 				trpcClient.programs.getById.query({ id: klass.program }),
-				trpcClient.students.list.query({ classId: klass.id }),
-				trpcClient.exams.list.query({ classCourseId: courseId }),
 			]);
-
-			setCourseInfo({
-				course_name: course.name,
-				class_name: klass.name,
-				program_name: program.name,
-			});
-
-			setStudents(studentsRes.items as Student[]);
-			const examsList = examsRes.items.map((e) => ({
-				id: e.id,
-				name: e.name,
-				type: e.type,
-				date: e.date,
-				percentage: Number(e.percentage),
-				isLocked: e.isLocked,
-			}));
-			setExams(examsList);
-			if (examsList.length > 0) setSelectedExam(examsList[0].id);
-		} catch (error: any) {
-			console.error("Error fetching course data:", error);
+			return {
+				courseInfo: {
+					course_name: course.name,
+					class_name: klass.name,
+					program_name: program.name,
+				} as CourseInfo,
+			};
+		},
+		onError: (error: any) => {
 			toast.error(
 				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
 			);
-		} finally {
-			setIsLoading(false);
+		},
+	});
+
+	const courseInfo = courseContextQuery.data?.courseInfo ?? null;
+
+	const rosterQuery = useQuery({
+		queryKey: ["class-course-roster", courseId],
+		enabled: Boolean(courseId),
+		queryFn: async () => {
+			if (!courseId) return [] as Student[];
+			const { students } = await trpcClient.classCourses.roster.query({
+				id: courseId,
+			});
+			return students as Student[];
+		},
+		onError: (error: any) => {
+			toast.error(
+				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
+			);
+		},
+	});
+
+	const examsQuery = useQuery({
+		queryKey: ["class-course-exams", courseId],
+		enabled: Boolean(courseId),
+		queryFn: async () => {
+			if (!courseId) return [] as Exam[];
+			const { items } = await trpcClient.exams.list.query({
+				classCourseId: courseId,
+			});
+			return items.map(
+				(e): Exam => ({
+					id: e.id,
+					name: e.name,
+					type: e.type,
+					date: e.date,
+					percentage: Number(e.percentage),
+					isLocked: e.isLocked,
+				}),
+			);
+		},
+		onError: (error: any) => {
+			toast.error(
+				error.message || t("teacher.gradeEntry.toast.fetchCourseError"),
+			);
+		},
+	});
+
+	const exams = examsQuery.data ?? [];
+
+	useEffect(() => {
+		if (!exams.length) {
+			setSelectedExam("");
+			return;
 		}
-	};
+		if (!selectedExam) {
+			setSelectedExam(exams[0].id);
+			return;
+		}
+		if (!exams.some((exam) => exam.id === selectedExam)) {
+			setSelectedExam(exams[0].id);
+		}
+	}, [exams, selectedExam]);
 
-	const fetchGrades = async (examId: string) => {
-		if (!examId) return;
+	const selectedExamInfo = useMemo(
+		() => exams.find((exam) => exam.id === selectedExam),
+		[exams, selectedExam],
+	);
+	const isExamLocked = selectedExamInfo?.isLocked ?? false;
 
-		try {
-			const { items } = await trpcClient.grades.listByExam.query({ examId });
-			const gradesRecord: Record<string, number> = {};
-			items.forEach((grade) => {
-				gradesRecord[grade.student] = Number(grade.score);
+	const gradesQuery = useQuery({
+		queryKey: ["exam-grades", selectedExam],
+		enabled: Boolean(selectedExam),
+		queryFn: async () => {
+			const response = await trpcClient.grades.listByExam.query({
+				examId: selectedExam!,
 			});
-			setGrades(gradesRecord);
-
-			const formData: Record<string, any> = {};
-			items.forEach((grade) => {
-				formData[`student_${grade.student}`] = Number(grade.score);
-			});
-			reset(formData);
-		} catch (error: any) {
-			console.error("Error fetching grades:", error);
+			return response.items;
+		},
+		onError: (error: any) => {
 			toast.error(
 				error.message || t("teacher.gradeEntry.toast.fetchGradesError"),
 			);
-		}
-	};
+		},
+	});
+
+	const gradeEntries = gradesQuery.data ?? [];
+	const grades = useMemo(() => {
+		const record: Record<string, number> = {};
+		gradeEntries.forEach((grade) => {
+			record[grade.student] = Number(grade.score);
+		});
+		return record;
+	}, [gradeEntries]);
+
+	useEffect(() => {
+		const defaults: Record<string, number> = {};
+		Object.entries(grades).forEach(([studentId, score]) => {
+			defaults[`student_${studentId}`] = score;
+		});
+		reset(defaults);
+	}, [grades, reset]);
+
+	const rosterStudents = rosterQuery.data ?? [];
 
 	const handleExamChange = (examId: string) => {
 		setSelectedExam(examId);
-		setGrades({});
+		reset({});
 	};
 
 	const onSubmit = async (data: any) => {
 		if (!selectedExam || isExamLocked) return;
+		const gradesToUpsert: GradeInput[] = [];
 
-		setIsSaving(true);
-		try {
-			// Transform form data into array of grade objects
-			const gradesToUpsert: GradeInput[] = [];
+		for (const studentId in data) {
+			if (studentId.startsWith("student_")) {
+				const actualStudentId = studentId.replace("student_", "");
+				const score = Number.parseFloat(data[studentId]);
 
-			for (const studentId in data) {
-				if (studentId.startsWith("student_")) {
-					const actualStudentId = studentId.replace("student_", "");
-					const score = Number.parseFloat(data[studentId]);
-
-					if (!isNaN(score) && score >= 0 && score <= 20) {
-						gradesToUpsert.push({
-							studentId: actualStudentId,
-							examId: selectedExam,
-							score,
-						});
-					}
+				if (!Number.isNaN(score) && score >= 0 && score <= 20) {
+					gradesToUpsert.push({
+						studentId: actualStudentId,
+						examId: selectedExam,
+						score,
+					});
 				}
 			}
-
-			// Upsert grades
-			if (gradesToUpsert.length > 0) {
-				await Promise.all(
-					gradesToUpsert.map((g) => trpcClient.grades.upsertNote.mutate(g)),
-				);
-				toast.success(t("teacher.gradeEntry.toast.saveSuccess"));
-				fetchGrades(selectedExam);
-			}
-		} catch (error: any) {
-			console.error("Error saving grades:", error);
-			toast.error(error.message || t("teacher.gradeEntry.toast.saveError"));
-		} finally {
-			setIsSaving(false);
 		}
+
+		if (gradesToUpsert.length === 0) return;
+		saveGrades.mutate(gradesToUpsert);
 	};
 
-	const lockExam = async () => {
-		if (!selectedExam) return;
-
-		try {
-			await trpcClient.exams.lock.mutate({ examId: selectedExam, lock: true });
-			setIsExamLocked(true);
-			toast.success(t("teacher.gradeEntry.toast.lockSuccess"));
-			setExams(
-				exams.map((exam) =>
-					exam.id === selectedExam ? { ...exam, isLocked: true } : exam,
-				),
+	const saveGrades = useMutation({
+		mutationFn: async (payload: GradeInput[]) => {
+			await Promise.all(
+				payload.map((grade) => trpcClient.grades.upsertNote.mutate(grade)),
 			);
-		} catch (error: any) {
-			console.error("Error locking exam:", error);
-			toast.error(error.message || t("teacher.gradeEntry.toast.lockError"));
-		}
-	};
+		},
+		onSuccess: () => {
+			toast.success(t("teacher.gradeEntry.toast.saveSuccess"));
+			if (selectedExam) {
+				queryClient.invalidateQueries({
+					queryKey: ["exam-grades", selectedExam],
+				});
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || t("teacher.gradeEntry.toast.saveError"));
+		},
+	});
 
-	if (isLoading) {
+	const lockExamMutation = useMutation({
+		mutationFn: async () => {
+			if (!selectedExam) return;
+			await trpcClient.exams.lock.mutate({ examId: selectedExam, lock: true });
+		},
+		onSuccess: () => {
+			toast.success(t("teacher.gradeEntry.toast.lockSuccess"));
+			if (courseId) {
+				queryClient.invalidateQueries({
+					queryKey: ["class-course-exams", courseId],
+				});
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || t("teacher.gradeEntry.toast.lockError"));
+		},
+	});
+
+	const isInitialLoading =
+		courseContextQuery.isLoading ||
+		rosterQuery.isLoading ||
+		examsQuery.isLoading;
+
+	if (isInitialLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-10 w-10 text-primary" />
@@ -314,8 +356,8 @@ const GradeEntry: React.FC = () => {
 									<Button
 										type="button"
 										variant="outline"
-										onClick={lockExam}
-										disabled={!selectedExam}
+										onClick={() => lockExamMutation.mutate()}
+										disabled={!selectedExam || lockExamMutation.isPending}
 									>
 										<Lock className="mr-2 h-4 w-4" />
 										{t("teacher.gradeEntry.actions.lock")}
@@ -337,7 +379,7 @@ const GradeEntry: React.FC = () => {
 				</CardContent>
 			</Card>
 
-			{selectedExam && students.length > 0 ? (
+			{selectedExam && rosterStudents.length > 0 ? (
 				<Card>
 					<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
 						<CardContent className="px-0">
@@ -357,7 +399,7 @@ const GradeEntry: React.FC = () => {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{students.map((student) => {
+									{rosterStudents.map((student) => {
 										const fieldError = (
 											errors as Record<string, { message?: string } | undefined>
 										)[`student_${student.id}`];
@@ -376,7 +418,6 @@ const GradeEntry: React.FC = () => {
 															max="20"
 															step="0.25"
 															className="w-28"
-															defaultValue={grades[student.id] ?? ""}
 															disabled={isExamLocked}
 															{...register(`student_${student.id}`, {
 																min: {
@@ -420,8 +461,11 @@ const GradeEntry: React.FC = () => {
 						</CardContent>
 						{!isExamLocked && (
 							<CardFooter className="justify-end gap-2 border-t">
-								<Button type="submit" disabled={isSaving}>
-									{isSaving ? (
+								<Button
+									type="submit"
+									disabled={saveGrades.isPending || lockExamMutation.isPending}
+								>
+									{saveGrades.isPending ? (
 										<>
 											<Spinner className="mr-2 h-4 w-4 text-white" />
 											{t("teacher.gradeEntry.actions.saving")}

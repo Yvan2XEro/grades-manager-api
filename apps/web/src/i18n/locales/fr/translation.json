@@ -442,7 +442,6 @@
 			"table": {
 				"name": "Cours",
 				"program": "Programme",
-				"credits": "Crédits",
 				"hours": "Heures",
 				"teacher": "Enseignant par défaut",
 				"cycleInfo": "Cycle : {{value}}"
@@ -453,8 +452,6 @@
 				"createSubmit": "Créer le cours",
 				"nameLabel": "Nom du cours",
 				"namePlaceholder": "Saisir le nom du cours",
-				"creditsLabel": "Crédits",
-				"creditsPlaceholder": "Saisir le nombre de crédits",
 				"hoursLabel": "Heures",
 				"hoursPlaceholder": "Saisir le volume horaire",
 				"programLabel": "Programme",
@@ -481,7 +478,6 @@
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
-				"credits": "Les crédits doivent être supérieurs ou égaux à 1",
 				"hours": "Le nombre d’heures doit être supérieur ou égal à 1",
 				"program": "Veuillez sélectionner un programme",
 				"teacher": "Veuillez sélectionner un enseignant"
@@ -1137,7 +1133,6 @@
 				"table": {
 					"name": "Nom",
 					"hours": "Heures",
-					"credits": "Crédits",
 					"teacher": "Enseignant référent"
 				},
 				"form": {
@@ -1145,8 +1140,6 @@
 					"editTitle": "Modifier l'élément",
 					"nameLabel": "Nom de l'élément",
 					"namePlaceholder": "Saisir le nom de l'élément",
-					"creditsLabel": "Crédits",
-					"creditsPlaceholder": "Saisir les crédits",
 					"hoursLabel": "Heures",
 					"hoursPlaceholder": "Saisir le volume horaire",
 					"teacherLabel": "Enseignant référent",
@@ -1158,7 +1151,6 @@
 				"deleteMessage": "Cette action est irréversible.",
 				"validation": {
 					"name": "Le nom de l'élément est obligatoire.",
-					"credits": "Les crédits doivent être positifs.",
 					"hours": "Le volume horaire doit être positif.",
 					"teacher": "Veuillez sélectionner un enseignant."
 				},
@@ -1197,7 +1189,6 @@
 			"table": {
 				"name": "Nom",
 				"program": "Programme",
-				"credits": "Crédits",
 				"hours": "Heures",
 				"teacher": "Enseignant par défaut"
 			},
@@ -1206,8 +1197,6 @@
 				"editTitle": "Modifier un cours",
 				"nameLabel": "Nom du cours",
 				"namePlaceholder": "Saisir le nom du cours",
-				"creditsLabel": "Crédits",
-				"creditsPlaceholder": "Saisir le nombre de crédits",
 				"hoursLabel": "Heures",
 				"hoursPlaceholder": "Saisir le volume horaire",
 				"programLabel": "Programme",
@@ -1226,7 +1215,6 @@
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
-				"credits": "Les crédits doivent être supérieurs ou égaux à 1",
 				"hours": "Le nombre d'heures doit être supérieur ou égal à 1",
 				"program": "Veuillez sélectionner un programme",
 				"teacher": "Veuillez sélectionner un enseignant"

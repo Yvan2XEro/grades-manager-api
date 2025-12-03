@@ -27,4 +27,7 @@ export const router = createRouter({
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getClassCourseById(input.id)),
+	roster: protectedProcedure
+		.input(idSchema)
+		.query(({ input }) => service.getClassCourseRoster(input.id)),
 });

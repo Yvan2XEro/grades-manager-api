@@ -57,7 +57,6 @@ export async function list(opts: {
 				columns: {
 					name: true,
 					code: true,
-					credits: true,
 				},
 			},
 			teacherRef: {
