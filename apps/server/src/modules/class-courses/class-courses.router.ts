@@ -6,6 +6,7 @@ import {
 import * as service from "./class-courses.service";
 import {
 	baseSchema,
+	codeSchema,
 	idSchema,
 	listSchema,
 	updateSchema,
@@ -27,6 +28,11 @@ export const router = createRouter({
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getClassCourseById(input.id)),
+	getByCode: protectedProcedure
+		.input(codeSchema)
+		.query(({ input }) =>
+			service.getClassCourseByCode(input.code, input.academicYearId),
+		),
 	roster: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getClassCourseRoster(input.id)),

@@ -44,11 +44,15 @@ describe("e2e http", () => {
 	});
 
 	it("creates full flow", async () => {
-		const faculty = await client.faculties.create.mutate({ name: "F" });
+		const faculty = await client.faculties.create.mutate({
+			name: "F",
+			code: "FAC-E2E",
+		});
 
 		const program = await client.programs.create.mutate({
 			name: "P",
 			faculty: faculty.id,
+			code: "PRG-E2E",
 		});
 
 		const year = await client.academicYears.create.mutate({
@@ -61,6 +65,7 @@ describe("e2e http", () => {
 			name: "C",
 			program: program.id,
 			academicYear: year.id,
+			code: "CLS-E2E",
 		});
 
 		const teacher = await createUser();
@@ -73,6 +78,7 @@ describe("e2e http", () => {
 		});
 
 		const course = await client.courses.create.mutate({
+			code: "CRS-E2E",
 			name: "Math",
 			credits: 3,
 			hours: 30,
@@ -82,6 +88,7 @@ describe("e2e http", () => {
 		});
 
 		const cc = await client.classCourses.create.mutate({
+			code: "CC-E2E",
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.profile.id,

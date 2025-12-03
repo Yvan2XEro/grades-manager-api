@@ -4,6 +4,7 @@ import * as schema from "../../db/schema/app-schema";
 
 const programSelection = {
 	id: schema.programs.id,
+	code: schema.programs.code,
 	name: schema.programs.name,
 	description: schema.programs.description,
 	faculty: schema.programs.faculty,
@@ -41,6 +42,24 @@ export async function findById(id: string) {
 			eq(schema.faculties.id, schema.programs.faculty),
 		)
 		.where(eq(schema.programs.id, id))
+		.limit(1);
+	return program ?? null;
+}
+
+export async function findByCode(code: string, facultyId: string) {
+	const [program] = await db
+		.select(programSelection)
+		.from(schema.programs)
+		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
+		.where(
+			and(
+				eq(schema.programs.code, code),
+				eq(schema.programs.faculty, facultyId),
+			),
+		)
 		.limit(1);
 	return program ?? null;
 }

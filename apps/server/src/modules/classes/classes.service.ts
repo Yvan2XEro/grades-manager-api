@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
+import { normalizeCode } from "@/lib/strings";
 import * as studentsRepo from "@/modules/students/students.repo";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -100,6 +101,29 @@ async function ensureProgramOption(
 	return option.id;
 }
 
+async function ensureSemester(semesterId?: string) {
+	if (semesterId) {
+		const semester = await db.query.semesters.findFirst({
+			where: eq(schema.semesters.id, semesterId),
+		});
+		if (!semester) throw notFound("Semester not found");
+		return semester.id;
+	}
+	const fallback = await db.query.semesters.findFirst({
+		orderBy: (semesters, helpers) => helpers.asc(semesters.orderIndex),
+	});
+	if (fallback) return fallback.id;
+	const [created] = await db
+		.insert(schema.semesters)
+		.values({
+			code: "S1",
+			name: "Semester 1",
+			orderIndex: 1,
+		})
+		.returning();
+	return created.id;
+}
+
 export async function createClass(data: Parameters<typeof repo.create>[0]) {
 	const program = await loadProgram(data.program);
 	const cycleLevelId = await ensureCycleLevel(program, data.cycleLevelId);
@@ -107,7 +131,14 @@ export async function createClass(data: Parameters<typeof repo.create>[0]) {
 		program,
 		data.programOptionId,
 	);
-	return repo.create({ ...data, cycleLevelId, programOptionId });
+	const semesterId = await ensureSemester(data.semesterId);
+	return repo.create({
+		...data,
+		code: normalizeCode(data.code),
+		cycleLevelId,
+		programOptionId,
+		semesterId,
+	});
 }
 
 export async function updateClass(
@@ -128,11 +159,16 @@ export async function updateClass(
 		program,
 		desiredProgramOptionId,
 	);
+	const semesterId = data.semesterId
+		? await ensureSemester(data.semesterId)
+		: undefined;
 	return repo.update(id, {
 		...data,
 		program: program.id,
 		cycleLevelId,
 		programOptionId,
+		code: data.code ? normalizeCode(data.code) : undefined,
+		semesterId,
 	});
 }
 
@@ -169,6 +205,12 @@ export async function listClasses(opts: Parameters<typeof repo.list>[0]) {
 
 export async function getClassById(id: string) {
 	const item = await repo.findById(id);
+	if (!item) throw notFound();
+	return item;
+}
+
+export async function getClassByCode(code: string, academicYearId: string) {
+	const item = await repo.findByCode(normalizeCode(code), academicYearId);
 	if (!item) throw notFound();
 	return item;
 }

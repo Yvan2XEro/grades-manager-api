@@ -37,10 +37,12 @@ describe("workflows router", () => {
 	it("runs grade validation and enrollment automation", async () => {
 		const faculty = await client.faculties.create.mutate({
 			name: "Workflow F",
+			code: "WF-F",
 		});
 		const program = await client.programs.create.mutate({
 			name: "Workflow P",
 			faculty: faculty.id,
+			code: "WF-P",
 		});
 		const year = await client.academicYears.create.mutate({
 			name: "2025/2026",
@@ -51,6 +53,7 @@ describe("workflows router", () => {
 			name: "WF Class",
 			program: program.id,
 			academicYear: year.id,
+			code: "WF-CLS",
 		});
 		const teacher = await createUser();
 		const teachingUnit = await client.teachingUnits.create.mutate({
@@ -61,6 +64,7 @@ describe("workflows router", () => {
 			semester: "annual",
 		});
 		const course = await client.courses.create.mutate({
+			code: "WF-CRS",
 			name: "Workflow Course",
 			credits: 2,
 			hours: 20,
@@ -69,6 +73,7 @@ describe("workflows router", () => {
 			defaultTeacher: teacher.profile.id,
 		});
 		const classCourse = await client.classCourses.create.mutate({
+			code: "WF-CC",
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.profile.id,

@@ -7,3 +7,7 @@ export function slugify(value: string) {
 		.replace(/-{2,}/g, "-");
 	return normalized.length ? normalized : "program";
 }
+
+export function normalizeCode(value: string) {
+	return value.trim().toUpperCase();
+}

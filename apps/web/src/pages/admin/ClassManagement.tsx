@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Table,
 	TableBody,
@@ -16,6 +17,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { generateClassCode } from "@/lib/code-generator";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -58,6 +60,17 @@ const buildClassSchema = (t: TFunction) =>
 				defaultValue: "Please select a program option",
 			}),
 		}),
+		semesterId: z.string({
+			required_error: t("admin.classes.validation.semester", {
+				defaultValue: "Select a semester",
+			}),
+		}),
+		code: z.string().min(
+			3,
+			t("admin.classes.validation.code", {
+				defaultValue: "Code is required",
+			}),
+		),
 		name: z.string().min(2, t("admin.classes.validation.name")),
 	});
 
@@ -65,13 +78,16 @@ type ClassFormData = z.infer<ReturnType<typeof buildClassSchema>>;
 
 interface Class {
 	id: string;
+	code: string;
 	name: string;
 	programId: string;
 	academicYearId: string;
 	cycleLevelId: string;
 	programOptionId: string;
+	semesterId: string | null;
 	program: {
 		name: string;
+		code: string;
 		cycleName?: string | null;
 		cycleCode?: string | null;
 	};
@@ -79,6 +95,7 @@ interface Class {
 	cycle?: { id: string; name: string; code: string };
 	cycleLevel?: { id: string; name: string; code: string };
 	programOption?: { id: string; name: string; code: string };
+	semester?: { id: string; code: string; name: string };
 	students: { id: string }[];
 }
 
@@ -89,6 +106,8 @@ type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
 		code: string | null;
 	};
 };
+
+type SemesterOption = RouterOutputs["semesters"]["list"][number];
 
 export default function ClassManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -111,13 +130,16 @@ export default function ClassManagement() {
 					});
 					return {
 						id: cls.id,
+						code: cls.code,
 						name: cls.name,
 						programId: cls.program,
 						academicYearId: cls.academicYear,
 						cycleLevelId: cls.cycleLevelId,
 						programOptionId: cls.programOptionId,
+						semesterId: cls.semester?.id ?? null,
 						program: {
 							name: cls.programInfo?.name ?? "",
+							code: cls.programInfo?.code ?? "",
 							cycleName: cls.cycle?.name,
 							cycleCode: cls.cycle?.code,
 						},
@@ -125,6 +147,7 @@ export default function ClassManagement() {
 						cycle: cls.cycle ?? undefined,
 						cycleLevel: cls.cycleLevel ?? undefined,
 						programOption: cls.programOption ?? undefined,
+						semester: cls.semester ?? undefined,
 						students: students.items.map((s) => ({ id: s.id })),
 					} as Class;
 				}),
@@ -155,6 +178,8 @@ export default function ClassManagement() {
 			academicYearId: "",
 			cycleLevelId: "",
 			programOptionId: "",
+			semesterId: "",
+			code: "",
 			name: "",
 		},
 	});
@@ -201,6 +226,16 @@ export default function ClassManagement() {
 	const selectedCycleLevel = useMemo(
 		() => cycleLevels.find((level) => level.id === cycleLevelId),
 		[cycleLevels, cycleLevelId],
+	);
+
+	const { data: semesters } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query(),
+	});
+	const semesterId = watch("semesterId");
+	const selectedSemester = useMemo(
+		() => semesters?.find((semester) => semester.id === semesterId),
+		[semesters, semesterId],
 	);
 
 	useEffect(() => {
@@ -253,6 +288,15 @@ export default function ClassManagement() {
 		}
 	}, [programOptions, programOptionId, setValue]);
 
+	const semesterDirty = Boolean(form.formState.dirtyFields.semesterId);
+	useEffect(() => {
+		if (editingClass) return;
+		if (semesterDirty) return;
+		if (semesters && semesters.length > 0 && !semesterId) {
+			setValue("semesterId", semesters[0].id, { shouldDirty: false });
+		}
+	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
+
 	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
 		if (selectedProgramOption && year) {
@@ -265,6 +309,37 @@ export default function ClassManagement() {
 		}
 	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
 
+	const classCodes = useMemo(
+		() => (classes ?? []).map((cls) => cls.code).filter(Boolean),
+		[classes],
+	);
+	const codeValue = watch("code");
+	const codeDirty = Boolean(form.formState.dirtyFields.code);
+	useEffect(() => {
+		if (editingClass) return;
+		if (codeDirty) return;
+		if (!selectedProgram?.code) return;
+		if (!selectedSemester?.code) return;
+		const suggestion = generateClassCode({
+			programCode: selectedProgram.code,
+			levelCode: selectedCycleLevel?.code,
+			semesterCode: selectedSemester.code,
+			existingCodes: classCodes,
+		});
+		if (suggestion && codeValue !== suggestion) {
+			setValue("code", suggestion, { shouldDirty: false });
+		}
+	}, [
+		classCodes,
+		codeDirty,
+		codeValue,
+		editingClass,
+		selectedProgram?.code,
+		selectedCycleLevel?.code,
+		selectedSemester?.code,
+		setValue,
+	]);
+
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassFormData) => {
 			await trpcClient.classes.create.mutate({
@@ -273,6 +348,8 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
+				semesterId: data.semesterId,
+				code: data.code,
 			});
 		},
 		onSuccess: () => {
@@ -299,6 +376,8 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
+				semesterId: data.semesterId,
+				code: data.code,
 			});
 		},
 		onSuccess: () => {
@@ -411,6 +490,9 @@ export default function ClassManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead>
+									{t("admin.classes.table.code", { defaultValue: "Code" })}
+								</TableHead>
 								<TableHead>{t("admin.classes.table.name")}</TableHead>
 								<TableHead>{t("admin.classes.table.program")}</TableHead>
 								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
@@ -431,6 +513,14 @@ export default function ClassManagement() {
 						<TableBody>
 							{classes?.map((cls) => (
 								<TableRow key={cls.id}>
+									<TableCell>
+										<ClipboardCopy
+											value={cls.code}
+											label={t("admin.classes.table.code", {
+												defaultValue: "Code",
+											})}
+										/>
+									</TableCell>
 									<TableCell className="font-medium">{cls.name}</TableCell>
 									<TableCell>{cls.program?.name}</TableCell>
 									<TableCell>{cls.academicYear?.name}</TableCell>
@@ -485,6 +575,8 @@ export default function ClassManagement() {
 														academicYearId: cls.academicYearId,
 														cycleLevelId: cls.cycleLevelId,
 														programOptionId: cls.programOptionId,
+														semesterId: cls.semesterId ?? "",
+														code: cls.code,
 													});
 													setIsFormOpen(true);
 												}}
@@ -694,6 +786,67 @@ export default function ClassManagement() {
 											})}
 										</p>
 									)}
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="semesterId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classes.form.semesterLabel", {
+											defaultValue: "Semester",
+										})}
+									</FormLabel>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+										disabled={!semesters || semesters.length === 0}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classes.form.semesterPlaceholder",
+														{ defaultValue: "Select a semester" },
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{semesters?.map((semester) => (
+												<SelectItem key={semester.id} value={semester.id}>
+													{semester.name} ({semester.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="code"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classes.form.codeLabel", {
+											defaultValue: "Code",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t("admin.classes.form.codePlaceholder", {
+												defaultValue: "INF11-01",
+											})}
+										/>
+									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}

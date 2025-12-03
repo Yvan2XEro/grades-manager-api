@@ -20,6 +20,7 @@ describe("programs router", () => {
 		const program = await admin.programs.create({
 			name: "Prog",
 			faculty: faculty.id,
+			code: "PRG-1",
 		});
 		expect(program.faculty).toBe(faculty.id);
 

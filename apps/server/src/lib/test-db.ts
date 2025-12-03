@@ -63,7 +63,11 @@ export async function seed() {
 	});
 	const [faculty] = await db
 		.insert(schema.faculties)
-		.values({ name: "Seed Faculty" })
+		.values({ code: "FAC-SEED", name: "Seed Faculty" })
+		.returning();
+	const [semester] = await db
+		.insert(schema.semesters)
+		.values({ code: "S1", name: "Semester 1", orderIndex: 1 })
 		.returning();
 	const [year] = await db
 		.insert(schema.academicYears)
@@ -96,6 +100,7 @@ export async function seed() {
 	const [program] = await db
 		.insert(schema.programs)
 		.values({
+			code: "PRG-SEED",
 			name: "Seed Program",
 			slug: "seed-program",
 			faculty: faculty.id,
@@ -117,11 +122,13 @@ export async function seed() {
 		semester: "annual",
 	});
 	await db.insert(schema.classes).values({
+		code: "CLS-SEED",
 		name: "Seed Class",
 		program: program.id,
 		academicYear: year.id,
 		cycleLevelId: level.id,
 		programOptionId: option.id,
+		semesterId: semester.id,
 	});
 }
 
@@ -144,6 +151,7 @@ export async function reset() {
      faculties,
      academic_years,
      students,
+     semesters,
      cycle_levels,
      study_cycles,
      account,

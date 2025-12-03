@@ -25,6 +25,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
 	DialogContent,
@@ -55,6 +56,15 @@ import { trpcClient } from "@/utils/trpc";
 const buildFacultySchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.faculties.validation.name")),
+		code: z
+			.string()
+			.trim()
+			.min(
+				2,
+				t("admin.faculties.validation.code", {
+					defaultValue: "Code is required",
+				}),
+			),
 		description: z.string().optional(),
 	});
 
@@ -62,6 +72,7 @@ type FacultyFormData = z.infer<ReturnType<typeof buildFacultySchema>>;
 
 interface Faculty {
 	id: string;
+	code: string;
 	name: string;
 	description: string | null;
 }
@@ -88,6 +99,7 @@ export default function FacultyManagement() {
 		resolver: zodResolver(facultySchema),
 		defaultValues: {
 			name: "",
+			code: "",
 			description: "",
 		},
 	});
@@ -146,7 +158,7 @@ export default function FacultyManagement() {
 
 	const startCreate = () => {
 		setEditingFaculty(null);
-		form.reset({ name: "", description: "" });
+		form.reset({ name: "", code: "", description: "" });
 		setIsFormOpen(true);
 	};
 
@@ -154,6 +166,7 @@ export default function FacultyManagement() {
 		setEditingFaculty(faculty);
 		form.reset({
 			name: faculty.name,
+			code: faculty.code,
 			description: faculty.description ?? "",
 		});
 		setIsFormOpen(true);
@@ -164,6 +177,7 @@ export default function FacultyManagement() {
 		setEditingFaculty(null);
 		form.reset({
 			name: "",
+			code: "",
 			description: "",
 		});
 	};
@@ -214,6 +228,9 @@ export default function FacultyManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>
+										{t("admin.faculties.table.code", { defaultValue: "Code" })}
+									</TableHead>
 									<TableHead>{t("admin.faculties.table.name")}</TableHead>
 									<TableHead>
 										{t("admin.faculties.table.description")}
@@ -226,6 +243,14 @@ export default function FacultyManagement() {
 							<TableBody>
 								{faculties.map((faculty) => (
 									<TableRow key={faculty.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={faculty.code}
+												label={t("admin.faculties.table.code", {
+													defaultValue: "Code",
+												})}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											{faculty.name}
 										</TableCell>
@@ -306,6 +331,29 @@ export default function FacultyManagement() {
 											<Input
 												placeholder={t("admin.faculties.form.namePlaceholder")}
 												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.faculties.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												placeholder={t("admin.faculties.form.codePlaceholder", {
+													defaultValue: "SCI",
+												})}
 											/>
 										</FormControl>
 										<FormMessage />

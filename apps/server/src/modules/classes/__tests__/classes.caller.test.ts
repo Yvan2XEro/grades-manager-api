@@ -25,6 +25,7 @@ describe("classes router", () => {
 			name: "B",
 			program: cls.program,
 			academicYear: cls.academicYear,
+			code: "B-CLS",
 		});
 		const student = await createStudent({ class: cls.id });
 		const transferred = await admin.classes.transferStudent({

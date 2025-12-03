@@ -25,6 +25,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
 	DialogContent,
@@ -64,6 +65,14 @@ import { trpcClient } from "@/utils/trpc";
 const buildProgramSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.programs.validation.name")),
+		code: z
+			.string()
+			.min(
+				2,
+				t("admin.programs.validation.code", {
+					defaultValue: "Code is required",
+				}),
+			),
 		description: z.string().optional(),
 		faculty: z.string({
 			required_error: t("admin.programs.validation.faculty"),
@@ -80,6 +89,7 @@ type ProgramOptionFormData = z.infer<typeof programOptionSchema>;
 
 interface Program {
 	id: string;
+	code: string;
 	name: string;
 	description: string | null;
 	faculty_id: string;
@@ -109,6 +119,7 @@ export default function ProgramManagement() {
 			const programRes = await trpcClient.programs.list.query({});
 			return programRes.items.map((p) => ({
 				id: p.id,
+				code: p.code,
 				name: p.name,
 				description: p.description ?? null,
 				faculty_id: p.faculty,
@@ -129,6 +140,7 @@ export default function ProgramManagement() {
 		resolver: zodResolver(programSchema),
 		defaultValues: {
 			name: "",
+			code: "",
 			description: "",
 			faculty: "",
 		},
@@ -275,7 +287,7 @@ export default function ProgramManagement() {
 
 	const startCreate = () => {
 		setEditingProgram(null);
-		form.reset({ name: "", description: "", faculty: "" });
+		form.reset({ name: "", code: "", description: "", faculty: "" });
 		setIsFormOpen(true);
 	};
 
@@ -283,6 +295,7 @@ export default function ProgramManagement() {
 		setEditingProgram(program);
 		form.reset({
 			name: program.name,
+			code: program.code,
 			description: program.description ?? "",
 			faculty: program.faculty_id,
 		});
@@ -292,7 +305,7 @@ export default function ProgramManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingProgram(null);
-		form.reset({ name: "", description: "", faculty: "" });
+		form.reset({ name: "", code: "", description: "", faculty: "" });
 	};
 
 	const confirmDelete = (id: string) => {
@@ -356,6 +369,9 @@ export default function ProgramManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>
+										{t("admin.programs.table.code", { defaultValue: "Code" })}
+									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.faculty")}</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
@@ -367,6 +383,14 @@ export default function ProgramManagement() {
 							<TableBody>
 								{programs.map((program) => (
 									<TableRow key={program.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={program.code}
+												label={t("admin.programs.table.code", {
+													defaultValue: "Code",
+												})}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											{program.name}
 										</TableCell>
@@ -456,6 +480,28 @@ export default function ProgramManagement() {
 										<FormControl>
 											<Input
 												placeholder={t("admin.programs.form.namePlaceholder")}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.programs.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.programs.form.codePlaceholder", {
+													defaultValue: "INF-LIC",
+												})}
 												{...field}
 											/>
 										</FormControl>

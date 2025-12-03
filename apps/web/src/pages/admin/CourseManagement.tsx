@@ -25,6 +25,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
 	DialogContent,
@@ -71,12 +72,22 @@ const buildCourseSchema = (t: TFunction) =>
 		defaultTeacher: z.string({
 			required_error: t("admin.courses.validation.teacher"),
 		}),
+		code: z
+			.string()
+			.trim()
+			.min(
+				2,
+				t("admin.courses.validation.code", {
+					defaultValue: "Code is required",
+				}),
+			),
 	});
 
 type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 
 interface Course {
 	id: string;
+	code: string;
 	name: string;
 	hours: number;
 	program: string;
@@ -126,6 +137,13 @@ export default function CourseManagement() {
 
 	const form = useForm<CourseFormData>({
 		resolver: zodResolver(courseSchema),
+		defaultValues: {
+			name: "",
+			hours: undefined as unknown as number,
+			program: "",
+			defaultTeacher: "",
+			code: "",
+		},
 	});
 	const { watch } = form;
 	const selectedProgramId = watch("program");
@@ -206,6 +224,7 @@ export default function CourseManagement() {
 			hours: undefined as unknown as number,
 			program: "",
 			defaultTeacher: "",
+			code: "",
 		});
 		setIsFormOpen(true);
 	};
@@ -217,6 +236,7 @@ export default function CourseManagement() {
 			hours: course.hours,
 			program: course.program,
 			defaultTeacher: course.defaultTeacher,
+			code: course.code,
 		});
 		setIsFormOpen(true);
 	};
@@ -224,7 +244,13 @@ export default function CourseManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingCourse(null);
-		form.reset();
+		form.reset({
+			name: "",
+			hours: undefined as unknown as number,
+			program: "",
+			defaultTeacher: "",
+			code: "",
+		});
 	};
 
 	const confirmDelete = (id: string) => {
@@ -279,6 +305,9 @@ export default function CourseManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>
+										{t("admin.courses.table.code", { defaultValue: "Code" })}
+									</TableHead>
 									<TableHead>{t("admin.courses.table.name")}</TableHead>
 									<TableHead>{t("admin.courses.table.program")}</TableHead>
 									<TableHead>{t("admin.courses.table.hours")}</TableHead>
@@ -291,6 +320,14 @@ export default function CourseManagement() {
 							<TableBody>
 								{courses.map((course) => (
 									<TableRow key={course.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={course.code}
+												label={t("admin.courses.table.code", {
+													defaultValue: "Code",
+												})}
+											/>
+										</TableCell>
 										<TableCell>{course.name}</TableCell>
 										<TableCell>
 											{(() => {
@@ -506,6 +543,28 @@ export default function CourseManagement() {
 												))}
 											</SelectContent>
 										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.courses.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.courses.form.codePlaceholder", {
+													defaultValue: "INF111",
+												})}
+												{...field}
+											/>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}

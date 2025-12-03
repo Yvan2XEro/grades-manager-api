@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
 	DialogContent,
@@ -39,6 +40,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -55,35 +57,53 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { generateClassCourseCode } from "@/lib/code-generator";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
 const buildClassCourseSchema = (t: TFunction) =>
-	z.object({
-		class: z.string({
-			required_error: t("admin.classCourses.validation.class"),
-		}),
-		course: z.string({
-			required_error: t("admin.classCourses.validation.course"),
-		}),
-		teacher: z.string({
-			required_error: t("admin.classCourses.validation.teacher"),
-		}),
-	});
+	z
+		.object({
+			class: z.string({
+				required_error: t("admin.classCourses.validation.class"),
+			}),
+			course: z.string({
+				required_error: t("admin.classCourses.validation.course"),
+			}),
+			teacher: z.string({
+				required_error: t("admin.classCourses.validation.teacher"),
+			}),
+		})
+		.extend({
+			code: z.string().min(
+				3,
+				t("admin.classCourses.validation.code", {
+					defaultValue: "Code is required",
+				}),
+			),
+			semesterId: z.string().optional(),
+		});
 
 type ClassCourseFormData = z.infer<ReturnType<typeof buildClassCourseSchema>>;
 
 interface ClassCourse {
 	id: string;
+	code: string;
 	class: string;
 	course: string;
 	teacher: string;
+	semesterId: string | null;
+	courseName?: string | null;
+	courseCode?: string | null;
 }
 
 interface Class {
 	id: string;
 	name: string;
+	code: string;
 	program: string;
+	academicYearName?: string;
+	semesterId?: string | null;
 }
 
 interface Program {
@@ -94,6 +114,7 @@ interface Program {
 interface Course {
 	id: string;
 	name: string;
+	code: string;
 }
 
 type Teacher = RouterOutputs["users"]["list"]["items"][number];
@@ -113,7 +134,17 @@ export default function ClassCourseManagement() {
 		queryKey: ["classes"],
 		queryFn: async () => {
 			const { items } = await trpcClient.classes.list.query({});
-			return items as Class[];
+			return items.map(
+				(cls) =>
+					({
+						id: cls.id,
+						name: cls.name,
+						code: cls.code,
+						program: cls.program,
+						academicYearName: cls.academicYearInfo?.name ?? "",
+						semesterId: cls.semester?.id ?? null,
+					}) as Class,
+			);
 		},
 	});
 
@@ -129,7 +160,14 @@ export default function ClassCourseManagement() {
 		queryKey: ["courses"],
 		queryFn: async () => {
 			const { items } = await trpcClient.courses.list.query({});
-			return items as Course[];
+			return items.map(
+				(course) =>
+					({
+						id: course.id,
+						name: course.name,
+						code: course.code,
+					}) as Course,
+			);
 		},
 	});
 
@@ -148,8 +186,25 @@ export default function ClassCourseManagement() {
 		queryKey: ["classCourses"],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({});
-			return items as ClassCourse[];
+			return items.map(
+				(cc) =>
+					({
+						id: cc.id,
+						code: cc.code,
+						class: cc.class,
+						course: cc.course,
+						teacher: cc.teacher,
+						semesterId: cc.semesterId ?? null,
+						courseName: cc.courseName,
+						courseCode: cc.courseCode,
+					}) as ClassCourse,
+			);
 		},
+	});
+
+	const { data: semesters } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query(),
 	});
 
 	const form = useForm<ClassCourseFormData>({
@@ -158,8 +213,15 @@ export default function ClassCourseManagement() {
 			class: "",
 			course: "",
 			teacher: "",
+			code: "",
+			semesterId: "",
 		},
 	});
+	const { watch } = form;
+	const selectedClassId = watch("class");
+	const selectedCourseId = watch("course");
+	const selectedSemesterId = watch("semesterId");
+	const codeValue = watch("code");
 
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
@@ -169,10 +231,66 @@ export default function ClassCourseManagement() {
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
-	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
+	const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 	const teacherMap = new Map(
 		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
+	const selectedClass = selectedClassId
+		? classMap.get(selectedClassId)
+		: undefined;
+	const selectedCourse = selectedCourseId
+		? courseMap.get(selectedCourseId)
+		: undefined;
+	const classCourseCodes = useMemo(
+		() => (classCourses ?? []).map((cc) => cc.code).filter(Boolean),
+		[classCourses],
+	);
+	const semesterDirty = Boolean(form.formState.dirtyFields.semesterId);
+	useEffect(() => {
+		if (editingClassCourse) return;
+		if (semesterDirty) return;
+		if (selectedClass?.semesterId) {
+			form.setValue("semesterId", selectedClass.semesterId, {
+				shouldDirty: false,
+			});
+			return;
+		}
+		if (!selectedSemesterId && semesters && semesters.length > 0) {
+			form.setValue("semesterId", semesters[0].id, { shouldDirty: false });
+		}
+	}, [
+		editingClassCourse,
+		form,
+		selectedClass?.semesterId,
+		selectedSemesterId,
+		semesters,
+		semesterDirty,
+	]);
+
+	const codeDirty = Boolean(form.formState.dirtyFields.code);
+	useEffect(() => {
+		if (editingClassCourse) return;
+		if (codeDirty) return;
+		if (!selectedCourse?.code) return;
+		const suggestion = generateClassCourseCode({
+			courseCode: selectedCourse.code,
+			classCode: selectedClass?.code,
+			academicYear: selectedClass?.academicYearName,
+			existingCodes: classCourseCodes,
+		});
+		if (suggestion && codeValue !== suggestion) {
+			form.setValue("code", suggestion, { shouldDirty: false });
+		}
+	}, [
+		classCourseCodes,
+		codeDirty,
+		codeValue,
+		editingClassCourse,
+		form,
+		selectedClass?.academicYearName,
+		selectedClass?.code,
+		selectedCourse?.code,
+	]);
 
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
@@ -245,7 +363,13 @@ export default function ClassCourseManagement() {
 
 	const startCreate = () => {
 		setEditingClassCourse(null);
-		form.reset({ class: "", course: "", teacher: "" });
+		form.reset({
+			class: "",
+			course: "",
+			teacher: "",
+			code: "",
+			semesterId: "",
+		});
 		setIsFormOpen(true);
 	};
 
@@ -255,6 +379,8 @@ export default function ClassCourseManagement() {
 			class: classCourse.class,
 			course: classCourse.course,
 			teacher: classCourse.teacher,
+			code: classCourse.code,
+			semesterId: classCourse.semesterId ?? "",
 		});
 		setIsFormOpen(true);
 	};
@@ -262,7 +388,13 @@ export default function ClassCourseManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingClassCourse(null);
-		form.reset({ class: "", course: "", teacher: "" });
+		form.reset({
+			class: "",
+			course: "",
+			teacher: "",
+			code: "",
+			semesterId: "",
+		});
 	};
 
 	const confirmDelete = (id: string) => {
@@ -311,6 +443,11 @@ export default function ClassCourseManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>
+										{t("admin.classCourses.table.code", {
+											defaultValue: "Code",
+										})}
+									</TableHead>
 									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
 									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
 									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
@@ -323,6 +460,14 @@ export default function ClassCourseManagement() {
 							<TableBody>
 								{displayedClassCourses.map((classCourse) => (
 									<TableRow key={classCourse.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={classCourse.code}
+												label={t("admin.classCourses.table.code", {
+													defaultValue: "Code",
+												})}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											{classMap.get(classCourse.class)?.name}
 										</TableCell>
@@ -331,7 +476,26 @@ export default function ClassCourseManagement() {
 												classMap.get(classCourse.class)?.program ?? "",
 											)}
 										</TableCell>
-										<TableCell>{courseMap.get(classCourse.course)}</TableCell>
+										<TableCell>
+											{(() => {
+												const info = courseMap.get(classCourse.course);
+												if (!info) {
+													return t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													});
+												}
+												return (
+													<div className="space-y-0.5">
+														<p className="font-medium text-sm">{info.name}</p>
+														{info.code && (
+															<p className="text-muted-foreground text-xs">
+																{info.code}
+															</p>
+														)}
+													</div>
+												);
+											})()}
+										</TableCell>
 										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
@@ -481,6 +645,68 @@ export default function ClassCourseManagement() {
 												))}
 											</SelectContent>
 										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="semesterId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classCourses.form.semesterLabel", {
+												defaultValue: "Semester",
+											})}
+										</FormLabel>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+											disabled={!semesters || semesters.length === 0}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classCourses.form.semesterPlaceholder",
+															{ defaultValue: "Select semester" },
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{semesters?.map((semester) => (
+													<SelectItem key={semester.id} value={semester.id}>
+														{semester.name} ({semester.code})
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classCourses.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												placeholder={t(
+													"admin.classCourses.form.codePlaceholder",
+													{ defaultValue: "INF11-CLS24-01" },
+												)}
+											/>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}

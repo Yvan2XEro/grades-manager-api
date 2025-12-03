@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const baseSchema = z.object({
-	name: z.string(),
+	code: z.string().trim().min(1),
+	name: z.string().trim().min(1),
 	description: z.string().optional(),
 });
 
@@ -14,3 +15,5 @@ export const listSchema = z.object({
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });
+
+export const codeSchema = z.object({ code: z.string().trim().min(1) });

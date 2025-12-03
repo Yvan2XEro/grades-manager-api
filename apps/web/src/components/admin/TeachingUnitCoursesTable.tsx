@@ -1,11 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { generateCourseCode } from "@/lib/code-generator";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -47,6 +49,7 @@ import { trpcClient } from "../../utils/trpc";
 type Course = {
 	id: string;
 	name: string;
+	code: string;
 	hours: number;
 	defaultTeacher: string;
 };
@@ -69,6 +72,12 @@ const buildCourseSchema = (
 				defaultValue: "Hours must be positive",
 			}),
 		),
+		code: z.string().min(
+			3,
+			t("admin.teachingUnits.courses.validation.code", {
+				defaultValue: "Code is required",
+			}),
+		),
 		defaultTeacher: z.string({
 			required_error: t("admin.teachingUnits.courses.validation.teacher", {
 				defaultValue: "Default teacher is required",
@@ -81,11 +90,13 @@ type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
 interface TeachingUnitCoursesTableProps {
 	teachingUnitId: string;
 	programId: string;
+	semesterCode?: string;
 }
 
 export function TeachingUnitCoursesTable({
 	teachingUnitId,
 	programId,
+	semesterCode,
 }: TeachingUnitCoursesTableProps) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
@@ -103,7 +114,16 @@ export function TeachingUnitCoursesTable({
 				teachingUnitId,
 				limit: 200,
 			});
-			return items as Course[];
+			return items.map(
+				(course) =>
+					({
+						id: course.id,
+						name: course.name,
+						code: course.code,
+						hours: course.hours,
+						defaultTeacher: course.defaultTeacher ?? "",
+					}) as Course,
+			);
 		},
 		enabled: Boolean(teachingUnitId),
 	});
@@ -117,6 +137,12 @@ export function TeachingUnitCoursesTable({
 			});
 			return items;
 		},
+	});
+
+	const { data: program } = useQuery({
+		queryKey: ["program", programId],
+		queryFn: () => trpcClient.programs.getById.query({ id: programId }),
+		enabled: Boolean(programId),
 	});
 
 	const teacherOptions = teachers ?? [];
@@ -139,12 +165,40 @@ export function TeachingUnitCoursesTable({
 	const form = useForm<CourseFormData>({
 		resolver: zodResolver(courseSchema),
 	});
+	const codeValue = form.watch("code");
+	const codeDirty = Boolean(form.formState.dirtyFields.code);
+	const courseCodes = useMemo(
+		() => (courses ?? []).map((course) => course.code).filter(Boolean),
+		[courses],
+	);
+	useEffect(() => {
+		if (editingCourse) return;
+		if (codeDirty) return;
+		if (!program?.code) return;
+		const suggestion = generateCourseCode({
+			programCode: program.code,
+			semesterCode,
+			existingCodes: courseCodes,
+		});
+		if (suggestion && codeValue !== suggestion) {
+			form.setValue("code", suggestion, { shouldDirty: false });
+		}
+	}, [
+		codeDirty,
+		codeValue,
+		courseCodes,
+		editingCourse,
+		form,
+		program?.code,
+		semesterCode,
+	]);
 
 	const openCreate = () => {
 		setEditingCourse(null);
 		form.reset({
 			name: "",
 			hours: undefined as unknown as number,
+			code: "",
 			defaultTeacher: "",
 		});
 		setIsFormOpen(true);
@@ -155,6 +209,7 @@ export function TeachingUnitCoursesTable({
 		form.reset({
 			name: course.name,
 			hours: course.hours,
+			code: course.code,
 			defaultTeacher: course.defaultTeacher,
 		});
 		setIsFormOpen(true);
@@ -162,7 +217,12 @@ export function TeachingUnitCoursesTable({
 
 	const handleCloseForm = () => {
 		setEditingCourse(null);
-		form.reset();
+		form.reset({
+			name: "",
+			hours: undefined as unknown as number,
+			code: "",
+			defaultTeacher: "",
+		});
 		setIsFormOpen(false);
 	};
 
@@ -196,6 +256,7 @@ export function TeachingUnitCoursesTable({
 				id: data.id,
 				name: data.name,
 				hours: data.hours,
+				code: data.code,
 				defaultTeacher: data.defaultTeacher,
 				program: programId,
 				teachingUnitId,
@@ -272,6 +333,11 @@ export function TeachingUnitCoursesTable({
 							<TableHeader>
 								<TableRow>
 									<TableHead>
+										{t("admin.teachingUnits.courses.table.code", {
+											defaultValue: "Code",
+										})}
+									</TableHead>
+									<TableHead>
 										{t("admin.teachingUnits.courses.table.name")}
 									</TableHead>
 									<TableHead>
@@ -288,6 +354,14 @@ export function TeachingUnitCoursesTable({
 							<TableBody>
 								{courses.map((course) => (
 									<TableRow key={course.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={course.code}
+												label={t("admin.teachingUnits.courses.table.code", {
+													defaultValue: "Code",
+												})}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">{course.name}</TableCell>
 										<TableCell>{course.hours}</TableCell>
 										<TableCell>
@@ -357,6 +431,30 @@ export function TeachingUnitCoursesTable({
 											{...field}
 											placeholder={t(
 												"admin.teachingUnits.courses.form.namePlaceholder",
+											)}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="code"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.teachingUnits.courses.form.codeLabel", {
+											defaultValue: "Code",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t(
+												"admin.teachingUnits.courses.form.codePlaceholder",
+												{ defaultValue: "INF111" },
 											)}
 										/>
 									</FormControl>

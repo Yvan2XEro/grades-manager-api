@@ -450,6 +450,7 @@ const TeachingUnitDetail = () => {
 				<TeachingUnitCoursesTable
 					teachingUnitId={teachingUnit.id}
 					programId={teachingUnit.programId}
+					semesterCode={teachingUnit.semester}
 				/>
 			)}
 		</div>

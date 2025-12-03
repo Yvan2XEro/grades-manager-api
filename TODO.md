@@ -61,6 +61,9 @@
 - [x] Add `program_option_id` to `classes`, enforce FK + validations, and backfill existing data with default options per program.
 - [x] Update seed helpers/tests (`lib/test-utils.ts`) so they create default options and wire classes accordingly.
 - [x] Adjust `student_course_enrollments`, `enrollments`, and related services to carry the option context end-to-end.
+- [x] Add explicit `code` columns (plus uniqueness checks) on faculties, programs, classes, courses, and classCourses (`docs/program-code-standard.md`).
+- [x] Introduce semester references on classes/classCourses so codes encode level + semester.
+- [x] Expose TRPC lookups by code for every module gaining the field (faculties/programs/classes/courses/classCourses).
 
 ### Frontend impact (program options)
 - [x] Rework Program Management UI to remove the “cycle” selector and add an Options manager (list/create/delete, per program).
@@ -68,6 +71,15 @@
 - [x] Surface option + cycle info in Enrollment Management, Course/UE forms, dashboards, exports, etc.
 - [x] Refresh i18n keys/type generation after the new UI strings land (`bun run --cwd apps/web i18n:gen`).
 - [ ] Add tests (TRPC + RTL/Playwright) covering option workflows (create option, assign class to option, enrollment snapshot).
+- [x] Implement the frontend code generator (program prefix + level + semester + counter) to prefill `code` fields on course/class/classCourse forms.
+- [ ] Build a searchable select component (code + label) for all forms that pick a coded entity (program, class, course, classCourse).
+
+### Frontend follow-up (code visibility & clipboard UX)
+- [ ] Introduce a shared `ClipboardCopy` button in `apps/web/src/components/ui` with i18n-friendly success/failure toasts.
+- [ ] Update all admin tables showing coded entities (faculties, programs, classes, class courses, courses/UEs, teaching-unit ECs) so the code column is displayed first and wrapped with the clipboard button.
+- [ ] Extend student tables so the registration number is the first column and also gets the clipboard affordance.
+- [ ] Ensure every create/edit modal for these entities exposes the `code` field, includes the existing auto-suggestion helper when relevant, and resets previews when the record changes.
+- [ ] Add Playwright/Vitest table snapshots to lock the new layout (at least faculties + classes + students) and prevent regressions.
 
 ## Phase 3 – User workflows & client surfaces (Week 4–6)
 - [x] Ship a TRPC router (`modules/workflows`) exposing key actions: grade validation, enrollment open/close, attendance alerts.

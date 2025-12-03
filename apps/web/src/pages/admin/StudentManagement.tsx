@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
 	DialogContent,
@@ -449,9 +450,9 @@ export default function StudentManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead>{t("admin.students.table.registration")}</TableHead>
 								<TableHead>{t("admin.students.table.name")}</TableHead>
 								<TableHead>{t("admin.students.table.email")}</TableHead>
-								<TableHead>{t("admin.students.table.registration")}</TableHead>
 								<TableHead>{t("admin.students.table.gender")}</TableHead>
 								<TableHead>{t("admin.students.table.dateOfBirth")}</TableHead>
 								<TableHead>{t("admin.students.table.placeOfBirth")}</TableHead>
@@ -466,9 +467,14 @@ export default function StudentManagement() {
 							{studentsData?.items.length ? (
 								studentsData.items.map((student) => (
 									<TableRow key={student.id}>
+										<TableCell>
+											<ClipboardCopy
+												value={student.registrationNumber}
+												label={t("admin.students.table.registration")}
+											/>
+										</TableCell>
 										<TableCell>{getStudentName(student)}</TableCell>
 										<TableCell>{student.profile.primaryEmail}</TableCell>
-										<TableCell>{student.registrationNumber}</TableCell>
 										<TableCell>
 											{formatStudentGender(t, student.profile.gender)}
 										</TableCell>

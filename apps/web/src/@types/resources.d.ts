@@ -31,6 +31,12 @@ interface Resources {
 			labels: {
 				notAvailable: "Not available";
 			};
+			clipboard: {
+				copied: "Copied to clipboard";
+				copiedValue: "{{value}} copied";
+				failed: "Unable to copy value";
+				copyAria: "Copy {{value}}";
+			};
 			pagination: {
 				next: "Next";
 				previous: "Previous";
@@ -56,6 +62,7 @@ interface Resources {
 					add: "Add Course";
 				};
 				table: {
+					code: "Code";
 					name: "Name";
 					program: "Program";
 					hours: "Hours";
@@ -67,6 +74,8 @@ interface Resources {
 					editTitle: "Edit Course";
 					nameLabel: "Course name";
 					namePlaceholder: "Enter course name";
+					codeLabel: "Course code";
+					codePlaceholder: "INF111";
 					hoursLabel: "Hours";
 					hoursPlaceholder: "Enter hours";
 					programLabel: "Program";
@@ -87,6 +96,7 @@ interface Resources {
 				validation: {
 					name: "Name must be at least 2 characters";
 					hours: "Hours must be at least 1";
+					code: "Code is required";
 					program: "Please select a program";
 					teacher: "Please select a teacher";
 				};
@@ -271,6 +281,7 @@ interface Resources {
 					description: "Get started by adding your first program.";
 				};
 				table: {
+					code: "Code";
 					name: "Name";
 					faculty: "Faculty";
 					description: "Description";
@@ -281,6 +292,8 @@ interface Resources {
 					editTitle: "Edit Program";
 					nameLabel: "Program name";
 					namePlaceholder: "Enter program name";
+					codeLabel: "Program code";
+					codePlaceholder: "INF-LIC";
 					facultyLabel: "Faculty";
 					facultyPlaceholder: "Select a faculty";
 					descriptionLabel: "Description";
@@ -289,6 +302,7 @@ interface Resources {
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
+					code: "Code is required";
 					faculty: "Please select a faculty";
 				};
 				toast: {
@@ -351,6 +365,7 @@ interface Resources {
 					class: "Please select a class";
 					course: "Please select a course";
 					teacher: "Please select a teacher";
+					code: "Please provide a code";
 				};
 				actions: {
 					add: "Assign Course";
@@ -361,6 +376,7 @@ interface Resources {
 				};
 				table: {
 					class: "Class";
+					code: "Code";
 					program: "Program";
 					course: "Course";
 					teacher: "Teacher";
@@ -374,6 +390,10 @@ interface Resources {
 					coursePlaceholder: "Select a course";
 					teacherLabel: "Teacher";
 					teacherPlaceholder: "Select a teacher";
+					semesterLabel: "Semester";
+					semesterPlaceholder: "Select a semester";
+					codeLabel: "Code";
+					codePlaceholder: "INF11-CLS24-01";
 					submit: "Save assignment";
 				};
 				toast: {
@@ -769,6 +789,7 @@ interface Resources {
 					description: "Assign a course to a class to populate this list.";
 				};
 				table: {
+					code: "Code";
 					class: "Class";
 					program: "Program";
 					course: "Course";
@@ -815,6 +836,7 @@ interface Resources {
 				};
 				table: {
 					name: "Class";
+					code: "Code";
 					program: "Program";
 					academicYear: "Academic year";
 					cycle: "Cycle / level";
@@ -837,6 +859,10 @@ interface Resources {
 					emptyCycleLevels: "No cycle levels available for the selected faculty.";
 					programOptionLabel: "Program option";
 					programOptionPlaceholder: "Select option";
+					semesterLabel: "Semester";
+					semesterPlaceholder: "Select a semester";
+					codeLabel: "Code";
+					codePlaceholder: "INF11-S1-01";
 					labelLabel: "Generated class label";
 				};
 				toast: {
@@ -856,6 +882,8 @@ interface Resources {
 					academicYear: "Please select an academic year";
 					cycleLevel: "Please select a cycle level";
 					programOption: "Please select a program option";
+					semester: "Please select a semester";
+					code: "Please provide a class code";
 					name: "Name must be at least 2 characters";
 				};
 			};
@@ -915,6 +943,7 @@ interface Resources {
 				};
 				table: {
 					name: "Name";
+					code: "Code";
 					description: "Description";
 					noDescription: "No description";
 				};
@@ -923,12 +952,15 @@ interface Resources {
 					editTitle: "Edit faculty";
 					nameLabel: "Faculty name";
 					namePlaceholder: "Enter faculty name";
+					codeLabel: "Code";
+					codePlaceholder: "SCI";
 					descriptionLabel: "Description";
 					descriptionPlaceholder: "Enter faculty description";
 					submit: "Save faculty";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
+					code: "Code is required";
 				};
 				toast: {
 					createSuccess: "Faculty created successfully";
@@ -954,6 +986,7 @@ interface Resources {
 					description: "Create a program to start organizing curricula.";
 				};
 				table: {
+					code: "Code";
 					name: "Program";
 					faculty: "Faculty";
 					cycle: "Cycle";
@@ -965,6 +998,8 @@ interface Resources {
 					editTitle: "Edit program";
 					nameLabel: "Program name";
 					namePlaceholder: "Enter program name";
+					codeLabel: "Program code";
+					codePlaceholder: "INF-LIC";
 					facultyLabel: "Faculty";
 					facultyPlaceholder: "Select a faculty";
 					cycleLabel: "Study cycle";
@@ -976,6 +1011,7 @@ interface Resources {
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
+					code: "Code is required";
 					faculty: "Please select a faculty";
 					cycle: "Please select a study cycle";
 				};
@@ -1018,6 +1054,7 @@ interface Resources {
 					add: "Add course";
 				};
 				table: {
+					code: "Code";
 					name: "Course";
 					program: "Program";
 					hours: "Hours";
@@ -1030,6 +1067,8 @@ interface Resources {
 					createSubmit: "Create course";
 					nameLabel: "Course name";
 					namePlaceholder: "Enter course name";
+					codeLabel: "Course code";
+					codePlaceholder: "INF111";
 					hoursLabel: "Hours";
 					hoursPlaceholder: "Enter total hours";
 					programLabel: "Program";
@@ -1057,6 +1096,7 @@ interface Resources {
 				validation: {
 					name: "Name must be at least 2 characters";
 					hours: "Hours must be at least 1";
+					code: "Code is required";
 					program: "Please select a program";
 					teacher: "Please select a teacher";
 				};
@@ -1568,6 +1608,7 @@ interface Resources {
 					};
 					table: {
 						name: "Name";
+						code: "Code";
 						hours: "Hours";
 						teacher: "Default teacher";
 					};
@@ -1576,6 +1617,8 @@ interface Resources {
 						editTitle: "Edit element";
 						nameLabel: "Element name";
 						namePlaceholder: "Enter the element name";
+						codeLabel: "Code";
+						codePlaceholder: "INF111";
 						hoursLabel: "Hours";
 						hoursPlaceholder: "Enter hours";
 						teacherLabel: "Default teacher";
@@ -1587,6 +1630,7 @@ interface Resources {
 					deleteMessage: "This action cannot be undone.";
 					validation: {
 						name: "Element name is required.";
+						code: "Course code is required.";
 						hours: "Hours must be positive.";
 						teacher: "A default teacher is required.";
 					};

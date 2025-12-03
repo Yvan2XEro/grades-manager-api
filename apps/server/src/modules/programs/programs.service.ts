@@ -1,11 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { slugify } from "@/lib/strings";
+import { normalizeCode, slugify } from "@/lib/strings";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./programs.repo";
 
 export async function createProgram(data: Parameters<typeof repo.create>[0]) {
 	const slug = slugify(data.name);
-	const program = await repo.create({ ...data, slug });
+	const program = await repo.create({
+		...data,
+		code: normalizeCode(data.code),
+		slug,
+	});
 	await programOptionsRepo.create({
 		programId: program.id,
 		name: "Default option",
@@ -24,6 +28,7 @@ export async function updateProgram(
 	const payload = {
 		...data,
 		slug: data.name ? slugify(data.name) : undefined,
+		code: data.code ? normalizeCode(data.code) : undefined,
 	};
 	return repo.update(id, payload);
 }
@@ -38,6 +43,13 @@ export async function listPrograms(opts: Parameters<typeof repo.list>[0]) {
 
 export async function getProgramById(id: string) {
 	const item = await repo.findById(id);
+	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+	return item;
+}
+
+export async function getProgramByCode(code: string, facultyId: string) {
+	const normalized = normalizeCode(code);
+	const item = await repo.findByCode(normalized, facultyId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
 }

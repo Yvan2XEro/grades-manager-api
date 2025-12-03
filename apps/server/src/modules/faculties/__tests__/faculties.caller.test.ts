@@ -21,13 +21,16 @@ describe("faculties router", () => {
 	it("enforces roles", async () => {
 		const caller = createCaller(makeTestContext({ role: "student" }));
 		await expect(
-			caller.faculties.create({ name: "F1" }),
+			caller.faculties.create({ name: "F1", code: "F1" }),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
 	});
 
 	it("supports CRUD", async () => {
 		const admin = createCaller(asAdmin());
-		const faculty = await admin.faculties.create({ name: "Science" });
+		const faculty = await admin.faculties.create({
+			name: "Science",
+			code: "SCI",
+		});
 		expect(faculty.id).toBeTruthy();
 
 		const fetched = await admin.faculties.getById({ id: faculty.id });

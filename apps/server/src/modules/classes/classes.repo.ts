@@ -1,15 +1,17 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, type SQL } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
 
 const classSelection = {
 	id: schema.classes.id,
+	code: schema.classes.code,
 	name: schema.classes.name,
 	program: schema.classes.program,
 	academicYear: schema.classes.academicYear,
 	cycleLevelId: schema.classes.cycleLevelId,
 	programOptionId: schema.classes.programOptionId,
+	semesterId: schema.classes.semesterId,
 	createdAt: schema.classes.createdAt,
 	programInfo: {
 		id: schema.programs.id,
@@ -37,27 +39,15 @@ const classSelection = {
 		name: schema.programOptions.name,
 		code: schema.programOptions.code,
 	},
+	semester: {
+		id: schema.semesters.id,
+		code: schema.semesters.code,
+		name: schema.semesters.name,
+		orderIndex: schema.semesters.orderIndex,
+	},
 };
 
-export async function create(data: schema.NewKlass) {
-	const [item] = await db.insert(schema.classes).values(data).returning();
-	return item;
-}
-
-export async function update(id: string, data: Partial<schema.NewKlass>) {
-	const [item] = await db
-		.update(schema.classes)
-		.set(data)
-		.where(eq(schema.classes.id, id))
-		.returning();
-	return item;
-}
-
-export async function remove(id: string) {
-	await db.delete(schema.classes).where(eq(schema.classes.id, id));
-}
-
-export async function findById(id: string) {
+async function selectClass(where: SQL<unknown>) {
 	const [klass] = await db
 		.select(classSelection)
 		.from(schema.classes)
@@ -78,9 +68,35 @@ export async function findById(id: string) {
 			schema.programOptions,
 			eq(schema.programOptions.id, schema.classes.programOptionId),
 		)
-		.where(eq(schema.classes.id, id))
+		.leftJoin(
+			schema.semesters,
+			eq(schema.semesters.id, schema.classes.semesterId),
+		)
+		.where(where)
 		.limit(1);
 	return klass ?? null;
+}
+
+export async function create(data: schema.NewKlass) {
+	const [item] = await db.insert(schema.classes).values(data).returning();
+	return item;
+}
+
+export async function update(id: string, data: Partial<schema.NewKlass>) {
+	const [item] = await db
+		.update(schema.classes)
+		.set(data)
+		.where(eq(schema.classes.id, id))
+		.returning();
+	return item;
+}
+
+export async function remove(id: string) {
+	await db.delete(schema.classes).where(eq(schema.classes.id, id));
+}
+
+export async function findById(id: string) {
+	return selectClass(eq(schema.classes.id, id));
 }
 
 export async function list(opts: {
@@ -90,11 +106,11 @@ export async function list(opts: {
 	cycleId?: string;
 	cycleLevelId?: string;
 	programOptionId?: string;
+	semesterId?: string;
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
-	let facultyProgramIds: string[] | undefined;
 	const conditions = [
 		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
 		opts.academicYearId
@@ -106,6 +122,9 @@ export async function list(opts: {
 		opts.cycleId ? eq(schema.cycleLevels.cycleId, opts.cycleId) : undefined,
 		opts.programOptionId
 			? eq(schema.classes.programOptionId, opts.programOptionId)
+			: undefined,
+		opts.semesterId
+			? eq(schema.classes.semesterId, opts.semesterId)
 			: undefined,
 		opts.facultyId ? eq(schema.programs.faculty, opts.facultyId) : undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
@@ -136,8 +155,21 @@ export async function list(opts: {
 			schema.programOptions,
 			eq(schema.programOptions.id, schema.classes.programOptionId),
 		)
+		.leftJoin(
+			schema.semesters,
+			eq(schema.semesters.id, schema.classes.semesterId),
+		)
 		.where(condition)
 		.orderBy(schema.classes.id)
 		.limit(limit);
 	return paginate(items, limit);
+}
+
+export async function findByCode(code: string, academicYearId: string) {
+	return selectClass(
+		and(
+			eq(schema.classes.code, code),
+			eq(schema.classes.academicYear, academicYearId),
+		),
+	);
 }

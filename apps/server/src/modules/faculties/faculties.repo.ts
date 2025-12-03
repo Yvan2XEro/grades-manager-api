@@ -24,6 +24,12 @@ export async function findById(id: string) {
 	return db.query.faculties.findFirst({ where: eq(schema.faculties.id, id) });
 }
 
+export async function findByCode(code: string) {
+	return db.query.faculties.findFirst({
+		where: eq(schema.faculties.code, code),
+	});
+}
+
 export async function list(opts: {
 	q?: string;
 	cursor?: string;

@@ -180,9 +180,15 @@ export async function createRecapFixture(
 }
 
 export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
+	const { code, name, description, ...rest } = data;
 	const [faculty] = await db
 		.insert(schema.faculties)
-		.values({ name: `Faculty-${randomUUID()}`, ...data })
+		.values({
+			code: code ?? `FAC-${randomUUID().slice(0, 4)}`,
+			name: name ?? `Faculty-${randomUUID()}`,
+			description: description ?? null,
+			...rest,
+		})
 		.returning();
 	return faculty;
 }
@@ -232,16 +238,19 @@ export async function createCycleLevel(
 }
 
 export async function createProgram(data: Partial<schema.NewProgram> = {}) {
-	const faculty = data.faculty ? { id: data.faculty } : await createFaculty();
-	const name = data.name ?? `Program-${randomUUID()}`;
-	const slug = slugify(name);
+	const { faculty: facultyId, code, name, description, ...rest } = data;
+	const faculty = facultyId ? { id: facultyId } : await createFaculty();
+	const resolvedName = name ?? `Program-${randomUUID()}`;
+	const slug = slugify(resolvedName);
 	const [program] = await db
 		.insert(schema.programs)
 		.values({
-			name,
+			code: code ?? `PRG-${randomUUID().slice(0, 4)}`,
+			name: resolvedName,
 			slug,
 			faculty: faculty.id,
-			description: data.description ?? null,
+			description: description ?? null,
+			...rest,
 		})
 		.returning();
 	await db
@@ -341,22 +350,55 @@ async function ensureCycleLevelForFaculty(
 	return created.id;
 }
 
+async function ensureSemester(semesterId?: string) {
+	if (semesterId) {
+		const semester = await db.query.semesters.findFirst({
+			where: eq(schema.semesters.id, semesterId),
+		});
+		if (!semester) throw new Error("Semester not found");
+		return semester.id;
+	}
+	const existing = await db.query.semesters.findFirst({
+		orderBy: asc(schema.semesters.orderIndex),
+	});
+	if (existing) return existing.id;
+	const [created] = await db
+		.insert(schema.semesters)
+		.values({
+			code: `S${randomUUID().slice(0, 2).toUpperCase()}`,
+			name: "Semester 1",
+			orderIndex: 1,
+		})
+		.returning();
+	return created.id;
+}
+
 export async function createClass(data: Partial<schema.NewKlass> = {}) {
-	const program = data.program
+	const {
+		program: programId,
+		academicYear: academicYearId,
+		cycleLevelId,
+		programOptionId,
+		semesterId,
+		code,
+		name,
+		...rest
+	} = data;
+	const program = programId
 		? await db.query.programs.findFirst({
-				where: eq(schema.programs.id, data.program),
+				where: eq(schema.programs.id, programId),
 			})
 		: await createProgram();
 	if (!program) throw new Error("Program not found");
-	const year = data.academicYear
-		? { id: data.academicYear }
+	const year = academicYearId
+		? { id: academicYearId }
 		: await createAcademicYear();
 	const levelId = await ensureCycleLevelForFaculty(
 		program.faculty,
-		data.cycleLevelId,
+		cycleLevelId,
 	);
 	const option =
-		data.programOptionId ??
+		programOptionId ??
 		(
 			await db.query.programOptions.findFirst({
 				where: eq(schema.programOptions.programId, program.id),
@@ -367,14 +409,18 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 				programId: program.id,
 			})
 		).id;
+	const resolvedSemesterId = await ensureSemester(semesterId);
 	const [klass] = await db
 		.insert(schema.classes)
 		.values({
-			name: data.name ?? `Class-${randomUUID()}`,
+			code: code ?? `CLS-${randomUUID().slice(0, 6)}`,
+			name: name ?? `Class-${randomUUID()}`,
 			program: program.id,
 			academicYear: year.id,
 			cycleLevelId: levelId,
 			programOptionId: option,
+			semesterId: resolvedSemesterId,
+			...rest,
 		})
 		.returning();
 	return klass;
@@ -417,20 +463,30 @@ export async function createUser(data: CreateUserOptions = {}) {
 }
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
-	const program = data.program ? { id: data.program } : await createProgram();
-	const teachingUnit = data.teachingUnitId
-		? { id: data.teachingUnitId }
+	const {
+		program: programId,
+		teachingUnitId,
+		defaultTeacher,
+		name,
+		hours,
+		code,
+		...rest
+	} = data;
+	const program = programId ? { id: programId } : await createProgram();
+	const teachingUnit = teachingUnitId
+		? { id: teachingUnitId }
 		: await createTeachingUnit({ programId: program.id });
-	const defaultTeacherId =
-		data.defaultTeacher ?? (await createUser()).profile.id;
+	const defaultTeacherId = defaultTeacher ?? (await createUser()).profile.id;
 	const [course] = await db
 		.insert(schema.courses)
 		.values({
-			name: data.name ?? `Course-${randomUUID()}`,
-			hours: data.hours ?? 30,
+			code: code ?? `CRS-${randomUUID().slice(0, 6)}`,
+			name: name ?? `Course-${randomUUID()}`,
+			hours: hours ?? 30,
 			program: program.id,
-			teachingUnitId: data.teachingUnitId ?? teachingUnit.id,
+			teachingUnitId: teachingUnitId ?? teachingUnit.id,
 			defaultTeacher: defaultTeacherId,
+			...rest,
 		})
 		.returning();
 	return course;
@@ -439,19 +495,39 @@ export async function createCourse(data: Partial<schema.NewCourse> = {}) {
 export async function createClassCourse(
 	data: Partial<schema.NewClassCourse> = {},
 ) {
-	const klass = data.class ? { id: data.class } : await createClass();
-	const course = data.course ? { id: data.course } : await createCourse();
-	const teacher = data.teacher
-		? { id: data.teacher }
+	const {
+		class: classId,
+		course: courseId,
+		teacher: teacherId,
+		weeklyHours,
+		code,
+		semesterId,
+		...rest
+	} = data;
+	const klass = classId
+		? await db.query.classes.findFirst({
+				where: eq(schema.classes.id, classId),
+			})
+		: await createClass();
+	if (!klass) {
+		throw new Error("Class not found");
+	}
+	const course = courseId ? { id: courseId } : await createCourse();
+	const teacher = teacherId
+		? { id: teacherId }
 		: { id: (await createUser()).profile.id };
+	const resolvedSemesterId =
+		semesterId ?? klass.semesterId ?? (await ensureSemester());
 	const [cc] = await db
 		.insert(schema.classCourses)
 		.values({
+			code: code ?? `CC-${randomUUID().slice(0, 6)}`,
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.id,
-			weeklyHours: data.weeklyHours ?? 2,
-			...data,
+			semesterId: resolvedSemesterId,
+			weeklyHours: weeklyHours ?? 2,
+			...rest,
 		})
 		.returning();
 	return cc;

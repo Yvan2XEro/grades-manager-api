@@ -77,11 +77,13 @@ export async function list(opts: {
 
 	const items = rows.map((row) => ({
 		id: row.id,
+		code: row.code,
 		class: row.class,
 		course: row.course,
 		teacher: row.teacher,
 		weeklyHours: row.weeklyHours,
 		createdAt: row.createdAt,
+		semesterId: row.semesterId,
 		courseName: row.courseRef?.name,
 		courseCode: row.courseRef?.code,
 		teacherFirstName: row.teacherRef?.firstName,
@@ -89,4 +91,20 @@ export async function list(opts: {
 	}));
 
 	return { items, nextCursor };
+}
+
+export async function findByCode(code: string, academicYearId: string) {
+	const [match] = await db
+		.select({ id: schema.classCourses.id })
+		.from(schema.classCourses)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.where(
+			and(
+				eq(schema.classCourses.code, code),
+				eq(schema.classes.academicYear, academicYearId),
+			),
+		)
+		.limit(1);
+	if (!match) return null;
+	return findById(match.id);
 }

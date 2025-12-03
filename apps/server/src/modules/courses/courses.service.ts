@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
@@ -49,7 +50,10 @@ async function syncPrerequisites(
 export async function createCourse(data: CourseInput) {
 	const { prerequisiteCourseIds, ...courseData } = data;
 	await ensureTeachingUnit(courseData.teachingUnitId, courseData.program);
-	const created = await repo.create(courseData);
+	const created = await repo.create({
+		...courseData,
+		code: normalizeCode(courseData.code),
+	});
 	await syncPrerequisites(created.id, prerequisiteCourseIds);
 	return created;
 }
@@ -67,7 +71,10 @@ export async function updateCourse(id: string, data: Partial<CourseInput>) {
 			courseData.program ?? existing.program,
 		);
 	}
-	const updated = await repo.update(id, courseData);
+	const updated = await repo.update(id, {
+		...courseData,
+		code: courseData.code ? normalizeCode(courseData.code) : undefined,
+	});
 	if (prerequisiteCourseIds) {
 		await syncPrerequisites(updated.id, prerequisiteCourseIds);
 	}
@@ -84,6 +91,12 @@ export async function listCourses(opts: Parameters<typeof repo.list>[0]) {
 
 export async function getCourseById(id: string) {
 	const item = await repo.findById(id);
+	if (!item) throw notFound();
+	return item;
+}
+
+export async function getCourseByCode(code: string, programId: string) {
+	const item = await repo.findByCode(normalizeCode(code), programId);
 	if (!item) throw notFound();
 	return item;
 }

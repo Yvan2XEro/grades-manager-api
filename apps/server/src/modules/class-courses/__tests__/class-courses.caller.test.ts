@@ -27,6 +27,7 @@ describe("class courses router", () => {
 		const teacherId = course.defaultTeacher;
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
+			code: "CC-CRUD",
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,
@@ -51,6 +52,7 @@ describe("class courses router", () => {
 		const teacherId = course.defaultTeacher;
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
+			code: "CC-ROSTER",
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,

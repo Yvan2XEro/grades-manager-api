@@ -24,6 +24,15 @@ export async function findById(id: string) {
 	return db.query.courses.findFirst({ where: eq(schema.courses.id, id) });
 }
 
+export async function findByCode(code: string, programId: string) {
+	return db.query.courses.findFirst({
+		where: and(
+			eq(schema.courses.code, code),
+			eq(schema.courses.program, programId),
+		),
+	});
+}
+
 export async function list(opts: {
 	programId?: string;
 	teachingUnitId?: string;

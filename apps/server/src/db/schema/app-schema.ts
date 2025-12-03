@@ -39,8 +39,8 @@ export const domainStatuses = ["active", "inactive", "suspended"] as const;
 export type DomainUserStatus = (typeof domainStatuses)[number];
 
 /** Semester placement for teaching units (UE). */
-export const semesters = ["fall", "spring", "annual"] as const;
-export type Semester = (typeof semesters)[number];
+export const teachingUnitSemesters = ["fall", "spring", "annual"] as const;
+export type TeachingUnitSemester = (typeof teachingUnitSemesters)[number];
 
 /** Enrollment lifecycle for student ↔ classe ↔ academic year. */
 export const enrollmentStatuses = [
@@ -126,13 +126,17 @@ export const faculties = pgTable(
 	"faculties",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
 		name: text("name").notNull(),
 		description: text("description"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
 	},
-	(t) => [unique("uq_faculties_name").on(t.name)],
+	(t) => [
+		unique("uq_faculties_name").on(t.name),
+		unique("uq_faculties_code").on(t.code),
+	],
 );
 
 /** Study cycles grouping programs inside a faculty (e.g., Bachelor, Master). */
@@ -180,6 +184,21 @@ export const cycleLevels = pgTable(
 	],
 );
 
+/** Semester catalog (S1, S2, etc.). */
+export const semesters = pgTable(
+	"semesters",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
+		name: text("name").notNull(),
+		orderIndex: integer("order_index").notNull(),
+	},
+	(t) => [
+		unique("uq_semesters_code").on(t.code),
+		index("idx_semesters_order").on(t.orderIndex),
+	],
+);
+
 /** Official academic sessions (e.g., 2024–2025). */
 export const academicYears = pgTable(
 	"academic_years",
@@ -203,6 +222,7 @@ export const programs = pgTable(
 	"programs",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
 		description: text("description"),
@@ -215,6 +235,7 @@ export const programs = pgTable(
 	},
 	(t) => [
 		unique("uq_programs_name_faculty").on(t.name, t.faculty),
+		unique("uq_programs_code_faculty").on(t.code, t.faculty),
 		unique("uq_programs_slug_faculty").on(t.slug, t.faculty),
 		index("idx_programs_faculty_id").on(t.faculty),
 	],
@@ -252,7 +273,10 @@ export const teachingUnits = pgTable(
 		code: text("code").notNull(),
 		description: text("description"),
 		credits: integer("credits").notNull().default(0),
-		semester: text("semester").$type<Semester>().notNull().default("annual"),
+		semester: text("semester")
+			.$type<TeachingUnitSemester>()
+			.notNull()
+			.default("annual"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -268,6 +292,7 @@ export const classes = pgTable(
 	"classes",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
 		name: text("name").notNull(),
 		program: text("program_id")
 			.notNull()
@@ -275,6 +300,9 @@ export const classes = pgTable(
 		academicYear: text("academic_year_id")
 			.notNull()
 			.references(() => academicYears.id, { onDelete: "restrict" }),
+		semesterId: text("semester_id").references(() => semesters.id, {
+			onDelete: "set null",
+		}),
 		cycleLevelId: text("cycle_level_id")
 			.notNull()
 			.references(() => cycleLevels.id, { onDelete: "restrict" }),
@@ -291,8 +319,10 @@ export const classes = pgTable(
 			t.program,
 			t.academicYear,
 		),
+		unique("uq_classes_code_year").on(t.code, t.academicYear),
 		index("idx_classes_program_id").on(t.program),
 		index("idx_classes_academic_year_id").on(t.academicYear),
+		index("idx_classes_semester_id").on(t.semesterId),
 		index("idx_classes_cycle_level_id").on(t.cycleLevelId),
 		index("idx_classes_program_option_id").on(t.programOptionId),
 	],
@@ -303,6 +333,7 @@ export const courses = pgTable(
 	"courses",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
 		name: text("name").notNull(),
 		hours: integer("hours").notNull(),
 		program: text("program_id")
@@ -324,6 +355,7 @@ export const courses = pgTable(
 	(t) => [
 		check("chk_courses_hours", sql`${t.hours} > 0`),
 		unique("uq_courses_name_program").on(t.name, t.program),
+		unique("uq_courses_code_program").on(t.code, t.program),
 		index("idx_courses_program_id").on(t.program),
 		index("idx_courses_teaching_unit_id").on(t.teachingUnitId),
 		index("idx_courses_default_teacher_id").on(t.defaultTeacher),
@@ -335,6 +367,7 @@ export const classCourses = pgTable(
 	"class_courses",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
 		class: text("class_id")
 			.notNull()
 			.references(() => classes.id, { onDelete: "cascade" }),
@@ -344,6 +377,9 @@ export const classCourses = pgTable(
 		teacher: text("teacher_id")
 			.notNull()
 			.references(() => domainUsers.id, { onDelete: "restrict" }),
+		semesterId: text("semester_id").references(() => semesters.id, {
+			onDelete: "set null",
+		}),
 		weeklyHours: integer("weekly_hours").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
@@ -351,9 +387,11 @@ export const classCourses = pgTable(
 	},
 	(t) => [
 		unique("uq_class_courses").on(t.class, t.course),
+		unique("uq_class_courses_code").on(t.code),
 		index("idx_class_courses_class_id").on(t.class),
 		index("idx_class_courses_course_id").on(t.course),
 		index("idx_class_courses_teacher_id").on(t.teacher),
+		index("idx_class_courses_semester_id").on(t.semesterId),
 	],
 );
 
@@ -722,6 +760,10 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 		fields: [classes.programOptionId],
 		references: [programOptions.id],
 	}),
+	semester: one(semesters, {
+		fields: [classes.semesterId],
+		references: [semesters.id],
+	}),
 	classCourses: many(classCourses),
 	students: many(students),
 	enrollments: many(enrollments),
@@ -796,10 +838,19 @@ export const classCoursesRelations = relations(
 			fields: [classCourses.teacher],
 			references: [domainUsers.id],
 		}),
+		semester: one(semesters, {
+			fields: [classCourses.semesterId],
+			references: [semesters.id],
+		}),
 		exams: many(exams),
 		studentCourseEnrollments: many(studentCourseEnrollments),
 	}),
 );
+
+export const semestersRelations = relations(semesters, ({ many }) => ({
+	classes: many(classes),
+	classCourses: many(classCourses),
+}));
 
 export const examsRelations = relations(exams, ({ one, many }) => ({
 	classCourseRef: one(classCourses, {
@@ -930,6 +981,9 @@ export type NewStudyCycle = InferInsertModel<typeof studyCycles>;
 
 export type CycleLevel = InferSelectModel<typeof cycleLevels>;
 export type NewCycleLevel = InferInsertModel<typeof cycleLevels>;
+
+export type Semester = InferSelectModel<typeof semesters>;
+export type NewSemester = InferInsertModel<typeof semesters>;
 
 export type Program = InferSelectModel<typeof programs>;
 export type NewProgram = InferInsertModel<typeof programs>;

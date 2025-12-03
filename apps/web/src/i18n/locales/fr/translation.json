@@ -30,6 +30,12 @@
 		"labels": {
 			"notAvailable": "Non disponible"
 		},
+		"clipboard": {
+			"copied": "Copié dans le presse-papiers",
+			"copiedValue": "{{value}} copié",
+			"failed": "Impossible de copier la valeur",
+			"copyAria": "Copier {{value}}"
+		},
 		"pagination": {
 			"next": "Suivant",
 			"previous": "Précédent"
@@ -301,6 +307,7 @@
 			},
 			"table": {
 				"class": "Classe",
+				"code": "Code",
 				"program": "Programme",
 				"course": "Cours",
 				"teacher": "Enseignant"
@@ -314,6 +321,10 @@
 				"coursePlaceholder": "Sélectionner un cours",
 				"teacherLabel": "Enseignant",
 				"teacherPlaceholder": "Sélectionner un enseignant",
+				"semesterLabel": "Semestre",
+				"semesterPlaceholder": "Sélectionner un semestre",
+				"codeLabel": "Code",
+				"codePlaceholder": "INF11-CLS24-01",
 				"createSubmit": "Affecter le cours"
 			},
 			"toast": {
@@ -331,7 +342,8 @@
 			"validation": {
 				"class": "Veuillez sélectionner une classe",
 				"course": "Veuillez sélectionner un cours",
-				"teacher": "Veuillez sélectionner un enseignant"
+				"teacher": "Veuillez sélectionner un enseignant",
+				"code": "Veuillez renseigner un code"
 			}
 		},
 		"classes": {
@@ -346,6 +358,7 @@
 			},
 			"table": {
 				"name": "Classe",
+				"code": "Code",
 				"program": "Programme",
 				"academicYear": "Année académique",
 				"cycle": "Cycle / niveau",
@@ -367,6 +380,10 @@
 				"selectProgramFirst": "Sélectionnez un programme pour charger ses niveaux.",
 				"programOptionLabel": "Option du programme",
 				"programOptionPlaceholder": "Sélectionner une option",
+				"semesterLabel": "Semestre",
+				"semesterPlaceholder": "Sélectionner un semestre",
+				"codeLabel": "Code",
+				"codePlaceholder": "INF11-S1-01",
 				"labelLabel": "Libellé généré de la classe"
 			},
 			"toast": {
@@ -386,6 +403,8 @@
 				"academicYear": "Veuillez sélectionner une année académique",
 				"cycleLevel": "Veuillez sélectionner un niveau",
 				"programOption": "Veuillez sélectionner une option",
+				"semester": "Veuillez sélectionner un semestre",
+				"code": "Veuillez saisir un code de classe",
 				"name": "Le nom doit comporter au moins 2 caractères"
 			}
 		},
@@ -440,6 +459,7 @@
 				"add": "Ajouter un cours"
 			},
 			"table": {
+				"code": "Code",
 				"name": "Cours",
 				"program": "Programme",
 				"hours": "Heures",
@@ -452,6 +472,8 @@
 				"createSubmit": "Créer le cours",
 				"nameLabel": "Nom du cours",
 				"namePlaceholder": "Saisir le nom du cours",
+				"codeLabel": "Code du cours",
+				"codePlaceholder": "INF111",
 				"hoursLabel": "Heures",
 				"hoursPlaceholder": "Saisir le volume horaire",
 				"programLabel": "Programme",
@@ -479,6 +501,7 @@
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
 				"hours": "Le nombre d’heures doit être supérieur ou égal à 1",
+				"code": "Le code est obligatoire",
 				"program": "Veuillez sélectionner un programme",
 				"teacher": "Veuillez sélectionner un enseignant"
 			}
@@ -495,6 +518,7 @@
 			},
 			"table": {
 				"name": "Nom",
+				"code": "Code",
 				"description": "Description",
 				"noDescription": "Pas de description"
 			},
@@ -503,12 +527,15 @@
 				"editTitle": "Modifier la faculté",
 				"nameLabel": "Nom de la faculté",
 				"namePlaceholder": "Saisir le nom de la faculté",
+				"codeLabel": "Code",
+				"codePlaceholder": "SCI",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Décrire la faculté",
 				"submit": "Enregistrer"
 			},
 			"validation": {
-				"name": "Le nom doit comporter au moins 2 caractères"
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"code": "Le code est obligatoire"
 			},
 			"toast": {
 				"createSuccess": "Faculté créée avec succès",
@@ -534,6 +561,7 @@
 				"description": "Créez un programme pour structurer les cursus."
 			},
 			"table": {
+				"code": "Code",
 				"name": "Programme",
 				"faculty": "Faculté",
 				"description": "Description",
@@ -544,6 +572,8 @@
 				"editTitle": "Modifier le programme",
 				"nameLabel": "Nom du programme",
 				"namePlaceholder": "Saisir le nom du programme",
+				"codeLabel": "Code du programme",
+				"codePlaceholder": "INF-LIC",
 				"facultyLabel": "Faculté",
 				"facultyPlaceholder": "Sélectionner une faculté",
 				"descriptionLabel": "Description",
@@ -552,6 +582,7 @@
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
+				"code": "Le code est obligatoire",
 				"faculty": "Veuillez sélectionner une faculté"
 			},
 			"toast": {
@@ -1132,6 +1163,7 @@
 				},
 				"table": {
 					"name": "Nom",
+					"code": "Code",
 					"hours": "Heures",
 					"teacher": "Enseignant référent"
 				},
@@ -1140,6 +1172,8 @@
 					"editTitle": "Modifier l'élément",
 					"nameLabel": "Nom de l'élément",
 					"namePlaceholder": "Saisir le nom de l'élément",
+					"codeLabel": "Code",
+					"codePlaceholder": "INF111",
 					"hoursLabel": "Heures",
 					"hoursPlaceholder": "Saisir le volume horaire",
 					"teacherLabel": "Enseignant référent",
@@ -1151,6 +1185,7 @@
 				"deleteMessage": "Cette action est irréversible.",
 				"validation": {
 					"name": "Le nom de l'élément est obligatoire.",
+					"code": "Le code est obligatoire.",
 					"hours": "Le volume horaire doit être positif.",
 					"teacher": "Veuillez sélectionner un enseignant."
 				},

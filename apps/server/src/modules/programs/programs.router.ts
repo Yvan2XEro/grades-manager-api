@@ -4,7 +4,13 @@ import {
 	protectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./programs.service";
-import { baseSchema, idSchema, listSchema, updateSchema } from "./programs.zod";
+import {
+	baseSchema,
+	codeSchema,
+	idSchema,
+	listSchema,
+	updateSchema,
+} from "./programs.zod";
 
 export const router = createRouter({
 	create: adminProcedure
@@ -22,4 +28,9 @@ export const router = createRouter({
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getProgramById(input.id)),
+	getByCode: protectedProcedure
+		.input(codeSchema)
+		.query(({ input }) =>
+			service.getProgramByCode(input.code, input.facultyId),
+		),
 });

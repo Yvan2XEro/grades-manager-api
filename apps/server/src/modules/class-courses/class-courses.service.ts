@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
+import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
@@ -57,12 +58,41 @@ async function validateConfig(
 			}
 		}
 	}
+
+	const resolvedSemesterId = await resolveSemesterId(
+		klass.semesterId,
+		config.semesterId,
+	);
+
+	return { semesterId: resolvedSemesterId };
+}
+
+async function resolveSemesterId(
+	classSemesterId?: string,
+	overrideSemesterId?: string,
+) {
+	const target = overrideSemesterId ?? classSemesterId;
+	if (!target) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Class must have a semester before assigning courses",
+		});
+	}
+	const semester = await db.query.semesters.findFirst({
+		where: eq(schema.semesters.id, target),
+	});
+	if (!semester) throw notFound("Semester not found");
+	return semester.id;
 }
 
 export async function createClassCourse(data: ClassCourseInput) {
 	const { allowTeacherOverride, ...payload } = data;
-	await validateConfig(payload, allowTeacherOverride);
-	return repo.create(payload);
+	const { semesterId } = await validateConfig(payload, allowTeacherOverride);
+	return repo.create({
+		...payload,
+		code: normalizeCode(payload.code),
+		semesterId,
+	});
 }
 
 export async function updateClassCourse(
@@ -76,8 +106,15 @@ export async function updateClassCourse(
 		...existing,
 		...payload,
 	};
-	await validateConfig(merged as schema.NewClassCourse, allowTeacherOverride);
-	return repo.update(id, payload);
+	const { semesterId } = await validateConfig(
+		merged as schema.NewClassCourse,
+		allowTeacherOverride,
+	);
+	return repo.update(id, {
+		...payload,
+		code: payload.code ? normalizeCode(payload.code) : undefined,
+		semesterId: payload.semesterId ? semesterId : undefined,
+	});
 }
 
 export async function deleteClassCourse(id: string) {
@@ -90,6 +127,15 @@ export async function listClassCourses(opts: Parameters<typeof repo.list>[0]) {
 
 export async function getClassCourseById(id: string) {
 	const item = await repo.findById(id);
+	if (!item) throw notFound();
+	return item;
+}
+
+export async function getClassCourseByCode(
+	code: string,
+	academicYearId: string,
+) {
+	const item = await repo.findByCode(normalizeCode(code), academicYearId);
 	if (!item) throw notFound();
 	return item;
 }

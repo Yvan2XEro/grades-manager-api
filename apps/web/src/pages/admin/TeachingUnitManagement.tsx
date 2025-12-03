@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Button } from "../../components/ui/button";
 import {
@@ -190,8 +191,8 @@ const TeachingUnitManagement = () => {
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead>{t("admin.teachingUnits.table.name")}</TableHead>
 										<TableHead>{t("admin.teachingUnits.table.code")}</TableHead>
+										<TableHead>{t("admin.teachingUnits.table.name")}</TableHead>
 										<TableHead>
 											{t("admin.teachingUnits.table.program")}
 										</TableHead>
@@ -209,8 +210,15 @@ const TeachingUnitManagement = () => {
 								<TableBody>
 									{units.items.map((unit) => (
 										<TableRow key={unit.id}>
+											<TableCell>
+												<ClipboardCopy
+													value={unit.code}
+													label={t("admin.teachingUnits.table.code", {
+														defaultValue: "Code",
+													})}
+												/>
+											</TableCell>
 											<TableCell className="font-medium">{unit.name}</TableCell>
-											<TableCell>{unit.code}</TableCell>
 											<TableCell>
 												{(() => {
 													const programInfo = programMap.get(unit.programId);

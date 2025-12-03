@@ -7,6 +7,7 @@ import {
 import * as service from "./faculties.service";
 import {
 	baseSchema,
+	codeSchema,
 	idSchema,
 	listSchema,
 	updateSchema,
@@ -28,4 +29,7 @@ export const router = createRouter({
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getFacultyById(input.id)),
+	getByCode: protectedProcedure
+		.input(codeSchema)
+		.query(({ input }) => service.getFacultyByCode(input.code)),
 });
