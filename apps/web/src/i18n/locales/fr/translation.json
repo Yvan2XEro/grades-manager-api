@@ -310,7 +310,8 @@
 				"code": "Code",
 				"program": "Programme",
 				"course": "Cours",
-				"teacher": "Enseignant"
+				"teacher": "Enseignant",
+				"semester": "Semestre"
 			},
 			"form": {
 				"createTitle": "Nouvelle affectation de cours",
@@ -1420,17 +1421,23 @@
 				"subtitle": "Les options représentent les parcours ou spécialisations disponibles pour ce programme.",
 				"empty": "Aucune option pour le moment. Ajoutez-en une ci-dessous.",
 				"delete": "Supprimer l'option",
+				"edit": "Modifier l'option",
+				"editing": "Modification de l'option {{name}}",
+				"cancelEdit": "Annuler",
 				"form": {
 					"name": "Nom de l'option",
 					"code": "Code",
 					"description": "Description",
-					"submit": "Ajouter l'option"
+					"submit": "Ajouter l'option",
+					"updateSubmit": "Enregistrer"
 				},
 				"toast": {
 					"create": "Option ajoutée",
 					"createError": "Impossible d'ajouter l'option",
 					"delete": "Option supprimée",
-					"deleteError": "Impossible de supprimer l'option"
+					"deleteError": "Impossible de supprimer l'option",
+					"update": "Option mise à jour",
+					"updateError": "Impossible de mettre à jour l'option"
 				}
 			}
 		},

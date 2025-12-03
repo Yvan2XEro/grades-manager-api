@@ -84,36 +84,24 @@ export function generateClassCode({
 }
 
 type ClassCourseCodeInput = {
-	courseCode?: string | null;
-	classCode?: string | null;
-	academicYear?: string | null;
+	programCode?: string | null;
+	levelCode?: string | null;
+	semesterCode?: string | null;
 	existingCodes?: string[];
 	counterPadding?: number;
 };
 
-const normalizeYearSegment = (value?: string | null) => {
-	if (!value) return "00";
-	const firstYearMatch = value.match(/\d{4}/);
-	if (firstYearMatch) {
-		return firstYearMatch[0].slice(-2);
-	}
-	const digits = value.replace(/[^0-9]/g, "");
-	if (!digits) return "00";
-	if (digits.length >= 2) return digits.slice(-2);
-	return digits.padStart(2, "0");
-};
-
 export function generateClassCourseCode({
-	courseCode,
-	classCode,
-	academicYear,
+	programCode,
+	levelCode,
+	semesterCode,
 	existingCodes = [],
-	counterPadding = 2,
+	counterPadding = 1,
 }: ClassCourseCodeInput) {
-	const baseCourse = sanitizePrefix(courseCode ?? PROGRAM_FALLBACK);
-	const classSegment = sanitizePrefix(classCode ?? "CLS");
-	const yearSegment = normalizeYearSegment(academicYear);
-	const base = `${baseCourse}-${classSegment}${yearSegment}`;
+	const prefix = sanitizePrefix(programCode);
+	const level = extractDigits(levelCode);
+	const semester = normalizeSemester(semesterCode);
+	const base = `${prefix}${level}${semester}`;
 	const counter = nextCounter(existingCodes, base, counterPadding);
-	return `${base}-${counter}`;
+	return `${base}${counter}`;
 }

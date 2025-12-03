@@ -1033,17 +1033,23 @@ interface Resources {
 					subtitle: "Options represent the different tracks/specializations offered within this program.";
 					empty: "No options yet. Add one below.";
 					delete: "Delete option";
+					edit: "Edit option";
+					editing: "Editing option {{name}}";
+					cancelEdit: "Cancel edit";
 					form: {
 						name: "Option name";
 						code: "Code";
 						description: "Description";
 						submit: "Add option";
+						updateSubmit: "Save changes";
 					};
 					toast: {
 						create: "Option added";
 						createError: "Could not add option";
 						delete: "Option deleted";
 						deleteError: "Could not delete option";
+						update: "Option updated";
+						updateError: "Could not update option";
 					};
 				};
 			};

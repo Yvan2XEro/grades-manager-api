@@ -65,14 +65,12 @@ import { trpcClient } from "@/utils/trpc";
 const buildProgramSchema = (t: TFunction) =>
 	z.object({
 		name: z.string().min(2, t("admin.programs.validation.name")),
-		code: z
-			.string()
-			.min(
-				2,
-				t("admin.programs.validation.code", {
-					defaultValue: "Code is required",
-				}),
-			),
+		code: z.string().min(
+			2,
+			t("admin.programs.validation.code", {
+				defaultValue: "Code is required",
+			}),
+		),
 		description: z.string().optional(),
 		faculty: z.string({
 			required_error: t("admin.programs.validation.faculty"),
@@ -87,19 +85,21 @@ const programOptionSchema = z.object({
 });
 type ProgramOptionFormData = z.infer<typeof programOptionSchema>;
 
-interface Program {
+type Program = {
 	id: string;
 	code: string;
 	name: string;
 	description: string | null;
 	faculty_id: string;
 	faculty: { name: string };
-}
+};
 
-interface Faculty {
+type Faculty = {
 	id: string;
 	name: string;
-}
+};
+
+type ProgramOption = RouterOutputs["programOptions"]["list"]["items"][number];
 
 export default function ProgramManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -107,6 +107,9 @@ export default function ProgramManagement() {
 	const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [optionProgram, setOptionProgram] = useState<Program | null>(null);
+	const [editingOption, setEditingOption] = useState<ProgramOption | null>(
+		null,
+	);
 	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
 
 	const queryClient = useQueryClient();
@@ -157,6 +160,15 @@ export default function ProgramManagement() {
 		},
 	});
 
+	const resetOptionEditing = () => {
+		setEditingOption(null);
+		optionForm.reset({
+			name: "",
+			code: "",
+			description: "",
+		});
+	};
+
 	const {
 		data: optionList = [],
 		isLoading: optionsLoading,
@@ -184,7 +196,7 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			refetchOptions();
-			optionForm.reset();
+			resetOptionEditing();
 			toast.success(
 				t("admin.programs.options.toast.create", {
 					defaultValue: "Option added",
@@ -207,6 +219,7 @@ export default function ProgramManagement() {
 		},
 		onSuccess: () => {
 			refetchOptions();
+			resetOptionEditing();
 			toast.success(
 				t("admin.programs.options.toast.delete", {
 					defaultValue: "Option deleted",
@@ -219,6 +232,32 @@ export default function ProgramManagement() {
 					t("admin.programs.options.toast.deleteError", {
 						defaultValue: "Could not delete option",
 					}),
+			);
+		},
+	});
+
+	const updateOptionMutation = useMutation({
+		mutationFn: async (
+			input: ProgramOptionFormData & { id: string; programId: string },
+		) => {
+			await trpcClient.programOptions.update.mutate(input);
+		},
+		onSuccess: () => {
+			refetchOptions();
+			resetOptionEditing();
+			toast.success(
+				t("admin.programs.options.toast.update", {
+					defaultValue: "Option updated",
+				}),
+			);
+		},
+		onError: (error: unknown) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.programs.options.toast.updateError", {
+							defaultValue: "Could not update option",
+						}),
 			);
 		},
 	});
@@ -282,7 +321,16 @@ export default function ProgramManagement() {
 	};
 
 	const onSubmitOption = (data: ProgramOptionFormData) => {
-		createOptionMutation.mutate(data);
+		if (!optionProgram) return;
+		if (editingOption) {
+			updateOptionMutation.mutate({
+				id: editingOption.id,
+				programId: optionProgram.id,
+				...data,
+			});
+		} else {
+			createOptionMutation.mutate(data);
+		}
 	};
 
 	const startCreate = () => {
@@ -321,17 +369,27 @@ export default function ProgramManagement() {
 
 	const openOptionsModal = (program: Program) => {
 		setOptionProgram(program);
+		resetOptionEditing();
 		setIsOptionModalOpen(true);
 	};
 
 	const closeOptionsModal = () => {
 		setIsOptionModalOpen(false);
 		setOptionProgram(null);
-		optionForm.reset();
+		resetOptionEditing();
 	};
 
 	const handleDeleteOption = (optionId: string) => {
 		deleteOptionMutation.mutate(optionId);
+	};
+
+	const handleEditOption = (option: ProgramOption) => {
+		setEditingOption(option);
+		optionForm.reset({
+			name: option.name,
+			code: option.code,
+			description: option.description ?? "",
+		});
 	};
 
 	if (isLoading) {
@@ -636,20 +694,32 @@ export default function ProgramManagement() {
 													</p>
 												)}
 											</div>
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												disabled={
-													optionList.length <= 1 ||
-													deleteOptionMutation.isPending
-												}
-												onClick={() => handleDeleteOption(option.id)}
-												aria-label={t("admin.programs.options.delete", {
-													defaultValue: "Delete option",
-												})}
-											>
-												<Trash2 className="h-4 w-4 text-destructive" />
-											</Button>
+											<div className="flex gap-2">
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													onClick={() => handleEditOption(option)}
+													aria-label={t("admin.programs.options.edit", {
+														defaultValue: "Edit option",
+													})}
+												>
+													<Pencil className="h-4 w-4" />
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													disabled={
+														optionList.length <= 1 ||
+														deleteOptionMutation.isPending
+													}
+													onClick={() => handleDeleteOption(option.id)}
+													aria-label={t("admin.programs.options.delete", {
+														defaultValue: "Delete option",
+													})}
+												>
+													<Trash2 className="h-4 w-4 text-destructive" />
+												</Button>
+											</div>
 										</div>
 									))}
 								</div>
@@ -666,6 +736,26 @@ export default function ProgramManagement() {
 								onSubmit={optionForm.handleSubmit(onSubmitOption)}
 								className="space-y-3 rounded-lg border border-border p-3"
 							>
+								{editingOption ? (
+									<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
+										<span>
+											{t("admin.programs.options.editing", {
+												defaultValue: "Editing option {{name}}",
+												name: editingOption.name,
+											})}
+										</span>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onClick={resetOptionEditing}
+										>
+											{t("admin.programs.options.cancelEdit", {
+												defaultValue: "Cancel",
+											})}
+										</Button>
+									</div>
+								) : null}
 								<FormField
 									control={optionForm.control}
 									name="name"
@@ -720,14 +810,23 @@ export default function ProgramManagement() {
 								<div className="flex justify-end">
 									<Button
 										type="submit"
-										disabled={createOptionMutation.isPending || !optionProgram}
+										disabled={
+											!optionProgram ||
+											createOptionMutation.isPending ||
+											updateOptionMutation.isPending
+										}
 									>
-										{createOptionMutation.isPending && (
+										{(createOptionMutation.isPending ||
+											updateOptionMutation.isPending) && (
 											<Spinner className="mr-2 h-4 w-4" />
 										)}
-										{t("admin.programs.options.form.submit", {
-											defaultValue: "Add option",
-										})}
+										{editingOption
+											? t("admin.programs.options.form.updateSubmit", {
+													defaultValue: "Save changes",
+												})
+											: t("admin.programs.options.form.submit", {
+													defaultValue: "Add option",
+												})}
 									</Button>
 								</div>
 							</form>

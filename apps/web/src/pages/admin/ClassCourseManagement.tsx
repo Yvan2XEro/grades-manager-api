@@ -102,13 +102,17 @@ interface Class {
 	name: string;
 	code: string;
 	program: string;
+	programCode?: string | null;
 	academicYearName?: string;
 	semesterId?: string | null;
+	semesterCode?: string | null;
+	cycleLevelCode?: string | null;
 }
 
 interface Program {
 	id: string;
 	name: string;
+	code?: string | null;
 }
 
 interface Course {
@@ -141,8 +145,11 @@ export default function ClassCourseManagement() {
 						name: cls.name,
 						code: cls.code,
 						program: cls.program,
+						programCode: cls.programInfo?.code ?? null,
+						cycleLevelCode: cls.cycleLevel?.code ?? null,
 						academicYearName: cls.academicYearInfo?.name ?? "",
 						semesterId: cls.semester?.id ?? null,
+						semesterCode: cls.semester?.code ?? null,
 					}) as Class,
 			);
 		},
@@ -152,7 +159,14 @@ export default function ClassCourseManagement() {
 		queryKey: ["programs"],
 		queryFn: async () => {
 			const { items } = await trpcClient.programs.list.query({});
-			return items as Program[];
+			return items.map(
+				(program) =>
+					({
+						id: program.id,
+						name: program.name,
+						code: program.code,
+					}) as Program,
+			);
 		},
 	});
 
@@ -222,6 +236,10 @@ export default function ClassCourseManagement() {
 	const selectedCourseId = watch("course");
 	const selectedSemesterId = watch("semesterId");
 	const codeValue = watch("code");
+	const selectedSemester = useMemo(
+		() => semesters?.find((semester) => semester.id === selectedSemesterId),
+		[semesters, selectedSemesterId],
+	);
 
 	const formatTeacherName = (teacher: Teacher) =>
 		[teacher.firstName, teacher.lastName].filter(Boolean).join(" ") ||
@@ -230,7 +248,7 @@ export default function ClassCourseManagement() {
 	const teacherOptions = teachers ?? [];
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c]));
-	const programMap = new Map((programs ?? []).map((p) => [p.id, p.name]));
+	const programMap = new Map((programs ?? []).map((p) => [p.id, p]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 	const teacherMap = new Map(
 		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
@@ -271,11 +289,14 @@ export default function ClassCourseManagement() {
 	useEffect(() => {
 		if (editingClassCourse) return;
 		if (codeDirty) return;
-		if (!selectedCourse?.code) return;
+		const programCode =
+			selectedClass?.programCode ??
+			programMap.get(selectedClass?.program ?? "")?.code;
+		if (!programCode) return;
 		const suggestion = generateClassCourseCode({
-			courseCode: selectedCourse.code,
-			classCode: selectedClass?.code,
-			academicYear: selectedClass?.academicYearName,
+			programCode,
+			levelCode: selectedClass?.cycleLevelCode,
+			semesterCode: selectedSemester?.code ?? selectedClass?.semesterCode,
 			existingCodes: classCourseCodes,
 		});
 		if (suggestion && codeValue !== suggestion) {
@@ -287,9 +308,12 @@ export default function ClassCourseManagement() {
 		codeValue,
 		editingClassCourse,
 		form,
-		selectedClass?.academicYearName,
-		selectedClass?.code,
-		selectedCourse?.code,
+		programMap,
+		selectedClass?.cycleLevelCode,
+		selectedClass?.program,
+		selectedClass?.programCode,
+		selectedClass?.semesterCode,
+		selectedSemester?.code,
 	]);
 
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
@@ -451,6 +475,11 @@ export default function ClassCourseManagement() {
 									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
 									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
 									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.semester", {
+											defaultValue: "Semester",
+										})}
+									</TableHead>
 									<TableHead>{t("admin.classCourses.table.teacher")}</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
@@ -474,7 +503,10 @@ export default function ClassCourseManagement() {
 										<TableCell>
 											{programMap.get(
 												classMap.get(classCourse.class)?.program ?? "",
-											)}
+											)?.name ??
+												t("common.labels.notAvailable", {
+													defaultValue: "N/A",
+												})}
 										</TableCell>
 										<TableCell>
 											{(() => {
@@ -494,6 +526,19 @@ export default function ClassCourseManagement() {
 														)}
 													</div>
 												);
+											})()}
+										</TableCell>
+										<TableCell>
+											{(() => {
+												const semester = semesters?.find(
+													(item) => item.id === classCourse.semesterId,
+												);
+												if (!semester) {
+													return t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													});
+												}
+												return `${semester.name} (${semester.code})`;
 											})()}
 										</TableCell>
 										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
@@ -578,7 +623,11 @@ export default function ClassCourseManagement() {
 											<SelectContent>
 												{classes?.map((cls) => (
 													<SelectItem key={cls.id} value={cls.id}>
-														{cls.name} • {programMap.get(cls.program)}
+														{cls.name} •{" "}
+														{programMap.get(cls.program)?.name ??
+															t("common.labels.notAvailable", {
+																defaultValue: "N/A",
+															})}
 													</SelectItem>
 												))}
 											</SelectContent>

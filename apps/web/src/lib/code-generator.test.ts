@@ -36,11 +36,11 @@ describe("code generator helpers", () => {
 
 	it("builds class course codes referencing class and year", () => {
 		const code = generateClassCourseCode({
-			courseCode: "INF211",
-			classCode: "INF31",
-			academicYear: "2024/2025",
-			existingCodes: ["INF211-INF3124-01"],
+			programCode: "INF",
+			levelCode: "L1",
+			semesterCode: "S2",
+			existingCodes: ["INF121", "INF122"],
 		});
-		expect(code).toBe("INF211-INF3124-02");
+		expect(code).toBe("INF123");
 	});
 });
