@@ -20,7 +20,10 @@ async function ensureProgram(programId: string) {
 async function ensureOption(id: string) {
 	const option = await repo.findById(id);
 	if (!option) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Program option not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Program option not found",
+		});
 	}
 	return option;
 }

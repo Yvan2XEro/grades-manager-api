@@ -8,9 +8,9 @@ import type {
 } from "../db/schema/app-schema";
 import * as schema from "../db/schema/app-schema";
 import { buildPermissions } from "../modules/authz";
-import { slugify } from "./strings";
 import * as creditLedger from "../modules/student-credit-ledger";
 import type { Context } from "./context";
+import { slugify } from "./strings";
 import { auth, db } from "./test-db";
 
 const DEFAULT_DATE = new Date("1990-01-01");
@@ -584,10 +584,7 @@ export async function ensureStudentCourseEnrollment(
 			creditsEarned: status === "completed" ? unit.credits : 0,
 		})
 		.returning();
-	const contribution = creditLedger.contributionForStatus(
-		status,
-		unit.credits,
-	);
+	const contribution = creditLedger.contributionForStatus(status, unit.credits);
 	await creditLedger.applyDelta(
 		studentId,
 		klass.academicYear,

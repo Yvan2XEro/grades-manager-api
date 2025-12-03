@@ -36,7 +36,10 @@ export async function findById(id: string) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
+		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
 		.where(eq(schema.programs.id, id))
 		.limit(1);
 	return program ?? null;
@@ -64,7 +67,10 @@ export async function list(opts: {
 	const items = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(schema.faculties, eq(schema.faculties.id, schema.programs.faculty))
+		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
 		.where(condition)
 		.orderBy(schema.programs.id)
 		.limit(limit);

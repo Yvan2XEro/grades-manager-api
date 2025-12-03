@@ -201,7 +201,7 @@ const EnrollmentManagement = () => {
 		<div className="space-y-6">
 			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3">
 				<div className="space-y-1">
-					<p className="text-sm font-medium text-gray-600">
+					<p className="font-medium text-gray-600 text-sm">
 						{t("admin.enrollments.filters.year", {
 							defaultValue: "Academic year",
 						})}
@@ -230,7 +230,7 @@ const EnrollmentManagement = () => {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<p className="text-sm font-medium text-gray-600">
+					<p className="font-medium text-gray-600 text-sm">
 						{t("admin.enrollments.filters.class", { defaultValue: "Class" })}
 					</p>
 					<Select
@@ -257,7 +257,7 @@ const EnrollmentManagement = () => {
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="space-y-2 rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600">
+				<div className="space-y-2 rounded-lg border border-gray-200 border-dashed p-3 text-gray-600 text-sm">
 					<p className="font-semibold text-gray-900">
 						{t("admin.enrollments.filters.summary", {
 							defaultValue: "Snapshot",
@@ -427,14 +427,14 @@ const EnrollmentManagement = () => {
 														</div>
 													</td>
 													<td className="px-4 py-3">
-														<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+														<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-700 text-xs">
 															{t("admin.enrollments.fields.statusValue", {
 																defaultValue: "{{value}}",
 																value: enrollment.status,
 															})}
 														</span>
 													</td>
-													<td className="px-4 py-3 text-sm text-gray-600">
+													<td className="px-4 py-3 text-gray-600 text-sm">
 														<p>
 															{t("admin.enrollments.fields.enrolledAt", {
 																defaultValue: "Enrolled: {{value}}",

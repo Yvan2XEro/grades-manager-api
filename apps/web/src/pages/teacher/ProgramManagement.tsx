@@ -573,7 +573,7 @@ export default function ProgramManagement() {
 									<Spinner className="h-6 w-6" />
 								</div>
 							) : optionList.length ? (
-								<div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+								<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
 									{optionList.map((option) => (
 										<div
 											key={option.id}

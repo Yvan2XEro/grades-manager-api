@@ -66,14 +66,14 @@ export async function findById(id: string) {
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
 		)
-	.leftJoin(
-		schema.cycleLevels,
-		eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
-	)
-	.leftJoin(
-		schema.studyCycles,
-		eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
-	)
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+		)
 		.leftJoin(
 			schema.programOptions,
 			eq(schema.programOptions.id, schema.classes.programOptionId),
@@ -103,15 +103,11 @@ export async function list(opts: {
 		opts.cycleLevelId
 			? eq(schema.classes.cycleLevelId, opts.cycleLevelId)
 			: undefined,
-		opts.cycleId
-			? eq(schema.cycleLevels.cycleId, opts.cycleId)
-			: undefined,
+		opts.cycleId ? eq(schema.cycleLevels.cycleId, opts.cycleId) : undefined,
 		opts.programOptionId
 			? eq(schema.classes.programOptionId, opts.programOptionId)
 			: undefined,
-		opts.facultyId
-			? eq(schema.programs.faculty, opts.facultyId)
-			: undefined,
+		opts.facultyId ? eq(schema.programs.faculty, opts.facultyId) : undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =

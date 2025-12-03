@@ -140,10 +140,7 @@ export default function CourseManagement() {
 
 	const teacherOptions = teachers ?? [];
 	const programMap = useMemo(
-		() =>
-			new Map(
-				(programs ?? []).map((program) => [program.id, program]),
-			),
+		() => new Map((programs ?? []).map((program) => [program.id, program])),
 		[programs],
 	);
 	const teacherMap = new Map(

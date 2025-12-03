@@ -116,8 +116,7 @@ const TeachingUnitDetail = () => {
 	});
 	const selectedProgramId = form.watch("programId");
 	const selectedProgram = useMemo(
-		() =>
-			programs?.items?.find((program) => program.id === selectedProgramId),
+		() => programs?.items?.find((program) => program.id === selectedProgramId),
 		[programs?.items, selectedProgramId],
 	);
 

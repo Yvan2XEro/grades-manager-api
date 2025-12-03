@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { slugify } from "@/lib/strings";
-import * as repo from "./programs.repo";
 import * as programOptionsRepo from "../program-options/program-options.repo";
+import * as repo from "./programs.repo";
 
 export async function createProgram(data: Parameters<typeof repo.create>[0]) {
 	const slug = slugify(data.name);

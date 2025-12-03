@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { BarChart3, LineChart, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { useStore } from "../../store";
 import { trpc } from "../../utils/trpc";
-import { Badge } from "@/components/ui/badge";
 
 const PerformanceDashboard = () => {
 	const { t } = useTranslation();

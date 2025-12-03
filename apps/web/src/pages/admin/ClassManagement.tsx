@@ -70,7 +70,11 @@ interface Class {
 	academicYearId: string;
 	cycleLevelId: string;
 	programOptionId: string;
-	program: { name: string; cycleName?: string | null; cycleCode?: string | null };
+	program: {
+		name: string;
+		cycleName?: string | null;
+		cycleCode?: string | null;
+	};
 	academicYear: { name: string };
 	cycle?: { id: string; name: string; code: string };
 	cycleLevel?: { id: string; name: string; code: string };
@@ -78,14 +82,13 @@ interface Class {
 	students: { id: string }[];
 }
 
-type CycleLevelOption =
-	RouterOutputs["studyCycles"]["listLevels"][number] & {
-		cycle: {
-			id: string;
-			name: string;
-			code: string | null;
-		};
+type CycleLevelOption = RouterOutputs["studyCycles"]["listLevels"][number] & {
+	cycle: {
+		id: string;
+		name: string;
+		code: string | null;
 	};
+};
 
 export default function ClassManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -208,7 +211,10 @@ export default function ClassManagement() {
 
 	useEffect(() => {
 		if (!cycleLevels.length) return;
-		if (!cycleLevelId || !cycleLevels.some((level) => level.id === cycleLevelId)) {
+		if (
+			!cycleLevelId ||
+			!cycleLevels.some((level) => level.id === cycleLevelId)
+		) {
 			setValue("cycleLevelId", cycleLevels[0].id);
 		}
 	}, [cycleLevels, cycleLevelId, setValue]);
@@ -257,12 +263,7 @@ export default function ClassManagement() {
 				`${selectedProgramOption.name} (${startYear}-${endYear})`,
 			);
 		}
-	}, [
-		selectedProgramOption,
-		selectedAcademicYearId,
-		academicYears,
-		setValue,
-	]);
+	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassFormData) => {
@@ -439,13 +440,15 @@ export default function ClassManagement() {
 												<p className="font-medium text-sm">{cls.cycle.name}</p>
 												<p className="text-muted-foreground text-xs">
 													{cls.cycleLevel?.name}
-													{cls.cycleLevel?.code ? ` (${cls.cycleLevel.code})` : ""}
+													{cls.cycleLevel?.code
+														? ` (${cls.cycleLevel.code})`
+														: ""}
 												</p>
 											</div>
 										) : (
 											t("common.labels.notAvailable", { defaultValue: "N/A" })
 										)}
-										</TableCell>
+									</TableCell>
 									<TableCell>
 										{cls.programOption ? (
 											<div className="space-y-0.5">
@@ -633,7 +636,8 @@ export default function ClassManagement() {
 									{!selectedProgram && (
 										<p className="text-muted-foreground text-xs">
 											{t("admin.classes.form.selectProgramFirst", {
-												defaultValue: "Select a program to load its cycle levels.",
+												defaultValue:
+													"Select a program to load its cycle levels.",
 											})}
 										</p>
 									)}
@@ -662,9 +666,7 @@ export default function ClassManagement() {
 									<Select
 										onValueChange={field.onChange}
 										value={field.value}
-										disabled={
-											!selectedProgram || programOptions.length === 0
-										}
+										disabled={!selectedProgram || programOptions.length === 0}
 									>
 										<FormControl>
 											<SelectTrigger>
