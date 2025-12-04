@@ -1,0 +1,87 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2024-12-05T00:05:00Z
+  dataset: demo
+programs:
+  - code: ENG-SWE-BSC
+    name: Software Engineering Bachelor
+    slug: software-engineering-bsc
+    description: Three-year software engineering curriculum
+    facultyCode: ENG
+programOptions:
+  - programCode: ENG-SWE-BSC
+    code: CORE
+    name: Core Curriculum
+    description: Default option for first-year cohorts
+  - programCode: ENG-SWE-BSC
+    code: AIS
+    name: Intelligent Systems
+    description: AI-focused track used later in the program
+teachingUnits:
+  - programCode: ENG-SWE-BSC
+    code: ENG-FND
+    name: Engineering Fundamentals
+    description: Mathematics and general engineering
+    credits: 18
+    semester: annual
+  - programCode: ENG-SWE-BSC
+    code: ENG-SOF
+    name: Software Foundations
+    description: Programming and architecture
+    credits: 12
+    semester: annual
+courses:
+  - programCode: ENG-SWE-BSC
+    teachingUnitCode: ENG-FND
+    code: ENG101
+    name: Programming Fundamentals
+    hours: 45
+  - programCode: ENG-SWE-BSC
+    teachingUnitCode: ENG-FND
+    code: ENG102
+    name: Discrete Mathematics
+    hours: 30
+  - programCode: ENG-SWE-BSC
+    teachingUnitCode: ENG-SOF
+    code: ENG201
+    name: Software Architecture
+    hours: 40
+classes:
+  - code: ENG24-L1A
+    name: Software Engineering L1 - Cohort A
+    programCode: ENG-SWE-BSC
+    programOptionCode: CORE
+    academicYearCode: AY-2024
+    studyCycleCode: BSC
+    cycleLevelCode: L1
+    semesterCode: S1
+  - code: ENG24-L1B
+    name: Software Engineering L1 - Cohort B
+    programCode: ENG-SWE-BSC
+    programOptionCode: CORE
+    academicYearCode: AY-2024
+    studyCycleCode: BSC
+    cycleLevelCode: L1
+    semesterCode: S1
+classCourses:
+  - code: CC-ENG101-L1A
+    classCode: ENG24-L1A
+    classAcademicYearCode: AY-2024
+    courseCode: ENG101
+    teacherCode: TEACH-ALICE
+    semesterCode: S1
+    weeklyHours: 4
+  - code: CC-ENG101-L1B
+    classCode: ENG24-L1B
+    classAcademicYearCode: AY-2024
+    courseCode: ENG101
+    teacherCode: TEACH-ALICE
+    semesterCode: S1
+    weeklyHours: 4
+  - code: CC-ENG102-L1A
+    classCode: ENG24-L1A
+    classAcademicYearCode: AY-2024
+    courseCode: ENG102
+    teacherCode: TEACH-JAMAL
+    semesterCode: S1
+    weeklyHours: 3

@@ -1,0 +1,77 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2024-12-05T00:10:00Z
+  dataset: demo
+authUsers:
+  - code: ADMIN-ROOT
+    email: admin@example.com
+    name: Admin Demo
+    password: ChangeMe123!
+    role: admin
+  - code: TEACH-ALICE
+    email: alice.teacher@example.com
+    name: Alice Nkom
+    password: Password123!
+    role: admin
+  - code: TEACH-JAMAL
+    email: jamal.teacher@example.com
+    name: Jamal Kouassi
+    password: Password123!
+    role: admin
+  - code: STUDENT-AMELIA
+    email: amelia.student@example.com
+    name: Amelia Tabe
+    password: Password123!
+    role: user
+domainUsers:
+  - code: ADMIN-ROOT
+    authUserCode: ADMIN-ROOT
+    businessRole: administrator
+    firstName: Admin
+    lastName: Demo
+    primaryEmail: admin@example.com
+    status: active
+  - code: TEACH-ALICE
+    authUserCode: TEACH-ALICE
+    businessRole: teacher
+    firstName: Alice
+    lastName: Nkom
+    primaryEmail: alice.teacher@example.com
+    status: active
+  - code: TEACH-JAMAL
+    authUserCode: TEACH-JAMAL
+    businessRole: teacher
+    firstName: Jamal
+    lastName: Kouassi
+    primaryEmail: jamal.teacher@example.com
+    status: active
+  - code: STUDENT-AMELIA
+    authUserCode: STUDENT-AMELIA
+    businessRole: student
+    firstName: Amelia
+    lastName: Tabe
+    primaryEmail: amelia.student@example.com
+    status: active
+students:
+  - code: STUDENT-AMELIA
+    domainUserCode: STUDENT-AMELIA
+    classCode: ENG24-L1A
+    classAcademicYearCode: AY-2024
+    registrationNumber: ENG24-0001
+enrollments:
+  - studentCode: STUDENT-AMELIA
+    classCode: ENG24-L1A
+    classAcademicYearCode: AY-2024
+    academicYearCode: AY-2024
+    status: active
+studentCourseEnrollments:
+  - studentCode: STUDENT-AMELIA
+    classCourseCode: CC-ENG101-L1A
+    courseCode: ENG101
+    sourceClassCode: ENG24-L1A
+    sourceClassAcademicYearCode: AY-2024
+    academicYearCode: AY-2024
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0

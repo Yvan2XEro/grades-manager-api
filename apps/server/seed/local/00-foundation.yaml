@@ -1,0 +1,59 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2024-12-05T00:00:00Z
+  dataset: demo
+examTypes:
+  - name: CC
+    description: Contrôle continu
+  - name: TP
+    description: Travaux pratiques
+  - name: FINAL
+    description: Examen final
+faculties:
+  - code: ENG
+    name: Faculty of Sciences
+    description: Engineering and technology programs
+studyCycles:
+  - code: BSC
+    name: Bachelor Cycle
+    facultyCode: ENG
+    description: Three-year bachelor sequence
+    totalCreditsRequired: 180
+    durationYears: 3
+cycleLevels:
+  - code: L1
+    name: Licence 1
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: BSC
+    facultyCode: ENG
+  - code: L2
+    name: Licence 2
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: BSC
+    facultyCode: ENG
+  - code: L3
+    name: Licence 3
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: BSC
+    facultyCode: ENG
+semesters:
+  - code: S1
+    name: Semester 1
+    orderIndex: 1
+  - code: S2
+    name: Semester 2
+    orderIndex: 2
+academicYears:
+  - code: AY-2024
+    name: 2024-2025
+    startDate: 2024-09-02
+    endDate: 2025-06-30
+    isActive: true
+  - code: AY-2023
+    name: 2023-2024
+    startDate: 2023-09-04
+    endDate: 2024-06-28
+    isActive: false

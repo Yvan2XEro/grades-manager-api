@@ -24,6 +24,13 @@ type CloseInput = {
 	status?: schema.StudentCourseEnrollmentStatus;
 };
 
+type AutoEnrollClassInput = {
+	classId: string;
+	academicYearId: string;
+	semesterId?: string;
+	status?: schema.StudentCourseEnrollmentStatus;
+};
+
 const FINAL_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"completed",
 	"failed",
@@ -314,4 +321,81 @@ export async function ensureStudentRegistered(
 		});
 	}
 	return enrollment;
+}
+
+export async function autoEnrollClass(input: AutoEnrollClassInput) {
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, input.classId),
+		columns: {
+			id: true,
+			academicYear: true,
+		},
+	});
+	if (!klass) {
+		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
+	}
+	if (klass.academicYear !== input.academicYearId) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Class is not attached to the provided academic year",
+		});
+	}
+	const students = await db
+		.select({ id: schema.students.id })
+		.from(schema.students)
+		.where(eq(schema.students.class, klass.id));
+	const baseCondition = eq(schema.classCourses.class, klass.id);
+	const classCourseCondition = input.semesterId
+		? and(baseCondition, eq(schema.classCourses.semesterId, input.semesterId))
+		: baseCondition;
+	const classCourses = await db
+		.select({ id: schema.classCourses.id })
+		.from(schema.classCourses)
+		.where(classCourseCondition);
+	if (!classCourses.length) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No class courses found for this selection",
+		});
+	}
+	if (!students.length) {
+		return {
+			studentsCount: 0,
+			classCoursesCount: classCourses.length,
+			createdCount: 0,
+			skippedCount: 0,
+			conflicts: [] as Array<{ studentId: string; classCourseId: string }>,
+		};
+	}
+	const status = input.status ?? "active";
+	const conflicts: Array<{ studentId: string; classCourseId: string }> = [];
+	let createdCount = 0;
+	for (const student of students) {
+		for (const classCourse of classCourses) {
+			try {
+				await createEnrollment({
+					studentId: student.id,
+					classCourseId: classCourse.id,
+					status,
+				});
+				createdCount++;
+			} catch (error) {
+				if (error instanceof TRPCError && error.code === "CONFLICT") {
+					conflicts.push({
+						studentId: student.id,
+						classCourseId: classCourse.id,
+					});
+					continue;
+				}
+				throw error;
+			}
+		}
+	}
+	return {
+		studentsCount: students.length,
+		classCoursesCount: classCourses.length,
+		createdCount,
+		skippedCount: conflicts.length,
+		conflicts,
+	};
 }

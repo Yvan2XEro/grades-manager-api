@@ -1062,11 +1062,18 @@
 				"title": "Ajustements manuels",
 				"description": "Utilisez la page de gestion des étudiants pour transférer ou réinscrire les étudiants entre les classes."
 			},
+			"autoEnroll": {
+				"button": "Inscrire toute la classe",
+				"title": "Inscrire tous les étudiants ?",
+				"description": "Cette action inscrira {{students}} étudiant(s) aux {{courses}} cours de la classe. Les inscriptions existantes seront ignorées.",
+				"confirm": "Confirmer l'inscription"
+			},
 			"toast": {
 				"updated": "Fenêtre mise à jour",
 				"courseEnrolled": "Étudiant inscrit au cours",
 				"courseWithdrawn": "Inscription mise à jour",
-				"courseReactivated": "Inscription réactivée"
+				"courseReactivated": "Inscription réactivée",
+				"autoEnrollSuccess": "Roster synchronisé ({{count}} nouvelles inscriptions)"
 			},
 			"courseRoster": {
 				"title": "Roster des cours (par étudiant)",

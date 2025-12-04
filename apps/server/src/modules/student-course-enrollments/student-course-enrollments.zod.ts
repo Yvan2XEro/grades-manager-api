@@ -42,3 +42,10 @@ export const closeSchema = z.object({
 	studentId: z.string(),
 	status: statusEnum.default("withdrawn"),
 });
+
+export const autoEnrollClassSchema = z.object({
+	classId: z.string(),
+	academicYearId: z.string(),
+	semesterId: z.string().optional(),
+	status: statusEnum.default("active"),
+});

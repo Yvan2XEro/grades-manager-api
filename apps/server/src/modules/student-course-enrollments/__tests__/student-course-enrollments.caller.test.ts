@@ -7,6 +7,7 @@ import {
 	createCourse,
 	createProgram,
 	createRecapFixture,
+	createStudent,
 	createTeachingUnit,
 	makeTestContext,
 } from "@/lib/test-utils";
@@ -90,5 +91,33 @@ describe("studentCourseEnrollments router", () => {
 		});
 		expect(result.created.length).toBe(1);
 		expect(result.skipped.length).toBe(1);
+	});
+
+	it("auto enrolls an entire class", async () => {
+		const admin = createCaller(asAdmin());
+		const { klass, academicYear, program, teachingUnit, classCourse } =
+			await createRecapFixture();
+		const secondCourse = await createCourse({
+			program: program.id,
+			teachingUnitId: teachingUnit.id,
+		});
+		const secondClassCourse = await createClassCourse({
+			class: klass.id,
+			course: secondCourse.id,
+		});
+		const newStudent = await createStudent({ class: klass.id });
+		const result = await admin.studentCourseEnrollments.autoEnrollClass({
+			classId: klass.id,
+			academicYearId: academicYear.id,
+		});
+		expect(result.studentsCount).toBeGreaterThanOrEqual(2);
+		expect(result.classCoursesCount).toBeGreaterThanOrEqual(2);
+		expect(result.createdCount).toBeGreaterThan(0);
+		const roster = await admin.studentCourseEnrollments.list({
+			studentId: newStudent.id,
+		});
+		const courseIds = roster.items.map((item) => item.classCourseId);
+		expect(courseIds).toContain(classCourse.id);
+		expect(courseIds).toContain(secondClassCourse.id);
 	});
 });

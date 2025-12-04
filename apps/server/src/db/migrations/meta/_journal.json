@@ -1,34 +1,13 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1764682804913,
-			"tag": "0000_bored_owl",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1764694122865,
-			"tag": "0001_opposite_legion",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1764698061583,
-			"tag": "0002_wide_vision",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1764754847363,
-			"tag": "0003_codes_and_semesters",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1764781005993,
+      "tag": "0000_nappy_argent",
+      "breakpoints": true
+    }
+  ]
 }

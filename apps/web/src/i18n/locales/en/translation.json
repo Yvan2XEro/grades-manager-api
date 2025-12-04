@@ -1534,11 +1534,18 @@
 				"title": "Manual adjustments",
 				"description": "Use the student management page to transfer or re-enroll students between classes."
 			},
+			"autoEnroll": {
+				"button": "Enroll entire class",
+				"title": "Enroll every student?",
+				"description": "This action enrolls {{students}} students into {{courses}} courses. Existing enrollments remain untouched.",
+				"confirm": "Confirm enrollment"
+			},
 			"toast": {
 				"updated": "Window updated",
 				"courseEnrolled": "Student enrolled in course",
 				"courseWithdrawn": "Enrollment updated",
-				"courseReactivated": "Enrollment restored"
+				"courseReactivated": "Enrollment restored",
+				"autoEnrollSuccess": "Class roster synced ({{count}} new records)"
 			},
 			"courseRoster": {
 				"title": "Course roster (per student)",

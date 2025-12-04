@@ -43,6 +43,8 @@ interface ExamItem {
 	date: string;
 	percentage: number;
 	courseName: string;
+	courseCode?: string | null;
+	classCourseCode?: string | null;
 }
 
 interface StudentExport {
@@ -60,7 +62,11 @@ interface StudentExport {
 			name: string;
 			type: string;
 			percentage: number;
-			class_course: { course: { id: string; name: string } };
+			class_course: {
+				id: string;
+				code: string | null;
+				course: { id: string; name: string; code: string | null };
+			};
 		};
 	}[];
 }
@@ -158,6 +164,8 @@ export default function GradeExport() {
 							date: exam.date,
 							percentage: Number(exam.percentage),
 							courseName: course.name,
+							courseCode: course.code ?? null,
+							classCourseCode: cc.code ?? null,
 						});
 					},
 				);
@@ -225,7 +233,13 @@ export default function GradeExport() {
 								type: exam.type,
 								percentage: Number(exam.percentage),
 								class_course: {
-									course: { id: classCourse.course, name: course.name },
+									id: classCourse.id,
+									code: classCourse.code ?? null,
+									course: {
+										id: classCourse.course,
+										name: course.name,
+										code: course.code ?? null,
+									},
 								},
 							},
 						};
@@ -266,12 +280,16 @@ export default function GradeExport() {
 			const exportData = students.map((student) => {
 				const courseGrades = new Map<string, number[]>();
 				student.grades.forEach((grade) => {
-					const courseName = grade.exam.class_course.course.name;
-					if (!courseGrades.has(courseName)) {
-						courseGrades.set(courseName, []);
+					const columnKey =
+						grade.exam.class_course.code ??
+						grade.exam.class_course.course.code ??
+						grade.exam.class_course.course.name;
+					if (!columnKey) return;
+					if (!courseGrades.has(columnKey)) {
+						courseGrades.set(columnKey, []);
 					}
 					if (selectedExams.includes(grade.exam.id)) {
-						courseGrades.get(courseName)?.push(grade.score);
+						courseGrades.get(columnKey)?.push(grade.score);
 					}
 				});
 				const courseAverages = new Map<string, number>();
@@ -322,25 +340,31 @@ export default function GradeExport() {
 			const students = await fetchStudentsWithGrades();
 			if (students.length === 0) return;
 
-			const courseGroups = new Map<string, ExamItem[]>();
+			const courseGroups = new Map<
+				string,
+				{ label: string; exams: ExamItem[] }
+			>();
 			selectedExamDetails.forEach((exam) => {
-				const list = courseGroups.get(exam.courseName) ?? [];
-				list.push(exam);
-				courseGroups.set(exam.courseName, list);
+				const key =
+					exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
+				const label = exam.courseCode
+					? `${exam.courseName} (${exam.courseCode})`
+					: exam.courseName;
+				const existing = courseGroups.get(key);
+				if (existing) {
+					existing.exams.push(exam);
+				} else {
+					courseGroups.set(key, { label, exams: [exam] });
+				}
 			});
-			const groupedCourses = Array.from(courseGroups.entries()).map(
-				([courseName, groupedExams]) => ({
-					courseName,
-					exams: groupedExams,
-				}),
-			);
+			const groupedCourses = Array.from(courseGroups.values());
 			const orderedExams = groupedCourses.flatMap(({ exams }) => exams);
 			const firstHeaderRow = [
 				t("admin.gradeExport.pv.table.rank"),
 				t("admin.gradeExport.columns.registration"),
 				t("admin.gradeExport.pv.table.fullName"),
-				...groupedCourses.flatMap(({ courseName, exams }) => [
-					courseName,
+				...groupedCourses.flatMap(({ label, exams }) => [
+					label,
 					...Array.from({ length: Math.max(exams.length - 1, 0) }, () => ""),
 				]),
 				t("admin.gradeExport.pv.table.average"),
@@ -416,7 +440,9 @@ export default function GradeExport() {
 				t("admin.gradeExport.pv.legend.headers.weight"),
 			];
 			const legendRows = orderedExams.map((exam) => [
-				exam.courseName,
+				exam.courseCode
+					? `${exam.courseName} (${exam.courseCode})`
+					: exam.courseName,
 				exam.type,
 				`${exam.percentage}%`,
 			]);
@@ -500,7 +526,10 @@ export default function GradeExport() {
 					ws,
 					t("admin.gradeExport.actions.examGroup.sheetName"),
 				);
-				const examSuffix = `${slugify(exam.courseName)}-${slugify(exam.type)}`;
+					const courseSegment = slugify(
+						exam.courseCode ?? exam.courseName,
+					);
+					const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
 				const filename = buildFilename(
 					t("admin.gradeExport.actions.examGroup.filePrefix"),
 					examSuffix,

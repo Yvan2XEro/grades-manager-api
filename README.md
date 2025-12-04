@@ -32,6 +32,20 @@ This project uses PostgreSQL with Drizzle ORM.
 bun db:push
 ```
 
+4. Generate the sample dataset templates (written to `seed/local`, which is gitignored). Use `--dir` to write elsewhere if needed:
+
+```bash
+bun run --filter server seed:scaffold
+```
+
+5. Populate the local database with those files (override paths with `--foundation`, etc., or set `$SEED_DIR`):
+
+```bash
+bun run --filter server seed
+```
+
+The seed command loads the layered YAML files stored in your local seed directory (default `seed/local`).
+
 
 Then, run the development server:
 

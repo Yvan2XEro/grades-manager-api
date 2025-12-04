@@ -1,8 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, LockOpen, Unlock } from "lucide-react";
+import { CalendarDays, Loader2, LockOpen, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +76,7 @@ const EnrollmentManagement = () => {
 
 	const [selectedStudent, setSelectedStudent] = useState<string>("");
 	const [rosterModalOpen, setRosterModalOpen] = useState(false);
+	const [autoEnrollDialogOpen, setAutoEnrollDialogOpen] = useState(false);
 
 	const courseEnrollmentQuery = useQuery({
 		...trpc.studentCourseEnrollments.list.queryOptions({
@@ -169,7 +181,31 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
+	const autoEnrollMutation = useMutation({
+		mutationFn: () =>
+			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+				classId: selectedClass,
+				academicYearId: selectedAcademicYear,
+				semesterId: selectedClassDetails?.semester?.id,
+			}),
+		onSuccess: (result) => {
+			toast.success(
+				t("admin.enrollments.toast.autoEnrollSuccess", {
+					defaultValue: "Class roster synced ({{count}} records)",
+					count: result.createdCount,
+				}),
+			);
+			setAutoEnrollDialogOpen(false);
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
 	const enrollments = enrollmentsQuery.data?.items ?? [];
+	const studentsCount = studentsQuery.data?.items?.length ?? 0;
+	const classCoursesCount = classCoursesQuery.data?.items?.length ?? 0;
 	const windowStatus = useMemo(() => {
 		if (!selectedClass || !selectedAcademicYear) return null;
 		return windowsQuery.data?.find(
@@ -196,6 +232,14 @@ const EnrollmentManagement = () => {
 	const selectedClassDetails = useMemo(() => {
 		return classes?.items?.find((klass) => klass.id === selectedClass);
 	}, [classes?.items, selectedClass]);
+
+	const canAutoEnroll = Boolean(
+		selectedAcademicYear &&
+			selectedClass &&
+			studentsCount > 0 &&
+			classCoursesCount > 0 &&
+			!autoEnrollMutation.isPending,
+	);
 
 	return (
 		<div className="space-y-6">
@@ -331,6 +375,58 @@ const EnrollmentManagement = () => {
 						</div>
 					</div>
 					<div className="flex flex-wrap gap-2">
+						<AlertDialog
+							open={autoEnrollDialogOpen}
+							onOpenChange={setAutoEnrollDialogOpen}
+						>
+							<AlertDialogTrigger asChild>
+								<Button
+									type="button"
+									variant="outline"
+									disabled={!canAutoEnroll}
+								>
+									{autoEnrollMutation.isPending && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
+									{t("admin.enrollments.autoEnroll.button", {
+										defaultValue: "Enroll entire class",
+									})}
+								</Button>
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>
+										{t("admin.enrollments.autoEnroll.title", {
+											defaultValue: "Enroll every student?",
+										})}
+									</AlertDialogTitle>
+									<AlertDialogDescription>
+										{t("admin.enrollments.autoEnroll.description", {
+											defaultValue:
+												"This action enrolls {{students}} students into {{courses}} courses. Existing enrollments remain untouched.",
+											students: studentsCount,
+											courses: classCoursesCount,
+										})}
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
+										{t("common.actions.cancel", { defaultValue: "Cancel" })}
+									</AlertDialogCancel>
+									<AlertDialogAction
+										onClick={() => autoEnrollMutation.mutate()}
+										disabled={autoEnrollMutation.isPending}
+									>
+										{autoEnrollMutation.isPending && (
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										)}
+										{t("admin.enrollments.autoEnroll.confirm", {
+											defaultValue: "Confirm enrollment",
+										})}
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 						<Button
 							type="button"
 							onClick={() => toggleWindow.mutate("open")}

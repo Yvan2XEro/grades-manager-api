@@ -1,6 +1,7 @@
 import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
 import * as service from "./student-course-enrollments.service";
 import {
+	autoEnrollClassSchema,
 	bulkSchema,
 	closeSchema,
 	createSchema,
@@ -19,6 +20,9 @@ export const studentCourseEnrollmentsRouter = router({
 	updateStatus: adminProcedure
 		.input(updateStatusSchema)
 		.mutation(({ input }) => service.updateStatus(input.id, input.status)),
+	autoEnrollClass: adminProcedure
+		.input(autoEnrollClassSchema)
+		.mutation(({ input }) => service.autoEnrollClass(input)),
 	closeForStudent: adminProcedure
 		.input(closeSchema)
 		.mutation(({ input }) => service.closeForStudent(input)),
