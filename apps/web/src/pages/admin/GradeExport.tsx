@@ -345,8 +345,7 @@ export default function GradeExport() {
 				{ label: string; exams: ExamItem[] }
 			>();
 			selectedExamDetails.forEach((exam) => {
-				const key =
-					exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
+				const key = exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
 				const label = exam.courseCode
 					? `${exam.courseName} (${exam.courseCode})`
 					: exam.courseName;
@@ -526,10 +525,8 @@ export default function GradeExport() {
 					ws,
 					t("admin.gradeExport.actions.examGroup.sheetName"),
 				);
-					const courseSegment = slugify(
-						exam.courseCode ?? exam.courseName,
-					);
-					const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
+				const courseSegment = slugify(exam.courseCode ?? exam.courseName);
+				const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
 				const filename = buildFilename(
 					t("admin.gradeExport.actions.examGroup.filePrefix"),
 					examSuffix,

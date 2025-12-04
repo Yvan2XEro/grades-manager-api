@@ -37,9 +37,7 @@ Options
 async function main() {
 	const args = parseArgs(process.argv.slice(2));
 	const baseDir =
-		args.dir ??
-		process.env.SEED_DIR ??
-		path.join("seed", "local");
+		args.dir ?? process.env.SEED_DIR ?? path.join("seed", "local");
 	const resolvedDir = path.isAbsolute(baseDir)
 		? baseDir
 		: path.resolve(process.cwd(), baseDir);

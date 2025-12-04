@@ -1,12 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { and, eq } from "drizzle-orm";
 import { hashPassword } from "better-auth/crypto";
+import { and, eq } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
-import * as schema from "../db/schema/app-schema";
-import * as authSchema from "../db/schema/auth";
 import type {
 	BusinessRole,
 	DomainUserStatus,
@@ -15,6 +13,8 @@ import type {
 	StudentCourseEnrollmentStatus,
 	TeachingUnitSemester,
 } from "../db/schema/app-schema";
+import * as schema from "../db/schema/app-schema";
+import * as authSchema from "../db/schema/auth";
 import { normalizeCode, slugify } from "../lib/strings";
 
 type SeedLogger = Pick<Console, "log" | "error">;
@@ -704,7 +704,7 @@ async function seedAcademics(
 			);
 		}
 		const semesterId = entry.semesterCode
-			? state.semesters.get(normalizeCode(entry.semesterCode)) ?? null
+			? (state.semesters.get(normalizeCode(entry.semesterCode)) ?? null)
 			: null;
 		if (entry.semesterCode && !semesterId) {
 			throw new Error(
@@ -801,9 +801,7 @@ async function seedUsers(
 				lastName: entry.lastName,
 				primaryEmail: entry.primaryEmail,
 				phone: entry.phone ?? null,
-				dateOfBirth: entry.dateOfBirth
-					? new Date(entry.dateOfBirth)
-					: null,
+				dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
 				placeOfBirth: entry.placeOfBirth ?? null,
 				gender: entry.gender ?? null,
 				nationality: entry.nationality ?? null,
@@ -818,9 +816,7 @@ async function seedUsers(
 					firstName: entry.firstName,
 					lastName: entry.lastName,
 					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth
-						? new Date(entry.dateOfBirth)
-						: null,
+					dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
 					gender: entry.gender ?? null,
 					nationality: entry.nationality ?? null,
@@ -972,7 +968,8 @@ async function seedUsers(
 		const courseGroup = state.courses.get(normalizeCode(entry.courseCode));
 		const courseRecord = courseGroup
 			? // Prefer course belonging to class program if available.
-				courseGroup.get(sourceClass.programCode) ?? Array.from(courseGroup.values())[0]
+				(courseGroup.get(sourceClass.programCode) ??
+				Array.from(courseGroup.values())[0])
 			: null;
 		if (!courseRecord) {
 			throw new Error(
@@ -1109,8 +1106,8 @@ async function seedClassCourses(
 		}
 		const courseGroup = state.courses.get(normalizeCode(entry.courseCode));
 		const courseRecord = courseGroup
-			? courseGroup.get(classRecord.programCode) ??
-				Array.from(courseGroup.values())[0]
+			? (courseGroup.get(classRecord.programCode) ??
+				Array.from(courseGroup.values())[0])
 			: null;
 		if (!courseRecord) {
 			throw new Error(
@@ -1118,7 +1115,7 @@ async function seedClassCourses(
 			);
 		}
 		const semesterId = entry.semesterCode
-			? state.semesters.get(normalizeCode(entry.semesterCode)) ?? null
+			? (state.semesters.get(normalizeCode(entry.semesterCode)) ?? null)
 			: null;
 		if (entry.semesterCode && !semesterId) {
 			throw new Error(

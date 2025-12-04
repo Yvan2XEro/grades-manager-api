@@ -1,12 +1,8 @@
+import { constants } from "node:fs";
 import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { constants } from "node:fs";
 import { stringify } from "yaml";
-import type {
-	AcademicsSeed,
-	FoundationSeed,
-	UsersSeed,
-} from "./runner";
+import type { AcademicsSeed, FoundationSeed, UsersSeed } from "./runner";
 
 type ScaffoldOptions = {
 	force?: boolean;
