@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -74,12 +74,18 @@ const GradeEntry: React.FC = () => {
 
 	const [selectedExam, setSelectedExam] = useState<string>("");
 
+	type GradeFormValues = { grades: Record<string, string> };
+
 	const {
-		register,
+		control,
 		handleSubmit,
 		reset,
+		watch,
 		formState: { errors },
-	} = useForm();
+	} = useForm<GradeFormValues>({
+		defaultValues: { grades: {} },
+		shouldUnregister: true,
+	});
 
 	const courseContextQuery = useQuery({
 		queryKey: ["grade-entry-context", courseId],
@@ -197,47 +203,43 @@ const GradeEntry: React.FC = () => {
 	});
 
 	const gradeEntries = gradesQuery.data ?? [];
-	const grades = useMemo(() => {
-		const record: Record<string, number> = {};
-		gradeEntries.forEach((grade) => {
-			record[grade.student] = Number(grade.score);
-		});
-		return record;
-	}, [gradeEntries]);
 
 	useEffect(() => {
-		const defaults: Record<string, number> = {};
-		Object.entries(grades).forEach(([studentId, score]) => {
-			defaults[`student_${studentId}`] = score;
+		if (!selectedExam) {
+			reset({ grades: {} });
+			return;
+		}
+		if (gradesQuery.isFetching) {
+			reset({ grades: {} });
+			return;
+		}
+		const defaults: Record<string, string> = {};
+		gradeEntries.forEach((grade) => {
+			defaults[grade.student] = Number(grade.score).toString();
 		});
-		reset(defaults);
-	}, [grades, reset]);
+		reset({ grades: defaults });
+	}, [selectedExam, gradeEntries, gradesQuery.isFetching, reset]);
 
 	const rosterStudents = rosterQuery.data ?? [];
 
 	const handleExamChange = (examId: string) => {
 		setSelectedExam(examId);
-		reset({});
 	};
 
 	const onSubmit = async (data: any) => {
 		if (!selectedExam || isExamLocked) return;
 		const gradesToUpsert: GradeInput[] = [];
 
-		for (const studentId in data) {
-			if (studentId.startsWith("student_")) {
-				const actualStudentId = studentId.replace("student_", "");
-				const score = Number.parseFloat(data[studentId]);
-
-				if (!Number.isNaN(score) && score >= 0 && score <= 20) {
-					gradesToUpsert.push({
-						studentId: actualStudentId,
-						examId: selectedExam,
-						score,
-					});
-				}
+		Object.entries(data.grades ?? {}).forEach(([studentId, rawScore]) => {
+			const score = Number.parseFloat(rawScore);
+			if (!Number.isNaN(score) && score >= 0 && score <= 20) {
+				gradesToUpsert.push({
+					studentId,
+					examId: selectedExam,
+					score,
+				});
 			}
-		}
+		});
 
 		if (gradesToUpsert.length === 0) return;
 		saveGrades.mutate(gradesToUpsert);
@@ -400,9 +402,8 @@ const GradeEntry: React.FC = () => {
 								</TableHeader>
 								<TableBody>
 									{rosterStudents.map((student) => {
-										const fieldError = (
-											errors as Record<string, { message?: string } | undefined>
-										)[`student_${student.id}`];
+										const fieldError =
+											errors.grades?.[student.id]?.message;
 										return (
 											<TableRow key={student.id}>
 												<TableCell>{student.registrationNumber}</TableCell>
@@ -411,15 +412,10 @@ const GradeEntry: React.FC = () => {
 												</TableCell>
 												<TableCell>
 													<div className="flex flex-col gap-1">
-														<Input
-															type="number"
-															inputMode="decimal"
-															min="0"
-															max="20"
-															step="0.25"
-															className="w-28"
-															disabled={isExamLocked}
-															{...register(`student_${student.id}`, {
+														<Controller
+															control={control}
+															name={`grades.${student.id}`}
+															rules={{
 																min: {
 																	value: 0,
 																	message: t(
@@ -432,7 +428,21 @@ const GradeEntry: React.FC = () => {
 																		"teacher.gradeEntry.validation.max",
 																	),
 																},
-															})}
+															}}
+															render={({ field }) => (
+																<Input
+																	key={`${selectedExam}-${student.id}`}
+																	type="number"
+																	inputMode="decimal"
+																	min="0"
+																	max="20"
+																	step="0.25"
+																	className="w-28"
+																	disabled={isExamLocked}
+																	{...field}
+																	value={field.value ?? ""}
+																/>
+															)}
 														/>
 														{fieldError ? (
 															<p className="text-destructive text-xs">
@@ -442,7 +452,7 @@ const GradeEntry: React.FC = () => {
 													</div>
 												</TableCell>
 												<TableCell>
-													{grades[student.id] !== undefined ? (
+				{watch(`grades.${student.id}`)?.toString().length ? (
 														<Badge variant="secondary" className="gap-1">
 															<Check className="h-3 w-3" />
 															{t("teacher.gradeEntry.status.graded")}
