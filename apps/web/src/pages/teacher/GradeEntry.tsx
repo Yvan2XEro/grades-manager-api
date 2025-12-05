@@ -402,8 +402,7 @@ const GradeEntry: React.FC = () => {
 								</TableHeader>
 								<TableBody>
 									{rosterStudents.map((student) => {
-										const fieldError =
-											errors.grades?.[student.id]?.message;
+										const fieldError = errors.grades?.[student.id]?.message;
 										return (
 											<TableRow key={student.id}>
 												<TableCell>{student.registrationNumber}</TableCell>
@@ -452,7 +451,7 @@ const GradeEntry: React.FC = () => {
 													</div>
 												</TableCell>
 												<TableCell>
-				{watch(`grades.${student.id}`)?.toString().length ? (
+													{watch(`grades.${student.id}`)?.toString().length ? (
 														<Badge variant="secondary" className="gap-1">
 															<Check className="h-3 w-3" />
 															{t("teacher.gradeEntry.status.graded")}
