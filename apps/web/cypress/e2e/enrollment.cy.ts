@@ -6,20 +6,22 @@ describe("Enrollment management", () => {
 	it("opens windows, auto-enrolls the class, and inspects roster", () => {
 		cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-		cy.contains("Academic year").parent().find("button").click();
-		cy.contains("2024-2025").click();
+		cy.get('[data-testid="academic-year-select"]').click();
+		cy.findByRole("option", { name: /2024-2025/i }).click();
 
-		cy.contains("Class").parent().find("button").click();
-		cy.contains("Software Engineering L1 - Cohort A").click();
+		cy.get('[data-testid="class-select"]').click();
+		cy.findByRole("option", {
+			name: /Software Engineering L1 - Cohort A/i,
+		}).click();
 
-		cy.contains("Students: 1").should("exist");
+		cy.contains("ENG24-0001").should("exist");
 		cy.contains("Window:").should("exist");
 
 		cy.findByRole("button", { name: /Enroll entire class/i }).click();
 		cy.findByRole("button", { name: /Confirm enrollment/i }).click();
 		cy.contains(/Class roster synced/i, { timeout: 10000 }).should("exist");
 
-		cy.findAllByRole("button", { name: /View roster/i })
+		cy.findAllByRole("button", { name: /Open roster/i })
 			.first()
 			.click();
 		cy.contains(/Course roster/i).should("exist");
