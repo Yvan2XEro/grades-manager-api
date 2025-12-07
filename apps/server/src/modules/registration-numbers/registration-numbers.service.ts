@@ -1,15 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import * as schema from "@/db/schema/app-schema";
+import { type TransactionClient, transaction } from "../_shared/db-transaction";
+import { notFound } from "../_shared/errors";
+import * as classesRepo from "../classes/classes.repo";
 import {
 	generateRegistrationNumber,
 	previewRegistrationNumber,
 	RegistrationNumberError,
 	type RegistrationNumberProfileInput,
 } from "./registration-number-generator";
-import * as classesRepo from "../classes/classes.repo";
-import { transaction, type TransactionClient } from "../_shared/db-transaction";
-import { notFound } from "../_shared/errors";
 import * as repo from "./registration-numbers.repo";
 
 type FormatDefinition = Pick<schema.RegistrationNumberFormat, "definition">;
@@ -37,14 +37,12 @@ export async function listFormats(opts: Parameters<typeof repo.list>[0]) {
 	return repo.list(opts);
 }
 
-export async function createFormat(
-	data: {
-		name: string;
-		description?: string;
-		definition: FormatDefinition["definition"];
-		isActive?: boolean;
-	},
-) {
+export async function createFormat(data: {
+	name: string;
+	description?: string;
+	definition: FormatDefinition["definition"];
+	isActive?: boolean;
+}) {
 	return transaction(async (tx) => {
 		if (data.isActive) {
 			await tx

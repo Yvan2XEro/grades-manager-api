@@ -60,7 +60,7 @@ export class RegistrationNumberError extends Error {
 const defaultTransform = "upper" as const;
 
 const trimValue = (value?: string | null) =>
-	typeof value === "string" ? value.trim() : value ?? undefined;
+	typeof value === "string" ? value.trim() : (value ?? undefined);
 
 const toInitial = (value?: string | null) => {
 	const trimmed = trimValue(value);
@@ -135,10 +135,7 @@ const resolveFieldValue = (
 			value = trimValue(context.academicYearName);
 			break;
 		case "academicYearStartYear":
-			value = formatYear(
-				context.academicYearStart,
-				field.format ?? "yyyy",
-			);
+			value = formatYear(context.academicYearStart, field.format ?? "yyyy");
 			break;
 		case "academicYearStartShort":
 			value = formatYear(context.academicYearStart, "yy");
@@ -283,9 +280,7 @@ export async function generateRegistrationNumber(opts: {
 						schema.registrationNumberCounters.scopeKey,
 					],
 					set: {
-						lastValue: sql`${
-							schema.registrationNumberCounters.lastValue
-						} + 1`,
+						lastValue: sql`${schema.registrationNumberCounters.lastValue} + 1`,
 						updatedAt: sql`now()`,
 					},
 				})
@@ -296,10 +291,12 @@ export async function generateRegistrationNumber(opts: {
 }
 
 export async function previewRegistrationNumber(opts: {
-	format: Pick<FormatLike, "definition" | "id"> | {
-		id?: string;
-		definition: RegistrationNumberFormatDefinition;
-	};
+	format:
+		| Pick<FormatLike, "definition" | "id">
+		| {
+				id?: string;
+				definition: RegistrationNumberFormatDefinition;
+		  };
 	klass: KlassRecord;
 	profile?: RegistrationNumberProfileInput;
 	useExistingCounters?: boolean;

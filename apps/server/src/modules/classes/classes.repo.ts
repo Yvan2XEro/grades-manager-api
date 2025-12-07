@@ -191,6 +191,4 @@ export async function findByCode(code: string, academicYearId: string) {
 	);
 }
 
-export type KlassRecord = NonNullable<
-	Awaited<ReturnType<typeof findById>>
->;
+export type KlassRecord = NonNullable<Awaited<ReturnType<typeof findById>>>;

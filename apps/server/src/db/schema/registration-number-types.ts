@@ -29,7 +29,8 @@ export const registrationCounterScopes = [
 	"cycle",
 	"cycleLevel",
 ] as const;
-export type RegistrationCounterScope = (typeof registrationCounterScopes)[number];
+export type RegistrationCounterScope =
+	(typeof registrationCounterScopes)[number];
 
 export type RegistrationFormatLiteralSegment = {
 	kind: "literal";

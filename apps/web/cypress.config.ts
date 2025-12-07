@@ -1,6 +1,6 @@
-import { defineConfig } from "cypress";
 import { execSync } from "node:child_process";
 import path from "node:path";
+import { defineConfig } from "cypress";
 
 function runSeed() {
 	try {
@@ -23,12 +23,10 @@ export default defineConfig({
 		env: {
 			API_URL: process.env.CYPRESS_API_URL ?? "http://localhost:3000",
 			ADMIN_EMAIL: process.env.CYPRESS_ADMIN_EMAIL ?? "admin@example.com",
-			ADMIN_PASSWORD:
-				process.env.CYPRESS_ADMIN_PASSWORD ?? "ChangeMe123!",
+			ADMIN_PASSWORD: process.env.CYPRESS_ADMIN_PASSWORD ?? "ChangeMe123!",
 			TEACHER_EMAIL:
 				process.env.CYPRESS_TEACHER_EMAIL ?? "alice.teacher@example.com",
-			TEACHER_PASSWORD:
-				process.env.CYPRESS_TEACHER_PASSWORD ?? "Password123!",
+			TEACHER_PASSWORD: process.env.CYPRESS_TEACHER_PASSWORD ?? "Password123!",
 			DEAN_EMAIL: process.env.CYPRESS_DEAN_EMAIL ?? "",
 			DEAN_PASSWORD: process.env.CYPRESS_DEAN_PASSWORD ?? "",
 		},

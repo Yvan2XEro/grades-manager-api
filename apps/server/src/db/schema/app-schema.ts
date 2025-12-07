@@ -496,7 +496,7 @@ export const students = pgTable(
 		index("idx_students_class_id").on(t.class),
 		index("idx_students_domain_user_id").on(t.domainUserId),
 	],
-	);
+);
 
 /** Configurable templates for student registration numbers. */
 export const registrationNumberFormats = pgTable(

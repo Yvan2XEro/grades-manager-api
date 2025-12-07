@@ -13,9 +13,9 @@ import type {
 	StudentCourseEnrollmentStatus,
 	TeachingUnitSemester,
 } from "../db/schema/app-schema";
-import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
+import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import { normalizeCode, slugify } from "../lib/strings";
 
 type SeedLogger = Pick<Console, "log" | "error">;

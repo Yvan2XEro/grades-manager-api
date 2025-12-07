@@ -792,9 +792,7 @@ export default function StudentManagement() {
 																: value,
 														)
 													}
-													value={
-														field.value ?? NO_REGISTRATION_FORMAT_VALUE
-													}
+													value={field.value ?? NO_REGISTRATION_FORMAT_VALUE}
 												>
 													<FormControl>
 														<SelectTrigger>

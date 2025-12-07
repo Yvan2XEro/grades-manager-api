@@ -24,7 +24,9 @@ const createExtrasSchema = z.object({
 	registrationFormatId: z.string().optional(),
 });
 
-export const baseSchema = baseFieldsSchema.merge(createExtrasSchema).merge(profileSchema);
+export const baseSchema = baseFieldsSchema
+	.merge(createExtrasSchema)
+	.merge(profileSchema);
 
 export const updateSchema = z
 	.object({ id: z.string() })

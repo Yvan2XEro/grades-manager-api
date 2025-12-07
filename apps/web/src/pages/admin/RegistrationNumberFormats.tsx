@@ -146,7 +146,8 @@ const RegistrationNumberFormats = () => {
 										<TableRow>
 											<TableCell colSpan={4}>
 												{t("admin.registrationNumbers.list.empty", {
-													defaultValue: "No formats yet. Create your first one.",
+													defaultValue:
+														"No formats yet. Create your first one.",
 												})}
 											</TableCell>
 										</TableRow>
@@ -167,7 +168,7 @@ const RegistrationNumberFormats = () => {
 										</TableCell>
 										<TableCell>{format.description || "-"}</TableCell>
 										<TableCell>
-											<div className="flex flex-wrap gap-2 text-xs text-gray-700">
+											<div className="flex flex-wrap gap-2 text-gray-700 text-xs">
 												{format.definition.segments.map((segment, idx) => (
 													<span
 														key={`${format.id}-${idx}`}

@@ -36,7 +36,9 @@ Cypress.Commands.add("loginAs", (role: Role, options: LoginOptions = {}) => {
 
 	cy.visit(loginUrl);
 	cy.findByLabelText(/email/i).clear().type(email);
-	cy.findByLabelText(/password/i).clear().type(password, { log: false });
+	cy.findByLabelText(/password/i)
+		.clear()
+		.type(password, { log: false });
 	cy.findByRole("button", { name: /sign in/i }).click();
 	cy.location("pathname", { timeout: 10000 }).should("eq", target);
 });

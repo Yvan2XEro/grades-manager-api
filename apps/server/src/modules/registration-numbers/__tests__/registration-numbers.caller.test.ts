@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import type { Context } from "@/lib/context";
 import {
 	asAdmin,
 	createAcademicYear,
@@ -6,7 +7,6 @@ import {
 	createFaculty,
 	createProgram,
 } from "@/lib/test-utils";
-import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);

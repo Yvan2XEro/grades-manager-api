@@ -47,18 +47,16 @@ const baseFormatSchema = z.object({
 
 export const createFormatSchema = baseFormatSchema;
 
-export const updateFormatSchema = z
-	.object({ id: z.string() })
-	.merge(
-		z
-			.object({
-				name: z.string().optional(),
-				description: z.string().optional(),
-				definition: formatDefinitionSchema.optional(),
-				isActive: z.boolean().optional(),
-			})
-			.partial(),
-	);
+export const updateFormatSchema = z.object({ id: z.string() }).merge(
+	z
+		.object({
+			name: z.string().optional(),
+			description: z.string().optional(),
+			definition: formatDefinitionSchema.optional(),
+			isActive: z.boolean().optional(),
+		})
+		.partial(),
+);
 
 export const idSchema = z.object({ id: z.string() });
 

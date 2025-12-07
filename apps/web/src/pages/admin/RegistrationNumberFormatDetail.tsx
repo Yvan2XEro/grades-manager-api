@@ -27,6 +27,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import type { RouterOutputs } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 import type {
 	RegistrationCounterScope,
 	RegistrationFormatField,
@@ -36,8 +38,6 @@ import {
 	registrationCounterScopes,
 	registrationFormatFields,
 } from "../../../../server/src/db/schema/registration-number-types";
-import type { RouterOutputs } from "@/utils/trpc";
-import { trpc, trpcClient } from "@/utils/trpc";
 
 type FormatRecord = RouterOutputs["registrationNumbers"]["list"][number];
 type Segment = RegistrationNumberFormatDefinition["segments"][number];
@@ -97,9 +97,7 @@ const RegistrationNumberFormatDetail = () => {
 	});
 	const [previewResult, setPreviewResult] = useState("");
 
-	const classesQuery = useQuery(
-		trpc.classes.list.queryOptions({ limit: 100 }),
-	);
+	const classesQuery = useQuery(trpc.classes.list.queryOptions({ limit: 100 }));
 
 	const formatsQuery = useQuery({
 		...trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
@@ -217,9 +215,7 @@ const RegistrationNumberFormatDetail = () => {
 			}
 			const payload = {
 				name: draft.name.trim(),
-				description: draft.description?.trim()
-					? draft.description
-					: undefined,
+				description: draft.description?.trim() ? draft.description : undefined,
 				definition: draft.definition,
 				isActive: draft.isActive,
 			};
@@ -330,7 +326,7 @@ const RegistrationNumberFormatDetail = () => {
 				<div className="space-y-1">
 					<button
 						type="button"
-						className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+						className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground"
 						onClick={() => navigate("/admin/registration-numbers")}
 					>
 						<ArrowLeft className="h-4 w-4" />
@@ -360,7 +356,10 @@ const RegistrationNumberFormatDetail = () => {
 							})}
 						</Badge>
 					)}
-					<Button onClick={() => upsertMutation.mutate()} disabled={upsertMutation.isPending}>
+					<Button
+						onClick={() => upsertMutation.mutate()}
+						disabled={upsertMutation.isPending}
+					>
 						{t("admin.registrationNumbers.actions.save", {
 							defaultValue: "Save format",
 						})}
@@ -412,12 +411,12 @@ const RegistrationNumberFormatDetail = () => {
 								</div>
 								<div className="flex items-center justify-between rounded-lg border px-4 py-2">
 									<div>
-										<p className="font-medium text-sm text-gray-900">
+										<p className="font-medium text-gray-900 text-sm">
 											{t("admin.registrationNumbers.form.activeLabel", {
 												defaultValue: "Activate on save",
 											})}
 										</p>
-										<p className="text-xs text-gray-600">
+										<p className="text-gray-600 text-xs">
 											{t("admin.registrationNumbers.form.activeHelp", {
 												defaultValue:
 													"Switching on will deactivate other templates.",
@@ -497,7 +496,7 @@ const RegistrationNumberFormatDetail = () => {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{draft.definition.segments.length === 0 && (
-								<p className="text-sm text-gray-600">
+								<p className="text-gray-600 text-sm">
 									{t("admin.registrationNumbers.segments.empty", {
 										defaultValue:
 											"Combine literals, fields, and counters to craft a pattern.",
@@ -508,15 +507,12 @@ const RegistrationNumberFormatDetail = () => {
 								<Card key={`segment-${index}`} className="border border-dashed">
 									<CardContent className="space-y-4 pt-4">
 										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+											<div className="flex items-center gap-2 font-medium text-gray-900 text-sm">
 												<Hash className="h-4 w-4" />
-												{t(
-													"admin.registrationNumbers.segments.segmentLabel",
-													{
-														defaultValue: "Segment {{index}}",
-														index: index + 1,
-													},
-												)}
+												{t("admin.registrationNumbers.segments.segmentLabel", {
+													defaultValue: "Segment {{index}}",
+													index: index + 1,
+												})}
 											</div>
 											<div className="flex items-center gap-2">
 												<Button
@@ -551,10 +547,9 @@ const RegistrationNumberFormatDetail = () => {
 										</div>
 										<div className="space-y-2">
 											<Label>
-												{t(
-													"admin.registrationNumbers.segments.typeLabel",
-													{ defaultValue: "Segment type" },
-												)}
+												{t("admin.registrationNumbers.segments.typeLabel", {
+													defaultValue: "Segment type",
+												})}
 											</Label>
 											<Select
 												value={segment.kind}
@@ -570,22 +565,19 @@ const RegistrationNumberFormatDetail = () => {
 												</SelectTrigger>
 												<SelectContent>
 													<SelectItem value="literal">
-														{t(
-															"admin.registrationNumbers.segments.literal",
-															{ defaultValue: "Literal text" },
-														)}
+														{t("admin.registrationNumbers.segments.literal", {
+															defaultValue: "Literal text",
+														})}
 													</SelectItem>
 													<SelectItem value="field">
-														{t(
-															"admin.registrationNumbers.segments.field",
-															{ defaultValue: "Data field" },
-														)}
+														{t("admin.registrationNumbers.segments.field", {
+															defaultValue: "Data field",
+														})}
 													</SelectItem>
 													<SelectItem value="counter">
-														{t(
-															"admin.registrationNumbers.segments.counter",
-															{ defaultValue: "Counter" },
-														)}
+														{t("admin.registrationNumbers.segments.counter", {
+															defaultValue: "Counter",
+														})}
 													</SelectItem>
 												</SelectContent>
 											</Select>
@@ -643,20 +635,16 @@ const RegistrationNumberFormatDetail = () => {
 												</div>
 												<div className="space-y-2">
 													<Label>
-														{t(
-															"admin.registrationNumbers.segments.transform",
-															{ defaultValue: "Transform" },
-														)}
+														{t("admin.registrationNumbers.segments.transform", {
+															defaultValue: "Transform",
+														})}
 													</Label>
 													<Select
 														value={segment.transform ?? "upper"}
 														onValueChange={(value) =>
 															handleSegmentUpdate(index, {
 																...segment,
-																transform: value as
-																	| "upper"
-																	| "lower"
-																	| "none",
+																transform: value as "upper" | "lower" | "none",
 															})
 														}
 													>
@@ -677,20 +665,18 @@ const RegistrationNumberFormatDetail = () => {
 																)}
 															</SelectItem>
 															<SelectItem value="none">
-																{t(
-																	"admin.registrationNumbers.segments.none",
-																	{ defaultValue: "Original" },
-																)}
+																{t("admin.registrationNumbers.segments.none", {
+																	defaultValue: "Original",
+																})}
 															</SelectItem>
 														</SelectContent>
 													</Select>
 												</div>
 												<div className="space-y-2">
 													<Label>
-														{t(
-															"admin.registrationNumbers.segments.length",
-															{ defaultValue: "Max length" },
-														)}
+														{t("admin.registrationNumbers.segments.length", {
+															defaultValue: "Max length",
+														})}
 													</Label>
 													<Input
 														type="number"
@@ -707,10 +693,9 @@ const RegistrationNumberFormatDetail = () => {
 												</div>
 												<div className="space-y-2">
 													<Label>
-														{t(
-															"admin.registrationNumbers.segments.fallback",
-															{ defaultValue: "Fallback" },
-														)}
+														{t("admin.registrationNumbers.segments.fallback", {
+															defaultValue: "Fallback",
+														})}
 													</Label>
 													<Input
 														value={segment.fallback ?? ""}
@@ -800,7 +785,7 @@ const RegistrationNumberFormatDetail = () => {
 														{registrationCounterScopes.map((scope) => (
 															<label
 																key={scope}
-																className="flex items-center gap-2 text-sm text-gray-700"
+																className="flex items-center gap-2 text-gray-700 text-sm"
 															>
 																<Checkbox
 																	checked={
@@ -833,7 +818,7 @@ const RegistrationNumberFormatDetail = () => {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<p className="text-sm text-gray-600">
+							<p className="text-gray-600 text-sm">
 								{t("admin.registrationNumbers.preview.subtitle", {
 									defaultValue:
 										"Select a class and optional student info to test the pattern.",
@@ -930,12 +915,12 @@ const RegistrationNumberFormatDetail = () => {
 							</Button>
 							{previewResult && (
 								<div className="rounded-lg border bg-white p-4">
-									<p className="text-sm font-medium text-gray-700">
+									<p className="font-medium text-gray-700 text-sm">
 										{t("admin.registrationNumbers.preview.result", {
 											defaultValue: "Preview result",
 										})}
 									</p>
-									<p className="text-2xl font-semibold text-gray-900">
+									<p className="font-semibold text-2xl text-gray-900">
 										{previewResult}
 									</p>
 								</div>

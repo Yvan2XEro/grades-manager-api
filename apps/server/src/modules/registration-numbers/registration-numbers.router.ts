@@ -1,8 +1,4 @@
-import {
-	adminProcedure,
-	protectedProcedure,
-	router,
-} from "@/lib/trpc";
+import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
 import * as service from "./registration-numbers.service";
 import {
 	createFormatSchema,
