@@ -11,7 +11,7 @@ examTypes:
     description: Examen final
 faculties:
   - code: ENG
-    name: Faculty of Sciences
+    name: Faculty of Engineering
     description: Engineering and technology programs
 studyCycles:
   - code: BSC
@@ -57,3 +57,23 @@ academicYears:
     startDate: 2023-09-04
     endDate: 2024-06-28
     isActive: false
+registrationNumberFormats:
+  - name: ENG default format
+    description: ENG-{year}-XXXX (per program/year)
+    isActive: true
+    definition:
+      segments:
+        - kind: literal
+          value: ENG
+        - kind: literal
+          value: "-"
+        - kind: field
+          field: academicYearStartShort
+        - kind: literal
+          value: "-"
+        - kind: counter
+          width: 4
+          scope:
+            - program
+            - academicYear
+          start: 1

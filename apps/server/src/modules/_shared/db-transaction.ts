@@ -1,5 +1,11 @@
 import { db } from "../../db";
 
-export function transaction<_T>(fn: Parameters<typeof db.transaction>[0]) {
+export type TransactionClient = Parameters<
+	Parameters<typeof db.transaction>[0]
+>[0];
+
+export function transaction<_T>(
+	fn: (tx: TransactionClient) => Promise<_T> | _T,
+) {
 	return db.transaction(fn);
 }

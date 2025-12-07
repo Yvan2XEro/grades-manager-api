@@ -13,6 +13,7 @@ import type {
 	StudentCourseEnrollmentStatus,
 	TeachingUnitSemester,
 } from "../db/schema/app-schema";
+import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import { normalizeCode, slugify } from "../lib/strings";
@@ -51,6 +52,12 @@ export type FoundationSeed = {
 		name?: string;
 		startDate: string;
 		endDate: string;
+		isActive?: boolean;
+	}>;
+	registrationNumberFormats?: Array<{
+		name: string;
+		description?: string;
+		definition: RegistrationNumberFormatDefinition;
 		isActive?: boolean;
 	}>;
 };
@@ -510,6 +517,41 @@ async function seedFoundation(
 	}
 	if (data.academicYears?.length) {
 		logger.log(`[seed] • Academic years: ${data.academicYears.length}`);
+	}
+
+	for (const entry of data.registrationNumberFormats ?? []) {
+		if (entry.isActive) {
+			await db
+				.update(schema.registrationNumberFormats)
+				.set({ isActive: false })
+				.where(eq(schema.registrationNumberFormats.isActive, true));
+		}
+		const existing = await db.query.registrationNumberFormats.findFirst({
+			where: eq(schema.registrationNumberFormats.name, entry.name),
+		});
+		if (existing) {
+			await db
+				.update(schema.registrationNumberFormats)
+				.set({
+					description: entry.description ?? existing.description,
+					definition: entry.definition,
+					isActive: entry.isActive ?? existing.isActive,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.registrationNumberFormats.id, existing.id));
+		} else {
+			await db.insert(schema.registrationNumberFormats).values({
+				name: entry.name,
+				description: entry.description ?? null,
+				definition: entry.definition,
+				isActive: entry.isActive ?? false,
+			});
+		}
+	}
+	if (data.registrationNumberFormats?.length) {
+		logger.log(
+			`[seed] • Registration formats: ${data.registrationNumberFormats.length}`,
+		);
 	}
 	logger.log("[seed] Foundation layer applied.");
 }

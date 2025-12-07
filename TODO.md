@@ -91,6 +91,19 @@
 - [x] Ensure every create/edit modal for these entities exposes the `code` field, includes the existing auto-suggestion helper when relevant, and resets previews when the record changes.
 - [ ] Add Playwright/Vitest table snapshots to lock the new layout (at least faculties + classes + students) and prevent regressions.
 
+### Cypress E2E automation (business workflows)
+
+- [ ] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`).
+- [ ] Enrollment management scripts: open/close windows, auto-enroll classes, roster per student, and regressions for option/cycle/semester metadata.
+- [ ] Teacher exam workflow: create session, submit grades, dean approval, lock exam, retake flows, and toast coverage for conflicts.
+- [ ] Admin catalog suites: CRUD faculties/programs/options/classes/classCourses with clipboard controls, code generators, and validation of uniqueness.
+- [ ] Study cycle/level CRUD + linkage to classes, ensuring UI badges and filters respond to seeds.
+- [ ] Student lifecycle: create enrollment, transfer between classes/options, withdraw/reactivate, verifying domain vs auth profile split.
+- [ ] Notifications center: trigger events (submission, validation, auto-enroll) and assert list/ack/flush interactions.
+- [ ] CSV import/export smoke tests for grades and admin exports, confirming headers/order match specs.
+- [ ] Role-based navigation: enforce guardrails for student/teacher/admin/dean personas with store-backed permissions.
+- [ ] Integrate Cypress run in CI (preview server + seed command) so business-critical flows block regressions.
+
 ### Seed automation & setup
 
 - [x] Define the seed architecture: structured YAML/JSON layers (`00-foundation`, `10-academics`, `20-users`) with code-based references (faculties, study cycles, programs, options, classes, courses, classCourses, examTypes, academic years).

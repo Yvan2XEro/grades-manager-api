@@ -29,6 +29,7 @@ import {
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -65,6 +66,8 @@ interface Class {
 	name: string;
 }
 
+const NO_REGISTRATION_FORMAT_VALUE = "__NONE__";
+
 const buildStudentSchema = (t: TFunction) =>
 	z.object({
 		firstName: z.string().min(1, t("admin.students.validation.firstName")),
@@ -72,7 +75,12 @@ const buildStudentSchema = (t: TFunction) =>
 		email: z.string().email(t("admin.students.validation.email")),
 		registrationNumber: z
 			.string()
-			.min(1, t("admin.students.validation.registration")),
+			.optional()
+			.refine(
+				(value) => !value || value.trim().length > 0,
+				t("admin.students.validation.registration"),
+			),
+		registrationFormatId: z.string().optional(),
 		classId: z.string().min(1, t("admin.students.validation.class")),
 	});
 
@@ -81,7 +89,7 @@ type BulkStudent = {
 	firstName: string;
 	lastName: string;
 	email: string;
-	registrationNumber: string;
+	registrationNumber?: string;
 	phone?: string;
 	gender?: "male" | "female" | "other";
 	dateOfBirth?: string;
@@ -157,6 +165,7 @@ export default function StudentManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<"single" | "import">("single");
 	const [importClass, setImportClass] = useState("");
+	const [importFormatId, setImportFormatId] = useState("");
 	const [importResult, setImportResult] = useState<{
 		createdCount: number;
 		conflicts: Array<{ row: number; reason: string }>;
@@ -173,6 +182,10 @@ export default function StudentManagement() {
 			return items as Class[];
 		},
 	});
+
+	const { data: registrationFormats } = useQuery(
+		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
+	);
 
 	const { data: studentsData } = useQuery<StudentsListResponse>({
 		queryKey: ["students", classFilter, search, cursor],
@@ -201,7 +214,17 @@ export default function StudentManagement() {
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
 
-	const form = useForm<StudentForm>({ resolver: zodResolver(studentSchema) });
+	const form = useForm<StudentForm>({
+		resolver: zodResolver(studentSchema),
+		defaultValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			registrationNumber: "",
+			registrationFormatId: undefined,
+			classId: "",
+		},
+	});
 
 	const createMutation = useMutation({
 		mutationFn: (data: StudentForm) => trpcClient.students.create.mutate(data),
@@ -219,8 +242,11 @@ export default function StudentManagement() {
 	});
 
 	const bulkMutation = useMutation({
-		mutationFn: (payload: { classId: string; students: BulkStudent[] }) =>
-			trpcClient.students.bulkCreate.mutate(payload),
+		mutationFn: (payload: {
+			classId: string;
+			registrationFormatId?: string;
+			students: BulkStudent[];
+		}) => trpcClient.students.bulkCreate.mutate(payload),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["students"] });
 		},
@@ -232,7 +258,16 @@ export default function StudentManagement() {
 			),
 	});
 
-	const onSubmit = (data: StudentForm) => createMutation.mutate(data);
+	const onSubmit = (data: StudentForm) =>
+		createMutation.mutate({
+			...data,
+			registrationNumber: data.registrationNumber?.trim()
+				? data.registrationNumber.trim()
+				: undefined,
+			registrationFormatId: data.registrationFormatId
+				? data.registrationFormatId
+				: undefined,
+		});
 
 	const handleNext = () => {
 		if (studentsData?.nextCursor) {
@@ -297,17 +332,14 @@ export default function StudentManagement() {
 				skipEmptyLines: true,
 			});
 			parsed.data.forEach((row, idx) => {
-				if (
-					row.firstName &&
-					row.lastName &&
-					row.email &&
-					row.registrationNumber
-				) {
+				if (row.firstName && row.lastName && row.email) {
 					rows.push({
 						firstName: row.firstName,
 						lastName: row.lastName,
 						email: row.email,
-						registrationNumber: row.registrationNumber,
+						registrationNumber: row.registrationNumber?.trim()
+							? row.registrationNumber.trim()
+							: undefined,
 						phone: row.phone || undefined,
 						gender: normalizeGender(row.gender),
 						dateOfBirth: row.dateOfBirth
@@ -329,17 +361,14 @@ export default function StudentManagement() {
 			const sheet = wb.Sheets[wb.SheetNames[0]];
 			const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet);
 			json.forEach((row, idx) => {
-				if (
-					row.firstName &&
-					row.lastName &&
-					row.email &&
-					row.registrationNumber
-				) {
+				if (row.firstName && row.lastName && row.email) {
 					rows.push({
 						firstName: row.firstName,
 						lastName: row.lastName,
 						email: row.email,
-						registrationNumber: row.registrationNumber,
+						registrationNumber: row.registrationNumber?.trim()
+							? row.registrationNumber.trim()
+							: undefined,
 						phone: row.phone || undefined,
 						gender: normalizeGender(row.gender),
 						dateOfBirth: toISODateFromSheet(
@@ -363,7 +392,11 @@ export default function StudentManagement() {
 		}
 
 		bulkMutation.mutate(
-			{ classId: importClass, students: rows },
+			{
+				classId: importClass,
+				registrationFormatId: importFormatId || undefined,
+				students: rows,
+			},
 			{
 				onSuccess: (res) => {
 					setImportResult({
@@ -388,6 +421,7 @@ export default function StudentManagement() {
 		setIsModalOpen(false);
 		setActiveTab("single");
 		setImportClass("");
+		setImportFormatId("");
 		setImportResult(null);
 		setImportFile(null);
 		setImportFileKey((key) => key + 1);
@@ -730,6 +764,78 @@ export default function StudentManagement() {
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
+												<FormDescription>
+													{t("admin.students.form.registrationHint", {
+														defaultValue:
+															"Leave blank to auto-generate the next matricule.",
+													})}
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="registrationFormatId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.registrationFormat", {
+														defaultValue: "Registration format",
+													})}
+												</FormLabel>
+												<Select
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_REGISTRATION_FORMAT_VALUE
+																? undefined
+																: value,
+														)
+													}
+													value={
+														field.value ?? NO_REGISTRATION_FORMAT_VALUE
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.students.form.registrationFormatPlaceholder",
+																	{
+																		defaultValue: "Use active format",
+																	},
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
+															{t(
+																"admin.students.form.registrationFormatPlaceholder",
+																{
+																	defaultValue: "Use active format",
+																},
+															)}
+														</SelectItem>
+														{registrationFormats?.map((format) => (
+															<SelectItem key={format.id} value={format.id}>
+																{format.name}
+																{format.isActive
+																	? ` (${t(
+																			"admin.registrationNumbers.list.active",
+																			{ defaultValue: "Active" },
+																		)})`
+																	: ""}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormDescription>
+													{t("admin.students.form.registrationFormatHint", {
+														defaultValue:
+															"Select a specific format to override the active template.",
+													})}
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -805,6 +911,53 @@ export default function StudentManagement() {
 												{classes?.map((c) => (
 													<SelectItem key={c.id} value={c.id}>
 														{c.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="import-format-select">
+											{t("admin.students.import.formatLabel", {
+												defaultValue: "Registration format (optional)",
+											})}
+										</Label>
+										<Select
+											value={importFormatId || NO_REGISTRATION_FORMAT_VALUE}
+											onValueChange={(value) =>
+												setImportFormatId(
+													value === NO_REGISTRATION_FORMAT_VALUE ? "" : value,
+												)
+											}
+										>
+											<SelectTrigger id="import-format-select">
+												<SelectValue
+													placeholder={t(
+														"admin.students.form.registrationFormatPlaceholder",
+														{
+															defaultValue: "Use active format",
+														},
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
+													{t(
+														"admin.students.form.registrationFormatPlaceholder",
+														{
+															defaultValue: "Use active format",
+														},
+													)}
+												</SelectItem>
+												{registrationFormats?.map((format) => (
+													<SelectItem key={format.id} value={format.id}>
+														{format.name}
+														{format.isActive
+															? ` (${t(
+																	"admin.registrationNumbers.list.active",
+																	{ defaultValue: "Active" },
+																)})`
+															: ""}
 													</SelectItem>
 												))}
 											</SelectContent>

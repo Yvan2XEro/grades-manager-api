@@ -10,6 +10,7 @@ import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
 import { notificationsRouter } from "../modules/notifications";
+import { registrationNumbersRouter } from "../modules/registration-numbers";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
 import { promotionsRouter } from "../modules/promotions";
@@ -46,6 +47,7 @@ export const appRouter = router({
 	examScheduler: examSchedulerRouter,
 	students: studentsRouter,
 	promotions: promotionsRouter,
+	registrationNumbers: registrationNumbersRouter,
 	grades: gradesRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,

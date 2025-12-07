@@ -17,10 +17,14 @@ export const profileSchema = z.object({
 
 const baseFieldsSchema = z.object({
 	classId: z.string(),
-	registrationNumber: z.string(),
+	registrationNumber: z.string().min(1).optional(),
 });
 
-export const baseSchema = baseFieldsSchema.merge(profileSchema);
+const createExtrasSchema = z.object({
+	registrationFormatId: z.string().optional(),
+});
+
+export const baseSchema = baseFieldsSchema.merge(createExtrasSchema).merge(profileSchema);
 
 export const updateSchema = z
 	.object({ id: z.string() })
@@ -38,9 +42,10 @@ export const idSchema = z.object({ id: z.string() });
 
 export const bulkCreateSchema = z.object({
 	classId: z.string(),
+	registrationFormatId: z.string().optional(),
 	students: z.array(
 		profileSchema.extend({
-			registrationNumber: z.string(),
+			registrationNumber: z.string().min(1).optional(),
 		}),
 	),
 });

@@ -11,6 +11,7 @@ import {
 	FileCog,
 	FileSpreadsheet,
 	GraduationCap,
+	Hash,
 	Layers3,
 	LayoutDashboard,
 	School,
@@ -111,6 +112,11 @@ const Sidebar: React.FC = () => {
 			to: "/admin/rules",
 			icon: <FileCog className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.rules",
+		},
+		{
+			to: "/admin/registration-numbers",
+			icon: <Hash className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.registrationNumbers",
 		},
 		{
 			to: "/admin/grade-export",

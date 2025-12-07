@@ -19,7 +19,7 @@ export const auth = betterAuth({
 		schema: authSchema,
 	}),
 	plugins: [admin({ adminRoles: adminRoles })],
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	trustedOrigins: process.env.CORS_ORIGINS?.split(",") || [],
 	emailAndPassword: {
 		enabled: true,
 	},

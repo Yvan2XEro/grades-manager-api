@@ -38,6 +38,7 @@ export const studentsRouter = router({
 		service.createStudent({
 			classId: input.classId,
 			registrationNumber: input.registrationNumber,
+			registrationFormatId: input.registrationFormatId,
 			profile: mapProfile(input),
 		}),
 	),
@@ -52,6 +53,7 @@ export const studentsRouter = router({
 	bulkCreate: adminProcedure.input(bulkCreateSchema).mutation(({ input }) =>
 		service.bulkCreateStudents({
 			classId: input.classId,
+			registrationFormatId: input.registrationFormatId,
 			students: input.students.map((student) => ({
 				registrationNumber: student.registrationNumber,
 				profile: mapProfile(student) as ServiceProfileInput,

@@ -83,6 +83,27 @@ const sampleFoundation: FoundationSeed = {
 			isActive: false,
 		},
 	],
+	registrationNumberFormats: [
+		{
+			name: "ENG default format",
+			description: "ENG-{year}-XXXX (per program/year)",
+			isActive: true,
+			definition: {
+				segments: [
+					{ kind: "literal", value: "ENG" },
+					{ kind: "literal", value: "-" },
+					{ kind: "field", field: "academicYearStartShort" },
+					{ kind: "literal", value: "-" },
+					{
+						kind: "counter",
+						width: 4,
+						scope: ["program", "academicYear"],
+						start: 1,
+					},
+				],
+			},
+		},
+	],
 };
 
 const sampleAcademics: AcademicsSeed = {

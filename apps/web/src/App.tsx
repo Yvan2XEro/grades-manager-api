@@ -22,6 +22,8 @@ import GradeExport from "./pages/admin/GradeExport";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import RuleManagement from "./pages/admin/RuleManagement";
+import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
+import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
@@ -115,6 +117,14 @@ function App() {
 						<Route path="faculties" element={<FacultyManagement />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="rules" element={<RuleManagement />} />
+						<Route
+							path="registration-numbers"
+							element={<RegistrationNumberFormats />}
+						/>
+						<Route
+							path="registration-numbers/:formatId"
+							element={<RegistrationNumberFormatDetail />}
+						/>
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />

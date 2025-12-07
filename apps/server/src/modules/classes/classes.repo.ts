@@ -16,11 +16,20 @@ const classSelection = {
 	programInfo: {
 		id: schema.programs.id,
 		name: schema.programs.name,
+		code: schema.programs.code,
+		slug: schema.programs.slug,
 		facultyId: schema.programs.faculty,
+	},
+	faculty: {
+		id: schema.faculties.id,
+		code: schema.faculties.code,
+		name: schema.faculties.name,
 	},
 	academicYearInfo: {
 		id: schema.academicYears.id,
 		name: schema.academicYears.name,
+		startDate: schema.academicYears.startDate,
+		endDate: schema.academicYears.endDate,
 	},
 	cycleLevel: {
 		id: schema.cycleLevels.id,
@@ -52,6 +61,10 @@ async function selectClass(where: SQL<unknown>) {
 		.select(classSelection)
 		.from(schema.classes)
 		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
@@ -140,6 +153,10 @@ export async function list(opts: {
 		.from(schema.classes)
 		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
 		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
+		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
 		)
@@ -173,3 +190,7 @@ export async function findByCode(code: string, academicYearId: string) {
 		),
 	);
 }
+
+export type KlassRecord = NonNullable<
+	Awaited<ReturnType<typeof findById>>
+>;

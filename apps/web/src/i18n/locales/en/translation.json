@@ -557,7 +557,8 @@
 				"enrollments": "Enrollments",
 				"examTypes": "Exam types",
 				"examScheduler": "Exam scheduler",
-				"rules": "Rule center"
+				"rules": "Rule center",
+				"registrationNumbers": "Registration numbers"
 			},
 			"teacher": {
 				"dashboard": "Overview",
@@ -717,6 +718,87 @@
 				"saved": "Rule saved successfully"
 			},
 			"previewWarning": "Overrides are stored soon. For now, keep a note of exported JSON until persistence arrives."
+		},
+		"registrationNumbers": {
+			"title": "Registration number formats",
+			"subtitle": "Design flexible matricule templates that pull context from classes, programs, and cohorts.",
+			"actions": {
+				"reset": "Reset form",
+				"save": "Save format",
+				"clear": "Clear form",
+				"new": "New format"
+			},
+			"list": {
+				"title": "Existing formats",
+				"empty": "No formats yet. Start by creating one.",
+				"active": "Active",
+				"edit": "Edit",
+				"activate": "Activate",
+				"delete": "Delete",
+				"confirmDelete": "Delete this format permanently?"
+			},
+			"form": {
+				"title": "Format designer",
+				"name": "Format name",
+				"activeLabel": "Activate on save",
+				"activeHelp": "When enabled, other templates will be deactivated.",
+				"description": "Description"
+			},
+			"segments": {
+				"title": "Segments",
+				"addLiteral": "Add literal",
+				"addField": "Add field",
+				"addCounter": "Add counter",
+				"empty": "Combine literals, fields, and counters to define your matricule format.",
+				"segmentLabel": "Segment {{index}}",
+				"typeLabel": "Segment type",
+				"literal": "Literal text",
+				"field": "Data field",
+				"counter": "Counter",
+				"literalValue": "Text value",
+				"fieldSelect": "Select field",
+				"transform": "Transform",
+				"uppercase": "Uppercase",
+				"lowercase": "Lowercase",
+				"none": "Original",
+				"length": "Max length",
+				"fallback": "Fallback value",
+				"counterWidth": "Width",
+				"counterStart": "Start value",
+				"counterPad": "Pad character",
+				"counterScope": "Counter scope"
+			},
+			"preview": {
+				"title": "Preview",
+				"subtitle": "Select a class and optional student info to preview the output.",
+				"class": "Class",
+				"classPlaceholder": "Select class",
+				"firstName": "First name",
+				"lastName": "Last name",
+				"nationality": "Nationality",
+				"run": "Generate preview",
+				"result": "Preview result"
+			},
+			"table": {
+				"name": "Name",
+				"description": "Description",
+				"pattern": "Pattern"
+			},
+			"dialog": {
+				"createTitle": "New format",
+				"editTitle": "Edit format"
+			},
+			"toast": {
+				"saved": "Format saved",
+				"deleted": "Format deleted",
+				"activated": "Format activated"
+			},
+			"errors": {
+				"missingName": "Name is required",
+				"missingSegments": "Add at least one segment",
+				"previewClass": "Select a class to preview",
+				"notFound": "Format not found"
+			}
 		},
 		"notifications": {
 			"title": "Notifications",
@@ -1330,12 +1412,17 @@
 				"lastName": "Last name",
 				"email": "Email",
 				"registration": "Registration number",
+				"registrationHint": "Leave blank to auto-generate the next available matricule.",
+				"registrationFormat": "Registration format",
+				"registrationFormatHint": "Choose a specific template to override the active format.",
+				"registrationFormatPlaceholder": "Use active format",
 				"class": "Class",
 				"classPlaceholder": "Select class",
 				"submit": "Add student"
 			},
 			"import": {
 				"classLabel": "Class for imported students",
+				"formatLabel": "Registration format (optional)",
 				"fileLabel": "Upload CSV or XLSX file",
 				"downloadTemplate": "Download template",
 				"invalidFormat": "Missing required fields in this row",
@@ -1383,7 +1470,7 @@
 				"firstName": "First name is required",
 				"lastName": "Last name is required",
 				"email": "Enter a valid email address",
-				"registration": "Registration number is required",
+				"registration": "Provide a registration number or leave the field blank",
 				"class": "Please select a class"
 			}
 		},

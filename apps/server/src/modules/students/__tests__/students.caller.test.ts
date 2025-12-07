@@ -1,4 +1,6 @@
 import { describe, expect, it } from "bun:test";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import { asAdmin, createClass, makeTestContext } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
@@ -75,5 +77,51 @@ describe("students router", () => {
 				students: [],
 			}),
 		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+
+	it("generates registration numbers when format is active", async () => {
+		const admin = createCaller(asAdmin());
+		const definition = {
+			segments: [
+				{ kind: "literal", value: "REG-" },
+				{ kind: "counter", width: 3 },
+			],
+		};
+		await admin.registrationNumbers.create({
+			name: "Default",
+			definition,
+			isActive: true,
+		});
+		const klass = await createClass();
+		const first = await admin.students.create({
+			classId: klass.id,
+			firstName: "Auto",
+			lastName: "One",
+			email: "auto1@example.com",
+		});
+		const second = await admin.students.create({
+			classId: klass.id,
+			firstName: "Auto",
+			lastName: "Two",
+			email: "auto2@example.com",
+		});
+		expect(first.registrationNumber).toBe("REG-001");
+		expect(second.registrationNumber).toBe("REG-002");
+	});
+
+	it("fails to auto-generate when no format is configured", async () => {
+		const admin = createCaller(asAdmin());
+		await db.delete(schema.registrationNumberFormats);
+		const klass = await createClass();
+		await expect(
+			admin.students.create({
+				classId: klass.id,
+				firstName: "Missing",
+				lastName: "Format",
+				email: "missing-format@example.com",
+			}),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+		});
 	});
 });

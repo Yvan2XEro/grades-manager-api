@@ -18,6 +18,7 @@ import {
 	unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import type { RegistrationNumberFormatDefinition } from "./registration-number-types";
 
 /** Business roles available for domain-level RBAC. */
 export const businessRoles = [
@@ -494,6 +495,52 @@ export const students = pgTable(
 		unique("uq_students_domain_user").on(t.domainUserId),
 		index("idx_students_class_id").on(t.class),
 		index("idx_students_domain_user_id").on(t.domainUserId),
+	],
+	);
+
+/** Configurable templates for student registration numbers. */
+export const registrationNumberFormats = pgTable(
+	"registration_number_formats",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		name: text("name").notNull(),
+		description: text("description"),
+		definition: jsonb("definition")
+			.$type<RegistrationNumberFormatDefinition>()
+			.notNull(),
+		isActive: boolean("is_active").notNull().default(false),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [index("idx_registration_formats_active").on(t.isActive)],
+);
+
+/** Counter checkpoints partitioned by format + scope key. */
+export const registrationNumberCounters = pgTable(
+	"registration_number_counters",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		formatId: text("format_id")
+			.notNull()
+			.references(() => registrationNumberFormats.id, {
+				onDelete: "cascade",
+			}),
+		scopeKey: text("scope_key").notNull(),
+		lastValue: integer("last_value").notNull().default(0),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_registration_counter_scope").on(t.formatId, t.scopeKey),
+		index("idx_registration_counter_format_id").on(t.formatId),
 	],
 );
 
@@ -973,6 +1020,23 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
+export const registrationNumberFormatsRelations = relations(
+	registrationNumberFormats,
+	({ many }) => ({
+		counters: many(registrationNumberCounters),
+	}),
+);
+
+export const registrationNumberCountersRelations = relations(
+	registrationNumberCounters,
+	({ one }) => ({
+		format: one(registrationNumberFormats, {
+			fields: [registrationNumberCounters.formatId],
+			references: [registrationNumberFormats.id],
+		}),
+	}),
+);
+
 export type Faculty = InferSelectModel<typeof faculties>;
 export type NewFaculty = InferInsertModel<typeof faculties>;
 
@@ -1048,3 +1112,16 @@ export type NewEnrollmentWindow = InferInsertModel<typeof enrollmentWindows>;
 
 export type Notification = InferSelectModel<typeof notifications>;
 export type NewNotification = InferInsertModel<typeof notifications>;
+
+export type RegistrationNumberFormat = InferSelectModel<
+	typeof registrationNumberFormats
+>;
+export type NewRegistrationNumberFormat = InferInsertModel<
+	typeof registrationNumberFormats
+>;
+export type RegistrationNumberCounter = InferSelectModel<
+	typeof registrationNumberCounters
+>;
+export type NewRegistrationNumberCounter = InferInsertModel<
+	typeof registrationNumberCounters
+>;

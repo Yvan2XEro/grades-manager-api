@@ -5,6 +5,7 @@ import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import * as classesRepo from "../classes/classes.repo";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
+import * as registrationNumbersService from "../registration-numbers/registration-numbers.service";
 import * as repo from "./students.repo";
 
 type StudentProfileInput = Pick<
@@ -22,7 +23,8 @@ type StudentProfileInput = Pick<
 
 type CreateStudentInput = {
 	classId: string;
-	registrationNumber: string;
+	registrationNumber?: string;
+	registrationFormatId?: string;
 	profile: StudentProfileInput;
 };
 
@@ -44,6 +46,12 @@ const buildProfilePayload = (p: StudentProfileInput) => ({
 	gender: p.gender ?? null,
 	nationality: p.nationality ?? null,
 	status: "active" as schema.DomainUserStatus,
+});
+
+const toRegistrationProfile = (p: StudentProfileInput) => ({
+	firstName: p.firstName,
+	lastName: p.lastName,
+	nationality: p.nationality,
 });
 
 const extractErrorMessage = (error: unknown): string => {
@@ -70,8 +78,17 @@ export async function createStudent(input: CreateStudentInput) {
 	const klass = await classesRepo.findById(input.classId);
 	if (!klass)
 		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
+	const registrationProfile = toRegistrationProfile(input.profile);
 	try {
 		const studentId = await transaction(async (tx) => {
+			const registrationNumber =
+				input.registrationNumber ??
+				(await registrationNumbersService.issueRegistrationNumber({
+					klass,
+					profile: registrationProfile,
+					tx,
+					formatId: input.registrationFormatId,
+				}));
 			const [profile] = await tx
 				.insert(schema.domainUsers)
 				.values(buildProfilePayload(input.profile))
@@ -80,7 +97,7 @@ export async function createStudent(input: CreateStudentInput) {
 				.insert(schema.students)
 				.values({
 					class: input.classId,
-					registrationNumber: input.registrationNumber,
+					registrationNumber,
 					domainUserId: profile.id,
 				})
 				.returning();
@@ -107,8 +124,9 @@ export async function createStudent(input: CreateStudentInput) {
 
 export async function bulkCreateStudents(data: {
 	classId: string;
+	registrationFormatId?: string;
 	students: Array<{
-		registrationNumber: string;
+		registrationNumber?: string;
 		profile: StudentProfileInput;
 	}>;
 }) {
@@ -128,7 +146,18 @@ export async function bulkCreateStudents(data: {
 		for (let i = 0; i < data.students.length; i++) {
 			const s = data.students[i];
 			let profileId: string | undefined;
+			let attemptedRegistration: string | undefined;
 			try {
+				const registrationProfile = toRegistrationProfile(s.profile);
+				const registrationNumber =
+					s.registrationNumber ??
+					(await registrationNumbersService.issueRegistrationNumber({
+						klass,
+						profile: registrationProfile,
+						tx,
+						formatId: data.registrationFormatId,
+					}));
+				attemptedRegistration = registrationNumber;
 				const [profile] = await tx
 					.insert(schema.domainUsers)
 					.values(buildProfilePayload(s.profile))
@@ -138,7 +167,7 @@ export async function bulkCreateStudents(data: {
 					.insert(schema.students)
 					.values({
 						class: data.classId,
-						registrationNumber: s.registrationNumber,
+						registrationNumber,
 						domainUserId: profile.id,
 					})
 					.returning();
@@ -165,7 +194,7 @@ export async function bulkCreateStudents(data: {
 				conflicts.push({
 					row: i + 1,
 					email: s.profile.primaryEmail,
-					registrationNumber: s.registrationNumber,
+					registrationNumber: attemptedRegistration ?? s.registrationNumber,
 					reason,
 				});
 			}

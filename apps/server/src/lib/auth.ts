@@ -32,7 +32,7 @@ export const auth = betterAuth({
 			};
 		}),
 	],
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	trustedOrigins: process.env.CORS_ORIGINS?.split(",") || [],
 	emailAndPassword: {
 		enabled: true,
 	},

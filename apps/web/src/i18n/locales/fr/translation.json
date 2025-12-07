@@ -76,7 +76,8 @@
 				"enrollments": "Inscriptions",
 				"examTypes": "Types d'examen",
 				"examScheduler": "Programmation des examens",
-				"rules": "Centre des règles"
+				"rules": "Centre des règles",
+				"registrationNumbers": "Formats de matricule"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
@@ -218,6 +219,87 @@
 				"saved": "Règle enregistrée"
 			},
 			"previewWarning": "La persistance arrive bientôt. Conservez l'export JSON en attendant."
+		},
+		"registrationNumbers": {
+			"title": "Formats de matricule",
+			"subtitle": "Définissez des modèles flexibles pour générer automatiquement les matricules des nouveaux étudiants.",
+			"actions": {
+				"reset": "Réinitialiser le formulaire",
+				"save": "Enregistrer le format",
+				"clear": "Effacer le formulaire",
+				"new": "Nouveau format"
+			},
+			"list": {
+				"title": "Formats existants",
+				"empty": "Aucun format pour le moment. Commencez par en créer un.",
+				"active": "Actif",
+				"edit": "Modifier",
+				"activate": "Activer",
+				"delete": "Supprimer",
+				"confirmDelete": "Supprimer définitivement ce format ?"
+			},
+			"form": {
+				"title": "Concepteur de format",
+				"name": "Nom du format",
+				"activeLabel": "Activer après l’enregistrement",
+				"activeHelp": "L’activation désactivera les autres formats.",
+				"description": "Description"
+			},
+			"segments": {
+				"title": "Segments",
+				"addLiteral": "Ajouter un littéral",
+				"addField": "Ajouter un champ",
+				"addCounter": "Ajouter un compteur",
+				"empty": "Assemblez des littéraux, des champs et des compteurs pour définir le matricule.",
+				"segmentLabel": "Segment {{index}}",
+				"typeLabel": "Type de segment",
+				"literal": "Texte",
+				"field": "Champ de données",
+				"counter": "Compteur",
+				"literalValue": "Valeur texte",
+				"fieldSelect": "Choisir un champ",
+				"transform": "Transformation",
+				"uppercase": "Majuscules",
+				"lowercase": "Minuscules",
+				"none": "Original",
+				"length": "Longueur max",
+				"fallback": "Valeur de secours",
+				"counterWidth": "Largeur",
+				"counterStart": "Valeur initiale",
+				"counterPad": "Caractère de remplissage",
+				"counterScope": "Portée du compteur"
+			},
+			"preview": {
+				"title": "Prévisualisation",
+				"subtitle": "Choisissez une classe et des informations facultatives pour tester le format.",
+				"class": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"nationality": "Nationalité",
+				"run": "Générer un aperçu",
+				"result": "Résultat"
+			},
+			"toast": {
+				"saved": "Format enregistré",
+				"deleted": "Format supprimé",
+				"activated": "Format activé"
+			},
+			"errors": {
+				"missingName": "Le nom est obligatoire",
+				"missingSegments": "Ajoutez au moins un segment",
+				"previewClass": "Sélectionnez une classe pour prévisualiser",
+				"notFound": "Format introuvable"
+			},
+			"table": {
+				"name": "Nom",
+				"description": "Description",
+				"pattern": "Motif"
+			},
+			"dialog": {
+				"createTitle": "Nouveau format",
+				"editTitle": "Modifier le format"
+			}
 		},
 		"notifications": {
 			"title": "Centre de notifications",
@@ -861,12 +943,17 @@
 				"lastName": "Nom",
 				"email": "E-mail",
 				"registration": "Numéro de matricule",
+				"registrationHint": "Laissez vide pour générer automatiquement le prochain matricule.",
+				"registrationFormat": "Format de matricule",
+				"registrationFormatHint": "Choisissez un format pour remplacer le modèle actif.",
+				"registrationFormatPlaceholder": "Utiliser le format actif",
 				"class": "Classe",
 				"classPlaceholder": "Sélectionner une classe",
 				"submit": "Ajouter l'étudiant"
 			},
 			"import": {
 				"classLabel": "Classe pour les étudiants importés",
+				"formatLabel": "Format de matricule (optionnel)",
 				"fileLabel": "Importer un fichier CSV ou XLSX",
 				"downloadTemplate": "Télécharger le modèle",
 				"invalidFormat": "Champs obligatoires manquants pour cette ligne",
@@ -911,7 +998,7 @@
 				"firstName": "Le prénom est obligatoire",
 				"lastName": "Le nom est obligatoire",
 				"email": "Saisissez une adresse e-mail valide",
-				"registration": "Le numéro de matricule est obligatoire",
+				"registration": "Saisissez un matricule ou laissez le champ vide",
 				"class": "Veuillez sélectionner une classe"
 			}
 		},
