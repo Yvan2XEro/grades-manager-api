@@ -93,7 +93,7 @@
 
 ### Cypress E2E automation (business workflows)
 
-- [ ] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`).
+- [x] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`).
 - [ ] Enrollment management scripts: open/close windows, auto-enroll classes, roster per student, and regressions for option/cycle/semester metadata.
 - [ ] Teacher exam workflow: create session, submit grades, dean approval, lock exam, retake flows, and toast coverage for conflicts.
 - [ ] Admin catalog suites: CRUD faculties/programs/options/classes/classCourses with clipboard controls, code generators, and validation of uniqueness.

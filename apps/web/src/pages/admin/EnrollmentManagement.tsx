@@ -285,10 +285,7 @@ const EnrollmentManagement = () => {
 						onValueChange={(value) => setSelectedClass(value)}
 						disabled={!selectedAcademicYear}
 					>
-						<SelectTrigger
-							data-testid="class-select"
-							className="w-full"
-						>
+						<SelectTrigger data-testid="class-select" className="w-full">
 							<SelectValue
 								placeholder={t("admin.enrollments.selectClass", {
 									defaultValue: "Select class",
