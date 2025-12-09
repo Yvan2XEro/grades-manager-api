@@ -42,6 +42,13 @@ import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
+import {
+	PromotionRulesDashboard,
+	RulesListPage,
+	EvaluatePromotionPage,
+	ExecutePromotionPage,
+	ExecutionHistoryPage,
+} from "./pages/admin/promotion-rules";
 import { useStore } from "./store";
 
 function App() {
@@ -136,6 +143,21 @@ function App() {
 							element={<TeachingUnitDetail />}
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
+						{/* Promotion Rules */}
+						<Route path="promotion-rules" element={<PromotionRulesDashboard />} />
+						<Route path="promotion-rules/rules" element={<RulesListPage />} />
+						<Route
+							path="promotion-rules/evaluate"
+							element={<EvaluatePromotionPage />}
+						/>
+						<Route
+							path="promotion-rules/execute"
+							element={<ExecutePromotionPage />}
+						/>
+						<Route
+							path="promotion-rules/history"
+							element={<ExecutionHistoryPage />}
+						/>
 					</Route>
 
 					{/* Dean Routes */}

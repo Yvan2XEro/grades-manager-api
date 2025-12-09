@@ -93,16 +93,84 @@
 
 ### Cypress E2E automation (business workflows)
 
-- [x] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`).
-- [ ] Enrollment management scripts: open/close windows, auto-enroll classes, roster per student, and regressions for option/cycle/semester metadata.
-- [ ] Teacher exam workflow: create session, submit grades, dean approval, lock exam, retake flows, and toast coverage for conflicts.
-- [ ] Admin catalog suites: CRUD faculties/programs/options/classes/classCourses with clipboard controls, code generators, and validation of uniqueness.
-- [ ] Study cycle/level CRUD + linkage to classes, ensuring UI badges and filters respond to seeds.
-- [ ] Student lifecycle: create enrollment, transfer between classes/options, withdraw/reactivate, verifying domain vs auth profile split.
-- [ ] Notifications center: trigger events (submission, validation, auto-enroll) and assert list/ack/flush interactions.
-- [ ] CSV import/export smoke tests for grades and admin exports, confirming headers/order match specs.
-- [ ] Role-based navigation: enforce guardrails for student/teacher/admin/dean personas with store-backed permissions.
-- [ ] Integrate Cypress run in CI (preview server + seed command) so business-critical flows block regressions.
+Reference: [`docs/cypress-critical-features.md`](docs/cypress-critical-features.md)
+
+#### Priority 1 - Core Features (Must Have)
+
+**Authentication & Authorization:**
+- [x] Admin login flow (valid/invalid credentials, session persistence, redirection)
+- [x] Teacher login flow (role-specific access, dashboard routing)
+- [x] Student login flow (restricted access verification)
+- [x] Logout flow (session invalidation, proper redirection)
+
+**Grade Entry (Teacher Workflow):**
+- [x] Grade entry for multiple students (course selection, exam selection, validation 0-20, save confirmation)
+- [x] Grade modification (load existing, edit, save, verify update)
+- [x] Grade locking (locked grades cannot be modified, appropriate error messages)
+
+**Student Management:**
+- [x] Student creation (complete form, class selection, auto-generation of registration number)
+- [x] Bulk student import (CSV/Excel upload, success/error reporting, duplicate handling)
+- [x] Student modification (edit personal info, class change, save changes)
+- [x] Student search and filtering (by name, registration number, class)
+
+**Enrollment Management:**
+- [x] Individual enrollment (student selection, class selection, academic year, status "active")
+- [x] Bulk class enrollment (entire class enrollment, conflict handling for already enrolled)
+- [x] Enrollment closure (status change to "completed", preserved history, immutability)
+
+**Exam Management:**
+- [x] Manual exam creation (course selection, exam type, date, coefficient)
+- [x] Automated exam scheduling (configuration, multiple classes, generation, scheduling report)
+- [x] Scheduling conflict detection and resolution
+
+#### Priority 2 - Business Features
+
+**Promotion Rules:**
+- [ ] Promotion rule creation (form completion, valid JSON rule, activation, list verification)
+- [ ] Student evaluation (rule selection, source class selection, launch evaluation, display eligible/non-eligible, criteria verification)
+- [ ] Promotion execution (student selection, target class selection, confirmation, class change verification, execution history)
+- [ ] Execution history consultation (past executions list, execution details, success rate statistics)
+
+**Registration Numbers:**
+- [ ] Format creation (segment definition, preview, activation, auto-deactivation of other formats)
+- [ ] Automatic generation (student creation without manual number, auto-generation verification, counter increment, uniqueness)
+
+**Grade Export:**
+- [ ] Excel export by class (class selection, specific exams selection, file download, content verification)
+- [ ] Transcript export (class report generation, all grades included, correct averages, successful download)
+
+**Class Management:**
+- [ ] Class creation (program selection, cycle level, option, code and name definition)
+- [ ] Course assignment to class (class selection, multiple courses addition, weekly hours, teacher assignment)
+
+#### Priority 3 - Workflows & Notifications
+
+**Approval Workflows:**
+- [ ] Approval request creation (teacher submits grade modification request, "pending" status, dean notification)
+- [ ] Approval/rejection processing (dean reviews pending requests, approves/rejects, automatic application, teacher notification)
+
+**Notifications:**
+- [ ] Notification reception (trigger event, notification appears in center, badge counter update)
+- [ ] Mark as read (click notification, marked as read, badge update)
+
+#### Infrastructure & Quality
+
+**Admin Catalog Suites:**
+- [x] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`)
+- [ ] CRUD faculties/programs/options/classes/classCourses with clipboard controls, code generators, and validation of uniqueness
+
+**Data Operations:**
+- [ ] CSV import/export smoke tests for grades and admin exports, confirming headers/order match specs
+- [ ] Study cycle/level CRUD + linkage to classes, ensuring UI badges and filters respond to seeds
+
+**Security & Access Control:**
+- [ ] Role-based navigation: enforce guardrails for student/teacher/admin/dean personas with store-backed permissions
+- [ ] Domain vs auth profile split verification throughout student lifecycle operations
+
+**CI/CD Integration:**
+- [ ] Integrate Cypress run in CI (preview server + seed command) so business-critical flows block regressions
+- [ ] Set up deterministic test data (seeds + fixtures) for reproducible test runs
 
 ### Seed automation & setup
 

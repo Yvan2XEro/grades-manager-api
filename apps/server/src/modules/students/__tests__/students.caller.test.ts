@@ -81,6 +81,9 @@ describe("students router", () => {
 
 	it("generates registration numbers when format is active", async () => {
 		const admin = createCaller(asAdmin());
+		// Clean up any existing formats and counters first
+		await db.delete(schema.registrationNumberCounters);
+		await db.delete(schema.registrationNumberFormats);
 		const definition = {
 			segments: [
 				{ kind: "literal", value: "REG-" },
@@ -111,6 +114,8 @@ describe("students router", () => {
 
 	it("fails to auto-generate when no format is configured", async () => {
 		const admin = createCaller(asAdmin());
+		// Clean up formats and counters to ensure no format is active
+		await db.delete(schema.registrationNumberCounters);
 		await db.delete(schema.registrationNumberFormats);
 		const klass = await createClass();
 		await expect(

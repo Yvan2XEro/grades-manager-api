@@ -17,6 +17,7 @@ import {
 	School,
 	UserCog,
 	Users,
+	TrendingUp,
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
@@ -102,6 +103,11 @@ const Sidebar: React.FC = () => {
 			to: "/admin/enrollments",
 			icon: <Calendar className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.enrollments",
+		},
+		{
+			to: "/admin/promotion-rules",
+			icon: <TrendingUp className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.promotionRules",
 		},
 		{
 			to: "/admin/student-promotion",

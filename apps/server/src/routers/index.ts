@@ -13,6 +13,7 @@ import { notificationsRouter } from "../modules/notifications";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
 import { promotionsRouter } from "../modules/promotions";
+import { promotionRulesRouter } from "../modules/promotion-rules";
 import { registrationNumbersRouter } from "../modules/registration-numbers";
 import { semestersRouter } from "../modules/semesters";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
@@ -47,6 +48,7 @@ export const appRouter = router({
 	examScheduler: examSchedulerRouter,
 	students: studentsRouter,
 	promotions: promotionsRouter,
+	promotionRules: promotionRulesRouter,
 	registrationNumbers: registrationNumbersRouter,
 	grades: gradesRouter,
 	users: usersRouter,

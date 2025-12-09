@@ -749,6 +749,106 @@ export const notifications = pgTable(
 	],
 );
 
+/** Configurable promotion/passage rules. */
+export const promotionRules = pgTable(
+	"promotion_rules",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		name: text("name").notNull(),
+		description: text("description"),
+		sourceClassId: text("source_class_id").references(() => classes.id, {
+			onDelete: "cascade",
+		}),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "cascade",
+		}),
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
+		ruleset: jsonb("ruleset").notNull().$type<Record<string, unknown>>(),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_promotion_rules_source_class").on(t.sourceClassId),
+		index("idx_promotion_rules_program").on(t.programId),
+		index("idx_promotion_rules_cycle_level").on(t.cycleLevelId),
+		index("idx_promotion_rules_active").on(t.isActive),
+	],
+);
+
+/** Audit trail of promotion executions. */
+export const promotionExecutions = pgTable(
+	"promotion_executions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		ruleId: text("rule_id")
+			.notNull()
+			.references(() => promotionRules.id, { onDelete: "restrict" }),
+		sourceClassId: text("source_class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "restrict" }),
+		targetClassId: text("target_class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "restrict" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		executedBy: text("executed_by")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "restrict" }),
+		studentsEvaluated: integer("students_evaluated").notNull().default(0),
+		studentsPromoted: integer("students_promoted").notNull().default(0),
+		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		executedAt: timestamp("executed_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_promotion_executions_rule").on(t.ruleId),
+		index("idx_promotion_executions_source_class").on(t.sourceClassId),
+		index("idx_promotion_executions_target_class").on(t.targetClassId),
+		index("idx_promotion_executions_year").on(t.academicYearId),
+		index("idx_promotion_executions_executor").on(t.executedBy),
+	],
+);
+
+/** Individual student evaluation results for promotion executions. */
+export const promotionExecutionResults = pgTable(
+	"promotion_execution_results",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		executionId: text("execution_id")
+			.notNull()
+			.references(() => promotionExecutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		wasPromoted: boolean("was_promoted").notNull(),
+		evaluationData: jsonb("evaluation_data")
+			.notNull()
+			.$type<Record<string, unknown>>(),
+		rulesMatched: jsonb("rules_matched").$type<string[]>().default([]),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_promotion_results_execution").on(t.executionId),
+		index("idx_promotion_results_student").on(t.studentId),
+		index("idx_promotion_results_promoted").on(t.wasPromoted),
+		unique("uq_promotion_results_execution_student").on(
+			t.executionId,
+			t.studentId,
+		),
+	],
+);
+
 export const facultiesRelations = relations(faculties, ({ many }) => ({
 	programs: many(programs),
 }));
@@ -1037,6 +1137,66 @@ export const registrationNumberCountersRelations = relations(
 	}),
 );
 
+export const promotionRulesRelations = relations(
+	promotionRules,
+	({ one, many }) => ({
+		sourceClass: one(classes, {
+			fields: [promotionRules.sourceClassId],
+			references: [classes.id],
+		}),
+		program: one(programs, {
+			fields: [promotionRules.programId],
+			references: [programs.id],
+		}),
+		cycleLevel: one(cycleLevels, {
+			fields: [promotionRules.cycleLevelId],
+			references: [cycleLevels.id],
+		}),
+		executions: many(promotionExecutions),
+	}),
+);
+
+export const promotionExecutionsRelations = relations(
+	promotionExecutions,
+	({ one, many }) => ({
+		rule: one(promotionRules, {
+			fields: [promotionExecutions.ruleId],
+			references: [promotionRules.id],
+		}),
+		sourceClass: one(classes, {
+			fields: [promotionExecutions.sourceClassId],
+			references: [classes.id],
+		}),
+		targetClass: one(classes, {
+			fields: [promotionExecutions.targetClassId],
+			references: [classes.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [promotionExecutions.academicYearId],
+			references: [academicYears.id],
+		}),
+		executor: one(domainUsers, {
+			fields: [promotionExecutions.executedBy],
+			references: [domainUsers.id],
+		}),
+		results: many(promotionExecutionResults),
+	}),
+);
+
+export const promotionExecutionResultsRelations = relations(
+	promotionExecutionResults,
+	({ one }) => ({
+		execution: one(promotionExecutions, {
+			fields: [promotionExecutionResults.executionId],
+			references: [promotionExecutions.id],
+		}),
+		student: one(students, {
+			fields: [promotionExecutionResults.studentId],
+			references: [students.id],
+		}),
+	}),
+);
+
 export type Faculty = InferSelectModel<typeof faculties>;
 export type NewFaculty = InferInsertModel<typeof faculties>;
 
@@ -1124,4 +1284,15 @@ export type RegistrationNumberCounter = InferSelectModel<
 >;
 export type NewRegistrationNumberCounter = InferInsertModel<
 	typeof registrationNumberCounters
+>;
+
+export type PromotionRule = InferSelectModel<typeof promotionRules>;
+export type NewPromotionRule = InferInsertModel<typeof promotionRules>;
+export type PromotionExecution = InferSelectModel<typeof promotionExecutions>;
+export type NewPromotionExecution = InferInsertModel<typeof promotionExecutions>;
+export type PromotionExecutionResult = InferSelectModel<
+	typeof promotionExecutionResults
+>;
+export type NewPromotionExecutionResult = InferInsertModel<
+	typeof promotionExecutionResults
 >;

@@ -74,6 +74,7 @@
 				"courseAssignments": "Affectations de cours",
 				"teachingUnits": "Unités d'enseignement",
 				"enrollments": "Inscriptions",
+				"promotionRules": "Règles de passage",
 				"examTypes": "Types d'examen",
 				"examScheduler": "Programmation des examens",
 				"rules": "Centre des règles",
@@ -1296,6 +1297,226 @@
 				"deleted": "Unité supprimée avec succès",
 				"prereqSaved": "Prérecquis enregistrés",
 				"programRequired": "Sélectionnez d'abord un programme"
+			}
+		},
+		"promotionRules": {
+			"title": "Règles de passage",
+			"subtitle": "Système automatisé de gestion des promotions d'étudiants",
+			"dashboard": {
+				"title": "Règles de passage",
+				"subtitle": "Système automatisé de gestion des promotions d'étudiants",
+				"stats": {
+					"activeRules": "Règles actives",
+					"totalRules": "{{count}} règles au total",
+					"recentExecutions": "Exécutions récentes",
+					"last30Days": "30 derniers jours",
+					"studentsPromoted": "Étudiants promus",
+					"acrossExecutions": "Toutes exécutions confondues"
+				},
+				"actions": {
+					"manageRules": "Gérer les règles",
+					"manageRulesDesc": "Créer, modifier et configurer les critères de promotion avec des définitions de règles flexibles",
+					"viewRules": "Voir les règles",
+					"evaluateExecute": "Évaluer et exécuter",
+					"evaluateExecuteDesc": "Prévisualiser les étudiants éligibles et appliquer les promotions aux candidats sélectionnés",
+					"startEvaluation": "Démarrer l'évaluation",
+					"executionHistory": "Historique des exécutions",
+					"executionHistoryDesc": "Consulter les journaux détaillés des promotions passées, y compris les résultats au niveau des étudiants et les pistes d'audit",
+					"viewHistory": "Voir l'historique"
+				},
+				"recentActivity": {
+					"title": "Activité récente",
+					"studentsPromoted": "{{count}} étudiants promus",
+					"unknownRule": "Règle inconnue",
+					"details": "Détails"
+				}
+			},
+			"rulesList": {
+				"title": "Règles de passage",
+				"subtitle": "Gérer les critères de promotion et les configurations de règles",
+				"actions": {
+					"createRule": "Créer une règle"
+				},
+				"emptyState": {
+					"noRules": "Aucune règle trouvée",
+					"createFirst": "Créez votre première règle"
+				},
+				"dialog": {
+					"create": {
+						"title": "Créer une règle de passage",
+						"description": "Définir les critères de promotion automatique des étudiants"
+					},
+					"edit": {
+						"title": "Modifier la règle de passage",
+						"description": "Mettre à jour la configuration de la règle"
+					},
+					"form": {
+						"ruleName": "Nom de la règle",
+						"ruleNamePlaceholder": "ex. Passage standard L1 vers L2",
+						"description": "Description",
+						"descriptionPlaceholder": "Décrire quand cette règle doit être appliquée",
+						"ruleset": "Ensemble de règles (JSON)",
+						"rulesetPlaceholder": "Saisir l'ensemble de règles JSON",
+						"rulesetHelp": "Utiliser le format json-rules-engine. Voir la documentation pour les faits disponibles."
+					},
+					"actions": {
+						"cancel": "Annuler",
+						"create": "Créer la règle",
+						"creating": "Création...",
+						"save": "Enregistrer les modifications",
+						"saving": "Enregistrement..."
+					},
+					"deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette règle ?"
+				},
+				"toast": {
+					"createSuccess": "Règle créée avec succès",
+					"createError": "Impossible de créer la règle : {{error}}",
+					"updateSuccess": "Règle mise à jour avec succès",
+					"updateError": "Impossible de mettre à jour la règle : {{error}}",
+					"deleteSuccess": "Règle supprimée avec succès",
+					"deleteError": "Impossible de supprimer la règle : {{error}}",
+					"invalidJson": "JSON invalide dans l'ensemble de règles"
+				}
+			},
+			"evaluate": {
+				"title": "Évaluer le passage",
+				"subtitle": "Prévisualiser quels étudiants sont éligibles pour le passage",
+				"form": {
+					"title": "Paramètres d'évaluation",
+					"ruleLabel": "Règle de passage",
+					"rulePlaceholder": "Sélectionner une règle",
+					"classLabel": "Classe source",
+					"classPlaceholder": "Sélectionner une classe",
+					"yearLabel": "Année académique",
+					"yearPlaceholder": "Sélectionner une année"
+				},
+				"tabs": {
+					"eligible": "Éligibles ({{count}})",
+					"notEligible": "Non éligibles ({{count}})"
+				},
+				"actions": {
+					"evaluate": "Évaluer les étudiants",
+					"evaluating": "Évaluation...",
+					"selectAll": "Sélectionner tous les éligibles",
+					"deselectAll": "Tout désélectionner",
+					"proceed": "Continuer avec {{count}} étudiant(s)"
+				},
+				"summary": {
+					"total": "Total d'étudiants",
+					"eligible": "Éligibles",
+					"notEligible": "Non éligibles",
+					"selected": "Sélectionnés"
+				},
+				"emptyState": {
+					"noEligible": "Aucun étudiant éligible trouvé",
+					"allEligible": "Tous les étudiants sont éligibles !"
+				},
+				"toast": {
+					"selectAll": "Veuillez sélectionner tous les champs requis",
+					"selectStudent": "Veuillez sélectionner au moins un étudiant"
+				}
+			},
+			"execute": {
+				"title": "Exécuter la promotion",
+				"subtitle": "Confirmer et appliquer les promotions des étudiants",
+				"noData": {
+					"message": "Aucune donnée de promotion trouvée. Veuillez commencer par la page d'évaluation.",
+					"button": "Aller à l'évaluation"
+				},
+				"form": {
+					"targetClassLabel": "Classe cible",
+					"targetClassPlaceholder": "Sélectionner la classe cible",
+					"executeButton": "Exécuter la promotion"
+				},
+				"summary": {
+					"title": "Résumé de la promotion",
+					"rule": "Règle",
+					"sourceClass": "Classe source",
+					"targetClass": "Classe cible",
+					"studentsToPromote": "Étudiants à promouvoir",
+					"studentCount": "{{count}} étudiants"
+				},
+				"confirmation": {
+					"title": "Confirmer la promotion",
+					"description": "Cette action promouvra {{count}} étudiant(s) de {{source}} vers {{target}}. Cette action est irréversible.",
+					"cancel": "Annuler",
+					"confirm": "Confirmer la promotion"
+				},
+				"process": {
+					"title": "Ce qui va se passer",
+					"step1": "Les inscriptions actuelles seront marquées comme terminées",
+					"step2": "De nouvelles inscriptions seront créées dans la classe cible",
+					"step3": "Les références de classe des étudiants seront mises à jour",
+					"step4": "Une piste d'audit complète sera enregistrée"
+				},
+				"toast": {
+					"success": "Promotion appliquée avec succès !",
+					"error": "Impossible d'appliquer la promotion : {{error}}",
+					"missingInfo": "Informations requises manquantes"
+				}
+			},
+			"history": {
+				"title": "Historique des exécutions",
+				"subtitle": "Consulter les exécutions de promotions passées et leurs résultats",
+				"table": {
+					"title": "Exécutions récentes",
+					"date": "Date",
+					"rule": "Règle",
+					"classes": "Source → Cible",
+					"students": "Étudiants",
+					"successRate": "Taux de réussite",
+					"executedBy": "Exécuté par",
+					"actions": "Actions",
+					"viewDetails": "Détails",
+					"user": "Utilisateur"
+				},
+				"badges": {
+					"evaluated": "{{count}} évalués",
+					"promoted": "{{count}} promus"
+				},
+				"emptyState": "Aucune exécution trouvée",
+				"details": {
+					"title": "Détails de l'exécution",
+					"description": "Résultats détaillés pour cette exécution de promotion",
+					"stats": {
+						"evaluated": "Évalués",
+						"promoted": "Promus",
+						"date": "Date",
+						"rule": "Règle utilisée"
+					},
+					"studentResults": {
+						"title": "Résultats des étudiants",
+						"studentId": "ID de l'étudiant",
+						"status": "Statut",
+						"average": "Moyenne",
+						"credits": "Crédits",
+						"successRate": "Taux de réussite",
+						"promoted": "Promu",
+						"notPromoted": "Non promu"
+					}
+				}
+			},
+			"studentCard": {
+				"eligible": "Éligible",
+				"notEligible": "Non éligible",
+				"metrics": {
+					"average": "Moyenne",
+					"credits": "Crédits",
+					"successRate": "Taux de réussite"
+				},
+				"progress": {
+					"creditCompletion": "Complétion des crédits"
+				},
+				"details": {
+					"title": "Métriques détaillées",
+					"failedCourses": "Cours échoués",
+					"requiredCredits": "Crédits requis"
+				},
+				"actions": {
+					"select": "Sélectionner",
+					"deselect": "Désélectionner",
+					"viewDetails": "Voir les détails"
+				}
 			}
 		}
 	},
