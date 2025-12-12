@@ -1,4 +1,14 @@
 {
+	"components": {
+		"codedEntitySelect": {
+			"placeholder": "Select an item",
+			"searchPlaceholder": "Search by code or name...",
+			"noResults": "No items found. Try a different search.",
+			"resultsCount_one": "{{count}} result",
+			"resultsCount_other": "{{count}} results",
+			"loading": "Loading..."
+		}
+	},
 	"common": {
 		"actions": {
 			"cancel": "Cancel",

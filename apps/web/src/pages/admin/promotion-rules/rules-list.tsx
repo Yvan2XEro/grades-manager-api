@@ -207,7 +207,7 @@ export function RulesListPage() {
 				</div>
 			) : rulesData?.items && rulesData.items.length > 0 ? (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{rulesData.items.map((rule) => (
+					{rulesData.items?.map((rule) => (
 						<RuleCard
 							key={rule.id}
 							rule={rule}

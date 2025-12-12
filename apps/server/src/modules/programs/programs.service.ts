@@ -53,3 +53,7 @@ export async function getProgramByCode(code: string, facultyId: string) {
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
 }
+
+export async function searchPrograms(opts: Parameters<typeof repo.search>[0]) {
+	return repo.search(opts);
+}

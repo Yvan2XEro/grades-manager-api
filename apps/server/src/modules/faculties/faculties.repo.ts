@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike } from "drizzle-orm";
+import { and, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -53,4 +53,20 @@ export async function list(opts: {
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
 	return { items, nextCursor };
+}
+
+export async function search(opts: { query: string; limit?: number }) {
+	const limit = opts.limit ?? 20;
+	const items = await db
+		.select()
+		.from(schema.faculties)
+		.where(
+			or(
+				ilike(schema.faculties.code, `%${opts.query}%`),
+				ilike(schema.faculties.name, `%${opts.query}%`),
+			),
+		)
+		.orderBy(schema.faculties.code)
+		.limit(limit);
+	return items;
 }

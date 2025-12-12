@@ -1,4 +1,14 @@
 {
+	"components": {
+		"codedEntitySelect": {
+			"placeholder": "Sélectionnez un élément",
+			"searchPlaceholder": "Rechercher par code ou nom...",
+			"noResults": "Aucun élément trouvé. Essayez une autre recherche.",
+			"resultsCount_one": "{{count}} résultat",
+			"resultsCount_other": "{{count}} résultats",
+			"loading": "Chargement..."
+		}
+	},
 	"common": {
 		"actions": {
 			"cancel": "Annuler",

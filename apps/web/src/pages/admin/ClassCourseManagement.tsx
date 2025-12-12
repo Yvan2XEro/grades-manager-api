@@ -26,6 +26,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { CodedEntitySelect } from "@/components/forms";
 import {
 	Dialog,
 	DialogContent,
@@ -129,15 +130,17 @@ export default function ClassCourseManagement() {
 	const [editingClassCourse, setEditingClassCourse] =
 		useState<ClassCourse | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [classSearch, setClassSearch] = useState("");
+	const [courseSearch, setCourseSearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
 
-	const { data: classes } = useQuery({
+	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
+			const { items } = await trpcClient.classes.list.query({ limit: 100 });
 			return items.map(
 				(cls) =>
 					({
@@ -155,6 +158,32 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	const { data: searchClasses = [] } = useQuery({
+		queryKey: ["classes", "search", classSearch],
+		queryFn: async () => {
+			const items = await trpcClient.classes.search.query({
+				query: classSearch,
+			});
+			return items.map(
+				(cls) =>
+					({
+						id: cls.id,
+						name: cls.name,
+						code: cls.code,
+						program: cls.program,
+						programCode: cls.programInfo?.code ?? null,
+						cycleLevelCode: cls.cycleLevel?.code ?? null,
+						academicYearName: cls.academicYearInfo?.name ?? "",
+						semesterId: cls.semester?.id ?? null,
+						semesterCode: cls.semester?.code ?? null,
+					}) as Class,
+			);
+		},
+		enabled: classSearch.length >= 2,
+	});
+
+	const classes = classSearch.length >= 2 ? searchClasses : defaultClasses;
+
 	const { data: programs } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
@@ -170,10 +199,10 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: courses } = useQuery({
+	const { data: defaultCourses = [] } = useQuery({
 		queryKey: ["courses"],
 		queryFn: async () => {
-			const { items } = await trpcClient.courses.list.query({});
+			const { items } = await trpcClient.courses.list.query({ limit: 100 });
 			return items.map(
 				(course) =>
 					({
@@ -184,6 +213,26 @@ export default function ClassCourseManagement() {
 			);
 		},
 	});
+
+	const { data: searchCourses = [] } = useQuery({
+		queryKey: ["courses", "search", courseSearch],
+		queryFn: async () => {
+			const items = await trpcClient.courses.search.query({
+				query: courseSearch,
+			});
+			return items.map(
+				(course) =>
+					({
+						id: course.id,
+						name: course.name,
+						code: course.code,
+					}) as Course,
+			);
+		},
+		enabled: courseSearch.length >= 2,
+	});
+
+	const courses = courseSearch.length >= 2 ? searchCourses : defaultCourses;
 
 	const { data: teachers } = useQuery({
 		queryKey: ["teachers"],
@@ -602,70 +651,38 @@ export default function ClassCourseManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="class"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.classLabel")}
-										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.classPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{classes?.map((cls) => (
-													<SelectItem key={cls.id} value={cls.id}>
-														{cls.name} •{" "}
-														{programMap.get(cls.program)?.name ??
-															t("common.labels.notAvailable", {
-																defaultValue: "N/A",
-															})}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
+							<CodedEntitySelect
+								items={classes}
+								onSearch={setClassSearch}
+								value={classes.find((c) => c.id === form.watch("class"))?.code || null}
+								onChange={(code) => {
+									const cls = classes.find((c) => c.code === code);
+									form.setValue("class", cls?.id || "");
+								}}
+								label={t("admin.classCourses.form.classLabel")}
+								placeholder={t("admin.classCourses.form.classPlaceholder")}
+								error={form.formState.errors.class?.message}
+								searchMode="hybrid"
+								getItemSubtitle={(cls) =>
+									programMap.get(cls.program)?.name ??
+									t("common.labels.notAvailable", { defaultValue: "N/A" })
+								}
+								required
 							/>
 
-							<FormField
-								control={form.control}
-								name="course"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.courseLabel")}
-										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.coursePlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{courses?.map((course) => (
-													<SelectItem key={course.id} value={course.id}>
-														{course.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
+							<CodedEntitySelect
+								items={courses}
+								onSearch={setCourseSearch}
+								value={courses.find((c) => c.id === form.watch("course"))?.code || null}
+								onChange={(code) => {
+									const course = courses.find((c) => c.code === code);
+									form.setValue("course", course?.id || "");
+								}}
+								label={t("admin.classCourses.form.courseLabel")}
+								placeholder={t("admin.classCourses.form.coursePlaceholder")}
+								error={form.formState.errors.course?.message}
+								searchMode="hybrid"
+								required
 							/>
 
 							<FormField

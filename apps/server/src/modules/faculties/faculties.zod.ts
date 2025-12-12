@@ -17,3 +17,8 @@ export const listSchema = z.object({
 });
 
 export const codeSchema = z.object({ code: z.string().trim().min(1) });
+
+export const searchSchema = z.object({
+	query: z.string().trim(),
+	limit: z.number().optional(),
+});

@@ -26,6 +26,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { CodedEntitySelect } from "@/components/forms";
 import {
 	Dialog,
 	DialogContent,
@@ -103,6 +104,7 @@ export default function CourseManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [programSearch, setProgramSearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -116,13 +118,26 @@ export default function CourseManagement() {
 		},
 	});
 
-	const { data: programs } = useQuery({
+	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({});
+			const { items } = await trpcClient.programs.list.query({ limit: 100 });
 			return items as ProgramOption[];
 		},
 	});
+
+	const { data: searchPrograms = [] } = useQuery({
+		queryKey: ["programs", "search", programSearch],
+		queryFn: async () => {
+			const items = await trpcClient.programs.search.query({
+				query: programSearch,
+			});
+			return items as ProgramOption[];
+		},
+		enabled: programSearch.length >= 2,
+	});
+
+	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
 	const { data: teachers } = useQuery({
 		queryKey: ["teachers"],
@@ -466,54 +481,22 @@ export default function CourseManagement() {
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name="program"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.programLabel")}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.courses.form.programPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{programs?.map((program) => (
-													<SelectItem key={program.id} value={program.id}>
-														<div className="flex flex-col">
-															<span>{program.name}</span>
-															{program.facultyInfo?.name && (
-																<span className="text-muted-foreground text-xs">
-																	{program.facultyInfo.name}
-																</span>
-															)}
-														</div>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										{selectedProgram?.facultyInfo?.name && (
-											<p className="text-muted-foreground text-xs">
-												{t("admin.courses.form.programFacultySummary", {
-													defaultValue: "Faculty: {{value}}",
-													value: selectedProgram.facultyInfo.name,
-												})}
-											</p>
-										)}
-										<FormMessage />
-									</FormItem>
-								)}
+							<CodedEntitySelect
+								items={programs}
+								onSearch={setProgramSearch}
+								value={programs.find((p) => p.id === form.watch("program"))?.code || null}
+								onChange={(code) => {
+									const program = programs.find((p) => p.code === code);
+									form.setValue("program", program?.id || "");
+								}}
+								label={t("admin.courses.form.programLabel")}
+								placeholder={t("admin.courses.form.programPlaceholder")}
+								error={form.formState.errors.program?.message}
+								searchMode="hybrid"
+								getItemSubtitle={(program) => program.facultyInfo?.name || ""}
+								required
 							/>
+
 							<FormField
 								control={form.control}
 								name="defaultTeacher"

@@ -4,7 +4,7 @@ import {
 	protectedProcedure,
 	superAdminProcedure,
 } from "../../lib/trpc";
-import * as service from "./faculties.service";
+import * as service from "./cycle-levels.service";
 import {
 	baseSchema,
 	codeSchema,
@@ -12,28 +12,30 @@ import {
 	listSchema,
 	searchSchema,
 	updateSchema,
-} from "./faculties.zod";
+} from "./cycle-levels.zod";
 
 export const router = createRouter({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createFaculty(input)),
+		.mutation(({ input }) => service.createCycleLevel(input)),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateFaculty(input.id, input)),
+		.mutation(({ input }) => service.updateCycleLevel(input.id, input)),
 	delete: superAdminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteFaculty(input.id)),
+		.mutation(({ input }) => service.deleteCycleLevel(input.id)),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listFaculties(input)),
+		.query(({ input }) => service.listCycleLevels(input)),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getFacultyById(input.id)),
+		.query(({ input }) => service.getCycleLevelById(input.id)),
 	getByCode: protectedProcedure
 		.input(codeSchema)
-		.query(({ input }) => service.getFacultyByCode(input.code)),
+		.query(({ input }) =>
+			service.getCycleLevelByCode(input.code, input.cycleId),
+		),
 	search: protectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchFaculties(input)),
+		.query(({ input }) => service.searchCycleLevels(input)),
 });

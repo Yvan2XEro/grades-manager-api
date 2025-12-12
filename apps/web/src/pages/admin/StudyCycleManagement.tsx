@@ -43,6 +43,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { CodedEntitySelect } from "@/components/forms";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
@@ -63,11 +64,30 @@ export default function StudyCycleManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
+	const [facultySearch, setFacultySearch] = useState("");
 
-	const facultiesQuery = useQuery({
+	const { data: defaultFaculties = [] } = useQuery({
 		queryKey: ["faculties"],
-		queryFn: () => trpcClient.faculties.list.query({}),
+		queryFn: async () => {
+			const { items } = await trpcClient.faculties.list.query({ limit: 100 });
+			return items;
+		},
 	});
+
+	const { data: searchFaculties = [] } = useQuery({
+		queryKey: ["faculties", "search", facultySearch],
+		queryFn: async () => {
+			const items = await trpcClient.faculties.search.query({
+				query: facultySearch,
+			});
+			return items;
+		},
+		enabled: facultySearch.length >= 2,
+	});
+
+	const faculties = facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
+
+	const facultiesQuery = { data: { items: faculties } };
 
 	const cyclesQuery = useQuery({
 		queryKey: ["studyCycles"],
@@ -434,36 +454,23 @@ export default function StudyCycleManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-							<FormField
-								control={form.control}
-								name="facultyId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.faculty", {
-												defaultValue: "Faculty",
-											})}
-										</FormLabel>
-										<FormControl>
-											<select
-												className="w-full rounded-md border border-gray-200 bg-white p-2"
-												{...field}
-											>
-												<option value="">
-													{t("admin.studyCycles.form.selectFaculty", {
-														defaultValue: "Select faculty",
-													})}
-												</option>
-												{facultiesQuery.data?.items?.map((faculty) => (
-													<option key={faculty.id} value={faculty.id}>
-														{faculty.name}
-													</option>
-												))}
-											</select>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
+							<CodedEntitySelect
+								items={faculties}
+								onSearch={setFacultySearch}
+								value={faculties.find((f) => f.id === form.watch("facultyId"))?.code || null}
+								onChange={(code) => {
+									const faculty = faculties.find((f) => f.code === code);
+									form.setValue("facultyId", faculty?.id || "");
+								}}
+								label={t("admin.studyCycles.form.faculty", {
+									defaultValue: "Faculty",
+								})}
+								placeholder={t("admin.studyCycles.form.selectFaculty", {
+									defaultValue: "Select faculty",
+								})}
+								error={form.formState.errors.facultyId?.message}
+								searchMode="hybrid"
+								required
 							/>
 							<FormField
 								control={form.control}

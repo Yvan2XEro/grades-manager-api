@@ -81,7 +81,7 @@
 - [x] Refresh i18n keys/type generation after the new UI strings land (`bun run --cwd apps/web i18n:gen`).
 - [ ] Add tests (TRPC + RTL/Playwright) covering option workflows (create option, assign class to option, enrollment snapshot).
 - [x] Implement the frontend code generator (program prefix + level + semester + counter) to prefill `code` fields on course/class/classCourse forms.
-- [ ] Build a searchable select component (code + label) for all forms that pick a coded entity (program, class, course, classCourse).
+- [x] Build a searchable select component (code + label) for all forms that pick a coded entity (program, class, course, classCourse) - `CodedEntitySelect` with debounced search, hybrid filtering (local+server), i18n support, customizable icons/badges/subtitles.
 
 ### Frontend follow-up (code visibility & clipboard UX)
 

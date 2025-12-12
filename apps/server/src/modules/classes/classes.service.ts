@@ -235,3 +235,7 @@ export async function transferStudent(studentId: string, toClassId: string) {
 	});
 	return studentsRepo.findById(studentId);
 }
+
+export async function searchClasses(opts: Parameters<typeof repo.search>[0]) {
+	return repo.search(opts);
+}

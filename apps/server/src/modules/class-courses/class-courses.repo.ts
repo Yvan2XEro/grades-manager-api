@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -107,4 +107,56 @@ export async function findByCode(code: string, academicYearId: string) {
 		.limit(1);
 	if (!match) return null;
 	return findById(match.id);
+}
+
+export async function search(opts: {
+	query: string;
+	classId?: string;
+	limit?: number;
+}) {
+	const limit = opts.limit ?? 20;
+	const searchCondition = or(
+		ilike(schema.classCourses.code, `%${opts.query}%`),
+		ilike(schema.courses.code, `%${opts.query}%`),
+		ilike(schema.courses.name, `%${opts.query}%`),
+	);
+	const condition = opts.classId
+		? and(eq(schema.classCourses.class, opts.classId), searchCondition)
+		: searchCondition;
+
+	const items = await db.query.classCourses.findMany({
+		where: condition,
+		orderBy: (classCourses, { asc }) => asc(classCourses.code),
+		limit,
+		with: {
+			courseRef: {
+				columns: {
+					name: true,
+					code: true,
+				},
+			},
+			teacherRef: {
+				columns: {
+					firstName: true,
+					lastName: true,
+					primaryEmail: true,
+				},
+			},
+		},
+	});
+
+	return items.map((row) => ({
+		id: row.id,
+		code: row.code,
+		class: row.class,
+		course: row.course,
+		teacher: row.teacher,
+		weeklyHours: row.weeklyHours,
+		createdAt: row.createdAt,
+		semesterId: row.semesterId,
+		courseName: row.courseRef?.name,
+		courseCode: row.courseRef?.code,
+		teacherFirstName: row.teacherRef?.firstName,
+		teacherLastName: row.teacherRef?.lastName,
+	}));
 }

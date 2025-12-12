@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -74,4 +74,27 @@ export async function assignDefaultTeacher(
 		.where(eq(schema.courses.id, courseId))
 		.returning();
 	return item;
+}
+
+export async function search(opts: {
+	query: string;
+	programId?: string;
+	limit?: number;
+}) {
+	const limit = opts.limit ?? 20;
+	const searchCondition = or(
+		ilike(schema.courses.code, `%${opts.query}%`),
+		ilike(schema.courses.name, `%${opts.query}%`),
+	);
+	const condition = opts.programId
+		? and(eq(schema.courses.program, opts.programId), searchCondition)
+		: searchCondition;
+
+	const items = await db
+		.select()
+		.from(schema.courses)
+		.where(condition)
+		.orderBy(schema.courses.code)
+		.limit(limit);
+	return items;
 }

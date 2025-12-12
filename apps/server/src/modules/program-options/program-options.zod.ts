@@ -17,4 +17,10 @@ export const listSchema = z.object({
 	limit: z.number().optional(),
 });
 
+export const searchSchema = z.object({
+	query: z.string().trim(),
+	programId: z.string().optional(),
+	limit: z.number().optional(),
+});
+
 export const idSchema = z.object({ id: z.string() });

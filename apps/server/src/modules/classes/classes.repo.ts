@@ -1,4 +1,4 @@
-import { and, eq, gt, type SQL } from "drizzle-orm";
+import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -189,6 +189,54 @@ export async function findByCode(code: string, academicYearId: string) {
 			eq(schema.classes.academicYear, academicYearId),
 		),
 	);
+}
+
+export async function search(opts: {
+	query: string;
+	programId?: string;
+	limit?: number;
+}) {
+	const limit = opts.limit ?? 20;
+	const searchCondition = or(
+		ilike(schema.classes.code, `%${opts.query}%`),
+		ilike(schema.classes.name, `%${opts.query}%`),
+	);
+	const condition = opts.programId
+		? and(eq(schema.classes.program, opts.programId), searchCondition)
+		: searchCondition;
+
+	const items = await db
+		.select(classSelection)
+		.from(schema.classes)
+		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.faculties,
+			eq(schema.faculties.id, schema.programs.faculty),
+		)
+		.leftJoin(
+			schema.academicYears,
+			eq(schema.academicYears.id, schema.classes.academicYear),
+		)
+		.leftJoin(
+			schema.cycleLevels,
+			eq(schema.cycleLevels.id, schema.classes.cycleLevelId),
+		)
+		.leftJoin(
+			schema.studyCycles,
+			eq(schema.studyCycles.id, schema.cycleLevels.cycleId),
+		)
+		.leftJoin(
+			schema.programOptions,
+			eq(schema.programOptions.id, schema.classes.programOptionId),
+		)
+		.leftJoin(
+			schema.semesters,
+			eq(schema.semesters.id, schema.classes.semesterId),
+		)
+		.where(condition)
+		.orderBy(schema.classes.code)
+		.limit(limit);
+	return items;
 }
 
 export type KlassRecord = NonNullable<Awaited<ReturnType<typeof findById>>>;
