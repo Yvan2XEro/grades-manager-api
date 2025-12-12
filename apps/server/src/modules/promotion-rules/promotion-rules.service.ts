@@ -1,10 +1,9 @@
-import { Engine } from "json-rules-engine";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { Engine } from "json-rules-engine";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as enrollmentsService from "../enrollments/enrollments.service";
-import { computeStudentFacts } from "./student-facts.service";
 import * as repo from "./promotion-rules.repo";
 import type {
 	ClassPromotionEvaluation,
@@ -19,13 +18,16 @@ import type {
 	ListRulesInput,
 	UpdateRuleInput,
 } from "./promotion-rules.zod";
+import { computeStudentFacts } from "./student-facts.service";
 
 // ========== Rule Management ==========
 
 export async function createRule(data: CreateRuleInput) {
 	// Validate ruleset format
 	try {
-		const engine = new Engine([data.ruleset as never], { allowUndefinedFacts: true });
+		const engine = new Engine([data.ruleset as never], {
+			allowUndefinedFacts: true,
+		});
 		await engine.run({} as never); // Test run with empty facts
 	} catch (error) {
 		throw new TRPCError({
@@ -47,7 +49,9 @@ export async function updateRule(data: UpdateRuleInput) {
 	// Validate ruleset if provided
 	if (data.ruleset) {
 		try {
-			const engine = new Engine([data.ruleset as never], { allowUndefinedFacts: true });
+			const engine = new Engine([data.ruleset as never], {
+				allowUndefinedFacts: true,
+			});
 			await engine.run({} as never);
 		} catch (error) {
 			throw new TRPCError({
@@ -111,7 +115,10 @@ export async function evaluateClassForPromotion(
 		where: eq(schema.classes.id, opts.sourceClassId),
 	});
 	if (!sourceClass) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Source class not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Source class not found",
+		});
 	}
 
 	// Get all students in the class
@@ -258,14 +265,20 @@ export async function applyPromotion(
 		where: eq(schema.classes.id, opts.sourceClassId),
 	});
 	if (!sourceClass) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Source class not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Source class not found",
+		});
 	}
 
 	const targetClass = await db.query.classes.findFirst({
 		where: eq(schema.classes.id, opts.targetClassId),
 	});
 	if (!targetClass) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Target class not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Target class not found",
+		});
 	}
 
 	// Re-evaluate selected students to get their facts
@@ -308,9 +321,7 @@ export async function applyPromotion(
 			rulesMatched: se.evaluation.matchedRules,
 		}));
 
-		await tx
-			.insert(schema.promotionExecutionResults)
-			.values(executionResults);
+		await tx.insert(schema.promotionExecutionResults).values(executionResults);
 
 		// Update student enrollments
 		for (const studentId of opts.studentIds) {

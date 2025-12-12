@@ -8,9 +8,7 @@ describe("Authentication - Login", () => {
 		it("successfully logs in with valid credentials", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("ADMIN_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("ADMIN_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("ADMIN_PASSWORD"));
@@ -25,9 +23,7 @@ describe("Authentication - Login", () => {
 		it("shows error message with invalid credentials", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type("invalid@example.com");
+			cy.findByLabelText(/email/i).clear().type("invalid@example.com");
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type("wrongpassword");
@@ -40,7 +36,11 @@ describe("Authentication - Login", () => {
 			cy.get("body").then(($body) => {
 				// Check if error message is shown OR still on login page
 				const hasErrorMessage =
-					$body.text().match(/invalid|incorrect|erreur|wrong|credentials|échec|failed/i) !== null;
+					$body
+						.text()
+						.match(
+							/invalid|incorrect|erreur|wrong|credentials|échec|failed/i,
+						) !== null;
 				const onLoginPage = window.location.pathname.includes("login");
 
 				// Either should show error or remain on login
@@ -58,7 +58,10 @@ describe("Authentication - Login", () => {
 			cy.reload();
 
 			// Should still be logged in
-			cy.location("pathname", { timeout: 10000 }).should("not.include", "login");
+			cy.location("pathname", { timeout: 10000 }).should(
+				"not.include",
+				"login",
+			);
 			cy.contains(/dashboard|accueil/i).should("exist");
 		});
 
@@ -68,9 +71,7 @@ describe("Authentication - Login", () => {
 
 			cy.visit(loginUrl);
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("ADMIN_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("ADMIN_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("ADMIN_PASSWORD"));
@@ -86,9 +87,7 @@ describe("Authentication - Login", () => {
 		it("successfully logs in and redirects to teacher dashboard", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("TEACHER_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("TEACHER_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("TEACHER_PASSWORD"));
@@ -154,7 +153,9 @@ describe("Authentication - Login", () => {
 			cy.visit("/auth/login");
 
 			cy.findByLabelText(/email/i).clear().type(studentEmail);
-			cy.findByLabelText(/password/i).clear().type(studentPassword);
+			cy.findByLabelText(/password/i)
+				.clear()
+				.type(studentPassword);
 
 			cy.findByRole("button", { name: /sign in/i }).click();
 
@@ -173,7 +174,9 @@ describe("Authentication - Login", () => {
 
 			cy.visit("/auth/login");
 			cy.findByLabelText(/email/i).clear().type(studentEmail);
-			cy.findByLabelText(/password/i).clear().type(studentPassword);
+			cy.findByLabelText(/password/i)
+				.clear()
+				.type(studentPassword);
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Try to access admin page
@@ -231,9 +234,7 @@ describe("Authentication - Login", () => {
 		it("requires password field", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type("test@example.com");
+			cy.findByLabelText(/email/i).clear().type("test@example.com");
 
 			cy.findByRole("button", { name: /sign in/i }).click();
 

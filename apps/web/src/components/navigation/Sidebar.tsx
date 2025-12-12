@@ -15,9 +15,9 @@ import {
 	Layers3,
 	LayoutDashboard,
 	School,
+	TrendingUp,
 	UserCog,
 	Users,
-	TrendingUp,
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";

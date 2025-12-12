@@ -1,3 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
+import {
+	ArrowLeft,
+	ArrowRight,
+	CheckCircle2,
+	Clock,
+	Eye,
+	XCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,11 +29,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { trpcClient } from "@/utils/trpc";
-import { ArrowRight, CheckCircle2, Clock, Eye, XCircle, ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
 export function ExecutionHistoryPage() {
 	const { t } = useTranslation();
@@ -47,7 +54,7 @@ export function ExecutionHistoryPage() {
 	});
 
 	return (
-		<div className="container mx-auto py-8 space-y-6">
+		<div className="container mx-auto space-y-6 py-8">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -60,8 +67,10 @@ export function ExecutionHistoryPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">{t("admin.promotionRules.history.title")}</h1>
-					<p className="text-muted-foreground mt-1">
+					<h1 className="font-bold text-3xl tracking-tight">
+						{t("admin.promotionRules.history.title")}
+					</h1>
+					<p className="mt-1 text-muted-foreground">
 						{t("admin.promotionRules.history.subtitle")}
 					</p>
 				</div>
@@ -76,20 +85,34 @@ export function ExecutionHistoryPage() {
 					{isLoading ? (
 						<div className="space-y-2">
 							{[...Array(5)].map((_, i) => (
-								<div key={i} className="h-16 bg-muted animate-pulse rounded" />
+								<div key={i} className="h-16 animate-pulse rounded bg-muted" />
 							))}
 						</div>
 					) : executionsData?.items && executionsData.items.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>{t("admin.promotionRules.history.table.date")}</TableHead>
-									<TableHead>{t("admin.promotionRules.history.table.rule")}</TableHead>
-									<TableHead>{t("admin.promotionRules.history.table.classes")}</TableHead>
-									<TableHead>{t("admin.promotionRules.history.table.students")}</TableHead>
-									<TableHead>{t("admin.promotionRules.history.table.successRate")}</TableHead>
-									<TableHead>{t("admin.promotionRules.history.table.executedBy")}</TableHead>
-									<TableHead className="text-right">{t("admin.promotionRules.history.table.actions")}</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.date")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.rule")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.classes")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.students")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.successRate")}
+									</TableHead>
+									<TableHead>
+										{t("admin.promotionRules.history.table.executedBy")}
+									</TableHead>
+									<TableHead className="text-right">
+										{t("admin.promotionRules.history.table.actions")}
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -97,7 +120,7 @@ export function ExecutionHistoryPage() {
 									<TableRow key={execution.id}>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
-												<Clock className="w-4 h-4 text-muted-foreground" />
+												<Clock className="h-4 w-4 text-muted-foreground" />
 												{new Date(execution.executedAt).toLocaleDateString()}
 											</div>
 										</TableCell>
@@ -112,7 +135,7 @@ export function ExecutionHistoryPage() {
 													{(execution as any).metadata?.sourceClassName ||
 														"N/A"}
 												</span>
-												<ArrowRight className="w-3 h-3" />
+												<ArrowRight className="h-3 w-3" />
 												<span>
 													{(execution as any).metadata?.targetClassName ||
 														"N/A"}
@@ -122,10 +145,14 @@ export function ExecutionHistoryPage() {
 										<TableCell>
 											<div className="flex items-center gap-2">
 												<Badge variant="outline">
-													{t("admin.promotionRules.history.badges.evaluated", { count: execution.studentsEvaluated })}
+													{t("admin.promotionRules.history.badges.evaluated", {
+														count: execution.studentsEvaluated,
+													})}
 												</Badge>
 												<Badge variant="default" className="bg-green-500">
-													{t("admin.promotionRules.history.badges.promoted", { count: execution.studentsPromoted })}
+													{t("admin.promotionRules.history.badges.promoted", {
+														count: execution.studentsPromoted,
+													})}
 												</Badge>
 											</div>
 										</TableCell>
@@ -133,9 +160,9 @@ export function ExecutionHistoryPage() {
 											<div className="flex items-center gap-1">
 												{execution.studentsPromoted ===
 												execution.studentsEvaluated ? (
-													<CheckCircle2 className="w-4 h-4 text-green-600" />
+													<CheckCircle2 className="h-4 w-4 text-green-600" />
 												) : (
-													<XCircle className="w-4 h-4 text-amber-600" />
+													<XCircle className="h-4 w-4 text-amber-600" />
 												)}
 												<span>
 													{execution.studentsEvaluated > 0
@@ -149,7 +176,7 @@ export function ExecutionHistoryPage() {
 												</span>
 											</div>
 										</TableCell>
-										<TableCell className="text-sm text-muted-foreground">
+										<TableCell className="text-muted-foreground text-sm">
 											{/* Would need to join with domainUsers to show name */}
 											{t("admin.promotionRules.history.table.user")}
 										</TableCell>
@@ -159,7 +186,7 @@ export function ExecutionHistoryPage() {
 												size="sm"
 												onClick={() => setSelectedExecutionId(execution.id)}
 											>
-												<Eye className="w-4 h-4 mr-1" />
+												<Eye className="mr-1 h-4 w-4" />
 												{t("admin.promotionRules.history.table.viewDetails")}
 											</Button>
 										</TableCell>
@@ -168,8 +195,10 @@ export function ExecutionHistoryPage() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="text-center py-12">
-							<p className="text-muted-foreground">{t("admin.promotionRules.history.emptyState")}</p>
+						<div className="py-12 text-center">
+							<p className="text-muted-foreground">
+								{t("admin.promotionRules.history.emptyState")}
+							</p>
 						</div>
 					)}
 				</CardContent>
@@ -180,9 +209,11 @@ export function ExecutionHistoryPage() {
 				open={!!selectedExecutionId}
 				onOpenChange={(open) => !open && setSelectedExecutionId(null)}
 			>
-				<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+				<DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle>{t("admin.promotionRules.history.details.title")}</DialogTitle>
+						<DialogTitle>
+							{t("admin.promotionRules.history.details.title")}
+						</DialogTitle>
 						<DialogDescription>
 							{t("admin.promotionRules.history.details.description")}
 						</DialogDescription>
@@ -191,55 +222,89 @@ export function ExecutionHistoryPage() {
 					{executionDetails && (
 						<div className="space-y-6">
 							{/* Summary */}
-							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+							<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 								<Card>
 									<CardContent className="pt-4">
-										<div className="text-2xl font-bold">
+										<div className="font-bold text-2xl">
 											{executionDetails.execution.studentsEvaluated}
 										</div>
-										<p className="text-xs text-muted-foreground">{t("admin.promotionRules.history.details.stats.evaluated")}</p>
+										<p className="text-muted-foreground text-xs">
+											{t(
+												"admin.promotionRules.history.details.stats.evaluated",
+											)}
+										</p>
 									</CardContent>
 								</Card>
 								<Card className="border-green-500/30 bg-green-50/20">
 									<CardContent className="pt-4">
-										<div className="text-2xl font-bold text-green-600">
+										<div className="font-bold text-2xl text-green-600">
 											{executionDetails.execution.studentsPromoted}
 										</div>
-										<p className="text-xs text-muted-foreground">{t("admin.promotionRules.history.details.stats.promoted")}</p>
+										<p className="text-muted-foreground text-xs">
+											{t("admin.promotionRules.history.details.stats.promoted")}
+										</p>
 									</CardContent>
 								</Card>
 								<Card>
 									<CardContent className="pt-4">
-										<div className="text-lg font-semibold">
+										<div className="font-semibold text-lg">
 											{new Date(
 												executionDetails.execution.executedAt,
 											).toLocaleString()}
 										</div>
-										<p className="text-xs text-muted-foreground">{t("admin.promotionRules.history.details.stats.date")}</p>
+										<p className="text-muted-foreground text-xs">
+											{t("admin.promotionRules.history.details.stats.date")}
+										</p>
 									</CardContent>
 								</Card>
 								<Card>
 									<CardContent className="pt-4">
-										<div className="text-lg font-semibold">
-											{(executionDetails.execution as any).metadata
-												?.ruleName || "N/A"}
+										<div className="font-semibold text-lg">
+											{(executionDetails.execution as any).metadata?.ruleName ||
+												"N/A"}
 										</div>
-										<p className="text-xs text-muted-foreground">{t("admin.promotionRules.history.details.stats.rule")}</p>
+										<p className="text-muted-foreground text-xs">
+											{t("admin.promotionRules.history.details.stats.rule")}
+										</p>
 									</CardContent>
 								</Card>
 							</div>
 
 							{/* Student Results */}
 							<div>
-								<h3 className="text-lg font-semibold mb-4">{t("admin.promotionRules.history.details.studentResults.title")}</h3>
+								<h3 className="mb-4 font-semibold text-lg">
+									{t(
+										"admin.promotionRules.history.details.studentResults.title",
+									)}
+								</h3>
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>{t("admin.promotionRules.history.details.studentResults.studentId")}</TableHead>
-											<TableHead>{t("admin.promotionRules.history.details.studentResults.status")}</TableHead>
-											<TableHead>{t("admin.promotionRules.history.details.studentResults.average")}</TableHead>
-											<TableHead>{t("admin.promotionRules.history.details.studentResults.credits")}</TableHead>
-											<TableHead>{t("admin.promotionRules.history.details.studentResults.successRate")}</TableHead>
+											<TableHead>
+												{t(
+													"admin.promotionRules.history.details.studentResults.studentId",
+												)}
+											</TableHead>
+											<TableHead>
+												{t(
+													"admin.promotionRules.history.details.studentResults.status",
+												)}
+											</TableHead>
+											<TableHead>
+												{t(
+													"admin.promotionRules.history.details.studentResults.average",
+												)}
+											</TableHead>
+											<TableHead>
+												{t(
+													"admin.promotionRules.history.details.studentResults.credits",
+												)}
+											</TableHead>
+											<TableHead>
+												{t(
+													"admin.promotionRules.history.details.studentResults.successRate",
+												)}
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -251,21 +316,24 @@ export function ExecutionHistoryPage() {
 												<TableCell>
 													{result.wasPromoted ? (
 														<Badge variant="default" className="bg-green-500">
-															<CheckCircle2 className="w-3 h-3 mr-1" />
-															{t("admin.promotionRules.history.details.studentResults.promoted")}
+															<CheckCircle2 className="mr-1 h-3 w-3" />
+															{t(
+																"admin.promotionRules.history.details.studentResults.promoted",
+															)}
 														</Badge>
 													) : (
 														<Badge variant="secondary">
-															<XCircle className="w-3 h-3 mr-1" />
-															{t("admin.promotionRules.history.details.studentResults.notPromoted")}
+															<XCircle className="mr-1 h-3 w-3" />
+															{t(
+																"admin.promotionRules.history.details.studentResults.notPromoted",
+															)}
 														</Badge>
 													)}
 												</TableCell>
 												<TableCell>
 													{(result.evaluationData as any).overallAverage
 														? `${(
-																(result.evaluationData as any)
-																	.overallAverage
+																(result.evaluationData as any).overallAverage
 															).toFixed(2)}/20`
 														: "N/A"}
 												</TableCell>

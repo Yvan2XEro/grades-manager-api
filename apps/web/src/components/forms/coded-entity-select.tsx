@@ -1,4 +1,10 @@
-import { Check, ChevronsUpDown, Loader2, SearchIcon, XIcon } from "lucide-react";
+import {
+	Check,
+	ChevronsUpDown,
+	Loader2,
+	SearchIcon,
+	XIcon,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +24,8 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
 import { useDebounce } from "@/lib/hooks/use-debounce";
+import { cn } from "@/lib/utils";
 
 /**
  * Generic coded entity type
@@ -192,7 +198,7 @@ export function CodedEntitySelect<T extends CodedEntity>({
 							)}
 							<span className="truncate">{displayText}</span>
 						</div>
-						<div className="flex items-center gap-1 shrink-0">
+						<div className="flex shrink-0 items-center gap-1">
 							{value && allowClear && !disabled && (
 								<XIcon
 									className="h-4 w-4 opacity-50 hover:opacity-100"
@@ -228,15 +234,14 @@ export function CodedEntitySelect<T extends CodedEntity>({
 
 							{!isLoading && filteredItems.length === 0 && (
 								<CommandEmpty>
-									{emptyMessage ||
-										t("components.codedEntitySelect.noResults")}
+									{emptyMessage || t("components.codedEntitySelect.noResults")}
 								</CommandEmpty>
 							)}
 
 							{!isLoading && filteredItems.length > 0 && (
 								<CommandGroup>
 									{searchQuery && (
-										<div className="px-2 py-1.5 text-xs text-muted-foreground">
+										<div className="px-2 py-1.5 text-muted-foreground text-xs">
 											{t("components.codedEntitySelect.resultsCount", {
 												count: filteredItems.length,
 											})}
@@ -258,9 +263,9 @@ export function CodedEntitySelect<T extends CodedEntity>({
 											{getItemIcon && (
 												<span className="shrink-0">{getItemIcon(item)}</span>
 											)}
-											<div className="flex flex-col gap-0.5 flex-1 overflow-hidden">
+											<div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
 												<div className="flex items-center gap-2">
-													<span className="font-mono text-xs font-semibold">
+													<span className="font-mono font-semibold text-xs">
 														{item.code}
 													</span>
 													{getItemBadge && (
@@ -269,9 +274,9 @@ export function CodedEntitySelect<T extends CodedEntity>({
 														</Badge>
 													)}
 												</div>
-												<span className="text-sm truncate">{item.name}</span>
+												<span className="truncate text-sm">{item.name}</span>
 												{getItemSubtitle && (
-													<span className="text-xs text-muted-foreground truncate">
+													<span className="truncate text-muted-foreground text-xs">
 														{getItemSubtitle(item)}
 													</span>
 												)}
@@ -285,7 +290,7 @@ export function CodedEntitySelect<T extends CodedEntity>({
 				</PopoverContent>
 			</Popover>
 
-			{error && <p className="text-sm text-destructive">{error}</p>}
+			{error && <p className="text-destructive text-sm">{error}</p>}
 
 			<input type="hidden" name={name} value={value || ""} />
 		</div>

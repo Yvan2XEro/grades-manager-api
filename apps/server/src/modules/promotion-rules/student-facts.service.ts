@@ -192,7 +192,12 @@ async function getStudentTranscript(studentId: string) {
 			name: string;
 			code: string;
 			credits: number;
-			courses: Array<{ id: string; name: string; code: string; average: number }>;
+			courses: Array<{
+				id: string;
+				name: string;
+				code: string;
+				average: number;
+			}>;
 			scoreSum: number;
 			courseCount: number;
 		}
@@ -405,9 +410,9 @@ async function getCourseEnrollmentStats(
 		courseAttempts.set(enrollment.courseId, current + 1);
 	}
 
-	const coursesWithMultipleAttempts = Array.from(courseAttempts.values()).filter(
-		(count) => count > 1,
-	).length;
+	const coursesWithMultipleAttempts = Array.from(
+		courseAttempts.values(),
+	).filter((count) => count > 1).length;
 	const maxAttemptCount =
 		courseAttempts.size > 0 ? Math.max(...courseAttempts.values()) : 0;
 	const totalAttempts = enrollments.length;
@@ -437,7 +442,9 @@ async function getCourseEnrollmentStats(
 		firstAttempts > 0 ? firstAttemptSuccesses / firstAttempts : 0;
 
 	const retakes = enrollments.filter((e) => e.attempt > 1);
-	const retakeSuccesses = retakes.filter((e) => e.status === "completed").length;
+	const retakeSuccesses = retakes.filter(
+		(e) => e.status === "completed",
+	).length;
 	const retakeSuccessRate =
 		retakes.length > 0 ? retakeSuccesses / retakes.length : 0;
 
@@ -498,7 +505,5 @@ function computePerformanceIndex(
 	// 30% credit completion
 	// 20% success rate
 	const normalizedAverage = overallAverage / 20; // Assuming 0-20 scale
-	return (
-		normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20
-	);
+	return normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20;
 }

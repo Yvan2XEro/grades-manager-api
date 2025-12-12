@@ -21,6 +21,13 @@ import ExamTypes from "./pages/admin/ExamTypes";
 import GradeExport from "./pages/admin/GradeExport";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
+import {
+	EvaluatePromotionPage,
+	ExecutePromotionPage,
+	ExecutionHistoryPage,
+	PromotionRulesDashboard,
+	RulesListPage,
+} from "./pages/admin/promotion-rules";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
 import RuleManagement from "./pages/admin/RuleManagement";
@@ -42,13 +49,6 @@ import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
-import {
-	PromotionRulesDashboard,
-	RulesListPage,
-	EvaluatePromotionPage,
-	ExecutePromotionPage,
-	ExecutionHistoryPage,
-} from "./pages/admin/promotion-rules";
 import { useStore } from "./store";
 
 function App() {
@@ -144,7 +144,10 @@ function App() {
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
 						{/* Promotion Rules */}
-						<Route path="promotion-rules" element={<PromotionRulesDashboard />} />
+						<Route
+							path="promotion-rules"
+							element={<PromotionRulesDashboard />}
+						/>
 						<Route path="promotion-rules/rules" element={<RulesListPage />} />
 						<Route
 							path="promotion-rules/evaluate"

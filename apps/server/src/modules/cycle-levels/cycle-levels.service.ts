@@ -24,9 +24,7 @@ export async function deleteCycleLevel(id: string) {
 	await repo.remove(id);
 }
 
-export async function listCycleLevels(
-	opts: Parameters<typeof repo.list>[0],
-) {
+export async function listCycleLevels(opts: Parameters<typeof repo.list>[0]) {
 	return repo.list(opts);
 }
 

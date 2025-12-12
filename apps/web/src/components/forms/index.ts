@@ -1,2 +1,5 @@
+export type {
+	CodedEntity,
+	CodedEntitySelectProps,
+} from "./coded-entity-select";
 export { CodedEntitySelect } from "./coded-entity-select";
-export type { CodedEntitySelectProps, CodedEntity } from "./coded-entity-select";

@@ -21,12 +21,16 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.contains(/student|étudiant/i, { timeout: 5000 }).should("exist");
 
 			// Enter grades for visible students
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.eq(1)
 				.clear()
 				.type("18");
@@ -35,9 +39,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should show success message
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("validates grade values between 0 and 20", () => {
@@ -53,7 +57,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Try to enter invalid grade (> 20)
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("25");
@@ -80,7 +86,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Try to enter negative grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("-5");
@@ -107,7 +115,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Enter decimal grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15.5");
@@ -116,9 +126,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save successfully
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("shows confirmation message after successful save", () => {
@@ -134,7 +144,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Enter a grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("16");
@@ -143,9 +155,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should show specific confirmation
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 	});
 
@@ -154,9 +166,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.loginAs("teacher", { route: "/teacher/grades" });
 
 			// Without selecting course/exam, grade inputs should not be visible
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').should(
-				"not.exist",
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).should("not.exist");
 		});
 
 		it("requires exam selection before entering grades", () => {
@@ -188,10 +200,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 
 			// Student list should load
 			cy.contains(/student|étudiant/i, { timeout: 5000 }).should("exist");
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').should(
-				"have.length.at.least",
-				1,
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).should("have.length.at.least", 1);
 		});
 	});
 
@@ -210,21 +221,21 @@ describe("Grade Entry - Teacher Workflow", () => {
 
 			// Enter grades for multiple students
 			const grades = ["14", "16", "18", "12"];
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').each(
-				($input, index) => {
-					if (index < grades.length) {
-						cy.wrap($input).clear().type(grades[index]);
-					}
-				},
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).each(($input, index) => {
+				if (index < grades.length) {
+					cy.wrap($input).clear().type(grades[index]);
+				}
+			});
 
 			// Save all grades
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should show success message
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("can save partial grades (not all students)", () => {
@@ -240,7 +251,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Enter grade for only first student
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
@@ -249,9 +262,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save successfully even if not all grades are entered
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 	});
 });

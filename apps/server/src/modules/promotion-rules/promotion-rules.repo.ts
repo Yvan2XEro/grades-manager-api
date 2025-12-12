@@ -30,7 +30,9 @@ export async function updateRule(
 }
 
 export async function deleteRule(id: string) {
-	await db.delete(schema.promotionRules).where(eq(schema.promotionRules.id, id));
+	await db
+		.delete(schema.promotionRules)
+		.where(eq(schema.promotionRules.id, id));
 }
 
 export async function listRules(opts: {
@@ -150,10 +152,7 @@ export async function createExecutionResults(
 	data: schema.NewPromotionExecutionResult[],
 ) {
 	if (data.length === 0) return [];
-	return db
-		.insert(schema.promotionExecutionResults)
-		.values(data)
-		.returning();
+	return db.insert(schema.promotionExecutionResults).values(data).returning();
 }
 
 export async function findExecutionResultsByExecutionId(executionId: string) {

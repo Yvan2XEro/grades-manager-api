@@ -23,9 +23,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -53,9 +51,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").eq(1).click(); // Different type
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15"); // Same date
+			cy.findByLabelText(/date/i).clear().type("2024-12-15"); // Same date
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -68,8 +64,9 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			// Should show conflict warning or allow with warning
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const hasConflictWarning =
-					$body.text().match(/conflict|conflit|warning|attention|same.*date/i) !==
-					null;
+					$body
+						.text()
+						.match(/conflict|conflit|warning|attention|same.*date/i) !== null;
 				const wasCreated = $body.text().match(/created|créé|success/i) !== null;
 
 				// Either shows warning or creates anyway
@@ -96,9 +93,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-16");
+			cy.findByLabelText(/date/i).clear().type("2024-12-16");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -126,9 +121,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").eq(1).click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-16"); // Same date
+			cy.findByLabelText(/date/i).clear().type("2024-12-16"); // Same date
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -171,9 +164,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-17");
+			cy.findByLabelText(/date/i).clear().type("2024-12-17");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -201,9 +192,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-17"); // Same date
+			cy.findByLabelText(/date/i).clear().type("2024-12-17"); // Same date
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -238,9 +227,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-18");
+			cy.findByLabelText(/date/i).clear().type("2024-12-18");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -268,9 +255,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").eq(1).click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-18");
+			cy.findByLabelText(/date/i).clear().type("2024-12-18");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -321,9 +306,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-19");
+			cy.findByLabelText(/date/i).clear().type("2024-12-19");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -352,9 +335,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			cy.get("[role=option]").eq(1).click();
 
 			// Use different date to avoid conflict
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-21");
+			cy.findByLabelText(/date/i).clear().type("2024-12-21");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -387,9 +368,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-20");
+			cy.findByLabelText(/date/i).clear().type("2024-12-20");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -417,9 +396,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").eq(1).click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-20");
+			cy.findByLabelText(/date/i).clear().type("2024-12-20");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -464,9 +441,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-22");
+			cy.findByLabelText(/date/i).clear().type("2024-12-22");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -513,9 +488,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-23");
+			cy.findByLabelText(/date/i).clear().type("2024-12-23");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -576,9 +549,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				}).click();
 				cy.get("[role=option]").eq(i).click();
 
-				cy.findByLabelText(/date/i)
-					.clear()
-					.type("2024-12-25");
+				cy.findByLabelText(/date/i).clear().type("2024-12-25");
 
 				cy.findByLabelText(/coefficient|weight|pondération/i)
 					.clear()
@@ -603,7 +574,9 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				if (hasConflictIndicator) {
 					cy.log("Conflict indicators shown in exam list");
 				} else {
-					cy.log("No conflict indicators - system allows multiple exams per day");
+					cy.log(
+						"No conflict indicators - system allows multiple exams per day",
+					);
 				}
 			});
 		});

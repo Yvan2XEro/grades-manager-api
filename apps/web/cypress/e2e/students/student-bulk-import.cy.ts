@@ -358,7 +358,8 @@ Valid,User,valid@example.com,2000-03-15,Yaoundé,female
 			}).click();
 
 			// Generate CSV with 20 students
-			let csvContent = `firstName,lastName,email,dateOfBirth,placeOfBirth,gender\n`;
+			let csvContent =
+				"firstName,lastName,email,dateOfBirth,placeOfBirth,gender\n";
 			for (let i = 1; i <= 20; i++) {
 				csvContent += `Student${i},User${i},student${i}@example.com,2000-01-${String(i).padStart(2, "0")},Yaoundé,${i % 2 === 0 ? "male" : "female"}\n`;
 			}

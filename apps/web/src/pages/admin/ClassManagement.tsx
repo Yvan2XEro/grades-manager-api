@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CodedEntitySelect } from "@/components/forms";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import { CodedEntitySelect } from "@/components/forms";
 import {
 	Table,
 	TableBody,
@@ -240,7 +240,12 @@ export default function ClassManagement() {
 	});
 
 	const { data: searchCycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevels", "search", cycleLevelSearch, selectedProgram?.faculty],
+		queryKey: [
+			"cycleLevels",
+			"search",
+			cycleLevelSearch,
+			selectedProgram?.faculty,
+		],
 		queryFn: async () => {
 			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
 			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
@@ -269,7 +274,8 @@ export default function ClassManagement() {
 		enabled: Boolean(selectedProgram?.faculty) && cycleLevelSearch.length >= 2,
 	});
 
-	const cycleLevels = cycleLevelSearch.length >= 2 ? searchCycleLevels : defaultCycleLevels;
+	const cycleLevels =
+		cycleLevelSearch.length >= 2 ? searchCycleLevels : defaultCycleLevels;
 	const cycleLevelId = watch("cycleLevelId");
 	const selectedCycleLevel = useMemo(
 		() => cycleLevels.find((level) => level.id === cycleLevelId),
@@ -316,7 +322,12 @@ export default function ClassManagement() {
 	});
 
 	const { data: searchProgramOptions = [] } = useQuery({
-		queryKey: ["programOptions", "search", programOptionSearch, selectedProgram?.id],
+		queryKey: [
+			"programOptions",
+			"search",
+			programOptionSearch,
+			selectedProgram?.id,
+		],
 		queryFn: async () => {
 			if (!selectedProgram) return [];
 			const items = await trpcClient.programOptions.search.query({
@@ -328,7 +339,10 @@ export default function ClassManagement() {
 		enabled: Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
 	});
 
-	const programOptions = programOptionSearch.length >= 2 ? searchProgramOptions : defaultProgramOptions;
+	const programOptions =
+		programOptionSearch.length >= 2
+			? searchProgramOptions
+			: defaultProgramOptions;
 	const programOptionId = watch("programOptionId");
 	const selectedProgramOption = useMemo(
 		() => programOptions.find((option) => option.id === programOptionId),
@@ -683,7 +697,10 @@ export default function ClassManagement() {
 						<CodedEntitySelect
 							items={programs}
 							onSearch={setProgramSearch}
-							value={programs.find((p) => p.id === form.watch("programId"))?.code || null}
+							value={
+								programs.find((p) => p.id === form.watch("programId"))?.code ||
+								null
+							}
 							onChange={(code) => {
 								const program = programs.find((p) => p.code === code);
 								form.setValue("programId", program?.id || "");
@@ -730,7 +747,10 @@ export default function ClassManagement() {
 						<CodedEntitySelect
 							items={cycleLevels}
 							onSearch={setCycleLevelSearch}
-							value={cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))?.code || null}
+							value={
+								cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))
+									?.code || null
+							}
 							onChange={(code) => {
 								const level = cycleLevels.find((l) => l.code === code);
 								form.setValue("cycleLevelId", level?.id || "");
@@ -750,7 +770,8 @@ export default function ClassManagement() {
 							emptyMessage={
 								!selectedProgram
 									? t("admin.classes.form.selectProgramFirst", {
-											defaultValue: "Select a program to load its cycle levels.",
+											defaultValue:
+												"Select a program to load its cycle levels.",
 										})
 									: t("admin.classes.form.emptyCycleLevels", {
 											defaultValue:
@@ -762,7 +783,11 @@ export default function ClassManagement() {
 						<CodedEntitySelect
 							items={programOptions}
 							onSearch={setProgramOptionSearch}
-							value={programOptions.find((o) => o.id === form.watch("programOptionId"))?.code || null}
+							value={
+								programOptions.find(
+									(o) => o.id === form.watch("programOptionId"),
+								)?.code || null
+							}
 							onChange={(code) => {
 								const option = programOptions.find((o) => o.code === code);
 								form.setValue("programOptionId", option?.id || "");

@@ -106,7 +106,8 @@ export default function ExamScheduler() {
 		enabled: facultySearch.length >= 2,
 	});
 
-	const faculties = facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
+	const faculties =
+		facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
 
 	const academicYearsQuery = useQuery({
 		queryKey: ["academicYears"],
@@ -393,9 +394,7 @@ export default function ExamScheduler() {
 										setFacultyId(faculty?.id || "");
 									}}
 									label={t("admin.examScheduler.form.facultyLabel")}
-									placeholder={t(
-										"admin.examScheduler.form.facultyPlaceholder",
-									)}
+									placeholder={t("admin.examScheduler.form.facultyPlaceholder")}
 									searchMode="hybrid"
 									required
 								/>

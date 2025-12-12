@@ -61,6 +61,8 @@ export async function getOptionById(id: string) {
 	return option;
 }
 
-export async function searchProgramOptions(opts: Parameters<typeof repo.search>[0]) {
+export async function searchProgramOptions(
+	opts: Parameters<typeof repo.search>[0],
+) {
 	return repo.search(opts);
 }

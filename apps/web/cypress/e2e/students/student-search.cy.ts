@@ -11,7 +11,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search by first name (using seed data)
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Alice");
 
@@ -35,7 +37,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search by last name
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Teacher");
 
@@ -49,7 +53,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search with lowercase
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("alice");
 
@@ -63,7 +69,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search with partial name
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Ali");
 
@@ -77,7 +85,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search for non-existent student
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("NonExistentStudentName123");
 
@@ -93,19 +103,23 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Perform search
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Alice");
 
 			cy.contains("Alice", { timeout: 5000 }).should("exist");
 
 			// Clear search
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]').clear();
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			).clear();
 
 			// Should show all students again
 			cy.get("body").then(($body) => {
-				const hasMultipleStudents = ($body.text().match(/ENG\d+-\d+/g) || [])
-					.length > 1;
+				const hasMultipleStudents =
+					($body.text().match(/ENG\d+-\d+/g) || []).length > 1;
 				expect(hasMultipleStudents).to.be.true;
 			});
 		});
@@ -128,7 +142,9 @@ describe("Student Management - Search and Filtering", () => {
 						cy.log(`Found registration number: ${regNumber}`);
 
 						// Search by registration number
-						cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+						cy.get(
+							'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+						)
 							.clear()
 							.type(regNumber);
 
@@ -144,7 +160,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Search by partial registration number
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("ENG");
 
@@ -194,7 +212,9 @@ describe("Student Management - Search and Filtering", () => {
 			// Look for "All" or reset option
 			cy.get("body").then(($body) => {
 				if ($body.text().match(/all.*class|toutes.*class/i)) {
-					cy.findByRole("option", { name: /all.*class|toutes.*class/i }).click();
+					cy.findByRole("option", {
+						name: /all.*class|toutes.*class/i,
+					}).click();
 				} else if ($body.find('[data-testid="clear-filter"]').length > 0) {
 					cy.get('[data-testid="clear-filter"]').click();
 				}
@@ -221,7 +241,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("[role=option]").first().click();
 
 			// Also search by name
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Alice");
 
@@ -241,17 +263,19 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("[role=option]").first().click();
 
 			// Perform search
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Student");
 
 			// Filter should still be applied (verify by checking if filter dropdown shows selection)
-			cy.get('[data-testid="class-filter"], [data-testid="class-select"]').should(
-				($select) => {
-					const text = $select.text();
-					expect(text).not.to.match(/select.*class|choisir.*class/i);
-				},
-			);
+			cy.get(
+				'[data-testid="class-filter"], [data-testid="class-select"]',
+			).should(($select) => {
+				const text = $select.text();
+				expect(text).not.to.match(/select.*class|choisir.*class/i);
+			});
 		});
 	});
 
@@ -264,7 +288,9 @@ describe("Student Management - Search and Filtering", () => {
 			const startTime = Date.now();
 
 			// Perform search
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("a");
 
@@ -284,7 +310,9 @@ describe("Student Management - Search and Filtering", () => {
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Alice");
 
@@ -298,7 +326,9 @@ describe("Student Management - Search and Filtering", () => {
 
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Student");
 
@@ -326,7 +356,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("[role=option]").first().click();
 
 			// Search
-			cy.get('[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]')
+			cy.get(
+				'[data-testid="search-input"], input[type="search"], input[placeholder*="search"], input[placeholder*="recherch"]',
+			)
 				.clear()
 				.type("Test");
 

@@ -26,9 +26,7 @@ describe("Exam Management - Manual Creation", () => {
 			cy.get("[role=option]").first().click();
 
 			// Set date
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			// Set coefficient
 			cy.findByLabelText(/coefficient|weight|pondération/i)
@@ -64,9 +62,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-20");
+			cy.findByLabelText(/date/i).clear().type("2024-12-20");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -170,18 +166,16 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			cy.findByRole("button", {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
 			// Should show validation error
-			cy.contains(/required|obligatoire|coefficient/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/required|obligatoire|coefficient/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("validates coefficient is positive", () => {
@@ -202,9 +196,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			// Enter negative coefficient
 			cy.findByLabelText(/coefficient|weight|pondération/i)
@@ -235,14 +227,12 @@ describe("Exam Management - Manual Creation", () => {
 			cy.get("[role=option]").first().click();
 
 			cy.get('[data-testid="exam-type-select"], #examType, #examTypeId', {
-				timeout: 5000 },
-			).click();
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Try invalid date
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("invalid-date");
+			cy.findByLabelText(/date/i).clear().type("invalid-date");
 
 			cy.findByRole("button", {
 				name: /save|create|submit|enregistrer|créer/i,
@@ -275,9 +265,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -290,7 +278,9 @@ describe("Exam Management - Manual Creation", () => {
 				);
 				if (descriptionField.length > 0) {
 					cy.log("Description field exists");
-					cy.wrap(descriptionField).first().type("Midterm exam for chapter 1-5");
+					cy.wrap(descriptionField)
+						.first()
+						.type("Midterm exam for chapter 1-5");
 				}
 			});
 
@@ -327,9 +317,7 @@ describe("Exam Management - Manual Creation", () => {
 					cy.get("[role=option]").first().click();
 				});
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -365,9 +353,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-15");
+			cy.findByLabelText(/date/i).clear().type("2024-12-15");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -429,7 +415,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Form should be empty
-			cy.get('[data-testid="class-course-select"], #classCourse, #classCourseId')
+			cy.get(
+				'[data-testid="class-course-select"], #classCourse, #classCourseId',
+			)
 				.invoke("text")
 				.should("match", /select|choisir/i);
 		});
@@ -455,9 +443,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-10");
+			cy.findByLabelText(/date/i).clear().type("2024-12-10");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()
@@ -485,9 +471,7 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 			cy.get("[role=option]").eq(1).click(); // Different exam type
 
-			cy.findByLabelText(/date/i)
-				.clear()
-				.type("2024-12-20");
+			cy.findByLabelText(/date/i).clear().type("2024-12-20");
 
 			cy.findByLabelText(/coefficient|weight|pondération/i)
 				.clear()

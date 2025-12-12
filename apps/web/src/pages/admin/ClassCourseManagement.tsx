@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CodedEntitySelect } from "@/components/forms";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -26,7 +27,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import { CodedEntitySelect } from "@/components/forms";
 import {
 	Dialog,
 	DialogContent,
@@ -654,7 +654,10 @@ export default function ClassCourseManagement() {
 							<CodedEntitySelect
 								items={classes}
 								onSearch={setClassSearch}
-								value={classes.find((c) => c.id === form.watch("class"))?.code || null}
+								value={
+									classes.find((c) => c.id === form.watch("class"))?.code ||
+									null
+								}
 								onChange={(code) => {
 									const cls = classes.find((c) => c.code === code);
 									form.setValue("class", cls?.id || "");
@@ -673,7 +676,10 @@ export default function ClassCourseManagement() {
 							<CodedEntitySelect
 								items={courses}
 								onSearch={setCourseSearch}
-								value={courses.find((c) => c.id === form.watch("course"))?.code || null}
+								value={
+									courses.find((c) => c.id === form.watch("course"))?.code ||
+									null
+								}
 								onChange={(code) => {
 									const course = courses.find((c) => c.code === code);
 									form.setValue("course", course?.id || "");

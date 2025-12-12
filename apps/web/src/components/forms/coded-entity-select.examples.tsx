@@ -5,11 +5,16 @@
  * with different entity types (programs, classes, courses, etc.)
  */
 
-import { BookIcon, BuildingIcon, GraduationCapIcon, SchoolIcon } from "lucide-react";
+import {
+	BookIcon,
+	BuildingIcon,
+	GraduationCapIcon,
+	SchoolIcon,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
-import { CodedEntitySelect } from "./coded-entity-select";
-import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
+import { CodedEntitySelect } from "./coded-entity-select";
 
 /**
  * Example 1: Program Select
@@ -49,7 +54,9 @@ export function ProgramSelectExample() {
 				placeholder="Select a program..."
 				icon={<GraduationCapIcon className="h-4 w-4" />}
 				getItemIcon={() => <GraduationCapIcon className="h-4 w-4" />}
-				getItemSubtitle={(program) => `Faculty: ${program.faculty?.name || "N/A"}`}
+				getItemSubtitle={(program) =>
+					`Faculty: ${program.faculty?.name || "N/A"}`
+				}
 				error={form.formState.errors.programCode?.message}
 				searchMode="hybrid"
 			/>

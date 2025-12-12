@@ -8,7 +8,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
 			// Select academic year
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			// Select a class
@@ -31,7 +33,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 					if ($body.find('[data-testid="enroll-student"]').length > 0) {
 						cy.get('[data-testid="enroll-student"]').first().click();
 					} else {
-						cy.findByRole("button", { name: /enroll/i }).first().click();
+						cy.findByRole("button", { name: /enroll/i })
+							.first()
+							.click();
 					}
 
 					// Should show success
@@ -49,14 +53,18 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("sets enrollment status to 'active'", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll student
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 10000 }).should(
@@ -70,7 +78,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("prevents duplicate enrollment for same student/class/year", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -105,7 +115,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("requires student selection", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			// Try to enroll without selecting class
@@ -129,7 +141,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("requires class selection", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			// Without selecting class, enroll button should be disabled or not visible
@@ -150,7 +164,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("displays enrolled student in roster", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -171,7 +187,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("shows enrollment status", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -191,7 +209,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("displays enrollment date/timestamp", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -219,14 +239,18 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("validates that student belongs to selected class", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll the class first to ensure there are students
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 10000 }).should(
@@ -241,7 +265,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 				if (studentCount > 0) {
 					cy.log("✓ Students are visible in the selected class");
 				} else {
-					cy.log("⚠ No students found - class may be empty or students not visible yet");
+					cy.log(
+						"⚠ No students found - class may be empty or students not visible yet",
+					);
 				}
 			});
 		});
@@ -252,7 +278,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
 			// Enroll in first year
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -274,7 +302,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 						.length > 0;
 
 				if (hasOtherYears) {
-					cy.log("Multiple academic years available - can test cross-year enrollment");
+					cy.log(
+						"Multiple academic years available - can test cross-year enrollment",
+					);
 				} else {
 					cy.log("Only one academic year in seed data");
 				}
@@ -286,7 +316,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("opens course roster dialog", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -315,7 +347,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 		it("allows withdrawing student from specific course", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();

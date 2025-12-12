@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CodedEntitySelect } from "@/components/forms";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -43,7 +44,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { CodedEntitySelect } from "@/components/forms";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
@@ -85,7 +85,8 @@ export default function StudyCycleManagement() {
 		enabled: facultySearch.length >= 2,
 	});
 
-	const faculties = facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
+	const faculties =
+		facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
 
 	const facultiesQuery = { data: { items: faculties } };
 
@@ -457,7 +458,10 @@ export default function StudyCycleManagement() {
 							<CodedEntitySelect
 								items={faculties}
 								onSearch={setFacultySearch}
-								value={faculties.find((f) => f.id === form.watch("facultyId"))?.code || null}
+								value={
+									faculties.find((f) => f.id === form.watch("facultyId"))
+										?.code || null
+								}
 								onChange={(code) => {
 									const faculty = faculties.find((f) => f.code === code);
 									form.setValue("facultyId", faculty?.id || "");
