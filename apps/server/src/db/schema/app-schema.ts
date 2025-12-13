@@ -107,6 +107,8 @@ export const domainUsers = pgTable(
 	],
 );
 
+/** Root institution profile storing bilingual metadata and branding. */
+
 /** Catalog of allowed exam types (CC, TP...). */
 export const examTypes = pgTable(
 	"exam_types",
@@ -542,6 +544,54 @@ export const registrationNumberCounters = pgTable(
 		unique("uq_registration_counter_scope").on(t.formatId, t.scopeKey),
 		index("idx_registration_counter_format_id").on(t.formatId),
 	],
+);
+
+/** Institution master data with bilingual metadata. */
+export const institutions = pgTable(
+	"institutions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		code: text("code").notNull(),
+		shortName: text("short_name"),
+		nameFr: text("name_fr").notNull(),
+		nameEn: text("name_en").notNull(),
+		legalNameFr: text("legal_name_fr"),
+		legalNameEn: text("legal_name_en"),
+		sloganFr: text("slogan_fr"),
+		sloganEn: text("slogan_en"),
+		descriptionFr: text("description_fr"),
+		descriptionEn: text("description_en"),
+		addressFr: text("address_fr"),
+		addressEn: text("address_en"),
+		contactEmail: text("contact_email"),
+		contactPhone: text("contact_phone"),
+		fax: text("fax"),
+		postalBox: text("postal_box"),
+		website: text("website"),
+		logoUrl: text("logo_url"),
+		coverImageUrl: text("cover_image_url"),
+		defaultAcademicYearId: text("default_academic_year_id").references(
+			() => academicYears.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		registrationFormatId: text("registration_format_id").references(
+			() => registrationNumberFormats.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		timezone: text("timezone").default("UTC"),
+		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [unique("uq_institutions_code").on(t.code)],
 );
 
 /** Directed edges capturing course prerequisites. */
@@ -1120,6 +1170,17 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
+export const institutionsRelations = relations(institutions, ({ one }) => ({
+	defaultAcademicYear: one(academicYears, {
+		fields: [institutions.defaultAcademicYearId],
+		references: [academicYears.id],
+	}),
+	registrationFormat: one(registrationNumberFormats, {
+		fields: [institutions.registrationFormatId],
+		references: [registrationNumberFormats.id],
+	}),
+}));
+
 export const registrationNumberFormatsRelations = relations(
 	registrationNumberFormats,
 	({ many }) => ({
@@ -1272,6 +1333,9 @@ export type NewEnrollmentWindow = InferInsertModel<typeof enrollmentWindows>;
 
 export type Notification = InferSelectModel<typeof notifications>;
 export type NewNotification = InferInsertModel<typeof notifications>;
+
+export type Institution = InferSelectModel<typeof institutions>;
+export type NewInstitution = InferInsertModel<typeof institutions>;
 
 export type RegistrationNumberFormat = InferSelectModel<
 	typeof registrationNumberFormats

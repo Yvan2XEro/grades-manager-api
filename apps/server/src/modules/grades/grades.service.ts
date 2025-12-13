@@ -86,6 +86,10 @@ export async function avgForStudentInCourse(
 }
 
 export async function exportClassCourseCsv(classCourseId: string) {
+	const institution = await db.query.institutions.findFirst();
+	void institution;
+	// Developer note: when adjusting CSV/PDF exports, include institution metadata
+	// (nameFr/nameEn, contactEmail, logoUrl, etc.) in the generated headers.
 	const rows = await db
 		.select({
 			registrationNumber: schema.students.registrationNumber,

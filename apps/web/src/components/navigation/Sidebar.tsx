@@ -12,6 +12,7 @@ import {
 	FileSpreadsheet,
 	GraduationCap,
 	Hash,
+	Landmark,
 	Layers3,
 	LayoutDashboard,
 	School,
@@ -43,6 +44,11 @@ const Sidebar: React.FC = () => {
 			to: "/admin/faculties",
 			icon: <Building2 className="h-5 w-5" />,
 			labelKey: "navigation.sidebar.admin.faculties",
+		},
+		{
+			to: "/admin/institution",
+			icon: <Landmark className="h-5 w-5" />,
+			labelKey: "navigation.sidebar.admin.institution",
 		},
 		{
 			to: "/admin/study-cycles",

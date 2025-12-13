@@ -1,0 +1,27 @@
+import z from "zod";
+
+export const upsertInstitutionSchema = z.object({
+	code: z.string().min(1),
+	shortName: z.string().optional(),
+	nameFr: z.string().min(1),
+	nameEn: z.string().min(1),
+	legalNameFr: z.string().optional(),
+	legalNameEn: z.string().optional(),
+	sloganFr: z.string().optional(),
+	sloganEn: z.string().optional(),
+	descriptionFr: z.string().optional(),
+	descriptionEn: z.string().optional(),
+	addressFr: z.string().optional(),
+	addressEn: z.string().optional(),
+	contactEmail: z.string().email().optional(),
+	contactPhone: z.string().optional(),
+	fax: z.string().optional(),
+	postalBox: z.string().optional(),
+	website: z.string().url().optional(),
+	logoUrl: z.string().url().optional(),
+	coverImageUrl: z.string().url().optional(),
+	defaultAcademicYearId: z.string().optional(),
+	registrationFormatId: z.string().optional(),
+	timezone: z.string().optional(),
+	metadata: z.record(z.unknown()).optional(),
+});

@@ -30,6 +30,7 @@ import {
 } from "./pages/admin/promotion-rules";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
+import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
@@ -132,6 +133,7 @@ function App() {
 							path="registration-numbers/:formatId"
 							element={<RegistrationNumberFormatDetail />}
 						/>
+						<Route path="institution" element={<InstitutionSettings />} />
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />

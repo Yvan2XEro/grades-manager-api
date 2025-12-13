@@ -9,12 +9,14 @@ import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
 import { facultiesRouter } from "../modules/faculties";
+import { filesRouter } from "../modules/files";
 import { notificationsRouter } from "../modules/notifications";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
 import { promotionRulesRouter } from "../modules/promotion-rules";
 import { promotionsRouter } from "../modules/promotions";
 import { registrationNumbersRouter } from "../modules/registration-numbers";
+import { institutionsRouter } from "../modules/institutions";
 import { semestersRouter } from "../modules/semesters";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
 import { studentCreditLedgerRouter } from "../modules/student-credit-ledger";
@@ -50,6 +52,8 @@ export const appRouter = router({
 	promotions: promotionsRouter,
 	promotionRules: promotionRulesRouter,
 	registrationNumbers: registrationNumbersRouter,
+	files: filesRouter,
+	institutions: institutionsRouter,
 	grades: gradesRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,
