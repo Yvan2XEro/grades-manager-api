@@ -19,6 +19,7 @@ import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
 import GradeExport from "./pages/admin/GradeExport";
+import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import {
@@ -30,7 +31,6 @@ import {
 } from "./pages/admin/promotion-rules";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
-import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";

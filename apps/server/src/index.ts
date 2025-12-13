@@ -1,13 +1,13 @@
 import "dotenv/config";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { startBackgroundJobs } from "./lib/jobs";
 import { appRouter } from "./routers/index";
-import { serveStatic } from "hono/bun";
 
 const app = new Hono();
 

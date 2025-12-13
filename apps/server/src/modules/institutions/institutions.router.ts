@@ -1,6 +1,6 @@
 import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
-import { upsertInstitutionSchema } from "./institutions.zod";
 import * as service from "./institutions.service";
+import { upsertInstitutionSchema } from "./institutions.zod";
 
 export const institutionsRouter = router({
 	get: protectedProcedure.query(() => service.getInstitution()),

@@ -23,7 +23,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -32,8 +31,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { trpc, trpcClient } from "@/utils/trpc";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 const institutionSchema = z.object({
 	code: z.string().min(1),
@@ -220,7 +220,7 @@ function ImageUploadField({
 						}}
 						onDrop={handleDrop}
 						className={cn(
-							"flex flex-col items-center justify-center rounded-md border border-dashed bg-muted/20 px-4 py-6 text-center text-sm font-medium text-foreground transition hover:border-primary focus:outline-none",
+							"flex flex-col items-center justify-center rounded-md border border-dashed bg-muted/20 px-4 py-6 text-center font-medium text-foreground text-sm transition hover:border-primary focus:outline-none",
 							isDragging && "border-primary bg-primary/5",
 						)}
 					>

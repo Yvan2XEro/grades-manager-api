@@ -8,7 +8,9 @@ export async function getInstitution() {
 	return existing ?? null;
 }
 
-export async function upsertInstitution(data: UpdatableFields & { id?: string }) {
+export async function upsertInstitution(
+	data: UpdatableFields & { id?: string },
+) {
 	const existing = await repo.getFirst();
 	if (existing) {
 		return repo.update(existing.id, data);
