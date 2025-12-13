@@ -228,10 +228,11 @@ export default function ClassManagement() {
 		[cycleLevels, cycleLevelId],
 	);
 
-	const { data: semesters } = useQuery({
+	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
 		queryFn: () => trpcClient.semesters.list.query(),
 	});
+	const semesters = semestersData?.items;
 	const semesterId = watch("semesterId");
 	const selectedSemester = useMemo(
 		() => semesters?.find((semester) => semester.id === semesterId),

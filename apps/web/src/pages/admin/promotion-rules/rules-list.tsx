@@ -1,3 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { RuleCard } from "@/components/promotion-rules/rule-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,12 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
-import { Plus, RefreshCw, ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
 export function RulesListPage() {
 	const { t } = useTranslation();
@@ -48,7 +48,11 @@ export function RulesListPage() {
 			setIsCreateDialogOpen(false);
 		},
 		onError: (error: any) => {
-			toast.error(t("admin.promotionRules.rulesList.toast.createError", { error: error.message }));
+			toast.error(
+				t("admin.promotionRules.rulesList.toast.createError", {
+					error: error.message,
+				}),
+			);
 		},
 	});
 
@@ -66,7 +70,11 @@ export function RulesListPage() {
 			setIsEditDialogOpen(false);
 		},
 		onError: (error: any) => {
-			toast.error(t("admin.promotionRules.rulesList.toast.updateError", { error: error.message }));
+			toast.error(
+				t("admin.promotionRules.rulesList.toast.updateError", {
+					error: error.message,
+				}),
+			);
 		},
 	});
 
@@ -78,7 +86,11 @@ export function RulesListPage() {
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 		},
 		onError: (error: any) => {
-			toast.error(t("admin.promotionRules.rulesList.toast.deleteError", { error: error.message }));
+			toast.error(
+				t("admin.promotionRules.rulesList.toast.deleteError", {
+					error: error.message,
+				}),
+			);
 		},
 	});
 
@@ -163,7 +175,7 @@ export function RulesListPage() {
 	};
 
 	return (
-		<div className="container mx-auto py-8 space-y-6">
+		<div className="container mx-auto space-y-6 py-8">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -177,8 +189,10 @@ export function RulesListPage() {
 				</Button>
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="text-3xl font-bold tracking-tight">{t("admin.promotionRules.rulesList.title")}</h1>
-						<p className="text-muted-foreground mt-1">
+						<h1 className="font-bold text-3xl tracking-tight">
+							{t("admin.promotionRules.rulesList.title")}
+						</h1>
+						<p className="mt-1 text-muted-foreground">
 							{t("admin.promotionRules.rulesList.subtitle")}
 						</p>
 					</div>
@@ -186,12 +200,14 @@ export function RulesListPage() {
 						<Button
 							variant="outline"
 							size="icon"
-							onClick={() => queryClient.invalidateQueries({ queryKey: ["promotionRules"] })}
+							onClick={() =>
+								queryClient.invalidateQueries({ queryKey: ["promotionRules"] })
+							}
 						>
 							<RefreshCw className="h-4 w-4" />
 						</Button>
 						<Button onClick={() => setIsCreateDialogOpen(true)}>
-							<Plus className="w-4 h-4 mr-2" />
+							<Plus className="mr-2 h-4 w-4" />
 							{t("admin.promotionRules.rulesList.actions.createRule")}
 						</Button>
 					</div>
@@ -200,13 +216,13 @@ export function RulesListPage() {
 
 			{/* Rules Grid */}
 			{isLoading ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{[...Array(6)].map((_, i) => (
-						<div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
+						<div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
 					))}
 				</div>
 			) : rulesData?.items && rulesData.items.length > 0 ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{rulesData.items.map((rule) => (
 						<RuleCard
 							key={rule.id}
@@ -218,8 +234,10 @@ export function RulesListPage() {
 					))}
 				</div>
 			) : (
-				<div className="text-center py-12">
-					<p className="text-muted-foreground">{t("admin.promotionRules.rulesList.emptyState.noRules")}</p>
+				<div className="py-12 text-center">
+					<p className="text-muted-foreground">
+						{t("admin.promotionRules.rulesList.emptyState.noRules")}
+					</p>
 					<Button
 						variant="outline"
 						className="mt-4"
@@ -232,44 +250,58 @@ export function RulesListPage() {
 
 			{/* Create Dialog */}
 			<Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+				<DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle>{t("admin.promotionRules.rulesList.dialog.create.title")}</DialogTitle>
+						<DialogTitle>
+							{t("admin.promotionRules.rulesList.dialog.create.title")}
+						</DialogTitle>
 						<DialogDescription>
 							{t("admin.promotionRules.rulesList.dialog.create.description")}
 						</DialogDescription>
 					</DialogHeader>
 					<form onSubmit={handleCreateRule} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="name">{t("admin.promotionRules.rulesList.dialog.form.ruleName")}</Label>
+							<Label htmlFor="name">
+								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+							</Label>
 							<Input
 								id="name"
 								name="name"
-								placeholder={t("admin.promotionRules.rulesList.dialog.form.ruleNamePlaceholder")}
+								placeholder={t(
+									"admin.promotionRules.rulesList.dialog.form.ruleNamePlaceholder",
+								)}
 								required
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="description">{t("admin.promotionRules.rulesList.dialog.form.description")}</Label>
+							<Label htmlFor="description">
+								{t("admin.promotionRules.rulesList.dialog.form.description")}
+							</Label>
 							<Textarea
 								id="description"
 								name="description"
-								placeholder={t("admin.promotionRules.rulesList.dialog.form.descriptionPlaceholder")}
+								placeholder={t(
+									"admin.promotionRules.rulesList.dialog.form.descriptionPlaceholder",
+								)}
 								rows={2}
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="ruleset">{t("admin.promotionRules.rulesList.dialog.form.ruleset")}</Label>
+							<Label htmlFor="ruleset">
+								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+							</Label>
 							<Textarea
 								id="ruleset"
 								name="ruleset"
-								placeholder={t("admin.promotionRules.rulesList.dialog.form.rulesetPlaceholder")}
+								placeholder={t(
+									"admin.promotionRules.rulesList.dialog.form.rulesetPlaceholder",
+								)}
 								rows={12}
 								defaultValue={JSON.stringify(defaultRuleset, null, 2)}
 								className="font-mono text-sm"
 								required
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.promotionRules.rulesList.dialog.form.rulesetHelp")}
 							</p>
 						</div>
@@ -282,7 +314,9 @@ export function RulesListPage() {
 								{t("admin.promotionRules.rulesList.dialog.actions.cancel")}
 							</Button>
 							<Button type="submit" disabled={createMutation.isPending}>
-								{createMutation.isPending ? t("admin.promotionRules.rulesList.dialog.actions.creating") : t("admin.promotionRules.rulesList.dialog.actions.create")}
+								{createMutation.isPending
+									? t("admin.promotionRules.rulesList.dialog.actions.creating")
+									: t("admin.promotionRules.rulesList.dialog.actions.create")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -291,14 +325,20 @@ export function RulesListPage() {
 
 			{/* Edit Dialog */}
 			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-				<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+				<DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle>{t("admin.promotionRules.rulesList.dialog.edit.title")}</DialogTitle>
-						<DialogDescription>{t("admin.promotionRules.rulesList.dialog.edit.description")}</DialogDescription>
+						<DialogTitle>
+							{t("admin.promotionRules.rulesList.dialog.edit.title")}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.promotionRules.rulesList.dialog.edit.description")}
+						</DialogDescription>
 					</DialogHeader>
 					<form onSubmit={handleUpdateRule} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="edit-name">{t("admin.promotionRules.rulesList.dialog.form.ruleName")}</Label>
+							<Label htmlFor="edit-name">
+								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+							</Label>
 							<Input
 								id="edit-name"
 								name="name"
@@ -307,7 +347,9 @@ export function RulesListPage() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="edit-description">{t("admin.promotionRules.rulesList.dialog.form.description")}</Label>
+							<Label htmlFor="edit-description">
+								{t("admin.promotionRules.rulesList.dialog.form.description")}
+							</Label>
 							<Textarea
 								id="edit-description"
 								name="description"
@@ -316,7 +358,9 @@ export function RulesListPage() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="edit-ruleset">{t("admin.promotionRules.rulesList.dialog.form.ruleset")}</Label>
+							<Label htmlFor="edit-ruleset">
+								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+							</Label>
 							<Textarea
 								id="edit-ruleset"
 								name="ruleset"
@@ -334,7 +378,9 @@ export function RulesListPage() {
 								{t("admin.promotionRules.rulesList.dialog.actions.cancel")}
 							</Button>
 							<Button type="submit" disabled={updateMutation.isPending}>
-								{updateMutation.isPending ? t("admin.promotionRules.rulesList.dialog.actions.saving") : t("admin.promotionRules.rulesList.dialog.actions.save")}
+								{updateMutation.isPending
+									? t("admin.promotionRules.rulesList.dialog.actions.saving")
+									: t("admin.promotionRules.rulesList.dialog.actions.save")}
 							</Button>
 						</DialogFooter>
 					</form>

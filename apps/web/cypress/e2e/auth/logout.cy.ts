@@ -11,7 +11,10 @@ describe("Authentication - Logout", () => {
 		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
 
 		// Should redirect to login page
-		cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"include",
+			"/auth/login",
+		);
 
 		// Session should be invalidated
 		cy.visit("/admin", { failOnStatusCode: false });
@@ -24,7 +27,10 @@ describe("Authentication - Logout", () => {
 		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
 
 		// Should redirect to login page
-		cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"include",
+			"/auth/login",
+		);
 
 		// Try to access teacher pages - should be redirected
 		cy.visit("/teacher/grades", { failOnStatusCode: false });
@@ -43,7 +49,10 @@ describe("Authentication - Logout", () => {
 
 		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
 
-		cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"include",
+			"/auth/login",
+		);
 
 		// Verify session storage is cleared
 		cy.window().then((win) => {
@@ -60,7 +69,10 @@ describe("Authentication - Logout", () => {
 		cy.visit("/admin/students");
 
 		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
-		cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"include",
+			"/auth/login",
+		);
 
 		// Try to go back
 		cy.go("back");
@@ -73,16 +85,17 @@ describe("Authentication - Logout", () => {
 		cy.loginAs("administrator");
 
 		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
-		cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"include",
+			"/auth/login",
+		);
 
 		// Try to access protected page without logging back in
 		cy.visit("/admin/students", { failOnStatusCode: false });
 		cy.location("pathname").should("include", "/auth/login");
 
 		// Now log back in
-		cy.findByLabelText(/email/i)
-			.clear()
-			.type(Cypress.env("ADMIN_EMAIL"));
+		cy.findByLabelText(/email/i).clear().type(Cypress.env("ADMIN_EMAIL"));
 		cy.findByLabelText(/password/i)
 			.clear()
 			.type(Cypress.env("ADMIN_PASSWORD"));

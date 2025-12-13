@@ -22,8 +22,16 @@ describe("promotion rules router", () => {
 			ruleset: {
 				conditions: {
 					all: [
-						{ fact: "overallAverage", operator: "greaterThanInclusive", value: 10 },
-						{ fact: "creditsEarned", operator: "greaterThanInclusive", value: 30 },
+						{
+							fact: "overallAverage",
+							operator: "greaterThanInclusive",
+							value: 10,
+						},
+						{
+							fact: "creditsEarned",
+							operator: "greaterThanInclusive",
+							value: 30,
+						},
 						{ fact: "eliminatoryFailures", operator: "equal", value: 0 },
 					],
 				},
@@ -51,7 +59,11 @@ describe("promotion rules router", () => {
 			ruleset: {
 				conditions: {
 					all: [
-						{ fact: "overallAverage", operator: "greaterThanInclusive", value: 10 },
+						{
+							fact: "overallAverage",
+							operator: "greaterThanInclusive",
+							value: 10,
+						},
 					],
 				},
 				event: { type: "eligible", params: {} },

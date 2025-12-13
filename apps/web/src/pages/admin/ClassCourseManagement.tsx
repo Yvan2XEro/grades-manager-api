@@ -216,10 +216,11 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: semesters } = useQuery({
+	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
 		queryFn: () => trpcClient.semesters.list.query(),
 	});
+	const semesters = semestersData?.items;
 
 	const form = useForm<ClassCourseFormData>({
 		resolver: zodResolver(classCourseSchema),

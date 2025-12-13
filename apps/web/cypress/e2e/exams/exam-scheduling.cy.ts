@@ -102,9 +102,8 @@ describe("Exam Management - Automated Scheduling", () => {
 			// Look for exam type selection
 			cy.get("body").then(($body) => {
 				const hasExamTypeSelect =
-					$body.find(
-						'[data-testid*="exam-type"], input[type="checkbox"]',
-					).length > 0;
+					$body.find('[data-testid*="exam-type"], input[type="checkbox"]')
+						.length > 0;
 
 				if (hasExamTypeSelect) {
 					cy.log("Exam type selection available");
@@ -183,7 +182,9 @@ describe("Exam Management - Automated Scheduling", () => {
 			// Should show loading/progress
 			cy.get("body").then(($body) => {
 				const hasProgress =
-					$body.find('[data-testid*="loading"], [class*="spinner"], [role="progressbar"]').length > 0 ||
+					$body.find(
+						'[data-testid*="loading"], [class*="spinner"], [role="progressbar"]',
+					).length > 0 ||
 					$body.text().match(/generating|loading|chargement/i) !== null;
 
 				if (hasProgress) {

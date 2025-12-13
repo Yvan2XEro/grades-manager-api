@@ -1,0 +1,90 @@
+{
+	"institution": {
+		"university": {
+			"name_fr": "UNIVERSITÉ DE [NOM]",
+			"name_en": "UNIVERSITY OF [NAME]",
+			"logo_url": "/logos/university.png"
+		},
+		"faculty": {
+			"name_fr": "FACULTÉ DE MÉDECINE ET DES SCIENCES PHARMACEUTIQUES",
+			"name_en": "FACULTY OF MEDICINE AND PHARMACEUTICAL SCIENCES",
+			"logo_url": "/logos/faculty.png"
+		},
+		"institute": {
+			"name_fr": "INSTITUT SUPÉRIEUR DES ÉTUDES PARAMÉDICALES DE LA CROIX-ROUGE CAMEROUNAISE",
+			"name_en": "HIGHER INSTITUTE OF PARAMEDICAL STUDIES OF THE CAMEROON RED CROSS",
+			"logo_url": "/logos/ipes.png"
+		}
+	},
+	"grading": {
+		"appreciations": [
+			{ "label": "Excellent", "min": 16, "max": 20 },
+			{ "label": "Très Bien", "min": 14, "max": 15.99 },
+			{ "label": "Bien", "min": 12, "max": 13.99 },
+			{ "label": "Assez Bien", "min": 10, "max": 11.99 },
+			{ "label": "Passable", "min": 8, "max": 9.99 },
+			{ "label": "Insuffisant", "min": 0, "max": 7.99 }
+		],
+		"passing_grade": 10,
+		"scale": 20
+	},
+	"signatures": {
+		"pv": [
+			{
+				"position": "Le Rapporteur",
+				"name": ""
+			},
+			{
+				"position": "Les Membres du Jury",
+				"name": ""
+			},
+			{
+				"position": "Le Président du Jury",
+				"name": ""
+			}
+		],
+		"evaluation": [
+			{
+				"position": "L'Enseignant",
+				"name": ""
+			},
+			{
+				"position": "Le Chef de Département",
+				"name": ""
+			},
+			{
+				"position": "Le Directeur des Études",
+				"name": ""
+			}
+		],
+		"ue": [
+			{
+				"position": "Le Rapporteur",
+				"name": ""
+			},
+			{
+				"position": "Les Membres du Jury",
+				"name": ""
+			},
+			{
+				"position": "Le Président du Jury",
+				"name": ""
+			}
+		]
+	},
+	"exam_settings": {
+		"default_duration_hours": 2,
+		"default_coefficient": 1,
+		"exam_types": {
+			"CC": { "label": "Contrôle Continu", "coefficient": 0.4 },
+			"TPE": { "label": "Travaux Pratiques Encadrés", "coefficient": 0.3 },
+			"TP": { "label": "Travaux Pratiques", "coefficient": 0.3 },
+			"EXAMEN": { "label": "Examen", "coefficient": 0.6 },
+			"RATTRAPAGE": { "label": "Rattrapage", "coefficient": 1.0 }
+		}
+	},
+	"watermark": {
+		"text": "ORIGINAL",
+		"enabled": true
+	}
+}

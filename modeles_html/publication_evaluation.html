@@ -9,20 +9,20 @@
             size: A4 portrait;
             margin: 10mm;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Times New Roman', Times, serif;
             background: #fafafa;
             padding: 10px;
             position: relative;
         }
-        
+
         .container {
             width: 210mm;
             min-height: 297mm;
@@ -32,9 +32,10 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.08);
             position: relative;
         }
-        
+
+        {{#if watermark.enabled}}
         .container::before {
-            content: 'ORIGINAL';
+            content: '{{watermark.text}}';
             position: absolute;
             top: 50%;
             left: 50%;
@@ -45,40 +46,41 @@
             z-index: 0;
             pointer-events: none;
         }
-        
+        {{/if}}
+
         .content-wrapper {
             position: relative;
             z-index: 1;
         }
-        
+
         .header {
             text-align: center;
             border-bottom: 2px solid #666;
             padding-bottom: 12px;
             margin-bottom: 15px;
         }
-        
+
         .header h1 {
             font-size: 14px;
             color: #2c2c2c;
             margin-bottom: 3px;
             font-weight: bold;
         }
-        
+
         .header h2 {
             font-size: 12px;
             color: #4a4a4a;
             margin-bottom: 2px;
             font-weight: normal;
         }
-        
+
         .header h3 {
             font-size: 10px;
             color: #666;
             font-weight: normal;
             margin-bottom: 2px;
         }
-        
+
         .logos {
             display: flex;
             justify-content: center;
@@ -86,7 +88,7 @@
             gap: 40px;
             margin: 12px 0;
         }
-        
+
         .logo-box {
             width: 70px;
             height: 70px;
@@ -100,7 +102,7 @@
             text-align: center;
             padding: 5px;
         }
-        
+
         .title {
             color: #2c2c2c;
             padding: 10px 0;
@@ -109,7 +111,7 @@
             font-size: 12px;
             font-weight: bold;
         }
-        
+
         .eval-info {
             background: white;
             border: 1px solid #ccc;
@@ -117,17 +119,17 @@
             margin-bottom: 15px;
             font-size: 10px;
         }
-        
+
         .eval-info div {
             margin-bottom: 5px;
         }
-        
+
         .eval-info strong {
             color: #2c2c2c;
             display: inline-block;
             width: 150px;
         }
-        
+
         table {
             border: 1px solid #ccc;
             width: 100%;
@@ -135,7 +137,7 @@
             font-size: 10px;
             margin-bottom: 15px;
         }
-        
+
         th {
             background: white;
             color: #2c2c2c;
@@ -146,7 +148,7 @@
             line-height: 1.3;
             font-size: 10px;
         }
-        
+
         td {
             padding: 6px 4px;
             border: 1px solid #ddd;
@@ -155,7 +157,7 @@
             color: #333;
             background: white;
         }
-        
+
         .student-name {
             text-align: left;
             font-weight: bold;
@@ -163,7 +165,7 @@
             font-size: 10px;
             color: #2c2c2c;
         }
-        
+
         .student-firstname {
             text-align: left;
             font-weight: bold;
@@ -171,12 +173,12 @@
             font-size: 10px;
             color: #2c2c2c;
         }
-        
+
         .note-cell {
             font-weight: bold;
             font-size: 11px;
         }
-        
+
         .stats-section {
             display: flex;
             justify-content: space-around;
@@ -185,82 +187,82 @@
             border: 1px solid #ccc;
             background: white;
         }
-        
+
         .stat-item {
             text-align: center;
         }
-        
+
         .stat-label {
             font-size: 9px;
             color: #666;
             margin-bottom: 5px;
         }
-        
+
         .stat-value {
             font-size: 14px;
             font-weight: bold;
             color: #2c2c2c;
         }
-        
+
         .bottom-section {
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
             gap: 15px;
         }
-        
+
         .legend-table {
             border: 1px solid #ccc;
             border-collapse: collapse;
             font-size: 7px;
             width: auto;
         }
-        
+
         .legend-table td {
             border: 1px solid #ddd;
             padding: 3px 6px;
             text-align: left;
             font-size: 7px;
         }
-        
+
         .legend-table td:nth-child(odd) {
             font-weight: bold;
             color: #2c2c2c;
             width: 40px;
         }
-        
+
         .info-box {
             border: 1px solid #ccc;
             padding: 10px;
             font-size: 9px;
             min-width: 220px;
         }
-        
+
         .info-box div {
             margin-bottom: 5px;
         }
-        
+
         .info-box strong {
             color: #2c2c2c;
         }
-        
+
         .signatures {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
         }
-        
+
         .signature-box {
             text-align: center;
             width: 30%;
         }
-        
+
         .signature-line {
             font-size: 10px;
             color: #2c2c2c;
             font-weight: normal;
         }
-        
+
         .observation {
             margin-top: 10px;
             padding: 10px;
@@ -268,22 +270,22 @@
             font-size: 9px;
             background: white;
         }
-        
+
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
-            
+
             .container {
                 box-shadow: none;
                 padding: 10mm;
             }
-            
+
             .container::before {
                 color: rgba(200, 200, 200, 0.15);
             }
-            
+
             .logo-box {
                 border-style: solid;
             }
@@ -294,10 +296,10 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                <h1>UNIVERSITÉ DE [NOM] / UNIVERSITY OF [NAME]</h1>
-                <h2>FACULTÉ DE MÉDECINE ET DES SCIENCES PHARMACEUTIQUES</h2>
-                <h2>FACULTY OF MEDICINE AND PHARMACEUTICAL SCIENCES</h2>
-                
+                <h1>{{university.name_fr}} / {{university.name_en}}</h1>
+                <h2>{{faculty.name_fr}}</h2>
+                <h2>{{faculty.name_en}}</h2>
+
                 <div class="logos">
                     <div class="logo-box">
                         <div>LOGO</div>
@@ -312,29 +314,28 @@
                         <div>IPES</div>
                     </div>
                 </div>
-                
-                <h3>INSTITUT SUPÉRIEUR DES ÉTUDES PARAMÉDICALES DE LA CROIX-ROUGE CAMEROUNAISE</h3>
-                <h3>HIGHER INSTITUTE OF PARAMEDICAL STUDIES OF THE CAMEROON RED CROSS</h3>
+
+                <h3>{{institute.name_fr}}</h3>
+                <h3>{{institute.name_en}}</h3>
             </div>
-            
+
             <div class="title">
-                PUBLICATION DES RÉSULTATS - [TYPE ÉVALUATION]<br>
-                <!-- TYPE ÉVALUATION: CC / TPE / TP / EXAMEN / RATTRAPAGE -->
-                SEMESTRE [N°] - ANNÉE ACADÉMIQUE [ANNÉE]
+                PUBLICATION DES RÉSULTATS - {{evaluationType}}<br>
+                {{semester}} - ANNÉE ACADÉMIQUE {{academicYear}}
             </div>
-            
+
             <div class="eval-info">
-                <div><strong>Type d'évaluation:</strong> [CC / TPE / TP / EXAMEN / RATTRAPAGE]</div>
-                <div><strong>Code EC:</strong> [CODE EC]</div>
-                <div><strong>Intitulé EC:</strong> [INTITULÉ COMPLET DE L'EC]</div>
-                <div><strong>Code UE:</strong> [CODE UE] - [INTITULÉ UE]</div>
-                <div><strong>Programme:</strong> [NOM DU PROGRAMME] - Niveau [N°]</div>
-                <div><strong>Date de l'évaluation:</strong> [JJ/MM/AAAA]</div>
-                <div><strong>Durée:</strong> [X] heures</div>
-                <div><strong>Coefficient:</strong> [X]</div>
-                <div><strong>Note sur:</strong> [20 / 10 / 100]</div>
+                <div><strong>Type d'évaluation:</strong> {{evaluationType}} - {{evaluationLabel}}</div>
+                <div><strong>Code EC:</strong> {{course.code}}</div>
+                <div><strong>Intitulé EC:</strong> {{course.name}}</div>
+                <div><strong>Code UE:</strong> {{teachingUnit.code}} - {{teachingUnit.name}}</div>
+                <div><strong>Programme:</strong> {{program.name}} - {{program.level}}</div>
+                <div><strong>Date de l'évaluation:</strong> {{examDate}}</div>
+                <div><strong>Durée:</strong> {{duration}} heures</div>
+                <div><strong>Coefficient:</strong> {{coefficient}}</div>
+                <div><strong>Note sur:</strong> {{scale}}</div>
             </div>
-            
+
             <table>
                 <thead>
                     <tr>
@@ -342,97 +343,64 @@
                         <th>NOM</th>
                         <th>PRÉNOM</th>
                         <th>MATRICULE</th>
-                        <th>NOTE / [20]</th>
+                        <th>NOTE / {{scale}}</th>
                         <th>APPRÉCIATION</th>
                         <th>OBSERVATION</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#each students}}
                     <tr>
-                        <td>1</td>
-                        <td class="student-name">[NOM 1]</td>
-                        <td class="student-firstname">[PRÉNOM 1]</td>
-                        <td>[MAT]</td>
-                        <td class="note-cell">XX,XX</td>
-                        <td>[Excellent / Très Bien / Bien / Assez Bien / Passable / Insuffisant]</td>
-                        <td>[Admis / Ajourné / Absent]</td>
+                        <td>{{number}}</td>
+                        <td class="student-name">{{lastName}}</td>
+                        <td class="student-firstname">{{firstName}}</td>
+                        <td>{{registrationNumber}}</td>
+                        <td class="note-cell">{{formatNumber score}}</td>
+                        <td>{{appreciation}}</td>
+                        <td>{{observation}}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td class="student-name">[NOM 2]</td>
-                        <td class="student-firstname">[PRÉNOM 2]</td>
-                        <td>[MAT]</td>
-                        <td class="note-cell">XX,XX</td>
-                        <td>[Excellent / Très Bien / Bien / Assez Bien / Passable / Insuffisant]</td>
-                        <td>[Admis / Ajourné / Absent]</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td class="student-name">[NOM 3]</td>
-                        <td class="student-firstname">[PRÉNOM 3]</td>
-                        <td>[MAT]</td>
-                        <td class="note-cell">XX,XX</td>
-                        <td>[Excellent / Très Bien / Bien / Assez Bien / Passable / Insuffisant]</td>
-                        <td>[Admis / Ajourné / Absent]</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td class="student-name">[NOM 4]</td>
-                        <td class="student-firstname">[PRÉNOM 4]</td>
-                        <td>[MAT]</td>
-                        <td class="note-cell">XX,XX</td>
-                        <td>[Excellent / Très Bien / Bien / Assez Bien / Passable / Insuffisant]</td>
-                        <td>[Admis / Ajourné / Absent]</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td class="student-name">[NOM 5]</td>
-                        <td class="student-firstname">[PRÉNOM 5]</td>
-                        <td>[MAT]</td>
-                        <td class="note-cell">XX,XX</td>
-                        <td>[Excellent / Très Bien / Bien / Assez Bien / Passable / Insuffisant]</td>
-                        <td>[Admis / Ajourné / Absent]</td>
-                    </tr>
+                    {{/each}}
                 </tbody>
             </table>
-            
+
             <div class="stats-section">
                 <div class="stat-item">
                     <div class="stat-label">Nombre d'étudiants</div>
-                    <div class="stat-value">[XX]</div>
+                    <div class="stat-value">{{stats.count}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Présents</div>
-                    <div class="stat-value">[XX]</div>
+                    <div class="stat-value">{{stats.present}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Absents</div>
-                    <div class="stat-value">[XX]</div>
+                    <div class="stat-value">{{stats.absent}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Moyenne générale</div>
-                    <div class="stat-value">[XX,XX] / 20</div>
+                    <div class="stat-value">{{formatNumber stats.average}} / {{scale}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Note la plus haute</div>
-                    <div class="stat-value">[XX,XX]</div>
+                    <div class="stat-value">{{formatNumber stats.highest}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Note la plus basse</div>
-                    <div class="stat-value">[XX,XX]</div>
+                    <div class="stat-value">{{formatNumber stats.lowest}}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Taux de réussite</div>
-                    <div class="stat-value">[XX]%</div>
+                    <div class="stat-value">{{stats.successRate}}%</div>
                 </div>
             </div>
-            
+
+            {{#if observations}}
             <div class="observation">
                 <strong>Observations générales:</strong><br>
-                [Espace pour les observations de l'enseignant concernant le déroulement de l'évaluation, 
-                le niveau général des étudiants, les difficultés rencontrées, etc.]
+                {{observations}}
             </div>
-            
+            {{/if}}
+
             <div class="bottom-section">
                 <div style="flex: 1;"></div>
                 <div style="display: flex; gap: 15px;">
@@ -456,26 +424,25 @@
                             <td>Unité d'Enseignement</td>
                         </tr>
                     </table>
-                    
+
                     <div class="info-box">
-                        <div><strong>Programme:</strong> [NOM DU PROGRAMME]</div>
-                        <div><strong>Semestre:</strong> SEMESTRE [N°]</div>
-                        <div><strong>Année académique:</strong> [ANNÉE]</div>
-                        <div><strong>Date de publication:</strong> [JJ/MM/AAAA]</div>
+                        <div><strong>Programme:</strong> {{program.name}}</div>
+                        <div><strong>Semestre:</strong> {{semester}}</div>
+                        <div><strong>Année académique:</strong> {{academicYear}}</div>
+                        <div><strong>Date de publication:</strong> {{publicationDate}}</div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="signatures">
+                {{#each signatures}}
                 <div class="signature-box">
-                    <div class="signature-line">L'Enseignant</div>
+                    <div class="signature-line">{{position}}</div>
+                    {{#if name}}
+                    <div class="signature-name">{{name}}</div>
+                    {{/if}}
                 </div>
-                <div class="signature-box">
-                    <div class="signature-line">Le Chef de Département</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Le Directeur des Études</div>
-                </div>
+                {{/each}}
             </div>
         </div>
     </div>

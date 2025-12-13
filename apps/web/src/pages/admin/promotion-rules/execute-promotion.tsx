@@ -1,3 +1,9 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,12 +26,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { trpcClient } from "@/utils/trpc";
-import { ArrowRight, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { toast } from "sonner";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 export function ExecutePromotionPage() {
 	const { t } = useTranslation();
@@ -106,7 +106,7 @@ export function ExecutePromotionPage() {
 			<div className="container mx-auto py-8">
 				<Card>
 					<CardContent className="pt-6">
-						<div className="text-center py-12">
+						<div className="py-12 text-center">
 							<p className="text-muted-foreground">
 								No promotion data found. Please start from the evaluation page.
 							</p>
@@ -124,7 +124,7 @@ export function ExecutePromotionPage() {
 	}
 
 	return (
-		<div className="container mx-auto py-8 space-y-6">
+		<div className="container mx-auto space-y-6 py-8">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -137,24 +137,26 @@ export function ExecutePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Execute Promotion</h1>
-					<p className="text-muted-foreground mt-1">
+					<h1 className="font-bold text-3xl tracking-tight">
+						Execute Promotion
+					</h1>
+					<p className="mt-1 text-muted-foreground">
 						Confirm and apply the promotion to selected students
 					</p>
 				</div>
 			</div>
 
 			{/* Summary */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-sm font-medium text-muted-foreground">
+						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Rule
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<div className="font-semibold">{rule?.name}</div>
-						<p className="text-sm text-muted-foreground mt-1">
+						<p className="mt-1 text-muted-foreground text-sm">
 							{rule?.description}
 						</p>
 					</CardContent>
@@ -162,7 +164,7 @@ export function ExecutePromotionPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-sm font-medium text-muted-foreground">
+						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Source Class
 						</CardTitle>
 					</CardHeader>
@@ -176,12 +178,12 @@ export function ExecutePromotionPage() {
 
 				<Card className="border-primary/30 bg-primary/5">
 					<CardHeader>
-						<CardTitle className="text-sm font-medium text-muted-foreground">
+						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Students to Promote
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="text-3xl font-bold text-primary">
+						<div className="font-bold text-3xl text-primary">
 							{state.studentIds.length}
 						</div>
 					</CardContent>
@@ -210,21 +212,21 @@ export function ExecutePromotionPage() {
 									))}
 							</SelectContent>
 						</Select>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Students will be enrolled in this class for the next academic year
 						</p>
 					</div>
 
 					{/* Visual Flow */}
 					{targetClassId && (
-						<div className="flex items-center justify-center gap-4 p-6 bg-muted rounded-lg">
+						<div className="flex items-center justify-center gap-4 rounded-lg bg-muted p-6">
 							<div className="text-center">
 								<div className="font-semibold">{sourceClass?.name}</div>
 								<Badge variant="outline" className="mt-1">
 									Current
 								</Badge>
 							</div>
-							<ArrowRight className="w-8 h-8 text-primary" />
+							<ArrowRight className="h-8 w-8 text-primary" />
 							<div className="text-center">
 								<div className="font-semibold">
 									{classes?.items.find((c) => c.id === targetClassId)?.name}
@@ -254,12 +256,12 @@ export function ExecutePromotionPage() {
 				>
 					{applyPromotionMutation.isPending ? (
 						<>
-							<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							Applying Promotion...
 						</>
 					) : (
 						<>
-							<CheckCircle className="w-4 h-4 mr-2" />
+							<CheckCircle className="mr-2 h-4 w-4" />
 							Execute Promotion
 						</>
 					)}
@@ -272,8 +274,9 @@ export function ExecutePromotionPage() {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Confirm Promotion Execution</AlertDialogTitle>
 						<AlertDialogDescription>
-							You are about to promote <strong>{state.studentIds.length}</strong>{" "}
-							student(s) from <strong>{sourceClass?.name}</strong> to{" "}
+							You are about to promote{" "}
+							<strong>{state.studentIds.length}</strong> student(s) from{" "}
+							<strong>{sourceClass?.name}</strong> to{" "}
 							<strong>
 								{classes?.items.find((c) => c.id === targetClassId)?.name}
 							</strong>
@@ -281,7 +284,7 @@ export function ExecutePromotionPage() {
 							<br />
 							<br />
 							This action will:
-							<ul className="list-disc list-inside mt-2 space-y-1">
+							<ul className="mt-2 list-inside list-disc space-y-1">
 								<li>Close current enrollments as "completed"</li>
 								<li>Create new enrollments in the target class</li>
 								<li>Update student class references</li>

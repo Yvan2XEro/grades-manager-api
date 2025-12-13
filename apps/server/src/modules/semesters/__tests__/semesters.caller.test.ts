@@ -16,9 +16,10 @@ describe("semesters router", () => {
 
 	it("lists semesters for authenticated users", async () => {
 		const caller = createCaller(asAdmin());
-		const semesters = await caller.semesters.list();
-		expect(Array.isArray(semesters)).toBe(true);
-		expect(semesters.length).toBeGreaterThanOrEqual(1);
-		expect(semesters[0]).toHaveProperty("code");
+		const result = await caller.semesters.list();
+		expect(result).toHaveProperty("items");
+		expect(Array.isArray(result.items)).toBe(true);
+		expect(result.items.length).toBeGreaterThanOrEqual(1);
+		expect(result.items[0]).toHaveProperty("code");
 	});
 });

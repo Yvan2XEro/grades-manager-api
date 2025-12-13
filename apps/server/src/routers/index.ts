@@ -8,12 +8,13 @@ import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
+import { exportsRouter } from "../modules/exports";
 import { facultiesRouter } from "../modules/faculties";
 import { notificationsRouter } from "../modules/notifications";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
-import { promotionsRouter } from "../modules/promotions";
 import { promotionRulesRouter } from "../modules/promotion-rules";
+import { promotionsRouter } from "../modules/promotions";
 import { registrationNumbersRouter } from "../modules/registration-numbers";
 import { semestersRouter } from "../modules/semesters";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
@@ -51,6 +52,7 @@ export const appRouter = router({
 	promotionRules: promotionRulesRouter,
 	registrationNumbers: registrationNumbersRouter,
 	grades: gradesRouter,
+	exports: exportsRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,
 	notifications: notificationsRouter,

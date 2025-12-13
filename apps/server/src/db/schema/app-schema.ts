@@ -1289,7 +1289,9 @@ export type NewRegistrationNumberCounter = InferInsertModel<
 export type PromotionRule = InferSelectModel<typeof promotionRules>;
 export type NewPromotionRule = InferInsertModel<typeof promotionRules>;
 export type PromotionExecution = InferSelectModel<typeof promotionExecutions>;
-export type NewPromotionExecution = InferInsertModel<typeof promotionExecutions>;
+export type NewPromotionExecution = InferInsertModel<
+	typeof promotionExecutions
+>;
 export type PromotionExecutionResult = InferSelectModel<
 	typeof promotionExecutionResults
 >;

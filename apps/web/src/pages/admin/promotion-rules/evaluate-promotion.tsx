@@ -1,3 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, CheckCircle2, Loader2, Play, XCircle } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,26 +19,25 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpcClient } from "@/utils/trpc";
-import { CheckCircle2, Loader2, Play, XCircle, ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useNavigate } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 export function EvaluatePromotionPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [selectedRuleId, setSelectedRuleId] = useState<string>("");
-	const [selectedSourceClassId, setSelectedSourceClassId] = useState<string>("");
-	const [selectedAcademicYearId, setSelectedAcademicYearId] = useState<string>("");
-	const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+	const [selectedSourceClassId, setSelectedSourceClassId] =
+		useState<string>("");
+	const [selectedAcademicYearId, setSelectedAcademicYearId] =
+		useState<string>("");
+	const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
+		new Set(),
+	);
 	const [hasEvaluated, setHasEvaluated] = useState(false);
 
 	// Fetch data
 	const { data: rules } = useQuery({
 		queryKey: ["promotionRules", { isActive: true }],
-		queryFn: async () => trpcClient.promotionRules.list.query({ isActive: true }),
+		queryFn: async () =>
+			trpcClient.promotionRules.list.query({ isActive: true }),
 	});
 
 	const { data: classes } = useQuery({
@@ -53,7 +58,11 @@ export function EvaluatePromotionPage() {
 	} = useQuery({
 		queryKey: [
 			"promotionEvaluation",
-			{ ruleId: selectedRuleId, sourceClassId: selectedSourceClassId, academicYearId: selectedAcademicYearId },
+			{
+				ruleId: selectedRuleId,
+				sourceClassId: selectedSourceClassId,
+				academicYearId: selectedAcademicYearId,
+			},
 		],
 		queryFn: async () =>
 			trpcClient.promotionRules.evaluateClass.query({
@@ -115,7 +124,7 @@ export function EvaluatePromotionPage() {
 	};
 
 	return (
-		<div className="container mx-auto py-8 space-y-6">
+		<div className="container mx-auto space-y-6 py-8">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -128,8 +137,10 @@ export function EvaluatePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">{t("admin.promotionRules.evaluate.title")}</h1>
-					<p className="text-muted-foreground mt-1">
+					<h1 className="font-bold text-3xl tracking-tight">
+						{t("admin.promotionRules.evaluate.title")}
+					</h1>
+					<p className="mt-1 text-muted-foreground">
 						{t("admin.promotionRules.evaluate.subtitle")}
 					</p>
 				</div>
@@ -141,12 +152,16 @@ export function EvaluatePromotionPage() {
 					<CardTitle>{t("admin.promotionRules.evaluate.form.title")}</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 						<div className="space-y-2">
 							<Label>{t("admin.promotionRules.evaluate.form.ruleLabel")}</Label>
 							<Select value={selectedRuleId} onValueChange={setSelectedRuleId}>
 								<SelectTrigger>
-									<SelectValue placeholder={t("admin.promotionRules.evaluate.form.rulePlaceholder")} />
+									<SelectValue
+										placeholder={t(
+											"admin.promotionRules.evaluate.form.rulePlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{rules?.items.map((rule) => (
@@ -159,13 +174,19 @@ export function EvaluatePromotionPage() {
 						</div>
 
 						<div className="space-y-2">
-							<Label>{t("admin.promotionRules.evaluate.form.classLabel")}</Label>
+							<Label>
+								{t("admin.promotionRules.evaluate.form.classLabel")}
+							</Label>
 							<Select
 								value={selectedSourceClassId}
 								onValueChange={setSelectedSourceClassId}
 							>
 								<SelectTrigger>
-									<SelectValue placeholder={t("admin.promotionRules.evaluate.form.classPlaceholder")} />
+									<SelectValue
+										placeholder={t(
+											"admin.promotionRules.evaluate.form.classPlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{classes?.items.map((cls) => (
@@ -184,7 +205,11 @@ export function EvaluatePromotionPage() {
 								onValueChange={setSelectedAcademicYearId}
 							>
 								<SelectTrigger>
-									<SelectValue placeholder={t("admin.promotionRules.evaluate.form.yearPlaceholder")} />
+									<SelectValue
+										placeholder={t(
+											"admin.promotionRules.evaluate.form.yearPlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{academicYears?.items.map((year) => (
@@ -210,12 +235,12 @@ export function EvaluatePromotionPage() {
 						>
 							{isEvaluating ? (
 								<>
-									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									{t("admin.promotionRules.evaluate.actions.evaluating")}
 								</>
 							) : (
 								<>
-									<Play className="w-4 h-4 mr-2" />
+									<Play className="mr-2 h-4 w-4" />
 									{t("admin.promotionRules.evaluate.actions.evaluate")}
 								</>
 							)}
@@ -226,39 +251,47 @@ export function EvaluatePromotionPage() {
 
 			{/* Results */}
 			{hasEvaluated && evaluationResult && (
-				<div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+				<div className="fade-in slide-in-from-bottom-4 animate-in space-y-6">
 					{/* Summary */}
-					<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
 						<Card>
 							<CardContent className="pt-6">
-								<div className="text-2xl font-bold">
+								<div className="font-bold text-2xl">
 									{evaluationResult.totalStudents}
 								</div>
-								<p className="text-xs text-muted-foreground">{t("admin.promotionRules.evaluate.summary.total")}</p>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.promotionRules.evaluate.summary.total")}
+								</p>
 							</CardContent>
 						</Card>
 						<Card className="border-green-500/30 bg-green-50/20">
 							<CardContent className="pt-6">
-								<div className="text-2xl font-bold text-green-600">
+								<div className="font-bold text-2xl text-green-600">
 									{evaluationResult.eligible.length}
 								</div>
-								<p className="text-xs text-muted-foreground">{t("admin.promotionRules.evaluate.summary.eligible")}</p>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.promotionRules.evaluate.summary.eligible")}
+								</p>
 							</CardContent>
 						</Card>
 						<Card className="border-red-500/30 bg-red-50/20">
 							<CardContent className="pt-6">
-								<div className="text-2xl font-bold text-red-600">
+								<div className="font-bold text-2xl text-red-600">
 									{evaluationResult.notEligible.length}
 								</div>
-								<p className="text-xs text-muted-foreground">{t("admin.promotionRules.evaluate.summary.notEligible")}</p>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.promotionRules.evaluate.summary.notEligible")}
+								</p>
 							</CardContent>
 						</Card>
 						<Card className="border-primary/30 bg-primary/5">
 							<CardContent className="pt-6">
-								<div className="text-2xl font-bold text-primary">
+								<div className="font-bold text-2xl text-primary">
 									{selectedStudents.size}
 								</div>
-								<p className="text-xs text-muted-foreground">{t("admin.promotionRules.evaluate.summary.selected")}</p>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.promotionRules.evaluate.summary.selected")}
+								</p>
 							</CardContent>
 						</Card>
 					</div>
@@ -277,7 +310,9 @@ export function EvaluatePromotionPage() {
 								onClick={handleProceed}
 								disabled={selectedStudents.size === 0}
 							>
-								{t("admin.promotionRules.evaluate.actions.proceed", { count: selectedStudents.size })}
+								{t("admin.promotionRules.evaluate.actions.proceed", {
+									count: selectedStudents.size,
+								})}
 							</Button>
 						</div>
 					)}
@@ -288,22 +323,26 @@ export function EvaluatePromotionPage() {
 					<Tabs defaultValue="eligible">
 						<TabsList className="grid w-full max-w-md grid-cols-2">
 							<TabsTrigger value="eligible" className="gap-2">
-								<CheckCircle2 className="w-4 h-4" />
-								{t("admin.promotionRules.evaluate.tabs.eligible", { count: evaluationResult.eligible.length })}
+								<CheckCircle2 className="h-4 w-4" />
+								{t("admin.promotionRules.evaluate.tabs.eligible", {
+									count: evaluationResult.eligible.length,
+								})}
 							</TabsTrigger>
 							<TabsTrigger value="not-eligible" className="gap-2">
-								<XCircle className="w-4 h-4" />
-								{t("admin.promotionRules.evaluate.tabs.notEligible", { count: evaluationResult.notEligible.length })}
+								<XCircle className="h-4 w-4" />
+								{t("admin.promotionRules.evaluate.tabs.notEligible", {
+									count: evaluationResult.notEligible.length,
+								})}
 							</TabsTrigger>
 						</TabsList>
 
-						<TabsContent value="eligible" className="space-y-4 mt-6">
+						<TabsContent value="eligible" className="mt-6 space-y-4">
 							{evaluationResult.eligible.length === 0 ? (
-								<div className="text-center py-12 text-muted-foreground">
+								<div className="py-12 text-center text-muted-foreground">
 									{t("admin.promotionRules.evaluate.emptyState.noEligible")}
 								</div>
 							) : (
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.eligible.map((result) => (
 										<StudentEvaluationCard
 											key={result.student.id}
@@ -321,13 +360,13 @@ export function EvaluatePromotionPage() {
 							)}
 						</TabsContent>
 
-						<TabsContent value="not-eligible" className="space-y-4 mt-6">
+						<TabsContent value="not-eligible" className="mt-6 space-y-4">
 							{evaluationResult.notEligible.length === 0 ? (
-								<div className="text-center py-12 text-muted-foreground">
+								<div className="py-12 text-center text-muted-foreground">
 									{t("admin.promotionRules.evaluate.emptyState.allEligible")}
 								</div>
 							) : (
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.notEligible.map((result) => (
 										<StudentEvaluationCard
 											key={result.student.id}

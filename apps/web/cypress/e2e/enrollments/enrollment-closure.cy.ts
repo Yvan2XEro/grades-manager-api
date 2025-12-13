@@ -8,14 +8,18 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
 			// Select academic year and class
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll class first
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -41,8 +45,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -61,13 +66,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("preserves enrollment history after closure", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -103,8 +112,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -125,13 +135,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("prevents modifications to closed enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -155,8 +169,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -173,8 +188,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 					cy.get("body").then(($body) => {
 						const hasWithdrawButton =
-							$body.find('button:contains("Withdraw"), button:contains("Retirer")')
-								.length > 0;
+							$body.find(
+								'button:contains("Withdraw"), button:contains("Retirer")',
+							).length > 0;
 
 						if (hasWithdrawButton) {
 							// Button should be disabled
@@ -194,20 +210,26 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("displays enrollment window status", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Should show window status
-			cy.contains(/window|période|fenêtre/i, { timeout: 10000 }).should("exist");
+			cy.contains(/window|période|fenêtre/i, { timeout: 10000 }).should(
+				"exist",
+			);
 		});
 
 		it("shows open/closed window indicator", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -226,14 +248,18 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("allows closing enrollment window for entire class", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll class first
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -257,8 +283,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -278,14 +305,18 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("prevents new enrollments after closure", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll and close
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -307,8 +338,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -353,13 +385,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("prevents withdrawals after closure", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -381,8 +417,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -413,13 +450,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("shows read-only view of closed enrollments", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -441,8 +482,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -467,13 +509,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("requires confirmation before closing enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -495,8 +541,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.log("Confirmation dialog shown");
 							cy.findByRole("button", { name: /confirm/i }).should("exist");
@@ -511,13 +558,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("shows warning about immutability in confirmation", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -551,13 +602,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("allows canceling closure operation", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -579,8 +634,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Cancel"), button:contains("Annuler")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Cancel"), button:contains("Annuler")',
+							).length > 0
 						) {
 							// Cancel the closure
 							cy.findByRole("button", { name: /cancel|annuler/i }).click();
@@ -600,13 +656,17 @@ describe("Enrollment Management - Enrollment Closure", () => {
 		it("allows reopening closed enrollment (if feature exists)", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -629,8 +689,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					cy.wait(1000);
 					cy.get("body").then(($dialog) => {
 						if (
-							$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-								.length > 0
+							$dialog.find(
+								'button:contains("Confirm"), button:contains("Confirmer")',
+							).length > 0
 						) {
 							cy.findByRole("button", { name: /confirm/i }).click();
 						}
@@ -655,8 +716,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 							cy.wait(1000);
 							cy.get("body").then(($dialog) => {
 								if (
-									$dialog.find('button:contains("Confirm"), button:contains("Confirmer")')
-										.length > 0
+									$dialog.find(
+										'button:contains("Confirm"), button:contains("Confirmer")',
+									).length > 0
 								) {
 									cy.findByRole("button", { name: /confirm/i }).click();
 								}

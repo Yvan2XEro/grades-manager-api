@@ -1,3 +1,10 @@
+import {
+	CheckCircle2,
+	Edit,
+	MoreVertical,
+	Trash2,
+	XCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +21,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CheckCircle2, Edit, MoreVertical, Trash2, XCircle } from "lucide-react";
 
 interface RuleCardProps {
 	rule: {
@@ -29,22 +35,27 @@ interface RuleCardProps {
 	onToggleActive?: () => void;
 }
 
-export function RuleCard({ rule, onEdit, onDelete, onToggleActive }: RuleCardProps) {
+export function RuleCard({
+	rule,
+	onEdit,
+	onDelete,
+	onToggleActive,
+}: RuleCardProps) {
 	return (
-		<Card className="group hover:shadow-md transition-shadow duration-200">
+		<Card className="group transition-shadow duration-200 hover:shadow-md">
 			<CardHeader className="pb-3">
 				<div className="flex items-start justify-between">
 					<div className="flex-1">
-						<CardTitle className="text-lg flex items-center gap-2">
+						<CardTitle className="flex items-center gap-2 text-lg">
 							{rule.name}
 							{rule.isActive ? (
 								<Badge variant="default" className="bg-green-500">
-									<CheckCircle2 className="w-3 h-3 mr-1" />
+									<CheckCircle2 className="mr-1 h-3 w-3" />
 									Active
 								</Badge>
 							) : (
 								<Badge variant="secondary">
-									<XCircle className="w-3 h-3 mr-1" />
+									<XCircle className="mr-1 h-3 w-3" />
 									Inactive
 								</Badge>
 							)}
@@ -55,14 +66,18 @@ export function RuleCard({ rule, onEdit, onDelete, onToggleActive }: RuleCardPro
 					</div>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+							<Button
+								variant="ghost"
+								size="icon"
+								className="opacity-0 transition-opacity group-hover:opacity-100"
+							>
 								<MoreVertical className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							{onEdit && (
 								<DropdownMenuItem onClick={onEdit}>
-									<Edit className="w-4 h-4 mr-2" />
+									<Edit className="mr-2 h-4 w-4" />
 									Edit
 								</DropdownMenuItem>
 							)}
@@ -70,12 +85,12 @@ export function RuleCard({ rule, onEdit, onDelete, onToggleActive }: RuleCardPro
 								<DropdownMenuItem onClick={onToggleActive}>
 									{rule.isActive ? (
 										<>
-											<XCircle className="w-4 h-4 mr-2" />
+											<XCircle className="mr-2 h-4 w-4" />
 											Deactivate
 										</>
 									) : (
 										<>
-											<CheckCircle2 className="w-4 h-4 mr-2" />
+											<CheckCircle2 className="mr-2 h-4 w-4" />
 											Activate
 										</>
 									)}
@@ -83,7 +98,7 @@ export function RuleCard({ rule, onEdit, onDelete, onToggleActive }: RuleCardPro
 							)}
 							{onDelete && (
 								<DropdownMenuItem onClick={onDelete} className="text-red-600">
-									<Trash2 className="w-4 h-4 mr-2" />
+									<Trash2 className="mr-2 h-4 w-4" />
 									Delete
 								</DropdownMenuItem>
 							)}
@@ -91,7 +106,7 @@ export function RuleCard({ rule, onEdit, onDelete, onToggleActive }: RuleCardPro
 					</DropdownMenu>
 				</div>
 			</CardHeader>
-			<CardFooter className="text-xs text-muted-foreground pt-0">
+			<CardFooter className="pt-0 text-muted-foreground text-xs">
 				Created {new Date(rule.createdAt).toLocaleDateString()}
 			</CardFooter>
 		</Card>

@@ -22,7 +22,9 @@ describe("Grade Locking", () => {
 
 			// Dean approves and locks
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé|locked|verrouillé/i, {
@@ -56,7 +58,7 @@ describe("Grade Locking", () => {
 			cy.get("body").then(($body) => {
 				const hasLockedMessage = $body.text().match(/locked|verrouillé/i);
 				const hasDisabledInputs =
-					$body.find('input[disabled], input[readonly]').length > 0;
+					$body.find("input[disabled], input[readonly]").length > 0;
 
 				expect(hasLockedMessage || hasDisabledInputs).to.be.true;
 			});
@@ -75,7 +77,9 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
@@ -119,7 +123,9 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
@@ -145,13 +151,13 @@ describe("Grade Locking", () => {
 			cy.get("[role=option]").first().click();
 
 			// Grade inputs should be disabled
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').should(
-				($inputs) => {
-					if ($inputs.length > 0) {
-						expect($inputs.first()).to.match("[disabled], [readonly]");
-					}
-				},
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).should(($inputs) => {
+				if ($inputs.length > 0) {
+					expect($inputs.first()).to.match("[disabled], [readonly]");
+				}
+			});
 		});
 	});
 
@@ -169,7 +175,9 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
@@ -217,7 +225,9 @@ describe("Grade Locking", () => {
 			cy.contains(/exam submitted|soumis/i, { timeout: 10000 }).should("exist");
 
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
@@ -264,7 +274,9 @@ describe("Grade Locking", () => {
 
 			// Step 3: Dean approves
 			cy.loginAs("dean", { route: "/dean/workflows" });
-			cy.findAllByRole("button", { name: /approve.*lock|approuver.*verrouiller/i })
+			cy.findAllByRole("button", {
+				name: /approve.*lock|approuver.*verrouiller/i,
+			})
 				.first()
 				.click();
 			cy.contains(/approved|approuvé/i, { timeout: 10000 }).should("exist");
@@ -307,7 +319,9 @@ describe("Grade Locking", () => {
 			cy.get("[role=option]").first().click();
 
 			// Should be able to enter grades
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.should("not.be.disabled")
 				.clear()
@@ -316,9 +330,9 @@ describe("Grade Locking", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save successfully
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 	});
 });

@@ -8,7 +8,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
 			// Select academic year
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			// Select a class
@@ -16,7 +18,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.get("[role=option]", { timeout: 5000 }).first().click();
 
 			// Click bulk enroll button
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 
 			// Confirm
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
@@ -30,13 +34,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("displays count of enrolled students", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			// Should show count (e.g., "5 students enrolled")
@@ -48,14 +56,18 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("handles already enrolled students gracefully", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll first time
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -63,14 +75,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			);
 
 			// Try to enroll again
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			// Should handle gracefully (skip already enrolled or show message)
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const hasMessage =
-					$body.text().match(/already.*enrolled|déjà.*inscrit|0.*new|synced/i) !==
-					null;
+					$body
+						.text()
+						.match(/already.*enrolled|déjà.*inscrit|0.*new|synced/i) !== null;
 				expect(hasMessage).to.be.true;
 			});
 		});
@@ -78,13 +93,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("enrolls all students in selected class courses", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -104,13 +123,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("shows confirmation dialog before enrolling", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 
 			// Should show confirmation dialog
 			cy.contains(/confirm|confirmer/i, { timeout: 5000 }).should("exist");
@@ -122,13 +145,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("displays enrollment summary in confirmation", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 
 			// Should show details about what will be enrolled
 			cy.get("body", { timeout: 5000 }).then(($body) => {
@@ -141,13 +168,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("allows canceling bulk enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 
 			// Cancel the enrollment
 			cy.findByRole("button", { name: /cancel|annuler/i }).click();
@@ -163,13 +194,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("shows enrollment report after bulk operation", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			// Should show summary/report
@@ -179,7 +214,8 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Should show numbers
 			cy.get("body").then(($body) => {
-				const hasNumbers = $body.text().match(/\d+.*student|\d+.*course/) !== null;
+				const hasNumbers =
+					$body.text().match(/\d+.*student|\d+.*course/) !== null;
 				expect(hasNumbers).to.be.true;
 			});
 		});
@@ -187,14 +223,18 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("reports any conflicts during bulk enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// Enroll first time
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -202,7 +242,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			);
 
 			// Try again to create conflicts
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			// Should report that students were already enrolled
@@ -219,7 +261,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("handles enrolling large class efficiently", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -227,7 +271,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			const startTime = Date.now();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 20000 }).then(() => {
@@ -240,13 +286,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("provides loading indicator during bulk enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			// Should show loading state
@@ -270,7 +320,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("allows selecting specific students for bulk enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
@@ -278,8 +330,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Check if there are checkboxes for selective enrollment
 			cy.get("body").then(($body) => {
-				const hasCheckboxes =
-					$body.find('input[type="checkbox"]').length > 1;
+				const hasCheckboxes = $body.find('input[type="checkbox"]').length > 1;
 
 				if (hasCheckboxes) {
 					cy.log("Selective enrollment is available");
@@ -305,15 +356,16 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("allows deselecting students from bulk enrollment", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			cy.get("body").then(($body) => {
-				const hasCheckboxes =
-					$body.find('input[type="checkbox"]').length > 1;
+				const hasCheckboxes = $body.find('input[type="checkbox"]').length > 1;
 
 				if (hasCheckboxes) {
 					// Select all
@@ -339,13 +391,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("shows course-wise enrollment status", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -354,8 +410,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Should show courses with enrollment status
 			cy.get("body").then(($body) => {
-				const hasCourses =
-					$body.text().match(/course|cours|matière/i) !== null;
+				const hasCourses = $body.text().match(/course|cours|matière/i) !== null;
 				if (hasCourses) {
 					cy.log("Course-wise status is shown");
 				}
@@ -365,13 +420,17 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("displays enrollment count per course", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -392,14 +451,18 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 		it("allows bulk unenrolling entire class (if feature exists)", () => {
 			cy.loginAs("administrator", { route: "/admin/enrollments" });
 
-			cy.get('[data-testid="academic-year-select"]', { timeout: 10000 }).click();
+			cy.get('[data-testid="academic-year-select"]', {
+				timeout: 10000,
+			}).click();
 			cy.findByRole("option", { name: /2024-2025/i }).click();
 
 			cy.get('[data-testid="class-select"]').click();
 			cy.get("[role=option]").first().click();
 
 			// First enroll
-			cy.findByRole("button", { name: /enroll.*entire.*class|enroll.*all/i }).click();
+			cy.findByRole("button", {
+				name: /enroll.*entire.*class|enroll.*all/i,
+			}).click();
 			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
@@ -413,7 +476,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 						.length > 0
 				) {
 					cy.log("Bulk unenroll feature exists");
-					cy.findByRole("button", { name: /unenroll|withdraw|retirer/i }).click();
+					cy.findByRole("button", {
+						name: /unenroll|withdraw|retirer/i,
+					}).click();
 					cy.findByRole("button", { name: /confirm/i }).click();
 
 					cy.contains(/unenrolled|withdrawn|retiré/i, {

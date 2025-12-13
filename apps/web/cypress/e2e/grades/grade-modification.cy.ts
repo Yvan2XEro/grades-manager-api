@@ -17,15 +17,17 @@ describe("Grade Modification", () => {
 			cy.get("[role=option]").first().click();
 
 			// Enter initial grades
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Reload the page or navigate away and back
 			cy.reload();
@@ -40,7 +42,9 @@ describe("Grade Modification", () => {
 			cy.get("[role=option]").first().click();
 
 			// The previously entered grade should be loaded
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.should("have.value", "15");
 		});
@@ -57,18 +61,22 @@ describe("Grade Modification", () => {
 			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Modify the grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("18");
@@ -76,9 +84,9 @@ describe("Grade Modification", () => {
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save the modification
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("verifies grade update persists after reload", () => {
@@ -93,26 +101,30 @@ describe("Grade Modification", () => {
 			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Update the grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("19");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Reload and verify the update
 			cy.reload();
@@ -126,7 +138,9 @@ describe("Grade Modification", () => {
 			cy.get("[role=option]").first().click();
 
 			// Should show the updated grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.should("have.value", "19");
 		});
@@ -143,27 +157,31 @@ describe("Grade Modification", () => {
 			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Clear the grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear();
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save successfully
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 	});
 
@@ -180,26 +198,30 @@ describe("Grade Modification", () => {
 			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Modify the grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("18");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Check if there's a history button or link
 			cy.get("body").then(($body) => {
@@ -237,35 +259,35 @@ describe("Grade Modification", () => {
 			cy.get("[role=option]").first().click();
 
 			const initialGrades = ["14", "15", "16"];
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').each(
-				($input, index) => {
-					if (index < initialGrades.length) {
-						cy.wrap($input).clear().type(initialGrades[index]);
-					}
-				},
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).each(($input, index) => {
+				if (index < initialGrades.length) {
+					cy.wrap($input).clear().type(initialGrades[index]);
+				}
+			});
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Modify multiple grades
 			const updatedGrades = ["17", "18", "19"];
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]').each(
-				($input, index) => {
-					if (index < updatedGrades.length) {
-						cy.wrap($input).clear().type(updatedGrades[index]);
-					}
-				},
-			);
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			).each(($input, index) => {
+				if (index < updatedGrades.length) {
+					cy.wrap($input).clear().type(updatedGrades[index]);
+				}
+			});
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
 
 			// Should save all modifications
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 	});
 
@@ -282,18 +304,22 @@ describe("Grade Modification", () => {
 			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("15");
 
 			cy.findByRole("button", { name: /save|enregistrer/i }).click();
-			cy.contains(/saved|enregistré|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/saved|enregistré|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Try to modify to invalid grade
-			cy.get('input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]')
+			cy.get(
+				'input[type="number"], input[placeholder*="note"], input[placeholder*="grade"]',
+			)
 				.first()
 				.clear()
 				.type("25");
