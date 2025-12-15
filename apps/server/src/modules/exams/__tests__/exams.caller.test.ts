@@ -1,8 +1,17 @@
 import { describe, expect, it } from "bun:test";
+import { randomUUID } from "node:crypto";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
+	createAcademicYear,
+	createClass,
 	createClassCourse,
+	createCourse,
+	createDomainUser,
+	createFaculty,
+	createProgram,
 	createRecapFixture,
 	createStudent,
 	ensureStudentCourseEnrollment,
@@ -88,5 +97,73 @@ describe("exams router", () => {
 				classCourseId: lonelyClassCourse.id,
 			}),
 		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+
+	it("prevents managing exams from another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Institution étrangère",
+				nameEn: "Foreign Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			faculty: faculty.id,
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		const course = await createCourse({ program: program.id });
+		const teacher = await createDomainUser({ businessRole: "teacher" });
+		const [classCourse] = await db
+			.insert(schema.classCourses)
+			.values({
+				code: `CC-${randomUUID().slice(0, 6)}`,
+				class: klass.id,
+				course: course.id,
+				teacher: teacher.id,
+				weeklyHours: 2,
+				institutionId: foreignInstitution.id,
+				semesterId: klass.semesterId,
+			})
+			.returning();
+		await expect(
+			admin.exams.create({
+				name: "Foreign Exam",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 20,
+				classCourseId: classCourse.id,
+			}),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+		const [exam] = await db
+			.insert(schema.exams)
+			.values({
+				name: "External",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: "20",
+				classCourse: classCourse.id,
+				institutionId: foreignInstitution.id,
+				status: "draft",
+				isLocked: false,
+			})
+			.returning();
+		await expect(admin.exams.getById({ id: exam.id })).rejects.toHaveProperty(
+			"code",
+			"NOT_FOUND",
+		);
 	});
 });

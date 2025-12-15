@@ -9,6 +9,7 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import { adminRoles } from "./auth";
+import { requireDefaultInstitutionId } from "./institution";
 
 const pg = new PGlite();
 export const db = drizzle(pg, { schema: { ...schema, ...authSchema } });
@@ -40,6 +41,7 @@ export async function pushSchema() {
 export async function seed() {
 	const firstName = "Seed";
 	const lastName = "Teacher";
+	const institutionId = await requireDefaultInstitutionId();
 	const teacher = await auth.api.createUser({
 		body: {
 			name: `${firstName} ${lastName}`,
@@ -63,7 +65,11 @@ export async function seed() {
 	});
 	const [faculty] = await db
 		.insert(schema.faculties)
-		.values({ code: "FAC-SEED", name: "Seed Faculty" })
+		.values({
+			code: "FAC-SEED",
+			name: "Seed Faculty",
+			institutionId,
+		})
 		.returning();
 	const [semester] = await db
 		.insert(schema.semesters)
@@ -75,6 +81,7 @@ export async function seed() {
 			name: "2024",
 			startDate: new Date("2024-01-01").toISOString(),
 			endDate: new Date("2024-12-31").toISOString(),
+			institutionId,
 		})
 		.returning();
 	const [cycle] = await db
@@ -104,6 +111,7 @@ export async function seed() {
 			name: "Seed Program",
 			slug: "seed-program",
 			faculty: faculty.id,
+			institutionId,
 		})
 		.returning();
 	const [option] = await db
@@ -112,6 +120,7 @@ export async function seed() {
 			programId: program.id,
 			name: "Default option",
 			code: "default",
+			institutionId,
 		})
 		.returning();
 	await db.insert(schema.teachingUnits).values({
@@ -129,6 +138,7 @@ export async function seed() {
 		cycleLevelId: level.id,
 		programOptionId: option.id,
 		semesterId: semester.id,
+		institutionId,
 	});
 }
 
@@ -155,6 +165,9 @@ export async function reset() {
      cycle_levels,
      study_cycles,
      account,
+     invitation,
+     member,
+     organization,
      session,
      verification,
      "user"

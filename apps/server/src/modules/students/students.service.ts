@@ -74,8 +74,11 @@ const mapConflict = (error: unknown) => {
 	return conflictMarkers.some((marker) => message.includes(marker));
 };
 
-export async function createStudent(input: CreateStudentInput) {
-	const klass = await classesRepo.findById(input.classId);
+export async function createStudent(
+	input: CreateStudentInput,
+	institutionId: string,
+) {
+	const klass = await classesRepo.findById(input.classId, institutionId);
 	if (!klass)
 		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
 	const registrationProfile = toRegistrationProfile(input.profile);
@@ -99,17 +102,19 @@ export async function createStudent(input: CreateStudentInput) {
 					class: input.classId,
 					registrationNumber,
 					domainUserId: profile.id,
+					institutionId: klass.institutionId,
 				})
 				.returning();
 			await tx.insert(schema.enrollments).values({
 				studentId: student.id,
 				classId: input.classId,
 				academicYearId: klass.academicYear,
+				institutionId: klass.institutionId,
 				status: "active",
 			});
 			return student.id;
 		});
-		const created = await repo.findById(studentId);
+		const created = await repo.findById(studentId, institutionId);
 		if (!created) {
 			throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 		}
@@ -122,15 +127,18 @@ export async function createStudent(input: CreateStudentInput) {
 	}
 }
 
-export async function bulkCreateStudents(data: {
-	classId: string;
-	registrationFormatId?: string;
-	students: Array<{
-		registrationNumber?: string;
-		profile: StudentProfileInput;
-	}>;
-}) {
-	const klass = await classesRepo.findById(data.classId);
+export async function bulkCreateStudents(
+	data: {
+		classId: string;
+		registrationFormatId?: string;
+		students: Array<{
+			registrationNumber?: string;
+			profile: StudentProfileInput;
+		}>;
+	},
+	institutionId: string,
+) {
+	const klass = await classesRepo.findById(data.classId, institutionId);
 	if (!klass) throw new TRPCError({ code: "NOT_FOUND" });
 
 	const conflicts: Array<{
@@ -169,12 +177,14 @@ export async function bulkCreateStudents(data: {
 						class: data.classId,
 						registrationNumber,
 						domainUserId: profile.id,
+						institutionId: klass.institutionId,
 					})
 					.returning();
 				await tx.insert(schema.enrollments).values({
 					studentId: student.id,
 					classId: data.classId,
 					academicYearId: klass.academicYear,
+					institutionId: klass.institutionId,
 					status: "active",
 				});
 				createdCount++;
@@ -211,8 +221,9 @@ export async function updateStudent(
 		registrationNumber?: string;
 		profile?: Partial<StudentProfileInput>;
 	},
+	institutionId: string,
 ) {
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
 
 	if (data.profile) {
@@ -245,31 +256,38 @@ export async function updateStudent(
 		if (data.registrationNumber) {
 			payload.registrationNumber = data.registrationNumber;
 		}
-		await repo.update(id, payload);
 		if (data.classId) {
-			const newClass = await classesRepo.findById(data.classId);
+			const newClass = await classesRepo.findById(data.classId, institutionId);
 			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
-			await enrollmentsRepo.closeActive(id, "completed");
+			payload.institutionId = newClass.institutionId;
+			await repo.update(id, payload, institutionId);
+			await enrollmentsRepo.closeActive(id, "completed", institutionId);
 			await enrollmentsRepo.create({
 				studentId: id,
 				classId: data.classId,
 				academicYearId: newClass.academicYear,
+				institutionId: newClass.institutionId,
 				status: "active",
 			});
+		} else {
+			await repo.update(id, payload, institutionId);
 		}
 	}
 
-	const updated = await repo.findById(id);
+	const updated = await repo.findById(id, institutionId);
 	if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
 	return updated;
 }
 
-export async function listStudents(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listStudents(
+	opts: Parameters<typeof repo.list>[0],
+	institutionId: string,
+) {
+	return repo.list({ ...opts, institutionId });
 }
 
-export async function getStudentById(id: string) {
-	const item = await repo.findById(id);
+export async function getStudentById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
 }

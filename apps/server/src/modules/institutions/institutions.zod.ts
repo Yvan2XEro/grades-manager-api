@@ -20,6 +20,7 @@ export const upsertInstitutionSchema = z.object({
 	website: z.string().url().optional(),
 	logoUrl: z.string().url().optional(),
 	coverImageUrl: z.string().url().optional(),
+	organizationId: z.string().optional(),
 	defaultAcademicYearId: z.string().optional(),
 	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),

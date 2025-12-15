@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { normalizeCode } from "@/lib/strings";
 import * as studentsRepo from "@/modules/students/students.repo";
@@ -9,12 +9,29 @@ import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./classes.repo";
 
-async function loadProgram(programId: string) {
+async function loadProgram(programId: string, institutionId: string) {
 	const program = await db.query.programs.findFirst({
-		where: eq(schema.programs.id, programId),
+		where: and(
+			eq(schema.programs.id, programId),
+			eq(schema.programs.institutionId, institutionId),
+		),
 	});
 	if (!program) throw notFound("Program not found");
 	return program;
+}
+
+async function ensureAcademicYear(
+	academicYearId: string,
+	institutionId: string,
+) {
+	const year = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, academicYearId),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+	if (!year) throw notFound("Academic year not found");
+	return year;
 }
 
 async function ensurePrimaryCycle(facultyId: string) {
@@ -88,6 +105,7 @@ async function ensureProgramOption(
 			programId: program.id,
 			name: "Default option",
 			code: `default-${program.id.slice(0, 4)}`,
+			institutionId: program.institutionId,
 		});
 		return option.id;
 	}
@@ -124,8 +142,15 @@ async function ensureSemester(semesterId?: string) {
 	return created.id;
 }
 
-export async function createClass(data: Parameters<typeof repo.create>[0]) {
-	const program = await loadProgram(data.program);
+export async function createClass(
+	data: Parameters<typeof repo.create>[0],
+	institutionId: string,
+) {
+	const program = await loadProgram(data.program, institutionId);
+	const academicYear = await ensureAcademicYear(
+		data.academicYear,
+		institutionId,
+	);
 	const cycleLevelId = await ensureCycleLevel(program, data.cycleLevelId);
 	const programOptionId = await ensureProgramOption(
 		program,
@@ -134,6 +159,8 @@ export async function createClass(data: Parameters<typeof repo.create>[0]) {
 	const semesterId = await ensureSemester(data.semesterId);
 	return repo.create({
 		...data,
+		academicYear: academicYear.id,
+		institutionId,
 		code: normalizeCode(data.code),
 		cycleLevelId,
 		programOptionId,
@@ -143,11 +170,19 @@ export async function createClass(data: Parameters<typeof repo.create>[0]) {
 
 export async function updateClass(
 	id: string,
-	data: Parameters<typeof repo.update>[1],
+	data: Parameters<typeof repo.update>[2],
+	institutionId: string,
 ) {
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
-	const program = await loadProgram(data.program ?? existing.program);
+	const program = await loadProgram(
+		data.program ?? existing.program,
+		institutionId,
+	);
+	const academicYear =
+		data.academicYear !== undefined
+			? await ensureAcademicYear(data.academicYear, institutionId)
+			: existing.academicYearInfo;
 	const desiredLevelId =
 		data.cycleLevelId !== undefined ? data.cycleLevelId : existing.cycleLevelId;
 	const cycleLevelId = await ensureCycleLevel(program, desiredLevelId);
@@ -162,9 +197,10 @@ export async function updateClass(
 	const semesterId = data.semesterId
 		? await ensureSemester(data.semesterId)
 		: undefined;
-	return repo.update(id, {
+	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
+		academicYear: academicYear.id ?? existing.academicYear,
 		cycleLevelId,
 		programOptionId,
 		code: data.code ? normalizeCode(data.code) : undefined,
@@ -172,53 +208,61 @@ export async function updateClass(
 	});
 }
 
-export async function deleteClass(id: string) {
-	const klass = await repo.findById(id);
+export async function deleteClass(id: string, institutionId: string) {
+	const klass = await repo.findById(id, institutionId);
 	if (!klass) throw notFound();
 
-	const students = await studentsRepo.list({ classId: id });
+	const students = await studentsRepo.list({ classId: id, institutionId });
 	if (students.items.length) {
-		const { items } = await repo.list({
+		const { items } = await repo.list(institutionId, {
 			programId: klass.program,
 			academicYearId: klass.academicYear,
 		});
 		const target = items.find((c) => c.id !== id);
 		if (!target) throw conflict("Cannot delete class with students");
 		for (const s of students.items) {
-			await studentsRepo.transferStudent(s.id, target.id);
-			await enrollmentsRepo.closeActive(s.id, "completed");
-			await enrollmentsRepo.create({
-				studentId: s.id,
-				classId: target.id,
-				academicYearId: target.academicYear,
-				status: "active",
-			});
+			await transferStudent(s.id, target.id, institutionId);
 		}
 	}
 
-	await repo.remove(id);
+	await repo.remove(id, institutionId);
 }
 
-export async function listClasses(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listClasses(
+	opts: Parameters<typeof repo.list>[1],
+	institutionId: string,
+) {
+	return repo.list(institutionId, opts);
 }
 
-export async function getClassById(id: string) {
-	const item = await repo.findById(id);
+export async function getClassById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
 	return item;
 }
 
-export async function getClassByCode(code: string, academicYearId: string) {
-	const item = await repo.findByCode(normalizeCode(code), academicYearId);
+export async function getClassByCode(
+	code: string,
+	academicYearId: string,
+	institutionId: string,
+) {
+	const item = await repo.findByCode(
+		normalizeCode(code),
+		academicYearId,
+		institutionId,
+	);
 	if (!item) throw notFound();
 	return item;
 }
 
-export async function transferStudent(studentId: string, toClassId: string) {
-	const student = await studentsRepo.findById(studentId);
+export async function transferStudent(
+	studentId: string,
+	toClassId: string,
+	institutionId: string,
+) {
+	const student = await studentsRepo.findById(studentId, institutionId);
 	if (!student) throw notFound("Student not found");
-	const target = await repo.findById(toClassId);
+	const target = await repo.findById(toClassId, institutionId);
 	if (!target) throw notFound("Class not found");
 	await transaction(async (tx) => {
 		await tx
@@ -226,16 +270,20 @@ export async function transferStudent(studentId: string, toClassId: string) {
 			.set({ class: toClassId })
 			.where(eq(schema.students.id, studentId));
 	});
-	await enrollmentsRepo.closeActive(studentId, "completed");
+	await enrollmentsRepo.closeActive(studentId, "completed", institutionId);
 	await enrollmentsRepo.create({
 		studentId,
 		classId: toClassId,
 		academicYearId: target.academicYear,
+		institutionId,
 		status: "active",
 	});
-	return studentsRepo.findById(studentId);
+	return studentsRepo.findById(studentId, institutionId);
 }
 
-export async function searchClasses(opts: Parameters<typeof repo.search>[0]) {
-	return repo.search(opts);
+export async function searchClasses(
+	opts: Parameters<typeof repo.search>[0],
+	institutionId: string,
+) {
+	return repo.search(opts, institutionId);
 }

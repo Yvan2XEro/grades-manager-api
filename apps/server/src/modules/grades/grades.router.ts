@@ -1,7 +1,7 @@
 import {
 	router as createRouter,
-	gradingProcedure,
-	protectedProcedure,
+	tenantGradingProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./grades.service";
 import {
@@ -20,46 +20,71 @@ import {
 } from "./grades.zod";
 
 export const router = createRouter({
-	upsertNote: gradingProcedure
+	upsertNote: tenantGradingProcedure
 		.input(upsertSchema)
-		.mutation(({ input }) =>
-			service.upsertNote(input.studentId, input.examId, input.score),
+		.mutation(({ ctx, input }) =>
+			service.upsertNote(
+				input.studentId,
+				input.examId,
+				input.score,
+				ctx.institution.id,
+			),
 		),
-	updateNote: gradingProcedure
+	updateNote: tenantGradingProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateNote(input.id, input.score)),
-	deleteNote: gradingProcedure
+		.mutation(({ ctx, input }) =>
+			service.updateNote(input.id, input.score, ctx.institution.id),
+		),
+	deleteNote: tenantGradingProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteNote(input.id)),
-	importCsv: gradingProcedure
+		.mutation(({ ctx, input }) =>
+			service.deleteNote(input.id, ctx.institution.id),
+		),
+	importCsv: tenantGradingProcedure
 		.input(importCsvSchema)
-		.mutation(({ input }) =>
-			service.importGradesFromCsv(input.examId, input.csv),
+		.mutation(({ ctx, input }) =>
+			service.importGradesFromCsv(input.examId, input.csv, ctx.institution.id),
 		),
-	exportClassCourseCsv: gradingProcedure
+	exportClassCourseCsv: tenantGradingProcedure
 		.input(exportClassCourseSchema)
-		.mutation(({ input }) => service.exportClassCourseCsv(input.classCourseId)),
-	listByExam: protectedProcedure
-		.input(listExamSchema)
-		.query(({ input }) => service.listByExam(input)),
-	listByStudent: protectedProcedure
-		.input(listStudentSchema)
-		.query(({ input }) => service.listByStudent(input)),
-	listByClassCourse: protectedProcedure
-		.input(listClassCourseSchema)
-		.query(({ input }) => service.listByClassCourse(input)),
-	avgForExam: protectedProcedure
-		.input(avgExamSchema)
-		.query(({ input }) => service.avgForExam(input.examId)),
-	avgForCourse: protectedProcedure
-		.input(avgCourseSchema)
-		.query(({ input }) => service.avgForCourse(input.courseId)),
-	avgForStudentInCourse: protectedProcedure
-		.input(avgStudentCourseSchema)
-		.query(({ input }) =>
-			service.avgForStudentInCourse(input.studentId, input.courseId),
+		.mutation(({ ctx, input }) =>
+			service.exportClassCourseCsv(input.classCourseId, ctx.institution.id),
 		),
-	consolidatedByStudent: protectedProcedure
+	listByExam: tenantProtectedProcedure
+		.input(listExamSchema)
+		.query(({ ctx, input }) => service.listByExam(input, ctx.institution.id)),
+	listByStudent: tenantProtectedProcedure
+		.input(listStudentSchema)
+		.query(({ ctx, input }) =>
+			service.listByStudent(input, ctx.institution.id),
+		),
+	listByClassCourse: tenantProtectedProcedure
+		.input(listClassCourseSchema)
+		.query(({ ctx, input }) =>
+			service.listByClassCourse(input, ctx.institution.id),
+		),
+	avgForExam: tenantProtectedProcedure
+		.input(avgExamSchema)
+		.query(({ ctx, input }) =>
+			service.avgForExam(input.examId, ctx.institution.id),
+		),
+	avgForCourse: tenantProtectedProcedure
+		.input(avgCourseSchema)
+		.query(({ ctx, input }) =>
+			service.avgForCourse(input.courseId, ctx.institution.id),
+		),
+	avgForStudentInCourse: tenantProtectedProcedure
+		.input(avgStudentCourseSchema)
+		.query(({ ctx, input }) =>
+			service.avgForStudentInCourse(
+				input.studentId,
+				input.courseId,
+				ctx.institution.id,
+			),
+		),
+	consolidatedByStudent: tenantProtectedProcedure
 		.input(consolidatedSchema)
-		.query(({ input }) => service.getStudentTranscript(input.studentId)),
+		.query(({ ctx, input }) =>
+			service.getStudentTranscript(input.studentId, ctx.institution.id),
+		),
 });

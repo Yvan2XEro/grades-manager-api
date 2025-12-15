@@ -16,6 +16,7 @@ const profileSchema = z.object({
 export const createUserProfileSchema = profileSchema.extend({
 	role: z.enum(businessRoles),
 	authUserId: z.string().optional(),
+	memberId: z.string().optional(),
 });
 
 export const updateUserProfileSchema = profileSchema
@@ -23,6 +24,8 @@ export const updateUserProfileSchema = profileSchema
 	.extend({
 		id: z.string(),
 		role: z.enum(businessRoles).optional(),
+		authUserId: z.string().optional(),
+		memberId: z.string().optional(),
 	})
 	.refine(
 		(value) =>
@@ -35,6 +38,8 @@ export const updateUserProfileSchema = profileSchema
 			value.gender ||
 			value.nationality ||
 			value.status ||
-			value.role,
+			value.role ||
+			value.authUserId ||
+			value.memberId,
 		{ message: "Missing fields to update" },
 	);

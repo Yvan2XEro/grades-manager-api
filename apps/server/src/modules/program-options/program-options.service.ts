@@ -28,9 +28,16 @@ async function ensureOption(id: string) {
 	return option;
 }
 
-export async function createOption(data: schema.NewProgramOption) {
-	await ensureProgram(data.programId);
-	return repo.create(data);
+export async function createOption(
+	data: Omit<schema.NewProgramOption, "institutionId"> & {
+		institutionId?: string;
+	},
+) {
+	const program = await ensureProgram(data.programId);
+	return repo.create({
+		...data,
+		institutionId: data.institutionId ?? program.institutionId,
+	});
 }
 
 export async function updateOption(
@@ -39,7 +46,8 @@ export async function updateOption(
 ) {
 	const existing = await ensureOption(id);
 	if (data.programId && data.programId !== existing.programId) {
-		await ensureProgram(data.programId);
+		const program = await ensureProgram(data.programId);
+		data = { ...data, institutionId: program.institutionId };
 	}
 	return repo.update(id, data);
 }

@@ -8,7 +8,10 @@ export async function getFirst() {
 }
 
 export async function create(data: schema.NewInstitution) {
-	const [created] = await db.insert(schema.institutions).values(data).returning();
+	const [created] = await db
+		.insert(schema.institutions)
+		.values(data)
+		.returning();
 	return created;
 }
 

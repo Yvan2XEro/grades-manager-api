@@ -165,7 +165,7 @@ describe("promotion rules router", () => {
 		// Delete should succeed since no executions
 		await expect(
 			admin.promotionRules.delete({ id: rule.id }),
-		).resolves.not.toThrow();
+		).resolves.toBeUndefined();
 	});
 });
 

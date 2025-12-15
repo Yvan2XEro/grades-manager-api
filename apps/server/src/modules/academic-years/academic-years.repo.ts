@@ -1,4 +1,4 @@
-import { eq, gt } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -10,31 +10,53 @@ export async function create(data: schema.NewAcademicYear) {
 
 export async function update(
 	id: string,
+	institutionId: string,
 	data: Partial<schema.NewAcademicYear>,
 ) {
 	const [item] = await db
 		.update(schema.academicYears)
 		.set(data)
-		.where(eq(schema.academicYears.id, id))
+		.where(
+			and(
+				eq(schema.academicYears.id, id),
+				eq(schema.academicYears.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function remove(id: string) {
-	await db.delete(schema.academicYears).where(eq(schema.academicYears.id, id));
+export async function remove(id: string, institutionId: string) {
+	await db
+		.delete(schema.academicYears)
+		.where(
+			and(
+				eq(schema.academicYears.id, id),
+				eq(schema.academicYears.institutionId, institutionId),
+			),
+		);
 }
 
-export async function findById(id: string) {
+export async function findById(id: string, institutionId: string) {
 	return db.query.academicYears.findFirst({
-		where: eq(schema.academicYears.id, id),
+		where: and(
+			eq(schema.academicYears.id, id),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
 	});
 }
 
-export async function list(opts: { cursor?: string; limit?: number }) {
+export async function list(
+	institutionId: string,
+	opts: { cursor?: string; limit?: number },
+) {
 	const limit = opts.limit ?? 50;
-	const condition = opts.cursor
+	const cursorCond = opts.cursor
 		? gt(schema.academicYears.id, opts.cursor)
-		: undefined;
+		: null;
+	const condition = cursorCond
+		? and(eq(schema.academicYears.institutionId, institutionId), cursorCond)
+		: eq(schema.academicYears.institutionId, institutionId);
 	const items = await db
 		.select()
 		.from(schema.academicYears)

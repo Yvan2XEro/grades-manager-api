@@ -7,17 +7,33 @@ export async function create(data: schema.NewExam) {
 	return item;
 }
 
-export async function update(id: string, data: Partial<schema.NewExam>) {
+export async function update(
+	id: string,
+	data: Partial<schema.NewExam>,
+	institutionId: string,
+) {
 	const [item] = await db
 		.update(schema.exams)
 		.set(data)
-		.where(eq(schema.exams.id, id))
+		.where(
+			and(
+				eq(schema.exams.id, id),
+				eq(schema.exams.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function remove(id: string) {
-	await db.delete(schema.exams).where(eq(schema.exams.id, id));
+export async function remove(id: string, institutionId: string) {
+	await db
+		.delete(schema.exams)
+		.where(
+			and(
+				eq(schema.exams.id, id),
+				eq(schema.exams.institutionId, institutionId),
+			),
+		);
 }
 
 export async function findById(id: string) {
@@ -25,6 +41,7 @@ export async function findById(id: string) {
 }
 
 export async function list(opts: {
+	institutionId: string;
 	classCourseId?: string;
 	dateFrom?: Date;
 	dateTo?: Date;
@@ -32,9 +49,10 @@ export async function list(opts: {
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
-	let condition: unknown;
+	let condition: unknown = eq(schema.exams.institutionId, opts.institutionId);
 	if (opts.classCourseId) {
-		condition = eq(schema.exams.classCourse, opts.classCourseId);
+		const classCond = eq(schema.exams.classCourse, opts.classCourseId);
+		condition = condition ? and(condition, classCond) : classCond;
 	}
 	if (opts.dateFrom) {
 		const c = gte(schema.exams.date, opts.dateFrom);
@@ -59,19 +77,37 @@ export async function list(opts: {
 	return { items, nextCursor };
 }
 
-export async function setLock(examId: string, lock: boolean) {
+export async function setLock(
+	examId: string,
+	lock: boolean,
+	institutionId: string,
+) {
 	const [item] = await db
 		.update(schema.exams)
 		.set({ isLocked: lock })
-		.where(eq(schema.exams.id, examId))
+		.where(
+			and(
+				eq(schema.exams.id, examId),
+				eq(schema.exams.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function assignScheduleRun(examIds: string[], runId: string) {
+export async function assignScheduleRun(
+	examIds: string[],
+	runId: string,
+	institutionId: string,
+) {
 	if (examIds.length === 0) return;
 	await db
 		.update(schema.exams)
 		.set({ scheduleRunId: runId })
-		.where(inArray(schema.exams.id, examIds));
+		.where(
+			and(
+				inArray(schema.exams.id, examIds),
+				eq(schema.exams.institutionId, institutionId),
+			),
+		);
 }

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import * as schema from "@/db/schema/app-schema";
 import { type TransactionClient, transaction } from "../_shared/db-transaction";
 import { notFound } from "../_shared/errors";
@@ -27,28 +27,46 @@ const normalizeDefinition = (
 	segments: definition.segments,
 });
 
-async function ensureFormat(id: string) {
-	const format = await repo.findById(id);
+async function ensureFormat(
+	id: string,
+	institutionId?: string,
+	agent?: TransactionClient,
+) {
+	const format = await repo.findById(id, agent);
 	if (!format) throw notFound("Format not found");
+	if (institutionId && format.institutionId !== institutionId) {
+		throw notFound();
+	}
 	return format;
 }
 
-export async function listFormats(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listFormats(
+	opts: { includeInactive?: boolean } = {},
+	institutionId: string,
+) {
+	return repo.list({ institutionId, includeInactive: opts.includeInactive });
 }
 
-export async function createFormat(data: {
-	name: string;
-	description?: string;
-	definition: FormatDefinition["definition"];
-	isActive?: boolean;
-}) {
+export async function createFormat(
+	data: {
+		name: string;
+		description?: string;
+		definition: FormatDefinition["definition"];
+		isActive?: boolean;
+	},
+	institutionId: string,
+) {
 	return transaction(async (tx) => {
 		if (data.isActive) {
 			await tx
 				.update(schema.registrationNumberFormats)
 				.set({ isActive: false })
-				.where(eq(schema.registrationNumberFormats.isActive, true));
+				.where(
+					and(
+						eq(schema.registrationNumberFormats.isActive, true),
+						eq(schema.registrationNumberFormats.institutionId, institutionId),
+					),
+				);
 		}
 		return repo.create(
 			{
@@ -56,6 +74,7 @@ export async function createFormat(data: {
 				description: data.description ?? null,
 				definition: normalizeDefinition(data.definition),
 				isActive: data.isActive ?? false,
+				institutionId,
 			},
 			tx,
 		);
@@ -70,14 +89,23 @@ export async function updateFormat(
 		definition?: FormatDefinition["definition"];
 		isActive?: boolean;
 	},
+	institutionId: string,
 ) {
-	await ensureFormat(id);
+	const existing = await ensureFormat(id, institutionId);
 	return transaction(async (tx) => {
 		if (data.isActive) {
 			await tx
 				.update(schema.registrationNumberFormats)
 				.set({ isActive: false })
-				.where(eq(schema.registrationNumberFormats.isActive, true));
+				.where(
+					and(
+						eq(schema.registrationNumberFormats.isActive, true),
+						eq(
+							schema.registrationNumberFormats.institutionId,
+							existing.institutionId,
+						),
+					),
+				);
 		}
 		const updated = await repo.update(
 			id,
@@ -97,17 +125,20 @@ export async function updateFormat(
 	});
 }
 
-export async function deleteFormat(id: string) {
-	await ensureFormat(id);
+export async function deleteFormat(id: string, institutionId: string) {
+	await ensureFormat(id, institutionId);
 	await repo.remove(id);
 }
 
-export async function getActiveFormat() {
-	return repo.findActive();
+export async function getActiveFormat(institutionId: string) {
+	return repo.findActive(institutionId);
 }
 
-export async function requireActiveFormat() {
-	const format = await repo.findActive();
+export async function requireActiveFormat(
+	institutionId: string,
+	agent?: TransactionClient,
+) {
+	const format = await repo.findActive(institutionId, agent);
 	if (!format) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -142,8 +173,8 @@ export async function issueRegistrationNumber(opts: {
 	formatId?: string;
 }) {
 	const format = opts.formatId
-		? await ensureFormat(opts.formatId)
-		: await requireActiveFormat();
+		? await ensureFormat(opts.formatId, opts.klass.institutionId, opts.tx)
+		: await requireActiveFormat(opts.klass.institutionId, opts.tx);
 	try {
 		return await generateRegistrationNumber({
 			format,
@@ -167,7 +198,7 @@ export async function previewFormat(input: PreviewInput) {
 					definition: normalizeDefinition(input.definition),
 				}
 			: input.formatId
-				? await ensureFormat(input.formatId)
+				? await ensureFormat(input.formatId, klass.institutionId)
 				: null;
 	if (!format) {
 		throw new TRPCError({

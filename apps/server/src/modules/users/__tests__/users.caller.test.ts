@@ -1,7 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
 import type { Context } from "@/lib/context";
-import { asAdmin, createUser, makeTestContext } from "@/lib/test-utils";
+import {
+	asAdmin,
+	createOrganizationMember,
+	createUser,
+	makeTestContext,
+} from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
@@ -43,5 +48,18 @@ describe("users router", () => {
 		expect(createdIds.has(secondPage.items[0].id)).toBe(true);
 		createdIds.delete(secondPage.items[0].id);
 		expect(createdIds.size).toBe(0);
+	});
+
+	it("allows admins to link profiles to organization members", async () => {
+		const member = await createOrganizationMember();
+		const admin = createCaller(asAdmin());
+		const created = await admin.users.createProfile({
+			firstName: "Org",
+			lastName: "Member",
+			email: `org-member-${randomUUID()}@example.com`,
+			role: "staff",
+			memberId: member.id,
+		});
+		expect(created?.memberId).toBe(member.id);
 	});
 });

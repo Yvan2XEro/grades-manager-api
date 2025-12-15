@@ -33,6 +33,7 @@ type ClassFetchInput = {
 	facultyId: string;
 	academicYearId: string;
 	classIds?: string[];
+	institutionId: string;
 };
 
 export async function getClassesForScheduling(
@@ -44,12 +45,18 @@ export async function getClassesForScheduling(
 			name: schema.programs.name,
 		})
 		.from(schema.programs)
-		.where(eq(schema.programs.faculty, params.facultyId));
+		.where(
+			and(
+				eq(schema.programs.faculty, params.facultyId),
+				eq(schema.programs.institutionId, params.institutionId),
+			),
+		);
 	if (!programs.length) return [];
 	const programIds = programs.map((p) => p.id);
 	const filters = [
 		eq(schema.classes.academicYear, params.academicYearId),
 		inArray(schema.classes.program, programIds),
+		eq(schema.classes.institutionId, params.institutionId),
 	];
 	if (params.classIds && params.classIds.length > 0) {
 		filters.push(inArray(schema.classes.id, params.classIds));
@@ -123,6 +130,7 @@ export async function getClassCourses(
 export async function findExistingTypeExams(
 	classCourseIds: string[],
 	typeName: string,
+	institutionId: string,
 ) {
 	if (classCourseIds.length === 0) return [];
 	return db
@@ -135,6 +143,7 @@ export async function findExistingTypeExams(
 			and(
 				inArray(schema.exams.classCourse, classCourseIds),
 				eq(schema.exams.type, typeName),
+				eq(schema.exams.institutionId, institutionId),
 			),
 		);
 }
@@ -161,7 +170,7 @@ type HistoryFilters = {
 	limit?: number;
 };
 
-export async function listRuns(filters: HistoryFilters) {
+export async function listRuns(filters: HistoryFilters, institutionId: string) {
 	const limit = filters.limit ?? 50;
 	const conditions = [
 		filters.facultyId
@@ -174,6 +183,7 @@ export async function listRuns(filters: HistoryFilters) {
 			? eq(schema.examScheduleRuns.examTypeId, filters.examTypeId)
 			: undefined,
 		filters.cursor ? gt(schema.examScheduleRuns.id, filters.cursor) : undefined,
+		eq(schema.faculties.institutionId, institutionId),
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =
 		conditions.length === 0
@@ -222,7 +232,7 @@ export async function listRuns(filters: HistoryFilters) {
 	return paginate(rows, limit);
 }
 
-export async function getRunDetails(runId: string) {
+export async function getRunDetails(runId: string, institutionId: string) {
 	const [run] = await db
 		.select({
 			id: schema.examScheduleRuns.id,
@@ -258,7 +268,12 @@ export async function getRunDetails(runId: string) {
 			schema.examTypes,
 			eq(schema.examTypes.id, schema.examScheduleRuns.examTypeId),
 		)
-		.where(eq(schema.examScheduleRuns.id, runId))
+		.where(
+			and(
+				eq(schema.examScheduleRuns.id, runId),
+				eq(schema.faculties.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	if (!run) return null;
 	const exams = await db

@@ -1,7 +1,7 @@
 import {
-	adminProcedure,
 	router as createRouter,
-	protectedProcedure,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./class-courses.service";
 import {
@@ -14,30 +14,48 @@ import {
 } from "./class-courses.zod";
 
 export const router = createRouter({
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createClassCourse(input)),
-	update: adminProcedure
-		.input(updateSchema)
-		.mutation(({ input }) => service.updateClassCourse(input.id, input)),
-	delete: adminProcedure
-		.input(idSchema)
-		.mutation(({ input }) => service.deleteClassCourse(input.id)),
-	list: protectedProcedure
-		.input(listSchema)
-		.query(({ input }) => service.listClassCourses(input)),
-	getById: protectedProcedure
-		.input(idSchema)
-		.query(({ input }) => service.getClassCourseById(input.id)),
-	getByCode: protectedProcedure
-		.input(codeSchema)
-		.query(({ input }) =>
-			service.getClassCourseByCode(input.code, input.academicYearId),
+		.mutation(({ ctx, input }) =>
+			service.createClassCourse(input, ctx.institution.id),
 		),
-	roster: protectedProcedure
+	update: tenantAdminProcedure
+		.input(updateSchema)
+		.mutation(({ ctx, input }) =>
+			service.updateClassCourse(input.id, input, ctx.institution.id),
+		),
+	delete: tenantAdminProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getClassCourseRoster(input.id)),
-	search: protectedProcedure
+		.mutation(({ ctx, input }) =>
+			service.deleteClassCourse(input.id, ctx.institution.id),
+		),
+	list: tenantProtectedProcedure
+		.input(listSchema)
+		.query(({ ctx, input }) =>
+			service.listClassCourses(input, ctx.institution.id),
+		),
+	getById: tenantProtectedProcedure
+		.input(idSchema)
+		.query(({ ctx, input }) =>
+			service.getClassCourseById(input.id, ctx.institution.id),
+		),
+	getByCode: tenantProtectedProcedure
+		.input(codeSchema)
+		.query(({ ctx, input }) =>
+			service.getClassCourseByCode(
+				input.code,
+				input.academicYearId,
+				ctx.institution.id,
+			),
+		),
+	roster: tenantProtectedProcedure
+		.input(idSchema)
+		.query(({ ctx, input }) =>
+			service.getClassCourseRoster(input.id, ctx.institution.id),
+		),
+	search: tenantProtectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchClassCourses(input)),
+		.query(({ ctx, input }) =>
+			service.searchClassCourses(input, ctx.institution.id),
+		),
 });

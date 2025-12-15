@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
+import { requireDefaultInstitutionId } from "@/lib/institution";
 import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -15,11 +16,21 @@ type ClassCourseInput = schema.NewClassCourse & {
 async function validateConfig(
 	config: schema.NewClassCourse,
 	allowTeacherOverride = false,
+	institutionId?: string,
 ) {
-	const klass = await classesRepo.findById(config.class);
+	const klass = await classesRepo.findById(config.class, institutionId);
 	if (!klass) throw notFound("Class not found");
 	const course = await coursesRepo.findById(config.course);
 	if (!course) throw notFound("Course not found");
+	const courseProgram = await db.query.programs.findFirst({
+		where: eq(schema.programs.id, course.program),
+	});
+	if (!courseProgram || courseProgram.institutionId !== klass.institutionId) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Course not found in this institution",
+		});
+	}
 	if (klass.program !== course.program) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -47,7 +58,11 @@ async function validateConfig(
 		.where(eq(schema.coursePrerequisites.courseId, config.course));
 
 	if (prereqs.length > 0) {
-		const existing = await repo.list({ classId: config.class, limit: 200 });
+		const existing = await repo.list({
+			classId: config.class,
+			limit: 200,
+			institutionId: klass.institutionId,
+		});
 		const assigned = new Set(existing.items.map((cc) => cc.course));
 		for (const prereq of prereqs) {
 			if (!assigned.has(prereq.prerequisiteCourseId)) {
@@ -64,7 +79,7 @@ async function validateConfig(
 		config.semesterId,
 	);
 
-	return { semesterId: resolvedSemesterId };
+	return { semesterId: resolvedSemesterId, klass };
 }
 
 async function resolveSemesterId(
@@ -85,11 +100,23 @@ async function resolveSemesterId(
 	return semester.id;
 }
 
-export async function createClassCourse(data: ClassCourseInput) {
+export async function createClassCourse(
+	data: ClassCourseInput,
+	institutionId: string,
+) {
 	const { allowTeacherOverride, ...payload } = data;
-	const { semesterId } = await validateConfig(payload, allowTeacherOverride);
+	const { semesterId, klass } = await validateConfig(
+		payload,
+		allowTeacherOverride,
+		institutionId,
+	);
+	const resolvedInstitutionId =
+		klass.institutionId ??
+		institutionId ??
+		(await requireDefaultInstitutionId());
 	return repo.create({
 		...payload,
+		institutionId: resolvedInstitutionId,
 		code: normalizeCode(payload.code),
 		semesterId,
 	});
@@ -98,35 +125,51 @@ export async function createClassCourse(data: ClassCourseInput) {
 export async function updateClassCourse(
 	id: string,
 	data: Partial<ClassCourseInput>,
+	institutionId: string,
 ) {
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
 	const { allowTeacherOverride, ...payload } = data;
 	const merged = {
 		...existing,
 		...payload,
 	};
-	const { semesterId } = await validateConfig(
+	const { semesterId, klass } = await validateConfig(
 		merged as schema.NewClassCourse,
 		allowTeacherOverride,
+		institutionId,
 	);
-	return repo.update(id, {
-		...payload,
-		code: payload.code ? normalizeCode(payload.code) : undefined,
-		semesterId: payload.semesterId ? semesterId : undefined,
-	});
+	const resolvedInstitutionId =
+		klass.institutionId ??
+		institutionId ??
+		(await requireDefaultInstitutionId());
+	return repo.update(
+		id,
+		{
+			...payload,
+			code: payload.code ? normalizeCode(payload.code) : undefined,
+			semesterId: payload.semesterId ? semesterId : undefined,
+			institutionId: resolvedInstitutionId,
+		},
+		institutionId,
+	);
 }
 
-export async function deleteClassCourse(id: string) {
-	await repo.remove(id);
+export async function deleteClassCourse(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw notFound();
+	await repo.remove(id, institutionId);
 }
 
-export async function listClassCourses(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listClassCourses(
+	opts: Parameters<typeof repo.list>[0],
+	institutionId: string,
+) {
+	return repo.list({ ...opts, institutionId });
 }
 
-export async function getClassCourseById(id: string) {
-	const item = await repo.findById(id);
+export async function getClassCourseById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
 	return item;
 }
@@ -134,8 +177,13 @@ export async function getClassCourseById(id: string) {
 export async function getClassCourseByCode(
 	code: string,
 	academicYearId: string,
+	institutionId: string,
 ) {
-	const item = await repo.findByCode(normalizeCode(code), academicYearId);
+	const item = await repo.findByCode(
+		normalizeCode(code),
+		academicYearId,
+		institutionId,
+	);
 	if (!item) throw notFound();
 	return item;
 }
@@ -147,8 +195,11 @@ const ROSTER_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"failed",
 ];
 
-export async function getClassCourseRoster(classCourseId: string) {
-	const classCourse = await repo.findById(classCourseId);
+export async function getClassCourseRoster(
+	classCourseId: string,
+	institutionId: string,
+) {
+	const classCourse = await repo.findById(classCourseId, institutionId);
 	if (!classCourse) throw notFound();
 	const students = await db
 		.select({
@@ -182,6 +233,7 @@ export async function getClassCourseRoster(classCourseId: string) {
 
 export async function searchClassCourses(
 	opts: Parameters<typeof repo.search>[0],
+	institutionId: string,
 ) {
-	return repo.search(opts);
+	return repo.search({ ...opts, institutionId });
 }

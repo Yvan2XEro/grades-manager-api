@@ -1,8 +1,8 @@
 import {
-	adminProcedure,
 	router as createRouter,
-	gradingProcedure,
-	protectedProcedure,
+	tenantAdminProcedure,
+	tenantGradingProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./exams.service";
 import {
@@ -16,7 +16,7 @@ import {
 } from "./exams.zod";
 
 export const router = createRouter({
-	create: gradingProcedure.input(baseSchema).mutation(({ ctx, input }) =>
+	create: tenantGradingProcedure.input(baseSchema).mutation(({ ctx, input }) =>
 		service.createExam(
 			{
 				name: input.name,
@@ -26,37 +26,59 @@ export const router = createRouter({
 				classCourse: input.classCourseId,
 			},
 			ctx.profile?.id ?? null,
+			ctx.institution.id,
 		),
 	),
-	update: gradingProcedure.input(updateSchema).mutation(({ input }) =>
-		service.updateExam(input.id, {
-			...input,
-			percentage:
-				input.percentage !== undefined
-					? input.percentage.toString()
-					: undefined,
-		}),
-	),
-	delete: adminProcedure
+	update: tenantGradingProcedure
+		.input(updateSchema)
+		.mutation(({ ctx, input }) =>
+			service.updateExam(
+				input.id,
+				{
+					...input,
+					percentage:
+						input.percentage !== undefined
+							? input.percentage.toString()
+							: undefined,
+				},
+				ctx.institution.id,
+			),
+		),
+	delete: tenantAdminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteExam(input.id)),
-	submit: gradingProcedure
+		.mutation(({ ctx, input }) =>
+			service.deleteExam(input.id, ctx.institution.id),
+		),
+	submit: tenantGradingProcedure
 		.input(submitSchema)
 		.mutation(({ ctx, input }) =>
-			service.submitExam(input.examId, ctx.profile?.id ?? null),
+			service.submitExam(
+				input.examId,
+				ctx.profile?.id ?? null,
+				ctx.institution.id,
+			),
 		),
-	validate: adminProcedure
+	validate: tenantAdminProcedure
 		.input(validateSchema)
 		.mutation(({ ctx, input }) =>
-			service.validateExam(input.examId, ctx.profile?.id ?? null, input.status),
+			service.validateExam(
+				input.examId,
+				ctx.profile?.id ?? null,
+				input.status,
+				ctx.institution.id,
+			),
 		),
-	lock: adminProcedure
+	lock: tenantAdminProcedure
 		.input(lockSchema)
-		.mutation(({ input }) => service.setLock(input.examId, input.lock)),
-	list: protectedProcedure
+		.mutation(({ ctx, input }) =>
+			service.setLock(input.examId, input.lock, ctx.institution.id),
+		),
+	list: tenantProtectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listExams(input)),
-	getById: protectedProcedure
+		.query(({ ctx, input }) => service.listExams(input, ctx.institution.id)),
+	getById: tenantProtectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getExamById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getExamById(input.id, ctx.institution.id),
+		),
 });

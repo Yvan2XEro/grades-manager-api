@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
@@ -10,6 +10,50 @@ import * as repo from "./grades.repo";
 
 const _CSV_HEADERS = ["registrationNumber", "score"];
 
+async function requireExamForInstitution(
+	examId: string,
+	institutionId: string,
+) {
+	const exam = await examsRepo.findById(examId);
+	if (!exam || exam.institutionId !== institutionId) {
+		throw notFound();
+	}
+	return exam;
+}
+
+async function requireClassCourseForInstitution(
+	classCourseId: string,
+	institutionId: string,
+) {
+	const classCourse = await db.query.classCourses.findFirst({
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+	});
+	if (!classCourse) throw notFound("Class course not found");
+	return classCourse;
+}
+
+async function requireCourseForInstitution(
+	courseId: string,
+	institutionId: string,
+) {
+	const [course] = await db
+		.select({
+			id: schema.courses.id,
+			institutionId: schema.programs.institutionId,
+		})
+		.from(schema.courses)
+		.innerJoin(schema.programs, eq(schema.programs.id, schema.courses.program))
+		.where(eq(schema.courses.id, courseId))
+		.limit(1);
+	if (!course || course.institutionId !== institutionId) {
+		throw notFound("Course not found");
+	}
+	return course;
+}
+
 function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
@@ -19,8 +63,9 @@ export async function upsertNote(
 	studentId: string,
 	examId: string,
 	score: number,
+	institutionId: string,
 ) {
-	const exam = await examsRepo.findById(examId);
+	const exam = await requireExamForInstitution(examId, institutionId);
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
 	try {
@@ -34,10 +79,14 @@ export async function upsertNote(
 	}
 }
 
-export async function updateNote(id: string, score: number) {
+export async function updateNote(
+	id: string,
+	score: number,
+	institutionId: string,
+) {
 	const grade = await repo.findById(id);
 	if (!grade) throw notFound();
-	const exam = await examsRepo.findById(grade.exam);
+	const exam = await requireExamForInstitution(grade.exam, institutionId);
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(
 		grade.student,
@@ -46,48 +95,63 @@ export async function updateNote(id: string, score: number) {
 	return repo.update(id, score.toString());
 }
 
-export async function deleteNote(id: string) {
+export async function deleteNote(id: string, institutionId: string) {
 	const grade = await repo.findById(id);
 	if (!grade) throw notFound();
-	const exam = await examsRepo.findById(grade.exam);
+	const exam = await requireExamForInstitution(grade.exam, institutionId);
 	ensureExamEditable(exam);
 	await repo.remove(id);
 }
 
-export async function listByExam(opts: Parameters<typeof repo.listByExam>[0]) {
+export async function listByExam(
+	opts: Parameters<typeof repo.listByExam>[0],
+	institutionId: string,
+) {
+	await requireExamForInstitution(opts.examId, institutionId);
 	return repo.listByExam(opts);
 }
 
 export async function listByStudent(
 	opts: Parameters<typeof repo.listByStudent>[0],
+	institutionId: string,
 ) {
+	await studentsRepo.findById(opts.studentId, institutionId);
 	return repo.listByStudent(opts);
 }
 
 export async function listByClassCourse(
 	opts: Parameters<typeof repo.listByClassCourse>[0],
+	institutionId: string,
 ) {
+	await requireClassCourseForInstitution(opts.classCourseId, institutionId);
 	return repo.listByClassCourse(opts);
 }
 
-export async function avgForExam(examId: string) {
+export async function avgForExam(examId: string, institutionId: string) {
+	await requireExamForInstitution(examId, institutionId);
 	return repo.avgForExam(examId);
 }
 
-export async function avgForCourse(courseId: string) {
+export async function avgForCourse(courseId: string, institutionId: string) {
+	await requireCourseForInstitution(courseId, institutionId);
 	return repo.avgForCourse(courseId);
 }
 
 export async function avgForStudentInCourse(
 	studentId: string,
 	courseId: string,
+	institutionId: string,
 ) {
+	await studentsRepo.findById(studentId, institutionId);
+	await requireCourseForInstitution(courseId, institutionId);
 	return repo.avgForStudentInCourse(studentId, courseId);
 }
 
-export async function exportClassCourseCsv(classCourseId: string) {
-	const institution = await db.query.institutions.findFirst();
-	void institution;
+export async function exportClassCourseCsv(
+	classCourseId: string,
+	institutionId: string,
+) {
+	await requireClassCourseForInstitution(classCourseId, institutionId);
 	// Developer note: when adjusting CSV/PDF exports, include institution metadata
 	// (nameFr/nameEn, contactEmail, logoUrl, etc.) in the generated headers.
 	const rows = await db
@@ -112,8 +176,12 @@ export async function exportClassCourseCsv(classCourseId: string) {
 	return [header.join(","), body].filter(Boolean).join("\n");
 }
 
-export async function importGradesFromCsv(examId: string, csv: string) {
-	const exam = await examsRepo.findById(examId);
+export async function importGradesFromCsv(
+	examId: string,
+	csv: string,
+	institutionId: string,
+) {
+	const exam = await requireExamForInstitution(examId, institutionId);
 	ensureExamEditable(exam);
 	const lines = csv
 		.split(/\r?\n/)
@@ -151,8 +219,10 @@ export async function importGradesFromCsv(examId: string, csv: string) {
 			result.errors.push(`Invalid row: ${line}`);
 			continue;
 		}
-		const student =
-			await studentsRepo.findByRegistrationNumber(registrationNumber);
+		const student = await studentsRepo.findByRegistrationNumber(
+			registrationNumber,
+			institutionId,
+		);
 		if (!student) {
 			result.errors.push(`Unknown registration: ${registrationNumber}`);
 			continue;
@@ -178,8 +248,11 @@ export async function importGradesFromCsv(examId: string, csv: string) {
 	return result;
 }
 
-export async function getStudentTranscript(studentId: string) {
-	const student = await studentsRepo.findById(studentId);
+export async function getStudentTranscript(
+	studentId: string,
+	institutionId: string,
+) {
+	const student = await studentsRepo.findById(studentId, institutionId);
 	if (!student) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Student not found" });
 	}

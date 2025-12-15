@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { Engine } from "json-rules-engine";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import { requireDefaultInstitutionId } from "@/lib/institution";
 import * as enrollmentsService from "../enrollments/enrollments.service";
 import * as repo from "./promotion-rules.repo";
 import type {
@@ -37,7 +38,8 @@ export async function createRule(data: CreateRuleInput) {
 		});
 	}
 
-	return repo.createRule(data);
+	const institutionId = await requireDefaultInstitutionId();
+	return repo.createRule({ ...data, institutionId });
 }
 
 export async function updateRule(data: UpdateRuleInput) {
@@ -92,7 +94,8 @@ export async function getRuleById(id: string) {
 }
 
 export async function listRules(opts: ListRulesInput) {
-	return repo.listRules(opts);
+	const institutionId = await requireDefaultInstitutionId();
+	return repo.listRules({ ...opts, institutionId });
 }
 
 // ========== Evaluation ==========

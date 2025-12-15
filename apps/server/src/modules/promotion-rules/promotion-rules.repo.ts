@@ -36,6 +36,7 @@ export async function deleteRule(id: string) {
 }
 
 export async function listRules(opts: {
+	institutionId: string;
 	programId?: string;
 	sourceClassId?: string;
 	cycleLevelId?: string;
@@ -45,6 +46,7 @@ export async function listRules(opts: {
 }) {
 	const limit = opts.limit ?? 50;
 	const conditions = [
+		eq(schema.promotionRules.institutionId, opts.institutionId),
 		opts.programId
 			? eq(schema.promotionRules.programId, opts.programId)
 			: undefined,

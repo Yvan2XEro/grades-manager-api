@@ -5,6 +5,7 @@ import { paginate } from "../_shared/pagination";
 
 const classSelection = {
 	id: schema.classes.id,
+	institutionId: schema.classes.institutionId,
 	code: schema.classes.code,
 	name: schema.classes.name,
 	program: schema.classes.program,
@@ -56,7 +57,10 @@ const classSelection = {
 	},
 };
 
-async function selectClass(where: SQL<unknown>) {
+async function selectClass(where: SQL<unknown>, institutionId?: string) {
+	const finalWhere = institutionId
+		? and(eq(schema.classes.institutionId, institutionId), where)
+		: where;
 	const [klass] = await db
 		.select(classSelection)
 		.from(schema.classes)
@@ -85,7 +89,7 @@ async function selectClass(where: SQL<unknown>) {
 			schema.semesters,
 			eq(schema.semesters.id, schema.classes.semesterId),
 		)
-		.where(where)
+		.where(finalWhere)
 		.limit(1);
 	return klass ?? null;
 }
@@ -95,36 +99,56 @@ export async function create(data: schema.NewKlass) {
 	return item;
 }
 
-export async function update(id: string, data: Partial<schema.NewKlass>) {
+export async function update(
+	id: string,
+	institutionId: string,
+	data: Partial<schema.NewKlass>,
+) {
 	const [item] = await db
 		.update(schema.classes)
 		.set(data)
-		.where(eq(schema.classes.id, id))
+		.where(
+			and(
+				eq(schema.classes.id, id),
+				eq(schema.classes.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function remove(id: string) {
-	await db.delete(schema.classes).where(eq(schema.classes.id, id));
+export async function remove(id: string, institutionId: string) {
+	await db
+		.delete(schema.classes)
+		.where(
+			and(
+				eq(schema.classes.id, id),
+				eq(schema.classes.institutionId, institutionId),
+			),
+		);
 }
 
-export async function findById(id: string) {
-	return selectClass(eq(schema.classes.id, id));
+export async function findById(id: string, institutionId?: string) {
+	return selectClass(eq(schema.classes.id, id), institutionId);
 }
 
-export async function list(opts: {
-	programId?: string;
-	academicYearId?: string;
-	facultyId?: string;
-	cycleId?: string;
-	cycleLevelId?: string;
-	programOptionId?: string;
-	semesterId?: string;
-	cursor?: string;
-	limit?: number;
-}) {
+export async function list(
+	institutionId: string,
+	opts: {
+		programId?: string;
+		academicYearId?: string;
+		facultyId?: string;
+		cycleId?: string;
+		cycleLevelId?: string;
+		programOptionId?: string;
+		semesterId?: string;
+		cursor?: string;
+		limit?: number;
+	},
+) {
 	const limit = opts.limit ?? 50;
 	const conditions = [
+		eq(schema.classes.institutionId, institutionId),
 		opts.programId ? eq(schema.classes.program, opts.programId) : undefined,
 		opts.academicYearId
 			? eq(schema.classes.academicYear, opts.academicYearId)
@@ -182,28 +206,40 @@ export async function list(opts: {
 	return paginate(items, limit);
 }
 
-export async function findByCode(code: string, academicYearId: string) {
+export async function findByCode(
+	code: string,
+	academicYearId: string,
+	institutionId: string,
+) {
 	return selectClass(
 		and(
 			eq(schema.classes.code, code),
 			eq(schema.classes.academicYear, academicYearId),
 		),
+		institutionId,
 	);
 }
 
-export async function search(opts: {
-	query: string;
-	programId?: string;
-	limit?: number;
-}) {
+export async function search(
+	opts: {
+		query: string;
+		programId?: string;
+		limit?: number;
+	},
+	institutionId: string,
+) {
 	const limit = opts.limit ?? 20;
 	const searchCondition = or(
 		ilike(schema.classes.code, `%${opts.query}%`),
 		ilike(schema.classes.name, `%${opts.query}%`),
 	);
 	const condition = opts.programId
-		? and(eq(schema.classes.program, opts.programId), searchCondition)
-		: searchCondition;
+		? and(
+				eq(schema.classes.program, opts.programId),
+				eq(schema.classes.institutionId, institutionId),
+				searchCondition,
+			)
+		: and(eq(schema.classes.institutionId, institutionId), searchCondition);
 
 	const items = await db
 		.select(classSelection)

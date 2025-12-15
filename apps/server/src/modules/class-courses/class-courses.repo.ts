@@ -7,26 +7,48 @@ export async function create(data: schema.NewClassCourse) {
 	return item;
 }
 
-export async function update(id: string, data: Partial<schema.NewClassCourse>) {
+export async function update(
+	id: string,
+	data: Partial<schema.NewClassCourse>,
+	institutionId: string,
+) {
 	const [item] = await db
 		.update(schema.classCourses)
 		.set(data)
-		.where(eq(schema.classCourses.id, id))
+		.where(
+			and(
+				eq(schema.classCourses.id, id),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function remove(id: string) {
-	await db.delete(schema.classCourses).where(eq(schema.classCourses.id, id));
+export async function remove(id: string, institutionId: string) {
+	await db
+		.delete(schema.classCourses)
+		.where(
+			and(
+				eq(schema.classCourses.id, id),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+		);
 }
 
-export async function findById(id: string) {
+export async function findById(id: string, institutionId?: string) {
 	return db.query.classCourses.findFirst({
-		where: eq(schema.classCourses.id, id),
+		where: institutionId
+			? and(
+					eq(schema.classCourses.id, id),
+					eq(schema.classCourses.institutionId, institutionId),
+				)
+			: eq(schema.classCourses.id, id),
 	});
 }
 
 export async function list(opts: {
+	institutionId: string;
 	classId?: string;
 	courseId?: string;
 	teacherId?: string;
@@ -35,6 +57,7 @@ export async function list(opts: {
 }) {
 	const limit = opts.limit ?? 50;
 	const conditions = [
+		eq(schema.classCourses.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
 		opts.courseId ? eq(schema.classCourses.course, opts.courseId) : undefined,
 		opts.teacherId
@@ -93,7 +116,11 @@ export async function list(opts: {
 	return { items, nextCursor };
 }
 
-export async function findByCode(code: string, academicYearId: string) {
+export async function findByCode(
+	code: string,
+	academicYearId: string,
+	institutionId: string,
+) {
 	const [match] = await db
 		.select({ id: schema.classCourses.id })
 		.from(schema.classCourses)
@@ -102,14 +129,16 @@ export async function findByCode(code: string, academicYearId: string) {
 			and(
 				eq(schema.classCourses.code, code),
 				eq(schema.classes.academicYear, academicYearId),
+				eq(schema.classCourses.institutionId, institutionId),
 			),
 		)
 		.limit(1);
 	if (!match) return null;
-	return findById(match.id);
+	return findById(match.id, institutionId);
 }
 
 export async function search(opts: {
+	institutionId: string;
 	query: string;
 	classId?: string;
 	limit?: number;
@@ -120,9 +149,13 @@ export async function search(opts: {
 		ilike(schema.courses.code, `%${opts.query}%`),
 		ilike(schema.courses.name, `%${opts.query}%`),
 	);
+	const scopedSearch = and(
+		eq(schema.classCourses.institutionId, opts.institutionId),
+		searchCondition,
+	);
 	const condition = opts.classId
-		? and(eq(schema.classCourses.class, opts.classId), searchCondition)
-		: searchCondition;
+		? and(eq(schema.classCourses.class, opts.classId), scopedSearch)
+		: scopedSearch;
 
 	const items = await db.query.classCourses.findMany({
 		where: condition,

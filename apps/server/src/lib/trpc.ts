@@ -67,3 +67,26 @@ export const gradingProcedure = protectedProcedure.use(({ ctx, next }) => {
 	}
 	return next();
 });
+
+const tenantMiddleware = t.middleware(({ ctx, next }) => {
+	if (!ctx.institution) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Institution context is missing",
+		});
+	}
+	return next({
+		ctx: {
+			...ctx,
+			institution: ctx.institution,
+		},
+	});
+});
+
+export const tenantProcedure = publicProcedure.use(tenantMiddleware);
+export const tenantProtectedProcedure =
+	protectedProcedure.use(tenantMiddleware);
+export const tenantAdminProcedure = adminProcedure.use(tenantMiddleware);
+export const tenantSuperAdminProcedure =
+	superAdminProcedure.use(tenantMiddleware);
+export const tenantGradingProcedure = gradingProcedure.use(tenantMiddleware);

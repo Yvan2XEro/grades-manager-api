@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./workflows.service";
 import {
 	attendanceAlertSchema,
@@ -7,31 +11,37 @@ import {
 } from "./workflows.zod";
 
 export const workflowsRouter = router({
-	validateGrades: adminProcedure
+	validateGrades: tenantAdminProcedure
 		.input(gradeValidationSchema)
-		.mutation(({ input }) =>
-			service.validateGrades(input.examId, input.approverId),
+		.mutation(({ ctx, input }) =>
+			service.validateGrades(
+				input.examId,
+				input.approverId,
+				ctx.institution.id,
+			),
 		),
-	enrollmentWindow: adminProcedure
+	enrollmentWindow: tenantAdminProcedure
 		.input(enrollmentWindowSchema)
-		.mutation(({ input }) =>
+		.mutation(({ ctx, input }) =>
 			service.toggleEnrollmentWindow(
 				input.classId,
 				input.academicYearId,
 				input.action,
+				ctx.institution.id,
 			),
 		),
-	enrollmentWindows: protectedProcedure.query(() =>
-		service.listEnrollmentWindows(),
+	enrollmentWindows: tenantProtectedProcedure.query(({ ctx }) =>
+		service.listEnrollmentWindows(ctx.institution.id),
 	),
-	attendanceAlert: protectedProcedure
+	attendanceAlert: tenantProtectedProcedure
 		.input(attendanceAlertSchema)
-		.mutation(({ input }) =>
+		.mutation(({ ctx, input }) =>
 			service.triggerAttendanceAlert(
 				input.classCourseId,
 				input.severity,
 				input.message,
 				input.recipientId,
+				ctx.institution.id,
 			),
 		),
 });

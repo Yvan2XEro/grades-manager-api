@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
@@ -210,6 +210,7 @@ type ProgramRecord = {
 	id: string;
 	code: string;
 	facultyCode: string;
+	institutionId: string;
 };
 
 type ClassRecord = {
@@ -217,15 +218,18 @@ type ClassRecord = {
 	code: string;
 	academicYearCode: string;
 	programCode: string;
+	institutionId: string;
 };
 
 type CourseRecord = {
 	id: string;
 	code: string;
 	programCode: string;
+	institutionId: string;
 };
 
 type SeedState = {
+	defaultInstitutionId?: string;
 	faculties: Map<string, { id: string; code: string }>;
 	studyCycles: Map<string, { id: string; facultyCode: string; code: string }>;
 	cycleLevels: Map<
@@ -235,11 +239,20 @@ type SeedState = {
 	semesters: Map<string, string>;
 	academicYears: Map<string, string>;
 	programs: Map<string, ProgramRecord>;
-	programOptions: Map<string, { id: string; programCode: string }>;
-	teachingUnits: Map<string, { id: string; programCode: string }>;
+	programOptions: Map<
+		string,
+		{ id: string; programCode: string; institutionId: string }
+	>;
+	teachingUnits: Map<
+		string,
+		{ id: string; programCode: string; institutionId: string }
+	>;
 	courses: Map<string, Map<string, CourseRecord>>;
 	classes: Map<string, Map<string, ClassRecord>>;
-	classCourses: Map<string, { id: string; classId: string; courseId: string }>;
+	classCourses: Map<
+		string,
+		{ id: string; classId: string; courseId: string; institutionId: string }
+	>;
 	pendingClassCourses: ClassCourseSeed[];
 	authUsers: Map<string, string>;
 	domainUsers: Map<string, { id: string; businessRole: BusinessRole }>;
@@ -274,21 +287,27 @@ export async function runSeed(options: RunSeedOptions = {}) {
 	const foundation = await loadSeedFile<FoundationSeed>(foundationPath, logger);
 	if (foundation) {
 		logger.log(
-			`[seed] Applying foundation layer${foundation.meta?.version ? ` (${foundation.meta.version})` : ""}`,
+			`[seed] Applying foundation layer${
+				foundation.meta?.version ? ` (${foundation.meta.version})` : ""
+			}`,
 		);
 		await seedFoundation(db, state, foundation, logger);
 	}
 	const academics = await loadSeedFile<AcademicsSeed>(academicsPath, logger);
 	if (academics) {
 		logger.log(
-			`[seed] Applying academics layer${academics.meta?.version ? ` (${academics.meta.version})` : ""}`,
+			`[seed] Applying academics layer${
+				academics.meta?.version ? ` (${academics.meta.version})` : ""
+			}`,
 		);
 		await seedAcademics(db, state, academics, logger);
 	}
 	const users = await loadSeedFile<UsersSeed>(usersPath, logger);
 	if (users) {
 		logger.log(
-			`[seed] Applying users layer${users.meta?.version ? ` (${users.meta.version})` : ""}`,
+			`[seed] Applying users layer${
+				users.meta?.version ? ` (${users.meta.version})` : ""
+			}`,
 		);
 		await seedUsers(db, state, users, logger);
 	}
@@ -301,6 +320,7 @@ export async function runSeed(options: RunSeedOptions = {}) {
 
 function createSeedState(): SeedState {
 	return {
+		defaultInstitutionId: undefined,
 		faculties: new Map(),
 		studyCycles: new Map(),
 		cycleLevels: new Map(),
@@ -358,12 +378,40 @@ function resolveSeedDir(dirOverride?: string) {
 	return path.resolve(process.cwd(), defaultSeedRelativeDir);
 }
 
+async function ensureSeedInstitutionId(db: typeof appDb, state: SeedState) {
+	if (state.defaultInstitutionId) {
+		return state.defaultInstitutionId;
+	}
+	const existing = await db
+		.select({ id: schema.institutions.id })
+		.from(schema.institutions)
+		.orderBy(asc(schema.institutions.createdAt))
+		.limit(1);
+	const found = existing.at(0);
+	if (found) {
+		state.defaultInstitutionId = found.id;
+		return found.id;
+	}
+	const [created] = await db
+		.insert(schema.institutions)
+		.values({
+			code: "default",
+			shortName: "DEFAULT",
+			nameFr: "Institution par défaut",
+			nameEn: "Default Institution",
+		})
+		.returning();
+	state.defaultInstitutionId = created.id;
+	return created.id;
+}
+
 async function seedFoundation(
 	db: typeof appDb,
 	state: SeedState,
 	data: FoundationSeed,
 	logger: SeedLogger,
 ) {
+	const institutionId = await ensureSeedInstitutionId(db, state);
 	const now = new Date();
 	for (const entry of data.examTypes ?? []) {
 		await db
@@ -371,9 +419,10 @@ async function seedFoundation(
 			.values({
 				name: entry.name,
 				description: entry.description ?? null,
+				institutionId,
 			})
 			.onConflictDoUpdate({
-				target: schema.examTypes.name,
+				target: [schema.examTypes.institutionId, schema.examTypes.name],
 				set: { description: entry.description ?? null },
 			});
 	}
@@ -389,9 +438,10 @@ async function seedFoundation(
 				code,
 				name: entry.name,
 				description: entry.description ?? null,
+				institutionId,
 			})
 			.onConflictDoUpdate({
-				target: schema.faculties.code,
+				target: [schema.faculties.institutionId, schema.faculties.code],
 				set: {
 					name: entry.name,
 					description: entry.description ?? null,
@@ -520,6 +570,7 @@ async function seedFoundation(
 						startDate: new Date(entry.startDate),
 						endDate: new Date(entry.endDate),
 						isActive: entry.isActive ?? existing.isActive,
+						institutionId,
 					})
 					.where(eq(schema.academicYears.id, existing.id))
 					.returning()
@@ -533,6 +584,7 @@ async function seedFoundation(
 						startDate: new Date(entry.startDate),
 						endDate: new Date(entry.endDate),
 						isActive: entry.isActive ?? false,
+						institutionId,
 					})
 					.returning()
 			)[0];
@@ -548,10 +600,18 @@ async function seedFoundation(
 			await db
 				.update(schema.registrationNumberFormats)
 				.set({ isActive: false })
-				.where(eq(schema.registrationNumberFormats.isActive, true));
+				.where(
+					and(
+						eq(schema.registrationNumberFormats.isActive, true),
+						eq(schema.registrationNumberFormats.institutionId, institutionId),
+					),
+				);
 		}
 		const existing = await db.query.registrationNumberFormats.findFirst({
-			where: eq(schema.registrationNumberFormats.name, entry.name),
+			where: and(
+				eq(schema.registrationNumberFormats.name, entry.name),
+				eq(schema.registrationNumberFormats.institutionId, institutionId),
+			),
 		});
 		if (existing) {
 			await db
@@ -561,6 +621,7 @@ async function seedFoundation(
 					definition: entry.definition,
 					isActive: entry.isActive ?? existing.isActive,
 					updatedAt: new Date(),
+					institutionId,
 				})
 				.where(eq(schema.registrationNumberFormats.id, existing.id));
 		} else {
@@ -569,6 +630,7 @@ async function seedFoundation(
 				description: entry.description ?? null,
 				definition: entry.definition,
 				isActive: entry.isActive ?? false,
+				institutionId,
 			});
 		}
 	}
@@ -578,7 +640,9 @@ async function seedFoundation(
 		);
 	}
 
-	for (const entry of data.institutions ?? []) {
+	const institutions = data.institutions ?? [];
+	for (let idx = 0; idx < institutions.length; idx++) {
+		const entry = institutions[idx];
 		const code = normalizeCode(entry.code);
 		const defaultAcademicYearId = entry.defaultAcademicYearCode
 			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
@@ -593,59 +657,42 @@ async function seedFoundation(
 			});
 			registrationFormatId = format?.id;
 		}
-		await db
-			.insert(schema.institutions)
-			.values({
-				code,
-				shortName: entry.shortName ?? null,
-				nameFr: entry.nameFr,
-				nameEn: entry.nameEn,
-				legalNameFr: entry.legalNameFr ?? null,
-				legalNameEn: entry.legalNameEn ?? null,
-				sloganFr: entry.sloganFr ?? null,
-				sloganEn: entry.sloganEn ?? null,
-				descriptionFr: entry.descriptionFr ?? null,
-				descriptionEn: entry.descriptionEn ?? null,
-				addressFr: entry.addressFr ?? null,
-				addressEn: entry.addressEn ?? null,
-				contactEmail: entry.contactEmail ?? null,
-				contactPhone: entry.contactPhone ?? null,
-				fax: entry.fax ?? null,
-				postalBox: entry.postalBox ?? null,
-				website: entry.website ?? null,
-				logoUrl: entry.logoUrl ?? null,
-				coverImageUrl: entry.coverImageUrl ?? null,
-				defaultAcademicYearId: defaultAcademicYearId ?? null,
-				registrationFormatId: registrationFormatId ?? null,
-				timezone: entry.timezone ?? "UTC",
-			})
-			.onConflictDoUpdate({
+		const payload = {
+			code,
+			shortName: entry.shortName ?? null,
+			nameFr: entry.nameFr,
+			nameEn: entry.nameEn,
+			legalNameFr: entry.legalNameFr ?? null,
+			legalNameEn: entry.legalNameEn ?? null,
+			sloganFr: entry.sloganFr ?? null,
+			sloganEn: entry.sloganEn ?? null,
+			descriptionFr: entry.descriptionFr ?? null,
+			descriptionEn: entry.descriptionEn ?? null,
+			addressFr: entry.addressFr ?? null,
+			addressEn: entry.addressEn ?? null,
+			contactEmail: entry.contactEmail ?? null,
+			contactPhone: entry.contactPhone ?? null,
+			fax: entry.fax ?? null,
+			postalBox: entry.postalBox ?? null,
+			website: entry.website ?? null,
+			logoUrl: entry.logoUrl ?? null,
+			coverImageUrl: entry.coverImageUrl ?? null,
+			defaultAcademicYearId: defaultAcademicYearId ?? null,
+			registrationFormatId: registrationFormatId ?? null,
+			timezone: entry.timezone ?? "UTC",
+			updatedAt: new Date(),
+		};
+		if (idx === 0 && state.defaultInstitutionId) {
+			await db
+				.update(schema.institutions)
+				.set(payload)
+				.where(eq(schema.institutions.id, state.defaultInstitutionId));
+		} else {
+			await db.insert(schema.institutions).values(payload).onConflictDoUpdate({
 				target: schema.institutions.code,
-				set: {
-					shortName: entry.shortName ?? null,
-					nameFr: entry.nameFr,
-					nameEn: entry.nameEn,
-					legalNameFr: entry.legalNameFr ?? null,
-					legalNameEn: entry.legalNameEn ?? null,
-					sloganFr: entry.sloganFr ?? null,
-					sloganEn: entry.sloganEn ?? null,
-					descriptionFr: entry.descriptionFr ?? null,
-					descriptionEn: entry.descriptionEn ?? null,
-					addressFr: entry.addressFr ?? null,
-					addressEn: entry.addressEn ?? null,
-					contactEmail: entry.contactEmail ?? null,
-					contactPhone: entry.contactPhone ?? null,
-					fax: entry.fax ?? null,
-					postalBox: entry.postalBox ?? null,
-					website: entry.website ?? null,
-					logoUrl: entry.logoUrl ?? null,
-					coverImageUrl: entry.coverImageUrl ?? null,
-					defaultAcademicYearId: defaultAcademicYearId ?? null,
-					registrationFormatId: registrationFormatId ?? null,
-					timezone: entry.timezone ?? "UTC",
-					updatedAt: new Date(),
-				},
+				set: payload,
 			});
+		}
 	}
 	if (data.institutions?.length) {
 		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
@@ -659,6 +706,7 @@ async function seedAcademics(
 	data: AcademicsSeed,
 	logger: SeedLogger,
 ) {
+	const institutionId = await ensureSeedInstitutionId(db, state);
 	const now = new Date();
 	for (const entry of data.programs ?? []) {
 		const facultyCode = normalizeCode(entry.facultyCode);
@@ -678,6 +726,7 @@ async function seedAcademics(
 				slug,
 				description: entry.description ?? null,
 				faculty: faculty.id,
+				institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.programs.code, schema.programs.faculty],
@@ -692,6 +741,7 @@ async function seedAcademics(
 			id: program.id,
 			code,
 			facultyCode,
+			institutionId,
 		});
 	}
 	if (data.programs?.length) {
@@ -714,6 +764,7 @@ async function seedAcademics(
 				code,
 				name: entry.name,
 				description: entry.description ?? null,
+				institutionId: program.institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.programOptions.programId, schema.programOptions.code],
@@ -726,6 +777,7 @@ async function seedAcademics(
 		state.programOptions.set(`${programCode}::${code}`, {
 			id: option.id,
 			programCode,
+			institutionId,
 		});
 	}
 	if (data.programOptions?.length) {
@@ -749,6 +801,7 @@ async function seedAcademics(
 				name: entry.name,
 				description: entry.description ?? null,
 				credits: entry.credits ?? 0,
+				institutionId: program.institutionId,
 				semester: entry.semester ?? "annual",
 			})
 			.onConflictDoUpdate({
@@ -764,6 +817,7 @@ async function seedAcademics(
 		state.teachingUnits.set(`${programCode}::${code}`, {
 			id: unit.id,
 			programCode,
+			institutionId,
 		});
 	}
 	if (data.teachingUnits?.length) {
@@ -795,6 +849,7 @@ async function seedAcademics(
 				name: entry.name,
 				hours: entry.hours,
 				defaultTeacher: null,
+				institutionId: program.institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.courses.program, schema.courses.code],
@@ -813,6 +868,7 @@ async function seedAcademics(
 			id: course.id,
 			code,
 			programCode,
+			institutionId,
 		});
 	}
 	if (data.courses?.length) {
@@ -870,6 +926,7 @@ async function seedAcademics(
 				cycleLevelId: cycleLevel.id,
 				programOptionId: option.id,
 				semesterId,
+				institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.classes.code, schema.classes.academicYear],
@@ -878,6 +935,7 @@ async function seedAcademics(
 					programOptionId: option.id,
 					cycleLevelId: cycleLevel.id,
 					semesterId,
+					institutionId: program.institutionId,
 				},
 			})
 			.returning();
@@ -891,6 +949,7 @@ async function seedAcademics(
 			code,
 			academicYearCode: normalizeCode(entry.academicYearCode),
 			programCode,
+			institutionId,
 		});
 	}
 	if (data.classes?.length) {
@@ -1002,12 +1061,14 @@ async function seedUsers(
 				domainUserId: domainUser.id,
 				class: klass.id,
 				registrationNumber: entry.registrationNumber,
+				institutionId: klass.institutionId,
 			})
 			.onConflictDoUpdate({
 				target: schema.students.registrationNumber,
 				set: {
 					domainUserId: domainUser.id,
 					class: klass.id,
+					institutionId: klass.institutionId,
 				},
 			})
 			.returning();
@@ -1055,6 +1116,7 @@ async function seedUsers(
 				.set({
 					status: entry.status ?? existing.status,
 					enrolledAt: existing.enrolledAt,
+					institutionId: klass.institutionId,
 				})
 				.where(eq(schema.enrollments.id, existing.id));
 		} else {
@@ -1064,6 +1126,7 @@ async function seedUsers(
 				academicYearId,
 				status: entry.status ?? "active",
 				enrolledAt: now,
+				institutionId: klass.institutionId,
 			});
 		}
 	}
@@ -1271,6 +1334,7 @@ async function seedClassCourses(
 				teacher: teacher.id,
 				semesterId,
 				weeklyHours: entry.weeklyHours ?? 0,
+				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
 				target: schema.classCourses.code,
@@ -1280,6 +1344,7 @@ async function seedClassCourses(
 					teacher: teacher.id,
 					semesterId,
 					weeklyHours: entry.weeklyHours ?? 0,
+					institutionId: classRecord.institutionId,
 				},
 			})
 			.returning();
@@ -1287,6 +1352,7 @@ async function seedClassCourses(
 			id: classCourse.id,
 			classId: classRecord.id,
 			courseId: courseRecord.id,
+			institutionId: classRecord.institutionId,
 		});
 	}
 	if (toSeed.length) {

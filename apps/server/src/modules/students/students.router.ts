@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "../../lib/trpc";
 import * as service from "./students.service";
 import {
 	baseSchema,
@@ -34,36 +38,52 @@ const hasProfileData = (payload: Partial<ServiceProfileInput>) =>
 	Object.values(payload).some((value) => value !== undefined);
 
 export const studentsRouter = router({
-	create: adminProcedure.input(baseSchema).mutation(({ input }) =>
-		service.createStudent({
-			classId: input.classId,
-			registrationNumber: input.registrationNumber,
-			registrationFormatId: input.registrationFormatId,
-			profile: mapProfile(input),
-		}),
+	create: tenantAdminProcedure.input(baseSchema).mutation(({ ctx, input }) =>
+		service.createStudent(
+			{
+				classId: input.classId,
+				registrationNumber: input.registrationNumber,
+				registrationFormatId: input.registrationFormatId,
+				profile: mapProfile(input),
+			},
+			ctx.institution.id,
+		),
 	),
-	update: adminProcedure.input(updateSchema).mutation(({ input }) => {
-		const profilePayload = mapProfile(input) as Partial<ServiceProfileInput>;
-		return service.updateStudent(input.id, {
-			classId: input.classId,
-			registrationNumber: input.registrationNumber,
-			profile: hasProfileData(profilePayload) ? profilePayload : undefined,
-		});
-	}),
-	bulkCreate: adminProcedure.input(bulkCreateSchema).mutation(({ input }) =>
-		service.bulkCreateStudents({
-			classId: input.classId,
-			registrationFormatId: input.registrationFormatId,
-			students: input.students.map((student) => ({
-				registrationNumber: student.registrationNumber,
-				profile: mapProfile(student) as ServiceProfileInput,
-			})),
+	update: tenantAdminProcedure
+		.input(updateSchema)
+		.mutation(({ ctx, input }) => {
+			const profilePayload = mapProfile(input) as Partial<ServiceProfileInput>;
+			return service.updateStudent(
+				input.id,
+				{
+					classId: input.classId,
+					registrationNumber: input.registrationNumber,
+					profile: hasProfileData(profilePayload) ? profilePayload : undefined,
+				},
+				ctx.institution.id,
+			);
 		}),
-	),
-	list: protectedProcedure
+	bulkCreate: tenantAdminProcedure
+		.input(bulkCreateSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkCreateStudents(
+				{
+					classId: input.classId,
+					registrationFormatId: input.registrationFormatId,
+					students: input.students.map((student) => ({
+						registrationNumber: student.registrationNumber,
+						profile: mapProfile(student) as ServiceProfileInput,
+					})),
+				},
+				ctx.institution.id,
+			),
+		),
+	list: tenantProtectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listStudents(input)),
-	getById: protectedProcedure
+		.query(({ ctx, input }) => service.listStudents(input, ctx.institution.id)),
+	getById: tenantProtectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getStudentById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getStudentById(input.id, ctx.institution.id),
+		),
 });

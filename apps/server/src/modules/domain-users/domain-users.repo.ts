@@ -102,6 +102,7 @@ export async function list(opts: ListOpts) {
 			nationality: domainUsers.nationality,
 			status: domainUsers.status,
 			authUserId: domainUsers.authUserId,
+			memberId: domainUsers.memberId,
 			authUser: {
 				id: user.id,
 				email: user.email,

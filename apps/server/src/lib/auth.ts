@@ -31,7 +31,7 @@ export const auth = betterAuth({
 				domainProfiles: domainProfiles,
 			};
 		}),
-		// organization(),
+		organization(),
 	],
 	trustedOrigins: process.env.CORS_ORIGINS?.split(",") || [],
 	emailAndPassword: {

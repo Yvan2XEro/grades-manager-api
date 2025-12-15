@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { cn } from "@/lib/utils";
+
 import {
 	createContext,
 	forwardRef,
@@ -15,6 +15,7 @@ import {
 	type FileRejection,
 	useDropzone as rootUseDropzone,
 } from "react-dropzone";
+import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "./button";
 
 type DropzoneResult<TUploadRes, TUploadError> =
@@ -133,21 +134,24 @@ const getRootError = (
 ) => {
 	const errors = errorCodes.map((error) => {
 		switch (error) {
-			case "file-invalid-type":
+			case "file-invalid-type": {
 				const acceptedTypes = Object.values(limits.accept ?? {})
 					.flat()
 					.join(", ");
 				return `only ${acceptedTypes} are allowed`;
-			case "file-too-large":
+			}
+			case "file-too-large": {
 				const maxMb = limits.maxSize
 					? (limits.maxSize / (1024 * 1024)).toFixed(2)
 					: "infinite?";
 				return `max size is ${maxMb}MB`;
-			case "file-too-small":
+			}
+			case "file-too-small": {
 				const roundedMinSize = limits.minSize
 					? (limits.minSize / (1024 * 1024)).toFixed(2)
 					: "negative?";
 				return `min size is ${roundedMinSize}MB`;
+			}
 			case "too-many-files":
 				return `max ${limits.maxFiles} files`;
 		}
@@ -246,7 +250,10 @@ const useDropzone = <TUploadRes, TUploadError = string>(
 			const result = await pOnDropFile(file);
 
 			if (result.status === "error") {
-				if (autoRetry === true && tries < (maxRetryCount ?? Infinity)) {
+				if (
+					autoRetry === true &&
+					tries < (maxRetryCount ?? Number.POSITIVE_INFINITY)
+				) {
 					dispatch({ type: "update-status", id, status: "pending" });
 					return _uploadFile(file, id, tries + 1);
 				}
@@ -297,7 +304,7 @@ const useDropzone = <TUploadRes, TUploadError = string>(
 			const fileStatus = fileStatuses.find((file) => file.id === id);
 			return (
 				fileStatus?.status === "error" &&
-				fileStatus.tries < (maxRetryCount ?? Infinity)
+				fileStatus.tries < (maxRetryCount ?? Number.POSITIVE_INFINITY)
 			);
 		},
 		[fileStatuses, maxRetryCount],
@@ -331,7 +338,7 @@ const useDropzone = <TUploadRes, TUploadError = string>(
 			const fileCount = fileStatuses.length;
 			const maxNewFiles =
 				validation?.maxFiles === undefined
-					? Infinity
+					? Number.POSITIVE_INFINITY
 					: validation?.maxFiles - fileCount;
 
 			if (maxNewFiles < newFiles.length) {
@@ -487,7 +494,7 @@ const DropzoneDescription = forwardRef<
 			ref={ref}
 			id={context.rootDescriptionId}
 			{...rest}
-			className={cn("pb-1 text-sm text-muted-foreground", className)}
+			className={cn("pb-1 text-muted-foreground text-sm", className)}
 		/>
 	);
 });
@@ -618,7 +625,7 @@ const DropzoneFileMessage = forwardRef<
 			id={context.messageId}
 			{...rest}
 			className={cn(
-				"h-5 text-[0.8rem] font-medium text-destructive",
+				"h-5 font-medium text-[0.8rem] text-destructive",
 				rest.className,
 			)}
 		>
@@ -645,7 +652,7 @@ const DropzoneMessage = forwardRef<HTMLParagraphElement, DropzoneMessageProps>(
 				id={context.rootMessageId}
 				{...rest}
 				className={cn(
-					"h-5 text-[0.8rem] font-medium text-destructive",
+					"h-5 font-medium text-[0.8rem] text-destructive",
 					rest.className,
 				)}
 			>

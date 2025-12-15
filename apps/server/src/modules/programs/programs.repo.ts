@@ -4,6 +4,7 @@ import * as schema from "../../db/schema/app-schema";
 
 const programSelection = {
 	id: schema.programs.id,
+	institutionId: schema.programs.institutionId,
 	code: schema.programs.code,
 	name: schema.programs.name,
 	description: schema.programs.description,
@@ -20,20 +21,36 @@ export async function create(data: schema.NewProgram) {
 	return item;
 }
 
-export async function update(id: string, data: Partial<schema.NewProgram>) {
+export async function update(
+	id: string,
+	institutionId: string,
+	data: Partial<schema.NewProgram>,
+) {
 	const [item] = await db
 		.update(schema.programs)
 		.set(data)
-		.where(eq(schema.programs.id, id))
+		.where(
+			and(
+				eq(schema.programs.id, id),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return item;
 }
 
-export async function remove(id: string) {
-	await db.delete(schema.programs).where(eq(schema.programs.id, id));
+export async function remove(id: string, institutionId: string) {
+	await db
+		.delete(schema.programs)
+		.where(
+			and(
+				eq(schema.programs.id, id),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		);
 }
 
-export async function findById(id: string) {
+export async function findById(id: string, institutionId: string) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
@@ -41,12 +58,21 @@ export async function findById(id: string) {
 			schema.faculties,
 			eq(schema.faculties.id, schema.programs.faculty),
 		)
-		.where(eq(schema.programs.id, id))
+		.where(
+			and(
+				eq(schema.programs.id, id),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	return program ?? null;
 }
 
-export async function findByCode(code: string, facultyId: string) {
+export async function findByCode(
+	code: string,
+	facultyId: string,
+	institutionId: string,
+) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
@@ -58,20 +84,28 @@ export async function findByCode(code: string, facultyId: string) {
 			and(
 				eq(schema.programs.code, code),
 				eq(schema.programs.faculty, facultyId),
+				eq(schema.programs.institutionId, institutionId),
 			),
 		)
 		.limit(1);
 	return program ?? null;
 }
 
-export async function list(opts: {
-	facultyId?: string;
-	q?: string;
-	cursor?: string;
-	limit?: number;
-}) {
+export async function list(
+	institutionId: string,
+	opts: {
+		facultyId?: string;
+		q?: string;
+		cursor?: string;
+		limit?: number;
+	},
+) {
 	const limit = opts.limit ?? 50;
-	let condition: unknown;
+	let condition:
+		| ReturnType<typeof eq>
+		| ReturnType<typeof and>
+		| ReturnType<typeof gt>
+		| undefined = eq(schema.programs.institutionId, institutionId);
 	if (opts.facultyId) {
 		condition = eq(schema.programs.faculty, opts.facultyId);
 	}
@@ -102,6 +136,7 @@ export async function search(opts: {
 	query: string;
 	facultyId?: string;
 	limit?: number;
+	institutionId: string;
 }) {
 	const limit = opts.limit ?? 20;
 	const searchCondition = or(
@@ -109,8 +144,15 @@ export async function search(opts: {
 		ilike(schema.programs.name, `%${opts.query}%`),
 	);
 	const condition = opts.facultyId
-		? and(eq(schema.programs.faculty, opts.facultyId), searchCondition)
-		: searchCondition;
+		? and(
+				eq(schema.programs.faculty, opts.facultyId),
+				eq(schema.programs.institutionId, opts.institutionId),
+				searchCondition,
+			)
+		: and(
+				eq(schema.programs.institutionId, opts.institutionId),
+				searchCondition,
+			);
 
 	const items = await db
 		.select(programSelection)

@@ -17,23 +17,37 @@ import {
 export const router = createRouter({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createFaculty(input)),
+		.mutation(({ ctx, input }) =>
+			service.createFaculty(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateFaculty(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateFaculty(input.id, ctx.institution.id, input),
+		),
 	delete: superAdminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteFaculty(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteFaculty(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listFaculties(input)),
+		.query(({ ctx, input }) =>
+			service.listFaculties(input, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getFacultyById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getFacultyById(input.id, ctx.institution.id),
+		),
 	getByCode: protectedProcedure
 		.input(codeSchema)
-		.query(({ input }) => service.getFacultyByCode(input.code)),
+		.query(({ ctx, input }) =>
+			service.getFacultyByCode(input.code, ctx.institution.id),
+		),
 	search: protectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchFaculties(input)),
+		.query(({ ctx, input }) =>
+			service.searchFaculties(input, ctx.institution.id),
+		),
 });

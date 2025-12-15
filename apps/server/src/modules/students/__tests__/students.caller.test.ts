@@ -1,8 +1,16 @@
 import { describe, expect, it } from "bun:test";
+import { randomUUID } from "node:crypto";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
-import { asAdmin, createClass, makeTestContext } from "@/lib/test-utils";
+import {
+	asAdmin,
+	createAcademicYear,
+	createClass,
+	createFaculty,
+	createProgram,
+	makeTestContext,
+} from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
@@ -128,5 +136,91 @@ describe("students router", () => {
 		).rejects.toMatchObject({
 			code: "BAD_REQUEST",
 		});
+	});
+
+	it("rejects creating students scoped to another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Autre Institution",
+				nameEn: "Other Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			faculty: faculty.id,
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		await expect(
+			admin.students.create({
+				classId: klass.id,
+				firstName: "Scoping",
+				lastName: "Mismatch",
+				email: "scoped@example.com",
+			}),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+
+	it("prevents fetching students from another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Autre Institution",
+				nameEn: "Other Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			faculty: faculty.id,
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		const [profile] = await db
+			.insert(schema.domainUsers)
+			.values({
+				firstName: "Foreign",
+				lastName: "Student",
+				primaryEmail: "foreign.student@example.com",
+				businessRole: "student",
+				status: "active",
+			})
+			.returning();
+		const [foreignStudent] = await db
+			.insert(schema.students)
+			.values({
+				class: klass.id,
+				domainUserId: profile.id,
+				registrationNumber: "F-001",
+				institutionId: foreignInstitution.id,
+			})
+			.returning();
+		await expect(
+			admin.students.getById({ id: foreignStudent.id }),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
 	});
 });

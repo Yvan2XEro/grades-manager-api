@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -19,6 +19,26 @@ function assertEditable(exam: schema.Exam) {
 	if (exam.isLocked || exam.status === "approved") {
 		throw new TRPCError({ code: "FORBIDDEN" });
 	}
+}
+
+async function requireClassCourse(
+	classCourseId: string,
+	institutionId: string,
+) {
+	const classCourse = await db.query.classCourses.findFirst({
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+	});
+	if (!classCourse) throw notFound("Class course not found");
+	return classCourse;
+}
+
+async function requireExam(id: string, institutionId: string) {
+	const exam = await repo.findById(id);
+	if (!exam || exam.institutionId !== institutionId) throw notFound();
+	return exam;
 }
 
 async function assertPercentageLimit(
@@ -55,9 +75,11 @@ async function resolveDomainUserId(userId: string | null | undefined) {
 export async function createExam(
 	data: CreateExamInput,
 	schedulerId: string | null,
+	institutionId: string,
 ) {
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
+	const classCourse = await requireClassCourse(data.classCourse, institutionId);
 	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
 		const [{ total }] = await tx
@@ -76,6 +98,7 @@ export async function createExam(
 			.insert(schema.exams)
 			.values({
 				...data,
+				institutionId,
 				status: schedulerId ? "scheduled" : "draft",
 				scheduledBy: resolvedScheduler,
 				scheduledAt: schedulerId ? new Date() : null,
@@ -85,12 +108,18 @@ export async function createExam(
 	return created;
 }
 
-export async function updateExam(id: string, data: Partial<schema.NewExam>) {
-	const existing = await repo.findById(id);
-	if (!existing) throw notFound();
+export async function updateExam(
+	id: string,
+	data: Partial<schema.NewExam>,
+	institutionId: string,
+) {
+	const existing = await requireExam(id, institutionId);
 	assertEditable(existing);
+	const payload = { ...data };
 	if (data.classCourse && data.classCourse !== existing.classCourse) {
+		await requireClassCourse(data.classCourse, institutionId);
 		await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
+		payload.institutionId = institutionId;
 	}
 	if (data.percentage !== undefined) {
 		await assertPercentageLimit(existing.classCourse, Number(data.percentage), {
@@ -98,12 +127,15 @@ export async function updateExam(id: string, data: Partial<schema.NewExam>) {
 			percentage: Number(existing.percentage),
 		});
 	}
-	return repo.update(id, data);
+	return repo.update(id, payload, institutionId);
 }
 
-export async function submitExam(examId: string, submitterId: string | null) {
-	const existing = await repo.findById(examId);
-	if (!existing) throw notFound();
+export async function submitExam(
+	examId: string,
+	submitterId: string | null,
+	institutionId: string,
+) {
+	const existing = await requireExam(examId, institutionId);
 	assertEditable(existing);
 	const resolved = await resolveDomainUserId(submitterId);
 	if (!["draft", "scheduled"].includes(existing.status)) {
@@ -112,20 +144,24 @@ export async function submitExam(examId: string, submitterId: string | null) {
 			message: "Exam cannot be submitted in its current status",
 		});
 	}
-	return repo.update(examId, {
-		status: "submitted",
-		scheduledBy: resolved ?? existing.scheduledBy,
-		scheduledAt: new Date(),
-	});
+	return repo.update(
+		examId,
+		{
+			status: "submitted",
+			scheduledBy: resolved ?? existing.scheduledBy,
+			scheduledAt: new Date(),
+		},
+		institutionId,
+	);
 }
 
 export async function validateExam(
 	examId: string,
 	approverId: string | null,
 	status: "approved" | "rejected",
+	institutionId: string,
 ) {
-	const existing = await repo.findById(examId);
-	if (!existing) throw notFound();
+	const existing = await requireExam(examId, institutionId);
 	const resolved = await resolveDomainUserId(approverId);
 	if (status === "approved" && existing.status !== "submitted") {
 		throw new TRPCError({
@@ -133,42 +169,53 @@ export async function validateExam(
 			message: "Exam must be submitted before approval",
 		});
 	}
-	return repo.update(examId, {
-		status,
-		validatedBy: resolved,
-		validatedAt: new Date(),
-	});
+	return repo.update(
+		examId,
+		{
+			status,
+			validatedBy: resolved,
+			validatedAt: new Date(),
+		},
+		institutionId,
+	);
 }
 
-export async function deleteExam(id: string) {
-	const existing = await repo.findById(id);
-	if (!existing) throw notFound();
+export async function deleteExam(id: string, institutionId: string) {
+	const existing = await requireExam(id, institutionId);
 	assertEditable(existing);
-	await repo.remove(id);
+	await repo.remove(id, institutionId);
 }
 
-export async function listExams(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listExams(
+	opts: Parameters<typeof repo.list>[0],
+	institutionId: string,
+) {
+	return repo.list({ ...opts, institutionId });
 }
 
-export async function getExamById(id: string) {
-	const item = await repo.findById(id);
-	if (!item) throw notFound();
-	return item;
+export async function getExamById(id: string, institutionId: string) {
+	return requireExam(id, institutionId);
 }
 
-export async function setLock(examId: string, lock: boolean) {
-	const existing = await repo.findById(examId);
-	if (!existing) throw notFound();
+export async function setLock(
+	examId: string,
+	lock: boolean,
+	institutionId: string,
+) {
+	const existing = await requireExam(examId, institutionId);
 	if (lock && existing.status !== "approved") {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Only approved exams can be locked",
 		});
 	}
-	return repo.setLock(examId, lock);
+	return repo.setLock(examId, lock, institutionId);
 }
 
-export function assignScheduleRun(examIds: string[], runId: string) {
-	return repo.assignScheduleRun(examIds, runId);
+export function assignScheduleRun(
+	examIds: string[],
+	runId: string,
+	institutionId: string,
+) {
+	return repo.assignScheduleRun(examIds, runId, institutionId);
 }

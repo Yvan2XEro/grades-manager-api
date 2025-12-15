@@ -16,25 +16,35 @@ import {
 export const router = createRouter({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createProgram(input)),
+		.mutation(({ ctx, input }) =>
+			service.createProgram(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateProgram(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateProgram(input.id, ctx.institution.id, input),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteProgram(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteProgram(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listPrograms(input)),
+		.query(({ ctx, input }) => service.listPrograms(input, ctx.institution.id)),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getProgramById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getProgramById(input.id, ctx.institution.id),
+		),
 	getByCode: protectedProcedure
 		.input(codeSchema)
-		.query(({ input }) =>
-			service.getProgramByCode(input.code, input.facultyId),
+		.query(({ ctx, input }) =>
+			service.getProgramByCode(input.code, input.facultyId, ctx.institution.id),
 		),
 	search: protectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchPrograms(input)),
+		.query(({ ctx, input }) =>
+			service.searchPrograms(input, ctx.institution.id),
+		),
 });
