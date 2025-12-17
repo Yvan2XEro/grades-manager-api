@@ -7,7 +7,9 @@ import {
 	courses,
 	domainUsers,
 	exams,
+	faculties,
 	grades,
+	institutions,
 	programs,
 	semesters,
 	students,
@@ -19,6 +21,25 @@ import {
  */
 export class ExportsRepo {
 	private db = db;
+
+	/**
+	 * Get the default institution (or first institution) with its configuration
+	 */
+	async getInstitution() {
+		const institution = await this.db.query.institutions.findFirst({
+			with: {
+				faculty: true,
+			},
+		});
+
+		if (!institution) {
+			throw new Error(
+				"No institution found. Please create an institution first.",
+			);
+		}
+
+		return institution;
+	}
 
 	/**
 	 * Get all data needed for a PV export

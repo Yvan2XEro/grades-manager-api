@@ -298,27 +298,23 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                <h1>{{university.name_fr}} / {{university.name_en}}</h1>
-                <h2>{{faculty.name_fr}}</h2>
-                <h2>{{faculty.name_en}}</h2>
+                <h1>{{name_fr}} / {{name_en}}</h1>
+                {{#if faculty_name_fr}}
+                <h2>{{faculty_name_fr}}</h2>
+                {{/if}}
 
                 <div class="logos">
+                    {{#if logo_url}}
+                    <div class="logo-box">
+                        <img src="{{logo_url}}" alt="Logo" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                    {{else}}
                     <div class="logo-box">
                         <div>LOGO</div>
-                        <div>UNIVERSITÉ</div>
+                        <div>INSTITUTION</div>
                     </div>
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>FACULTÉ</div>
-                    </div>
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>IPES</div>
-                    </div>
+                    {{/if}}
                 </div>
-
-                <h3>{{institute.name_fr}}</h3>
-                <h3>{{institute.name_en}}</h3>
             </div>
 
             <div class="title">

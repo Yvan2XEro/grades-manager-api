@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(bun check:*)",
-      "Bash(bun add:*)"
+      "Bash(bun add:*)",
+      "Bash(git add:*)",
+      "Bash(powershell -Command \"(Get-Content rules-list.tsx -Raw) -replace ''<<<<<<< HEAD\\r?\\n\\s+\\{rulesData\\.items\\.map\\(\\(rule\\) => \\(\\r?\\n=======\\r?\\n\\s+\\{rulesData\\.items\\?\\.map\\(\\(rule\\) => \\(\\r?\\n>>>>>>> origin/main'', ''\t\t\t\t{rulesData.items?.map((rule) => ('' | Set-Content rules-list.tsx -NoNewline\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nMerge branch ''main'' into cedric-review\n\nResolved conflicts:\n- apps/server/.env.example: kept file from main\n- apps/server/src/db/migrations/meta/_journal.json: merged migration entries\n- apps/web/src/pages/admin/promotion-rules/rules-list.tsx: used optional chaining from main\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(bun run:*)",
+      "Bash(bun check-types:*)",
+      "Bash(bun:*)"
     ]
   }
 }

@@ -1,26 +1,20 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type {
+	Institution,
+	InstitutionMetadata,
+} from "../../db/schema/app-schema";
 
 /**
  * Configuration interface for exports
  */
 export interface ExportConfig {
 	institution: {
-		university: {
-			name_fr: string;
-			name_en: string;
-			logo_url: string;
-		};
-		faculty: {
-			name_fr: string;
-			name_en: string;
-			logo_url: string;
-		};
-		institute: {
-			name_fr: string;
-			name_en: string;
-			logo_url: string;
-		};
+		name_fr: string;
+		name_en: string;
+		logo_url: string;
+		faculty_name_fr?: string;
+		faculty_name_en?: string;
 	};
 	grading: {
 		appreciations: Array<{
@@ -54,12 +48,92 @@ export interface ExportConfig {
 }
 
 /**
- * Load export configuration from JSON file
+ * Load export configuration from JSON file (fallback for compatibility)
  */
 export function loadExportConfig(): ExportConfig {
 	const configPath = join(import.meta.dir, "../../config/export-config.json");
 	const configData = readFileSync(configPath, "utf-8");
-	return JSON.parse(configData) as ExportConfig;
+	const jsonConfig = JSON.parse(configData);
+
+	// Convert old format to new format
+	return {
+		institution: {
+			name_fr: jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
+			name_en: jsonConfig.institution?.university?.name_en || "UNIVERSITY",
+			logo_url: jsonConfig.institution?.university?.logo_url || "",
+			faculty_name_fr: jsonConfig.institution?.faculty?.name_fr,
+			faculty_name_en: jsonConfig.institution?.faculty?.name_en,
+		},
+		grading: jsonConfig.grading,
+		signatures: jsonConfig.signatures,
+		exam_settings: jsonConfig.exam_settings,
+		watermark: jsonConfig.watermark,
+	};
+}
+
+/**
+ * Convert institution data from database to ExportConfig format
+ */
+export function institutionToExportConfig(
+	institution: Institution & { faculty?: { name: string } | null },
+): ExportConfig {
+	const metadata = institution.metadata as InstitutionMetadata;
+	const exportConfig = metadata?.export_config;
+
+	// Default values matching the old export-config.json
+	return {
+		institution: {
+			name_fr: institution.nameFr,
+			name_en: institution.nameEn,
+			logo_url: institution.logoUrl || "/logos/university.png",
+			faculty_name_fr: institution.faculty?.name,
+			faculty_name_en: institution.faculty?.name,
+		},
+		grading: exportConfig?.grading || {
+			appreciations: [
+				{ label: "Excellent", min: 16, max: 20 },
+				{ label: "Très Bien", min: 14, max: 15.99 },
+				{ label: "Bien", min: 12, max: 13.99 },
+				{ label: "Assez Bien", min: 10, max: 11.99 },
+				{ label: "Passable", min: 8, max: 9.99 },
+				{ label: "Insuffisant", min: 0, max: 7.99 },
+			],
+			passing_grade: 10,
+			scale: 20,
+		},
+		signatures: exportConfig?.signatures || {
+			pv: [
+				{ position: "Le Rapporteur", name: "" },
+				{ position: "Les Membres du Jury", name: "" },
+				{ position: "Le Président du Jury", name: "" },
+			],
+			evaluation: [
+				{ position: "L'Enseignant", name: "" },
+				{ position: "Le Chef de Département", name: "" },
+				{ position: "Le Directeur des Études", name: "" },
+			],
+			ue: [
+				{ position: "Le Rapporteur", name: "" },
+				{ position: "Les Membres du Jury", name: "" },
+				{ position: "Le Président du Jury", name: "" },
+			],
+		},
+		exam_settings: exportConfig?.exam_settings || {
+			default_duration_hours: 2,
+			default_coefficient: 1,
+			exam_types: {
+				CC: { label: "Contrôle Continu", coefficient: 0.4 },
+				TPE: { label: "Travaux Pratiques Encadrés", coefficient: 0.3 },
+				TP: { label: "Travaux Pratiques", coefficient: 0.3 },
+				EXAMEN: { label: "Examen", coefficient: 0.6 },
+				RATTRAPAGE: { label: "Rattrapage", coefficient: 1.0 },
+			},
+		},
+		watermark: exportConfig?.watermark || {
+			text: "ORIGINAL",
+			enabled: true,
+		},
+	};
 }
 
 /**

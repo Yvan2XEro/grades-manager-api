@@ -547,6 +547,42 @@ export const registrationNumberCounters = pgTable(
 );
 
 /** Institution master data with bilingual metadata. */
+/** Institution metadata for export configuration */
+export interface InstitutionMetadata {
+	export_config?: {
+		grading?: {
+			appreciations?: Array<{
+				label: string;
+				min: number;
+				max: number;
+			}>;
+			passing_grade?: number;
+			scale?: number;
+		};
+		signatures?: {
+			pv?: Array<{ position: string; name: string }>;
+			evaluation?: Array<{ position: string; name: string }>;
+			ue?: Array<{ position: string; name: string }>;
+		};
+		exam_settings?: {
+			default_duration_hours?: number;
+			default_coefficient?: number;
+			exam_types?: Record<
+				string,
+				{
+					label: string;
+					coefficient: number;
+				}
+			>;
+		};
+		watermark?: {
+			text?: string;
+			enabled?: boolean;
+		};
+	};
+	[key: string]: unknown;
+}
+
 export const institutions = pgTable(
 	"institutions",
 	{
@@ -570,6 +606,9 @@ export const institutions = pgTable(
 		website: text("website"),
 		logoUrl: text("logo_url"),
 		coverImageUrl: text("cover_image_url"),
+		facultyId: text("faculty_id").references(() => faculties.id, {
+			onDelete: "set null",
+		}),
 		defaultAcademicYearId: text("default_academic_year_id").references(
 			() => academicYears.id,
 			{
@@ -583,7 +622,7 @@ export const institutions = pgTable(
 			},
 		),
 		timezone: text("timezone").default("UTC"),
-		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1171,6 +1210,10 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 }));
 
 export const institutionsRelations = relations(institutions, ({ one }) => ({
+	faculty: one(faculties, {
+		fields: [institutions.facultyId],
+		references: [faculties.id],
+	}),
 	defaultAcademicYear: one(academicYears, {
 		fields: [institutions.defaultAcademicYearId],
 		references: [academicYears.id],

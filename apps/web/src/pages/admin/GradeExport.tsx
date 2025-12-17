@@ -463,7 +463,8 @@ export default function GradeExport() {
 
 			if (classData || semesterData || yearData) {
 				if (classData) headerRows.push([`Classe: ${classData.name}`]);
-				if (classData?.program) headerRows.push([`Programme: ${classData.program.name}`]);
+				if (classData?.program)
+					headerRows.push([`Programme: ${classData.program.name}`]);
 				if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
 				if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
 				headerRows.push([""]);
@@ -511,21 +512,21 @@ export default function GradeExport() {
 			XLSX.utils.sheet_add_json(ws, exportData, { origin: -1 });
 
 			// Apply styling
-			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 
 			// Style institution name (row 0) - Bold, larger font, centered
-			if (ws['A1']) {
-				ws['A1'].s = {
+			if (ws["A1"]) {
+				ws["A1"].s = {
 					font: { bold: true, sz: 16 },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
 			// Style faculty name (row 1) - Bold, centered
-			if (ws['A2']) {
-				ws['A2'].s = {
+			if (ws["A2"]) {
+				ws["A2"].s = {
 					font: { bold: true, sz: 14 },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
@@ -535,7 +536,7 @@ export default function GradeExport() {
 				if (ws[cellRef] && ws[cellRef].v === "RELEVÉ DE NOTES") {
 					ws[cellRef].s = {
 						font: { bold: true, sz: 18 },
-						alignment: { horizontal: 'center', vertical: 'center' }
+						alignment: { horizontal: "center", vertical: "center" },
 					};
 				}
 			}
@@ -543,13 +544,17 @@ export default function GradeExport() {
 			// Style info rows (Classe, Programme, etc.) - Bold labels
 			for (let i = 0; i < headerRows.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
-				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
+				if (ws[cellRef] && typeof ws[cellRef].v === "string") {
 					const value = ws[cellRef].v;
-					if (value.startsWith('Classe:') || value.startsWith('Programme:') ||
-					    value.startsWith('Semestre:') || value.startsWith('Année Académique:')) {
+					if (
+						value.startsWith("Classe:") ||
+						value.startsWith("Programme:") ||
+						value.startsWith("Semestre:") ||
+						value.startsWith("Année Académique:")
+					) {
 						ws[cellRef].s = {
 							font: { bold: true },
-							alignment: { horizontal: 'left' }
+							alignment: { horizontal: "left" },
 						};
 					}
 				}
@@ -561,32 +566,32 @@ export default function GradeExport() {
 				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
 				if (ws[cellRef]) {
 					ws[cellRef].s = {
-						font: { bold: true, color: { rgb: 'FFFFFF' } },
-						fill: { fgColor: { rgb: '4472C4' } },
-						alignment: { horizontal: 'center', vertical: 'center' },
+						font: { bold: true, color: { rgb: "FFFFFF" } },
+						fill: { fgColor: { rgb: "4472C4" } },
+						alignment: { horizontal: "center", vertical: "center" },
 						border: {
-							top: { style: 'thin', color: { rgb: '000000' } },
-							bottom: { style: 'thin', color: { rgb: '000000' } },
-							left: { style: 'thin', color: { rgb: '000000' } },
-							right: { style: 'thin', color: { rgb: '000000' } }
-						}
+							top: { style: "thin", color: { rgb: "000000" } },
+							bottom: { style: "thin", color: { rgb: "000000" } },
+							left: { style: "thin", color: { rgb: "000000" } },
+							right: { style: "thin", color: { rgb: "000000" } },
+						},
 					};
 				}
 			}
 
 			// Set column widths
-			ws['!cols'] = [
+			ws["!cols"] = [
 				{ wch: 20 }, // Nom
 				{ wch: 20 }, // Prénom
 				{ wch: 15 }, // Matricule
 				{ wch: 12 }, // Date naissance
 				{ wch: 20 }, // Lieu naissance
 				{ wch: 10 }, // Sexe
-				...Array(range.e.c - 5).fill({ wch: 12 }) // Cours
+				...Array(range.e.c - 5).fill({ wch: 12 }), // Cours
 			];
 
 			// Merge cells for institution name and title
-			ws['!merges'] = [
+			ws["!merges"] = [
 				{ s: { r: 0, c: 0 }, e: { r: 0, c: Math.min(5, range.e.c) } }, // Institution
 				{ s: { r: 1, c: 0 }, e: { r: 1, c: Math.min(5, range.e.c) } }, // Faculty
 			];
@@ -595,7 +600,10 @@ export default function GradeExport() {
 			for (let i = 0; i < headerRows.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
 				if (ws[cellRef] && ws[cellRef].v === "RELEVÉ DE NOTES") {
-					ws['!merges'].push({ s: { r: i, c: 0 }, e: { r: i, c: Math.min(5, range.e.c) } });
+					ws["!merges"].push({
+						s: { r: i, c: 0 },
+						e: { r: i, c: Math.min(5, range.e.c) },
+					});
 					break;
 				}
 			}
@@ -755,9 +763,12 @@ export default function GradeExport() {
 
 			if (classData || semesterData || yearData) {
 				if (classData) institutionHeader.push([`Classe: ${classData.name}`]);
-				if (classData?.program) institutionHeader.push([`Programme: ${classData.program.name}`]);
-				if (semesterData) institutionHeader.push([`Semestre: ${semesterData.name}`]);
-				if (yearData) institutionHeader.push([`Année Académique: ${yearData.name}`]);
+				if (classData?.program)
+					institutionHeader.push([`Programme: ${classData.program.name}`]);
+				if (semesterData)
+					institutionHeader.push([`Semestre: ${semesterData.name}`]);
+				if (yearData)
+					institutionHeader.push([`Année Académique: ${yearData.name}`]);
 				institutionHeader.push([""]);
 			}
 
@@ -796,22 +807,22 @@ export default function GradeExport() {
 				courseColumnStart = courseColumnEnd + 1;
 			});
 			// Add institution header merges and styling
-			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 
 			// Style institution name (row 0) - Bold, larger font, centered
-			if (ws['A1']) {
-				ws['A1'].s = {
+			if (ws["A1"]) {
+				ws["A1"].s = {
 					font: { bold: true, sz: 16 },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
 			}
 
 			// Style faculty name (row 1) - Bold, centered
-			if (ws['A2']) {
-				ws['A2'].s = {
+			if (ws["A2"]) {
+				ws["A2"].s = {
 					font: { bold: true, sz: 14 },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 				merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: range.e.c } });
 			}
@@ -822,7 +833,7 @@ export default function GradeExport() {
 				if (ws[cellRef] && ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS") {
 					ws[cellRef].s = {
 						font: { bold: true, sz: 18 },
-						alignment: { horizontal: 'center', vertical: 'center' }
+						alignment: { horizontal: "center", vertical: "center" },
 					};
 					merges.push({ s: { r: i, c: 0 }, e: { r: i, c: range.e.c } });
 				}
@@ -831,13 +842,17 @@ export default function GradeExport() {
 			// Style info rows
 			for (let i = 0; i < institutionHeader.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
-				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
+				if (ws[cellRef] && typeof ws[cellRef].v === "string") {
 					const value = ws[cellRef].v;
-					if (value.startsWith('Classe:') || value.startsWith('Programme:') ||
-					    value.startsWith('Semestre:') || value.startsWith('Année Académique:')) {
+					if (
+						value.startsWith("Classe:") ||
+						value.startsWith("Programme:") ||
+						value.startsWith("Semestre:") ||
+						value.startsWith("Année Académique:")
+					) {
 						ws[cellRef].s = {
 							font: { bold: true },
-							alignment: { horizontal: 'left' }
+							alignment: { horizontal: "left" },
 						};
 					}
 				}
@@ -849,8 +864,8 @@ export default function GradeExport() {
 			if (ws[statsTitleRef]) {
 				ws[statsTitleRef].s = {
 					font: { bold: true, sz: 14 },
-					fill: { fgColor: { rgb: 'E7E6E6' } },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					fill: { fgColor: { rgb: "E7E6E6" } },
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
@@ -868,8 +883,8 @@ export default function GradeExport() {
 			if (ws[tableTitleRef]) {
 				ws[tableTitleRef].s = {
 					font: { bold: true, sz: 14 },
-					fill: { fgColor: { rgb: 'E7E6E6' } },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					fill: { fgColor: { rgb: "E7E6E6" } },
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
@@ -879,15 +894,19 @@ export default function GradeExport() {
 				const cellRef1 = XLSX.utils.encode_cell({ r: headerRow1Index, c });
 				if (ws[cellRef1]) {
 					ws[cellRef1].s = {
-						font: { bold: true, color: { rgb: 'FFFFFF' } },
-						fill: { fgColor: { rgb: '4472C4' } },
-						alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+						font: { bold: true, color: { rgb: "FFFFFF" } },
+						fill: { fgColor: { rgb: "4472C4" } },
+						alignment: {
+							horizontal: "center",
+							vertical: "center",
+							wrapText: true,
+						},
 						border: {
-							top: { style: 'thin', color: { rgb: '000000' } },
-							bottom: { style: 'thin', color: { rgb: '000000' } },
-							left: { style: 'thin', color: { rgb: '000000' } },
-							right: { style: 'thin', color: { rgb: '000000' } }
-						}
+							top: { style: "thin", color: { rgb: "000000" } },
+							bottom: { style: "thin", color: { rgb: "000000" } },
+							left: { style: "thin", color: { rgb: "000000" } },
+							right: { style: "thin", color: { rgb: "000000" } },
+						},
 					};
 				}
 
@@ -895,15 +914,15 @@ export default function GradeExport() {
 				const cellRef2 = XLSX.utils.encode_cell({ r: headerRow2Index, c });
 				if (ws[cellRef2]) {
 					ws[cellRef2].s = {
-						font: { bold: true, color: { rgb: 'FFFFFF' } },
-						fill: { fgColor: { rgb: '5B9BD5' } },
-						alignment: { horizontal: 'center', vertical: 'center' },
+						font: { bold: true, color: { rgb: "FFFFFF" } },
+						fill: { fgColor: { rgb: "5B9BD5" } },
+						alignment: { horizontal: "center", vertical: "center" },
 						border: {
-							top: { style: 'thin', color: { rgb: '000000' } },
-							bottom: { style: 'thin', color: { rgb: '000000' } },
-							left: { style: 'thin', color: { rgb: '000000' } },
-							right: { style: 'thin', color: { rgb: '000000' } }
-						}
+							top: { style: "thin", color: { rgb: "000000" } },
+							bottom: { style: "thin", color: { rgb: "000000" } },
+							left: { style: "thin", color: { rgb: "000000" } },
+							right: { style: "thin", color: { rgb: "000000" } },
+						},
 					};
 				}
 			}
@@ -916,18 +935,18 @@ export default function GradeExport() {
 					const cellRef = XLSX.utils.encode_cell({ r, c });
 					if (ws[cellRef]) {
 						ws[cellRef].s = {
-							alignment: { horizontal: 'center', vertical: 'center' },
+							alignment: { horizontal: "center", vertical: "center" },
 							border: {
-								top: { style: 'thin', color: { rgb: 'D0D0D0' } },
-								bottom: { style: 'thin', color: { rgb: 'D0D0D0' } },
-								left: { style: 'thin', color: { rgb: 'D0D0D0' } },
-								right: { style: 'thin', color: { rgb: 'D0D0D0' } }
-							}
+								top: { style: "thin", color: { rgb: "D0D0D0" } },
+								bottom: { style: "thin", color: { rgb: "D0D0D0" } },
+								left: { style: "thin", color: { rgb: "D0D0D0" } },
+								right: { style: "thin", color: { rgb: "D0D0D0" } },
+							},
 						};
 
 						// Alternate row colors
 						if ((r - dataStartRow) % 2 === 1) {
-							ws[cellRef].s.fill = { fgColor: { rgb: 'F2F2F2' } };
+							ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } };
 						}
 					}
 				}
@@ -935,12 +954,15 @@ export default function GradeExport() {
 
 			// Style legend title
 			const legendTitleRow = dataEndRow + 2;
-			const legendTitleRef = XLSX.utils.encode_cell({ r: legendTitleRow, c: 0 });
+			const legendTitleRef = XLSX.utils.encode_cell({
+				r: legendTitleRow,
+				c: 0,
+			});
 			if (ws[legendTitleRef]) {
 				ws[legendTitleRef].s = {
 					font: { bold: true, sz: 14 },
-					fill: { fgColor: { rgb: 'E7E6E6' } },
-					alignment: { horizontal: 'center', vertical: 'center' }
+					fill: { fgColor: { rgb: "E7E6E6" } },
+					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
@@ -951,25 +973,25 @@ export default function GradeExport() {
 				if (ws[cellRef]) {
 					ws[cellRef].s = {
 						font: { bold: true },
-						fill: { fgColor: { rgb: 'D9E2F3' } },
-						alignment: { horizontal: 'center', vertical: 'center' },
+						fill: { fgColor: { rgb: "D9E2F3" } },
+						alignment: { horizontal: "center", vertical: "center" },
 						border: {
-							top: { style: 'thin' },
-							bottom: { style: 'thin' },
-							left: { style: 'thin' },
-							right: { style: 'thin' }
-						}
+							top: { style: "thin" },
+							bottom: { style: "thin" },
+							left: { style: "thin" },
+							right: { style: "thin" },
+						},
 					};
 				}
 			}
 
 			// Set column widths
-			ws['!cols'] = [
-				{ wch: 8 },  // Rang
+			ws["!cols"] = [
+				{ wch: 8 }, // Rang
 				{ wch: 15 }, // Matricule
 				{ wch: 25 }, // Nom complet
 				...Array(orderedExams.length).fill({ wch: 10 }), // Notes
-				{ wch: 12 }  // Moyenne
+				{ wch: 12 }, // Moyenne
 			];
 
 			ws["!merges"] = merges;
@@ -1022,15 +1044,21 @@ export default function GradeExport() {
 
 				// Document title and info
 				headerRows.push([""]);
-				headerRows.push([`PUBLICATION DES NOTES - ${exam.courseName} (${exam.type})`]);
+				headerRows.push([
+					`PUBLICATION DES NOTES - ${exam.courseName} (${exam.type})`,
+				]);
 				headerRows.push([""]);
 
 				if (classData || semesterData || yearData) {
 					if (classData) headerRows.push([`Classe: ${classData.name}`]);
-					if (classData?.program) headerRows.push([`Programme: ${classData.program.name}`]);
+					if (classData?.program)
+						headerRows.push([`Programme: ${classData.program.name}`]);
 					if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
 					if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
-					if (exam.date) headerRows.push([`Date: ${format(new Date(exam.date), "dd/MM/yyyy")}`]);
+					if (exam.date)
+						headerRows.push([
+							`Date: ${format(new Date(exam.date), "dd/MM/yyyy")}`,
+						]);
 					headerRows.push([""]);
 				}
 
@@ -1057,36 +1085,75 @@ export default function GradeExport() {
 					t("admin.gradeExport.actions.examGroup.sheetName"),
 				);
 				// Apply styling
-			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-			const merges: XLSX.Range[] = [];
-			if (ws['A1']) { ws['A1'].s = { font: { bold: true, sz: 16 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); }
-			if (ws['A2']) { ws['A2'].s = { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }); }
-			for (let i = 0; i < headerRows.length; i++) {
-				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
-				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
-					const value = ws[cellRef].v;
-					if (value.startsWith('PUBLICATION')) { ws[cellRef].s = { font: { bold: true, sz: 18 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 3 } }); }
-					else if (value.includes(':')) { ws[cellRef].s = { font: { bold: true } }; }
+				const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+				const merges: XLSX.Range[] = [];
+				if (ws["A1"]) {
+					ws["A1"].s = {
+						font: { bold: true, sz: 16 },
+						alignment: { horizontal: "center" },
+					};
+					merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } });
 				}
-			}
-			const headerRowIndex = headerRows.length;
-			for (let c = 0; c <= 3; c++) {
-				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
-				if (ws[cellRef]) ws[cellRef].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '4472C4' } }, alignment: { horizontal: 'center' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
-			}
-			for (let r = headerRowIndex + 1; r <= range.e.r; r++) {
-				for (let c = 0; c <= 3; c++) {
-					const cellRef = XLSX.utils.encode_cell({ r, c });
-					if (ws[cellRef]) {
-						ws[cellRef].s = { alignment: { horizontal: 'center' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
-						if ((r - headerRowIndex - 1) % 2 === 1) ws[cellRef].s.fill = { fgColor: { rgb: 'F2F2F2' } };
+				if (ws["A2"]) {
+					ws["A2"].s = {
+						font: { bold: true, sz: 14 },
+						alignment: { horizontal: "center" },
+					};
+					merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 3 } });
+				}
+				for (let i = 0; i < headerRows.length; i++) {
+					const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+					if (ws[cellRef] && typeof ws[cellRef].v === "string") {
+						const value = ws[cellRef].v;
+						if (value.startsWith("PUBLICATION")) {
+							ws[cellRef].s = {
+								font: { bold: true, sz: 18 },
+								alignment: { horizontal: "center" },
+							};
+							merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 3 } });
+						} else if (value.includes(":")) {
+							ws[cellRef].s = { font: { bold: true } };
+						}
 					}
 				}
-			}
-			ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 12 }];
-			ws['!merges'] = merges;
+				const headerRowIndex = headerRows.length;
+				for (let c = 0; c <= 3; c++) {
+					const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+					if (ws[cellRef])
+						ws[cellRef].s = {
+							font: { bold: true, color: { rgb: "FFFFFF" } },
+							fill: { fgColor: { rgb: "4472C4" } },
+							alignment: { horizontal: "center" },
+							border: {
+								top: { style: "thin" },
+								bottom: { style: "thin" },
+								left: { style: "thin" },
+								right: { style: "thin" },
+							},
+						};
+				}
+				for (let r = headerRowIndex + 1; r <= range.e.r; r++) {
+					for (let c = 0; c <= 3; c++) {
+						const cellRef = XLSX.utils.encode_cell({ r, c });
+						if (ws[cellRef]) {
+							ws[cellRef].s = {
+								alignment: { horizontal: "center" },
+								border: {
+									top: { style: "thin" },
+									bottom: { style: "thin" },
+									left: { style: "thin" },
+									right: { style: "thin" },
+								},
+							};
+							if ((r - headerRowIndex - 1) % 2 === 1)
+								ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } };
+						}
+					}
+				}
+				ws["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 12 }];
+				ws["!merges"] = merges;
 
-			const courseSegment = slugify(exam.courseCode ?? exam.courseName);
+				const courseSegment = slugify(exam.courseCode ?? exam.courseName);
 				const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
 				const filename = buildFilename(
 					t("admin.gradeExport.actions.examGroup.filePrefix"),
@@ -1099,7 +1166,18 @@ export default function GradeExport() {
 				setExporting(null);
 			}
 		},
-		[buildFilename, fetchStudentsWithGrades, selectedClass, t, exportConfig, classes, semesters, selectedSemester, academicYears, selectedYear],
+		[
+			buildFilename,
+			fetchStudentsWithGrades,
+			selectedClass,
+			t,
+			exportConfig,
+			classes,
+			semesters,
+			selectedSemester,
+			academicYears,
+			selectedYear,
+		],
 	);
 
 	const handlePreviewPV = useCallback(async () => {
@@ -1788,7 +1866,8 @@ export default function GradeExport() {
 												) : (
 													<Download className="mr-2 h-4 w-4" />
 												)}
-												Télécharger toutes les évaluations ({selectedExamDetails.length})
+												Télécharger toutes les évaluations (
+												{selectedExamDetails.length})
 											</Button>
 										</div>
 										<div className="flex flex-wrap gap-2">

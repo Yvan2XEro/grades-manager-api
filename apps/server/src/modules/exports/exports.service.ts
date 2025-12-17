@@ -22,14 +22,38 @@ import {
  */
 export class ExportsService {
 	private repo: ExportsRepo;
-	private config: ReturnType<typeof loadExportConfig>;
+	private config: ReturnType<typeof loadExportConfig> | null = null;
 
 	constructor() {
 		this.repo = new ExportsRepo();
-		this.config = loadExportConfig();
 
 		// Register Handlebars helpers
 		this.registerHelpers();
+	}
+
+	/**
+	 * Get export config from institution or fallback to JSON file
+	 */
+	private async getConfig(): Promise<ReturnType<typeof loadExportConfig>> {
+		if (this.config) {
+			return this.config;
+		}
+
+		try {
+			// Try to load from institution
+			const institution = await this.repo.getInstitution();
+			const { institutionToExportConfig } = await import("./template-helper");
+			this.config = institutionToExportConfig(institution);
+			return this.config;
+		} catch (error) {
+			// Fallback to JSON file
+			console.warn(
+				"Failed to load institution config, falling back to JSON file:",
+				error,
+			);
+			this.config = loadExportConfig();
+			return this.config;
+		}
 	}
 
 	/**
@@ -53,6 +77,7 @@ export class ExportsService {
 	 * Generate PV (Procès-Verbal) export
 	 */
 	async generatePV(input: GeneratePVInput) {
+		const config = await this.getConfig();
 		const data = await this.repo.getPVData(
 			input.classId,
 			input.semesterId,
@@ -60,7 +85,7 @@ export class ExportsService {
 		);
 
 		// Process data for template
-		const templateData = this.processPVData(data);
+		const templateData = this.processPVData(data, config);
 
 		// Generate HTML
 		const html = this.renderTemplate("pv", templateData);
@@ -83,10 +108,15 @@ export class ExportsService {
 	 * Generate evaluation publication export
 	 */
 	async generateEvaluation(input: GenerateEvaluationInput) {
+		const config = await this.getConfig();
 		const data = await this.repo.getEvaluationData(input.examId);
 
 		// Process data for template
-		const templateData = this.processEvaluationData(data, input.observations);
+		const templateData = this.processEvaluationData(
+			data,
+			config,
+			input.observations,
+		);
 
 		// Generate HTML
 		const html = this.renderTemplate("evaluation", templateData);
@@ -116,6 +146,7 @@ export class ExportsService {
 	 * Generate UE (Teaching Unit) publication export
 	 */
 	async generateUE(input: GenerateUEInput) {
+		const config = await this.getConfig();
 		const data = await this.repo.getUEData(
 			input.teachingUnitId,
 			input.classId,
@@ -124,7 +155,7 @@ export class ExportsService {
 		);
 
 		// Process data for template
-		const templateData = this.processUEData(data);
+		const templateData = this.processUEData(data, config);
 
 		// Generate HTML
 		const html = this.renderTemplate("ue", templateData);
@@ -146,7 +177,10 @@ export class ExportsService {
 	/**
 	 * Process raw data for PV template
 	 */
-	private processPVData(data: any) {
+	private processPVData(
+		data: any,
+		config: ReturnType<typeof loadExportConfig>,
+	) {
 		// Group courses by teaching unit
 		const ueMap = new Map();
 
@@ -219,7 +253,7 @@ export class ExportsService {
 						: null;
 
 				const isPassed =
-					ueAverage !== null && ueAverage >= this.config.grading.passing_grade;
+					ueAverage !== null && ueAverage >= config.grading.passing_grade;
 				const creditsEarned = isPassed ? ue.credits : 0;
 
 				ueGrades.push({
@@ -229,10 +263,7 @@ export class ExportsService {
 					credits: creditsEarned,
 					successRate:
 						validAverages.length > 0
-							? calculateSuccessRate(
-									[ueAverage],
-									this.config.grading.passing_grade,
-								)
+							? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 							: 0,
 				});
 			}
@@ -251,7 +282,7 @@ export class ExportsService {
 
 			const overallPassed =
 				generalAverage !== null &&
-				generalAverage >= this.config.grading.passing_grade;
+				generalAverage >= config.grading.passing_grade;
 
 			return {
 				number: index + 1,
@@ -275,7 +306,7 @@ export class ExportsService {
 				: 0;
 
 		return {
-			...this.config.institution,
+			...config.institution,
 			program: {
 				name: data.program.name,
 				level: data.cycleLevel.name,
@@ -285,15 +316,19 @@ export class ExportsService {
 			ues: Array.from(ueMap.values()),
 			students,
 			globalSuccessRate,
-			signatures: this.config.signatures.pv,
-			watermark: this.config.watermark,
+			signatures: config.signatures.pv,
+			watermark: config.watermark,
 		};
 	}
 
 	/**
 	 * Process raw data for evaluation template
 	 */
-	private processEvaluationData(data: any, observations?: string) {
+	private processEvaluationData(
+		data: any,
+		config: ReturnType<typeof loadExportConfig>,
+		observations?: string,
+	) {
 		const grades = data.grades.map((grade: any, index: number) => {
 			const score = grade.score ? Number(grade.score) : null;
 
@@ -303,8 +338,8 @@ export class ExportsService {
 				firstName: grade.studentRef.profile.firstName,
 				registrationNumber: grade.studentRef.registrationNumber,
 				score,
-				appreciation: score !== null ? getAppreciation(score, this.config) : "",
-				observation: getObservation(score, this.config),
+				appreciation: score !== null ? getAppreciation(score, config) : "",
+				observation: getObservation(score, config),
 			};
 		});
 
@@ -312,14 +347,13 @@ export class ExportsService {
 		const stats = calculateStats(scores);
 		const successRate = calculateSuccessRate(
 			scores,
-			this.config.grading.passing_grade,
+			config.grading.passing_grade,
 		);
 
-		const examTypeConfig =
-			this.config.exam_settings.exam_types[data.type] || {};
+		const examTypeConfig = config.exam_settings.exam_types[data.type] || {};
 
 		return {
-			...this.config.institution,
+			...config.institution,
 			evaluationType: data.type,
 			evaluationLabel: examTypeConfig.label || data.type,
 			course: {
@@ -337,11 +371,10 @@ export class ExportsService {
 			examDate: data.date
 				? new Date(data.date).toLocaleDateString("fr-FR")
 				: "",
-			duration: this.config.exam_settings.default_duration_hours,
+			duration: config.exam_settings.default_duration_hours,
 			coefficient:
-				examTypeConfig.coefficient ||
-				this.config.exam_settings.default_coefficient,
-			scale: this.config.grading.scale,
+				examTypeConfig.coefficient || config.exam_settings.default_coefficient,
+			scale: config.grading.scale,
 			semester: data.classCourseRef.classRef.semester?.name || "",
 			academicYear: data.classCourseRef.classRef.academicYear.name,
 			students: grades,
@@ -351,15 +384,18 @@ export class ExportsService {
 			},
 			observations: observations || "",
 			publicationDate: new Date().toLocaleDateString("fr-FR"),
-			signatures: this.config.signatures.evaluation,
-			watermark: this.config.watermark,
+			signatures: config.signatures.evaluation,
+			watermark: config.watermark,
 		};
 	}
 
 	/**
 	 * Process raw data for UE template
 	 */
-	private processUEData(data: any) {
+	private processUEData(
+		data: any,
+		config: ReturnType<typeof loadExportConfig>,
+	) {
 		const { teachingUnit, classCourses, students } = data;
 
 		// Process students
@@ -408,10 +444,10 @@ export class ExportsService {
 					: null;
 
 			const isPassed =
-				ueAverage !== null && ueAverage >= this.config.grading.passing_grade;
+				ueAverage !== null && ueAverage >= config.grading.passing_grade;
 			const successRate =
 				validAverages.length > 0
-					? calculateSuccessRate([ueAverage], this.config.grading.passing_grade)
+					? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 					: 0;
 
 			return {
@@ -439,7 +475,7 @@ export class ExportsService {
 		const classData = classCourses[0]?.classRef;
 
 		return {
-			...this.config.institution,
+			...config.institution,
 			teachingUnit: {
 				code: teachingUnit.code,
 				name: teachingUnit.name,
@@ -457,8 +493,8 @@ export class ExportsService {
 			})),
 			students: studentGrades,
 			globalSuccessRate,
-			signatures: this.config.signatures.ue,
-			watermark: this.config.watermark,
+			signatures: config.signatures.ue,
+			watermark: config.watermark,
 		};
 	}
 
