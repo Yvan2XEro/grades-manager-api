@@ -1,5 +1,8 @@
 {
-	"permissions": {
-		"allow": ["Bash(bun check:*)"]
-	}
+  "permissions": {
+    "allow": [
+      "Bash(bun check:*)",
+      "Bash(bun add:*)"
+    ]
+  }
 }

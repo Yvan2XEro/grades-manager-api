@@ -157,11 +157,14 @@ export default function GradeExport() {
 				]),
 			);
 			return classRes.items.map(
-				(cls: { id: string; name: string; program: string }) => ({
-					id: cls.id,
-					name: cls.name,
-					program: { name: programMap.get(cls.program) ?? "" },
-				}),
+				(cls: { id: string; name: string; program: string }) => {
+					const program = programMap.get(cls.program);
+					return {
+						id: cls.id,
+						name: cls.name,
+						program: { id: cls.program, name: program?.name ?? "" },
+					};
+				},
 			) as Class[];
 		},
 		enabled: !!selectedYear,
@@ -187,14 +190,11 @@ export default function GradeExport() {
 			const classData = classes?.find((c) => c.id === selectedClass);
 			if (!classData) return [];
 
-			const { items: programData } = await trpcClient.programs.list.query({});
-			const program = programData.find(
-				(p: any) => p.id === classData.program.name,
-			);
-			if (!program) return [];
+			const programId = classData.program.id;
+			if (!programId) return [];
 
 			const { items: ues } = await trpcClient.teachingUnits.list.query({
-				programId: (program as any).id,
+				programId,
 			});
 			return ues as Array<{
 				id: string;
@@ -204,6 +204,11 @@ export default function GradeExport() {
 			}>;
 		},
 		enabled: !!selectedClass && !!classes,
+	});
+
+	const { data: exportConfig } = useQuery({
+		queryKey: ["exportConfig"],
+		queryFn: () => trpcClient.exports.getConfig.query(),
 	});
 
 	const { data: exams } = useQuery({
@@ -430,11 +435,39 @@ export default function GradeExport() {
 	);
 
 	const handleCombinedExport = useCallback(async () => {
-		if (!selectedClass || !hasExamSelection) return;
+		if (!selectedClass || !hasExamSelection || !exportConfig) return;
 		setExporting("combined");
 		try {
 			const students = await fetchStudentsWithGrades();
 			if (students.length === 0) return;
+
+			const classData = classes?.find((c) => c.id === selectedClass);
+			const semesterData = semesters?.find((s) => s.id === selectedSemester);
+			const yearData = academicYears?.find((y) => y.id === selectedYear);
+
+			// Build header rows
+			const headerRows: any[][] = [];
+
+			// Institution header
+			if (exportConfig.institution) {
+				headerRows.push([exportConfig.institution.name_fr || ""]);
+				if (exportConfig.institution.faculty_name_fr) {
+					headerRows.push([exportConfig.institution.faculty_name_fr]);
+				}
+			}
+
+			// Document title and info
+			headerRows.push([""]);
+			headerRows.push(["RELEVÉ DE NOTES"]);
+			headerRows.push([""]);
+
+			if (classData || semesterData || yearData) {
+				if (classData) headerRows.push([`Classe: ${classData.name}`]);
+				if (classData?.program) headerRows.push([`Programme: ${classData.program.name}`]);
+				if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
+				if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
+				headerRows.push([""]);
+			}
 
 			const exportData = students.map((student) => {
 				const courseGrades = new Map<string, number[]>();
@@ -473,7 +506,100 @@ export default function GradeExport() {
 				};
 			});
 
-			const ws = XLSX.utils.json_to_sheet(exportData);
+			// Create worksheet with header rows
+			const ws = XLSX.utils.aoa_to_sheet(headerRows);
+			XLSX.utils.sheet_add_json(ws, exportData, { origin: -1 });
+
+			// Apply styling
+			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+
+			// Style institution name (row 0) - Bold, larger font, centered
+			if (ws['A1']) {
+				ws['A1'].s = {
+					font: { bold: true, sz: 16 },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+			}
+
+			// Style faculty name (row 1) - Bold, centered
+			if (ws['A2']) {
+				ws['A2'].s = {
+					font: { bold: true, sz: 14 },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+			}
+
+			// Style document title (find "RELEVÉ DE NOTES")
+			for (let i = 0; i < headerRows.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && ws[cellRef].v === "RELEVÉ DE NOTES") {
+					ws[cellRef].s = {
+						font: { bold: true, sz: 18 },
+						alignment: { horizontal: 'center', vertical: 'center' }
+					};
+				}
+			}
+
+			// Style info rows (Classe, Programme, etc.) - Bold labels
+			for (let i = 0; i < headerRows.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
+					const value = ws[cellRef].v;
+					if (value.startsWith('Classe:') || value.startsWith('Programme:') ||
+					    value.startsWith('Semestre:') || value.startsWith('Année Académique:')) {
+						ws[cellRef].s = {
+							font: { bold: true },
+							alignment: { horizontal: 'left' }
+						};
+					}
+				}
+			}
+
+			// Style column headers (first data row after header) - Bold, background color
+			const headerRowIndex = headerRows.length;
+			for (let c = range.s.c; c <= range.e.c; c++) {
+				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+				if (ws[cellRef]) {
+					ws[cellRef].s = {
+						font: { bold: true, color: { rgb: 'FFFFFF' } },
+						fill: { fgColor: { rgb: '4472C4' } },
+						alignment: { horizontal: 'center', vertical: 'center' },
+						border: {
+							top: { style: 'thin', color: { rgb: '000000' } },
+							bottom: { style: 'thin', color: { rgb: '000000' } },
+							left: { style: 'thin', color: { rgb: '000000' } },
+							right: { style: 'thin', color: { rgb: '000000' } }
+						}
+					};
+				}
+			}
+
+			// Set column widths
+			ws['!cols'] = [
+				{ wch: 20 }, // Nom
+				{ wch: 20 }, // Prénom
+				{ wch: 15 }, // Matricule
+				{ wch: 12 }, // Date naissance
+				{ wch: 20 }, // Lieu naissance
+				{ wch: 10 }, // Sexe
+				...Array(range.e.c - 5).fill({ wch: 12 }) // Cours
+			];
+
+			// Merge cells for institution name and title
+			ws['!merges'] = [
+				{ s: { r: 0, c: 0 }, e: { r: 0, c: Math.min(5, range.e.c) } }, // Institution
+				{ s: { r: 1, c: 0 }, e: { r: 1, c: Math.min(5, range.e.c) } }, // Faculty
+			];
+
+			// Find and merge title row
+			for (let i = 0; i < headerRows.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && ws[cellRef].v === "RELEVÉ DE NOTES") {
+					ws['!merges'].push({ s: { r: i, c: 0 }, e: { r: i, c: Math.min(5, range.e.c) } });
+					break;
+				}
+			}
+
 			const wb = XLSX.utils.book_new();
 			XLSX.utils.book_append_sheet(wb, ws, t("admin.gradeExport.sheetName"));
 			const filename = buildFilename(t("admin.gradeExport.filePrefix"));
@@ -490,14 +616,24 @@ export default function GradeExport() {
 		selectedClass,
 		selectedExams,
 		t,
+		exportConfig,
+		classes,
+		semesters,
+		selectedSemester,
+		academicYears,
+		selectedYear,
 	]);
 
 	const handleVerbalReportExport = useCallback(async () => {
-		if (!selectedClass || !hasExamSelection) return;
+		if (!selectedClass || !hasExamSelection || !exportConfig) return;
 		setExporting("pv");
 		try {
 			const students = await fetchStudentsWithGrades();
 			if (students.length === 0) return;
+
+			const classData = classes?.find((c) => c.id === selectedClass);
+			const semesterData = semesters?.find((s) => s.id === selectedSemester);
+			const yearData = academicYears?.find((y) => y.id === selectedYear);
 
 			const courseGroups = new Map<
 				string,
@@ -605,7 +741,28 @@ export default function GradeExport() {
 				`${exam.percentage}%`,
 			]);
 
+			// Build institution header
+			const institutionHeader: (string | number)[][] = [];
+			if (exportConfig.institution) {
+				institutionHeader.push([exportConfig.institution.name_fr || ""]);
+				if (exportConfig.institution.faculty_name_fr) {
+					institutionHeader.push([exportConfig.institution.faculty_name_fr]);
+				}
+			}
+			institutionHeader.push([""]);
+			institutionHeader.push(["PROCÈS-VERBAL DES RÉSULTATS"]);
+			institutionHeader.push([""]);
+
+			if (classData || semesterData || yearData) {
+				if (classData) institutionHeader.push([`Classe: ${classData.name}`]);
+				if (classData?.program) institutionHeader.push([`Programme: ${classData.program.name}`]);
+				if (semesterData) institutionHeader.push([`Semestre: ${semesterData.name}`]);
+				if (yearData) institutionHeader.push([`Année Académique: ${yearData.name}`]);
+				institutionHeader.push([""]);
+			}
+
 			const aoa: (string | number)[][] = [
+				...institutionHeader,
 				...statsRows,
 				[""],
 				[t("admin.gradeExport.pv.table.title")],
@@ -619,7 +776,7 @@ export default function GradeExport() {
 			];
 
 			const ws = XLSX.utils.aoa_to_sheet(aoa);
-			const headerRow1Index = statsRows.length + 2;
+			const headerRow1Index = institutionHeader.length + statsRows.length + 1;
 			const headerRow2Index = headerRow1Index + 1;
 			const merges: XLSX.Range[] = [];
 			const verticalColumns = [0, 1, 2, 3 + orderedExams.length];
@@ -638,6 +795,183 @@ export default function GradeExport() {
 				});
 				courseColumnStart = courseColumnEnd + 1;
 			});
+			// Add institution header merges and styling
+			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+
+			// Style institution name (row 0) - Bold, larger font, centered
+			if (ws['A1']) {
+				ws['A1'].s = {
+					font: { bold: true, sz: 16 },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
+			}
+
+			// Style faculty name (row 1) - Bold, centered
+			if (ws['A2']) {
+				ws['A2'].s = {
+					font: { bold: true, sz: 14 },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+				merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: range.e.c } });
+			}
+
+			// Style document title
+			for (let i = 0; i < institutionHeader.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS") {
+					ws[cellRef].s = {
+						font: { bold: true, sz: 18 },
+						alignment: { horizontal: 'center', vertical: 'center' }
+					};
+					merges.push({ s: { r: i, c: 0 }, e: { r: i, c: range.e.c } });
+				}
+			}
+
+			// Style info rows
+			for (let i = 0; i < institutionHeader.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
+					const value = ws[cellRef].v;
+					if (value.startsWith('Classe:') || value.startsWith('Programme:') ||
+					    value.startsWith('Semestre:') || value.startsWith('Année Académique:')) {
+						ws[cellRef].s = {
+							font: { bold: true },
+							alignment: { horizontal: 'left' }
+						};
+					}
+				}
+			}
+
+			// Style stats section title
+			const statsStartRow = institutionHeader.length;
+			const statsTitleRef = XLSX.utils.encode_cell({ r: statsStartRow, c: 0 });
+			if (ws[statsTitleRef]) {
+				ws[statsTitleRef].s = {
+					font: { bold: true, sz: 14 },
+					fill: { fgColor: { rgb: 'E7E6E6' } },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+			}
+
+			// Style stats rows
+			for (let i = 1; i < statsRows.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: statsStartRow + i, c: 0 });
+				if (ws[cellRef]) {
+					ws[cellRef].s = { font: { bold: true } };
+				}
+			}
+
+			// Style table title
+			const tableTitleRow = institutionHeader.length + statsRows.length + 1;
+			const tableTitleRef = XLSX.utils.encode_cell({ r: tableTitleRow, c: 0 });
+			if (ws[tableTitleRef]) {
+				ws[tableTitleRef].s = {
+					font: { bold: true, sz: 14 },
+					fill: { fgColor: { rgb: 'E7E6E6' } },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+			}
+
+			// Style table headers - Bold, background color, borders
+			for (let c = 0; c <= range.e.c; c++) {
+				// First header row
+				const cellRef1 = XLSX.utils.encode_cell({ r: headerRow1Index, c });
+				if (ws[cellRef1]) {
+					ws[cellRef1].s = {
+						font: { bold: true, color: { rgb: 'FFFFFF' } },
+						fill: { fgColor: { rgb: '4472C4' } },
+						alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+						border: {
+							top: { style: 'thin', color: { rgb: '000000' } },
+							bottom: { style: 'thin', color: { rgb: '000000' } },
+							left: { style: 'thin', color: { rgb: '000000' } },
+							right: { style: 'thin', color: { rgb: '000000' } }
+						}
+					};
+				}
+
+				// Second header row
+				const cellRef2 = XLSX.utils.encode_cell({ r: headerRow2Index, c });
+				if (ws[cellRef2]) {
+					ws[cellRef2].s = {
+						font: { bold: true, color: { rgb: 'FFFFFF' } },
+						fill: { fgColor: { rgb: '5B9BD5' } },
+						alignment: { horizontal: 'center', vertical: 'center' },
+						border: {
+							top: { style: 'thin', color: { rgb: '000000' } },
+							bottom: { style: 'thin', color: { rgb: '000000' } },
+							left: { style: 'thin', color: { rgb: '000000' } },
+							right: { style: 'thin', color: { rgb: '000000' } }
+						}
+					};
+				}
+			}
+
+			// Style data rows - add borders and alternate row colors
+			const dataStartRow = headerRow2Index + 1;
+			const dataEndRow = dataStartRow + tableRows.length - 1;
+			for (let r = dataStartRow; r <= dataEndRow; r++) {
+				for (let c = 0; c <= range.e.c; c++) {
+					const cellRef = XLSX.utils.encode_cell({ r, c });
+					if (ws[cellRef]) {
+						ws[cellRef].s = {
+							alignment: { horizontal: 'center', vertical: 'center' },
+							border: {
+								top: { style: 'thin', color: { rgb: 'D0D0D0' } },
+								bottom: { style: 'thin', color: { rgb: 'D0D0D0' } },
+								left: { style: 'thin', color: { rgb: 'D0D0D0' } },
+								right: { style: 'thin', color: { rgb: 'D0D0D0' } }
+							}
+						};
+
+						// Alternate row colors
+						if ((r - dataStartRow) % 2 === 1) {
+							ws[cellRef].s.fill = { fgColor: { rgb: 'F2F2F2' } };
+						}
+					}
+				}
+			}
+
+			// Style legend title
+			const legendTitleRow = dataEndRow + 2;
+			const legendTitleRef = XLSX.utils.encode_cell({ r: legendTitleRow, c: 0 });
+			if (ws[legendTitleRef]) {
+				ws[legendTitleRef].s = {
+					font: { bold: true, sz: 14 },
+					fill: { fgColor: { rgb: 'E7E6E6' } },
+					alignment: { horizontal: 'center', vertical: 'center' }
+				};
+			}
+
+			// Style legend headers
+			const legendHeaderRow = legendTitleRow + 1;
+			for (let c = 0; c < 3; c++) {
+				const cellRef = XLSX.utils.encode_cell({ r: legendHeaderRow, c });
+				if (ws[cellRef]) {
+					ws[cellRef].s = {
+						font: { bold: true },
+						fill: { fgColor: { rgb: 'D9E2F3' } },
+						alignment: { horizontal: 'center', vertical: 'center' },
+						border: {
+							top: { style: 'thin' },
+							bottom: { style: 'thin' },
+							left: { style: 'thin' },
+							right: { style: 'thin' }
+						}
+					};
+				}
+			}
+
+			// Set column widths
+			ws['!cols'] = [
+				{ wch: 8 },  // Rang
+				{ wch: 15 }, // Matricule
+				{ wch: 25 }, // Nom complet
+				...Array(orderedExams.length).fill({ wch: 10 }), // Notes
+				{ wch: 12 }  // Moyenne
+			];
+
 			ws["!merges"] = merges;
 			const wb = XLSX.utils.book_new();
 			XLSX.utils.book_append_sheet(wb, ws, t("admin.gradeExport.pv.sheetName"));
@@ -655,15 +989,50 @@ export default function GradeExport() {
 		selectedClass,
 		selectedExamDetails,
 		t,
+		exportConfig,
+		classes,
+		semesters,
+		selectedSemester,
+		academicYears,
+		selectedYear,
 	]);
 
 	const handleExamExport = useCallback(
 		async (exam: ExamItem) => {
-			if (!selectedClass) return;
+			if (!selectedClass || !exportConfig) return;
 			setExporting(exam.id);
 			try {
 				const students = await fetchStudentsWithGrades();
 				if (students.length === 0) return;
+
+				const classData = classes?.find((c) => c.id === selectedClass);
+				const semesterData = semesters?.find((s) => s.id === selectedSemester);
+				const yearData = academicYears?.find((y) => y.id === selectedYear);
+
+				// Build header rows
+				const headerRows: any[][] = [];
+
+				// Institution header
+				if (exportConfig.institution) {
+					headerRows.push([exportConfig.institution.name_fr || ""]);
+					if (exportConfig.institution.faculty_name_fr) {
+						headerRows.push([exportConfig.institution.faculty_name_fr]);
+					}
+				}
+
+				// Document title and info
+				headerRows.push([""]);
+				headerRows.push([`PUBLICATION DES NOTES - ${exam.courseName} (${exam.type})`]);
+				headerRows.push([""]);
+
+				if (classData || semesterData || yearData) {
+					if (classData) headerRows.push([`Classe: ${classData.name}`]);
+					if (classData?.program) headerRows.push([`Programme: ${classData.program.name}`]);
+					if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
+					if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
+					if (exam.date) headerRows.push([`Date: ${format(new Date(exam.date), "dd/MM/yyyy")}`]);
+					headerRows.push([""]);
+				}
 
 				const exportData = students.map((student) => {
 					const grade = student.grades.find((g) => g.exam.id === exam.id);
@@ -677,14 +1046,47 @@ export default function GradeExport() {
 					};
 				});
 
-				const ws = XLSX.utils.json_to_sheet(exportData);
+				// Create worksheet with header rows
+				const ws = XLSX.utils.aoa_to_sheet(headerRows);
+				XLSX.utils.sheet_add_json(ws, exportData, { origin: -1 });
+
 				const wb = XLSX.utils.book_new();
 				XLSX.utils.book_append_sheet(
 					wb,
 					ws,
 					t("admin.gradeExport.actions.examGroup.sheetName"),
 				);
-				const courseSegment = slugify(exam.courseCode ?? exam.courseName);
+				// Apply styling
+			const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+			const merges: XLSX.Range[] = [];
+			if (ws['A1']) { ws['A1'].s = { font: { bold: true, sz: 16 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); }
+			if (ws['A2']) { ws['A2'].s = { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }); }
+			for (let i = 0; i < headerRows.length; i++) {
+				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
+				if (ws[cellRef] && typeof ws[cellRef].v === 'string') {
+					const value = ws[cellRef].v;
+					if (value.startsWith('PUBLICATION')) { ws[cellRef].s = { font: { bold: true, sz: 18 }, alignment: { horizontal: 'center' } }; merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 3 } }); }
+					else if (value.includes(':')) { ws[cellRef].s = { font: { bold: true } }; }
+				}
+			}
+			const headerRowIndex = headerRows.length;
+			for (let c = 0; c <= 3; c++) {
+				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+				if (ws[cellRef]) ws[cellRef].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '4472C4' } }, alignment: { horizontal: 'center' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+			}
+			for (let r = headerRowIndex + 1; r <= range.e.r; r++) {
+				for (let c = 0; c <= 3; c++) {
+					const cellRef = XLSX.utils.encode_cell({ r, c });
+					if (ws[cellRef]) {
+						ws[cellRef].s = { alignment: { horizontal: 'center' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+						if ((r - headerRowIndex - 1) % 2 === 1) ws[cellRef].s.fill = { fgColor: { rgb: 'F2F2F2' } };
+					}
+				}
+			}
+			ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 12 }];
+			ws['!merges'] = merges;
+
+			const courseSegment = slugify(exam.courseCode ?? exam.courseName);
 				const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
 				const filename = buildFilename(
 					t("admin.gradeExport.actions.examGroup.filePrefix"),
@@ -697,7 +1099,7 @@ export default function GradeExport() {
 				setExporting(null);
 			}
 		},
-		[buildFilename, fetchStudentsWithGrades, selectedClass, t],
+		[buildFilename, fetchStudentsWithGrades, selectedClass, t, exportConfig, classes, semesters, selectedSemester, academicYears, selectedYear],
 	);
 
 	const handlePreviewPV = useCallback(async () => {
@@ -866,6 +1268,88 @@ export default function GradeExport() {
 		},
 		[selectedClass, selectedSemester, selectedYear],
 	);
+
+	const handleBulkGenerateEvaluations = useCallback(async () => {
+		if (!selectedExamDetails || selectedExamDetails.length === 0) return;
+		setExporting("bulk-evaluations");
+		try {
+			for (const exam of selectedExamDetails) {
+				const result = await trpcClient.exports.generateEvaluation.mutate({
+					examId: exam.id,
+					format: "pdf",
+				});
+
+				const byteCharacters = atob(result.data);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "application/pdf" });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+
+				// Small delay between downloads
+				await new Promise((resolve) => setTimeout(resolve, 500));
+			}
+		} catch (error) {
+			console.error("Bulk evaluations generation error:", error);
+		} finally {
+			setExporting(null);
+		}
+	}, [selectedExamDetails]);
+
+	const handleBulkGenerateUEs = useCallback(async () => {
+		if (
+			!teachingUnits ||
+			teachingUnits.length === 0 ||
+			!selectedClass ||
+			!selectedSemester ||
+			!selectedYear
+		)
+			return;
+		setExporting("bulk-ues");
+		try {
+			for (const ue of teachingUnits) {
+				const result = await trpcClient.exports.generateUE.mutate({
+					teachingUnitId: ue.id,
+					classId: selectedClass,
+					semesterId: selectedSemester,
+					academicYearId: selectedYear,
+					format: "pdf",
+				});
+
+				const byteCharacters = atob(result.data);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "application/pdf" });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+
+				// Small delay between downloads
+				await new Promise((resolve) => setTimeout(resolve, 500));
+			}
+		} catch (error) {
+			console.error("Bulk UEs generation error:", error);
+		} finally {
+			setExporting(null);
+		}
+	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
 
 	return (
 		<div className="space-y-6 p-6">
@@ -1293,6 +1777,20 @@ export default function GradeExport() {
 											Exportez les publications PDF pour chaque évaluation
 											sélectionnée
 										</p>
+										<div className="mb-4">
+											<Button
+												type="button"
+												onClick={handleBulkGenerateEvaluations}
+												disabled={disableExamExports}
+											>
+												{exporting === "bulk-evaluations" ? (
+													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												) : (
+													<Download className="mr-2 h-4 w-4" />
+												)}
+												Télécharger toutes les évaluations ({selectedExamDetails.length})
+											</Button>
+										</div>
 										<div className="flex flex-wrap gap-2">
 											{selectedExamDetails.map((exam) => (
 												<div key={exam.id} className="flex gap-1">
@@ -1339,6 +1837,25 @@ export default function GradeExport() {
 										<p className="mb-4 text-muted-foreground text-sm">
 											Exportez les publications PDF pour chaque UE sélectionnée
 										</p>
+										<div className="mb-4">
+											<Button
+												type="button"
+												onClick={handleBulkGenerateUEs}
+												disabled={
+													!selectedClass ||
+													!selectedSemester ||
+													!selectedYear ||
+													isBusy
+												}
+											>
+												{exporting === "bulk-ues" ? (
+													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												) : (
+													<Download className="mr-2 h-4 w-4" />
+												)}
+												Télécharger toutes les UEs ({teachingUnits.length})
+											</Button>
+										</div>
 										<div className="flex flex-wrap gap-2">
 											{teachingUnits.map((ue) => (
 												<div key={ue.id} className="flex gap-1">

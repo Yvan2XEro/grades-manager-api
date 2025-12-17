@@ -195,7 +195,7 @@ export class ExportsService {
 					const ex = examGrades.find((eg: any) => eg.type === "EXAMEN");
 
 					let average = null;
-					if (cc?.score !== null && ex?.score !== null) {
+					if (cc && ex && cc.score !== null && ex.score !== null) {
 						average =
 							(cc.score * cc.percentage + ex.score * ex.percentage) / 100;
 					}
@@ -380,7 +380,7 @@ export class ExportsService {
 				const examScore = examGrade ? Number(examGrade.score) : null;
 
 				let average = null;
-				if (ccScore !== null && examScore !== null) {
+				if (ccExam && examExam && ccScore !== null && examScore !== null) {
 					average =
 						(ccScore * Number(ccExam.percentage) +
 							examScore * Number(examExam.percentage)) /
