@@ -1,4 +1,14 @@
 {
+	"components": {
+		"codedEntitySelect": {
+			"placeholder": "Select an item",
+			"searchPlaceholder": "Search by code or name...",
+			"noResults": "No items found. Try a different search.",
+			"resultsCount_one": "{{count}} result",
+			"resultsCount_other": "{{count}} results",
+			"loading": "Loading..."
+		}
+	},
 	"common": {
 		"actions": {
 			"cancel": "Cancel",
@@ -549,6 +559,7 @@
 				"courses": "Courses",
 				"classes": "Classes",
 				"faculties": "Faculties",
+				"institution": "Institution",
 				"studyCycles": "Study cycles",
 				"programs": "Programs",
 				"teachers": "Teachers",
@@ -968,6 +979,58 @@
 				"semester": "Please select a semester",
 				"code": "Please provide a class code",
 				"name": "Name must be at least 2 characters"
+			}
+		},
+		"institution": {
+			"title": "Institution settings",
+			"subtitle": "Store the bilingual identity, branding, and official contact information used in generated documents.",
+			"actions": {
+				"save": "Save institution"
+			},
+			"toast": {
+				"saved": "Institution saved successfully"
+			},
+			"form": {
+				"identity": "Identity & branding",
+				"identityHint": "French and English fields are required to feed bilingual headers.",
+				"code": "Sigle / Code",
+				"shortName": "Abbreviation",
+				"nameFr": "Official name (FR)",
+				"nameEn": "Official name (EN)",
+				"legalNameFr": "Legal name (FR)",
+				"legalNameEn": "Legal name (EN)",
+				"sloganFr": "Slogan (FR)",
+				"sloganEn": "Slogan (EN)",
+				"descriptionFr": "Description (FR)",
+				"descriptionEn": "Description (EN)",
+				"addressFr": "Address (FR)",
+				"addressEn": "Address (EN)",
+				"contactEmail": "Contact email",
+				"contactPhone": "Phone",
+				"fax": "Fax",
+				"postalBox": "Postal box",
+				"timezone": "Timezone",
+				"website": "Website URL",
+				"logoUrl": "Logo URL",
+				"coverImageUrl": "Cover image URL",
+				"logoUploadLabel": "Logo (PNG/JPG)",
+				"logoUploadDescription": "Used on transcripts, attestations, and diplomas.",
+				"logoUrlPlaceholder": "https://example.com/logo.png",
+				"coverUploadLabel": "Banner / header",
+				"coverUploadDescription": "Displayed on dashboards and PDF cover pages.",
+				"coverImageUrlPlaceholder": "https://example.com/banner.jpg",
+				"uploadCta": "Select or drop an image",
+				"uploadHint": "PNG/JPG up to 5 MB",
+				"uploading": "Uploading…",
+				"uploadDescription": "You can also paste a public URL directly.",
+				"clearImage": "Remove image",
+				"previewPlaceholder": "No image yet",
+				"uploadSuccess": "Image uploaded",
+				"uploadError": "Upload failed",
+				"defaultAcademicYear": "Default academic year",
+				"defaultAcademicYearPlaceholder": "Select academic year",
+				"registrationFormat": "Registration format",
+				"registrationFormatPlaceholder": "Use active format"
 			}
 		},
 		"studyCycles": {

@@ -9,6 +9,7 @@ import {
 	codeSchema,
 	idSchema,
 	listSchema,
+	searchSchema,
 	updateSchema,
 } from "./class-courses.zod";
 
@@ -36,4 +37,7 @@ export const router = createRouter({
 	roster: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getClassCourseRoster(input.id)),
+	search: protectedProcedure
+		.input(searchSchema)
+		.query(({ input }) => service.searchClassCourses(input)),
 });

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CodedEntitySelect } from "@/components/forms";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -114,6 +115,9 @@ export default function ClassManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingClass, setEditingClass] = useState<Class | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [programSearch, setProgramSearch] = useState("");
+	const [programOptionSearch, setProgramOptionSearch] = useState("");
+	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -155,13 +159,26 @@ export default function ClassManagement() {
 		},
 	});
 
-	const { data: programs } = useQuery({
+	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({});
+			const { items } = await trpcClient.programs.list.query({ limit: 100 });
 			return items;
 		},
 	});
+
+	const { data: searchPrograms = [] } = useQuery({
+		queryKey: ["programs", "search", programSearch],
+		queryFn: async () => {
+			const items = await trpcClient.programs.search.query({
+				query: programSearch,
+			});
+			return items;
+		},
+		enabled: programSearch.length >= 2,
+	});
+
+	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["academicYears"],
@@ -193,7 +210,7 @@ export default function ClassManagement() {
 		[programs, selectedProgramId],
 	);
 
-	const { data: cycleLevelsData } = useQuery({
+	const { data: defaultCycleLevels = [] } = useQuery({
 		queryKey: ["cycleLevelsByFaculty", selectedProgram?.faculty],
 		queryFn: async () => {
 			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
@@ -221,7 +238,44 @@ export default function ClassManagement() {
 		},
 		enabled: Boolean(selectedProgram?.faculty),
 	});
-	const cycleLevels = cycleLevelsData ?? [];
+
+	const { data: searchCycleLevels = [] } = useQuery({
+		queryKey: [
+			"cycleLevels",
+			"search",
+			cycleLevelSearch,
+			selectedProgram?.faculty,
+		],
+		queryFn: async () => {
+			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
+			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
+				facultyId: selectedProgram.faculty,
+				limit: 100,
+			});
+			if (!cycles.length) return [];
+			const levels = await Promise.all(
+				cycles.map(async (cycle) => {
+					const items = await trpcClient.cycleLevels.search.query({
+						query: cycleLevelSearch,
+						cycleId: cycle.id,
+					});
+					return items.map((level) => ({
+						...level,
+						cycle: {
+							id: cycle.id,
+							name: cycle.name,
+							code: cycle.code,
+						},
+					}));
+				}),
+			);
+			return levels.flat() as CycleLevelOption[];
+		},
+		enabled: Boolean(selectedProgram?.faculty) && cycleLevelSearch.length >= 2,
+	});
+
+	const cycleLevels =
+		cycleLevelSearch.length >= 2 ? searchCycleLevels : defaultCycleLevels;
 	const cycleLevelId = watch("cycleLevelId");
 	const selectedCycleLevel = useMemo(
 		() => cycleLevels.find((level) => level.id === cycleLevelId),
@@ -255,18 +309,41 @@ export default function ClassManagement() {
 		}
 	}, [cycleLevels, cycleLevelId, setValue]);
 
-	const { data: programOptionsData } = useQuery({
+	const { data: defaultProgramOptions = [] } = useQuery({
 		queryKey: ["programOptions", selectedProgram?.id],
 		queryFn: async () => {
 			if (!selectedProgram) return [];
 			const { items } = await trpcClient.programOptions.list.query({
 				programId: selectedProgram.id,
+				limit: 100,
 			});
 			return items;
 		},
 		enabled: Boolean(selectedProgram?.id),
 	});
-	const programOptions = programOptionsData ?? [];
+
+	const { data: searchProgramOptions = [] } = useQuery({
+		queryKey: [
+			"programOptions",
+			"search",
+			programOptionSearch,
+			selectedProgram?.id,
+		],
+		queryFn: async () => {
+			if (!selectedProgram) return [];
+			const items = await trpcClient.programOptions.search.query({
+				query: programOptionSearch,
+				programId: selectedProgram.id,
+			});
+			return items;
+		},
+		enabled: Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
+	});
+
+	const programOptions =
+		programOptionSearch.length >= 2
+			? searchProgramOptions
+			: defaultProgramOptions;
 	const programOptionId = watch("programOptionId");
 	const selectedProgramOption = useMemo(
 		() => programOptions.find((option) => option.id === programOptionId),
@@ -618,48 +695,23 @@ export default function ClassManagement() {
 			>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<FormField
-							control={form.control}
-							name="programId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.classes.form.programLabel")}</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.programPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{programs?.map((program) => (
-												<SelectItem key={program.id} value={program.id}>
-													<div className="flex flex-col">
-														<span>{program.name}</span>
-														{program.facultyInfo?.name && (
-															<span className="text-muted-foreground text-xs">
-																{program.facultyInfo.name}
-															</span>
-														)}
-													</div>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{selectedCycleLevel && (
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classes.form.cycleSummary", {
-												defaultValue: "Cycle: {{value}}",
-												value: `${selectedCycleLevel.cycle.name}${selectedCycleLevel.cycle.code ? ` (${selectedCycleLevel.cycle.code})` : ""}`,
-											})}
-										</p>
-									)}
-									<FormMessage />
-								</FormItem>
-							)}
+						<CodedEntitySelect
+							items={programs}
+							onSearch={setProgramSearch}
+							value={
+								programs.find((p) => p.id === form.watch("programId"))?.code ||
+								null
+							}
+							onChange={(code) => {
+								const program = programs.find((p) => p.code === code);
+								form.setValue("programId", program?.id || "");
+							}}
+							label={t("admin.classes.form.programLabel")}
+							placeholder={t("admin.classes.form.programPlaceholder")}
+							error={form.formState.errors.programId?.message}
+							searchMode="hybrid"
+							getItemSubtitle={(program) => program.facultyInfo?.name || ""}
+							required
 						/>
 
 						<FormField
@@ -693,103 +745,71 @@ export default function ClassManagement() {
 							)}
 						/>
 
-						<FormField
-							control={form.control}
-							name="cycleLevelId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.cycleLevelLabel", {
-											defaultValue: "Cycle level",
-										})}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-										disabled={!selectedProgram || cycleLevels.length === 0}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.cycleLevelPlaceholder",
-														{ defaultValue: "Select cycle level" },
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{cycleLevels.map((level) => (
-												<SelectItem key={level.id} value={level.id}>
-													{`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""} • ${level.name}${level.code ? ` (${level.code})` : ""}`}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{!selectedProgram && (
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classes.form.selectProgramFirst", {
-												defaultValue:
-													"Select a program to load its cycle levels.",
-											})}
-										</p>
-									)}
-									{selectedProgram && cycleLevels.length === 0 && (
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classes.form.emptyCycleLevels", {
-												defaultValue:
-													"No cycle levels available for the selected faculty.",
-											})}
-										</p>
-									)}
-									<FormMessage />
-								</FormItem>
-							)}
+						<CodedEntitySelect
+							items={cycleLevels}
+							onSearch={setCycleLevelSearch}
+							value={
+								cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))
+									?.code || null
+							}
+							onChange={(code) => {
+								const level = cycleLevels.find((l) => l.code === code);
+								form.setValue("cycleLevelId", level?.id || "");
+							}}
+							label={t("admin.classes.form.cycleLevelLabel", {
+								defaultValue: "Cycle level",
+							})}
+							placeholder={t("admin.classes.form.cycleLevelPlaceholder", {
+								defaultValue: "Select cycle level",
+							})}
+							error={form.formState.errors.cycleLevelId?.message}
+							searchMode="hybrid"
+							getItemSubtitle={(level) =>
+								`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""}`
+							}
+							disabled={!selectedProgram || cycleLevels.length === 0}
+							emptyMessage={
+								!selectedProgram
+									? t("admin.classes.form.selectProgramFirst", {
+											defaultValue:
+												"Select a program to load its cycle levels.",
+										})
+									: t("admin.classes.form.emptyCycleLevels", {
+											defaultValue:
+												"No cycle levels available for the selected faculty.",
+										})
+							}
+							required
 						/>
-						<FormField
-							control={form.control}
-							name="programOptionId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.programOptionLabel", {
-											defaultValue: "Program option",
-										})}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-										disabled={!selectedProgram || programOptions.length === 0}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.programOptionPlaceholder",
-														{ defaultValue: "Select option" },
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{programOptions.map((option) => (
-												<SelectItem key={option.id} value={option.id}>
-													{option.name} ({option.code})
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{!selectedProgram && (
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classes.form.selectProgramFirst", {
-												defaultValue:
-													"Select a program to load its cycle levels.",
-											})}
-										</p>
-									)}
-									<FormMessage />
-								</FormItem>
-							)}
+						<CodedEntitySelect
+							items={programOptions}
+							onSearch={setProgramOptionSearch}
+							value={
+								programOptions.find(
+									(o) => o.id === form.watch("programOptionId"),
+								)?.code || null
+							}
+							onChange={(code) => {
+								const option = programOptions.find((o) => o.code === code);
+								form.setValue("programOptionId", option?.id || "");
+							}}
+							label={t("admin.classes.form.programOptionLabel", {
+								defaultValue: "Program option",
+							})}
+							placeholder={t("admin.classes.form.programOptionPlaceholder", {
+								defaultValue: "Select option",
+							})}
+							error={form.formState.errors.programOptionId?.message}
+							searchMode="hybrid"
+							disabled={!selectedProgram || programOptions.length === 0}
+							emptyMessage={
+								!selectedProgram
+									? t("admin.classes.form.selectProgramFirst", {
+											defaultValue: "Select a program to load its options.",
+										})
+									: "No options available"
+							}
+							required
 						/>
 
 						<FormField

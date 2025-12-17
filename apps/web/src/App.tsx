@@ -19,6 +19,7 @@ import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
 import GradeExport from "./pages/admin/GradeExport";
+import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import {
@@ -132,6 +133,7 @@ function App() {
 							path="registration-numbers/:formatId"
 							element={<RegistrationNumberFormatDetail />}
 						/>
+						<Route path="institution" element={<InstitutionSettings />} />
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />

@@ -9,6 +9,7 @@ import {
 	codeSchema,
 	idSchema,
 	listSchema,
+	searchSchema,
 	updateSchema,
 } from "./programs.zod";
 
@@ -33,4 +34,7 @@ export const router = createRouter({
 		.query(({ input }) =>
 			service.getProgramByCode(input.code, input.facultyId),
 		),
+	search: protectedProcedure
+		.input(searchSchema)
+		.query(({ input }) => service.searchPrograms(input)),
 });

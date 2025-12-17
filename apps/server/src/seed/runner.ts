@@ -60,6 +60,30 @@ export type FoundationSeed = {
 		definition: RegistrationNumberFormatDefinition;
 		isActive?: boolean;
 	}>;
+	institutions?: Array<{
+		code: string;
+		shortName?: string;
+		nameFr: string;
+		nameEn: string;
+		legalNameFr?: string;
+		legalNameEn?: string;
+		sloganFr?: string;
+		sloganEn?: string;
+		descriptionFr?: string;
+		descriptionEn?: string;
+		addressFr?: string;
+		addressEn?: string;
+		contactEmail?: string;
+		contactPhone?: string;
+		fax?: string;
+		postalBox?: string;
+		website?: string;
+		logoUrl?: string;
+		coverImageUrl?: string;
+		defaultAcademicYearCode?: string;
+		registrationFormatName?: string;
+		timezone?: string;
+	}>;
 };
 
 type ProgramSeed = {
@@ -552,6 +576,79 @@ async function seedFoundation(
 		logger.log(
 			`[seed] • Registration formats: ${data.registrationNumberFormats.length}`,
 		);
+	}
+
+	for (const entry of data.institutions ?? []) {
+		const code = normalizeCode(entry.code);
+		const defaultAcademicYearId = entry.defaultAcademicYearCode
+			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
+			: undefined;
+		let registrationFormatId: string | undefined;
+		if (entry.registrationFormatName) {
+			const format = await db.query.registrationNumberFormats.findFirst({
+				where: eq(
+					schema.registrationNumberFormats.name,
+					entry.registrationFormatName,
+				),
+			});
+			registrationFormatId = format?.id;
+		}
+		await db
+			.insert(schema.institutions)
+			.values({
+				code,
+				shortName: entry.shortName ?? null,
+				nameFr: entry.nameFr,
+				nameEn: entry.nameEn,
+				legalNameFr: entry.legalNameFr ?? null,
+				legalNameEn: entry.legalNameEn ?? null,
+				sloganFr: entry.sloganFr ?? null,
+				sloganEn: entry.sloganEn ?? null,
+				descriptionFr: entry.descriptionFr ?? null,
+				descriptionEn: entry.descriptionEn ?? null,
+				addressFr: entry.addressFr ?? null,
+				addressEn: entry.addressEn ?? null,
+				contactEmail: entry.contactEmail ?? null,
+				contactPhone: entry.contactPhone ?? null,
+				fax: entry.fax ?? null,
+				postalBox: entry.postalBox ?? null,
+				website: entry.website ?? null,
+				logoUrl: entry.logoUrl ?? null,
+				coverImageUrl: entry.coverImageUrl ?? null,
+				defaultAcademicYearId: defaultAcademicYearId ?? null,
+				registrationFormatId: registrationFormatId ?? null,
+				timezone: entry.timezone ?? "UTC",
+			})
+			.onConflictDoUpdate({
+				target: schema.institutions.code,
+				set: {
+					shortName: entry.shortName ?? null,
+					nameFr: entry.nameFr,
+					nameEn: entry.nameEn,
+					legalNameFr: entry.legalNameFr ?? null,
+					legalNameEn: entry.legalNameEn ?? null,
+					sloganFr: entry.sloganFr ?? null,
+					sloganEn: entry.sloganEn ?? null,
+					descriptionFr: entry.descriptionFr ?? null,
+					descriptionEn: entry.descriptionEn ?? null,
+					addressFr: entry.addressFr ?? null,
+					addressEn: entry.addressEn ?? null,
+					contactEmail: entry.contactEmail ?? null,
+					contactPhone: entry.contactPhone ?? null,
+					fax: entry.fax ?? null,
+					postalBox: entry.postalBox ?? null,
+					website: entry.website ?? null,
+					logoUrl: entry.logoUrl ?? null,
+					coverImageUrl: entry.coverImageUrl ?? null,
+					defaultAcademicYearId: defaultAcademicYearId ?? null,
+					registrationFormatId: registrationFormatId ?? null,
+					timezone: entry.timezone ?? "UTC",
+					updatedAt: new Date(),
+				},
+			});
+	}
+	if (data.institutions?.length) {
+		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
 	}
 	logger.log("[seed] Foundation layer applied.");
 }

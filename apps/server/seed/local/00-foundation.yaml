@@ -77,3 +77,26 @@ registrationNumberFormats:
             - program
             - academicYear
           start: 1
+institutions:
+  - code: SGN
+    shortName: SGN
+    nameFr: Institut Supérieur Demo
+    nameEn: Demo Higher Institute
+    legalNameFr: Institut Supérieur Demo
+    legalNameEn: Demo Higher Institute
+    sloganFr: L'excellence avant tout
+    sloganEn: Excellence First
+    descriptionFr: Établissement privé d'enseignement supérieur.
+    descriptionEn: Private higher education institution.
+    addressFr: BP 123 Yaoundé, Cameroun
+    addressEn: PO Box 123 Yaounde, Cameroon
+    contactEmail: contact@demo.edu
+    contactPhone: +237 699 99 99 99
+    fax: +237 222 22 22 22
+    postalBox: BP 123
+    website: https://demo.edu
+    logoUrl: https://placehold.co/200x200.png
+    coverImageUrl: https://placehold.co/1200x400.png
+    defaultAcademicYearCode: AY-2024
+    registrationFormatName: ENG default format
+    timezone: Africa/Douala

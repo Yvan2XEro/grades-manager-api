@@ -109,3 +109,7 @@ export async function assignDefaultTeacher(
 	if (!existing) throw notFound();
 	return repo.assignDefaultTeacher(courseId, teacherId);
 }
+
+export async function searchCourses(opts: Parameters<typeof repo.search>[0]) {
+	return repo.search(opts);
+}

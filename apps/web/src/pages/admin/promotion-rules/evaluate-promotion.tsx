@@ -164,7 +164,7 @@ export function EvaluatePromotionPage() {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{rules?.items.map((rule) => (
+									{rules?.items?.map((rule) => (
 										<SelectItem key={rule.id} value={rule.id}>
 											{rule.name}
 										</SelectItem>
@@ -189,7 +189,7 @@ export function EvaluatePromotionPage() {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{classes?.items.map((cls) => (
+									{classes?.items?.map((cls) => (
 										<SelectItem key={cls.id} value={cls.id}>
 											{cls.name}
 										</SelectItem>
@@ -212,7 +212,7 @@ export function EvaluatePromotionPage() {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{academicYears?.items.map((year) => (
+									{academicYears?.items?.map((year) => (
 										<SelectItem key={year.id} value={year.id}>
 											{year.name}
 										</SelectItem>

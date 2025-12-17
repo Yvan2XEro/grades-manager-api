@@ -26,3 +26,9 @@ export const codeSchema = z.object({
 	code: z.string().trim().min(1),
 	academicYearId: z.string(),
 });
+
+export const searchSchema = z.object({
+	query: z.string().trim(),
+	classId: z.string().optional(),
+	limit: z.number().optional(),
+});

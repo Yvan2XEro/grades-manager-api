@@ -30,3 +30,9 @@ export const codeSchema = z.object({
 	code: z.string().trim().min(1),
 	programId: z.string(),
 });
+
+export const searchSchema = z.object({
+	query: z.string().trim(),
+	programId: z.string().optional(),
+	limit: z.number().optional(),
+});

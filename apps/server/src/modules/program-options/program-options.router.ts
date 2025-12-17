@@ -4,6 +4,7 @@ import {
 	baseSchema,
 	idSchema,
 	listSchema,
+	searchSchema,
 	updateSchema,
 } from "./program-options.zod";
 
@@ -20,6 +21,9 @@ export const programOptionsRouter = router({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input }) => service.listOptions(input)),
+	search: protectedProcedure
+		.input(searchSchema)
+		.query(({ input }) => service.searchProgramOptions(input)),
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ input }) => service.getOptionById(input.id)),

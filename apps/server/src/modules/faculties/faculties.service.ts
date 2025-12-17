@@ -38,3 +38,7 @@ export async function getFacultyByCode(code: string) {
 	if (!item) throw notFound();
 	return item;
 }
+
+export async function searchFaculties(opts: Parameters<typeof repo.search>[0]) {
+	return repo.search(opts);
+}

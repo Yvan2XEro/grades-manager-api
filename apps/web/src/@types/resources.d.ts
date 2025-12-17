@@ -1,5 +1,15 @@
 interface Resources {
 	translation: {
+		components: {
+			codedEntitySelect: {
+				placeholder: "Select an item";
+				searchPlaceholder: "Search by code or name...";
+				noResults: "No items found. Try a different search.";
+				resultsCount_one: "{{count}} result";
+				resultsCount_other: "{{count}} results";
+				loading: "Loading...";
+			};
+		};
 		common: {
 			actions: {
 				cancel: "Cancel";
@@ -550,6 +560,7 @@ interface Resources {
 					courses: "Courses";
 					classes: "Classes";
 					faculties: "Faculties";
+					institution: "Institution";
 					studyCycles: "Study cycles";
 					programs: "Programs";
 					teachers: "Teachers";
@@ -560,6 +571,7 @@ interface Resources {
 					examScheduler: "Exam scheduler";
 					rules: "Rule center";
 					registrationNumbers: "Registration numbers";
+					promotionRules: "Promotion rules";
 				};
 				teacher: {
 					dashboard: "Overview";
@@ -968,6 +980,58 @@ interface Resources {
 					semester: "Please select a semester";
 					code: "Please provide a class code";
 					name: "Name must be at least 2 characters";
+				};
+			};
+			institution: {
+				title: "Institution settings";
+				subtitle: "Store the bilingual identity, branding, and official contact information used in generated documents.";
+				actions: {
+					save: "Save institution";
+				};
+				toast: {
+					saved: "Institution saved successfully";
+				};
+				form: {
+					identity: "Identity & branding";
+					identityHint: "French and English fields are required to feed bilingual headers.";
+					code: "Sigle / Code";
+					shortName: "Abbreviation";
+					nameFr: "Official name (FR)";
+					nameEn: "Official name (EN)";
+					legalNameFr: "Legal name (FR)";
+					legalNameEn: "Legal name (EN)";
+					sloganFr: "Slogan (FR)";
+					sloganEn: "Slogan (EN)";
+					descriptionFr: "Description (FR)";
+					descriptionEn: "Description (EN)";
+					addressFr: "Address (FR)";
+					addressEn: "Address (EN)";
+					contactEmail: "Contact email";
+					contactPhone: "Phone";
+					fax: "Fax";
+					postalBox: "Postal box";
+					timezone: "Timezone";
+					website: "Website URL";
+					logoUrl: "Logo URL";
+					coverImageUrl: "Cover image URL";
+					logoUploadLabel: "Logo (PNG/JPG)";
+					logoUploadDescription: "Used on transcripts, attestations, and diplomas.";
+					logoUrlPlaceholder: "https://example.com/logo.png";
+					coverUploadLabel: "Banner / header";
+					coverUploadDescription: "Displayed on dashboards and PDF cover pages.";
+					coverImageUrlPlaceholder: "https://example.com/banner.jpg";
+					uploadCta: "Select or drop an image";
+					uploadHint: "PNG/JPG up to 5 MB";
+					uploading: "Uploading…";
+					uploadDescription: "You can also paste a public URL directly.";
+					clearImage: "Remove image";
+					previewPlaceholder: "No image yet";
+					uploadSuccess: "Image uploaded";
+					uploadError: "Upload failed";
+					defaultAcademicYear: "Default academic year";
+					defaultAcademicYearPlaceholder: "Select academic year";
+					registrationFormat: "Registration format";
+					registrationFormatPlaceholder: "Use active format";
 				};
 			};
 			studyCycles: {
@@ -1747,6 +1811,226 @@ interface Resources {
 					deleted: "Teaching unit deleted";
 					prereqSaved: "Prerequisites saved";
 					programRequired: "Select a program first";
+				};
+			};
+			promotionRules: {
+				title: "Promotion Rules";
+				subtitle: "Automated student promotion management system";
+				dashboard: {
+					title: "Promotion Rules";
+					subtitle: "Automated student promotion management system";
+					stats: {
+						activeRules: "Active Rules";
+						totalRules: "{{count}} total rules";
+						recentExecutions: "Recent Executions";
+						last30Days: "Last 30 days";
+						studentsPromoted: "Students Promoted";
+						acrossExecutions: "Across all executions";
+					};
+					actions: {
+						manageRules: "Manage Rules";
+						manageRulesDesc: "Create, edit, and configure promotion criteria using flexible rule definitions";
+						viewRules: "View Rules";
+						evaluateExecute: "Evaluate & Execute";
+						evaluateExecuteDesc: "Preview eligible students and apply promotions to selected candidates";
+						startEvaluation: "Start Evaluation";
+						executionHistory: "Execution History";
+						executionHistoryDesc: "View detailed logs of past promotions, including student-level results and audit trails";
+						viewHistory: "View History";
+					};
+					recentActivity: {
+						title: "Recent Activity";
+						studentsPromoted: "{{count}} students promoted";
+						unknownRule: "Unknown rule";
+						details: "Details";
+					};
+				};
+				rulesList: {
+					title: "Promotion Rules";
+					subtitle: "Manage promotion criteria and rule configurations";
+					actions: {
+						createRule: "Create Rule";
+					};
+					emptyState: {
+						noRules: "No rules found";
+						createFirst: "Create your first rule";
+					};
+					dialog: {
+						create: {
+							title: "Create Promotion Rule";
+							description: "Define criteria for automatic student promotion";
+						};
+						edit: {
+							title: "Edit Promotion Rule";
+							description: "Update rule configuration";
+						};
+						form: {
+							ruleName: "Rule Name";
+							ruleNamePlaceholder: "e.g., Standard L1 to L2 Promotion";
+							description: "Description";
+							descriptionPlaceholder: "Describe when this rule should be applied";
+							ruleset: "Ruleset (JSON)";
+							rulesetPlaceholder: "Enter JSON ruleset";
+							rulesetHelp: "Use json-rules-engine format. See documentation for available facts.";
+						};
+						actions: {
+							cancel: "Cancel";
+							create: "Create Rule";
+							creating: "Creating...";
+							save: "Save Changes";
+							saving: "Saving...";
+						};
+						deleteConfirm: "Are you sure you want to delete this rule?";
+					};
+					toast: {
+						createSuccess: "Rule created successfully";
+						createError: "Failed to create rule: {{error}}";
+						updateSuccess: "Rule updated successfully";
+						updateError: "Failed to update rule: {{error}}";
+						deleteSuccess: "Rule deleted successfully";
+						deleteError: "Failed to delete rule: {{error}}";
+						invalidJson: "Invalid JSON in ruleset";
+					};
+				};
+				evaluate: {
+					title: "Evaluate Promotion";
+					subtitle: "Preview which students are eligible for promotion";
+					form: {
+						title: "Evaluation Parameters";
+						ruleLabel: "Promotion Rule";
+						rulePlaceholder: "Select a rule";
+						classLabel: "Source Class";
+						classPlaceholder: "Select class";
+						yearLabel: "Academic Year";
+						yearPlaceholder: "Select year";
+					};
+					tabs: {
+						eligible: "Eligible ({{count}})";
+						notEligible: "Not Eligible ({{count}})";
+					};
+					actions: {
+						evaluate: "Evaluate Students";
+						evaluating: "Evaluating...";
+						selectAll: "Select All Eligible";
+						deselectAll: "Deselect All";
+						proceed: "Proceed with {{count}} student(s)";
+					};
+					summary: {
+						total: "Total Students";
+						eligible: "Eligible";
+						notEligible: "Not Eligible";
+						selected: "Selected";
+					};
+					emptyState: {
+						noEligible: "No eligible students found";
+						allEligible: "All students are eligible!";
+					};
+					toast: {
+						selectAll: "Please select all required fields";
+						selectStudent: "Please select at least one student";
+					};
+				};
+				execute: {
+					title: "Execute Promotion";
+					subtitle: "Confirm and apply student promotions";
+					noData: {
+						message: "No promotion data found. Please start from the evaluation page.";
+						button: "Go to Evaluation";
+					};
+					form: {
+						targetClassLabel: "Target Class";
+						targetClassPlaceholder: "Select target class";
+						executeButton: "Execute Promotion";
+					};
+					summary: {
+						title: "Promotion Summary";
+						rule: "Rule";
+						sourceClass: "Source Class";
+						targetClass: "Target Class";
+						studentsToPromote: "Students to Promote";
+						studentCount: "{{count}} students";
+					};
+					confirmation: {
+						title: "Confirm Promotion";
+						description: "This action will promote {{count}} student(s) from {{source}} to {{target}}. This cannot be undone.";
+						cancel: "Cancel";
+						confirm: "Confirm Promotion";
+					};
+					process: {
+						title: "What will happen";
+						step1: "Current enrollments will be marked as completed";
+						step2: "New enrollments will be created in the target class";
+						step3: "Student class references will be updated";
+						step4: "Full audit trail will be recorded";
+					};
+					toast: {
+						success: "Promotion applied successfully!";
+						error: "Failed to apply promotion: {{error}}";
+						missingInfo: "Missing required information";
+					};
+				};
+				history: {
+					title: "Execution History";
+					subtitle: "View past promotion executions and their results";
+					table: {
+						title: "Recent Executions";
+						date: "Date";
+						rule: "Rule";
+						classes: "Source → Target";
+						students: "Students";
+						successRate: "Success Rate";
+						executedBy: "Executed By";
+						actions: "Actions";
+						viewDetails: "Details";
+						user: "User";
+					};
+					badges: {
+						evaluated: "{{count}} evaluated";
+						promoted: "{{count}} promoted";
+					};
+					emptyState: "No executions found";
+					details: {
+						title: "Execution Details";
+						description: "Detailed results for this promotion execution";
+						stats: {
+							evaluated: "Evaluated";
+							promoted: "Promoted";
+							date: "Date";
+							rule: "Rule Used";
+						};
+						studentResults: {
+							title: "Student Results";
+							studentId: "Student ID";
+							status: "Status";
+							average: "Average";
+							credits: "Credits";
+							successRate: "Success Rate";
+							promoted: "Promoted";
+							notPromoted: "Not Promoted";
+						};
+					};
+				};
+				studentCard: {
+					eligible: "Eligible";
+					notEligible: "Not Eligible";
+					metrics: {
+						average: "Average";
+						credits: "Credits";
+						successRate: "Success Rate";
+					};
+					progress: {
+						creditCompletion: "Credit Completion";
+					};
+					details: {
+						title: "Detailed Metrics";
+						failedCourses: "Failed Courses";
+						requiredCredits: "Required Credits";
+					};
+					actions: {
+						select: "Select";
+						deselect: "Deselect";
+						viewDetails: "View Details";
+					};
 				};
 			};
 		};

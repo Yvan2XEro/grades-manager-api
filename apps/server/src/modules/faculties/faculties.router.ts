@@ -10,6 +10,7 @@ import {
 	codeSchema,
 	idSchema,
 	listSchema,
+	searchSchema,
 	updateSchema,
 } from "./faculties.zod";
 
@@ -32,4 +33,7 @@ export const router = createRouter({
 	getByCode: protectedProcedure
 		.input(codeSchema)
 		.query(({ input }) => service.getFacultyByCode(input.code)),
+	search: protectedProcedure
+		.input(searchSchema)
+		.query(({ input }) => service.searchFaculties(input)),
 });

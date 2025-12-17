@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { auth } from "./lib/auth";
@@ -11,6 +12,19 @@ import { appRouter } from "./routers/index";
 const app = new Hono();
 
 app.use(logger());
+app.use("/static/*", serveStatic({ root: "./" }));
+if ((process.env.STORAGE_DRIVER ?? "local") === "local") {
+	const uploadsPath = process.env.STORAGE_LOCAL_PUBLIC_PATH ?? "/uploads";
+	const uploadsRoot = process.env.STORAGE_LOCAL_ROOT ?? "./storage/uploads";
+	app.use(
+		`${uploadsPath}/*`,
+		serveStatic({
+			root: uploadsRoot,
+			rewriteRequestPath: (path) =>
+				path.replace(new RegExp(`^${uploadsPath}`), ""),
+		}),
+	);
+}
 app.use(
 	"/*",
 	cors({
@@ -32,7 +46,6 @@ app.use(
 		},
 	}),
 );
-
 app.get("/", (c) => {
 	return c.text("OK");
 });

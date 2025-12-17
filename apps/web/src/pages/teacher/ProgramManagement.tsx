@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CodedEntitySelect } from "@/components/forms";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -96,6 +97,7 @@ type Program = {
 
 type Faculty = {
 	id: string;
+	code: string;
 	name: string;
 };
 
@@ -111,6 +113,7 @@ export default function ProgramManagement() {
 		null,
 	);
 	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+	const [facultySearch, setFacultySearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -131,13 +134,35 @@ export default function ProgramManagement() {
 		},
 	});
 
-	const { data: faculties } = useQuery({
+	const { data: defaultFaculties = [] } = useQuery({
 		queryKey: ["faculties"],
 		queryFn: async () => {
-			const { items } = await trpcClient.faculties.list.query({});
-			return items as Faculty[];
+			const { items } = await trpcClient.faculties.list.query({ limit: 100 });
+			return items.map((f) => ({
+				id: f.id,
+				code: f.code,
+				name: f.name,
+			})) as Faculty[];
 		},
 	});
+
+	const { data: searchFaculties = [] } = useQuery({
+		queryKey: ["faculties", "search", facultySearch],
+		queryFn: async () => {
+			const items = await trpcClient.faculties.search.query({
+				query: facultySearch,
+			});
+			return items.map((f) => ({
+				id: f.id,
+				code: f.code,
+				name: f.name,
+			})) as Faculty[];
+		},
+		enabled: facultySearch.length >= 2,
+	});
+
+	const faculties =
+		facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
 
 	const form = useForm<ProgramFormData>({
 		resolver: zodResolver(programSchema),
@@ -264,7 +289,13 @@ export default function ProgramManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ProgramFormData) => {
-			await trpcClient.programs.create.mutate(data);
+			// Convert faculty code to ID
+			const faculty = faculties.find((f) => f.code === data.faculty);
+			if (!faculty) throw new Error("Faculty not found");
+			await trpcClient.programs.create.mutate({
+				...data,
+				faculty: faculty.id,
+			});
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
@@ -281,7 +312,14 @@ export default function ProgramManagement() {
 	const updateMutation = useMutation({
 		mutationFn: async (data: ProgramFormData & { id: string }) => {
 			const { id, ...updateData } = data;
-			await trpcClient.programs.update.mutate({ id, ...updateData });
+			// Convert faculty code to ID
+			const faculty = faculties.find((f) => f.code === updateData.faculty);
+			if (!faculty) throw new Error("Faculty not found");
+			await trpcClient.programs.update.mutate({
+				id,
+				...updateData,
+				faculty: faculty.id,
+			});
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
@@ -341,11 +379,13 @@ export default function ProgramManagement() {
 
 	const startEdit = (program: Program) => {
 		setEditingProgram(program);
+		// Convert faculty ID to code for the form
+		const faculty = faculties.find((f) => f.id === program.faculty_id);
 		form.reset({
 			name: program.name,
 			code: program.code,
 			description: program.description ?? "",
-			faculty: program.faculty_id,
+			faculty: faculty?.code || "",
 		});
 		setIsFormOpen(true);
 	};
@@ -567,38 +607,16 @@ export default function ProgramManagement() {
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name="faculty"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.facultyLabel")}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.programs.form.facultyPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{faculties?.map((faculty) => (
-													<SelectItem key={faculty.id} value={faculty.id}>
-														{faculty.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
+							<CodedEntitySelect
+								items={faculties}
+								onSearch={setFacultySearch}
+								value={form.watch("faculty")}
+								onChange={(code) => form.setValue("faculty", code || "")}
+								label={t("admin.programs.form.facultyLabel")}
+								placeholder={t("admin.programs.form.facultyPlaceholder")}
+								error={form.formState.errors.faculty?.message}
+								searchMode="hybrid"
+								required
 							/>
 							<FormField
 								control={form.control}

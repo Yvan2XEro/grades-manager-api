@@ -116,7 +116,7 @@ export function ExecutionHistoryPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{executionsData.items.map((execution) => (
+								{executionsData?.items?.map((execution) => (
 									<TableRow key={execution.id}>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">

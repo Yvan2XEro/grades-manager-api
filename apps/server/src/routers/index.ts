@@ -10,6 +10,8 @@ import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
 import { exportsRouter } from "../modules/exports";
 import { facultiesRouter } from "../modules/faculties";
+import { filesRouter } from "../modules/files";
+import { institutionsRouter } from "../modules/institutions";
 import { notificationsRouter } from "../modules/notifications";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
@@ -51,6 +53,8 @@ export const appRouter = router({
 	promotions: promotionsRouter,
 	promotionRules: promotionRulesRouter,
 	registrationNumbers: registrationNumbersRouter,
+	files: filesRouter,
+	institutions: institutionsRouter,
 	grades: gradesRouter,
 	exports: exportsRouter,
 	users: usersRouter,

@@ -1,4 +1,14 @@
 {
+	"components": {
+		"codedEntitySelect": {
+			"placeholder": "Sélectionnez un élément",
+			"searchPlaceholder": "Rechercher par code ou nom...",
+			"noResults": "Aucun élément trouvé. Essayez une autre recherche.",
+			"resultsCount_one": "{{count}} résultat",
+			"resultsCount_other": "{{count}} résultats",
+			"loading": "Chargement..."
+		}
+	},
 	"common": {
 		"actions": {
 			"cancel": "Annuler",
@@ -68,6 +78,7 @@
 				"courses": "Cours",
 				"classes": "Classes",
 				"faculties": "Facultés",
+				"institution": "Institution",
 				"studyCycles": "Cycles d'étude",
 				"programs": "Programmes",
 				"teachers": "Enseignants",
@@ -490,6 +501,58 @@
 				"semester": "Veuillez sélectionner un semestre",
 				"code": "Veuillez saisir un code de classe",
 				"name": "Le nom doit comporter au moins 2 caractères"
+			}
+		},
+		"institution": {
+			"title": "Paramètres de l’établissement",
+			"subtitle": "Enregistrez l’identité bilingue, la charte graphique et les coordonnées officielles utilisées sur les documents.",
+			"actions": {
+				"save": "Enregistrer l’établissement"
+			},
+			"toast": {
+				"saved": "Établissement enregistré"
+			},
+			"form": {
+				"identity": "Identité & branding",
+				"identityHint": "Les champs français et anglais alimentent les en-têtes bilingues (relevés, diplômes, etc.).",
+				"code": "Sigle / Code",
+				"shortName": "Abréviation",
+				"nameFr": "Nom officiel (FR)",
+				"nameEn": "Nom officiel (EN)",
+				"legalNameFr": "Dénomination légale (FR)",
+				"legalNameEn": "Dénomination légale (EN)",
+				"sloganFr": "Slogan (FR)",
+				"sloganEn": "Slogan (EN)",
+				"descriptionFr": "Description (FR)",
+				"descriptionEn": "Description (EN)",
+				"addressFr": "Adresse (FR)",
+				"addressEn": "Adresse (EN)",
+				"contactEmail": "Email de contact",
+				"contactPhone": "Téléphone",
+				"fax": "Fax",
+				"postalBox": "Boîte postale",
+				"timezone": "Fuseau horaire",
+				"website": "Site web",
+				"logoUrl": "URL du logo",
+				"coverImageUrl": "URL de la bannière",
+				"logoUploadLabel": "Logo (PNG/JPG)",
+				"logoUploadDescription": "Utilisé sur les relevés, attestations et diplômes.",
+				"logoUrlPlaceholder": "https://exemple.com/logo.png",
+				"coverUploadLabel": "Bannière / en-tête",
+				"coverUploadDescription": "Affichée sur les tableaux de bord et les couvertures PDF.",
+				"coverImageUrlPlaceholder": "https://exemple.com/banniere.jpg",
+				"uploadCta": "Sélectionnez ou déposez une image",
+				"uploadHint": "PNG/JPG jusqu’à 5 Mo",
+				"uploading": "Téléversement…",
+				"uploadDescription": "Vous pouvez également coller une URL publique ci-dessous.",
+				"clearImage": "Supprimer l’image",
+				"previewPlaceholder": "Aucune image pour le moment",
+				"uploadSuccess": "Image téléversée",
+				"uploadError": "Échec du téléversement",
+				"defaultAcademicYear": "Année académique par défaut",
+				"defaultAcademicYearPlaceholder": "Sélectionner une année",
+				"registrationFormat": "Format de matricule",
+				"registrationFormatPlaceholder": "Utiliser le format actif"
 			}
 		},
 		"studyCycles": {

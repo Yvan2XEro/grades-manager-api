@@ -179,3 +179,9 @@ export async function getClassCourseRoster(classCourseId: string) {
 		students,
 	};
 }
+
+export async function searchClassCourses(
+	opts: Parameters<typeof repo.search>[0],
+) {
+	return repo.search(opts);
+}
