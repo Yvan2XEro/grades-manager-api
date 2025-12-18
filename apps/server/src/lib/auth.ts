@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, customSession, organization } from "better-auth/plugins";
-import { domainUsersRepo } from "@/modules/domain-users";
 import { and, eq } from "drizzle-orm";
+import { domainUsersRepo } from "@/modules/domain-users";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 import {

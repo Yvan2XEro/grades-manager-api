@@ -48,8 +48,8 @@ import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
-import { roleGuards, useStore } from "./store";
 import type { BusinessRole } from "./store";
+import { roleGuards, useStore } from "./store";
 
 function App() {
 	const {

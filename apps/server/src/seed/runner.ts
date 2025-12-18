@@ -274,7 +274,10 @@ type CourseRecord = {
 type SeedState = {
 	defaultInstitutionId?: string;
 	organizations: Map<string, { id: string; slug: string }>;
-	institutions: Map<string, { id: string; code: string; organizationId: string | null }>;
+	institutions: Map<
+		string,
+		{ id: string; code: string; organizationId: string | null }
+	>;
 	faculties: Map<string, { id: string; code: string }>;
 	studyCycles: Map<string, { id: string; facultyCode: string; code: string }>;
 	cycleLevels: Map<
@@ -1116,7 +1119,9 @@ function resolveSeedOrganization(
 	return firstOrg;
 }
 
-function determineMemberRole(seed: DomainUserSeed): OrganizationRoleName | null {
+function determineMemberRole(
+	seed: DomainUserSeed,
+): OrganizationRoleName | null {
 	if (seed.memberRole) {
 		return seed.memberRole;
 	}
@@ -1608,13 +1613,10 @@ async function seedExams(
 		};
 		const updatePayload = { ...insertPayload };
 		delete updatePayload.id;
-		await db
-			.insert(schema.exams)
-			.values(insertPayload)
-			.onConflictDoUpdate({
-				target: schema.exams.id,
-				set: updatePayload,
-			});
+		await db.insert(schema.exams).values(insertPayload).onConflictDoUpdate({
+			target: schema.exams.id,
+			set: updatePayload,
+		});
 	}
 	logger.log(`[seed] • Exams: ${toSeed.length}`);
 }
@@ -1661,9 +1663,7 @@ async function seedEnrollmentWindows(
 				],
 				set: {
 					status,
-					openedAt: entry.openedAt
-						? new Date(entry.openedAt)
-						: new Date(),
+					openedAt: entry.openedAt ? new Date(entry.openedAt) : new Date(),
 					closedAt: entry.closedAt ? new Date(entry.closedAt) : null,
 				},
 			});
@@ -1685,22 +1685,22 @@ function findClassRecord(
 		return byYear.get(normalizeCode(academicYearCode)) ?? null;
 	}
 	if (byYear.size === 1) {
-	return Array.from(byYear.values())[0];
-}
-
-function resolveDomainUserId(
-	state: SeedState,
-	code: string,
-	context: string,
-) {
-	const record = state.domainUsers.get(normalizeCode(code));
-	if (!record) {
-		throw new Error(
-			`Unknown domain user code "${code}" referenced while seeding ${context}`,
-		);
+		return Array.from(byYear.values())[0];
 	}
-	return record.id;
-}
+
+	function resolveDomainUserId(
+		state: SeedState,
+		code: string,
+		context: string,
+	) {
+		const record = state.domainUsers.get(normalizeCode(code));
+		if (!record) {
+			throw new Error(
+				`Unknown domain user code "${code}" referenced while seeding ${context}`,
+			);
+		}
+		return record.id;
+	}
 	throw new Error(
 		`Class ${classCode} exists for multiple academic years. Provide classAcademicYearCode to disambiguate.`,
 	);

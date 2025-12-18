@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, mock } from "bun:test";
-import { asc } from "drizzle-orm";
 import { config } from "dotenv";
+import { asc } from "drizzle-orm";
 import * as schema from "../db/schema/app-schema";
 import { setTestInstitution } from "./test-context-state";
 import { close, db, pushSchema, reset, seed } from "./test-db";

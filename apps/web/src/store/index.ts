@@ -42,8 +42,18 @@ const defaultPermissions: PermissionSnapshot = {
  * Use these to protect layouts/routes on the client.
  */
 export const roleGuards = {
-	manageCatalog: ["administrator", "dean", "super_admin", "owner"] as BusinessRole[],
-	manageStudents: ["administrator", "dean", "super_admin", "owner"] as BusinessRole[],
+	manageCatalog: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
+	manageStudents: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
 	grade: [
 		"teacher",
 		"administrator",
@@ -51,7 +61,12 @@ export const roleGuards = {
 		"super_admin",
 		"owner",
 	] as BusinessRole[],
-	viewAnalytics: ["administrator", "dean", "super_admin", "owner"] as BusinessRole[],
+	viewAnalytics: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
 };
 
 type StoreState = {

@@ -45,10 +45,7 @@ async function syncMemberRole(
 	if (!record) return;
 	if (record.role === "owner") return;
 	if (record.role === role) return;
-	await db
-		.update(member)
-		.set({ role })
-		.where(eq(member.id, memberId));
+	await db.update(member).set({ role }).where(eq(member.id, memberId));
 }
 
 export async function getDomainsByAuthUserId(

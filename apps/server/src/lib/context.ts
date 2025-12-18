@@ -125,7 +125,11 @@ async function resolveTenantContext(
 
 function deriveMemberRole(role: string | null | undefined): MemberRole | null {
 	if (!role) return null;
-	if (!organizationRoleNames.includes(role as (typeof organizationRoleNames)[number])) {
+	if (
+		!organizationRoleNames.includes(
+			role as (typeof organizationRoleNames)[number],
+		)
+	) {
 		return null;
 	}
 	if (role === "owner") return "owner";

@@ -51,7 +51,9 @@ async function linkOrganization() {
 			`[link-org] ✓ Linked ${institutions.length} institution(s) to organization`,
 		);
 	} else {
-		console.log("[link-org] ✓ All institutions already linked to organizations");
+		console.log(
+			"[link-org] ✓ All institutions already linked to organizations",
+		);
 	}
 
 	// Step 3: Create members for existing domain users (staff only, not students)

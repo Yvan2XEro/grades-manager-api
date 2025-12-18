@@ -44,7 +44,10 @@ export const ADMIN_ROLES: MemberRole[] = [
 ];
 export const SUPER_ADMIN_ROLES: MemberRole[] = ["super_admin", "owner"];
 
-export function roleSatisfies(role: MemberRole | null | undefined, allowed: MemberRole[]) {
+export function roleSatisfies(
+	role: MemberRole | null | undefined,
+	allowed: MemberRole[],
+) {
 	if (!role) return false;
 	const expanded = roleHierarchy[role] ?? [];
 	return expanded.some((r) => allowed.includes(r));

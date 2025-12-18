@@ -36,8 +36,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc, trpcClient } from "../../utils/trpc";
 import { useStore } from "../../store";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 type Student = {
 	id: string;
@@ -405,13 +405,13 @@ const GradeEntry: React.FC = () => {
 							onValueChange={handleCourseChange}
 							disabled={availableClassCourses.length === 0}
 						>
-								<SelectTrigger
-									id="class-course"
-									data-testid="class-course-select"
-								>
-									<SelectValue
-										placeholder={t("teacher.gradeEntry.selectCourse.empty")}
-									/>
+							<SelectTrigger
+								id="class-course"
+								data-testid="class-course-select"
+							>
+								<SelectValue
+									placeholder={t("teacher.gradeEntry.selectCourse.empty")}
+								/>
 							</SelectTrigger>
 							<SelectContent>
 								{availableClassCourses.map((cc) => (
@@ -421,7 +421,8 @@ const GradeEntry: React.FC = () => {
 								))}
 							</SelectContent>
 						</Select>
-						{availableClassCourses.length === 0 && !classCoursesQuery.isLoading ? (
+						{availableClassCourses.length === 0 &&
+						!classCoursesQuery.isLoading ? (
 							<p className="text-muted-foreground text-sm">
 								{t("teacher.gradeEntry.selectCourse.emptyState")}
 							</p>

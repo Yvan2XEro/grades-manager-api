@@ -806,9 +806,7 @@ export default function StudentManagement() {
 										name="gender"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
-													{t("admin.students.form.gender")}
-												</FormLabel>
+												<FormLabel>{t("admin.students.form.gender")}</FormLabel>
 												<Select
 													onValueChange={field.onChange}
 													value={field.value || ""}
