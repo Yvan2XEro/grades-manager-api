@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
-import { requireDefaultInstitutionId } from "@/lib/institution";
 import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -110,10 +109,7 @@ export async function createClassCourse(
 		allowTeacherOverride,
 		institutionId,
 	);
-	const resolvedInstitutionId =
-		klass.institutionId ??
-		institutionId ??
-		(await requireDefaultInstitutionId());
+	const resolvedInstitutionId = klass.institutionId ?? institutionId;
 	return repo.create({
 		...payload,
 		institutionId: resolvedInstitutionId,
@@ -139,10 +135,7 @@ export async function updateClassCourse(
 		allowTeacherOverride,
 		institutionId,
 	);
-	const resolvedInstitutionId =
-		klass.institutionId ??
-		institutionId ??
-		(await requireDefaultInstitutionId());
+	const resolvedInstitutionId = klass.institutionId ?? institutionId;
 	return repo.update(
 		id,
 		{

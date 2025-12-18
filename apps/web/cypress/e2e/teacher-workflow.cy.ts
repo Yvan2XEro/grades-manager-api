@@ -17,6 +17,7 @@ describe("Teacher exam workflow", () => {
 			.first()
 			.click();
 		cy.contains(/Exam submitted/i, { timeout: 10000 }).should("exist");
+		cy.logout();
 
 		// Dean approves the submitted exam.
 		cy.loginAs("dean", { route: "/dean/workflows" });
@@ -24,11 +25,13 @@ describe("Teacher exam workflow", () => {
 			.first()
 			.click();
 		cy.contains(/Exam approved/i, { timeout: 10000 }).should("exist");
+		cy.logout();
 
 		// Teacher locks the approved exam.
 		cy.loginAs("teacher", { route: "/teacher/workflows" });
 		selectFirstClassCourse();
 		cy.findAllByRole("button", { name: /Lock/i }).first().click();
 		cy.contains(/Exam locked/i, { timeout: 10000 }).should("exist");
+		cy.logout();
 	});
 });

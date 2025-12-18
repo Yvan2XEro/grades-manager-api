@@ -15,7 +15,9 @@ export const promotionRulesRouter = router({
 	// Rule CRUD (admin only)
 	create: adminProcedure
 		.input(createRuleSchema)
-		.mutation(({ input }) => service.createRule(input)),
+		.mutation(({ input, ctx }) =>
+			service.createRule(input, ctx.institution.id),
+		),
 
 	update: adminProcedure
 		.input(updateRuleSchema)
@@ -31,7 +33,7 @@ export const promotionRulesRouter = router({
 
 	list: protectedProcedure
 		.input(listRulesSchema)
-		.query(({ input }) => service.listRules(input)),
+		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
 
 	// Evaluation (requires protection, but not necessarily admin)
 	evaluateClass: protectedProcedure

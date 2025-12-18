@@ -9,6 +9,7 @@ import type {
 	BusinessRole,
 	DomainUserStatus,
 	EnrollmentStatus,
+	EnrollmentWindowStatus,
 	Gender,
 	StudentCourseEnrollmentStatus,
 	TeachingUnitSemester,
@@ -16,6 +17,7 @@ import type {
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
+import type { OrganizationRoleName } from "../lib/organization-roles";
 import { normalizeCode, slugify } from "../lib/strings";
 
 type SeedLogger = Pick<Console, "log" | "error">;
@@ -28,6 +30,11 @@ export type SeedMeta = {
 
 export type FoundationSeed = {
 	meta?: SeedMeta;
+	organizations?: Array<{
+		slug: string;
+		name: string;
+		logo?: string;
+	}>;
 	examTypes?: Array<{ name: string; description?: string }>;
 	faculties?: Array<{ code: string; name: string; description?: string }>;
 	studyCycles?: Array<{
@@ -83,6 +90,7 @@ export type FoundationSeed = {
 		defaultAcademicYearCode?: string;
 		registrationFormatName?: string;
 		timezone?: string;
+		organizationSlug?: string;
 	}>;
 };
 
@@ -115,6 +123,29 @@ type ClassCourseSeed = {
 	weeklyHours?: number;
 };
 
+type ExamSeed = {
+	id: string;
+	classCourseCode: string;
+	name: string;
+	type: string;
+	date: string;
+	percentage: number;
+	status?: "draft" | "scheduled" | "submitted" | "approved" | "rejected";
+	isLocked?: boolean;
+	scheduledByCode?: string;
+	validatedByCode?: string;
+	scheduledAt?: string;
+	validatedAt?: string;
+};
+
+type EnrollmentWindowSeed = {
+	classCode: string;
+	academicYearCode: string;
+	status?: EnrollmentWindowStatus;
+	openedAt?: string;
+	closedAt?: string;
+};
+
 export type AcademicsSeed = {
 	meta?: SeedMeta;
 	programs?: ProgramSeed[];
@@ -142,6 +173,8 @@ export type AcademicsSeed = {
 	}>;
 	classes?: ClassSeed[];
 	classCourses?: ClassCourseSeed[];
+	exams?: ExamSeed[];
+	enrollmentWindows?: EnrollmentWindowSeed[];
 };
 
 type AuthUserSeed = {
@@ -166,7 +199,17 @@ type DomainUserSeed = {
 	gender?: Gender;
 	nationality?: string;
 	status?: DomainUserStatus;
+	organizationSlug?: string;
+	memberRole?: OrganizationRoleName;
 };
+
+const STAFF_BUSINESS_ROLES: BusinessRole[] = [
+	"super_admin",
+	"administrator",
+	"dean",
+	"teacher",
+	"staff",
+];
 
 type StudentSeed = {
 	code: string;
@@ -230,6 +273,8 @@ type CourseRecord = {
 
 type SeedState = {
 	defaultInstitutionId?: string;
+	organizations: Map<string, { id: string; slug: string }>;
+	institutions: Map<string, { id: string; code: string; organizationId: string | null }>;
 	faculties: Map<string, { id: string; code: string }>;
 	studyCycles: Map<string, { id: string; facultyCode: string; code: string }>;
 	cycleLevels: Map<
@@ -254,6 +299,7 @@ type SeedState = {
 		{ id: string; classId: string; courseId: string; institutionId: string }
 	>;
 	pendingClassCourses: ClassCourseSeed[];
+	pendingExams: ExamSeed[];
 	authUsers: Map<string, string>;
 	domainUsers: Map<string, { id: string; businessRole: BusinessRole }>;
 	students: Map<string, { id: string }>;
@@ -321,6 +367,8 @@ export async function runSeed(options: RunSeedOptions = {}) {
 function createSeedState(): SeedState {
 	return {
 		defaultInstitutionId: undefined,
+		organizations: new Map(),
+		institutions: new Map(),
 		faculties: new Map(),
 		studyCycles: new Map(),
 		cycleLevels: new Map(),
@@ -333,6 +381,7 @@ function createSeedState(): SeedState {
 		classes: new Map(),
 		classCourses: new Map(),
 		pendingClassCourses: [],
+		pendingExams: [],
 		authUsers: new Map(),
 		domainUsers: new Map(),
 		students: new Map(),
@@ -378,6 +427,16 @@ function resolveSeedDir(dirOverride?: string) {
 	return path.resolve(process.cwd(), defaultSeedRelativeDir);
 }
 
+/**
+ * Fallback to get or create a default institution for seeds that don't define institutions.
+ *
+ * TODO (Phase 3b): This should eventually require organizations to be defined in seed YAML.
+ * For now, it maintains backward compatibility by auto-creating a default institution,
+ * but this institution won't have an organizationId, which will cause issues with the
+ * new organization-based tenant resolution.
+ *
+ * Proper solution: Seeds should define organizations first, then institutions linked to them.
+ */
 async function ensureSeedInstitutionId(db: typeof appDb, state: SeedState) {
 	if (state.defaultInstitutionId) {
 		return state.defaultInstitutionId;
@@ -399,6 +458,7 @@ async function ensureSeedInstitutionId(db: typeof appDb, state: SeedState) {
 			shortName: "DEFAULT",
 			nameFr: "Institution par défaut",
 			nameEn: "Default Institution",
+			// NOTE: organizationId is null, which will cause issues with new tenant resolution
 		})
 		.returning();
 	state.defaultInstitutionId = created.id;
@@ -411,8 +471,35 @@ async function seedFoundation(
 	data: FoundationSeed,
 	logger: SeedLogger,
 ) {
-	const institutionId = await ensureSeedInstitutionId(db, state);
 	const now = new Date();
+
+	// Seed organizations first (Better Auth)
+	for (const entry of data.organizations ?? []) {
+		const slug = entry.slug;
+		const [org] = await db
+			.insert(authSchema.organization)
+			.values({
+				id: randomUUID(),
+				name: entry.name,
+				slug: slug,
+				logo: entry.logo ?? null,
+				createdAt: now,
+			})
+			.onConflictDoUpdate({
+				target: authSchema.organization.slug,
+				set: {
+					name: entry.name,
+					logo: entry.logo ?? null,
+				},
+			})
+			.returning();
+		state.organizations.set(slug, { id: org.id, slug: org.slug });
+	}
+	if (data.organizations?.length) {
+		logger.log(`[seed] • Organizations: ${data.organizations.length}`);
+	}
+
+	const institutionId = await ensureSeedInstitutionId(db, state);
 	for (const entry of data.examTypes ?? []) {
 		await db
 			.insert(schema.examTypes)
@@ -657,6 +744,19 @@ async function seedFoundation(
 			});
 			registrationFormatId = format?.id;
 		}
+
+		// Resolve organization ID from slug if provided
+		let organizationId: string | null = null;
+		if (entry.organizationSlug) {
+			const org = state.organizations.get(entry.organizationSlug);
+			if (!org) {
+				throw new Error(
+					`Organization with slug "${entry.organizationSlug}" not found for institution ${entry.code}. Ensure organizations are defined before institutions.`,
+				);
+			}
+			organizationId = org.id;
+		}
+
 		const payload = {
 			code,
 			shortName: entry.shortName ?? null,
@@ -680,18 +780,38 @@ async function seedFoundation(
 			defaultAcademicYearId: defaultAcademicYearId ?? null,
 			registrationFormatId: registrationFormatId ?? null,
 			timezone: entry.timezone ?? "UTC",
+			organizationId,
 			updatedAt: new Date(),
 		};
+
+		let institutionId: string;
 		if (idx === 0 && state.defaultInstitutionId) {
 			await db
 				.update(schema.institutions)
 				.set(payload)
 				.where(eq(schema.institutions.id, state.defaultInstitutionId));
+			institutionId = state.defaultInstitutionId;
 		} else {
-			await db.insert(schema.institutions).values(payload).onConflictDoUpdate({
-				target: schema.institutions.code,
-				set: payload,
-			});
+			const [inst] = await db
+				.insert(schema.institutions)
+				.values(payload)
+				.onConflictDoUpdate({
+					target: schema.institutions.code,
+					set: payload,
+				})
+				.returning();
+			institutionId = inst.id;
+		}
+
+		state.institutions.set(code, {
+			id: institutionId,
+			code,
+			organizationId,
+		});
+
+		// Set as default institution if it's the first one
+		if (idx === 0 && !state.defaultInstitutionId) {
+			state.defaultInstitutionId = institutionId;
 		}
 	}
 	if (data.institutions?.length) {
@@ -962,7 +1082,48 @@ async function seedAcademics(
 			`[seed] • Queued class courses: ${data.classCourses.length} (waiting for teachers)`,
 		);
 	}
+	if (data.exams?.length) {
+		state.pendingExams.push(...data.exams);
+		logger.log(
+			`[seed] • Queued exams: ${data.exams.length} (waiting for class courses)`,
+		);
+	}
+	if (data.enrollmentWindows?.length) {
+		await seedEnrollmentWindows(db, state, data.enrollmentWindows, logger);
+	}
 	logger.log("[seed] Academics layer applied.");
+}
+
+function resolveSeedOrganization(
+	state: SeedState,
+	slug?: string,
+): { id: string; slug: string } {
+	if (slug) {
+		const org = state.organizations.get(slug);
+		if (!org) {
+			throw new Error(
+				`Unknown organization slug "${slug}" referenced in users seed. Define the organization in 00-foundation.yaml.`,
+			);
+		}
+		return org;
+	}
+	const firstOrg = state.organizations.values().next().value;
+	if (!firstOrg) {
+		throw new Error(
+			"No organizations are available in the seed state. Add at least one organization to the foundation seed before seeding users.",
+		);
+	}
+	return firstOrg;
+}
+
+function determineMemberRole(seed: DomainUserSeed): OrganizationRoleName | null {
+	if (seed.memberRole) {
+		return seed.memberRole;
+	}
+	if (!STAFF_BUSINESS_ROLES.includes(seed.businessRole)) {
+		return null;
+	}
+	return seed.businessRole;
 }
 
 async function seedUsers(
@@ -1027,6 +1188,51 @@ async function seedUsers(
 			id: profile.id,
 			businessRole: profile.businessRole,
 		});
+
+		const targetMemberRole = determineMemberRole(entry);
+		if (authUserId && targetMemberRole) {
+			const organization = resolveSeedOrganization(
+				state,
+				entry.organizationSlug,
+			);
+			const existingMember = await db.query.member.findFirst({
+				where: and(
+					eq(authSchema.member.userId, authUserId),
+					eq(authSchema.member.organizationId, organization.id),
+				),
+			});
+
+			let memberId: string;
+			if (existingMember) {
+				memberId = existingMember.id;
+				if (
+					existingMember.role !== targetMemberRole &&
+					existingMember.role !== "owner"
+				) {
+					await db
+						.update(authSchema.member)
+						.set({ role: targetMemberRole })
+						.where(eq(authSchema.member.id, existingMember.id));
+				}
+			} else {
+				const [member] = await db
+					.insert(authSchema.member)
+					.values({
+						id: randomUUID(),
+						organizationId: organization.id,
+						userId: authUserId,
+						role: targetMemberRole,
+						createdAt: now,
+					})
+					.returning();
+				memberId = member.id;
+			}
+
+			await db
+				.update(schema.domainUsers)
+				.set({ memberId })
+				.where(eq(schema.domainUsers.id, profile.id));
+		}
 	}
 	if (data.domainUsers?.length) {
 		logger.log(`[seed] • Domain users: ${data.domainUsers.length}`);
@@ -1034,6 +1240,9 @@ async function seedUsers(
 
 	if (state.pendingClassCourses.length) {
 		await seedClassCourses(db, state, logger);
+	}
+	if (state.pendingExams.length) {
+		await seedExams(db, state, logger);
 	}
 
 	for (const entry of data.students ?? []) {
@@ -1360,6 +1569,110 @@ async function seedClassCourses(
 	}
 }
 
+async function seedExams(
+	db: typeof appDb,
+	state: SeedState,
+	logger: SeedLogger,
+) {
+	const toSeed = state.pendingExams.splice(0);
+	if (!toSeed.length) return;
+	for (const entry of toSeed) {
+		const classCourse = state.classCourses.get(
+			normalizeCode(entry.classCourseCode),
+		);
+		if (!classCourse) {
+			throw new Error(
+				`Unknown class course ${entry.classCourseCode} for exam ${entry.id}`,
+			);
+		}
+		const scheduledBy = entry.scheduledByCode
+			? resolveDomainUserId(state, entry.scheduledByCode, entry.id)
+			: null;
+		const validatedBy = entry.validatedByCode
+			? resolveDomainUserId(state, entry.validatedByCode, entry.id)
+			: null;
+		const insertPayload = {
+			id: entry.id,
+			name: entry.name,
+			type: entry.type,
+			date: new Date(entry.date),
+			percentage: entry.percentage,
+			classCourse: classCourse.id,
+			institutionId: classCourse.institutionId,
+			status: entry.status ?? "draft",
+			isLocked: entry.isLocked ?? false,
+			scheduledBy,
+			validatedBy,
+			scheduledAt: entry.scheduledAt ? new Date(entry.scheduledAt) : null,
+			validatedAt: entry.validatedAt ? new Date(entry.validatedAt) : null,
+		};
+		const updatePayload = { ...insertPayload };
+		delete updatePayload.id;
+		await db
+			.insert(schema.exams)
+			.values(insertPayload)
+			.onConflictDoUpdate({
+				target: schema.exams.id,
+				set: updatePayload,
+			});
+	}
+	logger.log(`[seed] • Exams: ${toSeed.length}`);
+}
+
+async function seedEnrollmentWindows(
+	db: typeof appDb,
+	state: SeedState,
+	windows: EnrollmentWindowSeed[],
+	logger: SeedLogger,
+) {
+	for (const entry of windows) {
+		const classRecord = findClassRecord(
+			state,
+			entry.classCode,
+			entry.academicYearCode,
+		);
+		if (!classRecord) {
+			throw new Error(
+				`Unknown class ${entry.classCode} for enrollment window seed`,
+			);
+		}
+		const academicYearId = state.academicYears.get(
+			normalizeCode(entry.academicYearCode),
+		);
+		if (!academicYearId) {
+			throw new Error(
+				`Unknown academic year ${entry.academicYearCode} for enrollment window`,
+			);
+		}
+		const status = entry.status ?? "open";
+		await db
+			.insert(schema.enrollmentWindows)
+			.values({
+				classId: classRecord.id,
+				academicYearId,
+				status,
+				openedAt: entry.openedAt ? new Date(entry.openedAt) : new Date(),
+				closedAt: entry.closedAt ? new Date(entry.closedAt) : null,
+			})
+			.onConflictDoUpdate({
+				target: [
+					schema.enrollmentWindows.classId,
+					schema.enrollmentWindows.academicYearId,
+				],
+				set: {
+					status,
+					openedAt: entry.openedAt
+						? new Date(entry.openedAt)
+						: new Date(),
+					closedAt: entry.closedAt ? new Date(entry.closedAt) : null,
+				},
+			});
+	}
+	if (windows.length) {
+		logger.log(`[seed] • Enrollment windows: ${windows.length}`);
+	}
+}
+
 function findClassRecord(
 	state: SeedState,
 	classCode: string,
@@ -1372,8 +1685,22 @@ function findClassRecord(
 		return byYear.get(normalizeCode(academicYearCode)) ?? null;
 	}
 	if (byYear.size === 1) {
-		return Array.from(byYear.values())[0];
+	return Array.from(byYear.values())[0];
+}
+
+function resolveDomainUserId(
+	state: SeedState,
+	code: string,
+	context: string,
+) {
+	const record = state.domainUsers.get(normalizeCode(code));
+	if (!record) {
+		throw new Error(
+			`Unknown domain user code "${code}" referenced while seeding ${context}`,
+		);
 	}
+	return record.id;
+}
 	throw new Error(
 		`Class ${classCode} exists for multiple academic years. Provide classAcademicYearCode to disambiguate.`,
 	);

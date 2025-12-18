@@ -32,7 +32,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	assertRole(ctx.profile, ADMIN_ROLES);
+	assertRole(ctx.memberRole, ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,
@@ -49,7 +49,7 @@ export const superAdminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	assertRole(ctx.profile, SUPER_ADMIN_ROLES);
+	assertRole(ctx.memberRole, SUPER_ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,

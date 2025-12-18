@@ -1,42 +1,26 @@
-import { asc } from "drizzle-orm";
-import { db } from "@/db";
-import * as schema from "@/db/schema/app-schema";
+import type { Context } from "./context";
 
 /**
- * Loads the first configured institution or throws if none exist.
- * Until Phase 3 introduces per-request scoping, we default to the
- * earliest institution row to keep legacy flows working.
+ * Helper to extract institutionId from context.
+ * This ensures we always use the tenant-scoped institution from the resolved context.
  */
-export async function requireDefaultInstitution() {
-	let institution = await db.query.institutions.findFirst({
-		orderBy: (institutions, { asc: ascFn }) => ascFn(institutions.createdAt),
-	});
-	if (!institution) {
-		const [created] = await db
-			.insert(schema.institutions)
-			.values({
-				code: "default",
-				shortName: "DEFAULT",
-				nameFr: "Institution par défaut",
-				nameEn: "Default Institution",
-			})
-			.returning();
-		institution = created;
+export function getInstitutionId(ctx: Context): string {
+	if (!ctx.institution?.id) {
+		throw new Error(
+			"Institution not available in context. This should not happen after tenant resolution.",
+		);
 	}
-	return institution;
+	return ctx.institution.id;
 }
 
-export async function requireDefaultInstitutionId() {
-	const institution = await requireDefaultInstitution();
-	return institution.id;
-}
-
-export async function ensureInstitutionScope<
+/**
+ * Ensure data has an institutionId, using the context's institution as fallback.
+ */
+export function ensureInstitutionScope<
 	T extends { institutionId?: string | null },
->(data: T) {
+>(data: T, ctx: Context): T & { institutionId: string } {
 	if (data.institutionId) {
 		return data as T & { institutionId: string };
 	}
-	const institutionId = await requireDefaultInstitutionId();
-	return { ...data, institutionId };
+	return { ...data, institutionId: getInstitutionId(ctx) };
 }

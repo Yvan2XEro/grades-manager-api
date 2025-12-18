@@ -82,6 +82,10 @@ const buildStudentSchema = (t: TFunction) =>
 			),
 		registrationFormatId: z.string().optional(),
 		classId: z.string().min(1, t("admin.students.validation.class")),
+		gender: z.enum(["male", "female", "other"]).optional(),
+		dateOfBirth: z.string().optional(),
+		placeOfBirth: z.string().optional(),
+		nationality: z.string().optional(),
 	});
 
 type StudentForm = z.infer<ReturnType<typeof buildStudentSchema>>;
@@ -223,6 +227,10 @@ export default function StudentManagement() {
 			registrationNumber: "",
 			registrationFormatId: undefined,
 			classId: "",
+			dateOfBirth: "",
+			placeOfBirth: "",
+			gender: undefined,
+			nationality: "",
 		},
 	});
 
@@ -261,12 +269,18 @@ export default function StudentManagement() {
 	const onSubmit = (data: StudentForm) =>
 		createMutation.mutate({
 			...data,
+			gender: data.gender || undefined,
 			registrationNumber: data.registrationNumber?.trim()
 				? data.registrationNumber.trim()
 				: undefined,
 			registrationFormatId: data.registrationFormatId
 				? data.registrationFormatId
 				: undefined,
+			dateOfBirth: data.dateOfBirth
+				? toISODateFromInput(data.dateOfBirth)
+				: undefined,
+			placeOfBirth: data.placeOfBirth?.trim() || undefined,
+			nationality: data.nationality?.trim() || undefined,
 		});
 
 	const handleNext = () => {
@@ -755,6 +769,92 @@ export default function StudentManagement() {
 									/>
 									<FormField
 										control={form.control}
+										name="dateOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.dateOfBirth")}
+												</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														type="date"
+														data-testid="date-of-birth-input"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="placeOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.placeOfBirth")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="gender"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.gender")}
+												</FormLabel>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value || ""}
+												>
+													<FormControl>
+														<SelectTrigger data-testid="gender-select">
+															<SelectValue
+																placeholder={t(
+																	"admin.students.form.genderPlaceholder",
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value="male">
+															{t("admin.students.gender.male")}
+														</SelectItem>
+														<SelectItem value="female">
+															{t("admin.students.gender.female")}
+														</SelectItem>
+														<SelectItem value="other">
+															{t("admin.students.gender.other")}
+														</SelectItem>
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="nationality"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.form.nationality")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
 										name="registrationNumber"
 										render={({ field }) => (
 											<FormItem>
@@ -847,9 +947,10 @@ export default function StudentManagement() {
 												<Select
 													onValueChange={field.onChange}
 													value={field.value}
+													disabled={!classes?.length}
 												>
 													<FormControl>
-														<SelectTrigger>
+														<SelectTrigger data-testid="class-select">
 															<SelectValue
 																placeholder={t(
 																	"admin.students.form.classPlaceholder",

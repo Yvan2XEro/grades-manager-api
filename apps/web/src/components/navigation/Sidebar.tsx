@@ -196,6 +196,7 @@ const Sidebar: React.FC = () => {
 		switch (user.role) {
 			case "administrator":
 			case "super_admin":
+			case "owner":
 				return adminLinks;
 			case "dean":
 				return deanLinks;

@@ -235,14 +235,6 @@ export default function ExamManagement() {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8" />
-			</div>
-		);
-	}
-
 	return (
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
@@ -256,6 +248,7 @@ export default function ExamManagement() {
 						form.reset();
 						setIsFormOpen(true);
 					}}
+					data-testid="add-exam-button"
 				>
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.exams.actions.add")}
@@ -274,13 +267,18 @@ export default function ExamManagement() {
 							form.reset();
 							setIsFormOpen(true);
 						}}
+						data-testid="add-exam-button-header"
 					>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("admin.exams.actions.add")}
 					</Button>
 				</CardHeader>
 				<CardContent>
-					{!exams?.length ? (
+					{isLoading ? (
+						<div className="flex h-48 items-center justify-center">
+							<Spinner className="h-8 w-8" />
+						</div>
+					) : !exams?.length ? (
 						<Empty className="border border-dashed">
 							<EmptyHeader>
 								<EmptyMedia variant="icon">
@@ -298,6 +296,7 @@ export default function ExamManagement() {
 										form.reset();
 										setIsFormOpen(true);
 									}}
+									data-testid="add-exam-button-empty"
 								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.exams.actions.add")}
@@ -421,7 +420,10 @@ export default function ExamManagement() {
 									<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
 									<Select onValueChange={field.onChange} value={field.value}>
 										<FormControl>
-											<SelectTrigger>
+											<SelectTrigger
+												id="classCourseId"
+												data-testid="class-course-select"
+											>
 												<SelectValue
 													placeholder={t("admin.exams.form.coursePlaceholder")}
 												/>
@@ -466,6 +468,8 @@ export default function ExamManagement() {
 									<FormControl>
 										<Input
 											{...field}
+											id="examType"
+											data-testid="exam-type-select"
 											placeholder={t("admin.exams.form.typePlaceholder")}
 										/>
 									</FormControl>

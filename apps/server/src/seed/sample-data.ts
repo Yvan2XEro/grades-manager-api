@@ -15,6 +15,12 @@ const sampleFoundation: FoundationSeed = {
 		generatedAt: "2024-12-05T00:00:00Z",
 		dataset: "demo",
 	},
+	organizations: [
+		{
+			slug: "sgn-institution",
+			name: "SGN Institution",
+		},
+	],
 	examTypes: [
 		{ name: "CC", description: "Contrôle continu" },
 		{ name: "TP", description: "Travaux pratiques" },
@@ -128,6 +134,7 @@ const sampleFoundation: FoundationSeed = {
 			defaultAcademicYearCode: "AY-2024",
 			registrationFormatName: "ENG default format",
 			timezone: "Africa/Douala",
+			organizationSlug: "sgn-institution",
 		},
 	],
 };
@@ -253,6 +260,24 @@ const sampleAcademics: AcademicsSeed = {
 			weeklyHours: 3,
 		},
 	],
+	exams: [
+		{
+			id: "EXAM-ENG101-MIDTERM",
+			classCourseCode: "CC-ENG101-L1A",
+			name: "ENG101 Midterm",
+			type: "CC",
+			date: "2024-10-01T09:00:00Z",
+			percentage: 40,
+			status: "draft",
+		},
+	],
+	enrollmentWindows: [
+		{
+			classCode: "ENG24-L1A",
+			academicYearCode: "AY-2024",
+			status: "open",
+		},
+	],
 };
 
 const sampleUsers: UsersSeed = {
@@ -300,6 +325,8 @@ const sampleUsers: UsersSeed = {
 			lastName: "Demo",
 			primaryEmail: "admin@example.com",
 			status: "active",
+			organizationSlug: "sgn-institution",
+			memberRole: "owner",
 		},
 		{
 			code: "TEACH-ALICE",
@@ -309,6 +336,7 @@ const sampleUsers: UsersSeed = {
 			lastName: "Nkom",
 			primaryEmail: "alice.teacher@example.com",
 			status: "active",
+			organizationSlug: "sgn-institution",
 		},
 		{
 			code: "TEACH-JAMAL",
@@ -318,6 +346,7 @@ const sampleUsers: UsersSeed = {
 			lastName: "Kouassi",
 			primaryEmail: "jamal.teacher@example.com",
 			status: "active",
+			organizationSlug: "sgn-institution",
 		},
 		{
 			code: "STUDENT-AMELIA",

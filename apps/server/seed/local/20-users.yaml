@@ -31,6 +31,8 @@ domainUsers:
     lastName: Demo
     primaryEmail: admin@example.com
     status: active
+    organizationSlug: sgn-institution
+    memberRole: owner
   - code: TEACH-ALICE
     authUserCode: TEACH-ALICE
     businessRole: teacher
@@ -38,6 +40,7 @@ domainUsers:
     lastName: Nkom
     primaryEmail: alice.teacher@example.com
     status: active
+    organizationSlug: sgn-institution
   - code: TEACH-JAMAL
     authUserCode: TEACH-JAMAL
     businessRole: teacher
@@ -45,6 +48,7 @@ domainUsers:
     lastName: Kouassi
     primaryEmail: jamal.teacher@example.com
     status: active
+    organizationSlug: sgn-institution
   - code: STUDENT-AMELIA
     authUserCode: STUDENT-AMELIA
     businessRole: student

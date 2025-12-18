@@ -1,15 +1,19 @@
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin } from "better-auth/plugins";
+import { admin, organization } from "better-auth/plugins";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import { adminRoles } from "./auth";
-import { requireDefaultInstitutionId } from "./institution";
+import {
+	organizationAccessControl,
+	organizationRoles,
+} from "./organization-roles";
 
 const pg = new PGlite();
 export const db = drizzle(pg, { schema: { ...schema, ...authSchema } });
@@ -19,7 +23,14 @@ export const auth = betterAuth({
 		provider: "pg",
 		schema: authSchema,
 	}),
-	plugins: [admin({ adminRoles: adminRoles })],
+	plugins: [
+		admin({ adminRoles: adminRoles }),
+		organization({
+			allowUserToCreateOrganization: true,
+			ac: organizationAccessControl,
+			roles: organizationRoles,
+		}),
+	],
 	trustedOrigins: process.env.CORS_ORIGINS?.split(",") || [],
 	emailAndPassword: {
 		enabled: true,
@@ -39,20 +50,59 @@ export async function pushSchema() {
 }
 
 export async function seed() {
+	// Create organization first
+	const orgId = randomUUID();
+	const [org] = await db
+		.insert(authSchema.organization)
+		.values({
+			id: orgId,
+			name: "Test Institution",
+			slug: "test-institution",
+			createdAt: new Date(),
+		})
+		.returning();
+
+	// Create institution linked to organization
+	const [institution] = await db
+		.insert(schema.institutions)
+		.values({
+			code: "TEST",
+			shortName: "TEST",
+			nameFr: "Institution de test",
+			nameEn: "Test Institution",
+			organizationId: org.id,
+		})
+		.returning();
+
+	// Create teacher user
 	const firstName = "Seed";
-	const lastName = "Teacher";
-	const institutionId = await requireDefaultInstitutionId();
+	const lastName = "Administrator";
 	const teacher = await auth.api.createUser({
 		body: {
 			name: `${firstName} ${lastName}`,
 			email: "seed.teacher@example.com",
-			role: "admin",
+			role: "administrator",
 			password: "password",
 		},
 	});
+
+	// Create member linking user to organization
+	const [member] = await db
+		.insert(authSchema.member)
+		.values({
+			id: randomUUID(),
+			organizationId: org.id,
+			userId: teacher.user.id,
+			role: "administrator",
+			createdAt: new Date(),
+		})
+		.returning();
+
+	// Create domain user profile linked to member
 	await db.insert(schema.domainUsers).values({
 		authUserId: teacher.user.id,
-		businessRole: "teacher",
+		memberId: member.id,
+		businessRole: "administrator",
 		firstName,
 		lastName,
 		primaryEmail: "seed.teacher@example.com",
@@ -63,12 +113,13 @@ export async function seed() {
 		nationality: null,
 		status: "active",
 	});
+
 	const [faculty] = await db
 		.insert(schema.faculties)
 		.values({
 			code: "FAC-SEED",
 			name: "Seed Faculty",
-			institutionId,
+			institutionId: institution.id,
 		})
 		.returning();
 	const [semester] = await db
@@ -81,7 +132,7 @@ export async function seed() {
 			name: "2024",
 			startDate: new Date("2024-01-01").toISOString(),
 			endDate: new Date("2024-12-31").toISOString(),
-			institutionId,
+			institutionId: institution.id,
 		})
 		.returning();
 	const [cycle] = await db
@@ -111,7 +162,7 @@ export async function seed() {
 			name: "Seed Program",
 			slug: "seed-program",
 			faculty: faculty.id,
-			institutionId,
+			institutionId: institution.id,
 		})
 		.returning();
 	const [option] = await db
@@ -120,7 +171,7 @@ export async function seed() {
 			programId: program.id,
 			name: "Default option",
 			code: "default",
-			institutionId,
+			institutionId: institution.id,
 		})
 		.returning();
 	await db.insert(schema.teachingUnits).values({
@@ -138,7 +189,7 @@ export async function seed() {
 		cycleLevelId: level.id,
 		programOptionId: option.id,
 		semesterId: semester.id,
-		institutionId,
+		institutionId: institution.id,
 	});
 }
 

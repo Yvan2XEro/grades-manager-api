@@ -9,7 +9,7 @@ import {
 	Save,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -36,7 +36,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
+import { useStore } from "../../store";
 
 type Student = {
 	id: string;
@@ -68,11 +69,16 @@ type CourseInfo = {
 };
 
 const GradeEntry: React.FC = () => {
-	const { courseId } = useParams<{ courseId: string }>();
+	const { courseId: routeCourseId } = useParams<{ courseId?: string }>();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const { user } = useStore();
 
+	const teacherProfileId = user?.domainProfiles?.[0]?.id;
+	const [selectedCourseId, setSelectedCourseId] = useState(routeCourseId ?? "");
+	const autoSelectExamRef = useRef<boolean>(Boolean(routeCourseId));
+	const manualCourseSelectionRef = useRef(false);
 	const [selectedExam, setSelectedExam] = useState<string>("");
 
 	const {
@@ -81,6 +87,38 @@ const GradeEntry: React.FC = () => {
 		reset,
 		formState: { errors },
 	} = useForm({ shouldUnregister: true });
+
+	const classCoursesQuery = useQuery({
+		...trpc.classCourses.list.queryOptions({
+			teacherId: teacherProfileId ?? undefined,
+			limit: 200,
+		}),
+	});
+	const availableClassCourses = classCoursesQuery.data?.items ?? [];
+
+	useEffect(() => {
+		if (routeCourseId && !manualCourseSelectionRef.current) {
+			autoSelectExamRef.current = true;
+			setSelectedCourseId(routeCourseId);
+		}
+		if (manualCourseSelectionRef.current) {
+			manualCourseSelectionRef.current = false;
+		}
+	}, [routeCourseId]);
+
+	const handleCourseChange = (value: string) => {
+		manualCourseSelectionRef.current = true;
+		autoSelectExamRef.current = false;
+		setSelectedCourseId(value);
+		setSelectedExam("");
+		if (value) {
+			navigate(`/teacher/grades/${value}`, { replace: true });
+		} else {
+			navigate("/teacher/grades", { replace: true });
+		}
+	};
+
+	const courseId = selectedCourseId;
 
 	const courseContextQuery = useQuery({
 		queryKey: ["grade-entry-context", courseId],
@@ -167,11 +205,17 @@ const GradeEntry: React.FC = () => {
 			return;
 		}
 		if (!selectedExam) {
-			setSelectedExam(exams[0].id);
+			if (autoSelectExamRef.current) {
+				setSelectedExam(exams[0].id);
+			}
 			return;
 		}
 		if (!exams.some((exam) => exam.id === selectedExam)) {
-			setSelectedExam(exams[0].id);
+			if (autoSelectExamRef.current) {
+				setSelectedExam(exams[0].id);
+			} else {
+				setSelectedExam("");
+			}
 		}
 	}, [exams, selectedExam]);
 
@@ -199,9 +243,18 @@ const GradeEntry: React.FC = () => {
 
 	const gradeEntries = gradesQuery.data ?? [];
 	const gradesByStudent = useMemo(() => {
-		const map: Record<string, number> = {};
+		const map: Record<
+			string,
+			{
+				score: number;
+				id: string;
+			}
+		> = {};
 		gradeEntries.forEach((grade) => {
-			map[grade.student] = Number(grade.score);
+			map[grade.student] = {
+				score: Number(grade.score),
+				id: grade.id,
+			};
 		});
 		return map;
 	}, [gradeEntries]);
@@ -226,13 +279,21 @@ const GradeEntry: React.FC = () => {
 
 	const submitGrades = handleSubmit((formValues) => {
 		if (!selectedExam || isExamLocked) return;
-		const values = formValues as Record<string, number | undefined>;
+		const values = formValues as Record<string, string | number | undefined>;
 		const gradesToUpsert: GradeInput[] = [];
+		const gradesToDelete: string[] = [];
 
-		Object.entries(values).forEach(([field, rawScore]) => {
+		Object.entries(values).forEach(([field, rawValue]) => {
 			if (!field.startsWith("student_")) return;
 			const studentId = field.replace("student_", "");
-			const score = Number(rawScore);
+			if (rawValue === "" || rawValue === undefined || rawValue === null) {
+				const existing = gradesByStudent[studentId];
+				if (existing?.id) {
+					gradesToDelete.push(existing.id);
+				}
+				return;
+			}
+			const score = Number(rawValue);
 			if (!Number.isNaN(score) && score >= 0 && score <= 20) {
 				gradesToUpsert.push({
 					studentId,
@@ -242,15 +303,30 @@ const GradeEntry: React.FC = () => {
 			}
 		});
 
-		if (gradesToUpsert.length === 0) return;
-		saveGrades.mutate(gradesToUpsert);
+		Object.entries(gradesByStudent).forEach(([studentId, entry]) => {
+			const fieldName = `student_${studentId}`;
+			if (!(fieldName in values) && entry?.id) {
+				gradesToDelete.push(entry.id);
+			}
+		});
+
+		if (!gradesToUpsert.length && !gradesToDelete.length) return;
+		saveGrades.mutate({ inserts: gradesToUpsert, deletes: gradesToDelete });
 	});
 
 	const saveGrades = useMutation({
-		mutationFn: async (payload: GradeInput[]) => {
-			await Promise.all(
-				payload.map((grade) => trpcClient.grades.upsertNote.mutate(grade)),
-			);
+		mutationFn: async (payload: {
+			inserts: GradeInput[];
+			deletes: string[];
+		}) => {
+			await Promise.all([
+				...payload.inserts.map((grade) =>
+					trpcClient.grades.upsertNote.mutate(grade),
+				),
+				...payload.deletes.map((id) =>
+					trpcClient.grades.deleteNote.mutate({ id }),
+				),
+			]);
 		},
 		onSuccess: () => {
 			toast.success(t("teacher.gradeEntry.toast.saveSuccess"));
@@ -284,9 +360,11 @@ const GradeEntry: React.FC = () => {
 	});
 
 	const isInitialLoading =
-		courseContextQuery.isLoading ||
-		rosterQuery.isLoading ||
-		examsQuery.isLoading;
+		classCoursesQuery.isLoading ||
+		(Boolean(courseId) &&
+			(courseContextQuery.isLoading ||
+				rosterQuery.isLoading ||
+				examsQuery.isLoading));
 
 	if (isInitialLoading) {
 		return (
@@ -317,6 +395,42 @@ const GradeEntry: React.FC = () => {
 			</div>
 
 			<Card>
+				<CardContent className="space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="class-course">
+							{t("teacher.gradeEntry.selectCourse.label")}
+						</Label>
+						<Select
+							value={courseId || undefined}
+							onValueChange={handleCourseChange}
+							disabled={availableClassCourses.length === 0}
+						>
+								<SelectTrigger
+									id="class-course"
+									data-testid="class-course-select"
+								>
+									<SelectValue
+										placeholder={t("teacher.gradeEntry.selectCourse.empty")}
+									/>
+							</SelectTrigger>
+							<SelectContent>
+								{availableClassCourses.map((cc) => (
+									<SelectItem key={cc.id} value={cc.id}>
+										{cc.courseName ?? cc.course} • {cc.code}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{availableClassCourses.length === 0 && !classCoursesQuery.isLoading ? (
+							<p className="text-muted-foreground text-sm">
+								{t("teacher.gradeEntry.selectCourse.emptyState")}
+							</p>
+						) : null}
+					</div>
+				</CardContent>
+			</Card>
+
+			<Card>
 				<CardContent className="space-y-4">
 					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 						<div className="w-full space-y-2 md:max-w-sm">
@@ -328,7 +442,7 @@ const GradeEntry: React.FC = () => {
 								onValueChange={handleExamChange}
 								disabled={exams.length === 0}
 							>
-								<SelectTrigger id="exam">
+								<SelectTrigger id="exam" data-testid="exam-select">
 									<SelectValue
 										placeholder={t("teacher.gradeEntry.selectExam.empty")}
 									/>
@@ -378,6 +492,12 @@ const GradeEntry: React.FC = () => {
 								{t("teacher.gradeEntry.info.description")}
 							</AlertDescription>
 						</Alert>
+					)}
+
+					{courseId && !selectedExam && (
+						<p className="text-muted-foreground text-sm">
+							{t("teacher.gradeEntry.selectExam.prompt")}
+						</p>
 					)}
 				</CardContent>
 			</Card>

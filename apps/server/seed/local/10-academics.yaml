@@ -85,3 +85,15 @@ classCourses:
     teacherCode: TEACH-JAMAL
     semesterCode: S1
     weeklyHours: 3
+exams:
+  - id: EXAM-ENG101-MIDTERM
+    classCourseCode: CC-ENG101-L1A
+    name: ENG101 Midterm
+    type: CC
+    date: 2024-10-01T09:00:00Z
+    percentage: 40
+    status: draft
+enrollmentWindows:
+  - classCode: ENG24-L1A
+    academicYearCode: AY-2024
+    status: open

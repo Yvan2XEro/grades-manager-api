@@ -4,6 +4,7 @@ import type {
 	BusinessRole,
 	DomainUser,
 	Gender,
+	Institution,
 	NewDomainUser,
 } from "../db/schema/app-schema";
 import * as schema from "../db/schema/app-schema";
@@ -11,13 +12,44 @@ import * as authSchema from "../db/schema/auth";
 import { buildPermissions } from "../modules/authz";
 import * as creditLedger from "../modules/student-credit-ledger";
 import type { Context } from "./context";
-import { requireDefaultInstitutionId } from "./institution";
 import { slugify } from "./strings";
-import { getTestInstitution } from "./test-context-state";
+import { getTestInstitution, setTestInstitution } from "./test-context-state";
 import { auth, db } from "./test-db";
 
 const DEFAULT_DATE = new Date("1990-01-01");
 const DEFAULT_PLACE = "Yaoundé";
+
+/**
+ * Creates a test organization and institution, then sets it as the global test institution.
+ * Call this at the beginning of test files that need tenant context.
+ */
+export async function setupTestInstitution(): Promise<Institution> {
+	// Create organization
+	const [org] = await db
+		.insert(authSchema.organization)
+		.values({
+			id: randomUUID(),
+			name: "Test Institution",
+			slug: `test-${randomUUID().slice(0, 8)}`,
+			createdAt: new Date(),
+		})
+		.returning();
+
+	// Create institution linked to organization
+	const [institution] = await db
+		.insert(schema.institutions)
+		.values({
+			code: `TEST-${randomUUID().slice(0, 4)}`,
+			shortName: "TEST",
+			nameFr: "Institution de test",
+			nameEn: "Test Institution",
+			organizationId: org.id,
+		})
+		.returning();
+
+	setTestInstitution(institution);
+	return institution;
+}
 
 type TestContextOptions = {
 	role?: BusinessRole;
@@ -42,15 +74,21 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		return {
 			session: null,
 			profile: null,
+			member: null,
+			memberRole: null,
 			permissions: buildPermissions(null),
 			institution,
 			organizationId: institution.organizationId ?? null,
 		} as Context;
 	}
+	const resolvedMemberId =
+		opts.profileOverrides?.memberId !== undefined
+			? opts.profileOverrides.memberId
+			: randomUUID();
 	const profile = {
 		id: opts.profileOverrides?.id ?? randomUUID(),
 		authUserId: opts.profileOverrides?.authUserId ?? userId,
-		memberId: opts.profileOverrides?.memberId ?? null,
+		memberId: resolvedMemberId,
 		businessRole: role,
 		firstName: opts.profileOverrides?.firstName ?? "Test",
 		lastName: opts.profileOverrides?.lastName ?? "User",
@@ -66,12 +104,23 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		createdAt: opts.profileOverrides?.createdAt ?? new Date(),
 		updatedAt: opts.profileOverrides?.updatedAt ?? new Date(),
 	} satisfies DomainUser;
+	const member = resolvedMemberId
+		? {
+				id: resolvedMemberId,
+				userId,
+				organizationId: institution.organizationId ?? randomUUID(),
+				role,
+				createdAt: new Date(),
+			}
+		: null;
 	return {
 		session: {
 			user: { id: userId, role: opts.authRole ?? "admin" },
 		},
 		profile,
-		permissions: buildPermissions(profile),
+		member,
+		memberRole: role,
+		permissions: buildPermissions(role),
 		institution,
 		organizationId: institution.organizationId ?? null,
 	} as Context;
@@ -153,7 +202,7 @@ export async function createOrganizationMember(
 			id: data.id ?? randomUUID(),
 			organizationId,
 			userId,
-			role: data.role ?? "member",
+			role: data.role ?? "teacher",
 			createdAt: data.createdAt ?? new Date(),
 		})
 		.returning();
@@ -246,8 +295,7 @@ export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
 		institutionId: providedInstitutionId,
 		...rest
 	} = data;
-	const institutionId =
-		providedInstitutionId ?? (await requireDefaultInstitutionId());
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 	const [faculty] = await db
 		.insert(schema.faculties)
 		.values({
@@ -397,8 +445,7 @@ export async function createAcademicYear(
 	data: Partial<schema.NewAcademicYear> = {},
 ) {
 	const { institutionId: providedInstitutionId, ...rest } = data;
-	const institutionId =
-		providedInstitutionId ?? (await requireDefaultInstitutionId());
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 	const [year] = await db
 		.insert(schema.academicYears)
 		.values({
@@ -663,8 +710,7 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
 
 export async function createExamType(data: Partial<schema.NewExamType> = {}) {
 	const { institutionId: providedInstitutionId, ...rest } = data;
-	const institutionId =
-		providedInstitutionId ?? (await requireDefaultInstitutionId());
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 	const [examType] = await db
 		.insert(schema.examTypes)
 		.values({

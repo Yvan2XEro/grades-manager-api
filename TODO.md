@@ -111,6 +111,13 @@
 - [ ] Migrate the remaining services/routers (students, classes, class courses, enrollments, exams, grades, workflows, promotion rules, etc.) to require the tenant context and enforce `institution_id` filters.
 - [ ] Adjust TRPC/tests to verify cross-institution isolation fails appropriately (e.g., two tenants seeded via PGlite snapshot).
 
+#### Phase 3b – Better Auth organization context (see [`docs/better-auth-organization-context.md`](docs/better-auth-organization-context.md))
+
+- [ ] Delete the `requireDefaultInstitution*` helpers and make `createContext` reject requests without an active Better Auth organization instead of fabricating a tenant.
+- [ ] Thread the `institutionId` from context through modules still using the default helper (`class-courses`, `promotion-rules`, `lib/test-utils`, seeds, etc.) so every service/router works with the resolved tenant.
+- [ ] Refresh seeds + fixtures so they always create organization ↔ institution ↔ member records via the Better Auth flow (no hidden defaults).
+- [ ] On the frontend, detect the organization slug from the subdomain (fallback to `VITE_DEFAULT_ORGANIZATION_SLUG`), store it, and call `authClient.organization.setActiveOrganization({ slug })` after login so the backend receives the tenant.
+
 #### Phase 4 – Seeds & onboarding
 
 - [ ] Update YAML seeds (`00-foundation`, `20-users`) to include institution + organization metadata.

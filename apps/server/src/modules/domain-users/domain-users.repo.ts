@@ -6,10 +6,11 @@ import {
 	domainUsers,
 	type NewDomainUser,
 } from "@/db/schema/app-schema";
-import { user } from "@/db/schema/auth";
+import { member, user } from "@/db/schema/auth";
 
 export async function create(data: NewDomainUser) {
 	const [profile] = await db.insert(domainUsers).values(data).returning();
+	await syncMemberRole(profile?.memberId, profile?.businessRole);
 	return profile;
 }
 
@@ -23,6 +24,7 @@ export async function update(id: string, data: Partial<NewDomainUser>) {
 		.set(data)
 		.where(eq(domainUsers.id, id))
 		.returning();
+	await syncMemberRole(profile?.memberId, profile?.businessRole);
 	return profile;
 }
 
@@ -30,6 +32,23 @@ export async function findById(id: string) {
 	return db.query.domainUsers.findFirst({
 		where: eq(domainUsers.id, id),
 	});
+}
+
+async function syncMemberRole(
+	memberId: string | null | undefined,
+	role: BusinessRole | null | undefined,
+) {
+	if (!memberId || !role) return;
+	const record = await db.query.member.findFirst({
+		where: eq(member.id, memberId),
+	});
+	if (!record) return;
+	if (record.role === "owner") return;
+	if (record.role === role) return;
+	await db
+		.update(member)
+		.set({ role })
+		.where(eq(member.id, memberId));
 }
 
 export async function getDomainsByAuthUserId(

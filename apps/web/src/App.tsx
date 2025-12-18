@@ -1,14 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Route, Routes } from "react-router";
-import type {
-	BusinessRole,
-	DomainUser,
-} from "../../server/src/db/schema/app-schema";
+import type { DomainUser } from "../../server/src/db/schema/app-schema";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import { Redirector } from "./components/navigation/Redirector";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
+import { detectOrganizationSlug } from "./lib/organization";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
 import ClassManagement from "./pages/admin/ClassManagement";
@@ -50,41 +48,85 @@ import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
-import { useStore } from "./store";
+import { roleGuards, useStore } from "./store";
+import type { BusinessRole } from "./store";
 
 function App() {
-	const { setUser, clearUser } = useStore();
+	const {
+		setUser,
+		clearUser,
+		setActiveOrganizationSlug,
+		activeOrganizationSlug,
+	} = useStore();
 	const { data: session, isPending } = authClient.useSession();
+	const activatedSlugRef = useRef<string | null>(null);
 
 	const memoUser = useMemo(() => {
 		if (!session || !session.user) return null;
 		const [firstName, ...rest] = (session.user.name || "").split(" ");
-		const domainRole: BusinessRole = (session.domainProfiles?.[0] as DomainUser)
-			.businessRole;
+		const membershipRole =
+			session.activeMembership?.role ??
+			(session.domainProfiles?.[0] as DomainUser | undefined)?.businessRole ??
+			null;
+		const role = normalizeRole(membershipRole);
 		return {
 			profileId: session.user.id,
 			authUserId: session.user.id,
 			email: session.user.email,
-			role: domainRole,
+			role,
 			firstName,
 			lastName: rest.join(" "),
 			domainProfiles: session.domainProfiles,
 			permissions: {
-				canManageCatalog: ["administrator", "dean", "super_admin"].includes(
-					domainRole,
-				),
-				canManageStudents: ["administrator", "dean", "super_admin"].includes(
-					domainRole,
-				),
-				canGrade: ["teacher", "administrator", "dean", "super_admin"].includes(
-					domainRole,
-				),
-				canAccessAnalytics: ["administrator", "dean", "super_admin"].includes(
-					domainRole,
-				),
+				canManageCatalog: roleGuards.manageCatalog.includes(role),
+				canManageStudents: roleGuards.manageStudents.includes(role),
+				canGrade: roleGuards.grade.includes(role),
+				canAccessAnalytics: roleGuards.viewAnalytics.includes(role),
 			},
 		};
 	}, [session]);
+
+	// Detect and set organization slug on mount
+	useEffect(() => {
+		try {
+			const slug = detectOrganizationSlug();
+			if (slug && slug !== activeOrganizationSlug) {
+				setActiveOrganizationSlug(slug);
+			}
+		} catch (error) {
+			console.error("Failed to detect organization slug:", error);
+		}
+	}, [activeOrganizationSlug, setActiveOrganizationSlug]);
+
+	// Set active organization in Better Auth when we have both session and slug
+	useEffect(() => {
+		if (!session?.user) {
+			activatedSlugRef.current = null;
+			return;
+		}
+		if (session?.user && activeOrganizationSlug) {
+			if (activatedSlugRef.current === activeOrganizationSlug) {
+				return;
+			}
+			let cancelled = false;
+			const activateOrganization = async () => {
+				try {
+					await authClient.organization.setActive({
+						organizationSlug: activeOrganizationSlug,
+					});
+					if (!cancelled) {
+						activatedSlugRef.current = activeOrganizationSlug;
+					}
+				} catch (error) {
+					console.error("Failed to set active organization:", error);
+				}
+			};
+			void activateOrganization();
+			return () => {
+				cancelled = true;
+			};
+		}
+	}, [session?.user?.id, activeOrganizationSlug]);
 
 	useEffect(() => {
 		if (memoUser) {
@@ -175,6 +217,7 @@ function App() {
 					<Route path="/teacher" element={<DashboardLayout />}>
 						<Route index element={<TeacherDashboard />} />
 						<Route path="courses" element={<CourseList />} />
+						<Route path="grades" element={<GradeEntry />} />
 						<Route path="grades/:courseId" element={<GradeEntry />} />
 						<Route path="attendance" element={<AttendanceAlerts />} />
 						<Route path="workflows" element={<WorkflowManager />} />
@@ -193,6 +236,25 @@ function App() {
 			/>
 		</Routes>
 	);
+}
+
+const allowedRoles: BusinessRole[] = [
+	"guest",
+	"student",
+	"staff",
+	"dean",
+	"teacher",
+	"administrator",
+	"super_admin",
+	"owner",
+];
+
+function normalizeRole(role: string | null | undefined): BusinessRole {
+	if (!role) return "guest";
+	if (allowedRoles.includes(role as BusinessRole)) {
+		return role as BusinessRole;
+	}
+	return "guest";
 }
 
 export default App;

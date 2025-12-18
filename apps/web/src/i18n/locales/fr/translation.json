@@ -114,7 +114,8 @@
 			"dean": "Doyen",
 			"teacher": "Enseignant",
 			"administrator": "Administrateur",
-			"super_admin": "Super administrateur"
+			"super_admin": "Super administrateur",
+			"owner": "Propriétaire"
 		}
 	},
 	"auth": {
@@ -1006,6 +1007,11 @@
 				"firstName": "Prénom",
 				"lastName": "Nom",
 				"email": "E-mail",
+				"dateOfBirth": "Date de naissance",
+				"placeOfBirth": "Lieu de naissance",
+				"gender": "Sexe",
+				"genderPlaceholder": "Sélectionner un sexe",
+				"nationality": "Nationalité",
 				"registration": "Numéro de matricule",
 				"registrationHint": "Laissez vide pour générer automatiquement le prochain matricule.",
 				"registrationFormat": "Format de matricule",
@@ -1673,10 +1679,16 @@
 		},
 		"gradeEntry": {
 			"title": "Saisie des notes",
+			"selectCourse": {
+				"label": "Sélectionner un cours",
+				"empty": "Choisir un cours",
+				"emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur."
+			},
 			"selectExam": {
 				"label": "Sélectionner une évaluation",
 				"empty": "Aucune évaluation disponible",
-				"lockedTag": "Verrouillée"
+				"lockedTag": "Verrouillée",
+				"prompt": "Sélectionnez une évaluation pour commencer la saisie des notes."
 			},
 			"lockedChip": "Notes verrouillées",
 			"actions": {

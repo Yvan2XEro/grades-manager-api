@@ -2,6 +2,14 @@ meta:
   version: "2024.12"
   generatedAt: 2024-12-05T00:00:00Z
   dataset: demo
+
+# Organizations: Better Auth organizations that own institutions
+# Each institution must be linked to an organization
+organizations:
+  - slug: sgn-institution
+    name: SGN Institution
+    # This organization will be linked to the institution below
+
 examTypes:
   - name: CC
     description: Contrôle continu
@@ -100,3 +108,4 @@ institutions:
     defaultAcademicYearCode: AY-2024
     registrationFormatName: ENG default format
     timezone: Africa/Douala
+    organizationSlug: sgn-institution

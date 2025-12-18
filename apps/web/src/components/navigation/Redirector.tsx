@@ -6,6 +6,7 @@ import LoadingScreen from "../ui/LoadingScreen";
 export const roleLayoutMap = {
 	administrator: <Navigate to="/admin" replace />,
 	super_admin: <Navigate to="/admin" replace />,
+	owner: <Navigate to="/admin" replace />,
 	dean: <Navigate to="/dean" replace />,
 	teacher: <Navigate to="/teacher" replace />,
 	student: <Navigate to="/student" replace />,

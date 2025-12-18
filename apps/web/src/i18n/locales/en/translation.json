@@ -149,10 +149,16 @@
 		},
 		"gradeEntry": {
 			"title": "Grade Entry",
+			"selectCourse": {
+				"label": "Select class course",
+				"empty": "Choose a class course",
+				"emptyState": "No class courses assigned. Contact an administrator."
+			},
 			"selectExam": {
 				"label": "Select exam",
 				"empty": "No exams available",
-				"lockedTag": "Locked"
+				"lockedTag": "Locked",
+				"prompt": "Select an exam to start entering grades."
 			},
 			"lockedChip": "Grades locked",
 			"actions": {
@@ -595,7 +601,8 @@
 			"dean": "Dean",
 			"teacher": "Teacher",
 			"administrator": "Administrator",
-			"super_admin": "Super admin"
+			"super_admin": "Super admin",
+			"owner": "Owner"
 		}
 	},
 	"auth": {
@@ -1475,6 +1482,11 @@
 				"firstName": "First name",
 				"lastName": "Last name",
 				"email": "Email",
+				"dateOfBirth": "Date of birth",
+				"placeOfBirth": "Place of birth",
+				"gender": "Gender",
+				"genderPlaceholder": "Select gender",
+				"nationality": "Nationality",
 				"registration": "Registration number",
 				"registrationHint": "Leave blank to auto-generate the next available matricule.",
 				"registrationFormat": "Registration format",
