@@ -583,11 +583,16 @@ export interface InstitutionMetadata {
 	[key: string]: unknown;
 }
 
+/** Institution types for hierarchical structure. */
+export const institutionTypes = ["university", "institution", "faculty"] as const;
+export type InstitutionType = (typeof institutionTypes)[number];
+
 export const institutions = pgTable(
 	"institutions",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		code: text("code").notNull(),
+		type: text("type").$type<InstitutionType>().notNull().default("institution"),
 		shortName: text("short_name"),
 		nameFr: text("name_fr").notNull(),
 		nameEn: text("name_en").notNull(),
@@ -606,6 +611,12 @@ export const institutions = pgTable(
 		website: text("website"),
 		logoUrl: text("logo_url"),
 		coverImageUrl: text("cover_image_url"),
+		parentInstitutionId: text("parent_institution_id").references(
+			(): any => institutions.id,
+			{
+				onDelete: "set null",
+			},
+		),
 		facultyId: text("faculty_id").references(() => faculties.id, {
 			onDelete: "set null",
 		}),
@@ -1209,7 +1220,15 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
-export const institutionsRelations = relations(institutions, ({ one }) => ({
+export const institutionsRelations = relations(institutions, ({ one, many }) => ({
+	parentInstitution: one(institutions, {
+		fields: [institutions.parentInstitutionId],
+		references: [institutions.id],
+		relationName: "institutionHierarchy",
+	}),
+	childInstitutions: many(institutions, {
+		relationName: "institutionHierarchy",
+	}),
 	faculty: one(faculties, {
 		fields: [institutions.facultyId],
 		references: [faculties.id],

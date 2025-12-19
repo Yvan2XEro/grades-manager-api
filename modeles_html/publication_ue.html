@@ -298,15 +298,23 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                <h1>{{name_fr}} / {{name_en}}</h1>
+                {{#if university_name_fr}}
+                <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                {{/if}}
                 {{#if faculty_name_fr}}
                 <h2>{{faculty_name_fr}}</h2>
                 {{/if}}
+                <h2>{{name_fr}} / {{name_en}}</h2>
 
                 <div class="logos">
+                    {{#if university_logo_url}}
+                    <div class="logo-box">
+                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                    {{/if}}
                     {{#if logo_url}}
                     <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo" style="max-width: 100px; max-height: 100px;">
+                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
                     </div>
                     {{else}}
                     <div class="logo-box">
@@ -314,6 +322,15 @@
                         <div>INSTITUTION</div>
                     </div>
                     {{/if}}
+                </div>
+
+                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
+                    {{#if university_contact_email}}Email Université: {{university_contact_email}}{{/if}}
+                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institut: {{contact_email}}{{/if}}
+                    {{#if university_fax}}<br>Fax Université: {{university_fax}}{{/if}}
+                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institut: {{fax}}{{/if}}
+                    {{#if university_postal_box}}<br>BP Université: {{university_postal_box}}{{/if}}
+                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP Institut: {{postal_box}}{{/if}}
                 </div>
             </div>
 

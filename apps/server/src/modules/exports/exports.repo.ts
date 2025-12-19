@@ -23,12 +23,18 @@ export class ExportsRepo {
 	private db = db;
 
 	/**
-	 * Get the default institution (or first institution) with its configuration
+	 * Get the default institution (or first institution) with its full hierarchy
+	 * Loads parent institution (university) and supervising faculty
 	 */
 	async getInstitution() {
 		const institution = await this.db.query.institutions.findFirst({
 			with: {
 				faculty: true,
+				parentInstitution: {
+					with: {
+						faculty: true,
+					},
+				},
 			},
 		});
 

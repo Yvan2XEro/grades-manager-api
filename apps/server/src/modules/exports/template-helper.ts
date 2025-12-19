@@ -10,11 +10,23 @@ import type {
  */
 export interface ExportConfig {
 	institution: {
+		// Institute/Institution information
 		name_fr: string;
 		name_en: string;
 		logo_url: string;
+		contact_email?: string;
+		fax?: string;
+		postal_box?: string;
+		// Supervising faculty/school information
 		faculty_name_fr?: string;
 		faculty_name_en?: string;
+		// Parent university information
+		university_name_fr?: string;
+		university_name_en?: string;
+		university_logo_url?: string;
+		university_contact_email?: string;
+		university_fax?: string;
+		university_postal_box?: string;
 	};
 	grading: {
 		appreciations: Array<{
@@ -73,21 +85,42 @@ export function loadExportConfig(): ExportConfig {
 
 /**
  * Convert institution data from database to ExportConfig format
+ * Handles 3-level hierarchy: University → Faculty/School → Institute
  */
 export function institutionToExportConfig(
-	institution: Institution & { faculty?: { name: string } | null },
+	institution: Institution & {
+		faculty?: { name: string } | null;
+		parentInstitution?: (Institution & { faculty?: { name: string } | null }) | null;
+	},
 ): ExportConfig {
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
 
+	// Extract university (parent institution) data
+	const university = institution.parentInstitution;
+	// Extract supervising faculty/school data
+	const supervisingFaculty = institution.faculty;
+
 	// Default values matching the old export-config.json
 	return {
 		institution: {
+			// Institute/Institution information
 			name_fr: institution.nameFr,
 			name_en: institution.nameEn,
-			logo_url: institution.logoUrl || "/logos/university.png",
-			faculty_name_fr: institution.faculty?.name,
-			faculty_name_en: institution.faculty?.name,
+			logo_url: institution.logoUrl || "/logos/institution.png",
+			contact_email: institution.contactEmail,
+			fax: institution.fax,
+			postal_box: institution.postalBox,
+			// Supervising faculty/school information
+			faculty_name_fr: supervisingFaculty?.name,
+			faculty_name_en: supervisingFaculty?.name,
+			// Parent university information
+			university_name_fr: university?.nameFr,
+			university_name_en: university?.nameEn,
+			university_logo_url: university?.logoUrl,
+			university_contact_email: university?.contactEmail,
+			university_fax: university?.fax,
+			university_postal_box: university?.postalBox,
 		},
 		grading: exportConfig?.grading || {
 			appreciations: [
