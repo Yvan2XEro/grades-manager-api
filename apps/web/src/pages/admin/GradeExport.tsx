@@ -1987,21 +1987,19 @@ export default function GradeExport() {
 			</Tabs>
 
 			<Dialog open={showPreview} onOpenChange={setShowPreview}>
-				<DialogContent className="max-h-[90vh] max-w-6xl overflow-auto">
+				<DialogContent className="max-h-[90vh] min-w-[80vw] overflow-auto">
 					<DialogHeader>
 						<DialogTitle>{previewTitle}</DialogTitle>
 						<DialogDescription>
 							Prévisualisation HTML avant génération PDF
 						</DialogDescription>
 					</DialogHeader>
-					<div className="overflow-auto rounded-md border bg-white p-4">
-						<div
-							className="mx-auto origin-top"
-							style={{
-								transform: "scale(0.85)",
-								transformOrigin: "top center",
-							}}
-							dangerouslySetInnerHTML={{ __html: previewHtml }}
+					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-gray-100">
+						<iframe
+							title="preview"
+							className="h-full w-full bg-white"
+							sandbox="allow-same-origin"
+							srcDoc={previewHtml}
 						/>
 					</div>
 				</DialogContent>
