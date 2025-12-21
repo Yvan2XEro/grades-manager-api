@@ -1,0 +1,58 @@
+services:
+  server:
+    image: ghcr.io/yvan2xero/grades-manager-server:latest
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgres://grades:grades@postgres:5432/grades}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173}
+      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-http://localhost:3000}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
+      STORAGE_LOCAL_PUBLIC_PATH: /uploads
+    ports:
+      - "3000:3000"
+    volumes:
+      - server_uploads:/usr/src/app/apps/server/storage/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/yvan2xero/grades-manager-web:latest
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_SERVER_URL: ${VITE_SERVER_URL:-http://localhost:3000}
+        VITE_DEFAULT_ORGANIZATION_SLUG: ${VITE_DEFAULT_ORGANIZATION_SLUG:-sgn-institution}
+    environment:
+      NODE_ENV: production
+      PORT: 4173
+    ports:
+      - "4173:4173"
+    depends_on:
+      - server
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: grades
+      POSTGRES_PASSWORD: grades
+      POSTGRES_DB: grades
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  server_uploads:
+  postgres_data:

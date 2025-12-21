@@ -1512,7 +1512,7 @@ export default function GradeExport() {
 								<SelectValue placeholder="Sélectionner un semestre" />
 							</SelectTrigger>
 							<SelectContent>
-								{semesters.map((semester) => (
+								{semesters?.map((semester) => (
 									<SelectItem key={semester.id} value={semester.id}>
 										{semester.name}
 									</SelectItem>

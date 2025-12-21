@@ -14,10 +14,7 @@ import {
  * Router for grade exports (PV, evaluation, UE)
  */
 export const exportsRouter = router({
-	/**
-	 * Generate PV (Procès-Verbal) for a class/semester
-	 * Returns PDF or HTML preview
-	 */
+	/** Generate PV (official minutes) for a class/semester and return PDF or HTML */
 	generatePV: gradingProcedure
 		.input(generatePVSchema)
 		.mutation(async ({ ctx, input }) => {

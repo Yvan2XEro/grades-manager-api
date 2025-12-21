@@ -73,9 +73,7 @@ export class ExportsService {
 		Handlebars.registerHelper("multiply", (a, b) => a * b);
 	}
 
-	/**
-	 * Generate PV (Procès-Verbal) export
-	 */
+	/** Generate PV (official minutes) export */
 	async generatePV(input: GeneratePVInput) {
 		const config = await this.getConfig();
 		const data = await this.repo.getPVData(

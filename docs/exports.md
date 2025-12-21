@@ -22,10 +22,10 @@ apps/server/src/
 │   └── template-helper.ts        # Helpers pour templates
 ├── config/
 │   └── export-config.json        # Configuration institutionnelle
-└── modeles_html/
-    ├── pv template.html           # Template PV
-    ├── publication_evaluation.html # Template évaluation
-    └── publication_ue.html        # Template UE
+└── modules/exports/templates/
+    ├── pv-template.html           # Template PV
+    ├── evaluation-publication.html # Template évaluation
+    └── teaching-unit-publication.html # Template UE
 ```
 
 ## Configuration

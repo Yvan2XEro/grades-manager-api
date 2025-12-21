@@ -80,6 +80,7 @@ export async function createExam(
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
 	const classCourse = await requireClassCourse(data.classCourse, institutionId);
+	const tenantId = classCourse.institutionId ?? institutionId;
 	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
 		const [{ total }] = await tx
@@ -98,7 +99,7 @@ export async function createExam(
 			.insert(schema.exams)
 			.values({
 				...data,
-				institutionId,
+				institutionId: tenantId,
 				status: schedulerId ? "scheduled" : "draft",
 				scheduledBy: resolvedScheduler,
 				scheduledAt: schedulerId ? new Date() : null,

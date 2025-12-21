@@ -174,14 +174,14 @@ export function institutionToExportConfig(
  */
 export function loadTemplate(templateName: "pv" | "evaluation" | "ue"): string {
 	const templateMap = {
-		pv: "pv template.html",
-		evaluation: "publication_evaluation.html",
-		ue: "publication_ue.html",
+		pv: "pv-template.html",
+		evaluation: "evaluation-publication.html",
+		ue: "teaching-unit-publication.html",
 	};
 
 	const templatePath = join(
 		import.meta.dir,
-		"../../../../../modeles_html",
+		"templates",
 		templateMap[templateName],
 	);
 

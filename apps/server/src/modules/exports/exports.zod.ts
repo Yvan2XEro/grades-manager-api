@@ -4,7 +4,7 @@ import { z } from "zod";
  * Export types supported by the system
  */
 export const exportTypeSchema = z.enum([
-	"pv", // Procès-Verbal (transcript for semester)
+	"pv", // Semester minutes export
 	"evaluation", // Single evaluation publication
 	"ue", // Teaching Unit (UE) results
 ]);
@@ -18,9 +18,7 @@ export const exportFormatSchema = z.enum(["pdf", "html"]);
 
 export type ExportFormat = z.infer<typeof exportFormatSchema>;
 
-/**
- * Input schema for generating a PV (Procès-Verbal)
- */
+/** Input schema for generating the PV (official minutes) export */
 export const generatePVSchema = z.object({
 	classId: z.string(),
 	semesterId: z.string(),
