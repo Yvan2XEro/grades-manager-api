@@ -37,6 +37,7 @@ import { trpc, trpcClient } from "@/utils/trpc";
 
 const institutionSchema = z.object({
 	code: z.string().min(1),
+	type: z.enum(["university", "institution", "faculty"]),
 	shortName: z.string().optional(),
 	nameFr: z.string().min(1),
 	nameEn: z.string().min(1),
@@ -55,6 +56,8 @@ const institutionSchema = z.object({
 	website: z.string().url().optional().or(z.literal("")),
 	logoUrl: z.string().url().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
+	parentInstitutionId: z.string().optional(),
+	facultyId: z.string().optional(),
 	defaultAcademicYearId: z.string().optional(),
 	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
@@ -66,6 +69,7 @@ const NO_SELECTION = "__NONE__";
 
 const defaultValues: InstitutionFormValues = {
 	code: "",
+	type: "institution",
 	shortName: "",
 	nameFr: "",
 	nameEn: "",
@@ -84,6 +88,8 @@ const defaultValues: InstitutionFormValues = {
 	website: "",
 	logoUrl: "",
 	coverImageUrl: "",
+	parentInstitutionId: undefined,
+	facultyId: undefined,
 	defaultAcademicYearId: undefined,
 	registrationFormatId: undefined,
 	timezone: "UTC",
@@ -274,6 +280,10 @@ function ImageUploadField({
 export default function InstitutionSettings() {
 	const { t } = useTranslation();
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
+	const institutionsQuery = useQuery(trpc.institutions.list.queryOptions());
+	const facultiesQuery = useQuery(
+		trpc.faculties.list.queryOptions({ limit: 100 }),
+	);
 	const yearsQuery = useQuery(
 		trpc.academicYears.list.queryOptions({ limit: 100 }),
 	);
@@ -288,13 +298,15 @@ export default function InstitutionSettings() {
 
 	useEffect(() => {
 		if (institutionQuery.data) {
-			const { defaultAcademicYearId, registrationFormatId, ...rest } =
+			const { defaultAcademicYearId, registrationFormatId, parentInstitutionId, facultyId, ...rest } =
 				institutionQuery.data;
 			const normalized: InstitutionFormValues = {
 				...defaultValues,
 				...rest,
 				defaultAcademicYearId: defaultAcademicYearId ?? undefined,
 				registrationFormatId: registrationFormatId ?? undefined,
+				parentInstitutionId: parentInstitutionId ?? undefined,
+				facultyId: facultyId ?? undefined,
 				contactEmail: rest.contactEmail ?? "",
 				contactPhone: rest.contactPhone ?? "",
 				fax: rest.fax ?? "",
@@ -324,6 +336,8 @@ export default function InstitutionSettings() {
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
+				parentInstitutionId: values.parentInstitutionId || undefined,
+				facultyId: values.facultyId || undefined,
 				registrationFormatId: values.registrationFormatId || undefined,
 				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 			}),
@@ -344,6 +358,8 @@ export default function InstitutionSettings() {
 
 	const registrationFormats = registrationFormatsQuery.data ?? [];
 	const academicYears = yearsQuery.data?.items ?? [];
+	const institutions = institutionsQuery.data ?? [];
+	const faculties = facultiesQuery.data?.items ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -417,6 +433,150 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
+
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="type"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.type", {
+														defaultValue: "Type",
+													})}
+												</FormLabel>
+												<Select
+													value={field.value}
+													onValueChange={field.onChange}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.institution.form.typePlaceholder",
+																	{ defaultValue: "Select type" },
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value="university">
+															{t("admin.institution.form.typeUniversity", {
+																defaultValue: "University",
+															})}
+														</SelectItem>
+														<SelectItem value="faculty">
+															{t("admin.institution.form.typeFaculty", {
+																defaultValue: "Faculty/School",
+															})}
+														</SelectItem>
+														<SelectItem value="institution">
+															{t("admin.institution.form.typeInstitution", {
+																defaultValue: "Institution/Institute",
+															})}
+														</SelectItem>
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="parentInstitutionId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.parentInstitution", {
+														defaultValue: "Parent Institution (University)",
+													})}
+												</FormLabel>
+												<Select
+													value={field.value ?? NO_SELECTION}
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.institution.form.parentInstitutionPlaceholder",
+																	{ defaultValue: "Select parent institution" },
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_SELECTION}>
+															{t(
+																"admin.institution.form.noParentInstitution",
+																{ defaultValue: "None (Top-level)" },
+															)}
+														</SelectItem>
+														{institutions
+															.filter((inst) => inst.id !== institutionQuery.data?.id)
+															.map((inst) => (
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr} ({inst.type})
+																</SelectItem>
+															))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								<FormField
+									control={form.control}
+									name="facultyId"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.institution.form.supervisingFaculty", {
+													defaultValue: "Supervising Faculty/School",
+												})}
+											</FormLabel>
+											<Select
+												value={field.value ?? NO_SELECTION}
+												onValueChange={(value) =>
+													field.onChange(
+														value === NO_SELECTION ? undefined : value,
+													)
+												}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={t(
+																"admin.institution.form.supervisingFacultyPlaceholder",
+																{ defaultValue: "Select supervising faculty" },
+															)}
+														/>
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													<SelectItem value={NO_SELECTION}>
+														{t(
+															"admin.institution.form.noSupervisingFaculty",
+															{ defaultValue: "None" },
+														)}
+													</SelectItem>
+													{faculties.map((faculty) => (
+														<SelectItem key={faculty.id} value={faculty.id}>
+															{faculty.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField

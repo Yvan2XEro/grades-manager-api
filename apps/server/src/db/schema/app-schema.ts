@@ -596,11 +596,52 @@ export const registrationNumberCounters = pgTable(
 );
 
 /** Institution master data with bilingual metadata. */
+/** Institution metadata for export configuration */
+export interface InstitutionMetadata {
+	export_config?: {
+		grading?: {
+			appreciations?: Array<{
+				label: string;
+				min: number;
+				max: number;
+			}>;
+			passing_grade?: number;
+			scale?: number;
+		};
+		signatures?: {
+			pv?: Array<{ position: string; name: string }>;
+			evaluation?: Array<{ position: string; name: string }>;
+			ue?: Array<{ position: string; name: string }>;
+		};
+		exam_settings?: {
+			default_duration_hours?: number;
+			default_coefficient?: number;
+			exam_types?: Record<
+				string,
+				{
+					label: string;
+					coefficient: number;
+				}
+			>;
+		};
+		watermark?: {
+			text?: string;
+			enabled?: boolean;
+		};
+	};
+	[key: string]: unknown;
+}
+
+/** Institution types for hierarchical structure. */
+export const institutionTypes = ["university", "institution", "faculty"] as const;
+export type InstitutionType = (typeof institutionTypes)[number];
+
 export const institutions = pgTable(
 	"institutions",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		code: text("code").notNull(),
+		type: text("type").$type<InstitutionType>().notNull().default("institution"),
 		shortName: text("short_name"),
 		nameFr: text("name_fr").notNull(),
 		nameEn: text("name_en").notNull(),
@@ -619,6 +660,15 @@ export const institutions = pgTable(
 		website: text("website"),
 		logoUrl: text("logo_url"),
 		coverImageUrl: text("cover_image_url"),
+		parentInstitutionId: text("parent_institution_id").references(
+			(): any => institutions.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		facultyId: text("faculty_id").references(() => faculties.id, {
+			onDelete: "set null",
+		}),
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
@@ -635,7 +685,7 @@ export const institutions = pgTable(
 			},
 		),
 		timezone: text("timezone").default("UTC"),
-		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1234,7 +1284,19 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
-export const institutionsRelations = relations(institutions, ({ one }) => ({
+export const institutionsRelations = relations(institutions, ({ one, many }) => ({
+	parentInstitution: one(institutions, {
+		fields: [institutions.parentInstitutionId],
+		references: [institutions.id],
+		relationName: "institutionHierarchy",
+	}),
+	childInstitutions: many(institutions, {
+		relationName: "institutionHierarchy",
+	}),
+	faculty: one(faculties, {
+		fields: [institutions.facultyId],
+		references: [faculties.id],
+	}),
 	defaultAcademicYear: one(academicYears, {
 		fields: [institutions.defaultAcademicYearId],
 		references: [academicYears.id],

@@ -8,6 +8,10 @@ export async function getInstitution() {
 	return existing ?? null;
 }
 
+export async function listInstitutions() {
+	return repo.list();
+}
+
 export async function upsertInstitution(
 	data: UpdatableFields & { id?: string },
 ) {

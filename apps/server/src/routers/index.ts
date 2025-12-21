@@ -8,6 +8,7 @@ import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
+import { exportsRouter } from "../modules/exports";
 import { facultiesRouter } from "../modules/faculties";
 import { filesRouter } from "../modules/files";
 import { institutionsRouter } from "../modules/institutions";
@@ -55,6 +56,7 @@ export const appRouter = router({
 	files: filesRouter,
 	institutions: institutionsRouter,
 	grades: gradesRouter,
+	exports: exportsRouter,
 	users: usersRouter,
 	workflows: workflowsRouter,
 	notifications: notificationsRouter,

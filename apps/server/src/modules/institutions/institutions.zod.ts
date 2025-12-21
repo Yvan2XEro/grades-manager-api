@@ -2,6 +2,7 @@ import z from "zod";
 
 export const upsertInstitutionSchema = z.object({
 	code: z.string().min(1),
+	type: z.enum(["university", "institution", "faculty"]).default("institution"),
 	shortName: z.string().optional(),
 	nameFr: z.string().min(1),
 	nameEn: z.string().min(1),
@@ -21,6 +22,8 @@ export const upsertInstitutionSchema = z.object({
 	logoUrl: z.string().url().optional(),
 	coverImageUrl: z.string().url().optional(),
 	organizationId: z.string().optional(),
+	parentInstitutionId: z.string().optional(),
+	facultyId: z.string().optional(),
 	defaultAcademicYearId: z.string().optional(),
 	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
