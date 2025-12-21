@@ -13,32 +13,50 @@ import {
 export const studyCyclesRouter = router({
 	createCycle: adminProcedure
 		.input(cycleBaseSchema)
-		.mutation(({ input }) => service.createCycle(input)),
+		.mutation(({ ctx, input }) =>
+			service.createCycle(input, ctx.institution.id),
+		),
 	updateCycle: adminProcedure
 		.input(updateCycleSchema)
-		.mutation(({ input }) => service.updateCycle(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateCycle(input.id, ctx.institution.id, input),
+		),
 	deleteCycle: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteCycle(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteCycle(input.id, ctx.institution.id),
+		),
 	listCycles: protectedProcedure
 		.input(cycleListSchema)
-		.query(({ input }) => service.listCycles(input)),
+		.query(({ ctx, input }) => service.listCycles(input, ctx.institution.id)),
 	getCycle: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getCycleById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getCycleById(input.id, ctx.institution.id),
+		),
 	createLevel: adminProcedure
 		.input(levelBaseSchema)
-		.mutation(({ input }) => service.createLevel(input)),
+		.mutation(({ ctx, input }) =>
+			service.createLevel(input, ctx.institution.id),
+		),
 	updateLevel: adminProcedure
 		.input(updateLevelSchema)
-		.mutation(({ input }) => service.updateLevel(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateLevel(input.id, ctx.institution.id, input),
+		),
 	deleteLevel: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteLevel(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteLevel(input.id, ctx.institution.id),
+		),
 	listLevels: protectedProcedure
 		.input(levelListSchema)
-		.query(({ input }) => service.listLevels(input.cycleId)),
+		.query(({ ctx, input }) =>
+			service.listLevels(input.cycleId, ctx.institution.id),
+		),
 	getLevel: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getLevelById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getLevelById(input.id, ctx.institution.id),
+		),
 });

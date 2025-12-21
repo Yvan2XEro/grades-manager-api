@@ -11,20 +11,30 @@ import {
 export const programOptionsRouter = router({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createOption(input)),
+		.mutation(({ input, ctx }) =>
+			service.createOption(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateOption(input.id, input)),
+		.mutation(({ input, ctx }) =>
+			service.updateOption(input.id, ctx.institution.id, input),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteOption(input.id)),
+		.mutation(({ input, ctx }) =>
+			service.deleteOption(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listOptions(input)),
+		.query(({ input, ctx }) => service.listOptions(input, ctx.institution.id)),
 	search: protectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchProgramOptions(input)),
+		.query(({ input, ctx }) =>
+			service.searchProgramOptions(input, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getOptionById(input.id)),
+		.query(({ input, ctx }) =>
+			service.getOptionById(input.id, ctx.institution.id),
+		),
 });

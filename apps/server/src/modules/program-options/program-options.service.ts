@@ -1,12 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as repo from "./program-options.repo";
 
-async function ensureProgram(programId: string) {
+async function ensureProgram(programId: string, institutionId: string) {
 	const program = await db.query.programs.findFirst({
-		where: eq(schema.programs.id, programId),
+		where: and(
+			eq(schema.programs.id, programId),
+			eq(schema.programs.institutionId, institutionId),
+		),
 	});
 	if (!program) {
 		throw new TRPCError({
@@ -17,8 +20,8 @@ async function ensureProgram(programId: string) {
 	return program;
 }
 
-async function ensureOption(id: string) {
-	const option = await repo.findById(id);
+async function ensureOption(id: string, institutionId: string) {
+	const option = await repo.findById(id, institutionId);
 	if (!option) {
 		throw new TRPCError({
 			code: "NOT_FOUND",
@@ -29,40 +32,39 @@ async function ensureOption(id: string) {
 }
 
 export async function createOption(
-	data: Omit<schema.NewProgramOption, "institutionId"> & {
-		institutionId?: string;
-	},
+	data: schema.NewProgramOption,
+	institutionId: string,
 ) {
-	const program = await ensureProgram(data.programId);
-	return repo.create({
-		...data,
-		institutionId: data.institutionId ?? program.institutionId,
-	});
+	await ensureProgram(data.programId, institutionId);
+	return repo.create({ ...data, institutionId });
 }
 
 export async function updateOption(
 	id: string,
+	institutionId: string,
 	data: Partial<schema.NewProgramOption>,
 ) {
-	const existing = await ensureOption(id);
+	const existing = await ensureOption(id, institutionId);
 	if (data.programId && data.programId !== existing.programId) {
-		const program = await ensureProgram(data.programId);
-		data = { ...data, institutionId: program.institutionId };
+		await ensureProgram(data.programId, institutionId);
 	}
-	return repo.update(id, data);
+	return repo.update(id, institutionId, data);
 }
 
-export async function deleteOption(id: string) {
-	await ensureOption(id);
-	await repo.remove(id);
+export async function deleteOption(id: string, institutionId: string) {
+	await ensureOption(id, institutionId);
+	await repo.remove(id, institutionId);
 }
 
-export async function listOptions(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listOptions(
+	opts: Parameters<typeof repo.list>[0],
+	institutionId: string,
+) {
+	return repo.list(opts, institutionId);
 }
 
-export async function getOptionById(id: string) {
-	const option = await repo.findById(id);
+export async function getOptionById(id: string, institutionId: string) {
+	const option = await repo.findById(id, institutionId);
 	if (!option) {
 		throw new TRPCError({ code: "NOT_FOUND" });
 	}
@@ -71,6 +73,7 @@ export async function getOptionById(id: string) {
 
 export async function searchProgramOptions(
 	opts: Parameters<typeof repo.search>[0],
+	institutionId: string,
 ) {
-	return repo.search(opts);
+	return repo.search(opts, institutionId);
 }

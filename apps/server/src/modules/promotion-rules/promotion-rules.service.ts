@@ -40,8 +40,8 @@ export async function createRule(data: CreateRuleInput, institutionId: string) {
 	return repo.createRule({ ...data, institutionId });
 }
 
-export async function updateRule(data: UpdateRuleInput) {
-	const existing = await repo.findRuleById(data.id);
+export async function updateRule(data: UpdateRuleInput, institutionId: string) {
+	const existing = await repo.findRuleById(data.id, institutionId);
 	if (!existing) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -62,11 +62,11 @@ export async function updateRule(data: UpdateRuleInput) {
 		}
 	}
 
-	return repo.updateRule(data.id, data);
+	return repo.updateRule(data.id, institutionId, data);
 }
 
-export async function deleteRule(id: string) {
-	const existing = await repo.findRuleById(id);
+export async function deleteRule(id: string, institutionId: string) {
+	const existing = await repo.findRuleById(id, institutionId);
 	if (!existing) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -80,11 +80,11 @@ export async function deleteRule(id: string) {
 		});
 	}
 
-	return repo.deleteRule(id);
+	return repo.deleteRule(id, institutionId);
 }
 
-export async function getRuleById(id: string) {
-	const rule = await repo.findRuleById(id);
+export async function getRuleById(id: string, institutionId: string) {
+	const rule = await repo.findRuleById(id, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -103,9 +103,10 @@ export async function listRules(opts: ListRulesInput, institutionId: string) {
  */
 export async function evaluateClassForPromotion(
 	opts: EvaluateClassInput,
+	institutionId: string,
 ): Promise<ClassPromotionEvaluation> {
 	// Fetch the rule
-	const rule = await repo.findRuleById(opts.ruleId);
+	const rule = await repo.findRuleById(opts.ruleId, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -254,9 +255,10 @@ async function evaluateStudentAgainstRule(
 export async function applyPromotion(
 	opts: ApplyPromotionInput,
 	executedBy: string,
+	institutionId: string,
 ) {
 	// Validate inputs
-	const rule = await repo.findRuleById(opts.ruleId);
+	const rule = await repo.findRuleById(opts.ruleId, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}

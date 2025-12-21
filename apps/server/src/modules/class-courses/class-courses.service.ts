@@ -14,12 +14,12 @@ type ClassCourseInput = schema.NewClassCourse & {
 
 async function validateConfig(
 	config: schema.NewClassCourse,
-	allowTeacherOverride = false,
-	institutionId?: string,
+	institutionId: string,
+	existingId?: string,
 ) {
 	const klass = await classesRepo.findById(config.class, institutionId);
 	if (!klass) throw notFound("Class not found");
-	const course = await coursesRepo.findById(config.course);
+	const course = await coursesRepo.findById(config.course, institutionId);
 	if (!course) throw notFound("Course not found");
 	const courseProgram = await db.query.programs.findFirst({
 		where: eq(schema.programs.id, course.program),
@@ -36,16 +36,29 @@ async function validateConfig(
 			message: "Class and course must belong to the same program",
 		});
 	}
-	if (config.teacher !== course.defaultTeacher && !allowTeacherOverride) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: "Teacher override requires approval",
-		});
-	}
 	if (config.weeklyHours > course.hours) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Weekly hours exceed course hours",
+		});
+	}
+
+	// Check if course is already assigned to this class
+	const existingAssignments = await repo.list({
+		classId: config.class,
+		courseId: config.course,
+		limit: 1,
+		institutionId: klass.institutionId,
+	});
+
+	// If we found an assignment and it's not the one we're updating, throw error
+	if (
+		existingAssignments.items.length > 0 &&
+		existingAssignments.items[0].id !== existingId
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Course "${course.name}" is already assigned to this class. Each course can only be assigned once per class.`,
 		});
 	}
 
@@ -104,11 +117,7 @@ export async function createClassCourse(
 	institutionId: string,
 ) {
 	const { allowTeacherOverride, ...payload } = data;
-	const { semesterId, klass } = await validateConfig(
-		payload,
-		allowTeacherOverride,
-		institutionId,
-	);
+	const { semesterId, klass } = await validateConfig(payload, institutionId);
 	const resolvedInstitutionId = klass.institutionId ?? institutionId;
 	return repo.create({
 		...payload,
@@ -132,8 +141,8 @@ export async function updateClassCourse(
 	};
 	const { semesterId, klass } = await validateConfig(
 		merged as schema.NewClassCourse,
-		allowTeacherOverride,
 		institutionId,
+		id,
 	);
 	const resolvedInstitutionId = klass.institutionId ?? institutionId;
 	return repo.update(

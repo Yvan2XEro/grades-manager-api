@@ -11,28 +11,44 @@ export async function createRule(data: schema.NewPromotionRule) {
 	return rule;
 }
 
-export async function findRuleById(id: string) {
+export async function findRuleById(id: string, institutionId?: string) {
 	return db.query.promotionRules.findFirst({
-		where: eq(schema.promotionRules.id, id),
+		where: institutionId
+			? and(
+					eq(schema.promotionRules.id, id),
+					eq(schema.promotionRules.institutionId, institutionId),
+				)
+			: eq(schema.promotionRules.id, id),
 	});
 }
 
 export async function updateRule(
 	id: string,
+	institutionId: string,
 	data: Partial<schema.NewPromotionRule>,
 ) {
 	const [rule] = await db
 		.update(schema.promotionRules)
 		.set({ ...data, updatedAt: new Date() })
-		.where(eq(schema.promotionRules.id, id))
+		.where(
+			and(
+				eq(schema.promotionRules.id, id),
+				eq(schema.promotionRules.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return rule;
 }
 
-export async function deleteRule(id: string) {
+export async function deleteRule(id: string, institutionId: string) {
 	await db
 		.delete(schema.promotionRules)
-		.where(eq(schema.promotionRules.id, id));
+		.where(
+			and(
+				eq(schema.promotionRules.id, id),
+				eq(schema.promotionRules.institutionId, institutionId),
+			),
+		);
 }
 
 export async function listRules(opts: {

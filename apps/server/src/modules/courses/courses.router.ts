@@ -17,28 +17,44 @@ import {
 export const router = createRouter({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createCourse(input)),
+		.mutation(({ input, ctx }) =>
+			service.createCourse(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateCourse(input.id, input)),
+		.mutation(({ input, ctx }) =>
+			service.updateCourse(input.id, ctx.institution.id, input),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteCourse(input.id)),
+		.mutation(({ input, ctx }) =>
+			service.deleteCourse(input.id, ctx.institution.id),
+		),
 	assignDefaultTeacher: adminProcedure
 		.input(assignSchema)
-		.mutation(({ input }) =>
-			service.assignDefaultTeacher(input.courseId, input.teacherId),
+		.mutation(({ input, ctx }) =>
+			service.assignDefaultTeacher(
+				input.courseId,
+				ctx.institution.id,
+				input.teacherId,
+			),
 		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listCourses(input)),
+		.query(({ input, ctx }) => service.listCourses(input, ctx.institution.id)),
 	search: protectedProcedure
 		.input(searchSchema)
-		.query(({ input }) => service.searchCourses(input)),
+		.query(({ input, ctx }) =>
+			service.searchCourses(input, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getCourseById(input.id)),
+		.query(({ input, ctx }) =>
+			service.getCourseById(input.id, ctx.institution.id),
+		),
 	getByCode: protectedProcedure
 		.input(codeSchema)
-		.query(({ input }) => service.getCourseByCode(input.code, input.programId)),
+		.query(({ input, ctx }) =>
+			service.getCourseByCode(input.code, input.programId, ctx.institution.id),
+		),
 });

@@ -365,6 +365,28 @@ export default function ClassCourseManagement() {
 		selectedSemester?.code,
 	]);
 
+	// Preselect default teacher when course changes
+	const teacherDirty = Boolean(form.formState.dirtyFields.teacher);
+	useEffect(() => {
+		if (editingClassCourse) return;
+		if (teacherDirty) return;
+		if (!selectedCourseId) return;
+
+		// Fetch course details to get default teacher
+		trpcClient.courses.getById
+			.query({ id: selectedCourseId })
+			.then((courseDetails) => {
+				if (courseDetails.defaultTeacher) {
+					form.setValue("teacher", courseDetails.defaultTeacher, {
+						shouldDirty: false,
+					});
+				}
+			})
+			.catch(() => {
+				// Ignore errors, teacher field will remain empty
+			});
+	}, [editingClassCourse, form, selectedCourseId, teacherDirty]);
+
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),

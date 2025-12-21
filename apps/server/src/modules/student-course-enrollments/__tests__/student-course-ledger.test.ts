@@ -49,7 +49,11 @@ describe("student course enrollments – ledger integration", () => {
 		expect(summary.creditsInProgress).toBe(30);
 		expect(summary.creditsEarned).toBe(0);
 
-		await enrollmentsService.updateStatus(enrollment.id, "completed");
+		await enrollmentsService.updateStatus(
+			enrollment.id,
+			student.institutionId,
+			"completed",
+		);
 		summary = await summarizeStudent(student.id);
 		expect(summary.creditsInProgress).toBe(0);
 		expect(summary.creditsEarned).toBe(30);
