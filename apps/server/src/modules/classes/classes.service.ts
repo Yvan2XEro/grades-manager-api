@@ -34,16 +34,16 @@ async function ensureAcademicYear(
 	return year;
 }
 
-async function ensurePrimaryCycle(facultyId: string) {
+async function ensurePrimaryCycle(institutionId: string) {
 	const existing = await db.query.studyCycles.findFirst({
-		where: eq(schema.studyCycles.facultyId, facultyId),
+		where: eq(schema.studyCycles.institutionId, institutionId),
 		orderBy: (cycles, helpers) => helpers.asc(cycles.createdAt),
 	});
 	if (existing) return existing;
 	const [created] = await db
 		.insert(schema.studyCycles)
 		.values({
-			facultyId,
+			institutionId,
 			code: "default",
 			name: "Default Cycle",
 			description: null,
@@ -67,12 +67,12 @@ async function ensureCycleLevel(
 			where: eq(schema.studyCycles.id, level.cycleId),
 		});
 		if (!cycle) throw notFound("Study cycle not found");
-		if (cycle.facultyId !== program.faculty) {
-			throw conflict("Cycle level does not belong to program faculty");
+		if (cycle.institutionId !== program.institutionId) {
+			throw conflict("Cycle level does not belong to program institution");
 		}
 		return level.id;
 	}
-	const cycle = await ensurePrimaryCycle(program.faculty);
+	const cycle = await ensurePrimaryCycle(program.institutionId);
 	const existing = await db.query.cycleLevels.findFirst({
 		where: eq(schema.cycleLevels.cycleId, cycle.id),
 		orderBy: (levels, helpers) => helpers.asc(levels.orderIndex),

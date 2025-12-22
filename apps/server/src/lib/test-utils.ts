@@ -96,7 +96,11 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 			opts.profileOverrides?.primaryEmail ??
 			`profile-${randomUUID()}@example.com`,
 		phone: opts.profileOverrides?.phone ?? null,
-		dateOfBirth: opts.profileOverrides?.dateOfBirth ?? DEFAULT_DATE,
+		dateOfBirth:
+			opts.profileOverrides?.dateOfBirth ??
+			(typeof DEFAULT_DATE === "string"
+				? DEFAULT_DATE
+				: DEFAULT_DATE.toISOString()),
 		placeOfBirth: opts.profileOverrides?.placeOfBirth ?? DEFAULT_PLACE,
 		gender: opts.profileOverrides?.gender ?? "other",
 		nationality: opts.profileOverrides?.nationality ?? null,
@@ -210,7 +214,6 @@ export async function createOrganizationMember(
 }
 
 type RecapFixtureOverrides = {
-	faculty?: Partial<schema.NewFaculty>;
 	program?: Partial<schema.NewProgram>;
 	academicYear?: Partial<schema.NewAcademicYear>;
 	klass?: Partial<schema.NewKlass>;
@@ -227,9 +230,11 @@ type RecapFixtureOverrides = {
 export async function createRecapFixture(
 	overrides: RecapFixtureOverrides = {},
 ) {
-	const faculty = await createFaculty(overrides.faculty);
+	// Use the test institution instead of creating a new faculty
+	// so that data is in the same institution as the test context
+	const institution = getTestInstitution();
 	const program = await createProgram({
-		faculty: faculty.id,
+		institutionId: institution.id,
 		...overrides.program,
 	});
 	const academicYear = await createAcademicYear(overrides.academicYear);
@@ -273,7 +278,7 @@ export async function createRecapFixture(
 	});
 
 	return {
-		faculty,
+		institution,
 		program,
 		academicYear,
 		teachingUnit,
@@ -287,38 +292,43 @@ export async function createRecapFixture(
 	};
 }
 
-export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
+export async function createFaculty(
+	data: Partial<schema.NewInstitution> & { name?: string } = {},
+) {
 	const {
 		code,
 		name,
-		description,
-		institutionId: providedInstitutionId,
+		descriptionFr: description,
+		parentInstitutionId: providedInstitutionId,
 		...rest
 	} = data;
-	const institutionId = providedInstitutionId ?? getTestInstitution().id;
-	const [faculty] = await db
-		.insert(schema.faculties)
+	const parentInstitution = getTestInstitution();
+	const [facultyInstitution] = await db
+		.insert(schema.institutions)
 		.values({
 			code: code ?? `FAC-${randomUUID().slice(0, 4)}`,
-			name: name ?? `Faculty-${randomUUID()}`,
-			description: description ?? null,
-			institutionId,
-			...rest,
+			type: "faculty",
+			nameFr: name ?? `Faculty-${randomUUID()}`,
+			nameEn: name ?? `Faculty-${randomUUID()}`,
+			descriptionFr: description ?? null,
+			// parentInstitutionId est optionnel - pas de hiérarchie obligatoire
+			parentInstitutionId: providedInstitutionId,
+			organizationId: parentInstitution.organizationId,
 		})
 		.returning();
-	return faculty;
+	return facultyInstitution;
 }
 
 export async function createStudyCycle(
 	data: Partial<schema.NewStudyCycle> = {},
 ) {
-	const faculty = data.facultyId
-		? { id: data.facultyId }
+	const faculty = data.institutionId
+		? { id: data.institutionId }
 		: await createFaculty();
 	const [cycle] = await db
 		.insert(schema.studyCycles)
 		.values({
-			facultyId: faculty.id,
+			institutionId: faculty.id,
 			code: data.code ?? `cycle-${randomUUID().slice(0, 6)}`,
 			name: data.name ?? `Cycle-${randomUUID().slice(0, 4)}`,
 			description: data.description ?? null,
@@ -355,21 +365,15 @@ export async function createCycleLevel(
 
 export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 	const {
-		faculty: facultyId,
+		institutionId: providedInstitutionId,
 		code,
 		name,
 		description,
-		institutionId: providedInstitutionId,
 		...rest
 	} = data;
-	const faculty = facultyId
-		? await db.query.faculties.findFirst({
-				where: eq(schema.faculties.id, facultyId),
-			})
-		: await createFaculty();
-	if (!faculty) {
-		throw new Error("Faculty not found for program creation");
-	}
+	// Utiliser l'institution de test par défaut si non spécifiée
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
+
 	const resolvedName = name ?? `Program-${randomUUID()}`;
 	const slug = slugify(resolvedName);
 	const [program] = await db
@@ -378,9 +382,8 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 			code: code ?? `PRG-${randomUUID().slice(0, 4)}`,
 			name: resolvedName,
 			slug,
-			faculty: faculty.id,
 			description: description ?? null,
-			institutionId: providedInstitutionId ?? faculty.institutionId,
+			institutionId,
 			...rest,
 		})
 		.returning();
@@ -460,7 +463,7 @@ export async function createAcademicYear(
 }
 
 async function ensureCycleLevelForFaculty(
-	facultyId: string,
+	institutionId: string,
 	cycleLevelId?: string,
 ) {
 	if (cycleLevelId) {
@@ -471,16 +474,16 @@ async function ensureCycleLevelForFaculty(
 		const cycle = await db.query.studyCycles.findFirst({
 			where: eq(schema.studyCycles.id, level.cycleId),
 		});
-		if (!cycle || cycle.facultyId !== facultyId) {
-			throw new Error("Cycle level does not belong to faculty");
+		if (!cycle || cycle.institutionId !== institutionId) {
+			throw new Error("Cycle level does not belong to institution");
 		}
 		return level.id;
 	}
 	let cycle = await db.query.studyCycles.findFirst({
-		where: eq(schema.studyCycles.facultyId, facultyId),
+		where: eq(schema.studyCycles.institutionId, institutionId),
 	});
 	if (!cycle) {
-		cycle = await createStudyCycle({ facultyId });
+		cycle = await createStudyCycle({ institutionId });
 	}
 	const level = await db.query.cycleLevels.findFirst({
 		where: eq(schema.cycleLevels.cycleId, cycle.id),
@@ -491,7 +494,7 @@ async function ensureCycleLevelForFaculty(
 	return created.id;
 }
 
-async function ensureSemester(semesterId?: string) {
+async function ensureSemester(semesterId?: string): Promise<string> {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -536,7 +539,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 		? { id: academicYearId }
 		: await createAcademicYear();
 	const levelId = await ensureCycleLevelForFaculty(
-		program.faculty,
+		program.institutionId,
 		cycleLevelId,
 	);
 	const option =
@@ -587,7 +590,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		body: {
 			name,
 			email,
-			role: data.role ?? "ADMIN",
+			role: data.role ?? "admin",
 			password: data.password ?? "password",
 		},
 	});
@@ -599,7 +602,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		lastName: rest.join(" ") || "Doe",
 		primaryEmail: email,
 		gender: data.gender ?? "other",
-		dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+		dateOfBirth: data.dateOfBirth?.toISOString() ?? DEFAULT_DATE.toISOString(),
 		placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	});
 	return { ...u.user, profile };
@@ -727,6 +730,7 @@ type StudentHelperInput = {
 	class?: string;
 	registrationNumber?: string;
 	domainUserId?: string;
+	institutionId?: string;
 	profile?: Partial<NewDomainUser>;
 };
 

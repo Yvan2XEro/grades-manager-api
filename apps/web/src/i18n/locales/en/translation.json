@@ -50,6 +50,10 @@
 			"next": "Next",
 			"previous": "Previous"
 		},
+		"gender": {
+			"male": "M",
+			"female": "F"
+		},
 		"invalidDate": "Invalid date",
 		"loading": "Loading..."
 	},
@@ -164,7 +168,9 @@
 			"actions": {
 				"lock": "Lock grades",
 				"save": "Save grades",
-				"saving": "Saving..."
+				"saving": "Saving...",
+				"exportTemplate": "Export Template",
+				"importGrades": "Import Grades"
 			},
 			"info": {
 				"title": "Grading information",
@@ -194,7 +200,11 @@
 				"saveSuccess": "Grades saved successfully",
 				"saveError": "Could not save grades",
 				"lockSuccess": "Exam locked successfully. Grades can no longer be modified.",
-				"lockError": "Could not lock the exam"
+				"lockError": "Could not lock the exam",
+				"exportError": "Please select an exam with students",
+				"exportSuccess": "Template exported successfully",
+				"importSuccess": "Imported {{count}} grades successfully",
+				"importError": "Failed to import grades"
 			}
 		},
 		"attendance": {
@@ -578,6 +588,15 @@
 				"registrationNumbers": "Registration numbers",
 				"promotionRules": "Promotion rules"
 			},
+			"groups": {
+				"overview": "Overview",
+				"structure": "Academic Structure",
+				"users": "Users",
+				"teaching": "Teaching",
+				"evaluation": "Evaluation",
+				"promotion": "Rules & Promotion",
+				"system": "System"
+			},
 			"teacher": {
 				"dashboard": "Overview",
 				"exams": "Exams",
@@ -943,6 +962,19 @@
 				"cycle": "Cycle / level",
 				"option": "Option",
 				"students": "Students"
+			},
+			"export": {
+				"button": "Export student list (PDF)",
+				"excelButton": "Export student list (Excel)",
+				"title": "Student List",
+				"totalStudents": "Total students",
+				"page": "Page",
+				"generatedOn": "Generated on",
+				"success": "Student list exported successfully",
+				"error": "Failed to export student list",
+				"excelSuccess": "Student list exported successfully",
+				"excelError": "Failed to export student list",
+				"sheetName": "Students"
 			},
 			"form": {
 				"createTitle": "Add class",
@@ -1475,7 +1507,8 @@
 				"title": "Add students",
 				"tabs": {
 					"single": "Single student",
-					"import": "Import file"
+					"import": "Import file",
+					"external": "External admission"
 				}
 			},
 			"form": {
@@ -1492,6 +1525,7 @@
 				"registrationFormat": "Registration format",
 				"registrationFormatHint": "Choose a specific template to override the active format.",
 				"registrationFormatPlaceholder": "Use active format",
+				"registrationSection": "Registration",
 				"class": "Class",
 				"classPlaceholder": "Select class",
 				"submit": "Add student"
@@ -1548,6 +1582,43 @@
 				"email": "Enter a valid email address",
 				"registration": "Provide a registration number or leave the field blank",
 				"class": "Please select a class"
+			},
+			"external": {
+				"info": {
+					"title": "External Student Admission",
+					"description": "Admit students from other institutions with transfer credits or direct admission"
+				},
+				"form": {
+					"admissionType": "Admission type",
+					"admissionTypePlaceholder": "Select admission type",
+					"admissionTypeHint": "Choose the type of admission for this external student",
+					"transferInstitution": "Transfer institution",
+					"transferCredits": "Transfer credits",
+					"transferLevel": "Transfer level",
+					"admissionDate": "Admission date",
+					"admissionJustification": "Justification",
+					"admissionJustificationPlaceholder": "Explain the reason for this admission (minimum 10 characters)",
+					"admissionJustificationHint": "Provide a detailed justification for this external admission",
+					"studentInfoSection": "Student Information",
+					"submit": "Admit external student"
+				},
+				"admissionTypes": {
+					"transfer": "Transfer",
+					"direct": "Direct admission",
+					"equivalence": "Equivalence"
+				},
+				"toast": {
+					"success": "External student admitted successfully",
+					"error": "Could not admit external student"
+				},
+				"validation": {
+					"admissionType": "Admission type is required",
+					"transferInstitution": "Transfer institution is required",
+					"transferCredits": "Transfer credits must be a number",
+					"transferLevel": "Transfer level is required (e.g., L1, L2, M1)",
+					"admissionDate": "Admission date is required",
+					"admissionJustification": "Justification must be at least 10 characters"
+				}
 			}
 		},
 		"users": {

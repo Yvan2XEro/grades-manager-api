@@ -43,10 +43,10 @@ describe("seed runner", () => {
 			baseDir: tmpDir,
 		});
 
-		const faculty = await db.query.faculties.findFirst({
-			where: eq(appSchema.faculties.code, "ENG"),
+		const faculty = await db.query.institutions.findFirst({
+			where: eq(appSchema.institutions.code, "ENG"),
 		});
-		expect(faculty?.name).toBe("Faculty of Engineering");
+		expect(faculty?.nameFr).toBe("Faculty of Engineering");
 
 		const klass = await db.query.classes.findFirst({
 			where: eq(appSchema.classes.code, "ENG24-L1A"),

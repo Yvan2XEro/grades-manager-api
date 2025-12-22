@@ -153,7 +153,6 @@ describe("students router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
-			faculty: faculty.id,
 			institutionId: foreignInstitution.id,
 		});
 		const academicYear = await createAcademicYear({
@@ -189,7 +188,6 @@ describe("students router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
-			faculty: faculty.id,
 			institutionId: foreignInstitution.id,
 		});
 		const academicYear = await createAcademicYear({

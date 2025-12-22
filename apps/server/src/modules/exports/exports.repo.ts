@@ -7,7 +7,6 @@ import {
 	courses,
 	domainUsers,
 	exams,
-	faculties,
 	grades,
 	institutions,
 	programs,
@@ -25,19 +24,14 @@ export class ExportsRepo {
 	constructor(private readonly institutionId: string) {}
 
 	/**
-	 * Get the default institution (or first institution) with its full hierarchy
-	 * Loads parent institution (university) and supervising faculty
+	 * Get institution with its optional parent institution
+	 * L'institution parente est optionnelle - une institution n'est pas forcément parrainée
 	 */
 	async getInstitution() {
 		const institution = await this.db.query.institutions.findFirst({
 			where: eq(institutions.id, this.institutionId),
 			with: {
-				faculty: true,
-				parentInstitution: {
-					with: {
-						faculty: true,
-					},
-				},
+				parentInstitution: true,
 			},
 		});
 
@@ -63,7 +57,6 @@ export class ExportsRepo {
 			with: {
 				program: {
 					with: {
-						faculty: true,
 						teachingUnits: {
 							with: {
 								courses: true,
@@ -136,11 +129,7 @@ export class ExportsRepo {
 					with: {
 						classRef: {
 							with: {
-								program: {
-									with: {
-										faculty: true,
-									},
-								},
+								program: true,
 								academicYear: true,
 								semester: true,
 								cycleLevel: true,
@@ -186,11 +175,7 @@ export class ExportsRepo {
 		const ueData = await this.db.query.teachingUnits.findFirst({
 			where: eq(teachingUnits.id, teachingUnitId),
 			with: {
-				program: {
-					with: {
-						faculty: true,
-					},
-				},
+				program: true,
 				courses: true,
 			},
 		});

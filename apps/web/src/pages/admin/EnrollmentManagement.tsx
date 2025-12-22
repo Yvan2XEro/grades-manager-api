@@ -37,9 +37,14 @@ const EnrollmentManagement = () => {
 	const queryClient = useQueryClient();
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
+	const [selectedSemester, setSelectedSemester] = useState<string>("");
 
 	const { data: years } = useQuery(
 		trpc.academicYears.list.queryOptions({ limit: 100 }),
+	);
+
+	const { data: semesters } = useQuery(
+		trpc.semesters.list.queryOptions({ limit: 100 }),
 	);
 
 	const { data: classes } = useQuery(
@@ -69,6 +74,7 @@ const EnrollmentManagement = () => {
 	const classCoursesQuery = useQuery({
 		...trpc.classCourses.list.queryOptions({
 			classId: selectedClass || undefined,
+			semesterId: selectedSemester || undefined,
 			limit: 100,
 		}),
 		enabled: Boolean(selectedClass),
@@ -186,7 +192,7 @@ const EnrollmentManagement = () => {
 			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
 				classId: selectedClass,
 				academicYearId: selectedAcademicYear,
-				semesterId: selectedClassDetails?.semester?.id,
+				semesterId: selectedSemester || selectedClassDetails?.semester?.id,
 			}),
 		onSuccess: (result) => {
 			toast.success(
@@ -218,7 +224,7 @@ const EnrollmentManagement = () => {
 	useEffect(() => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
-	}, [selectedAcademicYear, selectedClass]);
+	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
 	const openRosterForStudent = (studentId: string) => {
 		setSelectedStudent(studentId);
@@ -243,7 +249,7 @@ const EnrollmentManagement = () => {
 
 	return (
 		<div className="space-y-6">
-			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3">
+			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
 				<div className="space-y-1">
 					<p className="font-medium text-gray-600 text-sm">
 						{t("admin.enrollments.filters.year", {
@@ -255,6 +261,7 @@ const EnrollmentManagement = () => {
 						onValueChange={(value) => {
 							setSelectedAcademicYear(value);
 							setSelectedClass("");
+							setSelectedSemester("");
 						}}
 					>
 						<SelectTrigger
@@ -299,6 +306,40 @@ const EnrollmentManagement = () => {
 									{klass.programOption?.name
 										? ` • ${klass.programOption.name}`
 										: ""}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+				<div className="space-y-1">
+					<p className="font-medium text-gray-600 text-sm">
+						{t("admin.enrollments.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</p>
+					<Select
+						value={selectedSemester || "_ALL_"}
+						onValueChange={(value) =>
+							setSelectedSemester(value === "_ALL_" ? "" : value)
+						}
+						disabled={!selectedClass}
+					>
+						<SelectTrigger data-testid="semester-select" className="w-full">
+							<SelectValue
+								placeholder={t("admin.enrollments.selectSemester", {
+									defaultValue: "Select semester",
+								})}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="_ALL_">
+								{t("admin.enrollments.allSemesters", {
+									defaultValue: "All semesters",
+								})}
+							</SelectItem>
+							{semesters?.items?.map((semester) => (
+								<SelectItem key={semester.id} value={semester.id}>
+									{semester.name}
 								</SelectItem>
 							))}
 						</SelectContent>

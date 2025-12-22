@@ -1,21 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import * as schema from "@/db/schema/app-schema";
+import { desc, eq } from "drizzle-orm";
+import { db } from "../../db";
+import * as schema from "../../db/schema/app-schema";
 import * as repo from "./study-cycles.repo";
-
-async function ensureFaculty(facultyId: string, institutionId: string) {
-	const faculty = await db.query.faculties.findFirst({
-		where: and(
-			eq(schema.faculties.id, facultyId),
-			eq(schema.faculties.institutionId, institutionId),
-		),
-	});
-	if (!faculty) {
-		throw new TRPCError({ code: "BAD_REQUEST", message: "Faculty not found" });
-	}
-	return faculty;
-}
 
 async function ensureCycle(cycleId: string, institutionId: string) {
 	const cycle = await repo.findCycleById(cycleId, institutionId);
@@ -40,8 +27,27 @@ export async function createCycle(
 	data: schema.NewStudyCycle,
 	institutionId: string,
 ) {
-	await ensureFaculty(data.facultyId, institutionId);
-	return repo.createCycle(data);
+	// Auto-inject institutionId from context if not provided
+	const cycle = await repo.createCycle({ ...data, institutionId });
+
+	// Auto-create cycle levels based on durationYears
+	if (data.durationYears && data.durationYears > 0) {
+		const creditsPerLevel = Math.floor(
+			data.totalCreditsRequired / data.durationYears,
+		);
+
+		for (let i = 1; i <= data.durationYears; i++) {
+			await repo.createLevel({
+				cycleId: cycle.id,
+				code: `${data.code}-L${i}`,
+				name: `Level ${i}`,
+				minCredits: creditsPerLevel,
+				orderIndex: i,
+			});
+		}
+	}
+
+	return cycle;
 }
 
 export async function updateCycle(
@@ -50,9 +56,6 @@ export async function updateCycle(
 	data: Partial<schema.NewStudyCycle>,
 ) {
 	const existing = await ensureCycle(id, institutionId);
-	if (data.facultyId && data.facultyId !== existing.facultyId) {
-		await ensureFaculty(data.facultyId, institutionId);
-	}
 	return repo.updateCycle(id, institutionId, data);
 }
 

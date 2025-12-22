@@ -134,36 +134,15 @@ export const examTypes = pgTable(
 );
 
 /** Catalog of allowed exam types (CC, TP...). */
-/** Faculties (schools) grouping programs. */
-export const faculties = pgTable(
-	"faculties",
+
+/** Study cycles grouping programs inside an institution (e.g., Bachelor, Master). */
+export const studyCycles = pgTable(
+	"study_cycles",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		institutionId: text("institution_id")
 			.notNull()
 			.references(() => institutions.id, { onDelete: "cascade" }),
-		code: text("code").notNull(),
-		name: text("name").notNull(),
-		description: text("description"),
-		createdAt: timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-	},
-	(t) => [
-		unique("uq_faculties_name_institution").on(t.institutionId, t.name),
-		unique("uq_faculties_code_institution").on(t.institutionId, t.code),
-		index("idx_faculties_institution").on(t.institutionId),
-	],
-);
-
-/** Study cycles grouping programs inside a faculty (e.g., Bachelor, Master). */
-export const studyCycles = pgTable(
-	"study_cycles",
-	{
-		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		facultyId: text("faculty_id")
-			.notNull()
-			.references(() => faculties.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
 		description: text("description"),
@@ -176,8 +155,8 @@ export const studyCycles = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_study_cycles_faculty_code").on(t.facultyId, t.code),
-		index("idx_study_cycles_faculty").on(t.facultyId),
+		unique("uq_study_cycles_institution_code").on(t.institutionId, t.code),
+		index("idx_study_cycles_institution").on(t.institutionId),
 	],
 );
 
@@ -239,7 +218,7 @@ export const academicYears = pgTable(
 	],
 );
 
-/** Programs offered under a faculty. */
+/** Programs offered under an institution. */
 export const programs = pgTable(
 	"programs",
 	{
@@ -251,19 +230,15 @@ export const programs = pgTable(
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
 		description: text("description"),
-		faculty: text("faculty_id")
-			.notNull()
-			.references(() => faculties.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_programs_name_faculty").on(t.name, t.faculty),
-		unique("uq_programs_code_faculty").on(t.code, t.faculty),
-		unique("uq_programs_slug_faculty").on(t.slug, t.faculty),
+		unique("uq_programs_name_institution").on(t.name, t.institutionId),
+		unique("uq_programs_code_institution").on(t.code, t.institutionId),
+		unique("uq_programs_slug_institution").on(t.slug, t.institutionId),
 		index("idx_programs_institution_id").on(t.institutionId),
-		index("idx_programs_faculty_id").on(t.faculty),
 	],
 );
 
@@ -438,9 +413,9 @@ export const examScheduleRuns = pgTable(
 	"exam_schedule_runs",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		facultyId: text("faculty_id")
+		institutionId: text("institution_id")
 			.notNull()
-			.references(() => faculties.id, { onDelete: "restrict" }),
+			.references(() => institutions.id, { onDelete: "restrict" }),
 		academicYearId: text("academic_year_id")
 			.notNull()
 			.references(() => academicYears.id, { onDelete: "restrict" }),
@@ -465,7 +440,7 @@ export const examScheduleRuns = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		index("idx_exam_schedule_runs_faculty").on(t.facultyId),
+		index("idx_exam_schedule_runs_institution").on(t.institutionId),
 		index("idx_exam_schedule_runs_year").on(t.academicYearId),
 		index("idx_exam_schedule_runs_type").on(t.examTypeId),
 	],
@@ -514,6 +489,15 @@ export const exams = pgTable(
 		index("idx_exams_date").on(t.date),
 	],
 );
+
+/** Admission types for students. */
+export const admissionTypes = [
+	"normal",
+	"transfer",
+	"direct",
+	"equivalence",
+] as const;
+export type AdmissionType = (typeof admissionTypes)[number];
 
 /** Student records referencing domain profiles. */
 export const students = pgTable(
@@ -633,7 +617,11 @@ export interface InstitutionMetadata {
 }
 
 /** Institution types for hierarchical structure. */
-export const institutionTypes = ["university", "institution", "faculty"] as const;
+export const institutionTypes = [
+	"university",
+	"institution",
+	"faculty",
+] as const;
 export type InstitutionType = (typeof institutionTypes)[number];
 
 export const institutions = pgTable(
@@ -641,7 +629,10 @@ export const institutions = pgTable(
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		code: text("code").notNull(),
-		type: text("type").$type<InstitutionType>().notNull().default("institution"),
+		type: text("type")
+			.$type<InstitutionType>()
+			.notNull()
+			.default("institution"),
 		shortName: text("short_name"),
 		nameFr: text("name_fr").notNull(),
 		nameEn: text("name_en").notNull(),
@@ -666,9 +657,6 @@ export const institutions = pgTable(
 				onDelete: "set null",
 			},
 		),
-		facultyId: text("faculty_id").references(() => faculties.id, {
-			onDelete: "set null",
-		}),
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
@@ -743,12 +731,24 @@ export const enrollments = pgTable(
 			.notNull()
 			.defaultNow(),
 		exitedAt: timestamp("exited_at", { withTimezone: true }),
+		// External admission fields (transfer, direct admission, equivalence)
+		admissionType: text("admission_type")
+			.$type<AdmissionType>()
+			.notNull()
+			.default("normal"),
+		transferInstitution: text("transfer_institution"),
+		transferCredits: integer("transfer_credits").default(0),
+		transferLevel: text("transfer_level"),
+		admissionJustification: text("admission_justification"),
+		admissionDate: timestamp("admission_date", { withTimezone: true }),
+		admissionMetadata: jsonb("admission_metadata").default({}),
 	},
 	(t) => [
 		index("idx_enrollments_institution_id").on(t.institutionId),
 		index("idx_enrollments_student_id").on(t.studentId),
 		index("idx_enrollments_class_id").on(t.classId),
 		index("idx_enrollments_year_id").on(t.academicYearId),
+		index("idx_enrollments_admission_type").on(t.admissionType),
 	],
 );
 
@@ -1009,19 +1009,11 @@ export const promotionExecutionResults = pgTable(
 	],
 );
 
-export const facultiesRelations = relations(faculties, ({ many }) => ({
-	programs: many(programs),
-}));
-
 export const academicYearsRelations = relations(academicYears, ({ many }) => ({
 	classes: many(classes),
 }));
 
 export const programsRelations = relations(programs, ({ one, many }) => ({
-	faculty: one(faculties, {
-		fields: [programs.faculty],
-		references: [faculties.id],
-	}),
 	options: many(programOptions),
 	classes: many(classes),
 	courses: many(courses),
@@ -1077,10 +1069,6 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 }));
 
 export const studyCyclesRelations = relations(studyCycles, ({ one, many }) => ({
-	faculty: one(faculties, {
-		fields: [studyCycles.facultyId],
-		references: [faculties.id],
-	}),
 	levels: many(cycleLevels),
 }));
 
@@ -1284,32 +1272,31 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
-export const institutionsRelations = relations(institutions, ({ one, many }) => ({
-	parentInstitution: one(institutions, {
-		fields: [institutions.parentInstitutionId],
-		references: [institutions.id],
-		relationName: "institutionHierarchy",
+export const institutionsRelations = relations(
+	institutions,
+	({ one, many }) => ({
+		parentInstitution: one(institutions, {
+			fields: [institutions.parentInstitutionId],
+			references: [institutions.id],
+			relationName: "institutionHierarchy",
+		}),
+		childInstitutions: many(institutions, {
+			relationName: "institutionHierarchy",
+		}),
+		defaultAcademicYear: one(academicYears, {
+			fields: [institutions.defaultAcademicYearId],
+			references: [academicYears.id],
+		}),
+		registrationFormat: one(registrationNumberFormats, {
+			fields: [institutions.registrationFormatId],
+			references: [registrationNumberFormats.id],
+		}),
+		organization: one(organization, {
+			fields: [institutions.organizationId],
+			references: [organization.id],
+		}),
 	}),
-	childInstitutions: many(institutions, {
-		relationName: "institutionHierarchy",
-	}),
-	faculty: one(faculties, {
-		fields: [institutions.facultyId],
-		references: [faculties.id],
-	}),
-	defaultAcademicYear: one(academicYears, {
-		fields: [institutions.defaultAcademicYearId],
-		references: [academicYears.id],
-	}),
-	registrationFormat: one(registrationNumberFormats, {
-		fields: [institutions.registrationFormatId],
-		references: [registrationNumberFormats.id],
-	}),
-	organization: one(organization, {
-		fields: [institutions.organizationId],
-		references: [organization.id],
-	}),
-}));
+);
 
 export const registrationNumberFormatsRelations = relations(
 	registrationNumberFormats,
@@ -1387,9 +1374,6 @@ export const promotionExecutionResultsRelations = relations(
 		}),
 	}),
 );
-
-export type Faculty = InferSelectModel<typeof faculties>;
-export type NewFaculty = InferInsertModel<typeof faculties>;
 
 export type StudyCycle = InferSelectModel<typeof studyCycles>;
 export type NewStudyCycle = InferInsertModel<typeof studyCycles>;

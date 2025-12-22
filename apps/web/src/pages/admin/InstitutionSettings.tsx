@@ -57,7 +57,7 @@ const institutionSchema = z.object({
 	logoUrl: z.string().url().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
-	facultyId: z.string().optional(),
+	institutionId: z.string().optional(),
 	defaultAcademicYearId: z.string().optional(),
 	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
@@ -89,7 +89,7 @@ const defaultValues: InstitutionFormValues = {
 	logoUrl: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
-	facultyId: undefined,
+	institutionId: undefined,
 	defaultAcademicYearId: undefined,
 	registrationFormatId: undefined,
 	timezone: "UTC",
@@ -281,9 +281,6 @@ export default function InstitutionSettings() {
 	const { t } = useTranslation();
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
 	const institutionsQuery = useQuery(trpc.institutions.list.queryOptions());
-	const facultiesQuery = useQuery(
-		trpc.faculties.list.queryOptions({ limit: 100 }),
-	);
 	const yearsQuery = useQuery(
 		trpc.academicYears.list.queryOptions({ limit: 100 }),
 	);
@@ -298,15 +295,20 @@ export default function InstitutionSettings() {
 
 	useEffect(() => {
 		if (institutionQuery.data) {
-			const { defaultAcademicYearId, registrationFormatId, parentInstitutionId, facultyId, ...rest } =
-				institutionQuery.data;
+			const {
+				defaultAcademicYearId,
+				registrationFormatId,
+				parentInstitutionId,
+				institutionId,
+				...rest
+			} = institutionQuery.data;
 			const normalized: InstitutionFormValues = {
 				...defaultValues,
 				...rest,
 				defaultAcademicYearId: defaultAcademicYearId ?? undefined,
 				registrationFormatId: registrationFormatId ?? undefined,
 				parentInstitutionId: parentInstitutionId ?? undefined,
-				facultyId: facultyId ?? undefined,
+				institutionId: institutionId ?? undefined,
 				contactEmail: rest.contactEmail ?? "",
 				contactPhone: rest.contactPhone ?? "",
 				fax: rest.fax ?? "",
@@ -337,7 +339,7 @@ export default function InstitutionSettings() {
 				logoUrl: values.logoUrl || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
-				facultyId: values.facultyId || undefined,
+				institutionId: values.institutionId || undefined,
 				registrationFormatId: values.registrationFormatId || undefined,
 				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 			}),
@@ -359,7 +361,7 @@ export default function InstitutionSettings() {
 	const registrationFormats = registrationFormatsQuery.data ?? [];
 	const academicYears = yearsQuery.data?.items ?? [];
 	const institutions = institutionsQuery.data ?? [];
-	const faculties = facultiesQuery.data?.items ?? [];
+	const faculties = institutions.filter((i) => i.type === "faculty");
 
 	return (
 		<div className="space-y-6">
@@ -511,13 +513,14 @@ export default function InstitutionSettings() {
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t(
-																"admin.institution.form.noParentInstitution",
-																{ defaultValue: "None (Top-level)" },
-															)}
+															{t("admin.institution.form.noParentInstitution", {
+																defaultValue: "None (Top-level)",
+															})}
 														</SelectItem>
 														{institutions
-															.filter((inst) => inst.id !== institutionQuery.data?.id)
+															.filter(
+																(inst) => inst.id !== institutionQuery.data?.id,
+															)
 															.map((inst) => (
 																<SelectItem key={inst.id} value={inst.id}>
 																	{inst.nameFr} ({inst.type})
@@ -533,7 +536,7 @@ export default function InstitutionSettings() {
 
 								<FormField
 									control={form.control}
-									name="facultyId"
+									name="institutionId"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
@@ -561,10 +564,9 @@ export default function InstitutionSettings() {
 												</FormControl>
 												<SelectContent>
 													<SelectItem value={NO_SELECTION}>
-														{t(
-															"admin.institution.form.noSupervisingFaculty",
-															{ defaultValue: "None" },
-														)}
+														{t("admin.institution.form.noSupervisingFaculty", {
+															defaultValue: "None",
+														})}
 													</SelectItem>
 													{faculties.map((faculty) => (
 														<SelectItem key={faculty.id} value={faculty.id}>

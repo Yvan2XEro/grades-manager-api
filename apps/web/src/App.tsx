@@ -44,7 +44,6 @@ import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
 import CourseList from "./pages/teacher/CourseList";
 import TeacherDashboard from "./pages/teacher/Dashboard";
-import FacultyManagement from "./pages/teacher/FacultyManagement";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
@@ -164,7 +163,6 @@ function App() {
 						<Route path="exams" element={<ExamManagement />} />
 						<Route path="exam-types" element={<ExamTypes />} />
 						<Route path="exam-scheduler" element={<ExamScheduler />} />
-						<Route path="faculties" element={<FacultyManagement />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="rules" element={<RuleManagement />} />
 						<Route

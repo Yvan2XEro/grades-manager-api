@@ -225,6 +225,13 @@ type EnrollmentSeed = {
 	classAcademicYearCode?: string;
 	academicYearCode: string;
 	status?: EnrollmentStatus;
+	// External admission fields
+	admissionType?: "normal" | "transfer" | "direct" | "equivalence";
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: string;
 };
 
 type StudentCourseEnrollmentSeed = {
@@ -520,28 +527,99 @@ async function seedFoundation(
 		logger.log(`[seed] • Exam types: ${data.examTypes.length}`);
 	}
 
-	for (const entry of data.faculties ?? []) {
-		const code = normalizeCode(entry.code);
-		const [faculty] = await db
-			.insert(schema.faculties)
+	// Get organization ID from the main institution (optional for backward compatibility)
+	const [mainInst] = await db
+		.select({ organizationId: schema.institutions.organizationId })
+		.from(schema.institutions)
+		.where(eq(schema.institutions.id, institutionId))
+		.limit(1);
+
+	let organizationId = mainInst?.organizationId;
+
+	// If no organization exists, create a default one for faculties
+	if (!organizationId && (data.faculties?.length ?? 0) > 0) {
+		const [defaultOrg] = await db
+			.insert(authSchema.organization)
 			.values({
-				code,
-				name: entry.name,
-				description: entry.description ?? null,
-				institutionId,
+				id: randomUUID(),
+				name: "Default Organization",
+				slug: "default-org",
+				createdAt: now,
 			})
 			.onConflictDoUpdate({
-				target: [schema.faculties.institutionId, schema.faculties.code],
+				target: authSchema.organization.slug,
 				set: {
-					name: entry.name,
-					description: entry.description ?? null,
+					name: "Default Organization",
 				},
 			})
 			.returning();
+		organizationId = defaultOrg.id;
+
+		// Update the main institution with this organizationId
+		await db
+			.update(schema.institutions)
+			.set({ organizationId: defaultOrg.id })
+			.where(eq(schema.institutions.id, institutionId));
+	}
+
+	for (const entry of data.faculties ?? []) {
+		const code = normalizeCode(entry.code);
+
+		// Use the organizationId from the main institution or the default one we just created
+		if (!organizationId) {
+			throw new Error(
+				"Cannot create faculties without an organization. Please define organizations in your seed data.",
+			);
+		}
+		const facultyOrgId = organizationId;
+
+		// Vérifier si l'institution existe déjà
+		const existing = await db.query.institutions.findFirst({
+			where: and(
+				eq(schema.institutions.organizationId, facultyOrgId),
+				eq(schema.institutions.code, code),
+			),
+		});
+
+		let faculty;
+		if (existing) {
+			// Mettre à jour
+			const [updated] = await db
+				.update(schema.institutions)
+				.set({
+					nameFr: entry.name,
+					nameEn: entry.name,
+					descriptionFr: entry.description ?? null,
+				})
+				.where(eq(schema.institutions.id, existing.id))
+				.returning();
+			faculty = updated;
+		} else {
+			// Créer nouveau
+			const [created] = await db
+				.insert(schema.institutions)
+				.values({
+					code,
+					type: "faculty",
+					nameFr: entry.name,
+					nameEn: entry.name,
+					shortName: code,
+					descriptionFr: entry.description ?? null,
+					// Une institution n'est pas forcément parrainée par une autre
+					// parentInstitutionId est complètement optionnel
+					parentInstitutionId: null,
+					organizationId: facultyOrgId,
+				})
+				.returning();
+			faculty = created;
+		}
+
 		state.faculties.set(code, { id: faculty.id, code });
 	}
 	if (data.faculties?.length) {
-		logger.log(`[seed] • Faculties: ${data.faculties.length}`);
+		logger.log(
+			`[seed] • Faculties (as institutions): ${data.faculties.length}`,
+		);
 	}
 
 	for (const entry of data.studyCycles ?? []) {
@@ -556,7 +634,7 @@ async function seedFoundation(
 		const [cycle] = await db
 			.insert(schema.studyCycles)
 			.values({
-				facultyId: faculty.id,
+				institutionId: faculty.id,
 				code,
 				name: entry.name,
 				description: entry.description ?? null,
@@ -564,7 +642,7 @@ async function seedFoundation(
 				durationYears: entry.durationYears ?? 3,
 			})
 			.onConflictDoUpdate({
-				target: [schema.studyCycles.facultyId, schema.studyCycles.code],
+				target: [schema.studyCycles.institutionId, schema.studyCycles.code],
 				set: {
 					name: entry.name,
 					description: entry.description ?? null,
@@ -848,11 +926,10 @@ async function seedAcademics(
 				name: entry.name,
 				slug,
 				description: entry.description ?? null,
-				faculty: faculty.id,
-				institutionId,
+				institutionId: faculty.id,
 			})
 			.onConflictDoUpdate({
-				target: [schema.programs.code, schema.programs.faculty],
+				target: [schema.programs.code, schema.programs.institutionId],
 				set: {
 					name: entry.name,
 					slug,
@@ -864,7 +941,7 @@ async function seedAcademics(
 			id: program.id,
 			code,
 			facultyCode,
-			institutionId,
+			institutionId: faculty.id,
 		});
 	}
 	if (data.programs?.length) {
@@ -1287,6 +1364,36 @@ async function seedUsers(
 			})
 			.returning();
 		state.students.set(normalizeCode(entry.code), { id: student.id });
+
+		// Auto-create a default enrollment if not explicitly provided in enrollments section
+		// This ensures backward compatibility with seeds that don't specify enrollments
+		const explicitEnrollment = data.enrollments?.find(
+			(e) => normalizeCode(e.studentCode) === normalizeCode(entry.code),
+		);
+		if (!explicitEnrollment) {
+			const academicYearId = state.academicYears.get(klass.academicYearCode);
+			if (academicYearId) {
+				const enrollmentExists = await db.query.enrollments.findFirst({
+					where: and(
+						eq(schema.enrollments.studentId, student.id),
+						eq(schema.enrollments.classId, klass.id),
+						eq(schema.enrollments.academicYearId, academicYearId),
+					),
+				});
+				if (!enrollmentExists) {
+					await db.insert(schema.enrollments).values({
+						studentId: student.id,
+						classId: klass.id,
+						academicYearId,
+						status: "active",
+						enrolledAt: now,
+						institutionId: klass.institutionId,
+						admissionType: "normal",
+						transferCredits: 0,
+					});
+				}
+			}
+		}
 	}
 	if (data.students?.length) {
 		logger.log(`[seed] • Students: ${data.students.length}`);
@@ -1331,6 +1438,17 @@ async function seedUsers(
 					status: entry.status ?? existing.status,
 					enrolledAt: existing.enrolledAt,
 					institutionId: klass.institutionId,
+					// Update admission fields if provided
+					admissionType: entry.admissionType ?? existing.admissionType,
+					transferInstitution:
+						entry.transferInstitution ?? existing.transferInstitution,
+					transferCredits: entry.transferCredits ?? existing.transferCredits,
+					transferLevel: entry.transferLevel ?? existing.transferLevel,
+					admissionJustification:
+						entry.admissionJustification ?? existing.admissionJustification,
+					admissionDate: entry.admissionDate
+						? new Date(entry.admissionDate)
+						: existing.admissionDate,
 				})
 				.where(eq(schema.enrollments.id, existing.id));
 		} else {
@@ -1341,6 +1459,15 @@ async function seedUsers(
 				status: entry.status ?? "active",
 				enrolledAt: now,
 				institutionId: klass.institutionId,
+				// External admission fields
+				admissionType: entry.admissionType ?? "normal",
+				transferInstitution: entry.transferInstitution ?? null,
+				transferCredits: entry.transferCredits ?? 0,
+				transferLevel: entry.transferLevel ?? null,
+				admissionJustification: entry.admissionJustification ?? null,
+				admissionDate: entry.admissionDate
+					? new Date(entry.admissionDate)
+					: null,
 			});
 		}
 	}

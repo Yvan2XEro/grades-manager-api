@@ -40,7 +40,7 @@ export const router = createRouter({
 	getByCode: protectedProcedure
 		.input(codeSchema)
 		.query(({ ctx, input }) =>
-			service.getProgramByCode(input.code, input.facultyId, ctx.institution.id),
+			service.getProgramByCode(input.code, ctx.institution.id),
 		),
 	search: protectedProcedure
 		.input(searchSchema)

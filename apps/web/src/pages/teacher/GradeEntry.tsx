@@ -1,12 +1,13 @@
-// @ts-nocheck
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertTriangle,
 	ArrowLeft,
 	Check,
+	Download,
 	Info,
 	Lock,
 	Save,
+	Upload,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -14,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -366,6 +368,94 @@ const GradeEntry: React.FC = () => {
 				rosterQuery.isLoading ||
 				examsQuery.isLoading));
 
+	const handleExportTemplate = () => {
+		if (!selectedExamInfo || !rosterStudents.length) {
+			toast.error(
+				t("teacher.gradeEntry.toast.exportError", {
+					defaultValue: "Please select an exam with students",
+				}),
+			);
+			return;
+		}
+
+		const data = rosterStudents.map((student) => ({
+			"Registration Number": student.registrationNumber || "",
+			"First Name": student.firstName,
+			"Last Name": student.lastName,
+			Score: gradesByStudent[student.id]?.score ?? "",
+		}));
+
+		const worksheet = XLSX.utils.json_to_sheet(data);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Grades");
+
+		const fileName = `${courseInfo?.course_name || "grades"}_${selectedExamInfo.name}_${new Date().toISOString().split("T")[0]}.xlsx`;
+		XLSX.writeFile(workbook, fileName);
+
+		toast.success(
+			t("teacher.gradeEntry.toast.exportSuccess", {
+				defaultValue: "Template exported successfully",
+			}),
+		);
+	};
+
+	const handleImportGrades = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			try {
+				const data = new Uint8Array(e.target?.result as ArrayBuffer);
+				const workbook = XLSX.read(data, { type: "array" });
+				const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+				const jsonData = XLSX.utils.sheet_to_json(worksheet) as Array<{
+					"Registration Number": string;
+					"First Name": string;
+					"Last Name": string;
+					Score: number | string;
+				}>;
+
+				const updates: Record<string, number> = {};
+				let importedCount = 0;
+
+				jsonData.forEach((row) => {
+					const student = rosterStudents.find(
+						(s) =>
+							s.registrationNumber === row["Registration Number"] ||
+							(s.firstName === row["First Name"] &&
+								s.lastName === row["Last Name"]),
+					);
+
+					if (student && row.Score !== "" && row.Score !== null) {
+						const score = Number(row.Score);
+						if (!Number.isNaN(score) && score >= 0 && score <= 20) {
+							updates[`student_${student.id}`] = score;
+							importedCount++;
+						}
+					}
+				});
+
+				reset(updates);
+				toast.success(
+					t("teacher.gradeEntry.toast.importSuccess", {
+						defaultValue: "Imported {{count}} grades successfully",
+						count: importedCount,
+					}),
+				);
+			} catch (error) {
+				toast.error(
+					t("teacher.gradeEntry.toast.importError", {
+						defaultValue: "Failed to import grades",
+					}),
+				);
+			}
+		};
+
+		reader.readAsArrayBuffer(file);
+		event.target.value = "";
+	};
+
 	if (isInitialLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
@@ -484,6 +574,45 @@ const GradeEntry: React.FC = () => {
 							</div>
 						)}
 					</div>
+
+					{selectedExam && rosterStudents.length > 0 && (
+						<div className="flex flex-wrap items-center gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleExportTemplate}
+								disabled={!selectedExam || !rosterStudents.length}
+							>
+								<Download className="mr-2 h-4 w-4" />
+								{t("teacher.gradeEntry.actions.exportTemplate", {
+									defaultValue: "Export Template",
+								})}
+							</Button>
+							<div>
+								<input
+									type="file"
+									id="import-grades"
+									accept=".xlsx,.xls"
+									className="hidden"
+									onChange={handleImportGrades}
+									disabled={isExamLocked}
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() =>
+										document.getElementById("import-grades")?.click()
+									}
+									disabled={!selectedExam || isExamLocked}
+								>
+									<Upload className="mr-2 h-4 w-4" />
+									{t("teacher.gradeEntry.actions.importGrades", {
+										defaultValue: "Import Grades",
+									})}
+								</Button>
+							</div>
+						</div>
+					)}
 
 					{selectedExam && exams.length > 0 && (
 						<Alert>

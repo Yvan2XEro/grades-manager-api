@@ -9,14 +9,6 @@ import type {
 	ScheduleInput,
 } from "./exam-scheduler.zod";
 
-async function ensureFaculty(facultyId: string, institutionId: string) {
-	const faculty = await repo.findFacultyById(facultyId);
-	if (!faculty || faculty.institutionId !== institutionId) {
-		throw notFound("Faculty not found");
-	}
-	return faculty;
-}
-
 async function ensureAcademicYear(
 	academicYearId: string,
 	institutionId: string,
@@ -37,11 +29,11 @@ async function ensureExamType(examTypeId: string, institutionId: string) {
 }
 
 async function resolveContext(input: PreviewInput, institutionId: string) {
-	const [faculty, academicYear] = await Promise.all([
-		ensureFaculty(input.facultyId, institutionId),
-		ensureAcademicYear(input.academicYearId, institutionId),
-	]);
-	return { faculty, academicYear };
+	const academicYear = await ensureAcademicYear(
+		input.academicYearId,
+		institutionId,
+	);
+	return { academicYear };
 }
 
 export async function previewEligibleClasses(
@@ -49,15 +41,13 @@ export async function previewEligibleClasses(
 	institutionId: string,
 ) {
 	const context = await resolveContext(input, institutionId);
+	console.log("[DEBUG preview] input:", input, "institutionId:", institutionId);
 	const classes = await repo.getClassesForScheduling({
-		...input,
+		academicYearId: input.academicYearId,
 		institutionId,
 	});
+	console.log("[DEBUG preview] Found classes:", classes.length);
 	return {
-		faculty: {
-			id: context.faculty.id,
-			name: context.faculty.name,
-		},
 		academicYear: {
 			id: context.academicYear.id,
 			name: context.academicYear.name,
@@ -76,10 +66,9 @@ export async function scheduleExams(
 	const context = await resolveContext(input, institutionId);
 	const examType = await ensureExamType(input.examTypeId, institutionId);
 	const classes = await repo.getClassesForScheduling({
-		facultyId: input.facultyId,
+		institutionId,
 		academicYearId: input.academicYearId,
 		classIds: input.classIds,
-		institutionId,
 	});
 	if (!classes.length) {
 		throw new TRPCError({
@@ -143,7 +132,6 @@ export async function scheduleExams(
 		classCourseCount: classCourses.length,
 		examIds: createdIds,
 		examType: { id: examType.id, name: examType.name },
-		faculty: { id: context.faculty.id, name: context.faculty.name },
 		academicYear: {
 			id: context.academicYear.id,
 			name: context.academicYear.name,
@@ -158,7 +146,7 @@ export async function scheduleExams(
 		: null;
 	try {
 		const run = await repo.recordRun({
-			facultyId: input.facultyId,
+			institutionId,
 			academicYearId: input.academicYearId,
 			examTypeId: examType.id,
 			percentage: input.percentage.toString(),

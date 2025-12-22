@@ -389,26 +389,11 @@ const TeachingUnitDetail = () => {
 											<SelectContent>
 												{programs?.items?.map((program) => (
 													<SelectItem key={program.id} value={program.id}>
-														<div className="flex flex-col">
-															<span>{program.name}</span>
-															{program.facultyInfo?.name && (
-																<span className="text-muted-foreground text-xs">
-																	{program.facultyInfo.name}
-																</span>
-															)}
-														</div>
+														{program.name}
 													</SelectItem>
 												))}
 											</SelectContent>
 										</Select>
-										{selectedProgram?.facultyInfo?.name && (
-											<p className="text-muted-foreground text-xs">
-												{t("admin.teachingUnits.programFacultySummary", {
-													defaultValue: "Faculty: {{value}}",
-													value: selectedProgram.facultyInfo.name,
-												})}
-											</p>
-										)}
 										<FormMessage />
 									</FormItem>
 								)}

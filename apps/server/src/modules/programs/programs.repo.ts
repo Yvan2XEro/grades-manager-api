@@ -8,12 +8,7 @@ const programSelection = {
 	code: schema.programs.code,
 	name: schema.programs.name,
 	description: schema.programs.description,
-	faculty: schema.programs.faculty,
 	createdAt: schema.programs.createdAt,
-	facultyInfo: {
-		id: schema.faculties.id,
-		name: schema.faculties.name,
-	},
 };
 
 export async function create(data: schema.NewProgram) {
@@ -54,10 +49,6 @@ export async function findById(id: string, institutionId: string) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.where(
 			and(
 				eq(schema.programs.id, id),
@@ -68,22 +59,13 @@ export async function findById(id: string, institutionId: string) {
 	return program ?? null;
 }
 
-export async function findByCode(
-	code: string,
-	facultyId: string,
-	institutionId: string,
-) {
+export async function findByCode(code: string, institutionId: string) {
 	const [program] = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.where(
 			and(
 				eq(schema.programs.code, code),
-				eq(schema.programs.faculty, facultyId),
 				eq(schema.programs.institutionId, institutionId),
 			),
 		)
@@ -94,7 +76,6 @@ export async function findByCode(
 export async function list(
 	institutionId: string,
 	opts: {
-		facultyId?: string;
 		q?: string;
 		cursor?: string;
 		limit?: number;
@@ -106,9 +87,6 @@ export async function list(
 		| ReturnType<typeof and>
 		| ReturnType<typeof gt>
 		| undefined = eq(schema.programs.institutionId, institutionId);
-	if (opts.facultyId) {
-		condition = eq(schema.programs.faculty, opts.facultyId);
-	}
 	if (opts.q) {
 		const qCond = ilike(schema.programs.name, `%${opts.q}%`);
 		condition = condition ? and(condition, qCond) : qCond;
@@ -120,10 +98,6 @@ export async function list(
 	const items = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.where(condition)
 		.orderBy(schema.programs.id)
 		.limit(limit);
@@ -134,7 +108,6 @@ export async function list(
 
 export async function search(opts: {
 	query: string;
-	facultyId?: string;
 	limit?: number;
 	institutionId: string;
 }) {
@@ -143,24 +116,14 @@ export async function search(opts: {
 		ilike(schema.programs.code, `%${opts.query}%`),
 		ilike(schema.programs.name, `%${opts.query}%`),
 	);
-	const condition = opts.facultyId
-		? and(
-				eq(schema.programs.faculty, opts.facultyId),
-				eq(schema.programs.institutionId, opts.institutionId),
-				searchCondition,
-			)
-		: and(
-				eq(schema.programs.institutionId, opts.institutionId),
-				searchCondition,
-			);
+	const condition = and(
+		eq(schema.programs.institutionId, opts.institutionId),
+		searchCondition,
+	);
 
 	const items = await db
 		.select(programSelection)
 		.from(schema.programs)
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.where(condition)
 		.orderBy(schema.programs.code)
 		.limit(limit);

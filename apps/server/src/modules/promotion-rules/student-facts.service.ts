@@ -31,6 +31,14 @@ export async function computeStudentFacts(
 		throw new Error(`Student not found: ${studentId}`);
 	}
 
+	// Get current active enrollment to retrieve admission info
+	const currentEnrollment = await db.query.enrollments.findFirst({
+		where: and(
+			eq(schema.enrollments.studentId, studentId),
+			eq(schema.enrollments.academicYearId, academicYearId),
+		),
+	});
+
 	// Get transcript with course averages
 	const transcript = await getStudentTranscript(studentId);
 
@@ -89,7 +97,7 @@ export async function computeStudentFacts(
 		successRate: transcript.successRate,
 		unitValidationRate: transcript.unitValidationRate,
 
-		// Credits
+		// Credits (transfer credits are already included in creditSummary via ledger)
 		creditsEarned: creditSummary.creditsEarned,
 		creditsEarnedThisYear: creditSummary.creditsEarnedThisYear,
 		creditsInProgress: creditSummary.creditsInProgress,
@@ -99,7 +107,10 @@ export async function computeStudentFacts(
 			0,
 			creditSummary.requiredCredits - creditSummary.creditsEarned,
 		),
-		creditCompletionRate: creditSummary.creditCompletionRate,
+		creditCompletionRate:
+			creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0,
 		creditSuccessRate: creditSummary.creditSuccessRate,
 
 		// Attempts and retakes
@@ -122,12 +133,15 @@ export async function computeStudentFacts(
 		// Advanced indicators
 		performanceIndex: computePerformanceIndex(
 			transcript.overallAverage,
-			creditSummary.creditCompletionRate,
+			creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0,
 			transcript.successRate,
 		),
 		isOnTrack:
-			creditSummary.creditCompletionRate >= 0.75 &&
-			transcript.overallAverage >= PASSING_GRADE,
+			(creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0) >= 0.75 && transcript.overallAverage >= PASSING_GRADE,
 		progressionRate:
 			enrollmentHistory.activeYearsCount > 0
 				? creditSummary.creditsEarned / enrollmentHistory.activeYearsCount
@@ -137,6 +151,18 @@ export async function computeStudentFacts(
 		canReachRequiredCredits:
 			creditSummary.creditsEarned + creditSummary.creditsInProgress >=
 			creditSummary.requiredCredits,
+
+		// External student fields (from current enrollment)
+		admissionType: currentEnrollment?.admissionType ?? "normal",
+		isTransferStudent: currentEnrollment?.admissionType === "transfer",
+		isDirectAdmission:
+			currentEnrollment?.admissionType === "direct" ||
+			currentEnrollment?.admissionType === "equivalence",
+		hasAcademicHistory:
+			transcript.overallAverage > 0 || transcript.validatedCoursesCount > 0,
+		transferCredits: currentEnrollment?.transferCredits ?? 0,
+		transferInstitution: currentEnrollment?.transferInstitution ?? null,
+		transferLevel: currentEnrollment?.transferLevel ?? null,
 	};
 
 	return facts;

@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { type InferInsertModel, relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -161,3 +161,7 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
 		references: [user.id],
 	}),
 }));
+
+// Type exports
+export type NewOrganization = InferInsertModel<typeof organization>;
+export type NewMember = InferInsertModel<typeof member>;

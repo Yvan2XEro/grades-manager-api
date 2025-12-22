@@ -4,7 +4,6 @@ import {
 	asAdmin,
 	createAcademicYear,
 	createClass,
-	createFaculty,
 	createProgram,
 } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
@@ -14,10 +13,8 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 describe("registration numbers router", () => {
 	it("creates formats, previews values, and lists entries", async () => {
 		const admin = createCaller(asAdmin());
-		const faculty = await createFaculty({ code: "SCI" });
 		const program = await createProgram({
-			faculty: faculty.id,
-			code: "UDS-SCI",
+			code: "SCI",
 		});
 		const academicYear = await createAcademicYear({
 			name: "2023/2024",
@@ -32,7 +29,7 @@ describe("registration numbers router", () => {
 		const definition = {
 			segments: [
 				{ kind: "literal", value: "cm-" },
-				{ kind: "field", field: "facultyCode", transform: "lower" },
+				{ kind: "field", field: "programCode", transform: "lower" },
 				{ kind: "literal", value: "-" },
 				{ kind: "field", field: "academicYearStartShort" },
 				{ kind: "literal", value: "-" },

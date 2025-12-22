@@ -1,15 +1,18 @@
 CREATE TABLE "academic_years" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"name" text NOT NULL,
 	"start_date" date NOT NULL,
 	"end_date" date NOT NULL,
 	"is_active" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "uq_academic_years_institution_name" UNIQUE("institution_id","name"),
 	CONSTRAINT "chk_academic_years_dates" CHECK ("academic_years"."end_date" > "academic_years"."start_date")
 );
 --> statement-breakpoint
 CREATE TABLE "class_courses" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"code" text NOT NULL,
 	"class_id" text NOT NULL,
 	"course_id" text NOT NULL,
@@ -23,6 +26,7 @@ CREATE TABLE "class_courses" (
 --> statement-breakpoint
 CREATE TABLE "classes" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"code" text NOT NULL,
 	"name" text NOT NULL,
 	"program_id" text NOT NULL,
@@ -101,17 +105,25 @@ CREATE TABLE "enrollment_windows" (
 --> statement-breakpoint
 CREATE TABLE "enrollments" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"student_id" text NOT NULL,
 	"class_id" text NOT NULL,
 	"academic_year_id" text NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL,
 	"enrolled_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"exited_at" timestamp with time zone
+	"exited_at" timestamp with time zone,
+	"admission_type" text DEFAULT 'normal' NOT NULL,
+	"transfer_institution" text,
+	"transfer_credits" integer DEFAULT 0,
+	"transfer_level" text,
+	"admission_justification" text,
+	"admission_date" timestamp with time zone,
+	"admission_metadata" jsonb DEFAULT '{}'::jsonb
 );
 --> statement-breakpoint
 CREATE TABLE "exam_schedule_runs" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"faculty_id" text NOT NULL,
+	"institution_id" text NOT NULL,
 	"academic_year_id" text NOT NULL,
 	"exam_type_id" text NOT NULL,
 	"percentage" numeric(5, 2) NOT NULL,
@@ -130,14 +142,16 @@ CREATE TABLE "exam_schedule_runs" (
 --> statement-breakpoint
 CREATE TABLE "exam_types" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_exam_types_name" UNIQUE("name")
+	CONSTRAINT "uq_exam_types_name_institution" UNIQUE("institution_id","name")
 );
 --> statement-breakpoint
 CREATE TABLE "exams" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"name" text NOT NULL,
 	"type" text NOT NULL,
 	"date" timestamp with time zone NOT NULL,
@@ -154,16 +168,6 @@ CREATE TABLE "exams" (
 	CONSTRAINT "chk_exams_percentage" CHECK ("exams"."percentage" >= 0 AND "exams"."percentage" <= 100)
 );
 --> statement-breakpoint
-CREATE TABLE "faculties" (
-	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"code" text NOT NULL,
-	"name" text NOT NULL,
-	"description" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_faculties_name" UNIQUE("name"),
-	CONSTRAINT "uq_faculties_code" UNIQUE("code")
-);
---> statement-breakpoint
 CREATE TABLE "grades" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"student_id" text NOT NULL,
@@ -177,6 +181,7 @@ CREATE TABLE "grades" (
 CREATE TABLE "institutions" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"code" text NOT NULL,
+	"type" text DEFAULT 'institution' NOT NULL,
 	"short_name" text,
 	"name_fr" text NOT NULL,
 	"name_en" text NOT NULL,
@@ -195,6 +200,7 @@ CREATE TABLE "institutions" (
 	"website" text,
 	"logo_url" text,
 	"cover_image_url" text,
+	"parent_institution_id" text,
 	"organization_id" text,
 	"default_academic_year_id" text,
 	"registration_format_id" text,
@@ -218,6 +224,7 @@ CREATE TABLE "notifications" (
 --> statement-breakpoint
 CREATE TABLE "program_options" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"program_id" text NOT NULL,
 	"name" text NOT NULL,
 	"code" text NOT NULL,
@@ -228,15 +235,15 @@ CREATE TABLE "program_options" (
 --> statement-breakpoint
 CREATE TABLE "programs" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"code" text NOT NULL,
 	"name" text NOT NULL,
 	"slug" text NOT NULL,
 	"description" text,
-	"faculty_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_programs_name_faculty" UNIQUE("name","faculty_id"),
-	CONSTRAINT "uq_programs_code_faculty" UNIQUE("code","faculty_id"),
-	CONSTRAINT "uq_programs_slug_faculty" UNIQUE("slug","faculty_id")
+	CONSTRAINT "uq_programs_name_institution" UNIQUE("name","institution_id"),
+	CONSTRAINT "uq_programs_code_institution" UNIQUE("code","institution_id"),
+	CONSTRAINT "uq_programs_slug_institution" UNIQUE("slug","institution_id")
 );
 --> statement-breakpoint
 CREATE TABLE "promotion_execution_results" (
@@ -265,6 +272,7 @@ CREATE TABLE "promotion_executions" (
 --> statement-breakpoint
 CREATE TABLE "promotion_rules" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"source_class_id" text,
@@ -288,6 +296,7 @@ CREATE TABLE "registration_number_counters" (
 --> statement-breakpoint
 CREATE TABLE "registration_number_formats" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"definition" jsonb NOT NULL,
@@ -333,6 +342,7 @@ CREATE TABLE "student_credit_ledgers" (
 --> statement-breakpoint
 CREATE TABLE "students" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
 	"domain_user_id" text NOT NULL,
 	"registration_number" text NOT NULL,
 	"class_id" text NOT NULL,
@@ -343,14 +353,14 @@ CREATE TABLE "students" (
 --> statement-breakpoint
 CREATE TABLE "study_cycles" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"faculty_id" text NOT NULL,
+	"institution_id" text NOT NULL,
 	"code" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"total_credits_required" integer DEFAULT 180 NOT NULL,
 	"duration_years" integer DEFAULT 3 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_study_cycles_faculty_code" UNIQUE("faculty_id","code")
+	CONSTRAINT "uq_study_cycles_institution_code" UNIQUE("institution_id","code")
 );
 --> statement-breakpoint
 CREATE TABLE "teaching_units" (
@@ -447,10 +457,13 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "academic_years" ADD CONSTRAINT "academic_years_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "class_courses" ADD CONSTRAINT "class_courses_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_courses" ADD CONSTRAINT "class_courses_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_courses" ADD CONSTRAINT "class_courses_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_courses" ADD CONSTRAINT "class_courses_teacher_id_domain_users_id_fk" FOREIGN KEY ("teacher_id") REFERENCES "public"."domain_users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "class_courses" ADD CONSTRAINT "class_courses_semester_id_semesters_id_fk" FOREIGN KEY ("semester_id") REFERENCES "public"."semesters"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "classes" ADD CONSTRAINT "classes_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "classes" ADD CONSTRAINT "classes_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "classes" ADD CONSTRAINT "classes_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "classes" ADD CONSTRAINT "classes_semester_id_semesters_id_fk" FOREIGN KEY ("semester_id") REFERENCES "public"."semesters"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -466,25 +479,30 @@ ALTER TABLE "domain_users" ADD CONSTRAINT "domain_users_auth_user_id_user_id_fk"
 ALTER TABLE "domain_users" ADD CONSTRAINT "domain_users_member_id_member_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."member"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollment_windows" ADD CONSTRAINT "enrollment_windows_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollment_windows" ADD CONSTRAINT "enrollment_windows_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "exam_schedule_runs" ADD CONSTRAINT "exam_schedule_runs_faculty_id_faculties_id_fk" FOREIGN KEY ("faculty_id") REFERENCES "public"."faculties"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "exam_schedule_runs" ADD CONSTRAINT "exam_schedule_runs_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exam_schedule_runs" ADD CONSTRAINT "exam_schedule_runs_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exam_schedule_runs" ADD CONSTRAINT "exam_schedule_runs_exam_type_id_exam_types_id_fk" FOREIGN KEY ("exam_type_id") REFERENCES "public"."exam_types"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exam_schedule_runs" ADD CONSTRAINT "exam_schedule_runs_scheduled_by_domain_users_id_fk" FOREIGN KEY ("scheduled_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "exam_types" ADD CONSTRAINT "exam_types_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "exams" ADD CONSTRAINT "exams_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exams" ADD CONSTRAINT "exams_class_course_id_class_courses_id_fk" FOREIGN KEY ("class_course_id") REFERENCES "public"."class_courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exams" ADD CONSTRAINT "exams_scheduled_by_domain_users_id_fk" FOREIGN KEY ("scheduled_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exams" ADD CONSTRAINT "exams_validated_by_domain_users_id_fk" FOREIGN KEY ("validated_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "exams" ADD CONSTRAINT "exams_schedule_run_id_exam_schedule_runs_id_fk" FOREIGN KEY ("schedule_run_id") REFERENCES "public"."exam_schedule_runs"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "grades" ADD CONSTRAINT "grades_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "grades" ADD CONSTRAINT "grades_exam_id_exams_id_fk" FOREIGN KEY ("exam_id") REFERENCES "public"."exams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "institutions" ADD CONSTRAINT "institutions_parent_institution_id_institutions_id_fk" FOREIGN KEY ("parent_institution_id") REFERENCES "public"."institutions"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_default_academic_year_id_academic_years_id_fk" FOREIGN KEY ("default_academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "institutions" ADD CONSTRAINT "institutions_registration_format_id_registration_number_formats_id_fk" FOREIGN KEY ("registration_format_id") REFERENCES "public"."registration_number_formats"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_domain_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "program_options" ADD CONSTRAINT "program_options_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "program_options" ADD CONSTRAINT "program_options_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "programs" ADD CONSTRAINT "programs_faculty_id_faculties_id_fk" FOREIGN KEY ("faculty_id") REFERENCES "public"."faculties"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "programs" ADD CONSTRAINT "programs_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_execution_results" ADD CONSTRAINT "promotion_execution_results_execution_id_promotion_executions_id_fk" FOREIGN KEY ("execution_id") REFERENCES "public"."promotion_executions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_execution_results" ADD CONSTRAINT "promotion_execution_results_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_executions" ADD CONSTRAINT "promotion_executions_rule_id_promotion_rules_id_fk" FOREIGN KEY ("rule_id") REFERENCES "public"."promotion_rules"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -492,10 +510,12 @@ ALTER TABLE "promotion_executions" ADD CONSTRAINT "promotion_executions_source_c
 ALTER TABLE "promotion_executions" ADD CONSTRAINT "promotion_executions_target_class_id_classes_id_fk" FOREIGN KEY ("target_class_id") REFERENCES "public"."classes"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_executions" ADD CONSTRAINT "promotion_executions_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_executions" ADD CONSTRAINT "promotion_executions_executed_by_domain_users_id_fk" FOREIGN KEY ("executed_by") REFERENCES "public"."domain_users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "promotion_rules" ADD CONSTRAINT "promotion_rules_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_rules" ADD CONSTRAINT "promotion_rules_source_class_id_classes_id_fk" FOREIGN KEY ("source_class_id") REFERENCES "public"."classes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_rules" ADD CONSTRAINT "promotion_rules_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_rules" ADD CONSTRAINT "promotion_rules_cycle_level_id_cycle_levels_id_fk" FOREIGN KEY ("cycle_level_id") REFERENCES "public"."cycle_levels"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registration_number_counters" ADD CONSTRAINT "registration_number_counters_format_id_registration_number_formats_id_fk" FOREIGN KEY ("format_id") REFERENCES "public"."registration_number_formats"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "registration_number_formats" ADD CONSTRAINT "registration_number_formats_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_course_enrollments" ADD CONSTRAINT "student_course_enrollments_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_course_enrollments" ADD CONSTRAINT "student_course_enrollments_class_course_id_class_courses_id_fk" FOREIGN KEY ("class_course_id") REFERENCES "public"."class_courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_course_enrollments" ADD CONSTRAINT "student_course_enrollments_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -503,9 +523,10 @@ ALTER TABLE "student_course_enrollments" ADD CONSTRAINT "student_course_enrollme
 ALTER TABLE "student_course_enrollments" ADD CONSTRAINT "student_course_enrollments_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_credit_ledgers" ADD CONSTRAINT "student_credit_ledgers_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_credit_ledgers" ADD CONSTRAINT "student_credit_ledgers_academic_year_id_academic_years_id_fk" FOREIGN KEY ("academic_year_id") REFERENCES "public"."academic_years"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "students" ADD CONSTRAINT "students_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "students" ADD CONSTRAINT "students_domain_user_id_domain_users_id_fk" FOREIGN KEY ("domain_user_id") REFERENCES "public"."domain_users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "students" ADD CONSTRAINT "students_class_id_classes_id_fk" FOREIGN KEY ("class_id") REFERENCES "public"."classes"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "study_cycles" ADD CONSTRAINT "study_cycles_faculty_id_faculties_id_fk" FOREIGN KEY ("faculty_id") REFERENCES "public"."faculties"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "study_cycles" ADD CONSTRAINT "study_cycles_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "teaching_units" ADD CONSTRAINT "teaching_units_program_id_programs_id_fk" FOREIGN KEY ("program_id") REFERENCES "public"."programs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation" ADD CONSTRAINT "invitation_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -513,10 +534,13 @@ ALTER TABLE "invitation" ADD CONSTRAINT "invitation_inviter_id_user_id_fk" FOREI
 ALTER TABLE "member" ADD CONSTRAINT "member_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "member" ADD CONSTRAINT "member_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_academic_years_institution" ON "academic_years" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_class_courses_institution_id" ON "class_courses" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_class_courses_class_id" ON "class_courses" USING btree ("class_id");--> statement-breakpoint
 CREATE INDEX "idx_class_courses_course_id" ON "class_courses" USING btree ("course_id");--> statement-breakpoint
 CREATE INDEX "idx_class_courses_teacher_id" ON "class_courses" USING btree ("teacher_id");--> statement-breakpoint
 CREATE INDEX "idx_class_courses_semester_id" ON "class_courses" USING btree ("semester_id");--> statement-breakpoint
+CREATE INDEX "idx_classes_institution_id" ON "classes" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_classes_program_id" ON "classes" USING btree ("program_id");--> statement-breakpoint
 CREATE INDEX "idx_classes_academic_year_id" ON "classes" USING btree ("academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_classes_semester_id" ON "classes" USING btree ("semester_id");--> statement-breakpoint
@@ -530,12 +554,16 @@ CREATE INDEX "idx_courses_default_teacher_id" ON "courses" USING btree ("default
 CREATE INDEX "idx_cycle_levels_cycle" ON "cycle_levels" USING btree ("cycle_id");--> statement-breakpoint
 CREATE INDEX "idx_domain_users_role" ON "domain_users" USING btree ("business_role");--> statement-breakpoint
 CREATE INDEX "idx_enrollment_window_status" ON "enrollment_windows" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "idx_enrollments_institution_id" ON "enrollments" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_enrollments_student_id" ON "enrollments" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_enrollments_class_id" ON "enrollments" USING btree ("class_id");--> statement-breakpoint
 CREATE INDEX "idx_enrollments_year_id" ON "enrollments" USING btree ("academic_year_id");--> statement-breakpoint
-CREATE INDEX "idx_exam_schedule_runs_faculty" ON "exam_schedule_runs" USING btree ("faculty_id");--> statement-breakpoint
+CREATE INDEX "idx_enrollments_admission_type" ON "enrollments" USING btree ("admission_type");--> statement-breakpoint
+CREATE INDEX "idx_exam_schedule_runs_institution" ON "exam_schedule_runs" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_exam_schedule_runs_year" ON "exam_schedule_runs" USING btree ("academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_exam_schedule_runs_type" ON "exam_schedule_runs" USING btree ("exam_type_id");--> statement-breakpoint
+CREATE INDEX "idx_exam_types_institution_id" ON "exam_types" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_exams_institution_id" ON "exams" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_exams_class_course_id" ON "exams" USING btree ("class_course_id");--> statement-breakpoint
 CREATE INDEX "idx_exams_date" ON "exams" USING btree ("date");--> statement-breakpoint
 CREATE INDEX "idx_grades_student_id" ON "grades" USING btree ("student_id");--> statement-breakpoint
@@ -543,7 +571,8 @@ CREATE INDEX "idx_grades_exam_id" ON "grades" USING btree ("exam_id");--> statem
 CREATE INDEX "idx_notifications_recipient" ON "notifications" USING btree ("recipient_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_status" ON "notifications" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_program_options_program_id" ON "program_options" USING btree ("program_id");--> statement-breakpoint
-CREATE INDEX "idx_programs_faculty_id" ON "programs" USING btree ("faculty_id");--> statement-breakpoint
+CREATE INDEX "idx_program_options_institution_id" ON "program_options" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_programs_institution_id" ON "programs" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_results_execution" ON "promotion_execution_results" USING btree ("execution_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_results_student" ON "promotion_execution_results" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_results_promoted" ON "promotion_execution_results" USING btree ("was_promoted");--> statement-breakpoint
@@ -552,12 +581,14 @@ CREATE INDEX "idx_promotion_executions_source_class" ON "promotion_executions" U
 CREATE INDEX "idx_promotion_executions_target_class" ON "promotion_executions" USING btree ("target_class_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_executions_year" ON "promotion_executions" USING btree ("academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_executions_executor" ON "promotion_executions" USING btree ("executed_by");--> statement-breakpoint
+CREATE INDEX "idx_promotion_rules_institution_id" ON "promotion_rules" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_rules_source_class" ON "promotion_rules" USING btree ("source_class_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_rules_program" ON "promotion_rules" USING btree ("program_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_rules_cycle_level" ON "promotion_rules" USING btree ("cycle_level_id");--> statement-breakpoint
 CREATE INDEX "idx_promotion_rules_active" ON "promotion_rules" USING btree ("is_active");--> statement-breakpoint
 CREATE INDEX "idx_registration_counter_format_id" ON "registration_number_counters" USING btree ("format_id");--> statement-breakpoint
 CREATE INDEX "idx_registration_formats_active" ON "registration_number_formats" USING btree ("is_active");--> statement-breakpoint
+CREATE INDEX "idx_registration_formats_institution_id" ON "registration_number_formats" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_semesters_order" ON "semesters" USING btree ("order_index");--> statement-breakpoint
 CREATE INDEX "idx_student_course_student" ON "student_course_enrollments" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_student_course_class_course" ON "student_course_enrollments" USING btree ("class_course_id");--> statement-breakpoint
@@ -565,9 +596,10 @@ CREATE INDEX "idx_student_course_course" ON "student_course_enrollments" USING b
 CREATE INDEX "idx_student_course_year" ON "student_course_enrollments" USING btree ("academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_student_credit_ledgers_student" ON "student_credit_ledgers" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "idx_student_credit_ledgers_year" ON "student_credit_ledgers" USING btree ("academic_year_id");--> statement-breakpoint
+CREATE INDEX "idx_students_institution_id" ON "students" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_students_class_id" ON "students" USING btree ("class_id");--> statement-breakpoint
 CREATE INDEX "idx_students_domain_user_id" ON "students" USING btree ("domain_user_id");--> statement-breakpoint
-CREATE INDEX "idx_study_cycles_faculty" ON "study_cycles" USING btree ("faculty_id");--> statement-breakpoint
+CREATE INDEX "idx_study_cycles_institution" ON "study_cycles" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_teaching_units_program_id" ON "teaching_units" USING btree ("program_id");--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint

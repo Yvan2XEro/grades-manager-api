@@ -24,19 +24,29 @@ import { trpc, trpcClient } from "../../utils/trpc";
 const RuleManagement = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const [selectedFaculty, setSelectedFaculty] = useState<string>("");
+	const [selectedInstitution, setSelectedInstitution] = useState<string>("");
 	const [selectedCycle, setSelectedCycle] = useState<string>("");
 	const [draftRule, setDraftRule] = useState<string>("");
 
-	const facultiesQuery = useQuery(
-		trpc.faculties.list.queryOptions({ limit: 100 }),
-	);
+	const institutionsQuery = useQuery({
+		queryKey: ["institutions", "faculties"],
+		queryFn: async () => {
+			const result = await trpcClient.institutions.list.query({ limit: 100 });
+			if (!result) {
+				return { items: [], total: 0 };
+			}
+			return {
+				...result,
+				items: result.items.filter((i) => i.type === "faculty"),
+			};
+		},
+	});
 	const cyclesQuery = useQuery({
 		...trpc.studyCycles.listCycles.queryOptions({
-			facultyId: selectedFaculty || undefined,
+			institutionId: selectedInstitution || undefined,
 			limit: 200,
 		}),
-		enabled: Boolean(selectedFaculty),
+		enabled: Boolean(selectedInstitution),
 	});
 	const rulesQuery = useQuery(trpc.promotions.listDefaultRules.queryOptions());
 
@@ -113,9 +123,9 @@ const RuleManagement = () => {
 								{t("admin.rules.faculty", { defaultValue: "Faculty" })}
 							</Label>
 							<Select
-								value={selectedFaculty}
+								value={selectedInstitution}
 								onValueChange={(value) => {
-									setSelectedFaculty(value);
+									setSelectedInstitution(value);
 									setSelectedCycle("");
 								}}
 							>
@@ -127,9 +137,9 @@ const RuleManagement = () => {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{facultiesQuery.data?.items?.map((faculty) => (
-										<SelectItem key={faculty.id} value={faculty.id}>
-											{faculty.name}
+									{institutionsQuery.data?.items?.map((institution) => (
+										<SelectItem key={institution.id} value={institution.id}>
+											{institution.nameFr || institution.nameEn}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -143,7 +153,7 @@ const RuleManagement = () => {
 							<Select
 								value={selectedCycle}
 								onValueChange={setSelectedCycle}
-								disabled={!selectedFaculty}
+								disabled={!selectedInstitution}
 							>
 								<SelectTrigger>
 									<SelectValue

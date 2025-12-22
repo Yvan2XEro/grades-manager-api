@@ -4,7 +4,6 @@ import { Loader2, Play, TableProperties } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CodedEntitySelect } from "../../components/forms";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -48,7 +47,6 @@ import {
 } from "../../components/ui/table";
 import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
-type Faculty = { id: string; code: string; name: string };
 type AcademicYear = { id: string; name: string };
 type ExamType = { id: string; name: string };
 type PreviewClass = {
@@ -66,8 +64,6 @@ export default function ExamScheduler() {
 	const queryClient = useQueryClient();
 	const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 	const [detailsRunId, setDetailsRunId] = useState<string | null>(null);
-	const [facultyId, setFacultyId] = useState("");
-	const [facultySearch, setFacultySearch] = useState("");
 	const [academicYearId, setAcademicYearId] = useState("");
 	const [examTypeId, setExamTypeId] = useState("");
 	const [percentage, setPercentage] = useState(40);
@@ -78,7 +74,6 @@ export default function ExamScheduler() {
 	);
 
 	const resetForm = () => {
-		setFacultyId("");
 		setAcademicYearId("");
 		setExamTypeId("");
 		setPercentage(40);
@@ -86,28 +81,6 @@ export default function ExamScheduler() {
 		setDateEnd("");
 		setSelectedClasses(new Set());
 	};
-
-	const { data: defaultFaculties = [] } = useQuery({
-		queryKey: ["faculties"],
-		queryFn: async () => {
-			const { items } = await trpcClient.faculties.list.query({ limit: 100 });
-			return items as Faculty[];
-		},
-	});
-
-	const { data: searchFaculties = [] } = useQuery({
-		queryKey: ["faculties", "search", facultySearch],
-		queryFn: async () => {
-			const items = await trpcClient.faculties.search.query({
-				query: facultySearch,
-			});
-			return items as Faculty[];
-		},
-		enabled: facultySearch.length >= 2,
-	});
-
-	const faculties =
-		facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
 
 	const academicYearsQuery = useQuery({
 		queryKey: ["academicYears"],
@@ -127,14 +100,13 @@ export default function ExamScheduler() {
 		},
 	});
 
-	const previewEnabled = isScheduleOpen && Boolean(facultyId && academicYearId);
+	const previewEnabled = isScheduleOpen && Boolean(academicYearId);
 	const previewQuery = useQuery({
-		queryKey: ["examSchedulerPreview", facultyId, academicYearId],
+		queryKey: ["examSchedulerPreview", academicYearId],
 		enabled: previewEnabled,
 		queryFn: async () => {
-			if (!facultyId || !academicYearId) return null;
+			if (!academicYearId) return null;
 			return trpcClient.examScheduler.preview.query({
-				facultyId,
 				academicYearId,
 			});
 		},
@@ -180,7 +152,6 @@ export default function ExamScheduler() {
 	const scheduleMutation = useMutation({
 		mutationFn: async () => {
 			if (
-				!facultyId ||
 				!academicYearId ||
 				!examTypeId ||
 				!dateStart ||
@@ -190,7 +161,6 @@ export default function ExamScheduler() {
 				throw new Error(t("admin.examScheduler.toast.error"));
 			}
 			await trpcClient.examScheduler.schedule.mutate({
-				facultyId,
 				academicYearId,
 				examTypeId,
 				percentage,
@@ -216,8 +186,7 @@ export default function ExamScheduler() {
 
 	const canSubmit =
 		Boolean(
-			facultyId &&
-				academicYearId &&
+			academicYearId &&
 				examTypeId &&
 				dateStart &&
 				dateEnd &&
@@ -297,9 +266,6 @@ export default function ExamScheduler() {
 									<TableRow>
 										<TableHead>{t("admin.exams.table.date")}</TableHead>
 										<TableHead>
-											{t("admin.examScheduler.form.facultyLabel")}
-										</TableHead>
-										<TableHead>
 											{t("admin.examScheduler.form.academicYearLabel")}
 										</TableHead>
 										<TableHead>
@@ -334,7 +300,6 @@ export default function ExamScheduler() {
 											<TableCell>
 												{format(new Date(item.createdAt), "PPp")}
 											</TableCell>
-											<TableCell>{item.facultyName ?? "—"}</TableCell>
 											<TableCell>{item.academicYearName ?? "—"}</TableCell>
 											<TableCell>{item.examTypeName ?? "—"}</TableCell>
 											<TableCell>{Number(item.percentage)}%</TableCell>
@@ -382,23 +347,6 @@ export default function ExamScheduler() {
 					</DialogHeader>
 					<div className="grid gap-6 lg:grid-cols-3">
 						<div className="space-y-4 lg:col-span-1">
-							<div className="space-y-2">
-								<CodedEntitySelect
-									items={faculties}
-									onSearch={setFacultySearch}
-									value={
-										faculties.find((f) => f.id === facultyId)?.code || null
-									}
-									onChange={(code) => {
-										const faculty = faculties.find((f) => f.code === code);
-										setFacultyId(faculty?.id || "");
-									}}
-									label={t("admin.examScheduler.form.facultyLabel")}
-									placeholder={t("admin.examScheduler.form.facultyPlaceholder")}
-									searchMode="hybrid"
-									required
-								/>
-							</div>
 							<div className="space-y-2">
 								<Label>{t("admin.examScheduler.form.academicYearLabel")}</Label>
 								<Select

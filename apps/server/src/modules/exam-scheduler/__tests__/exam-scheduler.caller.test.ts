@@ -8,7 +8,6 @@ import {
 	createClassCourse,
 	createCourse,
 	createExamType,
-	createFaculty,
 	createProgram,
 	createStudent,
 	createTeachingUnit,
@@ -20,9 +19,8 @@ import { appRouter } from "@/routers";
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
 async function bootstrapFixtures() {
-	const faculty = await createFaculty();
 	const academicYear = await createAcademicYear();
-	const program = await createProgram({ faculty: faculty.id });
+	const program = await createProgram();
 	const teachingUnit = await createTeachingUnit({ programId: program.id });
 	const courseA = await createCourse({
 		program: program.id,
@@ -52,7 +50,7 @@ async function bootstrapFixtures() {
 		name: `Session normale ${randomUUID()}`,
 	});
 	return {
-		faculty,
+		institutionId: program.institutionId,
 		academicYear,
 		program,
 		courses: [courseA, courseB],
@@ -64,11 +62,11 @@ async function bootstrapFixtures() {
 
 describe("exam scheduler router", () => {
 	it("requires admin privileges", async () => {
-		const { faculty, academicYear, examType } = await bootstrapFixtures();
+		const { institutionId, academicYear, examType } = await bootstrapFixtures();
 		const unauthenticated = createCaller(makeTestContext());
 		await expect(
 			unauthenticated.examScheduler.preview({
-				facultyId: faculty.id,
+				institutionId: institutionId,
 				academicYearId: academicYear.id,
 			}),
 		).rejects.toHaveProperty("code", "UNAUTHORIZED");
@@ -76,7 +74,7 @@ describe("exam scheduler router", () => {
 		const student = createCaller(makeTestContext({ role: "student" }));
 		await expect(
 			student.examScheduler.schedule({
-				facultyId: faculty.id,
+				institutionId: institutionId,
 				academicYearId: academicYear.id,
 				examTypeId: examType.id,
 				percentage: 30,
@@ -94,7 +92,7 @@ describe("exam scheduler router", () => {
 		const fixtures = await bootstrapFixtures();
 		const admin = createCaller(asAdmin());
 		const preview = await admin.examScheduler.preview({
-			facultyId: fixtures.faculty.id,
+			institutionId: fixtures.institutionId,
 			academicYearId: fixtures.academicYear.id,
 		});
 		expect(preview.classes.length).toBe(2);
@@ -103,7 +101,7 @@ describe("exam scheduler router", () => {
 		);
 
 		const firstRun = await admin.examScheduler.schedule({
-			facultyId: fixtures.faculty.id,
+			institutionId: fixtures.institutionId,
 			academicYearId: fixtures.academicYear.id,
 			examTypeId: fixtures.examType.id,
 			percentage: 40,
@@ -117,7 +115,7 @@ describe("exam scheduler router", () => {
 		expect(firstRun.runId).toBeTruthy();
 
 		const secondRun = await admin.examScheduler.schedule({
-			facultyId: fixtures.faculty.id,
+			institutionId: fixtures.institutionId,
 			academicYearId: fixtures.academicYear.id,
 			examTypeId: fixtures.examType.id,
 			percentage: 40,
@@ -148,7 +146,7 @@ describe("exam scheduler router", () => {
 		const admin = createCaller(asAdmin());
 		const targetClass = fixtures.classes[0];
 		const subset = await admin.examScheduler.schedule({
-			facultyId: fixtures.faculty.id,
+			institutionId: fixtures.institutionId,
 			academicYearId: fixtures.academicYear.id,
 			examTypeId: fixtures.examType.id,
 			percentage: 25,

@@ -7,6 +7,7 @@ import * as service from "./students.service";
 import {
 	baseSchema,
 	bulkCreateSchema,
+	externalAdmissionSchema,
 	idSchema,
 	listSchema,
 	type StudentProfilePayload,
@@ -45,10 +46,35 @@ export const studentsRouter = router({
 				registrationNumber: input.registrationNumber,
 				registrationFormatId: input.registrationFormatId,
 				profile: mapProfile(input),
+				admissionType: input.admissionType,
+				transferInstitution: input.transferInstitution,
+				transferCredits: input.transferCredits,
+				transferLevel: input.transferLevel,
+				admissionJustification: input.admissionJustification,
+				admissionDate: input.admissionDate,
 			},
 			ctx.institution.id,
 		),
 	),
+	admitExternal: tenantAdminProcedure
+		.input(externalAdmissionSchema)
+		.mutation(({ ctx, input }) =>
+			service.admitExternalStudent(
+				{
+					classId: input.classId,
+					registrationNumber: input.registrationNumber,
+					registrationFormatId: input.registrationFormatId,
+					profile: mapProfile(input),
+					admissionType: input.admissionType,
+					transferInstitution: input.transferInstitution,
+					transferCredits: input.transferCredits,
+					transferLevel: input.transferLevel,
+					admissionJustification: input.admissionJustification,
+					admissionDate: input.admissionDate,
+				},
+				ctx.institution.id,
+			),
+		),
 	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) => {

@@ -8,7 +8,27 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nMerge branch ''main'' into cedric-review\n\nResolved conflicts:\n- apps/server/.env.example: kept file from main\n- apps/server/src/db/migrations/meta/_journal.json: merged migration entries\n- apps/web/src/pages/admin/promotion-rules/rules-list.tsx: used optional chaining from main\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(bun run:*)",
       "Bash(bun check-types:*)",
-      "Bash(bun:*)"
+      "Bash(bun:*)",
+      "Bash(bun run check-types:*)",
+      "Bash(bun db:generate)",
+      "Bash(bun test:*)",
+      "Bash(timeout 60 bun test:*)",
+      "Bash(timeout 90 bun test:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(git checkout:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bunx --filter web tsc:*)",
+      "Bash(bun db:migrate:*)",
+      "Bash(bunx @biomejs/biome check:*)",
+      "Bash(tsc:*)",
+      "Bash(bun db:push:*)",
+      "Bash(timeout 10 bun dev:server:*)",
+      "Bash(timeout 10 bun run:*)"
     ]
   }
 }

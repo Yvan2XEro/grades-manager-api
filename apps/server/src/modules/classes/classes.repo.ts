@@ -19,12 +19,6 @@ const classSelection = {
 		name: schema.programs.name,
 		code: schema.programs.code,
 		slug: schema.programs.slug,
-		facultyId: schema.programs.faculty,
-	},
-	faculty: {
-		id: schema.faculties.id,
-		code: schema.faculties.code,
-		name: schema.faculties.name,
 	},
 	academicYearInfo: {
 		id: schema.academicYears.id,
@@ -65,10 +59,6 @@ async function selectClass(where: SQL<unknown>, institutionId?: string) {
 		.select(classSelection)
 		.from(schema.classes)
 		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
@@ -137,7 +127,6 @@ export async function list(
 	opts: {
 		programId?: string;
 		academicYearId?: string;
-		facultyId?: string;
 		cycleId?: string;
 		cycleLevelId?: string;
 		programOptionId?: string;
@@ -163,7 +152,6 @@ export async function list(
 		opts.semesterId
 			? eq(schema.classes.semesterId, opts.semesterId)
 			: undefined,
-		opts.facultyId ? eq(schema.programs.faculty, opts.facultyId) : undefined,
 		opts.cursor ? gt(schema.classes.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =
@@ -176,10 +164,6 @@ export async function list(
 		.select(classSelection)
 		.from(schema.classes)
 		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
@@ -245,10 +229,6 @@ export async function search(
 		.select(classSelection)
 		.from(schema.classes)
 		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
-		.leftJoin(
-			schema.faculties,
-			eq(schema.faculties.id, schema.programs.faculty),
-		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),

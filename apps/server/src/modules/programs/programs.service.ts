@@ -55,13 +55,9 @@ export async function getProgramById(id: string, institutionId: string) {
 	return item;
 }
 
-export async function getProgramByCode(
-	code: string,
-	facultyId: string,
-	institutionId: string,
-) {
+export async function getProgramByCode(code: string, institutionId: string) {
 	const normalized = normalizeCode(code);
-	const item = await repo.findByCode(normalized, facultyId, institutionId);
+	const item = await repo.findByCode(normalized, institutionId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
 }

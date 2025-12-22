@@ -49,6 +49,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
+type ExcelCell = string | number | boolean | null | undefined;
+type ExcelRow = ExcelCell[];
+
 interface AcademicYear {
 	id: string;
 	name: string;
@@ -446,7 +449,7 @@ export default function GradeExport() {
 			const yearData = academicYears?.find((y) => y.id === selectedYear);
 
 			// Build header rows
-			const headerRows: any[][] = [];
+			const headerRows: ExcelRow[] = [];
 
 			// Institution header
 			if (exportConfig.institution) {
@@ -1032,7 +1035,7 @@ export default function GradeExport() {
 				const yearData = academicYears?.find((y) => y.id === selectedYear);
 
 				// Build header rows
-				const headerRows: any[][] = [];
+				const headerRows: ExcelRow[] = [];
 
 				// Institution header
 				if (exportConfig.institution) {
@@ -1256,12 +1259,6 @@ export default function GradeExport() {
 				examId,
 				format: "pdf",
 			});
-
-			// Debug: log what we received
-			console.log("Result from backend:", result);
-			console.log("Result data type:", typeof result.data);
-			console.log("Result data length:", result.data.length);
-			console.log("First 100 chars:", result.data.substring(0, 100));
 
 			// Convert base64 to blob and download
 			const byteCharacters = atob(result.data);
@@ -1512,7 +1509,7 @@ export default function GradeExport() {
 								<SelectValue placeholder="Sélectionner un semestre" />
 							</SelectTrigger>
 							<SelectContent>
-								{semesters?.map((semester) => (
+								{(semesters || []).map((semester) => (
 									<SelectItem key={semester.id} value={semester.id}>
 										{semester.name}
 									</SelectItem>

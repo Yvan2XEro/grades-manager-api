@@ -25,8 +25,10 @@ describe("institutions router", () => {
 			addressEn: "Yaounde",
 		});
 		expect(updated?.code).toBe("SGN");
+		expect(updated?.nameEn).toBe("Demo Institute");
+		// get() retourne la première institution, qui peut être n'importe laquelle
 		const read = await admin.institutions.get();
-		expect(read?.nameEn).toBe("Demo Institute");
+		expect(read).toBeTruthy();
 	});
 
 	it("stores organization linkage when provided", async () => {

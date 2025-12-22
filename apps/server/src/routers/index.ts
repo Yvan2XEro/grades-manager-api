@@ -9,7 +9,6 @@ import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
 import { exportsRouter } from "../modules/exports";
-import { facultiesRouter } from "../modules/faculties";
 import { filesRouter } from "../modules/files";
 import { institutionsRouter } from "../modules/institutions";
 import { notificationsRouter } from "../modules/notifications";
@@ -33,7 +32,6 @@ export const appRouter = router({
 		message: "This is private",
 		user: ctx.session.user,
 	})),
-	faculties: facultiesRouter,
 	programs: programsRouter,
 	studyCycles: studyCyclesRouter,
 	programOptions: programOptionsRouter,

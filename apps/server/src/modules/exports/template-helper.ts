@@ -85,21 +85,27 @@ export function loadExportConfig(): ExportConfig {
 
 /**
  * Convert institution data from database to ExportConfig format
- * Handles 3-level hierarchy: University → Faculty/School → Institute
+ * Handles optional hierarchyoptional: Institution → Parent Institution (peut être de type faculty)
+ * Une institution n'est pas forcément parrainée par une faculté
  */
 export function institutionToExportConfig(
 	institution: Institution & {
-		faculty?: { name: string } | null;
-		parentInstitution?: (Institution & { faculty?: { name: string } | null }) | null;
+		parentInstitution?: Institution | null;
 	},
 ): ExportConfig {
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
 
-	// Extract university (parent institution) data
-	const university = institution.parentInstitution;
-	// Extract supervising faculty/school data
-	const supervisingFaculty = institution.faculty;
+	// Extract parent institution data (optionnel)
+	const parentInst = institution.parentInstitution;
+
+	// Si l'institution parente est de type "faculty", on l'utilise comme faculté de supervision
+	// Sinon, la faculté de supervision est null (optionnel)
+	const supervisingFaculty = parentInst?.type === "faculty" ? parentInst : null;
+
+	// Si le parent n'est pas une faculté, chercher le "grand-parent" comme université
+	// Sinon, utiliser le parent direct
+	const university = supervisingFaculty ? null : parentInst;
 
 	// Default values matching the old export-config.json
 	return {
@@ -111,10 +117,10 @@ export function institutionToExportConfig(
 			contact_email: institution.contactEmail,
 			fax: institution.fax,
 			postal_box: institution.postalBox,
-			// Supervising faculty/school information
-			faculty_name_fr: supervisingFaculty?.name,
-			faculty_name_en: supervisingFaculty?.name,
-			// Parent university information
+			// Supervising faculty/school information (optionnel)
+			faculty_name_fr: supervisingFaculty?.nameFr,
+			faculty_name_en: supervisingFaculty?.nameEn,
+			// Parent university information (optionnel)
 			university_name_fr: university?.nameFr,
 			university_name_en: university?.nameEn,
 			university_logo_url: university?.logoUrl,

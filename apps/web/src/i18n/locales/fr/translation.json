@@ -50,6 +50,10 @@
 			"next": "Suivant",
 			"previous": "Précédent"
 		},
+		"gender": {
+			"male": "M",
+			"female": "F"
+		},
 		"invalidDate": "Date invalide",
 		"loading": "Chargement..."
 	},
@@ -90,6 +94,15 @@
 				"examScheduler": "Programmation des examens",
 				"rules": "Centre des règles",
 				"registrationNumbers": "Formats de matricule"
+			},
+			"groups": {
+				"overview": "Vue d'ensemble",
+				"structure": "Structure académique",
+				"users": "Utilisateurs",
+				"teaching": "Enseignement",
+				"evaluation": "Évaluations",
+				"promotion": "Règles & Promotion",
+				"system": "Système"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
@@ -460,6 +473,19 @@
 				"cycle": "Cycle / niveau",
 				"option": "Option",
 				"students": "Étudiants"
+			},
+			"export": {
+				"button": "Exporter la liste des étudiants (PDF)",
+				"excelButton": "Exporter la liste des étudiants (Excel)",
+				"title": "Liste des étudiants",
+				"totalStudents": "Total étudiants",
+				"page": "Page",
+				"generatedOn": "Généré le",
+				"success": "Liste des étudiants exportée avec succès",
+				"error": "Échec de l'export de la liste des étudiants",
+				"excelSuccess": "Liste des étudiants exportée avec succès",
+				"excelError": "Échec de l'export de la liste des étudiants",
+				"sheetName": "Étudiants"
 			},
 			"form": {
 				"createTitle": "Ajouter une classe",
@@ -1000,7 +1026,8 @@
 				"title": "Ajouter des étudiants",
 				"tabs": {
 					"single": "Étudiant individuel",
-					"import": "Importer un fichier"
+					"import": "Importer un fichier",
+					"external": "Admission externe"
 				}
 			},
 			"form": {
@@ -1017,6 +1044,7 @@
 				"registrationFormat": "Format de matricule",
 				"registrationFormatHint": "Choisissez un format pour remplacer le modèle actif.",
 				"registrationFormatPlaceholder": "Utiliser le format actif",
+				"registrationSection": "Inscription",
 				"class": "Classe",
 				"classPlaceholder": "Sélectionner une classe",
 				"submit": "Ajouter l'étudiant"
@@ -1070,6 +1098,43 @@
 				"email": "Saisissez une adresse e-mail valide",
 				"registration": "Saisissez un matricule ou laissez le champ vide",
 				"class": "Veuillez sélectionner une classe"
+			},
+			"external": {
+				"info": {
+					"title": "Admission d'étudiant externe",
+					"description": "Admettre des étudiants venant d'autres établissements avec crédits transférés ou admission directe"
+				},
+				"form": {
+					"admissionType": "Type d'admission",
+					"admissionTypePlaceholder": "Sélectionner le type d'admission",
+					"admissionTypeHint": "Choisissez le type d'admission pour cet étudiant externe",
+					"transferInstitution": "Établissement d'origine",
+					"transferCredits": "Crédits transférés",
+					"transferLevel": "Niveau de transfert",
+					"admissionDate": "Date d'admission",
+					"admissionJustification": "Justification",
+					"admissionJustificationPlaceholder": "Expliquez la raison de cette admission (minimum 10 caractères)",
+					"admissionJustificationHint": "Fournissez une justification détaillée pour cette admission externe",
+					"studentInfoSection": "Informations de l'étudiant",
+					"submit": "Admettre l'étudiant externe"
+				},
+				"admissionTypes": {
+					"transfer": "Transfert",
+					"direct": "Admission directe",
+					"equivalence": "Équivalence"
+				},
+				"toast": {
+					"success": "Étudiant externe admis avec succès",
+					"error": "Impossible d'admettre l'étudiant externe"
+				},
+				"validation": {
+					"admissionType": "Le type d'admission est obligatoire",
+					"transferInstitution": "L'établissement d'origine est obligatoire",
+					"transferCredits": "Les crédits transférés doivent être un nombre",
+					"transferLevel": "Le niveau de transfert est obligatoire (ex : L1, L2, M1)",
+					"admissionDate": "La date d'admission est obligatoire",
+					"admissionJustification": "La justification doit contenir au moins 10 caractères"
+				}
 			}
 		},
 		"users": {
@@ -1694,7 +1759,9 @@
 			"actions": {
 				"lock": "Verrouiller les notes",
 				"save": "Enregistrer les notes",
-				"saving": "Enregistrement..."
+				"saving": "Enregistrement...",
+				"exportTemplate": "Exporter le modèle",
+				"importGrades": "Importer les notes"
 			},
 			"info": {
 				"title": "Informations de notation",
@@ -1722,9 +1789,13 @@
 				"fetchCourseError": "Impossible de charger les informations du cours",
 				"fetchGradesError": "Impossible de charger les notes",
 				"saveSuccess": "Notes enregistrées avec succès",
-				"saveError": "Impossible d’enregistrer les notes",
+				"saveError": "Impossible d'enregistrer les notes",
 				"lockSuccess": "Évaluation verrouillée. Les notes ne peuvent plus être modifiées.",
-				"lockError": "Impossible de verrouiller l'évaluation"
+				"lockError": "Impossible de verrouiller l'évaluation",
+				"exportError": "Veuillez sélectionner un examen avec des étudiants",
+				"exportSuccess": "Modèle exporté avec succès",
+				"importSuccess": "{{count}} notes importées avec succès",
+				"importError": "Échec de l'importation des notes"
 			}
 		},
 		"gradeExport": {

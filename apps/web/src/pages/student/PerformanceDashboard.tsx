@@ -31,7 +31,7 @@ const PerformanceDashboard = () => {
 	const ledger = summaryQuery.data;
 	const progress = useMemo(() => {
 		if (!ledger) return 0;
-		if (!ledger.requiredCredits) return 0;
+		if (!ledger.requiredCredits || ledger.requiredCredits === 0) return 0;
 		return Math.min(100, (ledger.creditsEarned / ledger.requiredCredits) * 100);
 	}, [ledger]);
 	const classInfo = classQuery.data;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const previewSchema = z.object({
-	facultyId: z.string().min(1),
+	institutionId: z.string().optional(), // Auto-filled from context
 	academicYearId: z.string().min(1),
 });
 
@@ -19,7 +19,7 @@ export const scheduleSchema = previewSchema
 	});
 
 export const historySchema = z.object({
-	facultyId: z.string().optional(),
+	institutionId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	examTypeId: z.string().optional(),
 	cursor: z.string().optional(),
