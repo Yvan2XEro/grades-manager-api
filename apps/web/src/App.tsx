@@ -16,6 +16,8 @@ import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
+import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
+import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -163,6 +165,8 @@ function App() {
 						<Route path="exams" element={<ExamManagement />} />
 						<Route path="exam-types" element={<ExamTypes />} />
 						<Route path="exam-scheduler" element={<ExamScheduler />} />
+						<Route path="export-templates" element={<ExportTemplatesManagement />} />
+						<Route path="export-templates/:templateId" element={<ExportTemplateEditor />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="rules" element={<RuleManagement />} />
 						<Route

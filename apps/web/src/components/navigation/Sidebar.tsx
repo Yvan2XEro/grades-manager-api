@@ -12,6 +12,7 @@ import {
 	ClipboardList,
 	FileCog,
 	FileSpreadsheet,
+	FileText,
 	GraduationCap,
 	Hash,
 	Landmark,
@@ -151,6 +152,11 @@ const Sidebar: React.FC = () => {
 					icon: <FileSpreadsheet className="h-5 w-5" />,
 					labelKey: "navigation.sidebar.admin.gradeExport",
 				},
+				{
+					to: "/admin/export-templates",
+					icon: <FileText className="h-5 w-5" />,
+					labelKey: "navigation.sidebar.admin.exportTemplates",
+				},
 			],
 		},
 		{
@@ -277,11 +283,8 @@ const Sidebar: React.FC = () => {
 					>
 						<div className="flex h-full flex-col">
 							{/* Logo */}
-							<div className="flex h-16 items-center justify-center border-gray-200 border-b px-4 py-5">
-								<GraduationCap className="h-8 w-8 text-primary-700" />
-								<h1 className="ml-2 font-bold text-primary-900 text-xl">
-									AcademiSys
-								</h1>
+							<div className="flex h-16 items-center justify-start border-gray-200 border-b px-4 py-5">
+								<img src="/logo.png" className="w-28" />
 							</div>
 
 							{/* Navigation */}

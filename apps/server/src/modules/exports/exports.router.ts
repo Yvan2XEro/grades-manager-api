@@ -8,6 +8,7 @@ import {
 	previewEvaluationSchema,
 	previewPVSchema,
 	previewUESchema,
+	previewTemplateSourceSchema,
 } from "./exports.zod";
 
 /**
@@ -105,6 +106,14 @@ export const exportsRouter = router({
 			});
 
 			return result.content;
+		}),
+
+	previewTemplate: adminProcedure
+		.input(previewTemplateSourceSchema)
+		.mutation(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			const html = await service.previewTemplate(input);
+			return { html };
 		}),
 
 	/**

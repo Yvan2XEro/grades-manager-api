@@ -63,3 +63,12 @@ export const previewEvaluationSchema = generateEvaluationSchema.omit({
 	format: true,
 });
 export const previewUESchema = generateUESchema.omit({ format: true });
+
+export const previewTemplateSourceSchema = z.object({
+	type: exportTypeSchema,
+	templateBody: z.string().min(1),
+});
+
+export type PreviewTemplateSourceInput = z.infer<
+	typeof previewTemplateSourceSchema
+>;

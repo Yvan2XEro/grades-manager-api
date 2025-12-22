@@ -12,6 +12,8 @@
 	"common": {
 		"actions": {
 			"cancel": "Annuler",
+			"create": "Créer",
+			"update": "Mettre à jour",
 			"delete": "Supprimer",
 			"save": "Enregistrer",
 			"saveChanges": "Enregistrer les modifications",
@@ -75,6 +77,7 @@
 				"users": "Utilisateurs",
 				"classCourses": "Cours de classes",
 				"gradeExport": "Export des notes",
+				"exportTemplates": "Modèles d'exportation",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
 				"students": "Etudiants",
@@ -867,6 +870,181 @@
 			"delete": {
 				"title": "Supprimer le type",
 				"message": "Voulez-vous vraiment supprimer ce type d'examen ?"
+			}
+		},
+		"exportTemplates": {
+			"title": "Modèles d'exportation",
+			"subtitle": "Personnalisez la mise en page, les colonnes, les en-têtes et le style des exports de notes.",
+			"actions": {
+				"add": "Ajouter un modèle"
+			},
+			"filter": {
+				"all": "Tous les types"
+			},
+			"table": {
+				"title": "Modèles disponibles",
+				"description": "Toutes les opérations d'exportation peuvent utiliser ces modèles.",
+				"name": "Nom",
+				"type": "Type",
+				"status": "Statut",
+				"columns": "Colonnes",
+				"columnsCount": "colonnes",
+				"actions": "Actions",
+				"default": "Par défaut",
+				"custom": "Personnalisé"
+			},
+			"empty": {
+				"title": "Aucun modèle pour le moment",
+				"description": "Créez votre premier modèle d'exportation pour personnaliser vos rapports."
+			},
+			"form": {
+				"createTitle": "Créer un modèle d'exportation",
+				"editTitle": "Modifier un modèle d'exportation",
+				"renameTitle": "Renommer le modèle",
+				"renameDescription": "Entrez un nouveau nom pour ce modèle.",
+				"description": "Définissez un modèle pour personnaliser les exports.",
+				"name": "Nom du modèle",
+				"namePlaceholder": "ex: Modèle PV Standard",
+				"type": "Type d'export",
+				"typeDescription": "Le type ne peut pas être modifié après la création.",
+				"isDefault": "Définir par défaut",
+				"isDefaultDescription": "Utiliser ce modèle par défaut pour ce type d'export."
+			},
+			"validation": {
+				"name": "Le nom doit contenir au moins 2 caractères"
+			},
+			"toast": {
+				"createSuccess": "Modèle d'exportation créé",
+				"createError": "Impossible de créer le modèle",
+				"updateSuccess": "Modèle d'exportation mis à jour",
+				"updateError": "Impossible de mettre à jour le modèle",
+				"deleteSuccess": "Modèle d'exportation supprimé",
+				"deleteError": "Impossible de supprimer le modèle",
+				"setDefaultSuccess": "Modèle par défaut mis à jour",
+				"setDefaultError": "Impossible de définir le modèle par défaut"
+			},
+			"delete": {
+				"title": "Supprimer le modèle",
+				"message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+			},
+			"actions": {
+				"setDefault": "Définir par défaut",
+				"edit": "Éditer le modèle",
+				"rename": "Renommer",
+				"delete": "Supprimer"
+			},
+			"editor": {
+				"notFound": "Modèle introuvable",
+				"createTitle": "Créer un nouveau modèle d'exportation",
+				"createDescription": "Entrez un nom et sélectionnez le type d'export pour commencer.",
+				"subtitle": "Édition du modèle {{type}}",
+				"tabs": {
+					"columns": "Colonnes",
+					"header": "En-tête",
+					"style": "Style",
+					"template": "Modèle"
+				},
+				"template": {
+					"editorTitle": "Source du modèle",
+					"editorDescription": "Collez votre fichier Handlebars (.hbs) avec en-têtes, logos et styles statiques.",
+					"placeholder": "<!-- Collez votre modèle ici -->",
+					"generatePreview": "Générer un aperçu",
+					"helpTitle": "Conseils",
+					"helpHandlebars": "Les helpers Handlebars comme {{formatNumber}} restent disponibles.",
+					"helpVariables": "Variables fréquentes : program, students, semester, academicYear, signatures.",
+					"helpStatic": "Les logos et en-têtes doivent être inclus directement dans le modèle.",
+					"previewTitle": "Aperçu",
+					"previewDescription": "Affiche le rendu avec des données d'exemple.",
+					"download": "Télécharger le HTML",
+					"noPreview": "Aucun aperçu disponible",
+					"clickGenerate": "Cliquez sur « Générer un aperçu » après avoir ajouté votre contenu.",
+					"required": "Le contenu du modèle ne peut pas être vide."
+				},
+				"columns": {
+					"title": "Configuration des colonnes",
+					"description": "Définissez les colonnes à afficher, leur ordre et leur formatage.",
+					"addColumn": "Ajouter une colonne",
+					"empty": "Aucune colonne configurée. Ajoutez votre première colonne pour commencer.",
+					"addTitle": "Ajouter une colonne",
+					"editTitle": "Modifier la colonne",
+					"dialogDescription": "Configurez les propriétés de la colonne.",
+					"key": "Clé de données",
+					"label": "Libellé",
+					"labelFr": "Libellé (FR)",
+					"labelEn": "Libellé (EN)",
+					"dataType": "Type de données",
+					"alignment": "Alignement",
+					"width": "Largeur (px)",
+					"format": "Format",
+					"formula": "Formule",
+					"visible": "Visible"
+				},
+				"header": {
+					"title": "Configuration de l'en-tête",
+					"description": "Personnalisez la mise en page et les informations de l'en-tête.",
+					"titles": "Titres du document",
+					"titleFr": "Titre (FR)",
+					"titleEn": "Titre (EN)",
+					"logoConfig": "Configuration du logo",
+					"showLogo": "Afficher le logo",
+					"logoPosition": "Position du logo",
+					"displayOptions": "Options d'affichage",
+					"showInstitutionName": "Afficher le nom de l'institution",
+					"showFacultyName": "Afficher le nom de la faculté",
+					"showAcademicYear": "Afficher l'année académique",
+					"showSemester": "Afficher le semestre",
+					"showClassName": "Afficher le nom de la classe"
+				},
+				"style": {
+					"title": "Configuration du style",
+					"description": "Personnalisez les polices, couleurs, paramètres de page et filigrane.",
+					"typography": "Typographie",
+					"fontFamily": "Police",
+					"fontSize": "Taille de police",
+					"headerFontSize": "Taille de police en-tête",
+					"colors": "Couleurs",
+					"primaryColor": "Couleur primaire",
+					"secondaryColor": "Couleur secondaire",
+					"headerBackgroundColor": "Fond en-tête",
+					"headerTextColor": "Texte en-tête",
+					"tableBorderColor": "Bordure tableau",
+					"alternateRowColor": "Ligne alternée",
+					"pageSettings": "Paramètres de page",
+					"pageSize": "Format de page",
+					"pageOrientation": "Orientation",
+					"tableBorderWidth": "Largeur bordure",
+					"margins": "Marges (mm)",
+					"marginTop": "Haut",
+					"marginRight": "Droite",
+					"marginBottom": "Bas",
+					"marginLeft": "Gauche",
+					"watermark": "Filigrane",
+					"watermarkEnabled": "Activer le filigrane",
+					"watermarkText": "Texte du filigrane",
+					"watermarkOpacity": "Opacité",
+					"watermarkFontSize": "Taille de police",
+					"watermarkRotation": "Rotation (degrés)"
+				},
+				"template": {
+					"editorTitle": "Éditeur de modèle HTML",
+					"editorDescription": "Écrivez un modèle Handlebars avec HTML/CSS personnalisé.",
+					"placeholder": "Entrez votre modèle Handlebars personnalisé ici...",
+					"generatePreview": "Générer l'aperçu",
+					"reset": "Réinitialiser par défaut",
+					"previewTitle": "Aperçu",
+					"previewDescription": "Aperçu en direct avec données de test",
+					"download": "Télécharger HTML",
+					"noPreview": "Aucun aperçu disponible",
+					"clickGenerate": "Cliquez sur 'Générer l'aperçu' pour voir le rendu",
+					"helpTitle": "Aide sur le modèle:",
+					"helpHandlebars": "Utilisez la syntaxe Handlebars: {{variable}}, {{#if}}, {{#each}}",
+					"helpVariables": "Variables disponibles: students, headerConfig, styleConfig",
+					"helpConfig": "Les configurations sont automatiquement appliquées au modèle"
+				},
+				"preview": {
+					"success": "Aperçu généré avec succès",
+					"error": "Échec de la génération de l'aperçu"
+				}
 			}
 		},
 		"examScheduler": {

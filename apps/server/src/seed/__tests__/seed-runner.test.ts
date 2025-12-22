@@ -44,22 +44,22 @@ describe("seed runner", () => {
 		});
 
 		const faculty = await db.query.institutions.findFirst({
-			where: eq(appSchema.institutions.code, "ENG"),
+			where: eq(appSchema.institutions.code, "INSES"),
 		});
-		expect(faculty?.nameEn).toBe("Faculty of Engineering");
+		expect(faculty?.nameEn).toBe("Hope Higher Institute");
 
 		const klass = await db.query.classes.findFirst({
-			where: eq(appSchema.classes.code, "ENG24-L1A"),
+			where: eq(appSchema.classes.code, "INF25-BTS1A"),
 		});
 		expect(klass).not.toBeNull();
 
 		const classCourse = await db.query.classCourses.findFirst({
-			where: eq(appSchema.classCourses.code, "CC-ENG101-L1A"),
+			where: eq(appSchema.classCourses.code, "CC-ANAT101-INF1A"),
 		});
 		expect(classCourse?.teacher).not.toBeNull();
 
 		const student = await db.query.students.findFirst({
-			where: eq(appSchema.students.registrationNumber, "ENG24-0001"),
+			where: eq(appSchema.students.registrationNumber, "INSES25-0001"),
 		});
 		expect(student).not.toBeNull();
 
@@ -74,7 +74,7 @@ describe("seed runner", () => {
 		expect(courseAttempt?.status).toBe("active");
 
 		const admin = await db.query.user.findFirst({
-			where: eq(authSchema.user.email, "admin@example.com"),
+			where: eq(authSchema.user.email, "admin@inses.cm"),
 		});
 		expect(admin?.role).toBe("admin");
 	});

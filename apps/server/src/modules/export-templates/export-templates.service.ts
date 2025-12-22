@@ -11,6 +11,7 @@ import type {
 	UpdateExportTemplateInput,
 } from "./export-templates.zod";
 import * as repo from "./export-templates.repo";
+import { loadTemplate } from "../exports/template-helper";
 
 export async function listTemplates(
 	institutionId: string,
@@ -50,15 +51,15 @@ export async function createTemplate(
 		await repo.setDefaultTemplate(institutionId, "", input.type);
 	}
 
+	const templateBody =
+		input.templateBody ?? loadTemplate(input.type as "pv" | "evaluation" | "ue");
+
 	return await repo.createTemplate({
 		institutionId,
 		name: input.name,
 		type: input.type,
 		isDefault: input.isDefault,
-		columns: input.columns,
-		headerConfig: input.headerConfig ?? null,
-		styleConfig: input.styleConfig ?? null,
-		customTemplate: input.customTemplate ?? null,
+		templateBody,
 		createdBy: userId,
 		updatedBy: userId,
 	});
@@ -76,11 +77,8 @@ export async function updateTemplate(
 	const updated = await repo.updateTemplate(input.id, {
 		...(input.name && { name: input.name }),
 		...(input.isDefault !== undefined && { isDefault: input.isDefault }),
-		...(input.columns && { columns: input.columns }),
-		...(input.headerConfig && { headerConfig: input.headerConfig }),
-		...(input.styleConfig && { styleConfig: input.styleConfig }),
-		...(input.customTemplate !== undefined && {
-			customTemplate: input.customTemplate,
+		...(input.templateBody !== undefined && {
+			templateBody: input.templateBody,
 		}),
 		updatedBy: userId,
 	});

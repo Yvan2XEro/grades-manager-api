@@ -18,9 +18,6 @@ import {
 } from "./template-helper";
 import {
 	loadExportTemplate,
-	getVisibleColumns,
-	formatCellValue,
-	applyColumnFormula,
 	type TemplateConfiguration,
 } from "./template-loader";
 
@@ -195,6 +192,21 @@ export class ExportsService {
 			content: pdfBuffer.toString("base64"),
 			mimeType: "application/pdf",
 		};
+	}
+
+	async previewTemplate(input: {
+		type: "pv" | "evaluation" | "ue";
+		templateBody: string;
+	}) {
+		const config = await this.getConfig();
+		const baseConfig = await loadExportTemplate(this.institutionId, input.type);
+		const templateConfig: TemplateConfiguration = {
+			templateBody: input.templateBody,
+			headerConfig: baseConfig.headerConfig,
+			styleConfig: baseConfig.styleConfig,
+		};
+		const sampleData = this.getSampleData(input.type, config);
+		return this.renderTemplate(input.type, sampleData, templateConfig);
 	}
 
 	/**
@@ -534,12 +546,11 @@ export class ExportsService {
 	): string {
 		// Use custom template if provided, otherwise use default
 		const templateSource =
-			templateConfig.customTemplate || loadTemplate(templateName);
+			templateConfig.templateBody || loadTemplate(templateName);
 
 		// Add template configuration to data
 		const enrichedData = {
 			...data,
-			columns: getVisibleColumns(templateConfig.columns),
 			headerConfig: templateConfig.headerConfig,
 			styleConfig: templateConfig.styleConfig,
 		};
@@ -580,6 +591,193 @@ export class ExportsService {
 			return pdf;
 		} finally {
 			await browser.close();
+		}
+	}
+
+	private getSampleData(
+		type: "pv" | "evaluation" | "ue",
+		config: ReturnType<typeof loadExportConfig>,
+	) {
+		switch (type) {
+			case "pv": {
+				const ues = [
+					{
+						code: "UE101",
+						name: "Mathématiques",
+						credits: 6,
+						courses: [
+							{ code: "MAT101", name: "Analyse I" },
+							{ code: "MAT102", name: "Algèbre" },
+						],
+					},
+					{
+						code: "UE202",
+						name: "Informatique",
+						credits: 6,
+						courses: [{ code: "INF201", name: "Structures de données" }],
+					},
+				];
+				const ueGrades = ues.map((ue) => ({
+					courseGrades: ue.courses.map(() => ({
+						cc: 14.0,
+						ex: 13.0,
+						average: 13.5,
+					})),
+					average: 13.5,
+					decision: "Ac",
+					credits: ue.credits,
+					successRate: 90,
+				}));
+				return {
+					...config.institution,
+					program: { name: "Licence Informatique", level: "L3" },
+					semester: "Semestre 1",
+					academicYear: "2024/2025",
+					ues,
+					students: [
+						{
+							number: 1,
+							lastName: "Doe",
+							firstName: "Jane",
+							registrationNumber: "INF23001",
+							ueGrades,
+							totalCredits: 12,
+							generalAverage: 13.5,
+							overallDecision: "ACQUIS",
+						},
+						{
+							number: 2,
+							lastName: "Smith",
+							firstName: "John",
+							registrationNumber: "INF23002",
+							ueGrades,
+							totalCredits: 12,
+							generalAverage: 12.2,
+							overallDecision: "ACQUIS",
+						},
+					],
+					globalSuccessRate: 90,
+					signatures: config.signatures.pv,
+					watermark: config.watermark,
+				};
+			}
+			case "evaluation": {
+				const students = [
+					{
+						number: 1,
+						lastName: "Doe",
+						firstName: "Jane",
+						registrationNumber: "INF23001",
+						score: 15,
+						appreciation: getAppreciation(15, config),
+						observation: getObservation(15, config),
+					},
+					{
+						number: 2,
+						lastName: "Smith",
+						firstName: "John",
+						registrationNumber: "INF23002",
+						score: 13,
+						appreciation: getAppreciation(13, config),
+						observation: getObservation(13, config),
+					},
+				];
+				const scores = students.map((s) => s.score);
+				return {
+					...config.institution,
+					evaluationType: "EXAMEN",
+					evaluationLabel: "Examen",
+					course: { code: "INF201", name: "Structures de données" },
+					teachingUnit: {
+						code: "UE202",
+						name: "Informatique avancée",
+					},
+					program: { name: "Licence Informatique", level: "L3" },
+					examDate: new Date().toLocaleDateString("fr-FR"),
+					duration: config.exam_settings.default_duration_hours,
+					coefficient: config.exam_settings.default_coefficient,
+					scale: config.grading.scale,
+					semester: "Semestre 1",
+					academicYear: "2024/2025",
+					students,
+					stats: {
+						count: students.length,
+						present: students.length,
+						absent: 0,
+						average: 14.0,
+						highest: 15,
+						lowest: 13,
+						successRate: calculateSuccessRate(
+							scores,
+							config.grading.passing_grade,
+						),
+					},
+					observations: "",
+					publicationDate: new Date().toLocaleDateString("fr-FR"),
+					signatures: config.signatures.evaluation,
+					watermark: config.watermark,
+				};
+			}
+			case "ue": {
+				const courseGrades = [
+					{
+						courseCode: "INF201",
+						courseName: "Structures de données",
+						cc: 14,
+						ex: 13,
+						average: 13.5,
+					},
+					{
+						courseCode: "INF202",
+						courseName: "Bases de données",
+						cc: 15,
+						ex: 14,
+						average: 14.5,
+					},
+				];
+				return {
+					...config.institution,
+					teachingUnit: {
+						code: "UE202",
+						name: "Informatique avancée",
+						credits: 12,
+					},
+					program: { name: "Licence Informatique", level: "L3" },
+					semester: "Semestre 1",
+					academicYear: "2024/2025",
+					courses: courseGrades.map((c) => ({
+						code: c.courseCode,
+						name: c.courseName,
+					})),
+					students: [
+						{
+							number: 1,
+							lastName: "Doe",
+							firstName: "Jane",
+							registrationNumber: "INF23001",
+							courseGrades,
+							ueAverage: 14,
+							decision: "Ac",
+							credits: 12,
+							successRate: 95,
+						},
+						{
+							number: 2,
+							lastName: "Smith",
+							firstName: "John",
+							registrationNumber: "INF23002",
+							courseGrades,
+							ueAverage: 12,
+							decision: "Ac",
+							credits: 12,
+							successRate: 80,
+						},
+					],
+					globalSuccessRate: 90,
+					signatures: config.signatures.ue,
+					watermark: config.watermark,
+				};
+			}
 		}
 	}
 }

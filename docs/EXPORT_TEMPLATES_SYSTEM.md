@@ -333,17 +333,14 @@ L'ancien système utilise un fichier `export-config.json` statique. Pour migrer 
 
 ## Base de Données
 
-La table `export_templates` stocke :
+La table `export_templates` stocke désormais uniquement :
 
 - `id` : Identifiant unique
 - `institution_id` : Institution propriétaire
 - `name` : Nom du template
-- `type` : Type d'export
-- `is_default` : Template par défaut pour ce type
-- `columns` : Configuration des colonnes (JSONB)
-- `header_config` : Configuration de l'entête (JSONB)
-- `style_config` : Configuration du style (JSONB)
-- `custom_template` : Template HTML personnalisé (optionnel)
+- `type` : Type d'export (`pv`, `evaluation`, `ue`)
+- `is_default` : Indique si le template est celui utilisé par défaut
+- `template_body` : Contenu Handlebars complet (.hbs) fourni par l'utilisateur
 - `created_at`, `updated_at`, `created_by`, `updated_by` : Audit
 
 ### Contraintes
@@ -354,10 +351,10 @@ La table `export_templates` stocke :
 
 ## Avantages du Système
 
-1. **Flexibilité** : Chaque institution peut avoir ses propres templates
-2. **Multilingue** : Labels en français et anglais
-3. **Personnalisation complète** : Colonnes, entêtes, styles
-4. **Formules calculées** : Colonnes avec formules personnalisées
+1. **Flexibilité totale** : l'utilisateur colle son Handlebars complet (entêtes, logos, styles)
+2. **Déploiement rapide** : pas d'éditeur graphique complexe ni de configuration de colonnes
+3. **Compatibilité** : toujours rendu avec les helpers existants (`formatNumber`, `getObservation`, etc.)
+4. **Personnalisation par institution** : chaque établissement peut conserver ses propres PDF statiques
 5. **Versioning** : Plusieurs versions de templates possibles
 6. **Audit** : Suivi de création/modification
 7. **Réutilisabilité** : Templates partagés entre exports similaires

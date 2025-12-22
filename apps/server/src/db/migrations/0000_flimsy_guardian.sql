@@ -564,6 +564,30 @@ CREATE INDEX "idx_exam_schedule_runs_year" ON "exam_schedule_runs" USING btree (
 CREATE INDEX "idx_exam_schedule_runs_type" ON "exam_schedule_runs" USING btree ("exam_type_id");--> statement-breakpoint
 CREATE INDEX "idx_exam_types_institution_id" ON "exam_types" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_exams_institution_id" ON "exams" USING btree ("institution_id");--> statement-breakpoint
+CREATE TABLE "export_templates" (
+    "id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+    "institution_id" text NOT NULL,
+    "name" text NOT NULL,
+    "type" text NOT NULL,
+    "is_default" boolean DEFAULT false NOT NULL,
+    "template_body" text NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "created_by" text,
+    "updated_by" text,
+    CONSTRAINT "uq_export_templates_institution_name" UNIQUE("institution_id","name")
+);
+--> statement-breakpoint
+ALTER TABLE "export_templates" ADD CONSTRAINT "export_templates_institution_id_fkey" FOREIGN KEY ("institution_id") REFERENCES "institutions"("id") ON DELETE CASCADE;
+--> statement-breakpoint
+ALTER TABLE "export_templates" ADD CONSTRAINT "export_templates_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "domain_users"("id");
+--> statement-breakpoint
+ALTER TABLE "export_templates" ADD CONSTRAINT "export_templates_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "domain_users"("id");
+--> statement-breakpoint
+CREATE INDEX "idx_export_templates_institution" ON "export_templates" ("institution_id");
+--> statement-breakpoint
+CREATE INDEX "idx_export_templates_type" ON "export_templates" ("type");
+--> statement-breakpoint
 CREATE INDEX "idx_exams_class_course_id" ON "exams" USING btree ("class_course_id");--> statement-breakpoint
 CREATE INDEX "idx_exams_date" ON "exams" USING btree ("date");--> statement-breakpoint
 CREATE INDEX "idx_grades_student_id" ON "grades" USING btree ("student_id");--> statement-breakpoint
