@@ -200,8 +200,9 @@ export async function reset() {
     TRUNCATE TABLE
      course_prerequisites,
      domain_users,
-     student_course_enrollments,
-     student_credit_ledgers,
+    student_course_enrollments,
+    student_credit_ledgers,
+    student_promotion_summaries,
      grades,
      exams,
      class_courses,

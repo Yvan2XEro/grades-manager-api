@@ -1,5 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Loader2, Play, XCircle } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+	ArrowLeft,
+	CheckCircle2,
+	Loader2,
+	Play,
+	RefreshCcw,
+	XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -73,6 +80,14 @@ export function EvaluatePromotionPage() {
 		enabled: false, // Manual trigger only
 	});
 
+	const {
+		mutateAsync: refreshClassFacts,
+		isPending: isRefreshingFacts,
+	} = useMutation({
+		mutationFn: (input: { classId: string; academicYearId: string }) =>
+			trpcClient.promotionRules.refreshClassSummaries.mutate(input),
+	});
+
 	const handleEvaluate = async () => {
 		if (!selectedRuleId || !selectedSourceClassId || !selectedAcademicYearId) {
 			toast.error(t("admin.promotionRules.evaluate.toast.selectAll"));
@@ -82,6 +97,36 @@ export function EvaluatePromotionPage() {
 		setHasEvaluated(true);
 		setSelectedStudents(new Set());
 		await evaluateClass();
+	};
+
+	const handleRefreshFacts = async () => {
+		if (!selectedSourceClassId || !selectedAcademicYearId) {
+			toast.error(t("admin.promotionRules.evaluate.toast.selectAll"));
+			return;
+		}
+
+		try {
+			await refreshClassFacts({
+				classId: selectedSourceClassId,
+				academicYearId: selectedAcademicYearId,
+			});
+			toast.success(
+				t("admin.promotionRules.evaluate.toast.refreshSuccess"),
+			);
+			if (hasEvaluated) {
+				await evaluateClass();
+			}
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: t("common.errors.unknown");
+			toast.error(
+				t("admin.promotionRules.evaluate.toast.refreshError", {
+					error: message,
+				}),
+			);
+		}
 	};
 
 	const handleToggleStudent = (studentId: string) => {
@@ -219,6 +264,47 @@ export function EvaluatePromotionPage() {
 									))}
 								</SelectContent>
 							</Select>
+						</div>
+					</div>
+
+					<div className="mt-6 rounded-lg border bg-muted/30 p-4">
+						<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+							<div>
+								<p className="font-medium">
+									{t("admin.promotionRules.evaluate.actions.refreshFacts")}
+								</p>
+								<p className="text-sm text-muted-foreground">
+									{t(
+										"admin.promotionRules.evaluate.form.refreshDescription",
+									)}
+								</p>
+							</div>
+							<Button
+								variant="outline"
+								onClick={handleRefreshFacts}
+								disabled={
+									isRefreshingFacts ||
+									!selectedSourceClassId ||
+									!selectedAcademicYearId
+								}
+								className="md:w-auto"
+							>
+								{isRefreshingFacts ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										{t(
+											"admin.promotionRules.evaluate.actions.refreshingFacts",
+										)}
+									</>
+								) : (
+									<>
+										<RefreshCcw className="mr-2 h-4 w-4" />
+										{t(
+											"admin.promotionRules.evaluate.actions.refreshFacts",
+										)}
+									</>
+								)}
+							</Button>
 						</div>
 					</div>
 

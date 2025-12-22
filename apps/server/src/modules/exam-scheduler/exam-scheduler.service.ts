@@ -45,6 +45,7 @@ export async function previewEligibleClasses(
 	const classes = await repo.getClassesForScheduling({
 		academicYearId: input.academicYearId,
 		institutionId,
+		semesterId: input.semesterId,
 	});
 	console.log("[DEBUG preview] Found classes:", classes.length);
 	return {
@@ -69,6 +70,7 @@ export async function scheduleExams(
 		institutionId,
 		academicYearId: input.academicYearId,
 		classIds: input.classIds,
+		semesterId: input.semesterId,
 	});
 	if (!classes.length) {
 		throw new TRPCError({
@@ -76,7 +78,10 @@ export async function scheduleExams(
 			message: "No classes match the provided selection",
 		});
 	}
-	const classCourses = await repo.getClassCourses(classes.map((c) => c.id));
+	const classCourses = await repo.getClassCourses(
+		classes.map((c) => c.id),
+		input.semesterId,
+	);
 	if (!classCourses.length) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",

@@ -49,6 +49,7 @@ import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
 type AcademicYear = { id: string; name: string };
 type ExamType = { id: string; name: string };
+type Semester = RouterOutputs["semesters"]["list"]["items"][number];
 type PreviewClass = {
 	id: string;
 	name: string;
@@ -66,6 +67,7 @@ export default function ExamScheduler() {
 	const [detailsRunId, setDetailsRunId] = useState<string | null>(null);
 	const [academicYearId, setAcademicYearId] = useState("");
 	const [examTypeId, setExamTypeId] = useState("");
+	const [semesterId, setSemesterId] = useState("");
 	const [percentage, setPercentage] = useState(40);
 	const [dateStart, setDateStart] = useState("");
 	const [dateEnd, setDateEnd] = useState("");
@@ -76,6 +78,7 @@ export default function ExamScheduler() {
 	const resetForm = () => {
 		setAcademicYearId("");
 		setExamTypeId("");
+		setSemesterId("");
 		setPercentage(40);
 		setDateStart("");
 		setDateEnd("");
@@ -100,14 +103,25 @@ export default function ExamScheduler() {
 		},
 	});
 
-	const previewEnabled = isScheduleOpen && Boolean(academicYearId);
+	const semestersQuery = useQuery({
+		queryKey: ["semesters"],
+		queryFn: async () => {
+			const result = await trpcClient.semesters.list.query({ limit: 200 });
+			return result.items as Semester[];
+		},
+	});
+	const semesters = semestersQuery.data ?? [];
+
+	const previewEnabled =
+		isScheduleOpen && Boolean(academicYearId) && Boolean(semesterId);
 	const previewQuery = useQuery({
-		queryKey: ["examSchedulerPreview", academicYearId],
+		queryKey: ["examSchedulerPreview", academicYearId, semesterId],
 		enabled: previewEnabled,
 		queryFn: async () => {
-			if (!academicYearId) return null;
+			if (!academicYearId || !semesterId) return null;
 			return trpcClient.examScheduler.preview.query({
 				academicYearId,
+				semesterId,
 			});
 		},
 	});
@@ -154,6 +168,7 @@ export default function ExamScheduler() {
 			if (
 				!academicYearId ||
 				!examTypeId ||
+				!semesterId ||
 				!dateStart ||
 				!dateEnd ||
 				!selectedClasses.size
@@ -163,6 +178,7 @@ export default function ExamScheduler() {
 			await trpcClient.examScheduler.schedule.mutate({
 				academicYearId,
 				examTypeId,
+				semesterId,
 				percentage,
 				dateStart: new Date(dateStart),
 				dateEnd: new Date(dateEnd),
@@ -188,6 +204,7 @@ export default function ExamScheduler() {
 		Boolean(
 			academicYearId &&
 				examTypeId &&
+				semesterId &&
 				dateStart &&
 				dateEnd &&
 				selectedClasses.size,
@@ -371,29 +388,52 @@ export default function ExamScheduler() {
 									</SelectContent>
 								</Select>
 							</div>
-							<div className="space-y-2">
-								<Label>{t("admin.examScheduler.form.examTypeLabel")}</Label>
-								<Select
-									value={examTypeId}
-									onValueChange={(value) => setExamTypeId(value)}
-								>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t(
-												"admin.examScheduler.form.examTypePlaceholder",
-											)}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{(examTypesQuery.data ?? []).map((type) => (
-											<SelectItem key={type.id} value={type.id}>
-												{type.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="grid grid-cols-2 gap-4">
+			<div className="space-y-2">
+				<Label>{t("admin.examScheduler.form.examTypeLabel")}</Label>
+				<Select
+					value={examTypeId}
+					onValueChange={(value) => setExamTypeId(value)}
+				>
+					<SelectTrigger>
+						<SelectValue
+							placeholder={t(
+								"admin.examScheduler.form.examTypePlaceholder",
+							)}
+						/>
+					</SelectTrigger>
+					<SelectContent>
+						{(examTypesQuery.data ?? []).map((type) => (
+							<SelectItem key={type.id} value={type.id}>
+								{type.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+			<div className="space-y-2">
+				<Label>{t("admin.examScheduler.form.semesterLabel")}</Label>
+				<Select
+					value={semesterId}
+					onValueChange={setSemesterId}
+					disabled={semesters.length === 0}
+				>
+					<SelectTrigger>
+						<SelectValue
+							placeholder={t(
+								"admin.examScheduler.form.semesterPlaceholder",
+							)}
+						/>
+					</SelectTrigger>
+					<SelectContent>
+						{semesters.map((semester) => (
+							<SelectItem key={semester.id} value={semester.id}>
+								{semester.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+			<div className="grid grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label>{t("admin.examScheduler.form.dateStartLabel")}</Label>
 									<Input

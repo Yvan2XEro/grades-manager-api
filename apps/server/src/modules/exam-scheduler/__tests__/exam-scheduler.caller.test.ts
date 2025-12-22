@@ -49,6 +49,10 @@ async function bootstrapFixtures() {
 	const examType = await createExamType({
 		name: `Session normale ${randomUUID()}`,
 	});
+	const semesterId = classOne.semesterId ?? classTwo.semesterId;
+	if (!semesterId) {
+		throw new Error("Missing semester for fixtures");
+	}
 	return {
 		institutionId: program.institutionId,
 		academicYear,
@@ -57,6 +61,7 @@ async function bootstrapFixtures() {
 		classes: [classOne, classTwo],
 		classCourses,
 		examType,
+		semesterId,
 	};
 }
 
@@ -94,6 +99,7 @@ describe("exam scheduler router", () => {
 		const preview = await admin.examScheduler.preview({
 			institutionId: fixtures.institutionId,
 			academicYearId: fixtures.academicYear.id,
+			semesterId: fixtures.semesterId,
 		});
 		expect(preview.classes.length).toBe(2);
 		expect(preview.classes.every((klass) => klass.classCourseCount === 1)).toBe(
@@ -107,6 +113,7 @@ describe("exam scheduler router", () => {
 			percentage: 40,
 			dateStart: new Date("2025-01-01"),
 			dateEnd: new Date("2025-01-10"),
+			semesterId: fixtures.semesterId,
 		});
 		expect(firstRun.created).toBe(fixtures.classCourses.length);
 		expect(firstRun.examIds.length).toBe(fixtures.classCourses.length);
@@ -121,6 +128,7 @@ describe("exam scheduler router", () => {
 			percentage: 40,
 			dateStart: new Date("2025-01-01"),
 			dateEnd: new Date("2025-01-10"),
+			semesterId: fixtures.semesterId,
 		});
 		expect(secondRun.created).toBe(0);
 		expect(secondRun.duplicates).toBe(fixtures.classCourses.length);
@@ -152,6 +160,7 @@ describe("exam scheduler router", () => {
 			percentage: 25,
 			dateStart: new Date("2025-03-01"),
 			dateEnd: new Date("2025-03-05"),
+			semesterId: fixtures.semesterId,
 			classIds: [targetClass.id],
 		});
 		expect(subset.created).toBe(1);

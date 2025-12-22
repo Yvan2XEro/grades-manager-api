@@ -8,6 +8,7 @@ import {
 	boolean,
 	check,
 	date,
+	doublePrecision,
 	index,
 	integer,
 	jsonb,
@@ -1009,6 +1010,105 @@ export const promotionExecutionResults = pgTable(
 	],
 );
 
+/** Cached yearly promotion facts per student. */
+export const studentPromotionSummaries = pgTable(
+	"student_promotion_summaries",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		registrationNumber: text("registration_number").notNull(),
+		className: text("class_name").notNull(),
+		programCode: text("program_code").notNull(),
+		computedAt: timestamp("computed_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		overallAverage: doublePrecision("overall_average").notNull().default(0),
+		overallAverageUnweighted: doublePrecision(
+			"overall_average_unweighted",
+		)
+			.notNull()
+			.default(0),
+		successRate: doublePrecision("success_rate").notNull().default(0),
+		unitValidationRate: doublePrecision("unit_validation_rate")
+			.notNull()
+			.default(0),
+		creditsEarned: integer("credits_earned").notNull().default(0),
+		creditsEarnedThisYear: integer("credits_earned_this_year")
+			.notNull()
+			.default(0),
+		creditsAttempted: integer("credits_attempted").notNull().default(0),
+		creditsInProgress: integer("credits_in_progress").notNull().default(0),
+		requiredCredits: integer("required_credits").notNull().default(0),
+		creditCompletionRate: doublePrecision("credit_completion_rate")
+			.notNull()
+			.default(0),
+		creditDeficit: integer("credit_deficit").notNull().default(0),
+		creditSuccessRate: doublePrecision("credit_success_rate")
+			.notNull()
+			.default(0),
+		performanceIndex: doublePrecision("performance_index")
+			.notNull()
+			.default(0),
+		isOnTrack: boolean("is_on_track").notNull().default(false),
+		progressionRate: doublePrecision("progression_rate").notNull().default(0),
+		projectedCreditsEndOfYear: doublePrecision(
+			"projected_credits_end_of_year",
+		)
+			.notNull()
+			.default(0),
+		canReachRequiredCredits: boolean("can_reach_required_credits")
+			.notNull()
+			.default(false),
+		failedTeachingUnitsCount: integer("failed_teaching_units_count")
+			.notNull()
+			.default(0),
+		eliminatoryFailures: integer("eliminatory_failures")
+			.notNull()
+			.default(0),
+		scoresBelow8: integer("scores_below_8").notNull().default(0),
+		admissionType: text("admission_type").notNull().default("normal"),
+		isTransferStudent: boolean("is_transfer_student")
+			.notNull()
+			.default(false),
+		isDirectAdmission: boolean("is_direct_admission")
+			.notNull()
+			.default(false),
+		hasAcademicHistory: boolean("has_academic_history")
+			.notNull()
+			.default(false),
+		transferCredits: integer("transfer_credits").notNull().default(0),
+		transferInstitution: text("transfer_institution"),
+		transferLevel: text("transfer_level"),
+		averagesByTeachingUnit: jsonb("averages_by_teaching_unit")
+			.notNull()
+			.$type<Record<string, unknown>>()
+			.default({}),
+		averagesByCourse: jsonb("averages_by_course")
+			.notNull()
+			.$type<Record<string, unknown>>()
+			.default({}),
+		facts: jsonb("facts").notNull().$type<Record<string, unknown>>(),
+	},
+	(t) => [
+		unique("uq_student_promotion_summary").on(t.studentId, t.academicYearId),
+		index("idx_student_promotion_summary_year").on(t.academicYearId),
+		index("idx_student_promotion_summary_class").on(t.classId),
+		index("idx_student_promotion_summary_program").on(t.programId),
+		index("idx_student_promotion_summary_ontrack").on(t.isOnTrack),
+	],
+);
+
 export const academicYearsRelations = relations(academicYears, ({ many }) => ({
 	classes: many(classes),
 }));
@@ -1475,6 +1575,12 @@ export type PromotionExecutionResult = InferSelectModel<
 >;
 export type NewPromotionExecutionResult = InferInsertModel<
 	typeof promotionExecutionResults
+>;
+export type StudentPromotionSummary = InferSelectModel<
+	typeof studentPromotionSummaries
+>;
+export type NewStudentPromotionSummary = InferInsertModel<
+	typeof studentPromotionSummaries
 >;
 
 /** Export template types for customizable document generation */

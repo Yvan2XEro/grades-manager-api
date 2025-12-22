@@ -52,6 +52,9 @@
 			"next": "Next",
 			"previous": "Previous"
 		},
+		"errors": {
+			"unknown": "Unknown error"
+		},
 		"gender": {
 			"male": "M",
 			"female": "F"
@@ -1579,6 +1582,8 @@
 				"academicYearPlaceholder": "Select academic year",
 				"examTypeLabel": "Exam type",
 				"examTypePlaceholder": "Select exam type",
+				"semesterLabel": "Semester",
+				"semesterPlaceholder": "Select semester",
 				"percentageLabel": "Weight (%)",
 				"dateStartLabel": "Start date",
 				"dateEndLabel": "End date"
@@ -2188,7 +2193,8 @@
 					"classLabel": "Source Class",
 					"classPlaceholder": "Select class",
 					"yearLabel": "Academic Year",
-					"yearPlaceholder": "Select year"
+					"yearPlaceholder": "Select year",
+					"refreshDescription": "Keep student facts up to date before evaluating. Refreshing recomputes all metrics for the selected class and year."
 				},
 				"tabs": {
 					"eligible": "Eligible ({{count}})",
@@ -2197,6 +2203,8 @@
 				"actions": {
 					"evaluate": "Evaluate Students",
 					"evaluating": "Evaluating...",
+					"refreshFacts": "Refresh Student Facts",
+					"refreshingFacts": "Refreshing...",
 					"selectAll": "Select All Eligible",
 					"deselectAll": "Deselect All",
 					"proceed": "Proceed with {{count}} student(s)"
@@ -2213,7 +2221,9 @@
 				},
 				"toast": {
 					"selectAll": "Please select all required fields",
-					"selectStudent": "Please select at least one student"
+					"selectStudent": "Please select at least one student",
+					"refreshSuccess": "Student facts recalculated successfully",
+					"refreshError": "Failed to refresh facts: {{error}}"
 				}
 			},
 			"execute": {

@@ -13,6 +13,8 @@ interface Resources {
 		"common": {
 			"actions": {
 				"cancel": "Cancel";
+				"create": "Create";
+				"update": "Update";
 				"delete": "Delete";
 				"save": "Save";
 				"saveChanges": "Save Changes";
@@ -50,6 +52,9 @@ interface Resources {
 			"pagination": {
 				"next": "Next";
 				"previous": "Previous";
+			};
+			"errors": {
+				"unknown": "Unknown error";
 			};
 			"gender": {
 				"male": "M";
@@ -569,6 +574,7 @@ interface Resources {
 					"users": "Users";
 					"classCourses": "Class courses";
 					"gradeExport": "Grade export";
+					"exportTemplates": "Export templates";
 					"monitoring": "Monitoring";
 					"notifications": "Notifications";
 					"students": "Students";
@@ -1389,6 +1395,162 @@ interface Resources {
 					"message": "Are you sure you want to delete this exam type?";
 				};
 			};
+			"exportTemplates": {
+				"title": "Export templates";
+				"subtitle": "Customize report layouts, columns, headers, and styling for grade exports.";
+				"actions": {
+					"setDefault": "Set as default";
+					"edit": "Edit template";
+					"rename": "Rename";
+					"delete": "Delete";
+				};
+				"filter": {
+					"all": "All types";
+				};
+				"table": {
+					"title": "Available templates";
+					"description": "All export operations can use these templates for formatting.";
+					"name": "Name";
+					"type": "Type";
+					"status": "Status";
+					"columns": "Columns";
+					"columnsCount": "columns";
+					"actions": "Actions";
+					"default": "Default";
+					"custom": "Custom";
+				};
+				"empty": {
+					"title": "No templates yet";
+					"description": "Create your first export template to customize your reports.";
+				};
+				"form": {
+					"createTitle": "Create export template";
+					"editTitle": "Edit export template";
+					"renameTitle": "Rename template";
+					"renameDescription": "Enter a new name for this template.";
+					"description": "Define a template for customizing export outputs.";
+					"name": "Template name";
+					"namePlaceholder": "e.g., Standard PV Template";
+					"type": "Export type";
+					"typeDescription": "Type cannot be changed after creation.";
+					"isDefault": "Set as default";
+					"isDefaultDescription": "Use this template by default for this export type.";
+				};
+				"validation": {
+					"name": "Name must be at least 2 characters";
+				};
+				"toast": {
+					"createSuccess": "Export template created";
+					"createError": "Could not create export template";
+					"updateSuccess": "Export template updated";
+					"updateError": "Could not update export template";
+					"deleteSuccess": "Export template deleted";
+					"deleteError": "Could not delete export template";
+					"setDefaultSuccess": "Default template updated";
+					"setDefaultError": "Could not set default template";
+				};
+				"delete": {
+					"title": "Delete export template";
+					"message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.";
+				};
+				"editor": {
+					"notFound": "Template not found";
+					"createTitle": "Create New Export Template";
+					"createDescription": "Enter a name and select the export type to get started.";
+					"subtitle": "Editing {{type}} template";
+					"tabs": {
+						"columns": "Columns";
+						"header": "Header";
+						"style": "Style";
+						"template": "Template";
+					};
+					"template": {
+						"editorTitle": "HTML Template Editor";
+						"editorDescription": "Write Handlebars template with custom HTML/CSS.";
+						"placeholder": "Enter your custom Handlebars template here...";
+						"generatePreview": "Generate Preview";
+						"reset": "Reset to Default";
+						"previewTitle": "Preview";
+						"previewDescription": "Live preview with sample data";
+						"download": "Download HTML";
+						"noPreview": "No preview available";
+						"clickGenerate": "Click 'Generate Preview' to see the rendered output";
+						"helpTitle": "Template Help:";
+						"helpHandlebars": "Use Handlebars syntax: {{variable}}, {{#if}}, {{#each}}";
+						"helpVariables": "Available variables: students, headerConfig, styleConfig";
+						"helpConfig": "Configurations are automatically applied to the template";
+					};
+					"columns": {
+						"title": "Column Configuration";
+						"description": "Define which columns to display, their order, and formatting.";
+						"addColumn": "Add Column";
+						"empty": "No columns configured yet. Add your first column to get started.";
+						"addTitle": "Add Column";
+						"editTitle": "Edit Column";
+						"dialogDescription": "Configure the column properties.";
+						"key": "Data Key";
+						"label": "Label";
+						"labelFr": "Label (FR)";
+						"labelEn": "Label (EN)";
+						"dataType": "Data Type";
+						"alignment": "Alignment";
+						"width": "Width (px)";
+						"format": "Format";
+						"formula": "Formula";
+						"visible": "Visible";
+					};
+					"header": {
+						"title": "Header Configuration";
+						"description": "Customize the document header layout and information.";
+						"titles": "Document Titles";
+						"titleFr": "Title (FR)";
+						"titleEn": "Title (EN)";
+						"logoConfig": "Logo Configuration";
+						"showLogo": "Show Logo";
+						"logoPosition": "Logo Position";
+						"displayOptions": "Display Options";
+						"showInstitutionName": "Show Institution Name";
+						"showFacultyName": "Show Faculty Name";
+						"showAcademicYear": "Show Academic Year";
+						"showSemester": "Show Semester";
+						"showClassName": "Show Class Name";
+					};
+					"style": {
+						"title": "Style Configuration";
+						"description": "Customize fonts, colors, page settings, and watermark.";
+						"typography": "Typography";
+						"fontFamily": "Font Family";
+						"fontSize": "Font Size";
+						"headerFontSize": "Header Font Size";
+						"colors": "Colors";
+						"primaryColor": "Primary Color";
+						"secondaryColor": "Secondary Color";
+						"headerBackgroundColor": "Header Background";
+						"headerTextColor": "Header Text";
+						"tableBorderColor": "Table Border";
+						"alternateRowColor": "Alternate Row";
+						"pageSettings": "Page Settings";
+						"pageSize": "Page Size";
+						"pageOrientation": "Orientation";
+						"tableBorderWidth": "Border Width";
+						"margins": "Margins (mm)";
+						"marginTop": "Top";
+						"marginRight": "Right";
+						"marginBottom": "Bottom";
+						"marginLeft": "Left";
+						"watermark": "Watermark";
+						"watermarkEnabled": "Enable Watermark";
+						"watermarkText": "Watermark Text";
+						"watermarkOpacity": "Opacity";
+						"watermarkFontSize": "Font Size";
+						"watermarkRotation": "Rotation (degrees)";
+					};
+					"preview": {
+						"success": "Preview generated successfully";
+						"error": "Failed to generate preview";
+					};
+				};
+			};
 			"examScheduler": {
 				"title": "Exam scheduler";
 				"subtitle": "Plan exams for entire faculties and academic years in a single step.";
@@ -1401,6 +1563,8 @@ interface Resources {
 					"academicYearPlaceholder": "Select academic year";
 					"examTypeLabel": "Exam type";
 					"examTypePlaceholder": "Select exam type";
+					"semesterLabel": "Semester";
+					"semesterPlaceholder": "Select semester";
 					"percentageLabel": "Weight (%)";
 					"dateStartLabel": "Start date";
 					"dateEndLabel": "End date";
@@ -2011,6 +2175,7 @@ interface Resources {
 						"classPlaceholder": "Select class";
 						"yearLabel": "Academic Year";
 						"yearPlaceholder": "Select year";
+						"refreshDescription": "Keep student facts up to date before evaluating. Refreshing recomputes all metrics for the selected class and year.";
 					};
 					"tabs": {
 						"eligible": "Eligible ({{count}})";
@@ -2019,6 +2184,8 @@ interface Resources {
 					"actions": {
 						"evaluate": "Evaluate Students";
 						"evaluating": "Evaluating...";
+						"refreshFacts": "Refresh Student Facts";
+						"refreshingFacts": "Refreshing...";
 						"selectAll": "Select All Eligible";
 						"deselectAll": "Deselect All";
 						"proceed": "Proceed with {{count}} student(s)";
@@ -2036,6 +2203,8 @@ interface Resources {
 					"toast": {
 						"selectAll": "Please select all required fields";
 						"selectStudent": "Please select at least one student";
+						"refreshSuccess": "Student facts recalculated successfully";
+						"refreshError": "Failed to refresh facts: {{error}}";
 					};
 				};
 				"execute": {

@@ -27,6 +27,7 @@ type ClassFetchInput = {
   institutionId: string;
   academicYearId: string;
   classIds?: string[];
+  semesterId?: string;
 };
 
 export async function getClassesForScheduling(
@@ -64,6 +65,18 @@ export async function getClassesForScheduling(
 
   if (!classes.length) return [];
   const classIds = classes.map((klass) => klass.id);
+  const classCourseConditions = [
+    inArray(schema.classCourses.class, classIds),
+  ];
+  if (params.semesterId) {
+    classCourseConditions.push(
+      eq(schema.classCourses.semesterId, params.semesterId),
+    );
+  }
+  const classCourseCondition =
+    classCourseConditions.length === 1
+      ? classCourseConditions[0]
+      : and(...classCourseConditions);
   const counts =
     classIds.length === 0
       ? []
@@ -73,7 +86,7 @@ export async function getClassesForScheduling(
             count: sql<number>`count(*)`,
           })
           .from(schema.classCourses)
-          .where(inArray(schema.classCourses.class, classIds))
+          .where(classCourseCondition)
           .groupBy(schema.classCourses.class);
   const countMap = new Map(
     counts.map((item) => [item.classId, Number(item.count)]),
@@ -81,13 +94,15 @@ export async function getClassesForScheduling(
   const programNames = new Map(
     programs.map((program) => [program.id, program.name]),
   );
-  return classes.map((klass) => ({
-    id: klass.id,
-    name: klass.name,
-    programId: klass.programId,
-    programName: programNames.get(klass.programId) ?? "",
-    classCourseCount: countMap.get(klass.id) ?? 0,
-  }));
+  return classes
+    .filter((klass) => (countMap.get(klass.id) ?? 0) > 0)
+    .map((klass) => ({
+      id: klass.id,
+      name: klass.name,
+      programId: klass.programId,
+      programName: programNames.get(klass.programId) ?? "",
+      classCourseCount: countMap.get(klass.id) ?? 0,
+    }));
 }
 
 export type SchedulerClassCourse = {
@@ -99,8 +114,15 @@ export type SchedulerClassCourse = {
 
 export async function getClassCourses(
   classIds: string[],
+  semesterId?: string,
 ): Promise<SchedulerClassCourse[]> {
   if (classIds.length === 0) return [];
+  const conditions = [inArray(schema.classCourses.class, classIds)];
+  if (semesterId) {
+    conditions.push(eq(schema.classCourses.semesterId, semesterId));
+  }
+  const condition =
+    conditions.length === 1 ? conditions[0] : and(...conditions);
   return db
     .select({
       id: schema.classCourses.id,
@@ -113,7 +135,7 @@ export async function getClassCourses(
       schema.courses,
       eq(schema.courses.id, schema.classCourses.course),
     )
-    .where(inArray(schema.classCourses.class, classIds))
+    .where(condition)
     .orderBy(schema.classCourses.class, schema.courses.name);
 }
 

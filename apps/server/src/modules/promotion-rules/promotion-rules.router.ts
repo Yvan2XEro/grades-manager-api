@@ -8,6 +8,7 @@ import {
 	idSchema,
 	listExecutionsSchema,
 	listRulesSchema,
+	refreshClassSummariesSchema,
 	updateRuleSchema,
 } from "./promotion-rules.zod";
 
@@ -40,6 +41,12 @@ export const promotionRulesRouter = router({
 	list: protectedProcedure
 		.input(listRulesSchema)
 		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
+
+	refreshClassSummaries: adminProcedure
+		.input(refreshClassSummariesSchema)
+		.mutation(({ input, ctx }) =>
+			service.refreshClassSummaries(input, ctx.institution.id),
+		),
 
 	// Evaluation (requires protection, but not necessarily admin)
 	evaluateClass: protectedProcedure

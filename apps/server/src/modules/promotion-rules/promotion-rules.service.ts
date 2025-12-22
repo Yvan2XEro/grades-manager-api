@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Engine } from "json-rules-engine";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -16,9 +16,13 @@ import type {
 	EvaluateClassInput,
 	ListExecutionsInput,
 	ListRulesInput,
+	RefreshClassSummariesInput,
 	UpdateRuleInput,
 } from "./promotion-rules.zod";
-import { computeStudentFacts } from "./student-facts.service";
+import {
+	getStudentPromotionFacts,
+	refreshClassPromotionSummaries,
+} from "./student-facts.service";
 
 // ========== Rule Management ==========
 
@@ -95,6 +99,41 @@ export async function listRules(opts: ListRulesInput, institutionId: string) {
 	return repo.listRules({ ...opts, institutionId });
 }
 
+// ========== Manual summary refresh ==========
+
+export async function refreshClassSummaries(
+	opts: RefreshClassSummariesInput,
+	institutionId: string,
+) {
+	const klass = await db.query.classes.findFirst({
+		where: and(
+			eq(schema.classes.id, opts.classId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	if (!klass) {
+		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
+	}
+	if (klass.academicYear !== opts.academicYearId) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Class does not belong to the specified academic year",
+		});
+	}
+
+	const summaries = await refreshClassPromotionSummaries(
+		klass.id,
+		opts.academicYearId,
+	);
+
+	return {
+		classId: klass.id,
+		academicYearId: klass.academicYear,
+		studentCount: summaries.length,
+		refreshedAt: new Date(),
+	};
+}
+
 // ========== Evaluation ==========
 
 /**
@@ -155,7 +194,7 @@ export async function evaluateClassForPromotion(
 	const evaluations = await Promise.all(
 		students.map(async (student) => {
 			try {
-				const facts = await computeStudentFacts(
+				const facts = await getStudentPromotionFacts(
 					student.id,
 					opts.academicYearId,
 				);
@@ -286,9 +325,23 @@ export async function applyPromotion(
 	// Re-evaluate selected students to get their facts
 	const studentEvaluations = await Promise.all(
 		opts.studentIds.map(async (studentId) => {
-			const facts = await computeStudentFacts(studentId, opts.academicYearId);
-			const evaluation = await evaluateStudentAgainstRule(rule.ruleset, facts);
-			return { studentId, facts, evaluation };
+			try {
+				const facts = await getStudentPromotionFacts(
+					studentId,
+					opts.academicYearId,
+				);
+				const evaluation = await evaluateStudentAgainstRule(
+					rule.ruleset,
+					facts,
+				);
+				return { studentId, facts, evaluation };
+			} catch (error) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: `Promotion summary missing for student ${studentId}`,
+					cause: error,
+				});
+			}
 		}),
 	);
 

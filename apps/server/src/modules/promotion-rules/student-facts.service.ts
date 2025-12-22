@@ -6,11 +6,98 @@ import type { StudentPromotionFacts } from "./promotion-rules.types";
 const PASSING_GRADE = 10;
 const COMPENSABLE_THRESHOLD = 8;
 
+type GetStudentFactsOptions = {
+	rebuildIfMissing?: boolean;
+};
+
+/**
+ * Retrieve cached promotion facts for a student/year combination.
+ * Optionally triggers a recomputation when the snapshot is missing.
+ */
+export async function getStudentPromotionFacts(
+	studentId: string,
+	academicYearId: string,
+	options: GetStudentFactsOptions = {},
+): Promise<StudentPromotionFacts> {
+	const summary = await db.query.studentPromotionSummaries.findFirst({
+		where: and(
+			eq(schema.studentPromotionSummaries.studentId, studentId),
+			eq(schema.studentPromotionSummaries.academicYearId, academicYearId),
+		),
+	});
+
+	if (summary) {
+		return summary.facts as StudentPromotionFacts;
+	}
+
+	if (options.rebuildIfMissing) {
+		return refreshStudentPromotionSummary(studentId, academicYearId);
+	}
+
+	throw new Error(
+		`Promotion summary missing for student ${studentId} (${academicYearId})`,
+	);
+}
+
+/**
+ * Rebuild (or build) the cached promotion summary for a student/year.
+ */
+export async function refreshStudentPromotionSummary(
+	studentId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts> {
+	const facts = await buildStudentFacts(studentId, academicYearId);
+	await saveStudentPromotionSummary(facts);
+	return facts;
+}
+
+/**
+ * Rebuild summaries for an entire class. Useful for cron jobs.
+ */
+export async function refreshClassPromotionSummaries(
+	classId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts[]> {
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, classId),
+	});
+	if (!klass) {
+		throw new Error(`Class not found: ${classId}`);
+	}
+	if (klass.academicYear !== academicYearId) {
+		throw new Error(
+			`Class ${classId} belongs to ${klass.academicYear}, not ${academicYearId}`,
+		);
+	}
+
+	const students = await db
+		.select({ id: schema.students.id })
+		.from(schema.students)
+		.where(eq(schema.students.class, classId));
+
+	const results: StudentPromotionFacts[] = [];
+	for (const student of students) {
+		results.push(await refreshStudentPromotionSummary(student.id, academicYearId));
+	}
+	return results;
+}
+
+/**
+ * Legacy helper retained for compatibility. It now refreshes the summary
+ * before returning the computed facts snapshot.
+ */
+export async function computeStudentFacts(
+	studentId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts> {
+	return refreshStudentPromotionSummary(studentId, academicYearId);
+}
+
 /**
  * Compute all facts for a student used in promotion rule evaluation.
  * This aggregates data from grades, enrollments, courses, credits, etc.
  */
-export async function computeStudentFacts(
+async function buildStudentFacts(
 	studentId: string,
 	academicYearId: string,
 ): Promise<StudentPromotionFacts> {
@@ -166,6 +253,68 @@ export async function computeStudentFacts(
 	};
 
 	return facts;
+}
+
+async function saveStudentPromotionSummary(facts: StudentPromotionFacts) {
+	const record = mapFactsToSummaryRecord(facts);
+	await db
+		.insert(schema.studentPromotionSummaries)
+		.values(record)
+		.onConflictDoUpdate({
+			target: [
+				schema.studentPromotionSummaries.studentId,
+				schema.studentPromotionSummaries.academicYearId,
+			],
+			set: {
+				...record,
+				computedAt: record.computedAt,
+			},
+		});
+}
+
+function mapFactsToSummaryRecord(
+	facts: StudentPromotionFacts,
+): schema.NewStudentPromotionSummary {
+	return {
+		studentId: facts.studentId,
+		academicYearId: facts.academicYearId,
+		classId: facts.classId,
+		programId: facts.programId,
+		registrationNumber: facts.registrationNumber,
+		className: facts.className,
+		programCode: facts.programCode,
+		computedAt: new Date(),
+		overallAverage: facts.overallAverage,
+		overallAverageUnweighted: facts.overallAverageUnweighted,
+		successRate: facts.successRate,
+		unitValidationRate: facts.unitValidationRate,
+		creditsEarned: facts.creditsEarned,
+		creditsEarnedThisYear: facts.creditsEarnedThisYear,
+		creditsAttempted: facts.creditsAttempted,
+		creditsInProgress: facts.creditsInProgress,
+		requiredCredits: facts.requiredCredits,
+		creditCompletionRate: facts.creditCompletionRate,
+		creditDeficit: facts.creditDeficit,
+		creditSuccessRate: facts.creditSuccessRate,
+		performanceIndex: facts.performanceIndex,
+		isOnTrack: facts.isOnTrack,
+		progressionRate: facts.progressionRate,
+		projectedCreditsEndOfYear: facts.projectedCreditsEndOfYear,
+		canReachRequiredCredits: facts.canReachRequiredCredits,
+		failedTeachingUnitsCount: facts.failedTeachingUnitsCount,
+		eliminatoryFailures: facts.eliminatoryFailures,
+		scoresBelow8: facts.scoresBelow8,
+		admissionType: facts.admissionType,
+		isTransferStudent: facts.isTransferStudent,
+		isDirectAdmission: facts.isDirectAdmission,
+		hasAcademicHistory: facts.hasAcademicHistory,
+		transferCredits: facts.transferCredits,
+		transferInstitution: facts.transferInstitution,
+		transferLevel: facts.transferLevel,
+		averagesByTeachingUnit: facts.averageByTeachingUnit,
+		averagesByCourse: facts.averageByCourse,
+		facts,
+	};
 }
 
 /**

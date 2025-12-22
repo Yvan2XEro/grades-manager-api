@@ -52,6 +52,9 @@
 			"next": "Suivant",
 			"previous": "Précédent"
 		},
+		"errors": {
+			"unknown": "Erreur inconnue"
+		},
 		"gender": {
 			"male": "M",
 			"female": "F"
@@ -1059,6 +1062,8 @@
 				"academicYearPlaceholder": "Sélectionner une année",
 				"examTypeLabel": "Type d'examen",
 				"examTypePlaceholder": "Sélectionner un type",
+				"semesterLabel": "Semestre",
+				"semesterPlaceholder": "Sélectionner un semestre",
 				"percentageLabel": "Pondération (%)",
 				"dateStartLabel": "Date de début",
 				"dateEndLabel": "Date de fin"
@@ -1725,7 +1730,8 @@
 					"classLabel": "Classe source",
 					"classPlaceholder": "Sélectionner une classe",
 					"yearLabel": "Année académique",
-					"yearPlaceholder": "Sélectionner une année"
+					"yearPlaceholder": "Sélectionner une année",
+					"refreshDescription": "Assurez-vous que les faits étudiants sont à jour avant l'évaluation. Le recalcul regénère toutes les métriques pour la classe et l'année sélectionnées."
 				},
 				"tabs": {
 					"eligible": "Éligibles ({{count}})",
@@ -1734,6 +1740,8 @@
 				"actions": {
 					"evaluate": "Évaluer les étudiants",
 					"evaluating": "Évaluation...",
+					"refreshFacts": "Recalculer les faits",
+					"refreshingFacts": "Recalcul...",
 					"selectAll": "Sélectionner tous les éligibles",
 					"deselectAll": "Tout désélectionner",
 					"proceed": "Continuer avec {{count}} étudiant(s)"
@@ -1750,7 +1758,9 @@
 				},
 				"toast": {
 					"selectAll": "Veuillez sélectionner tous les champs requis",
-					"selectStudent": "Veuillez sélectionner au moins un étudiant"
+					"selectStudent": "Veuillez sélectionner au moins un étudiant",
+					"refreshSuccess": "Faits étudiants recalculés avec succès",
+					"refreshError": "Impossible de recalculer les faits : {{error}}"
 				}
 			},
 			"execute": {

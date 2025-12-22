@@ -199,7 +199,7 @@ const GradeEntry: React.FC = () => {
 		},
 	});
 
-	const exams = examsQuery.data ?? [];
+	const exams = useMemo(() => examsQuery.data ?? [], [examsQuery.data]);
 
 	useEffect(() => {
 		if (!exams.length) {
@@ -243,7 +243,10 @@ const GradeEntry: React.FC = () => {
 		},
 	});
 
-	const gradeEntries = gradesQuery.data ?? [];
+	const gradeEntries = useMemo(
+		() => gradesQuery.data ?? [],
+		[gradesQuery.data],
+	);
 	const gradesByStudent = useMemo(() => {
 		const map: Record<
 			string,
