@@ -6,8 +6,8 @@
     <title>Procès-Verbal</title>
     <style>
         @page {
-            size: A4 landscape;
-            margin: 8mm;
+            size: {{#if styleConfig.pageSize}}{{styleConfig.pageSize}}{{else}}A4{{/if}} {{#if styleConfig.pageOrientation}}{{styleConfig.pageOrientation}}{{else}}landscape{{/if}};
+            margin: {{#if styleConfig.margins.top}}{{styleConfig.margins.top}}{{else}}8{{/if}}mm {{#if styleConfig.margins.right}}{{styleConfig.margins.right}}{{else}}8{{/if}}mm {{#if styleConfig.margins.bottom}}{{styleConfig.margins.bottom}}{{else}}8{{/if}}mm {{#if styleConfig.margins.left}}{{styleConfig.margins.left}}{{else}}8{{/if}}mm;
         }
 
         * {
@@ -17,7 +17,8 @@
         }
 
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: {{#if styleConfig.fontFamily}}{{styleConfig.fontFamily}}{{else}}'Times New Roman', Times, serif{{/if}};
+            font-size: {{#if styleConfig.fontSize}}{{styleConfig.fontSize}}{{else}}10{{/if}}px;
             background: #fafafa;
             padding: 10px;
             position: relative;
@@ -33,16 +34,17 @@
             position: relative;
         }
 
-        {{#if watermark.enabled}}
+        {{#if styleConfig.watermark.enabled}}
         .container::before {
-            content: '{{watermark.text}}';
+            content: '{{styleConfig.watermark.text}}';
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 120px;
+            transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
+            font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}120{{/if}}px;
             font-weight: bold;
-            color: rgba(200, 200, 200, 0.15);
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            color: rgba(200, 200, 200, 1);
             z-index: 0;
             pointer-events: none;
         }
@@ -61,21 +63,21 @@
         }
 
         .header h1 {
-            font-size: 15px;
-            color: #2c2c2c;
+            font-size: {{#if styleConfig.headerFontSize}}{{styleConfig.headerFontSize}}{{else}}15{{/if}}px;
+            color: {{#if styleConfig.primaryColor}}{{styleConfig.primaryColor}}{{else}}#2c2c2c{{/if}};
             margin-bottom: 3px;
             font-weight: bold;
         }
 
         .header h2 {
-            font-size: 13px;
-            color: #4a4a4a;
+            font-size: {{#if styleConfig.headerFontSize}}{{multiply styleConfig.headerFontSize 0.87}}{{else}}13{{/if}}px;
+            color: {{#if styleConfig.secondaryColor}}{{styleConfig.secondaryColor}}{{else}}#4a4a4a{{/if}};
             margin-bottom: 2px;
             font-weight: normal;
         }
 
         .header h3 {
-            font-size: 11px;
+            font-size: {{#if styleConfig.fontSize}}{{styleConfig.fontSize}}{{else}}11{{/if}}px;
             color: #666;
             font-weight: normal;
             margin-bottom: 2px;
@@ -113,23 +115,23 @@
         }
 
         table {
-            border: 1px solid #ccc;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ccc{{/if}};
             width: 100%;
             border-collapse: collapse;
-            font-size: 7.5px;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.75}}{{else}}7.5{{/if}}px;
             margin-bottom: 12px;
             table-layout: auto;
         }
 
         th {
-            background: white;
-            color: #2c2c2c;
+            background: {{#if styleConfig.headerBackgroundColor}}{{styleConfig.headerBackgroundColor}}{{else}}white{{/if}};
+            color: {{#if styleConfig.headerTextColor}}{{styleConfig.headerTextColor}}{{else}}#2c2c2c{{/if}};
             padding: 4px 2px;
             text-align: center;
-            border: 1px solid #bbb;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#bbb{{/if}};
             font-weight: bold;
             line-height: 1.2;
-            font-size: 7px;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.7}}{{else}}7{{/if}}px;
         }
 
         .ue-header {
@@ -138,11 +140,15 @@
 
         td {
             padding: 3px 1px;
-            border: 1px solid #ddd;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ddd{{/if}};
             text-align: center;
-            font-size: 7.5px;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.75}}{{else}}7.5{{/if}}px;
             color: #333;
             background: white;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
         }
 
         .student-name {
@@ -297,14 +303,21 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if university_name_fr}}
-                <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                {{#if headerConfig.showInstitutionName}}
+                    {{#if university_name_fr}}
+                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                    {{/if}}
                 {{/if}}
-                {{#if faculty_name_fr}}
-                <h2>{{faculty_name_fr}}</h2>
+                {{#if headerConfig.showFacultyName}}
+                    {{#if faculty_name_fr}}
+                    <h2>{{faculty_name_fr}}</h2>
+                    {{/if}}
                 {{/if}}
+                {{#if headerConfig.showInstitutionName}}
                 <h2>{{name_fr}} / {{name_en}}</h2>
+                {{/if}}
 
+                {{#if headerConfig.showLogo}}
                 <div class="logos">
                     {{#if university_logo_url}}
                     <div class="logo-box">
@@ -322,6 +335,7 @@
                     </div>
                     {{/if}}
                 </div>
+                {{/if}}
 
                 <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
                     {{#if university_contact_email}}Email Université: {{university_contact_email}}{{/if}}
@@ -334,8 +348,9 @@
             </div>
 
             <div class="title">
-                PROCÈS-VERBAL DES RÉSULTATS DU {{semester}} POUR LE COMPTE DE L'ANNÉE ACADÉMIQUE {{academicYear}}<br>
-                ({{program.name}} {{program.level}})
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DES RÉSULTATS{{/if}}<br>
+                {{#if headerConfig.showSemester}}{{semester}} - {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE {{academicYear}}{{/if}}<br>
+                {{#if headerConfig.showClassName}}({{program.name}} {{program.level}}){{/if}}
             </div>
 
             <table>

@@ -46,7 +46,7 @@ describe("seed runner", () => {
 		const faculty = await db.query.institutions.findFirst({
 			where: eq(appSchema.institutions.code, "ENG"),
 		});
-		expect(faculty?.nameFr).toBe("Faculty of Engineering");
+		expect(faculty?.nameEn).toBe("Faculty of Engineering");
 
 		const klass = await db.query.classes.findFirst({
 			where: eq(appSchema.classes.code, "ENG24-L1A"),

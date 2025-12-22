@@ -19,6 +19,7 @@ import * as authSchema from "../db/schema/auth";
 import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import type { OrganizationRoleName } from "../lib/organization-roles";
 import { normalizeCode, slugify } from "../lib/strings";
+import * as studentCreditLedgerService from "../modules/student-credit-ledger/student-credit-ledger.service";
 
 type SeedLogger = Pick<Console, "log" | "error">;
 
@@ -69,6 +70,7 @@ export type FoundationSeed = {
 	}>;
 	institutions?: Array<{
 		code: string;
+		type?: "main" | "faculty" | "department" | "other";
 		shortName?: string;
 		nameFr: string;
 		nameEn: string;
@@ -91,6 +93,7 @@ export type FoundationSeed = {
 		registrationFormatName?: string;
 		timezone?: string;
 		organizationSlug?: string;
+		parentInstitutionCode?: string;
 	}>;
 };
 
@@ -510,6 +513,119 @@ async function seedFoundation(
 	}
 
 	const institutionId = await ensureSeedInstitutionId(db, state);
+
+	// Process institutions early so that institutions with type="faculty" can populate state.faculties
+	// before they are needed by studyCycles
+	const institutions = data.institutions ?? [];
+	for (let idx = 0; idx < institutions.length; idx++) {
+		const entry = institutions[idx];
+		const code = normalizeCode(entry.code);
+		const defaultAcademicYearId = entry.defaultAcademicYearCode
+			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
+			: undefined;
+		let registrationFormatId: string | undefined;
+		if (entry.registrationFormatName) {
+			const format = await db.query.registrationNumberFormats.findFirst({
+				where: eq(
+					schema.registrationNumberFormats.name,
+					entry.registrationFormatName,
+				),
+			});
+			registrationFormatId = format?.id;
+		}
+
+		// Resolve organization ID from slug if provided
+		let organizationId: string | null = null;
+		if (entry.organizationSlug) {
+			const org = state.organizations.get(entry.organizationSlug);
+			if (!org) {
+				throw new Error(
+					`Organization with slug "${entry.organizationSlug}" not found for institution ${entry.code}. Ensure organizations are defined before institutions.`,
+				);
+			}
+			organizationId = org.id;
+		}
+
+		// Resolve parent institution ID from code if provided
+		let parentInstitutionId: string | null = null;
+		if (entry.parentInstitutionCode) {
+			const parent = state.institutions.get(normalizeCode(entry.parentInstitutionCode));
+			if (!parent) {
+				throw new Error(
+					`Parent institution with code "${entry.parentInstitutionCode}" not found for institution ${entry.code}. Ensure parent institutions are defined before children.`,
+				);
+			}
+			parentInstitutionId = parent.id;
+		}
+
+		const payload = {
+			code,
+			type: entry.type ?? "other",
+			shortName: entry.shortName ?? null,
+			nameFr: entry.nameFr,
+			nameEn: entry.nameEn,
+			legalNameFr: entry.legalNameFr ?? null,
+			legalNameEn: entry.legalNameEn ?? null,
+			sloganFr: entry.sloganFr ?? null,
+			sloganEn: entry.sloganEn ?? null,
+			descriptionFr: entry.descriptionFr ?? null,
+			descriptionEn: entry.descriptionEn ?? null,
+			addressFr: entry.addressFr ?? null,
+			addressEn: entry.addressEn ?? null,
+			contactEmail: entry.contactEmail ?? null,
+			contactPhone: entry.contactPhone ?? null,
+			fax: entry.fax ?? null,
+			postalBox: entry.postalBox ?? null,
+			website: entry.website ?? null,
+			logoUrl: entry.logoUrl ?? null,
+			coverImageUrl: entry.coverImageUrl ?? null,
+			defaultAcademicYearId: defaultAcademicYearId ?? null,
+			registrationFormatId: registrationFormatId ?? null,
+			timezone: entry.timezone ?? "UTC",
+			organizationId,
+			parentInstitutionId,
+			updatedAt: new Date(),
+		};
+
+		let institutionRecordId: string;
+		if (idx === 0 && state.defaultInstitutionId) {
+			await db
+				.update(schema.institutions)
+				.set(payload)
+				.where(eq(schema.institutions.id, state.defaultInstitutionId));
+			institutionRecordId = state.defaultInstitutionId;
+		} else {
+			const [inst] = await db
+				.insert(schema.institutions)
+				.values(payload)
+				.onConflictDoUpdate({
+					target: schema.institutions.code,
+					set: payload,
+				})
+				.returning();
+			institutionRecordId = inst.id;
+		}
+
+		state.institutions.set(code, {
+			id: institutionRecordId,
+			code,
+			organizationId,
+		});
+
+		// Register all institutions in state.faculties for backward compatibility
+		// This allows studyCycles and programs to reference any institution via facultyCode
+		// Supports both faculty-based structures and single-institution setups
+		state.faculties.set(code, { id: institutionRecordId, code });
+
+		// Set as default institution if it's the first one
+		if (idx === 0 && !state.defaultInstitutionId) {
+			state.defaultInstitutionId = institutionRecordId;
+		}
+	}
+	if (data.institutions?.length) {
+		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
+	}
+
 	for (const entry of data.examTypes ?? []) {
 		await db
 			.insert(schema.examTypes)
@@ -808,96 +924,6 @@ async function seedFoundation(
 		);
 	}
 
-	const institutions = data.institutions ?? [];
-	for (let idx = 0; idx < institutions.length; idx++) {
-		const entry = institutions[idx];
-		const code = normalizeCode(entry.code);
-		const defaultAcademicYearId = entry.defaultAcademicYearCode
-			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
-			: undefined;
-		let registrationFormatId: string | undefined;
-		if (entry.registrationFormatName) {
-			const format = await db.query.registrationNumberFormats.findFirst({
-				where: eq(
-					schema.registrationNumberFormats.name,
-					entry.registrationFormatName,
-				),
-			});
-			registrationFormatId = format?.id;
-		}
-
-		// Resolve organization ID from slug if provided
-		let organizationId: string | null = null;
-		if (entry.organizationSlug) {
-			const org = state.organizations.get(entry.organizationSlug);
-			if (!org) {
-				throw new Error(
-					`Organization with slug "${entry.organizationSlug}" not found for institution ${entry.code}. Ensure organizations are defined before institutions.`,
-				);
-			}
-			organizationId = org.id;
-		}
-
-		const payload = {
-			code,
-			shortName: entry.shortName ?? null,
-			nameFr: entry.nameFr,
-			nameEn: entry.nameEn,
-			legalNameFr: entry.legalNameFr ?? null,
-			legalNameEn: entry.legalNameEn ?? null,
-			sloganFr: entry.sloganFr ?? null,
-			sloganEn: entry.sloganEn ?? null,
-			descriptionFr: entry.descriptionFr ?? null,
-			descriptionEn: entry.descriptionEn ?? null,
-			addressFr: entry.addressFr ?? null,
-			addressEn: entry.addressEn ?? null,
-			contactEmail: entry.contactEmail ?? null,
-			contactPhone: entry.contactPhone ?? null,
-			fax: entry.fax ?? null,
-			postalBox: entry.postalBox ?? null,
-			website: entry.website ?? null,
-			logoUrl: entry.logoUrl ?? null,
-			coverImageUrl: entry.coverImageUrl ?? null,
-			defaultAcademicYearId: defaultAcademicYearId ?? null,
-			registrationFormatId: registrationFormatId ?? null,
-			timezone: entry.timezone ?? "UTC",
-			organizationId,
-			updatedAt: new Date(),
-		};
-
-		let institutionId: string;
-		if (idx === 0 && state.defaultInstitutionId) {
-			await db
-				.update(schema.institutions)
-				.set(payload)
-				.where(eq(schema.institutions.id, state.defaultInstitutionId));
-			institutionId = state.defaultInstitutionId;
-		} else {
-			const [inst] = await db
-				.insert(schema.institutions)
-				.values(payload)
-				.onConflictDoUpdate({
-					target: schema.institutions.code,
-					set: payload,
-				})
-				.returning();
-			institutionId = inst.id;
-		}
-
-		state.institutions.set(code, {
-			id: institutionId,
-			code,
-			organizationId,
-		});
-
-		// Set as default institution if it's the first one
-		if (idx === 0 && !state.defaultInstitutionId) {
-			state.defaultInstitutionId = institutionId;
-		}
-	}
-	if (data.institutions?.length) {
-		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
-	}
 	logger.log("[seed] Foundation layer applied.");
 }
 
@@ -1469,6 +1495,17 @@ async function seedUsers(
 					? new Date(entry.admissionDate)
 					: null,
 			});
+
+			// Register transfer credits in student credit ledger if any
+			if (entry.transferCredits && entry.transferCredits > 0) {
+				await studentCreditLedgerService.applyDelta(
+					student.id,
+					academicYearId,
+					0, // deltaProgress = 0 (transfer credits are already earned)
+					entry.transferCredits, // deltaEarned
+					60, // Default required credits (will be updated based on class requirements)
+				);
+			}
 		}
 	}
 	if (data.enrollments?.length) {

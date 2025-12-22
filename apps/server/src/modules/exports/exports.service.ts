@@ -16,6 +16,13 @@ import {
 	loadExportConfig,
 	loadTemplate,
 } from "./template-helper";
+import {
+	loadExportTemplate,
+	getVisibleColumns,
+	formatCellValue,
+	applyColumnFormula,
+	type TemplateConfiguration,
+} from "./template-loader";
 
 /**
  * Service for generating grade exports (PDFs and HTML previews)
@@ -76,24 +83,32 @@ export class ExportsService {
 	/** Generate PV (official minutes) export */
 	async generatePV(input: GeneratePVInput) {
 		const config = await this.getConfig();
+
+		// Load export template configuration
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"pv",
+			input.templateId,
+		);
+
 		const data = await this.repo.getPVData(
 			input.classId,
 			input.semesterId,
 			input.academicYearId,
 		);
 
-		// Process data for template
-		const templateData = this.processPVData(data, config);
+		// Process data for template with template configuration
+		const templateData = this.processPVData(data, config, templateConfig);
 
 		// Generate HTML
-		const html = this.renderTemplate("pv", templateData);
+		const html = this.renderTemplate("pv", templateData, templateConfig);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
 			return { content: html, mimeType: "text/html" };
 		}
 
-		const pdf = await this.generatePDF(html);
+		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
 		// Convert to Buffer if it isn't already (Bun's Puppeteer returns Uint8Array)
 		const pdfBuffer = Buffer.from(pdf);
 		return {
@@ -107,24 +122,33 @@ export class ExportsService {
 	 */
 	async generateEvaluation(input: GenerateEvaluationInput) {
 		const config = await this.getConfig();
+
+		// Load export template configuration
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"evaluation",
+			input.templateId,
+		);
+
 		const data = await this.repo.getEvaluationData(input.examId);
 
-		// Process data for template
+		// Process data for template with template configuration
 		const templateData = this.processEvaluationData(
 			data,
 			config,
+			templateConfig,
 			input.observations,
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate("evaluation", templateData);
+		const html = this.renderTemplate("evaluation", templateData, templateConfig);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
 			return { content: html, mimeType: "text/html" };
 		}
 
-		const pdf = await this.generatePDF(html);
+		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
 		// Convert to Buffer if it isn't already (Bun's Puppeteer returns Uint8Array)
 		const pdfBuffer = Buffer.from(pdf);
 		return {
@@ -138,6 +162,14 @@ export class ExportsService {
 	 */
 	async generateUE(input: GenerateUEInput) {
 		const config = await this.getConfig();
+
+		// Load export template configuration
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"ue",
+			input.templateId,
+		);
+
 		const data = await this.repo.getUEData(
 			input.teachingUnitId,
 			input.classId,
@@ -145,18 +177,18 @@ export class ExportsService {
 			input.academicYearId,
 		);
 
-		// Process data for template
-		const templateData = this.processUEData(data, config);
+		// Process data for template with template configuration
+		const templateData = this.processUEData(data, config, templateConfig);
 
 		// Generate HTML
-		const html = this.renderTemplate("ue", templateData);
+		const html = this.renderTemplate("ue", templateData, templateConfig);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
 			return { content: html, mimeType: "text/html" };
 		}
 
-		const pdf = await this.generatePDF(html);
+		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
 		// Convert to Buffer if it isn't already (Bun's Puppeteer returns Uint8Array)
 		const pdfBuffer = Buffer.from(pdf);
 		return {
@@ -171,6 +203,7 @@ export class ExportsService {
 	private processPVData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
+		templateConfig: TemplateConfiguration,
 	) {
 		// Group courses by teaching unit
 		const ueMap = new Map();
@@ -318,6 +351,7 @@ export class ExportsService {
 	private processEvaluationData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
+		templateConfig: TemplateConfiguration,
 		observations?: string,
 	) {
 		const grades = data.grades.map((grade: any, index: number) => {
@@ -386,6 +420,7 @@ export class ExportsService {
 	private processUEData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
+		templateConfig: TemplateConfiguration,
 	) {
 		const { teachingUnit, classCourses, students } = data;
 
@@ -495,16 +530,31 @@ export class ExportsService {
 	private renderTemplate(
 		templateName: "pv" | "evaluation" | "ue",
 		data: any,
+		templateConfig: TemplateConfiguration,
 	): string {
-		const templateSource = loadTemplate(templateName);
+		// Use custom template if provided, otherwise use default
+		const templateSource =
+			templateConfig.customTemplate || loadTemplate(templateName);
+
+		// Add template configuration to data
+		const enrichedData = {
+			...data,
+			columns: getVisibleColumns(templateConfig.columns),
+			headerConfig: templateConfig.headerConfig,
+			styleConfig: templateConfig.styleConfig,
+		};
+
 		const template = Handlebars.compile(templateSource);
-		return template(data);
+		return template(enrichedData);
 	}
 
 	/**
 	 * Generate PDF from HTML using Puppeteer
 	 */
-	private async generatePDF(html: string): Promise<Buffer> {
+	private async generatePDF(
+		html: string,
+		styleConfig: TemplateConfiguration["styleConfig"],
+	): Promise<Buffer> {
 		const browser = await puppeteer.launch({
 			headless: true,
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -514,14 +564,16 @@ export class ExportsService {
 			const page = await browser.newPage();
 			await page.setContent(html, { waitUntil: "networkidle0" });
 
+			// Use style config for PDF options
 			const pdf = await page.pdf({
-				format: "A4",
+				format: styleConfig.pageSize || "A4",
+				landscape: styleConfig.pageOrientation === "landscape",
 				printBackground: true,
 				margin: {
-					top: "10mm",
-					right: "10mm",
-					bottom: "10mm",
-					left: "10mm",
+					top: `${styleConfig.margins?.top || 10}mm`,
+					right: `${styleConfig.margins?.right || 10}mm`,
+					bottom: `${styleConfig.margins?.bottom || 10}mm`,
+					left: `${styleConfig.margins?.left || 10}mm`,
 				},
 			});
 

@@ -24,6 +24,7 @@ export const generatePVSchema = z.object({
 	semesterId: z.string(),
 	academicYearId: z.string(),
 	format: exportFormatSchema.default("pdf"),
+	templateId: z.string().optional(), // Use specific template instead of default
 });
 
 export type GeneratePVInput = z.infer<typeof generatePVSchema>;
@@ -35,6 +36,7 @@ export const generateEvaluationSchema = z.object({
 	examId: z.string(),
 	format: exportFormatSchema.default("pdf"),
 	observations: z.string().optional(),
+	templateId: z.string().optional(), // Use specific template instead of default
 });
 
 export type GenerateEvaluationInput = z.infer<typeof generateEvaluationSchema>;
@@ -48,6 +50,7 @@ export const generateUESchema = z.object({
 	semesterId: z.string(),
 	academicYearId: z.string(),
 	format: exportFormatSchema.default("pdf"),
+	templateId: z.string().optional(), // Use specific template instead of default
 });
 
 export type GenerateUEInput = z.infer<typeof generateUESchema>;

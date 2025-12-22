@@ -1476,3 +1476,137 @@ export type PromotionExecutionResult = InferSelectModel<
 export type NewPromotionExecutionResult = InferInsertModel<
 	typeof promotionExecutionResults
 >;
+
+/** Export template types for customizable document generation */
+export const exportTemplateTypes = [
+	"pv",
+	"evaluation",
+	"ue",
+	"excel_combined",
+	"excel_pv",
+	"excel_individual",
+] as const;
+export type ExportTemplateType = (typeof exportTemplateTypes)[number];
+
+/** Export template configuration for flexible headers and columns */
+export const exportTemplates = pgTable(
+	"export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		type: text("type").$type<ExportTemplateType>().notNull(),
+		isDefault: boolean("is_default").notNull().default(false),
+
+		// Column configuration
+		columns: jsonb("columns").$type<ExportColumnConfig[]>().notNull(),
+
+		// Header configuration
+		headerConfig: jsonb("header_config").$type<ExportHeaderConfig>(),
+
+		// Styling and layout
+		styleConfig: jsonb("style_config").$type<ExportStyleConfig>(),
+
+		// For PDF templates: custom HTML template
+		customTemplate: text("custom_template"),
+
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		index("idx_export_templates_institution").on(t.institutionId),
+		index("idx_export_templates_type").on(t.type),
+		unique("uq_export_templates_institution_name").on(t.institutionId, t.name),
+	],
+);
+
+export type ExportTemplate = InferSelectModel<typeof exportTemplates>;
+export type NewExportTemplate = InferInsertModel<typeof exportTemplates>;
+
+/** Column configuration for export templates */
+export type ExportColumnConfig = {
+	id: string;
+	key: string;
+	label: string;
+	labelFr?: string;
+	labelEn?: string;
+	width?: number;
+	visible: boolean;
+	order: number;
+	dataType?: "text" | "number" | "date" | "formula";
+	formula?: string; // For calculated columns (e.g., "CC * 0.4 + EXAM * 0.6")
+	format?: string; // Number format, date format, etc.
+	alignment?: "left" | "center" | "right";
+};
+
+/** Header configuration for export templates */
+export type ExportHeaderConfig = {
+	showLogo?: boolean;
+	logoPosition?: "left" | "center" | "right";
+	title?: string;
+	titleFr?: string;
+	titleEn?: string;
+	subtitle?: string;
+	subtitleFr?: string;
+	subtitleEn?: string;
+	showInstitutionName?: boolean;
+	showFacultyName?: boolean;
+	showAcademicYear?: boolean;
+	showSemester?: boolean;
+	showClassName?: boolean;
+	customFields?: Array<{
+		key: string;
+		label: string;
+		labelFr?: string;
+		labelEn?: string;
+		value?: string;
+		visible: boolean;
+		order: number;
+	}>;
+};
+
+/** Style configuration for export templates */
+export type ExportStyleConfig = {
+	// Font settings
+	fontFamily?: string;
+	fontSize?: number;
+	headerFontSize?: number;
+
+	// Colors
+	primaryColor?: string;
+	secondaryColor?: string;
+	headerBackgroundColor?: string;
+	headerTextColor?: string;
+
+	// Table styling
+	tableBorderColor?: string;
+	tableBorderWidth?: number;
+	alternateRowColor?: string;
+
+	// Page settings
+	pageSize?: "A4" | "A3" | "Letter";
+	pageOrientation?: "portrait" | "landscape";
+	margins?: {
+		top: number;
+		right: number;
+		bottom: number;
+		left: number;
+	};
+
+	// Watermark
+	watermark?: {
+		enabled: boolean;
+		text: string;
+		opacity?: number;
+		fontSize?: number;
+		rotation?: number;
+	};
+};

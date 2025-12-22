@@ -1,81 +1,141 @@
 meta:
   version: "2024.12"
-  generatedAt: 2024-12-05T00:10:00Z
-  dataset: demo
+  generatedAt: 2024-12-22T00:10:00Z
+  dataset: inses
 authUsers:
   - code: ADMIN-ROOT
-    email: admin@example.com
-    name: Admin Demo
+    email: admin@inses.cm
+    name: Administrateur INSES
     password: ChangeMe123!
     role: admin
-  - code: TEACH-ALICE
-    email: alice.teacher@example.com
-    name: Alice Nkom
+  - code: TEACH-DR-MBALLA
+    email: dr.mballa@inses.cm
+    name: Dr. Mballa Jean
     password: Password123!
     role: admin
-  - code: TEACH-JAMAL
-    email: jamal.teacher@example.com
-    name: Jamal Kouassi
+  - code: TEACH-DR-NGUEMA
+    email: dr.nguema@inses.cm
+    name: Dr. Nguema Marie
     password: Password123!
     role: admin
-  - code: STUDENT-AMELIA
-    email: amelia.student@example.com
-    name: Amelia Tabe
+  - code: TEACH-INF-AKONO
+    email: inf.akono@inses.cm
+    name: Inf. Akono Patricia
+    password: Password123!
+    role: admin
+  - code: TEACH-KOMBO
+    email: kombo@inses.cm
+    name: Kombo Francis
+    password: Password123!
+    role: admin
+  - code: STUDENT-NDONG
+    email: ndong.student@inses.cm
+    name: Ndong Alain
+    password: Password123!
+    role: user
+  - code: STUDENT-EYEBE
+    email: eyebe.student@inses.cm
+    name: Eyebe Rachel
     password: Password123!
     role: user
 domainUsers:
   - code: ADMIN-ROOT
     authUserCode: ADMIN-ROOT
     businessRole: administrator
-    firstName: Admin
-    lastName: Demo
-    primaryEmail: admin@example.com
+    firstName: Administrateur
+    lastName: INSES
+    primaryEmail: admin@inses.cm
     status: active
-    organizationSlug: sgn-institution
+    organizationSlug: inses-institution
     memberRole: owner
-  - code: TEACH-ALICE
-    authUserCode: TEACH-ALICE
+  - code: TEACH-DR-MBALLA
+    authUserCode: TEACH-DR-MBALLA
     businessRole: teacher
-    firstName: Alice
-    lastName: Nkom
-    primaryEmail: alice.teacher@example.com
+    firstName: Jean
+    lastName: Mballa
+    primaryEmail: dr.mballa@inses.cm
     status: active
-    organizationSlug: sgn-institution
-  - code: TEACH-JAMAL
-    authUserCode: TEACH-JAMAL
+    organizationSlug: inses-institution
+  - code: TEACH-DR-NGUEMA
+    authUserCode: TEACH-DR-NGUEMA
     businessRole: teacher
-    firstName: Jamal
-    lastName: Kouassi
-    primaryEmail: jamal.teacher@example.com
+    firstName: Marie
+    lastName: Nguema
+    primaryEmail: dr.nguema@inses.cm
     status: active
-    organizationSlug: sgn-institution
-  - code: STUDENT-AMELIA
-    authUserCode: STUDENT-AMELIA
+    organizationSlug: inses-institution
+  - code: TEACH-INF-AKONO
+    authUserCode: TEACH-INF-AKONO
+    businessRole: teacher
+    firstName: Patricia
+    lastName: Akono
+    primaryEmail: inf.akono@inses.cm
+    status: active
+    organizationSlug: inses-institution
+  - code: TEACH-KOMBO
+    authUserCode: TEACH-KOMBO
+    businessRole: teacher
+    firstName: Francis
+    lastName: Kombo
+    primaryEmail: kombo@inses.cm
+    status: active
+    organizationSlug: inses-institution
+  - code: STUDENT-NDONG
+    authUserCode: STUDENT-NDONG
     businessRole: student
-    firstName: Amelia
-    lastName: Tabe
-    primaryEmail: amelia.student@example.com
+    firstName: Alain
+    lastName: Ndong
+    primaryEmail: ndong.student@inses.cm
+    status: active
+  - code: STUDENT-EYEBE
+    authUserCode: STUDENT-EYEBE
+    businessRole: student
+    firstName: Rachel
+    lastName: Eyebe
+    primaryEmail: eyebe.student@inses.cm
     status: active
 students:
-  - code: STUDENT-AMELIA
-    domainUserCode: STUDENT-AMELIA
-    classCode: ENG24-L1A
-    classAcademicYearCode: AY-2024
-    registrationNumber: ENG24-0001
+  - code: STUDENT-NDONG
+    domainUserCode: STUDENT-NDONG
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0001
+  - code: STUDENT-EYEBE
+    domainUserCode: STUDENT-EYEBE
+    classCode: COMPT25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0002
 enrollments:
-  - studentCode: STUDENT-AMELIA
-    classCode: ENG24-L1A
-    classAcademicYearCode: AY-2024
-    academicYearCode: AY-2024
+  - studentCode: STUDENT-NDONG
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
     status: active
+    admissionType: normal
+  - studentCode: STUDENT-EYEBE
+    classCode: COMPT25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
 studentCourseEnrollments:
-  - studentCode: STUDENT-AMELIA
-    classCourseCode: CC-ENG101-L1A
-    courseCode: ENG101
-    sourceClassCode: ENG24-L1A
-    sourceClassAcademicYearCode: AY-2024
-    academicYearCode: AY-2024
+  - studentCode: STUDENT-NDONG
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
     status: active
     attempt: 1
-    creditsAttempted: 6
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-EYEBE
+    classCourseCode: CC-COMPT101-COMPT1A
+    courseCode: COMPT101
+    sourceClassCode: COMPT25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 5
     creditsEarned: 0
