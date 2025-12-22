@@ -1058,6 +1058,11 @@
 				"actions": {
 					"import": "Importer les étudiants"
 				},
+				"instructions": {
+					"gender": "Le genre accepte : {{values}}.",
+					"admissionType": "Le type d'admission accepte : {{values}}. Renseignez les colonnes de transfert pour les admissions transfert/direct/équivalence.",
+					"date": "Les dates doivent respecter le format ISO AAAA-MM-JJ."
+				},
 				"summary": {
 					"created": "{{count}} étudiant(s) importé(s) avec succès",
 					"conflicts": {
@@ -1068,6 +1073,26 @@
 						"title": "Erreurs",
 						"item": "Ligne {{row}} : {{reason}}"
 					}
+				},
+				"errors": {
+					"invalidGender": "Genre invalide « {{value}} ». Valeurs permises : {{values}}.",
+					"invalidAdmissionType": "Type d'admission invalide « {{value}} ». Valeurs permises : {{values}}.",
+					"invalidTransferCredits": "Les crédits transférés doivent être un nombre entre 0 et 300.",
+					"invalidDate": "Date invalide pour {{field}}.",
+					"missingTransferData": "Informations de transfert manquantes : {{fields}}."
+				},
+				"fields": {
+					"dateOfBirth": "Date de naissance",
+					"admissionDate": "Date d'admission",
+					"transferInstitution": "Établissement d'origine",
+					"transferCredits": "Crédits transférés",
+					"transferLevel": "Niveau de transfert",
+					"admissionJustification": "Justification"
+				},
+				"preview": {
+					"ready": "{{count}} ligne(s) prête(s) à être importée(s).",
+					"errorsTitle": "Problèmes détectés",
+					"noValidRows": "Aucune ligne valide détectée. Corrigez les erreurs listées ci-dessus."
 				}
 			},
 			"templates": {

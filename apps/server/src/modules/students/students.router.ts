@@ -99,6 +99,12 @@ export const studentsRouter = router({
 					students: input.students.map((student) => ({
 						registrationNumber: student.registrationNumber,
 						profile: mapProfile(student) as ServiceProfileInput,
+						admissionType: student.admissionType,
+						transferInstitution: student.transferInstitution,
+						transferCredits: student.transferCredits,
+						transferLevel: student.transferLevel,
+						admissionJustification: student.admissionJustification,
+						admissionDate: student.admissionDate,
 					})),
 				},
 				ctx.institution.id,

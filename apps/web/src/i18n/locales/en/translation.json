@@ -1539,8 +1539,10 @@
 				"actions": {
 					"import": "Import students"
 				},
-				"actions": {
-					"import": "Import students"
+				"instructions": {
+					"gender": "Gender accepts: {{values}}.",
+					"admissionType": "Admission type accepts: {{values}}. Provide transfer columns for transfer/direct/equivalence admissions.",
+					"date": "Dates must use the ISO format YYYY-MM-DD."
 				},
 				"summary": {
 					"created": "{{count}} students imported successfully",
@@ -1552,6 +1554,26 @@
 						"title": "Errors",
 						"item": "Row {{row}}: {{reason}}"
 					}
+				},
+				"errors": {
+					"invalidGender": "Invalid gender \"{{value}}\". Allowed values: {{values}}.",
+					"invalidAdmissionType": "Invalid admission type \"{{value}}\". Allowed values: {{values}}.",
+					"invalidTransferCredits": "Transfer credits must be a number between 0 and 300.",
+					"invalidDate": "Invalid date for {{field}}.",
+					"missingTransferData": "Missing required transfer data: {{fields}}."
+				},
+				"fields": {
+					"dateOfBirth": "Date of birth",
+					"admissionDate": "Admission date",
+					"transferInstitution": "Transfer institution",
+					"transferCredits": "Transfer credits",
+					"transferLevel": "Transfer level",
+					"admissionJustification": "Admission justification"
+				},
+				"preview": {
+					"ready": "{{count}} row(s) ready to import.",
+					"errorsTitle": "Issues detected",
+					"noValidRows": "No valid rows detected. Check the errors above."
 				}
 			},
 			"templates": {

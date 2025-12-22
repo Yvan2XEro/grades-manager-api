@@ -129,6 +129,17 @@ type StudentForm = z.infer<ReturnType<typeof buildStudentSchema>>;
 type ExternalAdmissionForm = z.infer<
 	ReturnType<typeof buildExternalAdmissionSchema>
 >;
+const ADMISSION_TYPES = [
+	"normal",
+	"transfer",
+	"direct",
+	"equivalence",
+] as const;
+type AdmissionType = (typeof ADMISSION_TYPES)[number];
+const ADMISSION_TYPE_HINT = ADMISSION_TYPES.join(", ");
+const GENDER_VALUES = ["male", "female", "other"] as const;
+const GENDER_HINT = GENDER_VALUES.join(", ");
+
 type BulkStudent = {
 	firstName: string;
 	lastName: string;
@@ -139,6 +150,178 @@ type BulkStudent = {
 	dateOfBirth?: string;
 	placeOfBirth?: string;
 	nationality?: string;
+	admissionType?: AdmissionType;
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: string;
+};
+
+type RawStudentRow = Record<string, string | number | undefined>;
+
+const sanitizeString = (value: unknown) => {
+	if (value === undefined || value === null) return undefined;
+	const str = typeof value === "string" ? value : String(value);
+	const trimmed = str.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const buildImportRowSchema = (
+	t: TFunction,
+	parseDateValue: (value?: string | number) => string | undefined,
+) => {
+	const requiredString = (message: string) =>
+		z.preprocess(
+			(value) => sanitizeString(value) ?? "",
+			z.string().min(1, { message }),
+		);
+	const optionalString = () =>
+		z.preprocess((value) => sanitizeString(value), z.string().optional());
+	const dateField = (fieldKey: "dateOfBirth" | "admissionDate") =>
+		z
+			.union([z.string(), z.number()])
+			.optional()
+			.transform((value, ctx) => {
+				if (value === undefined || value === null || value === "")
+					return undefined;
+				const iso = parseDateValue(value);
+				if (!iso) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: t("admin.students.import.errors.invalidDate", {
+							field: t(`admin.students.import.fields.${fieldKey}`),
+						}),
+						path: [fieldKey],
+					});
+					return undefined;
+				}
+				return iso;
+			});
+	const genderField = optionalString().transform((value, ctx) => {
+		if (!value) return undefined;
+		const normalized = normalizeGender(value);
+		if (!normalized) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: t("admin.students.import.errors.invalidGender", {
+					value,
+					values: GENDER_HINT,
+				}),
+				path: ["gender"],
+			});
+			return undefined;
+		}
+		return normalized;
+	});
+	const admissionTypeField = optionalString().transform((value, ctx) => {
+		if (!value) return undefined;
+		const normalized = normalizeAdmissionType(value);
+		if (!normalized) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: t("admin.students.import.errors.invalidAdmissionType", {
+					value,
+					values: ADMISSION_TYPE_HINT,
+				}),
+				path: ["admissionType"],
+			});
+			return undefined;
+		}
+		return normalized;
+	});
+	const transferCreditsField = z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((value, ctx) => {
+			if (value === undefined || value === null || value === "")
+				return undefined;
+			const parsed =
+				typeof value === "number" ? value : Number(String(value).trim());
+			if (!Number.isFinite(parsed)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: t("admin.students.import.errors.invalidTransferCredits"),
+					path: ["transferCredits"],
+				});
+				return undefined;
+			}
+			const rounded = Math.max(0, Math.round(parsed));
+			if (rounded > 300) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: t("admin.students.import.errors.invalidTransferCredits"),
+					path: ["transferCredits"],
+				});
+				return undefined;
+			}
+			return rounded;
+		});
+
+	return z
+		.object({
+			firstName: requiredString(
+				t("admin.students.validation.firstName", {
+					defaultValue: "First name is required",
+				}),
+			),
+			lastName: requiredString(
+				t("admin.students.validation.lastName", {
+					defaultValue: "Last name is required",
+				}),
+			),
+			email: z.preprocess(
+				(value) => sanitizeString(value) ?? "",
+				z.string().email(t("admin.students.validation.email")),
+			),
+			registrationNumber: optionalString(),
+			phone: optionalString(),
+			gender: genderField,
+			dateOfBirth: dateField("dateOfBirth"),
+			placeOfBirth: optionalString(),
+			nationality: optionalString(),
+			admissionType: admissionTypeField,
+			transferInstitution: optionalString(),
+			transferCredits: transferCreditsField,
+			transferLevel: optionalString(),
+			admissionJustification: optionalString(),
+			admissionDate: dateField("admissionDate"),
+		})
+		.superRefine((data, ctx) => {
+			if (data.admissionType && data.admissionType !== "normal") {
+				const missingFields: string[] = [];
+				if (!data.transferInstitution) {
+					missingFields.push(
+						t("admin.students.import.fields.transferInstitution"),
+					);
+				}
+				if (
+					data.admissionType === "transfer" &&
+					(!data.transferCredits || data.transferCredits <= 0)
+				) {
+					missingFields.push(t("admin.students.import.fields.transferCredits"));
+				}
+				if (!data.transferLevel) {
+					missingFields.push(t("admin.students.import.fields.transferLevel"));
+				}
+				if (!data.admissionJustification) {
+					missingFields.push(
+						t("admin.students.import.fields.admissionJustification"),
+					);
+				}
+				if (!data.admissionDate) {
+					missingFields.push(t("admin.students.import.fields.admissionDate"));
+				}
+				if (missingFields.length > 0) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: t("admin.students.import.errors.missingTransferData", {
+							fields: missingFields.join(", "),
+						}),
+					});
+				}
+			}
+		});
 };
 
 const getStudentName = (student: StudentRow) =>
@@ -155,6 +338,18 @@ const normalizeGender = (value?: string | null) => {
 	return undefined;
 };
 
+const normalizeAdmissionType = (
+	value?: string | null,
+): AdmissionType | undefined => {
+	if (!value) return undefined;
+	const normalized = value.trim().toLowerCase();
+	if (ADMISSION_TYPES.includes(normalized as AdmissionType)) {
+		return normalized as AdmissionType;
+	}
+	if (normalized === "transfert") return "transfer";
+	return undefined;
+};
+
 const formatStudentGender = (
 	t: TFunction,
 	gender?: StudentRow["profile"]["gender"],
@@ -168,13 +363,6 @@ const formatDate = (value?: Date | string | null) => {
 	const date = value instanceof Date ? value : new Date(value);
 	if (Number.isNaN(date.getTime())) return "—";
 	return format(date, "PPP");
-};
-
-const toInputDate = (value?: Date | string | null) => {
-	if (!value) return "";
-	const date = value instanceof Date ? value : new Date(value);
-	if (Number.isNaN(date.getTime())) return "";
-	return date.toISOString().split("T")[0];
 };
 
 const toISODateFromInput = (value?: string) => {
@@ -218,6 +406,10 @@ export default function StudentManagement() {
 		errors: Array<{ row: number; reason: string }>;
 	} | null>(null);
 	const [importFile, setImportFile] = useState<File | null>(null);
+	const [importPreview, setImportPreview] = useState<{
+		rows: BulkStudent[];
+		errors: Array<{ row: number; reason: string }>;
+	} | null>(null);
 	const [importFileKey, setImportFileKey] = useState(0);
 	const [ledgerStudent, setLedgerStudent] = useState<StudentRow | null>(null);
 
@@ -405,28 +597,33 @@ export default function StudentManagement() {
 	};
 
 	const handleDownloadTemplate = () => {
-		const header =
-			"firstName,lastName,email,phone,dateOfBirth,placeOfBirth,gender,nationality,registrationNumber\n";
-		const csvBlob = new Blob([header], { type: "text/csv;charset=utf-8" });
+		const headers = [
+			"firstName",
+			"lastName",
+			"email",
+			"phone",
+			"dateOfBirth",
+			"placeOfBirth",
+			"gender",
+			"nationality",
+			"registrationNumber",
+			"admissionType",
+			"transferInstitution",
+			"transferCredits",
+			"transferLevel",
+			"admissionDate",
+			"admissionJustification",
+		];
+		const csvBlob = new Blob([`${headers.join(",")}\n`], {
+			type: "text/csv;charset=utf-8",
+		});
 		const a = document.createElement("a");
 		a.href = URL.createObjectURL(csvBlob);
 		a.download = `${t("admin.students.templates.filePrefix")}.csv`;
 		a.click();
 
 		const wb = XLSX.utils.book_new();
-		const ws = XLSX.utils.aoa_to_sheet([
-			[
-				"firstName",
-				"lastName",
-				"email",
-				"phone",
-				"dateOfBirth",
-				"placeOfBirth",
-				"gender",
-				"nationality",
-				"registrationNumber",
-			],
-		]);
+		const ws = XLSX.utils.aoa_to_sheet([headers]);
 		XLSX.utils.book_append_sheet(
 			wb,
 			ws,
@@ -435,7 +632,66 @@ export default function StudentManagement() {
 		XLSX.writeFile(wb, `${t("admin.students.templates.filePrefix")}.xlsx`);
 	};
 
-	const handleImport = async (file: File) => {
+	const parseImportFile = async (file: File) => {
+		const ext = file.name.split(".").pop()?.toLowerCase();
+		const rows: BulkStudent[] = [];
+		const errors: Array<{ row: number; reason: string }> = [];
+
+		const pushIssues = (issues: z.ZodIssue[], rowNumber: number) => {
+			issues.forEach((issue) => {
+				errors.push({
+					row: rowNumber,
+					reason: issue.message ?? t("admin.students.import.invalidFormat"),
+				});
+			});
+		};
+
+		if (ext === "csv") {
+			const text = await file.text();
+			const parsed = Papa.parse<Record<string, string>>(text, {
+				header: true,
+				skipEmptyLines: true,
+			});
+			const parseCsvDate = (value?: string | number) => {
+				if (typeof value === "number") {
+					return toISODateFromSheet(value);
+				}
+				return toISODateFromInput(
+					typeof value === "string" ? value : undefined,
+				);
+			};
+			const schema = buildImportRowSchema(t, parseCsvDate);
+			parsed.data.forEach((row, idx) => {
+				const result = schema.safeParse(row as RawStudentRow);
+				if (result.success) {
+					rows.push(result.data);
+				} else {
+					pushIssues(result.error.issues, idx + 2);
+				}
+			});
+		} else {
+			const buf = await file.arrayBuffer();
+			const wb = XLSX.read(buf);
+			const sheet = wb.Sheets[wb.SheetNames[0]];
+			const json =
+				XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet);
+			const parseSheetDate = (value?: string | number) =>
+				toISODateFromSheet(value);
+			const schema = buildImportRowSchema(t, parseSheetDate);
+			json.forEach((row, idx) => {
+				const result = schema.safeParse(row as RawStudentRow);
+				if (result.success) {
+					rows.push(result.data);
+				} else {
+					pushIssues(result.error.issues, idx + 2);
+				}
+			});
+		}
+
+		return { rows, errors };
+	};
+
+	const handleImport = async () => {
 		if (!importClass) {
 			toast.error(
 				t("admin.students.import.classLabel", {
@@ -444,81 +700,37 @@ export default function StudentManagement() {
 			);
 			return;
 		}
-		const ext = file.name.split(".").pop()?.toLowerCase();
-		const rows: BulkStudent[] = [];
-		const formatErrors: Array<{ row: number; reason: string }> = [];
-
-		if (ext === "csv") {
-			const text = await file.text();
-			const parsed = Papa.parse<Record<string, string>>(text, {
-				header: true,
-				skipEmptyLines: true,
-			});
-			parsed.data.forEach((row, idx) => {
-				if (row.firstName && row.lastName && row.email) {
-					rows.push({
-						firstName: row.firstName,
-						lastName: row.lastName,
-						email: row.email,
-						registrationNumber: row.registrationNumber?.trim()
-							? row.registrationNumber.trim()
-							: undefined,
-						phone: row.phone || undefined,
-						gender: normalizeGender(row.gender),
-						dateOfBirth: row.dateOfBirth
-							? toISODateFromInput(row.dateOfBirth)
-							: undefined,
-						placeOfBirth: row.placeOfBirth || undefined,
-						nationality: row.nationality || undefined,
-					});
-				} else {
-					formatErrors.push({
-						row: idx + 2,
-						reason: t("admin.students.import.invalidFormat"),
-					});
-				}
-			});
-		} else {
-			const buf = await file.arrayBuffer();
-			const wb = XLSX.read(buf);
-			const sheet = wb.Sheets[wb.SheetNames[0]];
-			const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet);
-			json.forEach((row, idx) => {
-				if (row.firstName && row.lastName && row.email) {
-					rows.push({
-						firstName: row.firstName,
-						lastName: row.lastName,
-						email: row.email,
-						registrationNumber: row.registrationNumber?.trim()
-							? row.registrationNumber.trim()
-							: undefined,
-						phone: row.phone || undefined,
-						gender: normalizeGender(row.gender),
-						dateOfBirth: toISODateFromSheet(
-							row.dateOfBirth as string | number | undefined,
-						),
-						placeOfBirth: row.placeOfBirth || undefined,
-						nationality: row.nationality || undefined,
-					});
-				} else {
-					formatErrors.push({
-						row: idx + 2,
-						reason: t("admin.students.import.invalidFormat"),
-					});
-				}
-			});
-		}
-
-		if (!rows.length) {
-			toast.error(t("admin.students.import.invalidFormat"));
+		if (!importFile) {
+			toast.error(
+				t("admin.students.import.fileLabel", {
+					defaultValue: "Upload CSV or XLSX file",
+				}),
+			);
 			return;
 		}
+		let preview = importPreview;
+		if (!preview) {
+			try {
+				preview = await parseImportFile(importFile);
+				setImportPreview(preview);
+			} catch (error) {
+				console.error(error);
+				toast.error(t("admin.students.import.invalidFormat"));
+				return;
+			}
+		}
+		if (!preview.rows.length) {
+			toast.error(t("admin.students.import.preview.noValidRows"));
+			return;
+		}
+
+		const formatErrors = preview.errors;
 
 		bulkMutation.mutate(
 			{
 				classId: importClass,
 				registrationFormatId: importFormatId || undefined,
-				students: rows,
+				students: preview.rows,
 			},
 			{
 				onSuccess: (res) => {
@@ -533,6 +745,7 @@ export default function StudentManagement() {
 					if (formatErrors.length === 0) {
 						toast.success(t("admin.students.toast.createSuccess"));
 					}
+					setImportPreview(null);
 					setImportFile(null);
 					setImportFileKey((key) => key + 1);
 				},
@@ -547,6 +760,7 @@ export default function StudentManagement() {
 		setImportFormatId("");
 		setImportResult(null);
 		setImportFile(null);
+		setImportPreview(null);
 		setImportFileKey((key) => key + 1);
 		form.reset();
 		externalForm.reset();
@@ -807,7 +1021,7 @@ export default function StudentManagement() {
 			</Drawer>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
-				<DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+				<DialogContent className=" overflow-y-auto max-h-[90vh] min-w-[60vw] ">
 					<DialogHeader>
 						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
 					</DialogHeader>
@@ -931,7 +1145,9 @@ export default function StudentManagement() {
 											name="gender"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>{t("admin.students.form.gender")}</FormLabel>
+													<FormLabel>
+														{t("admin.students.form.gender")}
+													</FormLabel>
 													<Select
 														onValueChange={field.onChange}
 														value={field.value || ""}
@@ -990,7 +1206,9 @@ export default function StudentManagement() {
 											name="classId"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>{t("admin.students.form.class")}</FormLabel>
+													<FormLabel>
+														{t("admin.students.form.class")}
+													</FormLabel>
 													<Select
 														onValueChange={field.onChange}
 														value={field.value}
@@ -1058,7 +1276,9 @@ export default function StudentManagement() {
 																		: value,
 																)
 															}
-															value={field.value ?? NO_REGISTRATION_FORMAT_VALUE}
+															value={
+																field.value ?? NO_REGISTRATION_FORMAT_VALUE
+															}
 														>
 															<FormControl>
 																<SelectTrigger>
@@ -1073,7 +1293,9 @@ export default function StudentManagement() {
 																</SelectTrigger>
 															</FormControl>
 															<SelectContent>
-																<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
+																<SelectItem
+																	value={NO_REGISTRATION_FORMAT_VALUE}
+																>
 																	{t(
 																		"admin.students.form.registrationFormatPlaceholder",
 																		{
@@ -1213,10 +1435,76 @@ export default function StudentManagement() {
 												const f = e.target.files?.[0] ?? null;
 												setImportFile(f);
 												setImportResult(null);
+												setImportPreview(null);
+												if (f) {
+													void (async () => {
+														try {
+															const preview = await parseImportFile(f);
+															setImportPreview(preview);
+															if (
+																!preview.rows.length &&
+																preview.errors.length > 0
+															) {
+																toast.error(
+																	t(
+																		"admin.students.import.preview.noValidRows",
+																	),
+																);
+															}
+														} catch (error) {
+															console.error(error);
+															toast.error(
+																t("admin.students.import.invalidFormat"),
+															);
+														}
+													})();
+												}
 											}}
 											disabled={!importClass || bulkMutation.isPending}
 										/>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.gender", {
+												values: GENDER_HINT,
+											})}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.admissionType", {
+												values: ADMISSION_TYPE_HINT,
+											})}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.date")}
+										</p>
 									</div>
+									{importPreview && (
+										<div className="space-y-2 rounded-md border p-3 text-sm">
+											<p>
+												{t("admin.students.import.preview.ready", {
+													count: importPreview.rows.length,
+												})}
+											</p>
+											{importPreview.errors.length > 0 && (
+												<div className="space-y-1">
+													<p className="font-semibold">
+														{t("admin.students.import.preview.errorsTitle")}
+													</p>
+													<ul className="ml-4 list-disc space-y-0.5">
+														{importPreview.errors.map((error) => (
+															<li key={`${error.row}-${error.reason}`}>
+																{t(
+																	"admin.students.import.summary.errors.item",
+																	{
+																		row: error.row,
+																		reason: error.reason,
+																	},
+																)}
+															</li>
+														))}
+													</ul>
+												</div>
+											)}
+										</div>
+									)}
 									<div className="flex flex-wrap gap-2">
 										<Button
 											type="button"
@@ -1230,7 +1518,13 @@ export default function StudentManagement() {
 											type="button"
 											onClick={() => {
 												if (importFile) {
-													handleImport(importFile);
+													void handleImport();
+												} else {
+													toast.error(
+														t("admin.students.import.fileLabel", {
+															defaultValue: "Upload CSV or XLSX file",
+														}),
+													);
 												}
 											}}
 											disabled={

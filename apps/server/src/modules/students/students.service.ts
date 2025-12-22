@@ -35,6 +35,17 @@ type CreateStudentInput = {
 	admissionDate?: Date;
 };
 
+type BulkStudentInput = {
+	registrationNumber?: string;
+	profile: StudentProfileInput;
+	admissionType?: schema.AdmissionType;
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: Date;
+};
+
 const conflictMarkers = [
 	"uq_students_registration",
 	"uq_domain_users_email",
@@ -167,10 +178,7 @@ export async function bulkCreateStudents(
 	data: {
 		classId: string;
 		registrationFormatId?: string;
-		students: Array<{
-			registrationNumber?: string;
-			profile: StudentProfileInput;
-		}>;
+		students: BulkStudentInput[];
 	},
 	institutionId: string,
 ) {
@@ -185,6 +193,8 @@ export async function bulkCreateStudents(
 	}> = [];
 	const errors: Array<{ row: number; reason: string }> = [];
 	let createdCount = 0;
+	const pendingLedgerCredits: Array<{ studentId: string; credits: number }> =
+		[];
 
 	await transaction(async (tx) => {
 		for (let i = 0; i < data.students.length; i++) {
@@ -206,6 +216,8 @@ export async function bulkCreateStudents(
 					.insert(schema.domainUsers)
 					.values(buildProfilePayload(s.profile))
 					.returning();
+				const admissionType = s.admissionType ?? "normal";
+				const transferCredits = s.transferCredits ?? 0;
 				profileId = profile.id;
 				const [student] = await tx
 					.insert(schema.students)
@@ -222,8 +234,30 @@ export async function bulkCreateStudents(
 					academicYearId: klass.academicYear,
 					institutionId: klass.institutionId,
 					status: "active",
+					admissionType,
+					transferInstitution: s.transferInstitution ?? null,
+					transferCredits,
+					transferLevel: s.transferLevel ?? null,
+					admissionJustification: s.admissionJustification ?? null,
+					admissionDate: s.admissionDate ?? null,
+					admissionMetadata:
+						admissionType !== "normal"
+							? {
+									admissionType,
+									transferInstitution: s.transferInstitution,
+									transferCredits,
+									transferLevel: s.transferLevel,
+									justification: s.admissionJustification,
+								}
+							: {},
 				});
 				createdCount++;
+				if (transferCredits > 0) {
+					pendingLedgerCredits.push({
+						studentId: student.id,
+						credits: transferCredits,
+					});
+				}
 			} catch (error) {
 				if (profileId) {
 					await tx
@@ -240,12 +274,21 @@ export async function bulkCreateStudents(
 				conflicts.push({
 					row: i + 1,
 					email: s.profile.primaryEmail,
-					registrationNumber: attemptedRegistration ?? s.registrationNumber,
+								registrationNumber: attemptedRegistration ?? s.registrationNumber,
 					reason,
 				});
 			}
 		}
 	});
+
+	for (const entry of pendingLedgerCredits) {
+		await studentCreditLedgerService.applyDelta(
+			entry.studentId,
+			klass.academicYear,
+			0,
+			entry.credits,
+		);
+	}
 
 	return { createdCount, conflicts, errors };
 }

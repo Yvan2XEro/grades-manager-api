@@ -77,9 +77,20 @@ export const bulkCreateSchema = z.object({
 	classId: z.string(),
 	registrationFormatId: z.string().optional(),
 	students: z.array(
-		profileSchema.extend({
-			registrationNumber: z.string().min(1).optional(),
-		}),
+		profileSchema
+			.extend({
+				registrationNumber: z.string().min(1).optional(),
+			})
+			.merge(
+				externalAdmissionFieldsSchema.pick({
+					admissionType: true,
+					transferInstitution: true,
+					transferCredits: true,
+					transferLevel: true,
+					admissionJustification: true,
+					admissionDate: true,
+				}),
+			),
 	),
 });
 

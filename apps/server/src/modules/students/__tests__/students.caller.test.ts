@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -75,6 +76,56 @@ describe("students router", () => {
 		});
 		expect(res.createdCount).toBe(1);
 		expect(res.conflicts).toHaveLength(1);
+	});
+
+	it("bulk imports transfer students including credits", async () => {
+		const admin = createCaller(asAdmin());
+		const klass = await createClass();
+		const transferEmail = "bulk-transfer@example.com";
+		const transferCredits = 42;
+		const admissionDate = new Date("2024-03-01");
+		const res = await admin.students.bulkCreate({
+			classId: klass.id,
+			students: [
+				{
+					...baseStudent,
+					email: transferEmail,
+					registrationNumber: "TRANSFER-001",
+					admissionType: "transfer",
+					transferInstitution: "External University",
+					transferCredits,
+					transferLevel: "L3",
+					admissionJustification: "Validated by committee",
+					admissionDate,
+				},
+			],
+		});
+		expect(res.createdCount).toBe(1);
+		const list = await admin.students.list({ classId: klass.id });
+		const created = list.items.find(
+			(student) => student.profile.primaryEmail === transferEmail,
+		);
+		expect(created).toBeTruthy();
+		if (!created) throw new Error("Student not created");
+
+		const enrollment = await db.query.enrollments.findFirst({
+			where: eq(schema.enrollments.studentId, created.id),
+		});
+		expect(enrollment?.admissionType).toBe("transfer");
+		expect(enrollment?.transferInstitution).toBe("External University");
+		expect(enrollment?.transferCredits).toBe(transferCredits);
+		expect(enrollment?.transferLevel).toBe("L3");
+		expect(enrollment?.admissionJustification).toBe(
+			"Validated by committee",
+		);
+		expect(
+			new Date(enrollment?.admissionDate ?? "").toISOString().slice(0, 10),
+		).toBe(admissionDate.toISOString().slice(0, 10));
+
+		const ledger = await db.query.studentCreditLedgers.findFirst({
+			where: eq(schema.studentCreditLedgers.studentId, created.id),
+		});
+		expect(ledger?.creditsEarned).toBe(transferCredits);
 	});
 
 	it("fails when class does not exist", async () => {
