@@ -14,6 +14,10 @@ export const listSchema = z.object({
 	classCourseId: z.string().optional(),
 	dateFrom: z.coerce.date().optional(),
 	dateTo: z.coerce.date().optional(),
+	academicYearId: z.string().optional(),
+	query: z.string().trim().min(1).optional(),
+	classId: z.string().optional(),
+	semesterId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

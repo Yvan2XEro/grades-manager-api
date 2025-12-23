@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, inArray, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -149,59 +149,64 @@ export async function search(opts: {
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 20;
-	const searchCondition = or(
-		ilike(schema.classCourses.code, `%${opts.query}%`),
-		ilike(schema.courses.code, `%${opts.query}%`),
-		ilike(schema.courses.name, `%${opts.query}%`),
-	);
-	const scopedSearch = and(
+	const searchTerm = `%${opts.query}%`;
+	const filters = [
 		eq(schema.classCourses.institutionId, opts.institutionId),
-		searchCondition,
-	);
-	let condition: ReturnType<typeof and> | ReturnType<typeof or> = scopedSearch;
-	if (opts.classId) {
-		condition = and(eq(schema.classCourses.class, opts.classId), condition);
-	}
-	if (opts.classCourseIds && opts.classCourseIds.length > 0) {
-		condition = and(
-			inArray(schema.classCourses.id, opts.classCourseIds),
-			condition,
-		);
-	}
+		or(
+			ilike(schema.classCourses.code, searchTerm),
+			ilike(schema.courses.code, searchTerm),
+			ilike(schema.courses.name, searchTerm),
+			ilike(schema.classes.name, searchTerm),
+		),
+		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
+		opts.classCourseIds && opts.classCourseIds.length > 0
+			? inArray(schema.classCourses.id, opts.classCourseIds)
+			: undefined,
+	].filter(Boolean) as Array<ReturnType<typeof and> | ReturnType<typeof or>>;
+	const condition =
+		filters.length === 0
+			? undefined
+			: filters.length === 1
+				? filters[0]
+				: and(...filters);
+	const rows = await db
+		.select({
+			classCourse: schema.classCourses,
+			className: schema.classes.name,
+			courseName: schema.courses.name,
+			courseCode: schema.courses.code,
+			teacherFirstName: schema.domainUsers.firstName,
+			teacherLastName: schema.domainUsers.lastName,
+			teacherEmail: schema.domainUsers.primaryEmail,
+		})
+		.from(schema.classCourses)
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.leftJoin(
+			schema.domainUsers,
+			eq(schema.domainUsers.id, schema.classCourses.teacher),
+		)
+		.where(condition)
+		.orderBy(asc(schema.classCourses.code))
+		.limit(limit);
 
-	const items = await db.query.classCourses.findMany({
-		where: condition,
-		orderBy: (classCourses, { asc }) => asc(classCourses.code),
-		limit,
-		with: {
-			courseRef: {
-				columns: {
-					name: true,
-					code: true,
-				},
-			},
-			teacherRef: {
-				columns: {
-					firstName: true,
-					lastName: true,
-					primaryEmail: true,
-				},
-			},
-		},
-	});
-
-	return items.map((row) => ({
-		id: row.id,
-		code: row.code,
-		class: row.class,
-		course: row.course,
-		teacher: row.teacher,
-		weeklyHours: row.weeklyHours,
-		createdAt: row.createdAt,
-		semesterId: row.semesterId,
-		courseName: row.courseRef?.name,
-		courseCode: row.courseRef?.code,
-		teacherFirstName: row.teacherRef?.firstName,
-		teacherLastName: row.teacherRef?.lastName,
+	return rows.map((row) => ({
+		id: row.classCourse.id,
+		code: row.classCourse.code,
+		class: row.classCourse.class,
+		className: row.className ?? null,
+		course: row.classCourse.course,
+		teacher: row.classCourse.teacher,
+		weeklyHours: row.classCourse.weeklyHours,
+		createdAt: row.classCourse.createdAt,
+		semesterId: row.classCourse.semesterId,
+		courseName: row.courseName ?? null,
+		courseCode: row.courseCode ?? null,
+		teacherFirstName: row.teacherFirstName ?? null,
+		teacherLastName: row.teacherLastName ?? null,
+		teacherPrimaryEmail: row.teacherEmail ?? null,
 	}));
 }

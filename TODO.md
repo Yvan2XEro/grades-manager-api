@@ -73,6 +73,12 @@
     - [ ] Update teacher dashboards/menus to expose only assigned/delegated courses, highlight delegated ones, and log access events.
       - [x] Highlight delegated courses directly inside the dashboard/course listings (badge parity with `/teacher/courses`).
       - [x] Log delegated course access events for auditability.
+- [ ] **Admin exam enhancements (see `docs/admin-exam-enhancements.md`)**
+  - [x] Add a “Review grades” action to `/admin/exams` rows linking to `/teacher/grades/:classCourseId?examId=...`.
+  - [x] Build `DebouncedSearchField` (shared debounced search input with clear affordance).
+  - [x] Build `AcademicYearSelect` (shared dropdown that defaults to the active academic year).
+  - [x] Extend `exams.list` with `query`, `academicYearId`, cursor pagination, plus regression tests.
+  - [x] Wire `/admin/exams` to the new filters and backend pagination (load-more UX).
 - [x] **Exam scheduler scoping by semester**
   - [x] Extend preview/schedule inputs to require `semesterId` and filter classes/class-courses accordingly.
   - [x] Update admin scheduler form with semester dropdown and scoped class preview list.

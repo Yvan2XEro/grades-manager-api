@@ -782,7 +782,17 @@
 			"title": "Gestion des évaluations",
 			"subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
 			"actions": {
-				"add": "Ajouter une évaluation"
+				"add": "Ajouter une évaluation",
+				"reviewGrades": "Consulter les notes"
+			},
+			"filters": {
+				"academicYear": "Année académique",
+				"search": "Recherche",
+				"searchPlaceholder": "Rechercher des évaluations, classes ou cours...",
+				"class": "Classe",
+				"classPlaceholder": "Toutes les classes",
+				"semester": "Semestre",
+				"semesterPlaceholder": "Tous les semestres"
 			},
 			"empty": {
 				"title": "Aucune évaluation",
@@ -830,6 +840,9 @@
 			"delete": {
 				"title": "Supprimer l'évaluation",
 				"message": "La suppression de cette évaluation retirera également les notes associées."
+			},
+			"pagination": {
+				"loadMore": "Charger plus d'évaluations"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",

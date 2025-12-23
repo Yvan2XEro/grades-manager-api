@@ -364,6 +364,7 @@ const GradeEntry: React.FC = () => {
 	const rosterStudents = rosterQuery.data ?? [];
 
 	const handleExamChange = (examId: string) => {
+		reset({});
 		setSelectedExam(examId);
 	};
 

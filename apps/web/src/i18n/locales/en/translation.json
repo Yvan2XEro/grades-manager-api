@@ -509,7 +509,17 @@
 			"title": "Exam Management",
 			"subtitle": "Create and manage course exams",
 			"actions": {
-				"add": "Add Exam"
+				"add": "Add Exam",
+				"reviewGrades": "Review grades"
+			},
+			"filters": {
+				"academicYear": "Academic year",
+				"search": "Search",
+				"searchPlaceholder": "Search exams, classes, or courses...",
+				"class": "Class",
+				"classPlaceholder": "All classes",
+				"semester": "Semester",
+				"semesterPlaceholder": "All semesters"
 			},
 			"empty": {
 				"title": "No exams found",
@@ -564,6 +574,9 @@
 			"delete": {
 				"title": "Delete Exam",
 				"message": "Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades."
+			},
+			"pagination": {
+				"loadMore": "Load more exams"
 			}
 		},
 		"workflow": {

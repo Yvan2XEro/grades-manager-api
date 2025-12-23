@@ -68,6 +68,7 @@ interface Resources {
 				"title": "My Courses";
 				"subtitle": "Manage your assigned courses and grades";
 				"delegatedBadge": "Delegated";
+				"delegatedDashboardBadge": "Delegated";
 				"actions": {
 					"viewGrades": "View Grades";
 				};
@@ -510,6 +511,16 @@ interface Resources {
 				"subtitle": "Create and manage course exams";
 				"actions": {
 					"add": "Add Exam";
+					"reviewGrades": "Review grades";
+				};
+				"filters": {
+					"academicYear": "Academic year";
+					"search": "Search";
+					"searchPlaceholder": "Search exams, classes, or courses...";
+					"class": "Class";
+					"classPlaceholder": "All classes";
+					"semester": "Semester";
+					"semesterPlaceholder": "All semesters";
 				};
 				"empty": {
 					"title": "No exams found";
@@ -564,6 +575,9 @@ interface Resources {
 				"delete": {
 					"title": "Delete Exam";
 					"message": "Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades.";
+				};
+				"pagination": {
+					"loadMore": "Load more exams";
 				};
 			};
 			"workflow": {

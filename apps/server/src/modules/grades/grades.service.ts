@@ -144,7 +144,6 @@ export async function deleteNote(
 		actor,
 	});
 	ensureExamEditable(exam);
-	await repo.remove(id);
 	await maybeLogDelegateGradeEdit({
 		access,
 		actor,
@@ -154,6 +153,7 @@ export async function deleteNote(
 		gradeId: grade.id,
 		scoreBefore: Number(grade.score),
 	});
+	await repo.remove(id);
 }
 
 export async function listByExam(

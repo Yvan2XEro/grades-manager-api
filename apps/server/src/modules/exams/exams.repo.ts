@@ -1,4 +1,4 @@
-import { and, eq, gt, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gt, gte, ilike, inArray, lte, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -47,31 +47,69 @@ export async function list(opts: {
 	dateTo?: Date;
 	cursor?: string;
 	limit?: number;
+	query?: string;
+	academicYearId?: string;
 }) {
 	const limit = opts.limit ?? 50;
-	let condition: unknown = eq(schema.exams.institutionId, opts.institutionId);
-	if (opts.classCourseId) {
-		const classCond = eq(schema.exams.classCourse, opts.classCourseId);
-		condition = condition ? and(condition, classCond) : classCond;
-	}
-	if (opts.dateFrom) {
-		const c = gte(schema.exams.date, opts.dateFrom);
-		condition = condition ? and(condition, c) : c;
-	}
-	if (opts.dateTo) {
-		const c = lte(schema.exams.date, opts.dateTo);
-		condition = condition ? and(condition, c) : c;
-	}
-	if (opts.cursor) {
-		const cursorCond = gt(schema.exams.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
-	}
-	const items = await db
-		.select()
+	const conditions = [
+		eq(schema.exams.institutionId, opts.institutionId),
+		opts.classCourseId ? eq(schema.exams.classCourse, opts.classCourseId) : undefined,
+		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
+		opts.dateTo ? lte(schema.exams.date, opts.dateTo) : undefined,
+		opts.cursor ? gt(schema.exams.id, opts.cursor) : undefined,
+		opts.academicYearId
+			? eq(schema.classes.academicYear, opts.academicYearId)
+			: undefined,
+		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
+		opts.semesterId ? eq(schema.classes.semesterId, opts.semesterId) : undefined,
+		opts.query
+			? or(
+					ilike(schema.exams.name, `%${opts.query}%`),
+					ilike(schema.classCourses.code, `%${opts.query}%`),
+					ilike(schema.classes.name, `%${opts.query}%`),
+					ilike(schema.courses.name, `%${opts.query}%`),
+				)
+			: undefined,
+	].filter(Boolean) as Array<ReturnType<typeof and> | ReturnType<typeof or>>;
+	const condition =
+		conditions.length === 0
+			? undefined
+			: conditions.length === 1
+				? conditions[0]
+				: and(...conditions);
+	const rows = await db
+		.select({
+			exam: schema.exams,
+			classCourseId: schema.classCourses.id,
+			classCourseCode: schema.classCourses.code,
+			classId: schema.classes.id,
+			className: schema.classes.name,
+			courseId: schema.courses.id,
+			courseName: schema.courses.name,
+		})
 		.from(schema.exams)
+		.innerJoin(
+			schema.classCourses,
+			eq(schema.classCourses.id, schema.exams.classCourse),
+		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
 		.where(condition)
-		.orderBy(schema.exams.id)
+		.orderBy(asc(schema.exams.id))
 		.limit(limit);
+	const items = rows.map((row) => ({
+		...row.exam,
+		classCourse: row.exam.classCourse,
+		classCourseId: row.classCourseId,
+		classCourseCode: row.classCourseCode,
+		classId: row.classId,
+		className: row.className,
+		courseId: row.courseId,
+		courseName: row.courseName,
+	}));
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
 	return { items, nextCursor };

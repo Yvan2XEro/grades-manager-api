@@ -167,11 +167,11 @@ const Sidebar: React.FC = () => {
 					icon: <TrendingUp className="h-5 w-5" />,
 					labelKey: "navigation.sidebar.admin.promotionRules",
 				},
-				{
-					to: "/admin/student-promotion",
-					icon: <ArrowUpRight className="h-5 w-5" />,
-					labelKey: "navigation.sidebar.admin.studentPromotion",
-				},
+				// {
+				// 	to: "/admin/student-promotion",
+				// 	icon: <ArrowUpRight className="h-5 w-5" />,
+				// 	labelKey: "navigation.sidebar.admin.studentPromotion",
+				// },
 				{
 					to: "/admin/rules",
 					icon: <FileCog className="h-5 w-5" />,
