@@ -235,7 +235,7 @@ export function calculateSuccessRate(
  * Format number to French locale (XX,XX)
  */
 export function formatNumber(num: number | null, decimals = 2): string {
-	if (num === null) return "ABS";
+	if (!num) return "ABS";
 	return num.toFixed(decimals).replace(".", ",");
 }
 

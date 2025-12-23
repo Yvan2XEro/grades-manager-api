@@ -302,35 +302,26 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if headerConfig.showInstitutionName}}
-                    {{#if university_name_fr}}
-                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showFacultyName}}
-                    {{#if faculty_name_fr}}
-                    <h2>{{faculty_name_fr}}</h2>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showInstitutionName}}
+            
+                    <h1>UNIVERSITE DE DOUALA / UNIVERSITY OF DOUALA</h1>
+                  
+                    <h2>FACULTE DE MEDECINE ET DES SCIENCES PHARMACEUTIQUES</h2>
+                  
                 <h2>{{name_fr}} / {{name_en}}</h2>
-                {{/if}}
-
+               
                 {{#if headerConfig.showLogo}}
                 <div class="logos">
-                    {{#if university_logo_url}}
+                   
                     <div class="logo-box">
-                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                        <img src="https://drive.google.com/file/d/1m8EzBd-dbpOx9YU35-x_YH56NafA3rY1/view?usp=sharing" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
                     </div>
-                    {{/if}}
+                    <div class="logo-box">
+                        <img src="https://drive.google.com/file/d/1817IHmazv9cZQNf_bJHuUo5Jfi9xTsYM/view?usp=sharing" alt="Logo faculté" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                
                     {{#if logo_url}}
                     <div class="logo-box">
                         <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
-                    </div>
-                    {{else}}
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>INSTITUTION</div>
                     </div>
                     {{/if}}
                 </div>
