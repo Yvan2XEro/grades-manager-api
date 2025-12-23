@@ -1010,6 +1010,118 @@ export const promotionExecutionResults = pgTable(
 	],
 );
 
+/** Delegated editors allowed to modify specific exam grades. */
+export const examGradeEditors = pgTable(
+	"exam_grade_editors",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		editorProfileId: text("editor_profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		grantedByProfileId: text("granted_by_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_exam_grade_editor").on(t.examId, t.editorProfileId),
+		index("idx_exam_grade_editors_exam").on(t.examId),
+		index("idx_exam_grade_editors_editor").on(t.editorProfileId),
+	],
+);
+
+export const gradeEditLogActions = ["write", "delete", "import"] as const;
+export type GradeEditLogAction = (typeof gradeEditLogActions)[number];
+
+export const gradeEditActorRoles = ["admin", "teacher", "delegate"] as const;
+export type GradeEditActorRole = (typeof gradeEditActorRoles)[number];
+
+/** Audit trail entries when grades are edited (especially by delegates). */
+export const gradeEditLogs = pgTable(
+	"grade_edit_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		examId: text("exam_id").references(() => exams.id, {
+			onDelete: "set null",
+		}),
+		classCourseId: text("class_course_id").references(
+			() => classCourses.id,
+			{ onDelete: "set null" },
+		),
+		studentId: text("student_id").references(() => students.id, {
+			onDelete: "set null",
+		}),
+		gradeId: text("grade_id").references(() => grades.id, {
+			onDelete: "set null",
+		}),
+		actorProfileId: text("actor_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		actorRole: text("actor_role")
+			.$type<GradeEditActorRole>()
+			.notNull(),
+		isDelegate: boolean("is_delegate").notNull().default(false),
+		action: text("action")
+			.$type<GradeEditLogAction>()
+			.notNull(),
+		scoreBefore: numeric("score_before", { precision: 5, scale: 2 }),
+		scoreAfter: numeric("score_after", { precision: 5, scale: 2 }),
+		metadata: jsonb("metadata")
+			.$type<Record<string, unknown>>()
+			.default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_grade_edit_logs_exam").on(t.examId),
+		index("idx_grade_edit_logs_actor").on(t.actorProfileId),
+		index("idx_grade_edit_logs_institution").on(t.institutionId),
+	],
+);
+
+export const classCourseAccessSources = ["list", "search"] as const;
+export type ClassCourseAccessSource = (typeof classCourseAccessSources)[number];
+
+/** Audit trail for delegated course navigation events. */
+export const classCourseAccessLogs = pgTable(
+	"class_course_access_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		actorProfileId: text("actor_profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		source: text("source")
+			.$type<ClassCourseAccessSource>()
+			.notNull(),
+		isDelegate: boolean("is_delegate").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_class_course_access_institution").on(t.institutionId),
+		index("idx_class_course_access_actor").on(t.actorProfileId),
+		index("idx_class_course_access_course").on(t.classCourseId),
+	],
+);
+
 /** Cached yearly promotion facts per student. */
 export const studentPromotionSummaries = pgTable(
 	"student_promotion_summaries",
@@ -1576,6 +1688,8 @@ export type PromotionExecutionResult = InferSelectModel<
 export type NewPromotionExecutionResult = InferInsertModel<
 	typeof promotionExecutionResults
 >;
+export type ExamGradeEditor = InferSelectModel<typeof examGradeEditors>;
+export type NewExamGradeEditor = InferInsertModel<typeof examGradeEditors>;
 export type StudentPromotionSummary = InferSelectModel<
 	typeof studentPromotionSummaries
 >;

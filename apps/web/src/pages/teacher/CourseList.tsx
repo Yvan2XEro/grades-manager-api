@@ -11,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
@@ -22,6 +23,7 @@ interface Course {
 	program_name: string;
 	student_count: number;
 	exam_count: number;
+	isDelegated?: boolean;
 }
 
 export default function CourseList() {
@@ -37,9 +39,7 @@ export default function CourseList() {
 			const activeYear = years.find((y) => y.isActive);
 			if (!activeYear) return [];
 
-			const { items } = await trpcClient.classCourses.list.query({
-				teacherId: user.id,
-			});
+			const { items } = await trpcClient.classCourses.list.query({});
 			const results = await Promise.all(
 				items.map(async (cc) => {
 					const klass = await trpcClient.classes.getById.query({
@@ -61,6 +61,7 @@ export default function CourseList() {
 						program_name: program.name,
 						student_count: students.items.length,
 						exam_count: exams.items.length,
+						isDelegated: cc.isDelegated,
 					} as Course;
 				}),
 			);
@@ -91,11 +92,22 @@ export default function CourseList() {
 				{courses?.length ? (
 					courses.map((course) => (
 						<Card key={course.id} className="h-full">
-							<CardHeader>
-								<CardTitle>{course.name}</CardTitle>
-								<CardDescription>
-									{course.class_name} • {course.program_name}
-								</CardDescription>
+							<CardHeader className="flex flex-col gap-2">
+								<div className="flex items-start justify-between gap-3">
+									<div>
+										<CardTitle>{course.name}</CardTitle>
+										<CardDescription>
+											{course.class_name} • {course.program_name}
+										</CardDescription>
+									</div>
+									{course.isDelegated ? (
+										<Badge variant="secondary">
+											{t("teacher.courses.delegatedBadge", {
+												defaultValue: "Delegated",
+											})}
+										</Badge>
+									) : null}
+								</div>
 							</CardHeader>
 							<CardContent className="flex flex-wrap justify-between gap-4">
 								<div className="flex items-center gap-2 text-muted-foreground">

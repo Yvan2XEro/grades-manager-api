@@ -67,6 +67,7 @@ interface Resources {
 			"courses": {
 				"title": "My Courses";
 				"subtitle": "Manage your assigned courses and grades";
+				"delegatedBadge": "Delegated";
 				"actions": {
 					"viewGrades": "View Grades";
 				};
@@ -199,6 +200,31 @@ interface Resources {
 				"emptyStudents": {
 					"title": "No students found";
 					"description": "There are no students enrolled in this class.";
+				};
+				"readOnly": {
+					"title": "Read-only mode";
+					"description": "You can view this exam but cannot modify grades.";
+				};
+				"delegates": {
+					"title": "Delegated editors";
+					"description": "Manage who can edit grades for this exam.";
+					"add": "Add editor";
+					"dialogTitle": "Assign delegated editor";
+					"dialogDescription": "Grant access to another teacher or staff member.";
+					"selectLabel": "Editor profile";
+					"selectPlaceholder": "Select a team member";
+					"unknownEmail": "No email";
+					"empty": "No delegated editors yet.";
+					"grantedAt": "Granted on {{date}}";
+					"grantedBy": "Granted by {{name}}";
+					"revoke": "Revoke";
+					"revokeSelf": "Leave delegation";
+					"manageRestriction": "Only the course owner can manage other delegates.";
+					"assignSuccess": "Delegate added successfully.";
+					"assignError": "Unable to add delegate.";
+					"revokeSuccess": "Delegate removed successfully.";
+					"revokeError": "Unable to remove delegate.";
+					"readOnlyToast": "You cannot edit this exam.";
 				};
 				"toast": {
 					"fetchCourseError": "Could not load course information";

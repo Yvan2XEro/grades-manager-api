@@ -1,3 +1,4 @@
+import type { Context } from "@/lib/context";
 import {
 	router as createRouter,
 	tenantGradingProcedure,
@@ -19,8 +20,13 @@ import {
 	upsertSchema,
 } from "./grades.zod";
 
+const actorFromCtx = (ctx: Context) => ({
+	profileId: ctx.profile?.id ?? null,
+	memberRole: ctx.memberRole ?? null,
+});
+
 export const router = createRouter({
-	upsertNote: tenantGradingProcedure
+	upsertNote: tenantProtectedProcedure
 		.input(upsertSchema)
 		.mutation(({ ctx, input }) =>
 			service.upsertNote(
@@ -28,22 +34,37 @@ export const router = createRouter({
 				input.examId,
 				input.score,
 				ctx.institution.id,
+				actorFromCtx(ctx),
 			),
 		),
-	updateNote: tenantGradingProcedure
+	updateNote: tenantProtectedProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>
-			service.updateNote(input.id, input.score, ctx.institution.id),
+			service.updateNote(
+				input.id,
+				input.score,
+				ctx.institution.id,
+				actorFromCtx(ctx),
+			),
 		),
-	deleteNote: tenantGradingProcedure
+	deleteNote: tenantProtectedProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
-			service.deleteNote(input.id, ctx.institution.id),
+			service.deleteNote(
+				input.id,
+				ctx.institution.id,
+				actorFromCtx(ctx),
+			),
 		),
-	importCsv: tenantGradingProcedure
+	importCsv: tenantProtectedProcedure
 		.input(importCsvSchema)
 		.mutation(({ ctx, input }) =>
-			service.importGradesFromCsv(input.examId, input.csv, ctx.institution.id),
+			service.importGradesFromCsv(
+				input.examId,
+				input.csv,
+				ctx.institution.id,
+				actorFromCtx(ctx),
+			),
 		),
 	exportClassCourseCsv: tenantGradingProcedure
 		.input(exportClassCourseSchema)

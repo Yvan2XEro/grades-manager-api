@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or } from "drizzle-orm";
+import { and, eq, gt, ilike, inArray, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -52,6 +52,7 @@ export async function list(opts: {
 	classId?: string;
 	courseId?: string;
 	teacherId?: string;
+	classCourseIds?: string[];
 	cursor?: string;
 	limit?: number;
 }) {
@@ -62,6 +63,9 @@ export async function list(opts: {
 		opts.courseId ? eq(schema.classCourses.course, opts.courseId) : undefined,
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
+		opts.classCourseIds && opts.classCourseIds.length > 0
+			? inArray(schema.classCourses.id, opts.classCourseIds)
 			: undefined,
 		opts.cursor ? gt(schema.classCourses.id, opts.cursor) : undefined,
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
@@ -141,6 +145,7 @@ export async function search(opts: {
 	institutionId: string;
 	query: string;
 	classId?: string;
+	classCourseIds?: string[];
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 20;
@@ -153,9 +158,16 @@ export async function search(opts: {
 		eq(schema.classCourses.institutionId, opts.institutionId),
 		searchCondition,
 	);
-	const condition = opts.classId
-		? and(eq(schema.classCourses.class, opts.classId), scopedSearch)
-		: scopedSearch;
+	let condition: ReturnType<typeof and> | ReturnType<typeof or> = scopedSearch;
+	if (opts.classId) {
+		condition = and(eq(schema.classCourses.class, opts.classId), condition);
+	}
+	if (opts.classCourseIds && opts.classCourseIds.length > 0) {
+		condition = and(
+			inArray(schema.classCourses.id, opts.classCourseIds),
+			condition,
+		);
+	}
 
 	const items = await db.query.classCourses.findMany({
 		where: condition,

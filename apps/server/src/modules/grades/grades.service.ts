@@ -4,6 +4,11 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
 import * as examsRepo from "../exams/exams.repo";
+import {
+	type ExamActorAccess,
+	type ExamEditorActor,
+	ensureActorCanEditExam,
+} from "../exam-grade-editors/exam-grade-editors.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
@@ -64,16 +69,31 @@ export async function upsertNote(
 	examId: string,
 	score: number,
 	institutionId: string,
+	actor: ExamEditorActor,
 ) {
-	const exam = await requireExamForInstitution(examId, institutionId);
+	const { exam, access } = await ensureActorCanEditExam({
+		examId,
+		institutionId,
+		actor,
+	});
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
 	try {
-		return await repo.upsert({
+		const saved = await repo.upsert({
 			student: studentId,
 			exam: examId,
 			score: score.toString(),
 		});
+		await maybeLogDelegateGradeEdit({
+			access,
+			actor,
+			exam,
+			action: "write",
+			studentId,
+			gradeId: saved.id,
+			scoreAfter: score,
+		});
+		return saved;
 	} catch (_e) {
 		throw new TRPCError({ code: "CONFLICT" });
 	}
@@ -83,24 +103,57 @@ export async function updateNote(
 	id: string,
 	score: number,
 	institutionId: string,
+	actor: ExamEditorActor,
 ) {
 	const grade = await repo.findById(id);
 	if (!grade) throw notFound();
-	const exam = await requireExamForInstitution(grade.exam, institutionId);
+	const { exam, access } = await ensureActorCanEditExam({
+		examId: grade.exam,
+		institutionId,
+		actor,
+	});
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(
 		grade.student,
 		exam.classCourse,
 	);
-	return repo.update(id, score.toString());
+	const updated = await repo.update(id, score.toString());
+	await maybeLogDelegateGradeEdit({
+		access,
+		actor,
+		exam,
+		action: "write",
+		studentId: grade.student,
+		gradeId: grade.id,
+		scoreBefore: Number(grade.score),
+		scoreAfter: score,
+	});
+	return updated;
 }
 
-export async function deleteNote(id: string, institutionId: string) {
+export async function deleteNote(
+	id: string,
+	institutionId: string,
+	actor: ExamEditorActor,
+) {
 	const grade = await repo.findById(id);
 	if (!grade) throw notFound();
-	const exam = await requireExamForInstitution(grade.exam, institutionId);
+	const { exam, access } = await ensureActorCanEditExam({
+		examId: grade.exam,
+		institutionId,
+		actor,
+	});
 	ensureExamEditable(exam);
 	await repo.remove(id);
+	await maybeLogDelegateGradeEdit({
+		access,
+		actor,
+		exam,
+		action: "delete",
+		studentId: grade.student,
+		gradeId: grade.id,
+		scoreBefore: Number(grade.score),
+	});
 }
 
 export async function listByExam(
@@ -180,8 +233,13 @@ export async function importGradesFromCsv(
 	examId: string,
 	csv: string,
 	institutionId: string,
+	actor: ExamEditorActor,
 ) {
-	const exam = await requireExamForInstitution(examId, institutionId);
+	const { exam, access } = await ensureActorCanEditExam({
+		examId,
+		institutionId,
+		actor,
+	});
 	ensureExamEditable(exam);
 	const lines = csv
 		.split(/\r?\n/)
@@ -238,12 +296,22 @@ export async function importGradesFromCsv(
 			);
 			continue;
 		}
-		await repo.upsert({
+		const saved = await repo.upsert({
 			exam: examId,
 			student: student.id,
 			score: scoreValue.toString(),
 		});
 		result.imported++;
+		await maybeLogDelegateGradeEdit({
+			access,
+			actor,
+			exam,
+			action: "import",
+			studentId: student.id,
+			gradeId: saved.id,
+			scoreAfter: scoreValue,
+			metadata: { source: "csv" },
+		});
 	}
 	return result;
 }
@@ -351,4 +419,42 @@ export async function getStudentTranscript(
 		units: unitSummaries,
 		overallAverage: totalCredits ? weightedSum / totalCredits : 0,
 	};
+}
+
+type DelegateLogInput = {
+	access: ExamActorAccess;
+	actor: ExamEditorActor;
+	exam: schema.Exam & { classCourseRef?: schema.ClassCourse | null };
+	action: schema.GradeEditLogAction;
+	studentId: string;
+	gradeId?: string | null;
+	scoreBefore?: number | null;
+	scoreAfter?: number | null;
+	metadata?: Record<string, unknown>;
+};
+
+async function maybeLogDelegateGradeEdit(input: DelegateLogInput) {
+	if (input.access !== "delegate") return;
+	const actorProfileId = input.actor.profileId;
+	if (!actorProfileId) return;
+	await db.insert(schema.gradeEditLogs).values({
+		institutionId: input.exam.institutionId,
+		examId: input.exam.id,
+		classCourseId: input.exam.classCourse,
+		studentId: input.studentId,
+		gradeId: input.gradeId ?? null,
+		actorProfileId,
+		actorRole: "delegate",
+		isDelegate: true,
+		action: input.action,
+		scoreBefore:
+			typeof input.scoreBefore === "number"
+				? input.scoreBefore.toString()
+				: null,
+		scoreAfter:
+			typeof input.scoreAfter === "number"
+				? input.scoreAfter.toString()
+				: null,
+		metadata: input.metadata ?? {},
+	});
 }

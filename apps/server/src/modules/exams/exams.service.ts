@@ -1,9 +1,12 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { notFound } from "../_shared/errors";
+import type { MemberRole } from "../authz";
+import { ADMIN_ROLES, roleSatisfies } from "../authz";
+import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
 
@@ -33,6 +36,18 @@ async function requireClassCourse(
 	});
 	if (!classCourse) throw notFound("Class course not found");
 	return classCourse;
+}
+
+async function getTeacherMap(classCourseIds: string[]) {
+	if (classCourseIds.length === 0) return new Map<string, string | null>();
+	const rows = await db
+		.select({
+			id: schema.classCourses.id,
+			teacher: schema.classCourses.teacher,
+		})
+		.from(schema.classCourses)
+		.where(inArray(schema.classCourses.id, classCourseIds));
+	return new Map(rows.map((row) => [row.id, row.teacher]));
 }
 
 async function requireExam(id: string, institutionId: string) {
@@ -189,9 +204,41 @@ export async function deleteExam(id: string, institutionId: string) {
 
 export async function listExams(
 	opts: Parameters<typeof repo.list>[0],
-	institutionId: string,
+	params: {
+		institutionId: string;
+		profileId: string | null;
+		memberRole: MemberRole | null;
+	},
 ) {
-	return repo.list({ ...opts, institutionId });
+	const result = await repo.list({ ...opts, institutionId: params.institutionId });
+	const exams = result.items;
+	const classCourseIds = Array.from(new Set(exams.map((exam) => exam.classCourse)));
+	const teacherMap = await getTeacherMap(classCourseIds);
+	const examIds = exams.map((exam) => exam.id);
+	const delegateSet =
+		params.profileId && examIds.length > 0
+			? new Set(
+					await examGradeEditorsRepo.examIdsForEditor(
+						params.profileId,
+						examIds,
+					),
+				)
+			: new Set<string>();
+	const isAdmin = roleSatisfies(params.memberRole, ADMIN_ROLES);
+	const enriched = exams.map((exam) => {
+		const isTeacher =
+			params.profileId !== null &&
+			teacherMap.get(exam.classCourse) === params.profileId;
+		const canEdit =
+			isAdmin ||
+			isTeacher ||
+			(params.profileId ? delegateSet.has(exam.id) : false);
+		return { ...exam, canEdit };
+	});
+	return {
+		...result,
+		items: isAdmin ? enriched : enriched.filter((exam) => exam.canEdit),
+	};
 }
 
 export async function getExamById(id: string, institutionId: string) {

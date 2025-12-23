@@ -1,4 +1,5 @@
 import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
+import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
 import { gradesRouter } from "@/modules/grades";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -48,6 +49,7 @@ export const appRouter = router({
 	exams: examsRouter,
 	examTypes: examTypesRouter,
 	examScheduler: examSchedulerRouter,
+	examGradeEditors: examGradeEditorsRouter,
 	students: studentsRouter,
 	promotions: promotionsRouter,
 	promotionRules: promotionRulesRouter,

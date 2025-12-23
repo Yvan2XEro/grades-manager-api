@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -10,6 +11,7 @@ import {
 	createClass,
 	createCourse,
 	createDomainUser,
+	createRecapFixture,
 	createFaculty,
 	createProgram,
 	createStudent,
@@ -114,5 +116,59 @@ describe("class courses router", () => {
 		await expect(
 			admin.classCourses.getById({ id: classCourse.id }),
 		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+
+	it("logs delegated course access events", async () => {
+		await db.delete(schema.classCourseAccessLogs);
+		const { classCourse, exam } = await createRecapFixture();
+		if (!classCourse.teacher) {
+			throw new Error("Class course missing teacher");
+		}
+		const teacherProfile = await db.query.domainUsers.findFirst({
+			where: eq(schema.domainUsers.id, classCourse.teacher),
+		});
+		if (!teacherProfile) {
+			throw new Error("Teacher profile not found");
+		}
+		const teacherCaller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: teacherProfile,
+			}),
+		);
+		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateCaller = createCaller(
+			makeTestContext({
+				role: "staff",
+				profileOverrides: delegateProfile,
+			}),
+		);
+
+		await teacherCaller.examGradeEditors.assign({
+			examId: exam.id,
+			editorProfileId: delegateProfile.id,
+		});
+
+		await delegateCaller.classCourses.list({ limit: 10 });
+		let logs = await db.query.classCourseAccessLogs.findMany({
+			where: eq(
+				schema.classCourseAccessLogs.actorProfileId,
+				delegateProfile.id,
+			),
+		});
+		expect(logs).toHaveLength(1);
+		expect(logs[0]?.classCourseId).toBe(classCourse.id);
+		expect(logs[0]?.source).toBe("list");
+
+		await delegateCaller.classCourses.search({
+			query: classCourse.code ?? classCourse.id,
+		});
+		logs = await db.query.classCourseAccessLogs.findMany({
+			where: eq(
+				schema.classCourseAccessLogs.actorProfileId,
+				delegateProfile.id,
+			),
+		});
+		expect(logs.some((log) => log.source === "search")).toBe(true);
 	});
 });

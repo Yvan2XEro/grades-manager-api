@@ -53,6 +53,31 @@
 - [x] Add scaffolding for `json-rules-engine` (rule registry + config storage) to eventually drive promotion/eligibility checks.
 - [x] Document admin UX requirements for managing rule sets and cycle hierarchies.
 
+## Upcoming Feature Tasks(`docs/exam-grade-delegation.md`)
+
+- [x] **Promotion summary cache**
+  - [x] Create `student_promotion_summaries` table/migration and backfill scripts.
+  - [x] Wire promotion evaluation to read from cached facts and expose manual refresh endpoints (class-level + per-student).
+  - [x] Surface manual refresh controls and cache status messaging in `/admin/promotion-rules/evaluate`.
+  - [x] Ship tests covering cache persistence + router usage.
+- [ ] **Exam grade delegation (see `docs/exam-grade-delegation.md`)**
+  - [x] Introduce `exam_grade_editors` schema/migration scaffold.
+  - [x] Complete backend router/service + authorization updates for grades/exams (ensure tests cover teacher/admin/delegate cases).
+  - [x] UI for delegate management inside `/teacher/grades/:courseId` (list, add, revoke) and read-only fallback for non-editors.
+  - [ ] Delegate navigation support (surface delegated courses/exams) and audit logging of delegate edits.
+    - [x] Surface delegated courses/exams within teacher navigation flows.
+    - [x] Capture audit logs whenever delegates edit grades.
+  - [ ] Teacher-facing navigation scoping
+    - [x] Restrict class course list/search endpoints to assigned teachers.
+    - [x] Limit exam listings to exams teachers/admins/delegates can edit.
+    - [ ] Update teacher dashboards/menus to expose only assigned/delegated courses, highlight delegated ones, and log access events.
+      - [x] Highlight delegated courses directly inside the dashboard/course listings (badge parity with `/teacher/courses`).
+      - [x] Log delegated course access events for auditability.
+- [x] **Exam scheduler scoping by semester**
+  - [x] Extend preview/schedule inputs to require `semesterId` and filter classes/class-courses accordingly.
+  - [x] Update admin scheduler form with semester dropdown and scoped class preview list.
+  - [x] Reflect semester info in scheduling history/details and add regression tests.
+
 ### Frontend impact (atomic enrollment + ledger)
 
 - [ ] Extend the enrollment UI so admins can enroll/withdraw students per course, view attempts, and trigger retakes (new tRPC hooks + optimistic updates).

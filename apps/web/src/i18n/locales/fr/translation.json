@@ -1871,6 +1871,8 @@
 		"courses": {
 			"title": "Mes cours",
 			"subtitle": "Gérez vos cours attribués et les notes",
+			"delegatedBadge": "Délégué",
+			"delegatedDashboardBadge": "Délégué",
 			"actions": {
 				"viewGrades": "Voir les notes"
 			},
@@ -1997,6 +1999,31 @@
 			"emptyStudents": {
 				"title": "Aucun étudiant",
 				"description": "Aucun étudiant n’est inscrit dans cette classe."
+			},
+			"readOnly": {
+				"title": "Mode lecture seule",
+				"description": "Vous pouvez consulter cette évaluation mais pas modifier les notes."
+			},
+			"delegates": {
+				"title": "Éditeurs délégués",
+				"description": "Ajoutez les personnes autorisées à saisir les notes pour cet examen.",
+				"add": "Ajouter un éditeur",
+				"dialogTitle": "Attribuer un éditeur délégué",
+				"dialogDescription": "Autorisez un autre enseignant ou membre du personnel à modifier les notes.",
+				"selectLabel": "Profil éditeur",
+				"selectPlaceholder": "Sélectionner un membre de l'équipe",
+				"unknownEmail": "Aucun e-mail",
+				"empty": "Aucun éditeur délégué pour le moment.",
+				"grantedAt": "Attribué le {{date}}",
+				"grantedBy": "Attribué par {{name}}",
+				"revoke": "Révoquer",
+				"revokeSelf": "Quitter la délégation",
+				"manageRestriction": "Seul l'enseignant responsable peut gérer les autres délégations.",
+				"assignSuccess": "Éditeur ajouté avec succès.",
+				"assignError": "Impossible d'ajouter l'éditeur.",
+				"revokeSuccess": "Éditeur supprimé avec succès.",
+				"revokeError": "Impossible de supprimer l'éditeur.",
+				"readOnlyToast": "Vous ne pouvez pas modifier cet examen."
 			},
 			"toast": {
 				"fetchCourseError": "Impossible de charger les informations du cours",
