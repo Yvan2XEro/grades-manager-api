@@ -1,0 +1,144 @@
+% Section 08 - Système de workflows
+\section{Système de workflows et notifications}
+
+\subsection{Workflows d'approbation}
+
+Le système de workflows permet de gérer les demandes de modification de notes avec validation hiérarchique.
+
+\subsubsection{Principe}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Demandeur} : Enseignant détectant une erreur
+    \item \textbf{Niveau 1} : Validation par le Dean
+    \item \textbf{Niveau 2} : Validation finale par l'Administrateur
+    \item \textbf{Exécution} : Application automatique si approuvé
+\end{itemize}
+
+\subsection{Création d'une demande}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Workflows} > \bouton{Nouvelle demande}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Type} : Modification de note
+        \item \champ{Étudiant} concerné
+        \item \champ{Cours} et \champ{Type d'examen}
+        \item \champ{Valeur actuelle} : Note actuelle
+        \item \champ{Nouvelle valeur} : Note corrigée
+        \item \champ{Justification} : Raison de la modification
+    \end{itemize}
+    \item \bouton{Soumettre}
+\end{enumerate}
+
+\subsection{Traitement des demandes}
+
+\subsubsection{Pour le Dean (Niveau 1)}
+
+\begin{enumerate}[leftmargin=*]
+    \item Accédez aux demandes en attente : Menu \menu{Workflows} > Filtre "En attente niveau 1"
+    \item Consultez la demande :
+    \begin{itemize}
+        \item Informations de l'étudiant
+        \item Note actuelle vs nouvelle note
+        \item Justification de l'enseignant
+    \end{itemize}
+    \item Décision :
+    \begin{itemize}
+        \item \bouton{Approuver} : La demande passe au niveau 2
+        \item \bouton{Rejeter} : Indiquez la raison du rejet
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Pour l'Administrateur (Niveau 2)}
+
+\begin{enumerate}[leftmargin=*]
+    \item Filtrer : "Approuvé niveau 1, en attente niveau 2"
+    \item Révision finale
+    \item Décision :
+    \begin{itemize}
+        \item \bouton{Approuver} : La note est modifiée automatiquement
+        \item \bouton{Rejeter} : La demande est refusée définitivement
+    \end{itemize}
+\end{enumerate}
+
+\subsection{États des workflows}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{État} & \textbf{Description} \\
+\hline
+Pending L1 & En attente de validation niveau 1 (Dean) \\
+Approved L1 & Approuvé niveau 1, en attente niveau 2 \\
+Rejected L1 & Rejeté par le Dean \\
+Approved L2 & Approuvé définitivement, exécuté \\
+Rejected L2 & Rejeté par l'Administrateur \\
+\hline
+\end{tabular}
+\caption{États possibles d'un workflow}
+\end{table}
+
+\subsection{Système de notifications}
+
+\subsubsection{Types de notifications}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Workflow créé} : Notifie les validateurs
+    \item \textbf{Workflow approuvé} : Notifie le demandeur et le niveau suivant
+    \item \textbf{Workflow rejeté} : Notifie le demandeur avec raison
+    \item \textbf{Note modifiée} : Notifie l'étudiant concerné
+    \item \textbf{Examen planifié} : Rappel aux enseignants
+    \item \textbf{Délégation expirée} : Alerte de fin de délégation
+\end{itemize}
+
+\subsubsection{Consultation des notifications}
+
+\begin{enumerate}[leftmargin=*]
+    \item Icône de notification (cloche) dans la barre de navigation
+    \item Badge indiquant le nombre de notifications non lues
+    \item Cliquez pour voir la liste
+    \item Cliquez sur une notification pour accéder au détail
+\end{enumerate}
+
+\subsubsection{Gestion des notifications}
+
+\begin{itemize}[leftmargin=*]
+    \item Marquer comme lue
+    \item Archiver
+    \item Paramétrer les préférences :
+    \begin{itemize}
+        \item Recevoir par email
+        \item Fréquence des emails (immédiate, quotidienne, hebdomadaire)
+        \item Types de notifications à recevoir
+    \end{itemize}
+\end{itemize}
+
+\subsection{Traçabilité}
+
+\subsubsection{Historique des workflows}
+
+Toutes les actions sont tracées :
+\begin{itemize}[leftmargin=*]
+    \item Date et heure de création
+    \item Auteur de la demande
+    \item Approbateurs successifs
+    \item Commentaires à chaque étape
+    \item Résultat final
+\end{itemize}
+
+\subsubsection{Consultation de l'historique}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Workflows} > \bouton{Historique}
+    \item Filtres disponibles :
+    \begin{itemize}
+        \item Par état
+        \item Par demandeur
+        \item Par période
+        \item Par cours/étudiant
+    \end{itemize}
+    \item Export possible en Excel ou PDF
+\end{enumerate}
+
+\newpage

@@ -1,0 +1,334 @@
+% Section 05 - Gestion des notes et examens
+\section{Gestion des notes et examens}
+
+\subsection{Types d'examens}
+
+\subsubsection{Configuration des types}
+
+Les types d'examens définissent les modalités d'évaluation :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Type} & \textbf{Description} & \textbf{Poids} \\
+\hline
+CC (Contrôle Continu) & Évaluations régulières & 30\% \\
+TP (Travaux Pratiques) & Évaluations pratiques & 20\% \\
+Examen Final & Examen de fin de semestre & 50\% \\
+\hline
+\end{tabular}
+\caption{Exemple de types d'examens}
+\end{table}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Types d'examens} > \bouton{Nouveau type}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Code} : Ex. "CC", "EF", "TP"
+        \item \champ{Nom} : Ex. "Contrôle Continu"
+        \item \champ{Poids} : Pourcentage dans la moyenne (ex: 30 pour 30\%)
+        \item \champ{Description} : Optionnel
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\info{La somme des poids de tous les types d'examens d'un cours doit faire 100\%.}
+
+\subsection{Planification des examens}
+
+\subsubsection{Création manuelle d'un examen}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Examens} > \bouton{Nouvel examen}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Cours}
+        \item \champ{Type d'examen}
+        \item \champ{Semestre}
+    \end{itemize}
+    \item Configurez les dates :
+    \begin{itemize}
+        \item \champ{Date de l'examen} : Date de passation
+        \item \champ{Date limite de saisie} : Deadline pour entrer les notes
+        \item \champ{Date de clôture automatique} : Fermeture automatique (optionnel)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsubsection{Planification automatique (Exam Scheduler)}
+
+Pour générer tous les examens d'un coup :
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Planification des examens}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Semestre} : S1 ou S2
+        \item \champ{Classe} : Classe concernée (ou toutes)
+    \end{itemize}
+    \item Le système génère automatiquement :
+    \begin{itemize}
+        \item Un examen pour chaque type configuré
+        \item Pour chaque cours du semestre
+        \item Avec des dates par défaut
+    \end{itemize}
+    \item Vérifiez et ajustez les dates si nécessaire
+    \item \bouton{Valider la planification}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}[Capture : Interface de planification automatique]\\\vspace{2cm}}}
+    \caption{Planification automatique des examens}
+    \label{fig:exam-scheduling}
+\end{figure}
+
+\subsection{Délégation de saisie}
+
+Le système permet de déléguer temporairement la saisie des notes aux enseignants.
+
+\subsubsection{Création d'une délégation}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Délégations} > \bouton{Nouvelle délégation}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Enseignant} : Utilisateur bénéficiaire
+        \item \champ{Examen} : Examen concerné
+        \item \champ{Date de début} : Début de validité
+        \item \champ{Date de fin} : Expiration de la délégation
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\info{Une délégation expire automatiquement après la date de fin. L'enseignant ne peut plus saisir de notes après expiration.}
+
+\subsubsection{Gestion des délégations}
+
+Les administrateurs peuvent :
+\begin{itemize}[leftmargin=*]
+    \item Consulter toutes les délégations actives
+    \item Révoquer une délégation avant son expiration
+    \item Prolonger une délégation
+    \item Voir l'historique des délégations
+\end{itemize}
+
+\subsection{Saisie des notes}
+
+\subsubsection{Interface de saisie}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Saisie des notes}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Cours}
+        \item \champ{Type d'examen}
+        \item \champ{Semestre}
+    \end{itemize}
+    \item L'interface affiche :
+    \begin{itemize}
+        \item Liste des étudiants inscrits au cours
+        \item Champ de saisie pour chaque étudiant
+        \item Statistiques en temps réel
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Saisie des notes}
+
+\begin{enumerate}[leftmargin=*]
+    \item Entrez la note de chaque étudiant (0 à 20)
+    \item Les notes sont validées automatiquement :
+    \begin{itemize}
+        \item Doivent être entre 0 et 20
+        \item Format accepté : entiers ou décimaux (ex: 15.5)
+    \end{itemize}
+    \item Marquez les absences si nécessaire (checkbox "Absent")
+    \item Cliquez sur \bouton{Enregistrer les notes}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}[Capture : Interface de saisie des notes]\\\vspace{2cm}}}
+    \caption{Interface de saisie des notes}
+    \label{fig:grade-entry}
+\end{figure}
+
+\subsubsection{Import depuis Excel}
+
+Pour saisir rapidement de nombreuses notes :
+
+\begin{enumerate}[leftmargin=*]
+    \item Dans l'interface de saisie, cliquez sur \bouton{Importer depuis Excel}
+    \item Téléchargez le modèle pré-rempli (contient déjà la liste des étudiants)
+    \item Remplissez les notes dans le fichier Excel
+    \item Importez le fichier
+    \item Vérifiez le rapport de validation
+    \item \bouton{Confirmer l'import}
+\end{enumerate}
+
+\subsection{Calcul des moyennes}
+
+\subsubsection{Moyenne d'un cours}
+
+La moyenne d'un cours est calculée automatiquement selon :
+
+\begin{equation}
+Moyenne\_Cours = \sum_{i=1}^{n} (Note_i \times Poids_i)
+\end{equation}
+
+Où :
+\begin{itemize}[leftmargin=*]
+    \item $Note_i$ : Note obtenue au type d'examen $i$
+    \item $Poids_i$ : Poids du type d'examen $i$ (en \%)
+    \item $n$ : Nombre de types d'examens pour ce cours
+\end{itemize}
+
+\textbf{Exemple :}
+\begin{itemize}[leftmargin=*]
+    \item CC = 12/20 (poids 30\%)
+    \item TP = 14/20 (poids 20\%)
+    \item Examen Final = 16/20 (poids 50\%)
+    \item Moyenne = (12 × 0.30) + (14 × 0.20) + (16 × 0.50) = 14.4/20
+\end{itemize}
+
+\subsubsection{Moyenne de l'UE}
+
+La moyenne d'une UE est calculée selon :
+
+\begin{equation}
+Moyenne\_UE = \frac{\sum_{j=1}^{m} (Moyenne\_Cours_j \times Coef_j)}{\sum_{j=1}^{m} Coef_j}
+\end{equation}
+
+Où :
+\begin{itemize}[leftmargin=*]
+    \item $Moyenne\_Cours_j$ : Moyenne du cours $j$
+    \item $Coef_j$ : Coefficient du cours $j$
+    \item $m$ : Nombre de cours dans l'UE
+\end{itemize}
+
+\subsubsection{Moyenne générale}
+
+La moyenne générale du semestre est calculée selon :
+
+\begin{equation}
+Moyenne\_Generale = \frac{\sum_{k=1}^{p} Moyenne\_UE_k}{p}
+\end{equation}
+
+Ou avec pondération si les UE ont des coefficients différents.
+
+\subsection{Validation et publication}
+
+\subsubsection{Validation des notes}
+
+Avant publication, les notes doivent être validées :
+
+\begin{enumerate}[leftmargin=*]
+    \item L'enseignant saisit les notes
+    \item L'enseignant soumet pour validation
+    \item Le Dean (Doyen) vérifie et approuve
+    \item L'Administrateur fait la validation finale
+    \item Les notes sont alors publiées aux étudiants
+\end{enumerate}
+
+\subsubsection{Workflow d'approbation}
+
+Le système utilise un workflow à deux niveaux :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Niveau 1} : Validation par le Dean
+    \item \textbf{Niveau 2} : Validation finale par l'Administrateur
+\end{itemize}
+
+Chaque niveau peut approuver ou rejeter avec un commentaire.
+
+\subsection{Modification des notes}
+
+\subsubsection{Demande de modification}
+
+Une fois les notes validées, toute modification nécessite un workflow :
+
+\begin{enumerate}[leftmargin=*]
+    \item L'enseignant identifie une erreur
+    \item Menu \menu{Workflows} > \bouton{Nouvelle demande}
+    \item Sélectionne la note à modifier
+    \item Indique la nouvelle valeur
+    \item Justifie la modification
+    \item Soumet la demande
+\end{enumerate}
+
+\subsubsection{Traitement de la demande}
+
+\begin{enumerate}[leftmargin=*]
+    \item Le Dean reçoit une notification
+    \item Examine la demande
+    \item Approuve ou rejette (niveau 1)
+    \item Si approuvé niveau 1 : passe à l'Administrateur
+    \item L'Administrateur fait la validation finale (niveau 2)
+    \item Si approuvé : la note est mise à jour automatiquement
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}[Capture : Interface de workflow]\\\vspace{2cm}}}
+    \caption{Gestion des workflows d'approbation}
+    \label{fig:workflow}
+\end{figure}
+
+\subsection{Statistiques et analyses}
+
+\subsubsection{Statistiques par cours}
+
+Pour chaque cours, visualisez :
+\begin{itemize}[leftmargin=*]
+    \item Moyenne de la classe
+    \item Note minimale et maximale
+    \item Écart-type
+    \item Taux de réussite ($\geq$ 10/20)
+    \item Distribution des notes (histogramme)
+\end{itemize}
+
+\subsubsection{Statistiques par classe}
+
+\begin{itemize}[leftmargin=*]
+    \item Moyenne générale de la classe
+    \item Nombre d'admis / ajournés
+    \item Répartition des mentions
+    \item Classement des étudiants
+\end{itemize}
+
+\subsection{Bonnes pratiques}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Recommandations pour la saisie des notes]
+
+\textbf{Préparation :}
+\begin{itemize}[leftmargin=*]
+    \item Vérifiez que tous les étudiants sont bien inscrits au cours
+    \item Assurez-vous que les types d'examens sont configurés
+    \item Planifiez les examens avant la période de saisie
+\end{itemize}
+
+\textbf{Saisie :}
+\begin{itemize}[leftmargin=*]
+    \item Saisissez les notes rapidement après les examens
+    \item Vérifiez les valeurs aberrantes
+    \item Utilisez l'import Excel pour gagner du temps
+    \item Marquez clairement les absences
+\end{itemize}
+
+\textbf{Validation :}
+\begin{itemize}[leftmargin=*]
+    \item Relisez avant de soumettre pour validation
+    \item Documentez toute modification demandée
+    \item Respectez les délais de validation
+\end{itemize}
+
+\textbf{Sécurité :}
+\begin{itemize}[leftmargin=*]
+    \item Ne partagez jamais vos identifiants de saisie
+    \item Déconnectez-vous après chaque session
+    \item Sauvegardez vos fichiers Excel source
+\end{itemize}
+\end{tcolorbox}
+
+\newpage

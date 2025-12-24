@@ -1,0 +1,145 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{float}
+
+\usepackage{amsmath}  % For \text command
+\usepackage{amssymb}  % For math symbols
+\usepackage{newunicodechar}  % For Unicode character support
+
+% Define Unicode characters FIRST
+\newunicodechar{✓}{\checkmark}
+\newunicodechar{✗}{\texttimes}
+\newunicodechar{○}{\textcircled{~}}
+\newunicodechar{●}{\textbullet}
+\newunicodechar{☑}{[\checkmark]}
+\newunicodechar{☐}{[~]}
+\newunicodechar{▓}{\rule{0.6em}{0.8ex}}  % Filled block
+\newunicodechar{░}{\rule{0.6em}{0.4ex}}  % Light block
+\newunicodechar{├}{|--}
+\newunicodechar{─}{--}
+\newunicodechar{└}{`--}
+\newunicodechar{│}{|}
+\newunicodechar{ℹ}{(i)}
+\newunicodechar{💡}{[!]}
+\newunicodechar{📄}{[DOC]}
+\newunicodechar{✅}{[OK]}
+\newunicodechar{⚠}{\textbf{/!\textbackslash}}  % Warning triangle
+
+% Configuration de la page
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm,
+    headheight=15pt
+}
+
+% Configuration des en-têtes et pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Guide d'utilisation complet}
+\fancyhead[R]{TKAMS - TK Academic Management System}
+\fancyfoot[C]{\thepage}
+
+% Configuration des liens
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Guide d'utilisation - TKAMS (TK Academic Management System)},
+    pdfpagemode=FullScreen,
+}
+
+% Commandes personnalisées - AFTER Unicode definitions
+\newcommand{\menu}[1]{\textbf{\textcolor{blue}{#1}}}
+\newcommand{\bouton}[1]{\texttt{\textcolor{teal}{[#1]}}}
+\newcommand{\champ}[1]{\textit{\textcolor{purple}{#1}}}
+\newcommand{\warning}[1]{\textcolor{orange}{\textbf{Attention:} #1}}
+\newcommand{\attention}[1]{\textcolor{red}{\textbf{⚠ #1}}}
+\newcommand{\info}[1]{\textcolor{blue}{\textbf{ℹ #1}}}
+\newcommand{\astuce}[1]{\textcolor{green}{\textbf{💡 #1}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% Début du document
+\begin{document}
+
+% Page de titre
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries Guide d'utilisation complet\par}
+    \vspace{1cm}
+    {\LARGE TKAMS\par}
+    {\LARGE TK Academic Management System\par}
+    \vspace{0.5cm}
+    {\large Système de Gestion Académique\par}
+    \vspace{1.5cm}
+
+    % Placeholder pour logo
+    \begin{figure}[H]
+        \centering
+        % Décommentez la ligne suivante et ajoutez votre logo
+        % \includegraphics[width=0.4\textwidth]{images/logo.png}
+    \end{figure}
+
+    \vspace{2cm}
+\noindent\textbf{Avis de Copyright}
+
+\noindent © 2025 TKAMS. Tous droits réservés.
+
+\noindent \textbf{Développeur :} Cédric TEFOYE
+
+\noindent \textbf{Contact :} cedrictefoye@gmail.com
+
+\noindent \textbf{Version :} 1.0 (Version de base)
+
+\noindent Ce logiciel est destiné aux institutions d'enseignement supérieur (facultés, universités, instituts). Cette version fournit les fonctionnalités essentielles de gestion académique et peut être étendue selon les besoins spécifiques de votre institution.
+
+\noindent Aucune partie de cette publication ne peut être reproduite, distribuée ou transmise sous quelque forme ou par quelque moyen que ce soit, y compris la photocopie, l'enregistrement ou autres méthodes électroniques ou mécaniques, sans l'autorisation écrite préalable de l'auteur.
+
+    \vspace{0.5cm}
+    {\large Guide de Référence\par}
+    \vspace{1cm}
+    {\large \today\par}
+
+    \vfill
+    {\large TKAMS - TK Academic Management System\par}
+\end{titlepage}
+
+% Table des matières
+\tableofcontents
+\newpage
+
+% Inclusion des sections
+\input{guide_sections/01_introduction}
+\input{guide_sections/02_installation}
+\input{guide_sections/03_structure_academique}
+\input{guide_sections/04_gestion_etudiants}
+\input{guide_sections/05_gestion_notes}
+\input{guide_sections/06_utilisateurs_autorisations}
+\input{guide_sections/07_exports_publications}
+\input{guide_sections/08_workflows}
+\input{guide_sections/09_configuration}
+\input{guide_sections/10_troubleshooting}
+\input{guide_sections/11_cas_usage}
+\input{guide_sections/12_annexes}
+
+\end{document}

@@ -1,0 +1,268 @@
+% Section 04 - Gestion des étudiants
+\section{Gestion des étudiants et inscriptions}
+
+\subsection{Enregistrement des étudiants}
+
+\subsubsection{Ajout manuel d'un étudiant}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Étudiants} > \bouton{Nouvel étudiant}
+    \item Remplissez le formulaire :
+    \begin{itemize}
+        \item \champ{Nom} : Nom de famille
+        \item \champ{Prénom(s)} : Prénoms complets
+        \item \champ{Date de naissance} : JJ/MM/AAAA
+        \item \champ{Lieu de naissance} : Ville, Pays
+        \item \champ{Genre} : Masculin/Féminin
+        \item \champ{Email} : Adresse email (optionnel)
+        \item \champ{Téléphone} : Numéro de contact (optionnel)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\info{Le matricule étudiant est généré automatiquement selon les règles configurées dans le module \code{registration-numbers}.}
+
+\subsubsection{Import en masse depuis Excel}
+
+Pour inscrire plusieurs étudiants simultanément :
+
+\begin{enumerate}[leftmargin=*]
+    \item Téléchargez le modèle Excel : \menu{Import/Export} > \bouton{Télécharger modèle étudiants}
+    \item Remplissez le fichier avec les informations des étudiants
+    \item Retournez dans \menu{Étudiants} > \bouton{Importer}
+    \item Sélectionnez votre fichier Excel
+    \item Vérifiez le rapport de validation :
+    \begin{itemize}
+        \item Nombre d'étudiants valides
+        \item Erreurs éventuelles (doublons, données manquantes)
+    \end{itemize}
+    \item Cliquez sur \bouton{Confirmer l'import}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}[Capture : Interface d'import Excel]\\\vspace{2cm}}}
+    \caption{Interface d'import d'étudiants depuis Excel}
+    \label{fig:student-import}
+\end{figure}
+
+\subsection{Inscriptions annuelles}
+
+Chaque année académique, les étudiants doivent être inscrits dans une classe.
+
+\subsubsection{Inscription individuelle}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Inscriptions} > \bouton{Nouvelle inscription}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Année académique} : Année active par défaut
+        \item \champ{Étudiant} : Recherchez par nom ou matricule
+        \item \champ{Classe} : Classe d'inscription
+        \item \champ{Statut} : Nouveau / Redoublant / Transfert
+    \end{itemize}
+    \item \bouton{Inscrire}
+\end{enumerate}
+
+\subsubsection{Inscription en masse}
+
+Pour inscrire toute une promotion :
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Inscriptions} > \bouton{Inscription en masse}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item La classe cible
+        \item Importez la liste des étudiants (Excel)
+    \end{itemize}
+    \item Vérifiez le résumé
+    \item \bouton{Confirmer}
+\end{enumerate}
+
+\subsection{Inscriptions aux cours}
+
+Une fois inscrits dans une classe, les étudiants doivent être inscrits aux cours du semestre.
+
+\subsubsection{Inscription automatique}
+
+L'inscription aux cours peut se faire automatiquement :
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Inscriptions aux cours} > \bouton{Inscription automatique}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Classe}
+        \item \champ{Semestre} : S1 ou S2
+    \end{itemize}
+    \item Le système inscrit automatiquement tous les étudiants de la classe à tous les cours du semestre
+    \item Vérifiez le résumé et confirmez
+\end{enumerate}
+
+\subsubsection{Inscription sélective}
+
+Pour des cas particuliers (redoublements, dispenses) :
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Inscriptions aux cours} > \bouton{Inscription sélective}
+    \item Sélectionnez l'étudiant
+    \item Cochez les cours auxquels l'inscrire
+    \item \bouton{Valider}
+\end{enumerate}
+
+\subsubsection{Gestion des tentatives}
+
+Le système suit le nombre de tentatives pour chaque cours :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tentative 1} : Première inscription au cours
+    \item \textbf{Tentative 2+} : Redoublement du cours (échec précédent)
+    \item Le nombre de tentatives est tracé automatiquement
+    \item Peut servir pour des règles académiques (limite de tentatives)
+\end{itemize}
+
+\subsection{Système de crédits ECTS}
+
+\subsubsection{Ledger de crédits}
+
+Le \textit{Student Credit Ledger} est un système de comptabilité des crédits :
+
+\begin{itemize}[leftmargin=*]
+    \item Enregistre chaque attribution de crédits
+    \item Trace la source (cours validé)
+    \item Calcule le cumul par étudiant
+    \item Permet de suivre la progression vers le diplôme
+\end{itemize}
+
+\subsubsection{Attribution automatique}
+
+Les crédits sont attribués automatiquement lorsque :
+\begin{itemize}[leftmargin=*]
+    \item Un étudiant obtient la moyenne ($\geq$ 10/20) dans un cours
+    \item Les notes sont validées par l'administration
+    \item Le cours a des crédits ECTS configurés
+\end{itemize}
+
+\subsubsection{Consultation du solde de crédits}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Ledger de crédits}
+    \item Recherchez un étudiant
+    \item Consultez :
+    \begin{itemize}
+        \item Total des crédits acquis
+        \item Détail par cours et semestre
+        \item Historique des attributions
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{2cm}[Capture : Ledger de crédits d'un étudiant]\\\vspace{2cm}}}
+    \caption{Visualisation du ledger de crédits}
+    \label{fig:credit-ledger}
+\end{figure}
+
+\subsection{Recherche et filtres}
+
+\subsubsection{Recherche d'étudiants}
+
+L'interface offre plusieurs options de recherche :
+
+\begin{itemize}[leftmargin=*]
+    \item Par \textbf{nom} ou \textbf{prénom}
+    \item Par \textbf{matricule}
+    \item Par \textbf{classe}
+    \item Par \textbf{statut} (actif, diplômé, suspendu)
+\end{itemize}
+
+\subsubsection{Filtres avancés}
+
+\begin{itemize}[leftmargin=*]
+    \item Filtrer par année académique
+    \item Filtrer par programme ou cycle
+    \item Filtrer par statut d'inscription
+    \item Trier par nom, matricule, classe
+\end{itemize}
+
+\subsection{Modification et suppression}
+
+\subsubsection{Modification d'un étudiant}
+
+\begin{enumerate}[leftmargin=*]
+    \item Dans la liste des étudiants, cliquez sur l'étudiant
+    \item Modifiez les informations nécessaires
+    \item \bouton{Enregistrer}
+\end{enumerate}
+
+\attention{La modification du matricule n'est généralement pas recommandée car il est utilisé comme référence dans tout le système.}
+
+\subsubsection{Suppression d'un étudiant}
+
+\begin{enumerate}[leftmargin=*]
+    \item Sélectionnez l'étudiant
+    \item Cliquez sur \bouton{Supprimer}
+    \item Confirmez l'action
+\end{enumerate}
+
+\attention{La suppression n'est possible que si l'étudiant n'a aucune note enregistrée. Sinon, préférez marquer le statut comme "inactif".}
+
+\subsection{Export des listes}
+
+\subsubsection{Export Excel}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Étudiants}
+    \item Appliquez les filtres souhaités
+    \item Cliquez sur \bouton{Exporter vers Excel}
+    \item Le fichier Excel contient :
+    \begin{itemize}
+        \item Matricule, nom, prénom
+        \item Date et lieu de naissance
+        \item Classe actuelle
+        \item Statut d'inscription
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Export PDF (liste de classe)}
+
+Pour générer une liste de classe imprimable :
+
+\begin{enumerate}[leftmargin=*]
+    \item Filtrez par classe
+    \item \bouton{Exporter en PDF}
+    \item Le PDF inclut :
+    \begin{itemize}
+        \item En-tête de l'établissement
+        \item Nom de la classe et année académique
+        \item Liste des étudiants avec numéros
+        \item Espace pour signatures
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Bonnes pratiques}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Recommandations]
+
+\textbf{Import en masse :}
+\begin{itemize}[leftmargin=*]
+    \item Vérifiez toujours le fichier Excel avant import
+    \item Utilisez le modèle fourni pour éviter les erreurs
+    \item Testez avec un petit lot avant un gros import
+\end{itemize}
+
+\textbf{Matricules :}
+\begin{itemize}[leftmargin=*]
+    \item Ne modifiez jamais un matricule une fois attribué
+    \item Vérifiez les doublons avant import
+    \item Documentez votre format de matricule
+\end{itemize}
+
+\textbf{Inscriptions :}
+\begin{itemize}[leftmargin=*]
+    \item Inscrivez les étudiants AVANT le début des cours
+    \item Vérifiez les inscriptions aux cours pour chaque semestre
+    \item Mettez à jour le statut (redoublant, transfert) correctement
+\end{itemize}
+\end{tcolorbox}
+
+\newpage

@@ -1,0 +1,217 @@
+% Section 09 - Configuration et administration
+\section{Configuration et administration système}
+
+\subsection{Paramètres généraux}
+
+\subsubsection{Configuration de l'établissement}
+
+Menu \menu{Configuration} > \menu{Établissement}
+
+\begin{itemize}[leftmargin=*]
+    \item \champ{Nom officiel} : Nom complet de l'établissement
+    \item \champ{Nom court} : Acronyme (ex: FMSP)
+    \item \champ{Adresse} : Adresse postale complète
+    \item \champ{Téléphone} : Numéro principal
+    \item \champ{Email} : Email de contact
+    \item \champ{Site web} : URL du site officiel
+    \item \champ{Logo principal} : Upload du logo
+\end{itemize}
+
+\subsubsection{Paramètres académiques}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Seuil de validation} : Note minimale pour valider un cours (défaut: 10/20)
+    \item \textbf{Système de notation} : Sur 20, sur 100, ou lettres (A-F)
+    \item \textbf{Mentions} :
+    \begin{itemize}
+        \item Très Bien : $\geq$ 16/20
+        \item Bien : 14-15.99/20
+        \item Assez Bien : 12-13.99/20
+        \item Passable : 10-11.99/20
+        \item Ajourné : $<$ 10/20
+    \end{itemize}
+    \item \textbf{Règles de progression} :
+    \begin{itemize}
+        \item Crédits requis pour passer au niveau suivant
+        \item Nombre maximum de redoublements
+        \item Conditions de compensation
+    \end{itemize}
+\end{itemize}
+
+\subsection{Génération des numéros de matricule}
+
+\subsubsection{Configuration du format}
+
+Menu \menu{Configuration} > \menu{Matricules}
+
+Le système génère automatiquement les matricules selon un format configurable :
+
+\begin{lstlisting}[frame=single]
+Format: {année}{faculté}{programme}{numéro séquentiel}
+Exemple: 24MED001, 24MED002, ...
+\end{lstlisting}
+
+Composants :
+\begin{itemize}[leftmargin=*]
+    \item \code{\{année\}} : Deux derniers chiffres de l'année (24 pour 2024)
+    \item \code{\{faculté\}} : Code de la faculté (ex: F pour FMSP)
+    \item \code{\{programme\}} : Code du programme (ex: MED)
+    \item \code{\{séquentiel\}} : Numéro auto-incrémenté (001, 002...)
+\end{itemize}
+
+\subsection{Gestion des semestres}
+
+\subsubsection{Configuration globale}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Nombre de semestres par an} : Généralement 2
+    \item \textbf{Dates de début/fin} :
+    \begin{itemize}
+        \item S1 : Septembre - Janvier
+        \item S2 : Février - Juin
+    \end{itemize}
+    \item \textbf{Périodes d'examens} :
+    \begin{itemize}
+        \item Session normale
+        \item Session de rattrapage
+    \end{itemize}
+\end{itemize}
+
+\subsection{Templates et personnalisation}
+
+\subsubsection{Templates de documents}
+
+Les templates sont situés dans :
+\begin{lstlisting}[frame=single]
+apps/server/src/modules/exports/templates/
+\end{lstlisting}
+
+Fichiers disponibles :
+\begin{itemize}[leftmargin=*]
+    \item \code{teaching-unit-publication.html} : Relevé de notes
+    \item \code{evaluation-publication.html} : Attestations
+    \item Utilisation de Handlebars pour les variables dynamiques
+\end{itemize}
+
+\subsubsection{Variables disponibles}
+
+\begin{lstlisting}[frame=single, basicstyle=\small\ttfamily]
+{
+  studentName: "Nom de l'etudiant",
+  studentId: "Matricule",
+  className: "Classe",
+  semester: "S1",
+  academicYear: "2024-2025",
+  courses: [
+    {
+      code: "ANAT101",
+      title: "Anatomie",
+      coefficient: 2,
+      credits: 4,
+      grades: { CC: 12, TP: 14, EF: 16 },
+      average: 14.4
+    }
+  ],
+  overallAverage: 13.5,
+  mention: "Assez Bien",
+  status: "Admis"
+}
+\end{lstlisting}
+
+\subsection{Sauvegarde et restauration}
+
+\subsubsection{Sauvegarde de la base de données}
+
+\textbf{Manuelle (PostgreSQL) :}
+\begin{lstlisting}[language={}, frame=single]
+# Sauvegarde complete
+pg_dump -U grades_app grades_manager > backup_$(date +%Y%m%d).sql
+
+# Sauvegarde comprimee
+pg_dump -U grades_app grades_manager | gzip > backup.sql.gz
+\end{lstlisting}
+
+\textbf{Automatisée (cron Linux) :}
+\begin{lstlisting}[language={}, frame=single]
+# Ajouter dans crontab (crontab -e)
+0 2 * * * pg_dump -U grades_app grades_manager |
+  gzip > /backups/grades_$(date +\%Y\%m\%d).sql.gz
+\end{lstlisting}
+
+\subsubsection{Restauration}
+
+\begin{lstlisting}[language={}, frame=single]
+# Depuis une sauvegarde SQL
+psql -U grades_app grades_manager < backup.sql
+
+# Depuis une sauvegarde comprimee
+gunzip -c backup.sql.gz | psql -U grades_app grades_manager
+\end{lstlisting}
+
+\attention{Testez toujours vos sauvegardes en les restaurant dans un environnement de test.}
+
+\subsection{Monitoring et logs}
+
+\subsubsection{Logs applicatifs}
+
+Les logs sont stockés dans :
+\begin{lstlisting}[frame=single]
+apps/server/logs/
+  ├── application.log    # Logs generaux
+  ├── error.log          # Erreurs uniquement
+  └── access.log         # Logs d'acces HTTP
+\end{lstlisting}
+
+\subsubsection{Niveau de logs}
+
+Configurez le niveau dans le \code{.env} :
+\begin{lstlisting}[frame=single]
+LOG_LEVEL=info  # debug, info, warn, error
+\end{lstlisting}
+
+\subsubsection{Surveillance}
+
+Points à surveiller :
+\begin{itemize}[leftmargin=*]
+    \item Espace disque disponible
+    \item Charge de la base de données
+    \item Temps de réponse des API
+    \item Taux d'erreurs
+    \item Nombre de sessions actives
+\end{itemize}
+
+\subsection{Maintenance}
+
+\subsubsection{Tâches régulières}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Tâche} & \textbf{Fréquence} & \textbf{Action} \\
+\hline
+Sauvegarde BD & Quotidienne & Script automatique \\
+Nettoyage logs & Hebdomadaire & Archiver logs > 7 jours \\
+Vérification espace & Quotidienne & Alertes si $<$ 10\% libre \\
+Mise à jour dépendances & Mensuelle & \code{bun update} \\
+Analyse performances & Mensuelle & Optimiser requêtes lentes \\
+Audit sécurité & Trimestrielle & Réviser accès et logs \\
+\hline
+\end{tabular}
+\caption{Planning de maintenance recommandé}
+\end{table}
+
+\subsubsection{Maintenance planifiée}
+
+Pour une maintenance sans interruption :
+\begin{enumerate}[leftmargin=*]
+    \item Prévenir les utilisateurs 48h à l'avance
+    \item Planifier hors heures de bureau (nuit/weekend)
+    \item Effectuer une sauvegarde complète
+    \item Appliquer les mises à jour
+    \item Tester les fonctionnalités critiques
+    \item Vérifier les logs
+    \item Confirmer la remise en service
+\end{enumerate}
+
+\newpage

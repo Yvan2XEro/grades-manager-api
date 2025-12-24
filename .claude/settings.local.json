@@ -29,7 +29,9 @@
       "Bash(bun db:push:*)",
       "Bash(timeout 10 bun dev:server:*)",
       "Bash(timeout 10 bun run:*)",
-      "Bash(yes:*)"
+      "Bash(yes:*)",
+      "Bash(mkdir:*)",
+      "Bash(pdflatex:*)"
     ]
   }
 }

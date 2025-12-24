@@ -1,0 +1,230 @@
+% Section 07 - Exports et publications
+\section{Exports et publications}
+
+\subsection{Relevés de notes}
+
+\subsubsection{Génération de relevés}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Exports} > \menu{Relevés de notes}
+    \item Sélectionnez les critères :
+    \begin{itemize}
+        \item \champ{Classe}
+        \item \champ{Semestre} : S1, S2 ou Annuel
+        \item \champ{Année académique}
+        \item \champ{Format} : PDF
+    \end{itemize}
+    \item Options :
+    \begin{itemize}
+        \item Inclure le logo de l'établissement
+        \item Inclure les signatures
+        \item Afficher les crédits ECTS
+        \item Afficher les mentions
+    \end{itemize}
+    \item \bouton{Générer}
+\end{enumerate}
+
+\subsubsection{Contenu du relevé}
+
+Un relevé de notes standard contient :
+\begin{itemize}[leftmargin=*]
+    \item En-tête : Logo, nom de l'établissement
+    \item Informations étudiant : Matricule, nom, classe
+    \item Tableau des notes :
+    \begin{itemize}
+        \item Liste des UE et cours
+        \item Notes par type d'examen (CC, TP, EF)
+        \item Moyenne du cours
+        \item Coefficient et crédits
+    \end{itemize}
+    \item Récapitulatif :
+    \begin{itemize}
+        \item Moyenne générale
+        \item Total des crédits acquis
+        \item Mention obtenue
+        \item Décision : Admis / Ajourné
+    \end{itemize}
+    \item Pied de page : Date, signatures
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Capture : Exemple de relevé de notes]\\\vspace{3cm}}}
+    \caption{Exemple de relevé de notes généré}
+    \label{fig:releve-notes}
+\end{figure}
+
+\subsubsection{Personnalisation du template}
+
+Les templates HTML sont situés dans :
+\begin{lstlisting}[frame=single]
+apps/server/src/modules/exports/templates/
+\end{lstlisting}
+
+Pour personnaliser :
+\begin{enumerate}[leftmargin=*]
+    \item Éditez le fichier \code{teaching-unit-publication.html}
+    \item Utilisez la syntaxe Handlebars pour les variables :
+    \begin{lstlisting}[language={}, frame=single, basicstyle=\small\ttfamily]
+<h1>{{studentName}}</h1>
+<p>Matricule: {{studentId}}</p>
+{{#each courses}}
+  <tr>
+    <td>{{this.title}}</td>
+    <td>{{this.average}}</td>
+  </tr>
+{{/each}}
+    \end{lstlisting}
+    \item Testez en générant un relevé
+\end{enumerate}
+
+\subsection{Attestations de réussite}
+
+\subsubsection{Génération automatique}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Exports} > \menu{Attestations}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Classe}
+        \item \champ{Semestre}
+    \end{itemize}
+    \item Le système filtre automatiquement :
+    \begin{itemize}
+        \item Seuls les étudiants avec moyenne $\geq$ 10/20
+        \item Tri par ordre alphabétique ou par mérite
+    \end{itemize}
+    \item \bouton{Générer les attestations}
+\end{enumerate}
+
+\subsubsection{Contenu de l'attestation}
+
+\begin{itemize}[leftmargin=*]
+    \item Titre : "ATTESTATION DE RÉUSSITE"
+    \item Corps :
+    \begin{itemize}
+        \item Texte légal : "Le Doyen de la Faculté... certifie que..."
+        \item Nom complet de l'étudiant
+        \item Classe et année académique
+        \item Mention obtenue
+        \item Date de délivrance
+    \end{itemize}
+    \item Signatures : Doyen, Secrétaire
+    \item Cachet de l'établissement
+\end{itemize}
+
+\subsection{Procès-verbaux d'examens}
+
+\subsubsection{Génération de PV}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Exports} > \menu{PV d'examens}
+    \item Sélectionnez :
+    \begin{itemize}
+        \item \champ{Cours}
+        \item \champ{Type d'examen}
+        \item \champ{Session}
+    \end{itemize}
+    \item \bouton{Générer le PV}
+\end{enumerate}
+
+\subsubsection{Contenu du PV}
+
+\begin{itemize}[leftmargin=*]
+    \item En-tête officiel
+    \item Informations de l'examen :
+    \begin{itemize}
+        \item Cours, type, date
+        \item Enseignant responsable
+        \item Nombre d'inscrits
+    \end{itemize}
+    \item Tableau des résultats :
+    \begin{itemize}
+        \item Liste nominative des étudiants
+        \item Notes obtenues
+        \item Mentions
+    \end{itemize}
+    \item Statistiques :
+    \begin{itemize}
+        \item Taux de réussite
+        \item Moyenne de classe
+        \item Répartition des mentions
+    \end{itemize}
+    \item Signatures : Enseignant, Jury, Direction
+\end{itemize}
+
+\subsection{Export en masse}
+
+\subsubsection{Export par classe}
+
+Pour exporter tous les relevés d'une classe :
+\begin{enumerate}[leftmargin=*]
+    \item Sélectionnez la classe
+    \item Choisissez le format de sortie :
+    \begin{itemize}
+        \item \textbf{ZIP} : Archive de PDFs individuels
+        \item \textbf{PDF unique} : Tous les relevés dans un seul fichier
+        \item \textbf{Excel} : Tableau récapitulatif
+    \end{itemize}
+    \item \bouton{Générer}
+    \item Téléchargez l'archive générée
+\end{enumerate}
+
+\subsection{Gestion des logos et en-têtes}
+
+\subsubsection{Configuration des logos}
+
+\begin{enumerate}[leftmargin=*]
+    \item Préparez vos logos :
+    \begin{itemize}
+        \item Format : PNG avec transparence
+        \item Taille recommandée : 800x200 px
+        \item Résolution : 150 DPI minimum
+    \end{itemize}
+    \item Placez-les dans \code{apps/server/storage/logos/}
+    \item Nommage :
+    \begin{itemize}
+        \item \code{logo-fmsp.png} : Logo principal
+        \item \code{logo-ud.png} : Logo université (si applicable)
+    \end{itemize}
+    \item Redémarrez le serveur pour charger les nouveaux logos
+\end{enumerate}
+
+\subsubsection{Personnalisation des en-têtes}
+
+Les en-têtes sont configurés via le template :
+\begin{lstlisting}[language={}, frame=single, basicstyle=\small\ttfamily]
+<header>
+  <img src="{{logoUrl}}" alt="Logo">
+  <h2>{{facultyName}}</h2>
+  <p>{{address}}</p>
+</header>
+\end{lstlisting}
+
+\subsection{Bonnes pratiques}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Recommandations pour les exports]
+
+\textbf{Préparation :}
+\begin{itemize}[leftmargin=*]
+    \item Vérifiez que toutes les notes sont validées
+    \item Testez avec un ou deux étudiants avant l'export en masse
+    \item Préparez des templates propres et professionnels
+\end{itemize}
+
+\textbf{Qualité :}
+\begin{itemize}[leftmargin=*]
+    \item Utilisez des logos haute résolution
+    \item Vérifiez l'orthographe et la grammaire
+    \item Respectez la charte graphique de l'établissement
+\end{itemize}
+
+\textbf{Sécurité :}
+\begin{itemize}[leftmargin=*]
+    \item Stockez les exports de manière sécurisée
+    \item Ne distribuez que les documents finaux validés
+    \item Conservez une archive des exports pour traçabilité
+\end{itemize}
+\end{tcolorbox}
+
+\newpage

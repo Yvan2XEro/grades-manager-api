@@ -1,0 +1,219 @@
+% Section 06 - Gestion des utilisateurs et autorisations
+\section{Gestion des utilisateurs et autorisations}
+
+\subsection{Système d'authentification}
+
+Le système utilise \textbf{Better-Auth} avec séparation entre comptes d'authentification et profils métier.
+
+\subsubsection{Architecture}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{User (Better-Auth)} : Compte de connexion (email/password)
+    \item \textbf{Domain User} : Profil métier avec rôle et permissions
+    \item Lien entre les deux via \code{authUserId}
+\end{itemize}
+
+\subsection{Création d'utilisateurs}
+
+\subsubsection{Ajout d'un utilisateur}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Utilisateurs} > \bouton{Nouvel utilisateur}
+    \item Remplissez le formulaire d'authentification :
+    \begin{itemize}
+        \item \champ{Email} : Adresse email unique
+        \item \champ{Nom complet}
+        \item \champ{Mot de passe} : Minimum 8 caractères
+    \end{itemize}
+    \item Le compte Better-Auth est créé
+    \item Ensuite, créez le profil de domaine :
+    \begin{itemize}
+        \item Menu \menu{Profils de domaine} > \bouton{Nouveau profil}
+        \item Liez au compte d'authentification
+        \item Sélectionnez le \champ{Rôle}
+        \item Remplissez les informations métier
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Rôles et hiérarchie}
+
+\subsubsection{Rôles disponibles}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|p{7cm}|}
+\hline
+\textbf{Rôle} & \textbf{Niveau} & \textbf{Description} \\
+\hline
+Super Admin & 6 & Contrôle total du système \\
+Administrator & 5 & Gestion académique et administrative \\
+Dean & 4 & Validation et supervision \\
+Teacher & 3 & Saisie des notes et consultations \\
+Staff & 2 & Personnel administratif \\
+Student & 1 & Consultation des résultats personnels \\
+\hline
+\end{tabular}
+\caption{Hiérarchie des rôles}
+\end{table}
+
+\subsubsection{Principe hiérarchique}
+
+Les rôles sont hiérarchiques :
+\begin{itemize}[leftmargin=*]
+    \item Un rôle supérieur inclut toutes les permissions des rôles inférieurs
+    \item \code{roleSatisfies(userRole, requiredRole)} vérifie si l'utilisateur a les permissions suffisantes
+    \item Exemple : un Administrator peut faire tout ce qu'un Teacher peut faire
+\end{itemize}
+
+\subsection{Permissions}
+
+\subsubsection{Permissions calculées}
+
+Le système calcule automatiquement les permissions selon le rôle :
+
+\begin{lstlisting}[frame=single, basicstyle=\small\ttfamily]
+{
+  canManageCatalog: true,      // Gerer programmes, cours
+  canGrade: true,              // Saisir les notes
+  canManageUsers: true,        // Gerer les utilisateurs
+  canApproveLevel1: true,      // Valider workflows niveau 1
+  canApproveLevel2: true,      // Valider workflows niveau 2
+  canViewAllGrades: true,      // Voir toutes les notes
+  canExport: true,             // Generer des exports
+  canActivateAcademicYear: false // Activer annees (super_admin uniquement)
+}
+\end{lstlisting}
+
+\subsubsection{Matrice de permissions}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Permission} & \textbf{Student} & \textbf{Staff} & \textbf{Teacher} & \textbf{Dean} & \textbf{Admin} & \textbf{S.Admin} \\
+\hline
+canManageCatalog & ✗ & ✗ & ✗ & ✗ & ✓ & ✓ \\
+canGrade & ✗ & ✗ & ✓ & ✓ & ✓ & ✓ \\
+canManageUsers & ✗ & ✗ & ✗ & ✗ & ✓ & ✓ \\
+canApproveLevel1 & ✗ & ✗ & ✗ & ✓ & ✓ & ✓ \\
+canApproveLevel2 & ✗ & ✗ & ✗ & ✗ & ✓ & ✓ \\
+canViewAllGrades & ✗ & ✗ & ✗ & ✓ & ✓ & ✓ \\
+canExport & ✗ & ✗ & ✗ & ✓ & ✓ & ✓ \\
+canActivateAcademicYear & ✗ & ✗ & ✗ & ✗ & ✗ & ✓ \\
+\hline
+\end{tabular}
+\caption{Matrice complète des permissions}
+\end{table}
+
+\subsection{Gestion des profils de domaine}
+
+\subsubsection{Informations du profil}
+
+Un profil de domaine contient :
+\begin{itemize}[leftmargin=*]
+    \item Nom, prénom, email
+    \item Rôle dans le système
+    \item Faculté de rattachement (optionnel)
+    \item Département ou service
+    \item Numéro de téléphone
+    \item Photo de profil (optionnel)
+\end{itemize}
+
+\subsubsection{Modification d'un profil}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Profils de domaine}
+    \item Sélectionnez le profil à modifier
+    \item Modifiez les informations
+    \item \bouton{Enregistrer}
+\end{enumerate}
+
+\attention{La modification du rôle nécessite des permissions Administrator ou supérieures.}
+
+\subsection{Gestion des mots de passe}
+
+\subsubsection{Réinitialisation par l'utilisateur}
+
+Si l'utilisateur a oublié son mot de passe :
+\begin{enumerate}[leftmargin=*]
+    \item Sur la page de connexion, cliquer sur "Mot de passe oublié ?"
+    \item Entrer son adresse email
+    \item Suivre les instructions de l'email reçu
+    \item Créer un nouveau mot de passe
+\end{enumerate}
+
+\subsubsection{Réinitialisation par l'administrateur}
+
+Un administrateur peut réinitialiser le mot de passe d'un utilisateur :
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Utilisateurs}
+    \item Sélectionnez l'utilisateur
+    \item Cliquez sur \bouton{Réinitialiser le mot de passe}
+    \item Un nouveau mot de passe temporaire est généré
+    \item Communiquez-le à l'utilisateur de manière sécurisée
+    \item L'utilisateur devra le changer à la première connexion
+\end{enumerate}
+
+\subsection{Sessions et sécurité}
+
+\subsubsection{Durée des sessions}
+
+\begin{itemize}[leftmargin=*]
+    \item Session par défaut : 7 jours
+    \item Option "Se souvenir de moi" : 30 jours
+    \item Déconnexion automatique après inactivité (configurable)
+\end{itemize}
+
+\subsubsection{Bonnes pratiques de sécurité}
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!75!black,title=Sécurité des comptes]
+
+\textbf{Mots de passe :}
+\begin{itemize}[leftmargin=*]
+    \item Minimum 8 caractères
+    \item Mélange de majuscules, minuscules, chiffres et symboles
+    \item Ne jamais réutiliser le même mot de passe
+    \item Changer régulièrement (tous les 3-6 mois)
+\end{itemize}
+
+\textbf{Utilisation :}
+\begin{itemize}[leftmargin=*]
+    \item Ne jamais partager ses identifiants
+    \item Se déconnecter après chaque session
+    \item Ne pas laisser une session ouverte sans surveillance
+    \item Signaler immédiatement toute activité suspecte
+\end{itemize}
+
+\textbf{Administrateurs :}
+\begin{itemize}[leftmargin=*]
+    \item Limiter le nombre de Super Admins (2-3 maximum)
+    \item Réviser régulièrement les accès
+    \item Désactiver les comptes inutilisés
+    \item Auditer les logs d'authentification
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Audit et traçabilité}
+
+\subsubsection{Logs d'authentification}
+
+Le système trace :
+\begin{itemize}[leftmargin=*]
+    \item Connexions réussies et échouées
+    \item Adresses IP
+    \item Horodatages
+    \item Navigateur et système d'exploitation
+\end{itemize}
+
+\subsubsection{Actions utilisateurs}
+
+Toutes les actions importantes sont tracées :
+\begin{itemize}[leftmargin=*]
+    \item Création/modification de données
+    \item Saisie et modification de notes
+    \item Approbations de workflows
+    \item Exports de documents
+\end{itemize}
+
+\newpage
