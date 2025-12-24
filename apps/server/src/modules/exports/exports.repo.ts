@@ -1,16 +1,10 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import {
-	academicYears,
 	classCourses,
 	classes,
-	courses,
-	domainUsers,
 	exams,
-	grades,
 	institutions,
-	programs,
-	semesters,
 	students,
 	teachingUnits,
 } from "../../db/schema/app-schema";
@@ -108,7 +102,12 @@ export class ExportsRepo {
 			throw new Error("Class not found");
 		}
 
-		if (classData.academicYear !== academicYearId) {
+		console.log({ academicYearId, classYear: classData.academicYear });
+		const classAcademicYearId =
+			typeof classData.academicYear === "string"
+				? (typeof classData.academicYear as string)
+				: (classData.academicYear as any).id;
+		if (classAcademicYearId !== academicYearId) {
 			throw new Error("Class does not belong to the requested academic year");
 		}
 
