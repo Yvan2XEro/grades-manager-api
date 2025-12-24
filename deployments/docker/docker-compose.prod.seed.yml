@@ -1,0 +1,15 @@
+# Production Docker Compose override for seeding
+# Usage: docker compose -f docker-compose.prod.yml -f docker-compose.prod.seed.yml up
+
+services:
+  server:
+    environment:
+      # Enable seeding on startup (use only for first deployment)
+      RUN_SEED: "true"
+      # Optional: Specify custom seed files
+      # SEED_FOUNDATION: "/seed/prod-foundation.yaml"
+      # SEED_ACADEMICS: "/seed/prod-academics.yaml"
+      # SEED_USERS: "/seed/prod-users.yaml"
+    volumes:
+      # Mount your production seed files directory
+      - ./production-seeds:/usr/src/app/apps/server/seed:ro

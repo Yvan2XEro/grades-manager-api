@@ -9,7 +9,6 @@
 		"dev": "bun run --hot src/index.ts",
 		"seed:scaffold": "bun run src/scripts/scaffold-seeds.ts",
 		"seed": "bun run src/scripts/seed.ts",
-		"seed:link-org": "bun run src/scripts/link-organization.ts",
 		"start": "bun run dist/index.js",
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",

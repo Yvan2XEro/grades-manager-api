@@ -1,0 +1,15 @@
+# Docker Compose override for seeding the database
+# Usage: docker compose -f docker-compose.yml -f docker-compose.seed.yml up
+
+services:
+  server:
+    environment:
+      # Enable seeding on startup
+      RUN_SEED: "true"
+      # Optional: Specify custom seed files (uncomment to use)
+      # SEED_FOUNDATION: "/seed/custom-foundation.yaml"
+      # SEED_ACADEMICS: "/seed/custom-academics.yaml"
+      # SEED_USERS: "/seed/custom-users.yaml"
+    volumes:
+      # Mount your seed files directory
+      - ./apps/server/seed:/usr/src/app/apps/server/seed:ro

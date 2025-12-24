@@ -1,4 +1,21 @@
 node_modules
 .env
+.env.*
+!.env.example
 .DS_Store
 dist
+
+# Keep migration files - they're needed in Docker
+!apps/server/src/db/migrations/
+
+# Development files
+*.log
+.vscode
+.idea
+coverage
+.turbo
+
+# Testing
+cypress/videos
+cypress/screenshots
+.vitest
