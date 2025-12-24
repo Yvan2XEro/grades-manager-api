@@ -11,8 +11,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  SERVER_IMAGE: ghcr.io/${{ github.repository_owner }}/grades-manager-server
-  WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/grades-manager-web
+  SERVER_IMAGE: ghcr.io/yvan2xero/grades-manager-server
+  WEB_IMAGE: ghcr.io/yvan2xero/grades-manager-web
 
 jobs:
   docker:
