@@ -92,6 +92,15 @@ export type StudentPromotionFacts = {
 	progressionRate: number;
 	projectedCreditsEndOfYear: number;
 	canReachRequiredCredits: boolean;
+
+	// External student fields
+	admissionType: "normal" | "transfer" | "direct" | "equivalence";
+	isTransferStudent: boolean;
+	isDirectAdmission: boolean;
+	hasAcademicHistory: boolean;
+	transferCredits: number;
+	transferInstitution: string | null;
+	transferLevel: string | null;
 };
 
 /**

@@ -1,0 +1,379 @@
+% Section 12 - Annexes
+\section{Annexes}
+
+\subsection{Glossaire}
+
+\begin{description}[leftmargin=4cm, style=nextline]
+    \item[Année académique] Période scolaire s'étalant généralement de septembre à août de l'année suivante.
+
+    \item[Better-Auth] Système d'authentification moderne utilisé par l'application.
+
+    \item[Classe] Groupe d'étudiants d'une même promotion et niveau d'études.
+
+    \item[Coefficient] Poids d'un cours dans le calcul de la moyenne d'une UE.
+
+    \item[Crédit ECTS] European Credit Transfer System - unité de mesure standardisée pour l'enseignement supérieur.
+
+    \item[Cycle d'études] Niveau académique (Licence, Master, Doctorat).
+
+    \item[Délégation] Attribution temporaire de droits de saisie à un enseignant.
+
+    \item[Dean] Doyen - responsable académique avec droits de validation niveau 1.
+
+    \item[Domain User] Profil métier d'un utilisateur dans le système.
+
+    \item[Drizzle] ORM (Object-Relational Mapping) utilisé pour communiquer avec PostgreSQL.
+
+    \item[Élément Constitutif (EC)] Synonyme de "Cours" - matière individuelle.
+
+    \item[Examen] Évaluation d'un cours selon un type défini (CC, TP, EF).
+
+    \item[Handlebars] Moteur de templates utilisé pour générer les PDFs.
+
+    \item[Hono] Framework web JavaScript léger utilisé pour l'API backend.
+
+    \item[Ledger de crédits] Comptabilité des crédits ECTS accumulés par un étudiant.
+
+    \item[Matricule] Numéro d'identification unique d'un étudiant.
+
+    \item[Mention] Appréciation qualitative du résultat (Très Bien, Bien, etc.).
+
+    \item[ORM] Object-Relational Mapping - outil de mapping entre objets et base de données.
+
+    \item[PostgreSQL] Système de gestion de base de données relationnelle utilisé.
+
+    \item[Programme] Filière d'études (ex: Médecine, Pharmacie).
+
+    \item[RBAC] Role-Based Access Control - contrôle d'accès basé sur les rôles.
+
+    \item[Relevé de notes] Document récapitulant les résultats d'un étudiant.
+
+    \item[Semestre] Division temporelle de l'année académique (généralement 2 par an).
+
+    \item[tRPC] Framework pour créer des APIs type-safe entre client et serveur.
+
+    \item[UE] Unité d'Enseignement - regroupement thématique de cours.
+
+    \item[Workflow] Processus d'approbation hiérarchique pour modifications de notes.
+\end{description}
+
+\subsection{Raccourcis clavier}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Raccourci} & \textbf{Action} \\
+\hline
+Ctrl + S & Enregistrer (formulaires) \\
+Ctrl + F & Rechercher \\
+Ctrl + P & Imprimer / Exporter PDF \\
+Ctrl + Z & Annuler (édition) \\
+Ctrl + Shift + Z & Rétablir \\
+Échap & Fermer modal/dialogue \\
+Entrée & Valider formulaire \\
+F5 & Rafraîchir la page \\
+Ctrl + F5 & Rafraîchir sans cache \\
+\hline
+\end{tabular}
+\caption{Raccourcis clavier utiles}
+\end{table}
+
+\subsection{Structure de la base de données}
+
+\subsubsection{Tables principales}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Table} & \textbf{Description} \\
+\hline
+academic\_years & Années académiques \\
+faculties & Facultés \\
+programs & Programmes (filières) \\
+study\_cycles & Cycles d'études (L, M, D) \\
+classes & Classes (groupes d'étudiants) \\
+semesters & Semestres (S1, S2) \\
+teaching\_units & Unités d'enseignement (UE) \\
+courses & Cours (éléments constitutifs) \\
+students & Étudiants \\
+enrollments & Inscriptions annuelles \\
+student\_course\_enrollments & Inscriptions aux cours \\
+exam\_types & Types d'examens (CC, TP, EF) \\
+exams & Examens planifiés \\
+grades & Notes des étudiants \\
+workflows & Demandes d'approbation \\
+domain\_users & Profils métier des utilisateurs \\
+notifications & Notifications système \\
+student\_credit\_ledger & Comptabilité des crédits ECTS \\
+\hline
+\end{tabular}
+\caption{Tables principales de la base de données}
+\end{table}
+
+\subsubsection{Relations clés}
+
+\begin{verbatim}
+academic_years
+└── enrollments
+    ├── students
+    └── classes
+        ├── study_cycles
+        │   └── programs
+        │       └── faculties
+        └── semesters
+
+teaching_units
+└── courses
+    ├── exams
+    │   ├── exam_types
+    │   └── grades
+    │       └── students
+    └── student_course_enrollments
+        └── students
+\end{verbatim}
+
+\subsection{API endpoints principaux}
+
+\subsubsection{Structure tRPC}
+
+L'API suit une architecture tRPC avec routes typées :
+
+\begin{lstlisting}[frame=single, basicstyle=\small\ttfamily]
+// Endpoint de base
+/trpc
+
+// Routes principales
+/trpc/academicYears.list
+/trpc/academicYears.create
+/trpc/academicYears.activate
+
+/trpc/students.list
+/trpc/students.create
+/trpc/students.importExcel
+
+/trpc/grades.list
+/trpc/grades.upsert
+/trpc/grades.bulkImport
+
+/trpc/workflows.create
+/trpc/workflows.approve
+/trpc/workflows.reject
+
+/trpc/exports.generateTranscripts
+/trpc/exports.generateCertificates
+\end{lstlisting}
+
+\subsection{Formats de fichiers}
+
+\subsubsection{Import Excel - Étudiants}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Exemple} \\
+\hline
+Nom & Texte & Oui & Dupont \\
+Prénom & Texte & Oui & Jean \\
+Date de naissance & Date & Oui & 15/03/2000 \\
+Lieu de naissance & Texte & Oui & Yaoundé, Cameroun \\
+Genre & M/F & Oui & M \\
+Email & Email & Non & jean.dupont@example.com \\
+Téléphone & Texte & Non & +237 6XX XX XX XX \\
+Classe & Code & Oui & MED1-2024 \\
+\hline
+\end{tabular}
+\caption{Format Excel pour import d'étudiants}
+\end{table}
+
+\subsubsection{Import Excel - Notes}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Exemple} \\
+\hline
+Matricule & Texte & Oui & 24MED001 \\
+Nom complet & Texte & Non & Dupont Jean \\
+Note & Nombre & Oui & 15.5 \\
+Absent & O/N & Non & N \\
+\hline
+\end{tabular}
+\caption{Format Excel pour import de notes}
+\end{table}
+
+\subsection{Variables d'environnement}
+
+\subsubsection{Fichier .env complet}
+
+\begin{lstlisting}[frame=single, basicstyle=\small\ttfamily]
+# Base de donnees
+DATABASE_URL="postgresql://user:pass@host:5432/dbname"
+
+# Application
+NODE_ENV="production"
+PORT=3000
+
+# Better-Auth
+BETTER_AUTH_SECRET="votre_secret_64_caracteres_minimum"
+BETTER_AUTH_URL="https://votre-domaine.com"
+
+# Logs
+LOG_LEVEL="info"
+
+# Sessions
+SESSION_DURATION_DAYS=7
+SESSION_REMEMBER_DAYS=30
+
+# Uploads
+MAX_FILE_SIZE_MB=10
+UPLOAD_DIR="./storage/uploads"
+
+# Exports
+EXPORT_LOGO_PATH="./storage/logos"
+EXPORT_TEMP_DIR="./storage/temp"
+
+# Frontend (apps/web/.env)
+VITE_API_URL="https://votre-domaine.com"
+\end{lstlisting}
+
+\subsection{Commandes utiles}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|p{6cm}|p{7cm}|}
+\hline
+\textbf{Commande} & \textbf{Description} \\
+\hline
+\code{bun install} & Installer dépendances \\
+\code{bun dev} & Démarrer en développement \\
+\code{bun dev:server} & Démarrer backend uniquement \\
+\code{bun dev:web} & Démarrer frontend uniquement \\
+\code{bun build} & Build production \\
+\code{bun run --filter server start} & Démarrer serveur production \\
+\code{bun db:push} & Appliquer schéma à la BD \\
+\code{bun db:studio} & Ouvrir Drizzle Studio \\
+\code{bun db:generate} & Générer migrations \\
+\code{bun db:migrate} & Exécuter migrations \\
+\code{bun run --filter server seed:scaffold} & Générer templates YAML \\
+\code{bun run --filter server seed} & Charger données de test \\
+\code{bun check} & Linter et formatter \\
+\code{bun check-types} & Vérification types \\
+\code{bun test} & Lancer tests \\
+\hline
+\end{tabular}
+\caption{Commandes Bun principales}
+\end{table}
+
+\subsection{Règles de calcul}
+
+\subsubsection{Formules de moyennes}
+
+\textbf{Moyenne d'un cours :}
+\begin{equation}
+M_{cours} = \sum_{i=1}^{n} (Note_i \times Poids_i)
+\end{equation}
+
+\textbf{Moyenne d'une UE :}
+\begin{equation}
+M_{UE} = \frac{\sum_{j=1}^{m} (M_{cours_j} \times Coef_j)}{\sum_{j=1}^{m} Coef_j}
+\end{equation}
+
+\textbf{Moyenne générale :}
+\begin{equation}
+M_{generale} = \frac{\sum_{k=1}^{p} (M_{UE_k} \times Coef_{UE_k})}{\sum_{k=1}^{p} Coef_{UE_k}}
+\end{equation}
+
+\subsubsection{Barème de mentions}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Mention} & \textbf{Plage} & \textbf{Code} \\
+\hline
+Très Bien & $16 \leq M \leq 20$ & TB \\
+Bien & $14 \leq M < 16$ & B \\
+Assez Bien & $12 \leq M < 14$ & AB \\
+Passable & $10 \leq M < 12$ & P \\
+Ajourné & M $<$ 10 & AJ \\
+\hline
+\end{tabular}
+\caption{Barème de mentions}
+\end{table}
+
+\subsection{Références}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Documentation Bun} : \url{https://bun.sh/docs}
+    \item \textbf{Documentation PostgreSQL} : \url{https://www.postgresql.org/docs/}
+    \item \textbf{Documentation Drizzle ORM} : \url{https://orm.drizzle.team/docs/overview}
+    \item \textbf{Documentation tRPC} : \url{https://trpc.io/docs}
+    \item \textbf{Documentation React} : \url{https://react.dev/}
+    \item \textbf{Documentation Better-Auth} : \url{https://www.better-auth.com/docs}
+\end{itemize}
+
+\subsection{Historique des versions}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|p{8cm}|}
+\hline
+\textbf{Version} & \textbf{Date} & \textbf{Changements} \\
+\hline
+1.0.0 & 2025-01 & Version initiale \\
+& & - Gestion académique complète \\
+& & - Système de notes et examens \\
+& & - Workflows d'approbation \\
+& & - Exports PDF \\
+\hline
+\end{tabular}
+\caption{Historique des versions}
+\end{table}
+
+\subsection{Licence et crédits}
+
+\begin{tcolorbox}[colback=gray!10!white,colframe=gray!75!black,title=Informations légales]
+
+\textbf{Développeur :} Cédric TEFOYE
+
+\textbf{Contact :} cedrictefoye@gmail.com
+
+\textbf{Institution :} Faculté de Médecine et Sciences Pharmaceutiques (FMSP)
+
+\textbf{Copyright :} © 2025 FMSP. Tous droits réservés.
+
+\textbf{Licence :} Logiciel propriétaire développé pour la FMSP. Toute reproduction, distribution ou modification non autorisée est strictement interdite.
+
+\textbf{Technologies utilisées :}
+\begin{itemize}[leftmargin=*]
+    \item Bun (MIT License)
+    \item PostgreSQL (PostgreSQL License)
+    \item React (MIT License)
+    \item tRPC (MIT License)
+    \item Drizzle ORM (Apache 2.0)
+    \item Better-Auth (MIT License)
+    \item TailwindCSS (MIT License)
+    \item shadcn/ui (MIT License)
+\end{itemize}
+
+\end{tcolorbox}
+
+\vspace{1cm}
+
+\begin{center}
+\textit{Merci d'utiliser le Système de Gestion des Notes !}
+
+\vspace{0.5cm}
+
+Pour toute question ou suggestion, n'hésitez pas à nous contacter.
+\end{center}
+
+\end{document}

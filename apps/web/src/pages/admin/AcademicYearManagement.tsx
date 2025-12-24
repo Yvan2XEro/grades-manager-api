@@ -115,8 +115,8 @@ const AcademicYearManagement: React.FC = () => {
 	const { data: academicYears, isLoading } = useQuery({
 		queryKey: ["academicYears"],
 		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return items as AcademicYear[];
+			const result = await trpcClient.academicYears.list.query({});
+			return (result?.items || []) as AcademicYear[];
 		},
 	});
 
@@ -270,7 +270,11 @@ const AcademicYearManagement: React.FC = () => {
 					<CardDescription>{t("admin.academicYears.subtitle")}</CardDescription>
 				</CardHeader>
 
-				{academicYears?.length === 0 ? (
+				{isLoading ? (
+					<div className="flex items-center justify-center p-8">
+						<Spinner />
+					</div>
+				) : academicYears?.length === 0 ? (
 					<div className="p-8 text-center">
 						<Calendar className="mx-auto h-12 w-12 text-gray-400" />
 						<h3 className="mt-4 font-medium text-gray-700 text-lg">

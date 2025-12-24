@@ -1,0 +1,280 @@
+% Section 10 - Dépannage
+\section{Dépannage et résolution de problèmes}
+
+\subsection{Problèmes de connexion}
+
+\subsubsection{Impossible de se connecter}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Message d'erreur : "Identifiants incorrects" ou "Échec de connexion"
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez que l'email est correct (pas de majuscules par erreur)
+    \item Vérifiez votre mot de passe (attention à Caps Lock)
+    \item Utilisez "Mot de passe oublié ?" pour réinitialiser
+    \item Vérifiez que le compte est actif (contactez l'administrateur)
+    \item Videz le cache du navigateur
+    \item Essayez en navigation privée
+\end{enumerate}
+
+\subsubsection{Session expirée}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Déconnexion automatique fréquente
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Cochez "Se souvenir de moi" à la connexion
+    \item Vérifiez que les cookies sont activés
+    \item Augmentez la durée de session (administrateurs uniquement)
+    \item Vérifiez la synchronisation de l'horloge système
+\end{enumerate}
+
+\subsection{Problèmes de saisie de notes}
+
+\subsubsection{Impossible de saisir les notes}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Champs de saisie désactivés ou message "Non autorisé"
+\end{tcolorbox}
+
+\textbf{Causes possibles :}
+\begin{enumerate}[leftmargin=*]
+    \item Vous n'avez pas la permission \code{canGrade}
+    \item L'examen est déjà clôturé (date limite dépassée)
+    \item Vous n'avez pas de délégation pour cet examen
+    \item Les notes ont déjà été validées (modification nécessite workflow)
+\end{enumerate}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez votre rôle (Teacher minimum requis)
+    \item Vérifiez la date limite de saisie de l'examen
+    \item Demandez une délégation à l'administrateur
+    \item Si notes validées : créez un workflow de modification
+\end{enumerate}
+
+\subsubsection{Notes rejetées à l'import Excel}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Message d'erreur lors de l'import de notes
+\end{tcolorbox}
+
+\textbf{Vérifications :}
+\begin{enumerate}[leftmargin=*]
+    \item Format du fichier : doit être .xlsx ou .xls
+    \item Structure des colonnes : utilisez le modèle fourni
+    \item Format des notes :
+    \begin{itemize}
+        \item Nombres entre 0 et 20
+        \item Séparateur décimal : point (15.5) ou virgule (15,5)
+        \item Pas de texte dans les cellules de notes
+    \end{itemize}
+    \item Matricules : doivent correspondre exactement à la base
+\end{enumerate}
+
+\subsection{Problèmes de calcul}
+
+\subsubsection{Moyenne incorrecte}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+La moyenne affichée ne correspond pas aux notes
+\end{tcolorbox}
+
+\textbf{Vérifications :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez les poids des types d'examens (doivent totaliser 100\%)
+    \item Vérifiez les coefficients des cours dans l'UE
+    \item Assurez-vous que toutes les notes sont saisies
+    \item Vérifiez qu'il n'y a pas de notes en attente de validation
+    \item Rafraîchissez la page (Ctrl+F5)
+\end{enumerate}
+
+Si le problème persiste :
+\begin{lstlisting}[language={}, frame=single]
+# Recalculer toutes les moyennes (administrateur)
+bun run --filter server recalculate-grades
+\end{lstlisting}
+
+\subsection{Problèmes d'export}
+
+\subsubsection{Export PDF vide ou incomplet}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Le PDF généré est vide ou manque des informations
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez que les notes sont validées
+    \item Vérifiez le template HTML (erreurs de syntaxe Handlebars)
+    \item Vérifiez que les logos existent et sont accessibles
+    \item Regardez les logs serveur pour les erreurs
+    \item Testez avec un seul étudiant d'abord
+\end{enumerate}
+
+\subsubsection{Logos manquants}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Les logos n'apparaissent pas dans les exports
+\end{tcolorbox}
+
+\textbf{Vérifications :}
+\begin{enumerate}[leftmargin=*]
+    \item Fichiers présents dans \code{apps/server/storage/logos/}
+    \item Noms corrects : \code{logo-fmsp.png}, \code{logo-ud.png}
+    \item Format PNG (pas JPG ou autre)
+    \item Permissions de lecture sur les fichiers
+    \item Redémarrez le serveur après ajout de logos
+\end{enumerate}
+
+\subsection{Problèmes de performance}
+
+\subsubsection{Application lente}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Temps de chargement élevés, interface qui rame
+\end{tcolorbox}
+
+\textbf{Diagnostics :}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Côté client :}
+    \begin{itemize}
+        \item Ouvrez la console développeur (F12)
+        \item Onglet Network : vérifiez les temps de requêtes
+        \item Vérifiez la vitesse de votre connexion Internet
+        \item Essayez un autre navigateur
+    \end{itemize}
+
+    \item \textbf{Côté serveur :}
+    \begin{itemize}
+        \item Vérifiez la charge CPU : \code{top} ou \code{htop}
+        \item Vérifiez la mémoire disponible : \code{free -h}
+        \item Vérifiez l'espace disque : \code{df -h}
+        \item Consultez les logs pour erreurs
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Optimisations :}
+\begin{enumerate}[leftmargin=*]
+    \item Optimiser la base de données :
+    \begin{lstlisting}[language={}, frame=single]
+-- Analyser et optimiser
+VACUUM ANALYZE;
+
+-- Reconstruire les index
+REINDEX DATABASE grades_manager;
+    \end{lstlisting}
+
+    \item Nettoyer le cache :
+    \begin{lstlisting}[language={}, frame=single]
+# Vider le cache de l'application
+rm -rf apps/server/cache/*
+    \end{lstlisting}
+
+    \item Augmenter les ressources serveur si nécessaire
+\end{enumerate}
+
+\subsection{Problèmes de base de données}
+
+\subsubsection{Erreur de connexion à la base}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+\code{Error: Connection refused} ou \code{ECONNREFUSED}
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez que PostgreSQL est démarré :
+    \begin{lstlisting}[language={}, frame=single]
+# Linux
+sudo systemctl status postgresql
+
+# Si arrete, demarrer
+sudo systemctl start postgresql
+    \end{lstlisting}
+
+    \item Vérifiez le \code{DATABASE\_URL} dans \code{.env}
+    \item Testez la connexion manuellement :
+    \begin{lstlisting}[language={}, frame=single]
+psql -U grades_app -d grades_manager
+    \end{lstlisting}
+
+    \item Vérifiez les permissions PostgreSQL dans \code{pg\_hba.conf}
+\end{enumerate}
+
+\subsubsection{Migration échouée}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+Erreur lors de \code{bun db:push} ou \code{bun db:migrate}
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez les logs d'erreur
+    \item Vérifiez que la base de données est accessible
+    \item Si conflit de schéma, restaurez depuis sauvegarde :
+    \begin{lstlisting}[language={}, frame=single]
+# Sauvegarder d'abord
+pg_dump grades_manager > backup_before_fix.sql
+
+# Restaurer depuis une sauvegarde propre
+psql grades_manager < backup_clean.sql
+
+# Relancer la migration
+bun db:migrate
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Messages d'erreur courants}
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Message} & \textbf{Solution} \\
+\hline
+FORBIDDEN & Permissions insuffisantes, vérifiez votre rôle \\
+\hline
+UNAUTHORIZED & Non connecté, reconnectez-vous \\
+\hline
+NOT\_FOUND & Ressource inexistante, vérifiez l'ID \\
+\hline
+VALIDATION\_ERROR & Données invalides, vérifiez le format \\
+\hline
+DUPLICATE\_KEY & Doublon, l'élément existe déjà \\
+\hline
+FOREIGN\_KEY\_VIOLATION & Référence manquante, créez d'abord l'élément parent \\
+\hline
+\end{tabular}
+\caption{Messages d'erreur fréquents}
+\end{table}
+
+\subsection{Obtenir de l'aide}
+
+\subsubsection{Support technique}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Email} : cedrictefoye@gmail.com
+    \item \textbf{Documentation} : Consultez ce guide et CLAUDE.md
+    \item \textbf{Logs} : Conservez les logs d'erreur pour le support
+\end{itemize}
+
+\subsubsection{Informations à fournir}
+
+Lors d'une demande de support, incluez :
+\begin{enumerate}[leftmargin=*]
+    \item Description du problème
+    \item Étapes pour reproduire
+    \item Messages d'erreur exacts
+    \item Captures d'écran
+    \item Version de l'application
+    \item Navigateur et système d'exploitation
+    \item Logs pertinents
+\end{enumerate}
+
+\newpage

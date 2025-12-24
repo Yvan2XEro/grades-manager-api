@@ -1,29 +1,34 @@
 import { TRPCError } from "@trpc/server";
 import * as repo from "./exam-types.repo";
 
-export function createExamType(data: Parameters<typeof repo.create>[0]) {
-	return repo.create(data);
+type CreateInput = Parameters<typeof repo.create>[0];
+type UpdateInput = Parameters<typeof repo.update>[2];
+type ListInput = Parameters<typeof repo.list>[1];
+
+export async function createExamType(data: CreateInput, institutionId: string) {
+	return repo.create({ ...data, institutionId });
 }
 
 export async function updateExamType(
 	id: string,
-	data: Parameters<typeof repo.update>[1],
+	institutionId: string,
+	data: UpdateInput,
 ) {
-	const updated = await repo.update(id, data);
+	const updated = await repo.update(id, institutionId, data);
 	if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
 	return updated;
 }
 
-export async function deleteExamType(id: string) {
-	const existing = await repo.findById(id);
+export async function deleteExamType(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
-	await repo.remove(id);
+	await repo.remove(id, institutionId);
 }
 
-export function getExamTypeById(id: string) {
-	return repo.findById(id);
+export function getExamTypeById(id: string, institutionId: string) {
+	return repo.findById(id, institutionId);
 }
 
-export function listExamTypes(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export function listExamTypes(opts: ListInput, institutionId: string) {
+	return repo.list(institutionId, opts);
 }

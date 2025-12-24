@@ -43,6 +43,12 @@ export const evaluateClassSchema = z.object({
 	academicYearId: z.string(),
 });
 
+// Refresh summaries for a class/year
+export const refreshClassSummariesSchema = z.object({
+	classId: z.string(),
+	academicYearId: z.string(),
+});
+
 // Apply promotion (execute)
 export const applyPromotionSchema = z.object({
 	sourceClassId: z.string(),
@@ -76,3 +82,6 @@ export type EvaluateClassInput = z.infer<typeof evaluateClassSchema>;
 export type ApplyPromotionInput = z.infer<typeof applyPromotionSchema>;
 export type ListExecutionsInput = z.infer<typeof listExecutionsSchema>;
 export type ExecutionDetailsInput = z.infer<typeof executionDetailsSchema>;
+export type RefreshClassSummariesInput = z.infer<
+	typeof refreshClassSummariesSchema
+>;

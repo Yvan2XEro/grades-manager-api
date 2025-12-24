@@ -15,7 +15,7 @@ import * as enrollmentsService from "../student-course-enrollments.service";
 
 async function setupCourseWithCredits(credits: number) {
 	const faculty = await createFaculty();
-	const program = await createProgram({ faculty: faculty.id });
+	const program = await createProgram({ institutionId: faculty.id });
 	const academicYear = await createAcademicYear();
 	const teachingUnit = await createTeachingUnit({
 		programId: program.id,
@@ -49,7 +49,11 @@ describe("student course enrollments – ledger integration", () => {
 		expect(summary.creditsInProgress).toBe(30);
 		expect(summary.creditsEarned).toBe(0);
 
-		await enrollmentsService.updateStatus(enrollment.id, "completed");
+		await enrollmentsService.updateStatus(
+			enrollment.id,
+			student.institutionId,
+			"completed",
+		);
 		summary = await summarizeStudent(student.id);
 		expect(summary.creditsInProgress).toBe(0);
 		expect(summary.creditsEarned).toBe(30);

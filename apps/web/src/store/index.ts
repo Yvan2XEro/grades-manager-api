@@ -9,7 +9,8 @@ export type BusinessRole =
 	| "dean"
 	| "teacher"
 	| "administrator"
-	| "super_admin";
+	| "super_admin"
+	| "owner";
 
 export type PermissionSnapshot = {
 	canManageCatalog: boolean;
@@ -41,10 +42,31 @@ const defaultPermissions: PermissionSnapshot = {
  * Use these to protect layouts/routes on the client.
  */
 export const roleGuards = {
-	manageCatalog: ["administrator", "dean", "super_admin"] as BusinessRole[],
-	manageStudents: ["administrator", "dean", "super_admin"] as BusinessRole[],
-	grade: ["teacher", "administrator", "dean", "super_admin"] as BusinessRole[],
-	viewAnalytics: ["administrator", "dean", "super_admin"] as BusinessRole[],
+	manageCatalog: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
+	manageStudents: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
+	grade: [
+		"teacher",
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
+	viewAnalytics: [
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	] as BusinessRole[],
 };
 
 type StoreState = {
@@ -54,6 +76,8 @@ type StoreState = {
 	sidebarOpen: boolean;
 	toggleSidebar: () => void;
 	setSidebarOpen: (open: boolean) => void;
+	activeOrganizationSlug: string | null;
+	setActiveOrganizationSlug: (slug: string) => void;
 };
 
 export const useStore = create<StoreState>()(
@@ -69,15 +93,21 @@ export const useStore = create<StoreState>()(
 							}
 						: null,
 				}),
-			clearUser: () => set({ user: null }),
+			clearUser: () => set({ user: null, activeOrganizationSlug: null }),
 			sidebarOpen: true,
 			toggleSidebar: () =>
 				set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 			setSidebarOpen: (open) => set({ sidebarOpen: open }),
+			activeOrganizationSlug: null,
+			setActiveOrganizationSlug: (slug) =>
+				set({ activeOrganizationSlug: slug }),
 		}),
 		{
 			name: "academic-management-store",
-			partialize: (state) => ({ user: state.user }),
+			partialize: (state) => ({
+				user: state.user,
+				activeOrganizationSlug: state.activeOrganizationSlug,
+			}),
 		},
 	),
 );

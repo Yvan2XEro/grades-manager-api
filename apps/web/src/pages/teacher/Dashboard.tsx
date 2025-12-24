@@ -28,6 +28,7 @@ type CourseInfo = {
 	cycle_code?: string | null;
 	cycle_level_name?: string | null;
 	cycle_level_code?: string | null;
+	isDelegated?: boolean;
 };
 
 type UpcomingExam = {
@@ -107,6 +108,7 @@ const TeacherDashboard: React.FC = () => {
 					cycle_code: klass.cycle?.code ?? null,
 					cycle_level_name: klass.cycleLevel?.name ?? null,
 					cycle_level_code: klass.cycleLevel?.code ?? null,
+					isDelegated: cc.isDelegated,
 				});
 
 				exams.items.forEach((exam) => {
@@ -245,13 +247,24 @@ const TeacherDashboard: React.FC = () => {
 									className="block px-2 py-4 transition hover:bg-muted/50"
 								>
 									<div className="flex items-center justify-between gap-4">
-										<div>
-											<p className="font-medium text-base text-foreground">
-												{course.name}
-											</p>
-											<p className="text-muted-foreground text-sm">
-												{course.class_name} • {course.program_name}
-											</p>
+										<div className="flex-1">
+											<div className="flex items-start justify-between gap-3">
+												<div>
+													<p className="font-medium text-base text-foreground">
+														{course.name}
+													</p>
+													<p className="text-muted-foreground text-sm">
+														{course.class_name} • {course.program_name}
+													</p>
+												</div>
+												{course.isDelegated ? (
+													<Badge variant="secondary">
+														{t("teacher.courses.delegatedBadge", {
+															defaultValue: "Delegated",
+														})}
+													</Badge>
+												) : null}
+											</div>
 											{(course.cycle_name || course.cycle_level_name) && (
 												<div className="mt-1 flex flex-wrap gap-2 text-xs">
 													{course.cycle_name && (

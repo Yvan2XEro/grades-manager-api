@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const cycleBaseSchema = z.object({
-	facultyId: z.string(),
+	institutionId: z.string().optional(), // Auto-filled from context
 	code: z.string().min(1),
 	name: z.string().min(1),
 	description: z.string().optional(),
@@ -14,7 +14,7 @@ export const updateCycleSchema = cycleBaseSchema.partial().extend({
 });
 
 export const cycleListSchema = z.object({
-	facultyId: z.string().optional(),
+	institutionId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

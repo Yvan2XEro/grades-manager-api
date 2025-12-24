@@ -47,11 +47,19 @@ Cypress.Commands.add("resetDatabase", () => {
 	cy.task("resetDB");
 });
 
+Cypress.Commands.add("logout", () => {
+	cy.findByRole("button", { name: /logout|sign out|déconnexion/i })
+		.first()
+		.click();
+	cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+});
+
 declare global {
 	namespace Cypress {
 		interface Chainable {
 			loginAs(role: Role, options?: LoginOptions): Chainable<void>;
 			resetDatabase(): Chainable<void>;
+			logout(): Chainable<void>;
 		}
 	}
 }

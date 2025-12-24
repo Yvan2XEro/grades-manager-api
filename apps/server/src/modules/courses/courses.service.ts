@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
@@ -10,10 +10,26 @@ type CourseInput = schema.NewCourse & {
 	prerequisiteCourseIds?: string[];
 };
 
-async function ensureTeachingUnit(teachingUnitId: string, programId: string) {
-	const unit = await db.query.teachingUnits.findFirst({
-		where: eq(schema.teachingUnits.id, teachingUnitId),
-	});
+async function ensureTeachingUnit(
+	teachingUnitId: string,
+	programId: string,
+	institutionId: string,
+) {
+	const result = await db
+		.select()
+		.from(schema.teachingUnits)
+		.innerJoin(
+			schema.programs,
+			eq(schema.teachingUnits.programId, schema.programs.id),
+		)
+		.where(
+			and(
+				eq(schema.teachingUnits.id, teachingUnitId),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	const unit = result[0]?.teaching_units;
 	if (!unit) {
 		throw new TRPCError({
 			code: "NOT_FOUND",
@@ -47,9 +63,13 @@ async function syncPrerequisites(
 	);
 }
 
-export async function createCourse(data: CourseInput) {
+export async function createCourse(data: CourseInput, institutionId: string) {
 	const { prerequisiteCourseIds, ...courseData } = data;
-	await ensureTeachingUnit(courseData.teachingUnitId, courseData.program);
+	await ensureTeachingUnit(
+		courseData.teachingUnitId,
+		courseData.program,
+		institutionId,
+	);
 	const created = await repo.create({
 		...courseData,
 		code: normalizeCode(courseData.code),
@@ -58,9 +78,13 @@ export async function createCourse(data: CourseInput) {
 	return created;
 }
 
-export async function updateCourse(id: string, data: Partial<CourseInput>) {
+export async function updateCourse(
+	id: string,
+	institutionId: string,
+	data: Partial<CourseInput>,
+) {
 	const { prerequisiteCourseIds, ...courseData } = data;
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
 	if (
 		(courseData.program && courseData.teachingUnitId) ||
@@ -69,9 +93,10 @@ export async function updateCourse(id: string, data: Partial<CourseInput>) {
 		await ensureTeachingUnit(
 			courseData.teachingUnitId ?? existing.teachingUnitId,
 			courseData.program ?? existing.program,
+			institutionId,
 		);
 	}
-	const updated = await repo.update(id, {
+	const updated = await repo.update(id, institutionId, {
 		...courseData,
 		code: courseData.code ? normalizeCode(courseData.code) : undefined,
 	});
@@ -81,35 +106,50 @@ export async function updateCourse(id: string, data: Partial<CourseInput>) {
 	return updated;
 }
 
-export async function deleteCourse(id: string) {
-	await repo.remove(id);
+export async function deleteCourse(id: string, institutionId: string) {
+	await repo.remove(id, institutionId);
 }
 
-export async function listCourses(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listCourses(
+	opts: Parameters<typeof repo.list>[1],
+	institutionId: string,
+) {
+	return repo.list(institutionId, opts);
 }
 
-export async function getCourseById(id: string) {
-	const item = await repo.findById(id);
+export async function getCourseById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
 	return item;
 }
 
-export async function getCourseByCode(code: string, programId: string) {
-	const item = await repo.findByCode(normalizeCode(code), programId);
+export async function getCourseByCode(
+	code: string,
+	programId: string,
+	institutionId: string,
+) {
+	const item = await repo.findByCode(
+		normalizeCode(code),
+		programId,
+		institutionId,
+	);
 	if (!item) throw notFound();
 	return item;
 }
 
 export async function assignDefaultTeacher(
 	courseId: string,
+	institutionId: string,
 	teacherId: string,
 ) {
-	const existing = await repo.findById(courseId);
+	const existing = await repo.findById(courseId, institutionId);
 	if (!existing) throw notFound();
-	return repo.assignDefaultTeacher(courseId, teacherId);
+	return repo.assignDefaultTeacher(courseId, institutionId, teacherId);
 }
 
-export async function searchCourses(opts: Parameters<typeof repo.search>[0]) {
-	return repo.search(opts);
+export async function searchCourses(
+	opts: Parameters<typeof repo.search>[1],
+	institutionId: string,
+) {
+	return repo.search(institutionId, opts);
 }

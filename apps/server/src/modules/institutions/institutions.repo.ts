@@ -7,6 +7,10 @@ export async function getFirst() {
 	return institution ?? null;
 }
 
+export async function list() {
+	return db.select().from(schema.institutions);
+}
+
 export async function create(data: schema.NewInstitution) {
 	const [created] = await db
 		.insert(schema.institutions)

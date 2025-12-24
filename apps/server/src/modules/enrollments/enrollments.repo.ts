@@ -10,31 +10,49 @@ export async function create(data: schema.NewEnrollment) {
 	return enrollment;
 }
 
-export async function update(id: string, data: Partial<schema.NewEnrollment>) {
+export async function update(
+	id: string,
+	data: Partial<schema.NewEnrollment>,
+	institutionId: string,
+) {
 	const [enrollment] = await db
 		.update(schema.enrollments)
 		.set(data)
-		.where(eq(schema.enrollments.id, id))
+		.where(
+			and(
+				eq(schema.enrollments.id, id),
+				eq(schema.enrollments.institutionId, institutionId),
+			),
+		)
 		.returning();
 	return enrollment;
 }
 
-export async function findById(id: string) {
-	return db.query.enrollments.findFirst({
-		where: eq(schema.enrollments.id, id),
-	});
-}
-
-export async function findActive(studentId: string) {
+export async function findById(id: string, institutionId: string) {
 	return db.query.enrollments.findFirst({
 		where: and(
-			eq(schema.enrollments.studentId, studentId),
-			eq(schema.enrollments.status, "active"),
+			eq(schema.enrollments.id, id),
+			eq(schema.enrollments.institutionId, institutionId),
 		),
 	});
 }
 
+export async function findActive(studentId: string, institutionId?: string) {
+	const conditions = [
+		eq(schema.enrollments.studentId, studentId),
+		eq(schema.enrollments.status, "active"),
+	] as ReturnType<typeof eq>[];
+	if (institutionId) {
+		conditions.push(eq(schema.enrollments.institutionId, institutionId));
+	}
+	const where = conditions.length === 1 ? conditions[0] : and(...conditions);
+	return db.query.enrollments.findFirst({
+		where,
+	});
+}
+
 export async function list(opts: {
+	institutionId: string;
 	studentId?: string;
 	classId?: string;
 	academicYearId?: string;
@@ -44,6 +62,7 @@ export async function list(opts: {
 }) {
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 	const conditions = [
+		eq(schema.enrollments.institutionId, opts.institutionId),
 		opts.studentId
 			? eq(schema.enrollments.studentId, opts.studentId)
 			: undefined,
@@ -77,19 +96,23 @@ export async function list(opts: {
 export async function closeActive(
 	studentId: string,
 	status: schema.EnrollmentStatus = "completed",
+	institutionId?: string,
 ) {
+	const conditions = [
+		eq(schema.enrollments.studentId, studentId),
+		eq(schema.enrollments.status, "active"),
+	] as ReturnType<typeof eq>[];
+	if (institutionId) {
+		conditions.push(eq(schema.enrollments.institutionId, institutionId));
+	}
+	const where = conditions.length === 1 ? conditions[0] : and(...conditions);
 	const [record] = await db
 		.update(schema.enrollments)
 		.set({
 			status,
 			exitedAt: new Date(),
 		})
-		.where(
-			and(
-				eq(schema.enrollments.studentId, studentId),
-				eq(schema.enrollments.status, "active"),
-			),
-		)
+		.where(where)
 		.returning();
 	return record ?? null;
 }

@@ -18,6 +18,7 @@ type CreateProfileInput = {
 	nationality?: string;
 	status?: DomainUserStatus;
 	authUserId?: string;
+	memberId?: string;
 };
 
 type UpdateProfileInput = {
@@ -32,6 +33,7 @@ type UpdateProfileInput = {
 	nationality?: string | null;
 	status?: DomainUserStatus;
 	authUserId?: string | null;
+	memberId?: string | null;
 };
 
 const normalizeDate = (value?: Date | null) => {
@@ -63,6 +65,7 @@ export async function createUserProfile(data: CreateProfileInput) {
 		nationality: data.nationality ?? null,
 		status: data.status ?? "active",
 		authUserId: data.authUserId ?? null,
+		memberId: data.memberId ?? null,
 	});
 }
 
@@ -83,6 +86,7 @@ export async function updateUserProfile(id: string, data: UpdateProfileInput) {
 	if (data.status !== undefined) payload.status = data.status;
 	if (data.authUserId !== undefined)
 		payload.authUserId = data.authUserId ?? null;
+	if (data.memberId !== undefined) payload.memberId = data.memberId ?? null;
 	if (!Object.keys(payload).length) {
 		return domainUsersRepo.findById(id);
 	}

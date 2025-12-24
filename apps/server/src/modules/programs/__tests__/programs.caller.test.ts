@@ -15,17 +15,15 @@ describe("programs router", () => {
 	});
 
 	it("supports CRUD", async () => {
-		const faculty = await createFaculty();
 		const admin = createCaller(asAdmin());
 		const program = await admin.programs.create({
 			name: "Prog",
-			faculty: faculty.id,
 			code: "PRG-1",
 		});
-		expect(program.faculty).toBe(faculty.id);
+		expect(program.code).toBe("PRG-1");
 
-		const list = await admin.programs.list({ facultyId: faculty.id });
-		expect(list.items[0].id).toBe(program.id);
+		const list = await admin.programs.list({});
+		expect(list.items.some((p) => p.id === program.id)).toBe(true);
 
 		const updated = await admin.programs.update({
 			id: program.id,
@@ -34,7 +32,7 @@ describe("programs router", () => {
 		expect(updated.name).toBe("Prog2");
 
 		await admin.programs.delete({ id: program.id });
-		const after = await admin.programs.list({ facultyId: faculty.id });
-		expect(after.items.length).toBe(0);
+		const after = await admin.programs.list({});
+		expect(after.items.find((p) => p.id === program.id)).toBeUndefined();
 	});
 });

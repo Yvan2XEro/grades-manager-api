@@ -1,0 +1,441 @@
+% Section 02 - Installation et Configuration
+\section{Installation et configuration initiale}
+
+\subsection{Prérequis techniques}
+
+Avant d'installer le système, assurez-vous de disposer des éléments suivants :
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Prérequis serveur]
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Bun} v1.0+ installé (ou Node.js v20+ en alternative)
+    \item \textbf{PostgreSQL} 14+ installé et configuré
+    \item \textbf{Git} pour cloner le repository (si installation depuis sources)
+    \item Accès administrateur au serveur
+    \item Port 3000 (backend) et 5173 (frontend dev) disponibles
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Installation de Bun}
+
+\subsubsection{Windows}
+
+\begin{lstlisting}[language={}, frame=single]
+# Utiliser PowerShell
+powershell -c "irm bun.sh/install.ps1 | iex"
+\end{lstlisting}
+
+\subsubsection{macOS et Linux}
+
+\begin{lstlisting}[language={}, frame=single]
+curl -fsSL https://bun.sh/install | bash
+\end{lstlisting}
+
+\subsubsection{Vérification de l'installation}
+
+\begin{lstlisting}[language={}, frame=single]
+bun --version
+# Doit afficher: 1.x.x ou superieur
+\end{lstlisting}
+
+\subsection{Installation de PostgreSQL}
+
+\subsubsection{Windows}
+
+\begin{enumerate}[leftmargin=*]
+    \item Téléchargez l'installateur depuis \url{https://www.postgresql.org/download/windows/}
+    \item Exécutez l'installateur et suivez les instructions
+    \item Notez le mot de passe du super-utilisateur \code{postgres}
+    \item Assurez-vous que PostgreSQL démarre automatiquement
+\end{enumerate}
+
+\subsubsection{macOS (Homebrew)}
+
+\begin{lstlisting}[language={}, frame=single]
+brew install postgresql@14
+brew services start postgresql@14
+\end{lstlisting}
+
+\subsubsection{Linux (Ubuntu/Debian)}
+
+\begin{lstlisting}[language={}, frame=single]
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+\end{lstlisting}
+
+\subsection{Téléchargement et installation de l'application}
+
+\subsubsection{Clonage du repository}
+
+\begin{lstlisting}[language={}, frame=single]
+# Cloner le repository
+git clone <repository-url> grades-manager-api
+cd grades-manager-api
+\end{lstlisting}
+
+\subsubsection{Installation des dépendances}
+
+\begin{lstlisting}[language={}, frame=single]
+# Installer toutes les dependances du monorepo
+bun install
+\end{lstlisting}
+
+\info{L'installation peut prendre quelques minutes selon votre connexion Internet.}
+
+\subsection{Configuration de la base de données}
+
+\subsubsection{Création de la base de données}
+
+Connectez-vous à PostgreSQL et créez la base de données :
+
+\begin{lstlisting}[language={}, frame=single]
+# Se connecter a PostgreSQL (Linux/macOS)
+sudo -u postgres psql
+
+# Ou sous Windows (dans psql)
+psql -U postgres
+\end{lstlisting}
+
+Dans la console PostgreSQL :
+
+\begin{lstlisting}[language={}, frame=single]
+-- Creer la base de donnees
+CREATE DATABASE grades_manager;
+
+-- Creer un utilisateur dedie (optionnel mais recommande)
+CREATE USER grades_app WITH PASSWORD 'votre_mot_de_passe_securise';
+
+-- Accorder les privileges
+GRANT ALL PRIVILEGES ON DATABASE grades_manager TO grades_app;
+
+-- Quitter
+\q
+\end{lstlisting}
+
+\subsubsection{Configuration du fichier .env}
+
+Créez un fichier \code{.env} à la racine du projet (et dans \code{apps/server/}) :
+
+\begin{lstlisting}[frame=single]
+# Base de donnees
+DATABASE_URL="postgresql://grades_app:votre_mot_de_passe@localhost:5432/grades_manager"
+
+# Better-Auth
+BETTER_AUTH_SECRET="votre_secret_aleatoire_64_caracteres_minimum"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# Application
+NODE_ENV="development"
+PORT=3000
+
+# Frontend (dans apps/web/.env)
+VITE_API_URL="http://localhost:3000"
+\end{lstlisting}
+
+\attention{Remplacez \code{votre\_secret\_aleatoire} par une chaîne aléatoire sécurisée. Vous pouvez en générer une avec : \code{openssl rand -base64 64}}
+
+\subsection{Initialisation du schéma de base de données}
+
+\subsubsection{Migration initiale}
+
+\begin{lstlisting}[language={}, frame=single]
+# Pousser le schema vers la base de donnees
+bun db:push
+\end{lstlisting}
+
+Cette commande créera toutes les tables nécessaires dans votre base de données PostgreSQL.
+
+\subsubsection{Vérification du schéma}
+
+Pour vérifier que le schéma a été correctement créé, vous pouvez utiliser Drizzle Studio :
+
+\begin{lstlisting}[language={}, frame=single]
+# Ouvrir Drizzle Studio
+bun db:studio
+\end{lstlisting}
+
+Cela ouvrira une interface web sur \url{https://local.drizzle.studio} où vous pourrez visualiser toutes vos tables.
+
+\subsection{Génération des données de test (optionnel)}
+
+Pour faciliter les tests et la prise en main, vous pouvez générer des données d'exemple :
+
+\subsubsection{Génération des templates}
+
+\begin{lstlisting}[language={}, frame=single]
+# Generer les fichiers YAML de configuration
+bun run --filter server seed:scaffold
+\end{lstlisting}
+
+Cette commande créera des fichiers YAML dans \code{apps/server/seed/local/} que vous pourrez personnaliser.
+
+\subsubsection{Chargement des données de test}
+
+\begin{lstlisting}[language={}, frame=single]
+# Charger les donnees depuis les YAML
+bun run --filter server seed
+\end{lstlisting}
+
+\info{Les données de test incluent : années académiques, facultés, programmes, cours, étudiants, examens et notes d'exemple.}
+
+\subsection{Premier démarrage}
+
+\subsubsection{Démarrage en mode développement}
+
+Pour démarrer l'application complète (backend + frontend) :
+
+\begin{lstlisting}[language={}, frame=single]
+# Demarrer tous les services
+bun dev
+\end{lstlisting}
+
+Ou séparément :
+
+\begin{lstlisting}[language={}, frame=single]
+# Demarrer uniquement le backend
+bun dev:server
+
+# Dans un autre terminal, demarrer le frontend
+bun dev:web
+\end{lstlisting}
+
+\subsubsection{Accès à l'application}
+
+Une fois démarrée, l'application est accessible via :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Frontend} : \url{http://localhost:5173}
+    \item \textbf{Backend API} : \url{http://localhost:3000}
+    \item \textbf{tRPC endpoint} : \url{http://localhost:3000/trpc}
+    \item \textbf{Auth routes} : \url{http://localhost:3000/api/auth/*}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % Placeholder pour capture d'ecran
+    \fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Capture : Écran de connexion]\\\vspace{3cm}}}
+    \caption{Écran de connexion de l'application}
+    \label{fig:login-screen}
+\end{figure}
+
+\subsection{Création du premier compte administrateur}
+
+\subsubsection{Via l'interface web}
+
+\begin{enumerate}[leftmargin=*]
+    \item Accédez à \url{http://localhost:5173}
+    \item Si aucun compte n'existe, l'interface proposera la création d'un compte
+    \item Remplissez le formulaire d'inscription :
+    \begin{itemize}
+        \item Nom complet
+        \item Email
+        \item Mot de passe (minimum 8 caractères)
+        \item Confirmation du mot de passe
+    \end{itemize}
+    \item Cliquez sur \bouton{S'inscrire}
+\end{enumerate}
+
+\subsubsection{Attribution du rôle Super Admin}
+
+Le premier compte créé doit être promu Super Admin manuellement via la base de données :
+
+\begin{lstlisting}[language={}, frame=single]
+-- Se connecter a la base
+psql -U grades_app -d grades_manager
+
+-- Mettre a jour le profil de domaine
+UPDATE domain_users
+SET role = 'super_admin'
+WHERE email = 'votre_email@exemple.com';
+\end{lstlisting}
+
+\attention{Cette opération manuelle n'est nécessaire que pour le premier compte. Les comptes suivants peuvent être créés et gérés via l'interface d'administration.}
+
+\subsection{Configuration initiale de l'établissement}
+
+Une fois connecté en tant que Super Admin, configurez les informations de base :
+
+\subsubsection{Activation de l'année académique}
+
+\begin{enumerate}[leftmargin=*]
+    \item Naviguez vers \menu{Années académiques}
+    \item Cliquez sur \bouton{Nouvelle année académique}
+    \item Renseignez :
+    \begin{itemize}
+        \item Année de début : 2024
+        \item Année de fin : 2025
+        \item Date de début : 01/09/2024
+        \item Date de fin : 31/08/2025
+    \end{itemize}
+    \item Cliquez sur \bouton{Activer} pour rendre cette année active
+\end{enumerate}
+
+\info{Une seule année académique peut être active à la fois. C'est l'année sur laquelle toutes les opérations (inscriptions, notes, etc.) seront effectuées.}
+
+\subsubsection{Création de la faculté}
+
+\begin{enumerate}[leftmargin=*]
+    \item Naviguez vers \menu{Facultés}
+    \item Cliquez sur \bouton{Nouvelle faculté}
+    \item Remplissez :
+    \begin{itemize}
+        \item Nom : Ex. "Faculté de Médecine et Sciences Pharmaceutiques"
+        \item Code : Ex. "FMSP"
+        \item Description (optionnel)
+    \end{itemize}
+    \item Cliquez sur \bouton{Créer}
+\end{enumerate}
+
+\subsubsection{Configuration des logos}
+
+Pour personnaliser les exports PDF :
+
+\begin{enumerate}[leftmargin=*]
+    \item Préparez vos logos en format PNG (recommandé : fond transparent)
+    \item Taille recommandée : 800x200 pixels maximum
+    \item Placez-les dans \code{apps/server/storage/logos/}
+    \item Nommez-les de manière descriptive (ex: \code{logo-fmsp.png})
+\end{enumerate}
+
+Les logos seront automatiquement utilisés dans les templates de publication.
+
+\subsection{Vérification de l'installation}
+
+Pour vérifier que tout fonctionne correctement :
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Backend} : Accédez à \url{http://localhost:3000/api/auth/get-session} (doit retourner du JSON)
+    \item \textbf{Base de données} : Lancez \code{bun db:studio} et vérifiez les tables
+    \item \textbf{Frontend} : L'interface web se charge sans erreur
+    \item \textbf{Authentification} : Vous pouvez vous connecter/déconnecter
+    \item \textbf{Données de test} : Si chargées, vérifiez leur présence dans l'interface
+\end{enumerate}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Installation réussie !]
+Si tous les points ci-dessus fonctionnent, votre installation est complète. Vous pouvez maintenant :
+\begin{itemize}[leftmargin=*]
+    \item Créer la structure académique (programmes, classes, cours)
+    \item Enregistrer des étudiants
+    \item Planifier des examens
+    \item Saisir des notes
+    \item Générer des relevés
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Dépannage de l'installation}
+
+\subsubsection{Erreur de connexion à la base de données}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+\code{Error: Connection refused} ou \code{ECONNREFUSED}
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez que PostgreSQL est démarré : \code{sudo systemctl status postgresql}
+    \item Vérifiez le \code{DATABASE\_URL} dans votre \code{.env}
+    \item Testez la connexion manuellement : \code{psql -U grades\_app -d grades\_manager}
+    \item Vérifiez que le port 5432 est bien ouvert
+\end{enumerate}
+
+\subsubsection{Erreur "Bun not found"}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+\code{bun: command not found}
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Vérifiez l'installation : \code{which bun}
+    \item Ajoutez Bun au PATH : \code{export PATH="\$HOME/.bun/bin:\$PATH"}
+    \item Relancez votre terminal
+    \item Réinstallez Bun si nécessaire
+\end{enumerate}
+
+\subsubsection{Port déjà utilisé}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Symptôme]
+\code{Error: listen EADDRINUSE: address already in use :::3000}
+\end{tcolorbox}
+
+\textbf{Solutions :}
+\begin{enumerate}[leftmargin=*]
+    \item Identifiez le processus : \code{lsof -i :3000} (Linux/macOS) ou \code{netstat -ano | findstr :3000} (Windows)
+    \item Tuez le processus : \code{kill -9 <PID>}
+    \item Ou changez le port dans le \code{.env} : \code{PORT=3001}
+\end{enumerate}
+
+\subsection{Build pour la production}
+
+\subsubsection{Construction des applications}
+
+\begin{lstlisting}[language={}, frame=single]
+# Build de toutes les applications
+bun build
+\end{lstlisting}
+
+\subsubsection{Démarrage en production}
+
+\begin{lstlisting}[language={}, frame=single]
+# Demarrer le serveur en mode production
+bun run --filter server start
+\end{lstlisting}
+
+\subsubsection{Variables d'environnement production}
+
+Pour la production, mettez à jour votre \code{.env} :
+
+\begin{lstlisting}[frame=single]
+NODE_ENV="production"
+BETTER_AUTH_URL="https://votre-domaine.com"
+DATABASE_URL="postgresql://user:password@production-host:5432/grades_manager"
+
+# Securite renforcee
+BETTER_AUTH_SECRET="un_secret_tres_long_et_aleatoire_minimum_64_caracteres"
+\end{lstlisting}
+
+\attention{Ne JAMAIS committer les fichiers \code{.env} dans Git. Utilisez \code{.env.example} comme template.}
+
+\subsection{Déploiement avec Docker (optionnel)}
+
+Si un \code{Dockerfile} est fourni :
+
+\begin{lstlisting}[language={}, frame=single]
+# Build de l'image Docker
+docker build -t grades-manager .
+
+# Lancement du conteneur
+docker run -d \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e BETTER_AUTH_SECRET="..." \
+  --name grades-manager \
+  grades-manager
+\end{lstlisting}
+
+\subsection{Mise à jour de l'application}
+
+Pour mettre à jour vers une nouvelle version :
+
+\begin{lstlisting}[language={}, frame=single]
+# Arreter l'application
+# Recuperer la nouvelle version
+git pull origin main
+
+# Mettre a jour les dependances
+bun install
+
+# Appliquer les migrations
+bun db:migrate
+
+# Rebuilder
+bun build
+
+# Redemarrer
+bun run --filter server start
+\end{lstlisting}
+
+\info{Effectuez toujours une sauvegarde de la base de données avant une mise à jour majeure.}
+
+\newpage

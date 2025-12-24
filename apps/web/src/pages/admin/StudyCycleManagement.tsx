@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
-import { CodedEntitySelect } from "@/components/forms";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -47,7 +46,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
-	facultyId: z.string().min(1),
 	code: z.string().min(1),
 	name: z.string().min(1),
 	description: z.string().optional(),
@@ -55,7 +53,14 @@ const cycleSchema = z.object({
 	durationYears: z.coerce.number().int().min(1),
 });
 
+const levelSchema = z.object({
+	name: z.string().min(1),
+	code: z.string().min(1),
+	minCredits: z.coerce.number().int().min(0),
+});
+
 type CycleForm = z.infer<typeof cycleSchema>;
+type LevelForm = z.infer<typeof levelSchema>;
 
 export default function StudyCycleManagement() {
 	const { t } = useTranslation();
@@ -64,44 +69,13 @@ export default function StudyCycleManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
-	const [facultySearch, setFacultySearch] = useState("");
-
-	const { data: defaultFaculties = [] } = useQuery({
-		queryKey: ["faculties"],
-		queryFn: async () => {
-			const { items } = await trpcClient.faculties.list.query({ limit: 100 });
-			return items;
-		},
-	});
-
-	const { data: searchFaculties = [] } = useQuery({
-		queryKey: ["faculties", "search", facultySearch],
-		queryFn: async () => {
-			const items = await trpcClient.faculties.search.query({
-				query: facultySearch,
-			});
-			return items;
-		},
-		enabled: facultySearch.length >= 2,
-	});
-
-	const faculties =
-		facultySearch.length >= 2 ? searchFaculties : defaultFaculties;
-
-	const facultiesQuery = { data: { items: faculties } };
+	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
+	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
 
 	const cyclesQuery = useQuery({
 		queryKey: ["studyCycles"],
 		queryFn: () => trpcClient.studyCycles.listCycles.query({ limit: 200 }),
 	});
-
-	const facultyMap = useMemo(() => {
-		const map = new Map<string, string>();
-		facultiesQuery.data?.items?.forEach((faculty) =>
-			map.set(faculty.id, faculty.name ?? faculty.id),
-		);
-		return map;
-	}, [facultiesQuery.data]);
 
 	const activeCycle = useMemo(
 		() =>
@@ -122,12 +96,20 @@ export default function StudyCycleManagement() {
 	const form = useForm<CycleForm>({
 		resolver: zodResolver(cycleSchema),
 		defaultValues: {
-			facultyId: "",
 			code: "",
 			name: "",
 			description: "",
 			totalCreditsRequired: 180,
 			durationYears: 3,
+		},
+	});
+
+	const levelForm = useForm<LevelForm>({
+		resolver: zodResolver(levelSchema),
+		defaultValues: {
+			code: "",
+			name: "",
+			minCredits: 60,
 		},
 	});
 
@@ -173,28 +155,35 @@ export default function StudyCycleManagement() {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const createLevelMutation = useMutation({
-		mutationFn: () =>
-			activeCycle
-				? trpcClient.studyCycles.createLevel.mutate({
-						cycleId: activeCycle.id,
-						code: `LEVEL-${(levelsQuery.data?.length ?? 0) + 1}`,
-						name: t("admin.studyCycles.levels.defaultName", {
-							defaultValue: "Level {{value}}",
-							value: (levelsQuery.data?.length ?? 0) + 1,
-						}),
-						minCredits: 60,
-					})
-				: Promise.resolve(null),
-		onSuccess: () => {
+	const updateLevelMutation = useMutation({
+		mutationFn: async (payload: LevelForm & { id?: string }) => {
+			if (payload.id) {
+				await trpcClient.studyCycles.updateLevel.mutate(payload);
+				return "update";
+			}
+			if (activeCycle) {
+				await trpcClient.studyCycles.createLevel.mutate({
+					cycleId: activeCycle.id,
+					...payload,
+				});
+			}
+			return "create";
+		},
+		onSuccess: (mode) => {
 			toast.success(
-				t("admin.studyCycles.toast.levelCreate", {
-					defaultValue: "Level added",
-				}),
+				mode === "update"
+					? t("admin.studyCycles.toast.levelUpdate", {
+							defaultValue: "Level updated",
+						})
+					: t("admin.studyCycles.toast.levelCreate", {
+							defaultValue: "Level created",
+						}),
 			);
 			queryClient.invalidateQueries({
 				queryKey: ["cycleLevels", activeCycle?.id],
 			});
+			setIsLevelFormOpen(false);
+			setEditingLevelId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -219,6 +208,12 @@ export default function StudyCycleManagement() {
 		createCycleMutation.mutate(editingId ? { ...data, id: editingId } : data);
 	};
 
+	const onLevelSubmit = (data: LevelForm) => {
+		updateLevelMutation.mutate(
+			editingLevelId ? { ...data, id: editingLevelId } : data,
+		);
+	};
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
@@ -238,7 +233,6 @@ export default function StudyCycleManagement() {
 					onClick={() => {
 						setEditingId(null);
 						form.reset({
-							facultyId: "",
 							code: "",
 							name: "",
 							description: "",
@@ -274,11 +268,6 @@ export default function StudyCycleManagement() {
 										})}
 									</TableHead>
 									<TableHead>
-										{t("admin.studyCycles.table.faculty", {
-											defaultValue: "Faculty",
-										})}
-									</TableHead>
-									<TableHead>
 										{t("admin.studyCycles.table.credits", {
 											defaultValue: "Credits",
 										})}
@@ -305,9 +294,6 @@ export default function StudyCycleManagement() {
 										<TableCell className="font-semibold text-gray-900">
 											{cycle.name}
 										</TableCell>
-										<TableCell>
-											{facultyMap.get(cycle.facultyId) ?? cycle.facultyId}
-										</TableCell>
 										<TableCell>{cycle.totalCreditsRequired}</TableCell>
 										<TableCell>
 											{t("admin.studyCycles.table.years", {
@@ -324,7 +310,6 @@ export default function StudyCycleManagement() {
 													event.stopPropagation();
 													setEditingId(cycle.id);
 													form.reset({
-														facultyId: cycle.facultyId,
 														code: cycle.code,
 														name: cycle.name,
 														description: cycle.description ?? "",
@@ -355,7 +340,7 @@ export default function StudyCycleManagement() {
 								{!cyclesQuery.data?.items?.length && (
 									<TableRow>
 										<TableCell
-											colSpan={5}
+											colSpan={4}
 											className="py-6 text-center text-gray-500 text-sm"
 										>
 											{t("admin.studyCycles.empty", {
@@ -394,8 +379,16 @@ export default function StudyCycleManagement() {
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => createLevelMutation.mutate()}
-							disabled={createLevelMutation.isPending}
+							onClick={() => {
+								setEditingLevelId(null);
+								const nextLevelNum = (levelsQuery.data?.length ?? 0) + 1;
+								levelForm.reset({
+									code: `${activeCycle?.code || "L"}-L${nextLevelNum}`,
+									name: `Level ${nextLevelNum}`,
+									minCredits: 60,
+								});
+								setIsLevelFormOpen(true);
+							}}
 						>
 							<Plus className="mr-2 h-4 w-4" />
 							{t("admin.studyCycles.actions.addLevel", {
@@ -417,15 +410,34 @@ export default function StudyCycleManagement() {
 											})}
 										</p>
 									</div>
-									<Button
-										type="button"
-										variant="ghost"
-										className="text-destructive"
-										onClick={() => deleteLevelMutation.mutate(level.id)}
-									>
-										<Trash2 className="mr-2 h-4 w-4" />
-										{t("common.actions.delete")}
-									</Button>
+									<div className="flex gap-2">
+										<Button
+											type="button"
+											variant="ghost"
+											className="text-primary-700"
+											onClick={() => {
+												setEditingLevelId(level.id);
+												levelForm.reset({
+													code: level.code,
+													name: level.name,
+													minCredits: level.minCredits,
+												});
+												setIsLevelFormOpen(true);
+											}}
+										>
+											<Pencil className="mr-2 h-4 w-4" />
+											{t("common.actions.edit")}
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											className="text-destructive"
+											onClick={() => deleteLevelMutation.mutate(level.id)}
+										>
+											<Trash2 className="mr-2 h-4 w-4" />
+											{t("common.actions.delete")}
+										</Button>
+									</div>
 								</div>
 							))}
 							{!levelsQuery.data?.length && (
@@ -455,27 +467,6 @@ export default function StudyCycleManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-							<CodedEntitySelect
-								items={faculties}
-								onSearch={setFacultySearch}
-								value={
-									faculties.find((f) => f.id === form.watch("facultyId"))
-										?.code || null
-								}
-								onChange={(code) => {
-									const faculty = faculties.find((f) => f.code === code);
-									form.setValue("facultyId", faculty?.id || "");
-								}}
-								label={t("admin.studyCycles.form.faculty", {
-									defaultValue: "Faculty",
-								})}
-								placeholder={t("admin.studyCycles.form.selectFaculty", {
-									defaultValue: "Select faculty",
-								})}
-								error={form.formState.errors.facultyId?.message}
-								searchMode="hybrid"
-								required
-							/>
 							<FormField
 								control={form.control}
 								name="name"
@@ -567,6 +558,87 @@ export default function StudyCycleManagement() {
 								type="submit"
 								className="w-full"
 								disabled={createCycleMutation.isPending}
+							>
+								{t("common.actions.save")}
+							</Button>
+						</form>
+					</Form>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={isLevelFormOpen} onOpenChange={setIsLevelFormOpen}>
+				<DialogContent className="sm:max-w-xl">
+					<DialogHeader>
+						<DialogTitle>
+							{editingLevelId
+								? t("admin.studyCycles.actions.updateLevel", {
+										defaultValue: "Update level",
+									})
+								: t("admin.studyCycles.actions.addLevel", {
+										defaultValue: "Add level",
+									})}
+						</DialogTitle>
+					</DialogHeader>
+					<Form {...levelForm}>
+						<form
+							className="space-y-4"
+							onSubmit={levelForm.handleSubmit(onLevelSubmit)}
+						>
+							<FormField
+								control={levelForm.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.name", {
+												defaultValue: "Name",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="Level 1" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={levelForm.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.code", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="L1" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={levelForm.control}
+								name="minCredits"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.minCredits", {
+												defaultValue: "Minimum credits",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input type="number" min={0} {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={updateLevelMutation.isPending}
 							>
 								{t("common.actions.save")}
 							</Button>

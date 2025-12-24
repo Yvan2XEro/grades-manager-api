@@ -27,8 +27,8 @@ export default defineConfig({
 			TEACHER_EMAIL:
 				process.env.CYPRESS_TEACHER_EMAIL ?? "alice.teacher@example.com",
 			TEACHER_PASSWORD: process.env.CYPRESS_TEACHER_PASSWORD ?? "Password123!",
-			DEAN_EMAIL: process.env.CYPRESS_DEAN_EMAIL ?? "",
-			DEAN_PASSWORD: process.env.CYPRESS_DEAN_PASSWORD ?? "",
+			DEAN_EMAIL: process.env.CYPRESS_DEAN_EMAIL ?? "admin@example.com",
+			DEAN_PASSWORD: process.env.CYPRESS_DEAN_PASSWORD ?? "ChangeMe123!",
 		},
 		setupNodeEvents(on) {
 			on("task", {

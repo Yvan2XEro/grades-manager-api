@@ -1,0 +1,57 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2024-12-22T00:00:00Z
+  dataset: external-admission-examples
+authUsers:
+  - code: STUDENT-TRANSFER
+    email: transfer.student@inses.cm
+    password: password123
+    name: Étudiant Transfert
+  - code: STUDENT-DIRECT
+    email: direct.student@inses.cm
+    password: password123
+    name: Étudiant Admission Directe
+domainUsers:
+  - code: STUDENT-TRANSFER
+    authUserCode: STUDENT-TRANSFER
+    businessRole: student
+    firstName: Pierre
+    lastName: Transfert
+    primaryEmail: transfer.student@inses.cm
+    status: active
+  - code: STUDENT-DIRECT
+    authUserCode: STUDENT-DIRECT
+    businessRole: student
+    firstName: Sophie
+    lastName: Direct
+    primaryEmail: direct.student@inses.cm
+    status: active
+students:
+  - code: STUDENT-TRANSFER
+    domainUserCode: STUDENT-TRANSFER
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0010
+  - code: STUDENT-DIRECT
+    domainUserCode: STUDENT-DIRECT
+    classCode: COMPT25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0011
+enrollments:
+  - studentCode: STUDENT-TRANSFER
+    classCode: INF25-BTS1A
+    academicYearCode: AY-2025
+    status: active
+    admissionType: transfer
+    transferInstitution: Institut de Santé de Yaoundé
+    transferCredits: 30
+    transferLevel: BTS1
+    admissionJustification: Transfert d'un autre établissement avec validation de crédits acquis.
+    admissionDate: 2025-09-01
+  - studentCode: STUDENT-DIRECT
+    classCode: COMPT25-BTS1A
+    academicYearCode: AY-2025
+    status: active
+    admissionType: direct
+    admissionJustification: Admission directe sur titre avec expérience professionnelle reconnue.
+    admissionDate: 2025-09-01

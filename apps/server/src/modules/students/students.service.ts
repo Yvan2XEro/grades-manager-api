@@ -6,6 +6,7 @@ import { transaction } from "../_shared/db-transaction";
 import * as classesRepo from "../classes/classes.repo";
 import * as enrollmentsRepo from "../enrollments/enrollments.repo";
 import * as registrationNumbersService from "../registration-numbers/registration-numbers.service";
+import * as studentCreditLedgerService from "../student-credit-ledger/student-credit-ledger.service";
 import * as repo from "./students.repo";
 
 type StudentProfileInput = Pick<
@@ -26,6 +27,23 @@ type CreateStudentInput = {
 	registrationNumber?: string;
 	registrationFormatId?: string;
 	profile: StudentProfileInput;
+	admissionType?: schema.AdmissionType;
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: Date;
+};
+
+type BulkStudentInput = {
+	registrationNumber?: string;
+	profile: StudentProfileInput;
+	admissionType?: schema.AdmissionType;
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: Date;
 };
 
 const conflictMarkers = [
@@ -74,8 +92,11 @@ const mapConflict = (error: unknown) => {
 	return conflictMarkers.some((marker) => message.includes(marker));
 };
 
-export async function createStudent(input: CreateStudentInput) {
-	const klass = await classesRepo.findById(input.classId);
+export async function createStudent(
+	input: CreateStudentInput,
+	institutionId: string,
+) {
+	const klass = await classesRepo.findById(input.classId, institutionId);
 	if (!klass)
 		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
 	const registrationProfile = toRegistrationProfile(input.profile);
@@ -99,17 +120,48 @@ export async function createStudent(input: CreateStudentInput) {
 					class: input.classId,
 					registrationNumber,
 					domainUserId: profile.id,
+					institutionId: klass.institutionId,
 				})
 				.returning();
 			await tx.insert(schema.enrollments).values({
 				studentId: student.id,
 				classId: input.classId,
 				academicYearId: klass.academicYear,
+				institutionId: klass.institutionId,
 				status: "active",
+				// External admission fields stored in enrollment
+				admissionType: input.admissionType ?? "normal",
+				transferInstitution: input.transferInstitution ?? null,
+				transferCredits: input.transferCredits ?? 0,
+				transferLevel: input.transferLevel ?? null,
+				admissionJustification: input.admissionJustification ?? null,
+				admissionDate: input.admissionDate ?? null,
+				// Keep metadata for backward compatibility
+				admissionMetadata:
+					input.admissionType && input.admissionType !== "normal"
+						? {
+								admissionType: input.admissionType,
+								transferInstitution: input.transferInstitution,
+								transferCredits: input.transferCredits,
+								transferLevel: input.transferLevel,
+								justification: input.admissionJustification,
+							}
+						: {},
 			});
 			return student.id;
 		});
-		const created = await repo.findById(studentId);
+
+		// Register transfer credits in student credit ledger if any
+		if (input.transferCredits && input.transferCredits > 0) {
+			await studentCreditLedgerService.applyDelta(
+				studentId,
+				klass.academicYear,
+				0, // deltaProgress = 0 (transfer credits are already earned, not in progress)
+				input.transferCredits, // deltaEarned = transfer credits
+				60, // Default required credits (will be updated based on class requirements)
+			);
+		}
+		const created = await repo.findById(studentId, institutionId);
 		if (!created) {
 			throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 		}
@@ -122,15 +174,15 @@ export async function createStudent(input: CreateStudentInput) {
 	}
 }
 
-export async function bulkCreateStudents(data: {
-	classId: string;
-	registrationFormatId?: string;
-	students: Array<{
-		registrationNumber?: string;
-		profile: StudentProfileInput;
-	}>;
-}) {
-	const klass = await classesRepo.findById(data.classId);
+export async function bulkCreateStudents(
+	data: {
+		classId: string;
+		registrationFormatId?: string;
+		students: BulkStudentInput[];
+	},
+	institutionId: string,
+) {
+	const klass = await classesRepo.findById(data.classId, institutionId);
 	if (!klass) throw new TRPCError({ code: "NOT_FOUND" });
 
 	const conflicts: Array<{
@@ -141,6 +193,8 @@ export async function bulkCreateStudents(data: {
 	}> = [];
 	const errors: Array<{ row: number; reason: string }> = [];
 	let createdCount = 0;
+	const pendingLedgerCredits: Array<{ studentId: string; credits: number }> =
+		[];
 
 	await transaction(async (tx) => {
 		for (let i = 0; i < data.students.length; i++) {
@@ -162,6 +216,8 @@ export async function bulkCreateStudents(data: {
 					.insert(schema.domainUsers)
 					.values(buildProfilePayload(s.profile))
 					.returning();
+				const admissionType = s.admissionType ?? "normal";
+				const transferCredits = s.transferCredits ?? 0;
 				profileId = profile.id;
 				const [student] = await tx
 					.insert(schema.students)
@@ -169,15 +225,39 @@ export async function bulkCreateStudents(data: {
 						class: data.classId,
 						registrationNumber,
 						domainUserId: profile.id,
+						institutionId: klass.institutionId,
 					})
 					.returning();
 				await tx.insert(schema.enrollments).values({
 					studentId: student.id,
 					classId: data.classId,
 					academicYearId: klass.academicYear,
+					institutionId: klass.institutionId,
 					status: "active",
+					admissionType,
+					transferInstitution: s.transferInstitution ?? null,
+					transferCredits,
+					transferLevel: s.transferLevel ?? null,
+					admissionJustification: s.admissionJustification ?? null,
+					admissionDate: s.admissionDate ?? null,
+					admissionMetadata:
+						admissionType !== "normal"
+							? {
+									admissionType,
+									transferInstitution: s.transferInstitution,
+									transferCredits,
+									transferLevel: s.transferLevel,
+									justification: s.admissionJustification,
+								}
+							: {},
 				});
 				createdCount++;
+				if (transferCredits > 0) {
+					pendingLedgerCredits.push({
+						studentId: student.id,
+						credits: transferCredits,
+					});
+				}
 			} catch (error) {
 				if (profileId) {
 					await tx
@@ -194,12 +274,21 @@ export async function bulkCreateStudents(data: {
 				conflicts.push({
 					row: i + 1,
 					email: s.profile.primaryEmail,
-					registrationNumber: attemptedRegistration ?? s.registrationNumber,
+								registrationNumber: attemptedRegistration ?? s.registrationNumber,
 					reason,
 				});
 			}
 		}
 	});
+
+	for (const entry of pendingLedgerCredits) {
+		await studentCreditLedgerService.applyDelta(
+			entry.studentId,
+			klass.academicYear,
+			0,
+			entry.credits,
+		);
+	}
 
 	return { createdCount, conflicts, errors };
 }
@@ -211,8 +300,9 @@ export async function updateStudent(
 		registrationNumber?: string;
 		profile?: Partial<StudentProfileInput>;
 	},
+	institutionId: string,
 ) {
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
 
 	if (data.profile) {
@@ -245,31 +335,80 @@ export async function updateStudent(
 		if (data.registrationNumber) {
 			payload.registrationNumber = data.registrationNumber;
 		}
-		await repo.update(id, payload);
 		if (data.classId) {
-			const newClass = await classesRepo.findById(data.classId);
+			const newClass = await classesRepo.findById(data.classId, institutionId);
 			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
-			await enrollmentsRepo.closeActive(id, "completed");
+			payload.institutionId = newClass.institutionId;
+			await repo.update(id, payload, institutionId);
+			await enrollmentsRepo.closeActive(id, "completed", institutionId);
 			await enrollmentsRepo.create({
 				studentId: id,
 				classId: data.classId,
 				academicYearId: newClass.academicYear,
+				institutionId: newClass.institutionId,
 				status: "active",
 			});
+		} else {
+			await repo.update(id, payload, institutionId);
 		}
 	}
 
-	const updated = await repo.findById(id);
+	const updated = await repo.findById(id, institutionId);
 	if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
 	return updated;
 }
 
-export async function listStudents(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function listStudents(
+	opts: Parameters<typeof repo.list>[0],
+	institutionId: string,
+) {
+	return repo.list({ ...opts, institutionId });
 }
 
-export async function getStudentById(id: string) {
-	const item = await repo.findById(id);
+export async function getStudentById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
+}
+
+export async function admitExternalStudent(
+	data: {
+		classId: string;
+		registrationNumber?: string;
+		registrationFormatId?: string;
+		profile: StudentProfileInput;
+		admissionType: schema.AdmissionType;
+		transferInstitution: string;
+		transferCredits: number;
+		transferLevel: string;
+		admissionJustification: string;
+		admissionDate: Date;
+	},
+	institutionId: string,
+) {
+	// Validate admission type (must not be "normal")
+	if (data.admissionType === "normal") {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"Use createStudent for normal admissions. admissionType must be transfer, direct, or equivalence.",
+		});
+	}
+
+	// Use the standard createStudent function with external admission fields
+	return createStudent(
+		{
+			classId: data.classId,
+			registrationNumber: data.registrationNumber,
+			registrationFormatId: data.registrationFormatId,
+			profile: data.profile,
+			admissionType: data.admissionType,
+			transferInstitution: data.transferInstitution,
+			transferCredits: data.transferCredits,
+			transferLevel: data.transferLevel,
+			admissionJustification: data.admissionJustification,
+			admissionDate: data.admissionDate,
+		},
+		institutionId,
+	);
 }

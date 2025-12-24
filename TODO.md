@@ -53,6 +53,37 @@
 - [x] Add scaffolding for `json-rules-engine` (rule registry + config storage) to eventually drive promotion/eligibility checks.
 - [x] Document admin UX requirements for managing rule sets and cycle hierarchies.
 
+## Upcoming Feature Tasks(`docs/exam-grade-delegation.md`)
+
+- [x] **Promotion summary cache**
+  - [x] Create `student_promotion_summaries` table/migration and backfill scripts.
+  - [x] Wire promotion evaluation to read from cached facts and expose manual refresh endpoints (class-level + per-student).
+  - [x] Surface manual refresh controls and cache status messaging in `/admin/promotion-rules/evaluate`.
+  - [x] Ship tests covering cache persistence + router usage.
+- [ ] **Exam grade delegation (see `docs/exam-grade-delegation.md`)**
+  - [x] Introduce `exam_grade_editors` schema/migration scaffold.
+  - [x] Complete backend router/service + authorization updates for grades/exams (ensure tests cover teacher/admin/delegate cases).
+  - [x] UI for delegate management inside `/teacher/grades/:courseId` (list, add, revoke) and read-only fallback for non-editors.
+  - [ ] Delegate navigation support (surface delegated courses/exams) and audit logging of delegate edits.
+    - [x] Surface delegated courses/exams within teacher navigation flows.
+    - [x] Capture audit logs whenever delegates edit grades.
+  - [ ] Teacher-facing navigation scoping
+    - [x] Restrict class course list/search endpoints to assigned teachers.
+    - [x] Limit exam listings to exams teachers/admins/delegates can edit.
+    - [ ] Update teacher dashboards/menus to expose only assigned/delegated courses, highlight delegated ones, and log access events.
+      - [x] Highlight delegated courses directly inside the dashboard/course listings (badge parity with `/teacher/courses`).
+      - [x] Log delegated course access events for auditability.
+- [ ] **Admin exam enhancements (see `docs/admin-exam-enhancements.md`)**
+  - [x] Add a “Review grades” action to `/admin/exams` rows linking to `/teacher/grades/:classCourseId?examId=...`.
+  - [x] Build `DebouncedSearchField` (shared debounced search input with clear affordance).
+  - [x] Build `AcademicYearSelect` (shared dropdown that defaults to the active academic year).
+  - [x] Extend `exams.list` with `query`, `academicYearId`, cursor pagination, plus regression tests.
+  - [x] Wire `/admin/exams` to the new filters and backend pagination (load-more UX).
+- [x] **Exam scheduler scoping by semester**
+  - [x] Extend preview/schedule inputs to require `semesterId` and filter classes/class-courses accordingly.
+  - [x] Update admin scheduler form with semester dropdown and scoped class preview list.
+  - [x] Reflect semester info in scheduling history/details and add regression tests.
+
 ### Frontend impact (atomic enrollment + ledger)
 
 - [ ] Extend the enrollment UI so admins can enroll/withdraw students per course, view attempts, and trigger retakes (new tRPC hooks + optimistic updates).
@@ -91,6 +122,39 @@
 - [x] Ensure every create/edit modal for these entities exposes the `code` field, includes the existing auto-suggestion helper when relevant, and resets previews when the record changes.
 - [ ] Add Playwright/Vitest table snapshots to lock the new layout (at least faculties + classes + students) and prevent regressions.
 
+### Multi-tenant alignment (see [`docs/institution-multi-tenant-plan.md`](docs/institution-multi-tenant-plan.md))
+
+#### Phase 1 – Core schema prep
+
+- [x] Add `organization_id` to `institutions` and link the default institution to a Better Auth organization (seed + migration).
+- [x] Introduce `member_id` (nullable) on `domain_users` with FK to Better Auth `member.id`.
+- [x] Backfill `member_id` for staff profiles that already have Better Auth accounts; keep students without linkage.
+
+#### Phase 2 – Institution scoping
+
+- [x] Add `institution_id` FKs (with backfill) to faculties, programs, program options, classes, class courses, students, enrollments, exams, exam types, registration-number formats, promotion rules, academic years.
+- [x] Keep `semesters` global but ensure activation flows respect the institution filter.
+
+#### Phase 3 – Context & APIs
+
+- [x] Update `createContext` to load the active organization/member and resolve the institution for every request.
+- [ ] Introduce reusable helpers (e.g., `requireInstitution`, scoped `adminProcedure`) so all routers/services receive the `institution_id` without re-querying.
+- [ ] Migrate the remaining services/routers (students, classes, class courses, enrollments, exams, grades, workflows, promotion rules, etc.) to require the tenant context and enforce `institution_id` filters.
+- [ ] Adjust TRPC/tests to verify cross-institution isolation fails appropriately (e.g., two tenants seeded via PGlite snapshot).
+
+#### Phase 3b – Better Auth organization context (see [`docs/better-auth-organization-context.md`](docs/better-auth-organization-context.md))
+
+- [ ] Delete the `requireDefaultInstitution*` helpers and make `createContext` reject requests without an active Better Auth organization instead of fabricating a tenant.
+- [ ] Thread the `institutionId` from context through modules still using the default helper (`class-courses`, `promotion-rules`, `lib/test-utils`, seeds, etc.) so every service/router works with the resolved tenant.
+- [ ] Refresh seeds + fixtures so they always create organization ↔ institution ↔ member records via the Better Auth flow (no hidden defaults).
+- [ ] On the frontend, detect the organization slug from the subdomain (fallback to `VITE_DEFAULT_ORGANIZATION_SLUG`), store it, and call `authClient.organization.setActiveOrganization({ slug })` after login so the backend receives the tenant.
+
+#### Phase 4 – Seeds & onboarding
+
+- [ ] Update YAML seeds (`00-foundation`, `20-users`) to include institution + organization metadata.
+- [ ] Provide a script or documented steps to create the default organization, members, and institution for new deployments.
+- [ ] Remove legacy `auth_user_id` once `member_id` is stable across flows.
+
 ### Cypress E2E automation (business workflows)
 
 Reference: [`docs/cypress-critical-features.md`](docs/cypress-critical-features.md)
@@ -98,28 +162,33 @@ Reference: [`docs/cypress-critical-features.md`](docs/cypress-critical-features.
 #### Priority 1 - Core Features (Must Have)
 
 **Authentication & Authorization:**
+
 - [x] Admin login flow (valid/invalid credentials, session persistence, redirection)
 - [x] Teacher login flow (role-specific access, dashboard routing)
 - [x] Student login flow (restricted access verification)
 - [x] Logout flow (session invalidation, proper redirection)
 
 **Grade Entry (Teacher Workflow):**
+
 - [x] Grade entry for multiple students (course selection, exam selection, validation 0-20, save confirmation)
 - [x] Grade modification (load existing, edit, save, verify update)
 - [x] Grade locking (locked grades cannot be modified, appropriate error messages)
 
 **Student Management:**
+
 - [x] Student creation (complete form, class selection, auto-generation of registration number)
 - [x] Bulk student import (CSV/Excel upload, success/error reporting, duplicate handling)
 - [x] Student modification (edit personal info, class change, save changes)
 - [x] Student search and filtering (by name, registration number, class)
 
 **Enrollment Management:**
+
 - [x] Individual enrollment (student selection, class selection, academic year, status "active")
 - [x] Bulk class enrollment (entire class enrollment, conflict handling for already enrolled)
 - [x] Enrollment closure (status change to "completed", preserved history, immutability)
 
 **Exam Management:**
+
 - [x] Manual exam creation (course selection, exam type, date, coefficient)
 - [x] Automated exam scheduling (configuration, multiple classes, generation, scheduling report)
 - [x] Scheduling conflict detection and resolution
@@ -127,48 +196,58 @@ Reference: [`docs/cypress-critical-features.md`](docs/cypress-critical-features.
 #### Priority 2 - Business Features
 
 **Promotion Rules:**
+
 - [ ] Promotion rule creation (form completion, valid JSON rule, activation, list verification)
 - [ ] Student evaluation (rule selection, source class selection, launch evaluation, display eligible/non-eligible, criteria verification)
 - [ ] Promotion execution (student selection, target class selection, confirmation, class change verification, execution history)
 - [ ] Execution history consultation (past executions list, execution details, success rate statistics)
 
 **Registration Numbers:**
+
 - [ ] Format creation (segment definition, preview, activation, auto-deactivation of other formats)
 - [ ] Automatic generation (student creation without manual number, auto-generation verification, counter increment, uniqueness)
 
 **Grade Export:**
+
 - [ ] Excel export by class (class selection, specific exams selection, file download, content verification)
 - [ ] Transcript export (class report generation, all grades included, correct averages, successful download)
 
 **Class Management:**
+
 - [ ] Class creation (program selection, cycle level, option, code and name definition)
 - [ ] Course assignment to class (class selection, multiple courses addition, weekly hours, teacher assignment)
 
 #### Priority 3 - Workflows & Notifications
 
 **Approval Workflows:**
+
 - [ ] Approval request creation (teacher submits grade modification request, "pending" status, dean notification)
 - [ ] Approval/rejection processing (dean reviews pending requests, approves/rejects, automatic application, teacher notification)
 
 **Notifications:**
+
 - [ ] Notification reception (trigger event, notification appears in center, badge counter update)
 - [ ] Mark as read (click notification, marked as read, badge update)
 
 #### Infrastructure & Quality
 
 **Admin Catalog Suites:**
+
 - [x] Scaffold Cypress in `apps/web` (config, support utilities, auth/local-storage helpers, DB reset hook) and document the workflow (`docs/cypress-e2e-guide.md`)
 - [ ] CRUD faculties/programs/options/classes/classCourses with clipboard controls, code generators, and validation of uniqueness
 
 **Data Operations:**
+
 - [ ] CSV import/export smoke tests for grades and admin exports, confirming headers/order match specs
 - [ ] Study cycle/level CRUD + linkage to classes, ensuring UI badges and filters respond to seeds
 
 **Security & Access Control:**
+
 - [ ] Role-based navigation: enforce guardrails for student/teacher/admin/dean personas with store-backed permissions
 - [ ] Domain vs auth profile split verification throughout student lifecycle operations
 
 **CI/CD Integration:**
+
 - [ ] Integrate Cypress run in CI (preview server + seed command) so business-critical flows block regressions
 - [ ] Set up deterministic test data (seeds + fixtures) for reproducible test runs
 

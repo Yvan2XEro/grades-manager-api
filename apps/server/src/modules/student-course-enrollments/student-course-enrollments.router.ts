@@ -19,17 +19,21 @@ export const studentCourseEnrollmentsRouter = router({
 		.mutation(({ input }) => service.bulkEnroll(input)),
 	updateStatus: adminProcedure
 		.input(updateStatusSchema)
-		.mutation(({ input }) => service.updateStatus(input.id, input.status)),
+		.mutation(({ input, ctx }) =>
+			service.updateStatus(input.id, ctx.institution.id, input.status),
+		),
 	autoEnrollClass: adminProcedure
 		.input(autoEnrollClassSchema)
 		.mutation(({ input }) => service.autoEnrollClass(input)),
 	closeForStudent: adminProcedure
 		.input(closeSchema)
-		.mutation(({ input }) => service.closeForStudent(input)),
+		.mutation(({ input, ctx }) =>
+			service.closeForStudent(input, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getById(input.id)),
+		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.list(input)),
+		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),
 });

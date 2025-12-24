@@ -11,17 +11,27 @@ import {
 export const registrationNumbersRouter = router({
 	list: adminProcedure
 		.input(listSchema.optional())
-		.query(({ input }) => service.listFormats(input ?? {})),
-	getActive: protectedProcedure.query(() => service.getActiveFormat()),
+		.query(({ ctx, input }) =>
+			service.listFormats(input ?? {}, ctx.institution.id),
+		),
+	getActive: protectedProcedure.query(({ ctx }) =>
+		service.getActiveFormat(ctx.institution.id),
+	),
 	create: adminProcedure
 		.input(createFormatSchema)
-		.mutation(({ input }) => service.createFormat(input)),
+		.mutation(({ ctx, input }) =>
+			service.createFormat(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateFormatSchema)
-		.mutation(({ input }) => service.updateFormat(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateFormat(input.id, input, ctx.institution.id),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteFormat(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteFormat(input.id, ctx.institution.id),
+		),
 	preview: adminProcedure
 		.input(previewSchema)
 		.mutation(({ input }) => service.previewFormat(input)),

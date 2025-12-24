@@ -30,6 +30,34 @@ import {
 } from "@/components/ui/table";
 import { trpcClient } from "@/utils/trpc";
 
+type ExecutionMetadata = {
+	ruleName?: string;
+	sourceClassName?: string;
+	targetClassName?: string;
+};
+
+type EvaluationData = {
+	overallAverage?: number;
+	creditsEarned?: number;
+	requiredCredits?: number;
+	successRate?: number;
+};
+
+type PromotionExecution = {
+	id: string;
+	status: string;
+	createdAt: string;
+	metadata?: ExecutionMetadata;
+};
+
+type ExecutionResult = {
+	id: string;
+	studentId: string;
+	outcome: string;
+	reason: string;
+	evaluationData?: EvaluationData;
+};
+
 export function ExecutionHistoryPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -126,19 +154,20 @@ export function ExecutionHistoryPage() {
 										</TableCell>
 										<TableCell>
 											<div className="font-medium">
-												{(execution as any).metadata?.ruleName || "N/A"}
+												{(execution as PromotionExecution).metadata?.ruleName ||
+													"N/A"}
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2 text-sm">
 												<span>
-													{(execution as any).metadata?.sourceClassName ||
-														"N/A"}
+													{(execution as PromotionExecution).metadata
+														?.sourceClassName || "N/A"}
 												</span>
 												<ArrowRight className="h-3 w-3" />
 												<span>
-													{(execution as any).metadata?.targetClassName ||
-														"N/A"}
+													{(execution as PromotionExecution).metadata
+														?.targetClassName || "N/A"}
 												</span>
 											</div>
 										</TableCell>
@@ -260,8 +289,8 @@ export function ExecutionHistoryPage() {
 								<Card>
 									<CardContent className="pt-4">
 										<div className="font-semibold text-lg">
-											{(executionDetails.execution as any).metadata?.ruleName ||
-												"N/A"}
+											{(executionDetails.execution as PromotionExecution)
+												.metadata?.ruleName || "N/A"}
 										</div>
 										<p className="text-muted-foreground text-xs">
 											{t("admin.promotionRules.history.details.stats.rule")}
@@ -331,22 +360,24 @@ export function ExecutionHistoryPage() {
 													)}
 												</TableCell>
 												<TableCell>
-													{(result.evaluationData as any).overallAverage
+													{(result.evaluationData as EvaluationData)
+														.overallAverage
 														? `${(
-																(result.evaluationData as any).overallAverage
+																(result.evaluationData as EvaluationData)
+																	.overallAverage
 															).toFixed(2)}/20`
 														: "N/A"}
 												</TableCell>
 												<TableCell>
-													{(result.evaluationData as any).creditsEarned !==
-													undefined
-														? `${(result.evaluationData as any).creditsEarned}/${(result.evaluationData as any).requiredCredits}`
+													{(result.evaluationData as EvaluationData)
+														.creditsEarned !== undefined
+														? `${(result.evaluationData as EvaluationData).creditsEarned}/${(result.evaluationData as EvaluationData).requiredCredits}`
 														: "N/A"}
 												</TableCell>
 												<TableCell>
-													{(result.evaluationData as any).successRate !==
-													undefined
-														? `${((result.evaluationData as any).successRate * 100).toFixed(0)}%`
+													{(result.evaluationData as EvaluationData)
+														.successRate !== undefined
+														? `${((result.evaluationData as EvaluationData).successRate * 100).toFixed(0)}%`
 														: "N/A"}
 												</TableCell>
 											</TableRow>

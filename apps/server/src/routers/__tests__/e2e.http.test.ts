@@ -44,14 +44,9 @@ describe("e2e http", () => {
 	});
 
 	it("creates full flow", async () => {
-		const faculty = await client.faculties.create.mutate({
-			name: "F",
-			code: "FAC-E2E",
-		});
-
+		// Create a faculty using test helper (institutions are created in test setup)
 		const program = await client.programs.create.mutate({
 			name: "P",
-			faculty: faculty.id,
 			code: "PRG-E2E",
 		});
 

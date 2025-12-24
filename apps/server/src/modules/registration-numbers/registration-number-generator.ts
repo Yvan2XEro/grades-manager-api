@@ -80,8 +80,9 @@ const toContext = (klass: KlassRecord): FormatContext => ({
 	programId: klass.program,
 	programCode: klass.programInfo?.code,
 	programSlug: klass.programInfo?.slug,
-	facultyId: klass.programInfo?.facultyId,
-	facultyCode: klass.faculty?.code,
+	// Faculty fields no longer exist - faculties are now institutions
+	facultyId: undefined,
+	facultyCode: undefined,
 	academicYearId: klass.academicYear,
 	academicYearName: klass.academicYearInfo?.name,
 	academicYearStart: klass.academicYearInfo?.startDate
@@ -215,6 +216,12 @@ const resolveScope = (
 	const parts = scopes.map((scope) => {
 		const value = scopeValues[scope];
 		if (!value) {
+			// Special error message for deprecated faculty scope
+			if (scope === "faculty") {
+				throw new RegistrationNumberError(
+					'Scope "faculty" is no longer available. Faculties have been converted to institutions. Please use "program" or another scope instead.',
+				);
+			}
 			throw new RegistrationNumberError(
 				`Scope "${scope}" is unavailable for this class`,
 			);

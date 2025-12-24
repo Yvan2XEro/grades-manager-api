@@ -1,11 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import {
+	FileSpreadsheet,
+	FileText,
+	Pencil,
+	Plus,
+	Trash2,
+	Users,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -127,6 +137,9 @@ export default function ClassManagement() {
 		queryKey: ["classes"],
 		queryFn: async () => {
 			const { items } = await trpcClient.classes.list.query({});
+			// TODO: N+1 Query Problem - This fetches students for each class separately
+			// Better solution: Modify backend classes.list to include studentCount
+			// or create a batch endpoint that returns classes with student counts
 			return Promise.all(
 				items.map(async (cls) => {
 					const students = await trpcClient.students.list.query({
@@ -211,11 +224,11 @@ export default function ClassManagement() {
 	);
 
 	const { data: defaultCycleLevels = [] } = useQuery({
-		queryKey: ["cycleLevelsByFaculty", selectedProgram?.faculty],
+		queryKey: ["cycleLevelsByInstitution", selectedProgram?.institutionId],
 		queryFn: async () => {
-			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
+			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
 			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				facultyId: selectedProgram.faculty,
+				institutionId: selectedProgram.institutionId,
 				limit: 100,
 			});
 			if (!cycles.length) return [];
@@ -236,7 +249,7 @@ export default function ClassManagement() {
 			);
 			return levels.flat() as CycleLevelOption[];
 		},
-		enabled: Boolean(selectedProgram?.faculty),
+		enabled: Boolean(selectedProgram?.institutionId),
 	});
 
 	const { data: searchCycleLevels = [] } = useQuery({
@@ -244,12 +257,12 @@ export default function ClassManagement() {
 			"cycleLevels",
 			"search",
 			cycleLevelSearch,
-			selectedProgram?.faculty,
+			selectedProgram?.institutionId,
 		],
 		queryFn: async () => {
-			if (!selectedProgram?.faculty) return [] as CycleLevelOption[];
+			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
 			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				facultyId: selectedProgram.faculty,
+				institutionId: selectedProgram.institutionId,
 				limit: 100,
 			});
 			if (!cycles.length) return [];
@@ -271,7 +284,8 @@ export default function ClassManagement() {
 			);
 			return levels.flat() as CycleLevelOption[];
 		},
-		enabled: Boolean(selectedProgram?.faculty) && cycleLevelSearch.length >= 2,
+		enabled:
+			Boolean(selectedProgram?.institutionId) && cycleLevelSearch.length >= 2,
 	});
 
 	const cycleLevels =
@@ -282,10 +296,11 @@ export default function ClassManagement() {
 		[cycleLevels, cycleLevelId],
 	);
 
-	const { data: semesters } = useQuery({
+	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
 		queryFn: () => trpcClient.semesters.list.query(),
 	});
+	const semesters = semestersData?.items;
 	const semesterId = watch("semesterId");
 	const selectedSemester = useMemo(
 		() => semesters?.find((semester) => semester.id === semesterId),
@@ -385,6 +400,258 @@ export default function ClassManagement() {
 			);
 		}
 	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
+
+	const handleExportStudentListPDF = async (classData: Class) => {
+		try {
+			// Fetch institution info
+			const institution = await trpcClient.institutions.get.query();
+
+			// Fetch full student list with details
+			const studentsData = await trpcClient.students.list.query({
+				classId: classData.id,
+				limit: 1000,
+			});
+
+			// Create PDF
+			const doc = new jsPDF();
+
+			// Header - Institution info
+			doc.setFontSize(16);
+			doc.setFont("helvetica", "bold");
+			const institutionName =
+				institution?.nameFr || institution?.nameEn || "Institution";
+			doc.text(institutionName, 105, 20, { align: "center" });
+
+			doc.setFontSize(10);
+			doc.setFont("helvetica", "normal");
+			if (institution?.shortName) {
+				doc.text(institution.shortName, 105, 27, { align: "center" });
+			}
+
+			// Title
+			doc.setFontSize(14);
+			doc.setFont("helvetica", "bold");
+			doc.text(
+				`${t("admin.classes.export.title", { defaultValue: "Student List" })}`,
+				105,
+				40,
+				{ align: "center" },
+			);
+
+			// Class info
+			doc.setFontSize(11);
+			doc.setFont("helvetica", "normal");
+			doc.text(`${t("admin.classes.table.name")}: ${classData.name}`, 14, 50);
+			doc.text(`${t("admin.classes.table.code")}: ${classData.code}`, 14, 56);
+			doc.text(
+				`${t("admin.classes.table.program")}: ${classData.program?.name}`,
+				14,
+				62,
+			);
+			doc.text(
+				`${t("admin.classes.table.academicYear")}: ${classData.academicYear?.name}`,
+				14,
+				68,
+			);
+			doc.text(
+				`${t("admin.classes.export.totalStudents", { defaultValue: "Total students" })}: ${studentsData.items.length}`,
+				14,
+				74,
+			);
+
+			// Student table
+			const tableData = studentsData.items.map((student, index) => [
+				index + 1,
+				student.registrationNumber || "-",
+				student.lastName,
+				student.firstName,
+				student.dateOfBirth
+					? new Date(student.dateOfBirth).toLocaleDateString()
+					: "-",
+				student.gender === "M"
+					? t("common.gender.male", { defaultValue: "M" })
+					: student.gender === "F"
+						? t("common.gender.female", { defaultValue: "F" })
+						: "-",
+			]);
+
+			autoTable(doc, {
+				head: [
+					[
+						"#",
+						t("admin.students.table.registrationNumber", {
+							defaultValue: "Reg. Number",
+						}),
+						t("admin.students.table.lastName", { defaultValue: "Last Name" }),
+						t("admin.students.table.firstName", {
+							defaultValue: "First Name",
+						}),
+						t("admin.students.table.dateOfBirth", {
+							defaultValue: "Birth Date",
+						}),
+						t("admin.students.table.gender", { defaultValue: "Gender" }),
+					],
+				],
+				body: tableData,
+				startY: 82,
+				styles: { fontSize: 9, cellPadding: 2 },
+				headStyles: { fillColor: [41, 128, 185], fontStyle: "bold" },
+				alternateRowStyles: { fillColor: [245, 245, 245] },
+			});
+
+			// Footer
+			const pageCount = (doc as any).internal.getNumberOfPages();
+			for (let i = 1; i <= pageCount; i++) {
+				doc.setPage(i);
+				doc.setFontSize(8);
+				doc.text(
+					`${t("admin.classes.export.page", { defaultValue: "Page" })} ${i}/${pageCount}`,
+					105,
+					290,
+					{ align: "center" },
+				);
+				doc.text(
+					`${t("admin.classes.export.generatedOn", { defaultValue: "Generated on" })}: ${new Date().toLocaleString()}`,
+					14,
+					290,
+				);
+			}
+
+			// Save PDF
+			doc.save(
+				`students_${classData.code}_${new Date().toISOString().split("T")[0]}.pdf`,
+			);
+
+			toast.success(
+				t("admin.classes.export.success", {
+					defaultValue: "Student list exported successfully",
+				}),
+			);
+		} catch (error) {
+			console.error("Error exporting PDF:", error);
+			toast.error(
+				t("admin.classes.export.error", {
+					defaultValue: "Failed to export student list",
+				}),
+			);
+		}
+	};
+
+	const handleExportStudentListExcel = async (classData: Class) => {
+		try {
+			// Fetch institution info
+			const institution = await trpcClient.institutions.get.query();
+
+			// Fetch full student list with details
+			const studentsData = await trpcClient.students.list.query({
+				classId: classData.id,
+				limit: 1000,
+			});
+
+			// Prepare header info
+			const institutionName =
+				institution?.nameFr || institution?.nameEn || "Institution";
+			const headerRows = [
+				[institutionName],
+				[institution?.shortName || ""],
+				[],
+				[t("admin.classes.export.title", { defaultValue: "Student List" })],
+				[],
+				[`${t("admin.classes.table.name")}: ${classData.name}`],
+				[`${t("admin.classes.table.code")}: ${classData.code}`],
+				[`${t("admin.classes.table.program")}: ${classData.program?.name}`],
+				[
+					`${t("admin.classes.table.academicYear")}: ${classData.academicYear?.name}`,
+				],
+				[
+					`${t("admin.classes.export.totalStudents", { defaultValue: "Total students" })}: ${studentsData.items.length}`,
+				],
+				[],
+				[
+					"#",
+					t("admin.students.table.registrationNumber", {
+						defaultValue: "Reg. Number",
+					}),
+					t("admin.students.table.lastName", { defaultValue: "Last Name" }),
+					t("admin.students.table.firstName", { defaultValue: "First Name" }),
+					t("admin.students.table.dateOfBirth", {
+						defaultValue: "Birth Date",
+					}),
+					t("admin.students.table.gender", { defaultValue: "Gender" }),
+				],
+			];
+
+			// Prepare student data rows
+			const dataRows = studentsData.items.map((student, index) => [
+				index + 1,
+				student.registrationNumber || "-",
+				student.lastName,
+				student.firstName,
+				student.dateOfBirth
+					? new Date(student.dateOfBirth).toLocaleDateString()
+					: "-",
+				student.gender === "M"
+					? t("common.gender.male", { defaultValue: "M" })
+					: student.gender === "F"
+						? t("common.gender.female", { defaultValue: "F" })
+						: "-",
+			]);
+
+			// Combine all rows
+			const worksheetData = [...headerRows, ...dataRows];
+
+			// Create workbook and worksheet
+			const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(
+				workbook,
+				worksheet,
+				t("admin.classes.export.sheetName", { defaultValue: "Students" }),
+			);
+
+			// Apply some basic styling to header row
+			const headerRowIndex = 11; // 0-indexed, row 12 in spreadsheet
+			const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1");
+			for (let C = range.s.c; C <= range.e.c; ++C) {
+				const address = XLSX.utils.encode_col(C) + (headerRowIndex + 1);
+				if (!worksheet[address]) continue;
+				if (!worksheet[address].s) worksheet[address].s = {};
+				worksheet[address].s = {
+					font: { bold: true },
+					fill: { fgColor: { rgb: "2980B9" } },
+				};
+			}
+
+			// Set column widths
+			worksheet["!cols"] = [
+				{ wch: 5 }, // #
+				{ wch: 15 }, // Registration Number
+				{ wch: 20 }, // Last Name
+				{ wch: 20 }, // First Name
+				{ wch: 12 }, // Birth Date
+				{ wch: 8 }, // Gender
+			];
+
+			// Generate and download Excel file
+			XLSX.writeFile(
+				workbook,
+				`students_${classData.code}_${new Date().toISOString().split("T")[0]}.xlsx`,
+			);
+
+			toast.success(
+				t("admin.classes.export.excelSuccess", {
+					defaultValue: "Student list exported successfully",
+				}),
+			);
+		} catch (error) {
+			console.error("Error exporting Excel:", error);
+			toast.error(
+				t("admin.classes.export.excelError", {
+					defaultValue: "Failed to export student list",
+				}),
+			);
+		}
+	};
 
 	const classCodes = useMemo(
 		() => (classes ?? []).map((cls) => cls.code).filter(Boolean),
@@ -658,6 +925,9 @@ export default function ClassManagement() {
 													setIsFormOpen(true);
 												}}
 												className="btn btn-square btn-sm btn-ghost"
+												title={t("common.actions.edit", {
+													defaultValue: "Edit",
+												})}
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
@@ -665,8 +935,35 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
+												onClick={() => handleExportStudentListPDF(cls)}
+												className="btn btn-square btn-sm btn-ghost"
+												title={t("admin.classes.export.button", {
+													defaultValue: "Export student list (PDF)",
+												})}
+											>
+												<FileText className="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												onClick={() => handleExportStudentListExcel(cls)}
+												className="btn btn-square btn-sm btn-ghost"
+												title={t("admin.classes.export.excelButton", {
+													defaultValue: "Export student list (Excel)",
+												})}
+											>
+												<FileSpreadsheet className="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
 												onClick={() => openDeleteModal(cls.id)}
 												className="btn btn-square btn-sm btn-ghost text-error"
+												title={t("common.actions.delete", {
+													defaultValue: "Delete",
+												})}
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>
@@ -709,7 +1006,7 @@ export default function ClassManagement() {
 							placeholder={t("admin.classes.form.programPlaceholder")}
 							error={form.formState.errors.programId?.message}
 							searchMode="hybrid"
-							getItemSubtitle={(program) => program.facultyInfo?.name || ""}
+							getItemSubtitle={(program) => program.institutionInfo?.name || ""}
 							required
 						/>
 
@@ -775,7 +1072,7 @@ export default function ClassManagement() {
 										})
 									: t("admin.classes.form.emptyCycleLevels", {
 											defaultValue:
-												"No cycle levels available for the selected faculty.",
+												"No cycle levels available for the selected program's institution.",
 										})
 							}
 							required

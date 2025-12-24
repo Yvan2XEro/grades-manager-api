@@ -32,7 +32,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	assertRole(ctx.profile, ADMIN_ROLES);
+	assertRole(ctx.memberRole, ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,
@@ -49,7 +49,7 @@ export const superAdminProcedure = t.procedure.use(({ ctx, next }) => {
 			cause: "No session",
 		});
 	}
-	assertRole(ctx.profile, SUPER_ADMIN_ROLES);
+	assertRole(ctx.memberRole, SUPER_ADMIN_ROLES);
 	return next({
 		ctx: {
 			...ctx,
@@ -67,3 +67,26 @@ export const gradingProcedure = protectedProcedure.use(({ ctx, next }) => {
 	}
 	return next();
 });
+
+const tenantMiddleware = t.middleware(({ ctx, next }) => {
+	if (!ctx.institution) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Institution context is missing",
+		});
+	}
+	return next({
+		ctx: {
+			...ctx,
+			institution: ctx.institution,
+		},
+	});
+});
+
+export const tenantProcedure = publicProcedure.use(tenantMiddleware);
+export const tenantProtectedProcedure =
+	protectedProcedure.use(tenantMiddleware);
+export const tenantAdminProcedure = adminProcedure.use(tenantMiddleware);
+export const tenantSuperAdminProcedure =
+	superAdminProcedure.use(tenantMiddleware);
+export const tenantGradingProcedure = gradingProcedure.use(tenantMiddleware);

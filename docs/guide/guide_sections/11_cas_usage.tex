@@ -1,0 +1,390 @@
+% Section 11 - Cas d'usage pratiques
+\section{Cas d'usage pratiques}
+
+\subsection{Scénario 1 : Début d'année académique}
+
+\subsubsection{Contexte}
+
+Vous êtes administrateur et devez préparer le système pour une nouvelle année académique 2024-2025.
+
+\subsubsection{Étapes}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Créer l'année académique}
+    \begin{itemize}
+        \item Menu \menu{Années académiques} > \bouton{Nouvelle année}
+        \item Année : 2024-2025
+        \item Dates : 01/09/2024 au 31/08/2025
+        \item \bouton{Activer} (Super Admin uniquement)
+    \end{itemize}
+
+    \item \textbf{Vérifier la structure académique}
+    \begin{itemize}
+        \item Facultés, programmes, cycles : à jour ?
+        \item Classes : créer les nouvelles classes pour l'année
+        \item Cours : vérifier que tous les cours sont configurés
+    \end{itemize}
+
+    \item \textbf{Configurer les semestres}
+    \begin{itemize}
+        \item S1 : Septembre 2024 - Janvier 2025
+        \item S2 : Février 2025 - Juin 2025
+    \end{itemize}
+
+    \item \textbf{Préparer les types d'examens}
+    \begin{itemize}
+        \item CC : 30\%
+        \item TP : 20\%
+        \item Examen Final : 50\%
+    \end{itemize}
+
+    \item \textbf{Importer les nouveaux étudiants}
+    \begin{itemize}
+        \item Télécharger modèle Excel
+        \item Remplir avec liste des nouveaux
+        \item Importer
+        \item Vérifier matricules générés
+    \end{itemize}
+
+    \item \textbf{Inscrire les étudiants}
+    \begin{itemize}
+        \item Inscrire dans leurs classes respectives
+        \item Marquer statut : Nouveau / Redoublant
+    \end{itemize}
+
+    \item \textbf{Préparer la saisie des notes}
+    \begin{itemize}
+        \item Planifier les examens du S1
+        \item Créer les délégations pour enseignants
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Scénario 2 : Session d'examens}
+
+\subsubsection{Contexte}
+
+Fin du semestre 1, vous devez organiser la session d'examens et la saisie des notes.
+
+\subsubsection{Workflow complet}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Planification} (Administrateur)
+    \begin{itemize}
+        \item Menu \menu{Planification des examens}
+        \item Générer tous les examens du S1
+        \item Ajuster les dates si nécessaire
+        \item Définir dates limites de saisie
+    \end{itemize}
+
+    \item \textbf{Délégation} (Administrateur)
+    \begin{itemize}
+        \item Pour chaque cours :
+        \item Créer délégation pour l'enseignant
+        \item Période : date examen jusqu'à +1 semaine
+    \end{itemize}
+
+    \item \textbf{Notification automatique}
+    \begin{itemize}
+        \item Les enseignants reçoivent une notification
+        \item Rappel de la date limite de saisie
+    \end{itemize}
+
+    \item \textbf{Saisie} (Enseignants)
+    \begin{itemize}
+        \item Menu \menu{Saisie des notes}
+        \item Sélectionner cours et type d'examen
+        \item Saisir les notes ou importer Excel
+        \item \bouton{Enregistrer}
+    \end{itemize}
+
+    \item \textbf{Validation} (Enseignants)
+    \begin{itemize}
+        \item Relire les notes
+        \item \bouton{Soumettre pour validation}
+    \end{itemize}
+
+    \item \textbf{Approbation niveau 1} (Dean)
+    \begin{itemize}
+        \item Consulter les notes soumises
+        \item Vérifier cohérence
+        \item \bouton{Approuver} ou \bouton{Rejeter}
+    \end{itemize}
+
+    \item \textbf{Approbation niveau 2} (Administrateur)
+    \begin{itemize}
+        \item Validation finale
+        \item \bouton{Approuver}
+    \end{itemize}
+
+    \item \textbf{Publication}
+    \begin{itemize}
+        \item Les notes sont visibles aux étudiants
+        \item Calcul automatique des moyennes
+        \item Attribution automatique des crédits
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Scénario 3 : Correction d'une note}
+
+\subsubsection{Contexte}
+
+Un enseignant découvre une erreur dans une note déjà validée.
+
+\subsubsection{Procédure de modification}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Identification} (Enseignant)
+    \begin{itemize}
+        \item Étudiant : Dupont Jean
+        \item Cours : Anatomie
+        \item Note actuelle : 8/20
+        \item Note correcte : 18/20 (erreur de saisie)
+    \end{itemize}
+
+    \item \textbf{Création du workflow} (Enseignant)
+    \begin{itemize}
+        \item Menu \menu{Workflows} > \bouton{Nouvelle demande}
+        \item Type : Modification de note
+        \item Sélectionner l'étudiant et le cours
+        \item Ancienne valeur : 8
+        \item Nouvelle valeur : 18
+        \item Justification : "Erreur de saisie, confusion avec un autre étudiant"
+        \item \bouton{Soumettre}
+    \end{itemize}
+
+    \item \textbf{Notification}
+    \begin{itemize}
+        \item Le Dean reçoit une notification
+    \end{itemize}
+
+    \item \textbf{Validation niveau 1} (Dean)
+    \begin{itemize}
+        \item Examine la demande
+        \item Vérifie la justification
+        \item Peut contacter l'enseignant si doute
+        \item \bouton{Approuver niveau 1}
+    \end{itemize}
+
+    \item \textbf{Notification niveau 2}
+    \begin{itemize}
+        \item L'Administrateur reçoit notification
+    \end{itemize}
+
+    \item \textbf{Validation niveau 2} (Administrateur)
+    \begin{itemize}
+        \item Révision finale
+        \item \bouton{Approuver niveau 2}
+    \end{itemize}
+
+    \item \textbf{Exécution automatique}
+    \begin{itemize}
+        \item La note passe automatiquement de 8 à 18
+        \item La moyenne du cours est recalculée
+        \item La moyenne générale est mise à jour
+        \item Les crédits sont attribués si applicable
+        \item L'étudiant reçoit une notification
+    \end{itemize}
+
+    \item \textbf{Traçabilité}
+    \begin{itemize}
+        \item Historique complet conservé
+        \item Visible dans l'audit trail
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Scénario 4 : Génération de relevés de notes}
+
+\subsubsection{Contexte}
+
+Fin de semestre, vous devez générer et distribuer les relevés de notes à tous les étudiants d'une classe.
+
+\subsubsection{Procédure}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Préparation}
+    \begin{itemize}
+        \item Vérifier que toutes les notes sont validées
+        \item Vérifier que les logos sont en place
+        \item Tester avec 1-2 étudiants d'abord
+    \end{itemize}
+
+    \item \textbf{Configuration de l'export}
+    \begin{itemize}
+        \item Menu \menu{Exports} > \menu{Relevés de notes}
+        \item Sélectionner classe : Médecine Année 1
+        \item Semestre : S1
+        \item Options :
+        \begin{itemize}
+            \item ☑ Inclure logo
+            \item ☑ Afficher crédits ECTS
+            \item ☑ Afficher mentions
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Génération}
+    \begin{itemize}
+        \item Format : ZIP (PDFs individuels)
+        \item \bouton{Générer}
+        \item Attendre la fin (barre de progression)
+    \end{itemize}
+
+    \item \textbf{Téléchargement}
+    \begin{itemize}
+        \item Télécharger l'archive ZIP
+        \item Extraire localement
+    \end{itemize}
+
+    \item \textbf{Vérification}
+    \begin{itemize}
+        \item Ouvrir quelques PDFs au hasard
+        \item Vérifier :
+        \begin{itemize}
+            \item Logos présents
+            \item Informations correctes
+            \item Calculs de moyennes
+            \item Mise en page propre
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Distribution}
+    \begin{itemize}
+        \item Envoyer par email aux étudiants
+        \item Ou imprimer et distribuer physiquement
+        \item Archiver une copie pour traçabilité
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Scénario 5 : Gestion d'un redoublant}
+
+\subsubsection{Contexte}
+
+Un étudiant a échoué au S1 (moyenne $<$ 10). Il doit redoubler certains cours au S2.
+
+\subsubsection{Gestion}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Identification}
+    \begin{itemize}
+        \item Étudiant : Martin Paul
+        \item Moyenne S1 : 8.5/20
+        \item Cours échoués : Anatomie (7/20), Chimie (6/20)
+        \item Cours validés : Physiologie (12/20), Biologie (11/20)
+    \end{itemize}
+
+    \item \textbf{Inscription sélective S2}
+    \begin{itemize}
+        \item Ne pas inscrire aux cours déjà validés
+        \item Inscrire uniquement :
+        \begin{itemize}
+            \item Anatomie (tentative 2)
+            \item Chimie (tentative 2)
+            \item Nouveaux cours du S2
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Suivi}
+    \begin{itemize}
+        \item Le système trace le nombre de tentatives
+        \item Visible dans le dossier de l'étudiant
+    \end{itemize}
+
+    \item \textbf{Validation finale}
+    \begin{itemize}
+        \item Si réussite aux cours redoublés :
+        \begin{itemize}
+            \item Remplacement des notes précédentes
+            \item Attribution des crédits
+            \item Calcul de la moyenne annuelle
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Scénario 6 : Import massif d'étudiants}
+
+\subsubsection{Contexte}
+
+Début d'année, inscription de 200 nouveaux étudiants répartis sur 5 classes.
+
+\subsubsection{Procédure optimisée}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Préparation du fichier Excel}
+    \begin{itemize}
+        \item Télécharger le modèle
+        \item Remplir toutes les colonnes :
+        \begin{itemize}
+            \item Nom, prénom
+            \item Date de naissance
+            \item Lieu de naissance
+            \item Genre
+            \item Email (optionnel)
+            \item Classe cible
+        \end{itemize}
+        \item Sauvegarder en .xlsx
+    \end{itemize}
+
+    \item \textbf{Test avec échantillon}
+    \begin{itemize}
+        \item Créer fichier test avec 5 étudiants
+        \item Importer
+        \item Vérifier résultats
+        \item Corriger erreurs éventuelles
+    \end{itemize}
+
+    \item \textbf{Import complet}
+    \begin{itemize}
+        \item Menu \menu{Étudiants} > \bouton{Importer}
+        \item Sélectionner fichier complet
+        \item Rapport de validation :
+        \begin{itemize}
+            \item 200 étudiants valides
+            \item 0 erreur
+        \end{itemize}
+        \item \bouton{Confirmer l'import}
+    \end{itemize}
+
+    \item \textbf{Vérification post-import}
+    \begin{itemize}
+        \item Vérifier matricules générés
+        \item Vérifier répartition par classe
+        \item Exporter liste pour validation
+    \end{itemize}
+
+    \item \textbf{Inscription aux cours}
+    \begin{itemize}
+        \item Pour chaque classe :
+        \item Inscription automatique au S1
+        \item Vérifier nombre d'inscrits par cours
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Bonnes pratiques générales}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Recommandations]
+
+\textbf{Organisation :}
+\begin{itemize}[leftmargin=*]
+    \item Planifiez les tâches en début d'année académique
+    \item Documentez vos procédures locales
+    \item Formez les utilisateurs avant utilisation
+    \item Préparez des modèles et templates
+\end{itemize}
+
+\textbf{Qualité des données :}
+\begin{itemize}[leftmargin=*]
+    \item Vérifiez toujours avant validation
+    \item Testez avec échantillons
+    \item Conservez les fichiers sources
+    \item Maintenez la cohérence des données
+\end{itemize}
+
+\textbf{Communication :}
+\begin{itemize}[leftmargin=*]
+    \item Informez les utilisateurs des procédures
+    \item Communiquez les délais
+    \item Notifiez les changements importants
+    \item Assurez un support réactif
+\end{itemize}
+\end{tcolorbox}
+
+\newpage

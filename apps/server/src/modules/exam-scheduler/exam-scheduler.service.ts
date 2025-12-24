@@ -9,24 +9,46 @@ import type {
 	ScheduleInput,
 } from "./exam-scheduler.zod";
 
-async function resolveContext(input: PreviewInput) {
-	const [faculty, academicYear] = await Promise.all([
-		repo.findFacultyById(input.facultyId),
-		repo.findAcademicYearById(input.academicYearId),
-	]);
-	if (!faculty) throw notFound("Faculty not found");
-	if (!academicYear) throw notFound("Academic year not found");
-	return { faculty, academicYear };
+async function ensureAcademicYear(
+	academicYearId: string,
+	institutionId: string,
+) {
+	const academicYear = await repo.findAcademicYearById(academicYearId);
+	if (!academicYear || academicYear.institutionId !== institutionId) {
+		throw notFound("Academic year not found");
+	}
+	return academicYear;
 }
 
-export async function previewEligibleClasses(input: PreviewInput) {
-	const context = await resolveContext(input);
-	const classes = await repo.getClassesForScheduling(input);
+async function ensureExamType(examTypeId: string, institutionId: string) {
+	const examType = await repo.findExamTypeById(examTypeId);
+	if (!examType || examType.institutionId !== institutionId) {
+		throw notFound("Exam type not found");
+	}
+	return examType;
+}
+
+async function resolveContext(input: PreviewInput, institutionId: string) {
+	const academicYear = await ensureAcademicYear(
+		input.academicYearId,
+		institutionId,
+	);
+	return { academicYear };
+}
+
+export async function previewEligibleClasses(
+	input: PreviewInput,
+	institutionId: string,
+) {
+	const context = await resolveContext(input, institutionId);
+	console.log("[DEBUG preview] input:", input, "institutionId:", institutionId);
+	const classes = await repo.getClassesForScheduling({
+		academicYearId: input.academicYearId,
+		institutionId,
+		semesterId: input.semesterId,
+	});
+	console.log("[DEBUG preview] Found classes:", classes.length);
 	return {
-		faculty: {
-			id: context.faculty.id,
-			name: context.faculty.name,
-		},
 		academicYear: {
 			id: context.academicYear.id,
 			name: context.academicYear.name,
@@ -40,16 +62,15 @@ export async function previewEligibleClasses(input: PreviewInput) {
 export async function scheduleExams(
 	input: ScheduleInput,
 	schedulerId: string | null,
+	institutionId: string,
 ) {
-	const context = await resolveContext(input);
-	const examType = await repo.findExamTypeById(input.examTypeId);
-	if (!examType) {
-		throw notFound("Exam type not found");
-	}
+	const context = await resolveContext(input, institutionId);
+	const examType = await ensureExamType(input.examTypeId, institutionId);
 	const classes = await repo.getClassesForScheduling({
-		facultyId: input.facultyId,
+		institutionId,
 		academicYearId: input.academicYearId,
 		classIds: input.classIds,
+		semesterId: input.semesterId,
 	});
 	if (!classes.length) {
 		throw new TRPCError({
@@ -57,7 +78,10 @@ export async function scheduleExams(
 			message: "No classes match the provided selection",
 		});
 	}
-	const classCourses = await repo.getClassCourses(classes.map((c) => c.id));
+	const classCourses = await repo.getClassCourses(
+		classes.map((c) => c.id),
+		input.semesterId,
+	);
 	if (!classCourses.length) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -67,6 +91,7 @@ export async function scheduleExams(
 	const existing = await repo.findExistingTypeExams(
 		classCourses.map((cc) => cc.id),
 		examType.name,
+		institutionId,
 	);
 	const existingSet = new Set(existing.map((item) => item.classCourseId));
 	const targets = classCourses.filter((cc) => !existingSet.has(cc.id));
@@ -91,6 +116,7 @@ export async function scheduleExams(
 					classCourse: target.id,
 				},
 				schedulerId,
+				institutionId,
 			);
 			if (exam) createdIds.push(exam.id);
 		} catch (error) {
@@ -111,7 +137,6 @@ export async function scheduleExams(
 		classCourseCount: classCourses.length,
 		examIds: createdIds,
 		examType: { id: examType.id, name: examType.name },
-		faculty: { id: context.faculty.id, name: context.faculty.name },
 		academicYear: {
 			id: context.academicYear.id,
 			name: context.academicYear.name,
@@ -126,7 +151,7 @@ export async function scheduleExams(
 		: null;
 	try {
 		const run = await repo.recordRun({
-			facultyId: input.facultyId,
+			institutionId,
 			academicYearId: input.academicYearId,
 			examTypeId: examType.id,
 			percentage: input.percentage.toString(),
@@ -142,7 +167,7 @@ export async function scheduleExams(
 			scheduledBy: schedulerProfile ? schedulerProfile.id : null,
 		});
 		runId = run.id;
-		await examsService.assignScheduleRun(createdIds, run.id);
+		await examsService.assignScheduleRun(createdIds, run.id, institutionId);
 	} catch (error) {
 		console.error("Failed to record or link exam scheduling run", error);
 	}
@@ -150,12 +175,15 @@ export async function scheduleExams(
 	return { ...summary, runId };
 }
 
-export function listHistory(input: HistoryInput) {
-	return repo.listRuns(input);
+export function listHistory(input: HistoryInput, institutionId: string) {
+	return repo.listRuns(input, institutionId);
 }
 
-export async function getRunDetails(input: RunDetailsInput) {
-	const result = await repo.getRunDetails(input.runId);
+export async function getRunDetails(
+	input: RunDetailsInput,
+	institutionId: string,
+) {
+	const result = await repo.getRunDetails(input.runId, institutionId);
 	if (!result) {
 		throw notFound("Scheduling run not found");
 	}

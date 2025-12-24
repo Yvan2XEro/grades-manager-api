@@ -10,17 +10,25 @@ import {
 export const teachingUnitsRouter = router({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createUnit(input)),
+		.mutation(({ input, ctx }) =>
+			service.createUnit(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateUnit(input.id, input)),
+		.mutation(({ input, ctx }) =>
+			service.updateUnit(input.id, ctx.institution.id, input),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteUnit(input.id)),
+		.mutation(({ input, ctx }) =>
+			service.deleteUnit(input.id, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getUnitById(input.id)),
+		.query(({ input, ctx }) =>
+			service.getUnitById(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listUnits(input)),
+		.query(({ input, ctx }) => service.listUnits(input, ctx.institution.id)),
 });

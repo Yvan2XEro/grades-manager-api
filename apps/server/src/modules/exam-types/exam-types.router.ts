@@ -10,17 +10,27 @@ import {
 export const examTypesRouter = router({
 	create: adminProcedure
 		.input(baseSchema)
-		.mutation(({ input }) => service.createExamType(input)),
+		.mutation(({ ctx, input }) =>
+			service.createExamType(input, ctx.institution.id),
+		),
 	update: adminProcedure
 		.input(updateSchema)
-		.mutation(({ input }) => service.updateExamType(input.id, input)),
+		.mutation(({ ctx, input }) =>
+			service.updateExamType(input.id, ctx.institution.id, input),
+		),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteExamType(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteExamType(input.id, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getExamTypeById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getExamTypeById(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listExamTypes(input)),
+		.query(({ ctx, input }) =>
+			service.listExamTypes(input, ctx.institution.id),
+		),
 });

@@ -55,6 +55,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -82,9 +83,63 @@ const buildStudentSchema = (t: TFunction) =>
 			),
 		registrationFormatId: z.string().optional(),
 		classId: z.string().min(1, t("admin.students.validation.class")),
+		gender: z.enum(["male", "female", "other"]).optional(),
+		dateOfBirth: z.string().optional(),
+		placeOfBirth: z.string().optional(),
+		nationality: z.string().optional(),
+	});
+
+const buildExternalAdmissionSchema = (t: TFunction) =>
+	z.object({
+		firstName: z.string().min(1, t("admin.students.validation.firstName")),
+		lastName: z.string().min(1, t("admin.students.validation.lastName")),
+		email: z.string().email(t("admin.students.validation.email")),
+		registrationNumber: z.string().optional(),
+		registrationFormatId: z.string().optional(),
+		classId: z.string().min(1, t("admin.students.validation.class")),
+		gender: z.enum(["male", "female", "other"]).optional(),
+		dateOfBirth: z.string().optional(),
+		placeOfBirth: z.string().optional(),
+		nationality: z.string().optional(),
+		admissionType: z.enum(["transfer", "direct", "equivalence"], {
+			required_error: t("admin.students.external.validation.admissionType"),
+		}),
+		transferInstitution: z
+			.string()
+			.min(1, t("admin.students.external.validation.transferInstitution")),
+		transferCredits: z
+			.number({
+				required_error: t("admin.students.external.validation.transferCredits"),
+			})
+			.int()
+			.min(0)
+			.max(300),
+		transferLevel: z
+			.string()
+			.min(1, t("admin.students.external.validation.transferLevel")),
+		admissionJustification: z
+			.string()
+			.min(10, t("admin.students.external.validation.admissionJustification")),
+		admissionDate: z
+			.string()
+			.min(1, t("admin.students.external.validation.admissionDate")),
 	});
 
 type StudentForm = z.infer<ReturnType<typeof buildStudentSchema>>;
+type ExternalAdmissionForm = z.infer<
+	ReturnType<typeof buildExternalAdmissionSchema>
+>;
+const ADMISSION_TYPES = [
+	"normal",
+	"transfer",
+	"direct",
+	"equivalence",
+] as const;
+type AdmissionType = (typeof ADMISSION_TYPES)[number];
+const ADMISSION_TYPE_HINT = ADMISSION_TYPES.join(", ");
+const GENDER_VALUES = ["male", "female", "other"] as const;
+const GENDER_HINT = GENDER_VALUES.join(", ");
+
 type BulkStudent = {
 	firstName: string;
 	lastName: string;
@@ -95,6 +150,178 @@ type BulkStudent = {
 	dateOfBirth?: string;
 	placeOfBirth?: string;
 	nationality?: string;
+	admissionType?: AdmissionType;
+	transferInstitution?: string;
+	transferCredits?: number;
+	transferLevel?: string;
+	admissionJustification?: string;
+	admissionDate?: string;
+};
+
+type RawStudentRow = Record<string, string | number | undefined>;
+
+const sanitizeString = (value: unknown) => {
+	if (value === undefined || value === null) return undefined;
+	const str = typeof value === "string" ? value : String(value);
+	const trimmed = str.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const buildImportRowSchema = (
+	t: TFunction,
+	parseDateValue: (value?: string | number) => string | undefined,
+) => {
+	const requiredString = (message: string) =>
+		z.preprocess(
+			(value) => sanitizeString(value) ?? "",
+			z.string().min(1, { message }),
+		);
+	const optionalString = () =>
+		z.preprocess((value) => sanitizeString(value), z.string().optional());
+	const dateField = (fieldKey: "dateOfBirth" | "admissionDate") =>
+		z
+			.union([z.string(), z.number()])
+			.optional()
+			.transform((value, ctx) => {
+				if (value === undefined || value === null || value === "")
+					return undefined;
+				const iso = parseDateValue(value);
+				if (!iso) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: t("admin.students.import.errors.invalidDate", {
+							field: t(`admin.students.import.fields.${fieldKey}`),
+						}),
+						path: [fieldKey],
+					});
+					return undefined;
+				}
+				return iso;
+			});
+	const genderField = optionalString().transform((value, ctx) => {
+		if (!value) return undefined;
+		const normalized = normalizeGender(value);
+		if (!normalized) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: t("admin.students.import.errors.invalidGender", {
+					value,
+					values: GENDER_HINT,
+				}),
+				path: ["gender"],
+			});
+			return undefined;
+		}
+		return normalized;
+	});
+	const admissionTypeField = optionalString().transform((value, ctx) => {
+		if (!value) return undefined;
+		const normalized = normalizeAdmissionType(value);
+		if (!normalized) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: t("admin.students.import.errors.invalidAdmissionType", {
+					value,
+					values: ADMISSION_TYPE_HINT,
+				}),
+				path: ["admissionType"],
+			});
+			return undefined;
+		}
+		return normalized;
+	});
+	const transferCreditsField = z
+		.union([z.string(), z.number()])
+		.optional()
+		.transform((value, ctx) => {
+			if (value === undefined || value === null || value === "")
+				return undefined;
+			const parsed =
+				typeof value === "number" ? value : Number(String(value).trim());
+			if (!Number.isFinite(parsed)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: t("admin.students.import.errors.invalidTransferCredits"),
+					path: ["transferCredits"],
+				});
+				return undefined;
+			}
+			const rounded = Math.max(0, Math.round(parsed));
+			if (rounded > 300) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: t("admin.students.import.errors.invalidTransferCredits"),
+					path: ["transferCredits"],
+				});
+				return undefined;
+			}
+			return rounded;
+		});
+
+	return z
+		.object({
+			firstName: requiredString(
+				t("admin.students.validation.firstName", {
+					defaultValue: "First name is required",
+				}),
+			),
+			lastName: requiredString(
+				t("admin.students.validation.lastName", {
+					defaultValue: "Last name is required",
+				}),
+			),
+			email: z.preprocess(
+				(value) => sanitizeString(value) ?? "",
+				z.string().email(t("admin.students.validation.email")),
+			),
+			registrationNumber: optionalString(),
+			phone: optionalString(),
+			gender: genderField,
+			dateOfBirth: dateField("dateOfBirth"),
+			placeOfBirth: optionalString(),
+			nationality: optionalString(),
+			admissionType: admissionTypeField,
+			transferInstitution: optionalString(),
+			transferCredits: transferCreditsField,
+			transferLevel: optionalString(),
+			admissionJustification: optionalString(),
+			admissionDate: dateField("admissionDate"),
+		})
+		.superRefine((data, ctx) => {
+			if (data.admissionType && data.admissionType !== "normal") {
+				const missingFields: string[] = [];
+				if (!data.transferInstitution) {
+					missingFields.push(
+						t("admin.students.import.fields.transferInstitution"),
+					);
+				}
+				if (
+					data.admissionType === "transfer" &&
+					(!data.transferCredits || data.transferCredits <= 0)
+				) {
+					missingFields.push(t("admin.students.import.fields.transferCredits"));
+				}
+				if (!data.transferLevel) {
+					missingFields.push(t("admin.students.import.fields.transferLevel"));
+				}
+				if (!data.admissionJustification) {
+					missingFields.push(
+						t("admin.students.import.fields.admissionJustification"),
+					);
+				}
+				if (!data.admissionDate) {
+					missingFields.push(t("admin.students.import.fields.admissionDate"));
+				}
+				if (missingFields.length > 0) {
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						message: t("admin.students.import.errors.missingTransferData", {
+							fields: missingFields.join(", "),
+						}),
+					});
+				}
+			}
+		});
 };
 
 const getStudentName = (student: StudentRow) =>
@@ -111,6 +338,18 @@ const normalizeGender = (value?: string | null) => {
 	return undefined;
 };
 
+const normalizeAdmissionType = (
+	value?: string | null,
+): AdmissionType | undefined => {
+	if (!value) return undefined;
+	const normalized = value.trim().toLowerCase();
+	if (ADMISSION_TYPES.includes(normalized as AdmissionType)) {
+		return normalized as AdmissionType;
+	}
+	if (normalized === "transfert") return "transfer";
+	return undefined;
+};
+
 const formatStudentGender = (
 	t: TFunction,
 	gender?: StudentRow["profile"]["gender"],
@@ -124,13 +363,6 @@ const formatDate = (value?: Date | string | null) => {
 	const date = value instanceof Date ? value : new Date(value);
 	if (Number.isNaN(date.getTime())) return "—";
 	return format(date, "PPP");
-};
-
-const toInputDate = (value?: Date | string | null) => {
-	if (!value) return "";
-	const date = value instanceof Date ? value : new Date(value);
-	if (Number.isNaN(date.getTime())) return "";
-	return date.toISOString().split("T")[0];
 };
 
 const toISODateFromInput = (value?: string) => {
@@ -163,7 +395,9 @@ export default function StudentManagement() {
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<"single" | "import">("single");
+	const [activeTab, setActiveTab] = useState<"single" | "import" | "external">(
+		"single",
+	);
 	const [importClass, setImportClass] = useState("");
 	const [importFormatId, setImportFormatId] = useState("");
 	const [importResult, setImportResult] = useState<{
@@ -172,14 +406,18 @@ export default function StudentManagement() {
 		errors: Array<{ row: number; reason: string }>;
 	} | null>(null);
 	const [importFile, setImportFile] = useState<File | null>(null);
+	const [importPreview, setImportPreview] = useState<{
+		rows: BulkStudent[];
+		errors: Array<{ row: number; reason: string }>;
+	} | null>(null);
 	const [importFileKey, setImportFileKey] = useState(0);
 	const [ledgerStudent, setLedgerStudent] = useState<StudentRow | null>(null);
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
-			return items as Class[];
+			const result = await trpcClient.classes.list.query({});
+			return (result?.items || []) as Class[];
 		},
 	});
 
@@ -213,6 +451,10 @@ export default function StudentManagement() {
 	});
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
+	const externalAdmissionSchema = useMemo(
+		() => buildExternalAdmissionSchema(t),
+		[t],
+	);
 
 	const form = useForm<StudentForm>({
 		resolver: zodResolver(studentSchema),
@@ -223,6 +465,32 @@ export default function StudentManagement() {
 			registrationNumber: "",
 			registrationFormatId: undefined,
 			classId: "",
+			dateOfBirth: "",
+			placeOfBirth: "",
+			gender: undefined,
+			nationality: "",
+		},
+	});
+
+	const externalForm = useForm<ExternalAdmissionForm>({
+		resolver: zodResolver(externalAdmissionSchema),
+		defaultValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			registrationNumber: "",
+			registrationFormatId: undefined,
+			classId: "",
+			dateOfBirth: "",
+			placeOfBirth: "",
+			gender: undefined,
+			nationality: "",
+			admissionType: "transfer",
+			transferInstitution: "",
+			transferCredits: 0,
+			transferLevel: "",
+			admissionJustification: "",
+			admissionDate: "",
 		},
 	});
 
@@ -258,15 +526,62 @@ export default function StudentManagement() {
 			),
 	});
 
+	const externalAdmissionMutation = useMutation({
+		mutationFn: (data: ExternalAdmissionForm) => {
+			return trpcClient.students.admitExternal.mutate({
+				...data,
+				admissionDate: new Date(data.admissionDate),
+			});
+		},
+		onSuccess: () => {
+			toast.success(t("admin.students.external.toast.success"));
+			queryClient.invalidateQueries({ queryKey: ["students"] });
+			closeModal();
+		},
+		onError: (err: unknown) =>
+			toast.error(
+				err instanceof Error
+					? err.message
+					: t("admin.students.external.toast.error"),
+			),
+	});
+
 	const onSubmit = (data: StudentForm) =>
 		createMutation.mutate({
 			...data,
+			gender: data.gender || undefined,
 			registrationNumber: data.registrationNumber?.trim()
 				? data.registrationNumber.trim()
 				: undefined,
 			registrationFormatId: data.registrationFormatId
 				? data.registrationFormatId
 				: undefined,
+			dateOfBirth: data.dateOfBirth
+				? toISODateFromInput(data.dateOfBirth)
+				: undefined,
+			placeOfBirth: data.placeOfBirth?.trim() || undefined,
+			nationality: data.nationality?.trim() || undefined,
+		});
+
+	const onExternalSubmit = (data: ExternalAdmissionForm) =>
+		externalAdmissionMutation.mutate({
+			...data,
+			gender: data.gender || undefined,
+			registrationNumber: data.registrationNumber?.trim()
+				? data.registrationNumber.trim()
+				: undefined,
+			registrationFormatId: data.registrationFormatId
+				? data.registrationFormatId
+				: undefined,
+			dateOfBirth: data.dateOfBirth
+				? toISODateFromInput(data.dateOfBirth)
+				: undefined,
+			placeOfBirth: data.placeOfBirth?.trim() || undefined,
+			nationality: data.nationality?.trim() || undefined,
+			transferInstitution: data.transferInstitution.trim(),
+			transferLevel: data.transferLevel.trim(),
+			admissionJustification: data.admissionJustification.trim(),
+			admissionDate: data.admissionDate,
 		});
 
 	const handleNext = () => {
@@ -282,28 +597,33 @@ export default function StudentManagement() {
 	};
 
 	const handleDownloadTemplate = () => {
-		const header =
-			"firstName,lastName,email,phone,dateOfBirth,placeOfBirth,gender,nationality,registrationNumber\n";
-		const csvBlob = new Blob([header], { type: "text/csv;charset=utf-8" });
+		const headers = [
+			"firstName",
+			"lastName",
+			"email",
+			"phone",
+			"dateOfBirth",
+			"placeOfBirth",
+			"gender",
+			"nationality",
+			"registrationNumber",
+			"admissionType",
+			"transferInstitution",
+			"transferCredits",
+			"transferLevel",
+			"admissionDate",
+			"admissionJustification",
+		];
+		const csvBlob = new Blob([`${headers.join(",")}\n`], {
+			type: "text/csv;charset=utf-8",
+		});
 		const a = document.createElement("a");
 		a.href = URL.createObjectURL(csvBlob);
 		a.download = `${t("admin.students.templates.filePrefix")}.csv`;
 		a.click();
 
 		const wb = XLSX.utils.book_new();
-		const ws = XLSX.utils.aoa_to_sheet([
-			[
-				"firstName",
-				"lastName",
-				"email",
-				"phone",
-				"dateOfBirth",
-				"placeOfBirth",
-				"gender",
-				"nationality",
-				"registrationNumber",
-			],
-		]);
+		const ws = XLSX.utils.aoa_to_sheet([headers]);
 		XLSX.utils.book_append_sheet(
 			wb,
 			ws,
@@ -312,7 +632,66 @@ export default function StudentManagement() {
 		XLSX.writeFile(wb, `${t("admin.students.templates.filePrefix")}.xlsx`);
 	};
 
-	const handleImport = async (file: File) => {
+	const parseImportFile = async (file: File) => {
+		const ext = file.name.split(".").pop()?.toLowerCase();
+		const rows: BulkStudent[] = [];
+		const errors: Array<{ row: number; reason: string }> = [];
+
+		const pushIssues = (issues: z.ZodIssue[], rowNumber: number) => {
+			issues.forEach((issue) => {
+				errors.push({
+					row: rowNumber,
+					reason: issue.message ?? t("admin.students.import.invalidFormat"),
+				});
+			});
+		};
+
+		if (ext === "csv") {
+			const text = await file.text();
+			const parsed = Papa.parse<Record<string, string>>(text, {
+				header: true,
+				skipEmptyLines: true,
+			});
+			const parseCsvDate = (value?: string | number) => {
+				if (typeof value === "number") {
+					return toISODateFromSheet(value);
+				}
+				return toISODateFromInput(
+					typeof value === "string" ? value : undefined,
+				);
+			};
+			const schema = buildImportRowSchema(t, parseCsvDate);
+			parsed.data.forEach((row, idx) => {
+				const result = schema.safeParse(row as RawStudentRow);
+				if (result.success) {
+					rows.push(result.data);
+				} else {
+					pushIssues(result.error.issues, idx + 2);
+				}
+			});
+		} else {
+			const buf = await file.arrayBuffer();
+			const wb = XLSX.read(buf);
+			const sheet = wb.Sheets[wb.SheetNames[0]];
+			const json =
+				XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet);
+			const parseSheetDate = (value?: string | number) =>
+				toISODateFromSheet(value);
+			const schema = buildImportRowSchema(t, parseSheetDate);
+			json.forEach((row, idx) => {
+				const result = schema.safeParse(row as RawStudentRow);
+				if (result.success) {
+					rows.push(result.data);
+				} else {
+					pushIssues(result.error.issues, idx + 2);
+				}
+			});
+		}
+
+		return { rows, errors };
+	};
+
+	const handleImport = async () => {
 		if (!importClass) {
 			toast.error(
 				t("admin.students.import.classLabel", {
@@ -321,81 +700,37 @@ export default function StudentManagement() {
 			);
 			return;
 		}
-		const ext = file.name.split(".").pop()?.toLowerCase();
-		const rows: BulkStudent[] = [];
-		const formatErrors: Array<{ row: number; reason: string }> = [];
-
-		if (ext === "csv") {
-			const text = await file.text();
-			const parsed = Papa.parse<Record<string, string>>(text, {
-				header: true,
-				skipEmptyLines: true,
-			});
-			parsed.data.forEach((row, idx) => {
-				if (row.firstName && row.lastName && row.email) {
-					rows.push({
-						firstName: row.firstName,
-						lastName: row.lastName,
-						email: row.email,
-						registrationNumber: row.registrationNumber?.trim()
-							? row.registrationNumber.trim()
-							: undefined,
-						phone: row.phone || undefined,
-						gender: normalizeGender(row.gender),
-						dateOfBirth: row.dateOfBirth
-							? toISODateFromInput(row.dateOfBirth)
-							: undefined,
-						placeOfBirth: row.placeOfBirth || undefined,
-						nationality: row.nationality || undefined,
-					});
-				} else {
-					formatErrors.push({
-						row: idx + 2,
-						reason: t("admin.students.import.invalidFormat"),
-					});
-				}
-			});
-		} else {
-			const buf = await file.arrayBuffer();
-			const wb = XLSX.read(buf);
-			const sheet = wb.Sheets[wb.SheetNames[0]];
-			const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet);
-			json.forEach((row, idx) => {
-				if (row.firstName && row.lastName && row.email) {
-					rows.push({
-						firstName: row.firstName,
-						lastName: row.lastName,
-						email: row.email,
-						registrationNumber: row.registrationNumber?.trim()
-							? row.registrationNumber.trim()
-							: undefined,
-						phone: row.phone || undefined,
-						gender: normalizeGender(row.gender),
-						dateOfBirth: toISODateFromSheet(
-							row.dateOfBirth as string | number | undefined,
-						),
-						placeOfBirth: row.placeOfBirth || undefined,
-						nationality: row.nationality || undefined,
-					});
-				} else {
-					formatErrors.push({
-						row: idx + 2,
-						reason: t("admin.students.import.invalidFormat"),
-					});
-				}
-			});
-		}
-
-		if (!rows.length) {
-			toast.error(t("admin.students.import.invalidFormat"));
+		if (!importFile) {
+			toast.error(
+				t("admin.students.import.fileLabel", {
+					defaultValue: "Upload CSV or XLSX file",
+				}),
+			);
 			return;
 		}
+		let preview = importPreview;
+		if (!preview) {
+			try {
+				preview = await parseImportFile(importFile);
+				setImportPreview(preview);
+			} catch (error) {
+				console.error(error);
+				toast.error(t("admin.students.import.invalidFormat"));
+				return;
+			}
+		}
+		if (!preview.rows.length) {
+			toast.error(t("admin.students.import.preview.noValidRows"));
+			return;
+		}
+
+		const formatErrors = preview.errors;
 
 		bulkMutation.mutate(
 			{
 				classId: importClass,
 				registrationFormatId: importFormatId || undefined,
-				students: rows,
+				students: preview.rows,
 			},
 			{
 				onSuccess: (res) => {
@@ -410,6 +745,7 @@ export default function StudentManagement() {
 					if (formatErrors.length === 0) {
 						toast.success(t("admin.students.toast.createSuccess"));
 					}
+					setImportPreview(null);
 					setImportFile(null);
 					setImportFileKey((key) => key + 1);
 				},
@@ -424,8 +760,10 @@ export default function StudentManagement() {
 		setImportFormatId("");
 		setImportResult(null);
 		setImportFile(null);
+		setImportPreview(null);
 		setImportFileKey((key) => key + 1);
 		form.reset();
+		externalForm.reset();
 	};
 
 	return (
@@ -683,7 +1021,7 @@ export default function StudentManagement() {
 			</Drawer>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
-				<DialogContent className="max-w-3xl">
+				<DialogContent className=" overflow-y-auto max-h-[90vh] min-w-[60vw] ">
 					<DialogHeader>
 						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
 					</DialogHeader>
@@ -691,7 +1029,7 @@ export default function StudentManagement() {
 					<Tabs
 						value={activeTab}
 						onValueChange={(value) =>
-							setActiveTab(value as "single" | "import")
+							setActiveTab(value as "single" | "import" | "external")
 						}
 						className="space-y-4"
 					>
@@ -702,44 +1040,52 @@ export default function StudentManagement() {
 							<TabsTrigger value="import">
 								{t("admin.students.modal.tabs.import")}
 							</TabsTrigger>
+							<TabsTrigger value="external">
+								{t("admin.students.modal.tabs.external")}
+							</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="single" className="space-y-4">
 							<Form {...form}>
 								<form
 									onSubmit={form.handleSubmit(onSubmit)}
-									className="space-y-4"
+									className="space-y-6"
 								>
-									<FormField
-										control={form.control}
-										name="firstName"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.form.firstName")}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="lastName"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.form.lastName")}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+									{/* Section: Informations personnelles */}
+									<div className="grid grid-cols-2 gap-4">
+										<FormField
+											control={form.control}
+											name="firstName"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.firstName")}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="lastName"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.lastName")}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									{/* Section: Contact */}
 									<FormField
 										control={form.control}
 										name="email"
@@ -747,128 +1093,241 @@ export default function StudentManagement() {
 											<FormItem>
 												<FormLabel>{t("admin.students.form.email")}</FormLabel>
 												<FormControl>
-													<Input {...field} />
+													<Input {...field} type="email" />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
-									<FormField
-										control={form.control}
-										name="registrationNumber"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.form.registration")}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormDescription>
-													{t("admin.students.form.registrationHint", {
-														defaultValue:
-															"Leave blank to auto-generate the next matricule.",
-													})}
-												</FormDescription>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="registrationFormatId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.form.registrationFormat", {
-														defaultValue: "Registration format",
-													})}
-												</FormLabel>
-												<Select
-													onValueChange={(value) =>
-														field.onChange(
-															value === NO_REGISTRATION_FORMAT_VALUE
-																? undefined
-																: value,
-														)
-													}
-													value={field.value ?? NO_REGISTRATION_FORMAT_VALUE}
-												>
+
+									{/* Section: Naissance */}
+									<div className="grid grid-cols-2 gap-4">
+										<FormField
+											control={form.control}
+											name="dateOfBirth"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.dateOfBirth")}
+													</FormLabel>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t(
-																	"admin.students.form.registrationFormatPlaceholder",
-																	{
-																		defaultValue: "Use active format",
-																	},
-																)}
-															/>
-														</SelectTrigger>
+														<Input
+															{...field}
+															type="date"
+															data-testid="date-of-birth-input"
+														/>
 													</FormControl>
-													<SelectContent>
-														<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
-															{t(
-																"admin.students.form.registrationFormatPlaceholder",
-																{
-																	defaultValue: "Use active format",
-																},
-															)}
-														</SelectItem>
-														{registrationFormats?.map((format) => (
-															<SelectItem key={format.id} value={format.id}>
-																{format.name}
-																{format.isActive
-																	? ` (${t(
-																			"admin.registrationNumbers.list.active",
-																			{ defaultValue: "Active" },
-																		)})`
-																	: ""}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-												<FormDescription>
-													{t("admin.students.form.registrationFormatHint", {
-														defaultValue:
-															"Select a specific format to override the active template.",
-													})}
-												</FormDescription>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="classId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t("admin.students.form.class")}</FormLabel>
-												<Select
-													onValueChange={field.onChange}
-													value={field.value}
-												>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="placeOfBirth"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.placeOfBirth")}
+													</FormLabel>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t(
-																	"admin.students.form.classPlaceholder",
-																)}
-															/>
-														</SelectTrigger>
+														<Input {...field} />
 													</FormControl>
-													<SelectContent>
-														{classes?.map((c) => (
-															<SelectItem key={c.id} value={c.id}>
-																{c.name}
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									{/* Section: Identité */}
+									<div className="grid grid-cols-2 gap-4">
+										<FormField
+											control={form.control}
+											name="gender"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.gender")}
+													</FormLabel>
+													<Select
+														onValueChange={field.onChange}
+														value={field.value || ""}
+													>
+														<FormControl>
+															<SelectTrigger data-testid="gender-select">
+																<SelectValue
+																	placeholder={t(
+																		"admin.students.form.genderPlaceholder",
+																	)}
+																/>
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															<SelectItem value="male">
+																{t("admin.students.gender.male")}
 															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+															<SelectItem value="female">
+																{t("admin.students.gender.female")}
+															</SelectItem>
+															<SelectItem value="other">
+																{t("admin.students.gender.other")}
+															</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="nationality"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.nationality")}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									{/* Section: Inscription */}
+									<div className="space-y-4 rounded-lg border bg-gray-50 p-4">
+										<p className="font-medium text-gray-900 text-sm">
+											{t("admin.students.form.registrationSection", {
+												defaultValue: "Inscription",
+											})}
+										</p>
+										<FormField
+											control={form.control}
+											name="classId"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.class")}
+													</FormLabel>
+													<Select
+														onValueChange={field.onChange}
+														value={field.value}
+														disabled={!classes?.length}
+													>
+														<FormControl>
+															<SelectTrigger data-testid="class-select">
+																<SelectValue
+																	placeholder={t(
+																		"admin.students.form.classPlaceholder",
+																	)}
+																/>
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															{classes?.map((c) => (
+																<SelectItem key={c.id} value={c.id}>
+																	{c.name}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<div className="grid grid-cols-2 gap-4">
+											<FormField
+												control={form.control}
+												name="registrationNumber"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.registration")}
+														</FormLabel>
+														<FormControl>
+															<Input {...field} />
+														</FormControl>
+														<FormDescription>
+															{t("admin.students.form.registrationHint", {
+																defaultValue:
+																	"Leave blank to auto-generate the next matricule.",
+															})}
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="registrationFormatId"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.registrationFormat", {
+																defaultValue: "Registration format",
+															})}
+														</FormLabel>
+														<Select
+															onValueChange={(value) =>
+																field.onChange(
+																	value === NO_REGISTRATION_FORMAT_VALUE
+																		? undefined
+																		: value,
+																)
+															}
+															value={
+																field.value ?? NO_REGISTRATION_FORMAT_VALUE
+															}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue
+																		placeholder={t(
+																			"admin.students.form.registrationFormatPlaceholder",
+																			{
+																				defaultValue: "Use active format",
+																			},
+																		)}
+																	/>
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																<SelectItem
+																	value={NO_REGISTRATION_FORMAT_VALUE}
+																>
+																	{t(
+																		"admin.students.form.registrationFormatPlaceholder",
+																		{
+																			defaultValue: "Use active format",
+																		},
+																	)}
+																</SelectItem>
+																{registrationFormats?.map((format) => (
+																	<SelectItem key={format.id} value={format.id}>
+																		{format.name}
+																		{format.isActive
+																			? ` (${t(
+																					"admin.registrationNumbers.list.active",
+																					{ defaultValue: "Active" },
+																				)})`
+																			: ""}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormDescription>
+															{t("admin.students.form.registrationFormatHint", {
+																defaultValue:
+																	"Select a specific format to override the active template.",
+															})}
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+									</div>
 									<div className="flex justify-end gap-3 pt-2">
 										<Button
 											type="button"
@@ -976,10 +1435,76 @@ export default function StudentManagement() {
 												const f = e.target.files?.[0] ?? null;
 												setImportFile(f);
 												setImportResult(null);
+												setImportPreview(null);
+												if (f) {
+													void (async () => {
+														try {
+															const preview = await parseImportFile(f);
+															setImportPreview(preview);
+															if (
+																!preview.rows.length &&
+																preview.errors.length > 0
+															) {
+																toast.error(
+																	t(
+																		"admin.students.import.preview.noValidRows",
+																	),
+																);
+															}
+														} catch (error) {
+															console.error(error);
+															toast.error(
+																t("admin.students.import.invalidFormat"),
+															);
+														}
+													})();
+												}
 											}}
 											disabled={!importClass || bulkMutation.isPending}
 										/>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.gender", {
+												values: GENDER_HINT,
+											})}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.admissionType", {
+												values: ADMISSION_TYPE_HINT,
+											})}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											{t("admin.students.import.instructions.date")}
+										</p>
 									</div>
+									{importPreview && (
+										<div className="space-y-2 rounded-md border p-3 text-sm">
+											<p>
+												{t("admin.students.import.preview.ready", {
+													count: importPreview.rows.length,
+												})}
+											</p>
+											{importPreview.errors.length > 0 && (
+												<div className="space-y-1">
+													<p className="font-semibold">
+														{t("admin.students.import.preview.errorsTitle")}
+													</p>
+													<ul className="ml-4 list-disc space-y-0.5">
+														{importPreview.errors.map((error) => (
+															<li key={`${error.row}-${error.reason}`}>
+																{t(
+																	"admin.students.import.summary.errors.item",
+																	{
+																		row: error.row,
+																		reason: error.reason,
+																	},
+																)}
+															</li>
+														))}
+													</ul>
+												</div>
+											)}
+										</div>
+									)}
 									<div className="flex flex-wrap gap-2">
 										<Button
 											type="button"
@@ -993,7 +1518,13 @@ export default function StudentManagement() {
 											type="button"
 											onClick={() => {
 												if (importFile) {
-													handleImport(importFile);
+													void handleImport();
+												} else {
+													toast.error(
+														t("admin.students.import.fileLabel", {
+															defaultValue: "Upload CSV or XLSX file",
+														}),
+													);
 												}
 											}}
 											disabled={
@@ -1064,6 +1595,451 @@ export default function StudentManagement() {
 									</div>
 								</div>
 							)}
+						</TabsContent>
+
+						<TabsContent value="external" className="space-y-4">
+							<Form {...externalForm}>
+								<form
+									onSubmit={externalForm.handleSubmit(onExternalSubmit)}
+									className="space-y-6"
+								>
+									<div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+										<p className="font-medium text-blue-900 text-sm">
+											{t("admin.students.external.info.title")}
+										</p>
+										<p className="text-blue-700 text-sm">
+											{t("admin.students.external.info.description")}
+										</p>
+									</div>
+
+									<FormField
+										control={externalForm.control}
+										name="admissionType"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.external.form.admissionType")}
+												</FormLabel>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.students.external.form.admissionTypePlaceholder",
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value="transfer">
+															{t(
+																"admin.students.external.admissionTypes.transfer",
+															)}
+														</SelectItem>
+														<SelectItem value="direct">
+															{t(
+																"admin.students.external.admissionTypes.direct",
+															)}
+														</SelectItem>
+														<SelectItem value="equivalence">
+															{t(
+																"admin.students.external.admissionTypes.equivalence",
+															)}
+														</SelectItem>
+													</SelectContent>
+												</Select>
+												<FormDescription>
+													{t("admin.students.external.form.admissionTypeHint")}
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<FormField
+										control={externalForm.control}
+										name="transferInstitution"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t(
+														"admin.students.external.form.transferInstitution",
+													)}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<div className="grid grid-cols-2 gap-4">
+										<FormField
+											control={externalForm.control}
+											name="transferCredits"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.external.form.transferCredits")}
+													</FormLabel>
+													<FormControl>
+														<Input
+															{...field}
+															type="number"
+															min={0}
+															max={300}
+															onChange={(e) =>
+																field.onChange(
+																	Number.parseInt(e.target.value, 10),
+																)
+															}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={externalForm.control}
+											name="transferLevel"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.external.form.transferLevel")}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} placeholder="L1, L2, M1, etc." />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<FormField
+										control={externalForm.control}
+										name="admissionDate"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.students.external.form.admissionDate")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} type="date" />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<FormField
+										control={externalForm.control}
+										name="admissionJustification"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t(
+														"admin.students.external.form.admissionJustification",
+													)}
+												</FormLabel>
+												<FormControl>
+													<Textarea
+														{...field}
+														rows={3}
+														placeholder={t(
+															"admin.students.external.form.admissionJustificationPlaceholder",
+														)}
+													/>
+												</FormControl>
+												<FormDescription>
+													{t(
+														"admin.students.external.form.admissionJustificationHint",
+													)}
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<div className="rounded-lg border bg-gray-50 p-4">
+										<p className="mb-3 font-medium text-gray-900 text-sm">
+											{t("admin.students.external.form.studentInfoSection")}
+										</p>
+										<div className="grid gap-4">
+											<div className="grid grid-cols-2 gap-4">
+												<FormField
+													control={externalForm.control}
+													name="firstName"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.firstName")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={externalForm.control}
+													name="lastName"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.lastName")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+
+											<FormField
+												control={externalForm.control}
+												name="email"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.email")}
+														</FormLabel>
+														<FormControl>
+															<Input {...field} type="email" />
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+
+											<div className="grid grid-cols-2 gap-4">
+												<FormField
+													control={externalForm.control}
+													name="dateOfBirth"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.dateOfBirth")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} type="date" />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={externalForm.control}
+													name="gender"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.gender")}
+															</FormLabel>
+															<Select
+																onValueChange={field.onChange}
+																value={field.value || ""}
+															>
+																<FormControl>
+																	<SelectTrigger>
+																		<SelectValue
+																			placeholder={t(
+																				"admin.students.form.genderPlaceholder",
+																			)}
+																		/>
+																	</SelectTrigger>
+																</FormControl>
+																<SelectContent>
+																	<SelectItem value="male">
+																		{t("admin.students.gender.male")}
+																	</SelectItem>
+																	<SelectItem value="female">
+																		{t("admin.students.gender.female")}
+																	</SelectItem>
+																	<SelectItem value="other">
+																		{t("admin.students.gender.other")}
+																	</SelectItem>
+																</SelectContent>
+															</Select>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+
+											<div className="grid grid-cols-2 gap-4">
+												<FormField
+													control={externalForm.control}
+													name="placeOfBirth"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.placeOfBirth")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={externalForm.control}
+													name="nationality"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.nationality")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+
+											<FormField
+												control={externalForm.control}
+												name="classId"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.class")}
+														</FormLabel>
+														<Select
+															onValueChange={field.onChange}
+															value={field.value}
+															disabled={!classes?.length}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue
+																		placeholder={t(
+																			"admin.students.form.classPlaceholder",
+																		)}
+																	/>
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																{classes?.map((c) => (
+																	<SelectItem key={c.id} value={c.id}>
+																		{c.name}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+
+											<FormField
+												control={externalForm.control}
+												name="registrationNumber"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.registration")}
+														</FormLabel>
+														<FormControl>
+															<Input {...field} />
+														</FormControl>
+														<FormDescription>
+															{t("admin.students.form.registrationHint")}
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+
+											<FormField
+												control={externalForm.control}
+												name="registrationFormatId"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.registrationFormat")}
+														</FormLabel>
+														<Select
+															onValueChange={(value) =>
+																field.onChange(
+																	value === NO_REGISTRATION_FORMAT_VALUE
+																		? undefined
+																		: value,
+																)
+															}
+															value={
+																field.value ?? NO_REGISTRATION_FORMAT_VALUE
+															}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue
+																		placeholder={t(
+																			"admin.students.form.registrationFormatPlaceholder",
+																		)}
+																	/>
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																<SelectItem
+																	value={NO_REGISTRATION_FORMAT_VALUE}
+																>
+																	{t(
+																		"admin.students.form.registrationFormatPlaceholder",
+																	)}
+																</SelectItem>
+																{registrationFormats?.map((format) => (
+																	<SelectItem key={format.id} value={format.id}>
+																		{format.name}
+																		{format.isActive
+																			? ` (${t(
+																					"admin.registrationNumbers.list.active",
+																				)})`
+																			: ""}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormDescription>
+															{t("admin.students.form.registrationFormatHint")}
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+									</div>
+
+									<div className="flex justify-end gap-3 pt-2">
+										<Button
+											type="button"
+											variant="outline"
+											onClick={closeModal}
+										>
+											{t("common.actions.cancel")}
+										</Button>
+										<Button
+											type="submit"
+											disabled={externalForm.formState.isSubmitting}
+										>
+											{externalForm.formState.isSubmitting
+												? t("common.loading")
+												: t("admin.students.external.form.submit")}
+										</Button>
+									</div>
+								</form>
+							</Form>
 						</TabsContent>
 					</Tabs>
 				</DialogContent>

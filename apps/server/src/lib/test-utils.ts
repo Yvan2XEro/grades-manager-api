@@ -4,17 +4,52 @@ import type {
 	BusinessRole,
 	DomainUser,
 	Gender,
+	Institution,
 	NewDomainUser,
 } from "../db/schema/app-schema";
 import * as schema from "../db/schema/app-schema";
+import * as authSchema from "../db/schema/auth";
 import { buildPermissions } from "../modules/authz";
 import * as creditLedger from "../modules/student-credit-ledger";
 import type { Context } from "./context";
 import { slugify } from "./strings";
+import { getTestInstitution, setTestInstitution } from "./test-context-state";
 import { auth, db } from "./test-db";
 
 const DEFAULT_DATE = new Date("1990-01-01");
 const DEFAULT_PLACE = "Yaoundé";
+
+/**
+ * Creates a test organization and institution, then sets it as the global test institution.
+ * Call this at the beginning of test files that need tenant context.
+ */
+export async function setupTestInstitution(): Promise<Institution> {
+	// Create organization
+	const [org] = await db
+		.insert(authSchema.organization)
+		.values({
+			id: randomUUID(),
+			name: "Test Institution",
+			slug: `test-${randomUUID().slice(0, 8)}`,
+			createdAt: new Date(),
+		})
+		.returning();
+
+	// Create institution linked to organization
+	const [institution] = await db
+		.insert(schema.institutions)
+		.values({
+			code: `TEST-${randomUUID().slice(0, 4)}`,
+			shortName: "TEST",
+			nameFr: "Institution de test",
+			nameEn: "Test Institution",
+			organizationId: org.id,
+		})
+		.returning();
+
+	setTestInstitution(institution);
+	return institution;
+}
 
 type TestContextOptions = {
 	role?: BusinessRole;
@@ -34,16 +69,26 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		userId: randomUUID(),
 		...opts,
 	};
+	const institution = getTestInstitution();
 	if (!role) {
 		return {
 			session: null,
 			profile: null,
+			member: null,
+			memberRole: null,
 			permissions: buildPermissions(null),
+			institution,
+			organizationId: institution.organizationId ?? null,
 		} as Context;
 	}
+	const resolvedMemberId =
+		opts.profileOverrides?.memberId !== undefined
+			? opts.profileOverrides.memberId
+			: randomUUID();
 	const profile = {
 		id: opts.profileOverrides?.id ?? randomUUID(),
 		authUserId: opts.profileOverrides?.authUserId ?? userId,
+		memberId: resolvedMemberId,
 		businessRole: role,
 		firstName: opts.profileOverrides?.firstName ?? "Test",
 		lastName: opts.profileOverrides?.lastName ?? "User",
@@ -51,7 +96,11 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 			opts.profileOverrides?.primaryEmail ??
 			`profile-${randomUUID()}@example.com`,
 		phone: opts.profileOverrides?.phone ?? null,
-		dateOfBirth: opts.profileOverrides?.dateOfBirth ?? DEFAULT_DATE,
+		dateOfBirth:
+			opts.profileOverrides?.dateOfBirth ??
+			(typeof DEFAULT_DATE === "string"
+				? DEFAULT_DATE
+				: DEFAULT_DATE.toISOString()),
 		placeOfBirth: opts.profileOverrides?.placeOfBirth ?? DEFAULT_PLACE,
 		gender: opts.profileOverrides?.gender ?? "other",
 		nationality: opts.profileOverrides?.nationality ?? null,
@@ -59,12 +108,25 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		createdAt: opts.profileOverrides?.createdAt ?? new Date(),
 		updatedAt: opts.profileOverrides?.updatedAt ?? new Date(),
 	} satisfies DomainUser;
+	const member = resolvedMemberId
+		? {
+				id: resolvedMemberId,
+				userId,
+				organizationId: institution.organizationId ?? randomUUID(),
+				role,
+				createdAt: new Date(),
+			}
+		: null;
 	return {
 		session: {
 			user: { id: userId, role: opts.authRole ?? "admin" },
 		},
 		profile,
-		permissions: buildPermissions(profile),
+		member,
+		memberRole: role,
+		permissions: buildPermissions(role),
+		institution,
+		organizationId: institution.organizationId ?? null,
 	} as Context;
 }
 
@@ -79,6 +141,7 @@ const defaultProfilePayload = (
 	} = {},
 ) => ({
 	authUserId: data.authUserId ?? null,
+	memberId: data.memberId ?? null,
 	businessRole: data.businessRole ?? "student",
 	firstName: data.firstName ?? "John",
 	lastName: data.lastName ?? "Doe",
@@ -101,8 +164,56 @@ export async function createDomainUser(
 	return profile;
 }
 
+export async function createOrganization(
+	data: Partial<authSchema.NewOrganization> = {},
+) {
+	const [org] = await db
+		.insert(authSchema.organization)
+		.values({
+			id: data.id ?? randomUUID(),
+			name: data.name ?? `Org-${randomUUID()}`,
+			slug: data.slug ?? `org-${randomUUID()}`,
+			logo: data.logo ?? null,
+			metadata: data.metadata ?? null,
+			createdAt: data.createdAt ?? new Date(),
+		})
+		.returning();
+	return org;
+}
+
+export async function createOrganizationMember(
+	data: Partial<authSchema.NewMember> & { userId?: string } = {},
+) {
+	const organizationId = data.organizationId ?? (await createOrganization()).id;
+	const userId =
+		data.userId ??
+		(
+			await db
+				.insert(authSchema.user)
+				.values({
+					id: randomUUID(),
+					name: "Org User",
+					email: `org-user-${randomUUID()}@example.com`,
+					emailVerified: false,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				})
+				.returning()
+		)[0].id;
+	const [member] = await db
+		.insert(authSchema.member)
+		.values({
+			id: data.id ?? randomUUID(),
+			organizationId,
+			userId,
+			role: data.role ?? "teacher",
+			createdAt: data.createdAt ?? new Date(),
+		})
+		.returning();
+	return member;
+}
+
 type RecapFixtureOverrides = {
-	faculty?: Partial<schema.NewFaculty>;
 	program?: Partial<schema.NewProgram>;
 	academicYear?: Partial<schema.NewAcademicYear>;
 	klass?: Partial<schema.NewKlass>;
@@ -119,9 +230,11 @@ type RecapFixtureOverrides = {
 export async function createRecapFixture(
 	overrides: RecapFixtureOverrides = {},
 ) {
-	const faculty = await createFaculty(overrides.faculty);
+	// Use the test institution instead of creating a new faculty
+	// so that data is in the same institution as the test context
+	const institution = getTestInstitution();
 	const program = await createProgram({
-		faculty: faculty.id,
+		institutionId: institution.id,
 		...overrides.program,
 	});
 	const academicYear = await createAcademicYear(overrides.academicYear);
@@ -165,7 +278,7 @@ export async function createRecapFixture(
 	});
 
 	return {
-		faculty,
+		institution,
 		program,
 		academicYear,
 		teachingUnit,
@@ -179,30 +292,43 @@ export async function createRecapFixture(
 	};
 }
 
-export async function createFaculty(data: Partial<schema.NewFaculty> = {}) {
-	const { code, name, description, ...rest } = data;
-	const [faculty] = await db
-		.insert(schema.faculties)
+export async function createFaculty(
+	data: Partial<schema.NewInstitution> & { name?: string } = {},
+) {
+	const {
+		code,
+		name,
+		descriptionFr: description,
+		parentInstitutionId: providedInstitutionId,
+		...rest
+	} = data;
+	const parentInstitution = getTestInstitution();
+	const [facultyInstitution] = await db
+		.insert(schema.institutions)
 		.values({
 			code: code ?? `FAC-${randomUUID().slice(0, 4)}`,
-			name: name ?? `Faculty-${randomUUID()}`,
-			description: description ?? null,
-			...rest,
+			type: "faculty",
+			nameFr: name ?? `Faculty-${randomUUID()}`,
+			nameEn: name ?? `Faculty-${randomUUID()}`,
+			descriptionFr: description ?? null,
+			// parentInstitutionId est optionnel - pas de hiérarchie obligatoire
+			parentInstitutionId: providedInstitutionId,
+			organizationId: parentInstitution.organizationId,
 		})
 		.returning();
-	return faculty;
+	return facultyInstitution;
 }
 
 export async function createStudyCycle(
 	data: Partial<schema.NewStudyCycle> = {},
 ) {
-	const faculty = data.facultyId
-		? { id: data.facultyId }
+	const faculty = data.institutionId
+		? { id: data.institutionId }
 		: await createFaculty();
 	const [cycle] = await db
 		.insert(schema.studyCycles)
 		.values({
-			facultyId: faculty.id,
+			institutionId: faculty.id,
 			code: data.code ?? `cycle-${randomUUID().slice(0, 6)}`,
 			name: data.name ?? `Cycle-${randomUUID().slice(0, 4)}`,
 			description: data.description ?? null,
@@ -238,8 +364,16 @@ export async function createCycleLevel(
 }
 
 export async function createProgram(data: Partial<schema.NewProgram> = {}) {
-	const { faculty: facultyId, code, name, description, ...rest } = data;
-	const faculty = facultyId ? { id: facultyId } : await createFaculty();
+	const {
+		institutionId: providedInstitutionId,
+		code,
+		name,
+		description,
+		...rest
+	} = data;
+	// Utiliser l'institution de test par défaut si non spécifiée
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
+
 	const resolvedName = name ?? `Program-${randomUUID()}`;
 	const slug = slugify(resolvedName);
 	const [program] = await db
@@ -248,8 +382,8 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 			code: code ?? `PRG-${randomUUID().slice(0, 4)}`,
 			name: resolvedName,
 			slug,
-			faculty: faculty.id,
 			description: description ?? null,
+			institutionId,
 			...rest,
 		})
 		.returning();
@@ -259,6 +393,7 @@ export async function createProgram(data: Partial<schema.NewProgram> = {}) {
 			programId: program.id,
 			name: "Default option",
 			code: "default",
+			institutionId: program.institutionId,
 		})
 		.onConflictDoNothing();
 	return program;
@@ -268,12 +403,18 @@ export async function createProgramOption(
 	data: Partial<schema.NewProgramOption> = {},
 ) {
 	const program = data.programId
-		? { id: data.programId }
+		? await db.query.programs.findFirst({
+				where: eq(schema.programs.id, data.programId),
+			})
 		: await createProgram();
+	if (!program) {
+		throw new Error("Program not found for option creation");
+	}
 	const [option] = await db
 		.insert(schema.programOptions)
 		.values({
 			programId: program.id,
+			institutionId: data.institutionId ?? program.institutionId,
 			name: data.name ?? `Option-${randomUUID().slice(0, 4)}`,
 			code: data.code ?? randomUUID().slice(0, 6),
 			description: data.description ?? null,
@@ -306,20 +447,23 @@ export async function createTeachingUnit(
 export async function createAcademicYear(
 	data: Partial<schema.NewAcademicYear> = {},
 ) {
+	const { institutionId: providedInstitutionId, ...rest } = data;
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 	const [year] = await db
 		.insert(schema.academicYears)
 		.values({
 			name: `AY-${randomUUID()}`,
 			startDate: data.startDate ?? new Date("2024-01-01"),
 			endDate: data.endDate ?? new Date("2024-12-31"),
-			...data,
+			institutionId,
+			...rest,
 		})
 		.returning();
 	return year;
 }
 
 async function ensureCycleLevelForFaculty(
-	facultyId: string,
+	institutionId: string,
 	cycleLevelId?: string,
 ) {
 	if (cycleLevelId) {
@@ -330,16 +474,16 @@ async function ensureCycleLevelForFaculty(
 		const cycle = await db.query.studyCycles.findFirst({
 			where: eq(schema.studyCycles.id, level.cycleId),
 		});
-		if (!cycle || cycle.facultyId !== facultyId) {
-			throw new Error("Cycle level does not belong to faculty");
+		if (!cycle || cycle.institutionId !== institutionId) {
+			throw new Error("Cycle level does not belong to institution");
 		}
 		return level.id;
 	}
 	let cycle = await db.query.studyCycles.findFirst({
-		where: eq(schema.studyCycles.facultyId, facultyId),
+		where: eq(schema.studyCycles.institutionId, institutionId),
 	});
 	if (!cycle) {
-		cycle = await createStudyCycle({ facultyId });
+		cycle = await createStudyCycle({ institutionId });
 	}
 	const level = await db.query.cycleLevels.findFirst({
 		where: eq(schema.cycleLevels.cycleId, cycle.id),
@@ -350,7 +494,7 @@ async function ensureCycleLevelForFaculty(
 	return created.id;
 }
 
-async function ensureSemester(semesterId?: string) {
+async function ensureSemester(semesterId?: string): Promise<string> {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -382,6 +526,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 		semesterId,
 		code,
 		name,
+		institutionId: providedInstitutionId,
 		...rest
 	} = data;
 	const program = programId
@@ -394,7 +539,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 		? { id: academicYearId }
 		: await createAcademicYear();
 	const levelId = await ensureCycleLevelForFaculty(
-		program.faculty,
+		program.institutionId,
 		cycleLevelId,
 	);
 	const option =
@@ -420,6 +565,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 			cycleLevelId: levelId,
 			programOptionId: option,
 			semesterId: resolvedSemesterId,
+			institutionId: providedInstitutionId ?? program.institutionId,
 			...rest,
 		})
 		.returning();
@@ -444,7 +590,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		body: {
 			name,
 			email,
-			role: data.role ?? "ADMIN",
+			role: data.role ?? "admin",
 			password: data.password ?? "password",
 		},
 	});
@@ -456,7 +602,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		lastName: rest.join(" ") || "Doe",
 		primaryEmail: email,
 		gender: data.gender ?? "other",
-		dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+		dateOfBirth: data.dateOfBirth?.toISOString() ?? DEFAULT_DATE.toISOString(),
 		placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	});
 	return { ...u.user, profile };
@@ -502,6 +648,7 @@ export async function createClassCourse(
 		weeklyHours,
 		code,
 		semesterId,
+		institutionId: providedInstitutionId,
 		...rest
 	} = data;
 	const klass = classId
@@ -527,6 +674,7 @@ export async function createClassCourse(
 			teacher: teacher.id,
 			semesterId: resolvedSemesterId,
 			weeklyHours: weeklyHours ?? 2,
+			institutionId: providedInstitutionId ?? klass.institutionId,
 			...rest,
 		})
 		.returning();
@@ -535,8 +683,13 @@ export async function createClassCourse(
 
 export async function createExam(data: Partial<schema.NewExam> = {}) {
 	const classCourse = data.classCourse
-		? { id: data.classCourse }
+		? await db.query.classCourses.findFirst({
+				where: eq(schema.classCourses.id, data.classCourse),
+			})
 		: await createClassCourse();
+	if (!classCourse) {
+		throw new Error("Class course not found for exam");
+	}
 	const [exam] = await db
 		.insert(schema.exams)
 		.values({
@@ -552,17 +705,22 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
 			scheduledAt: data.scheduledAt ?? new Date(),
 			validatedAt:
 				data.validatedAt ?? (data.status === "approved" ? new Date() : null),
+			institutionId: data.institutionId ?? classCourse.institutionId,
 		})
 		.returning();
 	return exam;
 }
 
 export async function createExamType(data: Partial<schema.NewExamType> = {}) {
+	const { institutionId: providedInstitutionId, ...rest } = data;
+	const institutionId = providedInstitutionId ?? getTestInstitution().id;
 	const [examType] = await db
 		.insert(schema.examTypes)
 		.values({
 			name: data.name ?? `ExamType-${randomUUID()}`,
 			description: data.description ?? null,
+			institutionId,
+			...rest,
 		})
 		.returning();
 	return examType;
@@ -572,6 +730,7 @@ type StudentHelperInput = {
 	class?: string;
 	registrationNumber?: string;
 	domainUserId?: string;
+	institutionId?: string;
 	profile?: Partial<NewDomainUser>;
 };
 
@@ -602,12 +761,14 @@ export async function createStudent(data: StudentHelperInput = {}) {
 			domainUserId: profileId,
 			registrationNumber: data.registrationNumber ?? randomUUID(),
 			class: klass.id,
+			institutionId: data.institutionId ?? klass.institutionId,
 		})
 		.returning();
 	await db.insert(schema.enrollments).values({
 		studentId: student.id,
 		classId: klass.id,
 		academicYearId: klass.academicYear,
+		institutionId: klass.institutionId,
 		status: "active",
 	});
 	return student;

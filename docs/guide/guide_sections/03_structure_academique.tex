@@ -1,0 +1,242 @@
+% Section 03 - Gestion de la structure académique
+\section{Gestion de la structure académique}
+
+Cette section explique comment configurer la hiérarchie académique de votre institution : années académiques, facultés, programmes, cycles d'études, classes, semestres, unités d'enseignement et cours.
+
+\subsection{Hiérarchie académique}
+
+La structure académique suit cette hiérarchie :
+
+\begin{verbatim}
+Année Académique (2024-2025)
+└── Faculté (FMSP)
+    └── Programme (Médecine)
+        └── Cycle d'études (Licence)
+            └── Classe (Médecine Année 1)
+                └── Semestre (S1, S2)
+                    └── Unité d'Enseignement (UE)
+                        └── Cours (Anatomie, Physiologie, etc.)
+\end{verbatim}
+
+\subsection{Années académiques}
+
+\subsubsection{Création d'une année académique}
+
+\begin{enumerate}[leftmargin=*]
+    \item Accédez au menu \menu{Années académiques}
+    \item Cliquez sur \bouton{Nouvelle année}
+    \item Remplissez les informations :
+    \begin{itemize}
+        \item \champ{Année de début} : Ex. 2024
+        \item \champ{Année de fin} : Ex. 2025
+        \item \champ{Date de début} : 01/09/2024
+        \item \champ{Date de fin} : 31/08/2025
+    \end{itemize}
+    \item Cliquez sur \bouton{Créer}
+\end{enumerate}
+
+\subsubsection{Activation d'une année académique}
+
+\attention{Seuls les Super Admins peuvent activer une année académique.}
+
+\begin{enumerate}[leftmargin=*]
+    \item Dans la liste des années, identifiez l'année à activer
+    \item Cliquez sur \bouton{Activer}
+    \item Confirmez l'action
+\end{enumerate}
+
+\info{Une seule année peut être active à la fois. L'activation d'une nouvelle année désactive automatiquement l'année précédente.}
+
+\subsubsection{Conséquences de l'activation}
+
+Lorsqu'une année académique est activée :
+\begin{itemize}[leftmargin=*]
+    \item Toutes les opérations (inscriptions, notes, examens) s'appliquent à cette année
+    \item Les inscriptions de l'année précédente sont gelées
+    \item Un nouveau cycle d'examens peut commencer
+    \item Les étudiants peuvent être inscrits dans les nouvelles classes
+\end{itemize}
+
+\subsection{Facultés}
+
+\subsubsection{Création d'une faculté}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Facultés} > \bouton{Nouvelle faculté}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Nom} : Ex. "Faculté de Médecine et Sciences Pharmaceutiques"
+        \item \champ{Code} : Ex. "FMSP" (utilisé dans les exports)
+        \item \champ{Description} : Texte descriptif (optionnel)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsubsection{Gestion des facultés}
+
+Depuis la liste des facultés, vous pouvez :
+\begin{itemize}[leftmargin=*]
+    \item Modifier les informations d'une faculté
+    \item Consulter les programmes associés
+    \item Supprimer une faculté (si aucun programme n'y est rattaché)
+\end{itemize}
+
+\subsection{Programmes}
+
+Les programmes représentent les filières d'études (Médecine, Pharmacie, Soins Infirmiers, etc.).
+
+\subsubsection{Création d'un programme}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Programmes} > \bouton{Nouveau programme}
+    \item Sélectionnez la \champ{Faculté} parente
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Nom} : Ex. "Médecine"
+        \item \champ{Code} : Ex. "MED"
+        \item \champ{Description} : Optionnel
+        \item \champ{Durée} : Nombre d'années (ex: 7 pour Médecine)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsection{Cycles d'études}
+
+Les cycles représentent les niveaux académiques (Licence, Master, Doctorat).
+
+\subsubsection{Création d'un cycle}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Cycles d'études} > \bouton{Nouveau cycle}
+    \item Sélectionnez le \champ{Programme}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Nom} : Ex. "Licence"
+        \item \champ{Code} : Ex. "L"
+        \item \champ{Niveau} : 1, 2, ou 3 (L=1, M=2, D=3)
+        \item \champ{Durée} : Nombre d'années (ex: 3 pour Licence)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsection{Classes}
+
+Les classes regroupent les étudiants d'une même année et promotion.
+
+\subsubsection{Création d'une classe}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Classes} > \bouton{Nouvelle classe}
+    \item Sélectionnez le \champ{Cycle d'études}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Nom} : Ex. "Médecine Année 1" ou "MED1"
+        \item \champ{Code} : Ex. "MED1-2024"
+        \item \champ{Année du cycle} : Position dans le cycle (1, 2, 3...)
+        \item \champ{Capacité} : Nombre maximum d'étudiants (optionnel)
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsection{Semestres}
+
+Les semestres divisent l'année académique en périodes.
+
+\subsubsection{Configuration des semestres}
+
+Généralement, deux semestres par année :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Semestre} & \textbf{Code} & \textbf{Période} \\
+\hline
+Semestre 1 & S1 & Septembre - Janvier \\
+Semestre 2 & S2 & Février - Juin \\
+\hline
+\end{tabular}
+\caption{Semestres standards}
+\end{table}
+
+Les semestres sont généralement créés automatiquement, mais peuvent être personnalisés via le menu \menu{Semestres}.
+
+\subsection{Unités d'Enseignement (UE)}
+
+Les UE regroupent des cours par thématique.
+
+\subsubsection{Création d'une UE}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Unités d'enseignement} > \bouton{Nouvelle UE}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Code} : Ex. "UE1-S1"
+        \item \champ{Titre} : Ex. "Sciences Fondamentales"
+        \item \champ{Description} : Optionnel
+        \item \champ{Crédits ECTS} : Total de l'UE
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsection{Cours (Éléments Constitutifs)}
+
+Les cours sont les matières individuelles enseignées aux étudiants.
+
+\subsubsection{Création d'un cours}
+
+\begin{enumerate}[leftmargin=*]
+    \item Menu \menu{Cours} > \bouton{Nouveau cours}
+    \item Sélectionnez l'\champ{Unité d'Enseignement}
+    \item Remplissez :
+    \begin{itemize}
+        \item \champ{Code} : Ex. "ANAT101"
+        \item \champ{Titre} : Ex. "Anatomie Générale"
+        \item \champ{Semestre} : S1 ou S2
+        \item \champ{Coefficient} : Poids dans le calcul de moyenne
+        \item \champ{Crédits ECTS} : Crédits attribués si validé
+        \item \champ{Enseignant responsable} : Optionnel
+    \end{itemize}
+    \item \bouton{Créer}
+\end{enumerate}
+
+\subsubsection{Import en masse des cours}
+
+Pour gagner du temps, vous pouvez importer plusieurs cours depuis un fichier Excel :
+
+\begin{enumerate}[leftmargin=*]
+    \item Téléchargez le modèle Excel depuis \menu{Import/Export}
+    \item Remplissez le fichier avec vos cours
+    \item Importez via \bouton{Importer des cours}
+    \item Vérifiez le rapport d'import
+    \item Confirmez l'import
+\end{enumerate}
+
+\subsection{Bonnes pratiques}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=Conseils d'organisation]
+
+\textbf{Codes cohérents :}
+\begin{itemize}[leftmargin=*]
+    \item Utilisez des codes courts et mnémoniques (MED, PHAR, L, M, D)
+    \item Maintenez une convention de nommage cohérente
+    \item Documentez votre système de codes
+\end{itemize}
+
+\textbf{Ordre de création :}
+\begin{enumerate}[leftmargin=*]
+    \item Créez d'abord l'année académique et activez-la
+    \item Ensuite : Facultés → Programmes → Cycles → Classes
+    \item Puis : UE → Cours
+    \item Enfin : Étudiants et Inscriptions
+\end{enumerate}
+
+\textbf{Planification :}
+\begin{itemize}[leftmargin=*]
+    \item Préparez votre structure académique complète avant de commencer
+    \item Documentez les coefficients et crédits de chaque cours
+    \item Validez avec les responsables académiques avant la création
+\end{itemize}
+\end{tcolorbox}
+
+\newpage

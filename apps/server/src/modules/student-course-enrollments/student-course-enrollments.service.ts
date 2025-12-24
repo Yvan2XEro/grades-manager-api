@@ -242,9 +242,10 @@ export async function bulkEnroll(input: BulkInput) {
 
 export async function updateStatus(
 	id: string,
+	institutionId: string,
 	status: schema.StudentCourseEnrollmentStatus,
 ) {
-	const existing = await repo.findById(id);
+	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
 	const payload: Partial<schema.NewStudentCourseEnrollment> = {
 		status,
@@ -254,7 +255,7 @@ export async function updateStatus(
 	if (status === "active" && existing.startedAt === null) {
 		payload.startedAt = new Date();
 	}
-	const updated = await repo.update(id, payload);
+	const updated = await repo.update(id, institutionId, payload);
 	if (!updated) return null;
 	const previousContribution = creditLedger.contributionForStatus(
 		existing.status,
@@ -273,24 +274,30 @@ export async function updateStatus(
 	return updated;
 }
 
-export async function closeForStudent(input: CloseInput) {
+export async function closeForStudent(
+	input: CloseInput,
+	institutionId: string,
+) {
 	const status = input.status ?? "withdrawn";
 	const activeRecords = await repo.findByStudentAndStatuses(input.studentId, [
 		"planned",
 		"active",
 	]);
 	for (const record of activeRecords) {
-		await updateStatus(record.id, status);
+		await updateStatus(record.id, institutionId, status);
 	}
 	return activeRecords.length;
 }
 
-export async function list(opts: Parameters<typeof repo.list>[0]) {
-	return repo.list(opts);
+export async function list(
+	opts: Parameters<typeof repo.list>[1],
+	institutionId: string,
+) {
+	return repo.list(institutionId, opts);
 }
 
-export async function getById(id: string) {
-	const item = await repo.findById(id);
+export async function getById(id: string, institutionId: string) {
+	const item = await repo.findById(id, institutionId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
 }

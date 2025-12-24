@@ -6,11 +6,98 @@ import type { StudentPromotionFacts } from "./promotion-rules.types";
 const PASSING_GRADE = 10;
 const COMPENSABLE_THRESHOLD = 8;
 
+type GetStudentFactsOptions = {
+	rebuildIfMissing?: boolean;
+};
+
+/**
+ * Retrieve cached promotion facts for a student/year combination.
+ * Optionally triggers a recomputation when the snapshot is missing.
+ */
+export async function getStudentPromotionFacts(
+	studentId: string,
+	academicYearId: string,
+	options: GetStudentFactsOptions = {},
+): Promise<StudentPromotionFacts> {
+	const summary = await db.query.studentPromotionSummaries.findFirst({
+		where: and(
+			eq(schema.studentPromotionSummaries.studentId, studentId),
+			eq(schema.studentPromotionSummaries.academicYearId, academicYearId),
+		),
+	});
+
+	if (summary) {
+		return summary.facts as StudentPromotionFacts;
+	}
+
+	if (options.rebuildIfMissing) {
+		return refreshStudentPromotionSummary(studentId, academicYearId);
+	}
+
+	throw new Error(
+		`Promotion summary missing for student ${studentId} (${academicYearId})`,
+	);
+}
+
+/**
+ * Rebuild (or build) the cached promotion summary for a student/year.
+ */
+export async function refreshStudentPromotionSummary(
+	studentId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts> {
+	const facts = await buildStudentFacts(studentId, academicYearId);
+	await saveStudentPromotionSummary(facts);
+	return facts;
+}
+
+/**
+ * Rebuild summaries for an entire class. Useful for cron jobs.
+ */
+export async function refreshClassPromotionSummaries(
+	classId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts[]> {
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, classId),
+	});
+	if (!klass) {
+		throw new Error(`Class not found: ${classId}`);
+	}
+	if (klass.academicYear !== academicYearId) {
+		throw new Error(
+			`Class ${classId} belongs to ${klass.academicYear}, not ${academicYearId}`,
+		);
+	}
+
+	const students = await db
+		.select({ id: schema.students.id })
+		.from(schema.students)
+		.where(eq(schema.students.class, classId));
+
+	const results: StudentPromotionFacts[] = [];
+	for (const student of students) {
+		results.push(await refreshStudentPromotionSummary(student.id, academicYearId));
+	}
+	return results;
+}
+
+/**
+ * Legacy helper retained for compatibility. It now refreshes the summary
+ * before returning the computed facts snapshot.
+ */
+export async function computeStudentFacts(
+	studentId: string,
+	academicYearId: string,
+): Promise<StudentPromotionFacts> {
+	return refreshStudentPromotionSummary(studentId, academicYearId);
+}
+
 /**
  * Compute all facts for a student used in promotion rule evaluation.
  * This aggregates data from grades, enrollments, courses, credits, etc.
  */
-export async function computeStudentFacts(
+async function buildStudentFacts(
 	studentId: string,
 	academicYearId: string,
 ): Promise<StudentPromotionFacts> {
@@ -30,6 +117,14 @@ export async function computeStudentFacts(
 	if (!student) {
 		throw new Error(`Student not found: ${studentId}`);
 	}
+
+	// Get current active enrollment to retrieve admission info
+	const currentEnrollment = await db.query.enrollments.findFirst({
+		where: and(
+			eq(schema.enrollments.studentId, studentId),
+			eq(schema.enrollments.academicYearId, academicYearId),
+		),
+	});
 
 	// Get transcript with course averages
 	const transcript = await getStudentTranscript(studentId);
@@ -89,7 +184,7 @@ export async function computeStudentFacts(
 		successRate: transcript.successRate,
 		unitValidationRate: transcript.unitValidationRate,
 
-		// Credits
+		// Credits (transfer credits are already included in creditSummary via ledger)
 		creditsEarned: creditSummary.creditsEarned,
 		creditsEarnedThisYear: creditSummary.creditsEarnedThisYear,
 		creditsInProgress: creditSummary.creditsInProgress,
@@ -99,7 +194,10 @@ export async function computeStudentFacts(
 			0,
 			creditSummary.requiredCredits - creditSummary.creditsEarned,
 		),
-		creditCompletionRate: creditSummary.creditCompletionRate,
+		creditCompletionRate:
+			creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0,
 		creditSuccessRate: creditSummary.creditSuccessRate,
 
 		// Attempts and retakes
@@ -122,12 +220,15 @@ export async function computeStudentFacts(
 		// Advanced indicators
 		performanceIndex: computePerformanceIndex(
 			transcript.overallAverage,
-			creditSummary.creditCompletionRate,
+			creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0,
 			transcript.successRate,
 		),
 		isOnTrack:
-			creditSummary.creditCompletionRate >= 0.75 &&
-			transcript.overallAverage >= PASSING_GRADE,
+			(creditSummary.requiredCredits > 0
+				? creditSummary.creditsEarned / creditSummary.requiredCredits
+				: 0) >= 0.75 && transcript.overallAverage >= PASSING_GRADE,
 		progressionRate:
 			enrollmentHistory.activeYearsCount > 0
 				? creditSummary.creditsEarned / enrollmentHistory.activeYearsCount
@@ -137,9 +238,83 @@ export async function computeStudentFacts(
 		canReachRequiredCredits:
 			creditSummary.creditsEarned + creditSummary.creditsInProgress >=
 			creditSummary.requiredCredits,
+
+		// External student fields (from current enrollment)
+		admissionType: currentEnrollment?.admissionType ?? "normal",
+		isTransferStudent: currentEnrollment?.admissionType === "transfer",
+		isDirectAdmission:
+			currentEnrollment?.admissionType === "direct" ||
+			currentEnrollment?.admissionType === "equivalence",
+		hasAcademicHistory:
+			transcript.overallAverage > 0 || transcript.validatedCoursesCount > 0,
+		transferCredits: currentEnrollment?.transferCredits ?? 0,
+		transferInstitution: currentEnrollment?.transferInstitution ?? null,
+		transferLevel: currentEnrollment?.transferLevel ?? null,
 	};
 
 	return facts;
+}
+
+async function saveStudentPromotionSummary(facts: StudentPromotionFacts) {
+	const record = mapFactsToSummaryRecord(facts);
+	await db
+		.insert(schema.studentPromotionSummaries)
+		.values(record)
+		.onConflictDoUpdate({
+			target: [
+				schema.studentPromotionSummaries.studentId,
+				schema.studentPromotionSummaries.academicYearId,
+			],
+			set: {
+				...record,
+				computedAt: record.computedAt,
+			},
+		});
+}
+
+function mapFactsToSummaryRecord(
+	facts: StudentPromotionFacts,
+): schema.NewStudentPromotionSummary {
+	return {
+		studentId: facts.studentId,
+		academicYearId: facts.academicYearId,
+		classId: facts.classId,
+		programId: facts.programId,
+		registrationNumber: facts.registrationNumber,
+		className: facts.className,
+		programCode: facts.programCode,
+		computedAt: new Date(),
+		overallAverage: facts.overallAverage,
+		overallAverageUnweighted: facts.overallAverageUnweighted,
+		successRate: facts.successRate,
+		unitValidationRate: facts.unitValidationRate,
+		creditsEarned: facts.creditsEarned,
+		creditsEarnedThisYear: facts.creditsEarnedThisYear,
+		creditsAttempted: facts.creditsAttempted,
+		creditsInProgress: facts.creditsInProgress,
+		requiredCredits: facts.requiredCredits,
+		creditCompletionRate: facts.creditCompletionRate,
+		creditDeficit: facts.creditDeficit,
+		creditSuccessRate: facts.creditSuccessRate,
+		performanceIndex: facts.performanceIndex,
+		isOnTrack: facts.isOnTrack,
+		progressionRate: facts.progressionRate,
+		projectedCreditsEndOfYear: facts.projectedCreditsEndOfYear,
+		canReachRequiredCredits: facts.canReachRequiredCredits,
+		failedTeachingUnitsCount: facts.failedTeachingUnitsCount,
+		eliminatoryFailures: facts.eliminatoryFailures,
+		scoresBelow8: facts.scoresBelow8,
+		admissionType: facts.admissionType,
+		isTransferStudent: facts.isTransferStudent,
+		isDirectAdmission: facts.isDirectAdmission,
+		hasAcademicHistory: facts.hasAcademicHistory,
+		transferCredits: facts.transferCredits,
+		transferInstitution: facts.transferInstitution,
+		transferLevel: facts.transferLevel,
+		averagesByTeachingUnit: facts.averageByTeachingUnit,
+		averagesByCourse: facts.averageByCourse,
+		facts,
+	};
 }
 
 /**

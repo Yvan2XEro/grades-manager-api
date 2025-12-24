@@ -19,12 +19,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
 
+type PromotionRule = {
+	id: string;
+	name: string;
+	description: string;
+	ruleset: Record<string, unknown>;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt: string;
+};
+
 export function RulesListPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [editingRule, setEditingRule] = useState<any>(null);
+	const [editingRule, setEditingRule] = useState<PromotionRule | null>(null);
 
 	const queryClient = useQueryClient();
 
@@ -47,7 +57,7 @@ export function RulesListPage() {
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 			setIsCreateDialogOpen(false);
 		},
-		onError: (error: any) => {
+		onError: (error: Error) => {
 			toast.error(
 				t("admin.promotionRules.rulesList.toast.createError", {
 					error: error.message,
@@ -69,7 +79,7 @@ export function RulesListPage() {
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 			setIsEditDialogOpen(false);
 		},
-		onError: (error: any) => {
+		onError: (error: Error) => {
 			toast.error(
 				t("admin.promotionRules.rulesList.toast.updateError", {
 					error: error.message,
@@ -85,7 +95,7 @@ export function RulesListPage() {
 			toast.success(t("admin.promotionRules.rulesList.toast.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 		},
-		onError: (error: any) => {
+		onError: (error: Error) => {
 			toast.error(
 				t("admin.promotionRules.rulesList.toast.deleteError", {
 					error: error.message,
@@ -141,7 +151,7 @@ export function RulesListPage() {
 		});
 	};
 
-	const handleEdit = (rule: any) => {
+	const handleEdit = (rule: PromotionRule) => {
 		setEditingRule(rule);
 		setIsEditDialogOpen(true);
 	};
@@ -152,7 +162,7 @@ export function RulesListPage() {
 		}
 	};
 
-	const handleToggleActive = (rule: any) => {
+	const handleToggleActive = (rule: PromotionRule) => {
 		updateMutation.mutate({
 			id: rule.id,
 			isActive: !rule.isActive,

@@ -21,7 +21,13 @@ import {
 import { trpcClient } from "../../utils/trpc";
 
 type StatCard = {
-	key: "faculties" | "programs" | "courses" | "exams" | "students" | "teachers";
+	key:
+		| "institutions"
+		| "programs"
+		| "courses"
+		| "exams"
+		| "students"
+		| "teachers";
 	count: number;
 	icon: JSX.Element;
 	color: string;
@@ -37,14 +43,14 @@ const AdminDashboard: React.FC = () => {
 		queryKey: ["adminDashboard"],
 		queryFn: async () => {
 			const [
-				facultiesRes,
+				institutionsRes,
 				programsRes,
 				coursesRes,
 				examsRes,
 				studentsRes,
 				yearsRes,
 			] = await Promise.all([
-				trpcClient.faculties.list.query({}),
+				trpcClient.institutions.list.query({}),
 				trpcClient.programs.list.query({}),
 				trpcClient.courses.list.query({}),
 				trpcClient.exams.list.query({}),
@@ -52,15 +58,17 @@ const AdminDashboard: React.FC = () => {
 				trpcClient.academicYears.list.query({}),
 			]);
 
-			const programs = programsRes.items;
-			const facultiesCount = facultiesRes.items.length;
+			const programs = programsRes?.items ?? [];
+			// Compter les institutions de type 'faculty'
+			const institutionsCount =
+				institutionsRes?.items?.filter((i) => i.type === "faculty").length ?? 0;
 			const programsCount = programs.length;
-			const coursesCount = coursesRes.items.length;
-			const examsCount = examsRes.items.length;
-			const studentsCount = studentsRes.items.length;
+			const coursesCount = coursesRes?.items?.length ?? 0;
+			const examsCount = examsRes?.items?.length ?? 0;
+			const studentsCount = studentsRes?.items?.length ?? 0;
 			const teachersCount = 0;
 
-			const activeYear = yearsRes.items.find((y) => y.isActive);
+			const activeYear = yearsRes?.items?.find((y) => y.isActive);
 
 			const programStats: ProgramStats[] = activeYear
 				? await Promise.all(
@@ -83,8 +91,8 @@ const AdminDashboard: React.FC = () => {
 
 			const stats: StatCard[] = [
 				{
-					key: "faculties",
-					count: facultiesCount,
+					key: "institutions",
+					count: institutionsCount,
 					icon: <Building2 className="h-8 w-8" />,
 					color: "bg-blue-100 text-blue-600",
 				},

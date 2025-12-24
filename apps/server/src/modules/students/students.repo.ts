@@ -4,6 +4,7 @@ import * as schema from "@/db/schema/app-schema";
 
 const studentProjection = {
 	id: schema.students.id,
+	institutionId: schema.students.institutionId,
 	domainUserId: schema.students.domainUserId,
 	registrationNumber: schema.students.registrationNumber,
 	class: schema.students.class,
@@ -33,38 +34,65 @@ const baseQuery = () =>
 			eq(schema.domainUsers.id, schema.students.domainUserId),
 		);
 
-export type StudentWithProfile = Awaited<ReturnType<typeof findById>>;
+const scopedWhere = (institutionId: string, condition?: SQL<unknown>) =>
+	condition
+		? and(eq(schema.students.institutionId, institutionId), condition)
+		: eq(schema.students.institutionId, institutionId);
+
+export type StudentWithProfile = Awaited<ReturnType<typeof internalFindById>>;
 
 export async function create(data: schema.NewStudent) {
 	const [created] = await db.insert(schema.students).values(data).returning();
-	return findById(created.id);
+	return internalFindById(created.id);
 }
 
-export async function update(id: string, data: Partial<schema.NewStudent>) {
+export async function update(
+	id: string,
+	data: Partial<schema.NewStudent>,
+	institutionId: string,
+) {
 	const [updated] = await db
 		.update(schema.students)
 		.set(data)
-		.where(eq(schema.students.id, id))
+		.where(
+			and(
+				eq(schema.students.id, id),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
 		.returning();
 	if (!updated) return null;
-	return findById(updated.id);
+	return internalFindById(updated.id);
 }
 
-export async function findById(id: string) {
+async function internalFindById(id: string) {
 	const [item] = await baseQuery().where(eq(schema.students.id, id)).limit(1);
 	return item ?? null;
 }
 
+export async function findById(id: string, institutionId: string) {
+	const [item] = await baseQuery()
+		.where(
+			and(
+				eq(schema.students.id, id),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return item ?? null;
+}
+
 export async function list(opts: {
+	institutionId: string;
 	classId?: string;
 	q?: string;
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
-	let condition: SQL<unknown> | undefined;
+	const extraConditions: SQL<unknown>[] = [];
 	if (opts.classId) {
-		condition = eq(schema.students.class, opts.classId);
+		extraConditions.push(eq(schema.students.class, opts.classId));
 	}
 	if (opts.q) {
 		const likeValue = `%${opts.q}%`;
@@ -74,15 +102,23 @@ export async function list(opts: {
 			ilike(schema.domainUsers.primaryEmail, likeValue),
 			ilike(schema.students.registrationNumber, likeValue),
 		);
-		condition = condition ? and(condition, qCond) : qCond;
+		extraConditions.push(qCond);
 	}
 	if (opts.cursor) {
-		const cursorCond = gt(schema.students.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
+		extraConditions.push(gt(schema.students.id, opts.cursor));
 	}
 
+	const where = scopedWhere(
+		opts.institutionId,
+		extraConditions.length
+			? extraConditions.length === 1
+				? extraConditions[0]
+				: and(...extraConditions)
+			: undefined,
+	);
+
 	const items = await baseQuery()
-		.where(condition)
+		.where(where)
 		.orderBy(schema.students.id)
 		.limit(limit);
 	const nextCursor =
@@ -90,19 +126,17 @@ export async function list(opts: {
 	return { items, nextCursor };
 }
 
-export async function transferStudent(studentId: string, toClassId: string) {
-	const [updated] = await db
-		.update(schema.students)
-		.set({ class: toClassId })
-		.where(eq(schema.students.id, studentId))
-		.returning();
-	if (!updated) return null;
-	return findById(updated.id);
-}
-
-export async function findByRegistrationNumber(registrationNumber: string) {
+export async function findByRegistrationNumber(
+	registrationNumber: string,
+	institutionId: string,
+) {
 	const [item] = await baseQuery()
-		.where(eq(schema.students.registrationNumber, registrationNumber))
+		.where(
+			and(
+				eq(schema.students.registrationNumber, registrationNumber),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	return item ?? null;
 }

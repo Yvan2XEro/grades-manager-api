@@ -8,6 +8,7 @@ import {
 	boolean,
 	check,
 	date,
+	doublePrecision,
 	index,
 	integer,
 	jsonb,
@@ -17,7 +18,7 @@ import {
 	timestamp,
 	unique,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
+import { member, organization, user } from "./auth";
 import type { RegistrationNumberFormatDefinition } from "./registration-number-types";
 
 /** Business roles available for domain-level RBAC. */
@@ -80,6 +81,9 @@ export const domainUsers = pgTable(
 		authUserId: text("auth_user_id").references(() => user.id, {
 			onDelete: "cascade",
 		}),
+		memberId: text("member_id").references(() => member.id, {
+			onDelete: "set null",
+		}),
 		businessRole: text("business_role").$type<BusinessRole>().notNull(),
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
@@ -102,6 +106,7 @@ export const domainUsers = pgTable(
 	},
 	(t) => [
 		unique("uq_domain_users_auth").on(t.authUserId),
+		unique("uq_domain_users_member").on(t.memberId),
 		unique("uq_domain_users_email").on(t.primaryEmail),
 		index("idx_domain_users_role").on(t.businessRole),
 	],
@@ -114,22 +119,9 @@ export const examTypes = pgTable(
 	"exam_types",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		name: text("name").notNull(),
-		description: text("description"),
-		createdAt: timestamp("created_at", { withTimezone: true })
+		institutionId: text("institution_id")
 			.notNull()
-			.defaultNow(),
-	},
-	(t) => [unique("uq_exam_types_name").on(t.name)],
-);
-
-/** Catalog of allowed exam types (CC, TP...). */
-/** Faculties (schools) grouping programs. */
-export const faculties = pgTable(
-	"faculties",
-	{
-		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		code: text("code").notNull(),
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		description: text("description"),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -137,19 +129,21 @@ export const faculties = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_faculties_name").on(t.name),
-		unique("uq_faculties_code").on(t.code),
+		unique("uq_exam_types_name_institution").on(t.institutionId, t.name),
+		index("idx_exam_types_institution_id").on(t.institutionId),
 	],
 );
 
-/** Study cycles grouping programs inside a faculty (e.g., Bachelor, Master). */
+/** Catalog of allowed exam types (CC, TP...). */
+
+/** Study cycles grouping programs inside an institution (e.g., Bachelor, Master). */
 export const studyCycles = pgTable(
 	"study_cycles",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		facultyId: text("faculty_id")
+		institutionId: text("institution_id")
 			.notNull()
-			.references(() => faculties.id, { onDelete: "cascade" }),
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
 		description: text("description"),
@@ -162,8 +156,8 @@ export const studyCycles = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_study_cycles_faculty_code").on(t.facultyId, t.code),
-		index("idx_study_cycles_faculty").on(t.facultyId),
+		unique("uq_study_cycles_institution_code").on(t.institutionId, t.code),
+		index("idx_study_cycles_institution").on(t.institutionId),
 	],
 );
 
@@ -207,6 +201,9 @@ export const academicYears = pgTable(
 	"academic_years",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		startDate: date("start_date").notNull(),
 		endDate: date("end_date").notNull(),
@@ -217,30 +214,32 @@ export const academicYears = pgTable(
 	},
 	(t) => [
 		check("chk_academic_years_dates", sql`${t.endDate} > ${t.startDate}`),
+		index("idx_academic_years_institution").on(t.institutionId),
+		unique("uq_academic_years_institution_name").on(t.institutionId, t.name),
 	],
 );
 
-/** Programs offered under a faculty. */
+/** Programs offered under an institution. */
 export const programs = pgTable(
 	"programs",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
 		description: text("description"),
-		faculty: text("faculty_id")
-			.notNull()
-			.references(() => faculties.id, { onDelete: "restrict" }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_programs_name_faculty").on(t.name, t.faculty),
-		unique("uq_programs_code_faculty").on(t.code, t.faculty),
-		unique("uq_programs_slug_faculty").on(t.slug, t.faculty),
-		index("idx_programs_faculty_id").on(t.faculty),
+		unique("uq_programs_name_institution").on(t.name, t.institutionId),
+		unique("uq_programs_code_institution").on(t.code, t.institutionId),
+		unique("uq_programs_slug_institution").on(t.slug, t.institutionId),
+		index("idx_programs_institution_id").on(t.institutionId),
 	],
 );
 
@@ -248,6 +247,9 @@ export const programOptions = pgTable(
 	"program_options",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		programId: text("program_id")
 			.notNull()
 			.references(() => programs.id, { onDelete: "cascade" }),
@@ -261,6 +263,7 @@ export const programOptions = pgTable(
 	(t) => [
 		unique("uq_program_options_program_code").on(t.programId, t.code),
 		index("idx_program_options_program_id").on(t.programId),
+		index("idx_program_options_institution_id").on(t.institutionId),
 	],
 );
 
@@ -295,6 +298,9 @@ export const classes = pgTable(
 	"classes",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
 		program: text("program_id")
@@ -323,6 +329,7 @@ export const classes = pgTable(
 			t.academicYear,
 		),
 		unique("uq_classes_code_year").on(t.code, t.academicYear),
+		index("idx_classes_institution_id").on(t.institutionId),
 		index("idx_classes_program_id").on(t.program),
 		index("idx_classes_academic_year_id").on(t.academicYear),
 		index("idx_classes_semester_id").on(t.semesterId),
@@ -370,6 +377,9 @@ export const classCourses = pgTable(
 	"class_courses",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		class: text("class_id")
 			.notNull()
@@ -391,6 +401,7 @@ export const classCourses = pgTable(
 	(t) => [
 		unique("uq_class_courses").on(t.class, t.course),
 		unique("uq_class_courses_code").on(t.code),
+		index("idx_class_courses_institution_id").on(t.institutionId),
 		index("idx_class_courses_class_id").on(t.class),
 		index("idx_class_courses_course_id").on(t.course),
 		index("idx_class_courses_teacher_id").on(t.teacher),
@@ -403,9 +414,9 @@ export const examScheduleRuns = pgTable(
 	"exam_schedule_runs",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		facultyId: text("faculty_id")
+		institutionId: text("institution_id")
 			.notNull()
-			.references(() => faculties.id, { onDelete: "restrict" }),
+			.references(() => institutions.id, { onDelete: "restrict" }),
 		academicYearId: text("academic_year_id")
 			.notNull()
 			.references(() => academicYears.id, { onDelete: "restrict" }),
@@ -430,7 +441,7 @@ export const examScheduleRuns = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		index("idx_exam_schedule_runs_faculty").on(t.facultyId),
+		index("idx_exam_schedule_runs_institution").on(t.institutionId),
 		index("idx_exam_schedule_runs_year").on(t.academicYearId),
 		index("idx_exam_schedule_runs_type").on(t.examTypeId),
 	],
@@ -441,6 +452,9 @@ export const exams = pgTable(
 	"exams",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		type: text("type").notNull(),
 		date: timestamp("date", { withTimezone: true }).notNull(),
@@ -471,16 +485,29 @@ export const exams = pgTable(
 			"chk_exams_percentage",
 			sql`${t.percentage} >= 0 AND ${t.percentage} <= 100`,
 		),
+		index("idx_exams_institution_id").on(t.institutionId),
 		index("idx_exams_class_course_id").on(t.classCourse),
 		index("idx_exams_date").on(t.date),
 	],
 );
+
+/** Admission types for students. */
+export const admissionTypes = [
+	"normal",
+	"transfer",
+	"direct",
+	"equivalence",
+] as const;
+export type AdmissionType = (typeof admissionTypes)[number];
 
 /** Student records referencing domain profiles. */
 export const students = pgTable(
 	"students",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		domainUserId: text("domain_user_id")
 			.notNull()
 			.references(() => domainUsers.id, { onDelete: "restrict" }),
@@ -495,6 +522,7 @@ export const students = pgTable(
 	(t) => [
 		unique("uq_students_registration").on(t.registrationNumber),
 		unique("uq_students_domain_user").on(t.domainUserId),
+		index("idx_students_institution_id").on(t.institutionId),
 		index("idx_students_class_id").on(t.class),
 		index("idx_students_domain_user_id").on(t.domainUserId),
 	],
@@ -505,6 +533,9 @@ export const registrationNumberFormats = pgTable(
 	"registration_number_formats",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		description: text("description"),
 		definition: jsonb("definition")
@@ -518,7 +549,10 @@ export const registrationNumberFormats = pgTable(
 			.notNull()
 			.defaultNow(),
 	},
-	(t) => [index("idx_registration_formats_active").on(t.isActive)],
+	(t) => [
+		index("idx_registration_formats_active").on(t.isActive),
+		index("idx_registration_formats_institution_id").on(t.institutionId),
+	],
 );
 
 /** Counter checkpoints partitioned by format + scope key. */
@@ -547,11 +581,59 @@ export const registrationNumberCounters = pgTable(
 );
 
 /** Institution master data with bilingual metadata. */
+/** Institution metadata for export configuration */
+export interface InstitutionMetadata {
+	export_config?: {
+		grading?: {
+			appreciations?: Array<{
+				label: string;
+				min: number;
+				max: number;
+			}>;
+			passing_grade?: number;
+			scale?: number;
+		};
+		signatures?: {
+			pv?: Array<{ position: string; name: string }>;
+			evaluation?: Array<{ position: string; name: string }>;
+			ue?: Array<{ position: string; name: string }>;
+		};
+		exam_settings?: {
+			default_duration_hours?: number;
+			default_coefficient?: number;
+			exam_types?: Record<
+				string,
+				{
+					label: string;
+					coefficient: number;
+				}
+			>;
+		};
+		watermark?: {
+			text?: string;
+			enabled?: boolean;
+		};
+	};
+	[key: string]: unknown;
+}
+
+/** Institution types for hierarchical structure. */
+export const institutionTypes = [
+	"university",
+	"institution",
+	"faculty",
+] as const;
+export type InstitutionType = (typeof institutionTypes)[number];
+
 export const institutions = pgTable(
 	"institutions",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
 		code: text("code").notNull(),
+		type: text("type")
+			.$type<InstitutionType>()
+			.notNull()
+			.default("institution"),
 		shortName: text("short_name"),
 		nameFr: text("name_fr").notNull(),
 		nameEn: text("name_en").notNull(),
@@ -570,6 +652,15 @@ export const institutions = pgTable(
 		website: text("website"),
 		logoUrl: text("logo_url"),
 		coverImageUrl: text("cover_image_url"),
+		parentInstitutionId: text("parent_institution_id").references(
+			(): any => institutions.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		organizationId: text("organization_id").references(() => organization.id, {
+			onDelete: "set null",
+		}),
 		defaultAcademicYearId: text("default_academic_year_id").references(
 			() => academicYears.id,
 			{
@@ -583,7 +674,7 @@ export const institutions = pgTable(
 			},
 		),
 		timezone: text("timezone").default("UTC"),
-		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -621,6 +712,9 @@ export const enrollments = pgTable(
 	"enrollments",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		studentId: text("student_id")
 			.notNull()
 			.references(() => students.id, { onDelete: "cascade" }),
@@ -638,11 +732,24 @@ export const enrollments = pgTable(
 			.notNull()
 			.defaultNow(),
 		exitedAt: timestamp("exited_at", { withTimezone: true }),
+		// External admission fields (transfer, direct admission, equivalence)
+		admissionType: text("admission_type")
+			.$type<AdmissionType>()
+			.notNull()
+			.default("normal"),
+		transferInstitution: text("transfer_institution"),
+		transferCredits: integer("transfer_credits").default(0),
+		transferLevel: text("transfer_level"),
+		admissionJustification: text("admission_justification"),
+		admissionDate: timestamp("admission_date", { withTimezone: true }),
+		admissionMetadata: jsonb("admission_metadata").default({}),
 	},
 	(t) => [
+		index("idx_enrollments_institution_id").on(t.institutionId),
 		index("idx_enrollments_student_id").on(t.studentId),
 		index("idx_enrollments_class_id").on(t.classId),
 		index("idx_enrollments_year_id").on(t.academicYearId),
+		index("idx_enrollments_admission_type").on(t.admissionType),
 	],
 );
 
@@ -804,6 +911,9 @@ export const promotionRules = pgTable(
 	"promotion_rules",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		description: text("description"),
 		sourceClassId: text("source_class_id").references(() => classes.id, {
@@ -825,6 +935,7 @@ export const promotionRules = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
+		index("idx_promotion_rules_institution_id").on(t.institutionId),
 		index("idx_promotion_rules_source_class").on(t.sourceClassId),
 		index("idx_promotion_rules_program").on(t.programId),
 		index("idx_promotion_rules_cycle_level").on(t.cycleLevelId),
@@ -899,19 +1010,222 @@ export const promotionExecutionResults = pgTable(
 	],
 );
 
-export const facultiesRelations = relations(faculties, ({ many }) => ({
-	programs: many(programs),
-}));
+/** Delegated editors allowed to modify specific exam grades. */
+export const examGradeEditors = pgTable(
+	"exam_grade_editors",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		editorProfileId: text("editor_profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		grantedByProfileId: text("granted_by_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_exam_grade_editor").on(t.examId, t.editorProfileId),
+		index("idx_exam_grade_editors_exam").on(t.examId),
+		index("idx_exam_grade_editors_editor").on(t.editorProfileId),
+	],
+);
+
+export const gradeEditLogActions = ["write", "delete", "import"] as const;
+export type GradeEditLogAction = (typeof gradeEditLogActions)[number];
+
+export const gradeEditActorRoles = ["admin", "teacher", "delegate"] as const;
+export type GradeEditActorRole = (typeof gradeEditActorRoles)[number];
+
+/** Audit trail entries when grades are edited (especially by delegates). */
+export const gradeEditLogs = pgTable(
+	"grade_edit_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		examId: text("exam_id").references(() => exams.id, {
+			onDelete: "set null",
+		}),
+		classCourseId: text("class_course_id").references(
+			() => classCourses.id,
+			{ onDelete: "set null" },
+		),
+		studentId: text("student_id").references(() => students.id, {
+			onDelete: "set null",
+		}),
+		gradeId: text("grade_id").references(() => grades.id, {
+			onDelete: "set null",
+		}),
+		actorProfileId: text("actor_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		actorRole: text("actor_role")
+			.$type<GradeEditActorRole>()
+			.notNull(),
+		isDelegate: boolean("is_delegate").notNull().default(false),
+		action: text("action")
+			.$type<GradeEditLogAction>()
+			.notNull(),
+		scoreBefore: numeric("score_before", { precision: 5, scale: 2 }),
+		scoreAfter: numeric("score_after", { precision: 5, scale: 2 }),
+		metadata: jsonb("metadata")
+			.$type<Record<string, unknown>>()
+			.default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_grade_edit_logs_exam").on(t.examId),
+		index("idx_grade_edit_logs_actor").on(t.actorProfileId),
+		index("idx_grade_edit_logs_institution").on(t.institutionId),
+	],
+);
+
+export const classCourseAccessSources = ["list", "search"] as const;
+export type ClassCourseAccessSource = (typeof classCourseAccessSources)[number];
+
+/** Audit trail for delegated course navigation events. */
+export const classCourseAccessLogs = pgTable(
+	"class_course_access_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		actorProfileId: text("actor_profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		source: text("source")
+			.$type<ClassCourseAccessSource>()
+			.notNull(),
+		isDelegate: boolean("is_delegate").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_class_course_access_institution").on(t.institutionId),
+		index("idx_class_course_access_actor").on(t.actorProfileId),
+		index("idx_class_course_access_course").on(t.classCourseId),
+	],
+);
+
+/** Cached yearly promotion facts per student. */
+export const studentPromotionSummaries = pgTable(
+	"student_promotion_summaries",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		registrationNumber: text("registration_number").notNull(),
+		className: text("class_name").notNull(),
+		programCode: text("program_code").notNull(),
+		computedAt: timestamp("computed_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		overallAverage: doublePrecision("overall_average").notNull().default(0),
+		overallAverageUnweighted: doublePrecision(
+			"overall_average_unweighted",
+		)
+			.notNull()
+			.default(0),
+		successRate: doublePrecision("success_rate").notNull().default(0),
+		unitValidationRate: doublePrecision("unit_validation_rate")
+			.notNull()
+			.default(0),
+		creditsEarned: integer("credits_earned").notNull().default(0),
+		creditsEarnedThisYear: integer("credits_earned_this_year")
+			.notNull()
+			.default(0),
+		creditsAttempted: integer("credits_attempted").notNull().default(0),
+		creditsInProgress: integer("credits_in_progress").notNull().default(0),
+		requiredCredits: integer("required_credits").notNull().default(0),
+		creditCompletionRate: doublePrecision("credit_completion_rate")
+			.notNull()
+			.default(0),
+		creditDeficit: integer("credit_deficit").notNull().default(0),
+		creditSuccessRate: doublePrecision("credit_success_rate")
+			.notNull()
+			.default(0),
+		performanceIndex: doublePrecision("performance_index")
+			.notNull()
+			.default(0),
+		isOnTrack: boolean("is_on_track").notNull().default(false),
+		progressionRate: doublePrecision("progression_rate").notNull().default(0),
+		projectedCreditsEndOfYear: doublePrecision(
+			"projected_credits_end_of_year",
+		)
+			.notNull()
+			.default(0),
+		canReachRequiredCredits: boolean("can_reach_required_credits")
+			.notNull()
+			.default(false),
+		failedTeachingUnitsCount: integer("failed_teaching_units_count")
+			.notNull()
+			.default(0),
+		eliminatoryFailures: integer("eliminatory_failures")
+			.notNull()
+			.default(0),
+		scoresBelow8: integer("scores_below_8").notNull().default(0),
+		admissionType: text("admission_type").notNull().default("normal"),
+		isTransferStudent: boolean("is_transfer_student")
+			.notNull()
+			.default(false),
+		isDirectAdmission: boolean("is_direct_admission")
+			.notNull()
+			.default(false),
+		hasAcademicHistory: boolean("has_academic_history")
+			.notNull()
+			.default(false),
+		transferCredits: integer("transfer_credits").notNull().default(0),
+		transferInstitution: text("transfer_institution"),
+		transferLevel: text("transfer_level"),
+		averagesByTeachingUnit: jsonb("averages_by_teaching_unit")
+			.notNull()
+			.$type<Record<string, unknown>>()
+			.default({}),
+		averagesByCourse: jsonb("averages_by_course")
+			.notNull()
+			.$type<Record<string, unknown>>()
+			.default({}),
+		facts: jsonb("facts").notNull().$type<Record<string, unknown>>(),
+	},
+	(t) => [
+		unique("uq_student_promotion_summary").on(t.studentId, t.academicYearId),
+		index("idx_student_promotion_summary_year").on(t.academicYearId),
+		index("idx_student_promotion_summary_class").on(t.classId),
+		index("idx_student_promotion_summary_program").on(t.programId),
+		index("idx_student_promotion_summary_ontrack").on(t.isOnTrack),
+	],
+);
 
 export const academicYearsRelations = relations(academicYears, ({ many }) => ({
 	classes: many(classes),
 }));
 
 export const programsRelations = relations(programs, ({ one, many }) => ({
-	faculty: one(faculties, {
-		fields: [programs.faculty],
-		references: [faculties.id],
-	}),
 	options: many(programOptions),
 	classes: many(classes),
 	courses: many(courses),
@@ -967,10 +1281,6 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
 }));
 
 export const studyCyclesRelations = relations(studyCycles, ({ one, many }) => ({
-	faculty: one(faculties, {
-		fields: [studyCycles.facultyId],
-		references: [faculties.id],
-	}),
 	levels: many(cycleLevels),
 }));
 
@@ -1073,9 +1383,13 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 }));
 
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
-	authUserRef: one(domainUsers, {
+	authUser: one(user, {
 		fields: [domainUsers.authUserId],
-		references: [domainUsers.id],
+		references: [user.id],
+	}),
+	member: one(member, {
+		fields: [domainUsers.memberId],
+		references: [member.id],
 	}),
 	studentProfile: one(students, {
 		fields: [domainUsers.id],
@@ -1170,16 +1484,31 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
-export const institutionsRelations = relations(institutions, ({ one }) => ({
-	defaultAcademicYear: one(academicYears, {
-		fields: [institutions.defaultAcademicYearId],
-		references: [academicYears.id],
+export const institutionsRelations = relations(
+	institutions,
+	({ one, many }) => ({
+		parentInstitution: one(institutions, {
+			fields: [institutions.parentInstitutionId],
+			references: [institutions.id],
+			relationName: "institutionHierarchy",
+		}),
+		childInstitutions: many(institutions, {
+			relationName: "institutionHierarchy",
+		}),
+		defaultAcademicYear: one(academicYears, {
+			fields: [institutions.defaultAcademicYearId],
+			references: [academicYears.id],
+		}),
+		registrationFormat: one(registrationNumberFormats, {
+			fields: [institutions.registrationFormatId],
+			references: [registrationNumberFormats.id],
+		}),
+		organization: one(organization, {
+			fields: [institutions.organizationId],
+			references: [organization.id],
+		}),
 	}),
-	registrationFormat: one(registrationNumberFormats, {
-		fields: [institutions.registrationFormatId],
-		references: [registrationNumberFormats.id],
-	}),
-}));
+);
 
 export const registrationNumberFormatsRelations = relations(
 	registrationNumberFormats,
@@ -1257,9 +1586,6 @@ export const promotionExecutionResultsRelations = relations(
 		}),
 	}),
 );
-
-export type Faculty = InferSelectModel<typeof faculties>;
-export type NewFaculty = InferInsertModel<typeof faculties>;
 
 export type StudyCycle = InferSelectModel<typeof studyCycles>;
 export type NewStudyCycle = InferInsertModel<typeof studyCycles>;
@@ -1362,3 +1688,48 @@ export type PromotionExecutionResult = InferSelectModel<
 export type NewPromotionExecutionResult = InferInsertModel<
 	typeof promotionExecutionResults
 >;
+export type ExamGradeEditor = InferSelectModel<typeof examGradeEditors>;
+export type NewExamGradeEditor = InferInsertModel<typeof examGradeEditors>;
+export type StudentPromotionSummary = InferSelectModel<
+	typeof studentPromotionSummaries
+>;
+export type NewStudentPromotionSummary = InferInsertModel<
+	typeof studentPromotionSummaries
+>;
+
+/** Export template types for customizable document generation */
+export const exportTemplateTypes = ["pv", "evaluation", "ue"] as const;
+export type ExportTemplateType = (typeof exportTemplateTypes)[number];
+
+/** Export template configuration for flexible headers and columns */
+export const exportTemplates = pgTable(
+	"export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		type: text("type").$type<ExportTemplateType>().notNull(),
+		isDefault: boolean("is_default").notNull().default(false),
+
+		// Raw Handlebars template source
+		templateBody: text("template_body").notNull(),
+
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		index("idx_export_templates_institution").on(t.institutionId),
+		index("idx_export_templates_type").on(t.type),
+		unique("uq_export_templates_institution_name").on(t.institutionId, t.name),
+	],
+);
+export type ExportTemplate = InferSelectModel<typeof exportTemplates>;
+export type NewExportTemplate = InferInsertModel<typeof exportTemplates>;

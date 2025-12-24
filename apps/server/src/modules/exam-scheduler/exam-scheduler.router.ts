@@ -1,4 +1,4 @@
-import { adminProcedure, router } from "@/lib/trpc";
+import { router, tenantAdminProcedure } from "@/lib/trpc";
 import * as service from "./exam-scheduler.service";
 import {
 	historySchema,
@@ -8,18 +8,22 @@ import {
 } from "./exam-scheduler.zod";
 
 export const examSchedulerRouter = router({
-	preview: adminProcedure
+	preview: tenantAdminProcedure
 		.input(previewSchema)
-		.query(({ input }) => service.previewEligibleClasses(input)),
-	schedule: adminProcedure
+		.query(({ ctx, input }) =>
+			service.previewEligibleClasses(input, ctx.institution.id),
+		),
+	schedule: tenantAdminProcedure
 		.input(scheduleSchema)
 		.mutation(({ ctx, input }) =>
-			service.scheduleExams(input, ctx.profile?.id ?? null),
+			service.scheduleExams(input, ctx.profile?.id ?? null, ctx.institution.id),
 		),
-	history: adminProcedure
+	history: tenantAdminProcedure
 		.input(historySchema)
-		.query(({ input }) => service.listHistory(input)),
-	details: adminProcedure
+		.query(({ ctx, input }) => service.listHistory(input, ctx.institution.id)),
+	details: tenantAdminProcedure
 		.input(runDetailsSchema)
-		.query(({ input }) => service.getRunDetails(input)),
+		.query(({ ctx, input }) =>
+			service.getRunDetails(input, ctx.institution.id),
+		),
 });

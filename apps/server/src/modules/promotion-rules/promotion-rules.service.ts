@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Engine } from "json-rules-engine";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -16,13 +16,17 @@ import type {
 	EvaluateClassInput,
 	ListExecutionsInput,
 	ListRulesInput,
+	RefreshClassSummariesInput,
 	UpdateRuleInput,
 } from "./promotion-rules.zod";
-import { computeStudentFacts } from "./student-facts.service";
+import {
+	getStudentPromotionFacts,
+	refreshClassPromotionSummaries,
+} from "./student-facts.service";
 
 // ========== Rule Management ==========
 
-export async function createRule(data: CreateRuleInput) {
+export async function createRule(data: CreateRuleInput, institutionId: string) {
 	// Validate ruleset format
 	try {
 		const engine = new Engine([data.ruleset as never], {
@@ -37,11 +41,11 @@ export async function createRule(data: CreateRuleInput) {
 		});
 	}
 
-	return repo.createRule(data);
+	return repo.createRule({ ...data, institutionId });
 }
 
-export async function updateRule(data: UpdateRuleInput) {
-	const existing = await repo.findRuleById(data.id);
+export async function updateRule(data: UpdateRuleInput, institutionId: string) {
+	const existing = await repo.findRuleById(data.id, institutionId);
 	if (!existing) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -62,11 +66,11 @@ export async function updateRule(data: UpdateRuleInput) {
 		}
 	}
 
-	return repo.updateRule(data.id, data);
+	return repo.updateRule(data.id, institutionId, data);
 }
 
-export async function deleteRule(id: string) {
-	const existing = await repo.findRuleById(id);
+export async function deleteRule(id: string, institutionId: string) {
+	const existing = await repo.findRuleById(id, institutionId);
 	if (!existing) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -80,19 +84,54 @@ export async function deleteRule(id: string) {
 		});
 	}
 
-	return repo.deleteRule(id);
+	return repo.deleteRule(id, institutionId);
 }
 
-export async function getRuleById(id: string) {
-	const rule = await repo.findRuleById(id);
+export async function getRuleById(id: string, institutionId: string) {
+	const rule = await repo.findRuleById(id, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
 	return rule;
 }
 
-export async function listRules(opts: ListRulesInput) {
-	return repo.listRules(opts);
+export async function listRules(opts: ListRulesInput, institutionId: string) {
+	return repo.listRules({ ...opts, institutionId });
+}
+
+// ========== Manual summary refresh ==========
+
+export async function refreshClassSummaries(
+	opts: RefreshClassSummariesInput,
+	institutionId: string,
+) {
+	const klass = await db.query.classes.findFirst({
+		where: and(
+			eq(schema.classes.id, opts.classId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	if (!klass) {
+		throw new TRPCError({ code: "NOT_FOUND", message: "Class not found" });
+	}
+	if (klass.academicYear !== opts.academicYearId) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Class does not belong to the specified academic year",
+		});
+	}
+
+	const summaries = await refreshClassPromotionSummaries(
+		klass.id,
+		opts.academicYearId,
+	);
+
+	return {
+		classId: klass.id,
+		academicYearId: klass.academicYear,
+		studentCount: summaries.length,
+		refreshedAt: new Date(),
+	};
 }
 
 // ========== Evaluation ==========
@@ -103,9 +142,10 @@ export async function listRules(opts: ListRulesInput) {
  */
 export async function evaluateClassForPromotion(
 	opts: EvaluateClassInput,
+	institutionId: string,
 ): Promise<ClassPromotionEvaluation> {
 	// Fetch the rule
-	const rule = await repo.findRuleById(opts.ruleId);
+	const rule = await repo.findRuleById(opts.ruleId, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -154,7 +194,7 @@ export async function evaluateClassForPromotion(
 	const evaluations = await Promise.all(
 		students.map(async (student) => {
 			try {
-				const facts = await computeStudentFacts(
+				const facts = await getStudentPromotionFacts(
 					student.id,
 					opts.academicYearId,
 				);
@@ -254,9 +294,10 @@ async function evaluateStudentAgainstRule(
 export async function applyPromotion(
 	opts: ApplyPromotionInput,
 	executedBy: string,
+	institutionId: string,
 ) {
 	// Validate inputs
-	const rule = await repo.findRuleById(opts.ruleId);
+	const rule = await repo.findRuleById(opts.ruleId, institutionId);
 	if (!rule) {
 		throw new TRPCError({ code: "NOT_FOUND", message: "Rule not found" });
 	}
@@ -284,9 +325,23 @@ export async function applyPromotion(
 	// Re-evaluate selected students to get their facts
 	const studentEvaluations = await Promise.all(
 		opts.studentIds.map(async (studentId) => {
-			const facts = await computeStudentFacts(studentId, opts.academicYearId);
-			const evaluation = await evaluateStudentAgainstRule(rule.ruleset, facts);
-			return { studentId, facts, evaluation };
+			try {
+				const facts = await getStudentPromotionFacts(
+					studentId,
+					opts.academicYearId,
+				);
+				const evaluation = await evaluateStudentAgainstRule(
+					rule.ruleset,
+					facts,
+				);
+				return { studentId, facts, evaluation };
+			} catch (error) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: `Promotion summary missing for student ${studentId}`,
+					cause: error,
+				});
+			}
 		}),
 	);
 

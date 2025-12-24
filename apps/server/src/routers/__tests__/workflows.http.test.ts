@@ -35,13 +35,9 @@ const client = createTRPCProxyClient<AppRouter>({
 
 describe("workflows router", () => {
 	it("runs grade validation and enrollment automation", async () => {
-		const faculty = await client.faculties.create.mutate({
-			name: "Workflow F",
-			code: "WF-F",
-		});
+		// Create program using test helper (institutions are created in test setup)
 		const program = await client.programs.create.mutate({
 			name: "Workflow P",
-			faculty: faculty.id,
 			code: "WF-P",
 		});
 		const year = await client.academicYears.create.mutate({

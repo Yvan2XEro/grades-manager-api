@@ -1,10 +1,19 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 import {
 	asAdmin,
+	createAcademicYear,
 	createClass,
 	createCourse,
+	createDomainUser,
+	createRecapFixture,
+	createFaculty,
+	createProgram,
 	createStudent,
 	ensureStudentCourseEnrollment,
 	makeTestContext,
@@ -64,5 +73,102 @@ describe("class courses router", () => {
 		const roster = await admin.classCourses.roster({ id: cc.id });
 		expect(roster.students).toHaveLength(1);
 		expect(roster.students[0].id).toBe(enrolled.id);
+	});
+
+	it("prevents accessing class courses from another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Institution étrangère",
+				nameEn: "Foreign Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		const course = await createCourse({ program: program.id });
+		const teacher = await createDomainUser({ businessRole: "teacher" });
+		const [classCourse] = await db
+			.insert(schema.classCourses)
+			.values({
+				code: `CC-${randomUUID().slice(0, 4)}`,
+				class: klass.id,
+				course: course.id,
+				teacher: teacher.id,
+				weeklyHours: 2,
+				institutionId: foreignInstitution.id,
+			})
+			.returning();
+		await expect(
+			admin.classCourses.getById({ id: classCourse.id }),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+
+	it("logs delegated course access events", async () => {
+		await db.delete(schema.classCourseAccessLogs);
+		const { classCourse, exam } = await createRecapFixture();
+		if (!classCourse.teacher) {
+			throw new Error("Class course missing teacher");
+		}
+		const teacherProfile = await db.query.domainUsers.findFirst({
+			where: eq(schema.domainUsers.id, classCourse.teacher),
+		});
+		if (!teacherProfile) {
+			throw new Error("Teacher profile not found");
+		}
+		const teacherCaller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: teacherProfile,
+			}),
+		);
+		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateCaller = createCaller(
+			makeTestContext({
+				role: "staff",
+				profileOverrides: delegateProfile,
+			}),
+		);
+
+		await teacherCaller.examGradeEditors.assign({
+			examId: exam.id,
+			editorProfileId: delegateProfile.id,
+		});
+
+		await delegateCaller.classCourses.list({ limit: 10 });
+		let logs = await db.query.classCourseAccessLogs.findMany({
+			where: eq(
+				schema.classCourseAccessLogs.actorProfileId,
+				delegateProfile.id,
+			),
+		});
+		expect(logs).toHaveLength(1);
+		expect(logs[0]?.classCourseId).toBe(classCourse.id);
+		expect(logs[0]?.source).toBe("list");
+
+		await delegateCaller.classCourses.search({
+			query: classCourse.code ?? classCourse.id,
+		});
+		logs = await db.query.classCourseAccessLogs.findMany({
+			where: eq(
+				schema.classCourseAccessLogs.actorProfileId,
+				delegateProfile.id,
+			),
+		});
+		expect(logs.some((log) => log.source === "search")).toBe(true);
 	});
 });

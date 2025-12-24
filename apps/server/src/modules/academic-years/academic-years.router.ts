@@ -14,15 +14,18 @@ import {
 } from "./academic-years.zod";
 
 export const router = createRouter({
-	create: adminProcedure.input(baseSchema).mutation(({ input }) =>
-		service.createAcademicYear({
-			...input,
-			startDate: input.startDate.toISOString(),
-			endDate: input.endDate.toISOString(),
-		}),
+	create: adminProcedure.input(baseSchema).mutation(({ ctx, input }) =>
+		service.createAcademicYear(
+			{
+				...input,
+				startDate: input.startDate.toISOString(),
+				endDate: input.endDate.toISOString(),
+			},
+			ctx.institution.id,
+		),
 	),
-	update: adminProcedure.input(updateSchema).mutation(({ input }) =>
-		service.updateAcademicYear(input.id, {
+	update: adminProcedure.input(updateSchema).mutation(({ ctx, input }) =>
+		service.updateAcademicYear(input.id, ctx.institution.id, {
 			...input,
 			startDate: input.startDate?.toISOString(),
 			endDate: input.endDate?.toISOString(),
@@ -30,14 +33,22 @@ export const router = createRouter({
 	),
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteAcademicYear(input.id)),
+		.mutation(({ ctx, input }) =>
+			service.deleteAcademicYear(input.id, ctx.institution.id),
+		),
 	setActive: superAdminProcedure
 		.input(setActiveSchema)
-		.mutation(({ input }) => service.setActive(input.id, input.isActive)),
+		.mutation(({ ctx, input }) =>
+			service.setActive(input.id, input.isActive, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input }) => service.listAcademicYears(input)),
+		.query(({ ctx, input }) =>
+			service.listAcademicYears(input, ctx.institution.id),
+		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getAcademicYearById(input.id)),
+		.query(({ ctx, input }) =>
+			service.getAcademicYearById(input.id, ctx.institution.id),
+		),
 });

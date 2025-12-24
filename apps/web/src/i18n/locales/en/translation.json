@@ -12,6 +12,8 @@
 	"common": {
 		"actions": {
 			"cancel": "Cancel",
+			"create": "Create",
+			"update": "Update",
 			"delete": "Delete",
 			"save": "Save",
 			"saveChanges": "Save Changes",
@@ -50,6 +52,13 @@
 			"next": "Next",
 			"previous": "Previous"
 		},
+		"errors": {
+			"unknown": "Unknown error"
+		},
+		"gender": {
+			"male": "M",
+			"female": "F"
+		},
 		"invalidDate": "Invalid date",
 		"loading": "Loading..."
 	},
@@ -57,6 +66,8 @@
 		"courses": {
 			"title": "My Courses",
 			"subtitle": "Manage your assigned courses and grades",
+			"delegatedBadge": "Delegated",
+			"delegatedDashboardBadge": "Delegated",
 			"actions": {
 				"viewGrades": "View Grades"
 			},
@@ -149,16 +160,24 @@
 		},
 		"gradeEntry": {
 			"title": "Grade Entry",
+			"selectCourse": {
+				"label": "Select class course",
+				"empty": "Choose a class course",
+				"emptyState": "No class courses assigned. Contact an administrator."
+			},
 			"selectExam": {
 				"label": "Select exam",
 				"empty": "No exams available",
-				"lockedTag": "Locked"
+				"lockedTag": "Locked",
+				"prompt": "Select an exam to start entering grades."
 			},
 			"lockedChip": "Grades locked",
 			"actions": {
 				"lock": "Lock grades",
 				"save": "Save grades",
-				"saving": "Saving..."
+				"saving": "Saving...",
+				"exportTemplate": "Export Template",
+				"importGrades": "Import Grades"
 			},
 			"info": {
 				"title": "Grading information",
@@ -182,13 +201,42 @@
 				"title": "No students found",
 				"description": "There are no students enrolled in this class."
 			},
+			"readOnly": {
+				"title": "Read-only mode",
+				"description": "You can view this exam but cannot modify grades."
+			},
+			"delegates": {
+				"title": "Delegated editors",
+				"description": "Manage who can edit grades for this exam.",
+				"add": "Add editor",
+				"dialogTitle": "Assign delegated editor",
+				"dialogDescription": "Grant access to another teacher or staff member.",
+				"selectLabel": "Editor profile",
+				"selectPlaceholder": "Select a team member",
+				"unknownEmail": "No email",
+				"empty": "No delegated editors yet.",
+				"grantedAt": "Granted on {{date}}",
+				"grantedBy": "Granted by {{name}}",
+				"revoke": "Revoke",
+				"revokeSelf": "Leave delegation",
+				"manageRestriction": "Only the course owner can manage other delegates.",
+				"assignSuccess": "Delegate added successfully.",
+				"assignError": "Unable to add delegate.",
+				"revokeSuccess": "Delegate removed successfully.",
+				"revokeError": "Unable to remove delegate.",
+				"readOnlyToast": "You cannot edit this exam."
+			},
 			"toast": {
 				"fetchCourseError": "Could not load course information",
 				"fetchGradesError": "Could not load grades",
 				"saveSuccess": "Grades saved successfully",
 				"saveError": "Could not save grades",
 				"lockSuccess": "Exam locked successfully. Grades can no longer be modified.",
-				"lockError": "Could not lock the exam"
+				"lockError": "Could not lock the exam",
+				"exportError": "Please select an exam with students",
+				"exportSuccess": "Template exported successfully",
+				"importSuccess": "Imported {{count}} grades successfully",
+				"importError": "Failed to import grades"
 			}
 		},
 		"attendance": {
@@ -461,7 +509,17 @@
 			"title": "Exam Management",
 			"subtitle": "Create and manage course exams",
 			"actions": {
-				"add": "Add Exam"
+				"add": "Add Exam",
+				"reviewGrades": "Review grades"
+			},
+			"filters": {
+				"academicYear": "Academic year",
+				"search": "Search",
+				"searchPlaceholder": "Search exams, classes, or courses...",
+				"class": "Class",
+				"classPlaceholder": "All classes",
+				"semester": "Semester",
+				"semesterPlaceholder": "All semesters"
 			},
 			"empty": {
 				"title": "No exams found",
@@ -516,6 +574,9 @@
 			"delete": {
 				"title": "Delete Exam",
 				"message": "Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades."
+			},
+			"pagination": {
+				"loadMore": "Load more exams"
 			}
 		},
 		"workflow": {
@@ -552,6 +613,7 @@
 				"users": "Users",
 				"classCourses": "Class courses",
 				"gradeExport": "Grade export",
+				"exportTemplates": "Export templates",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
 				"students": "Students",
@@ -571,6 +633,15 @@
 				"rules": "Rule center",
 				"registrationNumbers": "Registration numbers",
 				"promotionRules": "Promotion rules"
+			},
+			"groups": {
+				"overview": "Overview",
+				"structure": "Academic Structure",
+				"users": "Users",
+				"teaching": "Teaching",
+				"evaluation": "Evaluation",
+				"promotion": "Rules & Promotion",
+				"system": "System"
 			},
 			"teacher": {
 				"dashboard": "Overview",
@@ -595,7 +666,8 @@
 			"dean": "Dean",
 			"teacher": "Teacher",
 			"administrator": "Administrator",
-			"super_admin": "Super admin"
+			"super_admin": "Super admin",
+			"owner": "Owner"
 		}
 	},
 	"auth": {
@@ -936,6 +1008,19 @@
 				"cycle": "Cycle / level",
 				"option": "Option",
 				"students": "Students"
+			},
+			"export": {
+				"button": "Export student list (PDF)",
+				"excelButton": "Export student list (Excel)",
+				"title": "Student List",
+				"totalStudents": "Total students",
+				"page": "Page",
+				"generatedOn": "Generated on",
+				"success": "Student list exported successfully",
+				"error": "Failed to export student list",
+				"excelSuccess": "Student list exported successfully",
+				"excelError": "Failed to export student list",
+				"sheetName": "Students"
 			},
 			"form": {
 				"createTitle": "Add class",
@@ -1350,6 +1435,181 @@
 				"message": "Are you sure you want to delete this exam type?"
 			}
 		},
+		"exportTemplates": {
+			"title": "Export templates",
+			"subtitle": "Customize report layouts, columns, headers, and styling for grade exports.",
+			"actions": {
+				"add": "Add template"
+			},
+			"filter": {
+				"all": "All types"
+			},
+			"table": {
+				"title": "Available templates",
+				"description": "All export operations can use these templates for formatting.",
+				"name": "Name",
+				"type": "Type",
+				"status": "Status",
+				"columns": "Columns",
+				"columnsCount": "columns",
+				"actions": "Actions",
+				"default": "Default",
+				"custom": "Custom"
+			},
+			"empty": {
+				"title": "No templates yet",
+				"description": "Create your first export template to customize your reports."
+			},
+			"form": {
+				"createTitle": "Create export template",
+				"editTitle": "Edit export template",
+				"renameTitle": "Rename template",
+				"renameDescription": "Enter a new name for this template.",
+				"description": "Define a template for customizing export outputs.",
+				"name": "Template name",
+				"namePlaceholder": "e.g., Standard PV Template",
+				"type": "Export type",
+				"typeDescription": "Type cannot be changed after creation.",
+				"isDefault": "Set as default",
+				"isDefaultDescription": "Use this template by default for this export type."
+			},
+			"validation": {
+				"name": "Name must be at least 2 characters"
+			},
+			"toast": {
+				"createSuccess": "Export template created",
+				"createError": "Could not create export template",
+				"updateSuccess": "Export template updated",
+				"updateError": "Could not update export template",
+				"deleteSuccess": "Export template deleted",
+				"deleteError": "Could not delete export template",
+				"setDefaultSuccess": "Default template updated",
+				"setDefaultError": "Could not set default template"
+			},
+			"delete": {
+				"title": "Delete export template",
+				"message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+			},
+			"actions": {
+				"setDefault": "Set as default",
+				"edit": "Edit template",
+				"rename": "Rename",
+				"delete": "Delete"
+			},
+			"editor": {
+				"notFound": "Template not found",
+				"createTitle": "Create New Export Template",
+				"createDescription": "Enter a name and select the export type to get started.",
+				"subtitle": "Editing {{type}} template",
+				"tabs": {
+					"columns": "Columns",
+					"header": "Header",
+					"style": "Style",
+					"template": "Template"
+				},
+				"template": {
+					"editorTitle": "Template source",
+					"editorDescription": "Paste your Handlebars (.hbs) layout with static headers, logos, and styles.",
+					"placeholder": "<!-- Paste your template here -->",
+					"generatePreview": "Generate preview",
+					"helpTitle": "Tips",
+					"helpHandlebars": "Handlebars helpers like {{formatNumber}} remain available.",
+					"helpVariables": "Common variables: program, students, semester, academicYear, signatures.",
+					"helpStatic": "Logos and headers should be part of your template (no dynamic builder).",
+					"previewTitle": "Preview",
+					"previewDescription": "Render the template with sample data.",
+					"download": "Download HTML",
+					"noPreview": "No preview yet",
+					"clickGenerate": "Click \"Generate preview\" after providing template content.",
+					"required": "Template content cannot be empty."
+				},
+				"columns": {
+					"title": "Column Configuration",
+					"description": "Define which columns to display, their order, and formatting.",
+					"addColumn": "Add Column",
+					"empty": "No columns configured yet. Add your first column to get started.",
+					"addTitle": "Add Column",
+					"editTitle": "Edit Column",
+					"dialogDescription": "Configure the column properties.",
+					"key": "Data Key",
+					"label": "Label",
+					"labelFr": "Label (FR)",
+					"labelEn": "Label (EN)",
+					"dataType": "Data Type",
+					"alignment": "Alignment",
+					"width": "Width (px)",
+					"format": "Format",
+					"formula": "Formula",
+					"visible": "Visible"
+				},
+				"header": {
+					"title": "Header Configuration",
+					"description": "Customize the document header layout and information.",
+					"titles": "Document Titles",
+					"titleFr": "Title (FR)",
+					"titleEn": "Title (EN)",
+					"logoConfig": "Logo Configuration",
+					"showLogo": "Show Logo",
+					"logoPosition": "Logo Position",
+					"displayOptions": "Display Options",
+					"showInstitutionName": "Show Institution Name",
+					"showFacultyName": "Show Faculty Name",
+					"showAcademicYear": "Show Academic Year",
+					"showSemester": "Show Semester",
+					"showClassName": "Show Class Name"
+				},
+				"style": {
+					"title": "Style Configuration",
+					"description": "Customize fonts, colors, page settings, and watermark.",
+					"typography": "Typography",
+					"fontFamily": "Font Family",
+					"fontSize": "Font Size",
+					"headerFontSize": "Header Font Size",
+					"colors": "Colors",
+					"primaryColor": "Primary Color",
+					"secondaryColor": "Secondary Color",
+					"headerBackgroundColor": "Header Background",
+					"headerTextColor": "Header Text",
+					"tableBorderColor": "Table Border",
+					"alternateRowColor": "Alternate Row",
+					"pageSettings": "Page Settings",
+					"pageSize": "Page Size",
+					"pageOrientation": "Orientation",
+					"tableBorderWidth": "Border Width",
+					"margins": "Margins (mm)",
+					"marginTop": "Top",
+					"marginRight": "Right",
+					"marginBottom": "Bottom",
+					"marginLeft": "Left",
+					"watermark": "Watermark",
+					"watermarkEnabled": "Enable Watermark",
+					"watermarkText": "Watermark Text",
+					"watermarkOpacity": "Opacity",
+					"watermarkFontSize": "Font Size",
+					"watermarkRotation": "Rotation (degrees)"
+				},
+				"template": {
+					"editorTitle": "HTML Template Editor",
+					"editorDescription": "Write Handlebars template with custom HTML/CSS.",
+					"placeholder": "Enter your custom Handlebars template here...",
+					"generatePreview": "Generate Preview",
+					"reset": "Reset to Default",
+					"previewTitle": "Preview",
+					"previewDescription": "Live preview with sample data",
+					"download": "Download HTML",
+					"noPreview": "No preview available",
+					"clickGenerate": "Click 'Generate Preview' to see the rendered output",
+					"helpTitle": "Template Help:",
+					"helpHandlebars": "Use Handlebars syntax: {{variable}}, {{#if}}, {{#each}}",
+					"helpVariables": "Available variables: students, headerConfig, styleConfig",
+					"helpConfig": "Configurations are automatically applied to the template"
+				},
+				"preview": {
+					"success": "Preview generated successfully",
+					"error": "Failed to generate preview"
+				}
+			}
+		},
 		"examScheduler": {
 			"title": "Exam scheduler",
 			"subtitle": "Plan exams for entire faculties and academic years in a single step.",
@@ -1362,6 +1622,8 @@
 				"academicYearPlaceholder": "Select academic year",
 				"examTypeLabel": "Exam type",
 				"examTypePlaceholder": "Select exam type",
+				"semesterLabel": "Semester",
+				"semesterPlaceholder": "Select semester",
 				"percentageLabel": "Weight (%)",
 				"dateStartLabel": "Start date",
 				"dateEndLabel": "End date"
@@ -1468,18 +1730,25 @@
 				"title": "Add students",
 				"tabs": {
 					"single": "Single student",
-					"import": "Import file"
+					"import": "Import file",
+					"external": "External admission"
 				}
 			},
 			"form": {
 				"firstName": "First name",
 				"lastName": "Last name",
 				"email": "Email",
+				"dateOfBirth": "Date of birth",
+				"placeOfBirth": "Place of birth",
+				"gender": "Gender",
+				"genderPlaceholder": "Select gender",
+				"nationality": "Nationality",
 				"registration": "Registration number",
 				"registrationHint": "Leave blank to auto-generate the next available matricule.",
 				"registrationFormat": "Registration format",
 				"registrationFormatHint": "Choose a specific template to override the active format.",
 				"registrationFormatPlaceholder": "Use active format",
+				"registrationSection": "Registration",
 				"class": "Class",
 				"classPlaceholder": "Select class",
 				"submit": "Add student"
@@ -1493,8 +1762,10 @@
 				"actions": {
 					"import": "Import students"
 				},
-				"actions": {
-					"import": "Import students"
+				"instructions": {
+					"gender": "Gender accepts: {{values}}.",
+					"admissionType": "Admission type accepts: {{values}}. Provide transfer columns for transfer/direct/equivalence admissions.",
+					"date": "Dates must use the ISO format YYYY-MM-DD."
 				},
 				"summary": {
 					"created": "{{count}} students imported successfully",
@@ -1506,6 +1777,26 @@
 						"title": "Errors",
 						"item": "Row {{row}}: {{reason}}"
 					}
+				},
+				"errors": {
+					"invalidGender": "Invalid gender \"{{value}}\". Allowed values: {{values}}.",
+					"invalidAdmissionType": "Invalid admission type \"{{value}}\". Allowed values: {{values}}.",
+					"invalidTransferCredits": "Transfer credits must be a number between 0 and 300.",
+					"invalidDate": "Invalid date for {{field}}.",
+					"missingTransferData": "Missing required transfer data: {{fields}}."
+				},
+				"fields": {
+					"dateOfBirth": "Date of birth",
+					"admissionDate": "Admission date",
+					"transferInstitution": "Transfer institution",
+					"transferCredits": "Transfer credits",
+					"transferLevel": "Transfer level",
+					"admissionJustification": "Admission justification"
+				},
+				"preview": {
+					"ready": "{{count}} row(s) ready to import.",
+					"errorsTitle": "Issues detected",
+					"noValidRows": "No valid rows detected. Check the errors above."
 				}
 			},
 			"templates": {
@@ -1536,6 +1827,43 @@
 				"email": "Enter a valid email address",
 				"registration": "Provide a registration number or leave the field blank",
 				"class": "Please select a class"
+			},
+			"external": {
+				"info": {
+					"title": "External Student Admission",
+					"description": "Admit students from other institutions with transfer credits or direct admission"
+				},
+				"form": {
+					"admissionType": "Admission type",
+					"admissionTypePlaceholder": "Select admission type",
+					"admissionTypeHint": "Choose the type of admission for this external student",
+					"transferInstitution": "Transfer institution",
+					"transferCredits": "Transfer credits",
+					"transferLevel": "Transfer level",
+					"admissionDate": "Admission date",
+					"admissionJustification": "Justification",
+					"admissionJustificationPlaceholder": "Explain the reason for this admission (minimum 10 characters)",
+					"admissionJustificationHint": "Provide a detailed justification for this external admission",
+					"studentInfoSection": "Student Information",
+					"submit": "Admit external student"
+				},
+				"admissionTypes": {
+					"transfer": "Transfer",
+					"direct": "Direct admission",
+					"equivalence": "Equivalence"
+				},
+				"toast": {
+					"success": "External student admitted successfully",
+					"error": "Could not admit external student"
+				},
+				"validation": {
+					"admissionType": "Admission type is required",
+					"transferInstitution": "Transfer institution is required",
+					"transferCredits": "Transfer credits must be a number",
+					"transferLevel": "Transfer level is required (e.g., L1, L2, M1)",
+					"admissionDate": "Admission date is required",
+					"admissionJustification": "Justification must be at least 10 characters"
+				}
 			}
 		},
 		"users": {
@@ -1905,7 +2233,8 @@
 					"classLabel": "Source Class",
 					"classPlaceholder": "Select class",
 					"yearLabel": "Academic Year",
-					"yearPlaceholder": "Select year"
+					"yearPlaceholder": "Select year",
+					"refreshDescription": "Keep student facts up to date before evaluating. Refreshing recomputes all metrics for the selected class and year."
 				},
 				"tabs": {
 					"eligible": "Eligible ({{count}})",
@@ -1914,6 +2243,8 @@
 				"actions": {
 					"evaluate": "Evaluate Students",
 					"evaluating": "Evaluating...",
+					"refreshFacts": "Refresh Student Facts",
+					"refreshingFacts": "Refreshing...",
 					"selectAll": "Select All Eligible",
 					"deselectAll": "Deselect All",
 					"proceed": "Proceed with {{count}} student(s)"
@@ -1930,7 +2261,9 @@
 				},
 				"toast": {
 					"selectAll": "Please select all required fields",
-					"selectStudent": "Please select at least one student"
+					"selectStudent": "Please select at least one student",
+					"refreshSuccess": "Student facts recalculated successfully",
+					"refreshError": "Failed to refresh facts: {{error}}"
 				}
 			},
 			"execute": {

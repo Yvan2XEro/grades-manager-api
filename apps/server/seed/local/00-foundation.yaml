@@ -1,70 +1,167 @@
 meta:
   version: "2024.12"
-  generatedAt: 2024-12-05T00:00:00Z
-  dataset: demo
+  generatedAt: 2024-12-22T00:00:00Z
+  dataset: inses
+organizations:
+  - slug: inses-institution
+    name: INSES - Institut Supérieur de l'Espoir
 examTypes:
   - name: CC
     description: Contrôle continu
   - name: TP
     description: Travaux pratiques
+  - name: TPE
+    description: Travaux pratiques encadrés
   - name: FINAL
     description: Examen final
-faculties:
-  - code: ENG
-    name: Faculty of Engineering
-    description: Engineering and technology programs
 studyCycles:
-  - code: BSC
-    name: Bachelor Cycle
-    facultyCode: ENG
-    description: Three-year bachelor sequence
+  - code: BTS-SANTE
+    name: BTS Sciences de la Santé
+    facultyCode: INSES
+    description: Cycle de formation professionnelle en sciences de la santé
+    totalCreditsRequired: 120
+    durationYears: 2
+  - code: LP-SANTE
+    name: Licence Professionnelle Santé
+    facultyCode: INSES
+    description: Cycle de licence professionnelle en sciences de la santé
     totalCreditsRequired: 180
     durationYears: 3
+  - code: MP-SANTE
+    name: Master Professionnel Santé
+    facultyCode: INSES
+    description: Cycle de master professionnel en sciences de la santé
+    totalCreditsRequired: 120
+    durationYears: 2
+  - code: BTS-COMMERCE
+    name: BTS Commerce et Gestion
+    facultyCode: INSES
+    description: Cycle de formation professionnelle en commerce et gestion
+    totalCreditsRequired: 120
+    durationYears: 2
+  - code: CQP-PARAM
+    name: CQP/AQP Paramédical
+    facultyCode: INSES
+    description: Certificat de Qualification Professionnelle Paramédical
+    totalCreditsRequired: 60
+    durationYears: 1
+  - code: DQP-PARAM
+    name: DQP/AQP Paramédical
+    facultyCode: INSES
+    description: Diplôme de Qualification Professionnelle Paramédical
+    totalCreditsRequired: 60
+    durationYears: 1
+  - code: BTS-PARAM
+    name: BTS Paramédical
+    facultyCode: INSES
+    description: Cycle BTS en filières paramédicales
+    totalCreditsRequired: 120
+    durationYears: 2
 cycleLevels:
-  - code: L1
-    name: Licence 1
+  - code: BTS1
+    name: BTS 1ère année
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: BSC
-    facultyCode: ENG
-  - code: L2
-    name: Licence 2
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: BTS2
+    name: BTS 2ème année
     orderIndex: 2
     minCredits: 120
-    studyCycleCode: BSC
-    facultyCode: ENG
-  - code: L3
-    name: Licence 3
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: BTS1-COM
+    name: BTS 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: BTS-COMMERCE
+    facultyCode: INSES
+  - code: BTS2-COM
+    name: BTS 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: BTS-COMMERCE
+    facultyCode: INSES
+  - code: BTS1-PAR
+    name: BTS 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: BTS-PARAM
+    facultyCode: INSES
+  - code: BTS2-PAR
+    name: BTS 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: BTS-PARAM
+    facultyCode: INSES
+  - code: LP1
+    name: Licence Pro 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: LP-SANTE
+    facultyCode: INSES
+  - code: LP2
+    name: Licence Pro 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: LP-SANTE
+    facultyCode: INSES
+  - code: LP3
+    name: Licence Pro 3ème année
     orderIndex: 3
     minCredits: 180
-    studyCycleCode: BSC
-    facultyCode: ENG
+    studyCycleCode: LP-SANTE
+    facultyCode: INSES
+  - code: MP1
+    name: Master Pro 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: MP-SANTE
+    facultyCode: INSES
+  - code: MP2
+    name: Master Pro 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: MP-SANTE
+    facultyCode: INSES
+  - code: CQP
+    name: CQP/AQP
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: CQP-PARAM
+    facultyCode: INSES
+  - code: DQP
+    name: DQP/AQP
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: DQP-PARAM
+    facultyCode: INSES
 semesters:
   - code: S1
-    name: Semester 1
+    name: Semestre 1
     orderIndex: 1
   - code: S2
-    name: Semester 2
+    name: Semestre 2
     orderIndex: 2
 academicYears:
+  - code: AY-2025
+    name: 2025-2026
+    startDate: 2025-09-01
+    endDate: 2026-06-30
+    isActive: true
   - code: AY-2024
     name: 2024-2025
     startDate: 2024-09-02
     endDate: 2025-06-30
-    isActive: true
-  - code: AY-2023
-    name: 2023-2024
-    startDate: 2023-09-04
-    endDate: 2024-06-28
     isActive: false
 registrationNumberFormats:
-  - name: ENG default format
-    description: ENG-{year}-XXXX (per program/year)
+  - name: INSES default format
+    description: INSES-{year}-XXXX (per program/year)
     isActive: true
     definition:
       segments:
         - kind: literal
-          value: ENG
+          value: INSES
         - kind: literal
           value: "-"
         - kind: field
@@ -78,25 +175,29 @@ registrationNumberFormats:
             - academicYear
           start: 1
 institutions:
-  - code: SGN
-    shortName: SGN
-    nameFr: Institut Supérieur Demo
-    nameEn: Demo Higher Institute
-    legalNameFr: Institut Supérieur Demo
-    legalNameEn: Demo Higher Institute
-    sloganFr: L'excellence avant tout
-    sloganEn: Excellence First
-    descriptionFr: Établissement privé d'enseignement supérieur.
-    descriptionEn: Private higher education institution.
-    addressFr: BP 123 Yaoundé, Cameroun
-    addressEn: PO Box 123 Yaounde, Cameroon
-    contactEmail: contact@demo.edu
-    contactPhone: +237 699 99 99 99
-    fax: +237 222 22 22 22
-    postalBox: BP 123
-    website: https://demo.edu
-    logoUrl: https://placehold.co/200x200.png
+  - code: INSES
+    type: main
+    shortName: INSES
+    nameFr: Institut Supérieur de l'Espoir
+    nameEn: Hope Higher Institute
+    legalNameFr: Institut Supérieur de l'Espoir
+    legalNameEn: Hope Higher Institute
+    sloganFr: Excellence, Innovation et Engagement
+    sloganEn: Excellence, Innovation and Commitment
+    descriptionFr: Établissement privé d'enseignement supérieur spécialisé dans la
+      formation des professionnels de santé et de commerce.
+    descriptionEn: Private higher education institution specialized in training
+      health and business professionals.
+    addressFr: Douala-Bonabéri, BP 12345 Douala, Cameroun
+    addressEn: Douala-Bonaberi, PO Box 12345 Douala, Cameroon
+    contactEmail: contact@inses.cm
+    contactPhone: +237 674 93 66 04
+    fax: +237 9293 2000
+    postalBox: BP 12345
+    website: https://univ-inses.com
+    logoUrl: https://univ-inses.com/images/logo/logo-inses.png
     coverImageUrl: https://placehold.co/1200x400.png
-    defaultAcademicYearCode: AY-2024
-    registrationFormatName: ENG default format
+    defaultAcademicYearCode: AY-2025
+    registrationFormatName: INSES default format
     timezone: Africa/Douala
+    organizationSlug: inses-institution

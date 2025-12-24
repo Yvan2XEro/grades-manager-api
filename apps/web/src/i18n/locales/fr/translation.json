@@ -12,6 +12,8 @@
 	"common": {
 		"actions": {
 			"cancel": "Annuler",
+			"create": "Créer",
+			"update": "Mettre à jour",
 			"delete": "Supprimer",
 			"save": "Enregistrer",
 			"saveChanges": "Enregistrer les modifications",
@@ -50,6 +52,13 @@
 			"next": "Suivant",
 			"previous": "Précédent"
 		},
+		"errors": {
+			"unknown": "Erreur inconnue"
+		},
+		"gender": {
+			"male": "M",
+			"female": "F"
+		},
 		"invalidDate": "Date invalide",
 		"loading": "Chargement..."
 	},
@@ -71,6 +80,7 @@
 				"users": "Utilisateurs",
 				"classCourses": "Cours de classes",
 				"gradeExport": "Export des notes",
+				"exportTemplates": "Modèles d'exportation",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
 				"students": "Etudiants",
@@ -90,6 +100,15 @@
 				"examScheduler": "Programmation des examens",
 				"rules": "Centre des règles",
 				"registrationNumbers": "Formats de matricule"
+			},
+			"groups": {
+				"overview": "Vue d'ensemble",
+				"structure": "Structure académique",
+				"users": "Utilisateurs",
+				"teaching": "Enseignement",
+				"evaluation": "Évaluations",
+				"promotion": "Règles & Promotion",
+				"system": "Système"
 			},
 			"teacher": {
 				"dashboard": "Tableau de bord",
@@ -114,7 +133,8 @@
 			"dean": "Doyen",
 			"teacher": "Enseignant",
 			"administrator": "Administrateur",
-			"super_admin": "Super administrateur"
+			"super_admin": "Super administrateur",
+			"owner": "Propriétaire"
 		}
 	},
 	"auth": {
@@ -460,6 +480,19 @@
 				"option": "Option",
 				"students": "Étudiants"
 			},
+			"export": {
+				"button": "Exporter la liste des étudiants (PDF)",
+				"excelButton": "Exporter la liste des étudiants (Excel)",
+				"title": "Liste des étudiants",
+				"totalStudents": "Total étudiants",
+				"page": "Page",
+				"generatedOn": "Généré le",
+				"success": "Liste des étudiants exportée avec succès",
+				"error": "Échec de l'export de la liste des étudiants",
+				"excelSuccess": "Liste des étudiants exportée avec succès",
+				"excelError": "Échec de l'export de la liste des étudiants",
+				"sheetName": "Étudiants"
+			},
 			"form": {
 				"createTitle": "Ajouter une classe",
 				"editTitle": "Modifier une classe",
@@ -749,7 +782,17 @@
 			"title": "Gestion des évaluations",
 			"subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
 			"actions": {
-				"add": "Ajouter une évaluation"
+				"add": "Ajouter une évaluation",
+				"reviewGrades": "Consulter les notes"
+			},
+			"filters": {
+				"academicYear": "Année académique",
+				"search": "Recherche",
+				"searchPlaceholder": "Rechercher des évaluations, classes ou cours...",
+				"class": "Classe",
+				"classPlaceholder": "Toutes les classes",
+				"semester": "Semestre",
+				"semesterPlaceholder": "Tous les semestres"
 			},
 			"empty": {
 				"title": "Aucune évaluation",
@@ -798,6 +841,9 @@
 				"title": "Supprimer l'évaluation",
 				"message": "La suppression de cette évaluation retirera également les notes associées."
 			},
+			"pagination": {
+				"loadMore": "Charger plus d'évaluations"
+			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
 				"type": "Le type doit comporter au moins 2 caractères",
@@ -842,6 +888,181 @@
 				"message": "Voulez-vous vraiment supprimer ce type d'examen ?"
 			}
 		},
+		"exportTemplates": {
+			"title": "Modèles d'exportation",
+			"subtitle": "Personnalisez la mise en page, les colonnes, les en-têtes et le style des exports de notes.",
+			"actions": {
+				"add": "Ajouter un modèle"
+			},
+			"filter": {
+				"all": "Tous les types"
+			},
+			"table": {
+				"title": "Modèles disponibles",
+				"description": "Toutes les opérations d'exportation peuvent utiliser ces modèles.",
+				"name": "Nom",
+				"type": "Type",
+				"status": "Statut",
+				"columns": "Colonnes",
+				"columnsCount": "colonnes",
+				"actions": "Actions",
+				"default": "Par défaut",
+				"custom": "Personnalisé"
+			},
+			"empty": {
+				"title": "Aucun modèle pour le moment",
+				"description": "Créez votre premier modèle d'exportation pour personnaliser vos rapports."
+			},
+			"form": {
+				"createTitle": "Créer un modèle d'exportation",
+				"editTitle": "Modifier un modèle d'exportation",
+				"renameTitle": "Renommer le modèle",
+				"renameDescription": "Entrez un nouveau nom pour ce modèle.",
+				"description": "Définissez un modèle pour personnaliser les exports.",
+				"name": "Nom du modèle",
+				"namePlaceholder": "ex: Modèle PV Standard",
+				"type": "Type d'export",
+				"typeDescription": "Le type ne peut pas être modifié après la création.",
+				"isDefault": "Définir par défaut",
+				"isDefaultDescription": "Utiliser ce modèle par défaut pour ce type d'export."
+			},
+			"validation": {
+				"name": "Le nom doit contenir au moins 2 caractères"
+			},
+			"toast": {
+				"createSuccess": "Modèle d'exportation créé",
+				"createError": "Impossible de créer le modèle",
+				"updateSuccess": "Modèle d'exportation mis à jour",
+				"updateError": "Impossible de mettre à jour le modèle",
+				"deleteSuccess": "Modèle d'exportation supprimé",
+				"deleteError": "Impossible de supprimer le modèle",
+				"setDefaultSuccess": "Modèle par défaut mis à jour",
+				"setDefaultError": "Impossible de définir le modèle par défaut"
+			},
+			"delete": {
+				"title": "Supprimer le modèle",
+				"message": "Voulez-vous vraiment supprimer \"{{name}}\" ? Cette action est irréversible."
+			},
+			"actions": {
+				"setDefault": "Définir par défaut",
+				"edit": "Éditer le modèle",
+				"rename": "Renommer",
+				"delete": "Supprimer"
+			},
+			"editor": {
+				"notFound": "Modèle introuvable",
+				"createTitle": "Créer un nouveau modèle d'exportation",
+				"createDescription": "Entrez un nom et sélectionnez le type d'export pour commencer.",
+				"subtitle": "Édition du modèle {{type}}",
+				"tabs": {
+					"columns": "Colonnes",
+					"header": "En-tête",
+					"style": "Style",
+					"template": "Modèle"
+				},
+				"template": {
+					"editorTitle": "Source du modèle",
+					"editorDescription": "Collez votre fichier Handlebars (.hbs) avec en-têtes, logos et styles statiques.",
+					"placeholder": "<!-- Collez votre modèle ici -->",
+					"generatePreview": "Générer un aperçu",
+					"helpTitle": "Conseils",
+					"helpHandlebars": "Les helpers Handlebars comme {{formatNumber}} restent disponibles.",
+					"helpVariables": "Variables fréquentes : program, students, semester, academicYear, signatures.",
+					"helpStatic": "Les logos et en-têtes doivent être inclus directement dans le modèle.",
+					"previewTitle": "Aperçu",
+					"previewDescription": "Affiche le rendu avec des données d'exemple.",
+					"download": "Télécharger le HTML",
+					"noPreview": "Aucun aperçu disponible",
+					"clickGenerate": "Cliquez sur « Générer un aperçu » après avoir ajouté votre contenu.",
+					"required": "Le contenu du modèle ne peut pas être vide."
+				},
+				"columns": {
+					"title": "Configuration des colonnes",
+					"description": "Définissez les colonnes à afficher, leur ordre et leur formatage.",
+					"addColumn": "Ajouter une colonne",
+					"empty": "Aucune colonne configurée. Ajoutez votre première colonne pour commencer.",
+					"addTitle": "Ajouter une colonne",
+					"editTitle": "Modifier la colonne",
+					"dialogDescription": "Configurez les propriétés de la colonne.",
+					"key": "Clé de données",
+					"label": "Libellé",
+					"labelFr": "Libellé (FR)",
+					"labelEn": "Libellé (EN)",
+					"dataType": "Type de données",
+					"alignment": "Alignement",
+					"width": "Largeur (px)",
+					"format": "Format",
+					"formula": "Formule",
+					"visible": "Visible"
+				},
+				"header": {
+					"title": "Configuration de l'en-tête",
+					"description": "Personnalisez la mise en page et les informations de l'en-tête.",
+					"titles": "Titres du document",
+					"titleFr": "Titre (FR)",
+					"titleEn": "Titre (EN)",
+					"logoConfig": "Configuration du logo",
+					"showLogo": "Afficher le logo",
+					"logoPosition": "Position du logo",
+					"displayOptions": "Options d'affichage",
+					"showInstitutionName": "Afficher le nom de l'institution",
+					"showFacultyName": "Afficher le nom de la faculté",
+					"showAcademicYear": "Afficher l'année académique",
+					"showSemester": "Afficher le semestre",
+					"showClassName": "Afficher le nom de la classe"
+				},
+				"style": {
+					"title": "Configuration du style",
+					"description": "Personnalisez les polices, couleurs, paramètres de page et filigrane.",
+					"typography": "Typographie",
+					"fontFamily": "Police",
+					"fontSize": "Taille de police",
+					"headerFontSize": "Taille de police en-tête",
+					"colors": "Couleurs",
+					"primaryColor": "Couleur primaire",
+					"secondaryColor": "Couleur secondaire",
+					"headerBackgroundColor": "Fond en-tête",
+					"headerTextColor": "Texte en-tête",
+					"tableBorderColor": "Bordure tableau",
+					"alternateRowColor": "Ligne alternée",
+					"pageSettings": "Paramètres de page",
+					"pageSize": "Format de page",
+					"pageOrientation": "Orientation",
+					"tableBorderWidth": "Largeur bordure",
+					"margins": "Marges (mm)",
+					"marginTop": "Haut",
+					"marginRight": "Droite",
+					"marginBottom": "Bas",
+					"marginLeft": "Gauche",
+					"watermark": "Filigrane",
+					"watermarkEnabled": "Activer le filigrane",
+					"watermarkText": "Texte du filigrane",
+					"watermarkOpacity": "Opacité",
+					"watermarkFontSize": "Taille de police",
+					"watermarkRotation": "Rotation (degrés)"
+				},
+				"template": {
+					"editorTitle": "Éditeur de modèle HTML",
+					"editorDescription": "Écrivez un modèle Handlebars avec HTML/CSS personnalisé.",
+					"placeholder": "Entrez votre modèle Handlebars personnalisé ici...",
+					"generatePreview": "Générer l'aperçu",
+					"reset": "Réinitialiser par défaut",
+					"previewTitle": "Aperçu",
+					"previewDescription": "Aperçu en direct avec données de test",
+					"download": "Télécharger HTML",
+					"noPreview": "Aucun aperçu disponible",
+					"clickGenerate": "Cliquez sur 'Générer l'aperçu' pour voir le rendu",
+					"helpTitle": "Aide sur le modèle:",
+					"helpHandlebars": "Utilisez la syntaxe Handlebars: {{variable}}, {{#if}}, {{#each}}",
+					"helpVariables": "Variables disponibles: students, headerConfig, styleConfig",
+					"helpConfig": "Les configurations sont automatiquement appliquées au modèle"
+				},
+				"preview": {
+					"success": "Aperçu généré avec succès",
+					"error": "Échec de la génération de l'aperçu"
+				}
+			}
+		},
 		"examScheduler": {
 			"title": "Programmation des examens",
 			"subtitle": "Planifiez les examens pour une faculté entière en une seule opération.",
@@ -854,6 +1075,8 @@
 				"academicYearPlaceholder": "Sélectionner une année",
 				"examTypeLabel": "Type d'examen",
 				"examTypePlaceholder": "Sélectionner un type",
+				"semesterLabel": "Semestre",
+				"semesterPlaceholder": "Sélectionner un semestre",
 				"percentageLabel": "Pondération (%)",
 				"dateStartLabel": "Date de début",
 				"dateEndLabel": "Date de fin"
@@ -999,18 +1222,25 @@
 				"title": "Ajouter des étudiants",
 				"tabs": {
 					"single": "Étudiant individuel",
-					"import": "Importer un fichier"
+					"import": "Importer un fichier",
+					"external": "Admission externe"
 				}
 			},
 			"form": {
 				"firstName": "Prénom",
 				"lastName": "Nom",
 				"email": "E-mail",
+				"dateOfBirth": "Date de naissance",
+				"placeOfBirth": "Lieu de naissance",
+				"gender": "Sexe",
+				"genderPlaceholder": "Sélectionner un sexe",
+				"nationality": "Nationalité",
 				"registration": "Numéro de matricule",
 				"registrationHint": "Laissez vide pour générer automatiquement le prochain matricule.",
 				"registrationFormat": "Format de matricule",
 				"registrationFormatHint": "Choisissez un format pour remplacer le modèle actif.",
 				"registrationFormatPlaceholder": "Utiliser le format actif",
+				"registrationSection": "Inscription",
 				"class": "Classe",
 				"classPlaceholder": "Sélectionner une classe",
 				"submit": "Ajouter l'étudiant"
@@ -1024,6 +1254,11 @@
 				"actions": {
 					"import": "Importer les étudiants"
 				},
+				"instructions": {
+					"gender": "Le genre accepte : {{values}}.",
+					"admissionType": "Le type d'admission accepte : {{values}}. Renseignez les colonnes de transfert pour les admissions transfert/direct/équivalence.",
+					"date": "Les dates doivent respecter le format ISO AAAA-MM-JJ."
+				},
 				"summary": {
 					"created": "{{count}} étudiant(s) importé(s) avec succès",
 					"conflicts": {
@@ -1034,6 +1269,26 @@
 						"title": "Erreurs",
 						"item": "Ligne {{row}} : {{reason}}"
 					}
+				},
+				"errors": {
+					"invalidGender": "Genre invalide « {{value}} ». Valeurs permises : {{values}}.",
+					"invalidAdmissionType": "Type d'admission invalide « {{value}} ». Valeurs permises : {{values}}.",
+					"invalidTransferCredits": "Les crédits transférés doivent être un nombre entre 0 et 300.",
+					"invalidDate": "Date invalide pour {{field}}.",
+					"missingTransferData": "Informations de transfert manquantes : {{fields}}."
+				},
+				"fields": {
+					"dateOfBirth": "Date de naissance",
+					"admissionDate": "Date d'admission",
+					"transferInstitution": "Établissement d'origine",
+					"transferCredits": "Crédits transférés",
+					"transferLevel": "Niveau de transfert",
+					"admissionJustification": "Justification"
+				},
+				"preview": {
+					"ready": "{{count}} ligne(s) prête(s) à être importée(s).",
+					"errorsTitle": "Problèmes détectés",
+					"noValidRows": "Aucune ligne valide détectée. Corrigez les erreurs listées ci-dessus."
 				}
 			},
 			"templates": {
@@ -1064,6 +1319,43 @@
 				"email": "Saisissez une adresse e-mail valide",
 				"registration": "Saisissez un matricule ou laissez le champ vide",
 				"class": "Veuillez sélectionner une classe"
+			},
+			"external": {
+				"info": {
+					"title": "Admission d'étudiant externe",
+					"description": "Admettre des étudiants venant d'autres établissements avec crédits transférés ou admission directe"
+				},
+				"form": {
+					"admissionType": "Type d'admission",
+					"admissionTypePlaceholder": "Sélectionner le type d'admission",
+					"admissionTypeHint": "Choisissez le type d'admission pour cet étudiant externe",
+					"transferInstitution": "Établissement d'origine",
+					"transferCredits": "Crédits transférés",
+					"transferLevel": "Niveau de transfert",
+					"admissionDate": "Date d'admission",
+					"admissionJustification": "Justification",
+					"admissionJustificationPlaceholder": "Expliquez la raison de cette admission (minimum 10 caractères)",
+					"admissionJustificationHint": "Fournissez une justification détaillée pour cette admission externe",
+					"studentInfoSection": "Informations de l'étudiant",
+					"submit": "Admettre l'étudiant externe"
+				},
+				"admissionTypes": {
+					"transfer": "Transfert",
+					"direct": "Admission directe",
+					"equivalence": "Équivalence"
+				},
+				"toast": {
+					"success": "Étudiant externe admis avec succès",
+					"error": "Impossible d'admettre l'étudiant externe"
+				},
+				"validation": {
+					"admissionType": "Le type d'admission est obligatoire",
+					"transferInstitution": "L'établissement d'origine est obligatoire",
+					"transferCredits": "Les crédits transférés doivent être un nombre",
+					"transferLevel": "Le niveau de transfert est obligatoire (ex : L1, L2, M1)",
+					"admissionDate": "La date d'admission est obligatoire",
+					"admissionJustification": "La justification doit contenir au moins 10 caractères"
+				}
 			}
 		},
 		"users": {
@@ -1451,7 +1743,8 @@
 					"classLabel": "Classe source",
 					"classPlaceholder": "Sélectionner une classe",
 					"yearLabel": "Année académique",
-					"yearPlaceholder": "Sélectionner une année"
+					"yearPlaceholder": "Sélectionner une année",
+					"refreshDescription": "Assurez-vous que les faits étudiants sont à jour avant l'évaluation. Le recalcul regénère toutes les métriques pour la classe et l'année sélectionnées."
 				},
 				"tabs": {
 					"eligible": "Éligibles ({{count}})",
@@ -1460,6 +1753,8 @@
 				"actions": {
 					"evaluate": "Évaluer les étudiants",
 					"evaluating": "Évaluation...",
+					"refreshFacts": "Recalculer les faits",
+					"refreshingFacts": "Recalcul...",
 					"selectAll": "Sélectionner tous les éligibles",
 					"deselectAll": "Tout désélectionner",
 					"proceed": "Continuer avec {{count}} étudiant(s)"
@@ -1476,7 +1771,9 @@
 				},
 				"toast": {
 					"selectAll": "Veuillez sélectionner tous les champs requis",
-					"selectStudent": "Veuillez sélectionner au moins un étudiant"
+					"selectStudent": "Veuillez sélectionner au moins un étudiant",
+					"refreshSuccess": "Faits étudiants recalculés avec succès",
+					"refreshError": "Impossible de recalculer les faits : {{error}}"
 				}
 			},
 			"execute": {
@@ -1587,6 +1884,8 @@
 		"courses": {
 			"title": "Mes cours",
 			"subtitle": "Gérez vos cours attribués et les notes",
+			"delegatedBadge": "Délégué",
+			"delegatedDashboardBadge": "Délégué",
 			"actions": {
 				"viewGrades": "Voir les notes"
 			},
@@ -1673,16 +1972,24 @@
 		},
 		"gradeEntry": {
 			"title": "Saisie des notes",
+			"selectCourse": {
+				"label": "Sélectionner un cours",
+				"empty": "Choisir un cours",
+				"emptyState": "Aucun cours ne vous est attribué. Contactez un administrateur."
+			},
 			"selectExam": {
 				"label": "Sélectionner une évaluation",
 				"empty": "Aucune évaluation disponible",
-				"lockedTag": "Verrouillée"
+				"lockedTag": "Verrouillée",
+				"prompt": "Sélectionnez une évaluation pour commencer la saisie des notes."
 			},
 			"lockedChip": "Notes verrouillées",
 			"actions": {
 				"lock": "Verrouiller les notes",
 				"save": "Enregistrer les notes",
-				"saving": "Enregistrement..."
+				"saving": "Enregistrement...",
+				"exportTemplate": "Exporter le modèle",
+				"importGrades": "Importer les notes"
 			},
 			"info": {
 				"title": "Informations de notation",
@@ -1706,13 +2013,42 @@
 				"title": "Aucun étudiant",
 				"description": "Aucun étudiant n’est inscrit dans cette classe."
 			},
+			"readOnly": {
+				"title": "Mode lecture seule",
+				"description": "Vous pouvez consulter cette évaluation mais pas modifier les notes."
+			},
+			"delegates": {
+				"title": "Éditeurs délégués",
+				"description": "Ajoutez les personnes autorisées à saisir les notes pour cet examen.",
+				"add": "Ajouter un éditeur",
+				"dialogTitle": "Attribuer un éditeur délégué",
+				"dialogDescription": "Autorisez un autre enseignant ou membre du personnel à modifier les notes.",
+				"selectLabel": "Profil éditeur",
+				"selectPlaceholder": "Sélectionner un membre de l'équipe",
+				"unknownEmail": "Aucun e-mail",
+				"empty": "Aucun éditeur délégué pour le moment.",
+				"grantedAt": "Attribué le {{date}}",
+				"grantedBy": "Attribué par {{name}}",
+				"revoke": "Révoquer",
+				"revokeSelf": "Quitter la délégation",
+				"manageRestriction": "Seul l'enseignant responsable peut gérer les autres délégations.",
+				"assignSuccess": "Éditeur ajouté avec succès.",
+				"assignError": "Impossible d'ajouter l'éditeur.",
+				"revokeSuccess": "Éditeur supprimé avec succès.",
+				"revokeError": "Impossible de supprimer l'éditeur.",
+				"readOnlyToast": "Vous ne pouvez pas modifier cet examen."
+			},
 			"toast": {
 				"fetchCourseError": "Impossible de charger les informations du cours",
 				"fetchGradesError": "Impossible de charger les notes",
 				"saveSuccess": "Notes enregistrées avec succès",
-				"saveError": "Impossible d’enregistrer les notes",
+				"saveError": "Impossible d'enregistrer les notes",
 				"lockSuccess": "Évaluation verrouillée. Les notes ne peuvent plus être modifiées.",
-				"lockError": "Impossible de verrouiller l'évaluation"
+				"lockError": "Impossible de verrouiller l'évaluation",
+				"exportError": "Veuillez sélectionner un examen avec des étudiants",
+				"exportSuccess": "Modèle exporté avec succès",
+				"importSuccess": "{{count}} notes importées avec succès",
+				"importError": "Échec de l'importation des notes"
 			}
 		},
 		"gradeExport": {

@@ -44,8 +44,11 @@ describe("grades router", () => {
 
 	it("rejects grading when student is not enrolled", async () => {
 		const admin = createCaller(asAdmin());
-		const { exam } = await createRecapFixture();
-		const outsider = await createStudent();
+		const { exam, klass } = await createRecapFixture();
+		// Create outsider in same institution but different class
+		const outsider = await createStudent({
+			institutionId: klass.institutionId,
+		});
 		await expect(
 			admin.grades.upsertNote({
 				studentId: outsider.id,

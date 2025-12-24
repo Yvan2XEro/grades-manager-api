@@ -1,15 +1,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import {
+	AcademicYearSelect,
+	ClassSelect,
+	DebouncedSearchField,
+	SemesterSelect,
+} from "@/components/inputs";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -37,6 +49,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -53,7 +66,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient, type RouterOutputs } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
@@ -79,6 +92,9 @@ interface Exam {
 	percentage: number;
 	classCourse: string;
 	isLocked: boolean;
+	classCourseCode?: string | null;
+	className?: string | null;
+	courseName?: string | null;
 }
 
 interface ClassCourse {
@@ -102,22 +118,60 @@ export default function ExamManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingExam, setEditingExam] = useState<Exam | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [classId, setClassId] = useState<string | null>(null);
+	const [semesterId, setSemesterId] = useState<string | null>(null);
+	useEffect(() => {
+		setClassId(null);
+		setSemesterId(null);
+	}, [academicYearId]);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
-	const { data: exams, isLoading } = useQuery({
-		queryKey: ["exams"],
-		queryFn: async () => {
-			const { items } = await trpcClient.exams.list.query({});
-			return items.map((e) => ({
-				...e,
-				percentage: Number(e.percentage),
-			})) as Exam[];
+	const examsQuery = useInfiniteQuery({
+		queryKey: ["exams", academicYearId, searchTerm, classId, semesterId],
+		queryFn: async ({ pageParam }) => {
+			if (!academicYearId) {
+				return {
+					items: [] as Exam[],
+					nextCursor: undefined as string | undefined,
+				};
+			}
+			const { items, nextCursor } = await trpcClient.exams.list.query({
+				academicYearId,
+				query: searchTerm.trim() ? searchTerm.trim() : undefined,
+				classId: classId ?? undefined,
+				semesterId: semesterId ?? undefined,
+				cursor: pageParam,
+				limit: 20,
+			});
+			return {
+				items: items.map(
+					(exam) =>
+						({
+							...exam,
+							percentage: Number(exam.percentage),
+						}) as Exam,
+				),
+				nextCursor,
+			};
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		enabled: Boolean(academicYearId),
 	});
+	const exams = examsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+	const isLoadingExams = examsQuery.isLoading || !academicYearId;
+	const isFetchingNextPage = examsQuery.isFetchingNextPage;
+	const hasNextPage = Boolean(examsQuery.hasNextPage);
+	const fetchNextPage = examsQuery.fetchNextPage;
 
+	const semestersQuery = useQuery({
+		...trpc.semesters.list.queryOptions({}),
+	});
 	const { data: classCourses } = useQuery({
 		queryKey: ["classCourses"],
 		queryFn: async () => {
@@ -235,14 +289,6 @@ export default function ExamManagement() {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8" />
-			</div>
-		);
-	}
-
 	return (
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
@@ -256,6 +302,7 @@ export default function ExamManagement() {
 						form.reset();
 						setIsFormOpen(true);
 					}}
+					data-testid="add-exam-button"
 				>
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.exams.actions.add")}
@@ -274,13 +321,53 @@ export default function ExamManagement() {
 							form.reset();
 							setIsFormOpen(true);
 						}}
+						data-testid="add-exam-button-header"
 					>
 						<Plus className="mr-2 h-4 w-4" />
 						{t("admin.exams.actions.add")}
 					</Button>
 				</CardHeader>
 				<CardContent>
-					{!exams?.length ? (
+					<div className="mb-6 gap-4 flex flex-row-reverse items-center">
+						<div className="flex items-center gap-3">
+							<div className="flex flex-col gap-2">
+								<Label>{t("admin.exams.filters.academicYear")}</Label>
+								<AcademicYearSelect
+									value={academicYearId}
+									onChange={(value) => setAcademicYearId(value)}
+									disabled={isLoadingExams}
+								/>
+							</div>
+							<div className="flex flex-col gap-2">
+								<Label>{t("admin.exams.filters.class")}</Label>
+								<ClassSelect
+									academicYearId={academicYearId}
+									value={classId}
+									onChange={setClassId}
+									disabled={!academicYearId}
+								/>
+							</div>
+							<div className="flex flex-col gap-2">
+								<Label>{t("admin.exams.filters.semester")}</Label>
+								<SemesterSelect value={semesterId} onChange={setSemesterId} />
+							</div>
+						</div>
+
+						<div className="flex flex-col gap-2 flex-auto">
+							<Label>{t("admin.exams.filters.search")}</Label>
+							<DebouncedSearchField
+								value={searchTerm}
+								onChange={setSearchTerm}
+								placeholder={t("admin.exams.filters.searchPlaceholder")}
+								disabled={!academicYearId}
+							/>
+						</div>
+					</div>
+					{isLoadingExams ? (
+						<div className="flex h-48 items-center justify-center">
+							<Spinner className="h-8 w-8" />
+						</div>
+					) : !exams.length ? (
 						<Empty className="border border-dashed">
 							<EmptyHeader>
 								<EmptyMedia variant="icon">
@@ -298,6 +385,7 @@ export default function ExamManagement() {
 										form.reset();
 										setIsFormOpen(true);
 									}}
+									data-testid="add-exam-button-empty"
 								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.exams.actions.add")}
@@ -305,95 +393,126 @@ export default function ExamManagement() {
 							</EmptyContent>
 						</Empty>
 					) : (
-						<div className="overflow-x-auto">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>{t("admin.exams.table.name")}</TableHead>
-										<TableHead>{t("admin.exams.table.course")}</TableHead>
-										<TableHead>{t("admin.exams.table.class")}</TableHead>
-										<TableHead>{t("admin.exams.table.type")}</TableHead>
-										<TableHead>{t("admin.exams.table.date")}</TableHead>
-										<TableHead>{t("admin.exams.table.percentage")}</TableHead>
-										<TableHead>{t("admin.exams.table.status")}</TableHead>
-										<TableHead className="text-right">
-											{t("common.table.actions")}
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{exams?.map((exam) => (
-										<TableRow key={exam.id}>
-											<TableCell className="font-medium">{exam.name}</TableCell>
-											<TableCell>
-												{courseMap.get(
-													classCourseMap.get(exam.classCourse)?.course || "",
-												)}
-											</TableCell>
-											<TableCell>
-												{classMap.get(
-													classCourseMap.get(exam.classCourse)?.class || "",
-												)}
-											</TableCell>
-											<TableCell>{exam.type}</TableCell>
-											<TableCell>
-												{format(new Date(exam.date), "MMM d, yyyy")}
-											</TableCell>
-											<TableCell>{exam.percentage}%</TableCell>
-											<TableCell>
-												<Badge
-													variant={exam.isLocked ? "secondary" : "default"}
-													className={
-														exam.isLocked
-															? "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-400/20 dark:text-amber-100"
-															: "bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-400/20 dark:text-emerald-100"
-													}
-												>
-													{exam.isLocked
-														? t("admin.exams.status.locked")
-														: t("admin.exams.status.open")}
-												</Badge>
-											</TableCell>
-											<TableCell className="text-right">
-												<div className="flex justify-end gap-2">
-													<Button
-														type="button"
-														size="icon-sm"
-														variant="ghost"
-														onClick={() => {
-															setEditingExam(exam);
-															form.reset({
-																name: exam.name,
-																type: exam.type,
-																date: exam.date.split("T")[0],
-																percentage: exam.percentage,
-																classCourseId: exam.classCourse,
-															});
-															setIsFormOpen(true);
-														}}
-														aria-label={t("admin.exams.form.editTitle")}
-														disabled={exam.isLocked}
-													>
-														<Pencil className="h-4 w-4" />
-													</Button>
-													<Button
-														type="button"
-														size="icon-sm"
-														variant="ghost"
-														className="text-destructive hover:text-destructive"
-														onClick={() => openDeleteModal(exam.id)}
-														aria-label={t("admin.exams.delete.title")}
-														disabled={exam.isLocked}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											</TableCell>
+						<>
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>{t("admin.exams.table.name")}</TableHead>
+											<TableHead>{t("admin.exams.table.course")}</TableHead>
+											<TableHead>{t("admin.exams.table.class")}</TableHead>
+											<TableHead>{t("admin.exams.table.type")}</TableHead>
+											<TableHead>{t("admin.exams.table.date")}</TableHead>
+											<TableHead>{t("admin.exams.table.percentage")}</TableHead>
+											<TableHead>{t("admin.exams.table.status")}</TableHead>
+											<TableHead className="text-right">
+												{t("common.table.actions")}
+											</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
+									</TableHeader>
+									<TableBody>
+										{exams.map((exam) => {
+											const classCourse = classCourseMap.get(exam.classCourse);
+											const resolvedCourse =
+												exam.courseName ??
+												(classCourse
+													? courseMap.get(classCourse.course)
+													: null) ??
+												t("common.labels.notAvailable");
+											const resolvedClass =
+												exam.className ??
+												(classCourse
+													? classMap.get(classCourse.class)
+													: null) ??
+												t("common.labels.notAvailable");
+											return (
+												<TableRow key={exam.id}>
+													<TableCell className="font-medium">
+														{exam.name}
+													</TableCell>
+													<TableCell>{resolvedCourse}</TableCell>
+													<TableCell>{resolvedClass}</TableCell>
+													<TableCell>{exam.type}</TableCell>
+													<TableCell>
+														{format(new Date(exam.date), "MMM d, yyyy")}
+													</TableCell>
+													<TableCell>{exam.percentage}%</TableCell>
+													<TableCell>
+														<Badge
+															variant={exam.isLocked ? "secondary" : "default"}
+															className={
+																exam.isLocked
+																	? "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-400/20 dark:text-amber-100"
+																	: "bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-400/20 dark:text-emerald-100"
+															}
+														>
+															{exam.isLocked
+																? t("admin.exams.status.locked")
+																: t("admin.exams.status.open")}
+														</Badge>
+													</TableCell>
+													<TableCell className="text-right">
+														<div className="flex flex-wrap justify-end gap-2">
+															<Button variant="ghost" size="sm" asChild>
+																<Link
+																	to={`/teacher/grades/${exam.classCourse}?examId=${exam.id}`}
+																>
+																	{t("admin.exams.actions.reviewGrades")}
+																</Link>
+															</Button>
+															<Button
+																type="button"
+																size="icon-sm"
+																variant="ghost"
+																onClick={() => {
+																	setEditingExam(exam);
+																	form.reset({
+																		name: exam.name,
+																		type: exam.type,
+																		date: exam.date.split("T")[0],
+																		percentage: exam.percentage,
+																		classCourseId: exam.classCourse,
+																	});
+																	setIsFormOpen(true);
+																}}
+																aria-label={t("admin.exams.form.editTitle")}
+																disabled={exam.isLocked}
+															>
+																<Pencil className="h-4 w-4" />
+															</Button>
+															<Button
+																type="button"
+																size="icon-sm"
+																variant="ghost"
+																className="text-destructive hover:text-destructive"
+																onClick={() => openDeleteModal(exam.id)}
+																aria-label={t("admin.exams.delete.title")}
+																disabled={exam.isLocked}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</div>
+													</TableCell>
+												</TableRow>
+											);
+										})}
+									</TableBody>
+								</Table>
+							</div>
+							{hasNextPage ? (
+								<div className="mt-4 flex justify-center">
+									<Button
+										variant="outline"
+										onClick={() => fetchNextPage()}
+										disabled={isFetchingNextPage}
+									>
+										{isFetchingNextPage
+											? t("common.loading")
+											: t("admin.exams.pagination.loadMore")}
+									</Button>
+								</div>
+							) : null}
+						</>
 					)}
 				</CardContent>
 			</Card>
@@ -421,7 +540,10 @@ export default function ExamManagement() {
 									<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
 									<Select onValueChange={field.onChange} value={field.value}>
 										<FormControl>
-											<SelectTrigger>
+											<SelectTrigger
+												id="classCourseId"
+												data-testid="class-course-select"
+											>
 												<SelectValue
 													placeholder={t("admin.exams.form.coursePlaceholder")}
 												/>
@@ -466,6 +588,8 @@ export default function ExamManagement() {
 									<FormControl>
 										<Input
 											{...field}
+											id="examType"
+											data-testid="exam-type-select"
 											placeholder={t("admin.exams.form.typePlaceholder")}
 										/>
 									</FormControl>

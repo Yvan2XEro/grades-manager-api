@@ -8,6 +8,7 @@ import {
 	idSchema,
 	listExecutionsSchema,
 	listRulesSchema,
+	refreshClassSummariesSchema,
 	updateRuleSchema,
 } from "./promotion-rules.zod";
 
@@ -15,28 +16,44 @@ export const promotionRulesRouter = router({
 	// Rule CRUD (admin only)
 	create: adminProcedure
 		.input(createRuleSchema)
-		.mutation(({ input }) => service.createRule(input)),
+		.mutation(({ input, ctx }) =>
+			service.createRule(input, ctx.institution.id),
+		),
 
 	update: adminProcedure
 		.input(updateRuleSchema)
-		.mutation(({ input }) => service.updateRule(input)),
+		.mutation(({ input, ctx }) =>
+			service.updateRule(input, ctx.institution.id),
+		),
 
 	delete: adminProcedure
 		.input(idSchema)
-		.mutation(({ input }) => service.deleteRule(input.id)),
+		.mutation(({ input, ctx }) =>
+			service.deleteRule(input.id, ctx.institution.id),
+		),
 
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input }) => service.getRuleById(input.id)),
+		.query(({ input, ctx }) =>
+			service.getRuleById(input.id, ctx.institution.id),
+		),
 
 	list: protectedProcedure
 		.input(listRulesSchema)
-		.query(({ input }) => service.listRules(input)),
+		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
+
+	refreshClassSummaries: adminProcedure
+		.input(refreshClassSummariesSchema)
+		.mutation(({ input, ctx }) =>
+			service.refreshClassSummaries(input, ctx.institution.id),
+		),
 
 	// Evaluation (requires protection, but not necessarily admin)
 	evaluateClass: protectedProcedure
 		.input(evaluateClassSchema)
-		.query(({ input }) => service.evaluateClassForPromotion(input)),
+		.query(({ input, ctx }) =>
+			service.evaluateClassForPromotion(input, ctx.institution.id),
+		),
 
 	// Execution (admin only, modifies enrollments)
 	applyPromotion: adminProcedure
@@ -45,7 +62,7 @@ export const promotionRulesRouter = router({
 			if (!ctx.profile) {
 				throw new Error("Profile required");
 			}
-			return service.applyPromotion(input, ctx.profile.id);
+			return service.applyPromotion(input, ctx.profile.id, ctx.institution.id);
 		}),
 
 	// Execution history

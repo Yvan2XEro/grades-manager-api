@@ -1,7 +1,18 @@
 import { TRPCError } from "@trpc/server";
-import type { BusinessRole, DomainUser } from "@/db/schema/app-schema";
+import type { BusinessRole } from "@/db/schema/app-schema";
 
-const roleHierarchy: Record<BusinessRole, BusinessRole[]> = {
+export type MemberRole = BusinessRole | "owner";
+
+const roleHierarchy: Record<MemberRole, MemberRole[]> = {
+	owner: [
+		"owner",
+		"super_admin",
+		"administrator",
+		"dean",
+		"teacher",
+		"staff",
+		"student",
+	],
 	super_admin: [
 		"super_admin",
 		"administrator",
@@ -18,36 +29,41 @@ const roleHierarchy: Record<BusinessRole, BusinessRole[]> = {
 };
 
 export type PermissionSnapshot = {
-	role: BusinessRole | "guest";
+	role: MemberRole | "guest";
 	canManageCatalog: boolean;
 	canManageStudents: boolean;
 	canGrade: boolean;
 	canAccessAnalytics: boolean;
 };
 
-export const ADMIN_ROLES: BusinessRole[] = [
+export const ADMIN_ROLES: MemberRole[] = [
 	"administrator",
 	"dean",
 	"super_admin",
+	"owner",
 ];
-export const SUPER_ADMIN_ROLES: BusinessRole[] = ["super_admin"];
+export const SUPER_ADMIN_ROLES: MemberRole[] = ["super_admin", "owner"];
 
-export function roleSatisfies(role: BusinessRole, allowed: BusinessRole[]) {
+export function roleSatisfies(
+	role: MemberRole | null | undefined,
+	allowed: MemberRole[],
+) {
+	if (!role) return false;
 	const expanded = roleHierarchy[role] ?? [];
 	return expanded.some((r) => allowed.includes(r));
 }
 
 export function assertRole(
-	profile: DomainUser | null | undefined,
-	allowedRoles: BusinessRole[],
+	role: MemberRole | null | undefined,
+	allowedRoles: MemberRole[],
 ) {
-	if (!profile) {
+	if (!role) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Domain profile is required to access this resource",
+			message: "Organization membership is required to access this resource",
 		});
 	}
-	if (!roleSatisfies(profile.businessRole, allowedRoles)) {
+	if (!roleSatisfies(role, allowedRoles)) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message: "Insufficient domain permissions",
@@ -56,26 +72,22 @@ export function assertRole(
 }
 
 export function buildPermissions(
-	profile: DomainUser | null | undefined,
+	role: MemberRole | null | undefined,
 ): PermissionSnapshot {
-	const role = profile?.businessRole ?? "guest";
-	const canManageCatalog =
-		!!profile && roleSatisfies(profile.businessRole, ADMIN_ROLES);
-	const canManageStudents =
-		!!profile && roleSatisfies(profile.businessRole, ADMIN_ROLES);
-	const canGrade =
-		!!profile &&
-		roleSatisfies(profile.businessRole, [
-			"teacher",
-			"administrator",
-			"dean",
-			"super_admin",
-		]);
-	const canAccessAnalytics =
-		!!profile && roleSatisfies(profile.businessRole, ADMIN_ROLES);
+	const normalizedRole = role ?? "guest";
+	const canManageCatalog = roleSatisfies(role, ADMIN_ROLES);
+	const canManageStudents = roleSatisfies(role, ADMIN_ROLES);
+	const canGrade = roleSatisfies(role, [
+		"teacher",
+		"administrator",
+		"dean",
+		"super_admin",
+		"owner",
+	]);
+	const canAccessAnalytics = roleSatisfies(role, ADMIN_ROLES);
 
 	return {
-		role,
+		role: normalizedRole,
 		canManageCatalog,
 		canManageStudents,
 		canGrade,

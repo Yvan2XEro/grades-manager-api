@@ -1,0 +1,418 @@
+% Section 01 - Introduction
+\section{Introduction}
+
+\subsection{À propos de TKAMS}
+
+\textbf{TKAMS (TK Academic Management System)} est un système de gestion académique complet destiné aux institutions d'enseignement supérieur : facultés, universités et instituts. Cette version 1.0 fournit les fonctionnalités essentielles pour gérer l'ensemble du processus académique, de l'inscription des étudiants jusqu'à la publication des résultats.
+
+\info{Cette version contient les fonctionnalités de base de gestion académique. Des fonctionnalités additionnelles peuvent être développées selon les besoins spécifiques de votre institution.}
+
+Le système offre :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Gestion de la structure académique} : Facultés, programmes, cycles d'études, classes et cours
+    \item \textbf{Gestion des étudiants} : Inscriptions, parcours académiques, crédits ECTS
+    \item \textbf{Gestion des examens} : Planification, types d'examens, sessions, délégations
+    \item \textbf{Saisie et validation des notes} : Interface intuitive avec workflows d'approbation
+    \item \textbf{Calculs automatiques} : Moyennes, crédits, mentions, résultats finaux
+    \item \textbf{Publications et exports} : Relevés de notes, attestations, PV d'examens
+    \item \textbf{Gestion des utilisateurs} : Rôles et permissions granulaires
+    \item \textbf{Traçabilité complète} : Historique, workflows, notifications
+\end{itemize}
+
+L'application est accessible via un navigateur web et fonctionne en mode client-serveur avec une base de données PostgreSQL centralisée.
+
+\subsection{Types d'institutions supportées}
+
+TKAMS est conçu pour s'adapter à différents types d'institutions d'enseignement supérieur :
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Facultés]
+    \begin{itemize}
+        \item Gestion complète des programmes académiques
+        \item Support multi-cycles (Licence, Master, Doctorat)
+        \item Exemple : Faculté de Médecine, Faculté de Droit, etc.
+    \end{itemize}
+
+    \item[Universités]
+    \begin{itemize}
+        \item Gestion multi-facultés
+        \item Structure hiérarchique complète
+        \item Coordination entre départements
+    \end{itemize}
+
+    \item[Instituts]
+    \begin{itemize}
+        \item Programmes spécialisés
+        \item Formation professionnelle et technique
+        \item Instituts de recherche avec enseignement
+    \end{itemize}
+\end{description}
+
+\subsection{Portée de cette version}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Version 1.0 - Fonctionnalités de base]
+
+\textbf{Cette version inclut :}
+\begin{itemize}[leftmargin=*]
+    \item Structure académique complète (facultés, programmes, cycles, classes, cours)
+    \item Gestion des étudiants et inscriptions
+    \item Système de notes et examens
+    \item Calcul automatique des moyennes et crédits
+    \item Workflows d'approbation
+    \item Exports de documents (relevés, attestations)
+    \item Système de permissions et sécurité
+\end{itemize}
+
+\textbf{Fonctionnalités non incluses (développement sur demande) :}
+\begin{itemize}[leftmargin=*]
+    \item Gestion financière (frais de scolarité, bourses)
+    \item Gestion des emplois du temps
+    \item Plateforme e-learning intégrée
+    \item Gestion des bibliothèques
+    \item Module de recherche et publications
+    \item Application mobile
+\end{itemize}
+
+\astuce{Contactez le développeur pour ajouter des fonctionnalités spécifiques à votre institution.}
+\end{tcolorbox}
+
+\subsection{Architecture technique}
+
+Le système est construit sur une architecture moderne et performante :
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Backend API]
+    \begin{itemize}
+        \item Runtime : \textbf{Bun} (JavaScript/TypeScript ultra-rapide)
+        \item Framework : \textbf{Hono} (serveur HTTP léger et performant)
+        \item API : \textbf{tRPC} (type-safety end-to-end entre frontend et backend)
+        \item Base de données : \textbf{PostgreSQL} avec \textbf{Drizzle ORM}
+        \item Authentification : \textbf{Better-Auth} avec profils de domaine
+    \end{itemize}
+
+    \item[Frontend Web]
+    \begin{itemize}
+        \item Framework : \textbf{React} avec \textbf{Vite}
+        \item Routing : \textbf{React Router v7}
+        \item UI : \textbf{shadcn/ui} + \textbf{TailwindCSS v4}
+        \item Gestion d'état : \textbf{Zustand}
+        \item Internationalisation : \textbf{i18next} (Français/Anglais)
+    \end{itemize}
+
+    \item[Architecture Monorepo]
+    \begin{itemize}
+        \item Organisation : Structure Better-T-Stack
+        \item \code{apps/server/} : API Backend
+        \item \code{apps/web/} : Application frontend
+        \item Partage de types TypeScript entre frontend et backend
+    \end{itemize}
+\end{description}
+
+\subsection{Fonctionnalités principales}
+
+\subsubsection{Gestion de la structure académique}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Années académiques]
+    \begin{itemize}
+        \item Gestion des années scolaires (ex: 2024-2025)
+        \item Une seule année active à la fois
+        \item Bascule entre années académiques
+    \end{itemize}
+
+    \item[Hiérarchie organisationnelle]
+    \begin{itemize}
+        \item \textbf{Facultés} : Unités principales (ex: FMSP)
+        \item \textbf{Programmes} : Filières d'études (ex: Médecine, Pharmacie)
+        \item \textbf{Cycles d'études} : Niveaux (ex: Licence, Master, Doctorat)
+        \item \textbf{Classes} : Groupes d'étudiants (ex: Médecine Année 1)
+    \end{itemize}
+
+    \item[Structure pédagogique]
+    \begin{itemize}
+        \item \textbf{Unités d'Enseignement (UE)} : Regroupements thématiques
+        \item \textbf{Cours} : Éléments constitutifs avec coefficients et crédits ECTS
+        \item Gestion des semestres (S1, S2)
+        \item Configuration flexible des coefficients
+    \end{itemize}
+\end{description}
+
+\subsubsection{Gestion des étudiants}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Inscriptions]
+    \begin{itemize}
+        \item Enregistrement des étudiants dans une classe
+        \item Numéros de matricule uniques générés automatiquement
+        \item Suivi du parcours académique année par année
+    \end{itemize}
+
+    \item[Inscriptions aux cours]
+    \begin{itemize}
+        \item Association étudiants-cours pour chaque semestre
+        \item Gestion des tentatives multiples (redoublement)
+        \item Validation automatique selon les règles académiques
+    \end{itemize}
+
+    \item[Système de crédits]
+    \begin{itemize}
+        \item \textbf{Ledger de crédits} : Comptabilité des crédits ECTS
+        \item Attribution automatique lors de validation des cours
+        \item Suivi cumulatif par étudiant
+        \item Conditions de passage (crédits requis)
+    \end{itemize}
+\end{description}
+
+\subsubsection{Gestion des examens et notes}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Types d'examens]
+    \begin{itemize}
+        \item Examens configurables (CC, TP, Examen Final, etc.)
+        \item Poids personnalisables dans le calcul de la moyenne
+        \item Gestion par semestre
+    \end{itemize}
+
+    \item[Planification des examens]
+    \begin{itemize}
+        \item Programmation automatique des sessions d'examens
+        \item Respect des contraintes semestre/cours
+        \item Dates limites de saisie configurables
+        \item Système de cache pour optimiser les performances
+    \end{itemize}
+
+    \item[Délégation de saisie]
+    \begin{itemize}
+        \item Attribution temporaire de droits de saisie
+        \item Gestion par enseignant et par examen
+        \item Contrôle des dates de validité
+    \end{itemize}
+
+    \item[Saisie des notes]
+    \begin{itemize}
+        \item Interface conviviale par cours et type d'examen
+        \item Validation des notes (0-20)
+        \item Calcul automatique des moyennes
+        \item Détection des valeurs aberrantes
+    \end{itemize}
+
+    \item[Workflows d'approbation]
+    \begin{itemize}
+        \item Soumission des modifications par les enseignants
+        \item Validation hiérarchique (Dean, Administrateur)
+        \item Traçabilité complète des changements
+        \item Notifications automatiques
+    \end{itemize}
+\end{description}
+
+\subsubsection{Exports et publications}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Relevés de notes]
+    \begin{itemize}
+        \item Génération en HTML (templates Handlebars)
+        \item Export PDF via navigateur
+        \item Personnalisation des logos et en-têtes
+        \item Support multi-semestres
+    \end{itemize}
+
+    \item[Attestations de réussite]
+    \begin{itemize}
+        \item Génération automatique pour étudiants admis
+        \item Templates personnalisables
+        \item Mentions calculées automatiquement
+    \end{itemize}
+
+    \item[PV d'examens]
+    \begin{itemize}
+        \item Procès-verbaux d'examens officiels
+        \item Statistiques de réussite/échec
+        \item Signatures électroniques
+    \end{itemize}
+\end{description}
+
+\subsection{Rôles et permissions}
+
+Le système implémente une gestion avancée des rôles avec hiérarchie et permissions granulaires :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{Rôle} & \textbf{Permissions principales} \\
+\hline
+\textbf{Super Admin} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Activation des années académiques
+    \item Gestion complète du système
+    \item Accès à toutes les fonctionnalités
+\end{itemize} \\
+\hline
+\textbf{Administrator} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Gestion de la structure académique
+    \item Validation des workflows de niveau 2
+    \item Configuration des examens
+    \item Génération des exports
+\end{itemize} \\
+\hline
+\textbf{Dean (Doyen)} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Validation des workflows de niveau 1
+    \item Consultation des résultats
+    \item Approbation des modifications de notes
+\end{itemize} \\
+\hline
+\textbf{Teacher (Enseignant)} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Saisie des notes pour ses cours
+    \item Soumission de demandes de modification
+    \item Consultation des résultats de ses cours
+\end{itemize} \\
+\hline
+\textbf{Staff (Personnel)} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Consultation limitée
+    \item Assistance administrative
+\end{itemize} \\
+\hline
+\textbf{Student (Étudiant)} &
+\begin{itemize}[leftmargin=*,topsep=0pt,partopsep=0pt,itemsep=0pt]
+    \item Consultation de ses propres résultats
+    \item Téléchargement de ses relevés de notes
+\end{itemize} \\
+\hline
+\end{tabular}
+\caption{Rôles et permissions du système}
+\end{table}
+
+\info{Les rôles sont hiérarchiques : un Super Admin peut faire tout ce qu'un Administrator peut faire, un Administrator peut faire tout ce qu'un Dean peut faire, etc.}
+
+\subsection{Organisation des modules}
+
+L'interface de l'application est organisée en modules fonctionnels :
+
+\subsubsection{Modules académiques}
+
+\begin{enumerate}[leftmargin=*]
+    \item \menu{Années académiques} - Gestion des années scolaires
+    \item \menu{Facultés} - Administration des facultés
+    \item \menu{Programmes} - Gestion des filières d'études
+    \item \menu{Cycles d'études} - Configuration des niveaux (L, M, D)
+    \item \menu{Classes} - Gestion des groupes d'étudiants
+    \item \menu{Semestres} - Configuration des périodes académiques
+    \item \menu{Unités d'enseignement} - Gestion des UE
+    \item \menu{Cours} - Configuration des éléments constitutifs
+\end{enumerate}
+
+\subsubsection{Modules étudiants}
+
+\begin{enumerate}[leftmargin=*]
+    \item \menu{Étudiants} - Base de données étudiants
+    \item \menu{Inscriptions} - Gestion des inscriptions annuelles
+    \item \menu{Inscriptions aux cours} - Affectation cours/étudiants
+    \item \menu{Ledger de crédits} - Suivi des crédits ECTS
+\end{enumerate}
+
+\subsubsection{Modules examens et notes}
+
+\begin{enumerate}[leftmargin=*]
+    \item \menu{Types d'examens} - Configuration des types d'évaluation
+    \item \menu{Planification des examens} - Programmation des sessions
+    \item \menu{Délégations} - Attribution des droits de saisie
+    \item \menu{Saisie des notes} - Interface de saisie
+    \item \menu{Notes} - Consultation et gestion
+\end{enumerate}
+
+\subsubsection{Modules workflow et administration}
+
+\begin{enumerate}[leftmargin=*]
+    \item \menu{Workflows} - Gestion des demandes d'approbation
+    \item \menu{Notifications} - Système de notifications
+    \item \menu{Utilisateurs} - Gestion des comptes utilisateurs
+    \item \menu{Profils de domaine} - Profils métier des utilisateurs
+    \item \menu{Exports} - Génération de documents (relevés, attestations)
+\end{enumerate}
+
+\subsection{Configuration requise}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Configuration système minimale]
+
+\textbf{Serveur :}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Système d'exploitation} : Linux (Ubuntu 20.04+), Windows Server 2019+, macOS
+    \item \textbf{Runtime} : Bun v1.0+ (ou Node.js v20+ en fallback)
+    \item \textbf{Base de données} : PostgreSQL 14+
+    \item \textbf{Mémoire RAM} : 2 Go minimum (4 Go recommandé)
+    \item \textbf{Espace disque} : 1 Go pour l'application + données
+    \item \textbf{Processeur} : 2 cœurs minimum
+\end{itemize}
+
+\textbf{Clients (navigateur web) :}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Navigateurs supportés} : Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+    \item \textbf{Résolution écran} : 1280x720 minimum (1920x1080 recommandé)
+    \item \textbf{Connexion Internet} : Haut débit recommandé
+    \item \textbf{JavaScript} : Activé et à jour
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Sécurité et confidentialité}
+
+\begin{tcolorbox}[colback=yellow!10!white,colframe=orange!75!black,title=Mesures de sécurité]
+
+\textbf{Authentification et autorisation :}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Better-Auth} : Système d'authentification robuste
+    \item \textbf{Sessions sécurisées} : Cookies HTTP-only, SameSite
+    \item \textbf{Hachage des mots de passe} : bcrypt avec salt
+    \item \textbf{Profils séparés} : Séparation auth/business logic
+    \item \textbf{RBAC (Role-Based Access Control)} : Contrôle d'accès granulaire
+\end{itemize}
+
+\textbf{Protection des données :}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{HTTPS recommandé} : Chiffrement des communications
+    \item \textbf{Validation des entrées} : Zod schemas pour toutes les données
+    \item \textbf{Prévention SQL injection} : ORM Drizzle avec requêtes paramétrées
+    \item \textbf{CORS configuré} : Contrôle des origines autorisées
+    \item \textbf{Traçabilité complète} : Logs et audit trails
+\end{itemize}
+
+\textbf{Recommandations de déploiement :}
+\begin{itemize}[leftmargin=*]
+    \item Utiliser HTTPS en production (certificat SSL/TLS)
+    \item Configurer un pare-feu pour limiter l'accès
+    \item Effectuer des sauvegardes régulières de la base de données
+    \item Mettre à jour régulièrement les dépendances
+    \item Utiliser des mots de passe forts pour tous les comptes
+    \item Activer l'authentification à deux facteurs (si disponible)
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Support et assistance}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Documentation]
+    \begin{itemize}
+        \item Guide utilisateur (ce document)
+        \item Documentation technique (CLAUDE.md)
+        \item README du projet
+    \end{itemize}
+
+    \item[Contact]
+    \begin{itemize}
+        \item Email : cedrictefoye@gmail.com
+        \item Support technique : Ouvert aux heures ouvrables
+    \end{itemize}
+
+    \item[Mises à jour]
+    \begin{itemize}
+        \item Vérification des mises à jour recommandée
+        \item Notes de version disponibles
+        \item Migration assistée entre versions
+    \end{itemize}
+\end{description}
+
+\newpage

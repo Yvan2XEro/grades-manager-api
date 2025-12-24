@@ -154,7 +154,7 @@ export default function CourseManagement() {
 		resolver: zodResolver(courseSchema),
 		defaultValues: {
 			name: "",
-			hours: undefined as unknown as number,
+			hours: 0,
 			program: "",
 			defaultTeacher: "",
 			code: "",
@@ -236,7 +236,7 @@ export default function CourseManagement() {
 		setEditingCourse(null);
 		form.reset({
 			name: "",
-			hours: undefined as unknown as number,
+			hours: 0,
 			program: "",
 			defaultTeacher: "",
 			code: "",
@@ -261,7 +261,7 @@ export default function CourseManagement() {
 		setEditingCourse(null);
 		form.reset({
 			name: "",
-			hours: undefined as unknown as number,
+			hours: 0,
 			program: "",
 			defaultTeacher: "",
 			code: "",
@@ -355,14 +355,6 @@ export default function CourseManagement() {
 												return (
 													<div className="space-y-0.5">
 														<p>{programInfo.name}</p>
-														{programInfo.facultyInfo?.name && (
-															<p className="text-muted-foreground text-xs">
-																{t("admin.courses.table.facultyInfo", {
-																	defaultValue: "Faculty: {{value}}",
-																	value: programInfo.facultyInfo.name,
-																})}
-															</p>
-														)}
 													</div>
 												);
 											})()}
@@ -496,7 +488,6 @@ export default function CourseManagement() {
 								placeholder={t("admin.courses.form.programPlaceholder")}
 								error={form.formState.errors.program?.message}
 								searchMode="hybrid"
-								getItemSubtitle={(program) => program.facultyInfo?.name || ""}
 								required
 							/>
 

@@ -1,8 +1,17 @@
 import { describe, expect, it } from "bun:test";
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
-import { asAdmin, createClass, makeTestContext } from "@/lib/test-utils";
+import {
+	asAdmin,
+	createAcademicYear,
+	createClass,
+	createFaculty,
+	createProgram,
+	makeTestContext,
+} from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
@@ -69,6 +78,56 @@ describe("students router", () => {
 		expect(res.conflicts).toHaveLength(1);
 	});
 
+	it("bulk imports transfer students including credits", async () => {
+		const admin = createCaller(asAdmin());
+		const klass = await createClass();
+		const transferEmail = "bulk-transfer@example.com";
+		const transferCredits = 42;
+		const admissionDate = new Date("2024-03-01");
+		const res = await admin.students.bulkCreate({
+			classId: klass.id,
+			students: [
+				{
+					...baseStudent,
+					email: transferEmail,
+					registrationNumber: "TRANSFER-001",
+					admissionType: "transfer",
+					transferInstitution: "External University",
+					transferCredits,
+					transferLevel: "L3",
+					admissionJustification: "Validated by committee",
+					admissionDate,
+				},
+			],
+		});
+		expect(res.createdCount).toBe(1);
+		const list = await admin.students.list({ classId: klass.id });
+		const created = list.items.find(
+			(student) => student.profile.primaryEmail === transferEmail,
+		);
+		expect(created).toBeTruthy();
+		if (!created) throw new Error("Student not created");
+
+		const enrollment = await db.query.enrollments.findFirst({
+			where: eq(schema.enrollments.studentId, created.id),
+		});
+		expect(enrollment?.admissionType).toBe("transfer");
+		expect(enrollment?.transferInstitution).toBe("External University");
+		expect(enrollment?.transferCredits).toBe(transferCredits);
+		expect(enrollment?.transferLevel).toBe("L3");
+		expect(enrollment?.admissionJustification).toBe(
+			"Validated by committee",
+		);
+		expect(
+			new Date(enrollment?.admissionDate ?? "").toISOString().slice(0, 10),
+		).toBe(admissionDate.toISOString().slice(0, 10));
+
+		const ledger = await db.query.studentCreditLedgers.findFirst({
+			where: eq(schema.studentCreditLedgers.studentId, created.id),
+		});
+		expect(ledger?.creditsEarned).toBe(transferCredits);
+	});
+
 	it("fails when class does not exist", async () => {
 		const admin = createCaller(asAdmin());
 		await expect(
@@ -128,5 +187,89 @@ describe("students router", () => {
 		).rejects.toMatchObject({
 			code: "BAD_REQUEST",
 		});
+	});
+
+	it("rejects creating students scoped to another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Autre Institution",
+				nameEn: "Other Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		await expect(
+			admin.students.create({
+				classId: klass.id,
+				firstName: "Scoping",
+				lastName: "Mismatch",
+				email: "scoped@example.com",
+			}),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+
+	it("prevents fetching students from another institution", async () => {
+		const admin = createCaller(asAdmin());
+		const [foreignInstitution] = await db
+			.insert(schema.institutions)
+			.values({
+				code: `OTH-${randomUUID().slice(0, 6)}`,
+				shortName: "OTHER",
+				nameFr: "Autre Institution",
+				nameEn: "Other Institution",
+			})
+			.returning();
+		const faculty = await createFaculty({
+			institutionId: foreignInstitution.id,
+		});
+		const program = await createProgram({
+			institutionId: foreignInstitution.id,
+		});
+		const academicYear = await createAcademicYear({
+			institutionId: foreignInstitution.id,
+		});
+		const klass = await createClass({
+			program: program.id,
+			academicYear: academicYear.id,
+			institutionId: foreignInstitution.id,
+		});
+		const [profile] = await db
+			.insert(schema.domainUsers)
+			.values({
+				firstName: "Foreign",
+				lastName: "Student",
+				primaryEmail: "foreign.student@example.com",
+				businessRole: "student",
+				status: "active",
+			})
+			.returning();
+		const [foreignStudent] = await db
+			.insert(schema.students)
+			.values({
+				class: klass.id,
+				domainUserId: profile.id,
+				registrationNumber: "F-001",
+				institutionId: foreignInstitution.id,
+			})
+			.returning();
+		await expect(
+			admin.students.getById({ id: foreignStudent.id }),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
 	});
 });

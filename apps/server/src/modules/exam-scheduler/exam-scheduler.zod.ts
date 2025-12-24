@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 export const previewSchema = z.object({
-	facultyId: z.string().min(1),
+	institutionId: z.string().optional(), // Auto-filled from context
 	academicYearId: z.string().min(1),
+	semesterId: z.string().min(1),
 });
 
 export const scheduleSchema = previewSchema
@@ -11,6 +12,7 @@ export const scheduleSchema = previewSchema
 		percentage: z.coerce.number().min(1).max(100),
 		dateStart: z.coerce.date(),
 		dateEnd: z.coerce.date(),
+		semesterId: z.string().min(1),
 		classIds: z.array(z.string()).optional(),
 	})
 	.refine((value) => value.dateEnd.getTime() >= value.dateStart.getTime(), {
@@ -19,7 +21,7 @@ export const scheduleSchema = previewSchema
 	});
 
 export const historySchema = z.object({
-	facultyId: z.string().optional(),
+	institutionId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	examTypeId: z.string().optional(),
 	cursor: z.string().optional(),

@@ -1,23 +1,35 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import type { TransactionClient } from "../_shared/db-transaction";
 
-export async function list(opts: { includeInactive?: boolean } = {}) {
-	const where = opts.includeInactive
-		? undefined
-		: eq(schema.registrationNumberFormats.isActive, true);
+type Agent = typeof db | TransactionClient;
+
+const pickAgent = (agent?: Agent) => agent ?? db;
+
+export async function list(opts: {
+	institutionId: string;
+	includeInactive?: boolean;
+}): Promise<schema.RegistrationNumberFormat[]> {
+	const condition = opts.includeInactive
+		? eq(schema.registrationNumberFormats.institutionId, opts.institutionId)
+		: and(
+				eq(schema.registrationNumberFormats.isActive, true),
+				eq(schema.registrationNumberFormats.institutionId, opts.institutionId),
+			);
 	return db
 		.select()
 		.from(schema.registrationNumberFormats)
-		.where(where)
+		.where(condition)
 		.orderBy(
 			desc(schema.registrationNumberFormats.isActive),
 			desc(schema.registrationNumberFormats.createdAt),
 		);
 }
 
-export async function findById(id: string) {
-	const [item] = await db
+export async function findById(id: string, agent?: Agent) {
+	const executor = pickAgent(agent);
+	const [item] = await executor
 		.select()
 		.from(schema.registrationNumberFormats)
 		.where(eq(schema.registrationNumberFormats.id, id))
@@ -25,11 +37,17 @@ export async function findById(id: string) {
 	return item ?? null;
 }
 
-export async function findActive() {
-	const [item] = await db
+export async function findActive(institutionId: string, agent?: Agent) {
+	const executor = pickAgent(agent);
+	const [item] = await executor
 		.select()
 		.from(schema.registrationNumberFormats)
-		.where(eq(schema.registrationNumberFormats.isActive, true))
+		.where(
+			and(
+				eq(schema.registrationNumberFormats.isActive, true),
+				eq(schema.registrationNumberFormats.institutionId, institutionId),
+			),
+		)
 		.limit(1);
 	return item ?? null;
 }

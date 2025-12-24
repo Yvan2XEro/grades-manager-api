@@ -1,5 +1,5 @@
-import "dotenv/config";
 import { trpcServer } from "@hono/trpc-server";
+import "dotenv/config";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
