@@ -10,6 +10,8 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgres://grades:grades@postgres:5432/grades}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_COOKIE_SAMESITE: ${BETTER_AUTH_COOKIE_SAMESITE:-none}
+      BETTER_AUTH_COOKIE_SECURE: ${BETTER_AUTH_COOKIE_SECURE:-true}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173}
       SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-http://localhost:3000}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
