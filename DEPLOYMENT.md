@@ -97,8 +97,9 @@ docker compose --env-file .env -f docker-compose.prod.yml down
 
 ```bash
 # 1. Prepare production seed files
-mkdir -p production-seeds
-# Add your YAML files: 00-foundation.yaml, 10-academics.yaml, 20-users.yaml
+mkdir -p deployments/docker/production-seeds
+# Add your YAML files inside this folder (00-foundation.yaml, 10-academics.yaml, 20-users.yaml)
+# They will be mounted into /usr/src/app/seed/local inside the container.
 
 # 2. Deploy with seeding enabled (FIRST TIME ONLY)
 docker compose --env-file .env \
