@@ -6,7 +6,6 @@ import { and, asc, eq } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
-	BusinessRole,
 	DomainUserStatus,
 	EnrollmentStatus,
 	EnrollmentWindowStatus,
@@ -192,7 +191,6 @@ type DomainUserSeed = {
 	code: string;
 	authUserCode?: string;
 	authUserEmail?: string;
-	businessRole: BusinessRole;
 	firstName: string;
 	lastName: string;
 	primaryEmail: string;
@@ -205,14 +203,6 @@ type DomainUserSeed = {
 	organizationSlug?: string;
 	memberRole?: OrganizationRoleName;
 };
-
-const STAFF_BUSINESS_ROLES: BusinessRole[] = [
-	"super_admin",
-	"administrator",
-	"dean",
-	"teacher",
-	"staff",
-];
 
 type StudentSeed = {
 	code: string;
@@ -314,7 +304,7 @@ type SeedState = {
 	pendingClassCourses: ClassCourseSeed[];
 	pendingExams: ExamSeed[];
 	authUsers: Map<string, string>;
-	domainUsers: Map<string, { id: string; businessRole: BusinessRole }>;
+	domainUsers: Map<string, { id: string }>;
 	students: Map<string, { id: string }>;
 };
 
@@ -1225,13 +1215,7 @@ function resolveSeedOrganization(
 function determineMemberRole(
 	seed: DomainUserSeed,
 ): OrganizationRoleName | null {
-	if (seed.memberRole) {
-		return seed.memberRole;
-	}
-	if (!STAFF_BUSINESS_ROLES.includes(seed.businessRole)) {
-		return null;
-	}
-	return seed.businessRole;
+	return seed.memberRole ?? null;
 }
 
 async function seedUsers(
@@ -1263,7 +1247,6 @@ async function seedUsers(
 			.insert(schema.domainUsers)
 			.values({
 				authUserId,
-				businessRole: entry.businessRole,
 				firstName: entry.firstName,
 				lastName: entry.lastName,
 				primaryEmail: entry.primaryEmail,
@@ -1279,7 +1262,6 @@ async function seedUsers(
 				target: schema.domainUsers.primaryEmail,
 				set: {
 					authUserId,
-					businessRole: entry.businessRole,
 					firstName: entry.firstName,
 					lastName: entry.lastName,
 					phone: entry.phone ?? null,
@@ -1294,7 +1276,6 @@ async function seedUsers(
 			.returning();
 		state.domainUsers.set(code, {
 			id: profile.id,
-			businessRole: profile.businessRole,
 		});
 
 		const targetMemberRole = determineMemberRole(entry);

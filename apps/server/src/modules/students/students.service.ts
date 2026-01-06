@@ -54,7 +54,6 @@ const conflictMarkers = [
 
 const buildProfilePayload = (p: StudentProfileInput) => ({
 	authUserId: p.authUserId ?? null,
-	businessRole: "student" as schema.BusinessRole,
 	firstName: p.firstName,
 	lastName: p.lastName,
 	primaryEmail: p.primaryEmail,

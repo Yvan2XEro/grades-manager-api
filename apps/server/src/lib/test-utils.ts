@@ -89,7 +89,6 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		id: opts.profileOverrides?.id ?? randomUUID(),
 		authUserId: opts.profileOverrides?.authUserId ?? userId,
 		memberId: resolvedMemberId,
-		businessRole: role,
 		firstName: opts.profileOverrides?.firstName ?? "Test",
 		lastName: opts.profileOverrides?.lastName ?? "User",
 		primaryEmail:
@@ -136,13 +135,11 @@ export const asUser = () => makeTestContext({ role: "student" });
 
 const defaultProfilePayload = (
 	data: Partial<NewDomainUser> & {
-		businessRole?: BusinessRole;
 		gender?: Gender;
 	} = {},
 ) => ({
 	authUserId: data.authUserId ?? null,
 	memberId: data.memberId ?? null,
-	businessRole: data.businessRole ?? "student",
 	firstName: data.firstName ?? "John",
 	lastName: data.lastName ?? "Doe",
 	primaryEmail: data.primaryEmail ?? `profile-${randomUUID()}@example.com`,
@@ -154,9 +151,7 @@ const defaultProfilePayload = (
 	status: data.status ?? "active",
 });
 
-export async function createDomainUser(
-	data: Partial<NewDomainUser> & { businessRole?: BusinessRole } = {},
-) {
+export async function createDomainUser(data: Partial<NewDomainUser> = {}) {
 	const [profile] = await db
 		.insert(schema.domainUsers)
 		.values(defaultProfilePayload(data))
@@ -577,7 +572,8 @@ type CreateUserOptions = {
 	email?: string;
 	role?: string;
 	password?: string;
-	businessRole?: BusinessRole;
+	memberRole?: BusinessRole | null;
+	organizationId?: string;
 	gender?: Gender;
 	dateOfBirth?: Date;
 	placeOfBirth?: string;
@@ -586,7 +582,7 @@ type CreateUserOptions = {
 export async function createUser(data: CreateUserOptions = {}) {
 	const email = data.email ?? `user-${randomUUID()}@example.com`;
 	const name = data.name ?? "John Doe";
-	const u = await auth.api.createUser({
+	const authUser = await auth.api.createUser({
 		body: {
 			name,
 			email,
@@ -595,9 +591,29 @@ export async function createUser(data: CreateUserOptions = {}) {
 		},
 	});
 	const [firstName, ...rest] = name.split(" ");
+	const targetRole = data.memberRole ?? "administrator";
+	const organizationId =
+		data.organizationId ?? getTestInstitution().organizationId;
+	if (targetRole && !organizationId) {
+		throw new Error("Test institution missing organizationId for member role");
+	}
+	let memberId: string | null = null;
+	if (targetRole && organizationId) {
+		const [member] = await db
+			.insert(authSchema.member)
+			.values({
+				id: randomUUID(),
+				organizationId,
+				userId: authUser.user.id,
+				role: targetRole,
+				createdAt: new Date(),
+			})
+			.returning();
+		memberId = member.id;
+	}
 	const profile = await createDomainUser({
-		authUserId: u.user.id,
-		businessRole: data.businessRole ?? "administrator",
+		authUserId: authUser.user.id,
+		memberId,
 		firstName: firstName || "John",
 		lastName: rest.join(" ") || "Doe",
 		primaryEmail: email,
@@ -605,7 +621,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		dateOfBirth: data.dateOfBirth?.toISOString() ?? DEFAULT_DATE.toISOString(),
 		placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	});
-	return { ...u.user, profile };
+	return { ...authUser.user, profile };
 }
 
 export async function createCourse(data: Partial<schema.NewCourse> = {}) {
@@ -747,7 +763,6 @@ export async function createStudent(data: StudentHelperInput = {}) {
 	let profileId = data.domainUserId;
 	if (!profileId) {
 		const profile = await createDomainUser({
-			businessRole: "student",
 			...data.profile,
 		});
 		profileId = profile.id;

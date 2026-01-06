@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Route, Routes } from "react-router";
-import type { DomainUser } from "../../server/src/db/schema/app-schema";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import { Redirector } from "./components/navigation/Redirector";
@@ -65,10 +64,7 @@ function App() {
 	const memoUser = useMemo(() => {
 		if (!session || !session.user) return null;
 		const [firstName, ...rest] = (session.user.name || "").split(" ");
-		const membershipRole =
-			session.activeMembership?.role ??
-			(session.domainProfiles?.[0] as DomainUser | undefined)?.businessRole ??
-			null;
+		const membershipRole = session.activeMembership?.role ?? null;
 		const role = normalizeRole(membershipRole);
 		return {
 			profileId: session.user.id,

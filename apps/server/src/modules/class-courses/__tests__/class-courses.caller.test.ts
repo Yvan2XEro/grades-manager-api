@@ -101,7 +101,7 @@ describe("class courses router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const course = await createCourse({ program: program.id });
-		const teacher = await createDomainUser({ businessRole: "teacher" });
+		const teacher = await createDomainUser();
 		const [classCourse] = await db
 			.insert(schema.classCourses)
 			.values({
@@ -136,7 +136,7 @@ describe("class courses router", () => {
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",

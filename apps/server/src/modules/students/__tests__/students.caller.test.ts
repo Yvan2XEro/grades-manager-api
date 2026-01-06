@@ -255,7 +255,6 @@ describe("students router", () => {
 				firstName: "Foreign",
 				lastName: "Student",
 				primaryEmail: "foreign.student@example.com",
-				businessRole: "student",
 				status: "active",
 			})
 			.returning();

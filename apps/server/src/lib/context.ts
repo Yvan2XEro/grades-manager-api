@@ -23,7 +23,6 @@ export async function createContext({ context }: CreateContextOptions) {
 		if (!profile) {
 			profile = await domainUsersRepo.create({
 				authUserId: session.user.id,
-				businessRole: "student",
 				primaryEmail: session.user.email,
 				firstName: session.user.name,
 				lastName: "",

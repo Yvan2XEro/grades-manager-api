@@ -84,7 +84,6 @@ export const domainUsers = pgTable(
 		memberId: text("member_id").references(() => member.id, {
 			onDelete: "set null",
 		}),
-		businessRole: text("business_role").$type<BusinessRole>().notNull(),
 		firstName: text("first_name").notNull(),
 		lastName: text("last_name").notNull(),
 		primaryEmail: text("primary_email").notNull(),
@@ -108,7 +107,6 @@ export const domainUsers = pgTable(
 		unique("uq_domain_users_auth").on(t.authUserId),
 		unique("uq_domain_users_member").on(t.memberId),
 		unique("uq_domain_users_email").on(t.primaryEmail),
-		index("idx_domain_users_role").on(t.businessRole),
 	],
 );
 

@@ -34,7 +34,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",
@@ -93,7 +93,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",

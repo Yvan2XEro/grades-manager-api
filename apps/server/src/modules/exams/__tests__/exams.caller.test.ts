@@ -125,7 +125,7 @@ describe("exams router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const course = await createCourse({ program: program.id });
-		const teacher = await createDomainUser({ businessRole: "teacher" });
+		const teacher = await createDomainUser();
 		const [classCourse] = await db
 			.insert(schema.classCourses)
 			.values({

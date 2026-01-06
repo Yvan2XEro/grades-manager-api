@@ -239,7 +239,6 @@ export async function admitExternalStudent(
 			.insert(schema.domainUsers)
 			.values({
 				institutionId,
-				businessRole: "student",
 				firstName: data.firstName,
 				lastName: data.lastName,
 				email: data.email,

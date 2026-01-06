@@ -1,8 +1,4 @@
-import type {
-	BusinessRole,
-	DomainUserStatus,
-	Gender,
-} from "@/db/schema/app-schema";
+import type { DomainUserStatus, Gender } from "@/db/schema/app-schema";
 import { domainUsersRepo } from "@/modules/domain-users";
 import * as repo from "./users.repo";
 
@@ -10,7 +6,6 @@ type CreateProfileInput = {
 	firstName: string;
 	lastName: string;
 	email: string;
-	role: BusinessRole;
 	phone?: string;
 	dateOfBirth?: Date;
 	placeOfBirth?: string;
@@ -25,7 +20,6 @@ type UpdateProfileInput = {
 	firstName?: string;
 	lastName?: string;
 	email?: string;
-	role?: BusinessRole;
 	phone?: string | null;
 	dateOfBirth?: Date | null;
 	placeOfBirth?: string | null;
@@ -54,7 +48,6 @@ export async function listUsers(opts: Parameters<typeof repo.list>[0]) {
 
 export async function createUserProfile(data: CreateProfileInput) {
 	return domainUsersRepo.create({
-		businessRole: data.role,
 		firstName: data.firstName,
 		lastName: data.lastName,
 		primaryEmail: data.email,
@@ -74,7 +67,6 @@ export async function updateUserProfile(id: string, data: UpdateProfileInput) {
 	if (data.firstName !== undefined) payload.firstName = data.firstName;
 	if (data.lastName !== undefined) payload.lastName = data.lastName;
 	if (data.email !== undefined) payload.primaryEmail = data.email;
-	if (data.role !== undefined) payload.businessRole = data.role;
 	if (data.phone !== undefined) payload.phone = data.phone ?? null;
 	if (data.dateOfBirth !== undefined)
 		payload.dateOfBirth = normalizeDate(data.dateOfBirth);

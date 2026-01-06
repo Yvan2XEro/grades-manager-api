@@ -89,7 +89,6 @@ const mapFormToProfile = (data: UserForm) => ({
 	placeOfBirth: data.placeOfBirth?.trim() || undefined,
 	nationality: data.nationality?.trim() || undefined,
 	status: data.status || "active",
-	role: toDomainRole(data.role),
 });
 
 const buildFullName = (data: Pick<UserForm, "firstName" | "lastName">) =>
@@ -239,7 +238,7 @@ export default function UserManagement() {
 			placeOfBirth: user.placeOfBirth || "",
 			nationality: user.nationality || "",
 			status: (user.status as UserForm["status"]) || "active",
-			role: toFormRole(user.businessRole),
+			role: toFormRole(user.role),
 			password: "",
 		});
 		setShowPassword(false);
@@ -419,14 +418,14 @@ export default function UserManagement() {
 								</TableCell>
 								<TableCell>{user.email}</TableCell>
 								<TableCell>
-									{user.businessRole
+									{user.role
 										? t(
 												`admin.users.roles.${
-													user.businessRole === "administrator"
+													user.role === "administrator"
 														? "admin"
-														: user.businessRole
+														: user.role
 												}`,
-												{ defaultValue: user.businessRole },
+												{ defaultValue: user.role },
 											)
 										: ""}
 								</TableCell>

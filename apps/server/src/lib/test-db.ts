@@ -102,7 +102,6 @@ export async function seed() {
   await db.insert(schema.domainUsers).values({
     authUserId: teacher.user.id,
     memberId: member.id,
-    businessRole: "administrator",
     firstName,
     lastName,
     primaryEmail: "seed.teacher@example.com",
