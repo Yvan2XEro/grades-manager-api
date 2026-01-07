@@ -8,6 +8,20 @@
       "when": 1766559691357,
       "tag": "0000_moaning_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766559692357,
+      "tag": "0001_free_mentallo",
+      "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767743988000,
+      "tag": "0002_prereq_types",
+      "breakpoints": false
     }
   ]
 }

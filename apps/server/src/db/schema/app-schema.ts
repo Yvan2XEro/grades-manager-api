@@ -683,6 +683,10 @@ export const institutions = pgTable(
 	(t) => [unique("uq_institutions_code").on(t.code)],
 );
 
+export const coursePrerequisiteTypes = ["mandatory", "recommended"] as const;
+export type CoursePrerequisiteType =
+	(typeof coursePrerequisiteTypes)[number];
+
 /** Directed edges capturing course prerequisites. */
 export const coursePrerequisites = pgTable(
 	"course_prerequisites",
@@ -694,6 +698,10 @@ export const coursePrerequisites = pgTable(
 		prerequisiteCourseId: text("prerequisite_course_id")
 			.notNull()
 			.references(() => courses.id, { onDelete: "cascade" }),
+		type: text("type")
+			.$type<CoursePrerequisiteType>()
+			.notNull()
+			.default("mandatory"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

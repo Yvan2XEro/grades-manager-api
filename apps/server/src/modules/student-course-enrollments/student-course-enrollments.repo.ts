@@ -190,3 +190,39 @@ export async function findByStudentAndStatuses(
 		),
 	});
 }
+
+export async function listCoursePrerequisites(courseId: string) {
+	return db
+		.select({
+			id: schema.coursePrerequisites.id,
+			type: schema.coursePrerequisites.type,
+			prerequisiteCourseId: schema.coursePrerequisites.prerequisiteCourseId,
+			prerequisiteCourseCode: schema.courses.code,
+			prerequisiteCourseName: schema.courses.name,
+		})
+		.from(schema.coursePrerequisites)
+		.innerJoin(
+			schema.courses,
+			eq(schema.coursePrerequisites.prerequisiteCourseId, schema.courses.id),
+		)
+		.where(eq(schema.coursePrerequisites.courseId, courseId));
+}
+
+export async function findStudentCourseHistoryForCourses(
+	studentId: string,
+	courseIds: string[],
+) {
+	if (!courseIds.length) return [];
+	return db
+		.select({
+			courseId: schema.studentCourseEnrollments.courseId,
+			status: schema.studentCourseEnrollments.status,
+		})
+		.from(schema.studentCourseEnrollments)
+		.where(
+			and(
+				eq(schema.studentCourseEnrollments.studentId, studentId),
+				inArray(schema.studentCourseEnrollments.courseId, courseIds),
+			),
+		);
+}

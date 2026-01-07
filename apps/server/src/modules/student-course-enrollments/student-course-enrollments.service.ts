@@ -36,6 +36,27 @@ const FINAL_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"failed",
 	"withdrawn",
 ];
+const SATISFIED_STATUSES: schema.StudentCourseEnrollmentStatus[] = ["completed"];
+const IN_PROGRESS_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
+	"planned",
+	"active",
+];
+type PrerequisiteWarningState = "missing" | "in-progress";
+type PrerequisiteWarning = {
+	studentId: string;
+	targetCourseId: string;
+	targetCourseCode: string;
+	targetCourseName: string;
+	prerequisiteCourseId: string;
+	prerequisiteCourseCode: string;
+	prerequisiteCourseName: string;
+	prerequisiteType: schema.CoursePrerequisiteType;
+	state: PrerequisiteWarningState;
+};
+type EnrollmentWithWarnings = {
+	record: schema.StudentCourseEnrollment;
+	warnings: PrerequisiteWarning[];
+};
 
 async function fetchStudentContext(studentId: string) {
 	const [row] = await db
@@ -60,6 +81,8 @@ async function fetchClassCourseContext(classCourseId: string) {
 			id: schema.classCourses.id,
 			classId: schema.classCourses.class,
 			courseId: schema.classCourses.course,
+			courseCode: schema.courses.code,
+			courseName: schema.courses.name,
 			teacherId: schema.classCourses.teacher,
 			classProgramId: schema.classes.program,
 			academicYearId: schema.classes.academicYear,
@@ -97,6 +120,46 @@ async function ensureSameProgram(
 			message: "Student cannot enroll in a course from another program",
 		});
 	}
+}
+
+async function collectPrerequisiteWarnings(
+	studentId: string,
+	classCourse: Awaited<ReturnType<typeof fetchClassCourseContext>>,
+) {
+	const prerequisites = await repo.listCoursePrerequisites(classCourse.courseId);
+	if (!prerequisites.length) return [];
+	const prerequisiteCourseIds = prerequisites.map(
+		(prereq) => prereq.prerequisiteCourseId,
+	);
+	const history = await repo.findStudentCourseHistoryForCourses(
+		studentId,
+		prerequisiteCourseIds,
+	);
+	const warnings: PrerequisiteWarning[] = [];
+	for (const prereq of prerequisites) {
+		const records = history.filter(
+			(entry) => entry.courseId === prereq.prerequisiteCourseId,
+		);
+		const satisfied = records.some((record) =>
+			SATISFIED_STATUSES.includes(record.status),
+		);
+		if (satisfied) continue;
+		const inProgress = records.some((record) =>
+			IN_PROGRESS_STATUSES.includes(record.status),
+		);
+		warnings.push({
+			studentId,
+			targetCourseId: classCourse.courseId,
+			targetCourseCode: classCourse.courseCode,
+			targetCourseName: classCourse.courseName,
+			prerequisiteCourseId: prereq.prerequisiteCourseId,
+			prerequisiteCourseCode: prereq.prerequisiteCourseCode,
+			prerequisiteCourseName: prereq.prerequisiteCourseName,
+			prerequisiteType: prereq.type,
+			state: inProgress ? "in-progress" : "missing",
+		});
+	}
+	return warnings;
 }
 
 function resolveCreditsEarned(
@@ -149,11 +212,14 @@ async function assertAttemptAvailability(input: {
 	}
 }
 
-export async function createEnrollment(input: CreateInput) {
+export async function createEnrollment(
+	input: CreateInput,
+): Promise<EnrollmentWithWarnings> {
 	const status = input.status ?? "planned";
 	const student = await fetchStudentContext(input.studentId);
 	const classCourse = await fetchClassCourseContext(input.classCourseId);
 	await ensureSameProgram(student.programId, classCourse.courseProgramId);
+	const warnings = await collectPrerequisiteWarnings(student.id, classCourse);
 	let attempt = input.attempt;
 	if (attempt === undefined) {
 		const latest = await findLatestEnrollment({
@@ -203,7 +269,7 @@ export async function createEnrollment(input: CreateInput) {
 		contribution.inProgress,
 		contribution.earned,
 	);
-	return record;
+	return { record, warnings };
 }
 
 export async function bulkEnroll(input: BulkInput) {
@@ -215,17 +281,17 @@ export async function bulkEnroll(input: BulkInput) {
 		});
 	}
 	const status = input.status ?? "active";
-	const created: schema.StudentCourseEnrollment[] = [];
+	const created: EnrollmentWithWarnings[] = [];
 	const skipped: { classCourseId: string; reason: string }[] = [];
 	for (const classCourseId of uniqueCourseIds) {
 		try {
-			const record = await createEnrollment({
+			const result = await createEnrollment({
 				studentId: input.studentId,
 				classCourseId,
 				status,
 				attempt: input.attempt,
 			});
-			created.push(record);
+			created.push(result);
 		} catch (error) {
 			if (error instanceof TRPCError && error.code === "CONFLICT") {
 				skipped.push({
@@ -376,16 +442,20 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 	}
 	const status = input.status ?? "active";
 	const conflicts: Array<{ studentId: string; classCourseId: string }> = [];
+	const warnings: PrerequisiteWarning[] = [];
 	let createdCount = 0;
 	for (const student of students) {
 		for (const classCourse of classCourses) {
 			try {
-				await createEnrollment({
+				const { warnings: localWarnings } = await createEnrollment({
 					studentId: student.id,
 					classCourseId: classCourse.id,
 					status,
 				});
 				createdCount++;
+				if (localWarnings.length) {
+					warnings.push(...localWarnings);
+				}
 			} catch (error) {
 				if (error instanceof TRPCError && error.code === "CONFLICT") {
 					conflicts.push({
@@ -404,5 +474,6 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 		createdCount,
 		skippedCount: conflicts.length,
 		conflicts,
+		warnings,
 	};
 }
