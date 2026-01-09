@@ -137,6 +137,14 @@ export async function avgForStudentInCourse(
 				eq(schema.classCourses.course, courseId),
 				eq(schema.grades.student, studentId),
 			),
-		);
+	);
 	return row?.avg as number | null;
+}
+
+export async function mapByExam(examId: string) {
+	const rows = await db
+		.select()
+		.from(schema.grades)
+		.where(eq(schema.grades.exam, examId));
+	return new Map(rows.map((row) => [row.student, row]));
 }

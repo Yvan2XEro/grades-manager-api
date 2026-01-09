@@ -10,6 +10,11 @@ const GRADE_ELIGIBLE_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"active",
 	"completed",
 ];
+const RETAKE_CANDIDATE_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
+	"active",
+	"completed",
+	"failed",
+];
 
 export async function create(data: schema.NewStudentCourseEnrollment) {
 	const [item] = await db
@@ -206,6 +211,62 @@ export async function listCoursePrerequisites(courseId: string) {
 			eq(schema.coursePrerequisites.prerequisiteCourseId, schema.courses.id),
 		)
 		.where(eq(schema.coursePrerequisites.courseId, courseId));
+}
+
+export async function listForClassCourseWithStudentProfile(
+	classCourseId: string,
+	institutionId: string,
+) {
+	return db
+		.select({
+			enrollment: schema.studentCourseEnrollments,
+			studentId: schema.students.id,
+			registrationNumber: schema.students.registrationNumber,
+			firstName: schema.domainUsers.firstName,
+			lastName: schema.domainUsers.lastName,
+		})
+		.from(schema.studentCourseEnrollments)
+		.innerJoin(
+			schema.students,
+			eq(schema.studentCourseEnrollments.studentId, schema.students.id),
+		)
+		.innerJoin(
+			schema.domainUsers,
+			eq(schema.students.domainUserId, schema.domainUsers.id),
+		)
+		.where(
+			and(
+				eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
+				eq(schema.students.institutionId, institutionId),
+				inArray(
+					schema.studentCourseEnrollments.status,
+					RETAKE_CANDIDATE_STATUSES,
+				),
+			),
+		);
+}
+
+export async function maxAttemptsForCourseYear(
+	courseId: string,
+	academicYearId: string,
+	studentIds: string[],
+) {
+	if (!studentIds.length) return new Map<string, number>();
+	const rows = await db
+		.select({
+			studentId: schema.studentCourseEnrollments.studentId,
+			maxAttempt: sql<number>`max(${schema.studentCourseEnrollments.attempt})`,
+		})
+		.from(schema.studentCourseEnrollments)
+		.where(
+			and(
+				eq(schema.studentCourseEnrollments.courseId, courseId),
+				eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
+				inArray(schema.studentCourseEnrollments.studentId, studentIds),
+			),
+		)
+		.groupBy(schema.studentCourseEnrollments.studentId);
+	return new Map(rows.map((row) => [row.studentId, Number(row.maxAttempt)]));
 }
 
 export async function findStudentCourseHistoryForCourses(

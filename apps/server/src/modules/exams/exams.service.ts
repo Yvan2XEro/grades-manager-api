@@ -8,6 +8,9 @@ import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
+import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
+import * as gradesRepo from "../grades/grades.repo";
+import * as retakeOverridesRepo from "./retake-overrides.repo";
 import * as repo from "./exams.repo";
 
 type CreateExamInput = {
@@ -258,6 +261,204 @@ export async function setLock(
 		});
 	}
 	return repo.setLock(examId, lock, institutionId);
+}
+
+const PASSING_GRADE = 10;
+
+export type RetakeEligibilityReason =
+	| "FAILED_EXAM"
+	| "NO_GRADE"
+	| "PASSED_EXAM"
+	| "ATTEMPT_LIMIT_REACHED"
+	| "OVERRIDE_FORCE_ELIGIBLE"
+	| "OVERRIDE_FORCE_INELIGIBLE";
+
+export type RetakeEligibilityRow = {
+	examId: string;
+	classCourseId: string;
+	studentCourseEnrollmentId: string;
+	studentId: string;
+	registrationNumber: string;
+	studentName: string;
+	attempt: number;
+	grade: number | null;
+	status: "eligible" | "ineligible";
+	reasons: RetakeEligibilityReason[];
+	override?: {
+		id: string;
+		decision: schema.RetakeOverrideDecision;
+		reason: string;
+		createdAt: Date;
+		createdBy: string | null;
+	};
+};
+
+function parseScore(score: string | null | undefined) {
+	if (score === null || score === undefined) return null;
+	const value = Number(score);
+	return Number.isNaN(value) ? null : value;
+}
+
+function buildEligibilityResult(input: {
+	enrollment: schema.StudentCourseEnrollment;
+	gradeValue: number | null;
+	maxAttempt: number;
+	override?: retakeOverridesRepo.RetakeOverride;
+}): { status: "eligible" | "ineligible"; reasons: RetakeEligibilityReason[] } {
+	const reasons = new Set<RetakeEligibilityReason>();
+	let eligible =
+		input.enrollment.status === "failed" ||
+		input.gradeValue === null ||
+		input.gradeValue < PASSING_GRADE;
+	if (input.gradeValue === null) {
+		reasons.add("NO_GRADE");
+	} else if (
+		input.enrollment.status === "failed" ||
+		input.gradeValue < PASSING_GRADE
+	) {
+		reasons.add("FAILED_EXAM");
+	} else {
+		reasons.add("PASSED_EXAM");
+	}
+	if (eligible && input.maxAttempt > input.enrollment.attempt) {
+		eligible = false;
+		reasons.add("ATTEMPT_LIMIT_REACHED");
+	}
+	if (input.override) {
+		const overrideReason =
+			input.override.decision === "force_eligible"
+				? "OVERRIDE_FORCE_ELIGIBLE"
+				: "OVERRIDE_FORCE_INELIGIBLE";
+		reasons.add(overrideReason);
+		eligible = input.override.decision === "force_eligible";
+	}
+	return { status: eligible ? "eligible" : "ineligible", reasons: [...reasons] };
+}
+
+export async function listRetakeEligibility(
+	examId: string,
+	institutionId: string,
+): Promise<RetakeEligibilityRow[]> {
+	const exam = await requireExam(examId, institutionId);
+	if (exam.status !== "approved") {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Exam must be approved before computing retake eligibility",
+		});
+	}
+	const classCourse = await requireClassCourse(exam.classCourse, institutionId);
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, classCourse.class),
+	});
+	if (!klass) throw notFound("Class context not found");
+	const roster = await courseEnrollmentRepo.listForClassCourseWithStudentProfile(
+		classCourse.id,
+		institutionId,
+	);
+	if (roster.length === 0) return [];
+	const gradeMap = await gradesRepo.mapByExam(examId);
+	const studentIds = roster.map((entry) => entry.studentId);
+	const attemptMap = await courseEnrollmentRepo.maxAttemptsForCourseYear(
+		classCourse.course,
+		klass.academicYear,
+		studentIds,
+	);
+	const overrides = await retakeOverridesRepo.listByExam(examId, institutionId);
+	const overridesByEnrollment = new Map(
+		overrides.map((record) => [record.studentCourseEnrollmentId, record]),
+	);
+	return roster.map((entry) => {
+		const grade = gradeMap.get(entry.studentId);
+		const gradeValue = grade ? parseScore(grade.score) : null;
+		const maxAttempt =
+			attemptMap.get(entry.studentId) ?? entry.enrollment.attempt;
+		const override = overridesByEnrollment.get(entry.enrollment.id);
+		const evaluation = buildEligibilityResult({
+			enrollment: entry.enrollment,
+			gradeValue,
+			maxAttempt,
+			override,
+		});
+		return {
+			examId: exam.id,
+			classCourseId: classCourse.id,
+			studentCourseEnrollmentId: entry.enrollment.id,
+			studentId: entry.studentId,
+			registrationNumber: entry.registrationNumber,
+			studentName: `${entry.lastName} ${entry.firstName}`,
+			attempt: entry.enrollment.attempt,
+			grade: gradeValue,
+			status: evaluation.status,
+			reasons: evaluation.reasons,
+			override: override
+				? {
+						id: override.id,
+						decision: override.decision,
+						reason: override.reason,
+						createdAt: override.createdAt,
+						createdBy: override.createdBy,
+					}
+				: undefined,
+		};
+	});
+}
+
+export async function upsertRetakeOverride(
+	examId: string,
+	studentCourseEnrollmentId: string,
+	payload: {
+		decision: schema.RetakeOverrideDecision;
+		reason: string;
+	},
+	institutionId: string,
+	actorId: string | null,
+) {
+	const exam = await requireExam(examId, institutionId);
+	const enrollment = await courseEnrollmentRepo.findById(
+		studentCourseEnrollmentId,
+		institutionId,
+	);
+	if (!enrollment) throw notFound("Enrollment not found");
+	if (enrollment.classCourseId !== exam.classCourse) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Enrollment does not belong to the exam's class course",
+		});
+	}
+	const resolvedActor = await resolveDomainUserId(actorId);
+	return retakeOverridesRepo.upsert({
+		examId,
+		studentCourseEnrollmentId,
+		institutionId,
+		decision: payload.decision,
+		reason: payload.reason,
+		createdBy: resolvedActor,
+	});
+}
+
+export async function deleteRetakeOverride(
+	examId: string,
+	studentCourseEnrollmentId: string,
+	institutionId: string,
+) {
+	const exam = await requireExam(examId, institutionId);
+	const enrollment = await courseEnrollmentRepo.findById(
+		studentCourseEnrollmentId,
+		institutionId,
+	);
+	if (!enrollment) throw notFound("Enrollment not found");
+	if (enrollment.classCourseId !== exam.classCourse) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Enrollment does not belong to the exam's class course",
+		});
+	}
+	await retakeOverridesRepo.deleteByExamAndEnrollment(
+		examId,
+		studentCourseEnrollmentId,
+		institutionId,
+	);
+	return true;
 }
 
 export function assignScheduleRun(

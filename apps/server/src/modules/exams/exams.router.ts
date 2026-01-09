@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server";
+import { isRetakesFeatureEnabled } from "../../config/retakes";
 import {
 	router as createRouter,
 	tenantAdminProcedure,
@@ -7,13 +9,25 @@ import {
 import * as service from "./exams.service";
 import {
 	baseSchema,
+	deleteRetakeOverrideSchema,
 	idSchema,
 	listSchema,
 	lockSchema,
+	retakeEligibilitySchema,
+	retakeOverrideSchema,
 	submitSchema,
 	updateSchema,
 	validateSchema,
 } from "./exams.zod";
+
+function ensureRetakesEnabled() {
+	if (!isRetakesFeatureEnabled()) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: "Retake eligibility feature flag is disabled",
+		});
+	}
+}
 
 export const router = createRouter({
 	create: tenantGradingProcedure.input(baseSchema).mutation(({ ctx, input }) =>
@@ -87,4 +101,38 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.getExamById(input.id, ctx.institution.id),
 		),
+	listRetakeEligibility: tenantAdminProcedure
+		.input(retakeEligibilitySchema)
+		.query(async ({ ctx, input }) => {
+			if (!isRetakesFeatureEnabled()) {
+				return { enabled: false, items: [] as service.RetakeEligibilityRow[] };
+			}
+			const items = await service.listRetakeEligibility(
+				input.examId,
+				ctx.institution.id,
+			);
+			return { enabled: true, items };
+		}),
+	upsertRetakeOverride: tenantAdminProcedure
+		.input(retakeOverrideSchema)
+		.mutation(({ ctx, input }) => {
+			ensureRetakesEnabled();
+			return service.upsertRetakeOverride(
+				input.examId,
+				input.studentCourseEnrollmentId,
+				{ decision: input.decision, reason: input.reason },
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+			);
+		}),
+	deleteRetakeOverride: tenantAdminProcedure
+		.input(deleteRetakeOverrideSchema)
+		.mutation(({ ctx, input }) => {
+			ensureRetakesEnabled();
+			return service.deleteRetakeOverride(
+				input.examId,
+				input.studentCourseEnrollmentId,
+				ctx.institution.id,
+			);
+		}),
 });

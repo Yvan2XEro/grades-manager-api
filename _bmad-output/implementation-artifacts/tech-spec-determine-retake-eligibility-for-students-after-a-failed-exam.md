@@ -2,7 +2,7 @@
 title: 'Determine retake eligibility for students after a failed exam'
 slug: 'determine-retake-eligibility-for-students-after-a-failed-exam'
 created: '2026-01-09T03:31:26+01:00'
-status: 'ready-for-dev'
+status: 'implementation-complete'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack:
   - Bun runtime
@@ -97,19 +97,19 @@ Add a feature-flagged backend eligibility service that runs once an exam reaches
 
 ### Tasks
 
-- [ ] Task 1: Add feature flag plumbing for retakes
+- [x] Task 1: Add feature flag plumbing for retakes
   - File: `apps/server/src/config/index.ts`, `apps/server/src/config/retakes.ts`, `.env.example`
   - Action: Introduce `RETAKES_FEATURE_FLAG` env variable, load it in config, and expose a typed helper (e.g., `isRetakesEnabled(institutionId)` or boolean accessor). Document default behavior and ensure tenant-aware configs can read it.
   - Notes: Keep consistent with existing config modules (export object with getters). Update `.env.example` so deployers know to set the flag.
-- [ ] Task 2: Create `retake_overrides` table via migration + schema
+- [x] Task 2: Create `retake_overrides` table via migration + schema
   - File: `apps/server/src/db/schema/app-schema.ts`, new migration file under `apps/server/src/db/migrations`
   - Action: Define table with columns: `id` (uuid), `examId` FK, `studentCourseEnrollmentId` FK, `decision` enum (`force_eligible`/`force_ineligible`), `reason` text, `createdBy` FK (domain user), `createdAt` timestamp default now, `institutionId`. Add composite unique constraint on (`examId`, `studentCourseEnrollmentId`). Generate migration reflecting schema.
   - Notes: Ensure foreign keys cascade appropriately and indexes exist for exam + enrollment lookups.
-- [ ] Task 3: Implement repository + service helpers for overrides
+- [x] Task 3: Implement repository + service helpers for overrides
   - File: `apps/server/src/modules/exams/exams.repo.ts` (or dedicated sub-module), new file `apps/server/src/modules/exams/retake-overrides.repo.ts` if preferred
   - Action: Add repo functions to upsert/delete overrides, list overrides by exam, and fetch override map keyed by enrollment. Service layer should validate institution ownership and actor permissions.
   - Notes: Keep logic colocated with exams module to avoid premature module splitting.
-- [ ] Task 4: Build eligibility computation service
+- [x] Task 4: Build eligibility computation service
   - File: `apps/server/src/modules/exams/exams.service.ts`, possibly helper file `retake-eligibility.service.ts`
   - Action: Implement function `listRetakeEligibility(examId, institutionId)` that:
     - Validates exam exists and `status === "approved"`
@@ -119,27 +119,27 @@ Add a feature-flagged backend eligibility service that runs once an exam reaches
     - Incorporates overrides: `force_eligible` always included, `force_ineligible` always excluded (even if failing)
     - Returns deterministic rows with reason codes (e.g., FAILED_EXAM, OVERRIDE_INCLUDE, OVERRIDE_EXCLUDE)
   - Notes: Reuse repos where possible; avoid N+1 queries by batching grade/enrollment fetches.
-- [ ] Task 5: Expose admin router procedures
+- [x] Task 5: Expose admin router procedures
   - File: `apps/server/src/modules/exams/exams.router.ts`
   - Action: Add `admin.exams.listRetakeEligibility` procedure (tenant admin only) that checks feature flag; when disabled, return `{ enabled: false, items: [] }`. When enabled, call the service, return `{ enabled: true, items, overrides }`. Add mutations for setting/removing overrides with validation.
   - Notes: Input schema should accept `examId`, optional override payload. Ensure TRPC errors mirror existing patterns.
-- [ ] Task 6: Update tests
+- [x] Task 6: Update tests
   - File: `apps/server/src/modules/exams/__tests__/exams.caller.test.ts`
   - Action: Add caller tests covering: feature flag disabled returns empty; enabled scenario computing eligibility with fixture data (failed grade, attempt counts); override behavior (force include/exclude). Seed necessary data via `test-utils`.
   - Notes: Include edge cases like exam not approved (expect BAD_REQUEST) and attempt limit reached.
-- [ ] Task 7: Wire supporting repos/services
+- [x] Task 7: Wire supporting repos/services
   - File: `apps/server/src/modules/grades/grades.repo.ts`, `apps/server/src/modules/student-course-enrollments/student-course-enrollments.repo.ts`
   - Action: Add query helpers to fetch grades per exam as maps, and to fetch enrollment attempts scoped to exam’s course/year to check retake counts efficiently.
   - Notes: Keep functions generic for reuse later (e.g., `listByClassCourseWithAttempts`).
 
 ### Acceptance Criteria
 
-- [ ] AC1: Given an approved exam with failing students and feature flag enabled, when the registrar calls `admin.exams.listRetakeEligibility`, then the response returns `enabled: true` with each eligible student listed along with reason codes and override metadata.
-- [ ] AC2: Given an exam that is not approved, when `admin.exams.listRetakeEligibility` is called, then the service rejects the request with a BAD_REQUEST error indicating the exam is not finalized.
-- [ ] AC3: Given the feature flag is disabled, when `admin.exams.listRetakeEligibility` is called, then the router returns `enabled: false` and an empty items array without touching the database.
-- [ ] AC4: Given a student has already consumed the single retake attempt for the course in the academic year, when eligibility is requested, then that student is excluded unless a `force_eligible` override exists.
-- [ ] AC5: Given overrides exist, when eligibility is computed, then `force_ineligible` entries suppress otherwise eligible students and `force_eligible` entries include students even if they do not meet grade-based criteria, with the override reason reflected in the response.
-- [ ] AC6: Given registrar submits an override mutation, when the request succeeds, then the override is persisted in `retake_overrides` with audit metadata and subsequent eligibility calls reflect the change.
+- [x] AC1: Given an approved exam with failing students and feature flag enabled, when the registrar calls `admin.exams.listRetakeEligibility`, then the response returns `enabled: true` with each eligible student listed along with reason codes and override metadata.
+- [x] AC2: Given an exam that is not approved, when `admin.exams.listRetakeEligibility` is called, then the service rejects the request with a BAD_REQUEST error indicating the exam is not finalized.
+- [x] AC3: Given the feature flag is disabled, when `admin.exams.listRetakeEligibility` is called, then the router returns `enabled: false` and an empty items array without touching the database.
+- [x] AC4: Given a student has already consumed the single retake attempt for the course in the academic year, when eligibility is requested, then that student is excluded unless a `force_eligible` override exists.
+- [x] AC5: Given overrides exist, when eligibility is computed, then `force_ineligible` entries suppress otherwise eligible students and `force_eligible` entries include students even if they do not meet grade-based criteria, with the override reason reflected in the response.
+- [x] AC6: Given registrar submits an override mutation, when the request succeeds, then the override is persisted in `retake_overrides` with audit metadata and subsequent eligibility calls reflect the change.
 
 ## Additional Context
 

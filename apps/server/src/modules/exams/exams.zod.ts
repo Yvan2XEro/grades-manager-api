@@ -32,3 +32,19 @@ export const validateSchema = z.object({
 	examId: z.string(),
 	status: z.enum(["approved", "rejected"]),
 });
+
+export const retakeEligibilitySchema = z.object({
+	examId: z.string(),
+});
+
+export const retakeOverrideSchema = z.object({
+	examId: z.string(),
+	studentCourseEnrollmentId: z.string(),
+	decision: z.enum(["force_eligible", "force_ineligible"]),
+	reason: z.string().trim().min(1),
+});
+
+export const deleteRetakeOverrideSchema = retakeOverrideSchema.pick({
+	examId: true,
+	studentCourseEnrollmentId: true,
+});

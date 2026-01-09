@@ -73,6 +73,12 @@ export type NotificationChannel = (typeof notificationChannels)[number];
 export const notificationStatuses = ["pending", "sent", "failed"] as const;
 export type NotificationStatus = (typeof notificationStatuses)[number];
 
+export const retakeOverrideDecisions = [
+	"force_eligible",
+	"force_ineligible",
+] as const;
+export type RetakeOverrideDecision = (typeof retakeOverrideDecisions)[number];
+
 /** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
 	"domain_users",
@@ -880,6 +886,41 @@ export const grades = pgTable(
 		unique("uq_grades_student_exam").on(t.student, t.exam),
 		index("idx_grades_student_id").on(t.student),
 		index("idx_grades_exam_id").on(t.exam),
+	],
+);
+
+export const retakeOverrides = pgTable(
+	"retake_overrides",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		studentCourseEnrollmentId: text("student_course_enrollment_id")
+			.notNull()
+			.references(() => studentCourseEnrollments.id, { onDelete: "cascade" }),
+		decision: text("decision")
+			.$type<RetakeOverrideDecision>()
+			.notNull(),
+		reason: text("reason").notNull(),
+		createdBy: text("created_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_retake_override_exam_enrollment").on(
+			t.examId,
+			t.studentCourseEnrollmentId,
+		),
+		index("idx_retake_override_institution").on(t.institutionId),
+		index("idx_retake_override_exam").on(t.examId),
+		index("idx_retake_override_enrollment").on(t.studentCourseEnrollmentId),
 	],
 );
 

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -281,5 +282,128 @@ describe("exams router", () => {
 				(item) => item.classId === semesterClass.id,
 			),
 		).toBe(true);
+	});
+
+	describe("retake eligibility endpoints", () => {
+		const originalFlag = process.env.RETAKES_FEATURE_FLAG;
+		beforeAll(() => {
+			process.env.RETAKES_FEATURE_FLAG = "true";
+		});
+
+		afterAll(() => {
+			process.env.RETAKES_FEATURE_FLAG = originalFlag;
+		});
+
+		it("short-circuits when feature flag disabled", async () => {
+			process.env.RETAKES_FEATURE_FLAG = "false";
+			const admin = createCaller(asAdmin());
+			const response = await admin.exams.listRetakeEligibility({
+				examId: randomUUID(),
+			});
+			expect(response).toEqual({ enabled: false, items: [] });
+			process.env.RETAKES_FEATURE_FLAG = "true";
+		});
+
+		it("rejects eligibility listing when exam is not approved", async () => {
+			const admin = createCaller(asAdmin());
+			const classCourse = await createClassCourse();
+			const student = await createStudent({ class: classCourse.class });
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
+			const exam = await admin.exams.create({
+				name: "Draft Exam",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 40,
+				classCourseId: classCourse.id,
+			});
+			await expect(
+				admin.exams.listRetakeEligibility({ examId: exam.id }),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+
+		it("computes eligibility rows and applies overrides", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "8" },
+			});
+			const response = await admin.exams.listRetakeEligibility({
+				examId: fixture.exam.id,
+			});
+			expect(response.enabled).toBe(true);
+			expect(response.items).toHaveLength(1);
+			const row = response.items[0];
+			expect(row.status).toBe("eligible");
+			expect(row.reasons).toContain("FAILED_EXAM");
+
+			await admin.exams.upsertRetakeOverride({
+				examId: fixture.exam.id,
+				studentCourseEnrollmentId: row.studentCourseEnrollmentId,
+				decision: "force_ineligible",
+				reason: "jury decision",
+			});
+			const overridden = await admin.exams.listRetakeEligibility({
+				examId: fixture.exam.id,
+			});
+			expect(overridden.items[0].status).toBe("ineligible");
+			expect(overridden.items[0].override?.decision).toBe("force_ineligible");
+
+			await admin.exams.deleteRetakeOverride({
+				examId: fixture.exam.id,
+				studentCourseEnrollmentId: row.studentCourseEnrollmentId,
+			});
+			const cleared = await admin.exams.listRetakeEligibility({
+				examId: fixture.exam.id,
+			});
+			expect(cleared.items[0].status).toBe("eligible");
+			expect(cleared.items[0].override).toBeUndefined();
+		});
+
+		it("enforces attempt limits while allowing overrides", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "9" },
+			});
+			const existingEnrollment =
+				await db.query.studentCourseEnrollments.findFirst({
+					where: eq(
+						schema.studentCourseEnrollments.classCourseId,
+						fixture.classCourse.id,
+					),
+				});
+			if (!existingEnrollment) {
+				throw new Error("Enrollment not found for fixture");
+			}
+			await db.insert(schema.studentCourseEnrollments).values({
+				id: randomUUID(),
+				studentId: existingEnrollment.studentId,
+				classCourseId: existingEnrollment.classCourseId,
+				courseId: existingEnrollment.courseId,
+				sourceClassId: existingEnrollment.sourceClassId,
+				academicYearId: existingEnrollment.academicYearId,
+				status: "completed",
+				attempt: existingEnrollment.attempt + 1,
+				creditsAttempted: existingEnrollment.creditsAttempted,
+				creditsEarned: existingEnrollment.creditsAttempted,
+				startedAt: new Date(),
+				completedAt: new Date(),
+			});
+			const limited = await admin.exams.listRetakeEligibility({
+				examId: fixture.exam.id,
+			});
+			expect(limited.items[0].status).toBe("ineligible");
+			expect(limited.items[0].reasons).toContain("ATTEMPT_LIMIT_REACHED");
+
+			await admin.exams.upsertRetakeOverride({
+				examId: fixture.exam.id,
+				studentCourseEnrollmentId: limited.items[0].studentCourseEnrollmentId,
+				decision: "force_eligible",
+				reason: "jury override",
+			});
+			const overridden = await admin.exams.listRetakeEligibility({
+				examId: fixture.exam.id,
+			});
+			expect(overridden.items[0].status).toBe("eligible");
+			expect(overridden.items[0].reasons).toContain("OVERRIDE_FORCE_ELIGIBLE");
+		});
 	});
 });
