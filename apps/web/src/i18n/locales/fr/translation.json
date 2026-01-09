@@ -333,24 +333,6 @@
 				"editTitle": "Modifier le format"
 			}
 		},
-		"notifications": {
-			"title": "Centre de notifications",
-			"subtitle": "Alertes de workflow envoyées au personnel et aux étudiants",
-			"gradeValidated": "Validation des notes terminée",
-			"gradeValidatedDesc": "Un examen a été validé et verrouillé.",
-			"windowOpened": "Fenêtre d'inscription ouverte",
-			"windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
-			"justNow": "À l'instant",
-			"queueTitle": "Dernières notifications",
-			"empty": "Aucune notification pour le moment.",
-			"actions": {
-				"flush": "Vider la file",
-				"ack": "Accuser réception"
-			},
-			"toast": {
-				"flushed": "Notifications en attente supprimées"
-			}
-		},
 		"dashboard": {
 			"title": "Tableau de bord administrateur",
 			"activeYear": "Année active : {{year}}",
@@ -865,7 +847,7 @@
 				"title": "Types disponibles",
 				"description": "Les examens planifiés pourront réutiliser ces types.",
 				"name": "Nom",
-				"description": "Description"
+				"descriptionColumn": "Description"
 			},
 			"empty": "Aucun type d'examen pour le moment.",
 			"form": {
@@ -891,9 +873,6 @@
 		"exportTemplates": {
 			"title": "Modèles d'exportation",
 			"subtitle": "Personnalisez la mise en page, les colonnes, les en-têtes et le style des exports de notes.",
-			"actions": {
-				"add": "Ajouter un modèle"
-			},
 			"filter": {
 				"all": "Tous les types"
 			},
@@ -947,6 +926,7 @@
 				"setDefault": "Définir par défaut",
 				"edit": "Éditer le modèle",
 				"rename": "Renommer",
+				"add": "Ajouter un modèle",
 				"delete": "Supprimer"
 			},
 			"editor": {
@@ -1040,22 +1020,6 @@
 					"watermarkOpacity": "Opacité",
 					"watermarkFontSize": "Taille de police",
 					"watermarkRotation": "Rotation (degrés)"
-				},
-				"template": {
-					"editorTitle": "Éditeur de modèle HTML",
-					"editorDescription": "Écrivez un modèle Handlebars avec HTML/CSS personnalisé.",
-					"placeholder": "Entrez votre modèle Handlebars personnalisé ici...",
-					"generatePreview": "Générer l'aperçu",
-					"reset": "Réinitialiser par défaut",
-					"previewTitle": "Aperçu",
-					"previewDescription": "Aperçu en direct avec données de test",
-					"download": "Télécharger HTML",
-					"noPreview": "Aucun aperçu disponible",
-					"clickGenerate": "Cliquez sur 'Générer l'aperçu' pour voir le rendu",
-					"helpTitle": "Aide sur le modèle:",
-					"helpHandlebars": "Utilisez la syntaxe Handlebars: {{variable}}, {{#if}}, {{#each}}",
-					"helpVariables": "Variables disponibles: students, headerConfig, styleConfig",
-					"helpConfig": "Les configurations sont automatiquement appliquées au modèle"
 				},
 				"preview": {
 					"success": "Aperçu généré avec succès",
@@ -1534,6 +1498,16 @@
 				"withdrawBtn": "Retirer",
 				"retakeBtn": "Recomposer",
 				"noCourses": "Cette classe n'a pas encore de cours affectés."
+			},
+			"warnings": {
+				"title": "Avertissements de prérequis",
+				"description": "Certaines inscriptions présentent des prérequis non satisfaits.",
+				"mandatory": "Écart obligatoire",
+				"recommended": "Écart recommandé",
+				"corequisite": "Cours co-requis en cours",
+				"courseFallback": "Cours {{courseId}}",
+				"courseLabel": "{{name}} ({{code}})",
+				"appliesTo": "Requis pour {{course}}"
 			}
 		},
 		"notifications": {

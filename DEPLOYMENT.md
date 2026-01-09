@@ -58,15 +58,15 @@ docker compose up
 docker compose build
 
 # Tag images (if needed)
-docker tag grades-manager-api-server:latest ghcr.io/yvan2xero/grades-manager-server:latest
-docker tag grades-manager-api-web:latest ghcr.io/yvan2xero/grades-manager-web:latest
+docker tag tkams-server:latest ghcr.io/yvan2xero/tkams-server:latest
+docker tag tkams-web:latest ghcr.io/yvan2xero/tkams-web:latest
 
 # Login to GHCR
 echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 
 # Push images
-docker push ghcr.io/yvan2xero/grades-manager-server:latest
-docker push ghcr.io/yvan2xero/grades-manager-web:latest
+docker push ghcr.io/yvan2xero/tkams-server:latest
+docker push ghcr.io/yvan2xero/tkams-web:latest
 ```
 
 2. **Set up environment variables**:
@@ -128,7 +128,7 @@ git commit -m "chore: add database migrations"
 
 # Rebuild and push new images
 docker compose build server
-docker push ghcr.io/yvan2xero/grades-manager-server:latest
+docker push ghcr.io/yvan2xero/tkams-server:latest
 
 # Deploy - migrations will run automatically
 cd deployments/docker
@@ -243,8 +243,8 @@ cd deployments/docker
 docker compose --env-file .env -f docker-compose.prod.yml down -v
 
 # Remove images
-docker rmi ghcr.io/yvan2xero/grades-manager-server:latest
-docker rmi ghcr.io/yvan2xero/grades-manager-web:latest
+docker rmi ghcr.io/yvan2xero/tkams-server:latest
+docker rmi ghcr.io/yvan2xero/tkams-web:latest
 ```
 
 ## CI/CD Integration
@@ -272,8 +272,8 @@ jobs:
 
       - name: Push images
         run: |
-          docker push ghcr.io/yvan2xero/grades-manager-server:latest
-          docker push ghcr.io/yvan2xero/grades-manager-web:latest
+          docker push ghcr.io/yvan2xero/tkams-server:latest
+          docker push ghcr.io/yvan2xero/tkams-web:latest
 
       - name: Deploy to server
         run: |

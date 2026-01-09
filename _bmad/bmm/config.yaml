@@ -3,7 +3,7 @@
 # Version: 6.0.0-alpha.22
 # Date: 2026-01-06T22:15:51.568Z
 
-project_name: grades-manager-api
+project_name: TKAMS (Tefoye and Kana Academic Management System)
 user_skill_level: intermediate
 planning_artifacts: "{project-root}/_bmad-output/planning-artifacts"
 implementation_artifacts: "{project-root}/_bmad-output/implementation-artifacts"

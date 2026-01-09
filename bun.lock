@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "grades-manager-api",
+      "name": "tkams",
       "devDependencies": {
         "@biomejs/biome": "^2.2.0",
       },

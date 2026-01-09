@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +33,152 @@ import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 type CourseEnrollmentListResponse =
 	RouterOutputs["studentCourseEnrollments"]["list"];
 type CourseEnrollmentRow = CourseEnrollmentListResponse["items"][number];
+type EnrollmentCreateResponse =
+	RouterOutputs["studentCourseEnrollments"]["create"];
+type PrerequisiteWarning =
+	EnrollmentCreateResponse["warnings"][number];
+type WarningCategory = "mandatory" | "recommended" | "corequisite";
+
+const warningTranslationDefaults = {
+	mandatory: "Mandatory gap",
+	recommended: "Recommended gap",
+	corequisite: "Co-requisite in progress",
+} as const;
+
+const warningMetaMap: Record<
+	WarningCategory,
+	{
+		badgeClass: string;
+		translationKey: keyof typeof warningTranslationDefaults;
+	}
+> = {
+	mandatory: {
+		badgeClass: "border-amber-200 bg-amber-50 text-amber-900",
+		translationKey: "mandatory",
+	},
+	recommended: {
+		badgeClass: "border-slate-200 bg-slate-50 text-slate-800",
+		translationKey: "recommended",
+	},
+	corequisite: {
+		badgeClass: "border-blue-200 bg-blue-50 text-blue-800",
+		translationKey: "corequisite",
+	},
+};
+
+const resolveWarningCategory = (warning: PrerequisiteWarning): WarningCategory => {
+	if (warning.state === "in-progress") {
+		return "corequisite";
+	}
+	return warning.prerequisiteType === "mandatory"
+		? "mandatory"
+		: "recommended";
+};
+
+const getWarningMeta = (
+	category: WarningCategory,
+	t: TFunction<"translation", undefined>,
+) => {
+	const meta = warningMetaMap[category];
+	return {
+		badgeClass: meta.badgeClass,
+		label: t(`admin.enrollments.warnings.${meta.translationKey}`, {
+			defaultValue: warningTranslationDefaults[meta.translationKey],
+		}),
+	};
+};
+
+const buildCourseLabel = (
+	name: string | null,
+	code: string | null,
+	fallbackId: string | null,
+	t: TFunction<"translation", undefined>,
+) => {
+	if (name && code) {
+		return t("admin.enrollments.warnings.courseLabel", {
+			defaultValue: "{{name}} ({{code}})",
+			name,
+			code,
+		});
+	}
+	if (name) return name;
+	if (code) return code;
+	return t("admin.enrollments.warnings.courseFallback", {
+		defaultValue: "Course {{courseId}}",
+		courseId: fallbackId ?? "N/A",
+	});
+};
+
+const PrerequisiteWarningsList = ({
+	warnings,
+	t,
+	showDescription = true,
+}: {
+	warnings: PrerequisiteWarning[];
+	t: TFunction<"translation", undefined>;
+	showDescription?: boolean;
+}) => {
+	if (!warnings.length) return null;
+	const alertClass = showDescription
+		? "border-amber-200 bg-amber-50 text-amber-900"
+		: "border-amber-200 bg-amber-50 text-amber-900 text-xs sm:text-sm";
+	return (
+		<Alert className={alertClass}>
+			<AlertTitle className="text-sm font-semibold">
+				{t("admin.enrollments.warnings.title", {
+					defaultValue: "Prerequisite warnings",
+				})}
+			</AlertTitle>
+			<AlertDescription className="grid gap-2">
+				{showDescription ? (
+					<p className="text-xs text-muted-foreground sm:text-sm">
+						{t("admin.enrollments.warnings.description", {
+							defaultValue:
+								"Review these unmet prerequisites before confirming next steps.",
+						})}
+					</p>
+				) : null}
+				{warnings.map((warning, index) => {
+					const category = resolveWarningCategory(warning);
+					const meta = getWarningMeta(category, t);
+					const prerequisiteLabel = buildCourseLabel(
+						warning.prerequisiteCourseName,
+						warning.prerequisiteCourseCode,
+						warning.prerequisiteCourseId,
+						t,
+					);
+					const targetLabel = buildCourseLabel(
+						warning.targetCourseName,
+						warning.targetCourseCode,
+						warning.targetCourseId,
+						t,
+					);
+					return (
+						<div
+							key={`${warning.prerequisiteCourseId}-${warning.targetCourseId}-${index}`}
+							className="space-y-1"
+						>
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge variant="outline" className={meta.badgeClass}>
+									{meta.label}
+								</Badge>
+								<span className="font-medium text-gray-900 text-sm">
+									{prerequisiteLabel}
+								</span>
+							</div>
+							<p className="text-xs text-muted-foreground sm:text-sm">
+								{t("admin.enrollments.warnings.appliesTo", {
+									defaultValue: "Required for {{course}}",
+									course: targetLabel,
+								})}
+							</p>
+						</div>
+					);
+				})}
+			</AlertDescription>
+		</Alert>
+	);
+};
 
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
@@ -83,6 +231,12 @@ const EnrollmentManagement = () => {
 	const [selectedStudent, setSelectedStudent] = useState<string>("");
 	const [rosterModalOpen, setRosterModalOpen] = useState(false);
 	const [autoEnrollDialogOpen, setAutoEnrollDialogOpen] = useState(false);
+	const [courseWarnings, setCourseWarnings] = useState<
+		Record<string, PrerequisiteWarning[]>
+	>({});
+	const [autoEnrollWarnings, setAutoEnrollWarnings] = useState<
+		PrerequisiteWarning[]
+	>([]);
 
 	const courseEnrollmentQuery = useQuery({
 		...trpc.studentCourseEnrollments.list.queryOptions({
@@ -139,12 +293,23 @@ const EnrollmentManagement = () => {
 				classCourseId,
 				status: "active",
 			}),
-		onSuccess: () => {
+		onSuccess: (result, classCourseIdParam) => {
 			toast.success(
 				t("admin.enrollments.toast.courseEnrolled", {
 					defaultValue: "Student enrolled in course",
 				}),
 			);
+			if (classCourseIdParam) {
+				setCourseWarnings((prev) => {
+					const next = { ...prev };
+					if (result.warnings?.length) {
+						next[classCourseIdParam] = result.warnings;
+					} else {
+						delete next[classCourseIdParam];
+					}
+					return next;
+				});
+			}
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryKey(),
 			);
@@ -201,7 +366,13 @@ const EnrollmentManagement = () => {
 					count: result.createdCount,
 				}),
 			);
-			setAutoEnrollDialogOpen(false);
+			if (result.warnings?.length) {
+				setAutoEnrollWarnings(result.warnings);
+				setAutoEnrollDialogOpen(true);
+			} else {
+				setAutoEnrollWarnings([]);
+				setAutoEnrollDialogOpen(false);
+			}
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryKey(),
 			);
@@ -226,13 +397,29 @@ const EnrollmentManagement = () => {
 		setSelectedStudent("");
 	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
+	useEffect(() => {
+		if (!rosterModalOpen) {
+			setCourseWarnings({});
+		}
+	}, [rosterModalOpen]);
+
+	useEffect(() => {
+		if (!selectedStudent) {
+			setCourseWarnings({});
+		}
+	}, [selectedStudent]);
+
 	const openRosterForStudent = (studentId: string) => {
 		setSelectedStudent(studentId);
+		setCourseWarnings({});
 		setRosterModalOpen(true);
 	};
 
 	const handleRosterModalChange = (open: boolean) => {
 		setRosterModalOpen(open);
+		if (!open) {
+			setCourseWarnings({});
+		}
 	};
 
 	const selectedClassDetails = useMemo(() => {
@@ -246,6 +433,11 @@ const EnrollmentManagement = () => {
 			classCoursesCount > 0 &&
 			!autoEnrollMutation.isPending,
 	);
+
+	const handleAutoEnrollConfirm = () => {
+		setAutoEnrollWarnings([]);
+		autoEnrollMutation.mutate();
+	};
 
 	return (
 		<div className="space-y-6">
@@ -421,7 +613,12 @@ const EnrollmentManagement = () => {
 					<div className="flex flex-wrap gap-2">
 						<AlertDialog
 							open={autoEnrollDialogOpen}
-							onOpenChange={setAutoEnrollDialogOpen}
+							onOpenChange={(open) => {
+								setAutoEnrollDialogOpen(open);
+								if (!open) {
+									setAutoEnrollWarnings([]);
+								}
+							}}
 						>
 							<AlertDialogTrigger asChild>
 								<Button
@@ -453,12 +650,20 @@ const EnrollmentManagement = () => {
 										})}
 									</AlertDialogDescription>
 								</AlertDialogHeader>
+								{autoEnrollWarnings.length > 0 ? (
+									<div className="py-2">
+										<PrerequisiteWarningsList
+											warnings={autoEnrollWarnings}
+											t={t}
+										/>
+									</div>
+								) : null}
 								<AlertDialogFooter>
 									<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
 										{t("common.actions.cancel", { defaultValue: "Cancel" })}
 									</AlertDialogCancel>
 									<AlertDialogAction
-										onClick={() => autoEnrollMutation.mutate()}
+										onClick={handleAutoEnrollConfirm}
 										disabled={autoEnrollMutation.isPending}
 									>
 										{autoEnrollMutation.isPending && (
@@ -687,6 +892,8 @@ const EnrollmentManagement = () => {
 														(canReactivate
 															? reactivateCourse.isPending
 															: assignCourse.isPending);
+													const warningsForCourse =
+														courseWarnings[course.id] ?? [];
 													const handlePrimaryAction = () => {
 														if (!selectedStudent) return;
 														if (canReactivate) {
@@ -696,105 +903,115 @@ const EnrollmentManagement = () => {
 														}
 													};
 													return (
-														<div
-															key={course.id}
-															className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-														>
-															<div className="space-y-1">
-																<p className="font-semibold text-gray-900 text-sm">
-																	{courseName}
-																</p>
-																<p className="text-gray-600 text-xs">
-																	{t("admin.enrollments.courseRoster.teacher", {
-																		defaultValue: "Teacher: {{value}}",
-																		value: teacherName,
-																	})}
-																</p>
-															</div>
-															<div className="flex flex-col gap-2 sm:items-end">
-																<Badge
-																	variant="outline"
-																	className={
-																		status === "active"
-																			? "border-emerald-200 bg-emerald-50 text-emerald-800"
-																			: status === "completed"
-																				? "border-blue-200 bg-blue-50 text-blue-800"
-																				: status === "failed"
-																					? "border-rose-200 bg-rose-50 text-rose-800"
-																					: "border-gray-200 bg-gray-50 text-gray-800"
-																	}
-																>
-																	{status === "none"
-																		? t(
-																				"admin.enrollments.courseRoster.notEnrolled",
-																				{
-																					defaultValue: "Not enrolled",
-																				},
-																			)
-																		: status}
-																</Badge>
-																<div className="flex flex-wrap gap-2">
-																	<Button
-																		type="button"
-																		size="xs"
+														<div key={course.id} className="space-y-2 px-4 py-3">
+															<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+																<div className="space-y-1">
+																	<p className="font-semibold text-gray-900 text-sm">
+																		{courseName}
+																	</p>
+																	<p className="text-gray-600 text-xs">
+																		{t(
+																			"admin.enrollments.courseRoster.teacher",
+																			{
+																				defaultValue: "Teacher: {{value}}",
+																				value: teacherName,
+																			},
+																		)}
+																	</p>
+																</div>
+																<div className="flex flex-col gap-2 sm:items-end">
+																	<Badge
 																		variant="outline"
-																		disabled={enrollDisabled}
-																		onClick={handlePrimaryAction}
+																		className={
+																			status === "active"
+																				? "border-emerald-200 bg-emerald-50 text-emerald-800"
+																				: status === "completed"
+																					? "border-blue-200 bg-blue-50 text-blue-800"
+																					: status === "failed"
+																						? "border-rose-200 bg-rose-50 text-rose-800"
+																						: "border-gray-200 bg-gray-50 text-gray-800"
+																		}
 																	>
-																		{canReactivate
+																		{status === "none"
 																			? t(
-																					"admin.enrollments.courseRoster.reactivateBtn",
+																					"admin.enrollments.courseRoster.notEnrolled",
 																					{
-																						defaultValue: "Restore enrollment",
+																						defaultValue: "Not enrolled",
 																					},
 																				)
-																			: t(
-																					"admin.enrollments.courseRoster.enrollBtn",
-																					{
-																						defaultValue: "Enroll",
-																					},
-																				)}
-																	</Button>
-																	<Button
-																		type="button"
-																		size="xs"
-																		variant="secondary"
-																		disabled={
-																			!enrollment || withdrawCourse.isPending
-																		}
-																		onClick={() =>
-																			enrollment &&
-																			withdrawCourse.mutate({
-																				id: enrollment.id,
-																				status: "withdrawn",
-																			})
-																		}
-																	>
-																		{t(
-																			"admin.enrollments.courseRoster.withdrawBtn",
-																			{
-																				defaultValue: "Withdraw",
-																			},
-																		)}
-																	</Button>
-																	<Button
-																		type="button"
-																		size="xs"
-																		variant="ghost"
-																		disabled={!selectedStudent}
-																		onClick={() =>
-																			assignCourse.mutate(course.id)
-																		}
-																	>
-																		{t(
-																			"admin.enrollments.courseRoster.retakeBtn",
-																			{
-																				defaultValue: "Retake",
-																			},
-																		)}
-																	</Button>
+																			: status}
+																	</Badge>
+																	<div className="flex flex-wrap gap-2">
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="outline"
+																			disabled={enrollDisabled}
+																			onClick={handlePrimaryAction}
+																		>
+																			{canReactivate
+																				? t(
+																						"admin.enrollments.courseRoster.reactivateBtn",
+																						{
+																							defaultValue:
+																								"Restore enrollment",
+																						},
+																					)
+																				: t(
+																						"admin.enrollments.courseRoster.enrollBtn",
+																						{
+																							defaultValue: "Enroll",
+																						},
+																					)}
+																		</Button>
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="secondary"
+																			disabled={
+																				!enrollment || withdrawCourse.isPending
+																			}
+																			onClick={() =>
+																				enrollment &&
+																				withdrawCourse.mutate({
+																					id: enrollment.id,
+																					status: "withdrawn",
+																				})
+																			}
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.withdrawBtn",
+																				{
+																					defaultValue: "Withdraw",
+																				},
+																			)}
+																		</Button>
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="ghost"
+																			disabled={!selectedStudent}
+																			onClick={() =>
+																				assignCourse.mutate(course.id)
+																			}
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.retakeBtn",
+																				{
+																					defaultValue: "Retake",
+																				},
+																			)}
+																		</Button>
+																	</div>
 																</div>
 															</div>
+															{warningsForCourse.length > 0 ? (
+																<PrerequisiteWarningsList
+																	warnings={warningsForCourse}
+																	t={t}
+																	showDescription={false}
+																/>
+															) : null}
 														</div>
 													);
 												}) ?? (

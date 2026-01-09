@@ -1,51 +1,61 @@
-generated: "2026-01-06T23:41:44+01:00"
-project: "grades-manager-api"
-project_type: "BMad Method (brownfield)"
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2026-01-09T01:17:33+01:00"
+project: "TKAMS"
+project_type: "{{project_type}}"
 selected_track: "bmad-method"
 field_type: "brownfield"
 workflow_path: "_bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
-workflow_status:
-  - phase: "Documentation"
-    note: "Prerequisite for brownfield work when legacy systems are undocumented"
+workflow_status: |
+  - phase: 0
+    name: Documentation
     workflows:
-      - id: "document-project"
-        status: "docs/architecture.md"
-        notes: "Architecture snapshot + module inventory already capture the legacy system."
-  - phase: "Analysis (Optional)"
+      - id: document-project
+        status: docs/bmad-index.md
+  - phase: 1
+    name: Analysis (Optional)
     workflows:
-      - id: "brainstorm-project"
-        status: "skipped"
-        notes: "Existing specs already define opportunities and guardrails."
-      - id: "research"
-        status: "skipped"
-        notes: "Domain and competitive analysis reside in docs/analyze.md."
-      - id: "product-brief"
-        status: "skipped"
-        notes: "Brownfield engagement; strategic brief covered by docs/analyze.md."
-  - phase: "Planning"
+      - id: brainstorm-project
+        status: skipped
+      - id: research
+        status: skipped
+      - id: product-brief
+        status: skipped
+  - phase: 2
+    name: Planning
     workflows:
-      - id: "prd"
-        status: "docs/analyze.md"
-        notes: "Functional + technical analysis describes the complete requirements."
-      - id: "create-ux-design"
-        status: "docs/analyze.md#user-interface-design"
-        notes: "Screen-level behaviors and flows are captured in the UI design chapter."
-  - phase: "Solutioning"
+      - id: prd
+        status: _bmad-output/planning-artifacts/prd.md
+      - id: create-ux-design
+        status: conditional
+  - phase: 3
+    name: Solutioning
     workflows:
-      - id: "create-architecture"
-        status: "docs/architecture.md"
-        notes: "Current runtime, router matrix, and schema docs describe the system design."
-      - id: "create-epics-and-stories"
-        status: "TODO.md"
-        notes: "Roadmap outlines epics/phases with detailed tasks and acceptance criteria."
-      - id: "test-design"
-        status: "docs/cypress-critical-features.md"
-        notes: "Critical workflow coverage and priorities are listed in the Cypress guide."
-      - id: "implementation-readiness"
-        status: "pending"
-        notes: "Need a gating review tying PRD + architecture + backlog before new delivery."
-  - phase: "Implementation"
+      - id: create-architecture
+        status: _bmad-output/planning-artifacts/architecture.md
+      - id: create-epics-and-stories
+        status: required
+      - id: test-design
+        status: optional
+      - id: implementation-readiness
+        status: _bmad-output/planning-artifacts/implementation-readiness-report-2026-01-06.md
+  - phase: 4
+    name: Implementation
     workflows:
-      - id: "sprint-planning"
-        status: "pending"
-        notes: "Sprint roadmap not yet captured once readiness review is complete."
+      - id: sprint-planning
+        status: required

@@ -138,16 +138,16 @@
 #### Phase 3 – Context & APIs
 
 - [x] Update `createContext` to load the active organization/member and resolve the institution for every request.
-- [ ] Introduce reusable helpers (e.g., `requireInstitution`, scoped `adminProcedure`) so all routers/services receive the `institution_id` without re-querying.
-- [ ] Migrate the remaining services/routers (students, classes, class courses, enrollments, exams, grades, workflows, promotion rules, etc.) to require the tenant context and enforce `institution_id` filters.
+- [x] Introduce reusable helpers (e.g., `requireInstitution`, scoped `adminProcedure`) so all routers/services receive the `institution_id` without re-querying.
+- [x] Migrate the remaining services/routers (students, classes, class courses, enrollments, exams, grades, workflows, promotion rules, etc.) to require the tenant context and enforce `institution_id` filters.
 - [ ] Adjust TRPC/tests to verify cross-institution isolation fails appropriately (e.g., two tenants seeded via PGlite snapshot).
 
 #### Phase 3b – Better Auth organization context (see [`docs/better-auth-organization-context.md`](docs/better-auth-organization-context.md))
 
-- [ ] Delete the `requireDefaultInstitution*` helpers and make `createContext` reject requests without an active Better Auth organization instead of fabricating a tenant.
-- [ ] Thread the `institutionId` from context through modules still using the default helper (`class-courses`, `promotion-rules`, `lib/test-utils`, seeds, etc.) so every service/router works with the resolved tenant.
-- [ ] Refresh seeds + fixtures so they always create organization ↔ institution ↔ member records via the Better Auth flow (no hidden defaults).
-- [ ] On the frontend, detect the organization slug from the subdomain (fallback to `VITE_DEFAULT_ORGANIZATION_SLUG`), store it, and call `authClient.organization.setActiveOrganization({ slug })` after login so the backend receives the tenant.
+- [x] Delete the `requireDefaultInstitution*` helpers and make `createContext` reject requests without an active Better Auth organization instead of fabricating a tenant.
+- [x] Thread the `institutionId` from context through modules still using the default helper (`class-courses`, `promotion-rules`, `lib/test-utils`, seeds, etc.) so every service/router works with the resolved tenant.
+- [x] Refresh seeds + fixtures so they always create organization ↔ institution ↔ member records via the Better Auth flow (no hidden defaults).
+- [x] On the frontend, detect the organization slug from the subdomain (fallback to `VITE_DEFAULT_ORGANIZATION_SLUG`), store it, and call `authClient.organization.setActiveOrganization({ slug })` after login so the backend receives the tenant.
 
 #### Phase 4 – Seeds & onboarding
 

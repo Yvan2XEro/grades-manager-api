@@ -1412,7 +1412,7 @@
 				"title": "Available types",
 				"description": "All scheduled exams can reuse the following types.",
 				"name": "Name",
-				"description": "Description"
+				"descriptionColumn": "Description"
 			},
 			"empty": "No exam types yet.",
 			"form": {
@@ -1438,9 +1438,6 @@
 		"exportTemplates": {
 			"title": "Export templates",
 			"subtitle": "Customize report layouts, columns, headers, and styling for grade exports.",
-			"actions": {
-				"add": "Add template"
-			},
 			"filter": {
 				"all": "All types"
 			},
@@ -1494,6 +1491,7 @@
 				"setDefault": "Set as default",
 				"edit": "Edit template",
 				"rename": "Rename",
+				"add": "Add template",
 				"delete": "Delete"
 			},
 			"editor": {
@@ -1587,22 +1585,6 @@
 					"watermarkOpacity": "Opacity",
 					"watermarkFontSize": "Font Size",
 					"watermarkRotation": "Rotation (degrees)"
-				},
-				"template": {
-					"editorTitle": "HTML Template Editor",
-					"editorDescription": "Write Handlebars template with custom HTML/CSS.",
-					"placeholder": "Enter your custom Handlebars template here...",
-					"generatePreview": "Generate Preview",
-					"reset": "Reset to Default",
-					"previewTitle": "Preview",
-					"previewDescription": "Live preview with sample data",
-					"download": "Download HTML",
-					"noPreview": "No preview available",
-					"clickGenerate": "Click 'Generate Preview' to see the rendered output",
-					"helpTitle": "Template Help:",
-					"helpHandlebars": "Use Handlebars syntax: {{variable}}, {{#if}}, {{#each}}",
-					"helpVariables": "Available variables: students, headerConfig, styleConfig",
-					"helpConfig": "Configurations are automatically applied to the template"
 				},
 				"preview": {
 					"success": "Preview generated successfully",
@@ -2042,6 +2024,16 @@
 				"withdrawBtn": "Withdraw",
 				"retakeBtn": "Retake",
 				"noCourses": "This class has no courses assigned yet."
+			},
+			"warnings": {
+				"title": "Prerequisite warnings",
+				"description": "Review these unmet prerequisites before confirming next steps.",
+				"mandatory": "Mandatory gap",
+				"recommended": "Recommended gap",
+				"corequisite": "Co-requisite in progress",
+				"courseFallback": "Course {{courseId}}",
+				"courseLabel": "{{name}} ({{code}})",
+				"appliesTo": "Required for {{course}}"
 			}
 		},
 		"teachingUnits": {
@@ -2405,8 +2397,6 @@
 		"performance": {
 			"title": "Performance dashboard",
 			"subtitle": "Track your averages, credits, and course progress",
-			"cycleBadge": "Cycle: {{value}}",
-			"levelBadge": "Level: {{value}}",
 			"cycleBadge": "Cycle: {{value}}",
 			"levelBadge": "Level: {{value}}",
 			"trendTitle": "Progression",

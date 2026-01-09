@@ -211,7 +211,7 @@ export default function ExamTypes() {
 								<TableRow>
 									<TableHead>{t("admin.examTypes.table.name")}</TableHead>
 									<TableHead>
-										{t("admin.examTypes.table.description")}
+										{t("admin.examTypes.table.descriptionColumn")}
 									</TableHead>
 									<TableHead className="w-[120px] text-right">
 										{t("common.table.actions")}

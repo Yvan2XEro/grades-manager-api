@@ -22,7 +22,7 @@ documentInventory:
 # Implementation Readiness Assessment Report
 
 **Date:** 2026-01-06
-**Project:** grades-manager-api
+**Project:** TKAMS (Tefoye and Kana Academic Management System)
 
 ## Document Inventory
 

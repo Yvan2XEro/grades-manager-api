@@ -1411,8 +1411,9 @@ interface Resources {
 				};
 				"table": {
 					"title": "Available types";
-					"description": "Description";
+					"description": "All scheduled exams can reuse the following types.";
 					"name": "Name";
+					"descriptionColumn": "Description";
 				};
 				"empty": "No exam types yet.";
 				"form": {
@@ -1505,20 +1506,20 @@ interface Resources {
 						"template": "Template";
 					};
 					"template": {
-						"editorTitle": "HTML Template Editor";
-						"editorDescription": "Write Handlebars template with custom HTML/CSS.";
-						"placeholder": "Enter your custom Handlebars template here...";
-						"generatePreview": "Generate Preview";
-						"reset": "Reset to Default";
+						"editorTitle": "Template source";
+						"editorDescription": "Paste your Handlebars (.hbs) layout with static headers, logos, and styles.";
+						"placeholder": "<!-- Paste your template here -->";
+						"generatePreview": "Generate preview";
+						"helpTitle": "Tips";
+						"helpHandlebars": "Handlebars helpers like {{formatNumber}} remain available.";
+						"helpVariables": "Common variables: program, students, semester, academicYear, signatures.";
+						"helpStatic": "Logos and headers should be part of your template (no dynamic builder).";
 						"previewTitle": "Preview";
-						"previewDescription": "Live preview with sample data";
+						"previewDescription": "Render the template with sample data.";
 						"download": "Download HTML";
-						"noPreview": "No preview available";
-						"clickGenerate": "Click 'Generate Preview' to see the rendered output";
-						"helpTitle": "Template Help:";
-						"helpHandlebars": "Use Handlebars syntax: {{variable}}, {{#if}}, {{#each}}";
-						"helpVariables": "Available variables: students, headerConfig, styleConfig";
-						"helpConfig": "Configurations are automatically applied to the template";
+						"noPreview": "No preview yet";
+						"clickGenerate": "Click \"Generate preview\" after providing template content.";
+						"required": "Template content cannot be empty.";
 					};
 					"columns": {
 						"title": "Column Configuration";
@@ -2023,6 +2024,16 @@ interface Resources {
 					"withdrawBtn": "Withdraw";
 					"retakeBtn": "Retake";
 					"noCourses": "This class has no courses assigned yet.";
+				};
+				"warnings": {
+					"title": "Prerequisite warnings";
+					"description": "Review these unmet prerequisites before confirming next steps.";
+					"mandatory": "Mandatory gap";
+					"recommended": "Recommended gap";
+					"corequisite": "Co-requisite in progress";
+					"courseFallback": "Course {{courseId}}";
+					"courseLabel": "{{name}} ({{code}})";
+					"appliesTo": "Required for {{course}}";
 				};
 			};
 			"teachingUnits": {
