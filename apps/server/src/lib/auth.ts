@@ -33,7 +33,10 @@ export const auth = betterAuth({
 				session.activeOrganizationId && user.id
 					? await db.query.member.findFirst({
 							where: and(
-								eq(schema.member.organizationId, session.activeOrganizationId),
+								eq(
+									schema.member.organizationId,
+									session.activeOrganizationId,
+								),
 								eq(schema.member.userId, user.id),
 							),
 						})

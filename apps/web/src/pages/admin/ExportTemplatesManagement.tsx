@@ -1,21 +1,23 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { useNavigate } from "react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	Download,
 	FileText,
 	Pencil,
 	Plus,
+	Settings,
 	Star,
 	Trash2,
-	Download,
 	Upload,
-	Settings,
 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { z } from "zod";
+import ConfirmModal from "@/components/modals/ConfirmModal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -32,6 +34,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -49,6 +52,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import {
 	Table,
@@ -58,11 +62,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
-import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import { trpcClient } from "@/utils/trpc";
-import ConfirmModal from "@/components/modals/ConfirmModal";
 
 type ExportTemplate = {
 	id: string;
@@ -97,9 +97,8 @@ export default function ExportTemplatesManagement() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const [isRenameOpen, setIsRenameOpen] = useState(false);
-	const [renamingTemplate, setRenamingTemplate] = useState<ExportTemplate | null>(
-		null,
-	);
+	const [renamingTemplate, setRenamingTemplate] =
+		useState<ExportTemplate | null>(null);
 	const [deletingTemplate, setDeletingTemplate] =
 		useState<ExportTemplate | null>(null);
 	const [selectedType, setSelectedType] = useState<string>("all");
@@ -120,7 +119,8 @@ export default function ExportTemplatesManagement() {
 		queryKey: ["exportTemplates", selectedType],
 		queryFn: async () => {
 			const result = await trpcClient.exportTemplates.list.query({
-				type: selectedType === "all" ? undefined : (selectedType as any),
+				type:
+					selectedType === "all" ? undefined : (selectedType as any),
 			});
 			return result as ExportTemplate[];
 		},
@@ -179,7 +179,8 @@ export default function ExportTemplatesManagement() {
 		},
 		onError: (error: any) => {
 			toast.error(
-				error.message || t("admin.exportTemplates.toast.setDefaultError"),
+				error.message ||
+					t("admin.exportTemplates.toast.setDefaultError"),
 			);
 		},
 	});
@@ -218,7 +219,7 @@ export default function ExportTemplatesManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
+					<h1 className="font-bold text-3xl tracking-tight">
 						{t("admin.exportTemplates.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -226,7 +227,7 @@ export default function ExportTemplatesManagement() {
 					</p>
 				</div>
 				<Button onClick={() => navigate("/admin/export-templates/new")}>
-					<Plus className="h-4 w-4 mr-2" />
+					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.exportTemplates.actions.add")}
 				</Button>
 			</div>
@@ -235,12 +236,17 @@ export default function ExportTemplatesManagement() {
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle>{t("admin.exportTemplates.table.title")}</CardTitle>
+							<CardTitle>
+								{t("admin.exportTemplates.table.title")}
+							</CardTitle>
 							<CardDescription>
 								{t("admin.exportTemplates.table.description")}
 							</CardDescription>
 						</div>
-						<Select value={selectedType} onValueChange={setSelectedType}>
+						<Select
+							value={selectedType}
+							onValueChange={setSelectedType}
+						>
 							<SelectTrigger className="w-[200px]">
 								<SelectValue />
 							</SelectTrigger>
@@ -249,7 +255,10 @@ export default function ExportTemplatesManagement() {
 									{t("admin.exportTemplates.filter.all")}
 								</SelectItem>
 								{EXPORT_TYPES.map((type) => (
-									<SelectItem key={type.value} value={type.value}>
+									<SelectItem
+										key={type.value}
+										value={type.value}
+									>
 										{type.label}
 									</SelectItem>
 								))}
@@ -266,13 +275,21 @@ export default function ExportTemplatesManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>{t("admin.exportTemplates.table.name")}</TableHead>
-									<TableHead>{t("admin.exportTemplates.table.type")}</TableHead>
 									<TableHead>
-										{t("admin.exportTemplates.table.status")}
+										{t("admin.exportTemplates.table.name")}
+									</TableHead>
+									<TableHead>
+										{t("admin.exportTemplates.table.type")}
+									</TableHead>
+									<TableHead>
+										{t(
+											"admin.exportTemplates.table.status",
+										)}
 									</TableHead>
 									<TableHead className="text-right">
-										{t("admin.exportTemplates.table.actions")}
+										{t(
+											"admin.exportTemplates.table.actions",
+										)}
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -290,12 +307,16 @@ export default function ExportTemplatesManagement() {
 										<TableCell>
 											{template.isDefault ? (
 												<Badge className="bg-yellow-500">
-													<Star className="h-3 w-3 mr-1" />
-													{t("admin.exportTemplates.table.default")}
+													<Star className="mr-1 h-3 w-3" />
+													{t(
+														"admin.exportTemplates.table.default",
+													)}
 												</Badge>
 											) : (
 												<Badge variant="secondary">
-													{t("admin.exportTemplates.table.custom")}
+													{t(
+														"admin.exportTemplates.table.custom",
+													)}
 												</Badge>
 											)}
 										</TableCell>
@@ -305,9 +326,17 @@ export default function ExportTemplatesManagement() {
 													<Button
 														variant="ghost"
 														size="sm"
-														onClick={() => handleSetDefault(template)}
-														disabled={setDefaultMutation.isPending}
-														title={t("admin.exportTemplates.actions.setDefault")}
+														onClick={() =>
+															handleSetDefault(
+																template,
+															)
+														}
+														disabled={
+															setDefaultMutation.isPending
+														}
+														title={t(
+															"admin.exportTemplates.actions.setDefault",
+														)}
 													>
 														<Star className="h-4 w-4" />
 													</Button>
@@ -315,25 +344,45 @@ export default function ExportTemplatesManagement() {
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() => navigate(`/admin/export-templates/${template.id}`)}
-													title={t("admin.exportTemplates.actions.edit")}
+													onClick={() =>
+														navigate(
+															`/admin/export-templates/${template.id}`,
+														)
+													}
+													title={t(
+														"admin.exportTemplates.actions.edit",
+													)}
 												>
 													<Settings className="h-4 w-4" />
 												</Button>
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() => handleOpenRename(template)}
-													title={t("admin.exportTemplates.actions.rename")}
+													onClick={() =>
+														handleOpenRename(
+															template,
+														)
+													}
+													title={t(
+														"admin.exportTemplates.actions.rename",
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() => setDeletingTemplate(template)}
-													disabled={template.isDefault}
-													title={t("admin.exportTemplates.actions.delete")}
+													onClick={() =>
+														setDeletingTemplate(
+															template,
+														)
+													}
+													disabled={
+														template.isDefault
+													}
+													title={t(
+														"admin.exportTemplates.actions.delete",
+													)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -349,14 +398,21 @@ export default function ExportTemplatesManagement() {
 								<FileText className="h-12 w-12" />
 							</EmptyHeader>
 							<EmptyContent>
-								<h3 className="text-lg font-semibold">
+								<h3 className="font-semibold text-lg">
 									{t("admin.exportTemplates.empty.title")}
 								</h3>
-								<p className="text-sm text-muted-foreground">
-									{t("admin.exportTemplates.empty.description")}
+								<p className="text-muted-foreground text-sm">
+									{t(
+										"admin.exportTemplates.empty.description",
+									)}
 								</p>
-								<Button onClick={() => navigate("/admin/export-templates/new")} className="mt-4">
-									<Plus className="h-4 w-4 mr-2" />
+								<Button
+									onClick={() =>
+										navigate("/admin/export-templates/new")
+									}
+									className="mt-4"
+								>
+									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.exportTemplates.actions.add")}
 								</Button>
 							</EmptyContent>
@@ -387,7 +443,9 @@ export default function ExportTemplatesManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.exportTemplates.form.name")}
+											{t(
+												"admin.exportTemplates.form.name",
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input

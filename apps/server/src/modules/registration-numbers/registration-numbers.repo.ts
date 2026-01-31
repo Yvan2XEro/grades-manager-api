@@ -15,7 +15,10 @@ export async function list(opts: {
 		? eq(schema.registrationNumberFormats.institutionId, opts.institutionId)
 		: and(
 				eq(schema.registrationNumberFormats.isActive, true),
-				eq(schema.registrationNumberFormats.institutionId, opts.institutionId),
+				eq(
+					schema.registrationNumberFormats.institutionId,
+					opts.institutionId,
+				),
 			);
 	return db
 		.select()
@@ -45,7 +48,10 @@ export async function findActive(institutionId: string, agent?: Agent) {
 		.where(
 			and(
 				eq(schema.registrationNumberFormats.isActive, true),
-				eq(schema.registrationNumberFormats.institutionId, institutionId),
+				eq(
+					schema.registrationNumberFormats.institutionId,
+					institutionId,
+				),
 			),
 		)
 		.limit(1);

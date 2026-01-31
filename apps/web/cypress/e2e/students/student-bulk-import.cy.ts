@@ -90,9 +90,9 @@ Carol,Williams,carol.williams@example.com,2000-11-30,Bafoussam,female`;
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Now try to import with duplicate
 			cy.findByRole("button", {
@@ -164,7 +164,9 @@ NoEmail,User,,2000-11-30,Bafoussam,female`;
 			}).click();
 
 			// Should show error report
-			cy.contains(/error|errors|erreur/i, { timeout: 15000 }).should("exist");
+			cy.contains(/error|errors|erreur/i, { timeout: 15000 }).should(
+				"exist",
+			);
 			cy.contains(/1.*created|1.*success/i).should("exist");
 			cy.contains(/2.*error|2.*failed|2.*échec/i).should("exist");
 		});

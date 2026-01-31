@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { db } from "@/db";
-import type { Context } from "@/lib/context";
 import * as schema from "@/db/schema/app-schema";
+import type { Context } from "@/lib/context";
 import {
 	asAdmin,
 	createClass,

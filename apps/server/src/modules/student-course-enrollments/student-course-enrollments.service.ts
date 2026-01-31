@@ -36,7 +36,9 @@ const FINAL_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"failed",
 	"withdrawn",
 ];
-const SATISFIED_STATUSES: schema.StudentCourseEnrollmentStatus[] = ["completed"];
+const SATISFIED_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
+	"completed",
+];
 const IN_PROGRESS_STATUSES: schema.StudentCourseEnrollmentStatus[] = [
 	"planned",
 	"active",
@@ -70,7 +72,10 @@ async function fetchStudentContext(studentId: string) {
 		.where(eq(schema.students.id, studentId))
 		.limit(1);
 	if (!row) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Student not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student not found",
+		});
 	}
 	return row;
 }
@@ -90,7 +95,10 @@ async function fetchClassCourseContext(classCourseId: string) {
 			unitCredits: schema.teachingUnits.credits,
 		})
 		.from(schema.classCourses)
-		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
+		.innerJoin(
+			schema.classes,
+			eq(schema.classCourses.class, schema.classes.id),
+		)
 		.innerJoin(
 			schema.courses,
 			eq(schema.classCourses.course, schema.courses.id),
@@ -126,7 +134,9 @@ async function collectPrerequisiteWarnings(
 	studentId: string,
 	classCourse: Awaited<ReturnType<typeof fetchClassCourseContext>>,
 ) {
-	const prerequisites = await repo.listCoursePrerequisites(classCourse.courseId);
+	const prerequisites = await repo.listCoursePrerequisites(
+		classCourse.courseId,
+	);
 	if (!prerequisites.length) return [];
 	const prerequisiteCourseIds = prerequisites.map(
 		(prereq) => prereq.prerequisiteCourseId,
@@ -184,7 +194,10 @@ async function findLatestEnrollment(input: {
 		where: and(
 			eq(schema.studentCourseEnrollments.studentId, input.studentId),
 			eq(schema.studentCourseEnrollments.courseId, input.courseId),
-			eq(schema.studentCourseEnrollments.academicYearId, input.academicYearId),
+			eq(
+				schema.studentCourseEnrollments.academicYearId,
+				input.academicYearId,
+			),
 		),
 		orderBy: (enrollments, { desc }) => desc(enrollments.attempt),
 	});
@@ -200,14 +213,18 @@ async function assertAttemptAvailability(input: {
 		where: and(
 			eq(schema.studentCourseEnrollments.studentId, input.studentId),
 			eq(schema.studentCourseEnrollments.courseId, input.courseId),
-			eq(schema.studentCourseEnrollments.academicYearId, input.academicYearId),
+			eq(
+				schema.studentCourseEnrollments.academicYearId,
+				input.academicYearId,
+			),
 			eq(schema.studentCourseEnrollments.attempt, input.attempt),
 		),
 	});
 	if (existing) {
 		throw new TRPCError({
 			code: "CONFLICT",
-			message: "Enrollment attempt already exists for this student/course/year",
+			message:
+				"Enrollment attempt already exists for this student/course/year",
 		});
 	}
 }
@@ -233,7 +250,8 @@ export async function createEnrollment(
 			if (!FINAL_STATUSES.includes(latest.status)) {
 				throw new TRPCError({
 					code: "CONFLICT",
-					message: "Student already has an active enrollment for this course",
+					message:
+						"Student already has an active enrollment for this course",
 				});
 			}
 			attempt = latest.attempt + 1;
@@ -419,7 +437,10 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 		.where(eq(schema.students.class, klass.id));
 	const baseCondition = eq(schema.classCourses.class, klass.id);
 	const classCourseCondition = input.semesterId
-		? and(baseCondition, eq(schema.classCourses.semesterId, input.semesterId))
+		? and(
+				baseCondition,
+				eq(schema.classCourses.semesterId, input.semesterId),
+			)
 		: baseCondition;
 	const classCourses = await db
 		.select({ id: schema.classCourses.id })
@@ -437,7 +458,10 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 			classCoursesCount: classCourses.length,
 			createdCount: 0,
 			skippedCount: 0,
-			conflicts: [] as Array<{ studentId: string; classCourseId: string }>,
+			conflicts: [] as Array<{
+				studentId: string;
+				classCourseId: string;
+			}>,
 		};
 	}
 	const status = input.status ?? "active";

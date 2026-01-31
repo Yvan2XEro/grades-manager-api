@@ -1,11 +1,17 @@
 import { z } from "zod";
 
+export const examSessionTypes = ["normal", "retake"] as const;
+export const retakeScoringPolicies = ["replace", "best_of"] as const;
+
 export const baseSchema = z.object({
 	name: z.string(),
 	type: z.string(),
 	date: z.coerce.date(),
 	percentage: z.number(),
 	classCourseId: z.string(),
+	sessionType: z.enum(examSessionTypes).optional().default("normal"),
+	parentExamId: z.string().nullish(),
+	scoringPolicy: z.enum(retakeScoringPolicies).optional().default("replace"),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });
@@ -47,4 +53,11 @@ export const retakeOverrideSchema = z.object({
 export const deleteRetakeOverrideSchema = retakeOverrideSchema.pick({
 	examId: true,
 	studentCourseEnrollmentId: true,
+});
+
+export const createRetakeSchema = z.object({
+	parentExamId: z.string(),
+	name: z.string().optional(),
+	date: z.coerce.date(),
+	scoringPolicy: z.enum(retakeScoringPolicies).optional().default("replace"),
 });

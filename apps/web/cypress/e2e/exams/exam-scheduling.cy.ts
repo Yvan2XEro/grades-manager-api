@@ -22,7 +22,8 @@ describe("Exam Management - Automated Scheduling", () => {
 			// Look for typical scheduling options
 			cy.get("body").then(($body) => {
 				const hasSchedulingOptions =
-					$body.text().match(/class|date|exam.*type|période/i) !== null;
+					$body.text().match(/class|date|exam.*type|période/i) !==
+					null;
 				expect(hasSchedulingOptions).to.be.true;
 			});
 		});
@@ -102,14 +103,17 @@ describe("Exam Management - Automated Scheduling", () => {
 			// Look for exam type selection
 			cy.get("body").then(($body) => {
 				const hasExamTypeSelect =
-					$body.find('[data-testid*="exam-type"], input[type="checkbox"]')
-						.length > 0;
+					$body.find(
+						'[data-testid*="exam-type"], input[type="checkbox"]',
+					).length > 0;
 
 				if (hasExamTypeSelect) {
 					cy.log("Exam type selection available");
 
 					// Select exam types
-					const examTypeCheckboxes = $body.find('input[type="checkbox"]');
+					const examTypeCheckboxes = $body.find(
+						'input[type="checkbox"]',
+					);
 					if (examTypeCheckboxes.length > 0) {
 						cy.wrap(examTypeCheckboxes.first()).check();
 					}
@@ -185,16 +189,17 @@ describe("Exam Management - Automated Scheduling", () => {
 					$body.find(
 						'[data-testid*="loading"], [class*="spinner"], [role="progressbar"]',
 					).length > 0 ||
-					$body.text().match(/generating|loading|chargement/i) !== null;
+					$body.text().match(/generating|loading|chargement/i) !==
+						null;
 
 				if (hasProgress) {
 					cy.log("Progress indicator shown");
 				}
 			});
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 		});
 
 		it("shows generation report after completion", () => {
@@ -211,14 +216,16 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show report with numbers
 			cy.get("body").then(($body) => {
 				const hasReport =
-					$body.text().match(/\d+.*exam|\d+.*created|\d+.*généré/i) !== null;
+					$body
+						.text()
+						.match(/\d+.*exam|\d+.*created|\d+.*généré/i) !== null;
 				expect(hasReport).to.be.true;
 			});
 		});
@@ -237,9 +244,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show exam count
 			cy.contains(/\d+.*exam|\d+.*examen/i).should("exist");
@@ -261,7 +268,8 @@ describe("Exam Management - Automated Scheduling", () => {
 
 			cy.get("body").then(($body) => {
 				const hasDateInputs =
-					$body.find('[name="startDate"], [name="endDate"]').length > 0;
+					$body.find('[name="startDate"], [name="endDate"]').length >
+					0;
 
 				if (hasDateInputs) {
 					// Set end date before start date
@@ -294,7 +302,9 @@ describe("Exam Management - Automated Scheduling", () => {
 					cy.log("Exam type selection required");
 
 					// Try to generate without selecting exam types
-					const classCheckboxes = $body.find('input[type="checkbox"]');
+					const classCheckboxes = $body.find(
+						'input[type="checkbox"]',
+					);
 					if (classCheckboxes.length > 0) {
 						cy.wrap(classCheckboxes.first()).check();
 					}
@@ -324,9 +334,9 @@ describe("Exam Management - Automated Scheduling", () => {
 						name: /generate|schedule|create|planifier|générer/i,
 					}).click();
 
-					cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-						"exist",
-					);
+					cy.contains(/generated|created|success/i, {
+						timeout: 15000,
+					}).should("exist");
 
 					// Should show multiple classes in report
 					cy.get("body").then(($report) => {
@@ -356,9 +366,9 @@ describe("Exam Management - Automated Scheduling", () => {
 						name: /generate|schedule|create|planifier|générer/i,
 					}).click();
 
-					cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-						"exist",
-					);
+					cy.contains(/generated|created|success/i, {
+						timeout: 15000,
+					}).should("exist");
 
 					// All generated exams should follow same rules
 					cy.log("Exams generated with consistent rules");
@@ -382,14 +392,15 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show list of created exams
 			cy.get("body").then(($body) => {
 				const hasExamList =
-					$body.find("table, ul, [data-testid*='exam-list']").length > 0;
+					$body.find("table, ul, [data-testid*='exam-list']").length >
+					0;
 				if (hasExamList) {
 					cy.log("Generated exams list displayed");
 				}
@@ -410,9 +421,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show class/course information
 			cy.contains(/class|course|classe|cours/i).should("exist");
@@ -432,14 +443,17 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show dates
 			cy.get("body").then(($body) => {
 				const hasDates =
-					$body.text().match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}/) !== null;
+					$body
+						.text()
+						.match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}/) !==
+					null;
 				if (hasDates) {
 					cy.log("Exam dates displayed in report");
 				}
@@ -460,9 +474,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Navigate to main exam list
 			cy.visit("/admin/exams");
@@ -493,7 +507,9 @@ describe("Exam Management - Automated Scheduling", () => {
 						cy.wrap(cancelButton).first().click();
 
 						// Selections should be cleared
-						cy.wrap(classCheckboxes.first()).should("not.be.checked");
+						cy.wrap(classCheckboxes.first()).should(
+							"not.be.checked",
+						);
 					}
 				}
 			});

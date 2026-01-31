@@ -1,7 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import {
 	Select,
 	SelectContent,
@@ -10,6 +9,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { trpc } from "@/utils/trpc";
 
 type AcademicYearSelectProps = {
 	value: string | null;
@@ -66,7 +66,10 @@ export function AcademicYearSelect({
 					) : (
 						years.map((year) => (
 							<SelectItem key={year.id} value={year.id}>
-								{year.name} {year.isActive ? `(${t("common.status.active")})` : ""}
+								{year.name}{" "}
+								{year.isActive
+									? `(${t("common.status.active")})`
+									: ""}
 							</SelectItem>
 						))
 					)}

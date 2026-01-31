@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 /**
  * Database migration script for production
  * Runs Drizzle migrations programmatically
@@ -6,8 +8,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 const MIGRATIONS_FOLDER = join(import.meta.dir, "../db/migrations");
 

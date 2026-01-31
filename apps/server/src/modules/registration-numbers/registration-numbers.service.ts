@@ -64,7 +64,10 @@ export async function createFormat(
 				.where(
 					and(
 						eq(schema.registrationNumberFormats.isActive, true),
-						eq(schema.registrationNumberFormats.institutionId, institutionId),
+						eq(
+							schema.registrationNumberFormats.institutionId,
+							institutionId,
+						),
 					),
 				);
 		}

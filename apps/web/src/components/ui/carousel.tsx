@@ -108,7 +108,8 @@ function Carousel({
 				api: api,
 				opts,
 				orientation:
-					orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+					orientation ||
+					(opts?.axis === "y" ? "vertical" : "horizontal"),
 				scrollPrev,
 				scrollNext,
 				canScrollPrev,

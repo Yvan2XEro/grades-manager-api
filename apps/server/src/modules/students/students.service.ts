@@ -273,7 +273,8 @@ export async function bulkCreateStudents(
 				conflicts.push({
 					row: i + 1,
 					email: s.profile.primaryEmail,
-								registrationNumber: attemptedRegistration ?? s.registrationNumber,
+					registrationNumber:
+						attemptedRegistration ?? s.registrationNumber,
 					reason,
 				});
 			}
@@ -312,7 +313,8 @@ export async function updateStudent(
 				lastName: data.profile.lastName ?? existing.profile.lastName,
 				primaryEmail:
 					data.profile.primaryEmail ?? existing.profile.primaryEmail,
-				dateOfBirth: data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
+				dateOfBirth:
+					data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
 				placeOfBirth:
 					data.profile.placeOfBirth ?? existing.profile.placeOfBirth,
 				gender: data.profile.gender ?? existing.profile.gender,
@@ -335,7 +337,10 @@ export async function updateStudent(
 			payload.registrationNumber = data.registrationNumber;
 		}
 		if (data.classId) {
-			const newClass = await classesRepo.findById(data.classId, institutionId);
+			const newClass = await classesRepo.findById(
+				data.classId,
+				institutionId,
+			);
 			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
 			payload.institutionId = newClass.institutionId;
 			await repo.update(id, payload, institutionId);

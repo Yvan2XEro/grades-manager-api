@@ -126,6 +126,90 @@ interface Resources {
 					"message": "Are you sure you want to delete this course? This action cannot be undone.";
 				};
 			};
+			"exams": {
+				"title": "Exam Management";
+				"subtitle": "Create and manage course exams";
+				"actions": {
+					"add": "Add Exam";
+					"reviewGrades": "Review grades";
+				};
+				"filters": {
+					"academicYear": "Academic year";
+					"search": "Search";
+					"searchPlaceholder": "Search exams, classes, or courses...";
+					"class": "Class";
+					"classPlaceholder": "All classes";
+					"semester": "Semester";
+					"semesterPlaceholder": "All semesters";
+				};
+				"empty": {
+					"title": "No exams found";
+					"description": "Get started by adding your first exam.";
+				};
+				"table": {
+					"name": "Name";
+					"course": "Course";
+					"class": "Class";
+					"type": "Type";
+					"date": "Date";
+					"percentage": "Percentage";
+					"percentageValue": "{{value}}%";
+					"status": "Status";
+				};
+				"status": {
+					"locked": "Locked";
+					"open": "Open";
+				};
+				"form": {
+					"createTitle": "Add New Exam";
+					"editTitle": "Edit Exam";
+					"classCourseLabel": "Linked course";
+					"classCoursePlaceholder": "Select a course";
+					"nameLabel": "Exam name";
+					"namePlaceholder": "Enter exam name";
+					"typeLabel": "Type";
+					"typePlaceholder": "e.g. Midterm, Final";
+					"dateLabel": "Date";
+					"percentageLabel": "Weight (1-100)";
+					"percentagePlaceholder": "Enter percentage";
+					"submit": "Save exam";
+				};
+				"validation": {
+					"name": "Name must be at least 2 characters";
+					"type": "Type must be at least 2 characters";
+					"date": "Date is required";
+					"percentage": {
+						"min": "Percentage must be at least 1";
+						"max": "Percentage cannot exceed 100";
+					};
+					"classCourse": "Please select a course";
+				};
+				"toast": {
+					"createSuccess": "Exam created successfully";
+					"createError": "Could not create the exam";
+					"updateSuccess": "Exam updated successfully";
+					"updateError": "Could not update the exam";
+					"deleteSuccess": "Exam deleted successfully";
+					"deleteError": "Could not delete the exam";
+					"retakeSuccess": "Retake exam created successfully";
+					"retakeError": "Could not create retake exam";
+				};
+				"delete": {
+					"title": "Delete Exam";
+					"message": "Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades.";
+				};
+				"pagination": {
+					"loadMore": "Load more exams";
+				};
+				"sessionType": {
+					"normal": "Normal";
+					"retake": "Retake";
+				};
+				"scoringPolicy": {
+					"replace": "Replace original";
+					"best_of": "Keep best grade";
+				};
+			};
 			"dashboard": {
 				"title": "Teacher Dashboard";
 				"subtitle": "Welcome back, {{name}}";
@@ -506,78 +590,63 @@ interface Resources {
 					"description": "There are no students in this class.";
 				};
 			};
-			"exams": {
-				"title": "Exam Management";
-				"subtitle": "Create and manage course exams";
-				"actions": {
-					"add": "Add Exam";
-					"reviewGrades": "Review grades";
+			"retake": {
+				"title": "Retake Eligibility";
+				"subtitle": "View and manage students eligible for retake exams";
+				"selectExam": "Select an approved exam";
+				"selectExamPlaceholder": "Choose an exam to view eligibility";
+				"featureDisabled": "Retake feature is currently disabled";
+				"eligible": "Eligible";
+				"ineligible": "Not Eligible";
+				"eligibleCount": "{{count}} eligible";
+				"ineligibleCount": "{{count}} not eligible";
+				"table": {
+					"student": "Student";
+					"registrationNumber": "Registration No.";
+					"attempt": "Attempt";
+					"grade": "Current Grade";
+					"status": "Status";
+					"reasons": "Reasons";
+					"override": "Override";
 				};
-				"filters": {
-					"academicYear": "Academic year";
-					"search": "Search";
-					"searchPlaceholder": "Search exams, classes, or courses...";
-					"class": "Class";
-					"classPlaceholder": "All classes";
-					"semester": "Semester";
-					"semesterPlaceholder": "All semesters";
+				"reasons": {
+					"NO_GRADE": "No grade recorded";
+					"FAILED_EXAM": "Failed exam";
+					"PASSED_EXAM": "Passed exam";
+					"ATTEMPT_LIMIT_REACHED": "Attempt limit reached";
+					"OVERRIDE_FORCE_ELIGIBLE": "Forced eligible (override)";
+					"OVERRIDE_FORCE_INELIGIBLE": "Forced ineligible (override)";
+				};
+				"override": {
+					"forceEligible": "Force Eligible";
+					"forceIneligible": "Block";
+					"remove": "Remove Override";
+					"reason": "Override reason";
+					"reasonPlaceholder": "Enter reason for override...";
+					"confirmTitle": "Confirm Override";
+					"confirmMessage": "Are you sure you want to {{action}} this student for retake?";
 				};
 				"empty": {
-					"title": "No exams found";
-					"description": "Get started by adding your first exam.";
-				};
-				"table": {
-					"name": "Name";
-					"course": "Course";
-					"class": "Class";
-					"type": "Type";
-					"date": "Date";
-					"percentage": "Percentage";
-					"percentageValue": "{{value}}%";
-					"status": "Status";
-				};
-				"status": {
-					"locked": "Locked";
-					"open": "Open";
-				};
-				"form": {
-					"createTitle": "Add New Exam";
-					"editTitle": "Edit Exam";
-					"classCourseLabel": "Linked course";
-					"classCoursePlaceholder": "Select a course";
-					"nameLabel": "Exam name";
-					"namePlaceholder": "Enter exam name";
-					"typeLabel": "Type";
-					"typePlaceholder": "e.g. Midterm, Final";
-					"dateLabel": "Date";
-					"percentageLabel": "Weight (1-100)";
-					"percentagePlaceholder": "Enter percentage";
-					"submit": "Save exam";
-				};
-				"validation": {
-					"name": "Name must be at least 2 characters";
-					"type": "Type must be at least 2 characters";
-					"date": "Date is required";
-					"percentage": {
-						"min": "Percentage must be at least 1";
-						"max": "Percentage cannot exceed 100";
-					};
-					"classCourse": "Please select a course";
+					"title": "No students found";
+					"description": "Select an approved exam to view student eligibility.";
 				};
 				"toast": {
-					"createSuccess": "Exam created successfully";
-					"createError": "Could not create the exam";
-					"updateSuccess": "Exam updated successfully";
-					"updateError": "Could not update the exam";
-					"deleteSuccess": "Exam deleted successfully";
-					"deleteError": "Could not delete the exam";
+					"overrideSuccess": "Override applied successfully";
+					"overrideError": "Could not apply override";
+					"removeSuccess": "Override removed";
+					"removeError": "Could not remove override";
 				};
-				"delete": {
-					"title": "Delete Exam";
-					"message": "Are you sure you want to delete this exam? This action cannot be undone and will also delete all associated grades.";
+				"actions": {
+					"createRetake": "Create Retake Exam";
+					"viewEligibility": "View Eligibility";
 				};
-				"pagination": {
-					"loadMore": "Load more exams";
+				"createRetake": {
+					"title": "Create Retake Exam";
+					"subtitle": "Create a retake session linked to the original exam";
+					"parentExam": "Original Exam";
+					"date": "Retake Date";
+					"scoringPolicy": "Scoring Policy";
+					"scoringPolicyHelp": "How to calculate the final grade when retake is completed";
 				};
 			};
 			"workflow": {
@@ -631,6 +700,7 @@ interface Resources {
 					"enrollments": "Enrollments";
 					"examTypes": "Exam types";
 					"examScheduler": "Exam scheduler";
+					"retakeEligibility": "Retake eligibility";
 					"rules": "Rule center";
 					"registrationNumbers": "Registration numbers";
 					"promotionRules": "Promotion rules";
@@ -1439,12 +1509,6 @@ interface Resources {
 			"exportTemplates": {
 				"title": "Export templates";
 				"subtitle": "Customize report layouts, columns, headers, and styling for grade exports.";
-				"actions": {
-					"setDefault": "Set as default";
-					"edit": "Edit template";
-					"rename": "Rename";
-					"delete": "Delete";
-				};
 				"filter": {
 					"all": "All types";
 				};
@@ -1493,6 +1557,13 @@ interface Resources {
 				"delete": {
 					"title": "Delete export template";
 					"message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.";
+				};
+				"actions": {
+					"setDefault": "Set as default";
+					"edit": "Edit template";
+					"rename": "Rename";
+					"add": "Add template";
+					"delete": "Delete";
 				};
 				"editor": {
 					"notFound": "Template not found";
@@ -2024,6 +2095,8 @@ interface Resources {
 					"withdrawBtn": "Withdraw";
 					"retakeBtn": "Retake";
 					"noCourses": "This class has no courses assigned yet.";
+					"attemptBadge": "Attempt {{value}}";
+					"retakeEligible": "Retake eligible";
 				};
 				"warnings": {
 					"title": "Prerequisite warnings";
@@ -2409,6 +2482,66 @@ interface Resources {
 				"courseAverages": "Course averages";
 				"courseSubtitle": "Latest scores for the active academic year";
 				"coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session.";
+			};
+		};
+		"retakes": {
+			"title": "Retake Eligibility";
+			"subtitle": "Manage retake exam eligibility for students";
+			"badge": {
+				"retake": "Retake";
+				"normal": "Normal";
+			};
+			"actions": {
+				"createRetake": "Create Retake Exam";
+			};
+			"form": {
+				"title": "Create Retake Exam";
+				"parentExamLabel": "Original Exam";
+				"nameLabel": "Retake Exam Name (optional)";
+				"namePlaceholder": "Leave empty to auto-generate";
+				"dateLabel": "Retake Date";
+				"scoringPolicyLabel": "Scoring Policy";
+				"submit": "Create Retake";
+			};
+			"scoringPolicy": {
+				"replace": "Replace Original";
+				"best_of": "Keep Best Grade";
+				"replaceDescription": "The retake grade will replace the original grade";
+				"best_ofDescription": "The higher grade between original and retake will be used";
+			};
+			"eligibility": {
+				"title": "Eligibility Status";
+				"eligible": "Eligible";
+				"ineligible": "Not Eligible";
+				"forced": "Forced";
+				"tabs": {
+					"eligible": "Eligible Students";
+					"ineligible": "Ineligible Students";
+				};
+				"reasons": {
+					"failed": "Failed the original exam";
+					"noGrade": "No grade recorded";
+					"limitReached": "Attempt limit reached";
+					"passed": "Already passed";
+					"forceEligible": "Manually set as eligible";
+					"forceIneligible": "Manually set as ineligible";
+				};
+			};
+			"override": {
+				"title": "Override Eligibility";
+				"forceEligible": "Force Eligible";
+				"forceIneligible": "Force Ineligible";
+				"clear": "Clear Override";
+				"reason": "Reason";
+				"reasonPlaceholder": "Enter reason for override...";
+			};
+			"empty": {
+				"title": "No Exam Selected";
+				"description": "Select an approved exam to view retake eligibility";
+			};
+			"toast": {
+				"overrideSuccess": "Override applied successfully";
+				"overrideError": "Failed to apply override";
 			};
 		};
 	};

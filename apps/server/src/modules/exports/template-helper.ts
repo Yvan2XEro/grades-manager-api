@@ -70,8 +70,10 @@ export function loadExportConfig(): ExportConfig {
 	// Convert old format to new format
 	return {
 		institution: {
-			name_fr: jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
-			name_en: jsonConfig.institution?.university?.name_en || "UNIVERSITY",
+			name_fr:
+				jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
+			name_en:
+				jsonConfig.institution?.university?.name_en || "UNIVERSITY",
 			logo_url: jsonConfig.institution?.university?.logo_url || "",
 			faculty_name_fr: jsonConfig.institution?.faculty?.name_fr,
 			faculty_name_en: jsonConfig.institution?.faculty?.name_en,
@@ -101,7 +103,8 @@ export function institutionToExportConfig(
 
 	// Si l'institution parente est de type "faculty", on l'utilise comme faculté de supervision
 	// Sinon, la faculté de supervision est null (optionnel)
-	const supervisingFaculty = parentInst?.type === "faculty" ? parentInst : null;
+	const supervisingFaculty =
+		parentInst?.type === "faculty" ? parentInst : null;
 
 	// Si le parent n'est pas une faculté, chercher le "grand-parent" comme université
 	// Sinon, utiliser le parent direct
@@ -261,7 +264,8 @@ export function calculateStats(scores: Array<number | null>) {
 		present: validScores.length,
 		absent: scores.length - validScores.length,
 		average:
-			validScores.reduce((sum, score) => sum + score, 0) / validScores.length,
+			validScores.reduce((sum, score) => sum + score, 0) /
+			validScores.length,
 		highest: Math.max(...validScores),
 		lowest: Math.min(...validScores),
 	};

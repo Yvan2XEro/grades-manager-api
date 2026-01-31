@@ -16,11 +16,17 @@ export const examSchedulerRouter = router({
 	schedule: tenantAdminProcedure
 		.input(scheduleSchema)
 		.mutation(({ ctx, input }) =>
-			service.scheduleExams(input, ctx.profile?.id ?? null, ctx.institution.id),
+			service.scheduleExams(
+				input,
+				ctx.profile?.id ?? null,
+				ctx.institution.id,
+			),
 		),
 	history: tenantAdminProcedure
 		.input(historySchema)
-		.query(({ ctx, input }) => service.listHistory(input, ctx.institution.id)),
+		.query(({ ctx, input }) =>
+			service.listHistory(input, ctx.institution.id),
+		),
 	details: tenantAdminProcedure
 		.input(runDetailsSchema)
 		.query(({ ctx, input }) =>

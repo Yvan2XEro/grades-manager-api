@@ -30,7 +30,10 @@ describe("users router", () => {
 			email: `second-${randomUUID()}@example.com`,
 			memberRole: role,
 		});
-		const createdIds = new Set([firstUser.profile.id, secondUser.profile.id]);
+		const createdIds = new Set([
+			firstUser.profile.id,
+			secondUser.profile.id,
+		]);
 
 		const admin = createCaller(asAdmin());
 		const firstPage = await admin.users.list({ limit: 1, role });

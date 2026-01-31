@@ -140,7 +140,9 @@ export default function ClassCourseManagement() {
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({ limit: 100 });
+			const { items } = await trpcClient.classes.list.query({
+				limit: 100,
+			});
 			return items.map(
 				(cls) =>
 					({
@@ -202,7 +204,9 @@ export default function ClassCourseManagement() {
 	const { data: defaultCourses = [] } = useQuery({
 		queryKey: ["courses"],
 		queryFn: async () => {
-			const { items } = await trpcClient.courses.list.query({ limit: 100 });
+			const { items } = await trpcClient.courses.list.query({
+				limit: 100,
+			});
 			return items.map(
 				(course) =>
 					({
@@ -301,7 +305,10 @@ export default function ClassCourseManagement() {
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
+		teacherOptions.map((teacher) => [
+			teacher.id,
+			formatTeacherName(teacher),
+		]),
 	);
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
@@ -324,7 +331,9 @@ export default function ClassCourseManagement() {
 			return;
 		}
 		if (!selectedSemesterId && semesters && semesters.length > 0) {
-			form.setValue("semesterId", semesters[0].id, { shouldDirty: false });
+			form.setValue("semesterId", semesters[0].id, {
+				shouldDirty: false,
+			});
 		}
 	}, [
 		editingClassCourse,
@@ -532,7 +541,9 @@ export default function ClassCourseManagement() {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
-					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
+					<CardDescription>
+						{t("admin.classCourses.subtitle")}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{displayedClassCourses.length > 0 ? (
@@ -544,15 +555,26 @@ export default function ClassCourseManagement() {
 											defaultValue: "Code",
 										})}
 									</TableHead>
-									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
-									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
-									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
 									<TableHead>
-										{t("admin.classCourses.table.semester", {
-											defaultValue: "Semester",
-										})}
+										{t("admin.classCourses.table.class")}
 									</TableHead>
-									<TableHead>{t("admin.classCourses.table.teacher")}</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.program")}
+									</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.course")}
+									</TableHead>
+									<TableHead>
+										{t(
+											"admin.classCourses.table.semester",
+											{
+												defaultValue: "Semester",
+											},
+										)}
+									</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.teacher")}
+									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -564,33 +586,50 @@ export default function ClassCourseManagement() {
 										<TableCell>
 											<ClipboardCopy
 												value={classCourse.code}
-												label={t("admin.classCourses.table.code", {
-													defaultValue: "Code",
-												})}
+												label={t(
+													"admin.classCourses.table.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											/>
 										</TableCell>
 										<TableCell className="font-medium">
-											{classMap.get(classCourse.class)?.name}
+											{
+												classMap.get(classCourse.class)
+													?.name
+											}
 										</TableCell>
 										<TableCell>
 											{programMap.get(
-												classMap.get(classCourse.class)?.program ?? "",
+												classMap.get(classCourse.class)
+													?.program ?? "",
 											)?.name ??
-												t("common.labels.notAvailable", {
-													defaultValue: "N/A",
-												})}
+												t(
+													"common.labels.notAvailable",
+													{
+														defaultValue: "N/A",
+													},
+												)}
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const info = courseMap.get(classCourse.course);
+												const info = courseMap.get(
+													classCourse.course,
+												);
 												if (!info) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+													return t(
+														"common.labels.notAvailable",
+														{
+															defaultValue: "N/A",
+														},
+													);
 												}
 												return (
 													<div className="space-y-0.5">
-														<p className="font-medium text-sm">{info.name}</p>
+														<p className="font-medium text-sm">
+															{info.name}
+														</p>
 														{info.code && (
 															<p className="text-muted-foreground text-xs">
 																{info.code}
@@ -602,25 +641,39 @@ export default function ClassCourseManagement() {
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const semester = semesters?.find(
-													(item) => item.id === classCourse.semesterId,
-												);
+												const semester =
+													semesters?.find(
+														(item) =>
+															item.id ===
+															classCourse.semesterId,
+													);
 												if (!semester) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+													return t(
+														"common.labels.notAvailable",
+														{
+															defaultValue: "N/A",
+														},
+													);
 												}
 												return `${semester.name} (${semester.code})`;
 											})()}
 										</TableCell>
-										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
+										<TableCell>
+											{teacherMap.get(
+												classCourse.teacher,
+											)}
+										</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => startEdit(classCourse)}
-													aria-label={t("admin.classCourses.form.editTitle")}
+													onClick={() =>
+														startEdit(classCourse)
+													}
+													aria-label={t(
+														"admin.classCourses.form.editTitle",
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -628,8 +681,14 @@ export default function ClassCourseManagement() {
 													variant="ghost"
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
-													onClick={() => confirmDelete(classCourse.id)}
-													aria-label={t("admin.classCourses.delete.title")}
+													onClick={() =>
+														confirmDelete(
+															classCourse.id,
+														)
+													}
+													aria-label={t(
+														"admin.classCourses.delete.title",
+													)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -673,25 +732,35 @@ export default function ClassCourseManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<CodedEntitySelect
 								items={classes}
 								onSearch={setClassSearch}
 								value={
-									classes.find((c) => c.id === form.watch("class"))?.code ||
-									null
+									classes.find(
+										(c) => c.id === form.watch("class"),
+									)?.code || null
 								}
 								onChange={(code) => {
-									const cls = classes.find((c) => c.code === code);
+									const cls = classes.find(
+										(c) => c.code === code,
+									);
 									form.setValue("class", cls?.id || "");
 								}}
 								label={t("admin.classCourses.form.classLabel")}
-								placeholder={t("admin.classCourses.form.classPlaceholder")}
+								placeholder={t(
+									"admin.classCourses.form.classPlaceholder",
+								)}
 								error={form.formState.errors.class?.message}
 								searchMode="hybrid"
 								getItemSubtitle={(cls) =>
 									programMap.get(cls.program)?.name ??
-									t("common.labels.notAvailable", { defaultValue: "N/A" })
+									t("common.labels.notAvailable", {
+										defaultValue: "N/A",
+									})
 								}
 								required
 							/>
@@ -700,15 +769,20 @@ export default function ClassCourseManagement() {
 								items={courses}
 								onSearch={setCourseSearch}
 								value={
-									courses.find((c) => c.id === form.watch("course"))?.code ||
-									null
+									courses.find(
+										(c) => c.id === form.watch("course"),
+									)?.code || null
 								}
 								onChange={(code) => {
-									const course = courses.find((c) => c.code === code);
+									const course = courses.find(
+										(c) => c.code === code,
+									);
 									form.setValue("course", course?.id || "");
 								}}
 								label={t("admin.classCourses.form.courseLabel")}
-								placeholder={t("admin.classCourses.form.coursePlaceholder")}
+								placeholder={t(
+									"admin.classCourses.form.coursePlaceholder",
+								)}
 								error={form.formState.errors.course?.message}
 								searchMode="hybrid"
 								required
@@ -720,9 +794,14 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.teacherLabel")}
+											{t(
+												"admin.classCourses.form.teacherLabel",
+											)}
 										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+										>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
@@ -733,11 +812,18 @@ export default function ClassCourseManagement() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
+												{teacherOptions.map(
+													(teacher) => (
+														<SelectItem
+															key={teacher.id}
+															value={teacher.id}
+														>
+															{formatTeacherName(
+																teacher,
+															)}
+														</SelectItem>
+													),
+												)}
 											</SelectContent>
 										</Select>
 										<FormMessage />
@@ -751,29 +837,42 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.semesterLabel", {
-												defaultValue: "Semester",
-											})}
+											{t(
+												"admin.classCourses.form.semesterLabel",
+												{
+													defaultValue: "Semester",
+												},
+											)}
 										</FormLabel>
 										<Select
 											value={field.value}
 											onValueChange={field.onChange}
-											disabled={!semesters || semesters.length === 0}
+											disabled={
+												!semesters ||
+												semesters.length === 0
+											}
 										>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
 														placeholder={t(
 															"admin.classCourses.form.semesterPlaceholder",
-															{ defaultValue: "Select semester" },
+															{
+																defaultValue:
+																	"Select semester",
+															},
 														)}
 													/>
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
 												{semesters?.map((semester) => (
-													<SelectItem key={semester.id} value={semester.id}>
-														{semester.name} ({semester.code})
+													<SelectItem
+														key={semester.id}
+														value={semester.id}
+													>
+														{semester.name} (
+														{semester.code})
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -789,16 +888,22 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
+											{t(
+												"admin.classCourses.form.codeLabel",
+												{
+													defaultValue: "Code",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input
 												{...field}
 												placeholder={t(
 													"admin.classCourses.form.codePlaceholder",
-													{ defaultValue: "INF11-CLS24-01" },
+													{
+														defaultValue:
+															"INF11-CLS24-01",
+													},
 												)}
 											/>
 										</FormControl>
@@ -816,13 +921,18 @@ export default function ClassCourseManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
+								<Button
+									type="submit"
+									disabled={form.formState.isSubmitting}
+								>
 									{form.formState.isSubmitting ? (
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingClassCourse ? (
 										t("common.actions.saveChanges")
 									) : (
-										t("admin.classCourses.form.createSubmit")
+										t(
+											"admin.classCourses.form.createSubmit",
+										)
 									)}
 								</Button>
 							</div>

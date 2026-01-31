@@ -89,7 +89,8 @@ export const useStore = create<StoreState>()(
 					user: user
 						? {
 								...user,
-								permissions: user.permissions ?? defaultPermissions,
+								permissions:
+									user.permissions ?? defaultPermissions,
 							}
 						: null,
 				}),

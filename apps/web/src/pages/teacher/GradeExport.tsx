@@ -90,7 +90,8 @@ export default function GradeExport() {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return (items as AcademicYear[]).sort(
 				(a, b) =>
-					new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+					new Date(b.startDate).getTime() -
+					new Date(a.startDate).getTime(),
 			);
 		},
 	});
@@ -124,9 +125,10 @@ export default function GradeExport() {
 		queryKey: ["exams", selectedClass],
 		queryFn: async () => {
 			if (!selectedClass) return [];
-			const { items: classCourses } = await trpcClient.classCourses.list.query({
-				classId: selectedClass,
-			});
+			const { items: classCourses } =
+				await trpcClient.classCourses.list.query({
+					classId: selectedClass,
+				});
 			const result: ExamItem[] = [];
 			for (const cc of classCourses) {
 				const course = await trpcClient.courses.getById.query({
@@ -152,7 +154,9 @@ export default function GradeExport() {
 					},
 				);
 			}
-			return result.sort((a, b) => a.courseName.localeCompare(b.courseName));
+			return result.sort((a, b) =>
+				a.courseName.localeCompare(b.courseName),
+			);
 		},
 		enabled: !!selectedClass,
 	});
@@ -160,9 +164,10 @@ export default function GradeExport() {
 	const handleExport = async () => {
 		if (!selectedClass || selectedExams.length === 0) return;
 		try {
-			const { items: studentItems } = await trpcClient.students.list.query({
-				classId: selectedClass,
-			});
+			const { items: studentItems } =
+				await trpcClient.students.list.query({
+					classId: selectedClass,
+				});
 			const students: StudentExport[] = await Promise.all(
 				studentItems.map(async (s: StudentItem) => {
 					const { items: gradeItems } =
@@ -171,19 +176,25 @@ export default function GradeExport() {
 						});
 					const grades = await Promise.all(
 						gradeItems.map(async (g: GradeItem) => {
-							const exam = await trpcClient.exams.getById.query({ id: g.exam });
-							const classCourse = await trpcClient.classCourses.getById.query({
-								id: exam.classCourse,
+							const exam = await trpcClient.exams.getById.query({
+								id: g.exam,
 							});
-							const course = await trpcClient.courses.getById.query({
-								id: classCourse.course,
-							});
+							const classCourse =
+								await trpcClient.classCourses.getById.query({
+									id: exam.classCourse,
+								});
+							const course =
+								await trpcClient.courses.getById.query({
+									id: classCourse.course,
+								});
 							return {
 								score: Number(g.score),
 								exam: {
 									id: exam.id,
 									percentage: Number(exam.percentage),
-									class_course: { course: { name: course.name } },
+									class_course: {
+										course: { name: course.name },
+									},
 								},
 							};
 						}),
@@ -215,28 +226,37 @@ export default function GradeExport() {
 				const courseAverages = new Map<string, number>();
 				courseGrades.forEach((grades, course) => {
 					if (grades.length > 0) {
-						const average = grades.reduce((a, b) => a + b, 0) / grades.length;
+						const average =
+							grades.reduce((a, b) => a + b, 0) / grades.length;
 						courseAverages.set(course, Number(average.toFixed(2)));
 					}
 				});
 				return {
-					[t("teacher.gradeExport.columns.lastName")]: student.last_name,
-					[t("teacher.gradeExport.columns.firstName")]: student.first_name,
+					[t("teacher.gradeExport.columns.lastName")]:
+						student.last_name,
+					[t("teacher.gradeExport.columns.firstName")]:
+						student.first_name,
 					[t("teacher.gradeExport.columns.registration")]:
 						student.registration_number,
-					[t("teacher.gradeExport.columns.birthDate")]: student.birth_date
-						? format(new Date(student.birth_date), "dd/MM/yyyy")
-						: "",
+					[t("teacher.gradeExport.columns.birthDate")]:
+						student.birth_date
+							? format(new Date(student.birth_date), "dd/MM/yyyy")
+							: "",
 					[t("teacher.gradeExport.columns.birthPlace")]:
 						student.birth_place || "",
-					[t("teacher.gradeExport.columns.gender")]: student.gender || "",
+					[t("teacher.gradeExport.columns.gender")]:
+						student.gender || "",
 					...Object.fromEntries(courseAverages),
 				};
 			});
 
 			const ws = XLSX.utils.json_to_sheet(exportData);
 			const wb = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(wb, ws, t("teacher.gradeExport.sheetName"));
+			XLSX.utils.book_append_sheet(
+				wb,
+				ws,
+				t("teacher.gradeExport.sheetName"),
+			);
 			const className =
 				classes?.find((c) => c.id === selectedClass)?.name ??
 				t("teacher.gradeExport.unknownClass");
@@ -250,7 +270,9 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">{t("teacher.gradeExport.title")}</h2>
+				<h2 className="font-bold text-2xl">
+					{t("teacher.gradeExport.title")}
+				</h2>
 				<p className="text-muted-foreground">
 					{t("teacher.gradeExport.subtitle")}
 				</p>
@@ -271,7 +293,9 @@ export default function GradeExport() {
 					>
 						<SelectTrigger
 							id={yearId}
-							aria-label={t("teacher.gradeExport.filters.academicYear")}
+							aria-label={t(
+								"teacher.gradeExport.filters.academicYear",
+							)}
 						>
 							<SelectValue
 								placeholder={t(
@@ -307,7 +331,9 @@ export default function GradeExport() {
 							className={!selectedYear ? "opacity-70" : undefined}
 						>
 							<SelectValue
-								placeholder={t("teacher.gradeExport.filters.classPlaceholder")}
+								placeholder={t(
+									"teacher.gradeExport.filters.classPlaceholder",
+								)}
 							/>
 						</SelectTrigger>
 						<SelectContent>
@@ -346,7 +372,9 @@ export default function GradeExport() {
 						<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{exams.map((exam) => {
 								const checkboxId = `${exam.id}-checkbox`;
-								const isChecked = selectedExams.includes(exam.id);
+								const isChecked = selectedExams.includes(
+									exam.id,
+								);
 								return (
 									<div
 										key={exam.id}
@@ -357,21 +385,33 @@ export default function GradeExport() {
 											checked={isChecked}
 											onCheckedChange={(checked) => {
 												if (checked) {
-													setSelectedExams([...selectedExams, exam.id]);
+													setSelectedExams([
+														...selectedExams,
+														exam.id,
+													]);
 												} else {
 													setSelectedExams(
-														selectedExams.filter((id) => id !== exam.id),
+														selectedExams.filter(
+															(id) =>
+																id !== exam.id,
+														),
 													);
 												}
 											}}
 										/>
-										<label htmlFor={checkboxId} className="flex-1 space-y-1">
+										<label
+											htmlFor={checkboxId}
+											className="flex-1 space-y-1"
+										>
 											<div className="font-medium">
 												{exam.courseName} - {exam.name}
 											</div>
 											<div className="text-muted-foreground text-sm">
-												{format(new Date(exam.date), "MMM d, yyyy")} (
-												{exam.percentage}%)
+												{format(
+													new Date(exam.date),
+													"MMM d, yyyy",
+												)}{" "}
+												({exam.percentage}%)
 											</div>
 										</label>
 									</div>

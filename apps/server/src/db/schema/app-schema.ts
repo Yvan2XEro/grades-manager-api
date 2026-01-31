@@ -79,6 +79,12 @@ export const retakeOverrideDecisions = [
 ] as const;
 export type RetakeOverrideDecision = (typeof retakeOverrideDecisions)[number];
 
+export const examSessionTypes = ["normal", "retake"] as const;
+export type ExamSessionType = (typeof examSessionTypes)[number];
+
+export const retakeScoringPolicies = ["replace", "best_of"] as const;
+export type RetakeScoringPolicy = (typeof retakeScoringPolicies)[number];
+
 /** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
 	"domain_users",
@@ -219,7 +225,10 @@ export const academicYears = pgTable(
 	(t) => [
 		check("chk_academic_years_dates", sql`${t.endDate} > ${t.startDate}`),
 		index("idx_academic_years_institution").on(t.institutionId),
-		unique("uq_academic_years_institution_name").on(t.institutionId, t.name),
+		unique("uq_academic_years_institution_name").on(
+			t.institutionId,
+			t.name,
+		),
 	],
 );
 
@@ -468,6 +477,15 @@ export const exams = pgTable(
 			.references(() => classCourses.id, { onDelete: "cascade" }),
 		isLocked: boolean("is_locked").notNull().default(false),
 		status: text("status").notNull().default("draft"),
+		sessionType: text("session_type")
+			.$type<ExamSessionType>()
+			.notNull()
+			.default("normal"),
+		parentExamId: text("parent_exam_id"),
+		scoringPolicy: text("scoring_policy")
+			.$type<RetakeScoringPolicy>()
+			.notNull()
+			.default("replace"),
 		scheduledBy: text("scheduled_by").references(() => domainUsers.id, {
 			onDelete: "set null",
 		}),
@@ -492,6 +510,8 @@ export const exams = pgTable(
 		index("idx_exams_institution_id").on(t.institutionId),
 		index("idx_exams_class_course_id").on(t.classCourse),
 		index("idx_exams_date").on(t.date),
+		index("idx_exams_session_type").on(t.sessionType),
+		index("idx_exams_parent_exam_id").on(t.parentExamId),
 	],
 );
 
@@ -662,9 +682,12 @@ export const institutions = pgTable(
 				onDelete: "set null",
 			},
 		),
-		organizationId: text("organization_id").references(() => organization.id, {
-			onDelete: "set null",
-		}),
+		organizationId: text("organization_id").references(
+			() => organization.id,
+			{
+				onDelete: "set null",
+			},
+		),
 		defaultAcademicYearId: text("default_academic_year_id").references(
 			() => academicYears.id,
 			{
@@ -690,8 +713,7 @@ export const institutions = pgTable(
 );
 
 export const coursePrerequisiteTypes = ["mandatory", "recommended"] as const;
-export type CoursePrerequisiteType =
-	(typeof coursePrerequisiteTypes)[number];
+export type CoursePrerequisiteType = (typeof coursePrerequisiteTypes)[number];
 
 /** Directed edges capturing course prerequisites. */
 export const coursePrerequisites = pgTable(
@@ -858,7 +880,10 @@ export const enrollmentWindows = pgTable(
 		closedAt: timestamp("closed_at", { withTimezone: true }),
 	},
 	(t) => [
-		unique("uq_enrollment_window_class_year").on(t.classId, t.academicYearId),
+		unique("uq_enrollment_window_class_year").on(
+			t.classId,
+			t.academicYearId,
+		),
 		index("idx_enrollment_window_status").on(t.status),
 	],
 );
@@ -901,10 +926,10 @@ export const retakeOverrides = pgTable(
 			.references(() => exams.id, { onDelete: "cascade" }),
 		studentCourseEnrollmentId: text("student_course_enrollment_id")
 			.notNull()
-			.references(() => studentCourseEnrollments.id, { onDelete: "cascade" }),
-		decision: text("decision")
-			.$type<RetakeOverrideDecision>()
-			.notNull(),
+			.references(() => studentCourseEnrollments.id, {
+				onDelete: "cascade",
+			}),
+		decision: text("decision").$type<RetakeOverrideDecision>().notNull(),
 		reason: text("reason").notNull(),
 		createdBy: text("created_by").references(() => domainUsers.id, {
 			onDelete: "set null",
@@ -1012,7 +1037,9 @@ export const promotionExecutions = pgTable(
 			.references(() => domainUsers.id, { onDelete: "restrict" }),
 		studentsEvaluated: integer("students_evaluated").notNull().default(0),
 		studentsPromoted: integer("students_promoted").notNull().default(0),
-		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+		metadata: jsonb("metadata")
+			.$type<Record<string, unknown>>()
+			.default({}),
 		executedAt: timestamp("executed_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1102,7 +1129,9 @@ export const gradeEditLogs = pgTable(
 		}),
 		classCourseId: text("class_course_id").references(
 			() => classCourses.id,
-			{ onDelete: "set null" },
+			{
+				onDelete: "set null",
+			},
 		),
 		studentId: text("student_id").references(() => students.id, {
 			onDelete: "set null",
@@ -1112,15 +1141,13 @@ export const gradeEditLogs = pgTable(
 		}),
 		actorProfileId: text("actor_profile_id").references(
 			() => domainUsers.id,
-			{ onDelete: "set null" },
+			{
+				onDelete: "set null",
+			},
 		),
-		actorRole: text("actor_role")
-			.$type<GradeEditActorRole>()
-			.notNull(),
+		actorRole: text("actor_role").$type<GradeEditActorRole>().notNull(),
 		isDelegate: boolean("is_delegate").notNull().default(false),
-		action: text("action")
-			.$type<GradeEditLogAction>()
-			.notNull(),
+		action: text("action").$type<GradeEditLogAction>().notNull(),
 		scoreBefore: numeric("score_before", { precision: 5, scale: 2 }),
 		scoreAfter: numeric("score_after", { precision: 5, scale: 2 }),
 		metadata: jsonb("metadata")
@@ -1154,9 +1181,7 @@ export const classCourseAccessLogs = pgTable(
 		actorProfileId: text("actor_profile_id")
 			.notNull()
 			.references(() => domainUsers.id, { onDelete: "cascade" }),
-		source: text("source")
-			.$type<ClassCourseAccessSource>()
-			.notNull(),
+		source: text("source").$type<ClassCourseAccessSource>().notNull(),
 		isDelegate: boolean("is_delegate").notNull().default(true),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
@@ -1193,9 +1218,7 @@ export const studentPromotionSummaries = pgTable(
 			.notNull()
 			.defaultNow(),
 		overallAverage: doublePrecision("overall_average").notNull().default(0),
-		overallAverageUnweighted: doublePrecision(
-			"overall_average_unweighted",
-		)
+		overallAverageUnweighted: doublePrecision("overall_average_unweighted")
 			.notNull()
 			.default(0),
 		successRate: doublePrecision("success_rate").notNull().default(0),
@@ -1220,7 +1243,9 @@ export const studentPromotionSummaries = pgTable(
 			.notNull()
 			.default(0),
 		isOnTrack: boolean("is_on_track").notNull().default(false),
-		progressionRate: doublePrecision("progression_rate").notNull().default(0),
+		progressionRate: doublePrecision("progression_rate")
+			.notNull()
+			.default(0),
 		projectedCreditsEndOfYear: doublePrecision(
 			"projected_credits_end_of_year",
 		)
@@ -1260,7 +1285,10 @@ export const studentPromotionSummaries = pgTable(
 		facts: jsonb("facts").notNull().$type<Record<string, unknown>>(),
 	},
 	(t) => [
-		unique("uq_student_promotion_summary").on(t.studentId, t.academicYearId),
+		unique("uq_student_promotion_summary").on(
+			t.studentId,
+			t.academicYearId,
+		),
 		index("idx_student_promotion_summary_year").on(t.academicYearId),
 		index("idx_student_promotion_summary_class").on(t.classId),
 		index("idx_student_promotion_summary_program").on(t.programId),
@@ -1411,6 +1439,12 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
 		fields: [exams.classCourse],
 		references: [classCourses.id],
 	}),
+	parentExam: one(exams, {
+		fields: [exams.parentExamId],
+		references: [exams.id],
+		relationName: "retakeToParent",
+	}),
+	retakeExams: many(exams, { relationName: "retakeToParent" }),
 	grades: many(grades),
 }));
 
@@ -1775,7 +1809,10 @@ export const exportTemplates = pgTable(
 	(t) => [
 		index("idx_export_templates_institution").on(t.institutionId),
 		index("idx_export_templates_type").on(t.type),
-		unique("uq_export_templates_institution_name").on(t.institutionId, t.name),
+		unique("uq_export_templates_institution_name").on(
+			t.institutionId,
+			t.name,
+		),
 	],
 );
 export type ExportTemplate = InferSelectModel<typeof exportTemplates>;

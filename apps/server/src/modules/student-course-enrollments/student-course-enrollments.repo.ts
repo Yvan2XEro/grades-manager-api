@@ -77,7 +77,10 @@ export async function list(
 			? eq(schema.studentCourseEnrollments.studentId, opts.studentId)
 			: undefined,
 		opts.classCourseId
-			? eq(schema.studentCourseEnrollments.classCourseId, opts.classCourseId)
+			? eq(
+					schema.studentCourseEnrollments.classCourseId,
+					opts.classCourseId,
+				)
 			: undefined,
 		opts.courseId
 			? eq(schema.studentCourseEnrollments.courseId, opts.courseId)
@@ -140,7 +143,10 @@ export async function closeForStudent(
 		.where(
 			and(
 				eq(schema.studentCourseEnrollments.studentId, studentId),
-				inArray(schema.studentCourseEnrollments.status, ACTIVE_STATUSES),
+				inArray(
+					schema.studentCourseEnrollments.status,
+					ACTIVE_STATUSES,
+				),
 			),
 		)
 		.returning();
@@ -155,7 +161,10 @@ export async function findEligibleForClassCourse(
 		where: and(
 			eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
 			eq(schema.studentCourseEnrollments.studentId, studentId),
-			inArray(schema.studentCourseEnrollments.status, GRADE_ELIGIBLE_STATUSES),
+			inArray(
+				schema.studentCourseEnrollments.status,
+				GRADE_ELIGIBLE_STATUSES,
+			),
 		),
 	});
 }
@@ -168,8 +177,14 @@ export async function countRosterForClassCourse(classCourseId: string) {
 		.from(schema.studentCourseEnrollments)
 		.where(
 			and(
-				eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
-				inArray(schema.studentCourseEnrollments.status, ACTIVE_STATUSES),
+				eq(
+					schema.studentCourseEnrollments.classCourseId,
+					classCourseId,
+				),
+				inArray(
+					schema.studentCourseEnrollments.status,
+					ACTIVE_STATUSES,
+				),
 			),
 		);
 	return Number(result?.total ?? 0);
@@ -201,14 +216,18 @@ export async function listCoursePrerequisites(courseId: string) {
 		.select({
 			id: schema.coursePrerequisites.id,
 			type: schema.coursePrerequisites.type,
-			prerequisiteCourseId: schema.coursePrerequisites.prerequisiteCourseId,
+			prerequisiteCourseId:
+				schema.coursePrerequisites.prerequisiteCourseId,
 			prerequisiteCourseCode: schema.courses.code,
 			prerequisiteCourseName: schema.courses.name,
 		})
 		.from(schema.coursePrerequisites)
 		.innerJoin(
 			schema.courses,
-			eq(schema.coursePrerequisites.prerequisiteCourseId, schema.courses.id),
+			eq(
+				schema.coursePrerequisites.prerequisiteCourseId,
+				schema.courses.id,
+			),
 		)
 		.where(eq(schema.coursePrerequisites.courseId, courseId));
 }
@@ -236,7 +255,10 @@ export async function listForClassCourseWithStudentProfile(
 		)
 		.where(
 			and(
-				eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
+				eq(
+					schema.studentCourseEnrollments.classCourseId,
+					classCourseId,
+				),
 				eq(schema.students.institutionId, institutionId),
 				inArray(
 					schema.studentCourseEnrollments.status,
@@ -261,7 +283,10 @@ export async function maxAttemptsForCourseYear(
 		.where(
 			and(
 				eq(schema.studentCourseEnrollments.courseId, courseId),
-				eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
+				eq(
+					schema.studentCourseEnrollments.academicYearId,
+					academicYearId,
+				),
 				inArray(schema.studentCourseEnrollments.studentId, studentIds),
 			),
 		)

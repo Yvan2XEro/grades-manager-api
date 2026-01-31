@@ -77,7 +77,10 @@
 		"default_coefficient": 1,
 		"exam_types": {
 			"CC": { "label": "Contrôle Continu", "coefficient": 0.4 },
-			"TPE": { "label": "Travaux Pratiques Encadrés", "coefficient": 0.3 },
+			"TPE": {
+				"label": "Travaux Pratiques Encadrés",
+				"coefficient": 0.3
+			},
 			"TP": { "label": "Travaux Pratiques", "coefficient": 0.3 },
 			"EXAMEN": { "label": "Examen", "coefficient": 0.6 },
 			"RATTRAPAGE": { "label": "Rattrapage", "coefficient": 1.0 }

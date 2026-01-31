@@ -58,7 +58,10 @@ async function selectClass(where: SQL<unknown>, institutionId?: string) {
 	const [klass] = await db
 		.select(classSelection)
 		.from(schema.classes)
-		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.programs,
+			eq(schema.programs.id, schema.classes.program),
+		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
@@ -163,7 +166,10 @@ export async function list(
 	const items = await db
 		.select(classSelection)
 		.from(schema.classes)
-		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.programs,
+			eq(schema.programs.id, schema.classes.program),
+		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),
@@ -228,7 +234,10 @@ export async function search(
 	const items = await db
 		.select(classSelection)
 		.from(schema.classes)
-		.leftJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
+		.leftJoin(
+			schema.programs,
+			eq(schema.programs.id, schema.classes.program),
+		)
 		.leftJoin(
 			schema.academicYears,
 			eq(schema.academicYears.id, schema.classes.academicYear),

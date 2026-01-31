@@ -46,7 +46,9 @@ const buildAcademicYearSchema = (t: TFunction) =>
 			startDate: z
 				.string()
 				.min(1, t("admin.academicYears.validation.startDate")),
-			endDate: z.string().min(1, t("admin.academicYears.validation.endDate")),
+			endDate: z
+				.string()
+				.min(1, t("admin.academicYears.validation.endDate")),
 			name: z.string().min(2, t("admin.academicYears.validation.name")),
 		})
 		.refine(
@@ -96,7 +98,10 @@ const AcademicYearManagement: React.FC = () => {
 
 	useEffect(() => {
 		if (startDate) {
-			if (!editingYear || startDate !== editingYear.startDate.slice(0, 10)) {
+			if (
+				!editingYear ||
+				startDate !== editingYear.startDate.slice(0, 10)
+			) {
 				const end = new Date(startDate);
 				end.setFullYear(end.getFullYear() + 1);
 				setValue("endDate", end.toISOString().slice(0, 10));
@@ -187,7 +192,13 @@ const AcademicYearManagement: React.FC = () => {
 	});
 
 	const toggleActiveMutation = useMutation({
-		mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+		mutationFn: async ({
+			id,
+			isActive,
+		}: {
+			id: string;
+			isActive: boolean;
+		}) => {
 			await trpcClient.academicYears.setActive.mutate({ id, isActive });
 		},
 		onSuccess: () => {
@@ -267,7 +278,9 @@ const AcademicYearManagement: React.FC = () => {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.academicYears.title")}</CardTitle>
-					<CardDescription>{t("admin.academicYears.subtitle")}</CardDescription>
+					<CardDescription>
+						{t("admin.academicYears.subtitle")}
+					</CardDescription>
 				</CardHeader>
 
 				{isLoading ? (
@@ -287,7 +300,11 @@ const AcademicYearManagement: React.FC = () => {
 							type="button"
 							onClick={() => {
 								setEditingYear(null);
-								form.reset({ startDate: "", endDate: "", name: "" });
+								form.reset({
+									startDate: "",
+									endDate: "",
+									name: "",
+								});
 								setIsModalOpen(true);
 							}}
 						>
@@ -300,30 +317,45 @@ const AcademicYearManagement: React.FC = () => {
 						<Table className="min-w-full">
 							<TableHeader>
 								<TableRow>
-									<TableHead>{t("admin.academicYears.table.name")}</TableHead>
 									<TableHead>
-										{t("admin.academicYears.table.startDate")}
+										{t("admin.academicYears.table.name")}
+									</TableHead>
+									<TableHead>
+										{t(
+											"admin.academicYears.table.startDate",
+										)}
 									</TableHead>
 									<TableHead>
 										{t("admin.academicYears.table.endDate")}
 									</TableHead>
-									<TableHead>{t("admin.academicYears.table.status")}</TableHead>
-									<TableHead>{t("common.table.actions")}</TableHead>
+									<TableHead>
+										{t("admin.academicYears.table.status")}
+									</TableHead>
+									<TableHead>
+										{t("common.table.actions")}
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{academicYears?.map((year) => (
 									<TableRow key={year.id}>
 										<TableCell>{year.name}</TableCell>
-										<TableCell>{formatDate(year.startDate)}</TableCell>
-										<TableCell>{formatDate(year.endDate)}</TableCell>
+										<TableCell>
+											{formatDate(year.startDate)}
+										</TableCell>
+										<TableCell>
+											{formatDate(year.endDate)}
+										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-3">
 												<Switch
 													id={`academic-year-${year.id}`}
 													checked={year.isActive}
 													onCheckedChange={() =>
-														handleToggleActive(year.id, year.isActive)
+														handleToggleActive(
+															year.id,
+															year.isActive,
+														)
 													}
 												/>
 												<label
@@ -331,8 +363,12 @@ const AcademicYearManagement: React.FC = () => {
 													className="text-muted-foreground text-sm"
 												>
 													{year.isActive
-														? t("common.status.active")
-														: t("common.status.inactive")}
+														? t(
+																"common.status.active",
+															)
+														: t(
+																"common.status.inactive",
+															)}
 												</label>
 											</div>
 										</TableCell>
@@ -340,18 +376,28 @@ const AcademicYearManagement: React.FC = () => {
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
 													<span className="text-gray-600 text-sm">
-														{t("admin.academicYears.confirmDelete")}
+														{t(
+															"admin.academicYears.confirmDelete",
+														)}
 													</span>
 													<button
 														type="button"
-														onClick={() => handleDelete(year.id)}
+														onClick={() =>
+															handleDelete(
+																year.id,
+															)
+														}
 														className="btn btn-error btn-sm"
 													>
 														<Check className="h-4 w-4" />
 													</button>
 													<button
 														type="button"
-														onClick={() => setDeleteConfirmId(null)}
+														onClick={() =>
+															setDeleteConfirmId(
+																null,
+															)
+														}
 														className="btn btn-ghost btn-sm"
 													>
 														<X className="h-4 w-4" />
@@ -364,13 +410,25 @@ const AcademicYearManagement: React.FC = () => {
 														variant="ghost"
 														size={"icon"}
 														onClick={() => {
-															setEditingYear(year);
+															setEditingYear(
+																year,
+															);
 															form.reset({
-																startDate: year.startDate.slice(0, 10),
-																endDate: year.endDate.slice(0, 10),
+																startDate:
+																	year.startDate.slice(
+																		0,
+																		10,
+																	),
+																endDate:
+																	year.endDate.slice(
+																		0,
+																		10,
+																	),
 																name: year.name,
 															});
-															setIsModalOpen(true);
+															setIsModalOpen(
+																true,
+															);
 														}}
 														className="btn btn-ghost btn-sm"
 													>
@@ -380,7 +438,11 @@ const AcademicYearManagement: React.FC = () => {
 														type="button"
 														variant="ghost"
 														size={"icon"}
-														onClick={() => setDeleteConfirmId(year.id)}
+														onClick={() =>
+															setDeleteConfirmId(
+																year.id,
+															)
+														}
 														className="btn btn-ghost btn-sm"
 													>
 														<Trash2 className="h-4 w-4" />
@@ -410,14 +472,19 @@ const AcademicYearManagement: React.FC = () => {
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-4"
+					>
 						<FormField
 							control={form.control}
 							name="startDate"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.academicYears.modal.startDate")}
+										{t(
+											"admin.academicYears.modal.startDate",
+										)}
 									</FormLabel>
 									<FormControl>
 										<Input type="date" {...field} />
@@ -448,7 +515,9 @@ const AcademicYearManagement: React.FC = () => {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("admin.academicYears.modal.label")}</FormLabel>
+									<FormLabel>
+										{t("admin.academicYears.modal.label")}
+									</FormLabel>
 									<FormControl>
 										<Input {...field} readOnly />
 									</FormControl>
@@ -469,7 +538,10 @@ const AcademicYearManagement: React.FC = () => {
 							>
 								{t("common.actions.cancel")}
 							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
+							<Button
+								type="submit"
+								disabled={form.formState.isSubmitting}
+							>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
 								) : (

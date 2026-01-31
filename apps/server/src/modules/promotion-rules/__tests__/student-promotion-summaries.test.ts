@@ -109,7 +109,9 @@ describe("student promotion summaries", () => {
 			klass.institutionId,
 		);
 		expect(after.eligible).toHaveLength(1);
-		expect(after.eligible[0].facts.overallAverage).toBeGreaterThanOrEqual(10);
+		expect(after.eligible[0].facts.overallAverage).toBeGreaterThanOrEqual(
+			10,
+		);
 	});
 
 	it("requires admin rights to trigger manual refresh", async () => {

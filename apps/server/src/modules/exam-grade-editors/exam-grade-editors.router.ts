@@ -4,17 +4,19 @@ import {
 	tenantProtectedProcedure,
 } from "@/lib/trpc";
 import * as service from "./exam-grade-editors.service";
-import { assignSchema, listSchema, revokeSchema } from "./exam-grade-editors.zod";
+import {
+	assignSchema,
+	listSchema,
+	revokeSchema,
+} from "./exam-grade-editors.zod";
 
 export const examGradeEditorsRouter = createRouter({
-	list: tenantProtectedProcedure
-		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.listEditors({
-				examId: input.examId,
-				institutionId: ctx.institution.id,
-			}),
-		),
+	list: tenantProtectedProcedure.input(listSchema).query(({ ctx, input }) =>
+		service.listEditors({
+			examId: input.examId,
+			institutionId: ctx.institution.id,
+		}),
+	),
 	assign: tenantGradingProcedure
 		.input(assignSchema)
 		.mutation(({ ctx, input }) =>

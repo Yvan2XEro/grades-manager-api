@@ -31,7 +31,9 @@ const AttendanceAlerts = () => {
 			}),
 		onSuccess: () => {
 			toast.success(
-				t("teacher.attendance.toast.sent", { defaultValue: "Alert queued" }),
+				t("teacher.attendance.toast.sent", {
+					defaultValue: "Alert queued",
+				}),
 			);
 			setMessage("");
 		},
@@ -57,7 +59,9 @@ const AttendanceAlerts = () => {
 			<div className="grid gap-4 lg:grid-cols-2">
 				<Card>
 					<CardHeader>
-						<CardTitle>{t("teacher.attendance.openAlerts")}</CardTitle>
+						<CardTitle>
+							{t("teacher.attendance.openAlerts")}
+						</CardTitle>
 						<CardDescription>
 							{t("teacher.attendance.subtitle")}
 						</CardDescription>
@@ -73,7 +77,9 @@ const AttendanceAlerts = () => {
 										<AlertTriangle className="h-5 w-5" />
 									</div>
 									<div>
-										<p className="font-medium text-foreground">{alert.type}</p>
+										<p className="font-medium text-foreground">
+											{alert.type}
+										</p>
 										<p className="text-muted-foreground text-sm">
 											{JSON.stringify(alert.payload)}
 										</p>
@@ -92,7 +98,9 @@ const AttendanceAlerts = () => {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>{t("teacher.attendance.broadcast")}</CardTitle>
+						<CardTitle>
+							{t("teacher.attendance.broadcast")}
+						</CardTitle>
 						<CardDescription>
 							{t("teacher.attendance.broadcastDesc")}
 						</CardDescription>
@@ -112,7 +120,9 @@ const AttendanceAlerts = () => {
 							onClick={() => sendAlert.mutate()}
 						>
 							<BellRing className="mr-2 h-4 w-4" />
-							{t("teacher.attendance.send", { defaultValue: "Send alert" })}
+							{t("teacher.attendance.send", {
+								defaultValue: "Send alert",
+							})}
 						</Button>
 					</CardContent>
 				</Card>

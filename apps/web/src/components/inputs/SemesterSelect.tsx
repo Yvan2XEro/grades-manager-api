@@ -1,6 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
+import { useTranslation } from "react-i18next";
 import {
 	Select,
 	SelectContent,
@@ -8,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { trpc } from "@/utils/trpc";
 
 type SemesterSelectProps = {
 	value: string | null;
@@ -37,7 +37,8 @@ export function SemesterSelect({
 			<SelectTrigger>
 				<SelectValue
 					placeholder={
-						placeholder ?? t("admin.exams.filters.semesterPlaceholder")
+						placeholder ??
+						t("admin.exams.filters.semesterPlaceholder")
 					}
 				/>
 			</SelectTrigger>

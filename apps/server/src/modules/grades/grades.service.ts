@@ -3,12 +3,13 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
-import * as examsRepo from "../exams/exams.repo";
 import {
 	type ExamActorAccess,
 	type ExamEditorActor,
 	ensureActorCanEditExam,
 } from "../exam-grade-editors/exam-grade-editors.service";
+import * as examsRepo from "../exams/exams.repo";
+import { refreshAfterRetakeGrade } from "../promotion-rules/student-facts.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
@@ -50,7 +51,10 @@ async function requireCourseForInstitution(
 			institutionId: schema.programs.institutionId,
 		})
 		.from(schema.courses)
-		.innerJoin(schema.programs, eq(schema.programs.id, schema.courses.program))
+		.innerJoin(
+			schema.programs,
+			eq(schema.programs.id, schema.courses.program),
+		)
 		.where(eq(schema.courses.id, courseId))
 		.limit(1);
 	if (!course || course.institutionId !== institutionId) {
@@ -77,7 +81,10 @@ export async function upsertNote(
 		actor,
 	});
 	ensureExamEditable(exam);
-	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
+	await courseEnrollments.ensureStudentRegistered(
+		studentId,
+		exam.classCourse,
+	);
 	try {
 		const saved = await repo.upsert({
 			student: studentId,
@@ -93,6 +100,10 @@ export async function upsertNote(
 			gradeId: saved.id,
 			scoreAfter: score,
 		});
+		// Trigger recalculation for retake exams to update UE averages and promotion facts
+		if (exam.sessionType === "retake") {
+			await refreshAfterRetakeGrade(studentId, examId);
+		}
 		return saved;
 	} catch (_e) {
 		throw new TRPCError({ code: "CONFLICT" });
@@ -128,6 +139,10 @@ export async function updateNote(
 		scoreBefore: Number(grade.score),
 		scoreAfter: score,
 	});
+	// Trigger recalculation for retake exams to update UE averages and promotion facts
+	if (exam.sessionType === "retake") {
+		await refreshAfterRetakeGrade(grade.student, grade.exam);
+	}
 	return updated;
 }
 
@@ -154,6 +169,10 @@ export async function deleteNote(
 		scoreBefore: Number(grade.score),
 	});
 	await repo.remove(id);
+	// Trigger recalculation for retake exams to update UE averages and promotion facts
+	if (exam.sessionType === "retake") {
+		await refreshAfterRetakeGrade(grade.student, grade.exam);
+	}
 }
 
 export async function listByExam(
@@ -219,7 +238,10 @@ export async function exportClassCourseCsv(
 			schema.classCourses,
 			eq(schema.exams.classCourse, schema.classCourses.id),
 		)
-		.innerJoin(schema.students, eq(schema.grades.student, schema.students.id))
+		.innerJoin(
+			schema.students,
+			eq(schema.grades.student, schema.students.id),
+		)
 		.where(eq(schema.classCourses.id, classCourseId));
 
 	const header = ["registrationNumber", "examId", "score"];
@@ -269,6 +291,8 @@ export async function importGradesFromCsv(
 		errors: [] as string[],
 	};
 
+	const importedStudentIds: string[] = [];
+
 	for (const line of lines) {
 		const cells = line.split(",");
 		const registrationNumber = cells[regIdx]?.trim();
@@ -302,6 +326,7 @@ export async function importGradesFromCsv(
 			score: scoreValue.toString(),
 		});
 		result.imported++;
+		importedStudentIds.push(student.id);
 		await maybeLogDelegateGradeEdit({
 			access,
 			actor,
@@ -313,6 +338,15 @@ export async function importGradesFromCsv(
 			metadata: { source: "csv" },
 		});
 	}
+
+	// Trigger recalculation for retake exams to update UE averages and promotion facts
+	if (exam.sessionType === "retake" && importedStudentIds.length > 0) {
+		const uniqueStudentIds = [...new Set(importedStudentIds)];
+		for (const studentId of uniqueStudentIds) {
+			await refreshAfterRetakeGrade(studentId, examId);
+		}
+	}
+
 	return result;
 }
 
@@ -322,7 +356,10 @@ export async function getStudentTranscript(
 ) {
 	const student = await studentsRepo.findById(studentId, institutionId);
 	if (!student) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Student not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student not found",
+		});
 	}
 
 	const courseScores = await db

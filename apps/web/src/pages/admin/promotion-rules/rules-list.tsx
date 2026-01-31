@@ -53,7 +53,9 @@ export function RulesListPage() {
 			isActive: boolean;
 		}) => trpcClient.promotionRules.create.mutate(data),
 		onSuccess: () => {
-			toast.success(t("admin.promotionRules.rulesList.toast.createSuccess"));
+			toast.success(
+				t("admin.promotionRules.rulesList.toast.createSuccess"),
+			);
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 			setIsCreateDialogOpen(false);
 		},
@@ -75,7 +77,9 @@ export function RulesListPage() {
 			isActive?: boolean;
 		}) => trpcClient.promotionRules.update.mutate(data),
 		onSuccess: () => {
-			toast.success(t("admin.promotionRules.rulesList.toast.updateSuccess"));
+			toast.success(
+				t("admin.promotionRules.rulesList.toast.updateSuccess"),
+			);
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 			setIsEditDialogOpen(false);
 		},
@@ -92,7 +96,9 @@ export function RulesListPage() {
 		mutationFn: async (data: { id: string }) =>
 			trpcClient.promotionRules.delete.mutate(data),
 		onSuccess: () => {
-			toast.success(t("admin.promotionRules.rulesList.toast.deleteSuccess"));
+			toast.success(
+				t("admin.promotionRules.rulesList.toast.deleteSuccess"),
+			);
 			queryClient.invalidateQueries({ queryKey: ["promotionRules"] });
 		},
 		onError: (error: Error) => {
@@ -138,7 +144,9 @@ export function RulesListPage() {
 			try {
 				ruleset = JSON.parse(rulesetText);
 			} catch (error) {
-				toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
+				toast.error(
+					t("admin.promotionRules.rulesList.toast.invalidJson"),
+				);
 				return;
 			}
 		}
@@ -173,8 +181,16 @@ export function RulesListPage() {
 		name: "default-promotion-rule",
 		conditions: {
 			all: [
-				{ fact: "overallAverage", operator: "greaterThanInclusive", value: 10 },
-				{ fact: "creditsEarned", operator: "greaterThanInclusive", value: 30 },
+				{
+					fact: "overallAverage",
+					operator: "greaterThanInclusive",
+					value: 10,
+				},
+				{
+					fact: "creditsEarned",
+					operator: "greaterThanInclusive",
+					value: 30,
+				},
 				{ fact: "eliminatoryFailures", operator: "equal", value: 0 },
 			],
 		},
@@ -211,14 +227,18 @@ export function RulesListPage() {
 							variant="outline"
 							size="icon"
 							onClick={() =>
-								queryClient.invalidateQueries({ queryKey: ["promotionRules"] })
+								queryClient.invalidateQueries({
+									queryKey: ["promotionRules"],
+								})
 							}
 						>
 							<RefreshCw className="h-4 w-4" />
 						</Button>
 						<Button onClick={() => setIsCreateDialogOpen(true)}>
 							<Plus className="mr-2 h-4 w-4" />
-							{t("admin.promotionRules.rulesList.actions.createRule")}
+							{t(
+								"admin.promotionRules.rulesList.actions.createRule",
+							)}
 						</Button>
 					</div>
 				</div>
@@ -228,7 +248,10 @@ export function RulesListPage() {
 			{isLoading ? (
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{[...Array(6)].map((_, i) => (
-						<div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+						<div
+							key={i}
+							className="h-48 animate-pulse rounded-lg bg-muted"
+						/>
 					))}
 				</div>
 			) : rulesData?.items && rulesData.items.length > 0 ? (
@@ -253,26 +276,37 @@ export function RulesListPage() {
 						className="mt-4"
 						onClick={() => setIsCreateDialogOpen(true)}
 					>
-						{t("admin.promotionRules.rulesList.emptyState.createFirst")}
+						{t(
+							"admin.promotionRules.rulesList.emptyState.createFirst",
+						)}
 					</Button>
 				</div>
 			)}
 
 			{/* Create Dialog */}
-			<Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+			<Dialog
+				open={isCreateDialogOpen}
+				onOpenChange={setIsCreateDialogOpen}
+			>
 				<DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>
-							{t("admin.promotionRules.rulesList.dialog.create.title")}
+							{t(
+								"admin.promotionRules.rulesList.dialog.create.title",
+							)}
 						</DialogTitle>
 						<DialogDescription>
-							{t("admin.promotionRules.rulesList.dialog.create.description")}
+							{t(
+								"admin.promotionRules.rulesList.dialog.create.description",
+							)}
 						</DialogDescription>
 					</DialogHeader>
 					<form onSubmit={handleCreateRule} className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="name">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.ruleName",
+								)}
 							</Label>
 							<Input
 								id="name"
@@ -285,7 +319,9 @@ export function RulesListPage() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="description">
-								{t("admin.promotionRules.rulesList.dialog.form.description")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.description",
+								)}
 							</Label>
 							<Textarea
 								id="description"
@@ -298,7 +334,9 @@ export function RulesListPage() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="ruleset">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.ruleset",
+								)}
 							</Label>
 							<Textarea
 								id="ruleset"
@@ -307,12 +345,18 @@ export function RulesListPage() {
 									"admin.promotionRules.rulesList.dialog.form.rulesetPlaceholder",
 								)}
 								rows={12}
-								defaultValue={JSON.stringify(defaultRuleset, null, 2)}
+								defaultValue={JSON.stringify(
+									defaultRuleset,
+									null,
+									2,
+								)}
 								className="font-mono text-sm"
 								required
 							/>
 							<p className="text-muted-foreground text-xs">
-								{t("admin.promotionRules.rulesList.dialog.form.rulesetHelp")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.rulesetHelp",
+								)}
 							</p>
 						</div>
 						<DialogFooter>
@@ -321,12 +365,21 @@ export function RulesListPage() {
 								variant="outline"
 								onClick={() => setIsCreateDialogOpen(false)}
 							>
-								{t("admin.promotionRules.rulesList.dialog.actions.cancel")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.actions.cancel",
+								)}
 							</Button>
-							<Button type="submit" disabled={createMutation.isPending}>
+							<Button
+								type="submit"
+								disabled={createMutation.isPending}
+							>
 								{createMutation.isPending
-									? t("admin.promotionRules.rulesList.dialog.actions.creating")
-									: t("admin.promotionRules.rulesList.dialog.actions.create")}
+									? t(
+											"admin.promotionRules.rulesList.dialog.actions.creating",
+										)
+									: t(
+											"admin.promotionRules.rulesList.dialog.actions.create",
+										)}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -338,16 +391,22 @@ export function RulesListPage() {
 				<DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>
-							{t("admin.promotionRules.rulesList.dialog.edit.title")}
+							{t(
+								"admin.promotionRules.rulesList.dialog.edit.title",
+							)}
 						</DialogTitle>
 						<DialogDescription>
-							{t("admin.promotionRules.rulesList.dialog.edit.description")}
+							{t(
+								"admin.promotionRules.rulesList.dialog.edit.description",
+							)}
 						</DialogDescription>
 					</DialogHeader>
 					<form onSubmit={handleUpdateRule} className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="edit-name">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.ruleName",
+								)}
 							</Label>
 							<Input
 								id="edit-name"
@@ -358,7 +417,9 @@ export function RulesListPage() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="edit-description">
-								{t("admin.promotionRules.rulesList.dialog.form.description")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.description",
+								)}
 							</Label>
 							<Textarea
 								id="edit-description"
@@ -369,12 +430,18 @@ export function RulesListPage() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="edit-ruleset">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.form.ruleset",
+								)}
 							</Label>
 							<Textarea
 								id="edit-ruleset"
 								name="ruleset"
-								defaultValue={JSON.stringify(editingRule?.ruleset, null, 2)}
+								defaultValue={JSON.stringify(
+									editingRule?.ruleset,
+									null,
+									2,
+								)}
 								rows={12}
 								className="font-mono text-sm"
 							/>
@@ -385,12 +452,21 @@ export function RulesListPage() {
 								variant="outline"
 								onClick={() => setIsEditDialogOpen(false)}
 							>
-								{t("admin.promotionRules.rulesList.dialog.actions.cancel")}
+								{t(
+									"admin.promotionRules.rulesList.dialog.actions.cancel",
+								)}
 							</Button>
-							<Button type="submit" disabled={updateMutation.isPending}>
+							<Button
+								type="submit"
+								disabled={updateMutation.isPending}
+							>
 								{updateMutation.isPending
-									? t("admin.promotionRules.rulesList.dialog.actions.saving")
-									: t("admin.promotionRules.rulesList.dialog.actions.save")}
+									? t(
+											"admin.promotionRules.rulesList.dialog.actions.saving",
+										)
+									: t(
+											"admin.promotionRules.rulesList.dialog.actions.save",
+										)}
 							</Button>
 						</DialogFooter>
 					</form>

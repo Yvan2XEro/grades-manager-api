@@ -3,6 +3,7 @@ import type {
 	ExportTemplateType,
 } from "../../db/schema/app-schema";
 import * as exportTemplatesService from "../export-templates/export-templates.service";
+
 type ExportHeaderConfig = {
 	showLogo?: boolean;
 	logoPosition?: "left" | "center" | "right";
@@ -55,6 +56,7 @@ type ExportStyleConfig = {
 		rotation?: number;
 	};
 };
+
 import { loadTemplate } from "./template-helper";
 
 /**
@@ -115,9 +117,7 @@ function getDefaultTemplateConfig(
 /**
  * Default header configuration
  */
-function getDefaultHeaderConfig(
-	type: ExportTemplateType,
-): ExportHeaderConfig {
+function getDefaultHeaderConfig(type: ExportTemplateType): ExportHeaderConfig {
 	const baseConfig: ExportHeaderConfig = {
 		showLogo: true,
 		logoPosition: "left",

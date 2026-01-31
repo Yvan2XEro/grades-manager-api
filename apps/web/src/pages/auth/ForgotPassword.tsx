@@ -65,7 +65,11 @@ const ForgotPassword: React.FC = () => {
 						</p>
 					)}
 				</div>
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="mt-6 w-full"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

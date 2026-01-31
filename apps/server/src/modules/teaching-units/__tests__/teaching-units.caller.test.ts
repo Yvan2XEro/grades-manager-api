@@ -29,7 +29,9 @@ describe("teaching units router", () => {
 		const fetched = await admin.teachingUnits.getById({ id: unit.id });
 		expect(fetched?.id).toBe(unit.id);
 
-		const listed = await admin.teachingUnits.list({ programId: program.id });
+		const listed = await admin.teachingUnits.list({
+			programId: program.id,
+		});
 		expect(listed.items.length).toBeGreaterThan(0);
 
 		const updated = await admin.teachingUnits.update({

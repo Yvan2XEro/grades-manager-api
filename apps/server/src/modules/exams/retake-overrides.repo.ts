@@ -53,7 +53,10 @@ export async function deleteByExamAndEnrollment(
 		.where(
 			and(
 				eq(schema.retakeOverrides.examId, examId),
-				eq(schema.retakeOverrides.studentCourseEnrollmentId, studentCourseEnrollmentId),
+				eq(
+					schema.retakeOverrides.studentCourseEnrollmentId,
+					studentCourseEnrollmentId,
+				),
 				eq(schema.retakeOverrides.institutionId, institutionId),
 			),
 		);
@@ -82,7 +85,10 @@ export async function findByExamAndEnrollment(
 	return db.query.retakeOverrides.findFirst({
 		where: and(
 			eq(schema.retakeOverrides.examId, examId),
-			eq(schema.retakeOverrides.studentCourseEnrollmentId, studentCourseEnrollmentId),
+			eq(
+				schema.retakeOverrides.studentCourseEnrollmentId,
+				studentCourseEnrollmentId,
+			),
 			eq(schema.retakeOverrides.institutionId, institutionId),
 		),
 	});

@@ -333,7 +333,10 @@ export async function runSeed(options: RunSeedOptions = {}) {
 	const usersPath = options.usersPath ?? defaults.usersPath;
 
 	const state = createSeedState();
-	const foundation = await loadSeedFile<FoundationSeed>(foundationPath, logger);
+	const foundation = await loadSeedFile<FoundationSeed>(
+		foundationPath,
+		logger,
+	);
 	if (foundation) {
 		logger.log(
 			`[seed] Applying foundation layer${
@@ -511,7 +514,9 @@ async function seedFoundation(
 		const entry = institutions[idx];
 		const code = normalizeCode(entry.code);
 		const defaultAcademicYearId = entry.defaultAcademicYearCode
-			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
+			? state.academicYears.get(
+					normalizeCode(entry.defaultAcademicYearCode),
+				)
 			: undefined;
 		let registrationFormatId: string | undefined;
 		if (entry.registrationFormatName) {
@@ -539,7 +544,9 @@ async function seedFoundation(
 		// Resolve parent institution ID from code if provided
 		let parentInstitutionId: string | null = null;
 		if (entry.parentInstitutionCode) {
-			const parent = state.institutions.get(normalizeCode(entry.parentInstitutionCode));
+			const parent = state.institutions.get(
+				normalizeCode(entry.parentInstitutionCode),
+			);
 			if (!parent) {
 				throw new Error(
 					`Parent institution with code "${entry.parentInstitutionCode}" not found for institution ${entry.code}. Ensure parent institutions are defined before children.`,
@@ -748,7 +755,10 @@ async function seedFoundation(
 				durationYears: entry.durationYears ?? 3,
 			})
 			.onConflictDoUpdate({
-				target: [schema.studyCycles.institutionId, schema.studyCycles.code],
+				target: [
+					schema.studyCycles.institutionId,
+					schema.studyCycles.code,
+				],
 				set: {
 					name: entry.name,
 					description: entry.description ?? null,
@@ -877,14 +887,20 @@ async function seedFoundation(
 				.where(
 					and(
 						eq(schema.registrationNumberFormats.isActive, true),
-						eq(schema.registrationNumberFormats.institutionId, institutionId),
+						eq(
+							schema.registrationNumberFormats.institutionId,
+							institutionId,
+						),
 					),
 				);
 		}
 		const existing = await db.query.registrationNumberFormats.findFirst({
 			where: and(
 				eq(schema.registrationNumberFormats.name, entry.name),
-				eq(schema.registrationNumberFormats.institutionId, institutionId),
+				eq(
+					schema.registrationNumberFormats.institutionId,
+					institutionId,
+				),
 			),
 		});
 		if (existing) {
@@ -983,7 +999,10 @@ async function seedAcademics(
 				institutionId: program.institutionId,
 			})
 			.onConflictDoUpdate({
-				target: [schema.programOptions.programId, schema.programOptions.code],
+				target: [
+					schema.programOptions.programId,
+					schema.programOptions.code,
+				],
 				set: {
 					name: entry.name,
 					description: entry.description ?? null,
@@ -1021,7 +1040,10 @@ async function seedAcademics(
 				semester: entry.semester ?? "annual",
 			})
 			.onConflictDoUpdate({
-				target: [schema.teachingUnits.programId, schema.teachingUnits.code],
+				target: [
+					schema.teachingUnits.programId,
+					schema.teachingUnits.code,
+				],
 				set: {
 					name: entry.name,
 					description: entry.description ?? null,
@@ -1049,7 +1071,9 @@ async function seedAcademics(
 			);
 		}
 		const unitCode = normalizeCode(entry.teachingUnitCode);
-		const teachingUnit = state.teachingUnits.get(`${programCode}::${unitCode}`);
+		const teachingUnit = state.teachingUnits.get(
+			`${programCode}::${unitCode}`,
+		);
 		if (!teachingUnit) {
 			throw new Error(
 				`Unknown teaching unit ${entry.teachingUnitCode} for course ${entry.code}`,
@@ -1100,7 +1124,9 @@ async function seedAcademics(
 			);
 		}
 		const optionCode = normalizeCode(entry.programOptionCode);
-		const option = state.programOptions.get(`${programCode}::${optionCode}`);
+		const option = state.programOptions.get(
+			`${programCode}::${optionCode}`,
+		);
 		if (!option) {
 			throw new Error(
 				`Unknown option ${entry.programOptionCode} for class ${entry.code}`,
@@ -1251,7 +1277,9 @@ async function seedUsers(
 				lastName: entry.lastName,
 				primaryEmail: entry.primaryEmail,
 				phone: entry.phone ?? null,
-				dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
+				dateOfBirth: entry.dateOfBirth
+					? new Date(entry.dateOfBirth)
+					: null,
 				placeOfBirth: entry.placeOfBirth ?? null,
 				gender: entry.gender ?? null,
 				nationality: entry.nationality ?? null,
@@ -1265,7 +1293,9 @@ async function seedUsers(
 					firstName: entry.firstName,
 					lastName: entry.lastName,
 					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
+					dateOfBirth: entry.dateOfBirth
+						? new Date(entry.dateOfBirth)
+						: null,
 					placeOfBirth: entry.placeOfBirth ?? null,
 					gender: entry.gender ?? null,
 					nationality: entry.nationality ?? null,
@@ -1378,7 +1408,9 @@ async function seedUsers(
 			(e) => normalizeCode(e.studentCode) === normalizeCode(entry.code),
 		);
 		if (!explicitEnrollment) {
-			const academicYearId = state.academicYears.get(klass.academicYearCode);
+			const academicYearId = state.academicYears.get(
+				klass.academicYearCode,
+			);
 			if (academicYearId) {
 				const enrollmentExists = await db.query.enrollments.findFirst({
 					where: and(
@@ -1446,13 +1478,18 @@ async function seedUsers(
 					enrolledAt: existing.enrolledAt,
 					institutionId: klass.institutionId,
 					// Update admission fields if provided
-					admissionType: entry.admissionType ?? existing.admissionType,
+					admissionType:
+						entry.admissionType ?? existing.admissionType,
 					transferInstitution:
-						entry.transferInstitution ?? existing.transferInstitution,
-					transferCredits: entry.transferCredits ?? existing.transferCredits,
-					transferLevel: entry.transferLevel ?? existing.transferLevel,
+						entry.transferInstitution ??
+						existing.transferInstitution,
+					transferCredits:
+						entry.transferCredits ?? existing.transferCredits,
+					transferLevel:
+						entry.transferLevel ?? existing.transferLevel,
 					admissionJustification:
-						entry.admissionJustification ?? existing.admissionJustification,
+						entry.admissionJustification ??
+						existing.admissionJustification,
 					admissionDate: entry.admissionDate
 						? new Date(entry.admissionDate)
 						: existing.admissionDate,
@@ -1798,7 +1835,9 @@ async function seedEnrollmentWindows(
 				classId: classRecord.id,
 				academicYearId,
 				status,
-				openedAt: entry.openedAt ? new Date(entry.openedAt) : new Date(),
+				openedAt: entry.openedAt
+					? new Date(entry.openedAt)
+					: new Date(),
 				closedAt: entry.closedAt ? new Date(entry.closedAt) : null,
 			})
 			.onConflictDoUpdate({
@@ -1808,7 +1847,9 @@ async function seedEnrollmentWindows(
 				],
 				set: {
 					status,
-					openedAt: entry.openedAt ? new Date(entry.openedAt) : new Date(),
+					openedAt: entry.openedAt
+						? new Date(entry.openedAt)
+						: new Date(),
 					closedAt: entry.closedAt ? new Date(entry.closedAt) : null,
 				},
 			});

@@ -116,7 +116,10 @@ const TeachingUnitDetail = () => {
 	});
 	const selectedProgramId = form.watch("programId");
 	const selectedProgram = useMemo(
-		() => programs?.items?.find((program) => program.id === selectedProgramId),
+		() =>
+			programs?.items?.find(
+				(program) => program.id === selectedProgramId,
+			),
 		[programs?.items, selectedProgramId],
 	);
 
@@ -232,22 +235,29 @@ const TeachingUnitDetail = () => {
 					</CardTitle>
 					<CardDescription>
 						{t("admin.teachingUnits.detail.formSubtitle", {
-							defaultValue: "Edit code, semester, and description.",
+							defaultValue:
+								"Edit code, semester, and description.",
 						})}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<FormField
 								control={form.control}
 								name="name"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.teachingUnits.fields.name", {
-												defaultValue: "Unit name",
-											})}
+											{t(
+												"admin.teachingUnits.fields.name",
+												{
+													defaultValue: "Unit name",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input {...field} />
@@ -263,9 +273,12 @@ const TeachingUnitDetail = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.teachingUnits.fields.code", {
-												defaultValue: "Code",
-											})}
+											{t(
+												"admin.teachingUnits.fields.code",
+												{
+													defaultValue: "Code",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input {...field} />
@@ -281,9 +294,12 @@ const TeachingUnitDetail = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.teachingUnits.fields.description", {
-												defaultValue: "Description",
-											})}
+											{t(
+												"admin.teachingUnits.fields.description",
+												{
+													defaultValue: "Description",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Textarea {...field} rows={4} />
@@ -300,9 +316,12 @@ const TeachingUnitDetail = () => {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.teachingUnits.fields.credits", {
-													defaultValue: "ECTS",
-												})}
+												{t(
+													"admin.teachingUnits.fields.credits",
+													{
+														defaultValue: "ECTS",
+													},
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input
@@ -310,9 +329,14 @@ const TeachingUnitDetail = () => {
 													value={field.value ?? ""}
 													onChange={(event) =>
 														field.onChange(
-															event.target.value === ""
+															event.target
+																.value === ""
 																? undefined
-																: Number(event.target.value),
+																: Number(
+																		event
+																			.target
+																			.value,
+																	),
 														)
 													}
 												/>
@@ -328,9 +352,13 @@ const TeachingUnitDetail = () => {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.teachingUnits.semesters.annual", {
-													defaultValue: "Semester",
-												})}
+												{t(
+													"admin.teachingUnits.semesters.annual",
+													{
+														defaultValue:
+															"Semester",
+													},
+												)}
 											</FormLabel>
 											<Select
 												onValueChange={field.onChange}
@@ -343,19 +371,31 @@ const TeachingUnitDetail = () => {
 												</FormControl>
 												<SelectContent>
 													<SelectItem value="annual">
-														{t("admin.teachingUnits.semesters.annual", {
-															defaultValue: "Annual",
-														})}
+														{t(
+															"admin.teachingUnits.semesters.annual",
+															{
+																defaultValue:
+																	"Annual",
+															},
+														)}
 													</SelectItem>
 													<SelectItem value="fall">
-														{t("admin.teachingUnits.semesters.fall", {
-															defaultValue: "Fall",
-														})}
+														{t(
+															"admin.teachingUnits.semesters.fall",
+															{
+																defaultValue:
+																	"Fall",
+															},
+														)}
 													</SelectItem>
 													<SelectItem value="spring">
-														{t("admin.teachingUnits.semesters.spring", {
-															defaultValue: "Spring",
-														})}
+														{t(
+															"admin.teachingUnits.semesters.spring",
+															{
+																defaultValue:
+																	"Spring",
+															},
+														)}
 													</SelectItem>
 												</SelectContent>
 											</Select>
@@ -371,9 +411,13 @@ const TeachingUnitDetail = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.teachingUnits.selectProgram", {
-												defaultValue: "Select program",
-											})}
+											{t(
+												"admin.teachingUnits.selectProgram",
+												{
+													defaultValue:
+														"Select program",
+												},
+											)}
 										</FormLabel>
 										<Select
 											onValueChange={field.onChange}
@@ -382,16 +426,23 @@ const TeachingUnitDetail = () => {
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
-														placeholder={t("admin.teachingUnits.selectProgram")}
+														placeholder={t(
+															"admin.teachingUnits.selectProgram",
+														)}
 													/>
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{programs?.items?.map((program) => (
-													<SelectItem key={program.id} value={program.id}>
-														{program.name}
-													</SelectItem>
-												))}
+												{programs?.items?.map(
+													(program) => (
+														<SelectItem
+															key={program.id}
+															value={program.id}
+														>
+															{program.name}
+														</SelectItem>
+													),
+												)}
 											</SelectContent>
 										</Select>
 										<FormMessage />
@@ -403,7 +454,9 @@ const TeachingUnitDetail = () => {
 								<Button
 									type="button"
 									variant="outline"
-									onClick={() => navigate("/admin/teaching-units")}
+									onClick={() =>
+										navigate("/admin/teaching-units")
+									}
 								>
 									{t("common.actions.cancel")}
 								</Button>
@@ -418,11 +471,17 @@ const TeachingUnitDetail = () => {
 									{form.formState.isSubmitting ||
 									createMutation.isPending ||
 									updateMutation.isPending
-										? t("common.actions.saving", { defaultValue: "Saving..." })
+										? t("common.actions.saving", {
+												defaultValue: "Saving...",
+											})
 										: isCreateMode
-											? t("admin.teachingUnits.actions.create", {
-													defaultValue: "Create UE",
-												})
+											? t(
+													"admin.teachingUnits.actions.create",
+													{
+														defaultValue:
+															"Create UE",
+													},
+												)
 											: t("common.actions.saveChanges")}
 								</Button>
 							</div>

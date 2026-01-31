@@ -64,7 +64,8 @@ async function validateConfig(
 
 	const prereqs = await db
 		.select({
-			prerequisiteCourseId: schema.coursePrerequisites.prerequisiteCourseId,
+			prerequisiteCourseId:
+				schema.coursePrerequisites.prerequisiteCourseId,
 		})
 		.from(schema.coursePrerequisites)
 		.where(eq(schema.coursePrerequisites.courseId, config.course));
@@ -80,7 +81,8 @@ async function validateConfig(
 			if (!assigned.has(prereq.prerequisiteCourseId)) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Prerequisite courses must be assigned before this course",
+					message:
+						"Prerequisite courses must be assigned before this course",
 				});
 			}
 		}
@@ -222,8 +224,14 @@ export async function getClassCourseRoster(
 		)
 		.where(
 			and(
-				eq(schema.studentCourseEnrollments.classCourseId, classCourseId),
-				inArray(schema.studentCourseEnrollments.status, ROSTER_STATUSES),
+				eq(
+					schema.studentCourseEnrollments.classCourseId,
+					classCourseId,
+				),
+				inArray(
+					schema.studentCourseEnrollments.status,
+					ROSTER_STATUSES,
+				),
 			),
 		)
 		.orderBy(schema.domainUsers.lastName, schema.domainUsers.firstName);

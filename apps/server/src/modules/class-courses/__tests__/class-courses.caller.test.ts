@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -11,9 +11,9 @@ import {
 	createClass,
 	createCourse,
 	createDomainUser,
-	createRecapFixture,
 	createFaculty,
 	createProgram,
+	createRecapFixture,
 	createStudent,
 	ensureStudentCourseEnrollment,
 	makeTestContext,

@@ -42,7 +42,8 @@ const Header: React.FC = () => {
 	};
 
 	const userInitials =
-		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
+		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() ||
+		"?";
 
 	return (
 		<header className="sticky top-0 z-30 border-border border-b bg-background/80 backdrop-blur">
@@ -79,10 +80,14 @@ const Header: React.FC = () => {
 						}}
 					>
 						<SelectTrigger
-							aria-label={t("navigation.header.languageSelectAria")}
+							aria-label={t(
+								"navigation.header.languageSelectAria",
+							)}
 						>
 							<SelectValue
-								placeholder={t("navigation.header.languageSelectPlaceholder")}
+								placeholder={t(
+									"navigation.header.languageSelectPlaceholder",
+								)}
 							/>
 						</SelectTrigger>
 						<SelectContent align="end">
@@ -96,14 +101,20 @@ const Header: React.FC = () => {
 								variant="ghost"
 								size="icon"
 								className="size-10 rounded-full p-0"
-								aria-label={t("navigation.header.profileMenuAria")}
+								aria-label={t(
+									"navigation.header.profileMenuAria",
+								)}
 							>
 								<Avatar className="size-10">
 									<AvatarImage
 										src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
-										alt={t("navigation.header.profileMenuAria")}
+										alt={t(
+											"navigation.header.profileMenuAria",
+										)}
 									/>
-									<AvatarFallback>{userInitials}</AvatarFallback>
+									<AvatarFallback>
+										{userInitials}
+									</AvatarFallback>
 								</Avatar>
 							</Button>
 						</DropdownMenuTrigger>

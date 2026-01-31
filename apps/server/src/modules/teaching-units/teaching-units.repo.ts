@@ -3,7 +3,10 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
 export async function create(data: schema.NewTeachingUnit) {
-	const [unit] = await db.insert(schema.teachingUnits).values(data).returning();
+	const [unit] = await db
+		.insert(schema.teachingUnits)
+		.values(data)
+		.returning();
 	return unit;
 }
 
@@ -29,7 +32,9 @@ export async function remove(id: string, institutionId: string) {
 	const existing = await findById(id, institutionId);
 	if (!existing) return;
 
-	await db.delete(schema.teachingUnits).where(eq(schema.teachingUnits.id, id));
+	await db
+		.delete(schema.teachingUnits)
+		.where(eq(schema.teachingUnits.id, id));
 }
 
 export async function findById(id: string, institutionId: string) {

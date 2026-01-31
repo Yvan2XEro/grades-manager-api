@@ -171,7 +171,10 @@ export function CodedEntitySelect<T extends CodedEntity>({
 	return (
 		<div className="flex flex-col gap-2">
 			{label && (
-				<Label htmlFor={id} className={cn(required && "after:content-['*']")}>
+				<Label
+					htmlFor={id}
+					className={cn(required && "after:content-['*']")}
+				>
 					{label}
 				</Label>
 			)}
@@ -194,7 +197,9 @@ export function CodedEntitySelect<T extends CodedEntity>({
 						<div className="flex items-center gap-2 overflow-hidden">
 							{icon && <span className="shrink-0">{icon}</span>}
 							{selectedItem && getItemIcon && (
-								<span className="shrink-0">{getItemIcon(selectedItem)}</span>
+								<span className="shrink-0">
+									{getItemIcon(selectedItem)}
+								</span>
 							)}
 							<span className="truncate">{displayText}</span>
 						</div>
@@ -218,7 +223,9 @@ export function CodedEntitySelect<T extends CodedEntity>({
 								className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
 								placeholder={
 									searchPlaceholder ||
-									t("components.codedEntitySelect.searchPlaceholder")
+									t(
+										"components.codedEntitySelect.searchPlaceholder",
+									)
 								}
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
@@ -234,7 +241,10 @@ export function CodedEntitySelect<T extends CodedEntity>({
 
 							{!isLoading && filteredItems.length === 0 && (
 								<CommandEmpty>
-									{emptyMessage || t("components.codedEntitySelect.noResults")}
+									{emptyMessage ||
+										t(
+											"components.codedEntitySelect.noResults",
+										)}
 								</CommandEmpty>
 							)}
 
@@ -242,9 +252,12 @@ export function CodedEntitySelect<T extends CodedEntity>({
 								<CommandGroup>
 									{searchQuery && (
 										<div className="px-2 py-1.5 text-muted-foreground text-xs">
-											{t("components.codedEntitySelect.resultsCount", {
-												count: filteredItems.length,
-											})}
+											{t(
+												"components.codedEntitySelect.resultsCount",
+												{
+													count: filteredItems.length,
+												},
+											)}
 										</div>
 									)}
 									{filteredItems.map((item) => (
@@ -257,11 +270,15 @@ export function CodedEntitySelect<T extends CodedEntity>({
 											<Check
 												className={cn(
 													"h-4 w-4 shrink-0",
-													value === item.code ? "opacity-100" : "opacity-0",
+													value === item.code
+														? "opacity-100"
+														: "opacity-0",
 												)}
 											/>
 											{getItemIcon && (
-												<span className="shrink-0">{getItemIcon(item)}</span>
+												<span className="shrink-0">
+													{getItemIcon(item)}
+												</span>
 											)}
 											<div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
 												<div className="flex items-center gap-2">
@@ -269,12 +286,17 @@ export function CodedEntitySelect<T extends CodedEntity>({
 														{item.code}
 													</span>
 													{getItemBadge && (
-														<Badge variant="secondary" className="text-xs">
+														<Badge
+															variant="secondary"
+															className="text-xs"
+														>
 															{getItemBadge(item)}
 														</Badge>
 													)}
 												</div>
-												<span className="truncate text-sm">{item.name}</span>
+												<span className="truncate text-sm">
+													{item.name}
+												</span>
 												{getItemSubtitle && (
 													<span className="truncate text-muted-foreground text-xs">
 														{getItemSubtitle(item)}

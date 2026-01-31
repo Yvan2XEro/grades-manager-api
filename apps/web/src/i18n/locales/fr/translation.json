@@ -98,6 +98,7 @@
 				"promotionRules": "Règles de passage",
 				"examTypes": "Types d'examen",
 				"examScheduler": "Programmation des examens",
+				"retakeEligibility": "Éligibilité rattrapage",
 				"rules": "Centre des règles",
 				"registrationNumbers": "Formats de matricule"
 			},
@@ -765,7 +766,10 @@
 			"subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
 			"actions": {
 				"add": "Ajouter une évaluation",
-				"reviewGrades": "Consulter les notes"
+				"reviewGrades": "Consulter les notes",
+				"submit": "Soumettre",
+				"approve": "Approuver",
+				"reject": "Rejeter"
 			},
 			"filters": {
 				"academicYear": "Année académique",
@@ -791,6 +795,11 @@
 				"status": "Statut"
 			},
 			"status": {
+				"draft": "Brouillon",
+				"scheduled": "Planifiée",
+				"submitted": "Soumise",
+				"approved": "Approuvée",
+				"rejected": "Rejetée",
 				"locked": "Verrouillée",
 				"open": "Ouverte"
 			},
@@ -817,7 +826,14 @@
 				"updateSuccess": "Évaluation mise à jour avec succès",
 				"updateError": "Impossible de mettre à jour l'évaluation",
 				"deleteSuccess": "Évaluation supprimée avec succès",
-				"deleteError": "Impossible de supprimer l'évaluation"
+				"deleteError": "Impossible de supprimer l'évaluation",
+				"submitSuccess": "Évaluation soumise pour approbation",
+				"submitError": "Impossible de soumettre l'évaluation",
+				"approveSuccess": "Évaluation approuvée avec succès",
+				"rejectSuccess": "Évaluation rejetée",
+				"validateError": "Impossible de valider l'évaluation",
+				"retakeSuccess": "Examen de rattrapage créé avec succès",
+				"retakeError": "Impossible de créer l'examen de rattrapage"
 			},
 			"delete": {
 				"title": "Supprimer l'évaluation",
@@ -835,6 +851,73 @@
 					"max": "La pondération ne peut pas dépasser 100"
 				},
 				"classCourse": "Veuillez sélectionner un cours de classe"
+			},
+			"sessionType": {
+				"normal": "Normale",
+				"retake": "Rattrapage"
+			},
+			"scoringPolicy": {
+				"replace": "Remplacer la note originale",
+				"best_of": "Conserver la meilleure note"
+			}
+		},
+		"retake": {
+			"title": "Éligibilité au rattrapage",
+			"subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
+			"selectExam": "Sélectionnez un examen approuvé",
+			"selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
+			"featureDisabled": "La fonctionnalité de rattrapage est actuellement désactivée",
+			"eligible": "Éligibles",
+			"ineligible": "Non éligibles",
+			"eligibleCount": "{{count}} éligible(s)",
+			"ineligibleCount": "{{count}} non éligible(s)",
+			"table": {
+				"student": "Étudiant",
+				"registrationNumber": "Matricule",
+				"attempt": "Tentative",
+				"grade": "Note actuelle",
+				"status": "Statut",
+				"reasons": "Raisons",
+				"override": "Dérogation"
+			},
+			"reasons": {
+				"NO_GRADE": "Aucune note enregistrée",
+				"FAILED_EXAM": "Examen échoué",
+				"PASSED_EXAM": "Examen réussi",
+				"ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
+				"OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
+				"OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)"
+			},
+			"override": {
+				"forceEligible": "Forcer éligible",
+				"forceIneligible": "Bloquer",
+				"remove": "Supprimer la dérogation",
+				"reason": "Motif de la dérogation",
+				"reasonPlaceholder": "Saisissez le motif de la dérogation...",
+				"confirmTitle": "Confirmer la dérogation",
+				"confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?"
+			},
+			"empty": {
+				"title": "Aucun étudiant trouvé",
+				"description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants."
+			},
+			"toast": {
+				"overrideSuccess": "Dérogation appliquée avec succès",
+				"overrideError": "Impossible d'appliquer la dérogation",
+				"removeSuccess": "Dérogation supprimée",
+				"removeError": "Impossible de supprimer la dérogation"
+			},
+			"actions": {
+				"createRetake": "Créer examen de rattrapage",
+				"viewEligibility": "Voir l'éligibilité"
+			},
+			"createRetake": {
+				"title": "Créer un examen de rattrapage",
+				"subtitle": "Créez une session de rattrapage liée à l'examen original",
+				"parentExam": "Examen original",
+				"date": "Date du rattrapage",
+				"scoringPolicy": "Politique de notation",
+				"scoringPolicyHelp": "Comment calculer la note finale après le rattrapage"
 			}
 		},
 		"examTypes": {
@@ -1497,7 +1580,9 @@
 				"reactivateBtn": "Réactiver l'inscription",
 				"withdrawBtn": "Retirer",
 				"retakeBtn": "Recomposer",
-				"noCourses": "Cette classe n'a pas encore de cours affectés."
+				"noCourses": "Cette classe n'a pas encore de cours affectés.",
+				"attemptBadge": "Tentative {{value}}",
+				"retakeEligible": "Éligible rattrapage"
 			},
 			"warnings": {
 				"title": "Avertissements de prérequis",
@@ -1855,6 +1940,16 @@
 		}
 	},
 	"teacher": {
+		"exams": {
+			"sessionType": {
+				"normal": "Normale",
+				"retake": "Rattrapage"
+			},
+			"scoringPolicy": {
+				"replace": "Remplace",
+				"best_of": "Meilleure note"
+			}
+		},
 		"courses": {
 			"title": "Mes cours",
 			"subtitle": "Gérez vos cours attribués et les notes",
@@ -1946,6 +2041,10 @@
 		},
 		"gradeEntry": {
 			"title": "Saisie des notes",
+			"context": {
+				"ue": "Unité d'Enseignement (UE)",
+				"ec": "Élément Constitutif (EC)"
+			},
 			"selectCourse": {
 				"label": "Sélectionner un cours",
 				"empty": "Choisir un cours",
@@ -2274,6 +2373,11 @@
 				"status": "Statut"
 			},
 			"status": {
+				"draft": "Brouillon",
+				"scheduled": "Planifiée",
+				"submitted": "Soumise",
+				"approved": "Approuvée",
+				"rejected": "Rejetée",
 				"locked": "Verrouillée",
 				"open": "Ouverte"
 			},
@@ -2371,6 +2475,66 @@
 			"courseAverages": "Moyennes par cours",
 			"courseSubtitle": "Dernières notes pour l'année active",
 			"coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées."
+		}
+	},
+	"retakes": {
+		"title": "Admissibilité au rattrapage",
+		"subtitle": "Gérez l'admissibilité aux examens de rattrapage pour les étudiants",
+		"badge": {
+			"retake": "Rattrapage",
+			"normal": "Normal"
+		},
+		"actions": {
+			"createRetake": "Créer un examen de rattrapage"
+		},
+		"form": {
+			"title": "Créer un examen de rattrapage",
+			"parentExamLabel": "Examen original",
+			"nameLabel": "Nom de l'examen de rattrapage (optionnel)",
+			"namePlaceholder": "Laisser vide pour générer automatiquement",
+			"dateLabel": "Date du rattrapage",
+			"scoringPolicyLabel": "Politique de notation",
+			"submit": "Créer le rattrapage"
+		},
+		"scoringPolicy": {
+			"replace": "Remplacer l'original",
+			"best_of": "Garder la meilleure note",
+			"replaceDescription": "La note de rattrapage remplacera la note originale",
+			"best_ofDescription": "La meilleure note entre l'original et le rattrapage sera utilisée"
+		},
+		"eligibility": {
+			"title": "Statut d'admissibilité",
+			"eligible": "Admissible",
+			"ineligible": "Non admissible",
+			"forced": "Forcé",
+			"tabs": {
+				"eligible": "Étudiants admissibles",
+				"ineligible": "Étudiants non admissibles"
+			},
+			"reasons": {
+				"failed": "A échoué à l'examen original",
+				"noGrade": "Aucune note enregistrée",
+				"limitReached": "Limite de tentatives atteinte",
+				"passed": "Déjà réussi",
+				"forceEligible": "Défini manuellement comme admissible",
+				"forceIneligible": "Défini manuellement comme non admissible"
+			}
+		},
+		"override": {
+			"title": "Modifier l'admissibilité",
+			"forceEligible": "Forcer admissible",
+			"forceIneligible": "Forcer non admissible",
+			"clear": "Effacer la modification",
+			"reason": "Motif",
+			"reasonPlaceholder": "Entrez le motif de la modification..."
+		},
+		"empty": {
+			"title": "Aucun examen sélectionné",
+			"description": "Sélectionnez un examen approuvé pour voir l'admissibilité au rattrapage"
+		},
+		"toast": {
+			"overrideSuccess": "Modification appliquée avec succès",
+			"overrideError": "Échec de l'application de la modification"
 		}
 	}
 }

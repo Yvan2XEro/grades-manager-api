@@ -16,7 +16,10 @@ function ContextMenuTrigger({
 	...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
 	return (
-		<ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} />
+		<ContextMenuPrimitive.Trigger
+			data-slot="context-menu-trigger"
+			{...props}
+		/>
 	);
 }
 
@@ -32,7 +35,10 @@ function ContextMenuPortal({
 	...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) {
 	return (
-		<ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />
+		<ContextMenuPrimitive.Portal
+			data-slot="context-menu-portal"
+			{...props}
+		/>
 	);
 }
 

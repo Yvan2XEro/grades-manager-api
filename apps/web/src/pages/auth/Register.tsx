@@ -22,7 +22,9 @@ const buildRegisterSchema = (t: TFunction) =>
 			password: z
 				.string()
 				.min(6, t("auth.validation.passwordMin", { count: 6 })),
-			confirmPassword: z.string().min(6, t("auth.validation.confirmPassword")),
+			confirmPassword: z
+				.string()
+				.min(6, t("auth.validation.confirmPassword")),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: t("auth.validation.passwordsMismatch"),
@@ -83,7 +85,9 @@ const Register: React.FC = () => {
 							type="text"
 							{...register("firstName")}
 							className="w-full"
-							placeholder={t("auth.register.placeholders.firstName")}
+							placeholder={t(
+								"auth.register.placeholders.firstName",
+							)}
 						/>
 						{errors.firstName && (
 							<p className="mt-1 text-error-600 text-sm">
@@ -101,7 +105,9 @@ const Register: React.FC = () => {
 							type="text"
 							{...register("lastName")}
 							className="w-full"
-							placeholder={t("auth.register.placeholders.lastName")}
+							placeholder={t(
+								"auth.register.placeholders.lastName",
+							)}
 						/>
 						{errors.lastName && (
 							<p className="mt-1 text-error-600 text-sm">
@@ -156,7 +162,9 @@ const Register: React.FC = () => {
 						type="password"
 						{...register("confirmPassword")}
 						className="w-full"
-						placeholder={t("auth.register.placeholders.confirmPassword")}
+						placeholder={t(
+							"auth.register.placeholders.confirmPassword",
+						)}
 					/>
 					{errors.confirmPassword && (
 						<p className="mt-1 text-error-600 text-sm">
@@ -165,7 +173,11 @@ const Register: React.FC = () => {
 					)}
 				</div>
 
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="mt-6 w-full"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

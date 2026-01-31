@@ -32,7 +32,10 @@ describe("institutions router", () => {
 	});
 
 	it("stores organization linkage when provided", async () => {
-		const org = await createOrganization({ name: "Tenant", slug: "tenant" });
+		const org = await createOrganization({
+			name: "Tenant",
+			slug: "tenant",
+		});
 		const admin = createCaller(asAdmin());
 		const saved = await admin.institutions.upsert({
 			code: "ORG1",

@@ -46,7 +46,9 @@ export class ExportsService {
 		try {
 			// Try to load from institution
 			const institution = await this.repo.getInstitution();
-			const { institutionToExportConfig } = await import("./template-helper");
+			const { institutionToExportConfig } = await import(
+				"./template-helper"
+			);
 			this.config = institutionToExportConfig(institution);
 			return this.config;
 		} catch (error) {
@@ -138,7 +140,11 @@ export class ExportsService {
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate("evaluation", templateData, templateConfig);
+		const html = this.renderTemplate(
+			"evaluation",
+			templateData,
+			templateConfig,
+		);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
@@ -199,7 +205,10 @@ export class ExportsService {
 		templateBody: string;
 	}) {
 		const config = await this.getConfig();
-		const baseConfig = await loadExportTemplate(this.institutionId, input.type);
+		const baseConfig = await loadExportTemplate(
+			this.institutionId,
+			input.type,
+		);
 		const templateConfig: TemplateConfiguration = {
 			templateBody: input.templateBody,
 			headerConfig: baseConfig.headerConfig,
@@ -262,12 +271,16 @@ export class ExportsService {
 
 					// Calculate course average (CC + EX)
 					const cc = examGrades.find((eg: any) => eg.type === "CC");
-					const ex = examGrades.find((eg: any) => eg.type === "EXAMEN");
+					const ex = examGrades.find(
+						(eg: any) => eg.type === "EXAMEN",
+					);
 
 					let average = null;
 					if (cc && ex && cc.score !== null && ex.score !== null) {
 						average =
-							(cc.score * cc.percentage + ex.score * ex.percentage) / 100;
+							(cc.score * cc.percentage +
+								ex.score * ex.percentage) /
+							100;
 					}
 
 					return {
@@ -289,7 +302,8 @@ export class ExportsService {
 						: null;
 
 				const isPassed =
-					ueAverage !== null && ueAverage >= config.grading.passing_grade;
+					ueAverage !== null &&
+					ueAverage >= config.grading.passing_grade;
 				const creditsEarned = isPassed ? ue.credits : 0;
 
 				ueGrades.push({
@@ -299,13 +313,19 @@ export class ExportsService {
 					credits: creditsEarned,
 					successRate:
 						validAverages.length > 0
-							? calculateSuccessRate([ueAverage], config.grading.passing_grade)
+							? calculateSuccessRate(
+									[ueAverage],
+									config.grading.passing_grade,
+								)
 							: 0,
 				});
 			}
 
 			// Calculate total credits and general average
-			const totalCredits = ueGrades.reduce((sum, ug) => sum + ug.credits, 0);
+			const totalCredits = ueGrades.reduce(
+				(sum, ug) => sum + ug.credits,
+				0,
+			);
 			const validUEAverages = ueGrades
 				.map((ug) => ug.average)
 				.filter((a): a is number => a !== null);
@@ -375,7 +395,8 @@ export class ExportsService {
 				firstName: grade.studentRef.profile.firstName,
 				registrationNumber: grade.studentRef.registrationNumber,
 				score,
-				appreciation: score !== null ? getAppreciation(score, config) : "",
+				appreciation:
+					score !== null ? getAppreciation(score, config) : "",
 				observation: getObservation(score, config),
 			};
 		});
@@ -410,7 +431,8 @@ export class ExportsService {
 				: "",
 			duration: config.exam_settings.default_duration_hours,
 			coefficient:
-				examTypeConfig.coefficient || config.exam_settings.default_coefficient,
+				examTypeConfig.coefficient ||
+				config.exam_settings.default_coefficient,
 			scale: config.grading.scale,
 			semester: data.classCourseRef.classRef.semester?.name || "",
 			academicYear: data.classCourseRef.classRef.academicYear.name,
@@ -454,7 +476,12 @@ export class ExportsService {
 				const examScore = examGrade ? Number(examGrade.score) : null;
 
 				let average = null;
-				if (ccExam && examExam && ccScore !== null && examScore !== null) {
+				if (
+					ccExam &&
+					examExam &&
+					ccScore !== null &&
+					examScore !== null
+				) {
 					average =
 						(ccScore * Number(ccExam.percentage) +
 							examScore * Number(examExam.percentage)) /
@@ -485,7 +512,10 @@ export class ExportsService {
 				ueAverage !== null && ueAverage >= config.grading.passing_grade;
 			const successRate =
 				validAverages.length > 0
-					? calculateSuccessRate([ueAverage], config.grading.passing_grade)
+					? calculateSuccessRate(
+							[ueAverage],
+							config.grading.passing_grade,
+						)
 					: 0;
 
 			return {
@@ -615,7 +645,9 @@ export class ExportsService {
 						code: "UE202",
 						name: "Informatique",
 						credits: 6,
-						courses: [{ code: "INF201", name: "Structures de données" }],
+						courses: [
+							{ code: "INF201", name: "Structures de données" },
+						],
 					},
 				];
 				const ueGrades = ues.map((ue) => ({

@@ -198,7 +198,10 @@ export async function evaluateClassForPromotion(
 					student.id,
 					opts.academicYearId,
 				);
-				const result = await evaluateStudentAgainstRule(rule.ruleset, facts);
+				const result = await evaluateStudentAgainstRule(
+					rule.ruleset,
+					facts,
+				);
 
 				return {
 					student: {
@@ -213,7 +216,13 @@ export async function evaluateClassForPromotion(
 					reasons: result.reasons,
 				} as StudentEvaluationResult;
 			} catch (error) {
-				console.error(`Failed to evaluate student ${student.id}:`, error);
+				// Log only in non-test environments to avoid noisy test output
+				if (process.env.NODE_ENV !== "test") {
+					console.error(
+						`Failed to evaluate student ${student.id}:`,
+						error,
+					);
+				}
 				return {
 					student: {
 						id: student.id,
@@ -259,7 +268,9 @@ async function evaluateStudentAgainstRule(
 	failedRules: string[];
 	reasons: string[];
 }> {
-	const engine = new Engine([ruleset as never], { allowUndefinedFacts: true });
+	const engine = new Engine([ruleset as never], {
+		allowUndefinedFacts: true,
+	});
 
 	try {
 		const result = await engine.run(facts as never);
@@ -376,12 +387,17 @@ export async function applyPromotion(
 			rulesMatched: se.evaluation.matchedRules,
 		}));
 
-		await tx.insert(schema.promotionExecutionResults).values(executionResults);
+		await tx
+			.insert(schema.promotionExecutionResults)
+			.values(executionResults);
 
 		// Update student enrollments
 		for (const studentId of opts.studentIds) {
 			// Close current enrollment
-			await enrollmentsService.closeActiveEnrollment(studentId, "completed");
+			await enrollmentsService.closeActiveEnrollment(
+				studentId,
+				"completed",
+			);
 
 			// Create new enrollment in target class
 			await tx.insert(schema.enrollments).values({
@@ -411,7 +427,10 @@ export async function listExecutions(opts: ListExecutionsInput) {
 export async function getExecutionDetails(executionId: string) {
 	const execution = await repo.findExecutionById(executionId);
 	if (!execution) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Execution not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Execution not found",
+		});
 	}
 
 	const results = await repo.findExecutionResultsByExecutionId(executionId);

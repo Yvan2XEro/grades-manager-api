@@ -160,7 +160,9 @@ export default function ClassManagement() {
 							cycleName: cls.cycle?.name,
 							cycleCode: cls.cycle?.code,
 						},
-						academicYear: { name: cls.academicYearInfo?.name ?? "" },
+						academicYear: {
+							name: cls.academicYearInfo?.name ?? "",
+						},
 						cycle: cls.cycle ?? undefined,
 						cycleLevel: cls.cycleLevel ?? undefined,
 						programOption: cls.programOption ?? undefined,
@@ -175,7 +177,9 @@ export default function ClassManagement() {
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({ limit: 100 });
+			const { items } = await trpcClient.programs.list.query({
+				limit: 100,
+			});
 			return items;
 		},
 	});
@@ -191,7 +195,8 @@ export default function ClassManagement() {
 		enabled: programSearch.length >= 2,
 	});
 
-	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
+	const programs =
+		programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["academicYears"],
@@ -226,17 +231,20 @@ export default function ClassManagement() {
 	const { data: defaultCycleLevels = [] } = useQuery({
 		queryKey: ["cycleLevelsByInstitution", selectedProgram?.institutionId],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
-			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				institutionId: selectedProgram.institutionId,
-				limit: 100,
-			});
+			if (!selectedProgram?.institutionId)
+				return [] as CycleLevelOption[];
+			const { items: cycles } =
+				await trpcClient.studyCycles.listCycles.query({
+					institutionId: selectedProgram.institutionId,
+					limit: 100,
+				});
 			if (!cycles.length) return [];
 			const levels = await Promise.all(
 				cycles.map(async (cycle) => {
-					const levelList = await trpcClient.studyCycles.listLevels.query({
-						cycleId: cycle.id,
-					});
+					const levelList =
+						await trpcClient.studyCycles.listLevels.query({
+							cycleId: cycle.id,
+						});
 					return levelList.map((level) => ({
 						...level,
 						cycle: {
@@ -260,11 +268,13 @@ export default function ClassManagement() {
 			selectedProgram?.institutionId,
 		],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
-			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
-				institutionId: selectedProgram.institutionId,
-				limit: 100,
-			});
+			if (!selectedProgram?.institutionId)
+				return [] as CycleLevelOption[];
+			const { items: cycles } =
+				await trpcClient.studyCycles.listCycles.query({
+					institutionId: selectedProgram.institutionId,
+					limit: 100,
+				});
 			if (!cycles.length) return [];
 			const levels = await Promise.all(
 				cycles.map(async (cycle) => {
@@ -285,7 +295,8 @@ export default function ClassManagement() {
 			return levels.flat() as CycleLevelOption[];
 		},
 		enabled:
-			Boolean(selectedProgram?.institutionId) && cycleLevelSearch.length >= 2,
+			Boolean(selectedProgram?.institutionId) &&
+			cycleLevelSearch.length >= 2,
 	});
 
 	const cycleLevels =
@@ -351,7 +362,8 @@ export default function ClassManagement() {
 			});
 			return items;
 		},
-		enabled: Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
+		enabled:
+			Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
 	});
 
 	const programOptions =
@@ -390,7 +402,9 @@ export default function ClassManagement() {
 	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
 
 	useEffect(() => {
-		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
+		const year = academicYears?.find(
+			(y) => y.id === selectedAcademicYearId,
+		);
 		if (selectedProgramOption && year) {
 			const startYear = new Date(year.startDate).getFullYear();
 			const endYear = new Date(year.endDate).getFullYear();
@@ -399,7 +413,12 @@ export default function ClassManagement() {
 				`${selectedProgramOption.name} (${startYear}-${endYear})`,
 			);
 		}
-	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
+	}, [
+		selectedProgramOption,
+		selectedAcademicYearId,
+		academicYears,
+		setValue,
+	]);
 
 	const handleExportStudentListPDF = async (classData: Class) => {
 		try {
@@ -441,8 +460,16 @@ export default function ClassManagement() {
 			// Class info
 			doc.setFontSize(11);
 			doc.setFont("helvetica", "normal");
-			doc.text(`${t("admin.classes.table.name")}: ${classData.name}`, 14, 50);
-			doc.text(`${t("admin.classes.table.code")}: ${classData.code}`, 14, 56);
+			doc.text(
+				`${t("admin.classes.table.name")}: ${classData.name}`,
+				14,
+				50,
+			);
+			doc.text(
+				`${t("admin.classes.table.code")}: ${classData.code}`,
+				14,
+				56,
+			);
 			doc.text(
 				`${t("admin.classes.table.program")}: ${classData.program?.name}`,
 				14,
@@ -482,14 +509,18 @@ export default function ClassManagement() {
 						t("admin.students.table.registrationNumber", {
 							defaultValue: "Reg. Number",
 						}),
-						t("admin.students.table.lastName", { defaultValue: "Last Name" }),
+						t("admin.students.table.lastName", {
+							defaultValue: "Last Name",
+						}),
 						t("admin.students.table.firstName", {
 							defaultValue: "First Name",
 						}),
 						t("admin.students.table.dateOfBirth", {
 							defaultValue: "Birth Date",
 						}),
-						t("admin.students.table.gender", { defaultValue: "Gender" }),
+						t("admin.students.table.gender", {
+							defaultValue: "Gender",
+						}),
 					],
 				],
 				body: tableData,
@@ -555,11 +586,17 @@ export default function ClassManagement() {
 				[institutionName],
 				[institution?.shortName || ""],
 				[],
-				[t("admin.classes.export.title", { defaultValue: "Student List" })],
+				[
+					t("admin.classes.export.title", {
+						defaultValue: "Student List",
+					}),
+				],
 				[],
 				[`${t("admin.classes.table.name")}: ${classData.name}`],
 				[`${t("admin.classes.table.code")}: ${classData.code}`],
-				[`${t("admin.classes.table.program")}: ${classData.program?.name}`],
+				[
+					`${t("admin.classes.table.program")}: ${classData.program?.name}`,
+				],
 				[
 					`${t("admin.classes.table.academicYear")}: ${classData.academicYear?.name}`,
 				],
@@ -572,12 +609,18 @@ export default function ClassManagement() {
 					t("admin.students.table.registrationNumber", {
 						defaultValue: "Reg. Number",
 					}),
-					t("admin.students.table.lastName", { defaultValue: "Last Name" }),
-					t("admin.students.table.firstName", { defaultValue: "First Name" }),
+					t("admin.students.table.lastName", {
+						defaultValue: "Last Name",
+					}),
+					t("admin.students.table.firstName", {
+						defaultValue: "First Name",
+					}),
 					t("admin.students.table.dateOfBirth", {
 						defaultValue: "Birth Date",
 					}),
-					t("admin.students.table.gender", { defaultValue: "Gender" }),
+					t("admin.students.table.gender", {
+						defaultValue: "Gender",
+					}),
 				],
 			];
 
@@ -606,7 +649,9 @@ export default function ClassManagement() {
 			XLSX.utils.book_append_sheet(
 				workbook,
 				worksheet,
-				t("admin.classes.export.sheetName", { defaultValue: "Students" }),
+				t("admin.classes.export.sheetName", {
+					defaultValue: "Students",
+				}),
 			);
 
 			// Apply some basic styling to header row
@@ -790,8 +835,12 @@ export default function ClassManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">{t("admin.classes.title")}</h1>
-					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
+					<h1 className="font-bold text-2xl">
+						{t("admin.classes.title")}
+					</h1>
+					<p className="text-base-content/60">
+						{t("admin.classes.subtitle")}
+					</p>
 				</div>
 				<Button
 					type="button"
@@ -835,11 +884,19 @@ export default function ClassManagement() {
 						<TableHeader>
 							<TableRow>
 								<TableHead>
-									{t("admin.classes.table.code", { defaultValue: "Code" })}
+									{t("admin.classes.table.code", {
+										defaultValue: "Code",
+									})}
 								</TableHead>
-								<TableHead>{t("admin.classes.table.name")}</TableHead>
-								<TableHead>{t("admin.classes.table.program")}</TableHead>
-								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
+								<TableHead>
+									{t("admin.classes.table.name")}
+								</TableHead>
+								<TableHead>
+									{t("admin.classes.table.program")}
+								</TableHead>
+								<TableHead>
+									{t("admin.classes.table.academicYear")}
+								</TableHead>
 								<TableHead>
 									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
@@ -850,8 +907,12 @@ export default function ClassManagement() {
 										defaultValue: "Option",
 									})}
 								</TableHead>
-								<TableHead>{t("admin.classes.table.students")}</TableHead>
-								<TableHead>{t("common.table.actions")}</TableHead>
+								<TableHead>
+									{t("admin.classes.table.students")}
+								</TableHead>
+								<TableHead>
+									{t("common.table.actions")}
+								</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -860,18 +921,27 @@ export default function ClassManagement() {
 									<TableCell>
 										<ClipboardCopy
 											value={cls.code}
-											label={t("admin.classes.table.code", {
-												defaultValue: "Code",
-											})}
+											label={t(
+												"admin.classes.table.code",
+												{
+													defaultValue: "Code",
+												},
+											)}
 										/>
 									</TableCell>
-									<TableCell className="font-medium">{cls.name}</TableCell>
+									<TableCell className="font-medium">
+										{cls.name}
+									</TableCell>
 									<TableCell>{cls.program?.name}</TableCell>
-									<TableCell>{cls.academicYear?.name}</TableCell>
+									<TableCell>
+										{cls.academicYear?.name}
+									</TableCell>
 									<TableCell>
 										{cls.cycle ? (
 											<div className="space-y-0.5">
-												<p className="font-medium text-sm">{cls.cycle.name}</p>
+												<p className="font-medium text-sm">
+													{cls.cycle.name}
+												</p>
 												<p className="text-muted-foreground text-xs">
 													{cls.cycleLevel?.name}
 													{cls.cycleLevel?.code
@@ -880,7 +950,9 @@ export default function ClassManagement() {
 												</p>
 											</div>
 										) : (
-											t("common.labels.notAvailable", { defaultValue: "N/A" })
+											t("common.labels.notAvailable", {
+												defaultValue: "N/A",
+											})
 										)}
 									</TableCell>
 									<TableCell>
@@ -902,7 +974,9 @@ export default function ClassManagement() {
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4" />
-											<span>{cls.students?.length || 0}</span>
+											<span>
+												{cls.students?.length || 0}
+											</span>
 										</div>
 									</TableCell>
 									<TableCell>
@@ -915,19 +989,28 @@ export default function ClassManagement() {
 													setEditingClass(cls);
 													form.reset({
 														name: cls.name,
-														programId: cls.programId,
-														academicYearId: cls.academicYearId,
-														cycleLevelId: cls.cycleLevelId,
-														programOptionId: cls.programOptionId,
-														semesterId: cls.semesterId ?? "",
+														programId:
+															cls.programId,
+														academicYearId:
+															cls.academicYearId,
+														cycleLevelId:
+															cls.cycleLevelId,
+														programOptionId:
+															cls.programOptionId,
+														semesterId:
+															cls.semesterId ??
+															"",
 														code: cls.code,
 													});
 													setIsFormOpen(true);
 												}}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t("common.actions.edit", {
-													defaultValue: "Edit",
-												})}
+												title={t(
+													"common.actions.edit",
+													{
+														defaultValue: "Edit",
+													},
+												)}
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
@@ -935,11 +1018,19 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() => handleExportStudentListPDF(cls)}
+												onClick={() =>
+													handleExportStudentListPDF(
+														cls,
+													)
+												}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t("admin.classes.export.button", {
-													defaultValue: "Export student list (PDF)",
-												})}
+												title={t(
+													"admin.classes.export.button",
+													{
+														defaultValue:
+															"Export student list (PDF)",
+													},
+												)}
 											>
 												<FileText className="h-4 w-4" />
 											</Button>
@@ -947,11 +1038,19 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() => handleExportStudentListExcel(cls)}
+												onClick={() =>
+													handleExportStudentListExcel(
+														cls,
+													)
+												}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t("admin.classes.export.excelButton", {
-													defaultValue: "Export student list (Excel)",
-												})}
+												title={t(
+													"admin.classes.export.excelButton",
+													{
+														defaultValue:
+															"Export student list (Excel)",
+													},
+												)}
 											>
 												<FileSpreadsheet className="h-4 w-4" />
 											</Button>
@@ -959,11 +1058,16 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() => openDeleteModal(cls.id)}
+												onClick={() =>
+													openDeleteModal(cls.id)
+												}
 												className="btn btn-square btn-sm btn-ghost text-error"
-												title={t("common.actions.delete", {
-													defaultValue: "Delete",
-												})}
+												title={t(
+													"common.actions.delete",
+													{
+														defaultValue: "Delete",
+													},
+												)}
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>
@@ -990,23 +1094,33 @@ export default function ClassManagement() {
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-4"
+					>
 						<CodedEntitySelect
 							items={programs}
 							onSearch={setProgramSearch}
 							value={
-								programs.find((p) => p.id === form.watch("programId"))?.code ||
-								null
+								programs.find(
+									(p) => p.id === form.watch("programId"),
+								)?.code || null
 							}
 							onChange={(code) => {
-								const program = programs.find((p) => p.code === code);
+								const program = programs.find(
+									(p) => p.code === code,
+								);
 								form.setValue("programId", program?.id || "");
 							}}
 							label={t("admin.classes.form.programLabel")}
-							placeholder={t("admin.classes.form.programPlaceholder")}
+							placeholder={t(
+								"admin.classes.form.programPlaceholder",
+							)}
 							error={form.formState.errors.programId?.message}
 							searchMode="hybrid"
-							getItemSubtitle={(program) => program.institutionInfo?.name || ""}
+							getItemSubtitle={(program) =>
+								program.institutionInfo?.name || ""
+							}
 							required
 						/>
 
@@ -1016,9 +1130,14 @@ export default function ClassManagement() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.classes.form.academicYearLabel")}
+										{t(
+											"admin.classes.form.academicYearLabel",
+										)}
 									</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+									>
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue
@@ -1030,7 +1149,10 @@ export default function ClassManagement() {
 										</FormControl>
 										<SelectContent>
 											{academicYears?.map((year) => (
-												<SelectItem key={year.id} value={year.id}>
+												<SelectItem
+													key={year.id}
+													value={year.id}
+												>
 													{year.name}
 												</SelectItem>
 											))}
@@ -1045,31 +1167,42 @@ export default function ClassManagement() {
 							items={cycleLevels}
 							onSearch={setCycleLevelSearch}
 							value={
-								cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))
-									?.code || null
+								cycleLevels.find(
+									(l) => l.id === form.watch("cycleLevelId"),
+								)?.code || null
 							}
 							onChange={(code) => {
-								const level = cycleLevels.find((l) => l.code === code);
+								const level = cycleLevels.find(
+									(l) => l.code === code,
+								);
 								form.setValue("cycleLevelId", level?.id || "");
 							}}
 							label={t("admin.classes.form.cycleLevelLabel", {
 								defaultValue: "Cycle level",
 							})}
-							placeholder={t("admin.classes.form.cycleLevelPlaceholder", {
-								defaultValue: "Select cycle level",
-							})}
+							placeholder={t(
+								"admin.classes.form.cycleLevelPlaceholder",
+								{
+									defaultValue: "Select cycle level",
+								},
+							)}
 							error={form.formState.errors.cycleLevelId?.message}
 							searchMode="hybrid"
 							getItemSubtitle={(level) =>
 								`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""}`
 							}
-							disabled={!selectedProgram || cycleLevels.length === 0}
+							disabled={
+								!selectedProgram || cycleLevels.length === 0
+							}
 							emptyMessage={
 								!selectedProgram
-									? t("admin.classes.form.selectProgramFirst", {
-											defaultValue:
-												"Select a program to load its cycle levels.",
-										})
+									? t(
+											"admin.classes.form.selectProgramFirst",
+											{
+												defaultValue:
+													"Select a program to load its cycle levels.",
+											},
+										)
 									: t("admin.classes.form.emptyCycleLevels", {
 											defaultValue:
 												"No cycle levels available for the selected program's institution.",
@@ -1082,27 +1215,44 @@ export default function ClassManagement() {
 							onSearch={setProgramOptionSearch}
 							value={
 								programOptions.find(
-									(o) => o.id === form.watch("programOptionId"),
+									(o) =>
+										o.id === form.watch("programOptionId"),
 								)?.code || null
 							}
 							onChange={(code) => {
-								const option = programOptions.find((o) => o.code === code);
-								form.setValue("programOptionId", option?.id || "");
+								const option = programOptions.find(
+									(o) => o.code === code,
+								);
+								form.setValue(
+									"programOptionId",
+									option?.id || "",
+								);
 							}}
 							label={t("admin.classes.form.programOptionLabel", {
 								defaultValue: "Program option",
 							})}
-							placeholder={t("admin.classes.form.programOptionPlaceholder", {
-								defaultValue: "Select option",
-							})}
-							error={form.formState.errors.programOptionId?.message}
+							placeholder={t(
+								"admin.classes.form.programOptionPlaceholder",
+								{
+									defaultValue: "Select option",
+								},
+							)}
+							error={
+								form.formState.errors.programOptionId?.message
+							}
 							searchMode="hybrid"
-							disabled={!selectedProgram || programOptions.length === 0}
+							disabled={
+								!selectedProgram || programOptions.length === 0
+							}
 							emptyMessage={
 								!selectedProgram
-									? t("admin.classes.form.selectProgramFirst", {
-											defaultValue: "Select a program to load its options.",
-										})
+									? t(
+											"admin.classes.form.selectProgramFirst",
+											{
+												defaultValue:
+													"Select a program to load its options.",
+											},
+										)
 									: "No options available"
 							}
 							required
@@ -1121,22 +1271,31 @@ export default function ClassManagement() {
 									<Select
 										onValueChange={field.onChange}
 										value={field.value}
-										disabled={!semesters || semesters.length === 0}
+										disabled={
+											!semesters || semesters.length === 0
+										}
 									>
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue
 													placeholder={t(
 														"admin.classes.form.semesterPlaceholder",
-														{ defaultValue: "Select a semester" },
+														{
+															defaultValue:
+																"Select a semester",
+														},
 													)}
 												/>
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
 											{semesters?.map((semester) => (
-												<SelectItem key={semester.id} value={semester.id}>
-													{semester.name} ({semester.code})
+												<SelectItem
+													key={semester.id}
+													value={semester.id}
+												>
+													{semester.name} (
+													{semester.code})
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -1159,9 +1318,12 @@ export default function ClassManagement() {
 									<FormControl>
 										<Input
 											{...field}
-											placeholder={t("admin.classes.form.codePlaceholder", {
-												defaultValue: "INF11-01",
-											})}
+											placeholder={t(
+												"admin.classes.form.codePlaceholder",
+												{
+													defaultValue: "INF11-01",
+												},
+											)}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -1174,7 +1336,9 @@ export default function ClassManagement() {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
+									<FormLabel>
+										{t("admin.classes.form.labelLabel")}
+									</FormLabel>
 									<FormControl>
 										<Input {...field} readOnly />
 									</FormControl>
@@ -1195,7 +1359,10 @@ export default function ClassManagement() {
 							>
 								{t("common.actions.cancel")}
 							</Button>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
+							<Button
+								type="submit"
+								disabled={form.formState.isSubmitting}
+							>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
 								) : editingClass ? (

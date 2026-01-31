@@ -7,11 +7,11 @@ import { notFound } from "../_shared/errors";
 import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
-import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
-import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
 import * as gradesRepo from "../grades/grades.repo";
-import * as retakeOverridesRepo from "./retake-overrides.repo";
+import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
+import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
+import * as retakeOverridesRepo from "./retake-overrides.repo";
 
 type CreateExamInput = {
 	name: string;
@@ -97,7 +97,10 @@ export async function createExam(
 ) {
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
-	const classCourse = await requireClassCourse(data.classCourse, institutionId);
+	const classCourse = await requireClassCourse(
+		data.classCourse,
+		institutionId,
+	);
 	const tenantId = classCourse.institutionId ?? institutionId;
 	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
@@ -141,10 +144,14 @@ export async function updateExam(
 		payload.institutionId = institutionId;
 	}
 	if (data.percentage !== undefined) {
-		await assertPercentageLimit(existing.classCourse, Number(data.percentage), {
-			id,
-			percentage: Number(existing.percentage),
-		});
+		await assertPercentageLimit(
+			existing.classCourse,
+			Number(data.percentage),
+			{
+				id,
+				percentage: Number(existing.percentage),
+			},
+		);
 	}
 	return repo.update(id, payload, institutionId);
 }
@@ -213,9 +220,14 @@ export async function listExams(
 		memberRole: MemberRole | null;
 	},
 ) {
-	const result = await repo.list({ ...opts, institutionId: params.institutionId });
+	const result = await repo.list({
+		...opts,
+		institutionId: params.institutionId,
+	});
 	const exams = result.items;
-	const classCourseIds = Array.from(new Set(exams.map((exam) => exam.classCourse)));
+	const classCourseIds = Array.from(
+		new Set(exams.map((exam) => exam.classCourse)),
+	);
 	const teacherMap = await getTeacherMap(classCourseIds);
 	const examIds = exams.map((exam) => exam.id);
 	const delegateSet =
@@ -263,7 +275,8 @@ export async function setLock(
 	return repo.setLock(examId, lock, institutionId);
 }
 
-const PASSING_GRADE = 10;
+const DEFAULT_PASSING_GRADE = 10;
+const RETAKE_ATTEMPT_LIMIT = 2;
 
 export type RetakeEligibilityReason =
 	| "FAILED_EXAM"
@@ -304,23 +317,24 @@ function buildEligibilityResult(input: {
 	gradeValue: number | null;
 	maxAttempt: number;
 	override?: retakeOverridesRepo.RetakeOverride;
+	passingGrade: number;
 }): { status: "eligible" | "ineligible"; reasons: RetakeEligibilityReason[] } {
 	const reasons = new Set<RetakeEligibilityReason>();
 	let eligible =
 		input.enrollment.status === "failed" ||
 		input.gradeValue === null ||
-		input.gradeValue < PASSING_GRADE;
+		input.gradeValue < input.passingGrade;
 	if (input.gradeValue === null) {
 		reasons.add("NO_GRADE");
 	} else if (
 		input.enrollment.status === "failed" ||
-		input.gradeValue < PASSING_GRADE
+		input.gradeValue < input.passingGrade
 	) {
 		reasons.add("FAILED_EXAM");
 	} else {
 		reasons.add("PASSED_EXAM");
 	}
-	if (eligible && input.maxAttempt > input.enrollment.attempt) {
+	if (eligible && input.maxAttempt >= RETAKE_ATTEMPT_LIMIT) {
 		eligible = false;
 		reasons.add("ATTEMPT_LIMIT_REACHED");
 	}
@@ -332,7 +346,10 @@ function buildEligibilityResult(input: {
 		reasons.add(overrideReason);
 		eligible = input.override.decision === "force_eligible";
 	}
-	return { status: eligible ? "eligible" : "ineligible", reasons: [...reasons] };
+	return {
+		status: eligible ? "eligible" : "ineligible",
+		reasons: [...reasons],
+	};
 }
 
 export async function listRetakeEligibility(
@@ -343,18 +360,30 @@ export async function listRetakeEligibility(
 	if (exam.status !== "approved") {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: "Exam must be approved before computing retake eligibility",
+			message:
+				"Exam must be approved before computing retake eligibility",
 		});
 	}
-	const classCourse = await requireClassCourse(exam.classCourse, institutionId);
+	const classCourse = await requireClassCourse(
+		exam.classCourse,
+		institutionId,
+	);
 	const klass = await db.query.classes.findFirst({
 		where: eq(schema.classes.id, classCourse.class),
 	});
 	if (!klass) throw notFound("Class context not found");
-	const roster = await courseEnrollmentRepo.listForClassCourseWithStudentProfile(
-		classCourse.id,
-		institutionId,
-	);
+	const institution = await db.query.institutions.findFirst({
+		where: eq(schema.institutions.id, klass.institutionId),
+	});
+	// TODO(INST-SETTINGS): centralize academic policy resolution (passing threshold, retake attempts, etc.)
+	const passingGrade =
+		institution?.metadata?.export_config?.grading?.passing_grade ??
+		DEFAULT_PASSING_GRADE;
+	const roster =
+		await courseEnrollmentRepo.listForClassCourseWithStudentProfile(
+			classCourse.id,
+			institutionId,
+		);
 	if (roster.length === 0) return [];
 	const gradeMap = await gradesRepo.mapByExam(examId);
 	const studentIds = roster.map((entry) => entry.studentId);
@@ -363,7 +392,10 @@ export async function listRetakeEligibility(
 		klass.academicYear,
 		studentIds,
 	);
-	const overrides = await retakeOverridesRepo.listByExam(examId, institutionId);
+	const overrides = await retakeOverridesRepo.listByExam(
+		examId,
+		institutionId,
+	);
 	const overridesByEnrollment = new Map(
 		overrides.map((record) => [record.studentCourseEnrollmentId, record]),
 	);
@@ -378,6 +410,7 @@ export async function listRetakeEligibility(
 			gradeValue,
 			maxAttempt,
 			override,
+			passingGrade,
 		});
 		return {
 			examId: exam.id,
@@ -467,4 +500,73 @@ export function assignScheduleRun(
 	institutionId: string,
 ) {
 	return repo.assignScheduleRun(examIds, runId, institutionId);
+}
+
+export type CreateRetakeInput = {
+	parentExamId: string;
+	name?: string;
+	date: Date;
+	scoringPolicy?: "replace" | "best_of";
+};
+
+export async function createRetakeExam(
+	input: CreateRetakeInput,
+	schedulerId: string | null,
+	institutionId: string,
+): Promise<schema.Exam> {
+	const parentExam = await requireExam(input.parentExamId, institutionId);
+
+	// Validate parent exam is approved
+	if (parentExam.status !== "approved") {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Parent exam must be approved before creating a retake",
+		});
+	}
+
+	// Check if parent is a normal session
+	if (parentExam.sessionType === "retake") {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Cannot create a retake from another retake exam",
+		});
+	}
+
+	// Check if retake already exists for this parent
+	const existingRetake = await db.query.exams.findFirst({
+		where: and(
+			eq(schema.exams.parentExamId, input.parentExamId),
+			eq(schema.exams.institutionId, institutionId),
+		),
+	});
+
+	if (existingRetake) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: "A retake exam already exists for this parent exam",
+		});
+	}
+
+	const resolvedScheduler = await resolveDomainUserId(schedulerId);
+	const retakeName = input.name ?? `${parentExam.name} (Rattrapage)`;
+
+	const [created] = await db
+		.insert(schema.exams)
+		.values({
+			name: retakeName,
+			type: parentExam.type,
+			date: input.date,
+			percentage: parentExam.percentage,
+			classCourse: parentExam.classCourse,
+			institutionId,
+			status: "draft",
+			sessionType: "retake",
+			parentExamId: input.parentExamId,
+			scoringPolicy: input.scoringPolicy ?? "replace",
+			scheduledBy: resolvedScheduler,
+			scheduledAt: resolvedScheduler ? new Date() : null,
+		})
+		.returning();
+
+	return created;
 }

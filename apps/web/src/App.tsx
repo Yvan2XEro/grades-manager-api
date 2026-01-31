@@ -15,8 +15,8 @@ import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
-import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
+import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -30,6 +30,7 @@ import {
 } from "./pages/admin/promotion-rules";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
+import RetakeEligibility from "./pages/admin/RetakeEligibility";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
@@ -153,17 +154,42 @@ function App() {
 					<Route path="/admin" element={<DashboardLayout />}>
 						<Route index element={<AdminDashboard />} />
 						<Route path="courses" element={<CourseManagement />} />
-						<Route path="academic-years" element={<AcademicYearManagement />} />
+						<Route
+							path="academic-years"
+							element={<AcademicYearManagement />}
+						/>
 						<Route path="classes" element={<ClassManagement />} />
-						<Route path="class-courses" element={<ClassCourseManagement />} />
-						<Route path="students" element={<StudentManagement />} />
+						<Route
+							path="class-courses"
+							element={<ClassCourseManagement />}
+						/>
+						<Route
+							path="students"
+							element={<StudentManagement />}
+						/>
 						<Route path="users" element={<UserManagement />} />
 						<Route path="exams" element={<ExamManagement />} />
+						<Route
+							path="retake-eligibility"
+							element={<RetakeEligibility />}
+						/>
 						<Route path="exam-types" element={<ExamTypes />} />
-						<Route path="exam-scheduler" element={<ExamScheduler />} />
-						<Route path="export-templates" element={<ExportTemplatesManagement />} />
-						<Route path="export-templates/:templateId" element={<ExportTemplateEditor />} />
-						<Route path="student-promotion" element={<StudentManagement />} />
+						<Route
+							path="exam-scheduler"
+							element={<ExamScheduler />}
+						/>
+						<Route
+							path="export-templates"
+							element={<ExportTemplatesManagement />}
+						/>
+						<Route
+							path="export-templates/:templateId"
+							element={<ExportTemplateEditor />}
+						/>
+						<Route
+							path="student-promotion"
+							element={<StudentManagement />}
+						/>
 						<Route path="rules" element={<RuleManagement />} />
 						<Route
 							path="registration-numbers"
@@ -173,24 +199,48 @@ function App() {
 							path="registration-numbers/:formatId"
 							element={<RegistrationNumberFormatDetail />}
 						/>
-						<Route path="institution" element={<InstitutionSettings />} />
-						<Route path="programs" element={<ProgramManagement />} />
-						<Route path="study-cycles" element={<StudyCycleManagement />} />
+						<Route
+							path="institution"
+							element={<InstitutionSettings />}
+						/>
+						<Route
+							path="programs"
+							element={<ProgramManagement />}
+						/>
+						<Route
+							path="study-cycles"
+							element={<StudyCycleManagement />}
+						/>
 						<Route path="grade-export" element={<GradeExport />} />
-						<Route path="monitoring" element={<MonitoringDashboard />} />
-						<Route path="enrollments" element={<EnrollmentManagement />} />
-						<Route path="teaching-units" element={<TeachingUnitManagement />} />
+						<Route
+							path="monitoring"
+							element={<MonitoringDashboard />}
+						/>
+						<Route
+							path="enrollments"
+							element={<EnrollmentManagement />}
+						/>
+						<Route
+							path="teaching-units"
+							element={<TeachingUnitManagement />}
+						/>
 						<Route
 							path="teaching-units/:teachingUnitId"
 							element={<TeachingUnitDetail />}
 						/>
-						<Route path="notifications" element={<NotificationsCenter />} />
+						<Route
+							path="notifications"
+							element={<NotificationsCenter />}
+						/>
 						{/* Promotion Rules */}
 						<Route
 							path="promotion-rules"
 							element={<PromotionRulesDashboard />}
 						/>
-						<Route path="promotion-rules/rules" element={<RulesListPage />} />
+						<Route
+							path="promotion-rules/rules"
+							element={<RulesListPage />}
+						/>
 						<Route
 							path="promotion-rules/evaluate"
 							element={<EvaluatePromotionPage />}
@@ -208,7 +258,10 @@ function App() {
 					{/* Dean Routes */}
 					<Route path="/dean" element={<DashboardLayout />}>
 						<Route index element={<MonitoringDashboard />} />
-						<Route path="workflows" element={<WorkflowApprovals />} />
+						<Route
+							path="workflows"
+							element={<WorkflowApprovals />}
+						/>
 					</Route>
 
 					{/* Teacher Routes */}
@@ -216,8 +269,14 @@ function App() {
 						<Route index element={<TeacherDashboard />} />
 						<Route path="courses" element={<CourseList />} />
 						<Route path="grades" element={<GradeEntry />} />
-						<Route path="grades/:courseId" element={<GradeEntry />} />
-						<Route path="attendance" element={<AttendanceAlerts />} />
+						<Route
+							path="grades/:courseId"
+							element={<GradeEntry />}
+						/>
+						<Route
+							path="attendance"
+							element={<AttendanceAlerts />}
+						/>
 						<Route path="workflows" element={<WorkflowManager />} />
 					</Route>
 

@@ -39,7 +39,8 @@ const WorkflowManager = () => {
 	});
 
 	const submitExam = useMutation({
-		mutationFn: (examId: string) => trpcClient.exams.submit.mutate({ examId }),
+		mutationFn: (examId: string) =>
+			trpcClient.exams.submit.mutate({ examId }),
 		onSuccess: () => {
 			toast.success(
 				t("teacher.workflow.toast.submitted", {
@@ -60,7 +61,9 @@ const WorkflowManager = () => {
 			trpcClient.exams.lock.mutate({ examId, lock: true }),
 		onSuccess: () => {
 			toast.success(
-				t("teacher.workflow.toast.locked", { defaultValue: "Exam locked" }),
+				t("teacher.workflow.toast.locked", {
+					defaultValue: "Exam locked",
+				}),
 			);
 			queryClient.invalidateQueries(
 				trpc.exams.list.queryKey({
@@ -71,13 +74,18 @@ const WorkflowManager = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const exams = useMemo(() => examsQuery.data?.items ?? [], [examsQuery.data]);
+	const exams = useMemo(
+		() => examsQuery.data?.items ?? [],
+		[examsQuery.data],
+	);
 
 	return (
 		<div className="space-y-6">
 			<div>
 				<h1 className="font-semibold text-2xl text-foreground">
-					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
+					{t("teacher.workflow.title", {
+						defaultValue: "Exam workflow",
+					})}
 				</h1>
 				<p className="text-muted-foreground">
 					{t("teacher.workflow.subtitle", {
@@ -117,7 +125,9 @@ const WorkflowManager = () => {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
+						{t("teacher.workflow.title", {
+							defaultValue: "Exam workflow",
+						})}
 					</CardTitle>
 					<CardDescription>
 						{t("teacher.workflow.subtitle", {
@@ -130,12 +140,15 @@ const WorkflowManager = () => {
 					{!selectedClassCourse ? (
 						<p className="text-muted-foreground text-sm">
 							{t("teacher.workflow.placeholder", {
-								defaultValue: "Choose a class course to view exams.",
+								defaultValue:
+									"Choose a class course to view exams.",
 							})}
 						</p>
 					) : examsQuery.isLoading ? (
 						<p className="text-muted-foreground text-sm">
-							{t("common.loading", { defaultValue: "Loading..." })}
+							{t("common.loading", {
+								defaultValue: "Loading...",
+							})}
 						</p>
 					) : exams.length ? (
 						<div className="space-y-3">
@@ -145,39 +158,61 @@ const WorkflowManager = () => {
 									className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
 								>
 									<div>
-										<p className="font-medium text-foreground">{exam.name}</p>
+										<p className="font-medium text-foreground">
+											{exam.name}
+										</p>
 										<p className="text-muted-foreground text-xs">
-											{exam.type} • {new Date(exam.date).toLocaleDateString()} •{" "}
-											{exam.percentage}%
+											{exam.type} •{" "}
+											{new Date(
+												exam.date,
+											).toLocaleDateString()}{" "}
+											• {exam.percentage}%
 										</p>
 									</div>
 									<div className="flex flex-wrap items-center gap-2">
 										<Button
 											type="button"
 											size="sm"
-											onClick={() => submitExam.mutate(exam.id)}
+											onClick={() =>
+												submitExam.mutate(exam.id)
+											}
 											disabled={
-												exam.status !== "draft" && exam.status !== "scheduled"
+												exam.status !== "draft" &&
+												exam.status !== "scheduled"
 											}
 										>
 											<Send className="mr-1 h-4 w-4" />
-											{t("teacher.workflow.actions.submit", {
-												defaultValue: "Submit",
-											})}
+											{t(
+												"teacher.workflow.actions.submit",
+												{
+													defaultValue: "Submit",
+												},
+											)}
 										</Button>
 										<Button
 											type="button"
 											size="sm"
 											variant="secondary"
-											onClick={() => lockExam.mutate(exam.id)}
-											disabled={exam.isLocked || exam.status !== "approved"}
+											onClick={() =>
+												lockExam.mutate(exam.id)
+											}
+											disabled={
+												exam.isLocked ||
+												exam.status !== "approved"
+											}
 										>
 											<ShieldCheck className="mr-1 h-4 w-4" />
-											{t("teacher.workflow.actions.lock", {
-												defaultValue: "Lock",
-											})}
+											{t(
+												"teacher.workflow.actions.lock",
+												{
+													defaultValue: "Lock",
+												},
+											)}
 										</Button>
-										<Badge variant="outline" className="uppercase">
+										<Badge
+											variant="outline"
+											className="uppercase"
+										>
 											<CheckCircle2 className="mr-1 h-4 w-4 text-emerald-600" />
 											{exam.status}
 										</Badge>

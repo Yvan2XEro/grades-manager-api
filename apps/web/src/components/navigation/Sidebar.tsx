@@ -18,6 +18,7 @@ import {
 	Landmark,
 	Layers3,
 	LayoutDashboard,
+	RefreshCw,
 	School,
 	TrendingUp,
 	UserCog,
@@ -148,6 +149,11 @@ const Sidebar: React.FC = () => {
 					labelKey: "navigation.sidebar.admin.examScheduler",
 				},
 				{
+					to: "/admin/retake-eligibility",
+					icon: <RefreshCw className="h-5 w-5" />,
+					labelKey: "navigation.sidebar.admin.retakeEligibility",
+				},
+				{
 					to: "/admin/grade-export",
 					icon: <FileSpreadsheet className="h-5 w-5" />,
 					labelKey: "navigation.sidebar.admin.gradeExport",
@@ -270,7 +276,9 @@ const Sidebar: React.FC = () => {
 					{/* Mobile overlay */}
 					<div
 						className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden"
-						onClick={() => useStore.getState().setSidebarOpen(false)}
+						onClick={() =>
+							useStore.getState().setSidebarOpen(false)
+						}
 					/>
 
 					{/* Sidebar */}
@@ -290,61 +298,97 @@ const Sidebar: React.FC = () => {
 							{/* Navigation */}
 							<nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
 								{menuContent.type === "grouped"
-									? menuContent.groups.map((group, groupIndex) => {
-											const groupKey =
-												group.title.split(".").pop() || group.title;
-											const isExpanded = expandedGroups.has(groupKey);
-											return (
-												<div key={group.title} className="mb-2">
-													{groupIndex > 0 && (
-														<div className="my-3 border-gray-200 border-t" />
-													)}
-													<button
-														type="button"
-														onClick={() => toggleGroup(groupKey)}
-														className="flex w-full items-center justify-between rounded-lg px-4 py-2 font-semibold text-gray-700 text-xs uppercase tracking-wider transition-colors hover:bg-gray-100"
+									? menuContent.groups.map(
+											(group, groupIndex) => {
+												const groupKey =
+													group.title
+														.split(".")
+														.pop() || group.title;
+												const isExpanded =
+													expandedGroups.has(
+														groupKey,
+													);
+												return (
+													<div
+														key={group.title}
+														className="mb-2"
 													>
-														<span>
-															{t(group.title, { defaultValue: group.title })}
-														</span>
-														{isExpanded ? (
-															<ChevronDown className="h-4 w-4" />
-														) : (
-															<ChevronRight className="h-4 w-4" />
+														{groupIndex > 0 && (
+															<div className="my-3 border-gray-200 border-t" />
 														)}
-													</button>
-													{isExpanded && (
-														<div className="mt-1 space-y-0.5">
-															{group.items.map((link) => (
-																<NavLink
-																	key={link.to}
-																	to={link.to}
-																	end={
-																		link.to === "/admin" ||
-																		link.to === "/teacher" ||
-																		link.to === "/dean" ||
-																		link.to === "/student"
-																	}
-																	data-testid={`nav-${link.to}`}
-																	className={({ isActive }) =>
-																		`flex items-center rounded-lg px-4 py-2.5 font-medium text-sm transition-colors ${
-																			isActive
-																				? "bg-primary-50 text-primary-800"
-																				: "text-gray-700 hover:bg-gray-100"
-																		}`
-																	}
-																>
-																	{link.icon}
-																	<span className="ml-3">
-																		{t(link.labelKey)}
-																	</span>
-																</NavLink>
-															))}
-														</div>
-													)}
-												</div>
-											);
-										})
+														<button
+															type="button"
+															onClick={() =>
+																toggleGroup(
+																	groupKey,
+																)
+															}
+															className="flex w-full items-center justify-between rounded-lg px-4 py-2 font-semibold text-gray-700 text-xs uppercase tracking-wider transition-colors hover:bg-gray-100"
+														>
+															<span>
+																{t(
+																	group.title,
+																	{
+																		defaultValue:
+																			group.title,
+																	},
+																)}
+															</span>
+															{isExpanded ? (
+																<ChevronDown className="h-4 w-4" />
+															) : (
+																<ChevronRight className="h-4 w-4" />
+															)}
+														</button>
+														{isExpanded && (
+															<div className="mt-1 space-y-0.5">
+																{group.items.map(
+																	(link) => (
+																		<NavLink
+																			key={
+																				link.to
+																			}
+																			to={
+																				link.to
+																			}
+																			end={
+																				link.to ===
+																					"/admin" ||
+																				link.to ===
+																					"/teacher" ||
+																				link.to ===
+																					"/dean" ||
+																				link.to ===
+																					"/student"
+																			}
+																			data-testid={`nav-${link.to}`}
+																			className={({
+																				isActive,
+																			}) =>
+																				`flex items-center rounded-lg px-4 py-2.5 font-medium text-sm transition-colors ${
+																					isActive
+																						? "bg-primary-50 text-primary-800"
+																						: "text-gray-700 hover:bg-gray-100"
+																				}`
+																			}
+																		>
+																			{
+																				link.icon
+																			}
+																			<span className="ml-3">
+																				{t(
+																					link.labelKey,
+																				)}
+																			</span>
+																		</NavLink>
+																	),
+																)}
+															</div>
+														)}
+													</div>
+												);
+											},
+										)
 									: menuContent.items.map((link) => (
 											<NavLink
 												key={link.to}
@@ -365,7 +409,9 @@ const Sidebar: React.FC = () => {
 												}
 											>
 												{link.icon}
-												<span className="ml-3">{t(link.labelKey)}</span>
+												<span className="ml-3">
+													{t(link.labelKey)}
+												</span>
 											</NavLink>
 										))}
 							</nav>
@@ -386,7 +432,11 @@ const Sidebar: React.FC = () => {
 											{user?.firstName} {user?.lastName}
 										</p>
 										<p className="text-gray-500 text-xs capitalize">
-											{user?.role ? t(`navigation.roles.${user.role}`) : ""}
+											{user?.role
+												? t(
+														`navigation.roles.${user.role}`,
+													)
+												: ""}
 										</p>
 									</div>
 								</div>

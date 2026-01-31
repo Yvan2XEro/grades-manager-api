@@ -50,11 +50,7 @@ export const router = createRouter({
 	deleteNote: tenantProtectedProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
-			service.deleteNote(
-				input.id,
-				ctx.institution.id,
-				actorFromCtx(ctx),
-			),
+			service.deleteNote(input.id, ctx.institution.id, actorFromCtx(ctx)),
 		),
 	importCsv: tenantProtectedProcedure
 		.input(importCsvSchema)
@@ -69,11 +65,16 @@ export const router = createRouter({
 	exportClassCourseCsv: tenantGradingProcedure
 		.input(exportClassCourseSchema)
 		.mutation(({ ctx, input }) =>
-			service.exportClassCourseCsv(input.classCourseId, ctx.institution.id),
+			service.exportClassCourseCsv(
+				input.classCourseId,
+				ctx.institution.id,
+			),
 		),
 	listByExam: tenantProtectedProcedure
 		.input(listExamSchema)
-		.query(({ ctx, input }) => service.listByExam(input, ctx.institution.id)),
+		.query(({ ctx, input }) =>
+			service.listByExam(input, ctx.institution.id),
+		),
 	listByStudent: tenantProtectedProcedure
 		.input(listStudentSchema)
 		.query(({ ctx, input }) =>

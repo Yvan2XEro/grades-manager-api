@@ -60,7 +60,8 @@ export function assertRole(
 	if (!role) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Organization membership is required to access this resource",
+			message:
+				"Organization membership is required to access this resource",
 		});
 	}
 	if (!roleSatisfies(role, allowedRoles)) {

@@ -137,7 +137,7 @@ export async function avgForStudentInCourse(
 				eq(schema.classCourses.course, courseId),
 				eq(schema.grades.student, studentId),
 			),
-	);
+		);
 	return row?.avg as number | null;
 }
 

@@ -9,6 +9,7 @@ import {
 import * as service from "./exams.service";
 import {
 	baseSchema,
+	createRetakeSchema,
 	deleteRetakeOverrideSchema,
 	idSchema,
 	listSchema,
@@ -30,19 +31,21 @@ function ensureRetakesEnabled() {
 }
 
 export const router = createRouter({
-	create: tenantGradingProcedure.input(baseSchema).mutation(({ ctx, input }) =>
-		service.createExam(
-			{
-				name: input.name,
-				type: input.type,
-				date: input.date,
-				percentage: input.percentage.toString(),
-				classCourse: input.classCourseId,
-			},
-			ctx.profile?.id ?? null,
-			ctx.institution.id,
+	create: tenantGradingProcedure
+		.input(baseSchema)
+		.mutation(({ ctx, input }) =>
+			service.createExam(
+				{
+					name: input.name,
+					type: input.type,
+					date: input.date,
+					percentage: input.percentage.toString(),
+					classCourse: input.classCourseId,
+				},
+				ctx.profile?.id ?? null,
+				ctx.institution.id,
+			),
 		),
-	),
 	update: tenantGradingProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>
@@ -87,15 +90,13 @@ export const router = createRouter({
 		.mutation(({ ctx, input }) =>
 			service.setLock(input.examId, input.lock, ctx.institution.id),
 		),
-	list: tenantProtectedProcedure
-		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.listExams(input, {
-				institutionId: ctx.institution.id,
-				profileId: ctx.profile?.id ?? null,
-				memberRole: ctx.memberRole ?? null,
-			}),
-		),
+	list: tenantProtectedProcedure.input(listSchema).query(({ ctx, input }) =>
+		service.listExams(input, {
+			institutionId: ctx.institution.id,
+			profileId: ctx.profile?.id ?? null,
+			memberRole: ctx.memberRole ?? null,
+		}),
+	),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
@@ -105,7 +106,10 @@ export const router = createRouter({
 		.input(retakeEligibilitySchema)
 		.query(async ({ ctx, input }) => {
 			if (!isRetakesFeatureEnabled()) {
-				return { enabled: false, items: [] as service.RetakeEligibilityRow[] };
+				return {
+					enabled: false,
+					items: [] as service.RetakeEligibilityRow[],
+				};
 			}
 			const items = await service.listRetakeEligibility(
 				input.examId,
@@ -132,6 +136,21 @@ export const router = createRouter({
 			return service.deleteRetakeOverride(
 				input.examId,
 				input.studentCourseEnrollmentId,
+				ctx.institution.id,
+			);
+		}),
+	createRetake: tenantAdminProcedure
+		.input(createRetakeSchema)
+		.mutation(({ ctx, input }) => {
+			ensureRetakesEnabled();
+			return service.createRetakeExam(
+				{
+					parentExamId: input.parentExamId,
+					name: input.name,
+					date: input.date,
+					scoringPolicy: input.scoringPolicy,
+				},
+				ctx.profile?.id ?? null,
 				ctx.institution.id,
 			);
 		}),

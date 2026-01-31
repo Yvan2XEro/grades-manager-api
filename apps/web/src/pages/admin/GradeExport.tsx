@@ -140,7 +140,8 @@ export default function GradeExport() {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return (items as AcademicYear[]).sort(
 				(a, b) =>
-					new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+					new Date(b.startDate).getTime() -
+					new Date(a.startDate).getTime(),
 			);
 		},
 	});
@@ -218,9 +219,10 @@ export default function GradeExport() {
 		queryKey: ["exams", selectedClass],
 		queryFn: async () => {
 			if (!selectedClass) return [];
-			const { items: classCourses } = await trpcClient.classCourses.list.query({
-				classId: selectedClass,
-			});
+			const { items: classCourses } =
+				await trpcClient.classCourses.list.query({
+					classId: selectedClass,
+				});
 			const result: ExamItem[] = [];
 			for (const cc of classCourses) {
 				const course = await trpcClient.courses.getById.query({
@@ -250,7 +252,9 @@ export default function GradeExport() {
 					},
 				);
 			}
-			return result.sort((a, b) => a.courseName.localeCompare(b.courseName));
+			return result.sort((a, b) =>
+				a.courseName.localeCompare(b.courseName),
+			);
 		},
 		enabled: !!selectedClass,
 	});
@@ -271,7 +275,8 @@ export default function GradeExport() {
 		// Sort exams within each course by date
 		for (const [, courseExams] of grouped) {
 			courseExams.sort(
-				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+				(a, b) =>
+					new Date(a.date).getTime() - new Date(b.date).getTime(),
 			);
 		}
 
@@ -303,8 +308,12 @@ export default function GradeExport() {
 				return keyA.localeCompare(keyB);
 			}
 			if (sortBy === "date") {
-				const dateA = examsA[0] ? new Date(examsA[0].date).getTime() : 0;
-				const dateB = examsB[0] ? new Date(examsB[0].date).getTime() : 0;
+				const dateA = examsA[0]
+					? new Date(examsA[0].date).getTime()
+					: 0;
+				const dateB = examsB[0]
+					? new Date(examsB[0].date).getTime()
+					: 0;
 				return dateA - dateB;
 			}
 			// sort by type
@@ -345,7 +354,9 @@ export default function GradeExport() {
 					prev.filter((id) => !courseExamIds.includes(id)),
 				);
 			} else {
-				setSelectedExams((prev) => [...new Set([...prev, ...courseExamIds])]);
+				setSelectedExams((prev) => [
+					...new Set([...prev, ...courseExamIds]),
+				]);
 			}
 		},
 		[selectedExams],
@@ -375,14 +386,19 @@ export default function GradeExport() {
 					gradeItems.map(async (grade: GradeItem) => {
 						let exam = examCache.get(grade.exam);
 						if (!exam) {
-							exam = await trpcClient.exams.getById.query({ id: grade.exam });
+							exam = await trpcClient.exams.getById.query({
+								id: grade.exam,
+							});
 							examCache.set(grade.exam, exam);
 						}
-						let classCourse = classCourseCache.get(exam.classCourse);
+						let classCourse = classCourseCache.get(
+							exam.classCourse,
+						);
 						if (!classCourse) {
-							classCourse = await trpcClient.classCourses.getById.query({
-								id: exam.classCourse,
-							});
+							classCourse =
+								await trpcClient.classCourses.getById.query({
+									id: exam.classCourse,
+								});
 							classCourseCache.set(exam.classCourse, classCourse);
 						}
 						let course = courseCache.get(classCourse.course);
@@ -445,7 +461,9 @@ export default function GradeExport() {
 			if (students.length === 0) return;
 
 			const classData = classes?.find((c) => c.id === selectedClass);
-			const semesterData = semesters?.find((s) => s.id === selectedSemester);
+			const semesterData = semesters?.find(
+				(s) => s.id === selectedSemester,
+			);
 			const yearData = academicYears?.find((y) => y.id === selectedYear);
 
 			// Build header rows
@@ -468,8 +486,10 @@ export default function GradeExport() {
 				if (classData) headerRows.push([`Classe: ${classData.name}`]);
 				if (classData?.program)
 					headerRows.push([`Programme: ${classData.program.name}`]);
-				if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
-				if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
+				if (semesterData)
+					headerRows.push([`Semestre: ${semesterData.name}`]);
+				if (yearData)
+					headerRows.push([`Année Académique: ${yearData.name}`]);
 				headerRows.push([""]);
 			}
 
@@ -491,21 +511,26 @@ export default function GradeExport() {
 				const courseAverages = new Map<string, number>();
 				courseGrades.forEach((grades, course) => {
 					if (grades.length > 0) {
-						const average = grades.reduce((a, b) => a + b, 0) / grades.length;
+						const average =
+							grades.reduce((a, b) => a + b, 0) / grades.length;
 						courseAverages.set(course, Number(average.toFixed(2)));
 					}
 				});
 				return {
-					[t("admin.gradeExport.columns.lastName")]: student.last_name,
-					[t("admin.gradeExport.columns.firstName")]: student.first_name,
+					[t("admin.gradeExport.columns.lastName")]:
+						student.last_name,
+					[t("admin.gradeExport.columns.firstName")]:
+						student.first_name,
 					[t("admin.gradeExport.columns.registration")]:
 						student.registration_number,
-					[t("admin.gradeExport.columns.birthDate")]: student.birth_date
-						? format(new Date(student.birth_date), "dd/MM/yyyy")
-						: "",
+					[t("admin.gradeExport.columns.birthDate")]:
+						student.birth_date
+							? format(new Date(student.birth_date), "dd/MM/yyyy")
+							: "",
 					[t("admin.gradeExport.columns.birthPlace")]:
 						student.birth_place || "",
-					[t("admin.gradeExport.columns.gender")]: student.gender || "",
+					[t("admin.gradeExport.columns.gender")]:
+						student.gender || "",
 					...Object.fromEntries(courseAverages),
 				};
 			});
@@ -566,7 +591,10 @@ export default function GradeExport() {
 			// Style column headers (first data row after header) - Bold, background color
 			const headerRowIndex = headerRows.length;
 			for (let c = range.s.c; c <= range.e.c; c++) {
-				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+				const cellRef = XLSX.utils.encode_cell({
+					r: headerRowIndex,
+					c,
+				});
 				if (ws[cellRef]) {
 					ws[cellRef].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -612,7 +640,11 @@ export default function GradeExport() {
 			}
 
 			const wb = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(wb, ws, t("admin.gradeExport.sheetName"));
+			XLSX.utils.book_append_sheet(
+				wb,
+				ws,
+				t("admin.gradeExport.sheetName"),
+			);
 			const filename = buildFilename(t("admin.gradeExport.filePrefix"));
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
@@ -643,7 +675,9 @@ export default function GradeExport() {
 			if (students.length === 0) return;
 
 			const classData = classes?.find((c) => c.id === selectedClass);
-			const semesterData = semesters?.find((s) => s.id === selectedSemester);
+			const semesterData = semesters?.find(
+				(s) => s.id === selectedSemester,
+			);
 			const yearData = academicYears?.find((y) => y.id === selectedYear);
 
 			const courseGroups = new Map<
@@ -651,7 +685,8 @@ export default function GradeExport() {
 				{ label: string; exams: ExamItem[] }
 			>();
 			selectedExamDetails.forEach((exam) => {
-				const key = exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
+				const key =
+					exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
 				const label = exam.courseCode
 					? `${exam.courseName} (${exam.courseCode})`
 					: exam.courseName;
@@ -670,7 +705,10 @@ export default function GradeExport() {
 				t("admin.gradeExport.pv.table.fullName"),
 				...groupedCourses.flatMap(({ label, exams }) => [
 					label,
-					...Array.from({ length: Math.max(exams.length - 1, 0) }, () => ""),
+					...Array.from(
+						{ length: Math.max(exams.length - 1, 0) },
+						() => "",
+					),
 				]),
 				t("admin.gradeExport.pv.table.average"),
 			];
@@ -687,7 +725,9 @@ export default function GradeExport() {
 
 			students.forEach((student, index) => {
 				const gradeValues = orderedExams.map((exam) => {
-					const grade = student.grades.find((g) => g.exam.id === exam.id);
+					const grade = student.grades.find(
+						(g) => g.exam.id === exam.id,
+					);
 					return typeof grade?.score === "number" ? grade.score : "";
 				});
 				const numericScores = gradeValues.filter(
@@ -697,8 +737,10 @@ export default function GradeExport() {
 					numericScores.length > 0
 						? Number(
 								(
-									numericScores.reduce((sum, value) => sum + value, 0) /
-									numericScores.length
+									numericScores.reduce(
+										(sum, value) => sum + value,
+										0,
+									) / numericScores.length
 								).toFixed(2),
 							)
 						: "";
@@ -721,7 +763,8 @@ export default function GradeExport() {
 				totalStudents > 0 ? (validated / totalStudents) * 100 : 0;
 			const promotionAverage =
 				averages.length > 0
-					? averages.reduce((sum, avg) => sum + avg, 0) / averages.length
+					? averages.reduce((sum, avg) => sum + avg, 0) /
+						averages.length
 					: null;
 
 			const statsRows: (string | number)[][] = [
@@ -735,7 +778,9 @@ export default function GradeExport() {
 				],
 				[
 					t("admin.gradeExport.pv.stats.average"),
-					promotionAverage !== null ? promotionAverage.toFixed(2) : "-",
+					promotionAverage !== null
+						? promotionAverage.toFixed(2)
+						: "-",
 				],
 			];
 
@@ -755,9 +800,13 @@ export default function GradeExport() {
 			// Build institution header
 			const institutionHeader: (string | number)[][] = [];
 			if (exportConfig.institution) {
-				institutionHeader.push([exportConfig.institution.name_fr || ""]);
+				institutionHeader.push([
+					exportConfig.institution.name_fr || "",
+				]);
 				if (exportConfig.institution.faculty_name_fr) {
-					institutionHeader.push([exportConfig.institution.faculty_name_fr]);
+					institutionHeader.push([
+						exportConfig.institution.faculty_name_fr,
+					]);
 				}
 			}
 			institutionHeader.push([""]);
@@ -765,13 +814,18 @@ export default function GradeExport() {
 			institutionHeader.push([""]);
 
 			if (classData || semesterData || yearData) {
-				if (classData) institutionHeader.push([`Classe: ${classData.name}`]);
+				if (classData)
+					institutionHeader.push([`Classe: ${classData.name}`]);
 				if (classData?.program)
-					institutionHeader.push([`Programme: ${classData.program.name}`]);
+					institutionHeader.push([
+						`Programme: ${classData.program.name}`,
+					]);
 				if (semesterData)
 					institutionHeader.push([`Semestre: ${semesterData.name}`]);
 				if (yearData)
-					institutionHeader.push([`Année Académique: ${yearData.name}`]);
+					institutionHeader.push([
+						`Année Académique: ${yearData.name}`,
+					]);
 				institutionHeader.push([""]);
 			}
 
@@ -790,7 +844,8 @@ export default function GradeExport() {
 			];
 
 			const ws = XLSX.utils.aoa_to_sheet(aoa);
-			const headerRow1Index = institutionHeader.length + statsRows.length + 1;
+			const headerRow1Index =
+				institutionHeader.length + statsRows.length + 1;
 			const headerRow2Index = headerRow1Index + 1;
 			const merges: XLSX.Range[] = [];
 			const verticalColumns = [0, 1, 2, 3 + orderedExams.length];
@@ -833,12 +888,18 @@ export default function GradeExport() {
 			// Style document title
 			for (let i = 0; i < institutionHeader.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
-				if (ws[cellRef] && ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS") {
+				if (
+					ws[cellRef] &&
+					ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS"
+				) {
 					ws[cellRef].s = {
 						font: { bold: true, sz: 18 },
 						alignment: { horizontal: "center", vertical: "center" },
 					};
-					merges.push({ s: { r: i, c: 0 }, e: { r: i, c: range.e.c } });
+					merges.push({
+						s: { r: i, c: 0 },
+						e: { r: i, c: range.e.c },
+					});
 				}
 			}
 
@@ -863,7 +924,10 @@ export default function GradeExport() {
 
 			// Style stats section title
 			const statsStartRow = institutionHeader.length;
-			const statsTitleRef = XLSX.utils.encode_cell({ r: statsStartRow, c: 0 });
+			const statsTitleRef = XLSX.utils.encode_cell({
+				r: statsStartRow,
+				c: 0,
+			});
 			if (ws[statsTitleRef]) {
 				ws[statsTitleRef].s = {
 					font: { bold: true, sz: 14 },
@@ -874,15 +938,22 @@ export default function GradeExport() {
 
 			// Style stats rows
 			for (let i = 1; i < statsRows.length; i++) {
-				const cellRef = XLSX.utils.encode_cell({ r: statsStartRow + i, c: 0 });
+				const cellRef = XLSX.utils.encode_cell({
+					r: statsStartRow + i,
+					c: 0,
+				});
 				if (ws[cellRef]) {
 					ws[cellRef].s = { font: { bold: true } };
 				}
 			}
 
 			// Style table title
-			const tableTitleRow = institutionHeader.length + statsRows.length + 1;
-			const tableTitleRef = XLSX.utils.encode_cell({ r: tableTitleRow, c: 0 });
+			const tableTitleRow =
+				institutionHeader.length + statsRows.length + 1;
+			const tableTitleRef = XLSX.utils.encode_cell({
+				r: tableTitleRow,
+				c: 0,
+			});
 			if (ws[tableTitleRef]) {
 				ws[tableTitleRef].s = {
 					font: { bold: true, sz: 14 },
@@ -894,7 +965,10 @@ export default function GradeExport() {
 			// Style table headers - Bold, background color, borders
 			for (let c = 0; c <= range.e.c; c++) {
 				// First header row
-				const cellRef1 = XLSX.utils.encode_cell({ r: headerRow1Index, c });
+				const cellRef1 = XLSX.utils.encode_cell({
+					r: headerRow1Index,
+					c,
+				});
 				if (ws[cellRef1]) {
 					ws[cellRef1].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -914,7 +988,10 @@ export default function GradeExport() {
 				}
 
 				// Second header row
-				const cellRef2 = XLSX.utils.encode_cell({ r: headerRow2Index, c });
+				const cellRef2 = XLSX.utils.encode_cell({
+					r: headerRow2Index,
+					c,
+				});
 				if (ws[cellRef2]) {
 					ws[cellRef2].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -938,12 +1015,27 @@ export default function GradeExport() {
 					const cellRef = XLSX.utils.encode_cell({ r, c });
 					if (ws[cellRef]) {
 						ws[cellRef].s = {
-							alignment: { horizontal: "center", vertical: "center" },
+							alignment: {
+								horizontal: "center",
+								vertical: "center",
+							},
 							border: {
-								top: { style: "thin", color: { rgb: "D0D0D0" } },
-								bottom: { style: "thin", color: { rgb: "D0D0D0" } },
-								left: { style: "thin", color: { rgb: "D0D0D0" } },
-								right: { style: "thin", color: { rgb: "D0D0D0" } },
+								top: {
+									style: "thin",
+									color: { rgb: "D0D0D0" },
+								},
+								bottom: {
+									style: "thin",
+									color: { rgb: "D0D0D0" },
+								},
+								left: {
+									style: "thin",
+									color: { rgb: "D0D0D0" },
+								},
+								right: {
+									style: "thin",
+									color: { rgb: "D0D0D0" },
+								},
 							},
 						};
 
@@ -972,7 +1064,10 @@ export default function GradeExport() {
 			// Style legend headers
 			const legendHeaderRow = legendTitleRow + 1;
 			for (let c = 0; c < 3; c++) {
-				const cellRef = XLSX.utils.encode_cell({ r: legendHeaderRow, c });
+				const cellRef = XLSX.utils.encode_cell({
+					r: legendHeaderRow,
+					c,
+				});
 				if (ws[cellRef]) {
 					ws[cellRef].s = {
 						font: { bold: true },
@@ -999,8 +1094,14 @@ export default function GradeExport() {
 
 			ws["!merges"] = merges;
 			const wb = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(wb, ws, t("admin.gradeExport.pv.sheetName"));
-			const filename = buildFilename(t("admin.gradeExport.pv.filePrefix"));
+			XLSX.utils.book_append_sheet(
+				wb,
+				ws,
+				t("admin.gradeExport.pv.sheetName"),
+			);
+			const filename = buildFilename(
+				t("admin.gradeExport.pv.filePrefix"),
+			);
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Verbal report export error:", error);
@@ -1031,8 +1132,12 @@ export default function GradeExport() {
 				if (students.length === 0) return;
 
 				const classData = classes?.find((c) => c.id === selectedClass);
-				const semesterData = semesters?.find((s) => s.id === selectedSemester);
-				const yearData = academicYears?.find((y) => y.id === selectedYear);
+				const semesterData = semesters?.find(
+					(s) => s.id === selectedSemester,
+				);
+				const yearData = academicYears?.find(
+					(y) => y.id === selectedYear,
+				);
 
 				// Build header rows
 				const headerRows: ExcelRow[] = [];
@@ -1041,7 +1146,9 @@ export default function GradeExport() {
 				if (exportConfig.institution) {
 					headerRows.push([exportConfig.institution.name_fr || ""]);
 					if (exportConfig.institution.faculty_name_fr) {
-						headerRows.push([exportConfig.institution.faculty_name_fr]);
+						headerRows.push([
+							exportConfig.institution.faculty_name_fr,
+						]);
 					}
 				}
 
@@ -1053,11 +1160,16 @@ export default function GradeExport() {
 				headerRows.push([""]);
 
 				if (classData || semesterData || yearData) {
-					if (classData) headerRows.push([`Classe: ${classData.name}`]);
+					if (classData)
+						headerRows.push([`Classe: ${classData.name}`]);
 					if (classData?.program)
-						headerRows.push([`Programme: ${classData.program.name}`]);
-					if (semesterData) headerRows.push([`Semestre: ${semesterData.name}`]);
-					if (yearData) headerRows.push([`Année Académique: ${yearData.name}`]);
+						headerRows.push([
+							`Programme: ${classData.program.name}`,
+						]);
+					if (semesterData)
+						headerRows.push([`Semestre: ${semesterData.name}`]);
+					if (yearData)
+						headerRows.push([`Année Académique: ${yearData.name}`]);
 					if (exam.date)
 						headerRows.push([
 							`Date: ${format(new Date(exam.date), "dd/MM/yyyy")}`,
@@ -1066,10 +1178,14 @@ export default function GradeExport() {
 				}
 
 				const exportData = students.map((student) => {
-					const grade = student.grades.find((g) => g.exam.id === exam.id);
+					const grade = student.grades.find(
+						(g) => g.exam.id === exam.id,
+					);
 					return {
-						[t("admin.gradeExport.columns.lastName")]: student.last_name,
-						[t("admin.gradeExport.columns.firstName")]: student.first_name,
+						[t("admin.gradeExport.columns.lastName")]:
+							student.last_name,
+						[t("admin.gradeExport.columns.firstName")]:
+							student.first_name,
 						[t("admin.gradeExport.columns.registration")]:
 							student.registration_number,
 						[t("admin.gradeExport.actions.examGroup.scoreColumn")]:
@@ -1113,7 +1229,10 @@ export default function GradeExport() {
 								font: { bold: true, sz: 18 },
 								alignment: { horizontal: "center" },
 							};
-							merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 3 } });
+							merges.push({
+								s: { r: i, c: 0 },
+								e: { r: i, c: 3 },
+							});
 						} else if (value.includes(":")) {
 							ws[cellRef].s = { font: { bold: true } };
 						}
@@ -1121,7 +1240,10 @@ export default function GradeExport() {
 				}
 				const headerRowIndex = headerRows.length;
 				for (let c = 0; c <= 3; c++) {
-					const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+					const cellRef = XLSX.utils.encode_cell({
+						r: headerRowIndex,
+						c,
+					});
 					if (ws[cellRef])
 						ws[cellRef].s = {
 							font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -1149,14 +1271,23 @@ export default function GradeExport() {
 								},
 							};
 							if ((r - headerRowIndex - 1) % 2 === 1)
-								ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } };
+								ws[cellRef].s.fill = {
+									fgColor: { rgb: "F2F2F2" },
+								};
 						}
 					}
 				}
-				ws["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 12 }];
+				ws["!cols"] = [
+					{ wch: 20 },
+					{ wch: 20 },
+					{ wch: 15 },
+					{ wch: 12 },
+				];
 				ws["!merges"] = merges;
 
-				const courseSegment = slugify(exam.courseCode ?? exam.courseName);
+				const courseSegment = slugify(
+					exam.courseCode ?? exam.courseName,
+				);
 				const examSuffix = `${courseSegment}-${slugify(exam.type)}`;
 				const filename = buildFilename(
 					t("admin.gradeExport.actions.examGroup.filePrefix"),
@@ -1349,10 +1480,11 @@ export default function GradeExport() {
 		setExporting("bulk-evaluations");
 		try {
 			for (const exam of selectedExamDetails) {
-				const result = await trpcClient.exports.generateEvaluation.mutate({
-					examId: exam.id,
-					format: "pdf",
-				});
+				const result =
+					await trpcClient.exports.generateEvaluation.mutate({
+						examId: exam.id,
+						format: "pdf",
+					});
 
 				const byteCharacters = atob(result.data);
 				const byteNumbers = new Array(byteCharacters.length);
@@ -1429,7 +1561,9 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div className="space-y-2">
-				<h2 className="font-bold text-2xl">{t("admin.gradeExport.title")}</h2>
+				<h2 className="font-bold text-2xl">
+					{t("admin.gradeExport.title")}
+				</h2>
 				<p className="text-muted-foreground">
 					{t("admin.gradeExport.subtitle")}
 				</p>
@@ -1437,7 +1571,9 @@ export default function GradeExport() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>{t("admin.gradeExport.filtersCard.title")}</CardTitle>
+					<CardTitle>
+						{t("admin.gradeExport.filtersCard.title")}
+					</CardTitle>
 					<CardDescription>
 						{t("admin.gradeExport.filtersCard.description")}
 					</CardDescription>
@@ -1486,7 +1622,9 @@ export default function GradeExport() {
 						>
 							<SelectTrigger id={classId}>
 								<SelectValue
-									placeholder={t("admin.gradeExport.filters.classPlaceholder")}
+									placeholder={t(
+										"admin.gradeExport.filters.classPlaceholder",
+									)}
 								/>
 							</SelectTrigger>
 							<SelectContent>
@@ -1500,7 +1638,9 @@ export default function GradeExport() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={semesterId}>Semestre (pour PV PDF)</Label>
+						<Label htmlFor={semesterId}>
+							Semestre (pour PV PDF)
+						</Label>
 						<Select
 							value={selectedSemester || undefined}
 							onValueChange={setSelectedSemester}
@@ -1510,7 +1650,10 @@ export default function GradeExport() {
 							</SelectTrigger>
 							<SelectContent>
 								{(semesters || []).map((semester) => (
-									<SelectItem key={semester.id} value={semester.id}>
+									<SelectItem
+										key={semester.id}
+										value={semester.id}
+									>
 										{semester.name}
 									</SelectItem>
 								))}
@@ -1525,10 +1668,12 @@ export default function GradeExport() {
 					<CardHeader>
 						<div className="flex items-center justify-between">
 							<div className="space-y-1">
-								<CardTitle>{t("admin.gradeExport.exams.title")}</CardTitle>
+								<CardTitle>
+									{t("admin.gradeExport.exams.title")}
+								</CardTitle>
 								<CardDescription>
-									{selectedExams.length} / {exams.length} évaluations
-									sélectionnées
+									{selectedExams.length} / {exams.length}{" "}
+									évaluations sélectionnées
 								</CardDescription>
 							</div>
 							<div className="flex gap-2">
@@ -1537,7 +1682,9 @@ export default function GradeExport() {
 									variant="outline"
 									size="sm"
 									onClick={handleSelectAll}
-									disabled={selectedExams.length === exams.length}
+									disabled={
+										selectedExams.length === exams.length
+									}
 								>
 									Tout sélectionner
 								</Button>
@@ -1561,7 +1708,9 @@ export default function GradeExport() {
 								<Input
 									placeholder="Rechercher une matière ou une évaluation..."
 									value={searchQuery}
-									onChange={(e) => setSearchQuery(e.target.value)}
+									onChange={(e) =>
+										setSearchQuery(e.target.value)
+									}
 									className="pl-9"
 								/>
 							</div>
@@ -1573,9 +1722,15 @@ export default function GradeExport() {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="course">Trier par matière</SelectItem>
-									<SelectItem value="date">Trier par date</SelectItem>
-									<SelectItem value="type">Trier par type</SelectItem>
+									<SelectItem value="course">
+										Trier par matière
+									</SelectItem>
+									<SelectItem value="date">
+										Trier par date
+									</SelectItem>
+									<SelectItem value="type">
+										Trier par type
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -1583,103 +1738,171 @@ export default function GradeExport() {
 						{/* Grouped exams by course */}
 						{filteredAndSortedCourses.length > 0 ? (
 							<Accordion type="multiple" className="w-full">
-								{filteredAndSortedCourses.map(([courseKey, courseExams]) => {
-									const courseSelectedCount = courseExams.filter((e) =>
-										selectedExams.includes(e.id),
-									).length;
-									const allCourseSelected =
-										courseSelectedCount === courseExams.length;
+								{filteredAndSortedCourses.map(
+									([courseKey, courseExams]) => {
+										const courseSelectedCount =
+											courseExams.filter((e) =>
+												selectedExams.includes(e.id),
+											).length;
+										const allCourseSelected =
+											courseSelectedCount ===
+											courseExams.length;
 
-									return (
-										<AccordionItem key={courseKey} value={courseKey}>
-											<div className="flex items-center gap-2">
-												<Checkbox
-													checked={allCourseSelected}
-													onCheckedChange={() =>
-														handleToggleCourse(courseExams)
-													}
-													className="ml-4"
-												/>
-												<AccordionTrigger className="flex-1 hover:no-underline">
-													<div className="flex flex-1 items-center gap-3">
-														<div className="flex-1 text-left">
-															<div className="font-medium">
-																{courseExams[0].courseName}
-																{courseExams[0].courseCode && (
-																	<span className="ml-2 font-normal text-muted-foreground">
-																		({courseExams[0].courseCode})
-																	</span>
-																)}
-															</div>
-															<div className="text-muted-foreground text-xs">
-																{courseSelectedCount} / {courseExams.length}{" "}
-																évaluations
-															</div>
-														</div>
-														<Badge
-															variant={
-																allCourseSelected ? "default" : "secondary"
-															}
-														>
-															{courseExams.length}
-														</Badge>
-													</div>
-												</AccordionTrigger>
-											</div>
-											<AccordionContent>
-												<div className="space-y-2 pt-2 pl-9">
-													{courseExams.map((exam) => (
-														<div
-															key={exam.id}
-															className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
-														>
-															<Checkbox
-																id={`exam-${exam.id}`}
-																checked={selectedExams.includes(exam.id)}
-																onCheckedChange={(checked) => {
-																	if (checked) {
-																		setSelectedExams((prev) => [
-																			...prev,
-																			exam.id,
-																		]);
-																	} else {
-																		setSelectedExams((prev) =>
-																			prev.filter((id) => id !== exam.id),
-																		);
+										return (
+											<AccordionItem
+												key={courseKey}
+												value={courseKey}
+											>
+												<div className="flex items-center gap-2">
+													<Checkbox
+														checked={
+															allCourseSelected
+														}
+														onCheckedChange={() =>
+															handleToggleCourse(
+																courseExams,
+															)
+														}
+														className="ml-4"
+													/>
+													<AccordionTrigger className="flex-1 hover:no-underline">
+														<div className="flex flex-1 items-center gap-3">
+															<div className="flex-1 text-left">
+																<div className="font-medium">
+																	{
+																		courseExams[0]
+																			.courseName
 																	}
-																}}
-															/>
-															<label
-																htmlFor={`exam-${exam.id}`}
-																className="flex-1 cursor-pointer"
-															>
-																<div className="flex items-center justify-between">
-																	<div>
-																		<div className="font-medium text-sm">
-																			{exam.name} • {exam.type}
-																		</div>
-																		<div className="text-muted-foreground text-xs">
-																			{format(
-																				new Date(exam.date),
-																				"dd MMM yyyy",
-																			)}{" "}
-																			• {exam.percentage}%
-																		</div>
-																	</div>
+																	{courseExams[0]
+																		.courseCode && (
+																		<span className="ml-2 font-normal text-muted-foreground">
+																			(
+																			{
+																				courseExams[0]
+																					.courseCode
+																			}
+																			)
+																		</span>
+																	)}
 																</div>
-															</label>
+																<div className="text-muted-foreground text-xs">
+																	{
+																		courseSelectedCount
+																	}{" "}
+																	/{" "}
+																	{
+																		courseExams.length
+																	}{" "}
+																	évaluations
+																</div>
+															</div>
+															<Badge
+																variant={
+																	allCourseSelected
+																		? "default"
+																		: "secondary"
+																}
+															>
+																{
+																	courseExams.length
+																}
+															</Badge>
 														</div>
-													))}
+													</AccordionTrigger>
 												</div>
-											</AccordionContent>
-										</AccordionItem>
-									);
-								})}
+												<AccordionContent>
+													<div className="space-y-2 pt-2 pl-9">
+														{courseExams.map(
+															(exam) => (
+																<div
+																	key={
+																		exam.id
+																	}
+																	className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
+																>
+																	<Checkbox
+																		id={`exam-${exam.id}`}
+																		checked={selectedExams.includes(
+																			exam.id,
+																		)}
+																		onCheckedChange={(
+																			checked,
+																		) => {
+																			if (
+																				checked
+																			) {
+																				setSelectedExams(
+																					(
+																						prev,
+																					) => [
+																						...prev,
+																						exam.id,
+																					],
+																				);
+																			} else {
+																				setSelectedExams(
+																					(
+																						prev,
+																					) =>
+																						prev.filter(
+																							(
+																								id,
+																							) =>
+																								id !==
+																								exam.id,
+																						),
+																				);
+																			}
+																		}}
+																	/>
+																	<label
+																		htmlFor={`exam-${exam.id}`}
+																		className="flex-1 cursor-pointer"
+																	>
+																		<div className="flex items-center justify-between">
+																			<div>
+																				<div className="font-medium text-sm">
+																					{
+																						exam.name
+																					}{" "}
+																					•{" "}
+																					{
+																						exam.type
+																					}
+																				</div>
+																				<div className="text-muted-foreground text-xs">
+																					{format(
+																						new Date(
+																							exam.date,
+																						),
+																						"dd MMM yyyy",
+																					)}{" "}
+																					•{" "}
+																					{
+																						exam.percentage
+																					}
+																					%
+																				</div>
+																			</div>
+																		</div>
+																	</label>
+																</div>
+															),
+														)}
+													</div>
+												</AccordionContent>
+											</AccordionItem>
+										);
+									},
+								)}
 							</Accordion>
 						) : (
 							<div className="py-8 text-center text-muted-foreground">
 								<Search className="mx-auto mb-4 h-12 w-12 opacity-50" />
-								<p>Aucune évaluation trouvée pour "{searchQuery}"</p>
+								<p>
+									Aucune évaluation trouvée pour "
+									{searchQuery}"
+								</p>
 							</div>
 						)}
 					</CardContent>
@@ -1713,7 +1936,9 @@ export default function GradeExport() {
 				<TabsContent value="excel" className="space-y-6">
 					<Card>
 						<CardHeader>
-							<CardTitle>{t("admin.gradeExport.actions.label")}</CardTitle>
+							<CardTitle>
+								{t("admin.gradeExport.actions.label")}
+							</CardTitle>
 							<CardDescription>
 								{t("admin.gradeExport.subtitle")}
 							</CardDescription>
@@ -1721,7 +1946,11 @@ export default function GradeExport() {
 						<CardContent className="space-y-6">
 							<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 								<div className="space-y-2">
-									<Label>{t("admin.gradeExport.actions.combinedLabel")}</Label>
+									<Label>
+										{t(
+											"admin.gradeExport.actions.combinedLabel",
+										)}
+									</Label>
 									<Button
 										type="button"
 										onClick={handleCombinedExport}
@@ -1733,11 +1962,15 @@ export default function GradeExport() {
 										) : (
 											<Download className="mr-2 h-4 w-4" />
 										)}
-										{t("admin.gradeExport.actions.combinedExport")}
+										{t(
+											"admin.gradeExport.actions.combinedExport",
+										)}
 									</Button>
 								</div>
 								<div className="space-y-2">
-									<Label>{t("admin.gradeExport.actions.pvLabel")}</Label>
+									<Label>
+										{t("admin.gradeExport.actions.pvLabel")}
+									</Label>
 									<Button
 										type="button"
 										onClick={handleVerbalReportExport}
@@ -1749,7 +1982,9 @@ export default function GradeExport() {
 										) : (
 											<FileSpreadsheet className="mr-2 h-4 w-4" />
 										)}
-										{t("admin.gradeExport.actions.pvExport")}
+										{t(
+											"admin.gradeExport.actions.pvExport",
+										)}
 									</Button>
 								</div>
 							</div>
@@ -1757,9 +1992,12 @@ export default function GradeExport() {
 							{hasExamSelection ? (
 								<div className="space-y-2">
 									<Label>
-										{t("admin.gradeExport.actions.examGroup.label", {
-											count: selectedExamDetails.length,
-										})}
+										{t(
+											"admin.gradeExport.actions.examGroup.label",
+											{
+												count: selectedExamDetails.length,
+											},
+										)}
 									</Label>
 									<div className="flex flex-wrap gap-2">
 										{selectedExamDetails.map((exam) => (
@@ -1768,7 +2006,9 @@ export default function GradeExport() {
 												type="button"
 												variant="outline"
 												disabled={disableExamExports}
-												onClick={() => handleExamExport(exam)}
+												onClick={() =>
+													handleExamExport(exam)
+												}
 											>
 												{exporting === exam.id && (
 													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1786,10 +2026,12 @@ export default function GradeExport() {
 				<TabsContent value="pdf" className="space-y-6">
 					<Card>
 						<CardHeader>
-							<CardTitle>Export PDF (Procès-Verbaux et Publications)</CardTitle>
+							<CardTitle>
+								Export PDF (Procès-Verbaux et Publications)
+							</CardTitle>
 							<CardDescription>
-								Générez des documents PDF professionnels pour les PV,
-								évaluations et UEs
+								Générez des documents PDF professionnels pour
+								les PV, évaluations et UEs
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-6">
@@ -1799,8 +2041,9 @@ export default function GradeExport() {
 										Procès-Verbal (PV) PDF
 									</h4>
 									<p className="mb-4 text-muted-foreground text-sm">
-										Exportez le PV complet avec toutes les UEs et notes pour la
-										classe et le semestre sélectionnés
+										Exportez le PV complet avec toutes les
+										UEs et notes pour la classe et le
+										semestre sélectionnés
 									</p>
 									<div className="flex gap-2">
 										<Button
@@ -1849,48 +2092,70 @@ export default function GradeExport() {
 											Publications des Évaluations PDF
 										</h4>
 										<p className="mb-4 text-muted-foreground text-sm">
-											Exportez les publications PDF pour chaque évaluation
-											sélectionnée
+											Exportez les publications PDF pour
+											chaque évaluation sélectionnée
 										</p>
 										<div className="mb-4">
 											<Button
 												type="button"
-												onClick={handleBulkGenerateEvaluations}
+												onClick={
+													handleBulkGenerateEvaluations
+												}
 												disabled={disableExamExports}
 											>
-												{exporting === "bulk-evaluations" ? (
+												{exporting ===
+												"bulk-evaluations" ? (
 													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 												) : (
 													<Download className="mr-2 h-4 w-4" />
 												)}
-												Télécharger toutes les évaluations (
+												Télécharger toutes les
+												évaluations (
 												{selectedExamDetails.length})
 											</Button>
 										</div>
 										<div className="flex flex-wrap gap-2">
 											{selectedExamDetails.map((exam) => (
-												<div key={exam.id} className="flex gap-1">
+												<div
+													key={exam.id}
+													className="flex gap-1"
+												>
 													<Button
 														type="button"
 														variant="outline"
 														size="sm"
-														disabled={disableExamExports}
-														onClick={() => handlePreviewEvaluation(exam.id)}
+														disabled={
+															disableExamExports
+														}
+														onClick={() =>
+															handlePreviewEvaluation(
+																exam.id,
+															)
+														}
 													>
-														{exporting === `preview-eval-${exam.id}` ? (
+														{exporting ===
+														`preview-eval-${exam.id}` ? (
 															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
 														) : (
 															<Eye className="mr-1 h-3 w-3" />
 														)}
-														{exam.courseName} • {exam.type}
+														{exam.courseName} •{" "}
+														{exam.type}
 													</Button>
 													<Button
 														type="button"
 														size="sm"
-														disabled={disableExamExports}
-														onClick={() => handleGenerateEvaluation(exam.id)}
+														disabled={
+															disableExamExports
+														}
+														onClick={() =>
+															handleGenerateEvaluation(
+																exam.id,
+															)
+														}
 													>
-														{exporting === `generate-eval-${exam.id}` ? (
+														{exporting ===
+														`generate-eval-${exam.id}` ? (
 															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
 														) : (
 															<Download className="mr-1 h-3 w-3" />
@@ -1908,10 +2173,12 @@ export default function GradeExport() {
 								{teachingUnits && teachingUnits.length > 0 && (
 									<div>
 										<h4 className="mb-3 font-semibold text-sm">
-											Publications des Unités d'Enseignement (UE) PDF
+											Publications des Unités
+											d'Enseignement (UE) PDF
 										</h4>
 										<p className="mb-4 text-muted-foreground text-sm">
-											Exportez les publications PDF pour chaque UE sélectionnée
+											Exportez les publications PDF pour
+											chaque UE sélectionnée
 										</p>
 										<div className="mb-4">
 											<Button
@@ -1929,12 +2196,16 @@ export default function GradeExport() {
 												) : (
 													<Download className="mr-2 h-4 w-4" />
 												)}
-												Télécharger toutes les UEs ({teachingUnits.length})
+												Télécharger toutes les UEs (
+												{teachingUnits.length})
 											</Button>
 										</div>
 										<div className="flex flex-wrap gap-2">
 											{teachingUnits.map((ue) => (
-												<div key={ue.id} className="flex gap-1">
+												<div
+													key={ue.id}
+													className="flex gap-1"
+												>
 													<Button
 														type="button"
 														variant="outline"
@@ -1945,9 +2216,14 @@ export default function GradeExport() {
 															!selectedYear ||
 															isBusy
 														}
-														onClick={() => handlePreviewUE(ue.id)}
+														onClick={() =>
+															handlePreviewUE(
+																ue.id,
+															)
+														}
 													>
-														{exporting === `preview-ue-${ue.id}` ? (
+														{exporting ===
+														`preview-ue-${ue.id}` ? (
 															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
 														) : (
 															<Eye className="mr-1 h-3 w-3" />
@@ -1963,9 +2239,14 @@ export default function GradeExport() {
 															!selectedYear ||
 															isBusy
 														}
-														onClick={() => handleGenerateUE(ue.id)}
+														onClick={() =>
+															handleGenerateUE(
+																ue.id,
+															)
+														}
 													>
-														{exporting === `generate-ue-${ue.id}` ? (
+														{exporting ===
+														`generate-ue-${ue.id}` ? (
 															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
 														) : (
 															<Download className="mr-1 h-3 w-3" />

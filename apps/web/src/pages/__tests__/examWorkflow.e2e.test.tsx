@@ -68,7 +68,9 @@ const PROGRAM_ID = "program-1";
 
 const buildInitialState = (): MockState => ({
 	classCourses: [{ id: CLASS_COURSE_ID, class: CLASS_ID, course: COURSE_ID }],
-	classes: [{ id: CLASS_ID, name: "L1 Computer Science", program: PROGRAM_ID }],
+	classes: [
+		{ id: CLASS_ID, name: "L1 Computer Science", program: PROGRAM_ID },
+	],
 	courses: [{ id: COURSE_ID, name: "Algorithms" }],
 	programs: [{ id: PROGRAM_ID, name: "Engineering" }],
 	students: [
@@ -143,7 +145,8 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async (input: { classCourseId?: string } = {}) => {
 					const filtered = input.classCourseId
 						? mockState.exams.filter(
-								(exam) => exam.classCourse === input.classCourseId,
+								(exam) =>
+									exam.classCourse === input.classCourseId,
 							)
 						: mockState.exams;
 					return { items: filtered };
@@ -175,14 +178,19 @@ vi.mock("../../utils/trpc", () => {
 			},
 			update: {
 				mutate: vi.fn(
-					async ({ id, ...changes }: { id: string } & Partial<MockExam>) => {
+					async ({
+						id,
+						...changes
+					}: { id: string } & Partial<MockExam>) => {
 						Object.assign(findExam(id), changes);
 					},
 				),
 			},
 			delete: {
 				mutate: vi.fn(async ({ id }: { id: string }) => {
-					const index = mockState.exams.findIndex((exam) => exam.id === id);
+					const index = mockState.exams.findIndex(
+						(exam) => exam.id === id,
+					);
 					if (index >= 0) {
 						mockState.exams.splice(index, 1);
 					}
@@ -195,7 +203,13 @@ vi.mock("../../utils/trpc", () => {
 			},
 			lock: {
 				mutate: vi.fn(
-					async ({ examId, lock }: { examId: string; lock: boolean }) => {
+					async ({
+						examId,
+						lock,
+					}: {
+						examId: string;
+						lock: boolean;
+					}) => {
 						findExam(examId).isLocked = lock;
 					},
 				),
@@ -214,7 +228,9 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async ({ id }: { id: string }) => {
 					const classCourse = findById(mockState.classCourses, id);
 					const students = mockState.students
-						.filter((student) => student.classId === classCourse.class)
+						.filter(
+							(student) => student.classId === classCourse.class,
+						)
 						.map((student) => ({
 							id: student.id,
 							firstName: student.firstName,
@@ -264,7 +280,9 @@ vi.mock("../../utils/trpc", () => {
 		grades: {
 			listByExam: {
 				query: vi.fn(async ({ examId }: { examId: string }) => ({
-					items: mockState.grades.filter((grade) => grade.examId === examId),
+					items: mockState.grades.filter(
+						(grade) => grade.examId === examId,
+					),
 				})),
 			},
 			upsertNote: {
@@ -279,7 +297,9 @@ vi.mock("../../utils/trpc", () => {
 						score: number;
 					}) => {
 						const existing = mockState.grades.find(
-							(grade) => grade.examId === examId && grade.student === studentId,
+							(grade) =>
+								grade.examId === examId &&
+								grade.student === studentId,
 						);
 						if (existing) {
 							existing.score = score;
@@ -309,7 +329,8 @@ vi.mock("../../utils/trpc", () => {
 				query: vi.fn(async ({ status }: { status?: string } = {}) =>
 					status
 						? mockState.notifications.filter(
-								(notification) => notification.status === status,
+								(notification) =>
+									notification.status === status,
 							)
 						: mockState.notifications,
 				),
@@ -430,7 +451,9 @@ describe("exam workflow UI e2e", () => {
 		const examName = "Algorithms Midterm";
 
 		const examManagement = renderWithProviders(<AdminExamManagement />);
-		const addButton = await screen.findByRole("button", { name: /Add Exam/i });
+		const addButton = await screen.findByRole("button", {
+			name: /Add Exam/i,
+		});
 		fireEvent.click(addButton);
 
 		const courseSelect = await screen.findByLabelText("Linked course");
@@ -454,7 +477,9 @@ describe("exam workflow UI e2e", () => {
 
 		const workflowManager = renderWithProviders(<WorkflowManager />);
 		const classCourseSelect = await screen.findByRole("combobox");
-		fireEvent.change(classCourseSelect, { target: { value: CLASS_COURSE_ID } });
+		fireEvent.change(classCourseSelect, {
+			target: { value: CLASS_COURSE_ID },
+		});
 		await screen.findByText(examName);
 
 		fireEvent.click(screen.getByRole("button", { name: /Submit/i }));
@@ -485,7 +510,9 @@ describe("exam workflow UI e2e", () => {
 		fireEvent.click(screen.getByRole("button", { name: /Save grades/i }));
 
 		await waitFor(() => {
-			expect(trpcClient.grades.upsertNote.mutate).toHaveBeenCalledTimes(2);
+			expect(trpcClient.grades.upsertNote.mutate).toHaveBeenCalledTimes(
+				2,
+			);
 		});
 		await waitFor(() => {
 			expect(screen.getAllByText("Graded")).toHaveLength(2);

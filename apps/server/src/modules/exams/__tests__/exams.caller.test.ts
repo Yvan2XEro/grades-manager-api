@@ -61,10 +61,9 @@ describe("exams router", () => {
 		await expect(
 			admin.exams.update({ id: exam.id, name: "M" }),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
-		await expect(admin.exams.delete({ id: exam.id })).rejects.toHaveProperty(
-			"code",
-			"FORBIDDEN",
-		);
+		await expect(
+			admin.exams.delete({ id: exam.id }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
 
 		await expect(
 			admin.grades.upsertNote({
@@ -161,10 +160,9 @@ describe("exams router", () => {
 				isLocked: false,
 			})
 			.returning();
-		await expect(admin.exams.getById({ id: exam.id })).rejects.toHaveProperty(
-			"code",
-			"NOT_FOUND",
-		);
+		await expect(
+			admin.exams.getById({ id: exam.id }),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
 	});
 
 	it("filters exams by academic year, search, class, and semester", async () => {
@@ -184,7 +182,11 @@ describe("exams router", () => {
 			course: secondaryCourse.id,
 		});
 		const otherStudent = await createStudent({ class: secondaryClass.id });
-		await ensureStudentCourseEnrollment(otherStudent.id, secondaryClassCourse.id, "active");
+		await ensureStudentCourseEnrollment(
+			otherStudent.id,
+			secondaryClassCourse.id,
+			"active",
+		);
 		await admin.exams.create({
 			name: "Secondary Session",
 			type: "WRITTEN",
@@ -205,7 +207,11 @@ describe("exams router", () => {
 			course: extraCourse.id,
 		});
 		const extraStudent = await createStudent({ class: extraClass.id });
-		await ensureStudentCourseEnrollment(extraStudent.id, extraClassCourse.id, "active");
+		await ensureStudentCourseEnrollment(
+			extraStudent.id,
+			extraClassCourse.id,
+			"active",
+		);
 		await admin.exams.create({
 			name: "Extra Session",
 			type: "LAB",
@@ -219,7 +225,9 @@ describe("exams router", () => {
 			query: primary.exam.name.slice(0, 3),
 		});
 		expect(
-			searchResponse.items.every((item) => item.classCourse === primary.classCourse.id),
+			searchResponse.items.every(
+				(item) => item.classCourse === primary.classCourse.id,
+			),
 		).toBe(true);
 
 		const secondaryResponse = await admin.exams.list({
@@ -254,12 +262,16 @@ describe("exams router", () => {
 			academicYear: primary.klass.academicYear,
 			semesterId: customSemester.id,
 		});
-		const semesterCourse = await createCourse({ program: primary.program.id });
+		const semesterCourse = await createCourse({
+			program: primary.program.id,
+		});
 		const semesterClassCourse = await createClassCourse({
 			class: semesterClass.id,
 			course: semesterCourse.id,
 		});
-		const semesterStudent = await createStudent({ class: semesterClass.id });
+		const semesterStudent = await createStudent({
+			class: semesterClass.id,
+		});
 		await ensureStudentCourseEnrollment(
 			semesterStudent.id,
 			semesterClassCourse.id,
@@ -308,7 +320,11 @@ describe("exams router", () => {
 			const admin = createCaller(asAdmin());
 			const classCourse = await createClassCourse();
 			const student = await createStudent({ class: classCourse.class });
-			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
+			await ensureStudentCourseEnrollment(
+				student.id,
+				classCourse.id,
+				"active",
+			);
 			const exam = await admin.exams.create({
 				name: "Draft Exam",
 				type: "WRITTEN",
@@ -345,7 +361,9 @@ describe("exams router", () => {
 				examId: fixture.exam.id,
 			});
 			expect(overridden.items[0].status).toBe("ineligible");
-			expect(overridden.items[0].override?.decision).toBe("force_ineligible");
+			expect(overridden.items[0].override?.decision).toBe(
+				"force_ineligible",
+			);
 
 			await admin.exams.deleteRetakeOverride({
 				examId: fixture.exam.id,
@@ -395,7 +413,8 @@ describe("exams router", () => {
 
 			await admin.exams.upsertRetakeOverride({
 				examId: fixture.exam.id,
-				studentCourseEnrollmentId: limited.items[0].studentCourseEnrollmentId,
+				studentCourseEnrollmentId:
+					limited.items[0].studentCourseEnrollmentId,
 				decision: "force_eligible",
 				reason: "jury override",
 			});
@@ -403,7 +422,111 @@ describe("exams router", () => {
 				examId: fixture.exam.id,
 			});
 			expect(overridden.items[0].status).toBe("eligible");
-			expect(overridden.items[0].reasons).toContain("OVERRIDE_FORCE_ELIGIBLE");
+			expect(overridden.items[0].reasons).toContain(
+				"OVERRIDE_FORCE_ELIGIBLE",
+			);
+		});
+
+		it("creates a retake exam from approved parent exam", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "8" },
+			});
+			const retake = await admin.exams.createRetake({
+				parentExamId: fixture.exam.id,
+				date: new Date("2025-06-15"),
+				scoringPolicy: "replace",
+			});
+			expect(retake.sessionType).toBe("retake");
+			expect(retake.parentExamId).toBe(fixture.exam.id);
+			expect(retake.scoringPolicy).toBe("replace");
+			expect(retake.name).toContain("Rattrapage");
+		});
+
+		it("creates retake with best_of scoring policy", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "7" },
+			});
+			const retake = await admin.exams.createRetake({
+				parentExamId: fixture.exam.id,
+				date: new Date("2025-06-20"),
+				scoringPolicy: "best_of",
+			});
+			expect(retake.scoringPolicy).toBe("best_of");
+		});
+
+		it("creates retake with custom name", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "6" },
+			});
+			const retake = await admin.exams.createRetake({
+				parentExamId: fixture.exam.id,
+				date: new Date("2025-06-25"),
+				name: "Session de rattrapage spéciale",
+			});
+			expect(retake.name).toBe("Session de rattrapage spéciale");
+		});
+
+		it("rejects retake creation when parent is not approved", async () => {
+			const admin = createCaller(asAdmin());
+			const classCourse = await createClassCourse();
+			const student = await createStudent({ class: classCourse.class });
+			await ensureStudentCourseEnrollment(
+				student.id,
+				classCourse.id,
+				"active",
+			);
+			const draftExam = await admin.exams.create({
+				name: "Draft",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 30,
+				classCourseId: classCourse.id,
+			});
+			await expect(
+				admin.exams.createRetake({
+					parentExamId: draftExam.id,
+					date: new Date("2025-07-01"),
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+
+		it("rejects creating retake from a retake exam", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "5" },
+			});
+			const retake = await admin.exams.createRetake({
+				parentExamId: fixture.exam.id,
+				date: new Date("2025-07-05"),
+			});
+			await admin.exams.submit({ examId: retake.id });
+			await admin.exams.validate({ examId: retake.id, status: "approved" });
+			await expect(
+				admin.exams.createRetake({
+					parentExamId: retake.id,
+					date: new Date("2025-07-10"),
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		});
+
+		it("rejects duplicate retake for same parent exam", async () => {
+			const admin = createCaller(asAdmin());
+			const fixture = await createRecapFixture({
+				grade: { score: "4" },
+			});
+			await admin.exams.createRetake({
+				parentExamId: fixture.exam.id,
+				date: new Date("2025-07-15"),
+			});
+			await expect(
+				admin.exams.createRetake({
+					parentExamId: fixture.exam.id,
+					date: new Date("2025-07-20"),
+				}),
+			).rejects.toHaveProperty("code", "CONFLICT");
 		});
 	});
 });

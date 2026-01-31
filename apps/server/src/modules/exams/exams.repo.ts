@@ -53,7 +53,9 @@ export async function list(opts: {
 	const limit = opts.limit ?? 50;
 	const conditions = [
 		eq(schema.exams.institutionId, opts.institutionId),
-		opts.classCourseId ? eq(schema.exams.classCourse, opts.classCourseId) : undefined,
+		opts.classCourseId
+			? eq(schema.exams.classCourse, opts.classCourseId)
+			: undefined,
 		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
 		opts.dateTo ? lte(schema.exams.date, opts.dateTo) : undefined,
 		opts.cursor ? gt(schema.exams.id, opts.cursor) : undefined,
@@ -61,7 +63,9 @@ export async function list(opts: {
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,
 		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
-		opts.semesterId ? eq(schema.classes.semesterId, opts.semesterId) : undefined,
+		opts.semesterId
+			? eq(schema.classes.semesterId, opts.semesterId)
+			: undefined,
 		opts.query
 			? or(
 					ilike(schema.exams.name, `%${opts.query}%`),
@@ -92,7 +96,10 @@ export async function list(opts: {
 			schema.classCourses,
 			eq(schema.classCourses.id, schema.exams.classCourse),
 		)
-		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.classCourses.class),
+		)
 		.innerJoin(
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
