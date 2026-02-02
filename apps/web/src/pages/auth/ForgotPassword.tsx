@@ -31,14 +31,15 @@ const ForgotPassword: React.FC = () => {
 	} = useForm<FormData>({ resolver: zodResolver(schema) });
 
 	const onSubmit = async (data: FormData) => {
-		try {
-			await authClient.requestPasswordReset({
-				email: data.email,
-				redirectTo: `${window.location.origin}/auth/reset?return=${callbackURL}`,
-			});
+		const result = await authClient.forgetPassword({
+			email: data.email,
+			redirectTo: `${window.location.origin}/auth/reset?return=${callbackURL}`,
+		});
+
+		if (result.error) {
+			toast.error(result.error.message || t("auth.forgot.error"));
+		} else {
 			toast.success(t("auth.forgot.success"));
-		} catch (error: any) {
-			toast.error(error.message || t("auth.forgot.error"));
 		}
 	};
 

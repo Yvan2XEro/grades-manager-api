@@ -670,7 +670,6 @@ export async function createClassCourse(
 		class: classId,
 		course: courseId,
 		teacher: teacherId,
-		weeklyHours,
 		code,
 		semesterId,
 		institutionId: providedInstitutionId,
@@ -698,7 +697,6 @@ export async function createClassCourse(
 			course: course.id,
 			teacher: teacher.id,
 			semesterId: resolvedSemesterId,
-			weeklyHours: weeklyHours ?? 2,
 			institutionId: providedInstitutionId ?? klass.institutionId,
 			...rest,
 		})

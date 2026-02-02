@@ -40,15 +40,14 @@ describe("class courses router", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,
-			weeklyHours: 2,
 		});
 		expect(cc.class).toBe(klass.id);
 
 		const updated = await admin.classCourses.update({
 			id: cc.id,
-			weeklyHours: 3,
+			coefficient: 2,
 		});
-		expect(updated.weeklyHours).toBe(3);
+		expect(Number(updated.coefficient)).toBe(2);
 
 		await admin.classCourses.delete({ id: cc.id });
 		const list = await admin.classCourses.list({ classId: klass.id });
@@ -65,7 +64,6 @@ describe("class courses router", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,
-			weeklyHours: 2,
 		});
 		const enrolled = await createStudent({ class: klass.id });
 		await ensureStudentCourseEnrollment(enrolled.id, cc.id, "active");
@@ -109,7 +107,6 @@ describe("class courses router", () => {
 				class: klass.id,
 				course: course.id,
 				teacher: teacher.id,
-				weeklyHours: 2,
 				institutionId: foreignInstitution.id,
 			})
 			.returning();

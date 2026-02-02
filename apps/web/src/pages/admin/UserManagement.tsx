@@ -1,15 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import {
-	Copy,
-	Eye,
-	EyeOff,
-	Pencil,
-	PlusIcon,
-	Search,
-	Trash2,
-} from "lucide-react";
+import { Pencil, PlusIcon, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -35,12 +27,6 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
-	InputGroupInput,
-} from "../../components/ui/input-group";
-import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -65,9 +51,6 @@ type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 
 const getDisplayName = (user: DomainUser) =>
 	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
-
-const toFormRole = (role?: string | null): "admin" | "teacher" =>
-	role === "administrator" ? "admin" : "teacher";
 
 const toDomainRole = (role: "admin" | "teacher") =>
 	role === "admin" ? "administrator" : role;
@@ -105,17 +88,13 @@ const buildUserSchema = (t: TFunction) =>
 		placeOfBirth: z.string().optional(),
 		nationality: z.string().optional(),
 		status: z.enum(["active", "inactive", "suspended"]).optional(),
-		role: z.enum(["admin", "teacher"], {
-			errorMap: () => ({ message: t("admin.users.validation.role") }),
-		}),
-		password: z.string().optional(),
 	});
 
 type UserForm = z.infer<ReturnType<typeof buildUserSchema>>;
 
-function generatePassword(length = 12) {
+function generatePassword(length = 16) {
 	const chars =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
 	let pwd = "";
 	for (let i = 0; i < length; i++) {
 		pwd += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -132,7 +111,6 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const [showPassword, setShowPassword] = useState(false);
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
@@ -205,8 +183,6 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
-			role: "teacher",
-			password: "",
 		},
 	});
 
@@ -222,10 +198,7 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
-			role: "teacher",
-			password: "",
 		});
-		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -241,10 +214,7 @@ export default function UserManagement() {
 			placeOfBirth: user.placeOfBirth || "",
 			nationality: user.nationality || "",
 			status: (user.status as UserForm["status"]) || "active",
-			role: toFormRole(user.role),
-			password: "",
 		});
-		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -252,15 +222,13 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			if (!data.password) {
-				throw new Error(t("admin.users.validation.passwordRequired"));
-			}
 			const fullName = buildFullName(data);
+			const autoPassword = generatePassword();
 			const response = await authClient.admin.createUser({
 				email: data.email,
 				name: fullName,
-				role: data.role,
-				password: data.password,
+				role: "teacher",
+				password: autoPassword,
 			});
 			const authUserId = response?.user?.id;
 			if (!authUserId) {
@@ -295,15 +263,8 @@ export default function UserManagement() {
 					data: {
 						name: fullName,
 						email: data.email,
-						role: data.role,
 					},
 				});
-				if (data.password) {
-					await authClient.admin.setUserPassword({
-						userId: authUserId,
-						password: data.password,
-					});
-				}
 			}
 			await trpcClient.users.updateProfile.mutate({
 				id,
@@ -340,25 +301,7 @@ export default function UserManagement() {
 			),
 	});
 
-	const handleGeneratePassword = () => {
-		const pwd = generatePassword();
-		form.setValue("password", pwd);
-		setShowPassword(true);
-	};
-
-	const handleCopyPassword = () => {
-		const pwd = form.getValues("password");
-		if (pwd) {
-			navigator.clipboard.writeText(pwd);
-			toast.success(t("admin.users.toast.passwordCopied"));
-		}
-	};
-
 	const onSubmit = (data: UserForm) => {
-		if (!editingUser && !data.password) {
-			toast.error(t("admin.users.validation.passwordRequired"));
-			return;
-		}
 		if (editingUser) {
 			updateMutation.mutate({
 				id: editingUser.id,
@@ -766,126 +709,6 @@ export default function UserManagement() {
 									)}
 								/>
 							</div>
-							<FormField
-								control={form.control}
-								name="role"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.users.form.roleLabel")}
-										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.users.filters.roles.all",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												<SelectItem value="admin">
-													{t(
-														"admin.users.filters.roles.admin",
-													)}
-												</SelectItem>
-												<SelectItem value="teacher">
-													{t(
-														"admin.users.filters.roles.teacher",
-													)}
-												</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{editingUser
-												? t(
-														"admin.users.form.newPasswordLabel",
-													)
-												: t(
-														"admin.users.form.passwordLabel",
-													)}
-										</FormLabel>
-										<FormControl>
-											<InputGroup>
-												<InputGroupInput
-													type={
-														showPassword
-															? "text"
-															: "password"
-													}
-													placeholder={
-														editingUser
-															? t(
-																	"admin.users.form.passwordPlaceholder",
-																)
-															: undefined
-													}
-													{...field}
-												/>
-												<InputGroupAddon
-													align="inline-end"
-													className="gap-1.5 pr-1.5"
-												>
-													<InputGroupButton
-														type="button"
-														size="sm"
-														variant="ghost"
-														onClick={() =>
-															setShowPassword(
-																(s) => !s,
-															)
-														}
-													>
-														{showPassword ? (
-															<EyeOff className="h-4 w-4" />
-														) : (
-															<Eye className="h-4 w-4" />
-														)}
-													</InputGroupButton>
-													<InputGroupButton
-														type="button"
-														size="sm"
-														variant="ghost"
-														onClick={
-															handleCopyPassword
-														}
-													>
-														<Copy className="h-4 w-4" />
-													</InputGroupButton>
-													{!editingUser && (
-														<InputGroupButton
-															type="button"
-															size="sm"
-															variant="ghost"
-															onClick={
-																handleGeneratePassword
-															}
-														>
-															{t(
-																"admin.users.form.generatePassword",
-															)}
-														</InputGroupButton>
-													)}
-												</InputGroupAddon>
-											</InputGroup>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
 							<DialogFooter>
 								<Button
 									type="button"

@@ -6,7 +6,9 @@ export const baseSchema = z.object({
 	hours: z.number().int().positive(),
 	program: z.string(),
 	teachingUnitId: z.string(),
-	defaultTeacher: z.string(),
+	defaultTeacher: z.string().optional(),
+	/** Default coefficient for weighted average calculation within a Teaching Unit (UE). */
+	defaultCoefficient: z.number().positive().default(1),
 	prerequisiteCourseIds: z.array(z.string()).optional(),
 });
 

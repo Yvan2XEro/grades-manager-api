@@ -48,24 +48,30 @@ const Register: React.FC = () => {
 	});
 
 	const onSubmit = async (data: RegisterFormData) => {
-		try {
-			await authClient.signUp.email({
-				email: data.email,
-				password: data.password,
-				name: `${data.firstName} ${data.lastName}`,
-			});
+		const signUpResult = await authClient.signUp.email({
+			email: data.email,
+			password: data.password,
+			name: `${data.firstName} ${data.lastName}`,
+		});
 
-			await authClient.signIn.email({
-				email: data.email,
-				password: data.password,
-				callbackURL: callbackURL || undefined,
-			});
-
-			toast.success(t("auth.register.success"));
-			navigate("/teacher");
-		} catch (error: any) {
-			toast.error(error.message || t("auth.register.error"));
+		if (signUpResult.error) {
+			toast.error(signUpResult.error.message || t("auth.register.error"));
+			return;
 		}
+
+		const signInResult = await authClient.signIn.email({
+			email: data.email,
+			password: data.password,
+			callbackURL: callbackURL || undefined,
+		});
+
+		if (signInResult.error) {
+			toast.error(signInResult.error.message || t("auth.login.error"));
+			return;
+		}
+
+		toast.success(t("auth.register.success"));
+		navigate("/teacher");
 	};
 
 	return (

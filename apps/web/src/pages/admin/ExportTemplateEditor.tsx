@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Download, Eye, Save } from "lucide-react";
+import { ArrowLeft, Download, Eye, FileCode, Save } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -24,6 +24,10 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
+import {
+	getTemplateExample,
+	type TemplateType,
+} from "@/lib/export-template-examples";
 
 export default function ExportTemplateEditor() {
 	const { t } = useTranslation();
@@ -174,6 +178,17 @@ export default function ExportTemplateEditor() {
 		URL.revokeObjectURL(url);
 	};
 
+	const handleLoadExample = () => {
+		const currentType = (template?.type || templateType) as TemplateType;
+		const exampleTemplate = getTemplateExample(currentType);
+		if (exampleTemplate) {
+			setTemplateBody(exampleTemplate);
+			toast.success(
+				t("admin.exportTemplates.editor.template.exampleLoaded"),
+			);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
@@ -304,6 +319,15 @@ export default function ExportTemplateEditor() {
 								spellCheck={false}
 							/>
 							<div className="flex gap-2">
+								<Button
+									variant="outline"
+									onClick={handleLoadExample}
+								>
+									<FileCode className="mr-2 h-4 w-4" />
+									{t(
+										"admin.exportTemplates.editor.template.loadExample",
+									)}
+								</Button>
 								<Button
 									onClick={handleGeneratePreview}
 									disabled={

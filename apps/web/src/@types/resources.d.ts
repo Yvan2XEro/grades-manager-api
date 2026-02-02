@@ -245,6 +245,10 @@ interface Resources {
 			};
 			"gradeEntry": {
 				"title": "Grade Entry";
+				"context": {
+					"ue": "Teaching Unit (UE)";
+					"ec": "Course (EC)";
+				};
 				"selectCourse": {
 					"label": "Select class course";
 					"empty": "Choose a class course";
@@ -1414,6 +1418,10 @@ interface Resources {
 				"subtitle": "Create and manage exams for each class course";
 				"actions": {
 					"add": "Add exam";
+					"submit": "Submit";
+					"approve": "Approve";
+					"reject": "Reject";
+					"reviewGrades": "Grades";
 				};
 				"empty": {
 					"title": "No exams yet";
@@ -1430,6 +1438,11 @@ interface Resources {
 					"status": "Status";
 				};
 				"status": {
+					"draft": "Draft";
+					"scheduled": "Scheduled";
+					"submitted": "Submitted";
+					"approved": "Approved";
+					"rejected": "Rejected";
 					"locked": "Locked";
 					"open": "Open";
 				};
@@ -1457,6 +1470,13 @@ interface Resources {
 					"updateError": "Could not update the exam";
 					"deleteSuccess": "Exam deleted successfully";
 					"deleteError": "Could not delete the exam";
+					"submitSuccess": "Exam submitted for approval";
+					"submitError": "Could not submit the exam";
+					"approveSuccess": "Exam approved successfully";
+					"rejectSuccess": "Exam rejected";
+					"validateError": "Could not validate the exam";
+					"retakeSuccess": "Retake exam created successfully";
+					"retakeError": "Could not create retake exam";
 				};
 				"delete": {
 					"title": "Delete exam";
@@ -1580,6 +1600,8 @@ interface Resources {
 						"editorTitle": "Template source";
 						"editorDescription": "Paste your Handlebars (.hbs) layout with static headers, logos, and styles.";
 						"placeholder": "<!-- Paste your template here -->";
+						"loadExample": "Load example";
+						"exampleLoaded": "Example template loaded successfully";
 						"generatePreview": "Generate preview";
 						"helpTitle": "Tips";
 						"helpHandlebars": "Handlebars helpers like {{formatNumber}} remain available.";

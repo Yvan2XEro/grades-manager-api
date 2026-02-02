@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { paginate } from "@/modules/_shared/pagination";
@@ -244,6 +244,107 @@ export async function listRuns(filters: HistoryFilters, institutionId: string) {
 		.orderBy(schema.examScheduleRuns.id)
 		.limit(limit);
 	return paginate(rows, limit);
+}
+
+export type RetakeEligibleExam = {
+	id: string;
+	name: string;
+	type: string;
+	date: Date;
+	percentage: string;
+	classCourseId: string;
+	classId: string;
+	className: string;
+	courseId: string;
+	courseName: string;
+	programId: string;
+	programName: string;
+};
+
+type RetakePreviewParams = {
+	institutionId: string;
+	academicYearId: string;
+	semesterId: string;
+	examTypeId?: string;
+	classId?: string;
+};
+
+export async function getApprovedExamsWithoutRetake(
+	params: RetakePreviewParams,
+): Promise<RetakeEligibleExam[]> {
+	const conditions = [
+		eq(schema.exams.institutionId, params.institutionId),
+		eq(schema.exams.status, "approved"),
+		eq(schema.exams.sessionType, "normal"),
+		isNull(schema.exams.parentExamId),
+		eq(schema.classes.academicYear, params.academicYearId),
+		eq(schema.classCourses.semesterId, params.semesterId),
+	];
+
+	if (params.examTypeId) {
+		const examType = await findExamTypeById(params.examTypeId);
+		if (examType) {
+			conditions.push(eq(schema.exams.type, examType.name));
+		}
+	}
+
+	if (params.classId) {
+		conditions.push(eq(schema.classes.id, params.classId));
+	}
+
+	// Get all approved normal exams
+	const exams = await db
+		.select({
+			id: schema.exams.id,
+			name: schema.exams.name,
+			type: schema.exams.type,
+			date: schema.exams.date,
+			percentage: schema.exams.percentage,
+			classCourseId: schema.exams.classCourse,
+			classId: schema.classes.id,
+			className: schema.classes.name,
+			courseId: schema.courses.id,
+			courseName: schema.courses.name,
+			programId: schema.programs.id,
+			programName: schema.programs.name,
+		})
+		.from(schema.exams)
+		.innerJoin(
+			schema.classCourses,
+			eq(schema.classCourses.id, schema.exams.classCourse),
+		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.programs,
+			eq(schema.programs.id, schema.classes.program),
+		)
+		.where(and(...conditions))
+		.orderBy(schema.classes.name, schema.courses.name);
+
+	// Get all exams that already have retakes
+	const examIds = exams.map((e) => e.id);
+	if (examIds.length === 0) return [];
+
+	const existingRetakes = await db
+		.select({ parentExamId: schema.exams.parentExamId })
+		.from(schema.exams)
+		.where(
+			and(
+				inArray(schema.exams.parentExamId, examIds),
+				eq(schema.exams.institutionId, params.institutionId),
+			),
+		);
+
+	const examsWithRetakes = new Set(
+		existingRetakes.map((r) => r.parentExamId).filter(Boolean),
+	);
+
+	// Filter out exams that already have retakes
+	return exams.filter((exam) => !examsWithRetakes.has(exam.id));
 }
 
 export async function getRunDetails(runId: string, institutionId: string) {

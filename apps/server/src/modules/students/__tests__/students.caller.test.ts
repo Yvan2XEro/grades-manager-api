@@ -33,19 +33,21 @@ describe("students router", () => {
 		);
 	});
 
-	it("enforces uniqueness", async () => {
+	it("enforces registration number uniqueness", async () => {
 		const admin = createCaller(asAdmin());
 		const klass = await createClass();
 		await admin.students.create({
 			classId: klass.id,
-			registrationNumber: "1",
+			registrationNumber: "UNIQUE-001",
 			...baseStudent,
 		});
+		// Same registration number should conflict
 		await expect(
 			admin.students.create({
 				classId: klass.id,
-				registrationNumber: "2",
+				registrationNumber: "UNIQUE-001",
 				...baseStudent,
+				email: "different@example.com",
 			}),
 		).rejects.toHaveProperty("code", "CONFLICT");
 	});
@@ -55,7 +57,7 @@ describe("students router", () => {
 		const klass = await createClass();
 		await admin.students.create({
 			classId: klass.id,
-			registrationNumber: "1",
+			registrationNumber: "BULK-001",
 			...baseStudent,
 			email: "existing@example.com",
 		});
@@ -65,12 +67,12 @@ describe("students router", () => {
 				{
 					...baseStudent,
 					email: "bulk-new@example.com",
-					registrationNumber: "2",
+					registrationNumber: "BULK-002",
 				},
 				{
 					...baseStudent,
-					email: "existing@example.com",
-					registrationNumber: "3",
+					email: "another@example.com",
+					registrationNumber: "BULK-001", // Duplicate registration number
 				},
 			],
 		});

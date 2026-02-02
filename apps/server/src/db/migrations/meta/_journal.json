@@ -12,29 +12,8 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1766559692357,
-      "tag": "0001_free_mentallo",
-      "breakpoints": false
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1767743988000,
-      "tag": "0002_prereq_types",
-      "breakpoints": false
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1767926699000,
-      "tag": "0003_retake_overrides",
-      "breakpoints": false
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1769777196903,
-      "tag": "0004_gorgeous_chat",
+      "when": 1769937062601,
+      "tag": "0001_lowly_iron_man",
       "breakpoints": true
     }
   ]

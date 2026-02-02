@@ -2,8 +2,10 @@ import { router, tenantAdminProcedure } from "@/lib/trpc";
 import * as service from "./exam-scheduler.service";
 import {
 	historySchema,
+	previewRetakesSchema,
 	previewSchema,
 	runDetailsSchema,
+	scheduleRetakesSchema,
 	scheduleSchema,
 } from "./exam-scheduler.zod";
 
@@ -17,6 +19,20 @@ export const examSchedulerRouter = router({
 		.input(scheduleSchema)
 		.mutation(({ ctx, input }) =>
 			service.scheduleExams(
+				input,
+				ctx.profile?.id ?? null,
+				ctx.institution.id,
+			),
+		),
+	previewRetakes: tenantAdminProcedure
+		.input(previewRetakesSchema)
+		.query(({ ctx, input }) =>
+			service.previewRetakeExams(input, ctx.institution.id),
+		),
+	scheduleRetakes: tenantAdminProcedure
+		.input(scheduleRetakesSchema)
+		.mutation(({ ctx, input }) =>
+			service.scheduleRetakes(
 				input,
 				ctx.profile?.id ?? null,
 				ctx.institution.id,

@@ -690,7 +690,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "ANAT101",
 			teacherCode: "TEACH-DR-MBALLA",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 		{
 			code: "CC-PHYS101-INF1A",
@@ -699,7 +698,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "PHYS101",
 			teacherCode: "TEACH-DR-NGUEMA",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 		{
 			code: "CC-SOIN101-INF1A",
@@ -708,7 +706,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "SOIN101",
 			teacherCode: "TEACH-INF-AKONO",
 			semesterCode: "S1",
-			weeklyHours: 4,
 		},
 
 		// Cours pour la classe BTS Comptabilité 1A
@@ -719,7 +716,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "COMPT101",
 			teacherCode: "TEACH-KOMBO",
 			semesterCode: "S1",
-			weeklyHours: 4,
 		},
 		{
 			code: "CC-COMPT102-COMPT1A",
@@ -728,7 +724,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "COMPT102",
 			teacherCode: "TEACH-KOMBO",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 	],
 	exams: [

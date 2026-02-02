@@ -36,12 +36,6 @@ async function validateConfig(
 			message: "Class and course must belong to the same program",
 		});
 	}
-	if (config.weeklyHours > course.hours) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Weekly hours exceed course hours",
-		});
-	}
 
 	// Check if course is already assigned to this class
 	const existingAssignments = await repo.list({

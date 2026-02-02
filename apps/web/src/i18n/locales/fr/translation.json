@@ -396,7 +396,20 @@
 			"title": "Affectations de cours",
 			"subtitle": "Assignez des enseignants et des cours aux classes",
 			"actions": {
-				"assign": "Affecter un cours"
+				"assign": "Affecter un cours",
+				"assignUe": "Assigner un UE"
+			},
+			"ueAssign": {
+				"title": "Assigner une unité d'enseignement",
+				"classLabel": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"ueLabel": "Unité d'enseignement",
+				"uePlaceholder": "Sélectionner une UE",
+				"noUe": "Aucune UE trouvée pour ce programme",
+				"hint": "Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+				"submit": "Assigner les cours",
+				"skippedTitle": "Certains cours n'ont pas été assignés",
+				"skippedDesc": "Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :"
 			},
 			"empty": {
 				"title": "Aucune affectation de cours",
@@ -408,7 +421,8 @@
 				"program": "Programme",
 				"course": "Cours",
 				"teacher": "Enseignant",
-				"semester": "Semestre"
+				"semester": "Semestre",
+				"coefficient": "Coef."
 			},
 			"form": {
 				"createTitle": "Nouvelle affectation de cours",
@@ -423,6 +437,9 @@
 				"semesterPlaceholder": "Sélectionner un semestre",
 				"codeLabel": "Code",
 				"codePlaceholder": "INF11-CLS24-01",
+				"coefficientLabel": "Coefficient",
+				"coefficientPlaceholder": "1.00",
+				"coefficientHelp": "Poids pour le calcul de la moyenne pondérée dans l'UE",
 				"createSubmit": "Affecter le cours"
 			},
 			"toast": {
@@ -431,7 +448,9 @@
 				"updateSuccess": "Affectation mise à jour avec succès",
 				"updateError": "Impossible de mettre à jour l'affectation",
 				"deleteSuccess": "Affectation supprimée avec succès",
-				"deleteError": "Impossible de supprimer l'affectation"
+				"deleteError": "Impossible de supprimer l'affectation",
+				"bulkAssignSuccess": "{{count}} cours assignés avec succès",
+				"bulkAssignError": "Erreur lors de l'assignation"
 			},
 			"delete": {
 				"title": "Supprimer l'affectation de cours",
@@ -930,7 +949,8 @@
 				"title": "Types disponibles",
 				"description": "Les examens planifiés pourront réutiliser ces types.",
 				"name": "Nom",
-				"descriptionColumn": "Description"
+				"descriptionColumn": "Description",
+				"defaultPercentage": "Pondération par défaut"
 			},
 			"empty": "Aucun type d'examen pour le moment.",
 			"form": {
@@ -938,6 +958,7 @@
 				"editTitle": "Modifier un type d'examen",
 				"nameLabel": "Nom",
 				"descriptionLabel": "Description",
+				"defaultPercentageLabel": "Pondération par défaut (%)",
 				"submit": "Enregistrer le type"
 			},
 			"toast": {
@@ -1027,6 +1048,8 @@
 					"editorTitle": "Source du modèle",
 					"editorDescription": "Collez votre fichier Handlebars (.hbs) avec en-têtes, logos et styles statiques.",
 					"placeholder": "<!-- Collez votre modèle ici -->",
+					"loadExample": "Charger un exemple",
+					"exampleLoaded": "Template d'exemple chargé avec succès",
 					"generatePreview": "Générer un aperçu",
 					"helpTitle": "Conseils",
 					"helpHandlebars": "Les helpers Handlebars comme {{formatNumber}} restent disponibles.",
@@ -1113,6 +1136,13 @@
 		"examScheduler": {
 			"title": "Programmation des examens",
 			"subtitle": "Planifiez les examens pour une faculté entière en une seule opération.",
+			"sessionMode": {
+				"label": "Type de programmation",
+				"normal": "Examens",
+				"normalDescription": "Programmer des examens (CC, TP, SN, etc.) pour les cours",
+				"retake": "Rattrapages",
+				"retakeDescription": "Programmer des rattrapages pour les examens approuvés"
+			},
 			"form": {
 				"title": "Paramètres de programmation",
 				"description": "Sélectionnez la faculté, l'année académique, le type d'examen, la pondération et la plage de dates.",
@@ -1126,19 +1156,38 @@
 				"semesterPlaceholder": "Sélectionner un semestre",
 				"percentageLabel": "Pondération (%)",
 				"dateStartLabel": "Date de début",
-				"dateEndLabel": "Date de fin"
+				"dateEndLabel": "Date de fin",
+				"scoringPolicyLabel": "Politique de notation",
+				"scoringPolicyPlaceholder": "Sélectionner une politique",
+				"scoringPolicyReplace": "Remplacer la note originale",
+				"scoringPolicyBestOf": "Garder la meilleure note",
+				"classFilterLabel": "Filtrer par classe",
+				"classFilterPlaceholder": "Toutes les classes",
+				"examTypeFilterLabel": "Filtrer par type d'examen",
+				"examTypeFilterPlaceholder": "Tous les types"
 			},
 			"classes": {
 				"title": "Classes concernées",
 				"description": "Toutes les classes de l'année sélectionnée sont incluses par défaut. Décochez celles à exclure.",
 				"selectAll": "Sélectionner toutes les classes"
 			},
+			"retakeExams": {
+				"title": "Examens éligibles au rattrapage",
+				"description": "Examens approuvés sans rattrapage programmé. Sélectionnez les examens pour lesquels programmer un rattrapage.",
+				"selectAll": "Sélectionner tous les examens",
+				"noExams": "Aucun examen approuvé sans rattrapage trouvé pour les critères sélectionnés.",
+				"examCount_one": "{{count}} examen",
+				"examCount_other": "{{count}} examens"
+			},
 			"actions": {
-				"schedule": "Programmer les examens"
+				"schedule": "Programmer les examens",
+				"scheduleRetakes": "Programmer les rattrapages"
 			},
 			"toast": {
 				"success": "Examens programmés",
-				"error": "Impossible de programmer les examens"
+				"error": "Impossible de programmer les examens",
+				"retakeSuccess": "Rattrapages programmés ({{count}} créés)",
+				"retakeError": "Impossible de programmer les rattrapages"
 			},
 			"history": {
 				"title": "Historique des programmations",
@@ -1675,7 +1724,8 @@
 					"name": "Nom",
 					"code": "Code",
 					"hours": "Heures",
-					"teacher": "Enseignant référent"
+					"teacher": "Enseignant référent",
+					"coefficient": "Coef."
 				},
 				"form": {
 					"createTitle": "Ajouter un élément",
@@ -1688,6 +1738,9 @@
 					"hoursPlaceholder": "Saisir le volume horaire",
 					"teacherLabel": "Enseignant référent",
 					"teacherPlaceholder": "Sélectionner un enseignant",
+					"coefficientLabel": "Coefficient par défaut",
+					"coefficientPlaceholder": "1.00",
+					"coefficientHelp": "Poids par défaut lors de l'assignation à une classe",
 					"submit": "Enregistrer l'élément"
 				},
 				"empty": "Aucun élément pour le moment.",

@@ -12,6 +12,7 @@ import {
 import { useCallback, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import {
 	Accordion,
 	AccordionContent,
@@ -52,12 +53,6 @@ import { trpcClient } from "../../utils/trpc";
 type ExcelCell = string | number | boolean | null | undefined;
 type ExcelRow = ExcelCell[];
 
-interface AcademicYear {
-	id: string;
-	name: string;
-	startDate: string;
-}
-
 interface Class {
 	id: string;
 	name: string;
@@ -73,6 +68,9 @@ interface ExamItem {
 	courseName: string;
 	courseCode?: string | null;
 	classCourseCode?: string | null;
+	sessionType?: "normal" | "retake";
+	parentExamId?: string | null;
+	scoringPolicy?: "replace" | "best_of";
 }
 
 interface StudentExport {
@@ -90,6 +88,9 @@ interface StudentExport {
 			name: string;
 			type: string;
 			percentage: number;
+			sessionType: "normal" | "retake";
+			parentExamId: string | null;
+			scoringPolicy: "replace" | "best_of";
 			class_course: {
 				id: string;
 				code: string | null;
@@ -112,6 +113,73 @@ const slugify = (value: string) =>
 		.replace(/^-+|-+$/g, "")
 		.toLowerCase();
 
+/**
+ * Resolve grades considering retake exams and scoring policy.
+ * Groups exams by type (CC, EXAMEN) and applies scoring policy for retakes.
+ *
+ * @param studentGrades - All grades for a student
+ * @param allExams - All exams (including retakes)
+ * @returns Map of exam ID to effective score (with retake logic applied)
+ */
+function resolveRetakeGrades(
+	studentGrades: Array<{ examId: string; score: number }>,
+	allExams: ExamItem[],
+): Map<string, { score: number; isRetake: boolean }> {
+	const gradeMap = new Map(
+		studentGrades.map((g) => [g.examId, g.score]),
+	);
+
+	const normalExams = allExams.filter((e) => e.sessionType === "normal");
+	const retakeExams = allExams.filter((e) => e.sessionType === "retake");
+
+	// Map retakes to their parent exams
+	const retakesByParent = new Map<string, ExamItem>();
+	for (const retake of retakeExams) {
+		if (retake.parentExamId) {
+			retakesByParent.set(retake.parentExamId, retake);
+		}
+	}
+
+	const resolvedGrades = new Map<string, { score: number; isRetake: boolean }>();
+
+	for (const exam of normalExams) {
+		const normalScore = gradeMap.get(exam.id);
+		const retakeExam = retakesByParent.get(exam.id);
+
+		if (retakeExam) {
+			const retakeScore = gradeMap.get(retakeExam.id);
+
+			if (retakeScore !== undefined) {
+				const policy = retakeExam.scoringPolicy || "replace";
+
+				if (policy === "replace") {
+					// Replace: always use retake score if available
+					resolvedGrades.set(exam.id, { score: retakeScore, isRetake: true });
+				} else {
+					// best_of: use the higher score
+					if (normalScore !== undefined) {
+						const bestScore = Math.max(normalScore, retakeScore);
+						resolvedGrades.set(exam.id, {
+							score: bestScore,
+							isRetake: bestScore === retakeScore && retakeScore !== normalScore,
+						});
+					} else {
+						resolvedGrades.set(exam.id, { score: retakeScore, isRetake: true });
+					}
+				}
+			} else if (normalScore !== undefined) {
+				// No retake grade, use normal score
+				resolvedGrades.set(exam.id, { score: normalScore, isRetake: false });
+			}
+		} else if (normalScore !== undefined) {
+			// No retake, use normal grade
+			resolvedGrades.set(exam.id, { score: normalScore, isRetake: false });
+		}
+	}
+
+	return resolvedGrades;
+}
+
 interface GradeItem {
 	exam: string;
 	score: string | number;
@@ -129,22 +197,10 @@ export default function GradeExport() {
 	const [previewTitle, setPreviewTitle] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<"course" | "date" | "type">("course");
-	const yearId = useId();
+	const [includeRetakes, setIncludeRetakes] = useState(true);
 	const classId = useId();
 	const semesterId = useId();
 	const { t } = useTranslation();
-
-	const { data: academicYears } = useQuery({
-		queryKey: ["academicYears"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return (items as AcademicYear[]).sort(
-				(a, b) =>
-					new Date(b.startDate).getTime() -
-					new Date(a.startDate).getTime(),
-			);
-		},
-	});
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes", selectedYear],
@@ -238,6 +294,9 @@ export default function GradeExport() {
 						type: string;
 						date: string;
 						percentage: string;
+						sessionType?: "normal" | "retake";
+						parentExamId?: string | null;
+						scoringPolicy?: "replace" | "best_of";
 					}) => {
 						result.push({
 							id: exam.id,
@@ -248,6 +307,9 @@ export default function GradeExport() {
 							courseName: course.name,
 							courseCode: course.code ?? null,
 							classCourseCode: cc.code ?? null,
+							sessionType: exam.sessionType || "normal",
+							parentExamId: exam.parentExamId || null,
+							scoringPolicy: exam.scoringPolicy || "replace",
 						});
 					},
 				);
@@ -415,6 +477,9 @@ export default function GradeExport() {
 								name: exam.name,
 								type: exam.type,
 								percentage: Number(exam.percentage),
+								sessionType: (exam.sessionType || "normal") as "normal" | "retake",
+								parentExamId: exam.parentExamId || null,
+								scoringPolicy: (exam.scoringPolicy || "replace") as "replace" | "best_of",
 								class_course: {
 									id: classCourse.id,
 									code: classCourse.code ?? null,
@@ -494,20 +559,54 @@ export default function GradeExport() {
 			}
 
 			const exportData = students.map((student) => {
+				// Build exam list from student's grades for retake resolution
+				const studentExamItems: ExamItem[] = student.grades.map((g) => ({
+					id: g.exam.id,
+					name: g.exam.name,
+					type: g.exam.type,
+					date: "",
+					percentage: g.exam.percentage,
+					courseName: g.exam.class_course.course.name,
+					courseCode: g.exam.class_course.course.code,
+					classCourseCode: g.exam.class_course.code,
+					sessionType: g.exam.sessionType,
+					parentExamId: g.exam.parentExamId,
+					scoringPolicy: g.exam.scoringPolicy,
+				}));
+
+				// Resolve retake grades
+				const studentGradesForResolution = student.grades.map((g) => ({
+					examId: g.exam.id,
+					score: g.score,
+				}));
+				const resolvedGrades = resolveRetakeGrades(
+					studentGradesForResolution,
+					studentExamItems,
+				);
+
+				// Group resolved grades by course
 				const courseGrades = new Map<string, number[]>();
-				student.grades.forEach((grade) => {
+				for (const grade of student.grades) {
+					// Skip retake exams - their scores are merged into parent exams
+					if (grade.exam.sessionType === "retake") continue;
+
 					const columnKey =
 						grade.exam.class_course.code ??
 						grade.exam.class_course.course.code ??
 						grade.exam.class_course.course.name;
-					if (!columnKey) return;
+					if (!columnKey) continue;
 					if (!courseGrades.has(columnKey)) {
 						courseGrades.set(columnKey, []);
 					}
 					if (selectedExams.includes(grade.exam.id)) {
-						courseGrades.get(columnKey)?.push(grade.score);
+						// Use resolved grade (with retake logic applied)
+						const resolved = resolvedGrades.get(grade.exam.id);
+						if (resolved) {
+							courseGrades.get(columnKey)?.push(resolved.score);
+						}
 					}
-				});
+				}
+
 				const courseAverages = new Map<string, number>();
 				courseGrades.forEach((grades, course) => {
 					if (grades.length > 0) {
@@ -680,11 +779,16 @@ export default function GradeExport() {
 			);
 			const yearData = academicYears?.find((y) => y.id === selectedYear);
 
+			// Filter out retake exams - they'll be resolved into parent exams
+			const normalExamDetails = selectedExamDetails.filter(
+				(exam) => exam.sessionType !== "retake",
+			);
+
 			const courseGroups = new Map<
 				string,
 				{ label: string; exams: ExamItem[] }
 			>();
-			selectedExamDetails.forEach((exam) => {
+			normalExamDetails.forEach((exam) => {
 				const key =
 					exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
 				const label = exam.courseCode
@@ -724,11 +828,35 @@ export default function GradeExport() {
 			const averages: number[] = [];
 
 			students.forEach((student, index) => {
+				// Build exam items from student grades for retake resolution
+				const studentExamItems: ExamItem[] = student.grades.map((g) => ({
+					id: g.exam.id,
+					name: g.exam.name,
+					type: g.exam.type,
+					date: "",
+					percentage: g.exam.percentage,
+					courseName: g.exam.class_course.course.name,
+					courseCode: g.exam.class_course.course.code,
+					classCourseCode: g.exam.class_course.code,
+					sessionType: g.exam.sessionType,
+					parentExamId: g.exam.parentExamId,
+					scoringPolicy: g.exam.scoringPolicy,
+				}));
+
+				// Resolve retake grades
+				const studentGradesForResolution = student.grades.map((g) => ({
+					examId: g.exam.id,
+					score: g.score,
+				}));
+				const resolvedGrades = resolveRetakeGrades(
+					studentGradesForResolution,
+					studentExamItems,
+				);
+
 				const gradeValues = orderedExams.map((exam) => {
-					const grade = student.grades.find(
-						(g) => g.exam.id === exam.id,
-					);
-					return typeof grade?.score === "number" ? grade.score : "";
+					// Use resolved grade (with retake logic applied)
+					const resolved = resolvedGrades.get(exam.id);
+					return resolved?.score ?? "";
 				});
 				const numericScores = gradeValues.filter(
 					(value): value is number => typeof value === "number",
@@ -1322,16 +1450,21 @@ export default function GradeExport() {
 				classId: selectedClass,
 				semesterId: selectedSemester,
 				academicYearId: selectedYear,
+				includeRetakes,
 			});
 			setPreviewHtml(html);
-			setPreviewTitle("Prévisualisation - Procès-Verbal");
+			setPreviewTitle(
+				includeRetakes
+					? "Prévisualisation - Procès-Verbal (avec rattrapages)"
+					: "Prévisualisation - Procès-Verbal (sans rattrapages)",
+			);
 			setShowPreview(true);
 		} catch (error) {
 			console.error("PV preview error:", error);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
 
 	const handleGeneratePV = useCallback(async () => {
 		if (!selectedClass || !selectedSemester || !selectedYear) return;
@@ -1342,6 +1475,7 @@ export default function GradeExport() {
 				semesterId: selectedSemester,
 				academicYearId: selectedYear,
 				format: "pdf",
+				includeRetakes,
 			});
 
 			// Convert base64 to blob and download
@@ -1365,7 +1499,7 @@ export default function GradeExport() {
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
 
 	const handlePreviewEvaluation = useCallback(async (examId: string) => {
 		setExporting(`preview-eval-${examId}`);
@@ -1580,32 +1714,20 @@ export default function GradeExport() {
 				</CardHeader>
 				<CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					<div className="space-y-2">
-						<Label htmlFor={yearId}>
+						<Label>
 							{t("admin.gradeExport.filters.academicYear")}
 						</Label>
-						<Select
-							value={selectedYear || undefined}
-							onValueChange={(value) => {
+						<AcademicYearSelect
+							value={selectedYear || null}
+							onChange={(value) => {
 								setSelectedYear(value);
 								setSelectedClass("");
 								setSelectedExams([]);
 							}}
-						>
-							<SelectTrigger id={yearId}>
-								<SelectValue
-									placeholder={t(
-										"admin.gradeExport.filters.academicYearPlaceholder",
-									)}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{academicYears?.map((year) => (
-									<SelectItem key={year.id} value={year.id}>
-										{year.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							placeholder={t(
+								"admin.gradeExport.filters.academicYearPlaceholder",
+							)}
+						/>
 					</div>
 
 					<div className="space-y-2">
@@ -2045,6 +2167,24 @@ export default function GradeExport() {
 										UEs et notes pour la classe et le
 										semestre sélectionnés
 									</p>
+									<div className="mb-4 flex items-center gap-2">
+										<Checkbox
+											id="include-retakes"
+											checked={includeRetakes}
+											onCheckedChange={(checked) =>
+												setIncludeRetakes(
+													checked === true,
+												)
+											}
+										/>
+										<Label
+											htmlFor="include-retakes"
+											className="cursor-pointer text-sm"
+										>
+											Inclure les notes de rattrapage
+											(applique la politique de scoring)
+										</Label>
+									</div>
 									<div className="flex gap-2">
 										<Button
 											type="button"

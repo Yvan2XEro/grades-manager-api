@@ -48,12 +48,14 @@ const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 	z.object({
 		name: z.string().min(2, t("admin.examTypes.form.nameLabel")),
 		description: z.string().optional(),
+		defaultPercentage: z.coerce.number().int().min(1).max(100).optional(),
 	});
 
 type ExamType = {
 	id: string;
 	name: string;
 	description: string | null;
+	defaultPercentage: number | null;
 };
 
 type FormValues = z.infer<ReturnType<typeof buildSchema>>;
@@ -68,10 +70,10 @@ export default function ExamTypes() {
 
 	const form = useForm<FormValues>({
 		resolver: zodResolver(schema),
-		defaultValues: { name: "", description: "" },
+		defaultValues: { name: "", description: "", defaultPercentage: 40 },
 	});
 
-	const resetForm = () => form.reset({ name: "", description: "" });
+	const resetForm = () => form.reset({ name: "", description: "", defaultPercentage: 40 });
 
 	const { data: examTypes, isLoading } = useQuery({
 		queryKey: ["examTypes"],
@@ -92,6 +94,7 @@ export default function ExamTypes() {
 		form.reset({
 			name: type.name,
 			description: type.description ?? "",
+			defaultPercentage: type.defaultPercentage ?? 40,
 		});
 		setIsModalOpen(true);
 	};
@@ -107,6 +110,7 @@ export default function ExamTypes() {
 			await trpcClient.examTypes.create.mutate({
 				name: values.name,
 				description: values.description || undefined,
+				defaultPercentage: values.defaultPercentage,
 			});
 		},
 		onSuccess: () => {
@@ -135,6 +139,7 @@ export default function ExamTypes() {
 				id,
 				name: values.name,
 				description: values.description || undefined,
+				defaultPercentage: values.defaultPercentage,
 			});
 		},
 		onSuccess: () => {
@@ -223,6 +228,9 @@ export default function ExamTypes() {
 											"admin.examTypes.table.descriptionColumn",
 										)}
 									</TableHead>
+									<TableHead>
+										{t("admin.examTypes.table.defaultPercentage")}
+									</TableHead>
 									<TableHead className="w-[120px] text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -236,6 +244,9 @@ export default function ExamTypes() {
 										</TableCell>
 										<TableCell>
 											{type.description || "—"}
+										</TableCell>
+										<TableCell>
+											{type.defaultPercentage != null ? `${type.defaultPercentage}%` : "—"}
 										</TableCell>
 										<TableCell className="flex items-center justify-end gap-2">
 											<Button
@@ -318,6 +329,26 @@ export default function ExamTypes() {
 									</FormLabel>
 									<FormControl>
 										<Input {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="defaultPercentage"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.examTypes.form.defaultPercentageLabel")}
+									</FormLabel>
+									<FormControl>
+										<Input
+											type="number"
+											min={1}
+											max={100}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

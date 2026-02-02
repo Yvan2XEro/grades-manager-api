@@ -5,8 +5,10 @@ import * as repo from "./exam-scheduler.repo";
 import type {
 	HistoryInput,
 	PreviewInput,
+	PreviewRetakesInput,
 	RunDetailsInput,
 	ScheduleInput,
+	ScheduleRetakesInput,
 } from "./exam-scheduler.zod";
 
 async function ensureAcademicYear(
@@ -193,4 +195,123 @@ export async function getRunDetails(
 		throw notFound("Scheduling run not found");
 	}
 	return result;
+}
+
+export async function previewRetakeExams(
+	input: PreviewRetakesInput,
+	institutionId: string,
+) {
+	await ensureAcademicYear(input.academicYearId, institutionId);
+
+	const exams = await repo.getApprovedExamsWithoutRetake({
+		institutionId,
+		academicYearId: input.academicYearId,
+		semesterId: input.semesterId,
+		examTypeId: input.examTypeId,
+		classId: input.classId,
+	});
+
+	// Group exams by class for better UI presentation
+	const examsByClass = new Map<
+		string,
+		{
+			classId: string;
+			className: string;
+			programName: string;
+			exams: typeof exams;
+		}
+	>();
+
+	for (const exam of exams) {
+		if (!examsByClass.has(exam.classId)) {
+			examsByClass.set(exam.classId, {
+				classId: exam.classId,
+				className: exam.className,
+				programName: exam.programName,
+				exams: [],
+			});
+		}
+		examsByClass.get(exam.classId)?.exams.push(exam);
+	}
+
+	return {
+		exams,
+		byClass: Array.from(examsByClass.values()),
+		totalCount: exams.length,
+	};
+}
+
+export async function scheduleRetakes(
+	input: ScheduleRetakesInput,
+	schedulerId: string | null,
+	institutionId: string,
+) {
+	await ensureAcademicYear(input.academicYearId, institutionId);
+
+	// Validate that all exam IDs are valid and eligible for retakes
+	const eligibleExams = await repo.getApprovedExamsWithoutRetake({
+		institutionId,
+		academicYearId: input.academicYearId,
+		semesterId: input.semesterId,
+		examTypeId: input.examTypeId,
+		classId: input.classId,
+	});
+
+	const eligibleExamIds = new Set(eligibleExams.map((e) => e.id));
+	const validExamIds = input.examIds.filter((id) => eligibleExamIds.has(id));
+
+	if (validExamIds.length === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No valid exams selected for retake scheduling",
+		});
+	}
+
+	const targetExams = eligibleExams.filter((e) => validExamIds.includes(e.id));
+	const createdIds: string[] = [];
+	let conflicts = 0;
+
+	const startMs = input.dateStart.getTime();
+	const endMs = input.dateEnd.getTime();
+	const range = Math.max(endMs - startMs, 0);
+	const step = targetExams.length > 1 ? range / (targetExams.length - 1) : 0;
+
+	for (let i = 0; i < targetExams.length; i += 1) {
+		const parentExam = targetExams[i];
+		const scheduledDate = new Date(startMs + step * i);
+		try {
+			const retakeExam = await examsService.createRetakeExam(
+				{
+					parentExamId: parentExam.id,
+					date: scheduledDate,
+					scoringPolicy: input.scoringPolicy,
+				},
+				schedulerId,
+				institutionId,
+			);
+			if (retakeExam) createdIds.push(retakeExam.id);
+		} catch (error) {
+			if (error instanceof TRPCError) {
+				if (error.code === "CONFLICT" || error.code === "BAD_REQUEST") {
+					conflicts += 1;
+					continue;
+				}
+			}
+			throw error;
+		}
+	}
+
+	// Get unique classes from selected exams
+	const classIds = [...new Set(targetExams.map((e) => e.classId))];
+
+	const summary = {
+		created: createdIds.length,
+		skipped: input.examIds.length - validExamIds.length,
+		conflicts,
+		examCount: validExamIds.length,
+		classCount: classIds.length,
+		retakeExamIds: createdIds,
+	};
+
+	return summary;
 }

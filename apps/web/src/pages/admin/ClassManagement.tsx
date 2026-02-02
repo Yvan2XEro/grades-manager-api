@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -1134,30 +1135,15 @@ export default function ClassManagement() {
 											"admin.classes.form.academicYearLabel",
 										)}
 									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.academicYearPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{academicYears?.map((year) => (
-												<SelectItem
-													key={year.id}
-													value={year.id}
-												>
-													{year.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<FormControl>
+										<AcademicYearSelect
+											value={field.value || null}
+											onChange={field.onChange}
+											placeholder={t(
+												"admin.classes.form.academicYearPlaceholder",
+											)}
+										/>
+									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}

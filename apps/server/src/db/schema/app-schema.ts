@@ -118,7 +118,6 @@ export const domainUsers = pgTable(
 	(t) => [
 		unique("uq_domain_users_auth").on(t.authUserId),
 		unique("uq_domain_users_member").on(t.memberId),
-		unique("uq_domain_users_email").on(t.primaryEmail),
 	],
 );
 
@@ -134,6 +133,7 @@ export const examTypes = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
 		description: text("description"),
+		defaultPercentage: integer("default_percentage").default(40),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -371,6 +371,15 @@ export const courses = pgTable(
 				onDelete: "restrict",
 			},
 		),
+		/** Default coefficient for weighted average calculation within a Teaching Unit (UE).
+		 * Used when assigning this course to a class. Default is 1.0.
+		 */
+		defaultCoefficient: numeric("default_coefficient", {
+			precision: 5,
+			scale: 2,
+		})
+			.notNull()
+			.default("1.00"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -406,7 +415,13 @@ export const classCourses = pgTable(
 		semesterId: text("semester_id").references(() => semesters.id, {
 			onDelete: "set null",
 		}),
-		weeklyHours: integer("weekly_hours").notNull().default(0),
+		/** Coefficient for weighted average calculation within a Teaching Unit (UE).
+		 * Default is 1.0, meaning equal weight for all courses.
+		 * Used to calculate: UE_average = Σ(EC_grade × coefficient) / Σ(coefficient)
+		 */
+		coefficient: numeric("coefficient", { precision: 5, scale: 2 })
+			.notNull()
+			.default("1.00"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

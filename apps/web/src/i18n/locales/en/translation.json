@@ -1031,7 +1031,20 @@
 			"title": "Class course assignments",
 			"subtitle": "Assign teachers and courses to classes",
 			"actions": {
-				"assign": "Assign course"
+				"assign": "Assign course",
+				"assignUe": "Assign UE"
+			},
+			"ueAssign": {
+				"title": "Assign a teaching unit",
+				"classLabel": "Class",
+				"classPlaceholder": "Select a class",
+				"ueLabel": "Teaching unit",
+				"uePlaceholder": "Select a UE",
+				"noUe": "No UE found for this program",
+				"hint": "All ECs from this UE will be assigned to the class with their default teacher and coefficient. ECs without a default teacher will be skipped.",
+				"submit": "Assign courses",
+				"skippedTitle": "Some courses were not assigned",
+				"skippedDesc": "The following courses have no default teacher and were skipped:"
 			},
 			"empty": {
 				"title": "No course assignments yet",
@@ -1043,7 +1056,8 @@
 				"program": "Program",
 				"course": "Course",
 				"teacher": "Teacher",
-				"semester": "Semester"
+				"semester": "Semester",
+				"coefficient": "Coef."
 			},
 			"form": {
 				"createTitle": "New course assignment",
@@ -1054,6 +1068,13 @@
 				"coursePlaceholder": "Select a course",
 				"teacherLabel": "Teacher",
 				"teacherPlaceholder": "Select a teacher",
+				"semesterLabel": "Semester",
+				"semesterPlaceholder": "Select a semester",
+				"codeLabel": "Code",
+				"codePlaceholder": "INF11-CLS24-01",
+				"coefficientLabel": "Coefficient",
+				"coefficientPlaceholder": "1.00",
+				"coefficientHelp": "Weight for weighted average calculation within the Teaching Unit",
 				"createSubmit": "Assign course"
 			},
 			"toast": {
@@ -1062,7 +1083,9 @@
 				"updateSuccess": "Course assignment updated successfully",
 				"updateError": "Could not update the assignment",
 				"deleteSuccess": "Course assignment deleted successfully",
-				"deleteError": "Could not delete the assignment"
+				"deleteError": "Could not delete the assignment",
+				"bulkAssignSuccess": "{{count}} courses assigned successfully",
+				"bulkAssignError": "Error during assignment"
 			},
 			"delete": {
 				"title": "Delete course assignment",
@@ -1512,7 +1535,8 @@
 				"title": "Available types",
 				"description": "All scheduled exams can reuse the following types.",
 				"name": "Name",
-				"descriptionColumn": "Description"
+				"descriptionColumn": "Description",
+				"defaultPercentage": "Default weight"
 			},
 			"empty": "No exam types yet.",
 			"form": {
@@ -1520,6 +1544,7 @@
 				"editTitle": "Edit exam type",
 				"nameLabel": "Name",
 				"descriptionLabel": "Description",
+				"defaultPercentageLabel": "Default weight (%)",
 				"submit": "Save exam type"
 			},
 			"toast": {
@@ -1609,6 +1634,8 @@
 					"editorTitle": "Template source",
 					"editorDescription": "Paste your Handlebars (.hbs) layout with static headers, logos, and styles.",
 					"placeholder": "<!-- Paste your template here -->",
+					"loadExample": "Load example",
+					"exampleLoaded": "Example template loaded successfully",
 					"generatePreview": "Generate preview",
 					"helpTitle": "Tips",
 					"helpHandlebars": "Handlebars helpers like {{formatNumber}} remain available.",
@@ -1695,6 +1722,13 @@
 		"examScheduler": {
 			"title": "Exam scheduler",
 			"subtitle": "Plan exams for entire faculties and academic years in a single step.",
+			"sessionMode": {
+				"label": "Scheduling type",
+				"normal": "Exams",
+				"normalDescription": "Schedule exams (CC, TP, SN, etc.) for class courses",
+				"retake": "Retakes",
+				"retakeDescription": "Schedule retakes for approved exams"
+			},
 			"form": {
 				"title": "Schedule parameters",
 				"description": "Choose the faculty, academic year, exam type, weight, and time window.",
@@ -1708,19 +1742,38 @@
 				"semesterPlaceholder": "Select semester",
 				"percentageLabel": "Weight (%)",
 				"dateStartLabel": "Start date",
-				"dateEndLabel": "End date"
+				"dateEndLabel": "End date",
+				"scoringPolicyLabel": "Scoring policy",
+				"scoringPolicyPlaceholder": "Select policy",
+				"scoringPolicyReplace": "Replace original grade",
+				"scoringPolicyBestOf": "Keep best grade",
+				"classFilterLabel": "Filter by class",
+				"classFilterPlaceholder": "All classes",
+				"examTypeFilterLabel": "Filter by exam type",
+				"examTypeFilterPlaceholder": "All types"
 			},
 			"classes": {
 				"title": "Target classes",
 				"description": "All classes for the selected year are preselected. Deselect any you wish to exclude.",
 				"selectAll": "Select all classes"
 			},
+			"retakeExams": {
+				"title": "Exams eligible for retake",
+				"description": "Approved exams without a scheduled retake. Select the exams to schedule retakes for.",
+				"selectAll": "Select all exams",
+				"noExams": "No approved exams found without retakes for the selected criteria.",
+				"examCount_one": "{{count}} exam",
+				"examCount_other": "{{count}} exams"
+			},
 			"actions": {
-				"schedule": "Schedule exams"
+				"schedule": "Schedule exams",
+				"scheduleRetakes": "Schedule retakes"
 			},
 			"toast": {
 				"success": "Exams scheduled",
-				"error": "Unable to schedule exams"
+				"error": "Unable to schedule exams",
+				"retakeSuccess": "Retakes scheduled ({{count}} created)",
+				"retakeError": "Unable to schedule retakes"
 			},
 			"history": {
 				"title": "Scheduling history",
@@ -2200,7 +2253,8 @@
 					"name": "Name",
 					"code": "Code",
 					"hours": "Hours",
-					"teacher": "Default teacher"
+					"teacher": "Default teacher",
+					"coefficient": "Coef."
 				},
 				"form": {
 					"createTitle": "Add element",
@@ -2213,6 +2267,9 @@
 					"hoursPlaceholder": "Enter hours",
 					"teacherLabel": "Default teacher",
 					"teacherPlaceholder": "Select a teacher",
+					"coefficientLabel": "Default coefficient",
+					"coefficientPlaceholder": "1.00",
+					"coefficientHelp": "Default weight when assigning to a class",
 					"submit": "Save element"
 				},
 				"empty": "No elements yet.",

@@ -36,18 +36,17 @@ const Login: React.FC = () => {
 	});
 	const [callbackURL] = useQueryState("return", {});
 	const onSubmit = async (data: LoginFormData) => {
-		try {
-			await authClient.signIn.email({
-				email: data.email,
-				password: data.password,
+		const result = await authClient.signIn.email({
+			email: data.email,
+			password: data.password,
+			callbackURL: callbackURL || undefined,
+		});
 
-				callbackURL: callbackURL || undefined,
-			});
-
+		if (result.error) {
+			toast.error(result.error.message || t("auth.login.error"));
+		} else {
 			toast.success(t("auth.login.success"));
 			// Navigation happens automatically through auth state change listener
-		} catch (error: any) {
-			toast.error(error.message || t("auth.login.error"));
 		}
 	};
 

@@ -133,7 +133,6 @@ describe("exams router", () => {
 				class: klass.id,
 				course: course.id,
 				teacher: teacher.id,
-				weeklyHours: 2,
 				institutionId: foreignInstitution.id,
 				semesterId: klass.semesterId,
 			})

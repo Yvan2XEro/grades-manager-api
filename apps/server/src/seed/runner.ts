@@ -35,7 +35,7 @@ export type FoundationSeed = {
 		name: string;
 		logo?: string;
 	}>;
-	examTypes?: Array<{ name: string; description?: string }>;
+	examTypes?: Array<{ name: string; description?: string; defaultPercentage?: number }>;
 	faculties?: Array<{ code: string; name: string; description?: string }>;
 	studyCycles?: Array<{
 		code: string;
@@ -122,7 +122,6 @@ type ClassCourseSeed = {
 	courseCode: string;
 	teacherCode: string;
 	semesterCode?: string;
-	weeklyHours?: number;
 };
 
 type ExamSeed = {
@@ -629,11 +628,15 @@ async function seedFoundation(
 			.values({
 				name: entry.name,
 				description: entry.description ?? null,
+				defaultPercentage: entry.defaultPercentage ?? null,
 				institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.examTypes.institutionId, schema.examTypes.name],
-				set: { description: entry.description ?? null },
+				set: {
+					description: entry.description ?? null,
+					defaultPercentage: entry.defaultPercentage ?? null,
+				},
 			});
 	}
 	if (data.examTypes?.length) {
@@ -1269,26 +1272,27 @@ async function seedUsers(
 				? await findAuthUserIdByEmail(db, entry.authUserEmail)
 				: undefined) ??
 			null;
-		const [profile] = await db
-			.insert(schema.domainUsers)
-			.values({
-				authUserId,
-				firstName: entry.firstName,
-				lastName: entry.lastName,
-				primaryEmail: entry.primaryEmail,
-				phone: entry.phone ?? null,
-				dateOfBirth: entry.dateOfBirth
-					? new Date(entry.dateOfBirth)
-					: null,
-				placeOfBirth: entry.placeOfBirth ?? null,
-				gender: entry.gender ?? null,
-				nationality: entry.nationality ?? null,
-				status: entry.status ?? "active",
-				updatedAt: now,
-			})
-			.onConflictDoUpdate({
-				target: schema.domainUsers.primaryEmail,
-				set: {
+
+		// Since primaryEmail is no longer unique, we need to find by authUserId or email
+		// Priority: authUserId match > email match (first found)
+		let existingProfile = authUserId
+			? await db.query.domainUsers.findFirst({
+					where: eq(schema.domainUsers.authUserId, authUserId),
+				})
+			: null;
+
+		if (!existingProfile) {
+			existingProfile = await db.query.domainUsers.findFirst({
+				where: eq(schema.domainUsers.primaryEmail, entry.primaryEmail),
+			});
+		}
+
+		let profile: { id: string };
+		if (existingProfile) {
+			// Update existing profile
+			const [updated] = await db
+				.update(schema.domainUsers)
+				.set({
 					authUserId,
 					firstName: entry.firstName,
 					lastName: entry.lastName,
@@ -1301,9 +1305,33 @@ async function seedUsers(
 					nationality: entry.nationality ?? null,
 					status: entry.status ?? "active",
 					updatedAt: now,
-				},
-			})
-			.returning();
+				})
+				.where(eq(schema.domainUsers.id, existingProfile.id))
+				.returning();
+			profile = updated;
+		} else {
+			// Insert new profile
+			const [created] = await db
+				.insert(schema.domainUsers)
+				.values({
+					authUserId,
+					firstName: entry.firstName,
+					lastName: entry.lastName,
+					primaryEmail: entry.primaryEmail,
+					phone: entry.phone ?? null,
+					dateOfBirth: entry.dateOfBirth
+						? new Date(entry.dateOfBirth)
+						: null,
+					placeOfBirth: entry.placeOfBirth ?? null,
+					gender: entry.gender ?? null,
+					nationality: entry.nationality ?? null,
+					status: entry.status ?? "active",
+					updatedAt: now,
+				})
+				.returning();
+			profile = created;
+		}
+
 		state.domainUsers.set(code, {
 			id: profile.id,
 		});
@@ -1729,7 +1757,6 @@ async function seedClassCourses(
 				course: courseRecord.id,
 				teacher: teacher.id,
 				semesterId,
-				weeklyHours: entry.weeklyHours ?? 0,
 				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1739,7 +1766,6 @@ async function seedClassCourses(
 					course: courseRecord.id,
 					teacher: teacher.id,
 					semesterId,
-					weeklyHours: entry.weeklyHours ?? 0,
 					institutionId: classRecord.institutionId,
 				},
 			})

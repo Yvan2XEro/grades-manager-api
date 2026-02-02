@@ -4,6 +4,7 @@ import { CalendarDays, Loader2, LockOpen, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -191,10 +192,6 @@ const EnrollmentManagement = () => {
 		useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
-
-	const { data: years } = useQuery(
-		trpc.academicYears.list.queryOptions({ limit: 100 }),
-	);
 
 	const { data: semesters } = useQuery(
 		trpc.semesters.list.queryOptions({ limit: 100 }),
@@ -456,32 +453,17 @@ const EnrollmentManagement = () => {
 							defaultValue: "Academic year",
 						})}
 					</p>
-					<Select
-						value={selectedAcademicYear}
-						onValueChange={(value) => {
+					<AcademicYearSelect
+						value={selectedAcademicYear || null}
+						onChange={(value) => {
 							setSelectedAcademicYear(value);
 							setSelectedClass("");
 							setSelectedSemester("");
 						}}
-					>
-						<SelectTrigger
-							data-testid="academic-year-select"
-							className="w-full"
-						>
-							<SelectValue
-								placeholder={t("admin.enrollments.selectYear", {
-									defaultValue: "Select academic year",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{years?.items?.map((year) => (
-								<SelectItem key={year.id} value={year.id}>
-									{year.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder={t("admin.enrollments.selectYear", {
+							defaultValue: "Select academic year",
+						})}
+					/>
 				</div>
 				<div className="space-y-1">
 					<p className="font-medium text-gray-600 text-sm">

@@ -106,6 +106,7 @@ export async function list(
 			program: schema.courses.program,
 			teachingUnitId: schema.courses.teachingUnitId,
 			defaultTeacher: schema.courses.defaultTeacher,
+			defaultCoefficient: schema.courses.defaultCoefficient,
 			createdAt: schema.courses.createdAt,
 		})
 		.from(schema.courses)
@@ -180,6 +181,7 @@ export async function search(
 			program: schema.courses.program,
 			teachingUnitId: schema.courses.teachingUnitId,
 			defaultTeacher: schema.courses.defaultTeacher,
+			defaultCoefficient: schema.courses.defaultCoefficient,
 			createdAt: schema.courses.createdAt,
 		})
 		.from(schema.courses)
