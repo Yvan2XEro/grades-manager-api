@@ -1,11 +1,12 @@
 import type { Context } from "@/lib/context";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
-import { classCourseIdsForEditor } from "../exam-grade-editors/exam-grade-editors.repo";
 import {
 	router as createRouter,
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
 } from "../../lib/trpc";
+import { classCourseIdsForEditor } from "../exam-grade-editors/exam-grade-editors.repo";
+import { logDelegateCourseAccess } from "./class-course-access-logs.service";
 import * as service from "./class-courses.service";
 import {
 	baseSchema,
@@ -15,7 +16,6 @@ import {
 	searchSchema,
 	updateSchema,
 } from "./class-courses.zod";
-import { logDelegateCourseAccess } from "./class-course-access-logs.service";
 
 type ClassCourseListItem = Awaited<
 	ReturnType<typeof service.listClassCourses>
@@ -66,15 +66,14 @@ export const router = createRouter({
 		.query(async ({ ctx, input }) => {
 			const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
 			const teacherId = ctx.profile?.id ?? null;
-			const baseRaw =
-				isAdmin
-					? await service.listClassCourses(input, ctx.institution.id)
-					: teacherId && ctx.memberRole === "teacher"
-						? await service.listClassCourses(
-								{ ...input, teacherId },
-								ctx.institution.id,
-							)
-						: { items: [], nextCursor: undefined };
+			const baseRaw = isAdmin
+				? await service.listClassCourses(input, ctx.institution.id)
+				: teacherId && ctx.memberRole === "teacher"
+					? await service.listClassCourses(
+							{ ...input, teacherId },
+							ctx.institution.id,
+						)
+					: { items: [], nextCursor: undefined };
 			if (isAdmin || !teacherId) {
 				return {
 					...baseRaw,
@@ -138,15 +137,14 @@ export const router = createRouter({
 		.query(async ({ ctx, input }) => {
 			const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
 			const teacherId = ctx.profile?.id ?? null;
-			const baseRaw =
-				isAdmin
-					? await service.searchClassCourses(input, ctx.institution.id)
-					: teacherId && ctx.memberRole === "teacher"
-						? await service.searchClassCourses(
-								{ ...input, teacherId },
-								ctx.institution.id,
-							)
-						: [];
+			const baseRaw = isAdmin
+				? await service.searchClassCourses(input, ctx.institution.id)
+				: teacherId && ctx.memberRole === "teacher"
+					? await service.searchClassCourses(
+							{ ...input, teacherId },
+							ctx.institution.id,
+						)
+					: [];
 			if (isAdmin || !teacherId) {
 				return markItems(baseRaw, false);
 			}

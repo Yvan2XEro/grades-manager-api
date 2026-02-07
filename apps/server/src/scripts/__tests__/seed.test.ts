@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { existsSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
@@ -28,8 +28,13 @@ describe("seed runner", () => {
 			"../../db/migrations",
 		);
 
-		if (!existsSync(migrationsFolder) || !existsSync(path.join(migrationsFolder, "meta/_journal.json"))) {
-			console.warn("⚠️  Skipping seed tests - no migrations found. Run 'bun db:generate' first.");
+		if (
+			!existsSync(migrationsFolder) ||
+			!existsSync(path.join(migrationsFolder, "meta/_journal.json"))
+		) {
+			console.warn(
+				"⚠️  Skipping seed tests - no migrations found. Run 'bun db:generate' first.",
+			);
 			return;
 		}
 
@@ -51,7 +56,10 @@ describe("seed runner", () => {
 		}
 
 		const tmpDir = await mkdtemp(path.join(tmpdir(), "seed-runner-"));
-		await scaffoldSampleSeeds(tmpDir, { force: true, logger: silentLogger });
+		await scaffoldSampleSeeds(tmpDir, {
+			force: true,
+			logger: silentLogger,
+		});
 		await runSeed({
 			db,
 			logger: silentLogger,
@@ -83,9 +91,14 @@ describe("seed runner", () => {
 		});
 		expect(enrollment?.status).toBe("active");
 
-		const courseAttempt = await db.query.studentCourseEnrollments.findFirst({
-			where: eq(appSchema.studentCourseEnrollments.studentId, student!.id),
-		});
+		const courseAttempt = await db.query.studentCourseEnrollments.findFirst(
+			{
+				where: eq(
+					appSchema.studentCourseEnrollments.studentId,
+					student!.id,
+				),
+			},
+		);
 		expect(courseAttempt?.status).toBe("active");
 
 		const admin = await db.query.user.findFirst({

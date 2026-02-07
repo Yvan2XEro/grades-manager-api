@@ -24,13 +24,16 @@ describe("users router", () => {
 		const role = "staff";
 		const firstUser = await createUser({
 			email: `first-${randomUUID()}@example.com`,
-			businessRole: role,
+			memberRole: role,
 		});
 		const secondUser = await createUser({
 			email: `second-${randomUUID()}@example.com`,
-			businessRole: role,
+			memberRole: role,
 		});
-		const createdIds = new Set([firstUser.profile.id, secondUser.profile.id]);
+		const createdIds = new Set([
+			firstUser.profile.id,
+			secondUser.profile.id,
+		]);
 
 		const admin = createCaller(asAdmin());
 		const firstPage = await admin.users.list({ limit: 1, role });
@@ -57,7 +60,6 @@ describe("users router", () => {
 			firstName: "Org",
 			lastName: "Member",
 			email: `org-member-${randomUUID()}@example.com`,
-			role: "staff",
 			memberId: member.id,
 		});
 		expect(created?.memberId).toBe(member.id);

@@ -19,7 +19,9 @@ const buildSchema = (t: TFunction) =>
 			password: z
 				.string()
 				.min(6, t("auth.validation.passwordMin", { count: 6 })),
-			confirmPassword: z.string().min(6, t("auth.validation.confirmPassword")),
+			confirmPassword: z
+				.string()
+				.min(6, t("auth.validation.confirmPassword")),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: t("auth.validation.passwordsMismatch"),
@@ -43,15 +45,16 @@ const ResetPassword: React.FC = () => {
 
 	const [callbackURL] = useQueryState("return", {});
 	const onSubmit = async (data: FormData) => {
-		try {
-			await authClient.resetPassword({
-				token,
-				newPassword: data.password,
-			});
+		const result = await authClient.resetPassword({
+			token,
+			newPassword: data.password,
+		});
+
+		if (result.error) {
+			toast.error(result.error.message || t("auth.reset.error"));
+		} else {
 			toast.success(t("auth.reset.success"));
 			navigate("/auth/login");
-		} catch (error: any) {
-			toast.error(error.message || t("auth.reset.error"));
 		}
 	};
 
@@ -95,7 +98,11 @@ const ResetPassword: React.FC = () => {
 						</p>
 					)}
 				</div>
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="mt-6 w-full"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

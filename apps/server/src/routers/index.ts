@@ -1,5 +1,5 @@
-import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
+import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { gradesRouter } from "@/modules/grades";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -9,8 +9,8 @@ import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
-import { exportsRouter } from "../modules/exports";
 import { exportTemplatesRouter } from "../modules/export-templates";
+import { exportsRouter } from "../modules/exports";
 import { filesRouter } from "../modules/files";
 import { institutionsRouter } from "../modules/institutions";
 import { notificationsRouter } from "../modules/notifications";

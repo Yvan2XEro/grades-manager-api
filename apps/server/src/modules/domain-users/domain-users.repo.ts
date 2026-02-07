@@ -10,7 +10,6 @@ import { member, user } from "@/db/schema/auth";
 
 export async function create(data: NewDomainUser) {
 	const [profile] = await db.insert(domainUsers).values(data).returning();
-	await syncMemberRole(profile?.memberId, profile?.businessRole);
 	return profile;
 }
 
@@ -24,7 +23,6 @@ export async function update(id: string, data: Partial<NewDomainUser>) {
 		.set(data)
 		.where(eq(domainUsers.id, id))
 		.returning();
-	await syncMemberRole(profile?.memberId, profile?.businessRole);
 	return profile;
 }
 
@@ -32,20 +30,6 @@ export async function findById(id: string) {
 	return db.query.domainUsers.findFirst({
 		where: eq(domainUsers.id, id),
 	});
-}
-
-async function syncMemberRole(
-	memberId: string | null | undefined,
-	role: BusinessRole | null | undefined,
-) {
-	if (!memberId || !role) return;
-	const record = await db.query.member.findFirst({
-		where: eq(member.id, memberId),
-	});
-	if (!record) return;
-	if (record.role === "owner") return;
-	if (record.role === role) return;
-	await db.update(member).set({ role }).where(eq(member.id, memberId));
 }
 
 export async function getDomainsByAuthUserId(
@@ -81,10 +65,10 @@ export async function list(opts: ListOpts) {
 	const limit = Math.min(Math.max(opts.limit ?? 20, 1), 100);
 	let condition: SQL<unknown> | undefined;
 	if (opts.role) {
-		condition = eq(domainUsers.businessRole, opts.role);
+		condition = eq(member.role, opts.role);
 	}
 	if (opts.roles && opts.roles.length > 0) {
-		const rolesCond = inArray(domainUsers.businessRole, opts.roles);
+		const rolesCond = inArray(member.role, opts.roles);
 		condition = condition ? and(condition, rolesCond) : rolesCond;
 	}
 	if (opts.status) {
@@ -107,7 +91,7 @@ export async function list(opts: ListOpts) {
 	const rows = await db
 		.select({
 			profileId: domainUsers.id,
-			businessRole: domainUsers.businessRole,
+			role: member.role,
 			firstName: domainUsers.firstName,
 			lastName: domainUsers.lastName,
 			primaryEmail: domainUsers.primaryEmail,
@@ -129,6 +113,7 @@ export async function list(opts: ListOpts) {
 			},
 		})
 		.from(domainUsers)
+		.leftJoin(member, eq(member.id, domainUsers.memberId))
 		.leftJoin(user, eq(user.id, domainUsers.authUserId))
 		.where(condition)
 		.orderBy(domainUsers.id)

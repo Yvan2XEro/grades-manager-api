@@ -14,14 +14,12 @@ authUsers:
 domainUsers:
   - code: STUDENT-TRANSFER
     authUserCode: STUDENT-TRANSFER
-    businessRole: student
     firstName: Pierre
     lastName: Transfert
     primaryEmail: transfer.student@inses.cm
     status: active
   - code: STUDENT-DIRECT
     authUserCode: STUDENT-DIRECT
-    businessRole: student
     firstName: Sophie
     lastName: Direct
     primaryEmail: direct.student@inses.cm

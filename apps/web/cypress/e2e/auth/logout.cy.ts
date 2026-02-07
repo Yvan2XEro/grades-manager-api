@@ -8,7 +8,9 @@ describe("Authentication - Logout", () => {
 
 		// Find and click logout button/link
 		// This might be in a dropdown menu or header
-		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
+		cy.findByRole("button", {
+			name: /logout|sign out|déconnexion/i,
+		}).click();
 
 		// Should redirect to login page
 		cy.location("pathname", { timeout: 10000 }).should(
@@ -24,7 +26,9 @@ describe("Authentication - Logout", () => {
 	it("successfully logs out teacher user", () => {
 		cy.loginAs("teacher");
 
-		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
+		cy.findByRole("button", {
+			name: /logout|sign out|déconnexion/i,
+		}).click();
 
 		// Should redirect to login page
 		cy.location("pathname", { timeout: 10000 }).should(
@@ -47,7 +51,9 @@ describe("Authentication - Logout", () => {
 			expect(hasAuthData).to.be.true;
 		});
 
-		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
+		cy.findByRole("button", {
+			name: /logout|sign out|déconnexion/i,
+		}).click();
 
 		cy.location("pathname", { timeout: 10000 }).should(
 			"include",
@@ -68,7 +74,9 @@ describe("Authentication - Logout", () => {
 		cy.loginAs("administrator");
 		cy.visit("/admin/students");
 
-		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
+		cy.findByRole("button", {
+			name: /logout|sign out|déconnexion/i,
+		}).click();
 		cy.location("pathname", { timeout: 10000 }).should(
 			"include",
 			"/auth/login",
@@ -78,13 +86,18 @@ describe("Authentication - Logout", () => {
 		cy.go("back");
 
 		// Should still be on login or redirect back to login
-		cy.location("pathname", { timeout: 5000 }).should("include", "/auth/login");
+		cy.location("pathname", { timeout: 5000 }).should(
+			"include",
+			"/auth/login",
+		);
 	});
 
 	it("requires re-authentication after logout", () => {
 		cy.loginAs("administrator");
 
-		cy.findByRole("button", { name: /logout|sign out|déconnexion/i }).click();
+		cy.findByRole("button", {
+			name: /logout|sign out|déconnexion/i,
+		}).click();
 		cy.location("pathname", { timeout: 10000 }).should(
 			"include",
 			"/auth/login",
@@ -102,7 +115,10 @@ describe("Authentication - Logout", () => {
 		cy.findByRole("button", { name: /sign in/i }).click();
 
 		// Should now have access
-		cy.location("pathname", { timeout: 10000 }).should("not.include", "login");
+		cy.location("pathname", { timeout: 10000 }).should(
+			"not.include",
+			"login",
+		);
 	});
 
 	it("handles logout when already logged out", () => {

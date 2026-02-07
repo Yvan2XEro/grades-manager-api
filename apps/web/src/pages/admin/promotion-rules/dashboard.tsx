@@ -46,16 +46,21 @@ export function PromotionRulesDashboard() {
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="font-medium text-sm">
-							{t("admin.promotionRules.dashboard.stats.activeRules")}
+							{t(
+								"admin.promotionRules.dashboard.stats.activeRules",
+							)}
 						</CardTitle>
 						<BookOpen className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
 						<div className="font-bold text-3xl">{activeRules}</div>
 						<p className="mt-1 text-muted-foreground text-xs">
-							{t("admin.promotionRules.dashboard.stats.totalRules", {
-								count: rulesData?.items.length || 0,
-							})}
+							{t(
+								"admin.promotionRules.dashboard.stats.totalRules",
+								{
+									count: rulesData?.items.length || 0,
+								},
+							)}
 						</p>
 					</CardContent>
 				</Card>
@@ -63,14 +68,20 @@ export function PromotionRulesDashboard() {
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="font-medium text-sm">
-							{t("admin.promotionRules.dashboard.stats.recentExecutions")}
+							{t(
+								"admin.promotionRules.dashboard.stats.recentExecutions",
+							)}
 						</CardTitle>
 						<History className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-3xl">{totalExecutions}</div>
+						<div className="font-bold text-3xl">
+							{totalExecutions}
+						</div>
 						<p className="mt-1 text-muted-foreground text-xs">
-							{t("admin.promotionRules.dashboard.stats.last30Days")}
+							{t(
+								"admin.promotionRules.dashboard.stats.last30Days",
+							)}
 						</p>
 					</CardContent>
 				</Card>
@@ -78,7 +89,9 @@ export function PromotionRulesDashboard() {
 				<Card className="border-primary/30 bg-primary/5">
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
 						<CardTitle className="font-medium text-sm">
-							{t("admin.promotionRules.dashboard.stats.studentsPromoted")}
+							{t(
+								"admin.promotionRules.dashboard.stats.studentsPromoted",
+							)}
 						</CardTitle>
 						<CheckCircle className="h-4 w-4 text-primary" />
 					</CardHeader>
@@ -90,7 +103,9 @@ export function PromotionRulesDashboard() {
 							) || 0}
 						</div>
 						<p className="mt-1 text-muted-foreground text-xs">
-							{t("admin.promotionRules.dashboard.stats.acrossExecutions")}
+							{t(
+								"admin.promotionRules.dashboard.stats.acrossExecutions",
+							)}
 						</p>
 					</CardContent>
 				</Card>
@@ -104,10 +119,14 @@ export function PromotionRulesDashboard() {
 							<div>
 								<CardTitle className="flex items-center gap-2">
 									<BookOpen className="h-5 w-5" />
-									{t("admin.promotionRules.dashboard.actions.manageRules")}
+									{t(
+										"admin.promotionRules.dashboard.actions.manageRules",
+									)}
 								</CardTitle>
 								<CardDescription className="mt-2">
-									{t("admin.promotionRules.dashboard.actions.manageRulesDesc")}
+									{t(
+										"admin.promotionRules.dashboard.actions.manageRulesDesc",
+									)}
 								</CardDescription>
 							</div>
 						</div>
@@ -115,7 +134,9 @@ export function PromotionRulesDashboard() {
 					<CardContent>
 						<Link to="/admin/promotion-rules/rules">
 							<Button className="w-full group-hover:bg-primary/90">
-								{t("admin.promotionRules.dashboard.actions.viewRules")}
+								{t(
+									"admin.promotionRules.dashboard.actions.viewRules",
+								)}
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
 						</Link>
@@ -128,7 +149,9 @@ export function PromotionRulesDashboard() {
 							<div>
 								<CardTitle className="flex items-center gap-2">
 									<Play className="h-5 w-5" />
-									{t("admin.promotionRules.dashboard.actions.evaluateExecute")}
+									{t(
+										"admin.promotionRules.dashboard.actions.evaluateExecute",
+									)}
 								</CardTitle>
 								<CardDescription className="mt-2">
 									{t(
@@ -141,7 +164,9 @@ export function PromotionRulesDashboard() {
 					<CardContent>
 						<Link to="/admin/promotion-rules/evaluate">
 							<Button className="w-full bg-green-600 hover:bg-green-700">
-								{t("admin.promotionRules.dashboard.actions.startEvaluation")}
+								{t(
+									"admin.promotionRules.dashboard.actions.startEvaluation",
+								)}
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
 						</Link>
@@ -154,7 +179,9 @@ export function PromotionRulesDashboard() {
 							<div>
 								<CardTitle className="flex items-center gap-2">
 									<History className="h-5 w-5" />
-									{t("admin.promotionRules.dashboard.actions.executionHistory")}
+									{t(
+										"admin.promotionRules.dashboard.actions.executionHistory",
+									)}
 								</CardTitle>
 								<CardDescription className="mt-2">
 									{t(
@@ -170,7 +197,9 @@ export function PromotionRulesDashboard() {
 								variant="outline"
 								className="w-full group-hover:bg-blue-50"
 							>
-								{t("admin.promotionRules.dashboard.actions.viewHistory")}
+								{t(
+									"admin.promotionRules.dashboard.actions.viewHistory",
+								)}
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
 						</Link>
@@ -182,46 +211,59 @@ export function PromotionRulesDashboard() {
 			{executionsData && executionsData.items.length > 0 && (
 				<div>
 					<h2 className="mb-4 font-bold text-2xl">
-						{t("admin.promotionRules.dashboard.recentActivity.title")}
+						{t(
+							"admin.promotionRules.dashboard.recentActivity.title",
+						)}
 					</h2>
 					<Card>
 						<CardContent className="pt-6">
 							<div className="space-y-4">
-								{executionsData.items.slice(0, 5).map((execution) => (
-									<div
-										key={execution.id}
-										className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
-									>
-										<div className="flex items-center gap-4">
-											<div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-												<CheckCircle className="h-5 w-5 text-green-600" />
-											</div>
-											<div>
-												<div className="font-medium">
-													{t(
-														"admin.promotionRules.dashboard.recentActivity.studentsPromoted",
-														{ count: execution.studentsPromoted },
-													)}
+								{executionsData.items
+									.slice(0, 5)
+									.map((execution) => (
+										<div
+											key={execution.id}
+											className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+										>
+											<div className="flex items-center gap-4">
+												<div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+													<CheckCircle className="h-5 w-5 text-green-600" />
 												</div>
-												<div className="text-muted-foreground text-sm">
-													{new Date(execution.executedAt).toLocaleDateString()}{" "}
-													•{" "}
-													{(execution as any).metadata?.ruleName ||
-														t(
-															"admin.promotionRules.dashboard.recentActivity.unknownRule",
+												<div>
+													<div className="font-medium">
+														{t(
+															"admin.promotionRules.dashboard.recentActivity.studentsPromoted",
+															{
+																count: execution.studentsPromoted,
+															},
 														)}
+													</div>
+													<div className="text-muted-foreground text-sm">
+														{new Date(
+															execution.executedAt,
+														).toLocaleDateString()}{" "}
+														•{" "}
+														{(execution as any)
+															.metadata
+															?.ruleName ||
+															t(
+																"admin.promotionRules.dashboard.recentActivity.unknownRule",
+															)}
+													</div>
 												</div>
 											</div>
+											<Link to="/admin/promotion-rules/history">
+												<Button
+													variant="ghost"
+													size="sm"
+												>
+													{t(
+														"admin.promotionRules.dashboard.recentActivity.details",
+													)}
+												</Button>
+											</Link>
 										</div>
-										<Link to="/admin/promotion-rules/history">
-											<Button variant="ghost" size="sm">
-												{t(
-													"admin.promotionRules.dashboard.recentActivity.details",
-												)}
-											</Button>
-										</Link>
-									</div>
-								))}
+									))}
 							</div>
 						</CardContent>
 					</Card>

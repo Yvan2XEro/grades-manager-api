@@ -31,7 +31,9 @@ const RuleManagement = () => {
 	const institutionsQuery = useQuery({
 		queryKey: ["institutions", "faculties"],
 		queryFn: async () => {
-			const result = await trpcClient.institutions.list.query({ limit: 100 });
+			const result = await trpcClient.institutions.list.query({
+				limit: 100,
+			});
 			if (!result) {
 				return { items: [], total: 0 };
 			}
@@ -48,11 +50,15 @@ const RuleManagement = () => {
 		}),
 		enabled: Boolean(selectedInstitution),
 	});
-	const rulesQuery = useQuery(trpc.promotions.listDefaultRules.queryOptions());
+	const rulesQuery = useQuery(
+		trpc.promotions.listDefaultRules.queryOptions(),
+	);
 
 	const selectedCycleData = useMemo(() => {
 		if (!selectedCycle) return undefined;
-		return cyclesQuery.data?.items?.find((cycle) => cycle.id === selectedCycle);
+		return cyclesQuery.data?.items?.find(
+			(cycle) => cycle.id === selectedCycle,
+		);
 	}, [cyclesQuery.data, selectedCycle]);
 
 	const levelsQuery = useQuery({
@@ -102,11 +108,15 @@ const RuleManagement = () => {
 					type="button"
 					variant="outline"
 					onClick={() => {
-						setDraftRule(JSON.stringify(rulesQuery.data ?? [], null, 2));
+						setDraftRule(
+							JSON.stringify(rulesQuery.data ?? [], null, 2),
+						);
 					}}
 				>
 					<PlusCircle className="mr-2 h-4 w-4" />
-					{t("admin.rules.actions.clone", { defaultValue: "Clone defaults" })}
+					{t("admin.rules.actions.clone", {
+						defaultValue: "Clone defaults",
+					})}
 				</Button>
 			</div>
 
@@ -114,13 +124,17 @@ const RuleManagement = () => {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{t("admin.rules.studyCycles", { defaultValue: "Study cycles" })}
+							{t("admin.rules.studyCycles", {
+								defaultValue: "Study cycles",
+							})}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
 							<Label className="font-medium text-gray-700 text-sm">
-								{t("admin.rules.faculty", { defaultValue: "Faculty" })}
+								{t("admin.rules.faculty", {
+									defaultValue: "Faculty",
+								})}
 							</Label>
 							<Select
 								value={selectedInstitution}
@@ -131,24 +145,35 @@ const RuleManagement = () => {
 							>
 								<SelectTrigger>
 									<SelectValue
-										placeholder={t("admin.rules.selectFaculty", {
-											defaultValue: "Select faculty",
-										})}
+										placeholder={t(
+											"admin.rules.selectFaculty",
+											{
+												defaultValue: "Select faculty",
+											},
+										)}
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{institutionsQuery.data?.items?.map((institution) => (
-										<SelectItem key={institution.id} value={institution.id}>
-											{institution.nameFr || institution.nameEn}
-										</SelectItem>
-									))}
+									{institutionsQuery.data?.items?.map(
+										(institution) => (
+											<SelectItem
+												key={institution.id}
+												value={institution.id}
+											>
+												{institution.nameFr ||
+													institution.nameEn}
+											</SelectItem>
+										),
+									)}
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
 							<Label className="font-medium text-gray-700 text-sm">
-								{t("admin.rules.cycle", { defaultValue: "Study cycle" })}
+								{t("admin.rules.cycle", {
+									defaultValue: "Study cycle",
+								})}
 							</Label>
 							<Select
 								value={selectedCycle}
@@ -157,14 +182,20 @@ const RuleManagement = () => {
 							>
 								<SelectTrigger>
 									<SelectValue
-										placeholder={t("admin.rules.selectCycle", {
-											defaultValue: "Select cycle",
-										})}
+										placeholder={t(
+											"admin.rules.selectCycle",
+											{
+												defaultValue: "Select cycle",
+											},
+										)}
 									/>
 								</SelectTrigger>
 								<SelectContent>
 									{cyclesQuery.data?.items?.map((cycle) => (
-										<SelectItem key={cycle.id} value={cycle.id}>
+										<SelectItem
+											key={cycle.id}
+											value={cycle.id}
+										>
 											{cycle.name}
 										</SelectItem>
 									))}
@@ -179,13 +210,15 @@ const RuleManagement = () => {
 								</p>
 								<p>
 									{t("admin.rules.totalCredits", {
-										defaultValue: "Total credits required: {{value}}",
+										defaultValue:
+											"Total credits required: {{value}}",
 										value: selectedCycleData.totalCreditsRequired,
 									})}
 								</p>
 								<p>
 									{t("admin.rules.duration", {
-										defaultValue: "Duration: {{value}} years",
+										defaultValue:
+											"Duration: {{value}} years",
 										value: selectedCycleData.durationYears,
 									})}
 								</p>
@@ -195,7 +228,9 @@ const RuleManagement = () => {
 						{levelsQuery.data && levelsQuery.data.length > 0 && (
 							<div className="space-y-3">
 								<p className="font-semibold text-gray-800 text-sm">
-									{t("admin.rules.levels", { defaultValue: "Cycle levels" })}
+									{t("admin.rules.levels", {
+										defaultValue: "Cycle levels",
+									})}
 								</p>
 								<div className="space-y-2">
 									{levelsQuery.data.map((level) => (
@@ -209,17 +244,28 @@ const RuleManagement = () => {
 														{level.name}
 													</p>
 													<p className="text-gray-600 text-sm">
-														{t("admin.rules.minCredits", {
-															defaultValue: "Required credits: {{value}}",
-															value: level.minCredits,
-														})}
+														{t(
+															"admin.rules.minCredits",
+															{
+																defaultValue:
+																	"Required credits: {{value}}",
+																value: level.minCredits,
+															},
+														)}
 													</p>
 												</div>
-												<Button variant="ghost" size="sm">
+												<Button
+													variant="ghost"
+													size="sm"
+												>
 													<BookOpenCheck className="mr-2 h-4 w-4" />
-													{t("admin.rules.actions.attach", {
-														defaultValue: "View programs",
-													})}
+													{t(
+														"admin.rules.actions.attach",
+														{
+															defaultValue:
+																"View programs",
+														},
+													)}
 												</Button>
 											</div>
 										</div>
@@ -247,8 +293,14 @@ const RuleManagement = () => {
 						</p>
 						<Textarea
 							value={draftRule}
-							onChange={(event) => setDraftRule(event.target.value)}
-							placeholder={JSON.stringify(rulesQuery.data ?? [], null, 2)}
+							onChange={(event) =>
+								setDraftRule(event.target.value)
+							}
+							placeholder={JSON.stringify(
+								rulesQuery.data ?? [],
+								null,
+								2,
+							)}
 							className="h-64 font-mono text-sm"
 						/>
 						<Button

@@ -121,7 +121,9 @@ export default function CourseManagement() {
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({ limit: 100 });
+			const { items } = await trpcClient.programs.list.query({
+				limit: 100,
+			});
 			return items as ProgramOption[];
 		},
 	});
@@ -137,7 +139,8 @@ export default function CourseManagement() {
 		enabled: programSearch.length >= 2,
 	});
 
-	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
+	const programs =
+		programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
 	const { data: teachers } = useQuery({
 		queryKey: ["teachers"],
@@ -177,7 +180,10 @@ export default function CourseManagement() {
 		[programs],
 	);
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
+		teacherOptions.map((teacher) => [
+			teacher.id,
+			formatTeacherName(teacher),
+		]),
 	);
 
 	const createMutation = useMutation({
@@ -292,11 +298,14 @@ export default function CourseManagement() {
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 className="font-semibold text-2xl">
-						{t("admin.courses.title", { defaultValue: "Course management" })}
+						{t("admin.courses.title", {
+							defaultValue: "Course management",
+						})}
 					</h1>
 					<p className="text-muted-foreground">
 						{t("admin.courses.subtitle", {
-							defaultValue: "Manage courses, workloads, and default teachers.",
+							defaultValue:
+								"Manage courses, workloads, and default teachers.",
 						})}
 					</p>
 				</div>
@@ -311,7 +320,8 @@ export default function CourseManagement() {
 					<CardTitle>{t("admin.courses.title")}</CardTitle>
 					<CardDescription>
 						{t("admin.courses.subtitle", {
-							defaultValue: "Manage courses, workloads, and default teachers.",
+							defaultValue:
+								"Manage courses, workloads, and default teachers.",
 						})}
 					</CardDescription>
 				</CardHeader>
@@ -321,12 +331,22 @@ export default function CourseManagement() {
 							<TableHeader>
 								<TableRow>
 									<TableHead>
-										{t("admin.courses.table.code", { defaultValue: "Code" })}
+										{t("admin.courses.table.code", {
+											defaultValue: "Code",
+										})}
 									</TableHead>
-									<TableHead>{t("admin.courses.table.name")}</TableHead>
-									<TableHead>{t("admin.courses.table.program")}</TableHead>
-									<TableHead>{t("admin.courses.table.hours")}</TableHead>
-									<TableHead>{t("admin.courses.table.teacher")}</TableHead>
+									<TableHead>
+										{t("admin.courses.table.name")}
+									</TableHead>
+									<TableHead>
+										{t("admin.courses.table.program")}
+									</TableHead>
+									<TableHead>
+										{t("admin.courses.table.hours")}
+									</TableHead>
+									<TableHead>
+										{t("admin.courses.table.teacher")}
+									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -338,39 +358,58 @@ export default function CourseManagement() {
 										<TableCell>
 											<ClipboardCopy
 												value={course.code}
-												label={t("admin.courses.table.code", {
-													defaultValue: "Code",
-												})}
+												label={t(
+													"admin.courses.table.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											/>
 										</TableCell>
 										<TableCell>{course.name}</TableCell>
 										<TableCell>
 											{(() => {
-												const programInfo = programMap.get(course.program);
+												const programInfo =
+													programMap.get(
+														course.program,
+													);
 												if (!programInfo) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+													return t(
+														"common.labels.notAvailable",
+														{
+															defaultValue: "N/A",
+														},
+													);
 												}
 												return (
 													<div className="space-y-0.5">
-														<p>{programInfo.name}</p>
+														<p>
+															{programInfo.name}
+														</p>
 													</div>
 												);
 											})()}
 										</TableCell>
 										<TableCell>{course.hours}</TableCell>
 										<TableCell>
-											{teacherMap.get(course.defaultTeacher) ??
-												t("admin.courses.form.teacherPlaceholder")}
+											{teacherMap.get(
+												course.defaultTeacher,
+											) ??
+												t(
+													"admin.courses.form.teacherPlaceholder",
+												)}
 										</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => startEdit(course)}
-													aria-label={t("admin.courses.form.editTitle")}
+													onClick={() =>
+														startEdit(course)
+													}
+													aria-label={t(
+														"admin.courses.form.editTitle",
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -378,8 +417,12 @@ export default function CourseManagement() {
 													variant="ghost"
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
-													onClick={() => confirmDelete(course.id)}
-													aria-label={t("admin.courses.delete.title")}
+													onClick={() =>
+														confirmDelete(course.id)
+													}
+													aria-label={t(
+														"admin.courses.delete.title",
+													)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -398,7 +441,8 @@ export default function CourseManagement() {
 							</p>
 							<p className="text-muted-foreground text-sm">
 								{t("admin.courses.empty.description", {
-									defaultValue: "Create a course to populate the catalog.",
+									defaultValue:
+										"Create a course to populate the catalog.",
 								})}
 							</p>
 						</div>
@@ -430,16 +474,23 @@ export default function CourseManagement() {
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<FormField
 								control={form.control}
 								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t("admin.courses.form.nameLabel")}</FormLabel>
+										<FormLabel>
+											{t("admin.courses.form.nameLabel")}
+										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t("admin.courses.form.namePlaceholder")}
+												placeholder={t(
+													"admin.courses.form.namePlaceholder",
+												)}
 												{...field}
 												value={field.value ?? ""}
 											/>
@@ -453,19 +504,27 @@ export default function CourseManagement() {
 								name="hours"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t("admin.courses.form.hoursLabel")}</FormLabel>
+										<FormLabel>
+											{t("admin.courses.form.hoursLabel")}
+										</FormLabel>
 										<FormControl>
 											<Input
 												type="number"
 												value={field.value ?? ""}
 												onChange={(event) =>
 													field.onChange(
-														event.target.value === ""
+														event.target.value ===
+															""
 															? undefined
-															: Number(event.target.value),
+															: Number(
+																	event.target
+																		.value,
+																),
 													)
 												}
-												placeholder={t("admin.courses.form.hoursPlaceholder")}
+												placeholder={t(
+													"admin.courses.form.hoursPlaceholder",
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -477,15 +536,20 @@ export default function CourseManagement() {
 								items={programs}
 								onSearch={setProgramSearch}
 								value={
-									programs.find((p) => p.id === form.watch("program"))?.code ||
-									null
+									programs.find(
+										(p) => p.id === form.watch("program"),
+									)?.code || null
 								}
 								onChange={(code) => {
-									const program = programs.find((p) => p.code === code);
+									const program = programs.find(
+										(p) => p.code === code,
+									);
 									form.setValue("program", program?.id || "");
 								}}
 								label={t("admin.courses.form.programLabel")}
-								placeholder={t("admin.courses.form.programPlaceholder")}
+								placeholder={t(
+									"admin.courses.form.programPlaceholder",
+								)}
 								error={form.formState.errors.program?.message}
 								searchMode="hybrid"
 								required
@@ -497,7 +561,9 @@ export default function CourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.courses.form.teacherLabel")}
+											{t(
+												"admin.courses.form.teacherLabel",
+											)}
 										</FormLabel>
 										<Select
 											onValueChange={field.onChange}
@@ -513,11 +579,18 @@ export default function CourseManagement() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
+												{teacherOptions.map(
+													(teacher) => (
+														<SelectItem
+															key={teacher.id}
+															value={teacher.id}
+														>
+															{formatTeacherName(
+																teacher,
+															)}
+														</SelectItem>
+													),
+												)}
 											</SelectContent>
 										</Select>
 										<FormMessage />
@@ -536,9 +609,12 @@ export default function CourseManagement() {
 										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t("admin.courses.form.codePlaceholder", {
-													defaultValue: "INF111",
-												})}
+												placeholder={t(
+													"admin.courses.form.codePlaceholder",
+													{
+														defaultValue: "INF111",
+													},
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -554,7 +630,10 @@ export default function CourseManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
+								<Button
+									type="submit"
+									disabled={form.formState.isSubmitting}
+								>
 									{form.formState.isSubmitting ? (
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingCourse ? (

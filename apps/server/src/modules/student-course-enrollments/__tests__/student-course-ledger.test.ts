@@ -16,7 +16,7 @@ import * as enrollmentsService from "../student-course-enrollments.service";
 async function setupCourseWithCredits(credits: number) {
 	const faculty = await createFaculty();
 	const program = await createProgram({ institutionId: faculty.id });
-	const academicYear = await createAcademicYear();
+	const academicYear = await createAcademicYear({ institutionId: faculty.id });
 	const teachingUnit = await createTeachingUnit({
 		programId: program.id,
 		credits,
@@ -24,6 +24,7 @@ async function setupCourseWithCredits(credits: number) {
 	const klass = await createClass({
 		program: program.id,
 		academicYear: academicYear.id,
+		institutionId: faculty.id,
 	});
 	const course = await createCourse({
 		program: program.id,
@@ -32,14 +33,15 @@ async function setupCourseWithCredits(credits: number) {
 	const classCourse = await createClassCourse({
 		class: klass.id,
 		course: course.id,
+		institutionId: faculty.id,
 	});
-	const student = await createStudent({ class: klass.id });
-	return { student, classCourse, academicYear };
+	const student = await createStudent({ class: klass.id, institutionId: faculty.id });
+	return { student, classCourse, academicYear, institutionId: faculty.id };
 }
 
 describe("student course enrollments – ledger integration", () => {
 	it("tracks credits for lifecycle transitions", async () => {
-		const { student, classCourse } = await setupCourseWithCredits(30);
+		const { student, classCourse, institutionId } = await setupCourseWithCredits(30);
 		const enrollment = await enrollmentsService.createEnrollment({
 			studentId: student.id,
 			classCourseId: classCourse.id,
@@ -50,8 +52,8 @@ describe("student course enrollments – ledger integration", () => {
 		expect(summary.creditsEarned).toBe(0);
 
 		await enrollmentsService.updateStatus(
-			enrollment.id,
-			student.institutionId,
+			enrollment.record.id,
+			institutionId,
 			"completed",
 		);
 		summary = await summarizeStudent(student.id);

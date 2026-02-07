@@ -21,7 +21,11 @@ export async function applyDelta(
 	if (deltaProgress === 0 && deltaEarned === 0) {
 		return repo.upsert(studentId, academicYearId, requiredCredits);
 	}
-	const ledger = await repo.upsert(studentId, academicYearId, requiredCredits);
+	const ledger = await repo.upsert(
+		studentId,
+		academicYearId,
+		requiredCredits,
+	);
 	return repo.applyDelta(ledger.id, deltaProgress, deltaEarned);
 }
 

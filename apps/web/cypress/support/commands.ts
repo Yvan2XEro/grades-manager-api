@@ -51,7 +51,10 @@ Cypress.Commands.add("logout", () => {
 	cy.findByRole("button", { name: /logout|sign out|déconnexion/i })
 		.first()
 		.click();
-	cy.location("pathname", { timeout: 10000 }).should("include", "/auth/login");
+	cy.location("pathname", { timeout: 10000 }).should(
+		"include",
+		"/auth/login",
+	);
 });
 
 declare global {

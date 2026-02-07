@@ -139,7 +139,9 @@ export async function listExecutions(opts: {
 		opts.executedBy
 			? eq(schema.promotionExecutions.executedBy, opts.executedBy)
 			: undefined,
-		opts.cursor ? gt(schema.promotionExecutions.id, opts.cursor) : undefined,
+		opts.cursor
+			? gt(schema.promotionExecutions.id, opts.cursor)
+			: undefined,
 	].filter(Boolean);
 
 	const items = await db

@@ -16,7 +16,9 @@ import { authClient } from "../../lib/auth-client";
 const buildLoginSchema = (t: TFunction) =>
 	z.object({
 		email: z.string().email(t("auth.validation.email")),
-		password: z.string().min(6, t("auth.validation.passwordMin", { count: 6 })),
+		password: z
+			.string()
+			.min(6, t("auth.validation.passwordMin", { count: 6 })),
 	});
 
 type LoginFormData = z.infer<ReturnType<typeof buildLoginSchema>>;
@@ -34,18 +36,17 @@ const Login: React.FC = () => {
 	});
 	const [callbackURL] = useQueryState("return", {});
 	const onSubmit = async (data: LoginFormData) => {
-		try {
-			await authClient.signIn.email({
-				email: data.email,
-				password: data.password,
+		const result = await authClient.signIn.email({
+			email: data.email,
+			password: data.password,
+			callbackURL: callbackURL || undefined,
+		});
 
-				callbackURL: callbackURL || undefined,
-			});
-
+		if (result.error) {
+			toast.error(result.error.message || t("auth.login.error"));
+		} else {
 			toast.success(t("auth.login.success"));
 			// Navigation happens automatically through auth state change listener
-		} catch (error: any) {
-			toast.error(error.message || t("auth.login.error"));
 		}
 	};
 
@@ -99,7 +100,11 @@ const Login: React.FC = () => {
 					</div>
 				</div>
 
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="mt-6 w-full"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

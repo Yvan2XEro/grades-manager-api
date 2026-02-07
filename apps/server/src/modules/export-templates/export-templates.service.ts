@@ -2,6 +2,8 @@ import type {
 	ExportTemplate,
 	ExportTemplateType,
 } from "../../db/schema/app-schema";
+import { loadTemplate } from "../exports/template-helper";
+import * as repo from "./export-templates.repo";
 import type {
 	CreateExportTemplateInput,
 	DeleteExportTemplateInput,
@@ -10,8 +12,6 @@ import type {
 	SetDefaultTemplateInput,
 	UpdateExportTemplateInput,
 } from "./export-templates.zod";
-import * as repo from "./export-templates.repo";
-import { loadTemplate } from "../exports/template-helper";
 
 export async function listTemplates(
 	institutionId: string,
@@ -52,7 +52,8 @@ export async function createTemplate(
 	}
 
 	const templateBody =
-		input.templateBody ?? loadTemplate(input.type as "pv" | "evaluation" | "ue");
+		input.templateBody ??
+		loadTemplate(input.type as "pv" | "evaluation" | "ue");
 
 	return await repo.createTemplate({
 		institutionId,

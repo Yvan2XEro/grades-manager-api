@@ -59,7 +59,9 @@ const TeacherDashboard: React.FC = () => {
 					},
 				};
 
-			const { items: years } = await trpcClient.academicYears.list.query({});
+			const { items: years } = await trpcClient.academicYears.list.query(
+				{},
+			);
 			const activeYear = years.find((y) => y.isActive);
 			if (!activeYear)
 				return {
@@ -81,7 +83,9 @@ const TeacherDashboard: React.FC = () => {
 			let totalStudents = 0;
 
 			for (const cc of items) {
-				const klass = await trpcClient.classes.getById.query({ id: cc.class });
+				const klass = await trpcClient.classes.getById.query({
+					id: cc.class,
+				});
 				if (klass.academicYear !== activeYear.id) continue;
 
 				const [course, program, students, exams] = await Promise.all([
@@ -124,14 +128,18 @@ const TeacherDashboard: React.FC = () => {
 			}
 
 			upcoming.sort(
-				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+				(a, b) =>
+					new Date(a.date).getTime() - new Date(b.date).getTime(),
 			);
 
 			const stats = {
 				totalCourses: courses.length,
 				totalClasses: new Set(courses.map((c) => c.class_name)).size,
 				totalStudents,
-				totalExams: courses.reduce((sum, c) => sum + c.upcoming_exams, 0),
+				totalExams: courses.reduce(
+					(sum, c) => sum + c.upcoming_exams,
+					0,
+				),
 			};
 
 			return {
@@ -211,7 +219,9 @@ const TeacherDashboard: React.FC = () => {
 								<stat.Icon className="h-6 w-6" />
 							</div>
 							<div>
-								<p className="text-muted-foreground text-sm">{stat.label}</p>
+								<p className="text-muted-foreground text-sm">
+									{stat.label}
+								</p>
 								<p className="font-semibold text-2xl text-foreground">
 									{stat.value}
 								</p>
@@ -224,7 +234,9 @@ const TeacherDashboard: React.FC = () => {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				<Card className="lg:col-span-2">
 					<CardHeader className="border-b pb-4">
-						<CardTitle>{t("teacher.dashboard.courses.title")}</CardTitle>
+						<CardTitle>
+							{t("teacher.dashboard.courses.title")}
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="divide-y">
 						{courses.length === 0 ? (
@@ -232,10 +244,14 @@ const TeacherDashboard: React.FC = () => {
 								<BookOpen className="h-12 w-12 text-muted-foreground/60" />
 								<div>
 									<p className="font-medium text-foreground text-lg">
-										{t("teacher.dashboard.courses.empty.title")}
+										{t(
+											"teacher.dashboard.courses.empty.title",
+										)}
 									</p>
 									<p className="text-muted-foreground text-sm">
-										{t("teacher.dashboard.courses.empty.description")}
+										{t(
+											"teacher.dashboard.courses.empty.description",
+										)}
 									</p>
 								</div>
 							</div>
@@ -254,18 +270,24 @@ const TeacherDashboard: React.FC = () => {
 														{course.name}
 													</p>
 													<p className="text-muted-foreground text-sm">
-														{course.class_name} • {course.program_name}
+														{course.class_name} •{" "}
+														{course.program_name}
 													</p>
 												</div>
 												{course.isDelegated ? (
 													<Badge variant="secondary">
-														{t("teacher.courses.delegatedBadge", {
-															defaultValue: "Delegated",
-														})}
+														{t(
+															"teacher.courses.delegatedBadge",
+															{
+																defaultValue:
+																	"Delegated",
+															},
+														)}
 													</Badge>
 												) : null}
 											</div>
-											{(course.cycle_name || course.cycle_level_name) && (
+											{(course.cycle_name ||
+												course.cycle_level_name) && (
 												<div className="mt-1 flex flex-wrap gap-2 text-xs">
 													{course.cycle_name && (
 														<Badge variant="outline">
@@ -277,7 +299,9 @@ const TeacherDashboard: React.FC = () => {
 													)}
 													{course.cycle_level_name && (
 														<Badge variant="secondary">
-															{course.cycle_level_name}
+															{
+																course.cycle_level_name
+															}
 															{course.cycle_level_code
 																? ` (${course.cycle_level_code})`
 																: ""}
@@ -288,14 +312,17 @@ const TeacherDashboard: React.FC = () => {
 										</div>
 										<div className="flex items-center gap-4 text-muted-foreground text-sm">
 											<span className="flex items-center gap-1">
-												<Users className="h-4 w-4" /> {course.student_count}
+												<Users className="h-4 w-4" />{" "}
+												{course.student_count}
 											</span>
 											<span className="flex items-center gap-1">
 												<ClipboardList className="h-4 w-4" />{" "}
 												{course.upcoming_exams}
 											</span>
 											<span className="font-medium text-primary">
-												{t("teacher.dashboard.courses.view")}
+												{t(
+													"teacher.dashboard.courses.view",
+												)}
 											</span>
 										</div>
 									</div>
@@ -314,7 +341,9 @@ const TeacherDashboard: React.FC = () => {
 
 				<Card>
 					<CardHeader className="border-b pb-4">
-						<CardTitle>{t("teacher.dashboard.exams.title")}</CardTitle>
+						<CardTitle>
+							{t("teacher.dashboard.exams.title")}
+						</CardTitle>
 					</CardHeader>
 					<CardContent className="divide-y">
 						{upcomingExams.length === 0 ? (
@@ -322,10 +351,14 @@ const TeacherDashboard: React.FC = () => {
 								<Calendar className="h-12 w-12 text-muted-foreground/60" />
 								<div>
 									<p className="font-medium text-foreground text-lg">
-										{t("teacher.dashboard.exams.empty.title")}
+										{t(
+											"teacher.dashboard.exams.empty.title",
+										)}
 									</p>
 									<p className="text-muted-foreground text-sm">
-										{t("teacher.dashboard.exams.empty.description")}
+										{t(
+											"teacher.dashboard.exams.empty.description",
+										)}
 									</p>
 								</div>
 							</div>
@@ -338,18 +371,28 @@ const TeacherDashboard: React.FC = () => {
 												{exam.name}
 											</p>
 											<p className="text-muted-foreground text-sm">
-												{exam.course_name} • {exam.class_name}
+												{exam.course_name} •{" "}
+												{exam.class_name}
 											</p>
 										</div>
-										<Badge variant="outline" className="text-primary">
-											{t("teacher.dashboard.exams.percentage", {
-												value: exam.percentage,
-											})}
+										<Badge
+											variant="outline"
+											className="text-primary"
+										>
+											{t(
+												"teacher.dashboard.exams.percentage",
+												{
+													value: exam.percentage,
+												},
+											)}
 										</Badge>
 									</div>
 									<div className="mt-2 flex items-center text-muted-foreground text-sm">
 										<Clock className="mr-1 h-4 w-4" />
-										{format(new Date(exam.date), "MMMM d, yyyy")}
+										{format(
+											new Date(exam.date),
+											"MMMM d, yyyy",
+										)}
 									</div>
 								</div>
 							))

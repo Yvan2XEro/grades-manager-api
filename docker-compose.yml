@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/yvan2xero/grades-manager-server:latest
+    image: ghcr.io/yvan2xero/tkams-server:latest
     build:
       context: .
       dockerfile: apps/server/Dockerfile
@@ -26,7 +26,7 @@ services:
         condition: service_healthy
 
   web:
-    image: ghcr.io/yvan2xero/grades-manager-web:latest
+    image: ghcr.io/yvan2xero/tkams-web:latest
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -49,6 +49,9 @@ services:
       POSTGRES_DB: grades
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "54321:5432"
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s

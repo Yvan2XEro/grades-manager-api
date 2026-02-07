@@ -3,7 +3,7 @@
 
 services:
   server:
-    image: ghcr.io/yvan2xero/grades-manager-server:latest
+    image: ghcr.io/yvan2xero/tkams-server:latest
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: ghcr.io/yvan2xero/grades-manager-web:latest
+    image: ghcr.io/yvan2xero/tkams-web:latest
     environment:
       NODE_ENV: production
       PORT: 4173

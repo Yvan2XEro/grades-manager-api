@@ -12,7 +12,10 @@ async function ensureProgram(programId: string, institutionId: string) {
 		),
 	});
 	if (!program) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Program not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Program not found",
+		});
 	}
 	return program;
 }

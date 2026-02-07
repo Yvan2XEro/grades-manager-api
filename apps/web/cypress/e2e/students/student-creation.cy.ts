@@ -52,9 +52,9 @@ describe("Student Management - Creation", () => {
 			}).click();
 
 			// Should show success message
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Should see the student in the list
 			cy.contains("Jean").should("exist");
@@ -105,9 +105,9 @@ describe("Student Management - Creation", () => {
 			}).click();
 
 			// Should create successfully
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Should see auto-generated registration number in the list
 			cy.get("body").then(($body) => {
@@ -161,7 +161,9 @@ describe("Student Management - Creation", () => {
 			// Should show email validation error
 			cy.get("body").then(($body) => {
 				const hasEmailError =
-					$body.text().match(/email.*invalid|email.*valide|format/i) !== null;
+					$body
+						.text()
+						.match(/email.*invalid|email.*valide|format/i) !== null;
 				const inputInvalid =
 					$body.find('input[type="email"]:invalid').length > 0;
 
@@ -208,9 +210,9 @@ describe("Student Management - Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Try to create second student with same email
 			cy.findByRole("button", {
@@ -295,9 +297,9 @@ describe("Student Management - Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Verify student appears in list
 			cy.contains(firstName, { timeout: 5000 }).should("exist");

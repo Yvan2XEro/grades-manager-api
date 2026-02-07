@@ -30,15 +30,20 @@ const WorkflowApprovals = () => {
 			}),
 		onSuccess: () => {
 			toast.success(
-				t("dean.workflows.toast.validated", { defaultValue: "Exam approved" }),
+				t("dean.workflows.toast.validated", {
+					defaultValue: "Exam approved",
+				}),
 			);
-			queryClient.invalidateQueries(trpc.exams.list.queryKey({ limit: 100 }));
+			queryClient.invalidateQueries(
+				trpc.exams.list.queryKey({ limit: 100 }),
+			);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
 
 	const pendingExams =
-		examsQuery.data?.items?.filter((exam) => exam.status === "submitted") ?? [];
+		examsQuery.data?.items?.filter((exam) => exam.status === "submitted") ??
+		[];
 	const pendingNotifications = notificationsQuery.data ?? [];
 
 	return (
@@ -48,14 +53,18 @@ const WorkflowApprovals = () => {
 					<h1 className="font-semibold text-2xl text-gray-900">
 						{t("dean.workflows.title")}
 					</h1>
-					<p className="text-gray-600">{t("dean.workflows.subtitle")}</p>
+					<p className="text-gray-600">
+						{t("dean.workflows.subtitle")}
+					</p>
 				</div>
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-2">
 				<div className="rounded-xl border bg-white p-6 shadow-sm">
 					<h2 className="font-semibold text-gray-900 text-lg">
-						{t("dean.workflows.queue", { defaultValue: "Submitted exams" })}
+						{t("dean.workflows.queue", {
+							defaultValue: "Submitted exams",
+						})}
 					</h2>
 					<div className="mt-4 space-y-3">
 						{pendingExams.length ? (
@@ -65,15 +74,20 @@ const WorkflowApprovals = () => {
 									className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
 								>
 									<div>
-										<p className="font-medium text-gray-900">{exam.name}</p>
+										<p className="font-medium text-gray-900">
+											{exam.name}
+										</p>
 										<p className="text-gray-500 text-xs">
-											{exam.classCourse} • {exam.percentage}%
+											{exam.classCourse} •{" "}
+											{exam.percentage}%
 										</p>
 									</div>
 									<button
 										type="button"
 										className="flex items-center rounded-lg bg-primary-600 px-3 py-2 font-semibold text-white text-xs"
-										onClick={() => validateExam.mutate(exam.id)}
+										onClick={() =>
+											validateExam.mutate(exam.id)
+										}
 									>
 										<ShieldCheck className="mr-1 h-4 w-4" />
 										{t("dean.workflows.actions.validate", {
@@ -106,7 +120,9 @@ const WorkflowApprovals = () => {
 								>
 									<div className="flex items-center space-x-3">
 										<div className="rounded-full bg-white p-2 text-primary-700">
-											{notification.type.includes("enrollment") ? (
+											{notification.type.includes(
+												"enrollment",
+											) ? (
 												<Clock3 className="h-5 w-5" />
 											) : (
 												<ClipboardCheck className="h-5 w-5" />
@@ -117,7 +133,9 @@ const WorkflowApprovals = () => {
 												{notification.type}
 											</p>
 											<p className="text-gray-500 text-xs">
-												{JSON.stringify(notification.payload)}
+												{JSON.stringify(
+													notification.payload,
+												)}
 											</p>
 										</div>
 									</div>
@@ -137,7 +155,9 @@ const WorkflowApprovals = () => {
 
 			<div className="rounded-xl border bg-white p-6 shadow-sm">
 				<h2 className="mb-3 font-semibold text-gray-900 text-lg">
-					{t("dean.workflows.windows", { defaultValue: "Enrollment windows" })}
+					{t("dean.workflows.windows", {
+						defaultValue: "Enrollment windows",
+					})}
 				</h2>
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 					{windowsQuery.data?.map((window) => (
@@ -146,7 +166,9 @@ const WorkflowApprovals = () => {
 							className="rounded-lg border px-4 py-3 text-gray-700 text-sm"
 						>
 							<p className="font-semibold">{window.classId}</p>
-							<p className="text-gray-500 text-xs">{window.academicYearId}</p>
+							<p className="text-gray-500 text-xs">
+								{window.academicYearId}
+							</p>
 							<p className="mt-1 text-primary-700 text-xs uppercase">
 								{window.status}
 							</p>

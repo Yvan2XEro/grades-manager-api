@@ -22,7 +22,9 @@ const buildRegisterSchema = (t: TFunction) =>
 			password: z
 				.string()
 				.min(6, t("auth.validation.passwordMin", { count: 6 })),
-			confirmPassword: z.string().min(6, t("auth.validation.confirmPassword")),
+			confirmPassword: z
+				.string()
+				.min(6, t("auth.validation.confirmPassword")),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: t("auth.validation.passwordsMismatch"),
@@ -46,24 +48,30 @@ const Register: React.FC = () => {
 	});
 
 	const onSubmit = async (data: RegisterFormData) => {
-		try {
-			await authClient.signUp.email({
-				email: data.email,
-				password: data.password,
-				name: `${data.firstName} ${data.lastName}`,
-			});
+		const signUpResult = await authClient.signUp.email({
+			email: data.email,
+			password: data.password,
+			name: `${data.firstName} ${data.lastName}`,
+		});
 
-			await authClient.signIn.email({
-				email: data.email,
-				password: data.password,
-				callbackURL: callbackURL || undefined,
-			});
-
-			toast.success(t("auth.register.success"));
-			navigate("/teacher");
-		} catch (error: any) {
-			toast.error(error.message || t("auth.register.error"));
+		if (signUpResult.error) {
+			toast.error(signUpResult.error.message || t("auth.register.error"));
+			return;
 		}
+
+		const signInResult = await authClient.signIn.email({
+			email: data.email,
+			password: data.password,
+			callbackURL: callbackURL || undefined,
+		});
+
+		if (signInResult.error) {
+			toast.error(signInResult.error.message || t("auth.login.error"));
+			return;
+		}
+
+		toast.success(t("auth.register.success"));
+		navigate("/teacher");
 	};
 
 	return (
@@ -83,7 +91,9 @@ const Register: React.FC = () => {
 							type="text"
 							{...register("firstName")}
 							className="w-full"
-							placeholder={t("auth.register.placeholders.firstName")}
+							placeholder={t(
+								"auth.register.placeholders.firstName",
+							)}
 						/>
 						{errors.firstName && (
 							<p className="mt-1 text-error-600 text-sm">
@@ -101,7 +111,9 @@ const Register: React.FC = () => {
 							type="text"
 							{...register("lastName")}
 							className="w-full"
-							placeholder={t("auth.register.placeholders.lastName")}
+							placeholder={t(
+								"auth.register.placeholders.lastName",
+							)}
 						/>
 						{errors.lastName && (
 							<p className="mt-1 text-error-600 text-sm">
@@ -156,7 +168,9 @@ const Register: React.FC = () => {
 						type="password"
 						{...register("confirmPassword")}
 						className="w-full"
-						placeholder={t("auth.register.placeholders.confirmPassword")}
+						placeholder={t(
+							"auth.register.placeholders.confirmPassword",
+						)}
 					/>
 					{errors.confirmPassword && (
 						<p className="mt-1 text-error-600 text-sm">
@@ -165,7 +179,11 @@ const Register: React.FC = () => {
 					)}
 				</div>
 
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="mt-6 w-full"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

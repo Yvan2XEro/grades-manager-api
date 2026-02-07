@@ -69,7 +69,8 @@ const TeachingUnitManagement = () => {
 	);
 
 	const deleteMutation = useMutation({
-		mutationFn: (id: string) => trpcClient.teachingUnits.delete.mutate({ id }),
+		mutationFn: (id: string) =>
+			trpcClient.teachingUnits.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(
 				t("admin.teachingUnits.toast.deleted", {
@@ -111,11 +112,14 @@ const TeachingUnitManagement = () => {
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h1 className="font-semibold text-2xl">
-						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
+						{t("admin.teachingUnits.title", {
+							defaultValue: "Teaching units",
+						})}
 					</h1>
 					<p className="text-muted-foreground">
 						{t("admin.teachingUnits.subtitle", {
-							defaultValue: "Manage UE catalog, semesters, and prerequisites.",
+							defaultValue:
+								"Manage UE catalog, semesters, and prerequisites.",
 						})}
 					</p>
 				</div>
@@ -145,18 +149,26 @@ const TeachingUnitManagement = () => {
 					<div className="flex flex-wrap items-center gap-2">
 						<Select
 							value={selectedProgramId || undefined}
-							onValueChange={(value) => setSelectedProgramId(value)}
+							onValueChange={(value) =>
+								setSelectedProgramId(value)
+							}
 						>
 							<SelectTrigger className="min-w-48">
 								<SelectValue
-									placeholder={t("admin.teachingUnits.selectProgram", {
-										defaultValue: "Select program",
-									})}
+									placeholder={t(
+										"admin.teachingUnits.selectProgram",
+										{
+											defaultValue: "Select program",
+										},
+									)}
 								/>
 							</SelectTrigger>
 							<SelectContent>
 								{programList.map((program) => (
-									<SelectItem key={program.id} value={program.id}>
+									<SelectItem
+										key={program.id}
+										value={program.id}
+									>
 										{program.name}
 									</SelectItem>
 								))}
@@ -167,7 +179,9 @@ const TeachingUnitManagement = () => {
 							onClick={() => setSelectedProgramId("")}
 							disabled={!selectedProgramId}
 						>
-							{t("common.actions.reset", { defaultValue: "Reset" })}
+							{t("common.actions.reset", {
+								defaultValue: "Reset",
+							})}
 						</Button>
 					</div>
 				</CardHeader>
@@ -177,16 +191,30 @@ const TeachingUnitManagement = () => {
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead>{t("admin.teachingUnits.table.code")}</TableHead>
-										<TableHead>{t("admin.teachingUnits.table.name")}</TableHead>
 										<TableHead>
-											{t("admin.teachingUnits.table.program")}
+											{t(
+												"admin.teachingUnits.table.code",
+											)}
 										</TableHead>
 										<TableHead>
-											{t("admin.teachingUnits.table.semester")}
+											{t(
+												"admin.teachingUnits.table.name",
+											)}
 										</TableHead>
 										<TableHead>
-											{t("admin.teachingUnits.table.credits")}
+											{t(
+												"admin.teachingUnits.table.program",
+											)}
+										</TableHead>
+										<TableHead>
+											{t(
+												"admin.teachingUnits.table.semester",
+											)}
+										</TableHead>
+										<TableHead>
+											{t(
+												"admin.teachingUnits.table.credits",
+											)}
 										</TableHead>
 										<TableHead className="text-right">
 											{t("common.table.actions")}
@@ -199,45 +227,80 @@ const TeachingUnitManagement = () => {
 											<TableCell>
 												<ClipboardCopy
 													value={unit.code}
-													label={t("admin.teachingUnits.table.code", {
-														defaultValue: "Code",
-													})}
+													label={t(
+														"admin.teachingUnits.table.code",
+														{
+															defaultValue:
+																"Code",
+														},
+													)}
 												/>
 											</TableCell>
-											<TableCell className="font-medium">{unit.name}</TableCell>
+											<TableCell className="font-medium">
+												{unit.name}
+											</TableCell>
 											<TableCell>
 												{(() => {
-													const programInfo = programMap.get(unit.programId);
+													const programInfo =
+														programMap.get(
+															unit.programId,
+														);
 													if (!programInfo) {
-														return t("common.labels.notAvailable", {
-															defaultValue: "N/A",
-														});
+														return t(
+															"common.labels.notAvailable",
+															{
+																defaultValue:
+																	"N/A",
+															},
+														);
 													}
-													return <p>{programInfo.name}</p>;
+													return (
+														<p>
+															{programInfo.name}
+														</p>
+													);
 												})()}
 											</TableCell>
 											<TableCell>
-												{t(`admin.teachingUnits.semesters.${unit.semester}`, {
-													defaultValue: unit.semester,
-												})}
+												{t(
+													`admin.teachingUnits.semesters.${unit.semester}`,
+													{
+														defaultValue:
+															unit.semester,
+													},
+												)}
 											</TableCell>
-											<TableCell>{unit.credits}</TableCell>
+											<TableCell>
+												{unit.credits}
+											</TableCell>
 											<TableCell className="text-right">
 												<div className="flex justify-end gap-2">
 													<Button
 														variant="ghost"
 														size="sm"
 														onClick={() =>
-															navigate(`/admin/teaching-units/${unit.id}`)
+															navigate(
+																`/admin/teaching-units/${unit.id}`,
+															)
 														}
 													>
-														{t("common.actions.open", { defaultValue: "Open" })}
+														{t(
+															"common.actions.open",
+															{
+																defaultValue:
+																	"Open",
+															},
+														)}
 													</Button>
 													<Button
 														variant="ghost"
 														size="icon-sm"
 														className="text-destructive hover:text-destructive"
-														onClick={() => handleOpenDelete(unit.id)}
+														onClick={() =>
+															handleOpenDelete(
+																unit.id,
+															)
+														}
 													>
 														<Trash2 className="h-4 w-4" />
 													</Button>
@@ -256,7 +319,8 @@ const TeachingUnitManagement = () => {
 								</EmptyMedia>
 								<EmptyTitle>
 									{t("admin.teachingUnits.empty", {
-										defaultValue: "No units yet for this program.",
+										defaultValue:
+											"No units yet for this program.",
 									})}
 								</EmptyTitle>
 								<EmptyDescription>
@@ -267,7 +331,11 @@ const TeachingUnitManagement = () => {
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
-								<Button onClick={() => navigate("/admin/teaching-units/+")}>
+								<Button
+									onClick={() =>
+										navigate("/admin/teaching-units/+")
+									}
+								>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.teachingUnits.actions.create", {
 										defaultValue: "Create UE",

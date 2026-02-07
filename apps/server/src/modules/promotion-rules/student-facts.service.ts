@@ -3,6 +3,8 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { StudentPromotionFacts } from "./promotion-rules.types";
 
+export type { StudentPromotionFacts };
+
 const PASSING_GRADE = 10;
 const COMPENSABLE_THRESHOLD = 8;
 
@@ -77,7 +79,9 @@ export async function refreshClassPromotionSummaries(
 
 	const results: StudentPromotionFacts[] = [];
 	for (const student of students) {
-		results.push(await refreshStudentPromotionSummary(student.id, academicYearId));
+		results.push(
+			await refreshStudentPromotionSummary(student.id, academicYearId),
+		);
 	}
 	return results;
 }
@@ -201,7 +205,8 @@ async function buildStudentFacts(
 		creditSuccessRate: creditSummary.creditSuccessRate,
 
 		// Attempts and retakes
-		coursesWithMultipleAttempts: enrollmentStats.coursesWithMultipleAttempts,
+		coursesWithMultipleAttempts:
+			enrollmentStats.coursesWithMultipleAttempts,
 		maxAttemptCount: enrollmentStats.maxAttemptCount,
 		totalAttempts: enrollmentStats.totalAttempts,
 		activeCourses: enrollmentStats.activeCourses,
@@ -231,7 +236,8 @@ async function buildStudentFacts(
 				: 0) >= 0.75 && transcript.overallAverage >= PASSING_GRADE,
 		progressionRate:
 			enrollmentHistory.activeYearsCount > 0
-				? creditSummary.creditsEarned / enrollmentHistory.activeYearsCount
+				? creditSummary.creditsEarned /
+					enrollmentHistory.activeYearsCount
 				: 0,
 		projectedCreditsEndOfYear:
 			creditSummary.creditsEarned + creditSummary.creditsInProgress,
@@ -246,7 +252,8 @@ async function buildStudentFacts(
 			currentEnrollment?.admissionType === "direct" ||
 			currentEnrollment?.admissionType === "equivalence",
 		hasAcademicHistory:
-			transcript.overallAverage > 0 || transcript.validatedCoursesCount > 0,
+			transcript.overallAverage > 0 ||
+			transcript.validatedCoursesCount > 0,
 		transferCredits: currentEnrollment?.transferCredits ?? 0,
 		transferInstitution: currentEnrollment?.transferInstitution ?? null,
 		transferLevel: currentEnrollment?.transferLevel ?? null,
@@ -319,10 +326,20 @@ function mapFactsToSummaryRecord(
 
 /**
  * Get student transcript with course and unit averages.
+ * Properly handles retake exam scoring policies (replace vs best_of).
  */
 async function getStudentTranscript(studentId: string) {
-	const courseScores = await db
+	// First, get all grades with exam details including retake info
+	const rawGrades = await db
 		.select({
+			gradeId: schema.grades.id,
+			gradeScore: schema.grades.score,
+			examId: schema.exams.id,
+			examPercentage: schema.exams.percentage,
+			examSessionType: schema.exams.sessionType,
+			examParentId: schema.exams.parentExamId,
+			examScoringPolicy: schema.exams.scoringPolicy,
+			classCourseId: schema.classCourses.id,
 			courseId: schema.courses.id,
 			courseName: schema.courses.name,
 			courseCode: schema.courses.code,
@@ -330,9 +347,6 @@ async function getStudentTranscript(studentId: string) {
 			unitName: schema.teachingUnits.name,
 			unitCode: schema.teachingUnits.code,
 			unitCredits: schema.teachingUnits.credits,
-			score: sql<number>`
-				sum(${schema.grades.score} * (${schema.exams.percentage} / 100.0))
-			`,
 		})
 		.from(schema.grades)
 		.innerJoin(schema.exams, eq(schema.grades.exam, schema.exams.id))
@@ -348,16 +362,142 @@ async function getStudentTranscript(studentId: string) {
 			schema.teachingUnits,
 			eq(schema.courses.teachingUnitId, schema.teachingUnits.id),
 		)
-		.where(eq(schema.grades.student, studentId))
-		.groupBy(
-			schema.courses.id,
-			schema.courses.name,
-			schema.courses.code,
-			schema.teachingUnits.id,
-			schema.teachingUnits.name,
-			schema.teachingUnits.code,
-			schema.teachingUnits.credits,
-		);
+		.where(eq(schema.grades.student, studentId));
+
+	// Apply retake scoring policies to determine effective grades per exam
+	// Group grades by classCourse to handle retake relationships
+	const gradesByClassCourse = new Map<
+		string,
+		Array<(typeof rawGrades)[number]>
+	>();
+	for (const grade of rawGrades) {
+		const existing = gradesByClassCourse.get(grade.classCourseId) ?? [];
+		existing.push(grade);
+		gradesByClassCourse.set(grade.classCourseId, existing);
+	}
+
+	// Build effective grades considering retake policies
+	const effectiveGrades: Array<{
+		courseId: string;
+		courseName: string;
+		courseCode: string;
+		teachingUnitId: string;
+		unitName: string;
+		unitCode: string;
+		unitCredits: number;
+		effectiveScore: number;
+		percentage: number;
+	}> = [];
+
+	for (const [_classCourseId, grades] of gradesByClassCourse) {
+		// Separate normal and retake exams
+		const normalExams = grades.filter((g) => g.examSessionType === "normal");
+		const retakeExams = grades.filter((g) => g.examSessionType === "retake");
+
+		// Build a map of parent exam IDs to their retake grades
+		const retakeByParent = new Map<string, (typeof grades)[number]>();
+		for (const retake of retakeExams) {
+			if (retake.examParentId) {
+				retakeByParent.set(retake.examParentId, retake);
+			}
+		}
+
+		// Process each normal exam, applying retake policies
+		for (const normalGrade of normalExams) {
+			const retakeGrade = retakeByParent.get(normalGrade.examId);
+			let effectiveScore = Number(normalGrade.gradeScore);
+			const percentage = Number(normalGrade.examPercentage);
+
+			if (retakeGrade) {
+				const retakeScore = Number(retakeGrade.gradeScore);
+				const scoringPolicy = retakeGrade.examScoringPolicy ?? "replace";
+
+				if (scoringPolicy === "replace") {
+					// Replace: use retake grade only
+					effectiveScore = retakeScore;
+				} else if (scoringPolicy === "best_of") {
+					// Best of: use the higher grade
+					effectiveScore = Math.max(effectiveScore, retakeScore);
+				}
+				// Remove from retake map so we don't double-count
+				retakeByParent.delete(normalGrade.examId);
+			}
+
+			effectiveGrades.push({
+				courseId: normalGrade.courseId,
+				courseName: normalGrade.courseName,
+				courseCode: normalGrade.courseCode,
+				teachingUnitId: normalGrade.teachingUnitId,
+				unitName: normalGrade.unitName,
+				unitCode: normalGrade.unitCode,
+				unitCredits: Number(normalGrade.unitCredits),
+				effectiveScore,
+				percentage,
+			});
+		}
+
+		// Handle any orphaned retake exams (without parent grades)
+		for (const retakeGrade of retakeByParent.values()) {
+			effectiveGrades.push({
+				courseId: retakeGrade.courseId,
+				courseName: retakeGrade.courseName,
+				courseCode: retakeGrade.courseCode,
+				teachingUnitId: retakeGrade.teachingUnitId,
+				unitName: retakeGrade.unitName,
+				unitCode: retakeGrade.unitCode,
+				unitCredits: Number(retakeGrade.unitCredits),
+				effectiveScore: Number(retakeGrade.gradeScore),
+				percentage: Number(retakeGrade.examPercentage),
+			});
+		}
+	}
+
+	// Now aggregate effective grades by course
+	const courseScoreMap = new Map<
+		string,
+		{
+			courseId: string;
+			courseName: string;
+			courseCode: string;
+			teachingUnitId: string;
+			unitName: string;
+			unitCode: string;
+			unitCredits: number;
+			weightedSum: number;
+		}
+	>();
+
+	for (const grade of effectiveGrades) {
+		const existing = courseScoreMap.get(grade.courseId);
+		const weightedScore = grade.effectiveScore * (grade.percentage / 100);
+
+		if (existing) {
+			existing.weightedSum += weightedScore;
+		} else {
+			courseScoreMap.set(grade.courseId, {
+				courseId: grade.courseId,
+				courseName: grade.courseName,
+				courseCode: grade.courseCode,
+				teachingUnitId: grade.teachingUnitId,
+				unitName: grade.unitName,
+				unitCode: grade.unitCode,
+				unitCredits: grade.unitCredits,
+				weightedSum: weightedScore,
+			});
+		}
+	}
+
+	// Convert to array format expected by the rest of the function
+	const courseScores = Array.from(courseScoreMap.values()).map((course) => ({
+		courseId: course.courseId,
+		courseName: course.courseName,
+		courseCode: course.courseCode,
+		teachingUnitId: course.teachingUnitId,
+		unitName: course.unitName,
+		unitCode: course.unitCode,
+		unitCredits: course.unitCredits,
+		score: course.weightedSum,
+	}));
 
 	// Organize by teaching units
 	const unitMap = new Map<
@@ -437,7 +577,8 @@ async function getStudentTranscript(studentId: string) {
 	let validatedUnitsCount = 0;
 
 	for (const [unitId, unit] of unitMap.entries()) {
-		const unitAvg = unit.courseCount > 0 ? unit.scoreSum / unit.courseCount : 0;
+		const unitAvg =
+			unit.courseCount > 0 ? unit.scoreSum / unit.courseCount : 0;
 		averageByTeachingUnit[unitId] = {
 			average: unitAvg,
 			code: unit.code,
@@ -467,8 +608,12 @@ async function getStudentTranscript(studentId: string) {
 			? Math.max(...courseAverages)
 			: Number.NEGATIVE_INFINITY;
 
-	const scoresAbove10 = courseAverages.filter((s) => s >= PASSING_GRADE).length;
-	const scoresBelow10 = courseAverages.filter((s) => s < PASSING_GRADE).length;
+	const scoresAbove10 = courseAverages.filter(
+		(s) => s >= PASSING_GRADE,
+	).length;
+	const scoresBelow10 = courseAverages.filter(
+		(s) => s < PASSING_GRADE,
+	).length;
 	const scoresBelow8 = courseAverages.filter(
 		(s) => s < COMPENSABLE_THRESHOLD,
 	).length;
@@ -492,9 +637,12 @@ async function getStudentTranscript(studentId: string) {
 		averageByTeachingUnit,
 		averageByCourse,
 		lowestScore: lowestScore === Number.POSITIVE_INFINITY ? 0 : lowestScore,
-		highestScore: highestScore === Number.NEGATIVE_INFINITY ? 0 : highestScore,
+		highestScore:
+			highestScore === Number.NEGATIVE_INFINITY ? 0 : highestScore,
 		lowestUnitAverage:
-			lowestUnitAverage === Number.POSITIVE_INFINITY ? 0 : lowestUnitAverage,
+			lowestUnitAverage === Number.POSITIVE_INFINITY
+				? 0
+				: lowestUnitAverage,
 		scoresAbove10,
 		scoresBelow10,
 		scoresBelow8,
@@ -574,7 +722,10 @@ async function getCourseEnrollmentStats(
 		.where(
 			and(
 				eq(schema.studentCourseEnrollments.studentId, studentId),
-				eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
+				eq(
+					schema.studentCourseEnrollments.academicYearId,
+					academicYearId,
+				),
 			),
 		);
 
@@ -680,5 +831,42 @@ function computePerformanceIndex(
 	// 30% credit completion
 	// 20% success rate
 	const normalizedAverage = overallAverage / 20; // Assuming 0-20 scale
-	return normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20;
+	return (
+		normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20
+	);
+}
+
+/**
+ * Trigger recalculation of promotion summary after a retake grade is submitted.
+ * Looks up the academic year from the exam's class course and refreshes the student's summary.
+ */
+export async function refreshAfterRetakeGrade(
+	studentId: string,
+	examId: string,
+): Promise<StudentPromotionFacts | null> {
+	// Lookup the academic year from the exam's class course
+	const examInfo = await db
+		.select({
+			academicYearId: schema.classes.academicYear,
+		})
+		.from(schema.exams)
+		.innerJoin(
+			schema.classCourses,
+			eq(schema.exams.classCourse, schema.classCourses.id),
+		)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classCourses.class, schema.classes.id),
+		)
+		.where(eq(schema.exams.id, examId))
+		.limit(1);
+
+	if (!examInfo.length) {
+		return null;
+	}
+
+	const { academicYearId } = examInfo[0];
+
+	// Refresh the student's promotion summary
+	return refreshStudentPromotionSummary(studentId, academicYearId);
 }

@@ -78,7 +78,7 @@ export async function examIdsForEditor(
 				inArray(schema.examGradeEditors.examId, examIds),
 				eq(schema.examGradeEditors.editorProfileId, editorProfileId),
 			),
-	);
+		);
 	return rows.map((row) => row.examId);
 }
 

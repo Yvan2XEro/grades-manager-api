@@ -8,7 +8,9 @@ const NotificationsCenter = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
-	const notificationsQuery = useQuery(trpc.notifications.list.queryOptions({}));
+	const notificationsQuery = useQuery(
+		trpc.notifications.list.queryOptions({}),
+	);
 
 	const ackMutation = useMutation({
 		mutationFn: (id: string) =>
@@ -42,7 +44,9 @@ const NotificationsCenter = () => {
 					<h1 className="font-semibold text-2xl text-gray-900">
 						{t("admin.notifications.title")}
 					</h1>
-					<p className="text-gray-600">{t("admin.notifications.subtitle")}</p>
+					<p className="text-gray-600">
+						{t("admin.notifications.subtitle")}
+					</p>
 				</div>
 			</div>
 
@@ -90,7 +94,9 @@ const NotificationsCenter = () => {
 									)}
 								</div>
 								<div>
-									<p className="font-medium text-gray-900">{item.type}</p>
+									<p className="font-medium text-gray-900">
+										{item.type}
+									</p>
 									<p className="text-gray-600 text-sm">
 										{JSON.stringify(item.payload)}
 									</p>

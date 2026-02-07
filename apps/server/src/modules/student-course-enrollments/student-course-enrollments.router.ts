@@ -32,7 +32,9 @@ export const studentCourseEnrollmentsRouter = router({
 		),
 	getById: protectedProcedure
 		.input(idSchema)
-		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
+		.query(({ input, ctx }) =>
+			service.getById(input.id, ctx.institution.id),
+		),
 	list: protectedProcedure
 		.input(listSchema)
 		.query(({ input, ctx }) => service.list(input, ctx.institution.id)),

@@ -53,7 +53,9 @@ async function syncPrerequisites(
 	await db
 		.delete(schema.coursePrerequisites)
 		.where(eq(schema.coursePrerequisites.courseId, courseId));
-	const sanitized = prerequisiteCourseIds.filter((id) => id && id !== courseId);
+	const sanitized = prerequisiteCourseIds.filter(
+		(id) => id && id !== courseId,
+	);
 	if (!sanitized.length) return;
 	await db.insert(schema.coursePrerequisites).values(
 		sanitized.map((prereqId) => ({

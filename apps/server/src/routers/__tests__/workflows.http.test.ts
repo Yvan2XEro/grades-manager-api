@@ -73,7 +73,6 @@ describe("workflows router", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.profile.id,
-			weeklyHours: 2,
 		});
 
 		const student = await client.students.create.mutate({

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ClipboardList, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -11,7 +12,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
@@ -35,7 +35,9 @@ export default function CourseList() {
 		queryFn: async (): Promise<Course[]> => {
 			if (!user) return [];
 
-			const { items: years } = await trpcClient.academicYears.list.query({});
+			const { items: years } = await trpcClient.academicYears.list.query(
+				{},
+			);
 			const activeYear = years.find((y) => y.isActive);
 			if (!activeYear) return [];
 
@@ -47,12 +49,19 @@ export default function CourseList() {
 					});
 					if (klass.academicYear !== activeYear.id) return null;
 
-					const [course, program, students, exams] = await Promise.all([
-						trpcClient.courses.getById.query({ id: cc.course }),
-						trpcClient.programs.getById.query({ id: klass.program }),
-						trpcClient.students.list.query({ classId: klass.id }),
-						trpcClient.exams.list.query({ classCourseId: cc.id }),
-					]);
+					const [course, program, students, exams] =
+						await Promise.all([
+							trpcClient.courses.getById.query({ id: cc.course }),
+							trpcClient.programs.getById.query({
+								id: klass.program,
+							}),
+							trpcClient.students.list.query({
+								classId: klass.id,
+							}),
+							trpcClient.exams.list.query({
+								classCourseId: cc.id,
+							}),
+						]);
 
 					return {
 						id: cc.id,
@@ -85,7 +94,9 @@ export default function CourseList() {
 				<h2 className="font-bold text-2xl text-foreground">
 					{t("teacher.courses.title")}
 				</h2>
-				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
+				<p className="text-muted-foreground">
+					{t("teacher.courses.subtitle")}
+				</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -97,14 +108,18 @@ export default function CourseList() {
 									<div>
 										<CardTitle>{course.name}</CardTitle>
 										<CardDescription>
-											{course.class_name} • {course.program_name}
+											{course.class_name} •{" "}
+											{course.program_name}
 										</CardDescription>
 									</div>
 									{course.isDelegated ? (
 										<Badge variant="secondary">
-											{t("teacher.courses.delegatedBadge", {
-												defaultValue: "Delegated",
-											})}
+											{t(
+												"teacher.courses.delegatedBadge",
+												{
+													defaultValue: "Delegated",
+												},
+											)}
 										</Badge>
 									) : null}
 								</div>
@@ -122,7 +137,9 @@ export default function CourseList() {
 							<CardFooter className="justify-end">
 								<Button asChild size="sm">
 									<Link to={`/teacher/grades/${course.id}`}>
-										{t("teacher.courses.actions.viewGrades")}
+										{t(
+											"teacher.courses.actions.viewGrades",
+										)}
 									</Link>
 								</Button>
 							</CardFooter>

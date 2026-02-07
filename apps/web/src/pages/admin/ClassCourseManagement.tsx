@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Layers, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -83,6 +83,7 @@ const buildClassCourseSchema = (t: TFunction) =>
 				}),
 			),
 			semesterId: z.string().optional(),
+			coefficient: z.coerce.number().positive().default(1),
 		});
 
 type ClassCourseFormData = z.infer<ReturnType<typeof buildClassCourseSchema>>;
@@ -96,6 +97,7 @@ interface ClassCourse {
 	semesterId: string | null;
 	courseName?: string | null;
 	courseCode?: string | null;
+	coefficient: number;
 }
 
 interface Class {
@@ -133,6 +135,13 @@ export default function ClassCourseManagement() {
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
+	// UE bulk assignment state
+	const [isUeAssignOpen, setIsUeAssignOpen] = useState(false);
+	const [ueAssignClassId, setUeAssignClassId] = useState<string>("");
+	const [ueAssignUeId, setUeAssignUeId] = useState<string>("");
+	const [ueAssignClassSearch, setUeAssignClassSearch] = useState("");
+	const [skippedCourses, setSkippedCourses] = useState<string[]>([]);
+
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
@@ -140,7 +149,9 @@ export default function ClassCourseManagement() {
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({ limit: 100 });
+			const { items } = await trpcClient.classes.list.query({
+				limit: 100,
+			});
 			return items.map(
 				(cls) =>
 					({
@@ -202,7 +213,9 @@ export default function ClassCourseManagement() {
 	const { data: defaultCourses = [] } = useQuery({
 		queryKey: ["courses"],
 		queryFn: async () => {
-			const { items } = await trpcClient.courses.list.query({ limit: 100 });
+			const { items } = await trpcClient.courses.list.query({
+				limit: 100,
+			});
 			return items.map(
 				(course) =>
 					({
@@ -260,6 +273,7 @@ export default function ClassCourseManagement() {
 						semesterId: cc.semesterId ?? null,
 						courseName: cc.courseName,
 						courseCode: cc.courseCode,
+						coefficient: cc.coefficient ?? 1,
 					}) as ClassCourse,
 			);
 		},
@@ -271,6 +285,49 @@ export default function ClassCourseManagement() {
 	});
 	const semesters = semestersData?.items;
 
+	// Query for UE assignment: search classes
+	const { data: ueAssignSearchClasses = [] } = useQuery({
+		queryKey: ["classes", "search", ueAssignClassSearch],
+		queryFn: async () => {
+			const items = await trpcClient.classes.search.query({
+				query: ueAssignClassSearch,
+			});
+			return items.map((cls) => ({
+				id: cls.id,
+				name: cls.name,
+				code: cls.code,
+				program: cls.program,
+				programCode: cls.programInfo?.code ?? null,
+				cycleLevelCode: cls.cycleLevel?.code ?? null,
+				academicYearName: cls.academicYearInfo?.name ?? "",
+				semesterId: cls.semester?.id ?? null,
+				semesterCode: cls.semester?.code ?? null,
+			})) as Class[];
+		},
+		enabled: ueAssignClassSearch.length >= 2,
+	});
+	const ueAssignClasses =
+		ueAssignClassSearch.length >= 2 ? ueAssignSearchClasses : defaultClasses;
+
+	// Get selected class for UE assignment
+	const ueAssignSelectedClass = useMemo(
+		() => ueAssignClasses.find((c) => c.id === ueAssignClassId),
+		[ueAssignClasses, ueAssignClassId],
+	);
+
+	// Query for teaching units filtered by class's program
+	const { data: teachingUnits = [] } = useQuery({
+		queryKey: ["teachingUnits", ueAssignSelectedClass?.program],
+		queryFn: async () => {
+			if (!ueAssignSelectedClass?.program) return [];
+			const { items } = await trpcClient.teachingUnits.list.query({
+				programId: ueAssignSelectedClass.program,
+			});
+			return items;
+		},
+		enabled: Boolean(ueAssignSelectedClass?.program),
+	});
+
 	const form = useForm<ClassCourseFormData>({
 		resolver: zodResolver(classCourseSchema),
 		defaultValues: {
@@ -279,6 +336,7 @@ export default function ClassCourseManagement() {
 			teacher: "",
 			code: "",
 			semesterId: "",
+			coefficient: 1,
 		},
 	});
 	const { watch } = form;
@@ -301,7 +359,10 @@ export default function ClassCourseManagement() {
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
+		teacherOptions.map((teacher) => [
+			teacher.id,
+			formatTeacherName(teacher),
+		]),
 	);
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
@@ -324,7 +385,9 @@ export default function ClassCourseManagement() {
 			return;
 		}
 		if (!selectedSemesterId && semesters && semesters.length > 0) {
-			form.setValue("semesterId", semesters[0].id, { shouldDirty: false });
+			form.setValue("semesterId", semesters[0].id, {
+				shouldDirty: false,
+			});
 		}
 	}, [
 		editingClassCourse,
@@ -449,6 +512,114 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	// Bulk UE assignment mutation
+	const bulkAssignMutation = useMutation({
+		mutationFn: async ({
+			classId,
+			teachingUnitId,
+		}: {
+			classId: string;
+			teachingUnitId: string;
+		}) => {
+			// Fetch all courses for this teaching unit
+			const { items: courses } = await trpcClient.courses.list.query({
+				teachingUnitId,
+				limit: 200,
+			});
+
+			const selectedClass = ueAssignClasses.find((c) => c.id === classId);
+			if (!selectedClass) throw new Error("Class not found");
+
+			// Get existing class-course codes for uniqueness
+			const existingCodes = (classCourses ?? []).map((cc) => cc.code);
+
+			const skipped: string[] = [];
+			const toCreate: Array<{
+				code: string;
+				class: string;
+				course: string;
+				teacher: string;
+				coefficient: number;
+				semesterId?: string;
+			}> = [];
+
+			for (const course of courses) {
+				if (!course.defaultTeacher) {
+					skipped.push(course.name);
+					continue;
+				}
+
+				// Generate a unique code
+				const programCode =
+					selectedClass.programCode ??
+					programs?.find((p) => p.id === selectedClass.program)?.code;
+				let code = generateClassCourseCode({
+					programCode: programCode ?? "PRG",
+					levelCode: selectedClass.cycleLevelCode,
+					semesterCode: selectedClass.semesterCode,
+					existingCodes: [...existingCodes, ...toCreate.map((c) => c.code)],
+				});
+
+				toCreate.push({
+					code,
+					class: classId,
+					course: course.id,
+					teacher: course.defaultTeacher,
+					coefficient: Number(course.defaultCoefficient) || 1,
+					semesterId: selectedClass.semesterId ?? undefined,
+				});
+			}
+
+			// Create all assignments
+			for (const data of toCreate) {
+				await trpcClient.classCourses.create.mutate(data);
+			}
+
+			return { created: toCreate.length, skipped };
+		},
+		onSuccess: ({ created, skipped }) => {
+			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			if (created > 0) {
+				toast.success(
+					t("admin.classCourses.toast.bulkAssignSuccess", {
+						defaultValue: "{{count}} cours assignés avec succès",
+						count: created,
+					}),
+				);
+			}
+			if (skipped.length > 0) {
+				setSkippedCourses(skipped);
+			} else {
+				handleCloseUeAssign();
+			}
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.bulkAssignError", {
+							defaultValue: "Erreur lors de l'assignation",
+						});
+			toast.error(message);
+		},
+	});
+
+	const handleCloseUeAssign = () => {
+		setIsUeAssignOpen(false);
+		setUeAssignClassId("");
+		setUeAssignUeId("");
+		setUeAssignClassSearch("");
+		setSkippedCourses([]);
+	};
+
+	const handleBulkAssign = () => {
+		if (!ueAssignClassId || !ueAssignUeId) return;
+		bulkAssignMutation.mutate({
+			classId: ueAssignClassId,
+			teachingUnitId: ueAssignUeId,
+		});
+	};
+
 	const onSubmit = (data: ClassCourseFormData) => {
 		if (editingClassCourse) {
 			updateMutation.mutate({ ...data, id: editingClassCourse.id });
@@ -465,6 +636,7 @@ export default function ClassCourseManagement() {
 			teacher: "",
 			code: "",
 			semesterId: "",
+			coefficient: 1,
 		});
 		setIsFormOpen(true);
 	};
@@ -477,6 +649,7 @@ export default function ClassCourseManagement() {
 			teacher: classCourse.teacher,
 			code: classCourse.code,
 			semesterId: classCourse.semesterId ?? "",
+			coefficient: classCourse.coefficient,
 		});
 		setIsFormOpen(true);
 	};
@@ -490,6 +663,7 @@ export default function ClassCourseManagement() {
 			teacher: "",
 			code: "",
 			semesterId: "",
+			coefficient: 1,
 		});
 	};
 
@@ -523,16 +697,26 @@ export default function ClassCourseManagement() {
 						{t("admin.classCourses.subtitle")}
 					</p>
 				</div>
-				<Button onClick={startCreate}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.classCourses.actions.assign")}
-				</Button>
+				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setIsUeAssignOpen(true)}>
+						<Layers className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.assignUe", {
+							defaultValue: "Assigner un UE",
+						})}
+					</Button>
+					<Button onClick={startCreate}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.assign")}
+					</Button>
+				</div>
 			</div>
 
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
-					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
+					<CardDescription>
+						{t("admin.classCourses.subtitle")}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{displayedClassCourses.length > 0 ? (
@@ -544,15 +728,26 @@ export default function ClassCourseManagement() {
 											defaultValue: "Code",
 										})}
 									</TableHead>
-									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
-									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
-									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
 									<TableHead>
-										{t("admin.classCourses.table.semester", {
-											defaultValue: "Semester",
-										})}
+										{t("admin.classCourses.table.class")}
 									</TableHead>
-									<TableHead>{t("admin.classCourses.table.teacher")}</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.program")}
+									</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.course")}
+									</TableHead>
+									<TableHead>
+										{t(
+											"admin.classCourses.table.semester",
+											{
+												defaultValue: "Semester",
+											},
+										)}
+									</TableHead>
+									<TableHead>
+										{t("admin.classCourses.table.teacher")}
+									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -564,33 +759,50 @@ export default function ClassCourseManagement() {
 										<TableCell>
 											<ClipboardCopy
 												value={classCourse.code}
-												label={t("admin.classCourses.table.code", {
-													defaultValue: "Code",
-												})}
+												label={t(
+													"admin.classCourses.table.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											/>
 										</TableCell>
 										<TableCell className="font-medium">
-											{classMap.get(classCourse.class)?.name}
+											{
+												classMap.get(classCourse.class)
+													?.name
+											}
 										</TableCell>
 										<TableCell>
 											{programMap.get(
-												classMap.get(classCourse.class)?.program ?? "",
+												classMap.get(classCourse.class)
+													?.program ?? "",
 											)?.name ??
-												t("common.labels.notAvailable", {
-													defaultValue: "N/A",
-												})}
+												t(
+													"common.labels.notAvailable",
+													{
+														defaultValue: "N/A",
+													},
+												)}
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const info = courseMap.get(classCourse.course);
+												const info = courseMap.get(
+													classCourse.course,
+												);
 												if (!info) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+													return t(
+														"common.labels.notAvailable",
+														{
+															defaultValue: "N/A",
+														},
+													);
 												}
 												return (
 													<div className="space-y-0.5">
-														<p className="font-medium text-sm">{info.name}</p>
+														<p className="font-medium text-sm">
+															{info.name}
+														</p>
 														{info.code && (
 															<p className="text-muted-foreground text-xs">
 																{info.code}
@@ -602,25 +814,39 @@ export default function ClassCourseManagement() {
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const semester = semesters?.find(
-													(item) => item.id === classCourse.semesterId,
-												);
+												const semester =
+													semesters?.find(
+														(item) =>
+															item.id ===
+															classCourse.semesterId,
+													);
 												if (!semester) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+													return t(
+														"common.labels.notAvailable",
+														{
+															defaultValue: "N/A",
+														},
+													);
 												}
 												return `${semester.name} (${semester.code})`;
 											})()}
 										</TableCell>
-										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
+										<TableCell>
+											{teacherMap.get(
+												classCourse.teacher,
+											)}
+										</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => startEdit(classCourse)}
-													aria-label={t("admin.classCourses.form.editTitle")}
+													onClick={() =>
+														startEdit(classCourse)
+													}
+													aria-label={t(
+														"admin.classCourses.form.editTitle",
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -628,8 +854,14 @@ export default function ClassCourseManagement() {
 													variant="ghost"
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
-													onClick={() => confirmDelete(classCourse.id)}
-													aria-label={t("admin.classCourses.delete.title")}
+													onClick={() =>
+														confirmDelete(
+															classCourse.id,
+														)
+													}
+													aria-label={t(
+														"admin.classCourses.delete.title",
+													)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -673,25 +905,35 @@ export default function ClassCourseManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<CodedEntitySelect
 								items={classes}
 								onSearch={setClassSearch}
 								value={
-									classes.find((c) => c.id === form.watch("class"))?.code ||
-									null
+									classes.find(
+										(c) => c.id === form.watch("class"),
+									)?.code || null
 								}
 								onChange={(code) => {
-									const cls = classes.find((c) => c.code === code);
+									const cls = classes.find(
+										(c) => c.code === code,
+									);
 									form.setValue("class", cls?.id || "");
 								}}
 								label={t("admin.classCourses.form.classLabel")}
-								placeholder={t("admin.classCourses.form.classPlaceholder")}
+								placeholder={t(
+									"admin.classCourses.form.classPlaceholder",
+								)}
 								error={form.formState.errors.class?.message}
 								searchMode="hybrid"
 								getItemSubtitle={(cls) =>
 									programMap.get(cls.program)?.name ??
-									t("common.labels.notAvailable", { defaultValue: "N/A" })
+									t("common.labels.notAvailable", {
+										defaultValue: "N/A",
+									})
 								}
 								required
 							/>
@@ -700,15 +942,20 @@ export default function ClassCourseManagement() {
 								items={courses}
 								onSearch={setCourseSearch}
 								value={
-									courses.find((c) => c.id === form.watch("course"))?.code ||
-									null
+									courses.find(
+										(c) => c.id === form.watch("course"),
+									)?.code || null
 								}
 								onChange={(code) => {
-									const course = courses.find((c) => c.code === code);
+									const course = courses.find(
+										(c) => c.code === code,
+									);
 									form.setValue("course", course?.id || "");
 								}}
 								label={t("admin.classCourses.form.courseLabel")}
-								placeholder={t("admin.classCourses.form.coursePlaceholder")}
+								placeholder={t(
+									"admin.classCourses.form.coursePlaceholder",
+								)}
 								error={form.formState.errors.course?.message}
 								searchMode="hybrid"
 								required
@@ -720,9 +967,14 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.teacherLabel")}
+											{t(
+												"admin.classCourses.form.teacherLabel",
+											)}
 										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
+										<Select
+											value={field.value}
+											onValueChange={field.onChange}
+										>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
@@ -733,11 +985,18 @@ export default function ClassCourseManagement() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
+												{teacherOptions.map(
+													(teacher) => (
+														<SelectItem
+															key={teacher.id}
+															value={teacher.id}
+														>
+															{formatTeacherName(
+																teacher,
+															)}
+														</SelectItem>
+													),
+												)}
 											</SelectContent>
 										</Select>
 										<FormMessage />
@@ -751,29 +1010,42 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.semesterLabel", {
-												defaultValue: "Semester",
-											})}
+											{t(
+												"admin.classCourses.form.semesterLabel",
+												{
+													defaultValue: "Semester",
+												},
+											)}
 										</FormLabel>
 										<Select
 											value={field.value}
 											onValueChange={field.onChange}
-											disabled={!semesters || semesters.length === 0}
+											disabled={
+												!semesters ||
+												semesters.length === 0
+											}
 										>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
 														placeholder={t(
 															"admin.classCourses.form.semesterPlaceholder",
-															{ defaultValue: "Select semester" },
+															{
+																defaultValue:
+																	"Select semester",
+															},
 														)}
 													/>
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
 												{semesters?.map((semester) => (
-													<SelectItem key={semester.id} value={semester.id}>
-														{semester.name} ({semester.code})
+													<SelectItem
+														key={semester.id}
+														value={semester.id}
+													>
+														{semester.name} (
+														{semester.code})
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -789,19 +1061,66 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.classCourses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
+											{t(
+												"admin.classCourses.form.codeLabel",
+												{
+													defaultValue: "Code",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input
 												{...field}
 												placeholder={t(
 													"admin.classCourses.form.codePlaceholder",
-													{ defaultValue: "INF11-CLS24-01" },
+													{
+														defaultValue:
+															"INF11-CLS24-01",
+													},
 												)}
 											/>
 										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="coefficient"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t(
+												"admin.classCourses.form.coefficientLabel",
+												{
+													defaultValue: "Coefficient",
+												},
+											)}
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												type="number"
+												step="0.01"
+												min="0.01"
+												placeholder={t(
+													"admin.classCourses.form.coefficientPlaceholder",
+													{
+														defaultValue: "1.00",
+													},
+												)}
+											/>
+										</FormControl>
+										<p className="text-muted-foreground text-xs">
+											{t(
+												"admin.classCourses.form.coefficientHelp",
+												{
+													defaultValue:
+														"Poids pour le calcul de la moyenne pondérée dans l'UE",
+												},
+											)}
+										</p>
 										<FormMessage />
 									</FormItem>
 								)}
@@ -816,13 +1135,18 @@ export default function ClassCourseManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
+								<Button
+									type="submit"
+									disabled={form.formState.isSubmitting}
+								>
 									{form.formState.isSubmitting ? (
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingClassCourse ? (
 										t("common.actions.saveChanges")
 									) : (
-										t("admin.classCourses.form.createSubmit")
+										t(
+											"admin.classCourses.form.createSubmit",
+										)
 									)}
 								</Button>
 							</div>
@@ -867,6 +1191,170 @@ export default function ClassCourseManagement() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* UE Bulk Assignment Dialog */}
+			<Dialog
+				open={isUeAssignOpen}
+				onOpenChange={(open) => {
+					if (!open) handleCloseUeAssign();
+					else setIsUeAssignOpen(open);
+				}}
+			>
+				<DialogContent className="max-w-lg">
+					<DialogHeader>
+						<DialogTitle>
+							{t("admin.classCourses.ueAssign.title", {
+								defaultValue: "Assigner une unité d'enseignement",
+							})}
+						</DialogTitle>
+					</DialogHeader>
+
+					{skippedCourses.length > 0 ? (
+						<div className="space-y-4">
+							<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+								<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
+								<div>
+									<p className="font-medium text-yellow-800">
+										{t("admin.classCourses.ueAssign.skippedTitle", {
+											defaultValue:
+												"Certains cours n'ont pas été assignés",
+										})}
+									</p>
+									<p className="mt-1 text-sm text-yellow-700">
+										{t("admin.classCourses.ueAssign.skippedDesc", {
+											defaultValue:
+												"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
+										})}
+									</p>
+									<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
+										{skippedCourses.map((name) => (
+											<li key={name}>{name}</li>
+										))}
+									</ul>
+								</div>
+							</div>
+							<div className="flex justify-end">
+								<Button onClick={handleCloseUeAssign}>
+									{t("common.actions.close")}
+								</Button>
+							</div>
+						</div>
+					) : (
+						<div className="space-y-4">
+							<div>
+								<label className="mb-2 block text-sm font-medium">
+									{t("admin.classCourses.ueAssign.classLabel", {
+										defaultValue: "Classe",
+									})}
+								</label>
+								<CodedEntitySelect
+									items={ueAssignClasses}
+									onSearch={setUeAssignClassSearch}
+									value={
+										ueAssignClasses.find(
+											(c) => c.id === ueAssignClassId,
+										)?.code || null
+									}
+									onChange={(code) => {
+										const cls = ueAssignClasses.find(
+											(c) => c.code === code,
+										);
+										setUeAssignClassId(cls?.id || "");
+										setUeAssignUeId(""); // Reset UE when class changes
+									}}
+									placeholder={t(
+										"admin.classCourses.ueAssign.classPlaceholder",
+										{
+											defaultValue: "Sélectionner une classe",
+										},
+									)}
+									searchMode="hybrid"
+									getItemSubtitle={(cls) =>
+										programs?.find((p) => p.id === cls.program)
+											?.name ?? ""
+									}
+								/>
+							</div>
+
+							{ueAssignClassId && (
+								<div>
+									<label className="mb-2 block text-sm font-medium">
+										{t("admin.classCourses.ueAssign.ueLabel", {
+											defaultValue: "Unité d'enseignement",
+										})}
+									</label>
+									<Select
+										value={ueAssignUeId}
+										onValueChange={setUeAssignUeId}
+										disabled={teachingUnits.length === 0}
+									>
+										<SelectTrigger>
+											<SelectValue
+												placeholder={t(
+													"admin.classCourses.ueAssign.uePlaceholder",
+													{
+														defaultValue:
+															"Sélectionner une UE",
+													},
+												)}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{teachingUnits.map((ue) => (
+												<SelectItem key={ue.id} value={ue.id}>
+													{ue.code} - {ue.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{teachingUnits.length === 0 && ueAssignClassId && (
+										<p className="mt-1 text-muted-foreground text-xs">
+											{t("admin.classCourses.ueAssign.noUe", {
+												defaultValue:
+													"Aucune UE trouvée pour ce programme",
+											})}
+										</p>
+									)}
+								</div>
+							)}
+
+							<p className="text-muted-foreground text-sm">
+								{t("admin.classCourses.ueAssign.hint", {
+									defaultValue:
+										"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+								})}
+							</p>
+
+							<div className="flex justify-end gap-2">
+								<Button
+									variant="outline"
+									onClick={handleCloseUeAssign}
+									disabled={bulkAssignMutation.isPending}
+								>
+									{t("common.actions.cancel")}
+								</Button>
+								<Button
+									onClick={handleBulkAssign}
+									disabled={
+										!ueAssignClassId ||
+										!ueAssignUeId ||
+										bulkAssignMutation.isPending
+									}
+								>
+									{bulkAssignMutation.isPending ? (
+										<Spinner className="mr-2 h-4 w-4" />
+									) : (
+										<Layers className="mr-2 h-4 w-4" />
+									)}
+									{t("admin.classCourses.ueAssign.submit", {
+										defaultValue: "Assigner les cours",
+									})}
+								</Button>
+							</div>
+						</div>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

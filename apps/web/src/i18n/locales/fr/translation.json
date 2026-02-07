@@ -98,6 +98,7 @@
 				"promotionRules": "Règles de passage",
 				"examTypes": "Types d'examen",
 				"examScheduler": "Programmation des examens",
+				"retakeEligibility": "Éligibilité rattrapage",
 				"rules": "Centre des règles",
 				"registrationNumbers": "Formats de matricule"
 			},
@@ -333,24 +334,6 @@
 				"editTitle": "Modifier le format"
 			}
 		},
-		"notifications": {
-			"title": "Centre de notifications",
-			"subtitle": "Alertes de workflow envoyées au personnel et aux étudiants",
-			"gradeValidated": "Validation des notes terminée",
-			"gradeValidatedDesc": "Un examen a été validé et verrouillé.",
-			"windowOpened": "Fenêtre d'inscription ouverte",
-			"windowOpenedDesc": "Les étudiants peuvent s'inscrire pour la classe sélectionnée.",
-			"justNow": "À l'instant",
-			"queueTitle": "Dernières notifications",
-			"empty": "Aucune notification pour le moment.",
-			"actions": {
-				"flush": "Vider la file",
-				"ack": "Accuser réception"
-			},
-			"toast": {
-				"flushed": "Notifications en attente supprimées"
-			}
-		},
 		"dashboard": {
 			"title": "Tableau de bord administrateur",
 			"activeYear": "Année active : {{year}}",
@@ -413,7 +396,20 @@
 			"title": "Affectations de cours",
 			"subtitle": "Assignez des enseignants et des cours aux classes",
 			"actions": {
-				"assign": "Affecter un cours"
+				"assign": "Affecter un cours",
+				"assignUe": "Assigner un UE"
+			},
+			"ueAssign": {
+				"title": "Assigner une unité d'enseignement",
+				"classLabel": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"ueLabel": "Unité d'enseignement",
+				"uePlaceholder": "Sélectionner une UE",
+				"noUe": "Aucune UE trouvée pour ce programme",
+				"hint": "Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+				"submit": "Assigner les cours",
+				"skippedTitle": "Certains cours n'ont pas été assignés",
+				"skippedDesc": "Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :"
 			},
 			"empty": {
 				"title": "Aucune affectation de cours",
@@ -425,7 +421,8 @@
 				"program": "Programme",
 				"course": "Cours",
 				"teacher": "Enseignant",
-				"semester": "Semestre"
+				"semester": "Semestre",
+				"coefficient": "Coef."
 			},
 			"form": {
 				"createTitle": "Nouvelle affectation de cours",
@@ -440,6 +437,9 @@
 				"semesterPlaceholder": "Sélectionner un semestre",
 				"codeLabel": "Code",
 				"codePlaceholder": "INF11-CLS24-01",
+				"coefficientLabel": "Coefficient",
+				"coefficientPlaceholder": "1.00",
+				"coefficientHelp": "Poids pour le calcul de la moyenne pondérée dans l'UE",
 				"createSubmit": "Affecter le cours"
 			},
 			"toast": {
@@ -448,7 +448,9 @@
 				"updateSuccess": "Affectation mise à jour avec succès",
 				"updateError": "Impossible de mettre à jour l'affectation",
 				"deleteSuccess": "Affectation supprimée avec succès",
-				"deleteError": "Impossible de supprimer l'affectation"
+				"deleteError": "Impossible de supprimer l'affectation",
+				"bulkAssignSuccess": "{{count}} cours assignés avec succès",
+				"bulkAssignError": "Erreur lors de l'assignation"
 			},
 			"delete": {
 				"title": "Supprimer l'affectation de cours",
@@ -783,7 +785,10 @@
 			"subtitle": "Créez et gérez les évaluations pour chaque cours de classe",
 			"actions": {
 				"add": "Ajouter une évaluation",
-				"reviewGrades": "Consulter les notes"
+				"reviewGrades": "Consulter les notes",
+				"submit": "Soumettre",
+				"approve": "Approuver",
+				"reject": "Rejeter"
 			},
 			"filters": {
 				"academicYear": "Année académique",
@@ -809,6 +814,11 @@
 				"status": "Statut"
 			},
 			"status": {
+				"draft": "Brouillon",
+				"scheduled": "Planifiée",
+				"submitted": "Soumise",
+				"approved": "Approuvée",
+				"rejected": "Rejetée",
 				"locked": "Verrouillée",
 				"open": "Ouverte"
 			},
@@ -835,7 +845,14 @@
 				"updateSuccess": "Évaluation mise à jour avec succès",
 				"updateError": "Impossible de mettre à jour l'évaluation",
 				"deleteSuccess": "Évaluation supprimée avec succès",
-				"deleteError": "Impossible de supprimer l'évaluation"
+				"deleteError": "Impossible de supprimer l'évaluation",
+				"submitSuccess": "Évaluation soumise pour approbation",
+				"submitError": "Impossible de soumettre l'évaluation",
+				"approveSuccess": "Évaluation approuvée avec succès",
+				"rejectSuccess": "Évaluation rejetée",
+				"validateError": "Impossible de valider l'évaluation",
+				"retakeSuccess": "Examen de rattrapage créé avec succès",
+				"retakeError": "Impossible de créer l'examen de rattrapage"
 			},
 			"delete": {
 				"title": "Supprimer l'évaluation",
@@ -853,6 +870,73 @@
 					"max": "La pondération ne peut pas dépasser 100"
 				},
 				"classCourse": "Veuillez sélectionner un cours de classe"
+			},
+			"sessionType": {
+				"normal": "Normale",
+				"retake": "Rattrapage"
+			},
+			"scoringPolicy": {
+				"replace": "Remplacer la note originale",
+				"best_of": "Conserver la meilleure note"
+			}
+		},
+		"retake": {
+			"title": "Éligibilité au rattrapage",
+			"subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
+			"selectExam": "Sélectionnez un examen approuvé",
+			"selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
+			"featureDisabled": "La fonctionnalité de rattrapage est actuellement désactivée",
+			"eligible": "Éligibles",
+			"ineligible": "Non éligibles",
+			"eligibleCount": "{{count}} éligible(s)",
+			"ineligibleCount": "{{count}} non éligible(s)",
+			"table": {
+				"student": "Étudiant",
+				"registrationNumber": "Matricule",
+				"attempt": "Tentative",
+				"grade": "Note actuelle",
+				"status": "Statut",
+				"reasons": "Raisons",
+				"override": "Dérogation"
+			},
+			"reasons": {
+				"NO_GRADE": "Aucune note enregistrée",
+				"FAILED_EXAM": "Examen échoué",
+				"PASSED_EXAM": "Examen réussi",
+				"ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
+				"OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
+				"OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)"
+			},
+			"override": {
+				"forceEligible": "Forcer éligible",
+				"forceIneligible": "Bloquer",
+				"remove": "Supprimer la dérogation",
+				"reason": "Motif de la dérogation",
+				"reasonPlaceholder": "Saisissez le motif de la dérogation...",
+				"confirmTitle": "Confirmer la dérogation",
+				"confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?"
+			},
+			"empty": {
+				"title": "Aucun étudiant trouvé",
+				"description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants."
+			},
+			"toast": {
+				"overrideSuccess": "Dérogation appliquée avec succès",
+				"overrideError": "Impossible d'appliquer la dérogation",
+				"removeSuccess": "Dérogation supprimée",
+				"removeError": "Impossible de supprimer la dérogation"
+			},
+			"actions": {
+				"createRetake": "Créer examen de rattrapage",
+				"viewEligibility": "Voir l'éligibilité"
+			},
+			"createRetake": {
+				"title": "Créer un examen de rattrapage",
+				"subtitle": "Créez une session de rattrapage liée à l'examen original",
+				"parentExam": "Examen original",
+				"date": "Date du rattrapage",
+				"scoringPolicy": "Politique de notation",
+				"scoringPolicyHelp": "Comment calculer la note finale après le rattrapage"
 			}
 		},
 		"examTypes": {
@@ -865,7 +949,8 @@
 				"title": "Types disponibles",
 				"description": "Les examens planifiés pourront réutiliser ces types.",
 				"name": "Nom",
-				"description": "Description"
+				"descriptionColumn": "Description",
+				"defaultPercentage": "Pondération par défaut"
 			},
 			"empty": "Aucun type d'examen pour le moment.",
 			"form": {
@@ -873,6 +958,7 @@
 				"editTitle": "Modifier un type d'examen",
 				"nameLabel": "Nom",
 				"descriptionLabel": "Description",
+				"defaultPercentageLabel": "Pondération par défaut (%)",
 				"submit": "Enregistrer le type"
 			},
 			"toast": {
@@ -891,9 +977,6 @@
 		"exportTemplates": {
 			"title": "Modèles d'exportation",
 			"subtitle": "Personnalisez la mise en page, les colonnes, les en-têtes et le style des exports de notes.",
-			"actions": {
-				"add": "Ajouter un modèle"
-			},
 			"filter": {
 				"all": "Tous les types"
 			},
@@ -947,6 +1030,7 @@
 				"setDefault": "Définir par défaut",
 				"edit": "Éditer le modèle",
 				"rename": "Renommer",
+				"add": "Ajouter un modèle",
 				"delete": "Supprimer"
 			},
 			"editor": {
@@ -964,6 +1048,8 @@
 					"editorTitle": "Source du modèle",
 					"editorDescription": "Collez votre fichier Handlebars (.hbs) avec en-têtes, logos et styles statiques.",
 					"placeholder": "<!-- Collez votre modèle ici -->",
+					"loadExample": "Charger un exemple",
+					"exampleLoaded": "Template d'exemple chargé avec succès",
 					"generatePreview": "Générer un aperçu",
 					"helpTitle": "Conseils",
 					"helpHandlebars": "Les helpers Handlebars comme {{formatNumber}} restent disponibles.",
@@ -1041,22 +1127,6 @@
 					"watermarkFontSize": "Taille de police",
 					"watermarkRotation": "Rotation (degrés)"
 				},
-				"template": {
-					"editorTitle": "Éditeur de modèle HTML",
-					"editorDescription": "Écrivez un modèle Handlebars avec HTML/CSS personnalisé.",
-					"placeholder": "Entrez votre modèle Handlebars personnalisé ici...",
-					"generatePreview": "Générer l'aperçu",
-					"reset": "Réinitialiser par défaut",
-					"previewTitle": "Aperçu",
-					"previewDescription": "Aperçu en direct avec données de test",
-					"download": "Télécharger HTML",
-					"noPreview": "Aucun aperçu disponible",
-					"clickGenerate": "Cliquez sur 'Générer l'aperçu' pour voir le rendu",
-					"helpTitle": "Aide sur le modèle:",
-					"helpHandlebars": "Utilisez la syntaxe Handlebars: {{variable}}, {{#if}}, {{#each}}",
-					"helpVariables": "Variables disponibles: students, headerConfig, styleConfig",
-					"helpConfig": "Les configurations sont automatiquement appliquées au modèle"
-				},
 				"preview": {
 					"success": "Aperçu généré avec succès",
 					"error": "Échec de la génération de l'aperçu"
@@ -1066,6 +1136,13 @@
 		"examScheduler": {
 			"title": "Programmation des examens",
 			"subtitle": "Planifiez les examens pour une faculté entière en une seule opération.",
+			"sessionMode": {
+				"label": "Type de programmation",
+				"normal": "Examens",
+				"normalDescription": "Programmer des examens (CC, TP, SN, etc.) pour les cours",
+				"retake": "Rattrapages",
+				"retakeDescription": "Programmer des rattrapages pour les examens approuvés"
+			},
 			"form": {
 				"title": "Paramètres de programmation",
 				"description": "Sélectionnez la faculté, l'année académique, le type d'examen, la pondération et la plage de dates.",
@@ -1079,19 +1156,38 @@
 				"semesterPlaceholder": "Sélectionner un semestre",
 				"percentageLabel": "Pondération (%)",
 				"dateStartLabel": "Date de début",
-				"dateEndLabel": "Date de fin"
+				"dateEndLabel": "Date de fin",
+				"scoringPolicyLabel": "Politique de notation",
+				"scoringPolicyPlaceholder": "Sélectionner une politique",
+				"scoringPolicyReplace": "Remplacer la note originale",
+				"scoringPolicyBestOf": "Garder la meilleure note",
+				"classFilterLabel": "Filtrer par classe",
+				"classFilterPlaceholder": "Toutes les classes",
+				"examTypeFilterLabel": "Filtrer par type d'examen",
+				"examTypeFilterPlaceholder": "Tous les types"
 			},
 			"classes": {
 				"title": "Classes concernées",
 				"description": "Toutes les classes de l'année sélectionnée sont incluses par défaut. Décochez celles à exclure.",
 				"selectAll": "Sélectionner toutes les classes"
 			},
+			"retakeExams": {
+				"title": "Examens éligibles au rattrapage",
+				"description": "Examens approuvés sans rattrapage programmé. Sélectionnez les examens pour lesquels programmer un rattrapage.",
+				"selectAll": "Sélectionner tous les examens",
+				"noExams": "Aucun examen approuvé sans rattrapage trouvé pour les critères sélectionnés.",
+				"examCount_one": "{{count}} examen",
+				"examCount_other": "{{count}} examens"
+			},
 			"actions": {
-				"schedule": "Programmer les examens"
+				"schedule": "Programmer les examens",
+				"scheduleRetakes": "Programmer les rattrapages"
 			},
 			"toast": {
 				"success": "Examens programmés",
-				"error": "Impossible de programmer les examens"
+				"error": "Impossible de programmer les examens",
+				"retakeSuccess": "Rattrapages programmés ({{count}} créés)",
+				"retakeError": "Impossible de programmer les rattrapages"
 			},
 			"history": {
 				"title": "Historique des programmations",
@@ -1533,7 +1629,19 @@
 				"reactivateBtn": "Réactiver l'inscription",
 				"withdrawBtn": "Retirer",
 				"retakeBtn": "Recomposer",
-				"noCourses": "Cette classe n'a pas encore de cours affectés."
+				"noCourses": "Cette classe n'a pas encore de cours affectés.",
+				"attemptBadge": "Tentative {{value}}",
+				"retakeEligible": "Éligible rattrapage"
+			},
+			"warnings": {
+				"title": "Avertissements de prérequis",
+				"description": "Certaines inscriptions présentent des prérequis non satisfaits.",
+				"mandatory": "Écart obligatoire",
+				"recommended": "Écart recommandé",
+				"corequisite": "Cours co-requis en cours",
+				"courseFallback": "Cours {{courseId}}",
+				"courseLabel": "{{name}} ({{code}})",
+				"appliesTo": "Requis pour {{course}}"
 			}
 		},
 		"notifications": {
@@ -1616,7 +1724,8 @@
 					"name": "Nom",
 					"code": "Code",
 					"hours": "Heures",
-					"teacher": "Enseignant référent"
+					"teacher": "Enseignant référent",
+					"coefficient": "Coef."
 				},
 				"form": {
 					"createTitle": "Ajouter un élément",
@@ -1629,6 +1738,9 @@
 					"hoursPlaceholder": "Saisir le volume horaire",
 					"teacherLabel": "Enseignant référent",
 					"teacherPlaceholder": "Sélectionner un enseignant",
+					"coefficientLabel": "Coefficient par défaut",
+					"coefficientPlaceholder": "1.00",
+					"coefficientHelp": "Poids par défaut lors de l'assignation à une classe",
 					"submit": "Enregistrer l'élément"
 				},
 				"empty": "Aucun élément pour le moment.",
@@ -1881,6 +1993,16 @@
 		}
 	},
 	"teacher": {
+		"exams": {
+			"sessionType": {
+				"normal": "Normale",
+				"retake": "Rattrapage"
+			},
+			"scoringPolicy": {
+				"replace": "Remplace",
+				"best_of": "Meilleure note"
+			}
+		},
 		"courses": {
 			"title": "Mes cours",
 			"subtitle": "Gérez vos cours attribués et les notes",
@@ -1972,6 +2094,10 @@
 		},
 		"gradeEntry": {
 			"title": "Saisie des notes",
+			"context": {
+				"ue": "Unité d'Enseignement (UE)",
+				"ec": "Élément Constitutif (EC)"
+			},
 			"selectCourse": {
 				"label": "Sélectionner un cours",
 				"empty": "Choisir un cours",
@@ -2300,6 +2426,11 @@
 				"status": "Statut"
 			},
 			"status": {
+				"draft": "Brouillon",
+				"scheduled": "Planifiée",
+				"submitted": "Soumise",
+				"approved": "Approuvée",
+				"rejected": "Rejetée",
 				"locked": "Verrouillée",
 				"open": "Ouverte"
 			},
@@ -2397,6 +2528,66 @@
 			"courseAverages": "Moyennes par cours",
 			"courseSubtitle": "Dernières notes pour l'année active",
 			"coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées."
+		}
+	},
+	"retakes": {
+		"title": "Admissibilité au rattrapage",
+		"subtitle": "Gérez l'admissibilité aux examens de rattrapage pour les étudiants",
+		"badge": {
+			"retake": "Rattrapage",
+			"normal": "Normal"
+		},
+		"actions": {
+			"createRetake": "Créer un examen de rattrapage"
+		},
+		"form": {
+			"title": "Créer un examen de rattrapage",
+			"parentExamLabel": "Examen original",
+			"nameLabel": "Nom de l'examen de rattrapage (optionnel)",
+			"namePlaceholder": "Laisser vide pour générer automatiquement",
+			"dateLabel": "Date du rattrapage",
+			"scoringPolicyLabel": "Politique de notation",
+			"submit": "Créer le rattrapage"
+		},
+		"scoringPolicy": {
+			"replace": "Remplacer l'original",
+			"best_of": "Garder la meilleure note",
+			"replaceDescription": "La note de rattrapage remplacera la note originale",
+			"best_ofDescription": "La meilleure note entre l'original et le rattrapage sera utilisée"
+		},
+		"eligibility": {
+			"title": "Statut d'admissibilité",
+			"eligible": "Admissible",
+			"ineligible": "Non admissible",
+			"forced": "Forcé",
+			"tabs": {
+				"eligible": "Étudiants admissibles",
+				"ineligible": "Étudiants non admissibles"
+			},
+			"reasons": {
+				"failed": "A échoué à l'examen original",
+				"noGrade": "Aucune note enregistrée",
+				"limitReached": "Limite de tentatives atteinte",
+				"passed": "Déjà réussi",
+				"forceEligible": "Défini manuellement comme admissible",
+				"forceIneligible": "Défini manuellement comme non admissible"
+			}
+		},
+		"override": {
+			"title": "Modifier l'admissibilité",
+			"forceEligible": "Forcer admissible",
+			"forceIneligible": "Forcer non admissible",
+			"clear": "Effacer la modification",
+			"reason": "Motif",
+			"reasonPlaceholder": "Entrez le motif de la modification..."
+		},
+		"empty": {
+			"title": "Aucun examen sélectionné",
+			"description": "Sélectionnez un examen approuvé pour voir l'admissibilité au rattrapage"
+		},
+		"toast": {
+			"overrideSuccess": "Modification appliquée avec succès",
+			"overrideError": "Échec de l'application de la modification"
 		}
 	}
 }

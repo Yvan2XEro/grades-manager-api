@@ -12,7 +12,10 @@ async function ensureStudent(studentId: string, institutionId: string) {
 		),
 	});
 	if (!student) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Student not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student not found",
+		});
 	}
 	return student;
 }

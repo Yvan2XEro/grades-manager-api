@@ -40,7 +40,9 @@ export const promotionRulesRouter = router({
 
 	list: protectedProcedure
 		.input(listRulesSchema)
-		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
+		.query(({ input, ctx }) =>
+			service.listRules(input, ctx.institution.id),
+		),
 
 	refreshClassSummaries: adminProcedure
 		.input(refreshClassSummariesSchema)
@@ -62,7 +64,11 @@ export const promotionRulesRouter = router({
 			if (!ctx.profile) {
 				throw new Error("Profile required");
 			}
-			return service.applyPromotion(input, ctx.profile.id, ctx.institution.id);
+			return service.applyPromotion(
+				input,
+				ctx.profile.id,
+				ctx.institution.id,
+			);
 		}),
 
 	// Execution history

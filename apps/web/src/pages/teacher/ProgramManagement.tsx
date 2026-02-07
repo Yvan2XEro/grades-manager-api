@@ -250,7 +250,8 @@ export default function ProgramManagement() {
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("admin.programs.toast.createError"),
+				(error as Error).message ||
+					t("admin.programs.toast.createError"),
 			);
 		},
 	});
@@ -266,7 +267,8 @@ export default function ProgramManagement() {
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("admin.programs.toast.updateError"),
+				(error as Error).message ||
+					t("admin.programs.toast.updateError"),
 			);
 		},
 	});
@@ -283,7 +285,8 @@ export default function ProgramManagement() {
 		},
 		onError: (error: unknown) => {
 			toast.error(
-				(error as Error).message || t("admin.programs.toast.deleteError"),
+				(error as Error).message ||
+					t("admin.programs.toast.deleteError"),
 			);
 		},
 	});
@@ -395,7 +398,9 @@ export default function ProgramManagement() {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.programs.title")}</CardTitle>
-					<CardDescription>{t("admin.programs.subtitle")}</CardDescription>
+					<CardDescription>
+						{t("admin.programs.subtitle")}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{programs && programs.length > 0 ? (
@@ -403,10 +408,16 @@ export default function ProgramManagement() {
 							<TableHeader>
 								<TableRow>
 									<TableHead>
-										{t("admin.programs.table.code", { defaultValue: "Code" })}
+										{t("admin.programs.table.code", {
+											defaultValue: "Code",
+										})}
 									</TableHead>
-									<TableHead>{t("admin.programs.table.name")}</TableHead>
-									<TableHead>{t("admin.programs.table.description")}</TableHead>
+									<TableHead>
+										{t("admin.programs.table.name")}
+									</TableHead>
+									<TableHead>
+										{t("admin.programs.table.description")}
+									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -418,9 +429,12 @@ export default function ProgramManagement() {
 										<TableCell>
 											<ClipboardCopy
 												value={program.code}
-												label={t("admin.programs.table.code", {
-													defaultValue: "Code",
-												})}
+												label={t(
+													"admin.programs.table.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											/>
 										</TableCell>
 										<TableCell className="font-medium">
@@ -429,7 +443,9 @@ export default function ProgramManagement() {
 										<TableCell>
 											{program.description || (
 												<span className="text-muted-foreground italic">
-													{t("admin.programs.table.noDescription")}
+													{t(
+														"admin.programs.table.noDescription",
+													)}
 												</span>
 											)}
 										</TableCell>
@@ -438,26 +454,44 @@ export default function ProgramManagement() {
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => startEdit(program)}
-													aria-label={t("admin.programs.form.editTitle")}
+													onClick={() =>
+														startEdit(program)
+													}
+													aria-label={t(
+														"admin.programs.form.editTitle",
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
 												<Button
 													variant="outline"
 													size="sm"
-													onClick={() => openOptionsModal(program)}
+													onClick={() =>
+														openOptionsModal(
+															program,
+														)
+													}
 												>
-													{t("admin.programs.options.manage", {
-														defaultValue: "Manage options",
-													})}
+													{t(
+														"admin.programs.options.manage",
+														{
+															defaultValue:
+																"Manage options",
+														},
+													)}
 												</Button>
 												<Button
 													variant="ghost"
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
-													onClick={() => confirmDelete(program.id)}
-													aria-label={t("admin.programs.delete.title")}
+													onClick={() =>
+														confirmDelete(
+															program.id,
+														)
+													}
+													aria-label={t(
+														"admin.programs.delete.title",
+													)}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -501,16 +535,23 @@ export default function ProgramManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<FormField
 								control={form.control}
 								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t("admin.programs.form.nameLabel")}</FormLabel>
+										<FormLabel>
+											{t("admin.programs.form.nameLabel")}
+										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t("admin.programs.form.namePlaceholder")}
+												placeholder={t(
+													"admin.programs.form.namePlaceholder",
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -524,15 +565,21 @@ export default function ProgramManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.programs.form.codeLabel", {
-												defaultValue: "Code",
-											})}
+											{t(
+												"admin.programs.form.codeLabel",
+												{
+													defaultValue: "Code",
+												},
+											)}
 										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder={t("admin.programs.form.codePlaceholder", {
-													defaultValue: "INF-LIC",
-												})}
+												placeholder={t(
+													"admin.programs.form.codePlaceholder",
+													{
+														defaultValue: "INF-LIC",
+													},
+												)}
 												{...field}
 											/>
 										</FormControl>
@@ -546,7 +593,9 @@ export default function ProgramManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t("admin.programs.form.descriptionLabel")}
+											{t(
+												"admin.programs.form.descriptionLabel",
+											)}
 										</FormLabel>
 										<FormControl>
 											<Textarea
@@ -570,7 +619,10 @@ export default function ProgramManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
+								<Button
+									type="submit"
+									disabled={form.formState.isSubmitting}
+								>
 									{form.formState.isSubmitting ? (
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingProgram ? (
@@ -624,7 +676,9 @@ export default function ProgramManagement() {
 											className="flex items-start justify-between rounded-lg border border-border p-3"
 										>
 											<div>
-												<p className="font-medium text-sm">{option.name}</p>
+												<p className="font-medium text-sm">
+													{option.name}
+												</p>
 												<p className="text-muted-foreground text-xs">
 													{option.code}
 												</p>
@@ -638,10 +692,16 @@ export default function ProgramManagement() {
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => handleEditOption(option)}
-													aria-label={t("admin.programs.options.edit", {
-														defaultValue: "Edit option",
-													})}
+													onClick={() =>
+														handleEditOption(option)
+													}
+													aria-label={t(
+														"admin.programs.options.edit",
+														{
+															defaultValue:
+																"Edit option",
+														},
+													)}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -649,13 +709,22 @@ export default function ProgramManagement() {
 													variant="ghost"
 													size="icon-sm"
 													disabled={
-														optionList.length <= 1 ||
+														optionList.length <=
+															1 ||
 														deleteOptionMutation.isPending
 													}
-													onClick={() => handleDeleteOption(option.id)}
-													aria-label={t("admin.programs.options.delete", {
-														defaultValue: "Delete option",
-													})}
+													onClick={() =>
+														handleDeleteOption(
+															option.id,
+														)
+													}
+													aria-label={t(
+														"admin.programs.options.delete",
+														{
+															defaultValue:
+																"Delete option",
+														},
+													)}
 												>
 													<Trash2 className="h-4 w-4 text-destructive" />
 												</Button>
@@ -666,23 +735,30 @@ export default function ProgramManagement() {
 							) : (
 								<p className="text-muted-foreground text-sm">
 									{t("admin.programs.options.empty", {
-										defaultValue: "No options yet. Add one below.",
+										defaultValue:
+											"No options yet. Add one below.",
 									})}
 								</p>
 							)}
 						</div>
 						<Form {...optionForm}>
 							<form
-								onSubmit={optionForm.handleSubmit(onSubmitOption)}
+								onSubmit={optionForm.handleSubmit(
+									onSubmitOption,
+								)}
 								className="space-y-3 rounded-lg border border-border p-3"
 							>
 								{editingOption ? (
 									<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
 										<span>
-											{t("admin.programs.options.editing", {
-												defaultValue: "Editing option {{name}}",
-												name: editingOption.name,
-											})}
+											{t(
+												"admin.programs.options.editing",
+												{
+													defaultValue:
+														"Editing option {{name}}",
+													name: editingOption.name,
+												},
+											)}
 										</span>
 										<Button
 											type="button"
@@ -690,9 +766,12 @@ export default function ProgramManagement() {
 											size="sm"
 											onClick={resetOptionEditing}
 										>
-											{t("admin.programs.options.cancelEdit", {
-												defaultValue: "Cancel",
-											})}
+											{t(
+												"admin.programs.options.cancelEdit",
+												{
+													defaultValue: "Cancel",
+												},
+											)}
 										</Button>
 									</div>
 								) : null}
@@ -702,9 +781,13 @@ export default function ProgramManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.programs.options.form.name", {
-													defaultValue: "Option name",
-												})}
+												{t(
+													"admin.programs.options.form.name",
+													{
+														defaultValue:
+															"Option name",
+													},
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -719,9 +802,12 @@ export default function ProgramManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.programs.options.form.code", {
-													defaultValue: "Code",
-												})}
+												{t(
+													"admin.programs.options.form.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -736,9 +822,13 @@ export default function ProgramManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.programs.options.form.description", {
-													defaultValue: "Description",
-												})}
+												{t(
+													"admin.programs.options.form.description",
+													{
+														defaultValue:
+															"Description",
+													},
+												)}
 											</FormLabel>
 											<FormControl>
 												<Textarea rows={2} {...field} />
@@ -761,12 +851,20 @@ export default function ProgramManagement() {
 											<Spinner className="mr-2 h-4 w-4" />
 										)}
 										{editingOption
-											? t("admin.programs.options.form.updateSubmit", {
-													defaultValue: "Save changes",
-												})
-											: t("admin.programs.options.form.submit", {
-													defaultValue: "Add option",
-												})}
+											? t(
+													"admin.programs.options.form.updateSubmit",
+													{
+														defaultValue:
+															"Save changes",
+													},
+												)
+											: t(
+													"admin.programs.options.form.submit",
+													{
+														defaultValue:
+															"Add option",
+													},
+												)}
 									</Button>
 								</div>
 							</form>

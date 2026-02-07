@@ -68,7 +68,9 @@ async function ensureCycleLevel(
 		});
 		if (!cycle) throw notFound("Study cycle not found");
 		if (cycle.institutionId !== program.institutionId) {
-			throw conflict("Cycle level does not belong to program institution");
+			throw conflict(
+				"Cycle level does not belong to program institution",
+			);
 		}
 		return level.id;
 	}
@@ -184,7 +186,9 @@ export async function updateClass(
 			? await ensureAcademicYear(data.academicYear, institutionId)
 			: existing.academicYearInfo;
 	const desiredLevelId =
-		data.cycleLevelId !== undefined ? data.cycleLevelId : existing.cycleLevelId;
+		data.cycleLevelId !== undefined
+			? data.cycleLevelId
+			: existing.cycleLevelId;
 	const cycleLevelId = await ensureCycleLevel(program, desiredLevelId);
 	const desiredProgramOptionId =
 		data.programOptionId !== undefined

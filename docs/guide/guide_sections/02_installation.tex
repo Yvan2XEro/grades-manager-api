@@ -70,8 +70,8 @@ sudo systemctl enable postgresql
 
 \begin{lstlisting}[language={}, frame=single]
 # Cloner le repository
-git clone <repository-url> grades-manager-api
-cd grades-manager-api
+git clone <repository-url> tkams
+cd tkams
 \end{lstlisting}
 
 \subsubsection{Installation des dépendances}
@@ -403,15 +403,15 @@ Si un \code{Dockerfile} est fourni :
 
 \begin{lstlisting}[language={}, frame=single]
 # Build de l'image Docker
-docker build -t grades-manager .
+docker build -t tkams .
 
 # Lancement du conteneur
 docker run -d \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://..." \
   -e BETTER_AUTH_SECRET="..." \
-  --name grades-manager \
-  grades-manager
+  --name tkams \
+  tkams
 \end{lstlisting}
 
 \subsection{Mise à jour de l'application}

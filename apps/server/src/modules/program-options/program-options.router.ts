@@ -26,7 +26,9 @@ export const programOptionsRouter = router({
 		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input, ctx }) => service.listOptions(input, ctx.institution.id)),
+		.query(({ input, ctx }) =>
+			service.listOptions(input, ctx.institution.id),
+		),
 	search: protectedProcedure
 		.input(searchSchema)
 		.query(({ input, ctx }) =>

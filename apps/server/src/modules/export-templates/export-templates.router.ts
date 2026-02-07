@@ -10,7 +10,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to list export templates",
+					message:
+						"You do not have permission to list export templates",
 				});
 			}
 
@@ -23,7 +24,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to view export templates",
+					message:
+						"You do not have permission to view export templates",
 				});
 			}
 
@@ -32,7 +34,9 @@ export const exportTemplatesRouter = router({
 
 	getDefault: protectedProcedure
 		.input(
-			zod.listExportTemplatesSchema.pick({ type: true }).required({ type: true }),
+			zod.listExportTemplatesSchema
+				.pick({ type: true })
+				.required({ type: true }),
 		)
 		.query(async ({ ctx, input }) => {
 			return await service.getDefaultTemplate(
@@ -47,7 +51,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to create export templates",
+					message:
+						"You do not have permission to create export templates",
 				});
 			}
 
@@ -59,7 +64,11 @@ export const exportTemplatesRouter = router({
 				});
 			}
 
-			return await service.createTemplate(ctx.institution.id, userId, input);
+			return await service.createTemplate(
+				ctx.institution.id,
+				userId,
+				input,
+			);
 		}),
 
 	update: adminProcedure
@@ -68,7 +77,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to update export templates",
+					message:
+						"You do not have permission to update export templates",
 				});
 			}
 
@@ -89,7 +99,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to delete export templates",
+					message:
+						"You do not have permission to delete export templates",
 				});
 			}
 
@@ -103,7 +114,8 @@ export const exportTemplatesRouter = router({
 			if (!ctx.permissions.canManageCatalog) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "You do not have permission to set default export templates",
+					message:
+						"You do not have permission to set default export templates",
 				});
 			}
 

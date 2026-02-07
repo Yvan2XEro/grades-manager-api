@@ -107,7 +107,9 @@ export default function ExamManagement() {
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c.name]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
-	const classCourseMap = new Map((classCourses ?? []).map((cc) => [cc.id, cc]));
+	const classCourseMap = new Map(
+		(classCourses ?? []).map((cc) => [cc.id, cc]),
+	);
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ExamFormData) => {
@@ -190,8 +192,12 @@ export default function ExamManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">{t("teacher.exams.title")}</h1>
-					<p className="text-base-content/60">{t("teacher.exams.subtitle")}</p>
+					<h1 className="font-bold text-2xl">
+						{t("teacher.exams.title")}
+					</h1>
+					<p className="text-base-content/60">
+						{t("teacher.exams.subtitle")}
+					</p>
 				</div>
 				<button
 					onClick={() => {
@@ -238,7 +244,9 @@ export default function ExamManagement() {
 									<th>{t("teacher.exams.table.class")}</th>
 									<th>{t("teacher.exams.table.type")}</th>
 									<th>{t("teacher.exams.table.date")}</th>
-									<th>{t("teacher.exams.table.percentage")}</th>
+									<th>
+										{t("teacher.exams.table.percentage")}
+									</th>
 									<th>{t("teacher.exams.table.status")}</th>
 									<th>{t("common.table.actions")}</th>
 								</tr>
@@ -246,31 +254,49 @@ export default function ExamManagement() {
 							<tbody>
 								{exams?.map((exam) => (
 									<tr key={exam.id}>
-										<td className="font-medium">{exam.name}</td>
+										<td className="font-medium">
+											{exam.name}
+										</td>
 										<td>
 											{courseMap.get(
-												classCourseMap.get(exam.classCourse)?.course || "",
+												classCourseMap.get(
+													exam.classCourse,
+												)?.course || "",
 											)}
 										</td>
 										<td>
 											{classMap.get(
-												classCourseMap.get(exam.classCourse)?.class || "",
+												classCourseMap.get(
+													exam.classCourse,
+												)?.class || "",
 											)}
 										</td>
 										<td>{exam.type}</td>
-										<td>{format(new Date(exam.date), "MMM d, yyyy")}</td>
 										<td>
-											{t("teacher.exams.table.percentageValue", {
-												value: exam.percentage,
-											})}
+											{format(
+												new Date(exam.date),
+												"MMM d, yyyy",
+											)}
+										</td>
+										<td>
+											{t(
+												"teacher.exams.table.percentageValue",
+												{
+													value: exam.percentage,
+												},
+											)}
 										</td>
 										<td>
 											<span
 												className={`badge ${exam.isLocked ? "badge-warning" : "badge-success"}`}
 											>
 												{exam.isLocked
-													? t("teacher.exams.status.locked")
-													: t("teacher.exams.status.open")}
+													? t(
+															"teacher.exams.status.locked",
+														)
+													: t(
+															"teacher.exams.status.open",
+														)}
 											</span>
 										</td>
 										<td>
@@ -281,9 +307,13 @@ export default function ExamManagement() {
 														reset({
 															name: exam.name,
 															type: exam.type,
-															date: exam.date.split("T")[0],
-															percentage: exam.percentage,
-															classCourseId: exam.classCourse,
+															date: exam.date.split(
+																"T",
+															)[0],
+															percentage:
+																exam.percentage,
+															classCourseId:
+																exam.classCourse,
 														});
 														setIsFormOpen(true);
 													}}
@@ -293,7 +323,9 @@ export default function ExamManagement() {
 													<Pencil className="h-4 w-4" />
 												</button>
 												<button
-													onClick={() => openDeleteModal(exam.id)}
+													onClick={() =>
+														openDeleteModal(exam.id)
+													}
 													className="btn btn-square btn-sm btn-ghost text-error"
 													disabled={exam.isLocked}
 												>
@@ -338,7 +370,8 @@ export default function ExamManagement() {
 							</option>
 							{classCourses?.map((cc) => (
 								<option key={cc.id} value={cc.id}>
-									{courseMap.get(cc.course)} - {classMap.get(cc.class)}
+									{courseMap.get(cc.course)} -{" "}
+									{classMap.get(cc.class)}
 								</option>
 							))}
 						</select>
@@ -361,7 +394,9 @@ export default function ExamManagement() {
 							type="text"
 							{...register("name")}
 							className="input input-bordered"
-							placeholder={t("teacher.exams.form.namePlaceholder")}
+							placeholder={t(
+								"teacher.exams.form.namePlaceholder",
+							)}
 						/>
 						{errors.name && (
 							<label className="label">
@@ -382,7 +417,9 @@ export default function ExamManagement() {
 							type="text"
 							{...register("type")}
 							className="input input-bordered"
-							placeholder={t("teacher.exams.form.typePlaceholder")}
+							placeholder={t(
+								"teacher.exams.form.typePlaceholder",
+							)}
 						/>
 						{errors.type && (
 							<label className="label">
@@ -423,7 +460,9 @@ export default function ExamManagement() {
 							type="number"
 							{...register("percentage", { valueAsNumber: true })}
 							className="input input-bordered"
-							placeholder={t("teacher.exams.form.percentagePlaceholder")}
+							placeholder={t(
+								"teacher.exams.form.percentagePlaceholder",
+							)}
 						/>
 						{errors.percentage && (
 							<label className="label">

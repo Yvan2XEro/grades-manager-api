@@ -39,9 +39,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show success
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("displays created exam in the list", () => {
@@ -72,7 +72,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 
 			// Should see exam in the list with date
 			cy.contains(/2024-12-20|20\/12\/2024/i).should("exist");
@@ -93,7 +95,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show validation error
-			cy.contains(/required|obligatoire/i, { timeout: 5000 }).should("exist");
+			cy.contains(/required|obligatoire/i, { timeout: 5000 }).should(
+				"exist",
+			);
 		});
 
 		it("requires exam type selection", () => {
@@ -115,9 +119,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show validation error
-			cy.contains(/required|obligatoire|exam.*type/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/required|obligatoire|exam.*type/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("requires date", () => {
@@ -208,9 +212,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show validation error
-			cy.contains(/positive|greater.*0|supérieur/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/positive|greater.*0|supérieur/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("validates date format", () => {
@@ -288,7 +292,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 		});
 
 		it("displays exam type in the exam list", () => {
@@ -327,7 +333,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 
 			// Should show exam type in list
 			if (examTypeName) {
@@ -363,7 +371,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 
 			// Should show coefficient "3" in list
 			cy.contains("3").should("exist");
@@ -453,7 +463,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 
 			// Create second exam for same course
 			cy.findByRole("button", {
@@ -481,7 +493,9 @@ describe("Exam Management - Manual Creation", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
+				"exist",
+			);
 
 			// Should see both exams in the list
 			cy.contains("2024-12-10").should("exist");

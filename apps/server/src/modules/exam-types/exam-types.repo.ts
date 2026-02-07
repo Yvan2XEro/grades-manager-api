@@ -51,7 +51,9 @@ export async function list(
 	opts: { cursor?: string; limit?: number },
 ) {
 	const limit = opts.limit ?? 50;
-	const cursorCond = opts.cursor ? gt(schema.examTypes.id, opts.cursor) : null;
+	const cursorCond = opts.cursor
+		? gt(schema.examTypes.id, opts.cursor)
+		: null;
 	const condition = cursorCond
 		? and(eq(schema.examTypes.institutionId, institutionId), cursorCond)
 		: eq(schema.examTypes.institutionId, institutionId);

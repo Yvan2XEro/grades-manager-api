@@ -30,8 +30,12 @@ describe("Enrollment Management - Individual Enrollment", () => {
 					cy.log("Individual enrollment button found");
 
 					// Try to click on whichever button exists
-					if ($body.find('[data-testid="enroll-student"]').length > 0) {
-						cy.get('[data-testid="enroll-student"]').first().click();
+					if (
+						$body.find('[data-testid="enroll-student"]').length > 0
+					) {
+						cy.get('[data-testid="enroll-student"]')
+							.first()
+							.click();
 					} else {
 						cy.findByRole("button", { name: /enroll/i })
 							.first()
@@ -101,7 +105,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			// Should handle gracefully (either show already enrolled or skip duplicates)
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const hasConflictMessage =
-					$body.text().match(/already.*enrolled|déjà.*inscrit|conflict/i) !==
+					$body
+						.text()
+						.match(/already.*enrolled|déjà.*inscrit|conflict/i) !==
 					null;
 				const hasSuccessMessage =
 					$body.text().match(/enrolled|inscrit|synced/i) !== null;
@@ -123,8 +129,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			// Try to enroll without selecting class
 			cy.get("body").then(($body) => {
 				if (
-					$body.find('button:contains("Enroll"), button:contains("Confirm")')
-						.length > 0
+					$body.find(
+						'button:contains("Enroll"), button:contains("Confirm")',
+					).length > 0
 				) {
 					const enrollButton = $body.find(
 						'button:contains("Enroll"), button:contains("Confirm")',
@@ -227,7 +234,10 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			// Look for date/timestamp
 			cy.get("body").then(($body) => {
 				const hasDate =
-					$body.text().match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}/) !== null;
+					$body
+						.text()
+						.match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4}/) !==
+					null;
 				if (hasDate) {
 					cy.log("Enrollment date is displayed");
 				}
@@ -259,7 +269,8 @@ describe("Enrollment Management - Individual Enrollment", () => {
 
 			// Should show students from that class
 			cy.get("body", { timeout: 10000 }).then(($body) => {
-				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || []).length;
+				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || [])
+					.length;
 				cy.log(`Found ${studentCount} students in selected class`);
 
 				if (studentCount > 0) {
@@ -298,8 +309,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 				const hasOtherYears =
 					$body
 						.find('[data-testid="academic-year-select"] option')
-						.filter((_, el) => el.textContent?.match(/2023-2024|2025-2026/))
-						.length > 0;
+						.filter((_, el) =>
+							el.textContent?.match(/2023-2024|2025-2026/),
+						).length > 0;
 
 				if (hasOtherYears) {
 					cy.log(
@@ -338,9 +350,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 				.click();
 
 			// Should show roster dialog
-			cy.contains(/course.*roster|roster.*cours/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/course.*roster|roster.*cours/i, {
+				timeout: 5000,
+			}).should("exist");
 			cy.contains(/managing|gérer/i).should("exist");
 		});
 
@@ -370,17 +382,18 @@ describe("Enrollment Management - Individual Enrollment", () => {
 			// Look for withdraw button
 			cy.get("body").then(($body) => {
 				if (
-					$body.find('button:contains("Withdraw"), button:contains("Retirer")')
-						.length > 0
+					$body.find(
+						'button:contains("Withdraw"), button:contains("Retirer")',
+					).length > 0
 				) {
 					cy.log("Withdraw functionality exists");
 					cy.findAllByRole("button", { name: /withdraw|retirer/i })
 						.first()
 						.click();
 
-					cy.contains(/withdrawn|retiré|success/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/withdrawn|retiré|success/i, {
+						timeout: 10000,
+					}).should("exist");
 				} else {
 					cy.log("No withdraw button - might be view-only roster");
 				}

@@ -14,7 +14,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Select an exam
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Wait for student list to load
@@ -53,7 +55,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Try to enter invalid grade (> 20)
@@ -82,7 +86,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Try to enter negative grade
@@ -111,7 +117,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Enter decimal grade
@@ -140,7 +148,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Enter a grade
@@ -195,7 +205,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			cy.get("[role=option]").first().click();
 
 			// Select exam
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Student list should load
@@ -216,7 +228,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Enter grades for multiple students
@@ -247,7 +261,9 @@ describe("Grade Entry - Teacher Workflow", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Enter grade for only first student

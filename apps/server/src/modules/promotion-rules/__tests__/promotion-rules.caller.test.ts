@@ -32,7 +32,11 @@ describe("promotion rules router", () => {
 							operator: "greaterThanInclusive",
 							value: 30,
 						},
-						{ fact: "eliminatoryFailures", operator: "equal", value: 0 },
+						{
+							fact: "eliminatoryFailures",
+							operator: "equal",
+							value: 0,
+						},
 					],
 				},
 				event: {

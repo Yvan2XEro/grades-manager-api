@@ -70,8 +70,10 @@ export function loadExportConfig(): ExportConfig {
 	// Convert old format to new format
 	return {
 		institution: {
-			name_fr: jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
-			name_en: jsonConfig.institution?.university?.name_en || "UNIVERSITY",
+			name_fr:
+				jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
+			name_en:
+				jsonConfig.institution?.university?.name_en || "UNIVERSITY",
 			logo_url: jsonConfig.institution?.university?.logo_url || "",
 			faculty_name_fr: jsonConfig.institution?.faculty?.name_fr,
 			faculty_name_en: jsonConfig.institution?.faculty?.name_en,
@@ -101,7 +103,8 @@ export function institutionToExportConfig(
 
 	// Si l'institution parente est de type "faculty", on l'utilise comme faculté de supervision
 	// Sinon, la faculté de supervision est null (optionnel)
-	const supervisingFaculty = parentInst?.type === "faculty" ? parentInst : null;
+	const supervisingFaculty =
+		parentInst?.type === "faculty" ? parentInst : null;
 
 	// Si le parent n'est pas une faculté, chercher le "grand-parent" comme université
 	// Sinon, utiliser le parent direct
@@ -261,8 +264,155 @@ export function calculateStats(scores: Array<number | null>) {
 		present: validScores.length,
 		absent: scores.length - validScores.length,
 		average:
-			validScores.reduce((sum, score) => sum + score, 0) / validScores.length,
+			validScores.reduce((sum, score) => sum + score, 0) /
+			validScores.length,
 		highest: Math.max(...validScores),
 		lowest: Math.min(...validScores),
 	};
+}
+
+/**
+ * Types for retake scoring policy
+ */
+export type RetakeScoringPolicy = "replace" | "best_of";
+
+export interface ExamWithRetake {
+	id: string;
+	type: string;
+	percentage: number;
+	sessionType: "normal" | "retake";
+	parentExamId: string | null;
+	scoringPolicy: RetakeScoringPolicy;
+	grades: Array<{
+		studentRef: { id: string };
+		score: string | null;
+	}>;
+}
+
+export interface ResolvedGrade {
+	type: string;
+	normalizedType: "CC" | "EXAMEN" | "OTHER";
+	score: number | null;
+	percentage: number;
+	isRetake: boolean;
+	originalScore: number | null;
+	retakeScore: number | null;
+}
+
+/**
+ * Normalize exam type to a standard category.
+ * CC types: CC
+ * EXAMEN types: EXAMEN, FINAL, EX (case-insensitive)
+ * OTHER: everything else (TP, TPE, etc.)
+ */
+export function normalizeExamType(type: string): "CC" | "EXAMEN" | "OTHER" {
+	const upperType = type.toUpperCase();
+	if (upperType === "CC") {
+		return "CC";
+	}
+	if (
+		upperType === "EXAMEN" ||
+		upperType === "FINAL" ||
+		upperType === "EX" ||
+		upperType === "EXAM"
+	) {
+		return "EXAMEN";
+	}
+	return "OTHER";
+}
+
+/**
+ * Resolve the effective grade for a student considering retake exams and scoring policy.
+ * Groups exams by type (CC, EXAMEN) and applies scoring policy for retakes.
+ *
+ * @param exams - All exams for a course (including retakes)
+ * @param studentId - The student ID to resolve grades for
+ * @param includeRetakes - Whether to apply retake scoring policy (default: true)
+ * @returns Array of resolved grades per exam type (CC, EXAMEN)
+ */
+export function resolveStudentGradesWithRetakes(
+	exams: ExamWithRetake[],
+	studentId: string,
+	includeRetakes = true,
+): ResolvedGrade[] {
+	// Group exams: normal exams and their retakes
+	const normalExams = exams.filter((e) => e.sessionType === "normal");
+	const retakeExams = exams.filter((e) => e.sessionType === "retake");
+
+	// Create a map of retakes by parent exam ID
+	const retakesByParent = new Map<string, ExamWithRetake>();
+	for (const retake of retakeExams) {
+		if (retake.parentExamId) {
+			retakesByParent.set(retake.parentExamId, retake);
+		}
+	}
+
+	const resolvedGrades: ResolvedGrade[] = [];
+
+	for (const exam of normalExams) {
+		const normalGrade = exam.grades.find(
+			(g) => g.studentRef.id === studentId,
+		);
+		const normalScore = normalGrade?.score
+			? Number(normalGrade.score)
+			: null;
+
+		const normalizedType = normalizeExamType(exam.type);
+
+		// Check if there's a retake for this exam and if we should include it
+		const retakeExam = includeRetakes ? retakesByParent.get(exam.id) : null;
+
+		if (retakeExam) {
+			const retakeGrade = retakeExam.grades.find(
+				(g) => g.studentRef.id === studentId,
+			);
+			const retakeScore = retakeGrade?.score
+				? Number(retakeGrade.score)
+				: null;
+
+			// Apply scoring policy
+			let effectiveScore: number | null;
+			const policy = retakeExam.scoringPolicy;
+
+			if (retakeScore !== null) {
+				if (policy === "replace") {
+					// Replace: always use retake score if available
+					effectiveScore = retakeScore;
+				} else {
+					// best_of: use the higher score
+					if (normalScore !== null) {
+						effectiveScore = Math.max(normalScore, retakeScore);
+					} else {
+						effectiveScore = retakeScore;
+					}
+				}
+			} else {
+				// No retake grade, use normal score
+				effectiveScore = normalScore;
+			}
+
+			resolvedGrades.push({
+				type: exam.type,
+				normalizedType,
+				score: effectiveScore,
+				percentage: Number(exam.percentage),
+				isRetake: retakeScore !== null,
+				originalScore: normalScore,
+				retakeScore: retakeScore,
+			});
+		} else {
+			// No retake, use normal grade
+			resolvedGrades.push({
+				type: exam.type,
+				normalizedType,
+				score: normalScore,
+				percentage: Number(exam.percentage),
+				isRetake: false,
+				originalScore: normalScore,
+				retakeScore: null,
+			});
+		}
+	}
+
+	return resolvedGrades;
 }

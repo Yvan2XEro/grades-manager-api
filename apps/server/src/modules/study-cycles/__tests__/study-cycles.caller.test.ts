@@ -42,7 +42,9 @@ describe("study cycles router", () => {
 		expect(level.cycleId).toBe(cycle.id);
 		expect(level.orderIndex).toBe(expectedLevelCount + 1);
 
-		const levels = await admin.studyCycles.listLevels({ cycleId: cycle.id });
+		const levels = await admin.studyCycles.listLevels({
+			cycleId: cycle.id,
+		});
 		expect(levels.length).toBe(preloadedLevels.length + 1);
 
 		const cycles = await admin.studyCycles.listCycles({});

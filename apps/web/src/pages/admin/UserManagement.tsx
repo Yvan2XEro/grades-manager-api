@@ -1,15 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import {
-	Copy,
-	Eye,
-	EyeOff,
-	Pencil,
-	PlusIcon,
-	Search,
-	Trash2,
-} from "lucide-react";
+import { Pencil, PlusIcon, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -34,12 +26,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
-	InputGroupInput,
-} from "../../components/ui/input-group";
 import {
 	Select,
 	SelectContent,
@@ -66,9 +52,6 @@ type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 const getDisplayName = (user: DomainUser) =>
 	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
-const toFormRole = (role?: string | null): "admin" | "teacher" =>
-	role === "administrator" ? "admin" : "teacher";
-
 const toDomainRole = (role: "admin" | "teacher") =>
 	role === "admin" ? "administrator" : role;
 
@@ -89,7 +72,6 @@ const mapFormToProfile = (data: UserForm) => ({
 	placeOfBirth: data.placeOfBirth?.trim() || undefined,
 	nationality: data.nationality?.trim() || undefined,
 	status: data.status || "active",
-	role: toDomainRole(data.role),
 });
 
 const buildFullName = (data: Pick<UserForm, "firstName" | "lastName">) =>
@@ -106,17 +88,13 @@ const buildUserSchema = (t: TFunction) =>
 		placeOfBirth: z.string().optional(),
 		nationality: z.string().optional(),
 		status: z.enum(["active", "inactive", "suspended"]).optional(),
-		role: z.enum(["admin", "teacher"], {
-			errorMap: () => ({ message: t("admin.users.validation.role") }),
-		}),
-		password: z.string().optional(),
 	});
 
 type UserForm = z.infer<ReturnType<typeof buildUserSchema>>;
 
-function generatePassword(length = 12) {
+function generatePassword(length = 16) {
 	const chars =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
 	let pwd = "";
 	for (let i = 0; i < length; i++) {
 		pwd += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -133,7 +111,6 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const [showPassword, setShowPassword] = useState(false);
 	const [cursor, setCursor] = useState<string | undefined>();
 	const [prevCursors, setPrevCursors] = useState<string[]>([]);
 	const pageSize = 10;
@@ -148,7 +125,9 @@ export default function UserManagement() {
 			},
 			{
 				value: "female",
-				label: t("admin.users.gender.female", { defaultValue: "Female" }),
+				label: t("admin.users.gender.female", {
+					defaultValue: "Female",
+				}),
 			},
 			{
 				value: "other",
@@ -172,7 +151,8 @@ export default function UserManagement() {
 			trpcClient.users.list.query({
 				cursor,
 				limit: pageSize,
-				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
+				role:
+					roleFilter === "all" ? undefined : toDomainRole(roleFilter),
 			}),
 	});
 	const users = data?.items ?? [];
@@ -203,8 +183,6 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
-			role: "teacher",
-			password: "",
 		},
 	});
 
@@ -220,10 +198,7 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
-			role: "teacher",
-			password: "",
 		});
-		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -239,10 +214,7 @@ export default function UserManagement() {
 			placeOfBirth: user.placeOfBirth || "",
 			nationality: user.nationality || "",
 			status: (user.status as UserForm["status"]) || "active",
-			role: toFormRole(user.businessRole),
-			password: "",
 		});
-		setShowPassword(false);
 		setIsModalOpen(true);
 	};
 
@@ -250,15 +222,13 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			if (!data.password) {
-				throw new Error(t("admin.users.validation.passwordRequired"));
-			}
 			const fullName = buildFullName(data);
+			const autoPassword = generatePassword();
 			const response = await authClient.admin.createUser({
 				email: data.email,
 				name: fullName,
-				role: data.role,
-				password: data.password,
+				role: "teacher",
+				password: autoPassword,
 			});
 			const authUserId = response?.user?.id;
 			if (!authUserId) {
@@ -275,7 +245,9 @@ export default function UserManagement() {
 			closeModal();
 		},
 		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.users.toast.createError")),
+			toast.error(
+				(err as Error).message || t("admin.users.toast.createError"),
+			),
 	});
 
 	const updateMutation = useMutation({
@@ -288,14 +260,11 @@ export default function UserManagement() {
 				const fullName = buildFullName(data);
 				await authClient.admin.adminUpdateUser({
 					userId: authUserId,
-					data: { name: fullName, email: data.email, role: data.role },
+					data: {
+						name: fullName,
+						email: data.email,
+					},
 				});
-				if (data.password) {
-					await authClient.admin.setUserPassword({
-						userId: authUserId,
-						password: data.password,
-					});
-				}
 			}
 			await trpcClient.users.updateProfile.mutate({
 				id,
@@ -308,7 +277,9 @@ export default function UserManagement() {
 			closeModal();
 		},
 		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.users.toast.updateError")),
+			toast.error(
+				(err as Error).message || t("admin.users.toast.updateError"),
+			),
 	});
 
 	const deleteMutation = useMutation({
@@ -325,28 +296,12 @@ export default function UserManagement() {
 			setUserToDelete(null);
 		},
 		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.users.toast.deleteError")),
+			toast.error(
+				(err as Error).message || t("admin.users.toast.deleteError"),
+			),
 	});
 
-	const handleGeneratePassword = () => {
-		const pwd = generatePassword();
-		form.setValue("password", pwd);
-		setShowPassword(true);
-	};
-
-	const handleCopyPassword = () => {
-		const pwd = form.getValues("password");
-		if (pwd) {
-			navigator.clipboard.writeText(pwd);
-			toast.success(t("admin.users.toast.passwordCopied"));
-		}
-	};
-
 	const onSubmit = (data: UserForm) => {
-		if (!editingUser && !data.password) {
-			toast.error(t("admin.users.validation.passwordRequired"));
-			return;
-		}
 		if (editingUser) {
 			updateMutation.mutate({
 				id: editingUser.id,
@@ -361,7 +316,9 @@ export default function UserManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-semibold text-xl">{t("admin.users.title")}</h1>
+				<h1 className="font-semibold text-xl">
+					{t("admin.users.title")}
+				</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
@@ -382,7 +339,9 @@ export default function UserManagement() {
 				<div className="flex flex-wrap gap-2">
 					<Select value={roleFilter} onValueChange={setRoleFilter}>
 						<SelectTrigger className="min-w-[180px]">
-							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
+							<SelectValue
+								placeholder={t("admin.users.filters.roles.all")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">
@@ -403,9 +362,13 @@ export default function UserManagement() {
 					<TableHeader>
 						<TableRow>
 							<TableHead>{t("admin.users.table.name")}</TableHead>
-							<TableHead>{t("admin.users.table.email")}</TableHead>
+							<TableHead>
+								{t("admin.users.table.email")}
+							</TableHead>
 							<TableHead>{t("admin.users.table.role")}</TableHead>
-							<TableHead>{t("admin.users.table.status")}</TableHead>
+							<TableHead>
+								{t("admin.users.table.status")}
+							</TableHead>
 							<TableHead className="w-1 text-right">
 								{t("common.table.actions")}
 							</TableHead>
@@ -419,24 +382,32 @@ export default function UserManagement() {
 								</TableCell>
 								<TableCell>{user.email}</TableCell>
 								<TableCell>
-									{user.businessRole
+									{user.role
 										? t(
 												`admin.users.roles.${
-													user.businessRole === "administrator"
+													user.role ===
+													"administrator"
 														? "admin"
-														: user.businessRole
+														: user.role
 												}`,
-												{ defaultValue: user.businessRole },
+												{ defaultValue: user.role },
 											)
 										: ""}
 								</TableCell>
 								<TableCell>
 									<Badge
-										variant={user.status === "active" ? "default" : "secondary"}
+										variant={
+											user.status === "active"
+												? "default"
+												: "secondary"
+										}
 									>
-										{t(`admin.users.status.${user.status}`, {
-											defaultValue: user.status,
-										})}
+										{t(
+											`admin.users.status.${user.status}`,
+											{
+												defaultValue: user.status,
+											},
+										)}
 									</Badge>
 								</TableCell>
 								<TableCell className="text-right">
@@ -446,7 +417,9 @@ export default function UserManagement() {
 											variant="ghost"
 											size="icon"
 											onClick={() => openEdit(user)}
-											aria-label={t("admin.users.actions.edit")}
+											aria-label={t(
+												"admin.users.actions.edit",
+											)}
 										>
 											<Pencil className="h-4 w-4" />
 										</Button>
@@ -454,9 +427,13 @@ export default function UserManagement() {
 											type="button"
 											variant="ghost"
 											size="icon"
-											onClick={() => setUserToDelete(user)}
+											onClick={() =>
+												setUserToDelete(user)
+											}
 											disabled={!user.authUserId}
-											aria-label={t("common.actions.delete")}
+											aria-label={t(
+												"common.actions.delete",
+											)}
 										>
 											<Trash2 className="h-4 w-4" />
 										</Button>
@@ -466,7 +443,10 @@ export default function UserManagement() {
 						))}
 						{displayedUsers.length === 0 && (
 							<TableRow>
-								<TableCell colSpan={5} className="py-4 text-center">
+								<TableCell
+									colSpan={5}
+									className="py-4 text-center"
+								>
 									{t("admin.users.empty")}
 								</TableCell>
 							</TableRow>
@@ -503,7 +483,10 @@ export default function UserManagement() {
 				</button>
 			</div>
 
-			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
+			<Dialog
+				open={isModalOpen}
+				onOpenChange={(open) => !open && closeModal()}
+			>
 				<DialogContent className="max-w-xl">
 					<DialogHeader>
 						<DialogTitle>
@@ -513,7 +496,10 @@ export default function UserManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
+						>
 							<div className="grid gap-4 md:grid-cols-2">
 								<FormField
 									control={form.control}
@@ -521,7 +507,9 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.users.form.firstNameLabel")}
+												{t(
+													"admin.users.form.firstNameLabel",
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -536,7 +524,9 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.users.form.lastNameLabel")}
+												{t(
+													"admin.users.form.lastNameLabel",
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -551,7 +541,9 @@ export default function UserManagement() {
 								name="email"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
+										<FormLabel>
+											{t("admin.users.form.emailLabel")}
+										</FormLabel>
 										<FormControl>
 											<Input type="email" {...field} />
 										</FormControl>
@@ -565,7 +557,11 @@ export default function UserManagement() {
 									name="phone"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
+											<FormLabel>
+												{t(
+													"admin.users.form.phoneLabel",
+												)}
+											</FormLabel>
 											<FormControl>
 												<Input {...field} />
 											</FormControl>
@@ -578,7 +574,11 @@ export default function UserManagement() {
 									name="gender"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
+											<FormLabel>
+												{t(
+													"admin.users.form.genderLabel",
+												)}
+											</FormLabel>
 											<Select
 												value={field.value}
 												onValueChange={field.onChange}
@@ -593,11 +593,20 @@ export default function UserManagement() {
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													{genderOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
+													{genderOptions.map(
+														(option) => (
+															<SelectItem
+																key={
+																	option.value
+																}
+																value={
+																	option.value
+																}
+															>
+																{option.label}
+															</SelectItem>
+														),
+													)}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -612,7 +621,9 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.users.form.dateOfBirthLabel")}
+												{t(
+													"admin.users.form.dateOfBirthLabel",
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input type="date" {...field} />
@@ -627,7 +638,9 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.users.form.placeOfBirthLabel")}
+												{t(
+													"admin.users.form.placeOfBirthLabel",
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -644,7 +657,9 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t("admin.users.form.nationalityLabel")}
+												{t(
+													"admin.users.form.nationalityLabel",
+												)}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -658,7 +673,11 @@ export default function UserManagement() {
 									name="status"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
+											<FormLabel>
+												{t(
+													"admin.users.form.statusLabel",
+												)}
+											</FormLabel>
 											<Select
 												value={field.value}
 												onValueChange={field.onChange}
@@ -669,11 +688,20 @@ export default function UserManagement() {
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													{statusOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
+													{statusOptions.map(
+														(option) => (
+															<SelectItem
+																key={
+																	option.value
+																}
+																value={
+																	option.value
+																}
+															>
+																{option.label}
+															</SelectItem>
+														),
+													)}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -681,95 +709,6 @@ export default function UserManagement() {
 									)}
 								/>
 							</div>
-							<FormField
-								control={form.control}
-								name="role"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.users.form.roleLabel")}</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t("admin.users.filters.roles.all")}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												<SelectItem value="admin">
-													{t("admin.users.filters.roles.admin")}
-												</SelectItem>
-												<SelectItem value="teacher">
-													{t("admin.users.filters.roles.teacher")}
-												</SelectItem>
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{editingUser
-												? t("admin.users.form.newPasswordLabel")
-												: t("admin.users.form.passwordLabel")}
-										</FormLabel>
-										<FormControl>
-											<InputGroup>
-												<InputGroupInput
-													type={showPassword ? "text" : "password"}
-													placeholder={
-														editingUser
-															? t("admin.users.form.passwordPlaceholder")
-															: undefined
-													}
-													{...field}
-												/>
-												<InputGroupAddon
-													align="inline-end"
-													className="gap-1.5 pr-1.5"
-												>
-													<InputGroupButton
-														type="button"
-														size="sm"
-														variant="ghost"
-														onClick={() => setShowPassword((s) => !s)}
-													>
-														{showPassword ? (
-															<EyeOff className="h-4 w-4" />
-														) : (
-															<Eye className="h-4 w-4" />
-														)}
-													</InputGroupButton>
-													<InputGroupButton
-														type="button"
-														size="sm"
-														variant="ghost"
-														onClick={handleCopyPassword}
-													>
-														<Copy className="h-4 w-4" />
-													</InputGroupButton>
-													{!editingUser && (
-														<InputGroupButton
-															type="button"
-															size="sm"
-															variant="ghost"
-															onClick={handleGeneratePassword}
-														>
-															{t("admin.users.form.generatePassword")}
-														</InputGroupButton>
-													)}
-												</InputGroupAddon>
-											</InputGroup>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
 							<DialogFooter>
 								<Button
 									type="button"
@@ -811,7 +750,9 @@ export default function UserManagement() {
 			<ConfirmModal
 				isOpen={Boolean(userToDelete)}
 				onClose={() => setUserToDelete(null)}
-				onConfirm={() => userToDelete && deleteMutation.mutate(userToDelete)}
+				onConfirm={() =>
+					userToDelete && deleteMutation.mutate(userToDelete)
+				}
 				title={t("admin.users.confirm.delete.title")}
 				message={t("admin.users.confirm.delete.message")}
 				confirmText={t("common.actions.delete")}

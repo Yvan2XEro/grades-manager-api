@@ -54,7 +54,6 @@ const conflictMarkers = [
 
 const buildProfilePayload = (p: StudentProfileInput) => ({
 	authUserId: p.authUserId ?? null,
-	businessRole: "student" as schema.BusinessRole,
 	firstName: p.firstName,
 	lastName: p.lastName,
 	primaryEmail: p.primaryEmail,
@@ -196,12 +195,12 @@ export async function bulkCreateStudents(
 	const pendingLedgerCredits: Array<{ studentId: string; credits: number }> =
 		[];
 
-	await transaction(async (tx) => {
-		for (let i = 0; i < data.students.length; i++) {
-			const s = data.students[i];
-			let profileId: string | undefined;
-			let attemptedRegistration: string | undefined;
-			try {
+	// Process each student in its own transaction to handle conflicts gracefully
+	for (let i = 0; i < data.students.length; i++) {
+		const s = data.students[i];
+		let attemptedRegistration: string | undefined;
+		try {
+			const studentId = await transaction(async (tx) => {
 				const registrationProfile = toRegistrationProfile(s.profile);
 				const registrationNumber =
 					s.registrationNumber ??
@@ -218,7 +217,6 @@ export async function bulkCreateStudents(
 					.returning();
 				const admissionType = s.admissionType ?? "normal";
 				const transferCredits = s.transferCredits ?? 0;
-				profileId = profile.id;
 				const [student] = await tx
 					.insert(schema.students)
 					.values({
@@ -251,35 +249,33 @@ export async function bulkCreateStudents(
 								}
 							: {},
 				});
-				createdCount++;
 				if (transferCredits > 0) {
 					pendingLedgerCredits.push({
 						studentId: student.id,
 						credits: transferCredits,
 					});
 				}
-			} catch (error) {
-				if (profileId) {
-					await tx
-						.delete(schema.domainUsers)
-						.where(eq(schema.domainUsers.id, profileId));
-				}
-				const message = String((error as Error)?.message ?? "");
-				let reason = "Unknown error";
-				if (message.includes("uq_domain_users_email")) {
-					reason = "Email already exists";
-				} else if (message.includes("uq_students_registration")) {
-					reason = "Registration number already exists";
-				}
-				conflicts.push({
-					row: i + 1,
-					email: s.profile.primaryEmail,
-								registrationNumber: attemptedRegistration ?? s.registrationNumber,
-					reason,
-				});
+				return student.id;
+			});
+			if (studentId) {
+				createdCount++;
 			}
+		} catch (error) {
+			const message = String((error as Error)?.message ?? "");
+			let reason = "Unknown error";
+			if (message.includes("uq_domain_users_email")) {
+				reason = "Email already exists";
+			} else if (message.includes("uq_students_registration")) {
+				reason = "Registration number already exists";
+			}
+			conflicts.push({
+				row: i + 1,
+				email: s.profile.primaryEmail,
+				registrationNumber: attemptedRegistration ?? s.registrationNumber,
+				reason,
+			});
 		}
-	});
+	}
 
 	for (const entry of pendingLedgerCredits) {
 		await studentCreditLedgerService.applyDelta(
@@ -313,7 +309,8 @@ export async function updateStudent(
 				lastName: data.profile.lastName ?? existing.profile.lastName,
 				primaryEmail:
 					data.profile.primaryEmail ?? existing.profile.primaryEmail,
-				dateOfBirth: data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
+				dateOfBirth:
+					data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
 				placeOfBirth:
 					data.profile.placeOfBirth ?? existing.profile.placeOfBirth,
 				gender: data.profile.gender ?? existing.profile.gender,
@@ -336,7 +333,10 @@ export async function updateStudent(
 			payload.registrationNumber = data.registrationNumber;
 		}
 		if (data.classId) {
-			const newClass = await classesRepo.findById(data.classId, institutionId);
+			const newClass = await classesRepo.findById(
+				data.classId,
+				institutionId,
+			);
 			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
 			payload.institutionId = newClass.institutionId;
 			await repo.update(id, payload, institutionId);

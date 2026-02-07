@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type DebouncedSearchFieldProps = {
 	value: string;
@@ -56,7 +56,7 @@ export function DebouncedSearchField({
 					type="button"
 					variant="ghost"
 					size="icon"
-					className="absolute right-1 top-1 h-7 w-7"
+					className="absolute top-1 right-1 h-7 w-7"
 					onClick={handleClear}
 					disabled={disabled}
 				>

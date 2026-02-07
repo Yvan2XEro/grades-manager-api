@@ -53,6 +53,7 @@ type Course = {
 	code: string;
 	hours: number;
 	defaultTeacher: string;
+	defaultCoefficient: number;
 };
 
 type Teacher = RouterOutputs["users"]["list"]["items"][number];
@@ -79,11 +80,8 @@ const buildCourseSchema = (
 				defaultValue: "Code is required",
 			}),
 		),
-		defaultTeacher: z.string({
-			required_error: t("admin.teachingUnits.courses.validation.teacher", {
-				defaultValue: "Default teacher is required",
-			}),
-		}),
+		defaultTeacher: z.string().optional(),
+		defaultCoefficient: z.coerce.number().positive().default(1),
 	});
 
 type CourseFormData = z.infer<ReturnType<typeof buildCourseSchema>>;
@@ -123,6 +121,7 @@ export function TeachingUnitCoursesTable({
 						code: course.code,
 						hours: course.hours,
 						defaultTeacher: course.defaultTeacher ?? "",
+						defaultCoefficient: Number(course.defaultCoefficient) || 1,
 					}) as Course,
 			);
 		},
@@ -201,6 +200,7 @@ export function TeachingUnitCoursesTable({
 			hours: undefined as unknown as number,
 			code: "",
 			defaultTeacher: "",
+			defaultCoefficient: 1,
 		});
 		setIsFormOpen(true);
 	};
@@ -212,6 +212,7 @@ export function TeachingUnitCoursesTable({
 			hours: course.hours,
 			code: course.code,
 			defaultTeacher: course.defaultTeacher,
+			defaultCoefficient: course.defaultCoefficient,
 		});
 		setIsFormOpen(true);
 	};
@@ -223,6 +224,7 @@ export function TeachingUnitCoursesTable({
 			hours: undefined as unknown as number,
 			code: "",
 			defaultTeacher: "",
+			defaultCoefficient: 1,
 		});
 		setIsFormOpen(false);
 	};
@@ -259,6 +261,7 @@ export function TeachingUnitCoursesTable({
 				hours: data.hours,
 				code: data.code,
 				defaultTeacher: data.defaultTeacher,
+				defaultCoefficient: data.defaultCoefficient,
 				program: programId,
 				teachingUnitId,
 			}),
@@ -312,7 +315,8 @@ export function TeachingUnitCoursesTable({
 					</CardTitle>
 					<CardDescription>
 						{t("admin.teachingUnits.courses.subtitle", {
-							defaultValue: "Manage ECs tied to this teaching unit.",
+							defaultValue:
+								"Manage ECs tied to this teaching unit.",
 						})}
 					</CardDescription>
 				</div>
@@ -334,18 +338,33 @@ export function TeachingUnitCoursesTable({
 							<TableHeader>
 								<TableRow>
 									<TableHead>
-										{t("admin.teachingUnits.courses.table.code", {
-											defaultValue: "Code",
-										})}
+										{t(
+											"admin.teachingUnits.courses.table.code",
+											{
+												defaultValue: "Code",
+											},
+										)}
 									</TableHead>
 									<TableHead>
-										{t("admin.teachingUnits.courses.table.name")}
+										{t(
+											"admin.teachingUnits.courses.table.name",
+										)}
 									</TableHead>
 									<TableHead>
-										{t("admin.teachingUnits.courses.table.hours")}
+										{t(
+											"admin.teachingUnits.courses.table.hours",
+										)}
 									</TableHead>
 									<TableHead>
-										{t("admin.teachingUnits.courses.table.teacher")}
+										{t(
+											"admin.teachingUnits.courses.table.teacher",
+										)}
+									</TableHead>
+									<TableHead>
+										{t(
+											"admin.teachingUnits.courses.table.coefficient",
+											{ defaultValue: "Coef." },
+										)}
 									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
@@ -358,22 +377,34 @@ export function TeachingUnitCoursesTable({
 										<TableCell>
 											<ClipboardCopy
 												value={course.code}
-												label={t("admin.teachingUnits.courses.table.code", {
-													defaultValue: "Code",
-												})}
+												label={t(
+													"admin.teachingUnits.courses.table.code",
+													{
+														defaultValue: "Code",
+													},
+												)}
 											/>
 										</TableCell>
-										<TableCell className="font-medium">{course.name}</TableCell>
+										<TableCell className="font-medium">
+											{course.name}
+										</TableCell>
 										<TableCell>{course.hours}</TableCell>
 										<TableCell>
-											{teacherMap.get(course.defaultTeacher) ?? "—"}
+											{teacherMap.get(
+												course.defaultTeacher,
+											) ?? "—"}
+										</TableCell>
+										<TableCell>
+											{course.defaultCoefficient}
 										</TableCell>
 										<TableCell className="text-right">
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() => openEdit(course)}
+													onClick={() =>
+														openEdit(course)
+													}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -418,14 +449,19 @@ export function TeachingUnitCoursesTable({
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-4"
+					>
 						<FormField
 							control={form.control}
 							name="name"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.teachingUnits.courses.form.nameLabel")}
+										{t(
+											"admin.teachingUnits.courses.form.nameLabel",
+										)}
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -446,9 +482,12 @@ export function TeachingUnitCoursesTable({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.teachingUnits.courses.form.codeLabel", {
-											defaultValue: "Code",
-										})}
+										{t(
+											"admin.teachingUnits.courses.form.codeLabel",
+											{
+												defaultValue: "Code",
+											},
+										)}
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -469,7 +508,9 @@ export function TeachingUnitCoursesTable({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.teachingUnits.courses.form.hoursLabel")}
+										{t(
+											"admin.teachingUnits.courses.form.hoursLabel",
+										)}
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -479,7 +520,10 @@ export function TeachingUnitCoursesTable({
 												field.onChange(
 													event.target.value === ""
 														? undefined
-														: Number(event.target.value),
+														: Number(
+																event.target
+																	.value,
+															),
 												)
 											}
 											placeholder={t(
@@ -498,7 +542,9 @@ export function TeachingUnitCoursesTable({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t("admin.teachingUnits.courses.form.teacherLabel")}
+										{t(
+											"admin.teachingUnits.courses.form.teacherLabel",
+										)}
 									</FormLabel>
 									<Select
 										onValueChange={field.onChange}
@@ -515,7 +561,10 @@ export function TeachingUnitCoursesTable({
 										</FormControl>
 										<SelectContent>
 											{teacherOptions.map((teacher) => (
-												<SelectItem key={teacher.id} value={teacher.id}>
+												<SelectItem
+													key={teacher.id}
+													value={teacher.id}
+												>
 													{formatTeacherName(teacher)}
 												</SelectItem>
 											))}
@@ -526,8 +575,49 @@ export function TeachingUnitCoursesTable({
 							)}
 						/>
 
+						<FormField
+							control={form.control}
+							name="defaultCoefficient"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t(
+											"admin.teachingUnits.courses.form.coefficientLabel",
+											{ defaultValue: "Coefficient par défaut" },
+										)}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											type="number"
+											step="0.01"
+											min="0.01"
+											placeholder={t(
+												"admin.teachingUnits.courses.form.coefficientPlaceholder",
+												{ defaultValue: "1.00" },
+											)}
+										/>
+									</FormControl>
+									<p className="text-muted-foreground text-xs">
+										{t(
+											"admin.teachingUnits.courses.form.coefficientHelp",
+											{
+												defaultValue:
+													"Poids par défaut lors de l'assignation à une classe",
+											},
+										)}
+									</p>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
 						<div className="flex justify-end gap-2">
-							<Button type="button" variant="outline" onClick={handleCloseForm}>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleCloseForm}
+							>
 								{t("common.actions.cancel")}
 							</Button>
 							<Button
@@ -539,10 +629,14 @@ export function TeachingUnitCoursesTable({
 								}
 							>
 								{form.formState.isSubmitting
-									? t("common.actions.saving", { defaultValue: "Saving..." })
+									? t("common.actions.saving", {
+											defaultValue: "Saving...",
+										})
 									: editingCourse
 										? t("common.actions.saveChanges")
-										: t("admin.teachingUnits.courses.form.submit")}
+										: t(
+												"admin.teachingUnits.courses.form.submit",
+											)}
 							</Button>
 						</div>
 					</form>

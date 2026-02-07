@@ -161,7 +161,10 @@ export default function ClassCourseManagement() {
 		teacher.email;
 	const teacherOptions = teachers ?? [];
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
+		teacherOptions.map((teacher) => [
+			teacher.id,
+			formatTeacherName(teacher),
+		]),
 	);
 	const activeClassIds = new Set((classes ?? []).map((c) => c.id));
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
@@ -179,7 +182,9 @@ export default function ClassCourseManagement() {
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.classCourses.toast.createError"));
+			toast.error(
+				error.message || t("teacher.classCourses.toast.createError"),
+			);
 		},
 	});
 
@@ -196,7 +201,9 @@ export default function ClassCourseManagement() {
 			reset();
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.classCourses.toast.updateError"));
+			toast.error(
+				error.message || t("teacher.classCourses.toast.updateError"),
+			);
 		},
 	});
 
@@ -211,7 +218,9 @@ export default function ClassCourseManagement() {
 			setDeleteId(null);
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("teacher.classCourses.toast.deleteError"));
+			toast.error(
+				error.message || t("teacher.classCourses.toast.deleteError"),
+			);
 		},
 	});
 
@@ -270,7 +279,9 @@ export default function ClassCourseManagement() {
 					<Empty
 						icon={BookOpen}
 						title={t("teacher.classCourses.empty.title")}
-						description={t("teacher.classCourses.empty.description")}
+						description={t(
+							"teacher.classCourses.empty.description",
+						)}
 						actionLabel={t("teacher.classCourses.actions.add")}
 						onAction={() => {
 							setEditingClassCourse(null);
@@ -281,23 +292,33 @@ export default function ClassCourseManagement() {
 				) : (
 					<>
 						<CardHeader>
-							<CardTitle>{t("teacher.classCourses.title")}</CardTitle>
+							<CardTitle>
+								{t("teacher.classCourses.title")}
+							</CardTitle>
 						</CardHeader>
 						<CardContent className="overflow-x-auto">
 							<Table>
 								<TableHeader>
 									<TableRow>
 										<TableHead>
-											{t("teacher.classCourses.table.class")}
+											{t(
+												"teacher.classCourses.table.class",
+											)}
 										</TableHead>
 										<TableHead>
-											{t("teacher.classCourses.table.program")}
+											{t(
+												"teacher.classCourses.table.program",
+											)}
 										</TableHead>
 										<TableHead>
-											{t("teacher.classCourses.table.course")}
+											{t(
+												"teacher.classCourses.table.course",
+											)}
 										</TableHead>
 										<TableHead>
-											{t("teacher.classCourses.table.teacher")}
+											{t(
+												"teacher.classCourses.table.teacher",
+											)}
 										</TableHead>
 										<TableHead className="text-right">
 											{t("common.table.actions")}
@@ -311,21 +332,31 @@ export default function ClassCourseManagement() {
 												{classMap.get(cc.class)?.name}
 											</TableCell>
 											<TableCell>
-												{programMap.get(classMap.get(cc.class)?.program || "")}
+												{programMap.get(
+													classMap.get(cc.class)
+														?.program || "",
+												)}
 											</TableCell>
-											<TableCell>{courseMap.get(cc.course)}</TableCell>
-											<TableCell>{teacherMap.get(cc.teacher)}</TableCell>
+											<TableCell>
+												{courseMap.get(cc.course)}
+											</TableCell>
+											<TableCell>
+												{teacherMap.get(cc.teacher)}
+											</TableCell>
 											<TableCell className="text-right">
 												<div className="flex justify-end gap-2">
 													<Button
 														variant="ghost"
 														size="icon"
 														onClick={() => {
-															setEditingClassCourse(cc);
+															setEditingClassCourse(
+																cc,
+															);
 															reset({
 																class: cc.class,
 																course: cc.course,
-																teacher: cc.teacher,
+																teacher:
+																	cc.teacher,
 															});
 															setIsFormOpen(true);
 														}}
@@ -336,7 +367,11 @@ export default function ClassCourseManagement() {
 														variant="ghost"
 														size="icon"
 														className="text-destructive"
-														onClick={() => openDeleteModal(cc.id)}
+														onClick={() =>
+															openDeleteModal(
+																cc.id,
+															)
+														}
 													>
 														<Trash2 className="h-4 w-4" />
 													</Button>
@@ -375,19 +410,24 @@ export default function ClassCourseManagement() {
 						>
 							<SelectTrigger id="class-select">
 								<SelectValue
-									placeholder={t("teacher.classCourses.form.classPlaceholder")}
+									placeholder={t(
+										"teacher.classCourses.form.classPlaceholder",
+									)}
 								/>
 							</SelectTrigger>
 							<SelectContent>
 								{classes?.map((cls) => (
 									<SelectItem key={cls.id} value={cls.id}>
-										{cls.name} - {programMap.get(cls.program)}
+										{cls.name} -{" "}
+										{programMap.get(cls.program)}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
 						{errors.class ? (
-							<p className="text-destructive text-sm">{errors.class.message}</p>
+							<p className="text-destructive text-sm">
+								{errors.class.message}
+							</p>
 						) : null}
 					</div>
 
@@ -401,12 +441,17 @@ export default function ClassCourseManagement() {
 						>
 							<SelectTrigger id="course-select">
 								<SelectValue
-									placeholder={t("teacher.classCourses.form.coursePlaceholder")}
+									placeholder={t(
+										"teacher.classCourses.form.coursePlaceholder",
+									)}
 								/>
 							</SelectTrigger>
 							<SelectContent>
 								{courses?.map((course) => (
-									<SelectItem key={course.id} value={course.id}>
+									<SelectItem
+										key={course.id}
+										value={course.id}
+									>
 										{course.name}
 									</SelectItem>
 								))}
@@ -425,7 +470,9 @@ export default function ClassCourseManagement() {
 						</Label>
 						<Select
 							value={watch("teacher")}
-							onValueChange={(value) => setValue("teacher", value)}
+							onValueChange={(value) =>
+								setValue("teacher", value)
+							}
 						>
 							<SelectTrigger id="teacher-select">
 								<SelectValue
@@ -436,7 +483,10 @@ export default function ClassCourseManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								{teacherOptions.map((teacher) => (
-									<SelectItem key={teacher.id} value={teacher.id}>
+									<SelectItem
+										key={teacher.id}
+										value={teacher.id}
+									>
 										{formatTeacherName(teacher)}
 									</SelectItem>
 								))}

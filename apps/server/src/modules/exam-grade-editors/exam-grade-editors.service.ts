@@ -3,8 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
-import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
 import { notFound } from "@/modules/_shared/errors";
+import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
 import * as repo from "./exam-grade-editors.repo";
 
 export type ExamEditorActor = {
@@ -89,7 +89,10 @@ async function requireEditorCandidate(
 		columns: { organizationId: true },
 	});
 	if (!institution) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Institution not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Institution not found",
+		});
 	}
 	if (row.memberOrg && row.memberOrg !== institution.organizationId) {
 		throw new TRPCError({
@@ -124,7 +127,10 @@ export async function assignEditor(opts: {
 			grantedByProfileId: grantedBy,
 		});
 	} catch (error) {
-		throw new TRPCError({ code: "CONFLICT", message: "Editor already assigned" });
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: "Editor already assigned",
+		});
 	}
 }
 

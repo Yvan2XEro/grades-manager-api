@@ -33,7 +33,8 @@ const sampleFoundation: FoundationSeed = {
 			code: "BTS-SANTE",
 			name: "BTS Sciences de la Santé",
 			facultyCode: "INSES",
-			description: "Cycle de formation professionnelle en sciences de la santé",
+			description:
+				"Cycle de formation professionnelle en sciences de la santé",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -41,7 +42,8 @@ const sampleFoundation: FoundationSeed = {
 			code: "LP-SANTE",
 			name: "Licence Professionnelle Santé",
 			facultyCode: "INSES",
-			description: "Cycle de licence professionnelle en sciences de la santé",
+			description:
+				"Cycle de licence professionnelle en sciences de la santé",
 			totalCreditsRequired: 180,
 			durationYears: 3,
 		},
@@ -49,7 +51,8 @@ const sampleFoundation: FoundationSeed = {
 			code: "MP-SANTE",
 			name: "Master Professionnel Santé",
 			facultyCode: "INSES",
-			description: "Cycle de master professionnel en sciences de la santé",
+			description:
+				"Cycle de master professionnel en sciences de la santé",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -58,7 +61,8 @@ const sampleFoundation: FoundationSeed = {
 			code: "BTS-COMMERCE",
 			name: "BTS Commerce et Gestion",
 			facultyCode: "INSES",
-			description: "Cycle de formation professionnelle en commerce et gestion",
+			description:
+				"Cycle de formation professionnelle en commerce et gestion",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -67,7 +71,8 @@ const sampleFoundation: FoundationSeed = {
 			code: "CQP-PARAM",
 			name: "CQP/AQP Paramédical",
 			facultyCode: "INSES",
-			description: "Certificat de Qualification Professionnelle Paramédical",
+			description:
+				"Certificat de Qualification Professionnelle Paramédical",
 			totalCreditsRequired: 60,
 			durationYears: 1,
 		},
@@ -90,25 +95,116 @@ const sampleFoundation: FoundationSeed = {
 	],
 	cycleLevels: [
 		// Niveaux BTS (2 ans)
-		{ code: "BTS1", name: "BTS 1ère année", orderIndex: 1, minCredits: 60, studyCycleCode: "BTS-SANTE", facultyCode: "INSES" },
-		{ code: "BTS2", name: "BTS 2ème année", orderIndex: 2, minCredits: 120, studyCycleCode: "BTS-SANTE", facultyCode: "INSES" },
-		{ code: "BTS1-COM", name: "BTS 1ère année", orderIndex: 1, minCredits: 60, studyCycleCode: "BTS-COMMERCE", facultyCode: "INSES" },
-		{ code: "BTS2-COM", name: "BTS 2ème année", orderIndex: 2, minCredits: 120, studyCycleCode: "BTS-COMMERCE", facultyCode: "INSES" },
-		{ code: "BTS1-PAR", name: "BTS 1ère année", orderIndex: 1, minCredits: 60, studyCycleCode: "BTS-PARAM", facultyCode: "INSES" },
-		{ code: "BTS2-PAR", name: "BTS 2ème année", orderIndex: 2, minCredits: 120, studyCycleCode: "BTS-PARAM", facultyCode: "INSES" },
+		{
+			code: "BTS1",
+			name: "BTS 1ère année",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "BTS-SANTE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "BTS2",
+			name: "BTS 2ème année",
+			orderIndex: 2,
+			minCredits: 120,
+			studyCycleCode: "BTS-SANTE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "BTS1-COM",
+			name: "BTS 1ère année",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "BTS-COMMERCE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "BTS2-COM",
+			name: "BTS 2ème année",
+			orderIndex: 2,
+			minCredits: 120,
+			studyCycleCode: "BTS-COMMERCE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "BTS1-PAR",
+			name: "BTS 1ère année",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "BTS-PARAM",
+			facultyCode: "INSES",
+		},
+		{
+			code: "BTS2-PAR",
+			name: "BTS 2ème année",
+			orderIndex: 2,
+			minCredits: 120,
+			studyCycleCode: "BTS-PARAM",
+			facultyCode: "INSES",
+		},
 
 		// Niveaux Licence Pro (3 ans)
-		{ code: "LP1", name: "Licence Pro 1ère année", orderIndex: 1, minCredits: 60, studyCycleCode: "LP-SANTE", facultyCode: "INSES" },
-		{ code: "LP2", name: "Licence Pro 2ème année", orderIndex: 2, minCredits: 120, studyCycleCode: "LP-SANTE", facultyCode: "INSES" },
-		{ code: "LP3", name: "Licence Pro 3ème année", orderIndex: 3, minCredits: 180, studyCycleCode: "LP-SANTE", facultyCode: "INSES" },
+		{
+			code: "LP1",
+			name: "Licence Pro 1ère année",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "LP-SANTE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "LP2",
+			name: "Licence Pro 2ème année",
+			orderIndex: 2,
+			minCredits: 120,
+			studyCycleCode: "LP-SANTE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "LP3",
+			name: "Licence Pro 3ème année",
+			orderIndex: 3,
+			minCredits: 180,
+			studyCycleCode: "LP-SANTE",
+			facultyCode: "INSES",
+		},
 
 		// Niveaux Master Pro (2 ans)
-		{ code: "MP1", name: "Master Pro 1ère année", orderIndex: 1, minCredits: 60, studyCycleCode: "MP-SANTE", facultyCode: "INSES" },
-		{ code: "MP2", name: "Master Pro 2ème année", orderIndex: 2, minCredits: 120, studyCycleCode: "MP-SANTE", facultyCode: "INSES" },
+		{
+			code: "MP1",
+			name: "Master Pro 1ère année",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "MP-SANTE",
+			facultyCode: "INSES",
+		},
+		{
+			code: "MP2",
+			name: "Master Pro 2ème année",
+			orderIndex: 2,
+			minCredits: 120,
+			studyCycleCode: "MP-SANTE",
+			facultyCode: "INSES",
+		},
 
 		// Niveaux CQP/DQP (1 an)
-		{ code: "CQP", name: "CQP/AQP", orderIndex: 1, minCredits: 60, studyCycleCode: "CQP-PARAM", facultyCode: "INSES" },
-		{ code: "DQP", name: "DQP/AQP", orderIndex: 1, minCredits: 60, studyCycleCode: "DQP-PARAM", facultyCode: "INSES" },
+		{
+			code: "CQP",
+			name: "CQP/AQP",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "CQP-PARAM",
+			facultyCode: "INSES",
+		},
+		{
+			code: "DQP",
+			name: "DQP/AQP",
+			orderIndex: 1,
+			minCredits: 60,
+			studyCycleCode: "DQP-PARAM",
+			facultyCode: "INSES",
+		},
 	],
 	semesters: [
 		{ code: "S1", name: "Semestre 1", orderIndex: 1 },
@@ -162,8 +258,10 @@ const sampleFoundation: FoundationSeed = {
 			legalNameEn: "Hope Higher Institute",
 			sloganFr: "Excellence, Innovation et Engagement",
 			sloganEn: "Excellence, Innovation and Commitment",
-			descriptionFr: "Établissement privé d'enseignement supérieur spécialisé dans la formation des professionnels de santé et de commerce.",
-			descriptionEn: "Private higher education institution specialized in training health and business professionals.",
+			descriptionFr:
+				"Établissement privé d'enseignement supérieur spécialisé dans la formation des professionnels de santé et de commerce.",
+			descriptionEn:
+				"Private higher education institution specialized in training health and business professionals.",
 			addressFr: "Douala-Bonabéri, BP 12345 Douala, Cameroun",
 			addressEn: "Douala-Bonaberi, PO Box 12345 Douala, Cameroon",
 			contactEmail: "contact@inses.cm",
@@ -193,7 +291,8 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-INFIRMIER",
 			name: "BTS Sciences Infirmières",
 			slug: "bts-sciences-infirmieres",
-			description: "Formation BTS en sciences infirmières / Nursing Sciences",
+			description:
+				"Formation BTS en sciences infirmières / Nursing Sciences",
 			facultyCode: "INSES",
 		},
 		{
@@ -207,7 +306,8 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-LABO",
 			name: "BTS Techniques de Laboratoire",
 			slug: "bts-techniques-laboratoire",
-			description: "Formation BTS en Techniques de Laboratoire / Laboratory Techniques",
+			description:
+				"Formation BTS en Techniques de Laboratoire / Laboratory Techniques",
 			facultyCode: "INSES",
 		},
 		{
@@ -228,14 +328,16 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-RADIO",
 			name: "BTS Radiologie et Imagérie Médicale",
 			slug: "bts-radiologie-imagerie",
-			description: "Formation BTS en Radiologie et Imagérie Médicale / Radiology and Medical Imaging",
+			description:
+				"Formation BTS en Radiologie et Imagérie Médicale / Radiology and Medical Imaging",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-PHARMA",
 			name: "BTS Techniques Pharmaceutiques",
 			slug: "bts-techniques-pharmaceutiques",
-			description: "Formation BTS en Techniques Pharmaceutiques / Pharmaceutical Techniques",
+			description:
+				"Formation BTS en Techniques Pharmaceutiques / Pharmaceutical Techniques",
 			facultyCode: "INSES",
 		},
 
@@ -244,7 +346,8 @@ const sampleAcademics: AcademicsSeed = {
 			code: "LP-INFIRMIER",
 			name: "Licence Professionnelle Sciences Infirmières",
 			slug: "licence-pro-sciences-infirmieres",
-			description: "Formation Licence Professionnelle en Sciences Infirmières / Nursing Sciences",
+			description:
+				"Formation Licence Professionnelle en Sciences Infirmières / Nursing Sciences",
 			facultyCode: "INSES",
 		},
 
@@ -253,35 +356,40 @@ const sampleAcademics: AcademicsSeed = {
 			code: "MP-INFIRMIER",
 			name: "Master Professionnel Sciences Infirmières",
 			slug: "master-pro-sciences-infirmieres",
-			description: "Formation Master Professionnel en Sciences Infirmières / Nursing Sciences",
+			description:
+				"Formation Master Professionnel en Sciences Infirmières / Nursing Sciences",
 			facultyCode: "INSES",
 		},
 		{
 			code: "MP-SANTE-PUB",
 			name: "Master Professionnel Santé Publique",
 			slug: "master-pro-sante-publique",
-			description: "Formation Master Professionnel en Santé Publique / Public Health",
+			description:
+				"Formation Master Professionnel en Santé Publique / Public Health",
 			facultyCode: "INSES",
 		},
 		{
 			code: "MP-SANTE-REPRO",
 			name: "Master Professionnel Santé de Reproduction",
 			slug: "master-pro-sante-reproduction",
-			description: "Formation Master Professionnel en Santé de Reproduction / Reproductive Health",
+			description:
+				"Formation Master Professionnel en Santé de Reproduction / Reproductive Health",
 			facultyCode: "INSES",
 		},
 		{
 			code: "MP-BIOMED",
 			name: "Master Professionnel Sciences Biomédicales",
 			slug: "master-pro-sciences-biomedicales",
-			description: "Formation Master Professionnel en Sciences Biomédicales / Biomedical Sciences",
+			description:
+				"Formation Master Professionnel en Sciences Biomédicales / Biomedical Sciences",
 			facultyCode: "INSES",
 		},
 		{
 			code: "MP-DIETETIQUE",
 			name: "Master Professionnel Diététique et Nutrition",
 			slug: "master-pro-dietetique-nutrition",
-			description: "Formation Master Professionnel en Diététique et Nutrition / Dietetics and Nutrition",
+			description:
+				"Formation Master Professionnel en Diététique et Nutrition / Dietetics and Nutrition",
 			facultyCode: "INSES",
 		},
 
@@ -290,35 +398,40 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-COMPTA",
 			name: "BTS Comptabilité et Gestion des Entreprises",
 			slug: "bts-comptabilite-gestion",
-			description: "Formation BTS en Comptabilité et Gestion des Entreprises / Accounting and Business Management",
+			description:
+				"Formation BTS en Comptabilité et Gestion des Entreprises / Accounting and Business Management",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-GRH",
 			name: "BTS Gestion des Ressources Humaines",
 			slug: "bts-gestion-rh",
-			description: "Formation BTS en Gestion des Ressources Humaines / Human Resources Management",
+			description:
+				"Formation BTS en Gestion des Ressources Humaines / Human Resources Management",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-DOUANE",
 			name: "BTS Douane et Transit",
 			slug: "bts-douane-transit",
-			description: "Formation BTS en Douane et Transit / Customs and Transit",
+			description:
+				"Formation BTS en Douane et Transit / Customs and Transit",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-BANQUE",
 			name: "BTS Banque et Finance",
 			slug: "bts-banque-finance",
-			description: "Formation BTS en Banque et Finance / Banking and Finance",
+			description:
+				"Formation BTS en Banque et Finance / Banking and Finance",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-LOGISTIQUE",
 			name: "BTS Logistique et Transport",
 			slug: "bts-logistique-transport",
-			description: "Formation BTS en Logistique et Transport / Logistics and Transport",
+			description:
+				"Formation BTS en Logistique et Transport / Logistics and Transport",
 			facultyCode: "INSES",
 		},
 		{
@@ -332,7 +445,8 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-MARKETING",
 			name: "BTS Marketing-Commerce-Vente",
 			slug: "bts-marketing-commerce-vente",
-			description: "Formation BTS en Marketing-Commerce-Vente / Marketing-Commerce-Sales",
+			description:
+				"Formation BTS en Marketing-Commerce-Vente / Marketing-Commerce-Sales",
 			facultyCode: "INSES",
 		},
 
@@ -341,14 +455,16 @@ const sampleAcademics: AcademicsSeed = {
 			code: "CQP-KINE-ASST",
 			name: "CQP Assistant Kinésithérapie",
 			slug: "cqp-assistant-kinesitherapie",
-			description: "Formation CQP en Assistant Kinésithérapie / Physiotherapy Assistant",
+			description:
+				"Formation CQP en Assistant Kinésithérapie / Physiotherapy Assistant",
 			facultyCode: "INSES",
 		},
 		{
 			code: "CQP-CHIMISTE",
 			name: "CQP Aide Chimiste Biologiste",
 			slug: "cqp-aide-chimiste-biologiste",
-			description: "Formation CQP en Aide Chimiste Biologiste / Assistant Chemist Biologist",
+			description:
+				"Formation CQP en Aide Chimiste Biologiste / Assistant Chemist Biologist",
 			facultyCode: "INSES",
 		},
 		{
@@ -369,14 +485,16 @@ const sampleAcademics: AcademicsSeed = {
 			code: "CQP-DELEGUE-PHARMA",
 			name: "CQP Délégué Pharmaceutique",
 			slug: "cqp-delegue-pharmaceutique",
-			description: "Formation CQP en Délégué Pharmaceutique / Pharmaceutical Delegate",
+			description:
+				"Formation CQP en Délégué Pharmaceutique / Pharmaceutical Delegate",
 			facultyCode: "INSES",
 		},
 		{
 			code: "CQP-DELEGUE-ASSUR",
 			name: "CQP Délégué de l'Assurance Maladie",
 			slug: "cqp-delegue-assurance-maladie",
-			description: "Formation CQP en Délégué de l'Assurance Maladie / Health Insurance Delegate",
+			description:
+				"Formation CQP en Délégué de l'Assurance Maladie / Health Insurance Delegate",
 			facultyCode: "INSES",
 		},
 		{
@@ -392,14 +510,16 @@ const sampleAcademics: AcademicsSeed = {
 			code: "DQP-VENDEUR-PHARMA",
 			name: "DQP Vendeur en Pharmacie",
 			slug: "dqp-vendeur-pharmacie",
-			description: "Formation DQP en Vendeur en Pharmacie / Pharmacy Salesperson",
+			description:
+				"Formation DQP en Vendeur en Pharmacie / Pharmacy Salesperson",
 			facultyCode: "INSES",
 		},
 		{
 			code: "DQP-SECRET-MED",
 			name: "DQP Secrétariat Médical",
 			slug: "dqp-secretariat-medical",
-			description: "Formation DQP en Secrétariat Médical / Medical Secretariat",
+			description:
+				"Formation DQP en Secrétariat Médical / Medical Secretariat",
 			facultyCode: "INSES",
 		},
 
@@ -415,14 +535,16 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-ASST-CABINET",
 			name: "BTS Assistant en Cabinet Médical",
 			slug: "bts-assistant-cabinet-medical",
-			description: "Formation BTS en Assistant en Cabinet Médical / Medical Office Assistant",
+			description:
+				"Formation BTS en Assistant en Cabinet Médical / Medical Office Assistant",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-PREPOSE",
 			name: "BTS Préposé aux Bénéficiaires",
 			slug: "bts-prepose-beneficiaires",
-			description: "Formation BTS en Préposé aux Bénéficiaires / Beneficial Assistant",
+			description:
+				"Formation BTS en Préposé aux Bénéficiaires / Beneficial Assistant",
 			facultyCode: "INSES",
 		},
 	],
@@ -568,7 +690,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "ANAT101",
 			teacherCode: "TEACH-DR-MBALLA",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 		{
 			code: "CC-PHYS101-INF1A",
@@ -577,7 +698,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "PHYS101",
 			teacherCode: "TEACH-DR-NGUEMA",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 		{
 			code: "CC-SOIN101-INF1A",
@@ -586,7 +706,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "SOIN101",
 			teacherCode: "TEACH-INF-AKONO",
 			semesterCode: "S1",
-			weeklyHours: 4,
 		},
 
 		// Cours pour la classe BTS Comptabilité 1A
@@ -597,7 +716,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "COMPT101",
 			teacherCode: "TEACH-KOMBO",
 			semesterCode: "S1",
-			weeklyHours: 4,
 		},
 		{
 			code: "CC-COMPT102-COMPT1A",
@@ -606,7 +724,6 @@ const sampleAcademics: AcademicsSeed = {
 			courseCode: "COMPT102",
 			teacherCode: "TEACH-KOMBO",
 			semesterCode: "S1",
-			weeklyHours: 3,
 		},
 	],
 	exams: [
@@ -709,7 +826,6 @@ const sampleUsers: UsersSeed = {
 		{
 			code: "ADMIN-ROOT",
 			authUserCode: "ADMIN-ROOT",
-			businessRole: "administrator",
 			firstName: "Administrateur",
 			lastName: "INSES",
 			primaryEmail: "admin@inses.cm",
@@ -720,47 +836,46 @@ const sampleUsers: UsersSeed = {
 		{
 			code: "TEACH-DR-MBALLA",
 			authUserCode: "TEACH-DR-MBALLA",
-			businessRole: "teacher",
 			firstName: "Jean",
 			lastName: "Mballa",
 			primaryEmail: "dr.mballa@inses.cm",
 			status: "active",
 			organizationSlug: "inses-institution",
+			memberRole: "teacher",
 		},
 		{
 			code: "TEACH-DR-NGUEMA",
 			authUserCode: "TEACH-DR-NGUEMA",
-			businessRole: "teacher",
 			firstName: "Marie",
 			lastName: "Nguema",
 			primaryEmail: "dr.nguema@inses.cm",
 			status: "active",
 			organizationSlug: "inses-institution",
+			memberRole: "teacher",
 		},
 		{
 			code: "TEACH-INF-AKONO",
 			authUserCode: "TEACH-INF-AKONO",
-			businessRole: "teacher",
 			firstName: "Patricia",
 			lastName: "Akono",
 			primaryEmail: "inf.akono@inses.cm",
 			status: "active",
 			organizationSlug: "inses-institution",
+			memberRole: "teacher",
 		},
 		{
 			code: "TEACH-KOMBO",
 			authUserCode: "TEACH-KOMBO",
-			businessRole: "teacher",
 			firstName: "Francis",
 			lastName: "Kombo",
 			primaryEmail: "kombo@inses.cm",
 			status: "active",
 			organizationSlug: "inses-institution",
+			memberRole: "teacher",
 		},
 		{
 			code: "STUDENT-NDONG",
 			authUserCode: "STUDENT-NDONG",
-			businessRole: "student",
 			firstName: "Alain",
 			lastName: "Ndong",
 			primaryEmail: "ndong.student@inses.cm",
@@ -769,7 +884,6 @@ const sampleUsers: UsersSeed = {
 		{
 			code: "STUDENT-EYEBE",
 			authUserCode: "STUDENT-EYEBE",
-			businessRole: "student",
 			firstName: "Rachel",
 			lastName: "Eyebe",
 			primaryEmail: "eyebe.student@inses.cm",
@@ -862,7 +976,6 @@ const sampleExternalStudents: UsersSeed = {
 		{
 			code: "STUDENT-TRANSFER",
 			authUserCode: "STUDENT-TRANSFER",
-			businessRole: "student",
 			firstName: "Pierre",
 			lastName: "Transfert",
 			primaryEmail: "transfer.student@inses.cm",
@@ -871,7 +984,6 @@ const sampleExternalStudents: UsersSeed = {
 		{
 			code: "STUDENT-DIRECT",
 			authUserCode: "STUDENT-DIRECT",
-			businessRole: "student",
 			firstName: "Sophie",
 			lastName: "Direct",
 			primaryEmail: "direct.student@inses.cm",

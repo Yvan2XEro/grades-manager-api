@@ -25,6 +25,7 @@ export const generatePVSchema = z.object({
 	academicYearId: z.string(),
 	format: exportFormatSchema.default("pdf"),
 	templateId: z.string().optional(), // Use specific template instead of default
+	includeRetakes: z.boolean().default(true), // Whether to apply retake scoring policy
 });
 
 export type GeneratePVInput = z.infer<typeof generatePVSchema>;
@@ -51,6 +52,7 @@ export const generateUESchema = z.object({
 	academicYearId: z.string(),
 	format: exportFormatSchema.default("pdf"),
 	templateId: z.string().optional(), // Use specific template instead of default
+	includeRetakes: z.boolean().default(true), // Whether to apply retake scoring policy
 });
 
 export type GenerateUEInput = z.infer<typeof generateUESchema>;
@@ -63,6 +65,9 @@ export const previewEvaluationSchema = generateEvaluationSchema.omit({
 	format: true,
 });
 export const previewUESchema = generateUESchema.omit({ format: true });
+
+export type PreviewPVInput = z.infer<typeof previewPVSchema>;
+export type PreviewUEInput = z.infer<typeof previewUESchema>;
 
 export const previewTemplateSourceSchema = z.object({
 	type: exportTypeSchema,

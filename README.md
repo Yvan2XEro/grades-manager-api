@@ -1,4 +1,4 @@
-# grades-manager-api
+# TKAMS (Tefoye and Kana Academic Management System)
 
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Hono, TRPC, and more.
 
@@ -189,7 +189,7 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 ## Project Structure
 
 ```
-grades-manager-api/
+tkams/
 ├── apps/
 │   ├── server/              # Backend API (Hono, TRPC)
 │   │   ├── src/

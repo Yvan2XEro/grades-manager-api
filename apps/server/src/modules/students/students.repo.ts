@@ -12,7 +12,6 @@ const studentProjection = {
 	profile: {
 		id: schema.domainUsers.id,
 		authUserId: schema.domainUsers.authUserId,
-		businessRole: schema.domainUsers.businessRole,
 		firstName: schema.domainUsers.firstName,
 		lastName: schema.domainUsers.lastName,
 		primaryEmail: schema.domainUsers.primaryEmail,

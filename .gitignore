@@ -16,3 +16,6 @@ production-seeds/
 
 # Docker override (local customization)
 docker-compose.override.yml
+
+# PGlite data (local development database)
+data/
