@@ -61,9 +61,9 @@ type ExecutionResult = {
 export function ExecutionHistoryPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const [selectedExecutionId, setSelectedExecutionId] = useState<
-		string | null
-	>(null);
+	const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(
+		null,
+	);
 
 	// Fetch executions
 	const { data: executionsData, isLoading } = useQuery({
@@ -107,59 +107,39 @@ export function ExecutionHistoryPage() {
 			{/* Executions List */}
 			<Card>
 				<CardHeader>
-					<CardTitle>
-						{t("admin.promotionRules.history.table.title")}
-					</CardTitle>
+					<CardTitle>{t("admin.promotionRules.history.table.title")}</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
 						<div className="space-y-2">
 							{[...Array(5)].map((_, i) => (
-								<div
-									key={i}
-									className="h-16 animate-pulse rounded bg-muted"
-								/>
+								<div key={i} className="h-16 animate-pulse rounded bg-muted" />
 							))}
 						</div>
-					) : executionsData?.items &&
-						executionsData.items.length > 0 ? (
+					) : executionsData?.items && executionsData.items.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.date",
-										)}
+										{t("admin.promotionRules.history.table.date")}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.rule",
-										)}
+										{t("admin.promotionRules.history.table.rule")}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.classes",
-										)}
+										{t("admin.promotionRules.history.table.classes")}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.students",
-										)}
+										{t("admin.promotionRules.history.table.students")}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.successRate",
-										)}
+										{t("admin.promotionRules.history.table.successRate")}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.promotionRules.history.table.executedBy",
-										)}
+										{t("admin.promotionRules.history.table.executedBy")}
 									</TableHead>
 									<TableHead className="text-right">
-										{t(
-											"admin.promotionRules.history.table.actions",
-										)}
+										{t("admin.promotionRules.history.table.actions")}
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -169,57 +149,39 @@ export function ExecutionHistoryPage() {
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
 												<Clock className="h-4 w-4 text-muted-foreground" />
-												{new Date(
-													execution.executedAt,
-												).toLocaleDateString()}
+												{new Date(execution.executedAt).toLocaleDateString()}
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="font-medium">
-												{(
-													execution as PromotionExecution
-												).metadata?.ruleName || "N/A"}
+												{(execution as PromotionExecution).metadata?.ruleName ||
+													"N/A"}
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2 text-sm">
 												<span>
-													{(
-														execution as PromotionExecution
-													).metadata
-														?.sourceClassName ||
-														"N/A"}
+													{(execution as PromotionExecution).metadata
+														?.sourceClassName || "N/A"}
 												</span>
 												<ArrowRight className="h-3 w-3" />
 												<span>
-													{(
-														execution as PromotionExecution
-													).metadata
-														?.targetClassName ||
-														"N/A"}
+													{(execution as PromotionExecution).metadata
+														?.targetClassName || "N/A"}
 												</span>
 											</div>
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-2">
 												<Badge variant="outline">
-													{t(
-														"admin.promotionRules.history.badges.evaluated",
-														{
-															count: execution.studentsEvaluated,
-														},
-													)}
+													{t("admin.promotionRules.history.badges.evaluated", {
+														count: execution.studentsEvaluated,
+													})}
 												</Badge>
-												<Badge
-													variant="default"
-													className="bg-green-500"
-												>
-													{t(
-														"admin.promotionRules.history.badges.promoted",
-														{
-															count: execution.studentsPromoted,
-														},
-													)}
+												<Badge variant="default" className="bg-green-500">
+													{t("admin.promotionRules.history.badges.promoted", {
+														count: execution.studentsPromoted,
+													})}
 												</Badge>
 											</div>
 										</TableCell>
@@ -232,8 +194,7 @@ export function ExecutionHistoryPage() {
 													<XCircle className="h-4 w-4 text-amber-600" />
 												)}
 												<span>
-													{execution.studentsEvaluated >
-													0
+													{execution.studentsEvaluated > 0
 														? (
 																(execution.studentsPromoted /
 																	execution.studentsEvaluated) *
@@ -246,24 +207,16 @@ export function ExecutionHistoryPage() {
 										</TableCell>
 										<TableCell className="text-muted-foreground text-sm">
 											{/* Would need to join with domainUsers to show name */}
-											{t(
-												"admin.promotionRules.history.table.user",
-											)}
+											{t("admin.promotionRules.history.table.user")}
 										</TableCell>
 										<TableCell className="text-right">
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() =>
-													setSelectedExecutionId(
-														execution.id,
-													)
-												}
+												onClick={() => setSelectedExecutionId(execution.id)}
 											>
 												<Eye className="mr-1 h-4 w-4" />
-												{t(
-													"admin.promotionRules.history.table.viewDetails",
-												)}
+												{t("admin.promotionRules.history.table.viewDetails")}
 											</Button>
 										</TableCell>
 									</TableRow>
@@ -291,9 +244,7 @@ export function ExecutionHistoryPage() {
 							{t("admin.promotionRules.history.details.title")}
 						</DialogTitle>
 						<DialogDescription>
-							{t(
-								"admin.promotionRules.history.details.description",
-							)}
+							{t("admin.promotionRules.history.details.description")}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -304,10 +255,7 @@ export function ExecutionHistoryPage() {
 								<Card>
 									<CardContent className="pt-4">
 										<div className="font-bold text-2xl">
-											{
-												executionDetails.execution
-													.studentsEvaluated
-											}
+											{executionDetails.execution.studentsEvaluated}
 										</div>
 										<p className="text-muted-foreground text-xs">
 											{t(
@@ -319,15 +267,10 @@ export function ExecutionHistoryPage() {
 								<Card className="border-green-500/30 bg-green-50/20">
 									<CardContent className="pt-4">
 										<div className="font-bold text-2xl text-green-600">
-											{
-												executionDetails.execution
-													.studentsPromoted
-											}
+											{executionDetails.execution.studentsPromoted}
 										</div>
 										<p className="text-muted-foreground text-xs">
-											{t(
-												"admin.promotionRules.history.details.stats.promoted",
-											)}
+											{t("admin.promotionRules.history.details.stats.promoted")}
 										</p>
 									</CardContent>
 								</Card>
@@ -335,28 +278,22 @@ export function ExecutionHistoryPage() {
 									<CardContent className="pt-4">
 										<div className="font-semibold text-lg">
 											{new Date(
-												executionDetails.execution
-													.executedAt,
+												executionDetails.execution.executedAt,
 											).toLocaleString()}
 										</div>
 										<p className="text-muted-foreground text-xs">
-											{t(
-												"admin.promotionRules.history.details.stats.date",
-											)}
+											{t("admin.promotionRules.history.details.stats.date")}
 										</p>
 									</CardContent>
 								</Card>
 								<Card>
 									<CardContent className="pt-4">
 										<div className="font-semibold text-lg">
-											{(
-												executionDetails.execution as PromotionExecution
-											).metadata?.ruleName || "N/A"}
+											{(executionDetails.execution as PromotionExecution)
+												.metadata?.ruleName || "N/A"}
 										</div>
 										<p className="text-muted-foreground text-xs">
-											{t(
-												"admin.promotionRules.history.details.stats.rule",
-											)}
+											{t("admin.promotionRules.history.details.stats.rule")}
 										</p>
 									</CardContent>
 								</Card>
@@ -400,65 +337,51 @@ export function ExecutionHistoryPage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{executionDetails.results.map(
-											(result) => (
-												<TableRow key={result.id}>
-													<TableCell className="font-medium">
-														{result.studentId}
-													</TableCell>
-													<TableCell>
-														{result.wasPromoted ? (
-															<Badge
-																variant="default"
-																className="bg-green-500"
-															>
-																<CheckCircle2 className="mr-1 h-3 w-3" />
-																{t(
-																	"admin.promotionRules.history.details.studentResults.promoted",
-																)}
-															</Badge>
-														) : (
-															<Badge variant="secondary">
-																<XCircle className="mr-1 h-3 w-3" />
-																{t(
-																	"admin.promotionRules.history.details.studentResults.notPromoted",
-																)}
-															</Badge>
-														)}
-													</TableCell>
-													<TableCell>
-														{(
-															result.evaluationData as EvaluationData
-														).overallAverage
-															? `${(
-																	(
-																		result.evaluationData as EvaluationData
-																	)
-																		.overallAverage
-																).toFixed(
-																	2,
-																)}/20`
-															: "N/A"}
-													</TableCell>
-													<TableCell>
-														{(
-															result.evaluationData as EvaluationData
-														).creditsEarned !==
-														undefined
-															? `${(result.evaluationData as EvaluationData).creditsEarned}/${(result.evaluationData as EvaluationData).requiredCredits}`
-															: "N/A"}
-													</TableCell>
-													<TableCell>
-														{(
-															result.evaluationData as EvaluationData
-														).successRate !==
-														undefined
-															? `${((result.evaluationData as EvaluationData).successRate * 100).toFixed(0)}%`
-															: "N/A"}
-													</TableCell>
-												</TableRow>
-											),
-										)}
+										{executionDetails.results.map((result) => (
+											<TableRow key={result.id}>
+												<TableCell className="font-medium">
+													{result.studentId}
+												</TableCell>
+												<TableCell>
+													{result.wasPromoted ? (
+														<Badge variant="default" className="bg-green-500">
+															<CheckCircle2 className="mr-1 h-3 w-3" />
+															{t(
+																"admin.promotionRules.history.details.studentResults.promoted",
+															)}
+														</Badge>
+													) : (
+														<Badge variant="secondary">
+															<XCircle className="mr-1 h-3 w-3" />
+															{t(
+																"admin.promotionRules.history.details.studentResults.notPromoted",
+															)}
+														</Badge>
+													)}
+												</TableCell>
+												<TableCell>
+													{(result.evaluationData as EvaluationData)
+														.overallAverage
+														? `${(
+																(result.evaluationData as EvaluationData)
+																	.overallAverage
+															).toFixed(2)}/20`
+														: "N/A"}
+												</TableCell>
+												<TableCell>
+													{(result.evaluationData as EvaluationData)
+														.creditsEarned !== undefined
+														? `${(result.evaluationData as EvaluationData).creditsEarned}/${(result.evaluationData as EvaluationData).requiredCredits}`
+														: "N/A"}
+												</TableCell>
+												<TableCell>
+													{(result.evaluationData as EvaluationData)
+														.successRate !== undefined
+														? `${((result.evaluationData as EvaluationData).successRate * 100).toFixed(0)}%`
+														: "N/A"}
+												</TableCell>
+											</TableRow>
+										))}
 									</TableBody>
 								</Table>
 							</div>

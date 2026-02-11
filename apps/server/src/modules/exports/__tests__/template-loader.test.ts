@@ -28,8 +28,7 @@ describe("export template loader", () => {
 	it("uses stored template body when available", async () => {
 		await clearTemplates();
 		const institution = getTestInstitution();
-		const templateBody =
-			"<html><body>Custom {{program.name}}</body></html>";
+		const templateBody = "<html><body>Custom {{program.name}}</body></html>";
 		await db.insert(exportTemplates).values({
 			institutionId: institution.id,
 			name: "Custom PV",

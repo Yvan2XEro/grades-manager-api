@@ -95,9 +95,7 @@ const RegistrationNumberFormats = () => {
 						})}
 					</p>
 				</div>
-				<Button
-					onClick={() => navigate("/admin/registration-numbers/+")}
-				>
+				<Button onClick={() => navigate("/admin/registration-numbers/+")}>
 					<PlusCircle className="mr-2 h-4 w-4" />
 					{t("admin.registrationNumbers.actions.new", {
 						defaultValue: "New format",
@@ -119,28 +117,19 @@ const RegistrationNumberFormats = () => {
 							<TableHeader>
 								<TableRow>
 									<TableHead>
-										{t(
-											"admin.registrationNumbers.table.name",
-											{
-												defaultValue: "Name",
-											},
-										)}
+										{t("admin.registrationNumbers.table.name", {
+											defaultValue: "Name",
+										})}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.registrationNumbers.table.description",
-											{
-												defaultValue: "Description",
-											},
-										)}
+										{t("admin.registrationNumbers.table.description", {
+											defaultValue: "Description",
+										})}
 									</TableHead>
 									<TableHead>
-										{t(
-											"admin.registrationNumbers.table.pattern",
-											{
-												defaultValue: "Pattern",
-											},
-										)}
+										{t("admin.registrationNumbers.table.pattern", {
+											defaultValue: "Pattern",
+										})}
 									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions", {
@@ -163,13 +152,10 @@ const RegistrationNumberFormats = () => {
 									(formatsQuery.data?.length ?? 0) === 0 && (
 										<TableRow>
 											<TableCell colSpan={4}>
-												{t(
-													"admin.registrationNumbers.list.empty",
-													{
-														defaultValue:
-															"No formats yet. Create your first one.",
-													},
-												)}
+												{t("admin.registrationNumbers.list.empty", {
+													defaultValue:
+														"No formats yet. Create your first one.",
+												})}
 											</TableCell>
 										</TableRow>
 									)}
@@ -180,34 +166,24 @@ const RegistrationNumberFormats = () => {
 												{format.name}
 												{format.isActive && (
 													<Badge variant="secondary">
-														{t(
-															"admin.registrationNumbers.list.active",
-															{
-																defaultValue:
-																	"Active",
-															},
-														)}
+														{t("admin.registrationNumbers.list.active", {
+															defaultValue: "Active",
+														})}
 													</Badge>
 												)}
 											</div>
 										</TableCell>
-										<TableCell>
-											{format.description || "-"}
-										</TableCell>
+										<TableCell>{format.description || "-"}</TableCell>
 										<TableCell>
 											<div className="flex flex-wrap gap-2 text-gray-700 text-xs">
-												{format.definition.segments.map(
-													(segment, idx) => (
-														<span
-															key={`${format.id}-${idx}`}
-															className="rounded bg-gray-100 px-2 py-1"
-														>
-															{describeSegment(
-																segment,
-															)}
-														</span>
-													),
-												)}
+												{format.definition.segments.map((segment, idx) => (
+													<span
+														key={`${format.id}-${idx}`}
+														className="rounded bg-gray-100 px-2 py-1"
+													>
+														{describeSegment(segment)}
+													</span>
+												))}
 											</div>
 										</TableCell>
 										<TableCell className="text-right">
@@ -216,39 +192,23 @@ const RegistrationNumberFormats = () => {
 													size="sm"
 													variant="outline"
 													onClick={() =>
-														navigate(
-															`/admin/registration-numbers/${format.id}`,
-														)
+														navigate(`/admin/registration-numbers/${format.id}`)
 													}
 												>
-													{t(
-														"admin.registrationNumbers.list.edit",
-														{
-															defaultValue:
-																"Edit",
-														},
-													)}
+													{t("admin.registrationNumbers.list.edit", {
+														defaultValue: "Edit",
+													})}
 												</Button>
 												{!format.isActive && (
 													<Button
 														size="sm"
 														variant="secondary"
-														onClick={() =>
-															activateMutation.mutate(
-																format.id,
-															)
-														}
-														disabled={
-															activateMutation.isPending
-														}
+														onClick={() => activateMutation.mutate(format.id)}
+														disabled={activateMutation.isPending}
 													>
-														{t(
-															"admin.registrationNumbers.list.activate",
-															{
-																defaultValue:
-																	"Activate",
-															},
-														)}
+														{t("admin.registrationNumbers.list.activate", {
+															defaultValue: "Activate",
+														})}
 													</Button>
 												)}
 												<Button
@@ -266,23 +226,14 @@ const RegistrationNumberFormats = () => {
 																),
 															)
 														) {
-															deleteMutation.mutate(
-																format.id,
-															);
+															deleteMutation.mutate(format.id);
 														}
 													}}
-													disabled={
-														format.isActive ||
-														deleteMutation.isPending
-													}
+													disabled={format.isActive || deleteMutation.isPending}
 												>
-													{t(
-														"admin.registrationNumbers.list.delete",
-														{
-															defaultValue:
-																"Delete",
-														},
-													)}
+													{t("admin.registrationNumbers.list.delete", {
+														defaultValue: "Delete",
+													})}
 												</Button>
 											</div>
 										</TableCell>

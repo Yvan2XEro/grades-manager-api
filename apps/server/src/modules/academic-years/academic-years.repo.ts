@@ -4,10 +4,7 @@ import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
 
 export async function create(data: schema.NewAcademicYear) {
-	const [item] = await db
-		.insert(schema.academicYears)
-		.values(data)
-		.returning();
+	const [item] = await db.insert(schema.academicYears).values(data).returning();
 	return item;
 }
 

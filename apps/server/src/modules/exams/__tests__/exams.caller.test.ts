@@ -61,9 +61,10 @@ describe("exams router", () => {
 		await expect(
 			admin.exams.update({ id: exam.id, name: "M" }),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
-		await expect(
-			admin.exams.delete({ id: exam.id }),
-		).rejects.toHaveProperty("code", "FORBIDDEN");
+		await expect(admin.exams.delete({ id: exam.id })).rejects.toHaveProperty(
+			"code",
+			"FORBIDDEN",
+		);
 
 		await expect(
 			admin.grades.upsertNote({
@@ -159,9 +160,10 @@ describe("exams router", () => {
 				isLocked: false,
 			})
 			.returning();
-		await expect(
-			admin.exams.getById({ id: exam.id }),
-		).rejects.toHaveProperty("code", "NOT_FOUND");
+		await expect(admin.exams.getById({ id: exam.id })).rejects.toHaveProperty(
+			"code",
+			"NOT_FOUND",
+		);
 	});
 
 	it("filters exams by academic year, search, class, and semester", async () => {
@@ -243,9 +245,7 @@ describe("exams router", () => {
 			classId: primary.klass.id,
 		});
 		expect(
-			classFiltered.items.every(
-				(item) => item.classId === primary.klass.id,
-			),
+			classFiltered.items.every((item) => item.classId === primary.klass.id),
 		).toBe(true);
 
 		const [customSemester] = await db
@@ -289,9 +289,7 @@ describe("exams router", () => {
 			semesterId: customSemester.id,
 		});
 		expect(
-			semesterFiltered.items.every(
-				(item) => item.classId === semesterClass.id,
-			),
+			semesterFiltered.items.every((item) => item.classId === semesterClass.id),
 		).toBe(true);
 	});
 
@@ -319,11 +317,7 @@ describe("exams router", () => {
 			const admin = createCaller(asAdmin());
 			const classCourse = await createClassCourse();
 			const student = await createStudent({ class: classCourse.class });
-			await ensureStudentCourseEnrollment(
-				student.id,
-				classCourse.id,
-				"active",
-			);
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 			const exam = await admin.exams.create({
 				name: "Draft Exam",
 				type: "WRITTEN",
@@ -360,9 +354,7 @@ describe("exams router", () => {
 				examId: fixture.exam.id,
 			});
 			expect(overridden.items[0].status).toBe("ineligible");
-			expect(overridden.items[0].override?.decision).toBe(
-				"force_ineligible",
-			);
+			expect(overridden.items[0].override?.decision).toBe("force_ineligible");
 
 			await admin.exams.deleteRetakeOverride({
 				examId: fixture.exam.id,
@@ -412,8 +404,7 @@ describe("exams router", () => {
 
 			await admin.exams.upsertRetakeOverride({
 				examId: fixture.exam.id,
-				studentCourseEnrollmentId:
-					limited.items[0].studentCourseEnrollmentId,
+				studentCourseEnrollmentId: limited.items[0].studentCourseEnrollmentId,
 				decision: "force_eligible",
 				reason: "jury override",
 			});
@@ -421,9 +412,7 @@ describe("exams router", () => {
 				examId: fixture.exam.id,
 			});
 			expect(overridden.items[0].status).toBe("eligible");
-			expect(overridden.items[0].reasons).toContain(
-				"OVERRIDE_FORCE_ELIGIBLE",
-			);
+			expect(overridden.items[0].reasons).toContain("OVERRIDE_FORCE_ELIGIBLE");
 		});
 
 		it("creates a retake exam from approved parent exam", async () => {
@@ -472,11 +461,7 @@ describe("exams router", () => {
 			const admin = createCaller(asAdmin());
 			const classCourse = await createClassCourse();
 			const student = await createStudent({ class: classCourse.class });
-			await ensureStudentCourseEnrollment(
-				student.id,
-				classCourse.id,
-				"active",
-			);
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 			const draftExam = await admin.exams.create({
 				name: "Draft",
 				type: "WRITTEN",

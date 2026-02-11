@@ -69,12 +69,8 @@ export function StudentEvaluationCard({
 						{eligible && (
 							<Badge variant={eligible ? "default" : "secondary"}>
 								{eligible
-									? t(
-											"admin.promotionRules.studentCard.eligible",
-										)
-									: t(
-											"admin.promotionRules.studentCard.notEligible",
-										)}
+									? t("admin.promotionRules.studentCard.eligible")
+									: t("admin.promotionRules.studentCard.notEligible")}
 							</Badge>
 						)}
 					</div>
@@ -86,9 +82,7 @@ export function StudentEvaluationCard({
 				<div className="grid grid-cols-3 gap-4">
 					<div>
 						<p className="text-muted-foreground text-xs">
-							{t(
-								"admin.promotionRules.studentCard.metrics.average",
-							)}
+							{t("admin.promotionRules.studentCard.metrics.average")}
 						</p>
 						<p className="font-semibold text-lg">
 							{facts.overallAverage.toFixed(2)}/20
@@ -96,9 +90,7 @@ export function StudentEvaluationCard({
 					</div>
 					<div>
 						<p className="text-muted-foreground text-xs">
-							{t(
-								"admin.promotionRules.studentCard.metrics.credits",
-							)}
+							{t("admin.promotionRules.studentCard.metrics.credits")}
 						</p>
 						<p className="font-semibold text-lg">
 							{facts.creditsEarned}/{facts.requiredCredits}
@@ -106,9 +98,7 @@ export function StudentEvaluationCard({
 					</div>
 					<div>
 						<p className="text-muted-foreground text-xs">
-							{t(
-								"admin.promotionRules.studentCard.metrics.successRate",
-							)}
+							{t("admin.promotionRules.studentCard.metrics.successRate")}
 						</p>
 						<p className="font-semibold text-lg">
 							{(facts.successRate * 100).toFixed(0)}%
@@ -120,9 +110,7 @@ export function StudentEvaluationCard({
 				<div className="space-y-1">
 					<div className="flex justify-between text-xs">
 						<span className="text-muted-foreground">
-							{t(
-								"admin.promotionRules.studentCard.progress.creditCompletion",
-							)}
+							{t("admin.promotionRules.studentCard.progress.creditCompletion")}
 						</span>
 						<span className="font-medium">
 							{(facts.creditCompletionRate * 100).toFixed(0)}%
@@ -140,9 +128,7 @@ export function StudentEvaluationCard({
 							className="w-full justify-between"
 						>
 							<span className="text-xs">
-								{t(
-									"admin.promotionRules.studentCard.actions.viewDetails",
-								)}
+								{t("admin.promotionRules.studentCard.actions.viewDetails")}
 							</span>
 							<ChevronDown
 								className={`h-4 w-4 transition-transform ${
@@ -155,21 +141,14 @@ export function StudentEvaluationCard({
 						<div className="space-y-1 text-sm">
 							<div className="flex justify-between">
 								<span className="text-muted-foreground">
-									{t(
-										"admin.promotionRules.studentCard.details.failedCourses",
-									)}
-									:
+									{t("admin.promotionRules.studentCard.details.failedCourses")}:
 								</span>
-								<span className="font-medium">
-									{facts.failedCoursesCount}
-								</span>
+								<span className="font-medium">{facts.failedCoursesCount}</span>
 							</div>
 						</div>
 						{reasons && reasons.length > 0 && (
 							<div className="border-t pt-2">
-								<p className="mb-1 font-medium text-xs">
-									Evaluation Notes:
-								</p>
+								<p className="mb-1 font-medium text-xs">Evaluation Notes:</p>
 								<ul className="space-y-1 text-muted-foreground text-xs">
 									{reasons.map((reason, idx) => (
 										<li key={idx}>• {reason}</li>
@@ -189,12 +168,8 @@ export function StudentEvaluationCard({
 						className="w-full"
 					>
 						{selected
-							? t(
-									"admin.promotionRules.studentCard.actions.deselect",
-								)
-							: t(
-									"admin.promotionRules.studentCard.actions.select",
-								)}
+							? t("admin.promotionRules.studentCard.actions.deselect")
+							: t("admin.promotionRules.studentCard.actions.select")}
 					</Button>
 				)}
 			</CardContent>

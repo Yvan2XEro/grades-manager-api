@@ -60,7 +60,8 @@
 			"female": "F"
 		},
 		"invalidDate": "Date invalide",
-		"loading": "Chargement..."
+		"loading": "Chargement...",
+		"optional": "Facultatif"
 	},
 	"navigation": {
 		"header": {
@@ -83,6 +84,7 @@
 				"exportTemplates": "Modèles d'exportation",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
+				"batchJobs": "Traitements par lots",
 				"students": "Etudiants",
 				"studentPromotion": "Promotion des etudiants",
 				"courses": "Cours",
@@ -349,6 +351,78 @@
 				"exams": "Évaluations",
 				"students": "Étudiants",
 				"teachers": "Enseignants"
+			}
+		},
+		"batchJobs": {
+			"title": "Traitements par lots",
+			"subtitle": "Lancez et suivez les opérations en masse de votre institution",
+			"fields": {
+				"jobType": "Type de traitement",
+				"academicYear": "Année académique",
+				"class": "Classe"
+			},
+			"actions": {
+				"create": "Nouveau traitement",
+				"run": "Exécuter",
+				"cancel": "Annuler",
+				"rollback": "Annuler les effets",
+				"preview": "Aperçu",
+				"confirm": "Confirmer et exécuter"
+			},
+			"empty": {
+				"title": "Aucun traitement par lots",
+				"description": "Créez un traitement pour effectuer des opérations en masse comme le recalcul des crédits ou la mise à jour des bilans étudiants."
+			},
+			"columns": {
+				"type": "Type",
+				"status": "Statut",
+				"progress": "Progression",
+				"createdBy": "Créé par",
+				"createdAt": "Créé le",
+				"actions": "Actions"
+			},
+			"status": {
+				"pending": "En attente",
+				"previewed": "Aperçu généré",
+				"running": "En cours",
+				"completed": "Terminé",
+				"failed": "Échoué",
+				"cancelled": "Annulé",
+				"stale": "Expiré",
+				"rolled_back": "Annulé (rollback)"
+			},
+			"types": {
+				"creditLedger.recompute": "Recalcul des crédits",
+				"studentFacts.refreshClass": "Mise à jour des bilans étudiants (classe)"
+			},
+			"preview": {
+				"title": "Aperçu du traitement",
+				"steps": "Étapes",
+				"totalItems": "Total d'éléments",
+				"summary": "Résumé",
+				"confirmRun": "Êtes-vous sûr de vouloir exécuter ce traitement ? Cette opération peut prendre plusieurs minutes."
+			},
+			"detail": {
+				"title": "Détails du traitement",
+				"steps": "Étapes",
+				"logs": "Journaux",
+				"progress": "Progression",
+				"error": "Erreur",
+				"result": "Résultat",
+				"noLogs": "Aucun journal"
+			},
+			"toast": {
+				"previewSuccess": "Aperçu généré avec succès",
+				"runSuccess": "Traitement lancé",
+				"cancelSuccess": "Traitement annulé",
+				"rollbackSuccess": "Annulation initiée"
+			},
+			"stepStatus": {
+				"pending": "En attente",
+				"running": "En cours",
+				"completed": "Terminé",
+				"failed": "Échoué",
+				"skipped": "Ignoré"
 			}
 		},
 		"academicYears": {

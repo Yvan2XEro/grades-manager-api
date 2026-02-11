@@ -59,10 +59,7 @@ export async function setActive(
 				.where(
 					and(
 						eq(schema.academicYears.isActive, true),
-						eq(
-							schema.academicYears.institutionId,
-							target.institutionId,
-						),
+						eq(schema.academicYears.institutionId, target.institutionId),
 					),
 				);
 		}
@@ -72,10 +69,7 @@ export async function setActive(
 			.where(
 				and(
 					eq(schema.academicYears.id, id),
-					eq(
-						schema.academicYears.institutionId,
-						target.institutionId,
-					),
+					eq(schema.academicYears.institutionId, target.institutionId),
 				),
 			);
 	});

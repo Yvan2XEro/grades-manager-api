@@ -1,3 +1,4 @@
+import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
 import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { gradesRouter } from "@/modules/grades";
@@ -27,6 +28,9 @@ import { studyCyclesRouter } from "../modules/study-cycles";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
+
+// Register all batch job type handlers
+registerAllJobTypes();
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
@@ -62,6 +66,7 @@ export const appRouter = router({
 	users: usersRouter,
 	workflows: workflowsRouter,
 	notifications: notificationsRouter,
+	batchJobs: batchJobsRouter,
 });
 
 export type AppRouter = typeof appRouter;

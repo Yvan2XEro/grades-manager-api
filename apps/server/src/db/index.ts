@@ -53,7 +53,9 @@ export function isUsingPGlite(): boolean {
 /**
  * Get the raw PGlite instance (for schema push scripts).
  */
-export function getPGliteInstance(): import("@electric-sql/pglite").PGlite | null {
+export function getPGliteInstance():
+	| import("@electric-sql/pglite").PGlite
+	| null {
 	return pgliteInstance;
 }
 

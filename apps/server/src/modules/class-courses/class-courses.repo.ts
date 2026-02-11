@@ -3,10 +3,7 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
 export async function create(data: schema.NewClassCourse) {
-	const [item] = await db
-		.insert(schema.classCourses)
-		.values(data)
-		.returning();
+	const [item] = await db.insert(schema.classCourses).values(data).returning();
 	return item;
 }
 
@@ -63,9 +60,7 @@ export async function list(opts: {
 	const conditions = [
 		eq(schema.classCourses.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
-		opts.courseId
-			? eq(schema.classCourses.course, opts.courseId)
-			: undefined,
+		opts.courseId ? eq(schema.classCourses.course, opts.courseId) : undefined,
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
 			: undefined,
@@ -133,10 +128,7 @@ export async function findByCode(
 	const [match] = await db
 		.select({ id: schema.classCourses.id })
 		.from(schema.classCourses)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
 		.where(
 			and(
 				eq(schema.classCourses.code, code),
@@ -192,10 +184,7 @@ export async function search(opts: {
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
 		)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
 		.leftJoin(
 			schema.domainUsers,
 			eq(schema.domainUsers.id, schema.classCourses.teacher),

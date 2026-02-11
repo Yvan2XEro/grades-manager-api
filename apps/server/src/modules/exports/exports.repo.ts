@@ -41,11 +41,7 @@ export class ExportsRepo {
 	/**
 	 * Get all data needed for a PV export
 	 */
-	async getPVData(
-		classId: string,
-		semesterId: string,
-		academicYearId: string,
-	) {
+	async getPVData(classId: string, semesterId: string, academicYearId: string) {
 		// Get class with related data
 		const classData = await this.db.query.classes.findFirst({
 			where: and(
@@ -112,9 +108,7 @@ export class ExportsRepo {
 				? (typeof classData.academicYear as string)
 				: (classData.academicYear as any).id;
 		if (classAcademicYearId !== academicYearId) {
-			throw new Error(
-				"Class does not belong to the requested academic year",
-			);
+			throw new Error("Class does not belong to the requested academic year");
 		}
 
 		return classData;

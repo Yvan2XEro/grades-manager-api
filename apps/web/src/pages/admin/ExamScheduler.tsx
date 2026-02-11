@@ -60,7 +60,8 @@ type PreviewClass = {
 };
 type HistoryItem = RouterOutputs["examScheduler"]["history"]["items"][number];
 type RunDetails = RouterOutputs["examScheduler"]["details"];
-type RetakeExam = RouterOutputs["examScheduler"]["previewRetakes"]["exams"][number];
+type RetakeExam =
+	RouterOutputs["examScheduler"]["previewRetakes"]["exams"][number];
 type SessionMode = "normal" | "retake";
 
 export default function ExamScheduler() {
@@ -346,7 +347,11 @@ export default function ExamScheduler() {
 
 	const canSubmitRetake =
 		Boolean(
-			academicYearId && semesterId && dateStart && dateEnd && selectedExams.size,
+			academicYearId &&
+				semesterId &&
+				dateStart &&
+				dateEnd &&
+				selectedExams.size,
 		) && !scheduleRetakesMutation.isPending;
 
 	const toggleClass = (id: string) => {
@@ -398,7 +403,8 @@ export default function ExamScheduler() {
 
 	const isPending =
 		scheduleMutation.isPending || scheduleRetakesMutation.isPending;
-	const canSubmit = sessionMode === "normal" ? canSubmitNormal : canSubmitRetake;
+	const canSubmit =
+		sessionMode === "normal" ? canSubmitNormal : canSubmitRetake;
 
 	return (
 		<div className="space-y-6">
@@ -597,9 +603,7 @@ export default function ExamScheduler() {
 							{sessionMode === "normal" && (
 								<>
 									<div className="space-y-2">
-										<Label>
-											{t("admin.examScheduler.form.examTypeLabel")}
-										</Label>
+										<Label>{t("admin.examScheduler.form.examTypeLabel")}</Label>
 										<Select
 											value={examTypeId}
 											onValueChange={(value) => {
@@ -683,7 +687,9 @@ export default function ExamScheduler() {
 										</Label>
 										<Select
 											value={classFilter || "__all__"}
-											onValueChange={(v) => setClassFilter(v === "__all__" ? "" : v)}
+											onValueChange={(v) =>
+												setClassFilter(v === "__all__" ? "" : v)
+											}
 										>
 											<SelectTrigger>
 												<SelectValue
@@ -711,7 +717,9 @@ export default function ExamScheduler() {
 										</Label>
 										<Select
 											value={examTypeFilter || "__all__"}
-											onValueChange={(v) => setExamTypeFilter(v === "__all__" ? "" : v)}
+											onValueChange={(v) =>
+												setExamTypeFilter(v === "__all__" ? "" : v)
+											}
 										>
 											<SelectTrigger>
 												<SelectValue

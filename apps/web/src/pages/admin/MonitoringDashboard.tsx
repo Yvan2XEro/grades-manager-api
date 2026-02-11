@@ -33,9 +33,7 @@ const MonitoringDashboard = () => {
 				<h1 className="font-semibold text-2xl text-gray-900">
 					{t("admin.monitoring.title")}
 				</h1>
-				<p className="text-gray-600">
-					{t("admin.monitoring.subtitle")}
-				</p>
+				<p className="text-gray-600">{t("admin.monitoring.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -46,16 +44,12 @@ const MonitoringDashboard = () => {
 					>
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-gray-500 text-sm">
-									{metric.label}
-								</p>
+								<p className="text-gray-500 text-sm">{metric.label}</p>
 								<p className="font-semibold text-2xl text-gray-900">
 									{metric.value}
 								</p>
 							</div>
-							<div className="rounded-full bg-gray-50 p-2">
-								{metric.icon}
-							</div>
+							<div className="rounded-full bg-gray-50 p-2">{metric.icon}</div>
 						</div>
 					</div>
 				))}

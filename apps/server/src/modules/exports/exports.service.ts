@@ -10,6 +10,7 @@ import type {
 import {
 	calculateStats,
 	calculateSuccessRate,
+	type ExamWithRetake,
 	formatNumber,
 	getAppreciation,
 	getObservation,
@@ -17,7 +18,6 @@ import {
 	loadTemplate,
 	normalizeExamType,
 	resolveStudentGradesWithRetakes,
-	type ExamWithRetake,
 } from "./template-helper";
 import {
 	loadExportTemplate,
@@ -49,9 +49,7 @@ export class ExportsService {
 		try {
 			// Try to load from institution
 			const institution = await this.repo.getInstitution();
-			const { institutionToExportConfig } = await import(
-				"./template-helper"
-			);
+			const { institutionToExportConfig } = await import("./template-helper");
 			this.config = institutionToExportConfig(institution);
 			return this.config;
 		} catch (error) {
@@ -80,6 +78,21 @@ export class ExportsService {
 		Handlebars.registerHelper("gt", (a, b) => a > b);
 		Handlebars.registerHelper("add", (a, b) => a + b);
 		Handlebars.registerHelper("multiply", (a, b) => a * b);
+	}
+
+	/** Return structured PV data (JSON) for frontend Excel export */
+	async getPVDataStructured(input: Omit<GeneratePVInput, "format" | "templateId">) {
+		const config = await this.getConfig();
+		const templateConfig = await loadExportTemplate(this.institutionId, "pv");
+
+		const data = await this.repo.getPVData(
+			input.classId,
+			input.semesterId,
+			input.academicYearId,
+		);
+
+		const includeRetakes = input.includeRetakes ?? true;
+		return this.processPVData(data, config, templateConfig, includeRetakes);
 	}
 
 	/** Generate PV (official minutes) export */
@@ -222,10 +235,7 @@ export class ExportsService {
 		templateBody: string;
 	}) {
 		const config = await this.getConfig();
-		const baseConfig = await loadExportTemplate(
-			this.institutionId,
-			input.type,
-		);
+		const baseConfig = await loadExportTemplate(this.institutionId, input.type);
 		const templateConfig: TemplateConfiguration = {
 			templateBody: input.templateBody,
 			headerConfig: baseConfig.headerConfig,
@@ -296,9 +306,7 @@ export class ExportsService {
 					);
 
 					// Find CC and EXAMEN grades using normalized type
-					const cc = resolvedGrades.find(
-						(rg) => rg.normalizedType === "CC",
-					);
+					const cc = resolvedGrades.find((rg) => rg.normalizedType === "CC");
 					const ex = resolvedGrades.find(
 						(rg) => rg.normalizedType === "EXAMEN",
 					);
@@ -306,9 +314,7 @@ export class ExportsService {
 					let average = null;
 					if (cc && ex && cc.score !== null && ex.score !== null) {
 						average =
-							(cc.score * cc.percentage +
-								ex.score * ex.percentage) /
-							100;
+							(cc.score * cc.percentage + ex.score * ex.percentage) / 100;
 					}
 
 					return {
@@ -328,15 +334,13 @@ export class ExportsService {
 				const coursesWithGrades = courseGrades.filter(
 					(cg: any) => cg.average !== null,
 				);
-				const allCoursesHaveGrades =
-					coursesWithGrades.length === totalCourses;
+				const allCoursesHaveGrades = coursesWithGrades.length === totalCourses;
 
 				let ueAverage: number | null = null;
 				if (allCoursesHaveGrades && coursesWithGrades.length > 0) {
 					// Calculate weighted average: Σ(grade × coefficient) / Σ(coefficient)
 					const sumWeightedGrades = coursesWithGrades.reduce(
-						(sum: number, cg: any) =>
-							sum + cg.average * cg.coefficient,
+						(sum: number, cg: any) => sum + cg.average * cg.coefficient,
 						0,
 					);
 					const sumCoefficients = coursesWithGrades.reduce(
@@ -344,9 +348,7 @@ export class ExportsService {
 						0,
 					);
 					ueAverage =
-						sumCoefficients > 0
-							? sumWeightedGrades / sumCoefficients
-							: null;
+						sumCoefficients > 0 ? sumWeightedGrades / sumCoefficients : null;
 				}
 
 				// Credits are only awarded if ALL ECs have grades AND UE average >= passing grade
@@ -371,32 +373,41 @@ export class ExportsService {
 					average: ueAverage,
 					decision,
 					credits: creditsEarned,
+					ueCredits: Number(ue.credits) || 0,
 					isComplete: allCoursesHaveGrades,
 					missingCourses: totalCourses - coursesWithGrades.length,
 					successRate:
 						ueAverage !== null
-							? calculateSuccessRate(
-									[ueAverage],
-									config.grading.passing_grade,
-								)
+							? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 							: 0,
 				});
 			}
 
-			// Calculate total credits and general average
-			const totalCredits = ueGrades.reduce(
-				(sum, ug) => sum + ug.credits,
-				0,
-			);
-			const validUEAverages = ueGrades
-				.map((ug) => ug.average)
-				.filter((a): a is number => a !== null);
+			// Calculate total credits and credit-weighted general average
+			const totalCredits = ueGrades.reduce((sum, ug) => sum + ug.credits, 0);
+			const uesWithAverages = ueGrades.filter(
+				(ug) => ug.average !== null,
+			) as Array<(typeof ueGrades)[number] & { average: number }>;
 
-			const generalAverage =
-				validUEAverages.length > 0
-					? validUEAverages.reduce((sum, avg) => sum + avg, 0) /
-						validUEAverages.length
-					: null;
+			let generalAverage: number | null = null;
+			if (uesWithAverages.length > 0) {
+				const totalUeCredits = uesWithAverages.reduce(
+					(sum, ug) => sum + ug.ueCredits,
+					0,
+				);
+				if (totalUeCredits > 0) {
+					generalAverage =
+						uesWithAverages.reduce(
+							(sum, ug) => sum + ug.average * ug.ueCredits,
+							0,
+						) / totalUeCredits;
+				} else {
+					// Fallback: simple average if no UE credits defined
+					generalAverage =
+						uesWithAverages.reduce((sum, ug) => sum + ug.average, 0) /
+						uesWithAverages.length;
+				}
+			}
 
 			const overallPassed =
 				generalAverage !== null &&
@@ -457,8 +468,7 @@ export class ExportsService {
 				firstName: grade.studentRef.profile.firstName,
 				registrationNumber: grade.studentRef.registrationNumber,
 				score,
-				appreciation:
-					score !== null ? getAppreciation(score, config) : "",
+				appreciation: score !== null ? getAppreciation(score, config) : "",
 				observation: getObservation(score, config),
 			};
 		});
@@ -493,8 +503,7 @@ export class ExportsService {
 				: "",
 			duration: config.exam_settings.default_duration_hours,
 			coefficient:
-				examTypeConfig.coefficient ||
-				config.exam_settings.default_coefficient,
+				examTypeConfig.coefficient || config.exam_settings.default_coefficient,
 			scale: config.grading.scale,
 			semester: data.classCourseRef.classRef.semester?.name || "",
 			academicYear: data.classCourseRef.classRef.academicYear.name,
@@ -545,9 +554,7 @@ export class ExportsService {
 				);
 
 				// Find CC and EXAMEN grades using normalized type
-				const ccGrade = resolvedGrades.find(
-					(rg) => rg.normalizedType === "CC",
-				);
+				const ccGrade = resolvedGrades.find((rg) => rg.normalizedType === "CC");
 				const examGrade = resolvedGrades.find(
 					(rg) => rg.normalizedType === "EXAMEN",
 				);
@@ -556,15 +563,9 @@ export class ExportsService {
 				const examScore = examGrade?.score ?? null;
 
 				let average = null;
-				if (
-					ccGrade &&
-					examGrade &&
-					ccScore !== null &&
-					examScore !== null
-				) {
+				if (ccGrade && examGrade && ccScore !== null && examScore !== null) {
 					average =
-						(ccScore * ccGrade.percentage +
-							examScore * examGrade.percentage) /
+						(ccScore * ccGrade.percentage + examScore * examGrade.percentage) /
 						100;
 				}
 
@@ -587,8 +588,7 @@ export class ExportsService {
 			const coursesWithGrades = courseGrades.filter(
 				(cg: any) => cg.average !== null,
 			);
-			const allCoursesHaveGrades =
-				coursesWithGrades.length === totalCourses;
+			const allCoursesHaveGrades = coursesWithGrades.length === totalCourses;
 
 			let ueAverage: number | null = null;
 			if (allCoursesHaveGrades && coursesWithGrades.length > 0) {
@@ -602,9 +602,7 @@ export class ExportsService {
 					0,
 				);
 				ueAverage =
-					sumCoefficients > 0
-						? sumWeightedGrades / sumCoefficients
-						: null;
+					sumCoefficients > 0 ? sumWeightedGrades / sumCoefficients : null;
 			}
 
 			// Credits are only awarded if ALL ECs have grades AND UE average >= passing grade
@@ -625,10 +623,7 @@ export class ExportsService {
 
 			const successRate =
 				ueAverage !== null
-					? calculateSuccessRate(
-							[ueAverage],
-							config.grading.passing_grade,
-						)
+					? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 					: 0;
 
 			return {
@@ -760,9 +755,7 @@ export class ExportsService {
 						code: "UE202",
 						name: "Informatique",
 						credits: 6,
-						courses: [
-							{ code: "INF201", name: "Structures de données" },
-						],
+						courses: [{ code: "INF201", name: "Structures de données" }],
 					},
 				];
 				const ueGrades = ues.map((ue) => ({

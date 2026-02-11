@@ -36,10 +36,7 @@ export async function findById(id: string, institutionId: string) {
 	const result = await db
 		.select()
 		.from(schema.courses)
-		.innerJoin(
-			schema.programs,
-			eq(schema.courses.program, schema.programs.id),
-		)
+		.innerJoin(schema.programs, eq(schema.courses.program, schema.programs.id))
 		.where(
 			and(
 				eq(schema.courses.id, id),
@@ -58,10 +55,7 @@ export async function findByCode(
 	const result = await db
 		.select()
 		.from(schema.courses)
-		.innerJoin(
-			schema.programs,
-			eq(schema.courses.program, schema.programs.id),
-		)
+		.innerJoin(schema.programs, eq(schema.courses.program, schema.programs.id))
 		.where(
 			and(
 				eq(schema.courses.code, code),
@@ -110,10 +104,7 @@ export async function list(
 			createdAt: schema.courses.createdAt,
 		})
 		.from(schema.courses)
-		.innerJoin(
-			schema.programs,
-			eq(schema.courses.program, schema.programs.id),
-		)
+		.innerJoin(schema.programs, eq(schema.courses.program, schema.programs.id))
 		.where(condition)
 		.orderBy(schema.courses.id)
 		.limit(limit + 1);
@@ -185,10 +176,7 @@ export async function search(
 			createdAt: schema.courses.createdAt,
 		})
 		.from(schema.courses)
-		.innerJoin(
-			schema.programs,
-			eq(schema.courses.program, schema.programs.id),
-		)
+		.innerJoin(schema.programs, eq(schema.courses.program, schema.programs.id))
 		.where(condition)
 		.orderBy(schema.courses.code)
 		.limit(limit);

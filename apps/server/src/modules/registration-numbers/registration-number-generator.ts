@@ -136,10 +136,7 @@ const resolveFieldValue = (
 			value = trimValue(context.academicYearName);
 			break;
 		case "academicYearStartYear":
-			value = formatYear(
-				context.academicYearStart,
-				field.format ?? "yyyy",
-			);
+			value = formatYear(context.academicYearStart, field.format ?? "yyyy");
 			break;
 		case "academicYearStartShort":
 			value = formatYear(context.academicYearStart, "yy");
@@ -248,11 +245,7 @@ const assembleRegistrationNumber = async (opts: {
 			continue;
 		}
 		if (segment.kind === "field") {
-			const rawValue = resolveFieldValue(
-				segment,
-				opts.context,
-				opts.profile,
-			);
+			const rawValue = resolveFieldValue(segment, opts.context, opts.profile);
 			if (!rawValue) {
 				throw new RegistrationNumberError(
 					`Missing value for field "${segment.field}"`,
@@ -342,20 +335,12 @@ export async function previewRegistrationNumber(opts: {
 				.from(schema.registrationNumberCounters)
 				.where(
 					and(
-						eq(
-							schema.registrationNumberCounters.formatId,
-							opts.format.id,
-						),
-						eq(
-							schema.registrationNumberCounters.scopeKey,
-							scope.key,
-						),
+						eq(schema.registrationNumberCounters.formatId, opts.format.id),
+						eq(schema.registrationNumberCounters.scopeKey, scope.key),
 					),
 				)
 				.limit(1);
-			const next = existing
-				? existing.lastValue + 1
-				: (segment.start ?? 1);
+			const next = existing ? existing.lastValue + 1 : (segment.start ?? 1);
 			cache.set(scope.key, next);
 			return next;
 		},

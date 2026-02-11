@@ -62,9 +62,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 						timeout: 10000,
 					}).should("exist");
 				} else {
-					cy.log(
-						"Close enrollment feature not found - may use status change",
-					);
+					cy.log("Close enrollment feature not found - may use status change");
 				}
 			});
 		});
@@ -216,9 +214,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								.first()
 								.should("be.disabled");
 						} else {
-							cy.log(
-								"No withdraw button in closed enrollment - as expected",
-							);
+							cy.log("No withdraw button in closed enrollment - as expected");
 						}
 					});
 				}
@@ -351,9 +347,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -391,13 +386,10 @@ describe("Enrollment Management - Enrollment Closure", () => {
 							// Button exists - check if it's disabled
 							const isDisabled =
 								enrollButtons.first().prop("disabled") ||
-								enrollButtons.first().attr("disabled") !==
-									undefined;
+								enrollButtons.first().attr("disabled") !== undefined;
 
 							if (isDisabled) {
-								cy.log(
-									"✓ Enroll button is disabled - enrollment prevented",
-								);
+								cy.log("✓ Enroll button is disabled - enrollment prevented");
 							} else {
 								cy.log(
 									"⚠ Enroll button exists and is not disabled - may indicate missing access control",
@@ -438,9 +430,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -479,9 +470,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 						);
 						if (withdrawButtons.length > 0) {
 							// Should be disabled
-							cy.wrap(withdrawButtons.first()).should(
-								"be.disabled",
-							);
+							cy.wrap(withdrawButtons.first()).should("be.disabled");
 						}
 					});
 				}
@@ -512,9 +501,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -578,9 +566,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -632,9 +619,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -645,11 +631,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 					// Should show warning about permanence
 					cy.get("body").then(($dialog) => {
 						const hasWarning =
-							$dialog
-								.text()
-								.match(
-									/cannot.*undo|permanent|irreversible/i,
-								) !== null;
+							$dialog.text().match(/cannot.*undo|permanent|irreversible/i) !==
+							null;
 						if (hasWarning) {
 							cy.log("Immutability warning is shown");
 						}
@@ -682,9 +665,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					cy.findAllByRole("button", {
 						name: /close|clôturer|complete|terminer/i,
@@ -706,13 +688,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 							}).click();
 
 							// Should remain open
-							cy.contains(/active|actif|open|ouvert/i).should(
-								"exist",
-							);
+							cy.contains(/active|actif|open|ouvert/i).should("exist");
 						} else {
-							cy.log(
-								"No cancel option in dialog - skipping cancel test",
-							);
+							cy.log("No cancel option in dialog - skipping cancel test");
 						}
 					});
 				}
@@ -745,9 +723,8 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Close"), button:contains("Clôturer")',
-					).length > 0
+					$body.find('button:contains("Close"), button:contains("Clôturer")')
+						.length > 0
 				) {
 					// Close first
 					cy.findAllByRole("button", {
@@ -805,9 +782,7 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								timeout: 10000,
 							}).should("exist");
 						} else {
-							cy.log(
-								"Reopen feature not available - closure is permanent",
-							);
+							cy.log("Reopen feature not available - closure is permanent");
 						}
 					});
 				}

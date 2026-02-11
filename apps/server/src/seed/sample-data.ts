@@ -33,8 +33,7 @@ const sampleFoundation: FoundationSeed = {
 			code: "BTS-SANTE",
 			name: "BTS Sciences de la Santé",
 			facultyCode: "INSES",
-			description:
-				"Cycle de formation professionnelle en sciences de la santé",
+			description: "Cycle de formation professionnelle en sciences de la santé",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -42,8 +41,7 @@ const sampleFoundation: FoundationSeed = {
 			code: "LP-SANTE",
 			name: "Licence Professionnelle Santé",
 			facultyCode: "INSES",
-			description:
-				"Cycle de licence professionnelle en sciences de la santé",
+			description: "Cycle de licence professionnelle en sciences de la santé",
 			totalCreditsRequired: 180,
 			durationYears: 3,
 		},
@@ -51,8 +49,7 @@ const sampleFoundation: FoundationSeed = {
 			code: "MP-SANTE",
 			name: "Master Professionnel Santé",
 			facultyCode: "INSES",
-			description:
-				"Cycle de master professionnel en sciences de la santé",
+			description: "Cycle de master professionnel en sciences de la santé",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -61,8 +58,7 @@ const sampleFoundation: FoundationSeed = {
 			code: "BTS-COMMERCE",
 			name: "BTS Commerce et Gestion",
 			facultyCode: "INSES",
-			description:
-				"Cycle de formation professionnelle en commerce et gestion",
+			description: "Cycle de formation professionnelle en commerce et gestion",
 			totalCreditsRequired: 120,
 			durationYears: 2,
 		},
@@ -71,8 +67,7 @@ const sampleFoundation: FoundationSeed = {
 			code: "CQP-PARAM",
 			name: "CQP/AQP Paramédical",
 			facultyCode: "INSES",
-			description:
-				"Certificat de Qualification Professionnelle Paramédical",
+			description: "Certificat de Qualification Professionnelle Paramédical",
 			totalCreditsRequired: 60,
 			durationYears: 1,
 		},
@@ -291,8 +286,7 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-INFIRMIER",
 			name: "BTS Sciences Infirmières",
 			slug: "bts-sciences-infirmieres",
-			description:
-				"Formation BTS en sciences infirmières / Nursing Sciences",
+			description: "Formation BTS en sciences infirmières / Nursing Sciences",
 			facultyCode: "INSES",
 		},
 		{
@@ -414,16 +408,14 @@ const sampleAcademics: AcademicsSeed = {
 			code: "BTS-DOUANE",
 			name: "BTS Douane et Transit",
 			slug: "bts-douane-transit",
-			description:
-				"Formation BTS en Douane et Transit / Customs and Transit",
+			description: "Formation BTS en Douane et Transit / Customs and Transit",
 			facultyCode: "INSES",
 		},
 		{
 			code: "BTS-BANQUE",
 			name: "BTS Banque et Finance",
 			slug: "bts-banque-finance",
-			description:
-				"Formation BTS en Banque et Finance / Banking and Finance",
+			description: "Formation BTS en Banque et Finance / Banking and Finance",
 			facultyCode: "INSES",
 		},
 		{
@@ -518,8 +510,7 @@ const sampleAcademics: AcademicsSeed = {
 			code: "DQP-SECRET-MED",
 			name: "DQP Secrétariat Médical",
 			slug: "dqp-secretariat-medical",
-			description:
-				"Formation DQP en Secrétariat Médical / Medical Secretariat",
+			description: "Formation DQP en Secrétariat Médical / Medical Secretariat",
 			facultyCode: "INSES",
 		},
 

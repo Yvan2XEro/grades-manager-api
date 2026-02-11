@@ -58,7 +58,10 @@ export function ExecutePromotionPage() {
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
-		queryFn: async () => trpcClient.classes.list.query({}),
+		queryFn: async () => {
+			const { items } = await trpcClient.classes.list.query({});
+			return items;
+		},
 	});
 
 	// Mutation
@@ -108,14 +111,11 @@ export function ExecutePromotionPage() {
 					<CardContent className="pt-6">
 						<div className="py-12 text-center">
 							<p className="text-muted-foreground">
-								No promotion data found. Please start from the
-								evaluation page.
+								No promotion data found. Please start from the evaluation page.
 							</p>
 							<Button
 								className="mt-4"
-								onClick={() =>
-									navigate("/admin/promotion-rules/evaluate")
-								}
+								onClick={() => navigate("/admin/promotion-rules/evaluate")}
 							>
 								Go to Evaluation
 							</Button>
@@ -201,18 +201,13 @@ export function ExecutePromotionPage() {
 				<CardContent className="space-y-6">
 					<div className="space-y-2">
 						<Label>Destination Class</Label>
-						<Select
-							value={targetClassId}
-							onValueChange={setTargetClassId}
-						>
+						<Select value={targetClassId} onValueChange={setTargetClassId}>
 							<SelectTrigger>
 								<SelectValue placeholder="Select the next class level" />
 							</SelectTrigger>
 							<SelectContent>
-								{classes?.items
-									.filter(
-										(cls) => cls.id !== state.sourceClassId,
-									)
+								{classes
+									.filter((cls) => cls.id !== state.sourceClassId)
 									.map((cls) => (
 										<SelectItem key={cls.id} value={cls.id}>
 											{cls.name}
@@ -221,8 +216,7 @@ export function ExecutePromotionPage() {
 							</SelectContent>
 						</Select>
 						<p className="text-muted-foreground text-sm">
-							Students will be enrolled in this class for the next
-							academic year
+							Students will be enrolled in this class for the next academic year
 						</p>
 					</div>
 
@@ -230,9 +224,7 @@ export function ExecutePromotionPage() {
 					{targetClassId && (
 						<div className="flex items-center justify-center gap-4 rounded-lg bg-muted p-6">
 							<div className="text-center">
-								<div className="font-semibold">
-									{sourceClass?.name}
-								</div>
+								<div className="font-semibold">{sourceClass?.name}</div>
 								<Badge variant="outline" className="mt-1">
 									Current
 								</Badge>
@@ -240,11 +232,7 @@ export function ExecutePromotionPage() {
 							<ArrowRight className="h-8 w-8 text-primary" />
 							<div className="text-center">
 								<div className="font-semibold">
-									{
-										classes?.items.find(
-											(c) => c.id === targetClassId,
-										)?.name
-									}
+									{classes.find((c) => c.id === targetClassId)?.name}
 								</div>
 								<Badge variant="default" className="mt-1">
 									Target
@@ -266,9 +254,7 @@ export function ExecutePromotionPage() {
 				<div className="flex-1" />
 				<Button
 					onClick={handleExecute}
-					disabled={
-						!targetClassId || applyPromotionMutation.isPending
-					}
+					disabled={!targetClassId || applyPromotionMutation.isPending}
 					size="lg"
 				>
 					{applyPromotionMutation.isPending ? (
@@ -286,46 +272,29 @@ export function ExecutePromotionPage() {
 			</div>
 
 			{/* Confirmation Dialog */}
-			<AlertDialog
-				open={showConfirmDialog}
-				onOpenChange={setShowConfirmDialog}
-			>
+			<AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Confirm Promotion Execution
-						</AlertDialogTitle>
+						<AlertDialogTitle>Confirm Promotion Execution</AlertDialogTitle>
 						<AlertDialogDescription>
 							You are about to promote{" "}
-							<strong>{state.studentIds.length}</strong>{" "}
-							student(s) from <strong>{sourceClass?.name}</strong>{" "}
-							to{" "}
+							<strong>{state.studentIds.length}</strong> student(s) from{" "}
+							<strong>{sourceClass?.name}</strong> to{" "}
 							<strong>
-								{
-									classes?.items.find(
-										(c) => c.id === targetClassId,
-									)?.name
-								}
+								{classes.find((c) => c.id === targetClassId)?.name}
 							</strong>
 							.
 							<br />
 							<br />
 							This action will:
 							<ul className="mt-2 list-inside list-disc space-y-1">
-								<li>
-									Close current enrollments as "completed"
-								</li>
-								<li>
-									Create new enrollments in the target class
-								</li>
+								<li>Close current enrollments as "completed"</li>
+								<li>Create new enrollments in the target class</li>
 								<li>Update student class references</li>
-								<li>
-									Record this action in the execution history
-								</li>
+								<li>Record this action in the execution history</li>
 							</ul>
 							<br />
-							This operation cannot be easily undone. Are you
-							sure?
+							This operation cannot be easily undone. Are you sure?
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

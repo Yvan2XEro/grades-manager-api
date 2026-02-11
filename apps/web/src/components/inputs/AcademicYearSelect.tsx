@@ -53,9 +53,7 @@ export function AcademicYearSelect({
 			>
 				<SelectTrigger>
 					<SelectValue
-						placeholder={
-							placeholder ?? t("admin.exams.filters.academicYear")
-						}
+						placeholder={placeholder ?? t("admin.exams.filters.academicYear")}
 					/>
 				</SelectTrigger>
 				<SelectContent>
@@ -67,9 +65,7 @@ export function AcademicYearSelect({
 						years.map((year) => (
 							<SelectItem key={year.id} value={year.id}>
 								{year.name}{" "}
-								{year.isActive
-									? `(${t("common.status.active")})`
-									: ""}
+								{year.isActive ? `(${t("common.status.active")})` : ""}
 							</SelectItem>
 						))
 					)}

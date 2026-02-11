@@ -43,6 +43,39 @@ export async function applyDelta(
 	return updated;
 }
 
+/**
+ * Set credit values directly (not delta-based). Used by UE-based recomputation.
+ */
+export async function setCredits(
+	studentId: string,
+	academicYearId: string,
+	requiredCredits: number,
+	creditsInProgress: number,
+	creditsEarned: number,
+) {
+	const existing = await findByStudentAndYear(studentId, academicYearId);
+	if (existing) {
+		const [updated] = await db
+			.update(schema.studentCreditLedgers)
+			.set({
+				creditsInProgress,
+				creditsEarned,
+				requiredCredits,
+				updatedAt: new Date(),
+			})
+			.where(eq(schema.studentCreditLedgers.id, existing.id))
+			.returning();
+		return updated;
+	}
+	return create({
+		studentId,
+		academicYearId,
+		requiredCredits,
+		creditsInProgress,
+		creditsEarned,
+	});
+}
+
 export async function listByStudent(studentId: string) {
 	return db.query.studentCreditLedgers.findMany({
 		where: eq(schema.studentCreditLedgers.studentId, studentId),

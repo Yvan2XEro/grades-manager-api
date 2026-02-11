@@ -3,10 +3,7 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
 export async function createCycle(data: schema.NewStudyCycle) {
-	const [cycle] = await db
-		.insert(schema.studyCycles)
-		.values(data)
-		.returning();
+	const [cycle] = await db.insert(schema.studyCycles).values(data).returning();
 	return cycle;
 }
 
@@ -55,10 +52,7 @@ export async function findCycleById(id: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.studyCycles.id, id),
-				eq(
-					schema.institutions.organizationId,
-					contextInst.organizationId,
-				),
+				eq(schema.institutions.organizationId, contextInst.organizationId),
 			),
 		)
 		.limit(1);
@@ -125,10 +119,7 @@ export async function listCycles(
 }
 
 export async function createLevel(data: schema.NewCycleLevel) {
-	const [level] = await db
-		.insert(schema.cycleLevels)
-		.values(data)
-		.returning();
+	const [level] = await db.insert(schema.cycleLevels).values(data).returning();
 	return level;
 }
 
@@ -181,10 +172,7 @@ export async function findLevelById(id: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.cycleLevels.id, id),
-				eq(
-					schema.institutions.organizationId,
-					contextInst.organizationId,
-				),
+				eq(schema.institutions.organizationId, contextInst.organizationId),
 			),
 		)
 		.limit(1);
@@ -222,10 +210,7 @@ export async function listLevels(cycleId: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.cycleLevels.cycleId, cycleId),
-				eq(
-					schema.institutions.organizationId,
-					contextInst.organizationId,
-				),
+				eq(schema.institutions.organizationId, contextInst.organizationId),
 			),
 		)
 		.orderBy(schema.cycleLevels.orderIndex);

@@ -20,9 +20,7 @@ export async function findTemplatesByInstitution(
 	type?: ExportTemplateType,
 	isDefault?: boolean,
 ): Promise<ExportTemplate[]> {
-	const conditions = [
-		eq(schema.exportTemplates.institutionId, institutionId),
-	];
+	const conditions = [eq(schema.exportTemplates.institutionId, institutionId)];
 
 	if (type) {
 		conditions.push(eq(schema.exportTemplates.type, type));

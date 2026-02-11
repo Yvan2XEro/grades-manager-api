@@ -344,28 +344,22 @@ const useDropzone = <TUploadRes, TUploadError = string>(
 			if (maxNewFiles < newFiles.length) {
 				if (shiftOnMaxFiles === true) {
 				} else {
-					setRootError(
-						getRootError(["too-many-files"], validation ?? {}),
-					);
+					setRootError(getRootError(["too-many-files"], validation ?? {}));
 				}
 			}
 
 			const slicedNewFiles =
-				shiftOnMaxFiles === true
-					? newFiles
-					: newFiles.slice(0, maxNewFiles);
+				shiftOnMaxFiles === true ? newFiles : newFiles.slice(0, maxNewFiles);
 
-			const onDropFilePromises = slicedNewFiles.map(
-				async (file, index) => {
-					if (fileCount + 1 > maxNewFiles) {
-						await onRemoveFile(fileStatuses[index].id);
-					}
+			const onDropFilePromises = slicedNewFiles.map(async (file, index) => {
+				if (fileCount + 1 > maxNewFiles) {
+					await onRemoveFile(fileStatuses[index].id);
+				}
 
-					const id = crypto.randomUUID();
-					dispatch({ type: "add", fileName: file.name, file, id });
-					await _uploadFile(file, id);
-				},
-			);
+				const id = crypto.randomUUID();
+				dispatch({ type: "add", fileName: file.name, file, id });
+				await _uploadFile(file, id);
+			});
 
 			await Promise.all(onDropFilePromises);
 			if (pOnAllUploaded !== undefined) {
@@ -431,9 +425,7 @@ const Dropzone = <TUploadRes, TUploadError>(
 ) => {
 	const { children, ...rest } = props;
 	return (
-		<DropZoneContext.Provider value={rest}>
-			{children}
-		</DropZoneContext.Provider>
+		<DropZoneContext.Provider value={rest}>{children}</DropZoneContext.Provider>
 	);
 };
 Dropzone.displayName = "Dropzone";
@@ -650,9 +642,7 @@ const DropzoneMessage = forwardRef<HTMLParagraphElement, DropzoneMessageProps>(
 		const { children, ...rest } = props;
 		const context = useDropzoneContext();
 		if (!context) {
-			throw new Error(
-				"DropzoneRootMessage must be used within a Dropzone",
-			);
+			throw new Error("DropzoneRootMessage must be used within a Dropzone");
 		}
 
 		const body = context.rootError ? String(context.rootError) : children;
@@ -780,9 +770,7 @@ const DropzoneTrigger = forwardRef<HTMLLabelElement, DropzoneTriggerProps>(
 					})}
 					aria-describedby={
 						context.isInvalid
-							? [context.rootMessageId, ...fileMessageIds].join(
-									" ",
-								)
+							? [context.rootMessageId, ...fileMessageIds].join(" ")
 							: undefined
 					}
 					aria-invalid={context.isInvalid}

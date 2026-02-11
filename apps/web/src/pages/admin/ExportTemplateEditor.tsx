@@ -23,11 +23,11 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { trpcClient } from "@/utils/trpc";
 import {
 	getTemplateExample,
 	type TemplateType,
 } from "@/lib/export-template-examples";
+import { trpcClient } from "@/utils/trpc";
 
 export default function ExportTemplateEditor() {
 	const { t } = useTranslation();
@@ -51,9 +51,7 @@ export default function ExportTemplateEditor() {
 				throw new Error(t("admin.exportTemplates.validation.name"));
 			}
 			if (!templateBody.trim()) {
-				throw new Error(
-					t("admin.exportTemplates.editor.template.required"),
-				);
+				throw new Error(t("admin.exportTemplates.editor.template.required"));
 			}
 			return await trpcClient.exportTemplates.create.mutate({
 				name: templateName.trim(),
@@ -131,8 +129,7 @@ export default function ExportTemplateEditor() {
 		},
 		onError: (error: any) => {
 			toast.error(
-				error.message ||
-					t("admin.exportTemplates.editor.preview.error"),
+				error.message || t("admin.exportTemplates.editor.preview.error"),
 			);
 		},
 	});
@@ -183,9 +180,7 @@ export default function ExportTemplateEditor() {
 		const exampleTemplate = getTemplateExample(currentType);
 		if (exampleTemplate) {
 			setTemplateBody(exampleTemplate);
-			toast.success(
-				t("admin.exportTemplates.editor.template.exampleLoaded"),
-			);
+			toast.success(t("admin.exportTemplates.editor.template.exampleLoaded"));
 		}
 	};
 
@@ -256,9 +251,7 @@ export default function ExportTemplateEditor() {
 					<Input
 						value={templateName}
 						onChange={(e) => setTemplateName(e.target.value)}
-						placeholder={t(
-							"admin.exportTemplates.form.namePlaceholder",
-						)}
+						placeholder={t("admin.exportTemplates.form.namePlaceholder")}
 					/>
 				</div>
 				<div className="space-y-2">
@@ -272,15 +265,9 @@ export default function ExportTemplateEditor() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="pv">
-								PV (Procès-Verbal)
-							</SelectItem>
-							<SelectItem value="evaluation">
-								Evaluation
-							</SelectItem>
-							<SelectItem value="ue">
-								UE (Teaching Unit)
-							</SelectItem>
+							<SelectItem value="pv">PV (Procès-Verbal)</SelectItem>
+							<SelectItem value="evaluation">Evaluation</SelectItem>
+							<SelectItem value="ue">UE (Teaching Unit)</SelectItem>
 						</SelectContent>
 					</Select>
 					<p className="text-muted-foreground text-xs">
@@ -295,23 +282,17 @@ export default function ExportTemplateEditor() {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{t(
-								"admin.exportTemplates.editor.template.editorTitle",
-							)}
+							{t("admin.exportTemplates.editor.template.editorTitle")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"admin.exportTemplates.editor.template.editorDescription",
-							)}
+							{t("admin.exportTemplates.editor.template.editorDescription")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<div className="space-y-4">
 							<Textarea
 								value={templateBody}
-								onChange={(e) =>
-									setTemplateBody(e.target.value)
-								}
+								onChange={(e) => setTemplateBody(e.target.value)}
 								placeholder={t(
 									"admin.exportTemplates.editor.template.placeholder",
 								)}
@@ -319,53 +300,35 @@ export default function ExportTemplateEditor() {
 								spellCheck={false}
 							/>
 							<div className="flex gap-2">
-								<Button
-									variant="outline"
-									onClick={handleLoadExample}
-								>
+								<Button variant="outline" onClick={handleLoadExample}>
 									<FileCode className="mr-2 h-4 w-4" />
-									{t(
-										"admin.exportTemplates.editor.template.loadExample",
-									)}
+									{t("admin.exportTemplates.editor.template.loadExample")}
 								</Button>
 								<Button
 									onClick={handleGeneratePreview}
-									disabled={
-										isGeneratingPreview ||
-										!templateBody.trim()
-									}
+									disabled={isGeneratingPreview || !templateBody.trim()}
 								>
 									{isGeneratingPreview ? (
 										<Spinner className="mr-2" />
 									) : (
 										<Eye className="mr-2 h-4 w-4" />
 									)}
-									{t(
-										"admin.exportTemplates.editor.template.generatePreview",
-									)}
+									{t("admin.exportTemplates.editor.template.generatePreview")}
 								</Button>
 							</div>
 							<div className="space-y-2 text-muted-foreground text-sm">
 								<p className="font-semibold">
-									{t(
-										"admin.exportTemplates.editor.template.helpTitle",
-									)}
+									{t("admin.exportTemplates.editor.template.helpTitle")}
 								</p>
 								<ul className="list-inside list-disc space-y-1">
 									<li>
-										{t(
-											"admin.exportTemplates.editor.template.helpHandlebars",
-										)}
+										{t("admin.exportTemplates.editor.template.helpHandlebars")}
 									</li>
 									<li>
-										{t(
-											"admin.exportTemplates.editor.template.helpVariables",
-										)}
+										{t("admin.exportTemplates.editor.template.helpVariables")}
 									</li>
 									<li>
-										{t(
-											"admin.exportTemplates.editor.template.helpStatic",
-										)}
+										{t("admin.exportTemplates.editor.template.helpStatic")}
 									</li>
 								</ul>
 							</div>
@@ -379,9 +342,7 @@ export default function ExportTemplateEditor() {
 						<div className="flex items-center justify-between">
 							<div>
 								<CardTitle>
-									{t(
-										"admin.exportTemplates.editor.template.previewTitle",
-									)}
+									{t("admin.exportTemplates.editor.template.previewTitle")}
 								</CardTitle>
 								<CardDescription>
 									{t(
@@ -396,9 +357,7 @@ export default function ExportTemplateEditor() {
 									onClick={handleDownloadPreview}
 								>
 									<Download className="mr-2 h-4 w-4" />
-									{t(
-										"admin.exportTemplates.editor.template.download",
-									)}
+									{t("admin.exportTemplates.editor.template.download")}
 								</Button>
 							)}
 						</div>
@@ -417,14 +376,10 @@ export default function ExportTemplateEditor() {
 							<div className="flex h-[600px] flex-col items-center justify-center rounded-lg border bg-muted/50">
 								<Eye className="mb-4 h-12 w-12 text-muted-foreground" />
 								<p className="text-muted-foreground">
-									{t(
-										"admin.exportTemplates.editor.template.noPreview",
-									)}
+									{t("admin.exportTemplates.editor.template.noPreview")}
 								</p>
 								<p className="mt-2 text-muted-foreground text-sm">
-									{t(
-										"admin.exportTemplates.editor.template.clickGenerate",
-									)}
+									{t("admin.exportTemplates.editor.template.clickGenerate")}
 								</p>
 							</div>
 						)}

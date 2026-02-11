@@ -37,8 +37,7 @@ export function SemesterSelect({
 			<SelectTrigger>
 				<SelectValue
 					placeholder={
-						placeholder ??
-						t("admin.exams.filters.semesterPlaceholder")
+						placeholder ?? t("admin.exams.filters.semesterPlaceholder")
 					}
 				/>
 			</SelectTrigger>

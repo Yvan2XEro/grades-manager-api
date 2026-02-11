@@ -119,8 +119,7 @@ export default function ExportTemplatesManagement() {
 		queryKey: ["exportTemplates", selectedType],
 		queryFn: async () => {
 			const result = await trpcClient.exportTemplates.list.query({
-				type:
-					selectedType === "all" ? undefined : (selectedType as any),
+				type: selectedType === "all" ? undefined : (selectedType as any),
 			});
 			return result as ExportTemplate[];
 		},
@@ -179,8 +178,7 @@ export default function ExportTemplatesManagement() {
 		},
 		onError: (error: any) => {
 			toast.error(
-				error.message ||
-					t("admin.exportTemplates.toast.setDefaultError"),
+				error.message || t("admin.exportTemplates.toast.setDefaultError"),
 			);
 		},
 	});
@@ -236,17 +234,12 @@ export default function ExportTemplatesManagement() {
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle>
-								{t("admin.exportTemplates.table.title")}
-							</CardTitle>
+							<CardTitle>{t("admin.exportTemplates.table.title")}</CardTitle>
 							<CardDescription>
 								{t("admin.exportTemplates.table.description")}
 							</CardDescription>
 						</div>
-						<Select
-							value={selectedType}
-							onValueChange={setSelectedType}
-						>
+						<Select value={selectedType} onValueChange={setSelectedType}>
 							<SelectTrigger className="w-[200px]">
 								<SelectValue />
 							</SelectTrigger>
@@ -255,10 +248,7 @@ export default function ExportTemplatesManagement() {
 									{t("admin.exportTemplates.filter.all")}
 								</SelectItem>
 								{EXPORT_TYPES.map((type) => (
-									<SelectItem
-										key={type.value}
-										value={type.value}
-									>
+									<SelectItem key={type.value} value={type.value}>
 										{type.label}
 									</SelectItem>
 								))}
@@ -275,21 +265,13 @@ export default function ExportTemplatesManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>{t("admin.exportTemplates.table.name")}</TableHead>
+									<TableHead>{t("admin.exportTemplates.table.type")}</TableHead>
 									<TableHead>
-										{t("admin.exportTemplates.table.name")}
-									</TableHead>
-									<TableHead>
-										{t("admin.exportTemplates.table.type")}
-									</TableHead>
-									<TableHead>
-										{t(
-											"admin.exportTemplates.table.status",
-										)}
+										{t("admin.exportTemplates.table.status")}
 									</TableHead>
 									<TableHead className="text-right">
-										{t(
-											"admin.exportTemplates.table.actions",
-										)}
+										{t("admin.exportTemplates.table.actions")}
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -308,15 +290,11 @@ export default function ExportTemplatesManagement() {
 											{template.isDefault ? (
 												<Badge className="bg-yellow-500">
 													<Star className="mr-1 h-3 w-3" />
-													{t(
-														"admin.exportTemplates.table.default",
-													)}
+													{t("admin.exportTemplates.table.default")}
 												</Badge>
 											) : (
 												<Badge variant="secondary">
-													{t(
-														"admin.exportTemplates.table.custom",
-													)}
+													{t("admin.exportTemplates.table.custom")}
 												</Badge>
 											)}
 										</TableCell>
@@ -326,14 +304,8 @@ export default function ExportTemplatesManagement() {
 													<Button
 														variant="ghost"
 														size="sm"
-														onClick={() =>
-															handleSetDefault(
-																template,
-															)
-														}
-														disabled={
-															setDefaultMutation.isPending
-														}
+														onClick={() => handleSetDefault(template)}
+														disabled={setDefaultMutation.isPending}
 														title={t(
 															"admin.exportTemplates.actions.setDefault",
 														)}
@@ -345,44 +317,26 @@ export default function ExportTemplatesManagement() {
 													variant="ghost"
 													size="sm"
 													onClick={() =>
-														navigate(
-															`/admin/export-templates/${template.id}`,
-														)
+														navigate(`/admin/export-templates/${template.id}`)
 													}
-													title={t(
-														"admin.exportTemplates.actions.edit",
-													)}
+													title={t("admin.exportTemplates.actions.edit")}
 												>
 													<Settings className="h-4 w-4" />
 												</Button>
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() =>
-														handleOpenRename(
-															template,
-														)
-													}
-													title={t(
-														"admin.exportTemplates.actions.rename",
-													)}
+													onClick={() => handleOpenRename(template)}
+													title={t("admin.exportTemplates.actions.rename")}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() =>
-														setDeletingTemplate(
-															template,
-														)
-													}
-													disabled={
-														template.isDefault
-													}
-													title={t(
-														"admin.exportTemplates.actions.delete",
-													)}
+													onClick={() => setDeletingTemplate(template)}
+													disabled={template.isDefault}
+													title={t("admin.exportTemplates.actions.delete")}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -402,14 +356,10 @@ export default function ExportTemplatesManagement() {
 									{t("admin.exportTemplates.empty.title")}
 								</h3>
 								<p className="text-muted-foreground text-sm">
-									{t(
-										"admin.exportTemplates.empty.description",
-									)}
+									{t("admin.exportTemplates.empty.description")}
 								</p>
 								<Button
-									onClick={() =>
-										navigate("/admin/export-templates/new")
-									}
+									onClick={() => navigate("/admin/export-templates/new")}
 									className="mt-4"
 								>
 									<Plus className="mr-2 h-4 w-4" />
@@ -443,9 +393,7 @@ export default function ExportTemplatesManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.exportTemplates.form.name",
-											)}
+											{t("admin.exportTemplates.form.name")}
 										</FormLabel>
 										<FormControl>
 											<Input
@@ -468,13 +416,8 @@ export default function ExportTemplatesManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button
-									type="submit"
-									disabled={renameMutation.isPending}
-								>
-									{renameMutation.isPending && (
-										<Spinner className="mr-2" />
-									)}
+								<Button type="submit" disabled={renameMutation.isPending}>
+									{renameMutation.isPending && <Spinner className="mr-2" />}
 									{t("common.actions.save")}
 								</Button>
 							</DialogFooter>

@@ -24,9 +24,7 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body").then(($body) => {
 				const hasOtherStudents = $body.text().match(/Bob|Charlie/);
 				if (hasOtherStudents) {
-					cy.log(
-						"Search might not be filtering - showing all results",
-					);
+					cy.log("Search might not be filtering - showing all results");
 				} else {
 					cy.log("Search is properly filtering results");
 				}
@@ -94,12 +92,9 @@ describe("Student Management - Search and Filtering", () => {
 				.type("NonExistentStudentName123");
 
 			// Should show no results
-			cy.contains(
-				/no.*result|no.*student|aucun.*résultat|aucun.*étudiant/i,
-				{
-					timeout: 5000,
-				},
-			).should("exist");
+			cy.contains(/no.*result|no.*student|aucun.*résultat|aucun.*étudiant/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("clears search results when search is cleared", () => {
@@ -154,9 +149,7 @@ describe("Student Management - Search and Filtering", () => {
 							.type(regNumber);
 
 						// Should find the student
-						cy.contains(regNumber, { timeout: 5000 }).should(
-							"exist",
-						);
+						cy.contains(regNumber, { timeout: 5000 }).should("exist");
 					}
 				});
 		});
@@ -185,20 +178,16 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Find and click class filter dropdown
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 
 			// Select first class
 			cy.get("[role=option]").first().click();
 
 			// Should show only students from that class
 			cy.get("body").then(($body) => {
-				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || [])
-					.length;
+				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || []).length;
 				cy.log(`Found ${studentCount} students in filtered class`);
 				expect(studentCount).to.be.greaterThan(0);
 			});
@@ -210,21 +199,15 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Filter by class first
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Then select "All" or clear filter
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 
 			// Look for "All" or reset option
 			cy.get("body").then(($body) => {
@@ -232,17 +215,14 @@ describe("Student Management - Search and Filtering", () => {
 					cy.findByRole("option", {
 						name: /all.*class|toutes.*class/i,
 					}).click();
-				} else if (
-					$body.find('[data-testid="clear-filter"]').length > 0
-				) {
+				} else if ($body.find('[data-testid="clear-filter"]').length > 0) {
 					cy.get('[data-testid="clear-filter"]').click();
 				}
 			});
 
 			// Should show more students
 			cy.get("body").then(($body) => {
-				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || [])
-					.length;
+				const studentCount = ($body.text().match(/ENG\d+-\d+/g) || []).length;
 				expect(studentCount).to.be.greaterThan(0);
 			});
 		});
@@ -255,12 +235,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Apply class filter
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Also search by name
@@ -280,12 +257,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Apply filter first
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Perform search
@@ -376,12 +350,9 @@ describe("Student Management - Search and Filtering", () => {
 			cy.get("body", { timeout: 10000 }).should("contain.text", "ENG");
 
 			// Apply filter
-			cy.get(
-				'[data-testid="class-filter"], [data-testid="class-select"]',
-				{
-					timeout: 5000,
-				},
-			).click();
+			cy.get('[data-testid="class-filter"], [data-testid="class-select"]', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Search
@@ -394,9 +365,8 @@ describe("Student Management - Search and Filtering", () => {
 			// Look for clear filters button
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'[data-testid="clear-filters"], button:contains("Clear")',
-					).length > 0
+					$body.find('[data-testid="clear-filters"], button:contains("Clear")')
+						.length > 0
 				) {
 					cy.log("Clear filters button exists");
 					cy.get(
@@ -404,9 +374,10 @@ describe("Student Management - Search and Filtering", () => {
 					).click();
 
 					// Filters should be cleared
-					cy.get(
-						'[data-testid="search-input"], input[type="search"]',
-					).should("have.value", "");
+					cy.get('[data-testid="search-input"], input[type="search"]').should(
+						"have.value",
+						"",
+					);
 				}
 			});
 		});

@@ -110,9 +110,7 @@ describe("Student Management - Modification", () => {
 			// Should show validation error
 			cy.get("body").then(($body) => {
 				const hasEmailError =
-					$body
-						.text()
-						.match(/email.*invalid|email.*valide|format/i) !== null;
+					$body.text().match(/email.*invalid|email.*valide|format/i) !== null;
 				const inputInvalid =
 					$body.find('input[type="email"]:invalid').length > 0;
 
@@ -180,10 +178,7 @@ describe("Student Management - Modification", () => {
 				.click();
 
 			// Form should have populated data
-			cy.findByLabelText(/first.*name|prénom/i).should(
-				"not.have.value",
-				"",
-			);
+			cy.findByLabelText(/first.*name|prénom/i).should("not.have.value", "");
 			cy.findByLabelText(/last.*name|nom/i).should("not.have.value", "");
 			cy.findByLabelText(/email|courriel/i).should("not.have.value", "");
 		});
@@ -364,10 +359,7 @@ describe("Student Management - Modification", () => {
 					'[name="registrationNumber"], [data-testid="registration-number"]',
 				);
 
-				if (
-					regNumberInput.length > 0 &&
-					!regNumberInput.prop("disabled")
-				) {
+				if (regNumberInput.length > 0 && !regNumberInput.prop("disabled")) {
 					cy.log("Registration number is editable");
 					cy.wrap(regNumberInput).clear().type("NEW-REG-123");
 
@@ -398,13 +390,11 @@ describe("Student Management - Modification", () => {
 			// Check if status field exists
 			cy.get("body").then(($body) => {
 				if (
-					$body.find('[name="status"], [data-testid="status-select"]')
-						.length > 0
+					$body.find('[name="status"], [data-testid="status-select"]').length >
+					0
 				) {
 					cy.log("Status field exists");
-					cy.get(
-						'[name="status"], [data-testid="status-select"]',
-					).click();
+					cy.get('[name="status"], [data-testid="status-select"]').click();
 					cy.get("[role=option]").first().click();
 
 					cy.findByRole("button", {

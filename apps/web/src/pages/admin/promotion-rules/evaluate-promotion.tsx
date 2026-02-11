@@ -50,7 +50,10 @@ export function EvaluatePromotionPage() {
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
-		queryFn: async () => trpcClient.classes.list.query({}),
+		queryFn: async () => {
+			const { items } = await trpcClient.classes.list.query({});
+			return items;
+		},
 	});
 
 	// Evaluation query
@@ -83,11 +86,7 @@ export function EvaluatePromotionPage() {
 		});
 
 	const handleEvaluate = async () => {
-		if (
-			!selectedRuleId ||
-			!selectedSourceClassId ||
-			!selectedAcademicYearId
-		) {
+		if (!selectedRuleId || !selectedSourceClassId || !selectedAcademicYearId) {
 			toast.error(t("admin.promotionRules.evaluate.toast.selectAll"));
 			return;
 		}
@@ -108,17 +107,13 @@ export function EvaluatePromotionPage() {
 				classId: selectedSourceClassId,
 				academicYearId: selectedAcademicYearId,
 			});
-			toast.success(
-				t("admin.promotionRules.evaluate.toast.refreshSuccess"),
-			);
+			toast.success(t("admin.promotionRules.evaluate.toast.refreshSuccess"));
 			if (hasEvaluated) {
 				await evaluateClass();
 			}
 		} catch (error) {
 			const message =
-				error instanceof Error
-					? error.message
-					: t("common.errors.unknown");
+				error instanceof Error ? error.message : t("common.errors.unknown");
 			toast.error(
 				t("admin.promotionRules.evaluate.toast.refreshError", {
 					error: message,
@@ -192,22 +187,13 @@ export function EvaluatePromotionPage() {
 			{/* Selection Form */}
 			<Card>
 				<CardHeader>
-					<CardTitle>
-						{t("admin.promotionRules.evaluate.form.title")}
-					</CardTitle>
+					<CardTitle>{t("admin.promotionRules.evaluate.form.title")}</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 						<div className="space-y-2">
-							<Label>
-								{t(
-									"admin.promotionRules.evaluate.form.ruleLabel",
-								)}
-							</Label>
-							<Select
-								value={selectedRuleId}
-								onValueChange={setSelectedRuleId}
-							>
+							<Label>{t("admin.promotionRules.evaluate.form.ruleLabel")}</Label>
+							<Select value={selectedRuleId} onValueChange={setSelectedRuleId}>
 								<SelectTrigger>
 									<SelectValue
 										placeholder={t(
@@ -217,10 +203,7 @@ export function EvaluatePromotionPage() {
 								</SelectTrigger>
 								<SelectContent>
 									{rules?.items?.map((rule) => (
-										<SelectItem
-											key={rule.id}
-											value={rule.id}
-										>
+										<SelectItem key={rule.id} value={rule.id}>
 											{rule.name}
 										</SelectItem>
 									))}
@@ -230,9 +213,7 @@ export function EvaluatePromotionPage() {
 
 						<div className="space-y-2">
 							<Label>
-								{t(
-									"admin.promotionRules.evaluate.form.classLabel",
-								)}
+								{t("admin.promotionRules.evaluate.form.classLabel")}
 							</Label>
 							<Select
 								value={selectedSourceClassId}
@@ -246,7 +227,7 @@ export function EvaluatePromotionPage() {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{classes?.items?.map((cls) => (
+									{classes?.map((cls) => (
 										<SelectItem key={cls.id} value={cls.id}>
 											{cls.name}
 										</SelectItem>
@@ -256,11 +237,7 @@ export function EvaluatePromotionPage() {
 						</div>
 
 						<div className="space-y-2">
-							<Label>
-								{t(
-									"admin.promotionRules.evaluate.form.yearLabel",
-								)}
-							</Label>
+							<Label>{t("admin.promotionRules.evaluate.form.yearLabel")}</Label>
 							<AcademicYearSelect
 								value={selectedAcademicYearId || null}
 								onChange={setSelectedAcademicYearId}
@@ -275,14 +252,10 @@ export function EvaluatePromotionPage() {
 						<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 							<div>
 								<p className="font-medium">
-									{t(
-										"admin.promotionRules.evaluate.actions.refreshFacts",
-									)}
+									{t("admin.promotionRules.evaluate.actions.refreshFacts")}
 								</p>
 								<p className="text-muted-foreground text-sm">
-									{t(
-										"admin.promotionRules.evaluate.form.refreshDescription",
-									)}
+									{t("admin.promotionRules.evaluate.form.refreshDescription")}
 								</p>
 							</div>
 							<Button
@@ -298,16 +271,12 @@ export function EvaluatePromotionPage() {
 								{isRefreshingFacts ? (
 									<>
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										{t(
-											"admin.promotionRules.evaluate.actions.refreshingFacts",
-										)}
+										{t("admin.promotionRules.evaluate.actions.refreshingFacts")}
 									</>
 								) : (
 									<>
 										<RefreshCcw className="mr-2 h-4 w-4" />
-										{t(
-											"admin.promotionRules.evaluate.actions.refreshFacts",
-										)}
+										{t("admin.promotionRules.evaluate.actions.refreshFacts")}
 									</>
 								)}
 							</Button>
@@ -328,16 +297,12 @@ export function EvaluatePromotionPage() {
 							{isEvaluating ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									{t(
-										"admin.promotionRules.evaluate.actions.evaluating",
-									)}
+									{t("admin.promotionRules.evaluate.actions.evaluating")}
 								</>
 							) : (
 								<>
 									<Play className="mr-2 h-4 w-4" />
-									{t(
-										"admin.promotionRules.evaluate.actions.evaluate",
-									)}
+									{t("admin.promotionRules.evaluate.actions.evaluate")}
 								</>
 							)}
 						</Button>
@@ -356,9 +321,7 @@ export function EvaluatePromotionPage() {
 									{evaluationResult.totalStudents}
 								</div>
 								<p className="text-muted-foreground text-xs">
-									{t(
-										"admin.promotionRules.evaluate.summary.total",
-									)}
+									{t("admin.promotionRules.evaluate.summary.total")}
 								</p>
 							</CardContent>
 						</Card>
@@ -368,9 +331,7 @@ export function EvaluatePromotionPage() {
 									{evaluationResult.eligible.length}
 								</div>
 								<p className="text-muted-foreground text-xs">
-									{t(
-										"admin.promotionRules.evaluate.summary.eligible",
-									)}
+									{t("admin.promotionRules.evaluate.summary.eligible")}
 								</p>
 							</CardContent>
 						</Card>
@@ -380,9 +341,7 @@ export function EvaluatePromotionPage() {
 									{evaluationResult.notEligible.length}
 								</div>
 								<p className="text-muted-foreground text-xs">
-									{t(
-										"admin.promotionRules.evaluate.summary.notEligible",
-									)}
+									{t("admin.promotionRules.evaluate.summary.notEligible")}
 								</p>
 							</CardContent>
 						</Card>
@@ -392,9 +351,7 @@ export function EvaluatePromotionPage() {
 									{selectedStudents.size}
 								</div>
 								<p className="text-muted-foreground text-xs">
-									{t(
-										"admin.promotionRules.evaluate.summary.selected",
-									)}
+									{t("admin.promotionRules.evaluate.summary.selected")}
 								</p>
 							</CardContent>
 						</Card>
@@ -403,35 +360,20 @@ export function EvaluatePromotionPage() {
 					{/* Selection Actions */}
 					{evaluationResult.eligible.length > 0 && (
 						<div className="flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleSelectAll}
-							>
-								{t(
-									"admin.promotionRules.evaluate.actions.selectAll",
-								)}
+							<Button variant="outline" size="sm" onClick={handleSelectAll}>
+								{t("admin.promotionRules.evaluate.actions.selectAll")}
 							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleDeselectAll}
-							>
-								{t(
-									"admin.promotionRules.evaluate.actions.deselectAll",
-								)}
+							<Button variant="outline" size="sm" onClick={handleDeselectAll}>
+								{t("admin.promotionRules.evaluate.actions.deselectAll")}
 							</Button>
 							<div className="flex-1" />
 							<Button
 								onClick={handleProceed}
 								disabled={selectedStudents.size === 0}
 							>
-								{t(
-									"admin.promotionRules.evaluate.actions.proceed",
-									{
-										count: selectedStudents.size,
-									},
-								)}
+								{t("admin.promotionRules.evaluate.actions.proceed", {
+									count: selectedStudents.size,
+								})}
 							</Button>
 						</div>
 					)}
@@ -443,34 +385,22 @@ export function EvaluatePromotionPage() {
 						<TabsList className="grid w-full max-w-md grid-cols-2">
 							<TabsTrigger value="eligible" className="gap-2">
 								<CheckCircle2 className="h-4 w-4" />
-								{t(
-									"admin.promotionRules.evaluate.tabs.eligible",
-									{
-										count: evaluationResult.eligible.length,
-									},
-								)}
+								{t("admin.promotionRules.evaluate.tabs.eligible", {
+									count: evaluationResult.eligible.length,
+								})}
 							</TabsTrigger>
 							<TabsTrigger value="not-eligible" className="gap-2">
 								<XCircle className="h-4 w-4" />
-								{t(
-									"admin.promotionRules.evaluate.tabs.notEligible",
-									{
-										count: evaluationResult.notEligible
-											.length,
-									},
-								)}
+								{t("admin.promotionRules.evaluate.tabs.notEligible", {
+									count: evaluationResult.notEligible.length,
+								})}
 							</TabsTrigger>
 						</TabsList>
 
-						<TabsContent
-							value="eligible"
-							className="mt-6 space-y-4"
-						>
+						<TabsContent value="eligible" className="mt-6 space-y-4">
 							{evaluationResult.eligible.length === 0 ? (
 								<div className="py-12 text-center text-muted-foreground">
-									{t(
-										"admin.promotionRules.evaluate.emptyState.noEligible",
-									)}
+									{t("admin.promotionRules.evaluate.emptyState.noEligible")}
 								</div>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -481,13 +411,9 @@ export function EvaluatePromotionPage() {
 											facts={result.facts}
 											eligible={true}
 											reasons={result.reasons}
-											selected={selectedStudents.has(
-												result.student.id,
-											)}
+											selected={selectedStudents.has(result.student.id)}
 											onToggleSelect={() =>
-												handleToggleStudent(
-													result.student.id,
-												)
+												handleToggleStudent(result.student.id)
 											}
 										/>
 									))}
@@ -495,29 +421,22 @@ export function EvaluatePromotionPage() {
 							)}
 						</TabsContent>
 
-						<TabsContent
-							value="not-eligible"
-							className="mt-6 space-y-4"
-						>
+						<TabsContent value="not-eligible" className="mt-6 space-y-4">
 							{evaluationResult.notEligible.length === 0 ? (
 								<div className="py-12 text-center text-muted-foreground">
-									{t(
-										"admin.promotionRules.evaluate.emptyState.allEligible",
-									)}
+									{t("admin.promotionRules.evaluate.emptyState.allEligible")}
 								</div>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-									{evaluationResult.notEligible.map(
-										(result) => (
-											<StudentEvaluationCard
-												key={result.student.id}
-												student={result.student}
-												facts={result.facts}
-												eligible={false}
-												reasons={result.reasons}
-											/>
-										),
-									)}
+									{evaluationResult.notEligible.map((result) => (
+										<StudentEvaluationCard
+											key={result.student.id}
+											student={result.student}
+											facts={result.facts}
+											eligible={false}
+											reasons={result.reasons}
+										/>
+									))}
 								</div>
 							)}
 						</TabsContent>

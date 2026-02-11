@@ -33,9 +33,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Try to create second exam on same date
 			cy.findByRole("button", {
@@ -68,11 +66,8 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				const hasConflictWarning =
 					$body
 						.text()
-						.match(
-							/conflict|conflit|warning|attention|same.*date/i,
-						) !== null;
-				const wasCreated =
-					$body.text().match(/created|créé|success/i) !== null;
+						.match(/conflict|conflit|warning|attention|same.*date/i) !== null;
+				const wasCreated = $body.text().match(/created|créé|success/i) !== null;
 
 				// Either shows warning or creates anyway
 				expect(hasConflictWarning || wasCreated).to.be.true;
@@ -108,9 +103,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Create conflicting exam
 			cy.findByRole("button", {
@@ -142,16 +135,12 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const text = $body.text();
 				const hasConflict =
-					text.match(
-						/conflict|conflit|already.*exam|déjà.*examen/i,
-					) !== null;
+					text.match(/conflict|conflit|already.*exam|déjà.*examen/i) !== null;
 
 				if (hasConflict) {
 					cy.log("Conflict warning displayed");
 				} else {
-					cy.log(
-						"No conflict warning - system allows multiple exams per day",
-					);
+					cy.log("No conflict warning - system allows multiple exams per day");
 				}
 			});
 		});
@@ -185,9 +174,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Create exam for different class/course on same date
 			cy.findByRole("button", {
@@ -216,9 +203,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 
 			// Should create successfully - no conflict for different classes
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 		});
 	});
 
@@ -252,9 +237,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Create potentially conflicting exam
 			cy.findByRole("button", {
@@ -333,9 +316,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Create second exam with different date
 			cy.findByRole("button", {
@@ -365,9 +346,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			}).click();
 
 			// Should create successfully - no conflict
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 		});
 
 		it("suggests alternative dates (if feature exists)", () => {
@@ -399,9 +378,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Try to create conflicting exam
 			cy.findByRole("button", {
@@ -432,9 +409,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			// Check for suggested dates
 			cy.get("body", { timeout: 10000 }).then(($body) => {
 				const hasSuggestions =
-					$body
-						.text()
-						.match(/suggest|alternative|proposer|alternative/i) !==
+					$body.text().match(/suggest|alternative|proposer|alternative/i) !==
 					null;
 
 				if (hasSuggestions) {
@@ -476,9 +451,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Open create form again
 			cy.findByRole("button", {
@@ -488,8 +461,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			// Check if existing exams are shown as context
 			cy.get("body").then(($body) => {
 				const showsExistingExams =
-					$body.text().match(/existing|scheduled|déjà.*planifié/i) !==
-					null;
+					$body.text().match(/existing|scheduled|déjà.*planifié/i) !== null;
 
 				if (showsExistingExams) {
 					cy.log("Existing exams are shown for context");
@@ -526,9 +498,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success/i, { timeout: 10000 }).should("exist");
 
 			// Create another exam and check date picker
 			cy.findByRole("button", {
@@ -547,8 +517,7 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			// Check if dates with exams are highlighted
 			cy.get("body").then(($body) => {
 				const hasHighlighting =
-					$body.find('[class*="highlighted"], [class*="occupied"]')
-						.length > 0;
+					$body.find('[class*="highlighted"], [class*="occupied"]').length > 0;
 
 				if (hasHighlighting) {
 					cy.log("Date picker highlights conflicting dates");
@@ -575,12 +544,9 @@ describe("Exam Management - Scheduling Conflicts", () => {
 				).click();
 				cy.get("[role=option]").first().click();
 
-				cy.get(
-					'[data-testid="exam-type-select"], #examType, #examTypeId',
-					{
-						timeout: 5000,
-					},
-				).click();
+				cy.get('[data-testid="exam-type-select"], #examType, #examTypeId', {
+					timeout: 5000,
+				}).click();
 				cy.get("[role=option]").eq(i).click();
 
 				cy.findByLabelText(/date/i).clear().type("2024-12-25");
@@ -601,12 +567,9 @@ describe("Exam Management - Scheduling Conflicts", () => {
 			// Check for conflict indicator in list
 			cy.get("body").then(($body) => {
 				const hasConflictIndicator =
-					$body
-						.text()
-						.match(/conflict|conflit|warning|attention/i) !==
-						null ||
-					$body.find('[data-testid*="conflict"], [class*="conflict"]')
-						.length > 0;
+					$body.text().match(/conflict|conflit|warning|attention/i) !== null ||
+					$body.find('[data-testid*="conflict"], [class*="conflict"]').length >
+						0;
 
 				if (hasConflictIndicator) {
 					cy.log("Conflict indicators shown in exam list");

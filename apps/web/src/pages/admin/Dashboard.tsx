@@ -61,8 +61,7 @@ const AdminDashboard: React.FC = () => {
 			const programs = programsRes?.items ?? [];
 			// Compter les institutions de type 'faculty'
 			const institutionsCount =
-				institutionsRes?.items?.filter((i) => i.type === "faculty")
-					.length ?? 0;
+				institutionsRes?.items?.filter((i) => i.type === "faculty").length ?? 0;
 			const programsCount = programs.length;
 			const coursesCount = coursesRes?.items?.length ?? 0;
 			const examsCount = examsRes?.items?.length ?? 0;
@@ -74,17 +73,15 @@ const AdminDashboard: React.FC = () => {
 			const programStats: ProgramStats[] = activeYear
 				? await Promise.all(
 						programs.map(async (program) => {
-							const { items: classes } =
-								await trpcClient.classes.list.query({
-									programId: program.id,
-									academicYearId: activeYear.id,
-								});
+							const { items: classes } = await trpcClient.classes.list.query({
+								programId: program.id,
+								academicYearId: activeYear.id,
+							});
 							let total = 0;
 							for (const cls of classes) {
-								const { items: studs } =
-									await trpcClient.students.list.query({
-										classId: cls.id,
-									});
+								const { items: studs } = await trpcClient.students.list.query({
+									classId: cls.id,
+								});
 								total += studs.length;
 							}
 							return { name: program.name, students: total };
@@ -182,9 +179,7 @@ const AdminDashboard: React.FC = () => {
 								<h3 className="font-medium text-gray-700 text-lg">
 									{t(`admin.dashboard.stats.${stat.key}`)}
 								</h3>
-								<p className="font-bold text-2xl text-gray-900">
-									{stat.count}
-								</p>
+								<p className="font-bold text-2xl text-gray-900">{stat.count}</p>
 							</div>
 						</div>
 					</div>
@@ -218,11 +213,7 @@ const AdminDashboard: React.FC = () => {
 								/>
 								<YAxis />
 								<Tooltip />
-								<Bar
-									dataKey="students"
-									fill="#3730A3"
-									radius={[4, 4, 0, 0]}
-								/>
+								<Bar dataKey="students" fill="#3730A3" radius={[4, 4, 0, 0]} />
 							</BarChart>
 						</ResponsiveContainer>
 					) : (

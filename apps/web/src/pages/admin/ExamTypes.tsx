@@ -73,7 +73,8 @@ export default function ExamTypes() {
 		defaultValues: { name: "", description: "", defaultPercentage: 40 },
 	});
 
-	const resetForm = () => form.reset({ name: "", description: "", defaultPercentage: 40 });
+	const resetForm = () =>
+		form.reset({ name: "", description: "", defaultPercentage: 40 });
 
 	const { data: examTypes, isLoading } = useQuery({
 		queryKey: ["examTypes"],
@@ -128,13 +129,7 @@ export default function ExamTypes() {
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: async ({
-			id,
-			values,
-		}: {
-			id: string;
-			values: FormValues;
-		}) => {
+		mutationFn: async ({ id, values }: { id: string; values: FormValues }) => {
 			await trpcClient.examTypes.update.mutate({
 				id,
 				name: values.name,
@@ -220,13 +215,9 @@ export default function ExamTypes() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead>{t("admin.examTypes.table.name")}</TableHead>
 									<TableHead>
-										{t("admin.examTypes.table.name")}
-									</TableHead>
-									<TableHead>
-										{t(
-											"admin.examTypes.table.descriptionColumn",
-										)}
+										{t("admin.examTypes.table.descriptionColumn")}
 									</TableHead>
 									<TableHead>
 										{t("admin.examTypes.table.defaultPercentage")}
@@ -239,31 +230,25 @@ export default function ExamTypes() {
 							<TableBody>
 								{examTypes.map((type) => (
 									<TableRow key={type.id}>
-										<TableCell className="font-medium">
-											{type.name}
-										</TableCell>
+										<TableCell className="font-medium">{type.name}</TableCell>
+										<TableCell>{type.description || "—"}</TableCell>
 										<TableCell>
-											{type.description || "—"}
-										</TableCell>
-										<TableCell>
-											{type.defaultPercentage != null ? `${type.defaultPercentage}%` : "—"}
+											{type.defaultPercentage != null
+												? `${type.defaultPercentage}%`
+												: "—"}
 										</TableCell>
 										<TableCell className="flex items-center justify-end gap-2">
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() =>
-													handleOpenEdit(type)
-												}
+												onClick={() => handleOpenEdit(type)}
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
 											<Button
 												variant="ghost"
 												size="icon"
-												onClick={() =>
-													setDeleteId(type.id)
-												}
+												onClick={() => setDeleteId(type.id)}
 											>
 												<Trash2 className="h-4 w-4 text-destructive" />
 											</Button>
@@ -275,9 +260,7 @@ export default function ExamTypes() {
 					) : (
 						<Empty>
 							<EmptyHeader>
-								<EmptyTitle>
-									{t("admin.examTypes.title")}
-								</EmptyTitle>
+								<EmptyTitle>{t("admin.examTypes.title")}</EmptyTitle>
 								<EmptyDescription>
 									{t("admin.examTypes.empty")}
 								</EmptyDescription>
@@ -298,18 +281,13 @@ export default function ExamTypes() {
 				}
 			>
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-4"
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
 							control={form.control}
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.examTypes.form.nameLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.examTypes.form.nameLabel")}</FormLabel>
 									<FormControl>
 										<Input {...field} />
 									</FormControl>
@@ -323,9 +301,7 @@ export default function ExamTypes() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t(
-											"admin.examTypes.form.descriptionLabel",
-										)}
+										{t("admin.examTypes.form.descriptionLabel")}
 									</FormLabel>
 									<FormControl>
 										<Input {...field} />
@@ -343,23 +319,14 @@ export default function ExamTypes() {
 										{t("admin.examTypes.form.defaultPercentageLabel")}
 									</FormLabel>
 									<FormControl>
-										<Input
-											type="number"
-											min={1}
-											max={100}
-											{...field}
-										/>
+										<Input type="number" min={1} max={100} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
 						<DialogFooter className="gap-2 sm:gap-0">
-							<Button
-								variant="ghost"
-								type="button"
-								onClick={handleCloseModal}
-							>
+							<Button variant="ghost" type="button" onClick={handleCloseModal}>
 								{t("common.actions.cancel")}
 							</Button>
 							<Button type="submit" disabled={isSaving}>

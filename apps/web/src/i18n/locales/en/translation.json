@@ -60,7 +60,8 @@
 			"female": "F"
 		},
 		"invalidDate": "Invalid date",
-		"loading": "Loading..."
+		"loading": "Loading...",
+		"optional": "Optional"
 	},
 	"teacher": {
 		"courses": {
@@ -699,6 +700,7 @@
 				"exportTemplates": "Export templates",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
+				"batchJobs": "Batch Jobs",
 				"students": "Students",
 				"studentPromotion": "Student promotion",
 				"courses": "Courses",
@@ -984,6 +986,78 @@
 			},
 			"toast": {
 				"flushed": "Pending notifications flushed"
+			}
+		},
+		"batchJobs": {
+			"title": "Batch Jobs",
+			"subtitle": "Run and monitor mass operations across your institution",
+			"fields": {
+				"jobType": "Job type",
+				"academicYear": "Academic year",
+				"class": "Class"
+			},
+			"actions": {
+				"create": "New batch job",
+				"run": "Run",
+				"cancel": "Cancel",
+				"rollback": "Rollback",
+				"preview": "Preview",
+				"confirm": "Confirm & Run"
+			},
+			"empty": {
+				"title": "No batch jobs yet",
+				"description": "Create a batch job to perform mass operations like credit recomputation or student facts refresh."
+			},
+			"columns": {
+				"type": "Type",
+				"status": "Status",
+				"progress": "Progress",
+				"createdBy": "Created by",
+				"createdAt": "Created",
+				"actions": "Actions"
+			},
+			"status": {
+				"pending": "Pending",
+				"previewed": "Previewed",
+				"running": "Running",
+				"completed": "Completed",
+				"failed": "Failed",
+				"cancelled": "Cancelled",
+				"stale": "Stale",
+				"rolled_back": "Rolled back"
+			},
+			"types": {
+				"creditLedger.recompute": "Credit Ledger Recomputation",
+				"studentFacts.refreshClass": "Student Facts Refresh (Class)"
+			},
+			"preview": {
+				"title": "Preview Batch Job",
+				"steps": "Steps",
+				"totalItems": "Total items",
+				"summary": "Summary",
+				"confirmRun": "Are you sure you want to execute this batch job? This operation may take several minutes."
+			},
+			"detail": {
+				"title": "Job Details",
+				"steps": "Steps",
+				"logs": "Logs",
+				"progress": "Progress",
+				"error": "Error",
+				"result": "Result",
+				"noLogs": "No logs yet"
+			},
+			"toast": {
+				"previewSuccess": "Preview generated successfully",
+				"runSuccess": "Batch job started",
+				"cancelSuccess": "Batch job cancelled",
+				"rollbackSuccess": "Rollback initiated"
+			},
+			"stepStatus": {
+				"pending": "Pending",
+				"running": "Running",
+				"completed": "Completed",
+				"failed": "Failed",
+				"skipped": "Skipped"
 			}
 		},
 		"academicYears": {

@@ -1,20 +1,27 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1766559691357,
-      "tag": "0000_moaning_sentinel",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1769937062601,
-      "tag": "0001_lowly_iron_man",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1766559691357,
+			"tag": "0000_moaning_sentinel",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1769937062601,
+			"tag": "0001_lowly_iron_man",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1770655601191,
+			"tag": "0002_living_wolf_cub",
+			"breakpoints": true
+		}
+	]
 }

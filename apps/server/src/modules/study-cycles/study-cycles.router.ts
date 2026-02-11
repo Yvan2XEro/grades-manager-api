@@ -28,9 +28,7 @@ export const studyCyclesRouter = router({
 		),
 	listCycles: protectedProcedure
 		.input(cycleListSchema)
-		.query(({ ctx, input }) =>
-			service.listCycles(input, ctx.institution.id),
-		),
+		.query(({ ctx, input }) => service.listCycles(input, ctx.institution.id)),
 	getCycle: protectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>
