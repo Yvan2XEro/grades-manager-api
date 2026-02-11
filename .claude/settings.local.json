@@ -50,7 +50,14 @@
       "Bash(bun tsc:*)",
       "Bash(bun seed:*)",
       "Bash(bun db:push:pglite:*)",
-      "Bash(bun db:generate:*)"
+      "Bash(bun db:generate:*)",
+      "WebSearch",
+      "Bash(node -e:*)",
+      "WebFetch(domain:www.esisalama.com)",
+      "WebFetch(domain:ics.utc.fr)",
+      "WebFetch(domain:ulpgl.net)",
+      "WebFetch(domain:go2congo.org)",
+      "WebFetch(domain:aefapblog.wordpress.com)"
     ]
   }
 }
