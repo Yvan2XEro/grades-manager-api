@@ -5,6 +5,12 @@ node_modules
 .DS_Store
 dist
 
+.claude
+.clinerules
+.github
+.gemini
+.vscode
+
 # Keep migration files - they're needed in Docker
 !apps/server/src/db/migrations/
 
