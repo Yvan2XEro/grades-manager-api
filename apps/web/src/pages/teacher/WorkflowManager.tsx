@@ -3,6 +3,8 @@ import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,9 +28,15 @@ const WorkflowManager = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [selectedClassCourse, setSelectedClassCourse] = useState<string>("");
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
 	const { data: classCourses } = useQuery(
-		trpc.classCourses.list.queryOptions({ limit: 200 }),
+		trpc.classCourses.list.queryOptions({
+			limit: 200,
+			...(filterYear ? { academicYearId: filterYear } : {}),
+			...(filterSemester ? { semesterId: filterSemester } : {}),
+		}),
 	);
 
 	const examsQuery = useQuery({
@@ -89,6 +97,37 @@ const WorkflowManager = () => {
 							"Submit exams for validation and monitor their status.",
 					})}
 				</p>
+			</div>
+
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => {
+							setFilterYear(v);
+							setSelectedClassCourse("");
+						}}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => {
+							setFilterSemester(v);
+							setSelectedClassCourse("");
+						}}
+					/>
+				</div>
 			</div>
 
 			<div className="space-y-2">

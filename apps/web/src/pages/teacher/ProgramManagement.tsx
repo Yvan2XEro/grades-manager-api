@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, Plus, School, Trash2 } from "lucide-react";
+import { Pencil, Plus, School, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -87,6 +87,7 @@ type Program = {
 	code: string;
 	name: string;
 	description: string | null;
+	optionsCount: number;
 };
 
 type ProgramOption = RouterOutputs["programOptions"]["list"]["items"][number];
@@ -101,20 +102,25 @@ export default function ProgramManagement() {
 		null,
 	);
 	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
 	const { data: programs, isLoading } = useQuery({
-		queryKey: ["programs"],
+		queryKey: ["programs", searchQuery],
 		queryFn: async () => {
-			const programRes = await trpcClient.programs.list.query({});
+			const programRes = await trpcClient.programs.list.query({
+				...(searchQuery ? { q: searchQuery } : {}),
+				limit: 200,
+			});
 			return programRes.items.map((p) => ({
 				id: p.id,
 				code: p.code,
 				name: p.name,
 				description: p.description ?? null,
+				optionsCount: (p as any).optionsCount ?? 0,
 			})) as Program[];
 		},
 	});
@@ -392,6 +398,18 @@ export default function ProgramManagement() {
 				</Button>
 			</div>
 
+			<div className="relative w-full max-w-sm">
+				<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder={t("admin.programs.search", {
+						defaultValue: "Search programs...",
+					})}
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					className="pl-9"
+				/>
+			</div>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.programs.title")}</CardTitle>
@@ -409,6 +427,11 @@ export default function ProgramManagement() {
 									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
+									<TableHead className="text-center">
+										{t("admin.programs.table.options", {
+											defaultValue: "Options",
+										})}
+									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -434,6 +457,9 @@ export default function ProgramManagement() {
 													{t("admin.programs.table.noDescription")}
 												</span>
 											)}
+										</TableCell>
+										<TableCell className="text-center">
+											{program.optionsCount}
 										</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">

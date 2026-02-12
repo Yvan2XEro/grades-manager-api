@@ -65,6 +65,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { Label } from "@/components/ui/label";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
@@ -139,6 +142,8 @@ export default function ClassCourseManagement() {
 	const [editingClassCourse, setEditingClassCourse] =
 		useState<ClassCourse | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -266,9 +271,12 @@ export default function ClassCourseManagement() {
 	});
 
 	const { data: classCourses, isLoading } = useQuery({
-		queryKey: ["classCourses"],
+		queryKey: ["classCourses", filterYear, filterSemester],
 		queryFn: async () => {
-			const { items } = await trpcClient.classCourses.list.query({});
+			const { items } = await trpcClient.classCourses.list.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+				...(filterSemester ? { semesterId: filterSemester } : {}),
+			});
 			return items.map(
 				(cc) =>
 					({
@@ -712,6 +720,31 @@ export default function ClassCourseManagement() {
 						<Plus className="mr-2 h-4 w-4" />
 						{t("admin.classCourses.actions.assign")}
 					</Button>
+				</div>
+			</div>
+
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => setFilterSemester(v)}
+					/>
 				</div>
 			</div>
 

@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,7 @@ export default function RetakeEligibility() {
 	const queryClient = useQueryClient();
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 	const [overrideModal, setOverrideModal] = useState<OverrideModalState>({
 		isOpen: false,
@@ -109,6 +111,7 @@ export default function RetakeEligibility() {
 	const examsQuery = useQuery({
 		...trpc.exams.list.queryOptions({
 			academicYearId: academicYearId ?? undefined,
+			...(filterSemester ? { semesterId: filterSemester } : {}),
 			limit: 100,
 		}),
 		enabled: Boolean(academicYearId),
@@ -370,6 +373,20 @@ export default function RetakeEligibility() {
 								value={academicYearId}
 								onChange={(value) => {
 									setAcademicYearId(value);
+									setSelectedExamId(null);
+								}}
+							/>
+						</div>
+						<div className="flex flex-col gap-2">
+							<Label>
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => {
+									setFilterSemester(v);
 									setSelectedExamId(null);
 								}}
 							/>

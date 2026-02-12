@@ -4,6 +4,7 @@
 			"placeholder": "Sélectionnez un élément",
 			"searchPlaceholder": "Rechercher par code ou nom...",
 			"noResults": "Aucun élément trouvé. Essayez une autre recherche.",
+			"resultsCount": "{{count}} résultats",
 			"resultsCount_one": "{{count}} résultat",
 			"resultsCount_other": "{{count}} résultats",
 			"loading": "Chargement..."
@@ -23,7 +24,8 @@
 			"saving": "Enregistrement...",
 			"reset": "Réinitialiser",
 			"open": "Ouvrir",
-			"back": "Retour"
+			"back": "Retour",
+			"edit": "Modifier"
 		},
 		"fields": {
 			"email": "E-mail",
@@ -237,7 +239,8 @@
 			"subtitle": "Orchestrez les cycles d'étude, ajustez les seuils de crédits et prévisualisez les changements.",
 			"actions": {
 				"clone": "Cloner les règles par défaut",
-				"save": "Enregistrer la variante"
+				"save": "Enregistrer la variante",
+				"attach": "Voir les programmes"
 			},
 			"studyCycles": "Cycles d'étude",
 			"faculty": "Faculté",
@@ -253,7 +256,8 @@
 			"toast": {
 				"saved": "Règle enregistrée"
 			},
-			"previewWarning": "La persistance arrive bientôt. Conservez l'export JSON en attendant."
+			"previewWarning": "La persistance arrive bientôt. Conservez l'export JSON en attendant.",
+			"selectLevel": "Sélectionner le niveau"
 		},
 		"registrationNumbers": {
 			"title": "Formats de matricule",
@@ -588,7 +592,9 @@
 				"semesterPlaceholder": "Sélectionner un semestre",
 				"codeLabel": "Code",
 				"codePlaceholder": "INF11-S1-01",
-				"labelLabel": "Libellé généré de la classe"
+				"labelLabel": "Libellé généré de la classe",
+				"emptyCycleLevels": "Aucun niveau de cycle disponible pour la faculté sélectionnée.",
+				"programSummary": "Faculté : {{value}}"
 			},
 			"toast": {
 				"createSuccess": "Classe créée avec succès",
@@ -610,7 +616,25 @@
 				"semester": "Veuillez sélectionner un semestre",
 				"code": "Veuillez saisir un code de classe",
 				"name": "Le nom doit comporter au moins 2 caractères"
-			}
+			},
+			"filters": {
+				"academicYear": "Année académique",
+				"semester": "Semestre"
+			},
+			"columns": {
+				"registration": "N° matricule",
+				"lastName": "Nom",
+				"firstName": "Prénom",
+				"birthDate": "Date de naissance",
+				"gender": "Sexe"
+			},
+			"students": "étudiants",
+			"preview": {
+				"button": "Voir la liste des étudiants"
+			},
+			"previewDescription": "Liste des étudiants inscrits dans cette classe",
+			"searchStudents": "Rechercher des étudiants...",
+			"noStudents": "Aucun étudiant inscrit dans cette classe"
 		},
 		"institution": {
 			"title": "Paramètres de l’établissement",
@@ -661,7 +685,15 @@
 				"defaultAcademicYear": "Année académique par défaut",
 				"defaultAcademicYearPlaceholder": "Sélectionner une année",
 				"registrationFormat": "Format de matricule",
-				"registrationFormatPlaceholder": "Utiliser le format actif"
+				"registrationFormatPlaceholder": "Utiliser le format actif",
+				"type": "Type",
+				"typeUniversity": "Université",
+				"typeFaculty": "Faculté/École",
+				"typeInstitution": "Établissement/Institut",
+				"parentInstitution": "Établissement parent (Université)",
+				"noParentInstitution": "Aucun (Premier niveau)",
+				"supervisingFaculty": "Faculté de tutelle",
+				"noSupervisingFaculty": "Aucune"
 			}
 		},
 		"studyCycles": {
@@ -669,7 +701,9 @@
 			"subtitle": "Regroupez les programmes et configurez les seuils de crédits par niveau.",
 			"actions": {
 				"add": "Ajouter un cycle",
-				"addLevel": "Ajouter un niveau"
+				"addLevel": "Ajouter un niveau",
+				"update": "Modifier le cycle",
+				"updateLevel": "Modifier le niveau"
 			},
 			"listTitle": "Cycles",
 			"empty": "Aucun cycle pour le moment.",
@@ -695,12 +729,15 @@
 				"code": "Code",
 				"description": "Description",
 				"credits": "Crédits requis",
-				"duration": "Durée (années)"
+				"duration": "Durée (années)",
+				"minCredits": "Crédits minimum"
 			},
 			"toast": {
 				"createSuccess": "Cycle créé",
+				"updateSuccess": "Cycle mis à jour",
 				"deleteSuccess": "Cycle supprimé",
 				"levelCreate": "Niveau ajouté",
+				"levelUpdate": "Niveau mis à jour",
 				"levelDelete": "Niveau supprimé"
 			},
 			"delete": {
@@ -720,7 +757,8 @@
 				"program": "Programme",
 				"hours": "Heures",
 				"teacher": "Enseignant par défaut",
-				"cycleInfo": "Cycle : {{value}}"
+				"cycleInfo": "Cycle : {{value}}",
+				"facultyInfo": "Faculté : {{value}}"
 			},
 			"form": {
 				"createTitle": "Ajouter un cours",
@@ -736,7 +774,8 @@
 				"programPlaceholder": "Sélectionner un programme",
 				"programCycleSummary": "Cycle : {{value}}",
 				"teacherLabel": "Enseignant par défaut",
-				"teacherPlaceholder": "Sélectionner un enseignant"
+				"teacherPlaceholder": "Sélectionner un enseignant",
+				"programFacultySummary": "Faculté : {{value}}"
 			},
 			"toast": {
 				"createSuccess": "Cours créé avec succès",
@@ -809,6 +848,7 @@
 		"programs": {
 			"title": "Gestion des programmes",
 			"subtitle": "Organisez les programmes académiques et rattachez-les aux facultés.",
+			"search": "Rechercher des programmes...",
 			"actions": {
 				"add": "Ajouter un programme"
 			},
@@ -821,7 +861,9 @@
 				"name": "Programme",
 				"faculty": "Faculté",
 				"description": "Description",
-				"noDescription": "Pas de description"
+				"noDescription": "Pas de description",
+				"cycle": "Cycle",
+				"options": "Options"
 			},
 			"form": {
 				"createTitle": "Ajouter un programme",
@@ -834,12 +876,16 @@
 				"facultyPlaceholder": "Sélectionner une faculté",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Décrire le programme",
-				"submit": "Enregistrer"
+				"submit": "Enregistrer",
+				"cycleLabel": "Cycle d'étude",
+				"cyclePlaceholder": "Sélectionner un cycle",
+				"selectFacultyFirst": "Sélectionnez une faculté pour charger les cycles disponibles."
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
 				"code": "Le code est obligatoire",
-				"faculty": "Veuillez sélectionner une faculté"
+				"faculty": "Veuillez sélectionner une faculté",
+				"cycle": "Veuillez sélectionner un cycle"
 			},
 			"toast": {
 				"createSuccess": "Programme créé avec succès",
@@ -852,6 +898,31 @@
 			"delete": {
 				"title": "Supprimer le programme",
 				"message": "Êtes-vous sûr de vouloir supprimer ce programme ?"
+			},
+			"options": {
+				"cancelEdit": "Annuler",
+				"delete": "Supprimer l'option",
+				"edit": "Modifier l'option",
+				"editing": "Modification de l'option {{name}}",
+				"empty": "Aucune option pour le moment. Ajoutez-en une ci-dessous.",
+				"form": {
+					"code": "Code",
+					"description": "Description",
+					"name": "Nom de l'option",
+					"submit": "Ajouter l'option",
+					"updateSubmit": "Enregistrer"
+				},
+				"manage": "Gérer les options",
+				"subtitle": "Les options représentent les parcours ou spécialisations disponibles pour ce programme.",
+				"title": "Gérer les options for {{value}}",
+				"toast": {
+					"create": "Option ajoutée",
+					"createError": "Impossible d'ajouter l'option",
+					"delete": "Option supprimée",
+					"deleteError": "Impossible de supprimer l'option",
+					"update": "Option mise à jour",
+					"updateError": "Impossible de mettre à jour l'option"
+				}
 			}
 		},
 		"exams": {
@@ -1250,6 +1321,7 @@
 				"description": "Examens approuvés sans rattrapage programmé. Sélectionnez les examens pour lesquels programmer un rattrapage.",
 				"selectAll": "Sélectionner tous les examens",
 				"noExams": "Aucun examen approuvé sans rattrapage trouvé pour les critères sélectionnés.",
+				"examCount": "{{count}} examens",
 				"examCount_one": "{{count}} examen",
 				"examCount_other": "{{count}} examens"
 			},
@@ -1317,7 +1389,8 @@
 					"sheetName": "Notes examen",
 					"filePrefix": "notes-examen",
 					"scoreColumn": "Note"
-				}
+				},
+				"export": "Exporter les notes"
 			},
 			"pv": {
 				"sheetName": "Procès-verbal",
@@ -1381,7 +1454,10 @@
 				"placeOfBirth": "Lieu de naissance",
 				"genderUnknown": "Non renseigné",
 				"actions": "Actions",
-				"viewLedger": "Crédits"
+				"viewLedger": "Crédits",
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"registrationNumber": "N° matricule"
 			},
 			"gender": {
 				"male": "Homme",
@@ -1642,6 +1718,8 @@
 			"subtitle": "Surveillez les cohortes et contrôlez les fenêtres d'inscription.",
 			"selectYear": "Sélectionner une année académique",
 			"selectClass": "Sélectionner une classe",
+			"selectSemester": "Sélectionner un semestre",
+			"allSemesters": "Tous les semestres",
 			"filters": {
 				"year": "Année académique",
 				"class": "Classe",
@@ -1650,7 +1728,8 @@
 				"cycle": "Cycle : {{value}}",
 				"cycleLevel": "Niveau : {{value}}",
 				"option": "Option : {{value}}",
-				"window": "Fenêtre : {{status}}"
+				"window": "Fenêtre : {{status}}",
+				"semester": "Semestre"
 			},
 			"listTitle": "Inscriptions",
 			"fields": {
@@ -1747,7 +1826,8 @@
 				"code": "Code",
 				"description": "Description",
 				"credits": "ECTS",
-				"programCycle": "Cycle : {{value}}"
+				"programCycle": "Cycle : {{value}}",
+				"programFaculty": "Faculté : {{value}}"
 			},
 			"semesters": {
 				"annual": "Annuel",
@@ -1838,7 +1918,8 @@
 				"deleted": "Unité supprimée avec succès",
 				"prereqSaved": "Prérecquis enregistrés",
 				"programRequired": "Sélectionnez d'abord un programme"
-			}
+			},
+			"programFacultySummary": "Faculté : {{value}}"
 		},
 		"promotionRules": {
 			"title": "Règles de passage",
@@ -2068,13 +2149,92 @@
 	},
 	"teacher": {
 		"exams": {
+			"title": "Gestion des évaluations",
+			"subtitle": "Créez et gérez les évaluations de cours",
+			"actions": {
+				"add": "Ajouter une évaluation",
+				"reviewGrades": "Consulter les notes"
+			},
+			"empty": {
+				"title": "Aucune évaluation",
+				"description": "Commencez par ajouter votre première évaluation."
+			},
+			"table": {
+				"name": "Nom",
+				"course": "Cours",
+				"class": "Classe",
+				"type": "Type",
+				"date": "Date",
+				"percentage": "Pondération",
+				"percentageValue": "{{value}} %",
+				"status": "Statut"
+			},
+			"status": {
+				"draft": "Brouillon",
+				"scheduled": "Planifiée",
+				"submitted": "Soumise",
+				"approved": "Approuvée",
+				"rejected": "Rejetée",
+				"locked": "Verrouillée",
+				"open": "Ouverte"
+			},
+			"form": {
+				"createTitle": "Ajouter une évaluation",
+				"editTitle": "Modifier une évaluation",
+				"classCourseLabel": "Cours associé",
+				"classCoursePlaceholder": "Sélectionner un cours",
+				"nameLabel": "Nom de l'évaluation",
+				"namePlaceholder": "Saisir le nom de l'évaluation",
+				"typeLabel": "Type",
+				"typePlaceholder": "ex. Interro, Finale",
+				"dateLabel": "Date",
+				"percentageLabel": "Pondération (1-100)",
+				"percentagePlaceholder": "Saisir la pondération",
+				"submit": "Enregistrer l'évaluation"
+			},
+			"validation": {
+				"name": "Le nom doit comporter au moins 2 caractères",
+				"type": "Le type doit comporter au moins 2 caractères",
+				"date": "La date est obligatoire",
+				"percentage": {
+					"min": "La pondération doit être au minimum de 1",
+					"max": "La pondération ne peut pas dépasser 100"
+				},
+				"classCourse": "Veuillez sélectionner un cours"
+			},
+			"toast": {
+				"createSuccess": "Évaluation créée avec succès",
+				"createError": "Impossible de créer l'évaluation",
+				"updateSuccess": "Évaluation mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'évaluation",
+				"deleteSuccess": "Évaluation supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'évaluation",
+				"retakeError": "Impossible de créer l'examen de rattrapage",
+				"retakeSuccess": "Examen de rattrapage créé avec succès"
+			},
+			"delete": {
+				"title": "Supprimer l'évaluation",
+				"message": "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action retirera également les notes associées."
+			},
+			"filters": {
+				"academicYear": "Année académique",
+				"class": "Classe",
+				"classPlaceholder": "Toutes les classes",
+				"search": "Recherche",
+				"searchPlaceholder": "Recherche exams, classes, or courses...",
+				"semester": "Semestre",
+				"semesterPlaceholder": "Tous les semestres"
+			},
+			"pagination": {
+				"loadMore": "Charger plus d'évaluations"
+			},
+			"scoringPolicy": {
+				"best_of": "Conserver la meilleure note",
+				"replace": "Remplacer la note originale"
+			},
 			"sessionType": {
 				"normal": "Normale",
 				"retake": "Rattrapage"
-			},
-			"scoringPolicy": {
-				"replace": "Remplace",
-				"best_of": "Meilleure note"
 			}
 		},
 		"courses": {
@@ -2088,10 +2248,25 @@
 			"empty": {
 				"title": "Aucun cours attribué",
 				"description": "Vous n'avez aucun cours attribué pour l'année académique active."
+			},
+			"manage": {
+				"form": {
+					"codeLabel": "Code du cours",
+					"codePlaceholder": "INF111",
+					"programCycleSummary": "Cycle: {{value}}"
+				},
+				"table": {
+					"code": "Code",
+					"cycleInfo": "Cycle: {{value}}"
+				},
+				"validation": {
+					"code": "Code is required"
+				}
 			}
 		},
 		"courses.manage": {
 			"title": "Gestion des cours",
+			"subtitle": "Gérez les cours par programme et par faculté",
 			"actions": {
 				"add": "Ajouter un cours"
 			},
@@ -2262,7 +2437,17 @@
 			},
 			"actions": {
 				"label": "Exporter",
-				"export": "Exporter les notes"
+				"export": "Exporter les notes",
+				"combinedExport": "Télécharger le fichier combiné",
+				"combinedLabel": "Notes combinées",
+				"examGroup": {
+					"filePrefix": "notes-examen",
+					"label": "Exports spécifiques par examen ({{count}})",
+					"scoreColumn": "Note",
+					"sheetName": "Notes examen"
+				},
+				"pvExport": "Télécharger le PV (Excel)",
+				"pvLabel": "Procès-verbal"
 			},
 			"exams": {
 				"title": "Sélectionnez les évaluations à inclure",
@@ -2279,7 +2464,37 @@
 			},
 			"sheetName": "Notes",
 			"filePrefix": "notes",
-			"unknownClass": "classe-inconnue"
+			"unknownClass": "classe-inconnue",
+			"filtersCard": {
+				"description": "Choisissez l'année académique et la classe avant d'exporter.",
+				"title": "Configuration"
+			},
+			"pv": {
+				"filePrefix": "pv-notes",
+				"legend": {
+					"headers": {
+						"course": "Cours",
+						"exam": "Examen",
+						"weight": "Pondération"
+					},
+					"title": "Légende des évaluations"
+				},
+				"sheetName": "Procès-verbal",
+				"stats": {
+					"average": "Moyenne de promotion",
+					"notValidated": "Non validés",
+					"students": "Étudiants",
+					"successRate": "Taux de réussite",
+					"title": "Statistiques",
+					"validated": "Validés"
+				},
+				"table": {
+					"average": "Moyenne",
+					"fullName": "Nom complet",
+					"rank": "Rang",
+					"title": "Tableau des résultats"
+				}
+			}
 		},
 		"programs": {
 			"title": "Gestion des programmes",
@@ -2296,7 +2511,8 @@
 				"faculty": "Faculté",
 				"cycle": "Cycle",
 				"description": "Description",
-				"noDescription": "Aucune description"
+				"noDescription": "Aucune description",
+				"code": "Code"
 			},
 			"form": {
 				"createTitle": "Ajouter un programme",
@@ -2310,12 +2526,15 @@
 				"selectFacultyFirst": "Sélectionnez une faculté pour charger les cycles disponibles.",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Description optionnelle (objectifs, axes)",
-				"submit": "Enregistrer le programme"
+				"submit": "Enregistrer le programme",
+				"codeLabel": "Code du programme",
+				"codePlaceholder": "INF-LIC"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
 				"faculty": "Veuillez sélectionner une faculté",
-				"cycle": "Veuillez sélectionner un cycle"
+				"cycle": "Veuillez sélectionner un cycle",
+				"code": "Code is required"
 			},
 			"toast": {
 				"createSuccess": "Programme créé avec succès",
@@ -2409,7 +2628,8 @@
 				"class": "Classe",
 				"program": "Programme",
 				"course": "Cours",
-				"teacher": "Enseignant"
+				"teacher": "Enseignant",
+				"code": "Code"
 			},
 			"form": {
 				"createTitle": "Nouvelle affectation de cours",
@@ -2420,12 +2640,17 @@
 				"coursePlaceholder": "Sélectionner un cours",
 				"teacherLabel": "Enseignant",
 				"teacherPlaceholder": "Sélectionner un enseignant",
-				"submit": "Enregistrer l'affectation"
+				"submit": "Enregistrer l'affectation",
+				"codeLabel": "Code",
+				"codePlaceholder": "INF11-CLS24-01",
+				"semesterLabel": "Semestre",
+				"semesterPlaceholder": "Sélectionner un semestre"
 			},
 			"validation": {
 				"class": "Veuillez sélectionner une classe",
 				"course": "Veuillez sélectionner un cours",
-				"teacher": "Veuillez sélectionner un enseignant"
+				"teacher": "Veuillez sélectionner un enseignant",
+				"code": "Veuillez renseigner un code"
 			},
 			"toast": {
 				"createSuccess": "Affectation créée avec succès",
@@ -2479,79 +2704,24 @@
 				"description": "Aucun étudiant dans cette classe."
 			}
 		},
-		"exams": {
-			"title": "Gestion des évaluations",
-			"subtitle": "Créez et gérez les évaluations de cours",
-			"actions": {
-				"add": "Ajouter une évaluation"
-			},
-			"empty": {
-				"title": "Aucune évaluation",
-				"description": "Commencez par ajouter votre première évaluation."
-			},
-			"table": {
-				"name": "Nom",
-				"course": "Cours",
-				"class": "Classe",
-				"type": "Type",
-				"date": "Date",
-				"percentage": "Pondération",
-				"percentageValue": "{{value}} %",
-				"status": "Statut"
-			},
-			"status": {
-				"draft": "Brouillon",
-				"scheduled": "Planifiée",
-				"submitted": "Soumise",
-				"approved": "Approuvée",
-				"rejected": "Rejetée",
-				"locked": "Verrouillée",
-				"open": "Ouverte"
-			},
-			"form": {
-				"createTitle": "Ajouter une évaluation",
-				"editTitle": "Modifier une évaluation",
-				"classCourseLabel": "Cours associé",
-				"classCoursePlaceholder": "Sélectionner un cours",
-				"nameLabel": "Nom de l'évaluation",
-				"namePlaceholder": "Saisir le nom de l'évaluation",
-				"typeLabel": "Type",
-				"typePlaceholder": "ex. Interro, Finale",
-				"dateLabel": "Date",
-				"percentageLabel": "Pondération (1-100)",
-				"percentagePlaceholder": "Saisir la pondération",
-				"submit": "Enregistrer l'évaluation"
-			},
-			"validation": {
-				"name": "Le nom doit comporter au moins 2 caractères",
-				"type": "Le type doit comporter au moins 2 caractères",
-				"date": "La date est obligatoire",
-				"percentage": {
-					"min": "La pondération doit être au minimum de 1",
-					"max": "La pondération ne peut pas dépasser 100"
-				},
-				"classCourse": "Veuillez sélectionner un cours"
-			},
-			"toast": {
-				"createSuccess": "Évaluation créée avec succès",
-				"createError": "Impossible de créer l'évaluation",
-				"updateSuccess": "Évaluation mise à jour avec succès",
-				"updateError": "Impossible de mettre à jour l'évaluation",
-				"deleteSuccess": "Évaluation supprimée avec succès",
-				"deleteError": "Impossible de supprimer l'évaluation"
-			},
-			"delete": {
-				"title": "Supprimer l'évaluation",
-				"message": "Êtes-vous sûr de vouloir supprimer cette évaluation ? Cette action retirera également les notes associées."
-			}
-		},
 		"attendance": {
 			"none": "Aucune alerte pour le moment.",
 			"placeholder": "Message",
 			"send": "Envoyer l'alerte",
 			"toast": {
 				"sent": "Alerte programmée"
-			}
+			},
+			"atRisk": "Cohorte à risque",
+			"atRiskDesc": "Le taux d'absence dépasse le seuil pour la semaine 6.",
+			"broadcast": "Diffusion",
+			"broadcastDesc": "Envoyez des rappels automatiques aux étudiants et aux tuteurs.",
+			"latest": "Dernière diffusion",
+			"latestDesc": "Rappels de présence programmés pour demain matin.",
+			"lowEngagement": "Faible engagement",
+			"lowEngagementDesc": "La participation aux quiz est tombée en dessous de 50%.",
+			"openAlerts": "Alertes ouvertes",
+			"subtitle": "Signalez les cohortes à risque et diffusez des mises à jour",
+			"title": "Alertes de présence"
 		},
 		"workflow": {
 			"title": "Workflow d'examens",
@@ -2566,6 +2736,65 @@
 			"toast": {
 				"submitted": "Examen soumis",
 				"locked": "Examen verrouillé"
+			}
+		},
+		"retake": {
+			"actions": {
+				"createRetake": "Créer un examen de rattrapage",
+				"viewEligibility": "Voir l'éligibilité"
+			},
+			"createRetake": {
+				"date": "Rattrapage Date",
+				"parentExam": "Examen original",
+				"scoringPolicy": "Politique de notation",
+				"scoringPolicyHelp": "Comment calculer la note finale après le rattrapage",
+				"subtitle": "Créez une session de rattrapage liée à l'examen original",
+				"title": "Créer un examen de rattrapage"
+			},
+			"eligible": "Éligibles",
+			"eligibleCount": "{{count}} éligible(s)",
+			"empty": {
+				"description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants.",
+				"title": "Aucun étudiant trouvé"
+			},
+			"featureDisabled": "Rattrapage feature is currently disabled",
+			"ineligible": "Non éligibles",
+			"ineligibleCount": "{{count}} non éligible(s)",
+			"override": {
+				"confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?",
+				"confirmTitle": "Confirmer la dérogation",
+				"forceEligible": "Forcer éligible",
+				"forceIneligible": "Bloquer",
+				"reason": "Motif de la dérogation",
+				"reasonPlaceholder": "Saisissez le motif de la dérogation...",
+				"remove": "Supprimer la dérogation"
+			},
+			"reasons": {
+				"ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
+				"FAILED_EXAM": "Non validés exam",
+				"NO_GRADE": "Aucune note enregistrée",
+				"OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
+				"OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)",
+				"PASSED_EXAM": "Validés exam"
+			},
+			"selectExam": "Sélectionnez un examen approuvé",
+			"selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
+			"subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
+			"table": {
+				"attempt": "Tentative",
+				"grade": "Note actuelle",
+				"override": "Dérogation",
+				"reasons": "Raisons",
+				"registrationNumber": "Matricule",
+				"status": "Statut",
+				"student": "Étudiant"
+			},
+			"title": "Rattrapage Eligibility",
+			"toast": {
+				"overrideError": "Impossible d'appliquer la dérogation",
+				"overrideSuccess": "Dérogation applied successfully",
+				"removeError": "Impossible de supprimer la dérogation",
+				"removeSuccess": "Dérogation removed"
 			}
 		}
 	},
@@ -2583,7 +2812,21 @@
 			},
 			"notifications": "Notifications du workflow",
 			"notificationsEmpty": "Aucune notification",
-			"windows": "Fenêtres d'inscription"
+			"windows": "Fenêtres d'inscription",
+			"alerts": "Alertes de présence",
+			"enrollmentWindows": "Fenêtres d'inscription",
+			"escalations": "Escalades uniquement",
+			"gradeValidations": "Validations de notes",
+			"inReview": "En révision",
+			"inReviewDesc": "Vérifiez les pondérations, les calendriers et les prérequis.",
+			"locked": "Verrouillé",
+			"lockedDesc": "Les examens approuvés sont verrouillés et partagés avec les étudiants.",
+			"notificationsDesc": "Les alertes sont propagées automatiquement aux enseignants et étudiants.",
+			"openClose": "Ouvrir/fermer",
+			"queueDesc": "Suivez les soumissions nécessitant la supervision du doyen.",
+			"realTime": "Temps réel",
+			"submitted": "Soumis",
+			"submittedDesc": "Les enseignants ont soumis des examens pour validation."
 		}
 	},
 	"student": {

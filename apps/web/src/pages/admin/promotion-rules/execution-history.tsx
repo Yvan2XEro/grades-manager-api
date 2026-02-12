@@ -10,9 +10,11 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
 	Dialog,
 	DialogContent,
@@ -64,11 +66,15 @@ export function ExecutionHistoryPage() {
 	const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(
 		null,
 	);
+	const [filterYear, setFilterYear] = useState<string | null>(null);
 
 	// Fetch executions
 	const { data: executionsData, isLoading } = useQuery({
-		queryKey: ["promotionExecutions"],
-		queryFn: async () => trpcClient.promotionRules.listExecutions.query({}),
+		queryKey: ["promotionExecutions", filterYear],
+		queryFn: async () =>
+			trpcClient.promotionRules.listExecutions.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+			}),
 	});
 
 	// Fetch execution details
@@ -101,6 +107,20 @@ export function ExecutionHistoryPage() {
 					<p className="mt-1 text-muted-foreground">
 						{t("admin.promotionRules.history.subtitle")}
 					</p>
+				</div>
+			</div>
+
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
 				</div>
 			</div>
 
