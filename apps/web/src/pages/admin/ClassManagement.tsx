@@ -4,10 +4,12 @@ import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
+	Eye,
 	FileSpreadsheet,
 	FileText,
 	Pencil,
 	Plus,
+	Search,
 	Trash2,
 	Users,
 } from "lucide-react";
@@ -19,6 +21,7 @@ import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -30,10 +33,19 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { generateClassCode } from "@/lib/code-generator";
+import { Badge } from "@/components/ui/badge";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -43,6 +55,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -129,15 +142,24 @@ export default function ClassManagement() {
 	const [programSearch, setProgramSearch] = useState("");
 	const [programOptionSearch, setProgramOptionSearch] = useState("");
 	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+	const [previewClass, setPreviewClass] = useState<Class | null>(null);
+	const [previewStudents, setPreviewStudents] = useState<any[]>([]);
+	const [previewLoading, setPreviewLoading] = useState(false);
+	const [studentSearch, setStudentSearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
 	const { data: classes, isLoading } = useQuery({
-		queryKey: ["classes"],
+		queryKey: ["classes", filterYear, filterSemester],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
+			const { items } = await trpcClient.classes.list.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+				...(filterSemester ? { semesterId: filterSemester } : {}),
+			});
 			// TODO: N+1 Query Problem - This fetches students for each class separately
 			// Better solution: Modify backend classes.list to include studentCount
 			// or create a batch endpoint that returns classes with student counts
@@ -406,6 +428,28 @@ export default function ClassManagement() {
 		}
 	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
 
+	const handlePreviewStudents = async (classData: Class) => {
+		setPreviewClass(classData);
+		setPreviewLoading(true);
+		setStudentSearch("");
+		try {
+			const studentsData = await trpcClient.students.list.query({
+				classId: classData.id,
+				limit: 1000,
+			});
+			const sorted = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+			setPreviewStudents(sorted);
+		} catch (error) {
+			console.error("Error fetching students:", error);
+			setPreviewStudents([]);
+		} finally {
+			setPreviewLoading(false);
+		}
+	};
+
 	const handleExportStudentListPDF = async (classData: Class) => {
 		try {
 			// Fetch institution info
@@ -464,18 +508,24 @@ export default function ClassManagement() {
 				74,
 			);
 
+			// Sort students alphabetically by last name, then first name
+			const sortedStudents = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+
 			// Student table
-			const tableData = studentsData.items.map((student, index) => [
+			const tableData = sortedStudents.map((student, index) => [
 				index + 1,
 				student.registrationNumber || "-",
-				student.lastName,
-				student.firstName,
-				student.dateOfBirth
-					? new Date(student.dateOfBirth).toLocaleDateString()
+				student.profile.lastName,
+				student.profile.firstName,
+				student.profile.dateOfBirth
+					? new Date(student.profile.dateOfBirth).toLocaleDateString()
 					: "-",
-				student.gender === "M"
+				student.profile.gender === "male"
 					? t("common.gender.male", { defaultValue: "M" })
-					: student.gender === "F"
+					: student.profile.gender === "female"
 						? t("common.gender.female", { defaultValue: "F" })
 						: "-",
 			]);
@@ -600,18 +650,24 @@ export default function ClassManagement() {
 				],
 			];
 
+			// Sort students alphabetically by last name, then first name
+			const sortedStudents = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+
 			// Prepare student data rows
-			const dataRows = studentsData.items.map((student, index) => [
+			const dataRows = sortedStudents.map((student, index) => [
 				index + 1,
 				student.registrationNumber || "-",
-				student.lastName,
-				student.firstName,
-				student.dateOfBirth
-					? new Date(student.dateOfBirth).toLocaleDateString()
+				student.profile.lastName,
+				student.profile.firstName,
+				student.profile.dateOfBirth
+					? new Date(student.profile.dateOfBirth).toLocaleDateString()
 					: "-",
-				student.gender === "M"
+				student.profile.gender === "male"
 					? t("common.gender.male", { defaultValue: "M" })
-					: student.gender === "F"
+					: student.profile.gender === "female"
 						? t("common.gender.female", { defaultValue: "F" })
 						: "-",
 			]);
@@ -828,6 +884,31 @@ export default function ClassManagement() {
 				</Button>
 			</div>
 
+			<div className="mb-4 flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => setFilterSemester(v)}
+					/>
+				</div>
+			</div>
+
 			<Card className="overflow-x-auto">
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
@@ -955,6 +1036,18 @@ export default function ClassManagement() {
 												})}
 											>
 												<Pencil className="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												onClick={() => handlePreviewStudents(cls)}
+												className="btn btn-square btn-sm btn-ghost"
+												title={t("admin.classes.preview.button", {
+													defaultValue: "View student list",
+												})}
+											>
+												<Eye className="h-4 w-4" />
 											</Button>
 											<Button
 												type="button"
@@ -1239,6 +1332,150 @@ export default function ClassManagement() {
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
+
+			<Dialog
+				open={!!previewClass}
+				onOpenChange={(open) => {
+					if (!open) {
+						setPreviewClass(null);
+						setPreviewStudents([]);
+						setStudentSearch("");
+					}
+				}}
+			>
+				<DialogContent className="flex h-[80vh] w-full flex-col sm:max-w-4xl">
+					<DialogHeader>
+						<DialogTitle>
+							{previewClass?.name ?? ""}{" "}
+							{!previewLoading && (
+								<Badge variant="secondary" className="ml-2">
+									{previewStudents.length}{" "}
+									{t("admin.classes.students", {
+										defaultValue: "students",
+									})}
+								</Badge>
+							)}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.classes.previewDescription", {
+								defaultValue:
+									"List of students enrolled in this class",
+							})}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="relative shrink-0">
+						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder={t("admin.classes.searchStudents", {
+								defaultValue: "Search students...",
+							})}
+							value={studentSearch}
+							onChange={(e) => setStudentSearch(e.target.value)}
+							className="pl-9"
+						/>
+					</div>
+
+					{previewLoading ? (
+						<div className="flex items-center justify-center py-12">
+							<Spinner />
+						</div>
+					) : previewStudents.length === 0 ? (
+						<div className="py-12 text-center text-muted-foreground">
+							<Users className="mx-auto mb-2 h-10 w-10" />
+							<p>
+								{t("admin.classes.noStudents", {
+									defaultValue:
+										"No students enrolled in this class",
+								})}
+							</p>
+						</div>
+					) : (
+						<ScrollArea className="min-h-0 flex-1">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-12">#</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.registration", {
+												defaultValue: "Reg. Number",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.lastName", {
+												defaultValue: "Last Name",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.firstName", {
+												defaultValue: "First Name",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.birthDate", {
+												defaultValue: "Birth Date",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.gender", {
+												defaultValue: "Gender",
+											})}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{previewStudents
+										.filter((s) => {
+											if (!studentSearch) return true;
+											const q = studentSearch.toLowerCase();
+											return (
+												(s.profile?.lastName ?? "")
+													.toLowerCase()
+													.includes(q) ||
+												(s.profile?.firstName ?? "")
+													.toLowerCase()
+													.includes(q) ||
+												(s.registrationNumber ?? "")
+													.toLowerCase()
+													.includes(q)
+											);
+										})
+										.map((student, idx) => (
+											<TableRow key={student.id}>
+												<TableCell className="text-muted-foreground">
+													{idx + 1}
+												</TableCell>
+												<TableCell className="font-mono text-sm">
+													{student.registrationNumber ?? "—"}
+												</TableCell>
+												<TableCell className="font-medium">
+													{student.profile?.lastName ?? "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.firstName ?? "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.dateOfBirth
+														? new Date(
+																student.profile.dateOfBirth,
+															).toLocaleDateString()
+														: "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.gender === "male"
+														? "M"
+														: student.profile?.gender === "female"
+															? "F"
+															: student.profile?.gender ?? "—"}
+												</TableCell>
+											</TableRow>
+										))}
+								</TableBody>
+							</Table>
+						</ScrollArea>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

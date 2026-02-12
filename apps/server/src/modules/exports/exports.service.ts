@@ -291,8 +291,14 @@ export class ExportsService {
 			});
 		}
 
+		// Sort students alphabetically by last name, then first name
+		const sortedStudents = [...data.students].sort((a: any, b: any) =>
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		);
+
 		// Process students
-		const students = data.students.map((student: any, index: number) => {
+		const students = sortedStudents.map((student: any, index: number) => {
 			const ueGrades: any[] = [];
 
 			// For each UE, calculate student's grades
@@ -459,7 +465,13 @@ export class ExportsService {
 		templateConfig: TemplateConfiguration,
 		observations?: string,
 	) {
-		const grades = data.grades.map((grade: any, index: number) => {
+		// Sort grades alphabetically by student last name, then first name
+		const sortedGrades = [...data.grades].sort((a: any, b: any) =>
+			(a.studentRef.profile.lastName ?? "").localeCompare(b.studentRef.profile.lastName ?? "") ||
+			(a.studentRef.profile.firstName ?? "").localeCompare(b.studentRef.profile.firstName ?? ""),
+		);
+
+		const grades = sortedGrades.map((grade: any, index: number) => {
 			const score = grade.score ? Number(grade.score) : null;
 
 			return {
@@ -532,8 +544,14 @@ export class ExportsService {
 	) {
 		const { teachingUnit, classCourses, students } = data;
 
+		// Sort students alphabetically by last name, then first name
+		const sortedStudents = [...students].sort((a: any, b: any) =>
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		);
+
 		// Process students
-		const studentGrades = students.map((student: any, index: number) => {
+		const studentGrades = sortedStudents.map((student: any, index: number) => {
 			const courseGrades = classCourses.map((cc: any) => {
 				// Convert exams to ExamWithRetake format
 				const exams = (cc.exams || []).map((exam: any) => ({

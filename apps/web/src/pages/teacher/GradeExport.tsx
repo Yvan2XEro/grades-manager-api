@@ -58,12 +58,14 @@ interface StudentExport {
 
 interface StudentItem {
 	id: string;
-	firstName: string;
-	lastName: string;
 	registrationNumber: string;
-	birthDate: string | null;
-	birthPlace: string | null;
-	gender: string | null;
+	profile: {
+		firstName: string;
+		lastName: string;
+		dateOfBirth: string | null;
+		placeOfBirth: string | null;
+		gender: string | null;
+	};
 }
 
 interface GradeItem {
@@ -177,18 +179,24 @@ export default function GradeExport() {
 					);
 					return {
 						id: s.id,
-						first_name: s.firstName,
-						last_name: s.lastName,
+						first_name: s.profile.firstName,
+						last_name: s.profile.lastName,
 						registration_number: s.registrationNumber,
-						birth_date: s.birthDate ?? null,
-						birth_place: s.birthPlace ?? null,
-						gender: s.gender ?? null,
+						birth_date: s.profile.dateOfBirth ?? null,
+						birth_place: s.profile.placeOfBirth ?? null,
+						gender: s.profile.gender ?? null,
 						grades,
 					} as StudentExport;
 				}),
 			);
 
-			const exportData = students.map((student) => {
+			// Sort students alphabetically
+			const sortedStudents = students.sort((a, b) =>
+				a.last_name.localeCompare(b.last_name) ||
+				a.first_name.localeCompare(b.first_name),
+			);
+
+			const exportData = sortedStudents.map((student) => {
 				const courseGrades = new Map<string, number[]>();
 				student.grades.forEach((grade) => {
 					const courseName = grade.exam.class_course.course.name;

@@ -555,7 +555,13 @@ export default function GradeExport() {
 				headerRows.push([""]);
 			}
 
-			const exportData = students.map((student) => {
+			// Sort students alphabetically
+			const sortedStudents = [...students].sort((a, b) =>
+				a.last_name.localeCompare(b.last_name) ||
+				a.first_name.localeCompare(b.first_name),
+			);
+
+			const exportData = sortedStudents.map((student) => {
 				// Build exam list from student's grades for retake resolution
 				const studentExamItems: ExamItem[] = student.grades.map((g) => ({
 					id: g.exam.id,
@@ -1153,7 +1159,13 @@ export default function GradeExport() {
 					headerRows.push([""]);
 				}
 
-				const exportData = students.map((student) => {
+				// Sort students alphabetically
+				const sortedStudents = [...students].sort((a, b) =>
+					a.last_name.localeCompare(b.last_name) ||
+					a.first_name.localeCompare(b.first_name),
+				);
+
+				const exportData = sortedStudents.map((student) => {
 					const grade = student.grades.find((g) => g.exam.id === exam.id);
 					return {
 						[t("admin.gradeExport.columns.lastName")]: student.last_name,
