@@ -2,3 +2,6 @@
 root = "./src"
 preload = "./src/lib/test-setup.ts"
 coverage = true
+
+[test.env]
+NODE_ENV = "test"
