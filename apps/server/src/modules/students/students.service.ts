@@ -152,12 +152,10 @@ export async function createStudent(
 
 		// Register transfer credits in student credit ledger if any
 		if (input.transferCredits && input.transferCredits > 0) {
-			await studentCreditLedgerService.applyDelta(
+			await studentCreditLedgerService.addTransferCredits(
 				studentId,
 				klass.academicYear,
-				0, // deltaProgress = 0 (transfer credits are already earned, not in progress)
-				input.transferCredits, // deltaEarned = transfer credits
-				60, // Default required credits (will be updated based on class requirements)
+				input.transferCredits,
 			);
 		}
 		const created = await repo.findById(studentId, institutionId);
@@ -278,10 +276,9 @@ export async function bulkCreateStudents(
 	}
 
 	for (const entry of pendingLedgerCredits) {
-		await studentCreditLedgerService.applyDelta(
+		await studentCreditLedgerService.addTransferCredits(
 			entry.studentId,
 			klass.academicYear,
-			0,
 			entry.credits,
 		);
 	}
@@ -309,8 +306,7 @@ export async function updateStudent(
 				lastName: data.profile.lastName ?? existing.profile.lastName,
 				primaryEmail:
 					data.profile.primaryEmail ?? existing.profile.primaryEmail,
-				dateOfBirth:
-					data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
+				dateOfBirth: data.profile.dateOfBirth ?? existing.profile.dateOfBirth,
 				placeOfBirth:
 					data.profile.placeOfBirth ?? existing.profile.placeOfBirth,
 				gender: data.profile.gender ?? existing.profile.gender,
@@ -333,10 +329,7 @@ export async function updateStudent(
 			payload.registrationNumber = data.registrationNumber;
 		}
 		if (data.classId) {
-			const newClass = await classesRepo.findById(
-				data.classId,
-				institutionId,
-			);
+			const newClass = await classesRepo.findById(data.classId, institutionId);
 			if (!newClass) throw new TRPCError({ code: "NOT_FOUND" });
 			payload.institutionId = newClass.institutionId;
 			await repo.update(id, payload, institutionId);

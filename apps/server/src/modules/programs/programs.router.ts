@@ -31,9 +31,7 @@ export const router = createRouter({
 		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.listPrograms(input, ctx.institution.id),
-		),
+		.query(({ ctx, input }) => service.listPrograms(input, ctx.institution.id)),
 	getById: protectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

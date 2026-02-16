@@ -241,9 +241,7 @@ export default function ExamManagement() {
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c.name]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c.name]));
-	const classCourseMap = new Map(
-		(classCourses ?? []).map((cc) => [cc.id, cc]),
-	);
+	const classCourseMap = new Map((classCourses ?? []).map((cc) => [cc.id, cc]));
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ExamFormData) => {
@@ -357,7 +355,10 @@ export default function ExamManagement() {
 		mutationFn: async ({
 			examId,
 			status,
-		}: { examId: string; status: "approved" | "rejected" }) => {
+		}: {
+			examId: string;
+			status: "approved" | "rejected";
+		}) => {
 			await trpcClient.exams.validate.mutate({ examId, status });
 		},
 		onSuccess: (_, variables) => {
@@ -428,12 +429,8 @@ export default function ExamManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">
-						{t("admin.exams.title")}
-					</h1>
-					<p className="text-muted-foreground">
-						{t("admin.exams.subtitle")}
-					</p>
+					<h1 className="font-semibold text-2xl">{t("admin.exams.title")}</h1>
+					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
 				<Button
 					onClick={() => {
@@ -452,9 +449,7 @@ export default function ExamManagement() {
 				<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 					<div>
 						<CardTitle>{t("admin.exams.title")}</CardTitle>
-						<CardDescription>
-							{t("admin.exams.subtitle")}
-						</CardDescription>
+						<CardDescription>{t("admin.exams.subtitle")}</CardDescription>
 					</div>
 					<Button
 						onClick={() => {
@@ -472,14 +467,10 @@ export default function ExamManagement() {
 					<div className="mb-6 flex flex-row-reverse items-center gap-4">
 						<div className="flex items-center gap-3">
 							<div className="flex flex-col gap-2">
-								<Label>
-									{t("admin.exams.filters.academicYear")}
-								</Label>
+								<Label>{t("admin.exams.filters.academicYear")}</Label>
 								<AcademicYearSelect
 									value={academicYearId}
-									onChange={(value) =>
-										setAcademicYearId(value)
-									}
+									onChange={(value) => setAcademicYearId(value)}
 									disabled={isLoadingExams}
 								/>
 							</div>
@@ -493,13 +484,8 @@ export default function ExamManagement() {
 								/>
 							</div>
 							<div className="flex flex-col gap-2">
-								<Label>
-									{t("admin.exams.filters.semester")}
-								</Label>
-								<SemesterSelect
-									value={semesterId}
-									onChange={setSemesterId}
-								/>
+								<Label>{t("admin.exams.filters.semester")}</Label>
+								<SemesterSelect value={semesterId} onChange={setSemesterId} />
 							</div>
 						</div>
 
@@ -508,9 +494,7 @@ export default function ExamManagement() {
 							<DebouncedSearchField
 								value={searchTerm}
 								onChange={setSearchTerm}
-								placeholder={t(
-									"admin.exams.filters.searchPlaceholder",
-								)}
+								placeholder={t("admin.exams.filters.searchPlaceholder")}
 								disabled={!academicYearId}
 							/>
 						</div>
@@ -525,9 +509,7 @@ export default function ExamManagement() {
 								<EmptyMedia variant="icon">
 									<ClipboardList className="h-8 w-8 text-muted-foreground" />
 								</EmptyMedia>
-								<EmptyTitle>
-									{t("admin.exams.empty.title")}
-								</EmptyTitle>
+								<EmptyTitle>{t("admin.exams.empty.title")}</EmptyTitle>
 								<EmptyDescription>
 									{t("admin.exams.empty.description")}
 								</EmptyDescription>
@@ -552,29 +534,13 @@ export default function ExamManagement() {
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>
-												{t("admin.exams.table.name")}
-											</TableHead>
-											<TableHead>
-												{t("admin.exams.table.course")}
-											</TableHead>
-											<TableHead>
-												{t("admin.exams.table.class")}
-											</TableHead>
-											<TableHead>
-												{t("admin.exams.table.type")}
-											</TableHead>
-											<TableHead>
-												{t("admin.exams.table.date")}
-											</TableHead>
-											<TableHead>
-												{t(
-													"admin.exams.table.percentage",
-												)}
-											</TableHead>
-											<TableHead>
-												{t("admin.exams.table.status")}
-											</TableHead>
+											<TableHead>{t("admin.exams.table.name")}</TableHead>
+											<TableHead>{t("admin.exams.table.course")}</TableHead>
+											<TableHead>{t("admin.exams.table.class")}</TableHead>
+											<TableHead>{t("admin.exams.table.type")}</TableHead>
+											<TableHead>{t("admin.exams.table.date")}</TableHead>
+											<TableHead>{t("admin.exams.table.percentage")}</TableHead>
+											<TableHead>{t("admin.exams.table.status")}</TableHead>
 											<TableHead className="text-right">
 												{t("common.table.actions")}
 											</TableHead>
@@ -582,28 +548,20 @@ export default function ExamManagement() {
 									</TableHeader>
 									<TableBody>
 										{exams.map((exam) => {
-											const classCourse =
-												classCourseMap.get(
-													exam.classCourse,
-												);
+											const classCourse = classCourseMap.get(exam.classCourse);
 											const resolvedCourse =
 												exam.courseName ??
 												(classCourse
-													? courseMap.get(
-															classCourse.course,
-														)
+													? courseMap.get(classCourse.course)
 													: null) ??
 												t("common.labels.notAvailable");
 											const resolvedClass =
 												exam.className ??
 												(classCourse
-													? classMap.get(
-															classCourse.class,
-														)
+													? classMap.get(classCourse.class)
 													: null) ??
 												t("common.labels.notAvailable");
-											const isRetake =
-												exam.sessionType === "retake";
+											const isRetake = exam.sessionType === "retake";
 											return (
 												<TableRow key={exam.id}>
 													<TableCell className="font-medium">
@@ -614,43 +572,27 @@ export default function ExamManagement() {
 																	variant="outline"
 																	className="border-amber-500 text-amber-600"
 																>
-																	{t(
-																		"retakes.badge.retake",
-																	)}
+																	{t("retakes.badge.retake")}
 																</Badge>
 															)}
 														</div>
 													</TableCell>
+													<TableCell>{resolvedCourse}</TableCell>
+													<TableCell>{resolvedClass}</TableCell>
+													<TableCell>{exam.type}</TableCell>
 													<TableCell>
-														{resolvedCourse}
+														{format(new Date(exam.date), "MMM d, yyyy")}
 													</TableCell>
-													<TableCell>
-														{resolvedClass}
-													</TableCell>
-													<TableCell>
-														{exam.type}
-													</TableCell>
-													<TableCell>
-														{format(
-															new Date(exam.date),
-															"MMM d, yyyy",
-														)}
-													</TableCell>
-													<TableCell>
-														{exam.percentage}%
-													</TableCell>
+													<TableCell>{exam.percentage}%</TableCell>
 													<TableCell>
 														<Badge
 															variant="outline"
 															className={
-																exam.status ===
-																"approved"
+																exam.status === "approved"
 																	? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-100"
-																	: exam.status ===
-																		  "submitted"
+																	: exam.status === "submitted"
 																		? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-400/20 dark:text-blue-100"
-																		: exam.status ===
-																			  "rejected"
+																		: exam.status === "rejected"
 																			? "border-red-500 bg-red-50 text-red-700 dark:bg-red-400/20 dark:text-red-100"
 																			: "border-gray-400 bg-gray-50 text-gray-700 dark:bg-gray-400/20 dark:text-gray-100"
 															}
@@ -664,19 +606,14 @@ export default function ExamManagement() {
 																variant="secondary"
 																className="ml-1 bg-amber-100 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100"
 															>
-																{t(
-																	"admin.exams.status.locked",
-																)}
+																{t("admin.exams.status.locked")}
 															</Badge>
 														)}
 													</TableCell>
 													<TableCell className="text-right">
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																>
+																<Button variant="ghost" size="icon-sm">
 																	<MoreHorizontal className="h-4 w-4" />
 																	<span className="sr-only">
 																		{t("common.table.actions")}
@@ -799,9 +736,7 @@ export default function ExamManagement() {
 									>
 										{isFetchingNextPage
 											? t("common.loading")
-											: t(
-													"admin.exams.pagination.loadMore",
-												)}
+											: t("admin.exams.pagination.loadMore")}
 									</Button>
 								</div>
 							) : null}
@@ -824,42 +759,28 @@ export default function ExamManagement() {
 				}
 			>
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-4"
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
 							control={form.control}
 							name="classCourseId"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.exams.form.courseLabel")}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-									>
+									<FormLabel>{t("admin.exams.form.courseLabel")}</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
 										<FormControl>
 											<SelectTrigger
 												id="classCourseId"
 												data-testid="class-course-select"
 											>
 												<SelectValue
-													placeholder={t(
-														"admin.exams.form.coursePlaceholder",
-													)}
+													placeholder={t("admin.exams.form.coursePlaceholder")}
 												/>
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
 											{classCourses?.map((cc) => (
-												<SelectItem
-													key={cc.id}
-													value={cc.id}
-												>
-													{courseMap.get(cc.course)} -{" "}
-													{classMap.get(cc.class)}
+												<SelectItem key={cc.id} value={cc.id}>
+													{courseMap.get(cc.course)} - {classMap.get(cc.class)}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -874,15 +795,11 @@ export default function ExamManagement() {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.exams.form.nameLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.exams.form.nameLabel")}</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
-											placeholder={t(
-												"admin.exams.form.namePlaceholder",
-											)}
+											placeholder={t("admin.exams.form.namePlaceholder")}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -895,17 +812,13 @@ export default function ExamManagement() {
 							name="type"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.exams.form.typeLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.exams.form.typeLabel")}</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
 											id="examType"
 											data-testid="exam-type-select"
-											placeholder={t(
-												"admin.exams.form.typePlaceholder",
-											)}
+											placeholder={t("admin.exams.form.typePlaceholder")}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -918,9 +831,7 @@ export default function ExamManagement() {
 							name="date"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.exams.form.dateLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
 									<FormControl>
 										<Input type="date" {...field} />
 									</FormControl>
@@ -934,9 +845,7 @@ export default function ExamManagement() {
 							name="percentage"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.exams.form.percentageLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.exams.form.percentageLabel")}</FormLabel>
 									<FormControl>
 										<Input
 											type="number"
@@ -945,15 +854,10 @@ export default function ExamManagement() {
 												field.onChange(
 													event.target.value === ""
 														? undefined
-														: Number(
-																event.target
-																	.value,
-															),
+														: Number(event.target.value),
 												)
 											}
-											placeholder={t(
-												"admin.exams.form.percentagePlaceholder",
-											)}
+											placeholder={t("admin.exams.form.percentagePlaceholder")}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -973,10 +877,7 @@ export default function ExamManagement() {
 							>
 								{t("common.actions.cancel")}
 							</Button>
-							<Button
-								type="submit"
-								disabled={form.formState.isSubmitting}
-							>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
 								) : editingExam ? (
@@ -1020,15 +921,12 @@ export default function ExamManagement() {
 					>
 						{retakeParentExam && (
 							<div className="rounded-md border bg-muted/50 p-4">
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									{t("retakes.form.parentExamLabel")}
 								</p>
-								<p className="font-medium">
-									{retakeParentExam.name}
-								</p>
-								<p className="text-sm text-muted-foreground">
-									{retakeParentExam.courseName} -{" "}
-									{retakeParentExam.className}
+								<p className="font-medium">{retakeParentExam.name}</p>
+								<p className="text-muted-foreground text-sm">
+									{retakeParentExam.courseName} - {retakeParentExam.className}
 								</p>
 							</div>
 						)}
@@ -1038,18 +936,14 @@ export default function ExamManagement() {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("retakes.form.nameLabel")}
-									</FormLabel>
+									<FormLabel>{t("retakes.form.nameLabel")}</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
 											placeholder={
 												retakeParentExam
 													? `${retakeParentExam.name} - ${t("retakes.badge.retake")}`
-													: t(
-															"retakes.form.namePlaceholder",
-														)
+													: t("retakes.form.namePlaceholder")
 											}
 										/>
 									</FormControl>
@@ -1063,9 +957,7 @@ export default function ExamManagement() {
 							name="date"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("retakes.form.dateLabel")}
-									</FormLabel>
+									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
 									<FormControl>
 										<Input type="date" {...field} />
 									</FormControl>
@@ -1079,13 +971,8 @@ export default function ExamManagement() {
 							name="scoringPolicy"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("retakes.form.scoringPolicyLabel")}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-									>
+									<FormLabel>{t("retakes.form.scoringPolicyLabel")}</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue />
@@ -1093,25 +980,17 @@ export default function ExamManagement() {
 										</FormControl>
 										<SelectContent>
 											<SelectItem value="replace">
-												{t(
-													"retakes.scoringPolicy.replace",
-												)}
+												{t("retakes.scoringPolicy.replace")}
 											</SelectItem>
 											<SelectItem value="best_of">
-												{t(
-													"retakes.scoringPolicy.best_of",
-												)}
+												{t("retakes.scoringPolicy.best_of")}
 											</SelectItem>
 										</SelectContent>
 									</Select>
-									<p className="text-sm text-muted-foreground">
+									<p className="text-muted-foreground text-sm">
 										{field.value === "replace"
-											? t(
-													"retakes.scoringPolicy.replaceDescription",
-												)
-											: t(
-													"retakes.scoringPolicy.best_ofDescription",
-												)}
+											? t("retakes.scoringPolicy.replaceDescription")
+											: t("retakes.scoringPolicy.best_ofDescription")}
 									</p>
 									<FormMessage />
 								</FormItem>

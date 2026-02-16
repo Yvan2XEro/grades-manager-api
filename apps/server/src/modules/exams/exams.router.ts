@@ -31,21 +31,19 @@ function ensureRetakesEnabled() {
 }
 
 export const router = createRouter({
-	create: tenantGradingProcedure
-		.input(baseSchema)
-		.mutation(({ ctx, input }) =>
-			service.createExam(
-				{
-					name: input.name,
-					type: input.type,
-					date: input.date,
-					percentage: input.percentage.toString(),
-					classCourse: input.classCourseId,
-				},
-				ctx.profile?.id ?? null,
-				ctx.institution.id,
-			),
+	create: tenantGradingProcedure.input(baseSchema).mutation(({ ctx, input }) =>
+		service.createExam(
+			{
+				name: input.name,
+				type: input.type,
+				date: input.date,
+				percentage: input.percentage.toString(),
+				classCourse: input.classCourseId,
+			},
+			ctx.profile?.id ?? null,
+			ctx.institution.id,
 		),
+	),
 	update: tenantGradingProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>

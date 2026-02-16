@@ -32,9 +32,7 @@ export const router = createRouter({
 		),
 	list: tenantProtectedProcedure
 		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.listClasses(input, ctx.institution.id),
-		),
+		.query(({ ctx, input }) => service.listClasses(input, ctx.institution.id)),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

@@ -95,10 +95,7 @@ async function fetchClassCourseContext(classCourseId: string) {
 			unitCredits: schema.teachingUnits.credits,
 		})
 		.from(schema.classCourses)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classCourses.class, schema.classes.id),
-		)
+		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
 		.innerJoin(
 			schema.courses,
 			eq(schema.classCourses.course, schema.courses.id),
@@ -194,10 +191,7 @@ async function findLatestEnrollment(input: {
 		where: and(
 			eq(schema.studentCourseEnrollments.studentId, input.studentId),
 			eq(schema.studentCourseEnrollments.courseId, input.courseId),
-			eq(
-				schema.studentCourseEnrollments.academicYearId,
-				input.academicYearId,
-			),
+			eq(schema.studentCourseEnrollments.academicYearId, input.academicYearId),
 		),
 		orderBy: (enrollments, { desc }) => desc(enrollments.attempt),
 	});
@@ -213,18 +207,14 @@ async function assertAttemptAvailability(input: {
 		where: and(
 			eq(schema.studentCourseEnrollments.studentId, input.studentId),
 			eq(schema.studentCourseEnrollments.courseId, input.courseId),
-			eq(
-				schema.studentCourseEnrollments.academicYearId,
-				input.academicYearId,
-			),
+			eq(schema.studentCourseEnrollments.academicYearId, input.academicYearId),
 			eq(schema.studentCourseEnrollments.attempt, input.attempt),
 		),
 	});
 	if (existing) {
 		throw new TRPCError({
 			code: "CONFLICT",
-			message:
-				"Enrollment attempt already exists for this student/course/year",
+			message: "Enrollment attempt already exists for this student/course/year",
 		});
 	}
 }
@@ -250,8 +240,7 @@ export async function createEnrollment(
 			if (!FINAL_STATUSES.includes(latest.status)) {
 				throw new TRPCError({
 					code: "CONFLICT",
-					message:
-						"Student already has an active enrollment for this course",
+					message: "Student already has an active enrollment for this course",
 				});
 			}
 			attempt = latest.attempt + 1;
@@ -277,16 +266,8 @@ export async function createEnrollment(
 		completedAt: resolveCompletionTimestamp(status),
 	};
 	const record = await repo.create(payload);
-	const contribution = creditLedger.contributionForStatus(
-		status,
-		classCourse.unitCredits,
-	);
-	await creditLedger.applyDelta(
-		record.studentId,
-		record.academicYearId,
-		contribution.inProgress,
-		contribution.earned,
-	);
+	// Ensure a ledger row exists (credits will be computed from grades, not enrollment status)
+	await creditLedger.ensureLedger(record.studentId, record.academicYearId);
 	return { record, warnings };
 }
 
@@ -340,21 +321,6 @@ export async function updateStatus(
 		payload.startedAt = new Date();
 	}
 	const updated = await repo.update(id, institutionId, payload);
-	if (!updated) return null;
-	const previousContribution = creditLedger.contributionForStatus(
-		existing.status,
-		existing.creditsAttempted,
-	);
-	const nextContribution = creditLedger.contributionForStatus(
-		status,
-		existing.creditsAttempted,
-	);
-	await creditLedger.applyDelta(
-		existing.studentId,
-		existing.academicYearId,
-		nextContribution.inProgress - previousContribution.inProgress,
-		nextContribution.earned - previousContribution.earned,
-	);
 	return updated;
 }
 
@@ -437,10 +403,7 @@ export async function autoEnrollClass(input: AutoEnrollClassInput) {
 		.where(eq(schema.students.class, klass.id));
 	const baseCondition = eq(schema.classCourses.class, klass.id);
 	const classCourseCondition = input.semesterId
-		? and(
-				baseCondition,
-				eq(schema.classCourses.semesterId, input.semesterId),
-			)
+		? and(baseCondition, eq(schema.classCourses.semesterId, input.semesterId))
 		: baseCondition;
 	const classCourses = await db
 		.select({ id: schema.classCourses.id })

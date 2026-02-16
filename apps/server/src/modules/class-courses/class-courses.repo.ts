@@ -3,10 +3,7 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
 export async function create(data: schema.NewClassCourse) {
-	const [item] = await db
-		.insert(schema.classCourses)
-		.values(data)
-		.returning();
+	const [item] = await db.insert(schema.classCourses).values(data).returning();
 	return item;
 }
 
@@ -55,19 +52,44 @@ export async function list(opts: {
 	classId?: string;
 	courseId?: string;
 	teacherId?: string;
+	academicYearId?: string;
+	semesterId?: string;
 	classCourseIds?: string[];
 	cursor?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
+
+	// If filtering by academicYearId, resolve matching class IDs via join
+	let classIdsFromYear: string[] | undefined;
+	if (opts.academicYearId) {
+		const matchingClasses = await db
+			.select({ id: schema.classes.id })
+			.from(schema.classes)
+			.where(
+				and(
+					eq(schema.classes.academicYear, opts.academicYearId),
+					eq(schema.classes.institutionId, opts.institutionId),
+				),
+			);
+		classIdsFromYear = matchingClasses.map((c) => c.id);
+		if (classIdsFromYear.length === 0) {
+			return { items: [], nextCursor: undefined };
+		}
+	}
+
 	const conditions = [
 		eq(schema.classCourses.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
-		opts.courseId
-			? eq(schema.classCourses.course, opts.courseId)
-			: undefined,
+		opts.courseId ? eq(schema.classCourses.course, opts.courseId) : undefined,
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
+		opts.semesterId
+			? eq(schema.classCourses.semesterId, opts.semesterId)
+			: undefined,
+		classIdsFromYear
+			? inArray(schema.classCourses.class, classIdsFromYear)
 			: undefined,
 		opts.classCourseIds && opts.classCourseIds.length > 0
 			? inArray(schema.classCourses.id, opts.classCourseIds)
@@ -133,10 +155,7 @@ export async function findByCode(
 	const [match] = await db
 		.select({ id: schema.classCourses.id })
 		.from(schema.classCourses)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
 		.where(
 			and(
 				eq(schema.classCourses.code, code),
@@ -192,10 +211,7 @@ export async function search(opts: {
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
 		)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
 		.leftJoin(
 			schema.domainUsers,
 			eq(schema.domainUsers.id, schema.classCourses.teacher),

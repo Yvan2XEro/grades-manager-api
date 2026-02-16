@@ -253,9 +253,7 @@ describe("Grade Modification", () => {
 					cy.contains("15").should("exist");
 					cy.contains("18").should("exist");
 				} else {
-					cy.log(
-						"Grade modification history feature not found - skipping",
-					);
+					cy.log("Grade modification history feature not found - skipping");
 				}
 			});
 		});

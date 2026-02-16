@@ -26,9 +26,7 @@ const formatObject = (object, depth = 2) => {
 				`Unexpected array value for key "${key}" in the translation file.`,
 			);
 		}
-		lines.push(
-			`${indent(depth)}${escapeKey(key)}: ${JSON.stringify(value)};`,
-		);
+		lines.push(`${indent(depth)}${escapeKey(key)}: ${JSON.stringify(value)};`);
 	}
 	lines.push(`${indent(depth - 1)}};`);
 	return lines.join("\n");

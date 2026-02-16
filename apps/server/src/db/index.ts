@@ -4,7 +4,8 @@ import { Pool } from "pg";
 import * as schema from "./schema/app-schema";
 import * as authSchema from "./schema/auth";
 
-const USE_PGLITE = process.env.USE_PGLITE === "true";
+const IS_TEST = process.env.NODE_ENV === "test";
+const USE_PGLITE = IS_TEST || process.env.USE_PGLITE === "true";
 
 type DbInstance =
 	| ReturnType<typeof drizzlePg>
@@ -14,16 +15,25 @@ let db: DbInstance;
 let pgliteInstance: import("@electric-sql/pglite").PGlite | null = null;
 
 if (USE_PGLITE) {
-	// Dynamic import to avoid loading PGlite in production
 	const { PGlite } = await import("@electric-sql/pglite");
 
-	// Use file-based storage for persistence across restarts
-	const dataDir = process.env.PGLITE_DATA_DIR || "./data/pglite";
-	pgliteInstance = new PGlite(dataDir);
+	if (IS_TEST) {
+		// Tests: always use in-memory PGlite, isolated from dev data.
+		// Most test files never reach here (the module mock in test-setup.ts
+		// redirects @/db to test-db.ts). This branch is a safety net for code
+		// that bypasses the mock (e.g. seed/runner.ts imported for its types).
+		pgliteInstance = new PGlite();
+		console.warn(
+			"[DB] Test fallback: in-memory PGlite (module mock was bypassed)",
+		);
+	} else {
+		// Dev: file-based storage for persistence across restarts
+		const dataDir = process.env.PGLITE_DATA_DIR || "./data/pglite";
+		pgliteInstance = new PGlite(dataDir);
+		console.log(`[DB] Using PGlite (data: ${dataDir})`);
+	}
 
 	db = drizzlePglite(pgliteInstance, { schema: { ...schema, ...authSchema } });
-
-	console.log(`[DB] Using PGlite (data: ${dataDir})`);
 } else {
 	const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 	db = drizzlePg(pool, { schema: { ...schema, ...authSchema } });
@@ -53,7 +63,9 @@ export function isUsingPGlite(): boolean {
 /**
  * Get the raw PGlite instance (for schema push scripts).
  */
-export function getPGliteInstance(): import("@electric-sql/pglite").PGlite | null {
+export function getPGliteInstance():
+	| import("@electric-sql/pglite").PGlite
+	| null {
 	return pgliteInstance;
 }
 

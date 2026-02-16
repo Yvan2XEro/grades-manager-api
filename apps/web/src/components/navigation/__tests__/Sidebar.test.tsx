@@ -42,12 +42,8 @@ describe("Sidebar navigation", () => {
 			</MemoryRouter>,
 		);
 
-		expect(
-			screen.getByTestId("nav-/admin/teaching-units"),
-		).toBeInTheDocument();
-		expect(
-			screen.getByTestId("nav-/admin/enrollments"),
-		).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admin/teaching-units")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admin/enrollments")).toBeInTheDocument();
 	});
 
 	it("shows workflow link for teachers", () => {
@@ -62,8 +58,6 @@ describe("Sidebar navigation", () => {
 			</MemoryRouter>,
 		);
 
-		expect(
-			screen.getByTestId("nav-/teacher/workflows"),
-		).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/teacher/workflows")).toBeInTheDocument();
 	});
 });

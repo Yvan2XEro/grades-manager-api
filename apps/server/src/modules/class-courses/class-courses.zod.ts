@@ -20,6 +20,8 @@ export const listSchema = z.object({
 	classId: z.string().optional(),
 	courseId: z.string().optional(),
 	teacherId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	semesterId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

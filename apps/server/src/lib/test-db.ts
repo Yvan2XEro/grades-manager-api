@@ -197,6 +197,9 @@ export async function seed() {
 export async function reset() {
 	await db.execute(sql`
     TRUNCATE TABLE
+     batch_job_logs,
+     batch_job_steps,
+     batch_jobs,
      course_prerequisites,
      domain_users,
     student_course_enrollments,

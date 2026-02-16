@@ -151,8 +151,7 @@ export default function UserManagement() {
 			trpcClient.users.list.query({
 				cursor,
 				limit: pageSize,
-				role:
-					roleFilter === "all" ? undefined : toDomainRole(roleFilter),
+				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
 			}),
 	});
 	const users = data?.items ?? [];
@@ -245,9 +244,7 @@ export default function UserManagement() {
 			closeModal();
 		},
 		onError: (err: unknown) =>
-			toast.error(
-				(err as Error).message || t("admin.users.toast.createError"),
-			),
+			toast.error((err as Error).message || t("admin.users.toast.createError")),
 	});
 
 	const updateMutation = useMutation({
@@ -277,9 +274,7 @@ export default function UserManagement() {
 			closeModal();
 		},
 		onError: (err: unknown) =>
-			toast.error(
-				(err as Error).message || t("admin.users.toast.updateError"),
-			),
+			toast.error((err as Error).message || t("admin.users.toast.updateError")),
 	});
 
 	const deleteMutation = useMutation({
@@ -296,9 +291,7 @@ export default function UserManagement() {
 			setUserToDelete(null);
 		},
 		onError: (err: unknown) =>
-			toast.error(
-				(err as Error).message || t("admin.users.toast.deleteError"),
-			),
+			toast.error((err as Error).message || t("admin.users.toast.deleteError")),
 	});
 
 	const onSubmit = (data: UserForm) => {
@@ -316,9 +309,7 @@ export default function UserManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-semibold text-xl">
-					{t("admin.users.title")}
-				</h1>
+				<h1 className="font-semibold text-xl">{t("admin.users.title")}</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
@@ -339,9 +330,7 @@ export default function UserManagement() {
 				<div className="flex flex-wrap gap-2">
 					<Select value={roleFilter} onValueChange={setRoleFilter}>
 						<SelectTrigger className="min-w-[180px]">
-							<SelectValue
-								placeholder={t("admin.users.filters.roles.all")}
-							/>
+							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">
@@ -362,13 +351,9 @@ export default function UserManagement() {
 					<TableHeader>
 						<TableRow>
 							<TableHead>{t("admin.users.table.name")}</TableHead>
-							<TableHead>
-								{t("admin.users.table.email")}
-							</TableHead>
+							<TableHead>{t("admin.users.table.email")}</TableHead>
 							<TableHead>{t("admin.users.table.role")}</TableHead>
-							<TableHead>
-								{t("admin.users.table.status")}
-							</TableHead>
+							<TableHead>{t("admin.users.table.status")}</TableHead>
 							<TableHead className="w-1 text-right">
 								{t("common.table.actions")}
 							</TableHead>
@@ -385,10 +370,7 @@ export default function UserManagement() {
 									{user.role
 										? t(
 												`admin.users.roles.${
-													user.role ===
-													"administrator"
-														? "admin"
-														: user.role
+													user.role === "administrator" ? "admin" : user.role
 												}`,
 												{ defaultValue: user.role },
 											)
@@ -396,18 +378,11 @@ export default function UserManagement() {
 								</TableCell>
 								<TableCell>
 									<Badge
-										variant={
-											user.status === "active"
-												? "default"
-												: "secondary"
-										}
+										variant={user.status === "active" ? "default" : "secondary"}
 									>
-										{t(
-											`admin.users.status.${user.status}`,
-											{
-												defaultValue: user.status,
-											},
-										)}
+										{t(`admin.users.status.${user.status}`, {
+											defaultValue: user.status,
+										})}
 									</Badge>
 								</TableCell>
 								<TableCell className="text-right">
@@ -417,9 +392,7 @@ export default function UserManagement() {
 											variant="ghost"
 											size="icon"
 											onClick={() => openEdit(user)}
-											aria-label={t(
-												"admin.users.actions.edit",
-											)}
+											aria-label={t("admin.users.actions.edit")}
 										>
 											<Pencil className="h-4 w-4" />
 										</Button>
@@ -427,13 +400,9 @@ export default function UserManagement() {
 											type="button"
 											variant="ghost"
 											size="icon"
-											onClick={() =>
-												setUserToDelete(user)
-											}
+											onClick={() => setUserToDelete(user)}
 											disabled={!user.authUserId}
-											aria-label={t(
-												"common.actions.delete",
-											)}
+											aria-label={t("common.actions.delete")}
 										>
 											<Trash2 className="h-4 w-4" />
 										</Button>
@@ -443,10 +412,7 @@ export default function UserManagement() {
 						))}
 						{displayedUsers.length === 0 && (
 							<TableRow>
-								<TableCell
-									colSpan={5}
-									className="py-4 text-center"
-								>
+								<TableCell colSpan={5} className="py-4 text-center">
 									{t("admin.users.empty")}
 								</TableCell>
 							</TableRow>
@@ -483,10 +449,7 @@ export default function UserManagement() {
 				</button>
 			</div>
 
-			<Dialog
-				open={isModalOpen}
-				onOpenChange={(open) => !open && closeModal()}
-			>
+			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
 				<DialogContent className="max-w-xl">
 					<DialogHeader>
 						<DialogTitle>
@@ -496,10 +459,7 @@ export default function UserManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="space-y-4"
-						>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<div className="grid gap-4 md:grid-cols-2">
 								<FormField
 									control={form.control}
@@ -507,9 +467,7 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.users.form.firstNameLabel",
-												)}
+												{t("admin.users.form.firstNameLabel")}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -524,9 +482,7 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.users.form.lastNameLabel",
-												)}
+												{t("admin.users.form.lastNameLabel")}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -541,9 +497,7 @@ export default function UserManagement() {
 								name="email"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
-											{t("admin.users.form.emailLabel")}
-										</FormLabel>
+										<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
 										<FormControl>
 											<Input type="email" {...field} />
 										</FormControl>
@@ -557,11 +511,7 @@ export default function UserManagement() {
 									name="phone"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												{t(
-													"admin.users.form.phoneLabel",
-												)}
-											</FormLabel>
+											<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
 											<FormControl>
 												<Input {...field} />
 											</FormControl>
@@ -574,11 +524,7 @@ export default function UserManagement() {
 									name="gender"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												{t(
-													"admin.users.form.genderLabel",
-												)}
-											</FormLabel>
+											<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
 											<Select
 												value={field.value}
 												onValueChange={field.onChange}
@@ -593,20 +539,11 @@ export default function UserManagement() {
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													{genderOptions.map(
-														(option) => (
-															<SelectItem
-																key={
-																	option.value
-																}
-																value={
-																	option.value
-																}
-															>
-																{option.label}
-															</SelectItem>
-														),
-													)}
+													{genderOptions.map((option) => (
+														<SelectItem key={option.value} value={option.value}>
+															{option.label}
+														</SelectItem>
+													))}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -621,9 +558,7 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.users.form.dateOfBirthLabel",
-												)}
+												{t("admin.users.form.dateOfBirthLabel")}
 											</FormLabel>
 											<FormControl>
 												<Input type="date" {...field} />
@@ -638,9 +573,7 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.users.form.placeOfBirthLabel",
-												)}
+												{t("admin.users.form.placeOfBirthLabel")}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -657,9 +590,7 @@ export default function UserManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.users.form.nationalityLabel",
-												)}
+												{t("admin.users.form.nationalityLabel")}
 											</FormLabel>
 											<FormControl>
 												<Input {...field} />
@@ -673,11 +604,7 @@ export default function UserManagement() {
 									name="status"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												{t(
-													"admin.users.form.statusLabel",
-												)}
-											</FormLabel>
+											<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
 											<Select
 												value={field.value}
 												onValueChange={field.onChange}
@@ -688,20 +615,11 @@ export default function UserManagement() {
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													{statusOptions.map(
-														(option) => (
-															<SelectItem
-																key={
-																	option.value
-																}
-																value={
-																	option.value
-																}
-															>
-																{option.label}
-															</SelectItem>
-														),
-													)}
+													{statusOptions.map((option) => (
+														<SelectItem key={option.value} value={option.value}>
+															{option.label}
+														</SelectItem>
+													))}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -750,9 +668,7 @@ export default function UserManagement() {
 			<ConfirmModal
 				isOpen={Boolean(userToDelete)}
 				onClose={() => setUserToDelete(null)}
-				onConfirm={() =>
-					userToDelete && deleteMutation.mutate(userToDelete)
-				}
+				onConfirm={() => userToDelete && deleteMutation.mutate(userToDelete)}
 				title={t("admin.users.confirm.delete.title")}
 				message={t("admin.users.confirm.delete.message")}
 				confirmText={t("common.actions.delete")}

@@ -78,17 +78,13 @@ export const studentsRouter = router({
 	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) => {
-			const profilePayload = mapProfile(
-				input,
-			) as Partial<ServiceProfileInput>;
+			const profilePayload = mapProfile(input) as Partial<ServiceProfileInput>;
 			return service.updateStudent(
 				input.id,
 				{
 					classId: input.classId,
 					registrationNumber: input.registrationNumber,
-					profile: hasProfileData(profilePayload)
-						? profilePayload
-						: undefined,
+					profile: hasProfileData(profilePayload) ? profilePayload : undefined,
 				},
 				ctx.institution.id,
 			);
@@ -116,9 +112,7 @@ export const studentsRouter = router({
 		),
 	list: tenantProtectedProcedure
 		.input(listSchema)
-		.query(({ ctx, input }) =>
-			service.listStudents(input, ctx.institution.id),
-		),
+		.query(({ ctx, input }) => service.listStudents(input, ctx.institution.id)),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

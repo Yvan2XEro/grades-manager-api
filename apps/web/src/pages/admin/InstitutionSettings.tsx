@@ -179,9 +179,7 @@ function ImageUploadField({
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div>
 					<p className="font-medium text-foreground">{label}</p>
-					<p className="text-muted-foreground text-sm">
-						{description}
-					</p>
+					<p className="text-muted-foreground text-sm">{description}</p>
 				</div>
 				{preview && (
 					<Button
@@ -343,8 +341,7 @@ export default function InstitutionSettings() {
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
 				registrationFormatId: values.registrationFormatId || undefined,
-				defaultAcademicYearId:
-					values.defaultAcademicYearId || undefined,
+				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(
@@ -387,9 +384,7 @@ export default function InstitutionSettings() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>
-						{t("admin.institution.form.identity")}
-					</CardTitle>
+					<CardTitle>{t("admin.institution.form.identity")}</CardTitle>
 					<CardDescription>
 						{t("admin.institution.form.identityHint", {
 							defaultValue:
@@ -415,9 +410,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.code",
-													)}
+													{t("admin.institution.form.code")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -432,9 +425,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.shortName",
-													)}
+													{t("admin.institution.form.shortName")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -452,19 +443,13 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.type",
-														{
-															defaultValue:
-																"Type",
-														},
-													)}
+													{t("admin.institution.form.type", {
+														defaultValue: "Type",
+													})}
 												</FormLabel>
 												<Select
 													value={field.value}
-													onValueChange={
-														field.onChange
-													}
+													onValueChange={field.onChange}
 												>
 													<FormControl>
 														<SelectTrigger>
@@ -472,8 +457,7 @@ export default function InstitutionSettings() {
 																placeholder={t(
 																	"admin.institution.form.typePlaceholder",
 																	{
-																		defaultValue:
-																			"Select type",
+																		defaultValue: "Select type",
 																	},
 																)}
 															/>
@@ -481,31 +465,19 @@ export default function InstitutionSettings() {
 													</FormControl>
 													<SelectContent>
 														<SelectItem value="university">
-															{t(
-																"admin.institution.form.typeUniversity",
-																{
-																	defaultValue:
-																		"University",
-																},
-															)}
+															{t("admin.institution.form.typeUniversity", {
+																defaultValue: "University",
+															})}
 														</SelectItem>
 														<SelectItem value="faculty">
-															{t(
-																"admin.institution.form.typeFaculty",
-																{
-																	defaultValue:
-																		"Faculty/School",
-																},
-															)}
+															{t("admin.institution.form.typeFaculty", {
+																defaultValue: "Faculty/School",
+															})}
 														</SelectItem>
 														<SelectItem value="institution">
-															{t(
-																"admin.institution.form.typeInstitution",
-																{
-																	defaultValue:
-																		"Institution/Institute",
-																},
-															)}
+															{t("admin.institution.form.typeInstitution", {
+																defaultValue: "Institution/Institute",
+															})}
 														</SelectItem>
 													</SelectContent>
 												</Select>
@@ -519,25 +491,15 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.parentInstitution",
-														{
-															defaultValue:
-																"Parent Institution (University)",
-														},
-													)}
+													{t("admin.institution.form.parentInstitution", {
+														defaultValue: "Parent Institution (University)",
+													})}
 												</FormLabel>
 												<Select
-													value={
-														field.value ??
-														NO_SELECTION
-													}
+													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
 														field.onChange(
-															value ===
-																NO_SELECTION
-																? undefined
-																: value,
+															value === NO_SELECTION ? undefined : value,
 														)
 													}
 												>
@@ -547,47 +509,25 @@ export default function InstitutionSettings() {
 																placeholder={t(
 																	"admin.institution.form.parentInstitutionPlaceholder",
 																	{
-																		defaultValue:
-																			"Select parent institution",
+																		defaultValue: "Select parent institution",
 																	},
 																)}
 															/>
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem
-															value={NO_SELECTION}
-														>
-															{t(
-																"admin.institution.form.noParentInstitution",
-																{
-																	defaultValue:
-																		"None (Top-level)",
-																},
-															)}
+														<SelectItem value={NO_SELECTION}>
+															{t("admin.institution.form.noParentInstitution", {
+																defaultValue: "None (Top-level)",
+															})}
 														</SelectItem>
 														{institutions
 															.filter(
-																(inst) =>
-																	inst.id !==
-																	institutionQuery
-																		.data
-																		?.id,
+																(inst) => inst.id !== institutionQuery.data?.id,
 															)
 															.map((inst) => (
-																<SelectItem
-																	key={
-																		inst.id
-																	}
-																	value={
-																		inst.id
-																	}
-																>
-																	{
-																		inst.nameFr
-																	}{" "}
-																	({inst.type}
-																	)
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr} ({inst.type})
 																</SelectItem>
 															))}
 													</SelectContent>
@@ -604,23 +544,15 @@ export default function InstitutionSettings() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.institution.form.supervisingFaculty",
-													{
-														defaultValue:
-															"Supervising Faculty/School",
-													},
-												)}
+												{t("admin.institution.form.supervisingFaculty", {
+													defaultValue: "Supervising Faculty/School",
+												})}
 											</FormLabel>
 											<Select
-												value={
-													field.value ?? NO_SELECTION
-												}
+												value={field.value ?? NO_SELECTION}
 												onValueChange={(value) =>
 													field.onChange(
-														value === NO_SELECTION
-															? undefined
-															: value,
+														value === NO_SELECTION ? undefined : value,
 													)
 												}
 											>
@@ -630,37 +562,23 @@ export default function InstitutionSettings() {
 															placeholder={t(
 																"admin.institution.form.supervisingFacultyPlaceholder",
 																{
-																	defaultValue:
-																		"Select supervising faculty",
+																	defaultValue: "Select supervising faculty",
 																},
 															)}
 														/>
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													<SelectItem
-														value={NO_SELECTION}
-													>
-														{t(
-															"admin.institution.form.noSupervisingFaculty",
-															{
-																defaultValue:
-																	"None",
-															},
-														)}
+													<SelectItem value={NO_SELECTION}>
+														{t("admin.institution.form.noSupervisingFaculty", {
+															defaultValue: "None",
+														})}
 													</SelectItem>
-													{faculties.map(
-														(faculty) => (
-															<SelectItem
-																key={faculty.id}
-																value={
-																	faculty.id
-																}
-															>
-																{faculty.name}
-															</SelectItem>
-														),
-													)}
+													{faculties.map((faculty) => (
+														<SelectItem key={faculty.id} value={faculty.id}>
+															{faculty.name}
+														</SelectItem>
+													))}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -675,9 +593,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.nameFr",
-													)}
+													{t("admin.institution.form.nameFr")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -692,9 +608,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.nameEn",
-													)}
+													{t("admin.institution.form.nameEn")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -712,9 +626,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.legalNameFr",
-													)}
+													{t("admin.institution.form.legalNameFr")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -729,9 +641,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.legalNameEn",
-													)}
+													{t("admin.institution.form.legalNameEn")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -749,9 +659,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.sloganFr",
-													)}
+													{t("admin.institution.form.sloganFr")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -766,9 +674,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.sloganEn",
-													)}
+													{t("admin.institution.form.sloganEn")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -786,15 +692,10 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.descriptionFr",
-													)}
+													{t("admin.institution.form.descriptionFr")}
 												</FormLabel>
 												<FormControl>
-													<Textarea
-														rows={3}
-														{...field}
-													/>
+													<Textarea rows={3} {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -806,15 +707,10 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.descriptionEn",
-													)}
+													{t("admin.institution.form.descriptionEn")}
 												</FormLabel>
 												<FormControl>
-													<Textarea
-														rows={3}
-														{...field}
-													/>
+													<Textarea rows={3} {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -829,15 +725,10 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.addressFr",
-													)}
+													{t("admin.institution.form.addressFr")}
 												</FormLabel>
 												<FormControl>
-													<Textarea
-														rows={2}
-														{...field}
-													/>
+													<Textarea rows={2} {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -849,15 +740,10 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.addressEn",
-													)}
+													{t("admin.institution.form.addressEn")}
 												</FormLabel>
 												<FormControl>
-													<Textarea
-														rows={2}
-														{...field}
-													/>
+													<Textarea rows={2} {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -872,15 +758,10 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.contactEmail",
-													)}
+													{t("admin.institution.form.contactEmail")}
 												</FormLabel>
 												<FormControl>
-													<Input
-														type="email"
-														{...field}
-													/>
+													<Input type="email" {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -892,9 +773,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.contactPhone",
-													)}
+													{t("admin.institution.form.contactPhone")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -911,11 +790,7 @@ export default function InstitutionSettings() {
 										name="fax"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
-													{t(
-														"admin.institution.form.fax",
-													)}
-												</FormLabel>
+												<FormLabel>{t("admin.institution.form.fax")}</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -929,9 +804,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.postalBox",
-													)}
+													{t("admin.institution.form.postalBox")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -946,9 +819,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.timezone",
-													)}
+													{t("admin.institution.form.timezone")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -966,9 +837,7 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.website",
-													)}
+													{t("admin.institution.form.website")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -983,27 +852,20 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.logoUrl",
-													)}
+													{t("admin.institution.form.logoUrl")}
 												</FormLabel>
 												<ImageUploadField
-													label={t(
-														"admin.institution.form.logoUploadLabel",
-													)}
+													label={t("admin.institution.form.logoUploadLabel")}
 													description={t(
 														"admin.institution.form.logoUploadDescription",
 													)}
 													value={field.value}
 													onChange={field.onChange}
-													onClear={() =>
-														field.onChange("")
-													}
+													onClear={() => field.onChange("")}
 													placeholder={t(
 														"admin.institution.form.logoUrlPlaceholder",
 														{
-															defaultValue:
-																"https://...",
+															defaultValue: "https://...",
 														},
 													)}
 												/>
@@ -1020,27 +882,20 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.coverImageUrl",
-													)}
+													{t("admin.institution.form.coverImageUrl")}
 												</FormLabel>
 												<ImageUploadField
-													label={t(
-														"admin.institution.form.coverUploadLabel",
-													)}
+													label={t("admin.institution.form.coverUploadLabel")}
 													description={t(
 														"admin.institution.form.coverUploadDescription",
 													)}
 													value={field.value}
 													onChange={field.onChange}
-													onClear={() =>
-														field.onChange("")
-													}
+													onClear={() => field.onChange("")}
 													placeholder={t(
 														"admin.institution.form.coverImageUrlPlaceholder",
 														{
-															defaultValue:
-																"https://...",
+															defaultValue: "https://...",
 														},
 													)}
 												/>
@@ -1054,21 +909,13 @@ export default function InstitutionSettings() {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t(
-														"admin.institution.form.defaultAcademicYear",
-													)}
+													{t("admin.institution.form.defaultAcademicYear")}
 												</FormLabel>
 												<Select
-													value={
-														field.value ??
-														NO_SELECTION
-													}
+													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
 														field.onChange(
-															value ===
-																NO_SELECTION
-																? undefined
-																: value,
+															value === NO_SELECTION ? undefined : value,
 														)
 													}
 												>
@@ -1082,27 +929,16 @@ export default function InstitutionSettings() {
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem
-															value={NO_SELECTION}
-														>
+														<SelectItem value={NO_SELECTION}>
 															{t(
 																"admin.institution.form.defaultAcademicYearPlaceholder",
 															)}
 														</SelectItem>
-														{academicYears.map(
-															(year) => (
-																<SelectItem
-																	key={
-																		year.id
-																	}
-																	value={
-																		year.id
-																	}
-																>
-																	{year.name}
-																</SelectItem>
-															),
-														)}
+														{academicYears.map((year) => (
+															<SelectItem key={year.id} value={year.id}>
+																{year.name}
+															</SelectItem>
+														))}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -1117,19 +953,13 @@ export default function InstitutionSettings() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.institution.form.registrationFormat",
-												)}
+												{t("admin.institution.form.registrationFormat")}
 											</FormLabel>
 											<Select
-												value={
-													field.value ?? NO_SELECTION
-												}
+												value={field.value ?? NO_SELECTION}
 												onValueChange={(value) =>
 													field.onChange(
-														value === NO_SELECTION
-															? undefined
-															: value,
+														value === NO_SELECTION ? undefined : value,
 													)
 												}
 											>
@@ -1143,34 +973,24 @@ export default function InstitutionSettings() {
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
-													<SelectItem
-														value={NO_SELECTION}
-													>
+													<SelectItem value={NO_SELECTION}>
 														{t(
 															"admin.institution.form.registrationFormatPlaceholder",
 														)}
 													</SelectItem>
-													{registrationFormats.map(
-														(format) => (
-															<SelectItem
-																key={format.id}
-																value={
-																	format.id
-																}
-															>
-																{format.name}
-																{format.isActive
-																	? ` (${t(
-																			"admin.registrationNumbers.list.active",
-																			{
-																				defaultValue:
-																					"Active",
-																			},
-																		)})`
-																	: ""}
-															</SelectItem>
-														),
-													)}
+													{registrationFormats.map((format) => (
+														<SelectItem key={format.id} value={format.id}>
+															{format.name}
+															{format.isActive
+																? ` (${t(
+																		"admin.registrationNumbers.list.active",
+																		{
+																			defaultValue: "Active",
+																		},
+																	)})`
+																: ""}
+														</SelectItem>
+													))}
 												</SelectContent>
 											</Select>
 											<FormMessage />
@@ -1182,16 +1002,11 @@ export default function InstitutionSettings() {
 									<Button
 										type="button"
 										variant="outline"
-										onClick={() =>
-											form.reset(defaultValues)
-										}
+										onClick={() => form.reset(defaultValues)}
 									>
 										{t("common.actions.reset")}
 									</Button>
-									<Button
-										type="submit"
-										disabled={upsertMutation.isPending}
-									>
+									<Button type="submit" disabled={upsertMutation.isPending}>
 										{upsertMutation.isPending && (
 											<Spinner className="mr-2 h-4 w-4" />
 										)}

@@ -4,10 +4,12 @@ import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
+	Eye,
 	FileSpreadsheet,
 	FileText,
 	Pencil,
 	Plus,
+	Search,
 	Trash2,
 	Users,
 } from "lucide-react";
@@ -19,6 +21,7 @@ import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -30,10 +33,19 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { generateClassCode } from "@/lib/code-generator";
+import { Badge } from "@/components/ui/badge";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
-import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -43,6 +55,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -129,15 +142,24 @@ export default function ClassManagement() {
 	const [programSearch, setProgramSearch] = useState("");
 	const [programOptionSearch, setProgramOptionSearch] = useState("");
 	const [cycleLevelSearch, setCycleLevelSearch] = useState("");
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+	const [previewClass, setPreviewClass] = useState<Class | null>(null);
+	const [previewStudents, setPreviewStudents] = useState<any[]>([]);
+	const [previewLoading, setPreviewLoading] = useState(false);
+	const [studentSearch, setStudentSearch] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
 	const { data: classes, isLoading } = useQuery({
-		queryKey: ["classes"],
+		queryKey: ["classes", filterYear, filterSemester],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
+			const { items } = await trpcClient.classes.list.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+				...(filterSemester ? { semesterId: filterSemester } : {}),
+			});
 			// TODO: N+1 Query Problem - This fetches students for each class separately
 			// Better solution: Modify backend classes.list to include studentCount
 			// or create a batch endpoint that returns classes with student counts
@@ -196,8 +218,7 @@ export default function ClassManagement() {
 		enabled: programSearch.length >= 2,
 	});
 
-	const programs =
-		programSearch.length >= 2 ? searchPrograms : defaultPrograms;
+	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
 	const { data: academicYears } = useQuery({
 		queryKey: ["academicYears"],
@@ -232,20 +253,17 @@ export default function ClassManagement() {
 	const { data: defaultCycleLevels = [] } = useQuery({
 		queryKey: ["cycleLevelsByInstitution", selectedProgram?.institutionId],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId)
-				return [] as CycleLevelOption[];
-			const { items: cycles } =
-				await trpcClient.studyCycles.listCycles.query({
-					institutionId: selectedProgram.institutionId,
-					limit: 100,
-				});
+			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
+			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
+				institutionId: selectedProgram.institutionId,
+				limit: 100,
+			});
 			if (!cycles.length) return [];
 			const levels = await Promise.all(
 				cycles.map(async (cycle) => {
-					const levelList =
-						await trpcClient.studyCycles.listLevels.query({
-							cycleId: cycle.id,
-						});
+					const levelList = await trpcClient.studyCycles.listLevels.query({
+						cycleId: cycle.id,
+					});
 					return levelList.map((level) => ({
 						...level,
 						cycle: {
@@ -269,13 +287,11 @@ export default function ClassManagement() {
 			selectedProgram?.institutionId,
 		],
 		queryFn: async () => {
-			if (!selectedProgram?.institutionId)
-				return [] as CycleLevelOption[];
-			const { items: cycles } =
-				await trpcClient.studyCycles.listCycles.query({
-					institutionId: selectedProgram.institutionId,
-					limit: 100,
-				});
+			if (!selectedProgram?.institutionId) return [] as CycleLevelOption[];
+			const { items: cycles } = await trpcClient.studyCycles.listCycles.query({
+				institutionId: selectedProgram.institutionId,
+				limit: 100,
+			});
 			if (!cycles.length) return [];
 			const levels = await Promise.all(
 				cycles.map(async (cycle) => {
@@ -296,8 +312,7 @@ export default function ClassManagement() {
 			return levels.flat() as CycleLevelOption[];
 		},
 		enabled:
-			Boolean(selectedProgram?.institutionId) &&
-			cycleLevelSearch.length >= 2,
+			Boolean(selectedProgram?.institutionId) && cycleLevelSearch.length >= 2,
 	});
 
 	const cycleLevels =
@@ -363,8 +378,7 @@ export default function ClassManagement() {
 			});
 			return items;
 		},
-		enabled:
-			Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
+		enabled: Boolean(selectedProgram?.id) && programOptionSearch.length >= 2,
 	});
 
 	const programOptions =
@@ -403,9 +417,7 @@ export default function ClassManagement() {
 	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
 
 	useEffect(() => {
-		const year = academicYears?.find(
-			(y) => y.id === selectedAcademicYearId,
-		);
+		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
 		if (selectedProgramOption && year) {
 			const startYear = new Date(year.startDate).getFullYear();
 			const endYear = new Date(year.endDate).getFullYear();
@@ -414,12 +426,29 @@ export default function ClassManagement() {
 				`${selectedProgramOption.name} (${startYear}-${endYear})`,
 			);
 		}
-	}, [
-		selectedProgramOption,
-		selectedAcademicYearId,
-		academicYears,
-		setValue,
-	]);
+	}, [selectedProgramOption, selectedAcademicYearId, academicYears, setValue]);
+
+	const handlePreviewStudents = async (classData: Class) => {
+		setPreviewClass(classData);
+		setPreviewLoading(true);
+		setStudentSearch("");
+		try {
+			const studentsData = await trpcClient.students.list.query({
+				classId: classData.id,
+				limit: 1000,
+			});
+			const sorted = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+			setPreviewStudents(sorted);
+		} catch (error) {
+			console.error("Error fetching students:", error);
+			setPreviewStudents([]);
+		} finally {
+			setPreviewLoading(false);
+		}
+	};
 
 	const handleExportStudentListPDF = async (classData: Class) => {
 		try {
@@ -461,16 +490,8 @@ export default function ClassManagement() {
 			// Class info
 			doc.setFontSize(11);
 			doc.setFont("helvetica", "normal");
-			doc.text(
-				`${t("admin.classes.table.name")}: ${classData.name}`,
-				14,
-				50,
-			);
-			doc.text(
-				`${t("admin.classes.table.code")}: ${classData.code}`,
-				14,
-				56,
-			);
+			doc.text(`${t("admin.classes.table.name")}: ${classData.name}`, 14, 50);
+			doc.text(`${t("admin.classes.table.code")}: ${classData.code}`, 14, 56);
 			doc.text(
 				`${t("admin.classes.table.program")}: ${classData.program?.name}`,
 				14,
@@ -487,18 +508,24 @@ export default function ClassManagement() {
 				74,
 			);
 
+			// Sort students alphabetically by last name, then first name
+			const sortedStudents = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+
 			// Student table
-			const tableData = studentsData.items.map((student, index) => [
+			const tableData = sortedStudents.map((student, index) => [
 				index + 1,
 				student.registrationNumber || "-",
-				student.lastName,
-				student.firstName,
-				student.dateOfBirth
-					? new Date(student.dateOfBirth).toLocaleDateString()
+				student.profile.lastName,
+				student.profile.firstName,
+				student.profile.dateOfBirth
+					? new Date(student.profile.dateOfBirth).toLocaleDateString()
 					: "-",
-				student.gender === "M"
+				student.profile.gender === "male"
 					? t("common.gender.male", { defaultValue: "M" })
-					: student.gender === "F"
+					: student.profile.gender === "female"
 						? t("common.gender.female", { defaultValue: "F" })
 						: "-",
 			]);
@@ -595,9 +622,7 @@ export default function ClassManagement() {
 				[],
 				[`${t("admin.classes.table.name")}: ${classData.name}`],
 				[`${t("admin.classes.table.code")}: ${classData.code}`],
-				[
-					`${t("admin.classes.table.program")}: ${classData.program?.name}`,
-				],
+				[`${t("admin.classes.table.program")}: ${classData.program?.name}`],
 				[
 					`${t("admin.classes.table.academicYear")}: ${classData.academicYear?.name}`,
 				],
@@ -625,18 +650,24 @@ export default function ClassManagement() {
 				],
 			];
 
+			// Sort students alphabetically by last name, then first name
+			const sortedStudents = [...studentsData.items].sort((a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			);
+
 			// Prepare student data rows
-			const dataRows = studentsData.items.map((student, index) => [
+			const dataRows = sortedStudents.map((student, index) => [
 				index + 1,
 				student.registrationNumber || "-",
-				student.lastName,
-				student.firstName,
-				student.dateOfBirth
-					? new Date(student.dateOfBirth).toLocaleDateString()
+				student.profile.lastName,
+				student.profile.firstName,
+				student.profile.dateOfBirth
+					? new Date(student.profile.dateOfBirth).toLocaleDateString()
 					: "-",
-				student.gender === "M"
+				student.profile.gender === "male"
 					? t("common.gender.male", { defaultValue: "M" })
-					: student.gender === "F"
+					: student.profile.gender === "female"
 						? t("common.gender.female", { defaultValue: "F" })
 						: "-",
 			]);
@@ -836,12 +867,8 @@ export default function ClassManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">
-						{t("admin.classes.title")}
-					</h1>
-					<p className="text-base-content/60">
-						{t("admin.classes.subtitle")}
-					</p>
+					<h1 className="font-bold text-2xl">{t("admin.classes.title")}</h1>
+					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<Button
 					type="button"
@@ -855,6 +882,31 @@ export default function ClassManagement() {
 					<Plus className="mr-2 h-5 w-5" />
 					{t("admin.classes.actions.add")}
 				</Button>
+			</div>
+
+			<div className="mb-4 flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => setFilterSemester(v)}
+					/>
+				</div>
 			</div>
 
 			<Card className="overflow-x-auto">
@@ -889,15 +941,9 @@ export default function ClassManagement() {
 										defaultValue: "Code",
 									})}
 								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.name")}
-								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.program")}
-								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.academicYear")}
-								</TableHead>
+								<TableHead>{t("admin.classes.table.name")}</TableHead>
+								<TableHead>{t("admin.classes.table.program")}</TableHead>
+								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
 								<TableHead>
 									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
@@ -908,12 +954,8 @@ export default function ClassManagement() {
 										defaultValue: "Option",
 									})}
 								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.students")}
-								</TableHead>
-								<TableHead>
-									{t("common.table.actions")}
-								</TableHead>
+								<TableHead>{t("admin.classes.table.students")}</TableHead>
+								<TableHead>{t("common.table.actions")}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -922,27 +964,18 @@ export default function ClassManagement() {
 									<TableCell>
 										<ClipboardCopy
 											value={cls.code}
-											label={t(
-												"admin.classes.table.code",
-												{
-													defaultValue: "Code",
-												},
-											)}
+											label={t("admin.classes.table.code", {
+												defaultValue: "Code",
+											})}
 										/>
 									</TableCell>
-									<TableCell className="font-medium">
-										{cls.name}
-									</TableCell>
+									<TableCell className="font-medium">{cls.name}</TableCell>
 									<TableCell>{cls.program?.name}</TableCell>
-									<TableCell>
-										{cls.academicYear?.name}
-									</TableCell>
+									<TableCell>{cls.academicYear?.name}</TableCell>
 									<TableCell>
 										{cls.cycle ? (
 											<div className="space-y-0.5">
-												<p className="font-medium text-sm">
-													{cls.cycle.name}
-												</p>
+												<p className="font-medium text-sm">{cls.cycle.name}</p>
 												<p className="text-muted-foreground text-xs">
 													{cls.cycleLevel?.name}
 													{cls.cycleLevel?.code
@@ -975,9 +1008,7 @@ export default function ClassManagement() {
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Users className="h-4 w-4" />
-											<span>
-												{cls.students?.length || 0}
-											</span>
+											<span>{cls.students?.length || 0}</span>
 										</div>
 									</TableCell>
 									<TableCell>
@@ -990,28 +1021,19 @@ export default function ClassManagement() {
 													setEditingClass(cls);
 													form.reset({
 														name: cls.name,
-														programId:
-															cls.programId,
-														academicYearId:
-															cls.academicYearId,
-														cycleLevelId:
-															cls.cycleLevelId,
-														programOptionId:
-															cls.programOptionId,
-														semesterId:
-															cls.semesterId ??
-															"",
+														programId: cls.programId,
+														academicYearId: cls.academicYearId,
+														cycleLevelId: cls.cycleLevelId,
+														programOptionId: cls.programOptionId,
+														semesterId: cls.semesterId ?? "",
 														code: cls.code,
 													});
 													setIsFormOpen(true);
 												}}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t(
-													"common.actions.edit",
-													{
-														defaultValue: "Edit",
-													},
-												)}
+												title={t("common.actions.edit", {
+													defaultValue: "Edit",
+												})}
 											>
 												<Pencil className="h-4 w-4" />
 											</Button>
@@ -1019,19 +1041,23 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() =>
-													handleExportStudentListPDF(
-														cls,
-													)
-												}
+												onClick={() => handlePreviewStudents(cls)}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t(
-													"admin.classes.export.button",
-													{
-														defaultValue:
-															"Export student list (PDF)",
-													},
-												)}
+												title={t("admin.classes.preview.button", {
+													defaultValue: "View student list",
+												})}
+											>
+												<Eye className="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												onClick={() => handleExportStudentListPDF(cls)}
+												className="btn btn-square btn-sm btn-ghost"
+												title={t("admin.classes.export.button", {
+													defaultValue: "Export student list (PDF)",
+												})}
 											>
 												<FileText className="h-4 w-4" />
 											</Button>
@@ -1039,19 +1065,11 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() =>
-													handleExportStudentListExcel(
-														cls,
-													)
-												}
+												onClick={() => handleExportStudentListExcel(cls)}
 												className="btn btn-square btn-sm btn-ghost"
-												title={t(
-													"admin.classes.export.excelButton",
-													{
-														defaultValue:
-															"Export student list (Excel)",
-													},
-												)}
+												title={t("admin.classes.export.excelButton", {
+													defaultValue: "Export student list (Excel)",
+												})}
 											>
 												<FileSpreadsheet className="h-4 w-4" />
 											</Button>
@@ -1059,16 +1077,11 @@ export default function ClassManagement() {
 												type="button"
 												size="icon"
 												variant="ghost"
-												onClick={() =>
-													openDeleteModal(cls.id)
-												}
+												onClick={() => openDeleteModal(cls.id)}
 												className="btn btn-square btn-sm btn-ghost text-error"
-												title={t(
-													"common.actions.delete",
-													{
-														defaultValue: "Delete",
-													},
-												)}
+												title={t("common.actions.delete", {
+													defaultValue: "Delete",
+												})}
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>
@@ -1095,33 +1108,23 @@ export default function ClassManagement() {
 				}
 			>
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-4"
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<CodedEntitySelect
 							items={programs}
 							onSearch={setProgramSearch}
 							value={
-								programs.find(
-									(p) => p.id === form.watch("programId"),
-								)?.code || null
+								programs.find((p) => p.id === form.watch("programId"))?.code ||
+								null
 							}
 							onChange={(code) => {
-								const program = programs.find(
-									(p) => p.code === code,
-								);
+								const program = programs.find((p) => p.code === code);
 								form.setValue("programId", program?.id || "");
 							}}
 							label={t("admin.classes.form.programLabel")}
-							placeholder={t(
-								"admin.classes.form.programPlaceholder",
-							)}
+							placeholder={t("admin.classes.form.programPlaceholder")}
 							error={form.formState.errors.programId?.message}
 							searchMode="hybrid"
-							getItemSubtitle={(program) =>
-								program.institutionInfo?.name || ""
-							}
+							getItemSubtitle={(program) => program.institutionInfo?.name || ""}
 							required
 						/>
 
@@ -1131,9 +1134,7 @@ export default function ClassManagement() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t(
-											"admin.classes.form.academicYearLabel",
-										)}
+										{t("admin.classes.form.academicYearLabel")}
 									</FormLabel>
 									<FormControl>
 										<AcademicYearSelect
@@ -1153,42 +1154,31 @@ export default function ClassManagement() {
 							items={cycleLevels}
 							onSearch={setCycleLevelSearch}
 							value={
-								cycleLevels.find(
-									(l) => l.id === form.watch("cycleLevelId"),
-								)?.code || null
+								cycleLevels.find((l) => l.id === form.watch("cycleLevelId"))
+									?.code || null
 							}
 							onChange={(code) => {
-								const level = cycleLevels.find(
-									(l) => l.code === code,
-								);
+								const level = cycleLevels.find((l) => l.code === code);
 								form.setValue("cycleLevelId", level?.id || "");
 							}}
 							label={t("admin.classes.form.cycleLevelLabel", {
 								defaultValue: "Cycle level",
 							})}
-							placeholder={t(
-								"admin.classes.form.cycleLevelPlaceholder",
-								{
-									defaultValue: "Select cycle level",
-								},
-							)}
+							placeholder={t("admin.classes.form.cycleLevelPlaceholder", {
+								defaultValue: "Select cycle level",
+							})}
 							error={form.formState.errors.cycleLevelId?.message}
 							searchMode="hybrid"
 							getItemSubtitle={(level) =>
 								`${level.cycle.name}${level.cycle.code ? ` (${level.cycle.code})` : ""}`
 							}
-							disabled={
-								!selectedProgram || cycleLevels.length === 0
-							}
+							disabled={!selectedProgram || cycleLevels.length === 0}
 							emptyMessage={
 								!selectedProgram
-									? t(
-											"admin.classes.form.selectProgramFirst",
-											{
-												defaultValue:
-													"Select a program to load its cycle levels.",
-											},
-										)
+									? t("admin.classes.form.selectProgramFirst", {
+											defaultValue:
+												"Select a program to load its cycle levels.",
+										})
 									: t("admin.classes.form.emptyCycleLevels", {
 											defaultValue:
 												"No cycle levels available for the selected program's institution.",
@@ -1201,44 +1191,27 @@ export default function ClassManagement() {
 							onSearch={setProgramOptionSearch}
 							value={
 								programOptions.find(
-									(o) =>
-										o.id === form.watch("programOptionId"),
+									(o) => o.id === form.watch("programOptionId"),
 								)?.code || null
 							}
 							onChange={(code) => {
-								const option = programOptions.find(
-									(o) => o.code === code,
-								);
-								form.setValue(
-									"programOptionId",
-									option?.id || "",
-								);
+								const option = programOptions.find((o) => o.code === code);
+								form.setValue("programOptionId", option?.id || "");
 							}}
 							label={t("admin.classes.form.programOptionLabel", {
 								defaultValue: "Program option",
 							})}
-							placeholder={t(
-								"admin.classes.form.programOptionPlaceholder",
-								{
-									defaultValue: "Select option",
-								},
-							)}
-							error={
-								form.formState.errors.programOptionId?.message
-							}
+							placeholder={t("admin.classes.form.programOptionPlaceholder", {
+								defaultValue: "Select option",
+							})}
+							error={form.formState.errors.programOptionId?.message}
 							searchMode="hybrid"
-							disabled={
-								!selectedProgram || programOptions.length === 0
-							}
+							disabled={!selectedProgram || programOptions.length === 0}
 							emptyMessage={
 								!selectedProgram
-									? t(
-											"admin.classes.form.selectProgramFirst",
-											{
-												defaultValue:
-													"Select a program to load its options.",
-											},
-										)
+									? t("admin.classes.form.selectProgramFirst", {
+											defaultValue: "Select a program to load its options.",
+										})
 									: "No options available"
 							}
 							required
@@ -1257,9 +1230,7 @@ export default function ClassManagement() {
 									<Select
 										onValueChange={field.onChange}
 										value={field.value}
-										disabled={
-											!semesters || semesters.length === 0
-										}
+										disabled={!semesters || semesters.length === 0}
 									>
 										<FormControl>
 											<SelectTrigger>
@@ -1267,8 +1238,7 @@ export default function ClassManagement() {
 													placeholder={t(
 														"admin.classes.form.semesterPlaceholder",
 														{
-															defaultValue:
-																"Select a semester",
+															defaultValue: "Select a semester",
 														},
 													)}
 												/>
@@ -1276,12 +1246,8 @@ export default function ClassManagement() {
 										</FormControl>
 										<SelectContent>
 											{semesters?.map((semester) => (
-												<SelectItem
-													key={semester.id}
-													value={semester.id}
-												>
-													{semester.name} (
-													{semester.code})
+												<SelectItem key={semester.id} value={semester.id}>
+													{semester.name} ({semester.code})
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -1304,12 +1270,9 @@ export default function ClassManagement() {
 									<FormControl>
 										<Input
 											{...field}
-											placeholder={t(
-												"admin.classes.form.codePlaceholder",
-												{
-													defaultValue: "INF11-01",
-												},
-											)}
+											placeholder={t("admin.classes.form.codePlaceholder", {
+												defaultValue: "INF11-01",
+											})}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -1322,9 +1285,7 @@ export default function ClassManagement() {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.labelLabel")}
-									</FormLabel>
+									<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
 									<FormControl>
 										<Input {...field} readOnly />
 									</FormControl>
@@ -1345,10 +1306,7 @@ export default function ClassManagement() {
 							>
 								{t("common.actions.cancel")}
 							</Button>
-							<Button
-								type="submit"
-								disabled={form.formState.isSubmitting}
-							>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
 								{form.formState.isSubmitting ? (
 									<Spinner className="mr-2 h-4 w-4" />
 								) : editingClass ? (
@@ -1374,6 +1332,150 @@ export default function ClassManagement() {
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
+
+			<Dialog
+				open={!!previewClass}
+				onOpenChange={(open) => {
+					if (!open) {
+						setPreviewClass(null);
+						setPreviewStudents([]);
+						setStudentSearch("");
+					}
+				}}
+			>
+				<DialogContent className="flex h-[80vh] w-full flex-col sm:max-w-4xl">
+					<DialogHeader>
+						<DialogTitle>
+							{previewClass?.name ?? ""}{" "}
+							{!previewLoading && (
+								<Badge variant="secondary" className="ml-2">
+									{previewStudents.length}{" "}
+									{t("admin.classes.students", {
+										defaultValue: "students",
+									})}
+								</Badge>
+							)}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.classes.previewDescription", {
+								defaultValue:
+									"List of students enrolled in this class",
+							})}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="relative shrink-0">
+						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder={t("admin.classes.searchStudents", {
+								defaultValue: "Search students...",
+							})}
+							value={studentSearch}
+							onChange={(e) => setStudentSearch(e.target.value)}
+							className="pl-9"
+						/>
+					</div>
+
+					{previewLoading ? (
+						<div className="flex items-center justify-center py-12">
+							<Spinner />
+						</div>
+					) : previewStudents.length === 0 ? (
+						<div className="py-12 text-center text-muted-foreground">
+							<Users className="mx-auto mb-2 h-10 w-10" />
+							<p>
+								{t("admin.classes.noStudents", {
+									defaultValue:
+										"No students enrolled in this class",
+								})}
+							</p>
+						</div>
+					) : (
+						<ScrollArea className="min-h-0 flex-1">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-12">#</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.registration", {
+												defaultValue: "Reg. Number",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.lastName", {
+												defaultValue: "Last Name",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.firstName", {
+												defaultValue: "First Name",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.birthDate", {
+												defaultValue: "Birth Date",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.classes.columns.gender", {
+												defaultValue: "Gender",
+											})}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{previewStudents
+										.filter((s) => {
+											if (!studentSearch) return true;
+											const q = studentSearch.toLowerCase();
+											return (
+												(s.profile?.lastName ?? "")
+													.toLowerCase()
+													.includes(q) ||
+												(s.profile?.firstName ?? "")
+													.toLowerCase()
+													.includes(q) ||
+												(s.registrationNumber ?? "")
+													.toLowerCase()
+													.includes(q)
+											);
+										})
+										.map((student, idx) => (
+											<TableRow key={student.id}>
+												<TableCell className="text-muted-foreground">
+													{idx + 1}
+												</TableCell>
+												<TableCell className="font-mono text-sm">
+													{student.registrationNumber ?? "—"}
+												</TableCell>
+												<TableCell className="font-medium">
+													{student.profile?.lastName ?? "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.firstName ?? "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.dateOfBirth
+														? new Date(
+																student.profile.dateOfBirth,
+															).toLocaleDateString()
+														: "—"}
+												</TableCell>
+												<TableCell>
+													{student.profile?.gender === "male"
+														? "M"
+														: student.profile?.gender === "female"
+															? "F"
+															: student.profile?.gender ?? "—"}
+												</TableCell>
+											</TableRow>
+										))}
+								</TableBody>
+							</Table>
+						</ScrollArea>
+					)}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

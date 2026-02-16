@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,7 @@ export default function RetakeEligibility() {
 	const queryClient = useQueryClient();
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 	const [overrideModal, setOverrideModal] = useState<OverrideModalState>({
 		isOpen: false,
@@ -109,11 +111,11 @@ export default function RetakeEligibility() {
 	const examsQuery = useQuery({
 		...trpc.exams.list.queryOptions({
 			academicYearId: academicYearId ?? undefined,
+			...(filterSemester ? { semesterId: filterSemester } : {}),
 			limit: 100,
 		}),
 		enabled: Boolean(academicYearId),
-		select: (data) =>
-			data.items.filter((exam) => exam.status === "approved"),
+		select: (data) => data.items.filter((exam) => exam.status === "approved"),
 	});
 
 	// Fetch eligibility data for the selected exam
@@ -208,14 +210,35 @@ export default function RetakeEligibility() {
 	const renderReasonBadge = (reason: RetakeEligibilityReason) => {
 		const reasonConfig: Record<
 			RetakeEligibilityReason,
-			{ variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }
+			{
+				variant: "default" | "secondary" | "destructive" | "outline";
+				icon: React.ReactNode;
+			}
 		> = {
-			NO_GRADE: { variant: "secondary", icon: <AlertTriangle className="h-3 w-3" /> },
-			FAILED_EXAM: { variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
-			PASSED_EXAM: { variant: "default", icon: <CheckCircle className="h-3 w-3" /> },
-			ATTEMPT_LIMIT_REACHED: { variant: "destructive", icon: <Ban className="h-3 w-3" /> },
-			OVERRIDE_FORCE_ELIGIBLE: { variant: "default", icon: <Shield className="h-3 w-3" /> },
-			OVERRIDE_FORCE_INELIGIBLE: { variant: "destructive", icon: <ShieldOff className="h-3 w-3" /> },
+			NO_GRADE: {
+				variant: "secondary",
+				icon: <AlertTriangle className="h-3 w-3" />,
+			},
+			FAILED_EXAM: {
+				variant: "destructive",
+				icon: <XCircle className="h-3 w-3" />,
+			},
+			PASSED_EXAM: {
+				variant: "default",
+				icon: <CheckCircle className="h-3 w-3" />,
+			},
+			ATTEMPT_LIMIT_REACHED: {
+				variant: "destructive",
+				icon: <Ban className="h-3 w-3" />,
+			},
+			OVERRIDE_FORCE_ELIGIBLE: {
+				variant: "default",
+				icon: <Shield className="h-3 w-3" />,
+			},
+			OVERRIDE_FORCE_INELIGIBLE: {
+				variant: "destructive",
+				icon: <ShieldOff className="h-3 w-3" />,
+			},
 		};
 		const config = reasonConfig[reason];
 		return (
@@ -226,16 +249,25 @@ export default function RetakeEligibility() {
 		);
 	};
 
-	const renderStudentTable = (students: EligibilityRow[], showEligibleActions: boolean) => (
+	const renderStudentTable = (
+		students: EligibilityRow[],
+		showEligibleActions: boolean,
+	) => (
 		<Table>
 			<TableHeader>
 				<TableRow>
 					<TableHead>{t("admin.retake.table.student")}</TableHead>
 					<TableHead>{t("admin.retake.table.registrationNumber")}</TableHead>
-					<TableHead className="text-center">{t("admin.retake.table.attempt")}</TableHead>
-					<TableHead className="text-center">{t("admin.retake.table.grade")}</TableHead>
+					<TableHead className="text-center">
+						{t("admin.retake.table.attempt")}
+					</TableHead>
+					<TableHead className="text-center">
+						{t("admin.retake.table.grade")}
+					</TableHead>
 					<TableHead>{t("admin.retake.table.reasons")}</TableHead>
-					<TableHead className="text-right">{t("admin.retake.table.override")}</TableHead>
+					<TableHead className="text-right">
+						{t("admin.retake.table.override")}
+					</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -246,7 +278,13 @@ export default function RetakeEligibility() {
 						<TableCell className="text-center">{row.attempt}</TableCell>
 						<TableCell className="text-center">
 							{row.grade !== null ? (
-								<span className={row.grade < 10 ? "text-destructive font-medium" : "text-green-600 font-medium"}>
+								<span
+									className={
+										row.grade < 10
+											? "font-medium text-destructive"
+											: "font-medium text-green-600"
+									}
+								>
 									{row.grade.toFixed(2)}
 								</span>
 							) : (
@@ -323,7 +361,9 @@ export default function RetakeEligibility() {
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.retake.selectExam")}</CardTitle>
-					<CardDescription>{t("admin.retake.selectExamPlaceholder")}</CardDescription>
+					<CardDescription>
+						{t("admin.retake.selectExamPlaceholder")}
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex flex-wrap gap-4">
@@ -337,6 +377,20 @@ export default function RetakeEligibility() {
 								}}
 							/>
 						</div>
+						<div className="flex flex-col gap-2">
+							<Label>
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => {
+									setFilterSemester(v);
+									setSelectedExamId(null);
+								}}
+							/>
+						</div>
 						<div className="flex flex-1 flex-col gap-2">
 							<Label>{t("admin.retake.selectExam")}</Label>
 							<Select
@@ -345,12 +399,15 @@ export default function RetakeEligibility() {
 								disabled={!academicYearId || examsQuery.isLoading}
 							>
 								<SelectTrigger>
-									<SelectValue placeholder={t("admin.retake.selectExamPlaceholder")} />
+									<SelectValue
+										placeholder={t("admin.retake.selectExamPlaceholder")}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{examsQuery.data?.map((exam) => (
 										<SelectItem key={exam.id} value={exam.id}>
-											{exam.name} - {exam.className ?? ""} ({format(new Date(exam.date), "MMM d, yyyy")})
+											{exam.name} - {exam.className ?? ""} (
+											{format(new Date(exam.date), "MMM d, yyyy")})
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -390,13 +447,17 @@ export default function RetakeEligibility() {
 								<div className="flex items-center gap-2">
 									<UserCheck className="h-5 w-5 text-green-600" />
 									<span className="font-medium">
-										{t("admin.retake.eligibleCount", { count: eligibleStudents.length })}
+										{t("admin.retake.eligibleCount", {
+											count: eligibleStudents.length,
+										})}
 									</span>
 								</div>
 								<div className="flex items-center gap-2">
 									<Users className="h-5 w-5 text-muted-foreground" />
 									<span className="font-medium">
-										{t("admin.retake.ineligibleCount", { count: ineligibleStudents.length })}
+										{t("admin.retake.ineligibleCount", {
+											count: ineligibleStudents.length,
+										})}
 									</span>
 								</div>
 							</div>
@@ -410,7 +471,9 @@ export default function RetakeEligibility() {
 										<Users className="h-8 w-8 text-muted-foreground" />
 									</EmptyMedia>
 									<EmptyTitle>{t("admin.retake.empty.title")}</EmptyTitle>
-									<EmptyDescription>{t("admin.retake.empty.description")}</EmptyDescription>
+									<EmptyDescription>
+										{t("admin.retake.empty.description")}
+									</EmptyDescription>
 								</EmptyHeader>
 								<EmptyContent />
 							</Empty>
@@ -451,15 +514,19 @@ export default function RetakeEligibility() {
 			)}
 
 			{/* Override Modal */}
-			<Dialog open={overrideModal.isOpen} onOpenChange={(open) => !open && closeOverrideModal()}>
+			<Dialog
+				open={overrideModal.isOpen}
+				onOpenChange={(open) => !open && closeOverrideModal()}
+			>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{t("admin.retake.override.confirmTitle")}</DialogTitle>
 						<DialogDescription>
 							{t("admin.retake.override.confirmMessage", {
-								action: overrideModal.action === "force_eligible"
-									? t("admin.retake.override.forceEligible").toLowerCase()
-									: t("admin.retake.override.forceIneligible").toLowerCase(),
+								action:
+									overrideModal.action === "force_eligible"
+										? t("admin.retake.override.forceEligible").toLowerCase()
+										: t("admin.retake.override.forceIneligible").toLowerCase(),
 							})}
 						</DialogDescription>
 					</DialogHeader>
@@ -469,7 +536,9 @@ export default function RetakeEligibility() {
 							<p className="font-medium">{overrideModal.row?.studentName}</p>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="overrideReason">{t("admin.retake.override.reason")}</Label>
+							<Label htmlFor="overrideReason">
+								{t("admin.retake.override.reason")}
+							</Label>
 							<Input
 								id="overrideReason"
 								value={overrideReason}
@@ -484,7 +553,9 @@ export default function RetakeEligibility() {
 						</Button>
 						<Button
 							onClick={handleOverrideSubmit}
-							disabled={!overrideReason.trim() || upsertOverrideMutation.isPending}
+							disabled={
+								!overrideReason.trim() || upsertOverrideMutation.isPending
+							}
 						>
 							{upsertOverrideMutation.isPending ? (
 								<Spinner className="mr-2 h-4 w-4" />

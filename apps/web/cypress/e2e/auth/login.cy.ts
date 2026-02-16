@@ -8,9 +8,7 @@ describe("Authentication - Login", () => {
 		it("successfully logs in with valid credentials", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("ADMIN_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("ADMIN_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("ADMIN_PASSWORD"));
@@ -18,10 +16,7 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to admin dashboard
-			cy.location("pathname", { timeout: 10000 }).should(
-				"include",
-				"/admin",
-			);
+			cy.location("pathname", { timeout: 10000 }).should("include", "/admin");
 			cy.contains(/dashboard|accueil/i).should("exist");
 		});
 
@@ -53,10 +48,7 @@ describe("Authentication - Login", () => {
 			});
 
 			// Should remain on login page (most important check)
-			cy.location("pathname", { timeout: 5000 }).should(
-				"include",
-				"login",
-			);
+			cy.location("pathname", { timeout: 5000 }).should("include", "login");
 		});
 
 		it("persists session after page refresh", () => {
@@ -79,9 +71,7 @@ describe("Authentication - Login", () => {
 
 			cy.visit(loginUrl);
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("ADMIN_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("ADMIN_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("ADMIN_PASSWORD"));
@@ -89,10 +79,7 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to the requested page
-			cy.location("pathname", { timeout: 10000 }).should(
-				"eq",
-				targetRoute,
-			);
+			cy.location("pathname", { timeout: 10000 }).should("eq", targetRoute);
 		});
 	});
 
@@ -100,9 +87,7 @@ describe("Authentication - Login", () => {
 		it("successfully logs in and redirects to teacher dashboard", () => {
 			cy.visit("/auth/login");
 
-			cy.findByLabelText(/email/i)
-				.clear()
-				.type(Cypress.env("TEACHER_EMAIL"));
+			cy.findByLabelText(/email/i).clear().type(Cypress.env("TEACHER_EMAIL"));
 			cy.findByLabelText(/password/i)
 				.clear()
 				.type(Cypress.env("TEACHER_PASSWORD"));
@@ -110,10 +95,7 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to teacher dashboard
-			cy.location("pathname", { timeout: 10000 }).should(
-				"include",
-				"/teacher",
-			);
+			cy.location("pathname", { timeout: 10000 }).should("include", "/teacher");
 		});
 
 		it("has access only to authorized features", () => {
@@ -137,15 +119,13 @@ describe("Authentication - Login", () => {
 
 				// Or check if there's an unauthorized message
 				const hasUnauthorizedMessage =
-					text.match(
-						/unauthorized|forbidden|access.*denied|non.*autorisé/i,
-					) !== null;
+					text.match(/unauthorized|forbidden|access.*denied|non.*autorisé/i) !==
+					null;
 
 				// Or check if page content is restricted (empty table, no add button)
 				const hasRestrictedContent =
-					$body.find(
-						'button:contains("Add"), button:contains("Ajouter")',
-					).length === 0;
+					$body.find('button:contains("Add"), button:contains("Ajouter")')
+						.length === 0;
 
 				// At least one of these should be true for proper access control
 				if (!isRedirected && !hasUnauthorizedMessage) {
@@ -166,9 +146,7 @@ describe("Authentication - Login", () => {
 			const studentPassword = Cypress.env("STUDENT_PASSWORD");
 
 			if (!studentEmail || !studentPassword) {
-				cy.log(
-					"Skipping student login test - no credentials configured",
-				);
+				cy.log("Skipping student login test - no credentials configured");
 				return;
 			}
 
@@ -182,10 +160,7 @@ describe("Authentication - Login", () => {
 			cy.findByRole("button", { name: /sign in/i }).click();
 
 			// Should redirect to student dashboard
-			cy.location("pathname", { timeout: 10000 }).should(
-				"include",
-				"/student",
-			);
+			cy.location("pathname", { timeout: 10000 }).should("include", "/student");
 		});
 
 		it("cannot access admin or teacher pages", () => {
@@ -193,9 +168,7 @@ describe("Authentication - Login", () => {
 			const studentPassword = Cypress.env("STUDENT_PASSWORD");
 
 			if (!studentEmail || !studentPassword) {
-				cy.log(
-					"Skipping student access test - no credentials configured",
-				);
+				cy.log("Skipping student access test - no credentials configured");
 				return;
 			}
 
@@ -214,9 +187,8 @@ describe("Authentication - Login", () => {
 				const text = $body.text();
 				const isRedirected = currentPath !== "/admin/students";
 				const hasUnauthorizedMessage =
-					text.match(
-						/unauthorized|forbidden|access.*denied|non.*autorisé/i,
-					) !== null;
+					text.match(/unauthorized|forbidden|access.*denied|non.*autorisé/i) !==
+					null;
 
 				if (!isRedirected && !hasUnauthorizedMessage) {
 					cy.log(
@@ -233,9 +205,8 @@ describe("Authentication - Login", () => {
 				const text = $body.text();
 				const isRedirected = currentPath !== "/teacher/grades";
 				const hasUnauthorizedMessage =
-					text.match(
-						/unauthorized|forbidden|access.*denied|non.*autorisé/i,
-					) !== null;
+					text.match(/unauthorized|forbidden|access.*denied|non.*autorisé/i) !==
+					null;
 
 				if (!isRedirected && !hasUnauthorizedMessage) {
 					cy.log(

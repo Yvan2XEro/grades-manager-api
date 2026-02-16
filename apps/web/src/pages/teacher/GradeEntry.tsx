@@ -121,9 +121,7 @@ const GradeEntry: React.FC = () => {
 
 	const teacherProfileId = user?.domainProfiles?.[0]?.id;
 	const viewerProfileId = teacherProfileId;
-	const [selectedCourseId, setSelectedCourseId] = useState(
-		routeCourseId ?? "",
-	);
+	const [selectedCourseId, setSelectedCourseId] = useState(routeCourseId ?? "");
 	const autoSelectExamRef = useRef<boolean>(Boolean(routeCourseId));
 	const manualCourseSelectionRef = useRef(false);
 	const [selectedExam, setSelectedExam] = useState<string>("");
@@ -397,21 +395,14 @@ const GradeEntry: React.FC = () => {
 			);
 			return;
 		}
-		const values = formValues as Record<
-			string,
-			string | number | undefined
-		>;
+		const values = formValues as Record<string, string | number | undefined>;
 		const gradesToUpsert: GradeInput[] = [];
 		const gradesToDelete: string[] = [];
 
 		Object.entries(values).forEach(([field, rawValue]) => {
 			if (!field.startsWith("student_")) return;
 			const studentId = field.replace("student_", "");
-			if (
-				rawValue === "" ||
-				rawValue === undefined ||
-				rawValue === null
-			) {
+			if (rawValue === "" || rawValue === undefined || rawValue === null) {
 				const existing = gradesByStudent[studentId];
 				if (existing?.id) {
 					gradesToDelete.push(existing.id);
@@ -462,9 +453,7 @@ const GradeEntry: React.FC = () => {
 			}
 		},
 		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.saveError"),
-			);
+			toast.error(error.message || t("teacher.gradeEntry.toast.saveError"));
 		},
 	});
 
@@ -485,9 +474,7 @@ const GradeEntry: React.FC = () => {
 			}
 		},
 		onError: (error: any) => {
-			toast.error(
-				error.message || t("teacher.gradeEntry.toast.lockError"),
-			);
+			toast.error(error.message || t("teacher.gradeEntry.toast.lockError"));
 		},
 	});
 
@@ -605,8 +592,7 @@ const GradeEntry: React.FC = () => {
 				jsonData.forEach((row) => {
 					const student = rosterStudents.find(
 						(s) =>
-							s.registrationNumber ===
-								row["Registration Number"] ||
+							s.registrationNumber === row["Registration Number"] ||
 							(s.firstName === row["First Name"] &&
 								s.lastName === row["Last Name"]),
 					);
@@ -652,21 +638,19 @@ const GradeEntry: React.FC = () => {
 		<div className="space-y-4">
 			{/* Compact Header */}
 			<div className="flex items-center gap-3">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() => navigate(-1)}
-				>
+				<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
 					<ArrowLeft className="h-5 w-5" />
 					<span className="sr-only">Back</span>
 				</Button>
 				<div className="min-w-0 flex-1">
-					<h2 className="font-semibold text-xl text-foreground">
+					<h2 className="font-semibold text-foreground text-xl">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
 						<p className="truncate text-muted-foreground text-sm">
-							<span className="font-medium">{courseInfo.teaching_unit_code}</span>
+							<span className="font-medium">
+								{courseInfo.teaching_unit_code}
+							</span>
 							{" / "}
 							<span className="font-medium">{courseInfo.course_code}</span>
 							{" • "}
@@ -682,7 +666,10 @@ const GradeEntry: React.FC = () => {
 					<div className="flex flex-col gap-4 lg:flex-row lg:items-end">
 						{/* Course Selector */}
 						<div className="min-w-0 flex-1 space-y-1.5">
-							<Label htmlFor="class-course" className="text-xs font-medium text-muted-foreground">
+							<Label
+								htmlFor="class-course"
+								className="font-medium text-muted-foreground text-xs"
+							>
 								{t("teacher.gradeEntry.selectCourse.label")}
 							</Label>
 							<Select
@@ -711,7 +698,10 @@ const GradeEntry: React.FC = () => {
 
 						{/* Exam Selector */}
 						<div className="min-w-0 flex-1 space-y-1.5">
-							<Label htmlFor="exam" className="text-xs font-medium text-muted-foreground">
+							<Label
+								htmlFor="exam"
+								className="font-medium text-muted-foreground text-xs"
+							>
 								{t("teacher.gradeEntry.selectExam.label")}
 							</Label>
 							<Select
@@ -719,7 +709,11 @@ const GradeEntry: React.FC = () => {
 								onValueChange={handleExamChange}
 								disabled={exams.length === 0 || !courseId}
 							>
-								<SelectTrigger id="exam" data-testid="exam-select" className="w-full">
+								<SelectTrigger
+									id="exam"
+									data-testid="exam-select"
+									className="w-full"
+								>
 									<SelectValue
 										placeholder={t("teacher.gradeEntry.selectExam.empty")}
 									/>
@@ -837,7 +831,9 @@ const GradeEntry: React.FC = () => {
 											{/* Add New Delegate */}
 											{canEditExam && (
 												<div className="space-y-2 border-t pt-4">
-													<Label>{t("teacher.gradeEntry.delegates.selectLabel")}</Label>
+													<Label>
+														{t("teacher.gradeEntry.delegates.selectLabel")}
+													</Label>
 													<div className="flex gap-2">
 														<Select
 															value={selectedEditorProfileId || undefined}
@@ -847,7 +843,7 @@ const GradeEntry: React.FC = () => {
 															<SelectTrigger className="flex-1">
 																<SelectValue
 																	placeholder={t(
-																		"teacher.gradeEntry.delegates.selectPlaceholder"
+																		"teacher.gradeEntry.delegates.selectPlaceholder",
 																	)}
 																/>
 															</SelectTrigger>
@@ -862,7 +858,9 @@ const GradeEntry: React.FC = () => {
 														<Button
 															type="button"
 															onClick={() =>
-																assignDelegateMutation.mutate(selectedEditorProfileId)
+																assignDelegateMutation.mutate(
+																	selectedEditorProfileId,
+																)
 															}
 															disabled={
 																!selectedEditorProfileId ||
@@ -901,10 +899,14 @@ const GradeEntry: React.FC = () => {
 						{/* Toolbar */}
 						<div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
-								<span>{rosterStudents.length} {t("teacher.gradeEntry.table.student").toLowerCase()}s</span>
+								<span>
+									{rosterStudents.length}{" "}
+									{t("teacher.gradeEntry.table.student").toLowerCase()}s
+								</span>
 								{Object.keys(gradesByStudent).length > 0 && (
 									<Badge variant="secondary" className="text-xs">
-										{Object.keys(gradesByStudent).length} / {rosterStudents.length}
+										{Object.keys(gradesByStudent).length} /{" "}
+										{rosterStudents.length}
 									</Badge>
 								)}
 							</div>
@@ -986,8 +988,10 @@ const GradeEntry: React.FC = () => {
 													{student.registrationNumber}
 												</TableCell>
 												<TableCell>
-													<span className="font-medium">{student.lastName}</span>,{" "}
-													{student.firstName}
+													<span className="font-medium">
+														{student.lastName}
+													</span>
+													, {student.firstName}
 												</TableCell>
 												<TableCell>
 													<div className="flex flex-col gap-1">
@@ -1003,16 +1007,22 @@ const GradeEntry: React.FC = () => {
 															{...register(`student_${student.id}`, {
 																min: {
 																	value: 0,
-																	message: t("teacher.gradeEntry.validation.min"),
+																	message: t(
+																		"teacher.gradeEntry.validation.min",
+																	),
 																},
 																max: {
 																	value: 20,
-																	message: t("teacher.gradeEntry.validation.max"),
+																	message: t(
+																		"teacher.gradeEntry.validation.max",
+																	),
 																},
 															})}
 														/>
 														{fieldError && (
-															<p className="text-destructive text-xs">{fieldError}</p>
+															<p className="text-destructive text-xs">
+																{fieldError}
+															</p>
 														)}
 													</div>
 												</TableCell>

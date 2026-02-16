@@ -91,14 +91,9 @@ describe("seed runner", () => {
 		});
 		expect(enrollment?.status).toBe("active");
 
-		const courseAttempt = await db.query.studentCourseEnrollments.findFirst(
-			{
-				where: eq(
-					appSchema.studentCourseEnrollments.studentId,
-					student!.id,
-				),
-			},
-		);
+		const courseAttempt = await db.query.studentCourseEnrollments.findFirst({
+			where: eq(appSchema.studentCourseEnrollments.studentId, student!.id),
+		});
 		expect(courseAttempt?.status).toBe("active");
 
 		const admin = await db.query.user.findFirst({

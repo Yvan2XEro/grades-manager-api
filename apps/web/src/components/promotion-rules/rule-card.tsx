@@ -49,10 +49,7 @@ export function RuleCard({
 						<CardTitle className="flex items-center gap-2 text-lg">
 							{rule.name}
 							{rule.isActive ? (
-								<Badge
-									variant="default"
-									className="bg-green-500"
-								>
+								<Badge variant="default" className="bg-green-500">
 									<CheckCircle2 className="mr-1 h-3 w-3" />
 									Active
 								</Badge>
@@ -100,10 +97,7 @@ export function RuleCard({
 								</DropdownMenuItem>
 							)}
 							{onDelete && (
-								<DropdownMenuItem
-									onClick={onDelete}
-									className="text-red-600"
-								>
+								<DropdownMenuItem onClick={onDelete} className="text-red-600">
 									<Trash2 className="mr-2 h-4 w-4" />
 									Delete
 								</DropdownMenuItem>

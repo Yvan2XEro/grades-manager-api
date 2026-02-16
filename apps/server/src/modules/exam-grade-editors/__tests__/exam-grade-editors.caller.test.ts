@@ -52,9 +52,7 @@ describe("exam grade delegation", () => {
 			limit: 50,
 		});
 		expect(
-			delegateCourses.items.some(
-				(course) => course.id === classCourse.id,
-			),
+			delegateCourses.items.some((course) => course.id === classCourse.id),
 		).toBe(true);
 
 		const grade = await delegateCaller.grades.upsertNote({

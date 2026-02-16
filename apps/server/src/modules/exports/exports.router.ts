@@ -29,6 +29,14 @@ export const exportsRouter = router({
 			};
 		}),
 
+	/** Get structured PV data (JSON) for frontend Excel export */
+	getPVData: gradingProcedure
+		.input(previewPVSchema)
+		.query(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			return service.getPVDataStructured(input);
+		}),
+
 	/**
 	 * Preview PV in HTML format (no PDF generation)
 	 */

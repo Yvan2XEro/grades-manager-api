@@ -32,10 +32,7 @@ const PerformanceDashboard = () => {
 	const progress = useMemo(() => {
 		if (!ledger) return 0;
 		if (!ledger.requiredCredits || ledger.requiredCredits === 0) return 0;
-		return Math.min(
-			100,
-			(ledger.creditsEarned / ledger.requiredCredits) * 100,
-		);
+		return Math.min(100, (ledger.creditsEarned / ledger.requiredCredits) * 100);
 	}, [ledger]);
 	const classInfo = classQuery.data;
 	const cycle = classInfo?.cycle;
@@ -47,9 +44,7 @@ const PerformanceDashboard = () => {
 				<h1 className="font-semibold text-2xl text-gray-900">
 					{t("student.performance.title")}
 				</h1>
-				<p className="text-gray-600">
-					{t("student.performance.subtitle")}
-				</p>
+				<p className="text-gray-600">{t("student.performance.subtitle")}</p>
 				{(cycle || cycleLevel) && (
 					<div className="mt-3 flex flex-wrap gap-2">
 						{cycle && (
@@ -98,8 +93,7 @@ const PerformanceDashboard = () => {
 							</p>
 							<p className="text-primary-900 text-xs">
 								{t("student.performance.inProgress", {
-									defaultValue:
-										"In progress: {{value}} credits",
+									defaultValue: "In progress: {{value}} credits",
 									value: ledger?.creditsInProgress ?? 0,
 								})}
 							</p>
@@ -118,20 +112,13 @@ const PerformanceDashboard = () => {
 								<div>
 									<p className="font-medium">
 										{promotionQuery.data.eligible
-											? t(
-													"student.performance.eligible",
-													{
-														defaultValue:
-															"Eligible for next level 🎉",
-													},
-												)
-											: t(
-													"student.performance.notEligible",
-													{
-														defaultValue:
-															"Keep going! You're almost ready for promotion.",
-													},
-												)}
+											? t("student.performance.eligible", {
+													defaultValue: "Eligible for next level 🎉",
+												})
+											: t("student.performance.notEligible", {
+													defaultValue:
+														"Keep going! You're almost ready for promotion.",
+												})}
 									</p>
 									<p className="text-xs">
 										{t("student.performance.ruleNotice", {

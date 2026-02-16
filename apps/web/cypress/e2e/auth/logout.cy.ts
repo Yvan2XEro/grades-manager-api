@@ -86,10 +86,7 @@ describe("Authentication - Logout", () => {
 		cy.go("back");
 
 		// Should still be on login or redirect back to login
-		cy.location("pathname", { timeout: 5000 }).should(
-			"include",
-			"/auth/login",
-		);
+		cy.location("pathname", { timeout: 5000 }).should("include", "/auth/login");
 	});
 
 	it("requires re-authentication after logout", () => {
@@ -115,10 +112,7 @@ describe("Authentication - Logout", () => {
 		cy.findByRole("button", { name: /sign in/i }).click();
 
 		// Should now have access
-		cy.location("pathname", { timeout: 10000 }).should(
-			"not.include",
-			"login",
-		);
+		cy.location("pathname", { timeout: 10000 }).should("not.include", "login");
 	});
 
 	it("handles logout when already logged out", () => {

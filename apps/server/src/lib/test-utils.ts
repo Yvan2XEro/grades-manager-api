@@ -179,8 +179,7 @@ export async function createOrganization(
 export async function createOrganizationMember(
 	data: Partial<authSchema.NewMember> & { userId?: string } = {},
 ) {
-	const organizationId =
-		data.organizationId ?? (await createOrganization()).id;
+	const organizationId = data.organizationId ?? (await createOrganization()).id;
 	const userId =
 		data.userId ??
 		(
@@ -338,9 +337,7 @@ export async function createStudyCycle(
 export async function createCycleLevel(
 	data: Partial<schema.NewCycleLevel> = {},
 ) {
-	const cycle = data.cycleId
-		? { id: data.cycleId }
-		: await createStudyCycle();
+	const cycle = data.cycleId ? { id: data.cycleId } : await createStudyCycle();
 	const [last] = await db
 		.select({ value: schema.cycleLevels.orderIndex })
 		.from(schema.cycleLevels)
@@ -601,9 +598,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 	const organizationId =
 		data.organizationId ?? getTestInstitution().organizationId;
 	if (targetRole && !organizationId) {
-		throw new Error(
-			"Test institution missing organizationId for member role",
-		);
+		throw new Error("Test institution missing organizationId for member role");
 	}
 	let memberId: string | null = null;
 	if (targetRole && organizationId) {
@@ -626,8 +621,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		lastName: rest.join(" ") || "Doe",
 		primaryEmail: email,
 		gender: data.gender ?? "other",
-		dateOfBirth:
-			data.dateOfBirth?.toISOString() ?? DEFAULT_DATE.toISOString(),
+		dateOfBirth: data.dateOfBirth?.toISOString() ?? DEFAULT_DATE.toISOString(),
 		placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	});
 	return { ...authUser.user, profile };
@@ -727,8 +721,7 @@ export async function createExam(data: Partial<schema.NewExam> = {}) {
 			validatedBy: data.validatedBy ?? null,
 			scheduledAt: data.scheduledAt ?? new Date(),
 			validatedAt:
-				data.validatedAt ??
-				(data.status === "approved" ? new Date() : null),
+				data.validatedAt ?? (data.status === "approved" ? new Date() : null),
 			institutionId: data.institutionId ?? classCourse.institutionId,
 		})
 		.returning();
@@ -844,16 +837,8 @@ export async function ensureStudentCourseEnrollment(
 			creditsEarned: status === "completed" ? unit.credits : 0,
 		})
 		.returning();
-	const contribution = creditLedger.contributionForStatus(
-		status,
-		unit.credits,
-	);
-	await creditLedger.applyDelta(
-		studentId,
-		klass.academicYear,
-		contribution.inProgress,
-		contribution.earned,
-	);
+	// Ensure a ledger row exists (credits are computed from grades via UE validation)
+	await creditLedger.ensureLedger(studentId, klass.academicYear);
 	return record;
 }
 

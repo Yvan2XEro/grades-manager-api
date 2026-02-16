@@ -57,15 +57,10 @@ export default function StudentManagement() {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return (
 				items
-					.filter(
-						(y) =>
-							new Date(y.startDate) <
-							new Date(activeYear.startDate),
-					)
+					.filter((y) => new Date(y.startDate) < new Date(activeYear.startDate))
 					.sort(
 						(a, b) =>
-							new Date(b.startDate).getTime() -
-							new Date(a.startDate).getTime(),
+							new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
 					)[0] ?? null
 			);
 		},
@@ -83,9 +78,7 @@ export default function StudentManagement() {
 				}),
 				trpcClient.programs.list.query({}),
 			]);
-			const programMap = new Map(
-				programRes.items.map((p) => [p.id, p.name]),
-			);
+			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
 			return classRes.items.map((cls) => ({
 				id: cls.id,
 				name: cls.name,
@@ -106,9 +99,7 @@ export default function StudentManagement() {
 				}),
 				trpcClient.programs.list.query({}),
 			]);
-			const programMap = new Map(
-				programRes.items.map((p) => [p.id, p.name]),
-			);
+			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
 			return classRes.items.map((cls) => ({
 				id: cls.id,
 				name: cls.name,
@@ -137,14 +128,12 @@ export default function StudentManagement() {
 							const exam = await trpcClient.exams.getById.query({
 								id: g.exam,
 							});
-							const classCourse =
-								await trpcClient.classCourses.getById.query({
-									id: exam.classCourse,
-								});
-							const course =
-								await trpcClient.courses.getById.query({
-									id: classCourse.course,
-								});
+							const classCourse = await trpcClient.classCourses.getById.query({
+								id: exam.classCourse,
+							});
+							const course = await trpcClient.courses.getById.query({
+								id: classCourse.course,
+							});
 							return {
 								score: Number(g.score),
 								exams: {
@@ -189,10 +178,7 @@ export default function StudentManagement() {
 
 	// Get course averages for a student
 	const getCourseAverages = (student: Student) => {
-		const courseGrades = new Map<
-			string,
-			{ total: number; count: number }
-		>();
+		const courseGrades = new Map<string, { total: number; count: number }>();
 
 		student.grades.forEach((grade) => {
 			const courseName = grade.exams.class_courses.courses.name;
@@ -208,10 +194,7 @@ export default function StudentManagement() {
 
 		const averages = new Map<string, number>();
 		courseGrades.forEach((value, course) => {
-			averages.set(
-				course,
-				Number((value.total / value.count).toFixed(2)),
-			);
+			averages.set(course, Number((value.total / value.count).toFixed(2)));
 		});
 
 		return averages;
@@ -264,12 +247,8 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">
-					{t("teacher.promotion.title")}
-				</h2>
-				<p className="text-gray-600">
-					{t("teacher.promotion.subtitle")}
-				</p>
+				<h2 className="font-bold text-2xl">{t("teacher.promotion.title")}</h2>
+				<p className="text-gray-600">{t("teacher.promotion.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2">
@@ -278,9 +257,7 @@ export default function StudentManagement() {
 					<label className="label" htmlFor={sourceId}>
 						<span className="label-text">
 							{t("teacher.promotion.sourceClassLabel", {
-								year:
-									previousYear?.name ??
-									t("teacher.promotion.unknownYear"),
+								year: previousYear?.name ?? t("teacher.promotion.unknownYear"),
 							})}
 						</span>
 					</label>
@@ -309,9 +286,7 @@ export default function StudentManagement() {
 					<label className="label" htmlFor={targetId}>
 						<span className="label-text">
 							{t("teacher.promotion.targetClassLabel", {
-								year:
-									activeYear?.name ??
-									t("teacher.promotion.unknownYear"),
+								year: activeYear?.name ?? t("teacher.promotion.unknownYear"),
 							})}
 						</span>
 					</label>
@@ -360,9 +335,7 @@ export default function StudentManagement() {
 								type="button"
 								onClick={handlePromote}
 								disabled={
-									selectedStudents.length === 0 ||
-									!targetClass ||
-									isPromoting
+									selectedStudents.length === 0 || !targetClass || isPromoting
 								}
 								className="btn btn-sm btn-primary"
 							>
@@ -370,9 +343,7 @@ export default function StudentManagement() {
 									<span className="loading loading-spinner loading-sm" />
 								) : (
 									<span className="flex items-center gap-2">
-										{t(
-											"teacher.promotion.actions.promoteSelected",
-										)}
+										{t("teacher.promotion.actions.promoteSelected")}
 										<ArrowRight className="h-4 w-4" />
 									</span>
 								)}
@@ -388,46 +359,26 @@ export default function StudentManagement() {
 										<input
 											type="checkbox"
 											className="checkbox"
-											checked={
-												selectedStudents.length ===
-												students.length
-											}
+											checked={selectedStudents.length === students.length}
 											onChange={(e) => {
 												if (e.target.checked) {
-													setSelectedStudents(
-														students.map(
-															(s) => s.id,
-														),
-													);
+													setSelectedStudents(students.map((s) => s.id));
 												} else {
 													setSelectedStudents([]);
 												}
 											}}
 										/>
 									</th>
-									<th>
-										{t(
-											"teacher.promotion.table.registration",
-										)}
-									</th>
+									<th>{t("teacher.promotion.table.registration")}</th>
 									<th>{t("teacher.promotion.table.name")}</th>
-									<th>
-										{t(
-											"teacher.promotion.table.courseAverages",
-										)}
-									</th>
-									<th>
-										{t(
-											"teacher.promotion.table.overallAverage",
-										)}
-									</th>
+									<th>{t("teacher.promotion.table.courseAverages")}</th>
+									<th>{t("teacher.promotion.table.overallAverage")}</th>
 								</tr>
 							</thead>
 							<tbody>
 								{students.map((student) => {
 									const average = calculateAverage(student);
-									const courseAverages =
-										getCourseAverages(student);
+									const courseAverages = getCourseAverages(student);
 
 									return (
 										<tr key={student.id}>
@@ -435,48 +386,32 @@ export default function StudentManagement() {
 												<input
 													type="checkbox"
 													className="checkbox"
-													checked={selectedStudents.includes(
-														student.id,
-													)}
+													checked={selectedStudents.includes(student.id)}
 													onChange={(e) => {
 														if (e.target.checked) {
-															setSelectedStudents(
-																[
-																	...selectedStudents,
-																	student.id,
-																],
-															);
+															setSelectedStudents([
+																...selectedStudents,
+																student.id,
+															]);
 														} else {
 															setSelectedStudents(
 																selectedStudents.filter(
-																	(id) =>
-																		id !==
-																		student.id,
+																	(id) => id !== student.id,
 																),
 															);
 														}
 													}}
 												/>
 											</td>
+											<td>{student.registration_number}</td>
 											<td>
-												{student.registration_number}
-											</td>
-											<td>
-												{student.last_name},{" "}
-												{student.first_name}
+												{student.last_name}, {student.first_name}
 											</td>
 											<td>
 												<div className="space-y-1">
-													{Array.from(
-														courseAverages,
-													).map(([course, avg]) => (
-														<div
-															key={course}
-															className="text-sm"
-														>
-															<span className="font-medium">
-																{course}:
-															</span>{" "}
+													{Array.from(courseAverages).map(([course, avg]) => (
+														<div key={course} className="text-sm">
+															<span className="font-medium">{course}:</span>{" "}
 															<span
 																className={
 																	avg >= 10

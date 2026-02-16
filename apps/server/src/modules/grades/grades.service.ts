@@ -12,6 +12,7 @@ import * as examsRepo from "../exams/exams.repo";
 import { refreshAfterRetakeGrade } from "../promotion-rules/student-facts.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as studentsRepo from "../students/students.repo";
+import * as creditLedger from "../student-credit-ledger/student-credit-ledger.service";
 import * as repo from "./grades.repo";
 
 const _CSV_HEADERS = ["registrationNumber", "score"];
@@ -51,10 +52,7 @@ async function requireCourseForInstitution(
 			institutionId: schema.programs.institutionId,
 		})
 		.from(schema.courses)
-		.innerJoin(
-			schema.programs,
-			eq(schema.programs.id, schema.courses.program),
-		)
+		.innerJoin(schema.programs, eq(schema.programs.id, schema.courses.program))
 		.where(eq(schema.courses.id, courseId))
 		.limit(1);
 	if (!course || course.institutionId !== institutionId) {
@@ -66,6 +64,25 @@ async function requireCourseForInstitution(
 function ensureExamEditable(exam: schema.Exam | undefined | null) {
 	if (!exam) throw notFound();
 	if (exam.isLocked) throw new TRPCError({ code: "FORBIDDEN" });
+}
+
+/** Resolve academicYearId from exam → classCourse → class chain. */
+async function resolveAcademicYearId(classCourseId: string): Promise<string | null> {
+	const [row] = await db
+		.select({ academicYear: schema.classes.academicYear })
+		.from(schema.classCourses)
+		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
+		.where(eq(schema.classCourses.id, classCourseId))
+		.limit(1);
+	return row?.academicYear ?? null;
+}
+
+/** Recompute credit ledger for a student after a grade change. */
+async function recomputeCreditsAfterGradeChange(studentId: string, classCourseId: string) {
+	const academicYearId = await resolveAcademicYearId(classCourseId);
+	if (academicYearId) {
+		await creditLedger.recomputeForStudent(studentId, academicYearId);
+	}
 }
 
 export async function upsertNote(
@@ -81,10 +98,7 @@ export async function upsertNote(
 		actor,
 	});
 	ensureExamEditable(exam);
-	await courseEnrollments.ensureStudentRegistered(
-		studentId,
-		exam.classCourse,
-	);
+	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
 	try {
 		const saved = await repo.upsert({
 			student: studentId,
@@ -104,6 +118,8 @@ export async function upsertNote(
 		if (exam.sessionType === "retake") {
 			await refreshAfterRetakeGrade(studentId, examId);
 		}
+		// Recompute credit ledger based on UE validation
+		await recomputeCreditsAfterGradeChange(studentId, exam.classCourse);
 		return saved;
 	} catch (_e) {
 		throw new TRPCError({ code: "CONFLICT" });
@@ -143,6 +159,8 @@ export async function updateNote(
 	if (exam.sessionType === "retake") {
 		await refreshAfterRetakeGrade(grade.student, grade.exam);
 	}
+	// Recompute credit ledger based on UE validation
+	await recomputeCreditsAfterGradeChange(grade.student, exam.classCourse);
 	return updated;
 }
 
@@ -173,6 +191,8 @@ export async function deleteNote(
 	if (exam.sessionType === "retake") {
 		await refreshAfterRetakeGrade(grade.student, grade.exam);
 	}
+	// Recompute credit ledger based on UE validation
+	await recomputeCreditsAfterGradeChange(grade.student, exam.classCourse);
 }
 
 export async function listByExam(
@@ -238,10 +258,7 @@ export async function exportClassCourseCsv(
 			schema.classCourses,
 			eq(schema.exams.classCourse, schema.classCourses.id),
 		)
-		.innerJoin(
-			schema.students,
-			eq(schema.grades.student, schema.students.id),
-		)
+		.innerJoin(schema.students, eq(schema.grades.student, schema.students.id))
 		.where(eq(schema.classCourses.id, classCourseId));
 
 	const header = ["registrationNumber", "examId", "score"];
@@ -339,11 +356,17 @@ export async function importGradesFromCsv(
 		});
 	}
 
-	// Trigger recalculation for retake exams to update UE averages and promotion facts
-	if (exam.sessionType === "retake" && importedStudentIds.length > 0) {
+	if (importedStudentIds.length > 0) {
 		const uniqueStudentIds = [...new Set(importedStudentIds)];
+		// Trigger recalculation for retake exams to update UE averages and promotion facts
+		if (exam.sessionType === "retake") {
+			for (const studentId of uniqueStudentIds) {
+				await refreshAfterRetakeGrade(studentId, examId);
+			}
+		}
+		// Recompute credit ledger for all affected students
 		for (const studentId of uniqueStudentIds) {
-			await refreshAfterRetakeGrade(studentId, examId);
+			await recomputeCreditsAfterGradeChange(studentId, exam.classCourse);
 		}
 	}
 
@@ -366,6 +389,7 @@ export async function getStudentTranscript(
 		.select({
 			courseId: schema.courses.id,
 			courseName: schema.courses.name,
+			coefficient: schema.classCourses.coefficient,
 			teachingUnitId: schema.teachingUnits.id,
 			unitName: schema.teachingUnits.name,
 			unitCode: schema.teachingUnits.code,
@@ -391,6 +415,7 @@ export async function getStudentTranscript(
 		.where(eq(schema.grades.student, studentId))
 		.groupBy(
 			schema.courses.id,
+			schema.classCourses.coefficient,
 			schema.teachingUnits.id,
 			schema.teachingUnits.name,
 			schema.teachingUnits.code,
@@ -406,30 +431,34 @@ export async function getStudentTranscript(
 				id: string;
 				name: string;
 				average: number;
+				coefficient: number;
 			}>;
 			credits: number;
-			scoreSum: number;
-			courseCount: number;
+			weightedScoreSum: number;
+			totalCoefficients: number;
 		}
 	>();
 
 	for (const course of courseScores) {
+		const coefficient = Number(course.coefficient ?? 1);
+		const score = Number(course.score ?? 0);
 		const unit = units.get(course.teachingUnitId) ?? {
 			id: course.teachingUnitId,
 			name: course.unitName,
 			code: course.unitCode,
 			courses: [],
 			credits: Number(course.unitCredits ?? 0),
-			scoreSum: 0,
-			courseCount: 0,
+			weightedScoreSum: 0,
+			totalCoefficients: 0,
 		};
 		unit.courses.push({
 			id: course.courseId,
 			name: course.courseName,
-			average: Number(course.score ?? 0),
+			average: score,
+			coefficient,
 		});
-		unit.scoreSum += Number(course.score ?? 0);
-		unit.courseCount += 1;
+		unit.weightedScoreSum += score * coefficient;
+		unit.totalCoefficients += coefficient;
 		units.set(course.teachingUnitId, unit);
 	}
 
@@ -437,7 +466,7 @@ export async function getStudentTranscript(
 		id: unit.id,
 		name: unit.name,
 		code: unit.code,
-		average: unit.courseCount ? unit.scoreSum / unit.courseCount : 0,
+		average: unit.totalCoefficients > 0 ? unit.weightedScoreSum / unit.totalCoefficients : 0,
 		credits: unit.credits,
 		courses: unit.courses,
 	}));
@@ -489,9 +518,7 @@ async function maybeLogDelegateGradeEdit(input: DelegateLogInput) {
 				? input.scoreBefore.toString()
 				: null,
 		scoreAfter:
-			typeof input.scoreAfter === "number"
-				? input.scoreAfter.toString()
-				: null,
+			typeof input.scoreAfter === "number" ? input.scoreAfter.toString() : null,
 		metadata: input.metadata ?? {},
 	});
 }

@@ -8,8 +8,6 @@ const studentSchema = z.object({ studentId: z.string() });
 export const promotionsRouter = router({
 	evaluateStudent: protectedProcedure
 		.input(studentSchema)
-		.query(({ input }) =>
-			service.evaluateStudentPromotion(input.studentId),
-		),
+		.query(({ input }) => service.evaluateStudentPromotion(input.studentId)),
 	listDefaultRules: protectedProcedure.query(() => promotionRules),
 });

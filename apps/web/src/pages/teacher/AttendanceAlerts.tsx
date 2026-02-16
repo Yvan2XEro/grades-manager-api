@@ -59,9 +59,7 @@ const AttendanceAlerts = () => {
 			<div className="grid gap-4 lg:grid-cols-2">
 				<Card>
 					<CardHeader>
-						<CardTitle>
-							{t("teacher.attendance.openAlerts")}
-						</CardTitle>
+						<CardTitle>{t("teacher.attendance.openAlerts")}</CardTitle>
 						<CardDescription>
 							{t("teacher.attendance.subtitle")}
 						</CardDescription>
@@ -77,9 +75,7 @@ const AttendanceAlerts = () => {
 										<AlertTriangle className="h-5 w-5" />
 									</div>
 									<div>
-										<p className="font-medium text-foreground">
-											{alert.type}
-										</p>
+										<p className="font-medium text-foreground">{alert.type}</p>
 										<p className="text-muted-foreground text-sm">
 											{JSON.stringify(alert.payload)}
 										</p>
@@ -98,9 +94,7 @@ const AttendanceAlerts = () => {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>
-							{t("teacher.attendance.broadcast")}
-						</CardTitle>
+						<CardTitle>{t("teacher.attendance.broadcast")}</CardTitle>
 						<CardDescription>
 							{t("teacher.attendance.broadcastDesc")}
 						</CardDescription>

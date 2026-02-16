@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or } from "drizzle-orm";
+import { and, count, eq, gt, ilike, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -95,12 +95,36 @@ export async function list(
 		const cursorCond = gt(schema.programs.id, opts.cursor);
 		condition = condition ? and(condition, cursorCond) : cursorCond;
 	}
-	const items = await db
-		.select(programSelection)
+	const rows = await db
+		.select({
+			...programSelection,
+			optionsCount: count(schema.programOptions.id),
+		})
 		.from(schema.programs)
+		.leftJoin(
+			schema.programOptions,
+			eq(schema.programOptions.programId, schema.programs.id),
+		)
 		.where(condition)
-		.orderBy(schema.programs.id)
+		.groupBy(
+			schema.programs.id,
+			schema.programs.institutionId,
+			schema.programs.code,
+			schema.programs.name,
+			schema.programs.description,
+			schema.programs.createdAt,
+		)
+		.orderBy(schema.programs.name)
 		.limit(limit);
+	const items = rows.map((r) => ({
+		id: r.id,
+		institutionId: r.institutionId,
+		code: r.code,
+		name: r.name,
+		description: r.description,
+		createdAt: r.createdAt,
+		optionsCount: r.optionsCount,
+	}));
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
 	return { items, nextCursor };

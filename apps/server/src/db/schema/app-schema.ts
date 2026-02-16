@@ -225,10 +225,7 @@ export const academicYears = pgTable(
 	(t) => [
 		check("chk_academic_years_dates", sql`${t.endDate} > ${t.startDate}`),
 		index("idx_academic_years_institution").on(t.institutionId),
-		unique("uq_academic_years_institution_name").on(
-			t.institutionId,
-			t.name,
-		),
+		unique("uq_academic_years_institution_name").on(t.institutionId, t.name),
 	],
 );
 
@@ -697,12 +694,9 @@ export const institutions = pgTable(
 				onDelete: "set null",
 			},
 		),
-		organizationId: text("organization_id").references(
-			() => organization.id,
-			{
-				onDelete: "set null",
-			},
-		),
+		organizationId: text("organization_id").references(() => organization.id, {
+			onDelete: "set null",
+		}),
 		defaultAcademicYearId: text("default_academic_year_id").references(
 			() => academicYears.id,
 			{
@@ -895,10 +889,7 @@ export const enrollmentWindows = pgTable(
 		closedAt: timestamp("closed_at", { withTimezone: true }),
 	},
 	(t) => [
-		unique("uq_enrollment_window_class_year").on(
-			t.classId,
-			t.academicYearId,
-		),
+		unique("uq_enrollment_window_class_year").on(t.classId, t.academicYearId),
 		index("idx_enrollment_window_status").on(t.status),
 	],
 );
@@ -1052,9 +1043,7 @@ export const promotionExecutions = pgTable(
 			.references(() => domainUsers.id, { onDelete: "restrict" }),
 		studentsEvaluated: integer("students_evaluated").notNull().default(0),
 		studentsPromoted: integer("students_promoted").notNull().default(0),
-		metadata: jsonb("metadata")
-			.$type<Record<string, unknown>>()
-			.default({}),
+		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
 		executedAt: timestamp("executed_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1142,32 +1131,24 @@ export const gradeEditLogs = pgTable(
 		examId: text("exam_id").references(() => exams.id, {
 			onDelete: "set null",
 		}),
-		classCourseId: text("class_course_id").references(
-			() => classCourses.id,
-			{
-				onDelete: "set null",
-			},
-		),
+		classCourseId: text("class_course_id").references(() => classCourses.id, {
+			onDelete: "set null",
+		}),
 		studentId: text("student_id").references(() => students.id, {
 			onDelete: "set null",
 		}),
 		gradeId: text("grade_id").references(() => grades.id, {
 			onDelete: "set null",
 		}),
-		actorProfileId: text("actor_profile_id").references(
-			() => domainUsers.id,
-			{
-				onDelete: "set null",
-			},
-		),
+		actorProfileId: text("actor_profile_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
 		actorRole: text("actor_role").$type<GradeEditActorRole>().notNull(),
 		isDelegate: boolean("is_delegate").notNull().default(false),
 		action: text("action").$type<GradeEditLogAction>().notNull(),
 		scoreBefore: numeric("score_before", { precision: 5, scale: 2 }),
 		scoreAfter: numeric("score_after", { precision: 5, scale: 2 }),
-		metadata: jsonb("metadata")
-			.$type<Record<string, unknown>>()
-			.default({}),
+		metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -1254,16 +1235,10 @@ export const studentPromotionSummaries = pgTable(
 		creditSuccessRate: doublePrecision("credit_success_rate")
 			.notNull()
 			.default(0),
-		performanceIndex: doublePrecision("performance_index")
-			.notNull()
-			.default(0),
+		performanceIndex: doublePrecision("performance_index").notNull().default(0),
 		isOnTrack: boolean("is_on_track").notNull().default(false),
-		progressionRate: doublePrecision("progression_rate")
-			.notNull()
-			.default(0),
-		projectedCreditsEndOfYear: doublePrecision(
-			"projected_credits_end_of_year",
-		)
+		progressionRate: doublePrecision("progression_rate").notNull().default(0),
+		projectedCreditsEndOfYear: doublePrecision("projected_credits_end_of_year")
 			.notNull()
 			.default(0),
 		canReachRequiredCredits: boolean("can_reach_required_credits")
@@ -1272,17 +1247,11 @@ export const studentPromotionSummaries = pgTable(
 		failedTeachingUnitsCount: integer("failed_teaching_units_count")
 			.notNull()
 			.default(0),
-		eliminatoryFailures: integer("eliminatory_failures")
-			.notNull()
-			.default(0),
+		eliminatoryFailures: integer("eliminatory_failures").notNull().default(0),
 		scoresBelow8: integer("scores_below_8").notNull().default(0),
 		admissionType: text("admission_type").notNull().default("normal"),
-		isTransferStudent: boolean("is_transfer_student")
-			.notNull()
-			.default(false),
-		isDirectAdmission: boolean("is_direct_admission")
-			.notNull()
-			.default(false),
+		isTransferStudent: boolean("is_transfer_student").notNull().default(false),
+		isDirectAdmission: boolean("is_direct_admission").notNull().default(false),
 		hasAcademicHistory: boolean("has_academic_history")
 			.notNull()
 			.default(false),
@@ -1300,10 +1269,7 @@ export const studentPromotionSummaries = pgTable(
 		facts: jsonb("facts").notNull().$type<Record<string, unknown>>(),
 	},
 	(t) => [
-		unique("uq_student_promotion_summary").on(
-			t.studentId,
-			t.academicYearId,
-		),
+		unique("uq_student_promotion_summary").on(t.studentId, t.academicYearId),
 		index("idx_student_promotion_summary_year").on(t.academicYearId),
 		index("idx_student_promotion_summary_class").on(t.classId),
 		index("idx_student_promotion_summary_program").on(t.programId),
@@ -1824,11 +1790,194 @@ export const exportTemplates = pgTable(
 	(t) => [
 		index("idx_export_templates_institution").on(t.institutionId),
 		index("idx_export_templates_type").on(t.type),
-		unique("uq_export_templates_institution_name").on(
-			t.institutionId,
-			t.name,
-		),
+		unique("uq_export_templates_institution_name").on(t.institutionId, t.name),
 	],
 );
 export type ExportTemplate = InferSelectModel<typeof exportTemplates>;
 export type NewExportTemplate = InferInsertModel<typeof exportTemplates>;
+
+// ---------------------------------------------------------------------------
+// Batch Jobs Framework
+// ---------------------------------------------------------------------------
+
+export const batchJobStatuses = [
+	"pending",
+	"previewed",
+	"running",
+	"completed",
+	"failed",
+	"cancelled",
+	"stale",
+	"rolled_back",
+] as const;
+export type BatchJobStatus = (typeof batchJobStatuses)[number];
+
+export const batchJobStepStatuses = [
+	"pending",
+	"running",
+	"completed",
+	"failed",
+	"skipped",
+] as const;
+export type BatchJobStepStatus = (typeof batchJobStepStatuses)[number];
+
+export const batchJobLogLevels = ["info", "warn", "error"] as const;
+export type BatchJobLogLevel = (typeof batchJobLogLevels)[number];
+
+export const batchJobs = pgTable(
+	"batch_jobs",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		type: text("type").notNull(),
+		params: jsonb("params").notNull().$type<Record<string, unknown>>(),
+		status: text("status").notNull().$type<BatchJobStatus>().default("pending"),
+		// Preview
+		previewResult: jsonb("preview_result").$type<Record<string, unknown>>(),
+		previewedAt: timestamp("previewed_at", { withTimezone: true }),
+		// Execution
+		executionResult: jsonb("execution_result").$type<Record<string, unknown>>(),
+		progress: jsonb("progress").$type<{
+			currentStep: number;
+			totalSteps: number;
+			itemsProcessed: number;
+			itemsTotal: number;
+		}>(),
+		startedAt: timestamp("started_at", { withTimezone: true }),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		failedAt: timestamp("failed_at", { withTimezone: true }),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		rolledBackAt: timestamp("rolled_back_at", { withTimezone: true }),
+		// Error handling
+		error: text("error"),
+		suggestedActions: jsonb("suggested_actions").$type<string[]>(),
+		// Rollback link: if this job is a rollback, points to the original
+		parentJobId: text("parent_job_id"),
+		// Rollback link: if this job was rolled back, points to the rollback job
+		rollbackJobId: text("rollback_job_id"),
+		// Actor
+		createdBy: text("created_by").references(() => domainUsers.id),
+		// Heartbeat for stale detection
+		lastHeartbeat: timestamp("last_heartbeat", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_batch_jobs_institution_status").on(t.institutionId, t.status),
+		index("idx_batch_jobs_type_status").on(t.type, t.status),
+		index("idx_batch_jobs_scope_lock").on(t.institutionId, t.type, t.status),
+	],
+);
+
+export const batchJobSteps = pgTable(
+	"batch_job_steps",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => sql`gen_random_uuid()`),
+		jobId: text("job_id")
+			.notNull()
+			.references(() => batchJobs.id, { onDelete: "cascade" }),
+		stepIndex: integer("step_index").notNull(),
+		name: text("name").notNull(),
+		status: text("status")
+			.notNull()
+			.$type<BatchJobStepStatus>()
+			.default("pending"),
+		itemsTotal: integer("items_total").default(0),
+		itemsProcessed: integer("items_processed").default(0),
+		itemsSkipped: integer("items_skipped").default(0),
+		itemsFailed: integer("items_failed").default(0),
+		error: text("error"),
+		data: jsonb("data").$type<Record<string, unknown>>(),
+		startedAt: timestamp("started_at", { withTimezone: true }),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+	},
+	(t) => [index("idx_batch_job_steps_job").on(t.jobId)],
+);
+
+export const batchJobLogs = pgTable(
+	"batch_job_logs",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => sql`gen_random_uuid()`),
+		jobId: text("job_id")
+			.notNull()
+			.references(() => batchJobs.id, { onDelete: "cascade" }),
+		stepId: text("step_id").references(() => batchJobSteps.id, {
+			onDelete: "cascade",
+		}),
+		level: text("level").notNull().$type<BatchJobLogLevel>().default("info"),
+		message: text("message").notNull(),
+		data: jsonb("data").$type<Record<string, unknown>>(),
+		timestamp: timestamp("timestamp", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_batch_job_logs_job").on(t.jobId),
+		index("idx_batch_job_logs_step").on(t.stepId),
+	],
+);
+
+// Relations
+export const batchJobsRelations = relations(batchJobs, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [batchJobs.institutionId],
+		references: [institutions.id],
+	}),
+	createdByRef: one(domainUsers, {
+		fields: [batchJobs.createdBy],
+		references: [domainUsers.id],
+	}),
+	parentJob: one(batchJobs, {
+		fields: [batchJobs.parentJobId],
+		references: [batchJobs.id],
+		relationName: "parentChild",
+	}),
+	rollbackJob: one(batchJobs, {
+		fields: [batchJobs.rollbackJobId],
+		references: [batchJobs.id],
+		relationName: "rollback",
+	}),
+	steps: many(batchJobSteps),
+	logs: many(batchJobLogs),
+}));
+
+export const batchJobStepsRelations = relations(
+	batchJobSteps,
+	({ one, many }) => ({
+		job: one(batchJobs, {
+			fields: [batchJobSteps.jobId],
+			references: [batchJobs.id],
+		}),
+		logs: many(batchJobLogs),
+	}),
+);
+
+export const batchJobLogsRelations = relations(batchJobLogs, ({ one }) => ({
+	job: one(batchJobs, {
+		fields: [batchJobLogs.jobId],
+		references: [batchJobs.id],
+	}),
+	step: one(batchJobSteps, {
+		fields: [batchJobLogs.stepId],
+		references: [batchJobSteps.id],
+	}),
+}));
+
+export type BatchJob = InferSelectModel<typeof batchJobs>;
+export type NewBatchJob = InferInsertModel<typeof batchJobs>;
+export type BatchJobStep = InferSelectModel<typeof batchJobSteps>;
+export type NewBatchJobStep = InferInsertModel<typeof batchJobSteps>;
+export type BatchJobLog = InferSelectModel<typeof batchJobLogs>;
+export type NewBatchJobLog = InferInsertModel<typeof batchJobLogs>;

@@ -4039,12 +4039,7 @@
 				"uq_student_course_attempt": {
 					"name": "uq_student_course_attempt",
 					"nullsNotDistinct": false,
-					"columns": [
-						"student_id",
-						"course_id",
-						"academic_year_id",
-						"attempt"
-					]
+					"columns": ["student_id", "course_id", "academic_year_id", "attempt"]
 				}
 			},
 			"policies": {},

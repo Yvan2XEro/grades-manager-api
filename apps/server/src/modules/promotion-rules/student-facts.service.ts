@@ -205,8 +205,7 @@ async function buildStudentFacts(
 		creditSuccessRate: creditSummary.creditSuccessRate,
 
 		// Attempts and retakes
-		coursesWithMultipleAttempts:
-			enrollmentStats.coursesWithMultipleAttempts,
+		coursesWithMultipleAttempts: enrollmentStats.coursesWithMultipleAttempts,
 		maxAttemptCount: enrollmentStats.maxAttemptCount,
 		totalAttempts: enrollmentStats.totalAttempts,
 		activeCourses: enrollmentStats.activeCourses,
@@ -236,8 +235,7 @@ async function buildStudentFacts(
 				: 0) >= 0.75 && transcript.overallAverage >= PASSING_GRADE,
 		progressionRate:
 			enrollmentHistory.activeYearsCount > 0
-				? creditSummary.creditsEarned /
-					enrollmentHistory.activeYearsCount
+				? creditSummary.creditsEarned / enrollmentHistory.activeYearsCount
 				: 0,
 		projectedCreditsEndOfYear:
 			creditSummary.creditsEarned + creditSummary.creditsInProgress,
@@ -252,8 +250,7 @@ async function buildStudentFacts(
 			currentEnrollment?.admissionType === "direct" ||
 			currentEnrollment?.admissionType === "equivalence",
 		hasAcademicHistory:
-			transcript.overallAverage > 0 ||
-			transcript.validatedCoursesCount > 0,
+			transcript.overallAverage > 0 || transcript.validatedCoursesCount > 0,
 		transferCredits: currentEnrollment?.transferCredits ?? 0,
 		transferInstitution: currentEnrollment?.transferInstitution ?? null,
 		transferLevel: currentEnrollment?.transferLevel ?? null,
@@ -340,6 +337,7 @@ async function getStudentTranscript(studentId: string) {
 			examParentId: schema.exams.parentExamId,
 			examScoringPolicy: schema.exams.scoringPolicy,
 			classCourseId: schema.classCourses.id,
+			classCourseCoefficient: schema.classCourses.coefficient,
 			courseId: schema.courses.id,
 			courseName: schema.courses.name,
 			courseCode: schema.courses.code,
@@ -385,6 +383,7 @@ async function getStudentTranscript(studentId: string) {
 		unitName: string;
 		unitCode: string;
 		unitCredits: number;
+		coefficient: number;
 		effectiveScore: number;
 		percentage: number;
 	}> = [];
@@ -431,6 +430,7 @@ async function getStudentTranscript(studentId: string) {
 				unitName: normalGrade.unitName,
 				unitCode: normalGrade.unitCode,
 				unitCredits: Number(normalGrade.unitCredits),
+				coefficient: Number(normalGrade.classCourseCoefficient),
 				effectiveScore,
 				percentage,
 			});
@@ -446,6 +446,7 @@ async function getStudentTranscript(studentId: string) {
 				unitName: retakeGrade.unitName,
 				unitCode: retakeGrade.unitCode,
 				unitCredits: Number(retakeGrade.unitCredits),
+				coefficient: Number(retakeGrade.classCourseCoefficient),
 				effectiveScore: Number(retakeGrade.gradeScore),
 				percentage: Number(retakeGrade.examPercentage),
 			});
@@ -463,6 +464,7 @@ async function getStudentTranscript(studentId: string) {
 			unitName: string;
 			unitCode: string;
 			unitCredits: number;
+			coefficient: number;
 			weightedSum: number;
 		}
 	>();
@@ -482,6 +484,7 @@ async function getStudentTranscript(studentId: string) {
 				unitName: grade.unitName,
 				unitCode: grade.unitCode,
 				unitCredits: grade.unitCredits,
+				coefficient: grade.coefficient,
 				weightedSum: weightedScore,
 			});
 		}
@@ -496,6 +499,7 @@ async function getStudentTranscript(studentId: string) {
 		unitName: course.unitName,
 		unitCode: course.unitCode,
 		unitCredits: course.unitCredits,
+		coefficient: course.coefficient,
 		score: course.weightedSum,
 	}));
 
@@ -512,9 +516,10 @@ async function getStudentTranscript(studentId: string) {
 				name: string;
 				code: string;
 				average: number;
+				coefficient: number;
 			}>;
-			scoreSum: number;
-			courseCount: number;
+			weightedScoreSum: number;
+			totalCoefficients: number;
 		}
 	>();
 
@@ -531,6 +536,7 @@ async function getStudentTranscript(studentId: string) {
 	for (const course of courseScores) {
 		const score = Number(course.score ?? 0);
 		const credits = Number(course.unitCredits ?? 0);
+		const coefficient = Number(course.coefficient ?? 1);
 
 		// Add to course averages
 		averageByCourse[course.courseId] = {
@@ -546,8 +552,8 @@ async function getStudentTranscript(studentId: string) {
 			code: course.unitCode,
 			credits,
 			courses: [],
-			scoreSum: 0,
-			courseCount: 0,
+			weightedScoreSum: 0,
+			totalCoefficients: 0,
 		};
 
 		unit.courses.push({
@@ -555,9 +561,10 @@ async function getStudentTranscript(studentId: string) {
 			name: course.courseName,
 			code: course.courseCode,
 			average: score,
+			coefficient,
 		});
-		unit.scoreSum += score;
-		unit.courseCount += 1;
+		unit.weightedScoreSum += score * coefficient;
+		unit.totalCoefficients += coefficient;
 		unitMap.set(course.teachingUnitId, unit);
 
 		// Overall totals
@@ -567,7 +574,7 @@ async function getStudentTranscript(studentId: string) {
 		totalCredits += credits;
 	}
 
-	// Compute unit averages
+	// Compute unit averages (coefficient-weighted: Σ(score × coeff) / Σ(coeff))
 	const averageByTeachingUnit: Record<
 		string,
 		{ average: number; code: string; name: string; credits: number }
@@ -577,8 +584,7 @@ async function getStudentTranscript(studentId: string) {
 	let validatedUnitsCount = 0;
 
 	for (const [unitId, unit] of unitMap.entries()) {
-		const unitAvg =
-			unit.courseCount > 0 ? unit.scoreSum / unit.courseCount : 0;
+		const unitAvg = unit.totalCoefficients > 0 ? unit.weightedScoreSum / unit.totalCoefficients : 0;
 		averageByTeachingUnit[unitId] = {
 			average: unitAvg,
 			code: unit.code,
@@ -608,12 +614,8 @@ async function getStudentTranscript(studentId: string) {
 			? Math.max(...courseAverages)
 			: Number.NEGATIVE_INFINITY;
 
-	const scoresAbove10 = courseAverages.filter(
-		(s) => s >= PASSING_GRADE,
-	).length;
-	const scoresBelow10 = courseAverages.filter(
-		(s) => s < PASSING_GRADE,
-	).length;
+	const scoresAbove10 = courseAverages.filter((s) => s >= PASSING_GRADE).length;
+	const scoresBelow10 = courseAverages.filter((s) => s < PASSING_GRADE).length;
 	const scoresBelow8 = courseAverages.filter(
 		(s) => s < COMPENSABLE_THRESHOLD,
 	).length;
@@ -637,12 +639,9 @@ async function getStudentTranscript(studentId: string) {
 		averageByTeachingUnit,
 		averageByCourse,
 		lowestScore: lowestScore === Number.POSITIVE_INFINITY ? 0 : lowestScore,
-		highestScore:
-			highestScore === Number.NEGATIVE_INFINITY ? 0 : highestScore,
+		highestScore: highestScore === Number.NEGATIVE_INFINITY ? 0 : highestScore,
 		lowestUnitAverage:
-			lowestUnitAverage === Number.POSITIVE_INFINITY
-				? 0
-				: lowestUnitAverage,
+			lowestUnitAverage === Number.POSITIVE_INFINITY ? 0 : lowestUnitAverage,
 		scoresAbove10,
 		scoresBelow10,
 		scoresBelow8,
@@ -722,10 +721,7 @@ async function getCourseEnrollmentStats(
 		.where(
 			and(
 				eq(schema.studentCourseEnrollments.studentId, studentId),
-				eq(
-					schema.studentCourseEnrollments.academicYearId,
-					academicYearId,
-				),
+				eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
 			),
 		);
 
@@ -831,9 +827,7 @@ function computePerformanceIndex(
 	// 30% credit completion
 	// 20% success rate
 	const normalizedAverage = overallAverage / 20; // Assuming 0-20 scale
-	return (
-		normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20
-	);
+	return normalizedAverage * 50 + creditCompletionRate * 30 + successRate * 20;
 }
 
 /**
@@ -854,10 +848,7 @@ export async function refreshAfterRetakeGrade(
 			schema.classCourses,
 			eq(schema.exams.classCourse, schema.classCourses.id),
 		)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classCourses.class, schema.classes.id),
-		)
+		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
 		.where(eq(schema.exams.id, examId))
 		.limit(1);
 

@@ -96,10 +96,7 @@ export async function list(opts: {
 			schema.classCourses,
 			eq(schema.classCourses.id, schema.exams.classCourse),
 		)
-		.innerJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
 		.innerJoin(
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),

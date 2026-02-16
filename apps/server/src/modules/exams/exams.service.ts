@@ -97,10 +97,7 @@ export async function createExam(
 ) {
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
-	const classCourse = await requireClassCourse(
-		data.classCourse,
-		institutionId,
-	);
+	const classCourse = await requireClassCourse(data.classCourse, institutionId);
 	const tenantId = classCourse.institutionId ?? institutionId;
 	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
@@ -144,14 +141,10 @@ export async function updateExam(
 		payload.institutionId = institutionId;
 	}
 	if (data.percentage !== undefined) {
-		await assertPercentageLimit(
-			existing.classCourse,
-			Number(data.percentage),
-			{
-				id,
-				percentage: Number(existing.percentage),
-			},
-		);
+		await assertPercentageLimit(existing.classCourse, Number(data.percentage), {
+			id,
+			percentage: Number(existing.percentage),
+		});
 	}
 	return repo.update(id, payload, institutionId);
 }
@@ -360,14 +353,10 @@ export async function listRetakeEligibility(
 	if (exam.status !== "approved") {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message:
-				"Exam must be approved before computing retake eligibility",
+			message: "Exam must be approved before computing retake eligibility",
 		});
 	}
-	const classCourse = await requireClassCourse(
-		exam.classCourse,
-		institutionId,
-	);
+	const classCourse = await requireClassCourse(exam.classCourse, institutionId);
 	const klass = await db.query.classes.findFirst({
 		where: eq(schema.classes.id, classCourse.class),
 	});
@@ -392,10 +381,7 @@ export async function listRetakeEligibility(
 		klass.academicYear,
 		studentIds,
 	);
-	const overrides = await retakeOverridesRepo.listByExam(
-		examId,
-		institutionId,
-	);
+	const overrides = await retakeOverridesRepo.listByExam(examId, institutionId);
 	const overridesByEnrollment = new Map(
 		overrides.map((record) => [record.studentCourseEnrollmentId, record]),
 	);

@@ -117,13 +117,9 @@ describe("students router", () => {
 		expect(enrollment?.transferInstitution).toBe("External University");
 		expect(enrollment?.transferCredits).toBe(transferCredits);
 		expect(enrollment?.transferLevel).toBe("L3");
-		expect(enrollment?.admissionJustification).toBe(
-			"Validated by committee",
-		);
+		expect(enrollment?.admissionJustification).toBe("Validated by committee");
 		expect(
-			new Date(enrollment?.admissionDate ?? "")
-				.toISOString()
-				.slice(0, 10),
+			new Date(enrollment?.admissionDate ?? "").toISOString().slice(0, 10),
 		).toBe(admissionDate.toISOString().slice(0, 10));
 
 		const ledger = await db.query.studentCreditLedgers.findFirst({

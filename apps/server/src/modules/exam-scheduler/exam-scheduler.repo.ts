@@ -65,9 +65,7 @@ export async function getClassesForScheduling(
 
 	if (!classes.length) return [];
 	const classIds = classes.map((klass) => klass.id);
-	const classCourseConditions = [
-		inArray(schema.classCourses.class, classIds),
-	];
+	const classCourseConditions = [inArray(schema.classCourses.class, classIds)];
 	if (params.semesterId) {
 		classCourseConditions.push(
 			eq(schema.classCourses.semesterId, params.semesterId),
@@ -194,9 +192,7 @@ export async function listRuns(filters: HistoryFilters, institutionId: string) {
 		filters.examTypeId
 			? eq(schema.examScheduleRuns.examTypeId, filters.examTypeId)
 			: undefined,
-		filters.cursor
-			? gt(schema.examScheduleRuns.id, filters.cursor)
-			: undefined,
+		filters.cursor ? gt(schema.examScheduleRuns.id, filters.cursor) : undefined,
 		eq(schema.examScheduleRuns.institutionId, institutionId),
 	].filter(Boolean) as (ReturnType<typeof eq> | ReturnType<typeof gt>)[];
 	const condition =
@@ -318,10 +314,7 @@ export async function getApprovedExamsWithoutRetake(
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
 		)
-		.innerJoin(
-			schema.programs,
-			eq(schema.programs.id, schema.classes.program),
-		)
+		.innerJoin(schema.programs, eq(schema.programs.id, schema.classes.program))
 		.where(and(...conditions))
 		.orderBy(schema.classes.name, schema.courses.name);
 
@@ -409,14 +402,8 @@ export async function getRunDetails(runId: string, institutionId: string) {
 			schema.classCourses,
 			eq(schema.classCourses.id, schema.exams.classCourse),
 		)
-		.leftJoin(
-			schema.classes,
-			eq(schema.classes.id, schema.classCourses.class),
-		)
-		.leftJoin(
-			schema.courses,
-			eq(schema.courses.id, schema.classCourses.course),
-		)
+		.leftJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.leftJoin(schema.courses, eq(schema.courses.id, schema.classCourses.course))
 		.where(eq(schema.exams.scheduleRunId, runId));
 	return { run, exams };
 }

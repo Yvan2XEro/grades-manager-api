@@ -1,7 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { AlertTriangle, BookOpen, Layers, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+	AlertTriangle,
+	BookOpen,
+	Layers,
+	Pencil,
+	Plus,
+	Trash2,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -58,6 +65,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { Label } from "@/components/ui/label";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
@@ -132,6 +142,8 @@ export default function ClassCourseManagement() {
 	const [editingClassCourse, setEditingClassCourse] =
 		useState<ClassCourse | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [filterYear, setFilterYear] = useState<string | null>(null);
+	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -259,9 +271,12 @@ export default function ClassCourseManagement() {
 	});
 
 	const { data: classCourses, isLoading } = useQuery({
-		queryKey: ["classCourses"],
+		queryKey: ["classCourses", filterYear, filterSemester],
 		queryFn: async () => {
-			const { items } = await trpcClient.classCourses.list.query({});
+			const { items } = await trpcClient.classCourses.list.query({
+				...(filterYear ? { academicYearId: filterYear } : {}),
+				...(filterSemester ? { semesterId: filterSemester } : {}),
+			});
 			return items.map(
 				(cc) =>
 					({
@@ -359,10 +374,7 @@ export default function ClassCourseManagement() {
 	const programMap = new Map((programs ?? []).map((p) => [p.id, p]));
 	const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [
-			teacher.id,
-			formatTeacherName(teacher),
-		]),
+		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
@@ -553,7 +565,7 @@ export default function ClassCourseManagement() {
 				const programCode =
 					selectedClass.programCode ??
 					programs?.find((p) => p.id === selectedClass.program)?.code;
-				let code = generateClassCourseCode({
+				const code = generateClassCourseCode({
 					programCode: programCode ?? "PRG",
 					levelCode: selectedClass.cycleLevelCode,
 					semesterCode: selectedClass.semesterCode,
@@ -711,12 +723,35 @@ export default function ClassCourseManagement() {
 				</div>
 			</div>
 
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => setFilterYear(v)}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", {
+							defaultValue: "Semester",
+						})}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => setFilterSemester(v)}
+					/>
+				</div>
+			</div>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
-					<CardDescription>
-						{t("admin.classCourses.subtitle")}
-					</CardDescription>
+					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{displayedClassCourses.length > 0 ? (
@@ -728,26 +763,15 @@ export default function ClassCourseManagement() {
 											defaultValue: "Code",
 										})}
 									</TableHead>
+									<TableHead>{t("admin.classCourses.table.class")}</TableHead>
+									<TableHead>{t("admin.classCourses.table.program")}</TableHead>
+									<TableHead>{t("admin.classCourses.table.course")}</TableHead>
 									<TableHead>
-										{t("admin.classCourses.table.class")}
+										{t("admin.classCourses.table.semester", {
+											defaultValue: "Semester",
+										})}
 									</TableHead>
-									<TableHead>
-										{t("admin.classCourses.table.program")}
-									</TableHead>
-									<TableHead>
-										{t("admin.classCourses.table.course")}
-									</TableHead>
-									<TableHead>
-										{t(
-											"admin.classCourses.table.semester",
-											{
-												defaultValue: "Semester",
-											},
-										)}
-									</TableHead>
-									<TableHead>
-										{t("admin.classCourses.table.teacher")}
-									</TableHead>
+									<TableHead>{t("admin.classCourses.table.teacher")}</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
 									</TableHead>
@@ -759,50 +783,33 @@ export default function ClassCourseManagement() {
 										<TableCell>
 											<ClipboardCopy
 												value={classCourse.code}
-												label={t(
-													"admin.classCourses.table.code",
-													{
-														defaultValue: "Code",
-													},
-												)}
+												label={t("admin.classCourses.table.code", {
+													defaultValue: "Code",
+												})}
 											/>
 										</TableCell>
 										<TableCell className="font-medium">
-											{
-												classMap.get(classCourse.class)
-													?.name
-											}
+											{classMap.get(classCourse.class)?.name}
 										</TableCell>
 										<TableCell>
 											{programMap.get(
-												classMap.get(classCourse.class)
-													?.program ?? "",
+												classMap.get(classCourse.class)?.program ?? "",
 											)?.name ??
-												t(
-													"common.labels.notAvailable",
-													{
-														defaultValue: "N/A",
-													},
-												)}
+												t("common.labels.notAvailable", {
+													defaultValue: "N/A",
+												})}
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const info = courseMap.get(
-													classCourse.course,
-												);
+												const info = courseMap.get(classCourse.course);
 												if (!info) {
-													return t(
-														"common.labels.notAvailable",
-														{
-															defaultValue: "N/A",
-														},
-													);
+													return t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													});
 												}
 												return (
 													<div className="space-y-0.5">
-														<p className="font-medium text-sm">
-															{info.name}
-														</p>
+														<p className="font-medium text-sm">{info.name}</p>
 														{info.code && (
 															<p className="text-muted-foreground text-xs">
 																{info.code}
@@ -814,39 +821,25 @@ export default function ClassCourseManagement() {
 										</TableCell>
 										<TableCell>
 											{(() => {
-												const semester =
-													semesters?.find(
-														(item) =>
-															item.id ===
-															classCourse.semesterId,
-													);
+												const semester = semesters?.find(
+													(item) => item.id === classCourse.semesterId,
+												);
 												if (!semester) {
-													return t(
-														"common.labels.notAvailable",
-														{
-															defaultValue: "N/A",
-														},
-													);
+													return t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													});
 												}
 												return `${semester.name} (${semester.code})`;
 											})()}
 										</TableCell>
-										<TableCell>
-											{teacherMap.get(
-												classCourse.teacher,
-											)}
-										</TableCell>
+										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
 												<Button
 													variant="ghost"
 													size="icon-sm"
-													onClick={() =>
-														startEdit(classCourse)
-													}
-													aria-label={t(
-														"admin.classCourses.form.editTitle",
-													)}
+													onClick={() => startEdit(classCourse)}
+													aria-label={t("admin.classCourses.form.editTitle")}
 												>
 													<Pencil className="h-4 w-4" />
 												</Button>
@@ -854,14 +847,8 @@ export default function ClassCourseManagement() {
 													variant="ghost"
 													size="icon-sm"
 													className="text-destructive hover:text-destructive"
-													onClick={() =>
-														confirmDelete(
-															classCourse.id,
-														)
-													}
-													aria-label={t(
-														"admin.classCourses.delete.title",
-													)}
+													onClick={() => confirmDelete(classCourse.id)}
+													aria-label={t("admin.classCourses.delete.title")}
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
@@ -905,28 +892,20 @@ export default function ClassCourseManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="space-y-4"
-						>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<CodedEntitySelect
 								items={classes}
 								onSearch={setClassSearch}
 								value={
-									classes.find(
-										(c) => c.id === form.watch("class"),
-									)?.code || null
+									classes.find((c) => c.id === form.watch("class"))?.code ||
+									null
 								}
 								onChange={(code) => {
-									const cls = classes.find(
-										(c) => c.code === code,
-									);
+									const cls = classes.find((c) => c.code === code);
 									form.setValue("class", cls?.id || "");
 								}}
 								label={t("admin.classCourses.form.classLabel")}
-								placeholder={t(
-									"admin.classCourses.form.classPlaceholder",
-								)}
+								placeholder={t("admin.classCourses.form.classPlaceholder")}
 								error={form.formState.errors.class?.message}
 								searchMode="hybrid"
 								getItemSubtitle={(cls) =>
@@ -942,20 +921,15 @@ export default function ClassCourseManagement() {
 								items={courses}
 								onSearch={setCourseSearch}
 								value={
-									courses.find(
-										(c) => c.id === form.watch("course"),
-									)?.code || null
+									courses.find((c) => c.id === form.watch("course"))?.code ||
+									null
 								}
 								onChange={(code) => {
-									const course = courses.find(
-										(c) => c.code === code,
-									);
+									const course = courses.find((c) => c.code === code);
 									form.setValue("course", course?.id || "");
 								}}
 								label={t("admin.classCourses.form.courseLabel")}
-								placeholder={t(
-									"admin.classCourses.form.coursePlaceholder",
-								)}
+								placeholder={t("admin.classCourses.form.coursePlaceholder")}
 								error={form.formState.errors.course?.message}
 								searchMode="hybrid"
 								required
@@ -967,14 +941,9 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.classCourses.form.teacherLabel",
-											)}
+											{t("admin.classCourses.form.teacherLabel")}
 										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
+										<Select value={field.value} onValueChange={field.onChange}>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue
@@ -985,18 +954,11 @@ export default function ClassCourseManagement() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{teacherOptions.map(
-													(teacher) => (
-														<SelectItem
-															key={teacher.id}
-															value={teacher.id}
-														>
-															{formatTeacherName(
-																teacher,
-															)}
-														</SelectItem>
-													),
-												)}
+												{teacherOptions.map((teacher) => (
+													<SelectItem key={teacher.id} value={teacher.id}>
+														{formatTeacherName(teacher)}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 										<FormMessage />
@@ -1010,20 +972,14 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.classCourses.form.semesterLabel",
-												{
-													defaultValue: "Semester",
-												},
-											)}
+											{t("admin.classCourses.form.semesterLabel", {
+												defaultValue: "Semester",
+											})}
 										</FormLabel>
 										<Select
 											value={field.value}
 											onValueChange={field.onChange}
-											disabled={
-												!semesters ||
-												semesters.length === 0
-											}
+											disabled={!semesters || semesters.length === 0}
 										>
 											<FormControl>
 												<SelectTrigger>
@@ -1031,8 +987,7 @@ export default function ClassCourseManagement() {
 														placeholder={t(
 															"admin.classCourses.form.semesterPlaceholder",
 															{
-																defaultValue:
-																	"Select semester",
+																defaultValue: "Select semester",
 															},
 														)}
 													/>
@@ -1040,12 +995,8 @@ export default function ClassCourseManagement() {
 											</FormControl>
 											<SelectContent>
 												{semesters?.map((semester) => (
-													<SelectItem
-														key={semester.id}
-														value={semester.id}
-													>
-														{semester.name} (
-														{semester.code})
+													<SelectItem key={semester.id} value={semester.id}>
+														{semester.name} ({semester.code})
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -1061,12 +1012,9 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.classCourses.form.codeLabel",
-												{
-													defaultValue: "Code",
-												},
-											)}
+											{t("admin.classCourses.form.codeLabel", {
+												defaultValue: "Code",
+											})}
 										</FormLabel>
 										<FormControl>
 											<Input
@@ -1074,8 +1022,7 @@ export default function ClassCourseManagement() {
 												placeholder={t(
 													"admin.classCourses.form.codePlaceholder",
 													{
-														defaultValue:
-															"INF11-CLS24-01",
+														defaultValue: "INF11-CLS24-01",
 													},
 												)}
 											/>
@@ -1091,12 +1038,9 @@ export default function ClassCourseManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.classCourses.form.coefficientLabel",
-												{
-													defaultValue: "Coefficient",
-												},
-											)}
+											{t("admin.classCourses.form.coefficientLabel", {
+												defaultValue: "Coefficient",
+											})}
 										</FormLabel>
 										<FormControl>
 											<Input
@@ -1113,13 +1057,10 @@ export default function ClassCourseManagement() {
 											/>
 										</FormControl>
 										<p className="text-muted-foreground text-xs">
-											{t(
-												"admin.classCourses.form.coefficientHelp",
-												{
-													defaultValue:
-														"Poids pour le calcul de la moyenne pondérée dans l'UE",
-												},
-											)}
+											{t("admin.classCourses.form.coefficientHelp", {
+												defaultValue:
+													"Poids pour le calcul de la moyenne pondérée dans l'UE",
+											})}
 										</p>
 										<FormMessage />
 									</FormItem>
@@ -1135,18 +1076,13 @@ export default function ClassCourseManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button
-									type="submit"
-									disabled={form.formState.isSubmitting}
-								>
+								<Button type="submit" disabled={form.formState.isSubmitting}>
 									{form.formState.isSubmitting ? (
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingClassCourse ? (
 										t("common.actions.saveChanges")
 									) : (
-										t(
-											"admin.classCourses.form.createSubmit",
-										)
+										t("admin.classCourses.form.createSubmit")
 									)}
 								</Button>
 							</div>
@@ -1216,8 +1152,7 @@ export default function ClassCourseManagement() {
 								<div>
 									<p className="font-medium text-yellow-800">
 										{t("admin.classCourses.ueAssign.skippedTitle", {
-											defaultValue:
-												"Certains cours n'ont pas été assignés",
+											defaultValue: "Certains cours n'ont pas été assignés",
 										})}
 									</p>
 									<p className="mt-1 text-sm text-yellow-700">
@@ -1242,7 +1177,7 @@ export default function ClassCourseManagement() {
 					) : (
 						<div className="space-y-4">
 							<div>
-								<label className="mb-2 block text-sm font-medium">
+								<label className="mb-2 block font-medium text-sm">
 									{t("admin.classCourses.ueAssign.classLabel", {
 										defaultValue: "Classe",
 									})}
@@ -1251,14 +1186,11 @@ export default function ClassCourseManagement() {
 									items={ueAssignClasses}
 									onSearch={setUeAssignClassSearch}
 									value={
-										ueAssignClasses.find(
-											(c) => c.id === ueAssignClassId,
-										)?.code || null
+										ueAssignClasses.find((c) => c.id === ueAssignClassId)
+											?.code || null
 									}
 									onChange={(code) => {
-										const cls = ueAssignClasses.find(
-											(c) => c.code === code,
-										);
+										const cls = ueAssignClasses.find((c) => c.code === code);
 										setUeAssignClassId(cls?.id || "");
 										setUeAssignUeId(""); // Reset UE when class changes
 									}}
@@ -1270,15 +1202,14 @@ export default function ClassCourseManagement() {
 									)}
 									searchMode="hybrid"
 									getItemSubtitle={(cls) =>
-										programs?.find((p) => p.id === cls.program)
-											?.name ?? ""
+										programs?.find((p) => p.id === cls.program)?.name ?? ""
 									}
 								/>
 							</div>
 
 							{ueAssignClassId && (
 								<div>
-									<label className="mb-2 block text-sm font-medium">
+									<label className="mb-2 block font-medium text-sm">
 										{t("admin.classCourses.ueAssign.ueLabel", {
 											defaultValue: "Unité d'enseignement",
 										})}
@@ -1293,8 +1224,7 @@ export default function ClassCourseManagement() {
 												placeholder={t(
 													"admin.classCourses.ueAssign.uePlaceholder",
 													{
-														defaultValue:
-															"Sélectionner une UE",
+														defaultValue: "Sélectionner une UE",
 													},
 												)}
 											/>
@@ -1310,8 +1240,7 @@ export default function ClassCourseManagement() {
 									{teachingUnits.length === 0 && ueAssignClassId && (
 										<p className="mt-1 text-muted-foreground text-xs">
 											{t("admin.classCourses.ueAssign.noUe", {
-												defaultValue:
-													"Aucune UE trouvée pour ce programme",
+												defaultValue: "Aucune UE trouvée pour ce programme",
 											})}
 										</p>
 									)}

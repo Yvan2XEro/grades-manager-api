@@ -79,9 +79,8 @@ export default function StudyCycleManagement() {
 
 	const activeCycle = useMemo(
 		() =>
-			cyclesQuery.data?.items.find(
-				(cycle) => cycle.id === activeCycleId,
-			) ?? null,
+			cyclesQuery.data?.items.find((cycle) => cycle.id === activeCycleId) ??
+			null,
 		[cyclesQuery.data, activeCycleId],
 	);
 
@@ -208,9 +207,7 @@ export default function StudyCycleManagement() {
 	});
 
 	const onSubmit = (data: CycleForm) => {
-		createCycleMutation.mutate(
-			editingId ? { ...data, id: editingId } : data,
-		);
+		createCycleMutation.mutate(editingId ? { ...data, id: editingId } : data);
 	};
 
 	const onLevelSubmit = (data: LevelForm) => {
@@ -300,25 +297,17 @@ export default function StudyCycleManagement() {
 									<TableRow
 										key={cycle.id}
 										className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-gray-50"}`}
-										onClick={() =>
-											setActiveCycleId(cycle.id)
-										}
+										onClick={() => setActiveCycleId(cycle.id)}
 									>
 										<TableCell className="font-semibold text-gray-900">
 											{cycle.name}
 										</TableCell>
+										<TableCell>{cycle.totalCreditsRequired}</TableCell>
 										<TableCell>
-											{cycle.totalCreditsRequired}
-										</TableCell>
-										<TableCell>
-											{t(
-												"admin.studyCycles.table.years",
-												{
-													defaultValue:
-														"{{value}} years",
-													value: cycle.durationYears,
-												},
-											)}
+											{t("admin.studyCycles.table.years", {
+												defaultValue: "{{value}} years",
+												value: cycle.durationYears,
+											})}
 										</TableCell>
 										<TableCell className="text-right">
 											<Button
@@ -331,13 +320,9 @@ export default function StudyCycleManagement() {
 													form.reset({
 														code: cycle.code,
 														name: cycle.name,
-														description:
-															cycle.description ??
-															"",
-														totalCreditsRequired:
-															cycle.totalCreditsRequired,
-														durationYears:
-															cycle.durationYears,
+														description: cycle.description ?? "",
+														totalCreditsRequired: cycle.totalCreditsRequired,
+														durationYears: cycle.durationYears,
 													});
 													setIsFormOpen(true);
 												}}
@@ -367,8 +352,7 @@ export default function StudyCycleManagement() {
 											className="py-6 text-center text-gray-500 text-sm"
 										>
 											{t("admin.studyCycles.empty", {
-												defaultValue:
-													"No study cycles yet.",
+												defaultValue: "No study cycles yet.",
 											})}
 										</TableCell>
 									</TableRow>
@@ -387,15 +371,13 @@ export default function StudyCycleManagement() {
 							<div>
 								<CardTitle>
 									{t("admin.studyCycles.levelsTitle", {
-										defaultValue:
-											"Cycle levels for {{cycle}}",
+										defaultValue: "Cycle levels for {{cycle}}",
 										cycle: activeCycle.name,
 									})}
 								</CardTitle>
 								<p className="text-gray-600 text-sm">
 									{t("admin.studyCycles.levelsSubtitle", {
-										defaultValue:
-											"Define how students move across years.",
+										defaultValue: "Define how students move across years.",
 									})}
 								</p>
 							</div>
@@ -407,8 +389,7 @@ export default function StudyCycleManagement() {
 							variant="outline"
 							onClick={() => {
 								setEditingLevelId(null);
-								const nextLevelNum =
-									(levelsQuery.data?.length ?? 0) + 1;
+								const nextLevelNum = (levelsQuery.data?.length ?? 0) + 1;
 								levelForm.reset({
 									code: `${activeCycle?.code || "L"}-L${nextLevelNum}`,
 									name: `Level ${nextLevelNum}`,
@@ -429,18 +410,12 @@ export default function StudyCycleManagement() {
 									className="flex flex-wrap items-center justify-between rounded-lg border bg-white p-3 shadow-sm"
 								>
 									<div>
-										<p className="font-semibold text-gray-900">
-											{level.name}
-										</p>
+										<p className="font-semibold text-gray-900">{level.name}</p>
 										<p className="text-gray-600 text-sm">
-											{t(
-												"admin.studyCycles.levelCredits",
-												{
-													defaultValue:
-														"Required credits: {{value}}",
-													value: level.minCredits,
-												},
-											)}
+											{t("admin.studyCycles.levelCredits", {
+												defaultValue: "Required credits: {{value}}",
+												value: level.minCredits,
+											})}
 										</p>
 									</div>
 									<div className="flex gap-2">
@@ -453,8 +428,7 @@ export default function StudyCycleManagement() {
 												levelForm.reset({
 													code: level.code,
 													name: level.name,
-													minCredits:
-														level.minCredits,
+													minCredits: level.minCredits,
 												});
 												setIsLevelFormOpen(true);
 											}}
@@ -466,11 +440,7 @@ export default function StudyCycleManagement() {
 											type="button"
 											variant="ghost"
 											className="text-destructive"
-											onClick={() =>
-												deleteLevelMutation.mutate(
-													level.id,
-												)
-											}
+											onClick={() => deleteLevelMutation.mutate(level.id)}
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											{t("common.actions.delete")}
@@ -504,10 +474,7 @@ export default function StudyCycleManagement() {
 						</DialogTitle>
 					</DialogHeader>
 					<Form {...form}>
-						<form
-							className="space-y-4"
-							onSubmit={form.handleSubmit(onSubmit)}
-						>
+						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
 							<FormField
 								control={form.control}
 								name="name"
@@ -519,10 +486,7 @@ export default function StudyCycleManagement() {
 											})}
 										</FormLabel>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder="Bachelor of Science"
-											/>
+											<Input {...field} placeholder="Bachelor of Science" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -539,10 +503,7 @@ export default function StudyCycleManagement() {
 											})}
 										</FormLabel>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder="BSC"
-											/>
+											<Input {...field} placeholder="BSC" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -554,12 +515,9 @@ export default function StudyCycleManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.studyCycles.form.description",
-												{
-													defaultValue: "Description",
-												},
-											)}
+											{t("admin.studyCycles.form.description", {
+												defaultValue: "Description",
+											})}
 										</FormLabel>
 										<FormControl>
 											<Textarea {...field} rows={3} />
@@ -575,19 +533,12 @@ export default function StudyCycleManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.studyCycles.form.credits",
-													{
-														defaultValue: "Credits",
-													},
-												)}
+												{t("admin.studyCycles.form.credits", {
+													defaultValue: "Credits",
+												})}
 											</FormLabel>
 											<FormControl>
-												<Input
-													type="number"
-													min={30}
-													{...field}
-												/>
+												<Input type="number" min={30} {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -599,19 +550,12 @@ export default function StudyCycleManagement() {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>
-												{t(
-													"admin.studyCycles.form.duration",
-													{
-														defaultValue: "Years",
-													},
-												)}
+												{t("admin.studyCycles.form.duration", {
+													defaultValue: "Years",
+												})}
 											</FormLabel>
 											<FormControl>
-												<Input
-													type="number"
-													min={1}
-													{...field}
-												/>
+												<Input type="number" min={1} {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -659,10 +603,7 @@ export default function StudyCycleManagement() {
 											})}
 										</FormLabel>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder="Level 1"
-											/>
+											<Input {...field} placeholder="Level 1" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -679,10 +620,7 @@ export default function StudyCycleManagement() {
 											})}
 										</FormLabel>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder="L1"
-											/>
+											<Input {...field} placeholder="L1" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -694,20 +632,12 @@ export default function StudyCycleManagement() {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
-											{t(
-												"admin.studyCycles.form.minCredits",
-												{
-													defaultValue:
-														"Minimum credits",
-												},
-											)}
+											{t("admin.studyCycles.form.minCredits", {
+												defaultValue: "Minimum credits",
+											})}
 										</FormLabel>
 										<FormControl>
-											<Input
-												type="number"
-												min={0}
-												{...field}
-											/>
+											<Input type="number" min={0} {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -744,13 +674,9 @@ export default function StudyCycleManagement() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.actions.cancel")}
-						</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.actions.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
-							onClick={() =>
-								deleteId && deleteCycleMutation.mutate(deleteId)
-							}
+							onClick={() => deleteId && deleteCycleMutation.mutate(deleteId)}
 							className="bg-destructive text-white hover:bg-destructive/90"
 						>
 							{t("common.actions.delete")}

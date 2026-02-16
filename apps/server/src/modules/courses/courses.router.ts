@@ -41,9 +41,7 @@ export const router = createRouter({
 		),
 	list: protectedProcedure
 		.input(listSchema)
-		.query(({ input, ctx }) =>
-			service.listCourses(input, ctx.institution.id),
-		),
+		.query(({ input, ctx }) => service.listCourses(input, ctx.institution.id)),
 	search: protectedProcedure
 		.input(searchSchema)
 		.query(({ input, ctx }) =>
@@ -57,10 +55,6 @@ export const router = createRouter({
 	getByCode: protectedProcedure
 		.input(codeSchema)
 		.query(({ input, ctx }) =>
-			service.getCourseByCode(
-				input.code,
-				input.programId,
-				ctx.institution.id,
-			),
+			service.getCourseByCode(input.code, input.programId, ctx.institution.id),
 		),
 });

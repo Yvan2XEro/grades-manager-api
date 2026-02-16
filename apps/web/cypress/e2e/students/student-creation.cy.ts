@@ -161,9 +161,7 @@ describe("Student Management - Creation", () => {
 			// Should show email validation error
 			cy.get("body").then(($body) => {
 				const hasEmailError =
-					$body
-						.text()
-						.match(/email.*invalid|email.*valide|format/i) !== null;
+					$body.text().match(/email.*invalid|email.*valide|format/i) !== null;
 				const inputInvalid =
 					$body.find('input[type="email"]:invalid').length > 0;
 

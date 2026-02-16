@@ -53,9 +53,7 @@ export function ClassSelect({
 		>
 			<SelectTrigger>
 				<SelectValue
-					placeholder={
-						placeholder ?? t("admin.exams.filters.classPlaceholder")
-					}
+					placeholder={placeholder ?? t("admin.exams.filters.classPlaceholder")}
 				/>
 			</SelectTrigger>
 			<SelectContent>

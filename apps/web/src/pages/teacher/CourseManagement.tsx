@@ -120,10 +120,7 @@ export default function CourseManagement() {
 		teacher.email;
 	const teacherOptions = teachers ?? [];
 	const teacherMap = new Map(
-		teacherOptions.map((teacher) => [
-			teacher.id,
-			formatTeacherName(teacher),
-		]),
+		teacherOptions.map((teacher) => [teacher.id, formatTeacherName(teacher)]),
 	);
 
 	const createMutation = useMutation({
@@ -239,15 +236,11 @@ export default function CourseManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>
-									{t("teacher.courses.manage.table.name")}
-								</TableHead>
+								<TableHead>{t("teacher.courses.manage.table.name")}</TableHead>
 								<TableHead>
 									{t("teacher.courses.manage.table.program")}
 								</TableHead>
-								<TableHead>
-									{t("teacher.courses.manage.table.hours")}
-								</TableHead>
+								<TableHead>{t("teacher.courses.manage.table.hours")}</TableHead>
 								<TableHead>
 									{t("teacher.courses.manage.table.teacher")}
 								</TableHead>
@@ -259,16 +252,10 @@ export default function CourseManagement() {
 						<TableBody>
 							{courses?.map((course) => (
 								<TableRow key={course.id}>
-									<TableCell className="font-medium">
-										{course.name}
-									</TableCell>
-									<TableCell>
-										{programMap.get(course.program)}
-									</TableCell>
+									<TableCell className="font-medium">{course.name}</TableCell>
+									<TableCell>{programMap.get(course.program)}</TableCell>
 									<TableCell>{course.hours}</TableCell>
-									<TableCell>
-										{teacherMap.get(course.defaultTeacher)}
-									</TableCell>
+									<TableCell>{teacherMap.get(course.defaultTeacher)}</TableCell>
 									<TableCell className="text-right">
 										<div className="flex justify-end gap-2">
 											<Button
@@ -280,8 +267,7 @@ export default function CourseManagement() {
 														name: course.name,
 														hours: course.hours,
 														program: course.program,
-														defaultTeacher:
-															course.defaultTeacher,
+														defaultTeacher: course.defaultTeacher,
 													});
 													setIsFormOpen(true);
 												}}
@@ -292,9 +278,7 @@ export default function CourseManagement() {
 												variant="ghost"
 												size="icon"
 												className="text-destructive"
-												onClick={() =>
-													openDeleteModal(course.id)
-												}
+												onClick={() => openDeleteModal(course.id)}
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>
@@ -326,9 +310,7 @@ export default function CourseManagement() {
 							placeholder="Enter course name"
 						/>
 						{errors.name ? (
-							<p className="text-destructive text-sm">
-								{errors.name.message}
-							</p>
+							<p className="text-destructive text-sm">{errors.name.message}</p>
 						) : null}
 					</div>
 
@@ -341,9 +323,7 @@ export default function CourseManagement() {
 								id="course-hours"
 								type="number"
 								{...register("hours", { valueAsNumber: true })}
-								placeholder={t(
-									"teacher.courses.manage.form.hoursPlaceholder",
-								)}
+								placeholder={t("teacher.courses.manage.form.hoursPlaceholder")}
 							/>
 							{errors.hours ? (
 								<p className="text-destructive text-sm">
@@ -359,9 +339,7 @@ export default function CourseManagement() {
 						</Label>
 						<Select
 							value={watch("program")}
-							onValueChange={(value) =>
-								setValue("program", value)
-							}
+							onValueChange={(value) => setValue("program", value)}
 						>
 							<SelectTrigger id="course-program">
 								<SelectValue
@@ -372,10 +350,7 @@ export default function CourseManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								{programs?.map((program) => (
-									<SelectItem
-										key={program.id}
-										value={program.id}
-									>
+									<SelectItem key={program.id} value={program.id}>
 										{program.name}
 									</SelectItem>
 								))}
@@ -394,9 +369,7 @@ export default function CourseManagement() {
 						</Label>
 						<Select
 							value={watch("defaultTeacher")}
-							onValueChange={(value) =>
-								setValue("defaultTeacher", value)
-							}
+							onValueChange={(value) => setValue("defaultTeacher", value)}
 						>
 							<SelectTrigger id="course-teacher">
 								<SelectValue
@@ -407,10 +380,7 @@ export default function CourseManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								{teacherOptions.map((teacher) => (
-									<SelectItem
-										key={teacher.id}
-										value={teacher.id}
-									>
+									<SelectItem key={teacher.id} value={teacher.id}>
 										{formatTeacherName(teacher)}
 									</SelectItem>
 								))}

@@ -93,9 +93,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 				const hasMessage =
 					$body
 						.text()
-						.match(
-							/already.*enrolled|déjà.*inscrit|0.*new|synced/i,
-						) !== null;
+						.match(/already.*enrolled|déjà.*inscrit|0.*new|synced/i) !== null;
 				expect(hasMessage).to.be.true;
 			});
 		});
@@ -148,9 +146,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			}).click();
 
 			// Should show confirmation dialog
-			cy.contains(/confirm|confirmer/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/confirm|confirmer/i, { timeout: 5000 }).should("exist");
 			cy.findByRole("button", {
 				name: /confirm.*enrollment|confirm/i,
 			}).should("exist");
@@ -174,8 +170,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			// Should show details about what will be enrolled
 			cy.get("body", { timeout: 5000 }).then(($body) => {
 				const hasDetails =
-					$body.text().match(/student|course|étudiant|cours/i) !==
-					null;
+					$body.text().match(/student|course|étudiant|cours/i) !== null;
 				expect(hasDetails).to.be.true;
 			});
 		});
@@ -299,13 +294,11 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 				name: /confirm.*enrollment|confirm/i,
 			}).click();
 
-			cy.contains(/enrolled|inscrit|synced/i, { timeout: 20000 }).then(
-				() => {
-					const duration = Date.now() - startTime;
-					cy.log(`Bulk enrollment took ${duration}ms`);
-					expect(duration).to.be.lessThan(20000);
-				},
-			);
+			cy.contains(/enrolled|inscrit|synced/i, { timeout: 20000 }).then(() => {
+				const duration = Date.now() - startTime;
+				cy.log(`Bulk enrollment took ${duration}ms`);
+				expect(duration).to.be.lessThan(20000);
+			});
 		});
 
 		it("provides loading indicator during bulk enrollment", () => {
@@ -329,9 +322,8 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			// Should show loading state
 			cy.get("body").then(($body) => {
 				const hasLoader =
-					$body.find('[data-testid*="loading"], [class*="spinner"]')
-						.length > 0 ||
-					$body.text().match(/loading|chargement/i) !== null;
+					$body.find('[data-testid*="loading"], [class*="spinner"]').length >
+						0 || $body.text().match(/loading|chargement/i) !== null;
 
 				if (hasLoader) {
 					cy.log("Loading indicator is shown");
@@ -358,8 +350,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Check if there are checkboxes for selective enrollment
 			cy.get("body").then(($body) => {
-				const hasCheckboxes =
-					$body.find('input[type="checkbox"]').length > 1;
+				const hasCheckboxes = $body.find('input[type="checkbox"]').length > 1;
 
 				if (hasCheckboxes) {
 					cy.log("Selective enrollment is available");
@@ -394,8 +385,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.get("[role=option]").first().click();
 
 			cy.get("body").then(($body) => {
-				const hasCheckboxes =
-					$body.find('input[type="checkbox"]').length > 1;
+				const hasCheckboxes = $body.find('input[type="checkbox"]').length > 1;
 
 				if (hasCheckboxes) {
 					// Select all
@@ -409,9 +399,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 					}).click();
 					cy.findByRole("button", { name: /confirm/i }).click();
 
-					cy.contains(/enrolled|inscrit/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/enrolled|inscrit/i, { timeout: 10000 }).should("exist");
 				} else {
 					cy.log("Selective enrollment not available");
 				}
@@ -444,8 +432,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Should show courses with enrollment status
 			cy.get("body").then(($body) => {
-				const hasCourses =
-					$body.text().match(/course|cours|matière/i) !== null;
+				const hasCourses = $body.text().match(/course|cours|matière/i) !== null;
 				if (hasCourses) {
 					cy.log("Course-wise status is shown");
 				}
@@ -476,8 +463,7 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Should show count per course (e.g., "5/5 enrolled")
 			cy.get("body").then(($body) => {
-				const hasCount =
-					$body.text().match(/\d+\/\d+|\d+.*enrolled/) !== null;
+				const hasCount = $body.text().match(/\d+\/\d+|\d+.*enrolled/) !== null;
 				if (hasCount) {
 					cy.log("Per-course enrollment count is shown");
 				}
@@ -512,9 +498,8 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			// Check for unenroll functionality
 			cy.get("body").then(($body) => {
 				if (
-					$body.find(
-						'button:contains("Unenroll"), button:contains("Withdraw")',
-					).length > 0
+					$body.find('button:contains("Unenroll"), button:contains("Withdraw")')
+						.length > 0
 				) {
 					cy.log("Bulk unenroll feature exists");
 					cy.findByRole("button", {

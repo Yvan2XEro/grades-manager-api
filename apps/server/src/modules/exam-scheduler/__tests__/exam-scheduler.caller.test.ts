@@ -44,11 +44,7 @@ async function bootstrapFixtures() {
 	];
 	for (const classCourse of classCourses) {
 		const student = await createStudent({ class: classCourse.class });
-		await ensureStudentCourseEnrollment(
-			student.id,
-			classCourse.id,
-			"active",
-		);
+		await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 	}
 	const examType = await createExamType({
 		name: `Session normale ${randomUUID()}`,
@@ -71,8 +67,7 @@ async function bootstrapFixtures() {
 
 describe("exam scheduler router", () => {
 	it("requires admin privileges", async () => {
-		const { institutionId, academicYear, examType } =
-			await bootstrapFixtures();
+		const { institutionId, academicYear, examType } = await bootstrapFixtures();
 		const unauthenticated = createCaller(makeTestContext());
 		await expect(
 			unauthenticated.examScheduler.preview({
@@ -107,9 +102,9 @@ describe("exam scheduler router", () => {
 			semesterId: fixtures.semesterId,
 		});
 		expect(preview.classes.length).toBe(2);
-		expect(
-			preview.classes.every((klass) => klass.classCourseCount === 1),
-		).toBe(true);
+		expect(preview.classes.every((klass) => klass.classCourseCount === 1)).toBe(
+			true,
+		);
 
 		const firstRun = await admin.examScheduler.schedule({
 			institutionId: fixtures.institutionId,
@@ -141,9 +136,7 @@ describe("exam scheduler router", () => {
 
 		const history = await admin.examScheduler.history({});
 		expect(history.items.length).toBeGreaterThan(0);
-		const targetRun = history.items.find(
-			(item) => item.id === firstRun.runId,
-		);
+		const targetRun = history.items.find((item) => item.id === firstRun.runId);
 		expect(targetRun).toBeTruthy();
 		expect(Number(targetRun?.createdCount ?? 0)).toBe(
 			fixtures.classCourses.length,
