@@ -95,7 +95,7 @@ export function ExecutionHistoryPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-bold text-3xl tracking-tight">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.promotionRules.history.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -105,7 +105,7 @@ export function ExecutionHistoryPage() {
 			</div>
 
 			{/* Executions List */}
-			<Card>
+			<Card className="border-0 shadow-sm">
 				<CardHeader>
 					<CardTitle>{t("admin.promotionRules.history.table.title")}</CardTitle>
 				</CardHeader>
@@ -178,7 +178,7 @@ export function ExecutionHistoryPage() {
 														count: execution.studentsEvaluated,
 													})}
 												</Badge>
-												<Badge variant="default" className="bg-green-500">
+												<Badge variant="default" className="bg-emerald-600">
 													{t("admin.promotionRules.history.badges.promoted", {
 														count: execution.studentsPromoted,
 													})}
@@ -189,9 +189,9 @@ export function ExecutionHistoryPage() {
 											<div className="flex items-center gap-1">
 												{execution.studentsPromoted ===
 												execution.studentsEvaluated ? (
-													<CheckCircle2 className="h-4 w-4 text-green-600" />
+													<CheckCircle2 className="h-4 w-4 text-emerald-600" />
 												) : (
-													<XCircle className="h-4 w-4 text-amber-600" />
+													<XCircle className="h-4 w-4 text-muted-foreground" />
 												)}
 												<span>
 													{execution.studentsEvaluated > 0
@@ -264,9 +264,9 @@ export function ExecutionHistoryPage() {
 										</p>
 									</CardContent>
 								</Card>
-								<Card className="border-green-500/30 bg-green-50/20">
+								<Card className="border-emerald-500/20 bg-emerald-500/5">
 									<CardContent className="pt-4">
-										<div className="font-bold text-2xl text-green-600">
+										<div className="font-bold text-2xl text-emerald-600">
 											{executionDetails.execution.studentsPromoted}
 										</div>
 										<p className="text-muted-foreground text-xs">
@@ -344,7 +344,7 @@ export function ExecutionHistoryPage() {
 												</TableCell>
 												<TableCell>
 													{result.wasPromoted ? (
-														<Badge variant="default" className="bg-green-500">
+														<Badge variant="default" className="bg-emerald-600">
 															<CheckCircle2 className="mr-1 h-3 w-3" />
 															{t(
 																"admin.promotionRules.history.details.studentResults.promoted",

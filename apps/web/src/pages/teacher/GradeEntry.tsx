@@ -621,7 +621,7 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="font-bold text-2xl text-foreground">
+					<h2 className="font-heading font-bold text-2xl text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (

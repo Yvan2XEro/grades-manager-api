@@ -3,6 +3,7 @@ import { BarChart3, LineChart, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "../../store";
 import { trpc } from "../../utils/trpc";
 
@@ -39,12 +40,15 @@ const PerformanceDashboard = () => {
 	const cycleLevel = classInfo?.cycleLevel;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
+			{/* Header */}
 			<div>
-				<h1 className="font-semibold text-2xl text-gray-900">
+				<h1 className="font-heading font-bold text-2xl text-foreground">
 					{t("student.performance.title")}
 				</h1>
-				<p className="text-gray-600">{t("student.performance.subtitle")}</p>
+				<p className="mt-1 text-muted-foreground text-sm">
+					{t("student.performance.subtitle")}
+				</p>
 				{(cycle || cycleLevel) && (
 					<div className="mt-3 flex flex-wrap gap-2">
 						{cycle && (
@@ -67,60 +71,73 @@ const PerformanceDashboard = () => {
 				)}
 			</div>
 
-			<div className="grid gap-4 lg:grid-cols-2">
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<div className="mb-4 flex items-center space-x-3">
-						<LineChart className="h-6 w-6 text-primary-700" />
-						<div>
-							<h2 className="font-semibold text-gray-900 text-lg">
-								{t("student.performance.trendTitle")}
-							</h2>
-							<p className="text-gray-600 text-sm">
-								{t("student.performance.trendSubtitle")}
-							</p>
+			{/* Content Grid */}
+			<div className="grid gap-6 lg:grid-cols-2">
+				{/* Credit Progress */}
+				<Card className="border-0 shadow-sm">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+								<LineChart className="h-5 w-5 text-primary" />
+							</div>
+							<div>
+								<CardTitle className="text-lg">
+									{t("student.performance.trendTitle")}
+								</CardTitle>
+								<p className="text-muted-foreground text-sm">
+									{t("student.performance.trendSubtitle")}
+								</p>
+							</div>
 						</div>
-					</div>
-					<div className="space-y-2">
-						<div className="rounded-lg bg-primary-50 p-4">
-							<p className="font-medium text-primary-900 text-sm">
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="rounded-xl bg-primary/5 p-5">
+							<p className="font-medium text-muted-foreground text-sm">
 								{t("student.performance.creditsProgress", {
 									defaultValue: "Credits earned",
 								})}
 							</p>
-							<p className="font-semibold text-3xl text-primary-900">
-								{ledger?.creditsEarned ?? "—"} /{" "}
-								{ledger?.requiredCredits ?? "—"}
+							<p className="mt-1 font-heading font-bold text-3xl text-foreground tabular-nums">
+								{ledger?.creditsEarned ?? "\u2014"}{" "}
+								<span className="font-normal text-lg text-muted-foreground">
+									/ {ledger?.requiredCredits ?? "\u2014"}
+								</span>
 							</p>
-							<p className="text-primary-900 text-xs">
+							<p className="mt-1 text-muted-foreground text-xs">
 								{t("student.performance.inProgress", {
 									defaultValue: "In progress: {{value}} credits",
 									value: ledger?.creditsInProgress ?? 0,
 								})}
 							</p>
-							<div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-primary-100">
+							<div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-primary/10">
 								<div
-									className="h-3 rounded-full bg-primary-600 transition-all"
+									className="h-full rounded-full bg-primary transition-all duration-500"
 									style={{ width: `${progress}%` }}
 								/>
 							</div>
 						</div>
+
 						{promotionQuery.data && (
 							<div
-								className={`flex items-center gap-3 rounded-lg p-3 ${promotionQuery.data.eligible ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}
+								className={`flex items-start gap-3 rounded-xl p-4 ${
+									promotionQuery.data.eligible
+										? "bg-emerald-50 text-emerald-900"
+										: "bg-amber-50 text-amber-900"
+								}`}
 							>
-								<ShieldCheck className="h-5 w-5" />
+								<ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
 								<div>
-									<p className="font-medium">
+									<p className="font-medium text-sm">
 										{promotionQuery.data.eligible
 											? t("student.performance.eligible", {
-													defaultValue: "Eligible for next level 🎉",
+													defaultValue: "Eligible for next level",
 												})
 											: t("student.performance.notEligible", {
 													defaultValue:
 														"Keep going! You're almost ready for promotion.",
 												})}
 									</p>
-									<p className="text-xs">
+									<p className="mt-0.5 text-xs opacity-75">
 										{t("student.performance.ruleNotice", {
 											defaultValue:
 												"Evaluated with the promotion rules configured by your faculty.",
@@ -129,27 +146,38 @@ const PerformanceDashboard = () => {
 								</div>
 							</div>
 						)}
-					</div>
-				</div>
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<div className="mb-4 flex items-center space-x-3">
-						<BarChart3 className="h-6 w-6 text-primary-700" />
-						<div>
-							<h2 className="font-semibold text-gray-900 text-lg">
-								{t("student.performance.courseAverages")}
-							</h2>
-							<p className="text-gray-600 text-sm">
-								{t("student.performance.courseSubtitle")}
+					</CardContent>
+				</Card>
+
+				{/* Course Averages */}
+				<Card className="border-0 shadow-sm">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-3">
+							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50">
+								<BarChart3 className="h-5 w-5 text-violet-600" />
+							</div>
+							<div>
+								<CardTitle className="text-lg">
+									{t("student.performance.courseAverages")}
+								</CardTitle>
+								<p className="text-muted-foreground text-sm">
+									{t("student.performance.courseSubtitle")}
+								</p>
+							</div>
+						</div>
+					</CardHeader>
+					<CardContent>
+						<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+							<BarChart3 className="h-8 w-8 text-muted-foreground/40" />
+							<p className="text-muted-foreground text-sm">
+								{t("student.performance.coursePlaceholder", {
+									defaultValue:
+										"Detailed course averages will appear once instructors publish grades for the current session.",
+								})}
 							</p>
 						</div>
-					</div>
-					<p className="rounded-lg border border-gray-200 border-dashed bg-gray-50 p-4 text-gray-600 text-sm">
-						{t("student.performance.coursePlaceholder", {
-							defaultValue:
-								"Detailed course averages will appear once instructors publish grades for the current session.",
-						})}
-					</p>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

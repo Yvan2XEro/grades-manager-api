@@ -370,7 +370,7 @@ export default function ProgramManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8" />
+				<Spinner className="h-8 w-8 text-primary" />
 			</div>
 		);
 	}
@@ -379,7 +379,7 @@ export default function ProgramManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.programs.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -614,7 +614,7 @@ export default function ProgramManagement() {
 						<div className="space-y-2">
 							{optionsLoading ? (
 								<div className="flex justify-center py-6">
-									<Spinner className="h-6 w-6" />
+									<Spinner className="h-6 w-6 text-primary" />
 								</div>
 							) : optionList.length ? (
 								<div className="max-h-64 space-y-2 overflow-y-auto pr-2">

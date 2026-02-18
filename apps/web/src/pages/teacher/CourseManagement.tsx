@@ -198,7 +198,7 @@ export default function CourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-6 w-6" />
+				<Spinner className="h-6 w-6 text-primary" />
 			</div>
 		);
 	}
@@ -207,7 +207,7 @@ export default function CourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("teacher.courses.manage.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -408,7 +408,7 @@ export default function CourseManagement() {
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? (
-								<Spinner className="mr-2" />
+								<Spinner className="mr-2 text-primary" />
 							) : editingCourse ? (
 								t("common.actions.saveChanges")
 							) : (

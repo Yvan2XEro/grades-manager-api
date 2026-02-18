@@ -368,12 +368,12 @@ export default function InstitutionSettings() {
 			<div className="flex items-center gap-3">
 				<Landmark className="h-10 w-10 text-primary-600" />
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-semibold text-2xl text-foreground">
 						{t("admin.institution.title", {
 							defaultValue: "Institution settings",
 						})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.institution.subtitle", {
 							defaultValue:
 								"Configure the bilingual identity, branding, and official contacts for generated documents.",

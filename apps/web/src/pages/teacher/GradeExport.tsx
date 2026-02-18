@@ -250,7 +250,7 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">{t("teacher.gradeExport.title")}</h2>
+				<h2 className="font-heading font-bold text-2xl text-foreground">{t("teacher.gradeExport.title")}</h2>
 				<p className="text-muted-foreground">
 					{t("teacher.gradeExport.subtitle")}
 				</p>

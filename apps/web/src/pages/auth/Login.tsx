@@ -5,7 +5,7 @@ import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link, useSearchParams } from "react-router";
+import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "../../components/ui/button";
@@ -38,12 +38,10 @@ const Login: React.FC = () => {
 			await authClient.signIn.email({
 				email: data.email,
 				password: data.password,
-
 				callbackURL: callbackURL || undefined,
 			});
 
 			toast.success(t("auth.login.success"));
-			// Navigation happens automatically through auth state change listener
 		} catch (error: any) {
 			toast.error(error.message || t("auth.login.error"));
 		}
@@ -51,55 +49,67 @@ const Login: React.FC = () => {
 
 	return (
 		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.login.title")}
-			</h2>
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-				<div>
-					<Label htmlFor="email" className="mb-1 block">
-						{t("common.fields.email")}
-					</Label>
+			<div className="mb-8">
+				<h2 className="font-heading font-bold text-2xl text-foreground">
+					{t("auth.login.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
+					{t("auth.login.noAccount")}{" "}
+					<Link
+						to={`/auth/register?return=${callbackURL}`}
+						className="font-medium text-primary hover:text-primary/80"
+					>
+						{t("auth.login.registerLink")}
+					</Link>
+				</p>
+			</div>
+
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<div className="space-y-2">
+					<Label htmlFor="email">{t("common.fields.email")}</Label>
 					<Input
 						id="email"
 						type="email"
 						{...register("email")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.login.emailPlaceholder")}
 					/>
 					{errors.email && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.email.message}
 						</p>
 					)}
 				</div>
 
-				<div>
-					<Label htmlFor="password" className="mb-1 block">
-						{t("common.fields.password")}
-					</Label>
-					<Input
-						id="password"
-						type="password"
-						{...register("password")}
-						className="w-full"
-						placeholder={t("auth.login.passwordPlaceholder")}
-					/>
-					{errors.password && (
-						<p className="mt-1 text-error-600 text-sm">
-							{errors.password.message}
-						</p>
-					)}
-					<div className="mt-1 text-right">
+				<div className="space-y-2">
+					<div className="flex items-center justify-between">
+						<Label htmlFor="password">{t("common.fields.password")}</Label>
 						<Link
 							to={`/auth/forgot?return=${callbackURL}`}
-							className="text-primary-600 text-sm hover:text-primary-500"
+							className="text-primary text-sm hover:text-primary/80"
 						>
 							{t("auth.login.forgotPassword")}
 						</Link>
 					</div>
+					<Input
+						id="password"
+						type="password"
+						{...register("password")}
+						className="h-11"
+						placeholder={t("auth.login.passwordPlaceholder")}
+					/>
+					{errors.password && (
+						<p className="text-destructive text-sm">
+							{errors.password.message}
+						</p>
+					)}
 				</div>
 
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="h-11 w-full font-semibold"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -110,18 +120,6 @@ const Login: React.FC = () => {
 					)}
 				</Button>
 			</form>
-
-			<div className="mt-6 text-center">
-				<p className="text-gray-600 text-sm">
-					{t("auth.login.noAccount")}{" "}
-					<Link
-						to={`/auth/register?return=${callbackURL}`}
-						className="font-medium text-primary-600 hover:text-primary-500"
-					>
-						{t("auth.login.registerLink")}
-					</Link>
-				</p>
-			</div>
 		</div>
 	);
 };

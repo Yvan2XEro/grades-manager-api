@@ -45,16 +45,16 @@ const WorkflowApprovals = () => {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("dean.workflows.title")}
 					</h1>
-					<p className="text-gray-600">{t("dean.workflows.subtitle")}</p>
+					<p className="text-muted-foreground">{t("dean.workflows.subtitle")}</p>
 				</div>
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-2">
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<h2 className="font-semibold text-gray-900 text-lg">
+				<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
+					<h2 className="font-heading font-semibold text-foreground text-lg">
 						{t("dean.workflows.queue", { defaultValue: "Submitted exams" })}
 					</h2>
 					<div className="mt-4 space-y-3">
@@ -62,17 +62,17 @@ const WorkflowApprovals = () => {
 							pendingExams.map((exam) => (
 								<div
 									key={exam.id}
-									className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+									className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
 								>
 									<div>
-										<p className="font-medium text-gray-900">{exam.name}</p>
-										<p className="text-gray-500 text-xs">
+										<p className="font-medium text-foreground">{exam.name}</p>
+										<p className="text-muted-foreground text-xs">
 											{exam.classCourse} • {exam.percentage}%
 										</p>
 									</div>
 									<button
 										type="button"
-										className="flex items-center rounded-lg bg-primary-600 px-3 py-2 font-semibold text-white text-xs"
+										className="flex items-center rounded-lg bg-primary px-3 py-2 font-semibold text-primary-foreground text-xs"
 										onClick={() => validateExam.mutate(exam.id)}
 									>
 										<ShieldCheck className="mr-1 h-4 w-4" />
@@ -83,7 +83,7 @@ const WorkflowApprovals = () => {
 								</div>
 							))
 						) : (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("dean.workflows.empty", {
 									defaultValue: "No pending exams.",
 								})}
@@ -91,8 +91,8 @@ const WorkflowApprovals = () => {
 						)}
 					</div>
 				</div>
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<h2 className="font-semibold text-gray-900 text-lg">
+				<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
+					<h2 className="font-heading font-semibold text-foreground text-lg">
 						{t("dean.workflows.notifications", {
 							defaultValue: "Workflow notifications",
 						})}
@@ -102,10 +102,10 @@ const WorkflowApprovals = () => {
 							pendingNotifications.map((notification) => (
 								<li
 									key={notification.id}
-									className="flex items-center justify-between rounded-lg bg-blue-50 p-3"
+									className="flex items-center justify-between rounded-lg bg-primary/5 p-3"
 								>
 									<div className="flex items-center space-x-3">
-										<div className="rounded-full bg-white p-2 text-primary-700">
+										<div className="rounded-full bg-card p-2 text-primary">
 											{notification.type.includes("enrollment") ? (
 												<Clock3 className="h-5 w-5" />
 											) : (
@@ -113,19 +113,19 @@ const WorkflowApprovals = () => {
 											)}
 										</div>
 										<div>
-											<p className="font-medium text-gray-900">
+											<p className="font-medium text-foreground">
 												{notification.type}
 											</p>
-											<p className="text-gray-500 text-xs">
+											<p className="text-muted-foreground text-xs">
 												{JSON.stringify(notification.payload)}
 											</p>
 										</div>
 									</div>
-									<ArrowRight className="h-4 w-4 text-gray-400" />
+									<ArrowRight className="h-4 w-4 text-muted-foreground/60" />
 								</li>
 							))
 						) : (
-							<li className="rounded-lg bg-gray-50 p-3 text-gray-500 text-sm">
+							<li className="rounded-lg bg-muted/50 p-3 text-muted-foreground text-sm">
 								{t("dean.workflows.notificationsEmpty", {
 									defaultValue: "No notifications",
 								})}
@@ -135,19 +135,19 @@ const WorkflowApprovals = () => {
 				</div>
 			</div>
 
-			<div className="rounded-xl border bg-white p-6 shadow-sm">
-				<h2 className="mb-3 font-semibold text-gray-900 text-lg">
+			<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
+				<h2 className="mb-3 font-heading font-semibold text-foreground text-lg">
 					{t("dean.workflows.windows", { defaultValue: "Enrollment windows" })}
 				</h2>
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 					{windowsQuery.data?.map((window) => (
 						<div
 							key={window.id}
-							className="rounded-lg border px-4 py-3 text-gray-700 text-sm"
+							className="rounded-lg border px-4 py-3 text-foreground text-sm"
 						>
 							<p className="font-semibold">{window.classId}</p>
-							<p className="text-gray-500 text-xs">{window.academicYearId}</p>
-							<p className="mt-1 text-primary-700 text-xs uppercase">
+							<p className="text-muted-foreground text-xs">{window.academicYearId}</p>
+							<p className="mt-1 text-primary text-xs uppercase">
 								{window.status}
 							</p>
 						</div>

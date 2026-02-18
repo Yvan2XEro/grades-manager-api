@@ -239,8 +239,8 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-bold text-2xl">{t("teacher.promotion.title")}</h2>
-				<p className="text-gray-600">{t("teacher.promotion.subtitle")}</p>
+				<h2 className="font-heading font-bold text-2xl text-foreground">{t("teacher.promotion.title")}</h2>
+				<p className="text-muted-foreground">{t("teacher.promotion.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2">
@@ -302,13 +302,13 @@ export default function StudentManagement() {
 			</div>
 
 			{students && students.length > 0 ? (
-				<div className="overflow-hidden rounded-lg bg-white shadow">
-					<div className="flex items-center justify-between border-gray-200 border-b p-4">
+				<div className="overflow-hidden rounded-lg bg-card shadow-sm">
+					<div className="flex items-center justify-between border-border border-b p-4">
 						<div className="flex items-center space-x-2">
 							<span className="font-medium">
 								{t("teacher.promotion.students.listTitle")}
 							</span>
-							<span className="text-gray-500 text-sm">
+							<span className="text-muted-foreground text-sm">
 								{t("teacher.promotion.students.selectedCount", {
 									count: selectedStudents.length,
 								})}
@@ -436,12 +436,12 @@ export default function StudentManagement() {
 					</div>
 				</div>
 			) : sourceClass ? (
-				<div className="rounded-lg bg-white p-8 text-center">
-					<Users className="mx-auto h-12 w-12 text-gray-400" />
-					<h3 className="mt-2 font-medium text-gray-900 text-sm">
+				<div className="rounded-lg bg-card p-8 text-center">
+					<Users className="mx-auto h-12 w-12 text-muted-foreground/60" />
+					<h3 className="mt-2 font-medium text-foreground text-sm">
 						{t("teacher.promotion.emptyStudents.title")}
 					</h3>
-					<p className="mt-1 text-gray-500 text-sm">
+					<p className="mt-1 text-muted-foreground text-sm">
 						{t("teacher.promotion.emptyStudents.description")}
 					</p>
 				</div>

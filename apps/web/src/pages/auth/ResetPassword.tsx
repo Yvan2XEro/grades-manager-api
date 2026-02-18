@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TFunction } from "i18next";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, KeyRound, Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -57,45 +57,60 @@ const ResetPassword: React.FC = () => {
 
 	return (
 		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.reset.title")}
-			</h2>
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-				<div>
-					<Label htmlFor="password" className="mb-1 block">
-						{t("auth.reset.newPassword")}
-					</Label>
+			<div className="mb-8">
+				<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+					<KeyRound className="h-6 w-6 text-primary" />
+				</div>
+				<h2 className="font-heading font-bold text-2xl text-foreground">
+					{t("auth.reset.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
+					{t("auth.reset.subtitle", {
+						defaultValue: "Choose a strong password for your account.",
+					})}
+				</p>
+			</div>
+
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<div className="space-y-2">
+					<Label htmlFor="password">{t("auth.reset.newPassword")}</Label>
 					<Input
 						id="password"
 						type="password"
 						{...register("password")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.reset.passwordPlaceholder")}
 					/>
 					{errors.password && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.password.message}
 						</p>
 					)}
 				</div>
-				<div>
-					<Label htmlFor="confirmPassword" className="mb-1 block">
+
+				<div className="space-y-2">
+					<Label htmlFor="confirmPassword">
 						{t("common.fields.confirmPassword")}
 					</Label>
 					<Input
 						id="confirmPassword"
 						type="password"
 						{...register("confirmPassword")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.reset.confirmPasswordPlaceholder")}
 					/>
 					{errors.confirmPassword && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.confirmPassword.message}
 						</p>
 					)}
 				</div>
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="h-11 w-full font-semibold"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -105,11 +120,13 @@ const ResetPassword: React.FC = () => {
 						t("auth.reset.submit")
 					)}
 				</Button>
-				<div className="mt-1 text-right">
+
+				<div className="text-center">
 					<Link
 						to={`/auth/login?return=${callbackURL}`}
-						className="text-primary-600 text-sm hover:text-primary-500"
+						className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 					>
+						<ArrowLeft className="h-4 w-4" />
 						{t("auth.reset.backToLogin")}
 					</Link>
 				</div>

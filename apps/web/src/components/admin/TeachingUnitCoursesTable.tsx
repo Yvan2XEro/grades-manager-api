@@ -302,7 +302,7 @@ export function TeachingUnitCoursesTable({
 	}
 
 	return (
-		<Card>
+		<Card className="border-0 shadow-sm">
 			<CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div>
 					<CardTitle>
@@ -326,7 +326,7 @@ export function TeachingUnitCoursesTable({
 			<CardContent>
 				{isLoading ? (
 					<div className="flex items-center justify-center py-12">
-						<Spinner className="h-6 w-6" />
+						<Spinner className="h-6 w-6 text-primary" />
 					</div>
 				) : courses?.length ? (
 					<div className="overflow-x-auto">

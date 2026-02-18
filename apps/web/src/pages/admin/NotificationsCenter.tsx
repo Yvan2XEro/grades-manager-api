@@ -39,15 +39,15 @@ const NotificationsCenter = () => {
 			<div className="flex items-center space-x-3">
 				<Bell className="h-6 w-6 text-primary-700" />
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-semibold text-2xl text-foreground">
 						{t("admin.notifications.title")}
 					</h1>
-					<p className="text-gray-600">{t("admin.notifications.subtitle")}</p>
+					<p className="text-muted-foreground">{t("admin.notifications.subtitle")}</p>
 				</div>
 			</div>
 
 			<div className="flex items-center justify-between">
-				<h2 className="font-semibold text-gray-900 text-lg">
+				<h2 className="font-semibold text-foreground text-lg">
 					{t("admin.notifications.queueTitle", {
 						defaultValue: "Latest notifications",
 					})}
@@ -55,7 +55,7 @@ const NotificationsCenter = () => {
 				<button
 					type="button"
 					onClick={() => flushMutation.mutate()}
-					className="flex items-center rounded-lg border px-3 py-2 font-medium text-gray-700 text-sm"
+					className="flex items-center rounded-lg border px-3 py-2 font-medium text-foreground text-sm"
 				>
 					<RefreshCw className="mr-2 h-4 w-4" />
 					{t("admin.notifications.actions.flush", {
@@ -64,16 +64,16 @@ const NotificationsCenter = () => {
 				</button>
 			</div>
 
-			<div className="rounded-xl border bg-white p-6 shadow-sm">
+			<div className="rounded-xl border bg-card p-6 shadow-sm">
 				{notificationsQuery.isLoading ? (
-					<p className="text-gray-500 text-sm">
+					<p className="text-muted-foreground text-sm">
 						{t("common.loading", { defaultValue: "Loading..." })}
 					</p>
 				) : notifications.length ? (
 					notifications.map((item) => (
 						<div
 							key={item.id}
-							className="flex items-start justify-between border-gray-100 border-b py-4 last:border-0"
+							className="flex items-start justify-between border-border border-b py-4 last:border-0"
 						>
 							<div className="flex items-start space-x-3">
 								<div
@@ -90,8 +90,8 @@ const NotificationsCenter = () => {
 									)}
 								</div>
 								<div>
-									<p className="font-medium text-gray-900">{item.type}</p>
-									<p className="text-gray-600 text-sm">
+									<p className="font-medium text-foreground">{item.type}</p>
+									<p className="text-muted-foreground text-sm">
 										{JSON.stringify(item.payload)}
 									</p>
 								</div>
@@ -109,7 +109,7 @@ const NotificationsCenter = () => {
 						</div>
 					))
 				) : (
-					<p className="text-gray-500 text-sm">
+					<p className="text-muted-foreground text-sm">
 						{t("admin.notifications.empty", {
 							defaultValue: "No notifications yet.",
 						})}

@@ -921,7 +921,7 @@ export default function StudentManagement() {
 					</DrawerHeader>
 					<div className="space-y-6 px-4 pb-6">
 						{ledgerSummaryQuery.isLoading ? (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.students.ledger.loading", {
 									defaultValue: "Fetching ledger…",
 								})}
@@ -929,21 +929,21 @@ export default function StudentManagement() {
 						) : (
 							<>
 								{ledgerSummaryQuery.data && (
-									<div className="rounded-xl border bg-gray-50 p-4">
-										<p className="font-medium text-gray-700 text-sm">
+									<div className="rounded-xl border bg-muted p-4">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.students.ledger.progressLabel", {
 												defaultValue: "Progress toward promotion",
 											})}
 										</p>
 										<div className="mt-3 flex items-end justify-between">
 											<div>
-												<p className="font-semibold text-3xl text-gray-900">
+												<p className="font-semibold text-3xl text-foreground">
 													{ledgerSummaryQuery.data.creditsEarned}{" "}
 													{t("admin.students.ledger.credits", {
 														defaultValue: "credits",
 													})}
 												</p>
-												<p className="text-gray-600 text-sm">
+												<p className="text-muted-foreground text-sm">
 													{t("admin.students.ledger.required", {
 														defaultValue: "Required: {{required}}",
 														required: ledgerSummaryQuery.data.requiredCredits,
@@ -951,7 +951,7 @@ export default function StudentManagement() {
 												</p>
 											</div>
 											<div className="text-right text-sm">
-												<p className="text-gray-600">
+												<p className="text-muted-foreground">
 													{t("admin.students.ledger.inProgress", {
 														defaultValue: "In progress: {{value}}",
 														value: ledgerSummaryQuery.data.creditsInProgress,
@@ -974,7 +974,7 @@ export default function StudentManagement() {
 									<div
 										className={`rounded-xl border p-4 ${promotionQuery.data.eligible ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
 									>
-										<p className="font-semibold text-gray-900">
+										<p className="font-semibold text-foreground">
 											{promotionQuery.data.eligible
 												? t("admin.students.ledger.ready", {
 														defaultValue: "Student is eligible for promotion",
@@ -984,7 +984,7 @@ export default function StudentManagement() {
 															"More credits required before promotion",
 													})}
 										</p>
-										<p className="text-gray-700 text-sm">
+										<p className="text-foreground text-sm">
 											{t("admin.students.ledger.message", {
 												defaultValue:
 													"Rules evaluated via json-rules-engine. Overrides will appear here once published.",
@@ -997,12 +997,12 @@ export default function StudentManagement() {
 										{ledgerSummaryQuery.data.ledgers.map((entry) => (
 											<div
 												key={entry.id}
-												className="rounded-lg border bg-white p-3 shadow-sm"
+												className="rounded-lg border bg-card p-3 shadow-sm"
 											>
-												<p className="font-medium text-gray-900">
+												<p className="font-medium text-foreground">
 													{entry.academicYearId}
 												</p>
-												<p className="text-gray-600 text-sm">
+												<p className="text-muted-foreground text-sm">
 													{t("admin.students.ledger.entry", {
 														defaultValue:
 															"Earned {{earned}} • In progress {{progress}}",
@@ -1195,8 +1195,8 @@ export default function StudentManagement() {
 									</div>
 
 									{/* Section: Inscription */}
-									<div className="space-y-4 rounded-lg border bg-gray-50 p-4">
-										<p className="font-medium text-gray-900 text-sm">
+									<div className="space-y-4 rounded-lg border bg-muted p-4">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.students.form.registrationSection", {
 												defaultValue: "Inscription",
 											})}
@@ -1766,8 +1766,8 @@ export default function StudentManagement() {
 										)}
 									/>
 
-									<div className="rounded-lg border bg-gray-50 p-4">
-										<p className="mb-3 font-medium text-gray-900 text-sm">
+									<div className="rounded-lg border bg-muted p-4">
+										<p className="mb-3 font-medium text-foreground text-sm">
 											{t("admin.students.external.form.studentInfoSection")}
 										</p>
 										<div className="grid gap-4">

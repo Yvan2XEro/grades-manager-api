@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { GraduationCap, Loader2 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,12 +6,15 @@ const LoadingScreen: React.FC = () => {
 	const { t } = useTranslation();
 
 	return (
-		<div className="flex h-screen w-full items-center justify-center bg-primary-50">
-			<div className="flex flex-col items-center space-y-4">
-				<Loader2 className="h-12 w-12 animate-spin text-primary-700" />
-				<h2 className="font-semibold text-primary-800 text-xl">
+		<div className="flex h-screen w-full flex-col items-center justify-center gap-6 bg-background">
+			<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
+				<GraduationCap className="h-7 w-7 text-primary-foreground" />
+			</div>
+			<div className="flex flex-col items-center gap-3">
+				<Loader2 className="h-5 w-5 animate-spin text-primary" />
+				<p className="font-medium text-muted-foreground text-sm">
 					{t("common.loading")}
-				</h2>
+				</p>
 			</div>
 		</div>
 	);

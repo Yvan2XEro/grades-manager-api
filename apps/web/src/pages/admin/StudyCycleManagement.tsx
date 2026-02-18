@@ -218,10 +218,10 @@ export default function StudyCycleManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-semibold text-2xl text-foreground">
 						{t("admin.studyCycles.title", { defaultValue: "Study cycles" })}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.studyCycles.subtitle", {
 							defaultValue:
 								"Group programs by cycle and tune the credit flow across levels.",
@@ -288,10 +288,10 @@ export default function StudyCycleManagement() {
 								{cyclesQuery.data?.items?.map((cycle) => (
 									<TableRow
 										key={cycle.id}
-										className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-gray-50"}`}
+										className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
 										onClick={() => setActiveCycleId(cycle.id)}
 									>
-										<TableCell className="font-semibold text-gray-900">
+										<TableCell className="font-semibold text-foreground">
 											{cycle.name}
 										</TableCell>
 										<TableCell>{cycle.totalCreditsRequired}</TableCell>
@@ -341,7 +341,7 @@ export default function StudyCycleManagement() {
 									<TableRow>
 										<TableCell
 											colSpan={4}
-											className="py-6 text-center text-gray-500 text-sm"
+											className="py-6 text-center text-muted-foreground text-sm"
 										>
 											{t("admin.studyCycles.empty", {
 												defaultValue: "No study cycles yet.",
@@ -367,7 +367,7 @@ export default function StudyCycleManagement() {
 										cycle: activeCycle.name,
 									})}
 								</CardTitle>
-								<p className="text-gray-600 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.studyCycles.levelsSubtitle", {
 										defaultValue: "Define how students move across years.",
 									})}
@@ -399,11 +399,11 @@ export default function StudyCycleManagement() {
 							{levelsQuery.data?.map((level) => (
 								<div
 									key={level.id}
-									className="flex flex-wrap items-center justify-between rounded-lg border bg-white p-3 shadow-sm"
+									className="flex flex-wrap items-center justify-between rounded-lg border bg-card p-3 shadow-sm"
 								>
 									<div>
-										<p className="font-semibold text-gray-900">{level.name}</p>
-										<p className="text-gray-600 text-sm">
+										<p className="font-semibold text-foreground">{level.name}</p>
+										<p className="text-muted-foreground text-sm">
 											{t("admin.studyCycles.levelCredits", {
 												defaultValue: "Required credits: {{value}}",
 												value: level.minCredits,
@@ -441,7 +441,7 @@ export default function StudyCycleManagement() {
 								</div>
 							))}
 							{!levelsQuery.data?.length && (
-								<p className="text-gray-500 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.studyCycles.levelsEmpty", {
 										defaultValue: "No levels defined yet.",
 									})}

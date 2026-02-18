@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TFunction } from "i18next";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -44,28 +44,43 @@ const ForgotPassword: React.FC = () => {
 
 	return (
 		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.forgot.title")}
-			</h2>
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-				<div>
-					<Label htmlFor="email" className="mb-1 block">
-						{t("common.fields.email")}
-					</Label>
+			<div className="mb-8">
+				<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+					<Mail className="h-6 w-6 text-primary" />
+				</div>
+				<h2 className="font-heading font-bold text-2xl text-foreground">
+					{t("auth.forgot.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
+					{t("auth.forgot.subtitle", {
+						defaultValue:
+							"Enter your email and we'll send you a link to reset your password.",
+					})}
+				</p>
+			</div>
+
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<div className="space-y-2">
+					<Label htmlFor="email">{t("common.fields.email")}</Label>
 					<Input
 						id="email"
 						type="email"
 						{...register("email")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.forgot.emailPlaceholder")}
 					/>
 					{errors.email && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.email.message}
 						</p>
 					)}
 				</div>
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="h-11 w-full font-semibold"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -75,11 +90,13 @@ const ForgotPassword: React.FC = () => {
 						t("auth.forgot.submit")
 					)}
 				</Button>
-				<div className="mt-1 text-right">
+
+				<div className="text-center">
 					<Link
 						to={`/auth/login?return=${callbackURL}`}
-						className="text-primary-600 text-sm hover:text-primary-500"
+						className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 					>
+						<ArrowLeft className="h-4 w-4" />
 						{t("auth.forgot.backToLogin")}
 					</Link>
 				</div>

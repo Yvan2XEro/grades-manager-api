@@ -249,9 +249,9 @@ const EnrollmentManagement = () => {
 
 	return (
 		<div className="space-y-6">
-			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
+			<div className="grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
+					<p className="font-medium text-muted-foreground text-sm">
 						{t("admin.enrollments.filters.year", {
 							defaultValue: "Academic year",
 						})}
@@ -284,7 +284,7 @@ const EnrollmentManagement = () => {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
+					<p className="font-medium text-muted-foreground text-sm">
 						{t("admin.enrollments.filters.class", { defaultValue: "Class" })}
 					</p>
 					<Select
@@ -312,7 +312,7 @@ const EnrollmentManagement = () => {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
+					<p className="font-medium text-muted-foreground text-sm">
 						{t("admin.enrollments.filters.semester", {
 							defaultValue: "Semester",
 						})}
@@ -345,8 +345,8 @@ const EnrollmentManagement = () => {
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="space-y-2 rounded-lg border border-gray-200 border-dashed p-3 text-gray-600 text-sm">
-					<p className="font-semibold text-gray-900">
+				<div className="space-y-2 rounded-lg border border-border border-dashed p-3 text-muted-foreground text-sm">
+					<p className="font-semibold text-foreground">
 						{t("admin.enrollments.filters.summary", {
 							defaultValue: "Snapshot",
 						})}
@@ -397,7 +397,7 @@ const EnrollmentManagement = () => {
 					<div className="flex items-center gap-3">
 						<CalendarDays className="h-6 w-6 text-primary-700" />
 						<div>
-							<p className="font-semibold text-gray-900">
+							<p className="font-semibold text-foreground">
 								{windowStatus
 									? t("admin.enrollments.windowStatus", {
 											defaultValue: "Window: {{status}}",
@@ -407,7 +407,7 @@ const EnrollmentManagement = () => {
 											defaultValue: "Window not configured",
 										})}
 							</p>
-							<p className="text-gray-600 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{windowStatus?.status === "open"
 									? t("admin.enrollments.windowOpen", {
 											defaultValue: "Students can enroll.",
@@ -499,7 +499,7 @@ const EnrollmentManagement = () => {
 			<div>
 				<Card className="lg:col-span-2">
 					<CardHeader className="pb-4">
-						<CardTitle className="font-semibold text-gray-900 text-lg">
+						<CardTitle className="font-semibold text-foreground text-lg">
 							{t("admin.enrollments.listTitle", {
 								defaultValue: "Enrollments",
 							})}
@@ -507,37 +507,37 @@ const EnrollmentManagement = () => {
 					</CardHeader>
 					<CardContent>
 						{enrollmentsQuery.isLoading ? (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("common.loading", { defaultValue: "Loading..." })}
 							</p>
 						) : enrollments.length ? (
 							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-gray-200">
-									<thead className="bg-gray-50">
+								<table className="min-w-full divide-y divide-border">
+									<thead className="bg-muted">
 										<tr>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.student", {
 													defaultValue: "Student",
 												})}
 											</th>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.status", {
 													defaultValue: "Status",
 												})}
 											</th>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.dates", {
 													defaultValue: "Dates",
 												})}
 											</th>
-											<th className="px-4 py-2 text-right font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-right font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.actions", {
 													defaultValue: "Actions",
 												})}
 											</th>
 										</tr>
 									</thead>
-									<tbody className="divide-y divide-gray-100">
+									<tbody className="divide-y divide-border">
 										{enrollments.map((enrollment) => {
 											const student = studentsQuery.data?.items?.find(
 												(s) => s.id === enrollment.studentId,
@@ -551,10 +551,10 @@ const EnrollmentManagement = () => {
 												<tr key={enrollment.id}>
 													<td className="px-4 py-3">
 														<div className="space-y-0.5">
-															<p className="font-semibold text-gray-900">
+															<p className="font-semibold text-foreground">
 																{fullName}
 															</p>
-															<p className="text-gray-600 text-sm">
+															<p className="text-muted-foreground text-sm">
 																{student?.registrationNumber ??
 																	t(
 																		"admin.enrollments.fields.registrationFallback",
@@ -567,14 +567,14 @@ const EnrollmentManagement = () => {
 														</div>
 													</td>
 													<td className="px-4 py-3">
-														<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-700 text-xs">
+														<span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-medium text-foreground text-xs">
 															{t("admin.enrollments.fields.statusValue", {
 																defaultValue: "{{value}}",
 																value: enrollment.status,
 															})}
 														</span>
 													</td>
-													<td className="px-4 py-3 text-gray-600 text-sm">
+													<td className="px-4 py-3 text-muted-foreground text-sm">
 														<p>
 															{t("admin.enrollments.fields.enrolledAt", {
 																defaultValue: "Enrolled: {{value}}",
@@ -622,7 +622,7 @@ const EnrollmentManagement = () => {
 								</table>
 							</div>
 						) : (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.enrollments.empty", {
 									defaultValue:
 										"No enrollments found for the selected filters.",
@@ -638,12 +638,12 @@ const EnrollmentManagement = () => {
 							<CardHeader className="pb-4">
 								<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 									<div>
-										<CardTitle className="font-semibold text-gray-900 text-lg">
+										<CardTitle className="font-semibold text-foreground text-lg">
 											{t("admin.enrollments.courseRoster.title", {
 												defaultValue: "Course roster (per student)",
 											})}
 										</CardTitle>
-										<p className="text-gray-600 text-sm">
+										<p className="text-muted-foreground text-sm">
 											{t("admin.enrollments.courseRoster.subtitle", {
 												defaultValue:
 													"Select a student to review enrollment attempts, retakes, and status per course.",
@@ -665,7 +665,7 @@ const EnrollmentManagement = () => {
 							<CardContent className="min-w-[70vw] space-y-4">
 								{selectedStudent ? (
 									<>
-										<p className="font-medium text-gray-700 text-sm">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.enrollments.courseRoster.courses", {
 												defaultValue: "Class courses",
 											})}
@@ -701,10 +701,10 @@ const EnrollmentManagement = () => {
 															className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
 														>
 															<div className="space-y-1">
-																<p className="font-semibold text-gray-900 text-sm">
+																<p className="font-semibold text-foreground text-sm">
 																	{courseName}
 																</p>
-																<p className="text-gray-600 text-xs">
+																<p className="text-muted-foreground text-xs">
 																	{t("admin.enrollments.courseRoster.teacher", {
 																		defaultValue: "Teacher: {{value}}",
 																		value: teacherName,
@@ -721,7 +721,7 @@ const EnrollmentManagement = () => {
 																				? "border-blue-200 bg-blue-50 text-blue-800"
 																				: status === "failed"
 																					? "border-rose-200 bg-rose-50 text-rose-800"
-																					: "border-gray-200 bg-gray-50 text-gray-800"
+																					: "border-border bg-muted text-foreground"
 																	}
 																>
 																	{status === "none"
@@ -798,7 +798,7 @@ const EnrollmentManagement = () => {
 														</div>
 													);
 												}) ?? (
-													<p className="text-gray-500 text-sm">
+													<p className="text-muted-foreground text-sm">
 														{t("admin.enrollments.courseRoster.noCourses", {
 															defaultValue:
 																"This class has no courses assigned yet.",
@@ -809,7 +809,7 @@ const EnrollmentManagement = () => {
 										</ScrollArea>
 									</>
 								) : (
-									<p className="text-gray-500 text-sm">
+									<p className="text-muted-foreground text-sm">
 										{t("admin.enrollments.courseRoster.selectStudent", {
 											defaultValue:
 												"Pick a student to manage course enrollments.",

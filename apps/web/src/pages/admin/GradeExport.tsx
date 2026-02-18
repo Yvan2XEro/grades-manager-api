@@ -1991,10 +1991,10 @@ export default function GradeExport() {
 							Prévisualisation HTML avant génération PDF
 						</DialogDescription>
 					</DialogHeader>
-					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-gray-100">
+					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-muted">
 						<iframe
 							title="preview"
-							className="h-full w-full bg-white"
+							className="h-full w-full bg-card"
 							sandbox="allow-same-origin"
 							srcDoc={previewHtml}
 						/>

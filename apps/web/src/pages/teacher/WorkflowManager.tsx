@@ -76,7 +76,7 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-semibold text-2xl text-foreground">
+				<h1 className="font-heading font-bold text-2xl text-foreground">
 					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
 				<p className="text-muted-foreground">

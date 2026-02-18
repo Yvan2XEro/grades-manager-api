@@ -199,7 +199,7 @@ export function RulesListPage() {
 				</Button>
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="font-bold text-3xl tracking-tight">
+						<h1 className="font-heading font-bold text-2xl text-foreground">
 							{t("admin.promotionRules.rulesList.title")}
 						</h1>
 						<p className="mt-1 text-muted-foreground">

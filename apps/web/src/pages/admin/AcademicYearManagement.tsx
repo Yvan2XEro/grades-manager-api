@@ -276,11 +276,11 @@ const AcademicYearManagement: React.FC = () => {
 					</div>
 				) : academicYears?.length === 0 ? (
 					<div className="p-8 text-center">
-						<Calendar className="mx-auto h-12 w-12 text-gray-400" />
-						<h3 className="mt-4 font-medium text-gray-700 text-lg">
+						<Calendar className="mx-auto h-12 w-12 text-muted-foreground/60" />
+						<h3 className="mt-4 font-medium text-foreground text-lg">
 							{t("admin.academicYears.empty.title")}
 						</h3>
-						<p className="mt-1 text-gray-500">
+						<p className="mt-1 text-muted-foreground">
 							{t("admin.academicYears.empty.description")}
 						</p>
 						<Button
@@ -339,7 +339,7 @@ const AcademicYearManagement: React.FC = () => {
 										<td>
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
-													<span className="text-gray-600 text-sm">
+													<span className="text-muted-foreground text-sm">
 														{t("admin.academicYears.confirmDelete")}
 													</span>
 													<button

@@ -68,104 +68,111 @@ const Register: React.FC = () => {
 
 	return (
 		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.register.title")}
-			</h2>
+			<div className="mb-8">
+				<h2 className="font-heading font-bold text-2xl text-foreground">
+					{t("auth.register.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
+					{t("auth.register.haveAccount")}{" "}
+					<Link
+						to={`/auth/login?return=${callbackURL}`}
+						className="font-medium text-primary hover:text-primary/80"
+					>
+						{t("auth.register.loginLink")}
+					</Link>
+				</p>
+			</div>
 
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<Label htmlFor="firstName" className="mb-1 block">
-							{t("common.fields.firstName")}
-						</Label>
+					<div className="space-y-2">
+						<Label htmlFor="firstName">{t("common.fields.firstName")}</Label>
 						<Input
 							id="firstName"
 							type="text"
 							{...register("firstName")}
-							className="w-full"
+							className="h-11"
 							placeholder={t("auth.register.placeholders.firstName")}
 						/>
 						{errors.firstName && (
-							<p className="mt-1 text-error-600 text-sm">
+							<p className="text-destructive text-sm">
 								{errors.firstName.message}
 							</p>
 						)}
 					</div>
 
-					<div>
-						<Label htmlFor="lastName" className="mb-1 block">
-							{t("common.fields.lastName")}
-						</Label>
+					<div className="space-y-2">
+						<Label htmlFor="lastName">{t("common.fields.lastName")}</Label>
 						<Input
 							id="lastName"
 							type="text"
 							{...register("lastName")}
-							className="w-full"
+							className="h-11"
 							placeholder={t("auth.register.placeholders.lastName")}
 						/>
 						{errors.lastName && (
-							<p className="mt-1 text-error-600 text-sm">
+							<p className="text-destructive text-sm">
 								{errors.lastName.message}
 							</p>
 						)}
 					</div>
 				</div>
 
-				<div>
-					<Label htmlFor="email" className="mb-1 block">
-						{t("common.fields.email")}
-					</Label>
+				<div className="space-y-2">
+					<Label htmlFor="email">{t("common.fields.email")}</Label>
 					<Input
 						id="email"
 						type="email"
 						{...register("email")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.register.placeholders.email")}
 					/>
 					{errors.email && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.email.message}
 						</p>
 					)}
 				</div>
 
-				<div>
-					<Label htmlFor="password" className="mb-1 block">
-						{t("common.fields.password")}
-					</Label>
+				<div className="space-y-2">
+					<Label htmlFor="password">{t("common.fields.password")}</Label>
 					<Input
 						id="password"
 						type="password"
 						{...register("password")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.register.placeholders.password")}
 					/>
 					{errors.password && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.password.message}
 						</p>
 					)}
 				</div>
 
-				<div>
-					<Label htmlFor="confirmPassword" className="mb-1 block">
+				<div className="space-y-2">
+					<Label htmlFor="confirmPassword">
 						{t("common.fields.confirmPassword")}
 					</Label>
 					<Input
 						id="confirmPassword"
 						type="password"
 						{...register("confirmPassword")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.register.placeholders.confirmPassword")}
 					/>
 					{errors.confirmPassword && (
-						<p className="mt-1 text-error-600 text-sm">
+						<p className="text-destructive text-sm">
 							{errors.confirmPassword.message}
 						</p>
 					)}
 				</div>
 
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="h-11 w-full font-semibold"
+				>
 					{isSubmitting ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -176,18 +183,6 @@ const Register: React.FC = () => {
 					)}
 				</Button>
 			</form>
-
-			<div className="mt-6 text-center">
-				<p className="text-gray-600 text-sm">
-					{t("auth.register.haveAccount")}{" "}
-					<Link
-						to={`/auth/login?return=${callbackURL}`}
-						className="font-medium text-primary-600 hover:text-primary-500"
-					>
-						{t("auth.register.loginLink")}
-					</Link>
-				</p>
-			</div>
 		</div>
 	);
 };

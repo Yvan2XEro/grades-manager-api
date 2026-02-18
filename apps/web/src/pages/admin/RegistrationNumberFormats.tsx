@@ -80,12 +80,12 @@ const RegistrationNumberFormats = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-semibold text-2xl text-foreground">
 						{t("admin.registrationNumbers.title", {
 							defaultValue: "Registration number formats",
 						})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.registrationNumbers.subtitle", {
 							defaultValue:
 								"Design templates for automatic matricule generation.",
@@ -168,11 +168,11 @@ const RegistrationNumberFormats = () => {
 										</TableCell>
 										<TableCell>{format.description || "-"}</TableCell>
 										<TableCell>
-											<div className="flex flex-wrap gap-2 text-gray-700 text-xs">
+											<div className="flex flex-wrap gap-2 text-foreground text-xs">
 												{format.definition.segments.map((segment, idx) => (
 													<span
 														key={`${format.id}-${idx}`}
-														className="rounded bg-gray-100 px-2 py-1"
+														className="rounded bg-muted px-2 py-1"
 													>
 														{describeSegment(segment)}
 													</span>

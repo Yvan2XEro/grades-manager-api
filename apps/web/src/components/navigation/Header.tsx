@@ -1,4 +1,4 @@
-import { Bell, LogOut, Menu, X } from "lucide-react";
+import { Bell, LogOut, Menu, PanelLeftClose } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -45,32 +45,25 @@ const Header: React.FC = () => {
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
 
 	return (
-		<header className="sticky top-0 z-30 border-border border-b bg-background/80 backdrop-blur">
-			<div className="flex items-center justify-between px-4 py-3 md:px-6">
-				<div className="flex items-center gap-2">
+		<header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur-xl">
+			<div className="flex h-16 items-center justify-between px-4 md:px-6">
+				<div className="flex items-center gap-3">
 					<Button
 						onClick={toggleSidebar}
 						variant="ghost"
 						size="icon"
-						className="text-muted-foreground"
+						className="h-9 w-9 text-muted-foreground hover:text-foreground"
 						aria-label={t("navigation.header.toggleSidebarAria")}
 					>
 						{sidebarOpen ? (
-							<X className="h-5 w-5" />
+							<PanelLeftClose className="h-5 w-5" />
 						) : (
 							<Menu className="h-5 w-5" />
 						)}
 					</Button>
-					<div className="hidden md:block">
-						<h1 className="font-semibold text-lg">
-							{user?.role === "admin"
-								? t("navigation.header.adminDashboard")
-								: t("navigation.header.teacherDashboard")}
-						</h1>
-					</div>
 				</div>
 
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-2">
 					<Select
 						value={i18n.language}
 						onValueChange={(value) => {
@@ -80,40 +73,62 @@ const Header: React.FC = () => {
 					>
 						<SelectTrigger
 							aria-label={t("navigation.header.languageSelectAria")}
+							className="h-9 w-[70px] border-none bg-transparent text-sm shadow-none"
 						>
 							<SelectValue
 								placeholder={t("navigation.header.languageSelectPlaceholder")}
 							/>
 						</SelectTrigger>
 						<SelectContent align="end">
-							<SelectItem value="en">En</SelectItem>
-							<SelectItem value="fr">Fr</SelectItem>
+							<SelectItem value="en">EN</SelectItem>
+							<SelectItem value="fr">FR</SelectItem>
 						</SelectContent>
 					</Select>
+
+					<Button
+						variant="ghost"
+						size="icon"
+						className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+						aria-label={t("navigation.header.notificationsAria")}
+					>
+						<Bell className="h-[18px] w-[18px]" />
+					</Button>
+
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-10 rounded-full p-0"
+								className="h-9 gap-2 rounded-full px-2"
 								aria-label={t("navigation.header.profileMenuAria")}
 							>
-								<Avatar className="size-10">
+								<Avatar className="h-8 w-8">
 									<AvatarImage
 										src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
 										alt={t("navigation.header.profileMenuAria")}
 									/>
-									<AvatarFallback>{userInitials}</AvatarFallback>
+									<AvatarFallback className="bg-primary/10 font-semibold text-primary text-xs">
+										{userInitials}
+									</AvatarFallback>
 								</Avatar>
+								<span className="hidden font-medium text-foreground text-sm md:inline">
+									{user?.firstName}
+								</span>
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuLabel>
-								{user?.firstName} {user?.lastName}
+							<DropdownMenuLabel className="font-normal">
+								<div className="flex flex-col gap-1">
+									<p className="font-medium text-sm">
+										{user?.firstName} {user?.lastName}
+									</p>
+									<p className="text-muted-foreground text-xs">
+										{user?.email}
+									</p>
+								</div>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								className="gap-2"
+								className="gap-2 text-destructive focus:text-destructive"
 								onSelect={(event) => {
 									event.preventDefault();
 									handleLogout();
@@ -124,24 +139,6 @@ const Header: React.FC = () => {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-muted-foreground"
-						aria-label={t("navigation.header.notificationsAria")}
-					>
-						<Bell className="h-5 w-5" />
-					</Button>
-					<Button
-						onClick={handleLogout}
-						variant="ghost"
-						size="icon"
-						className="text-muted-foreground"
-						aria-label={t("auth.logout.aria")}
-					>
-						<LogOut className="h-5 w-5" />
-					</Button>
 				</div>
 			</div>
 		</header>

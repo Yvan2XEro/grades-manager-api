@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { BookOpen, Calendar, ClipboardList, Clock, Users } from "lucide-react";
+import {
+	BookOpen,
+	Calendar,
+	ChevronRight,
+	ClipboardList,
+	Clock,
+	Users,
+} from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -153,66 +160,75 @@ const TeacherDashboard: React.FC = () => {
 			totalStudents: 0,
 			totalExams: 0,
 		} as const);
+
 	const statCards = [
 		{
 			label: t("teacher.dashboard.stats.courses"),
 			value: stats.totalCourses,
 			Icon: BookOpen,
-			iconClass: "bg-blue-50 text-blue-600",
+			bgColor: "bg-blue-50",
+			iconColor: "text-blue-600",
 		},
 		{
 			label: t("teacher.dashboard.stats.classes"),
 			value: stats.totalClasses,
 			Icon: Users,
-			iconClass: "bg-emerald-50 text-emerald-600",
+			bgColor: "bg-emerald-50",
+			iconColor: "text-emerald-600",
 		},
 		{
 			label: t("teacher.dashboard.stats.students"),
 			value: stats.totalStudents,
 			Icon: Users,
-			iconClass: "bg-purple-50 text-purple-600",
+			bgColor: "bg-violet-50",
+			iconColor: "text-violet-600",
 		},
 		{
 			label: t("teacher.dashboard.stats.exams"),
 			value: stats.totalExams,
 			Icon: ClipboardList,
-			iconClass: "bg-amber-50 text-amber-600",
+			bgColor: "bg-amber-50",
+			iconColor: "text-amber-600",
 		},
 	];
 
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-10 w-10 text-primary" />
+				<Spinner className="h-8 w-8 text-primary" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
+			{/* Header */}
 			<div>
-				<h2 className="font-bold text-2xl text-foreground">
+				<h1 className="font-heading font-bold text-2xl text-foreground">
 					{t("teacher.dashboard.title")}
-				</h2>
-				<p className="text-muted-foreground">
+				</h1>
+				<p className="mt-1 text-muted-foreground text-sm">
 					{t("teacher.dashboard.subtitle", {
 						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
 					})}
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+			{/* Stats */}
+			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 				{statCards.map((stat) => (
-					<Card key={stat.label}>
-						<CardContent className="flex items-center gap-4">
+					<Card key={stat.label} className="border-0 shadow-sm">
+						<CardContent className="flex items-center gap-4 p-5">
 							<div
-								className={`rounded-full p-3 ${stat.iconClass} [&_svg]:h-6 [&_svg]:w-6`}
+								className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
 							>
-								<stat.Icon className="h-6 w-6" />
+								<stat.Icon className="h-5 w-5" />
 							</div>
 							<div>
-								<p className="text-muted-foreground text-sm">{stat.label}</p>
-								<p className="font-semibold text-2xl text-foreground">
+								<p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+									{stat.label}
+								</p>
+								<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
 									{stat.value}
 								</p>
 							</div>
@@ -221,17 +237,23 @@ const TeacherDashboard: React.FC = () => {
 				))}
 			</div>
 
+			{/* Content Grid */}
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-				<Card className="lg:col-span-2">
-					<CardHeader className="border-b pb-4">
-						<CardTitle>{t("teacher.dashboard.courses.title")}</CardTitle>
+				{/* Courses */}
+				<Card className="border-0 shadow-sm lg:col-span-2">
+					<CardHeader className="pb-3">
+						<CardTitle className="text-lg">
+							{t("teacher.dashboard.courses.title")}
+						</CardTitle>
 					</CardHeader>
-					<CardContent className="divide-y">
+					<CardContent className="p-0">
 						{courses.length === 0 ? (
-							<div className="flex flex-col items-center gap-3 py-10 text-center">
-								<BookOpen className="h-12 w-12 text-muted-foreground/60" />
+							<div className="flex flex-col items-center gap-3 p-10 text-center">
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+									<BookOpen className="h-6 w-6 text-muted-foreground" />
+								</div>
 								<div>
-									<p className="font-medium text-foreground text-lg">
+									<p className="font-medium text-foreground">
 										{t("teacher.dashboard.courses.empty.title")}
 									</p>
 									<p className="text-muted-foreground text-sm">
@@ -240,35 +262,36 @@ const TeacherDashboard: React.FC = () => {
 								</div>
 							</div>
 						) : (
-							courses.map((course) => (
-								<Link
-									key={course.id}
-									to={`/teacher/grades/${course.id}`}
-									className="block px-2 py-4 transition hover:bg-muted/50"
-								>
-									<div className="flex items-center justify-between gap-4">
-										<div className="flex-1">
+							<div className="divide-y">
+								{courses.map((course) => (
+									<Link
+										key={course.id}
+										to={`/teacher/grades/${course.id}`}
+										className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-muted/50"
+									>
+										<div className="min-w-0 flex-1">
 											<div className="flex items-start justify-between gap-3">
-												<div>
-													<p className="font-medium text-base text-foreground">
+												<div className="min-w-0">
+													<p className="truncate font-medium text-foreground">
 														{course.name}
 													</p>
 													<p className="text-muted-foreground text-sm">
-														{course.class_name} • {course.program_name}
+														{course.class_name} &middot;{" "}
+														{course.program_name}
 													</p>
 												</div>
-												{course.isDelegated ? (
-													<Badge variant="secondary">
+												{course.isDelegated && (
+													<Badge variant="secondary" className="shrink-0">
 														{t("teacher.courses.delegatedBadge", {
 															defaultValue: "Delegated",
 														})}
 													</Badge>
-												) : null}
+												)}
 											</div>
 											{(course.cycle_name || course.cycle_level_name) && (
-												<div className="mt-1 flex flex-wrap gap-2 text-xs">
+												<div className="mt-2 flex flex-wrap gap-1.5">
 													{course.cycle_name && (
-														<Badge variant="outline">
+														<Badge variant="outline" className="text-xs">
 															{course.cycle_name}
 															{course.cycle_code
 																? ` (${course.cycle_code})`
@@ -276,7 +299,7 @@ const TeacherDashboard: React.FC = () => {
 														</Badge>
 													)}
 													{course.cycle_level_name && (
-														<Badge variant="secondary">
+														<Badge variant="secondary" className="text-xs">
 															{course.cycle_level_name}
 															{course.cycle_level_code
 																? ` (${course.cycle_level_code})`
@@ -286,42 +309,48 @@ const TeacherDashboard: React.FC = () => {
 												</div>
 											)}
 										</div>
-										<div className="flex items-center gap-4 text-muted-foreground text-sm">
-											<span className="flex items-center gap-1">
-												<Users className="h-4 w-4" /> {course.student_count}
+										<div className="flex shrink-0 items-center gap-4 text-muted-foreground text-sm">
+											<span className="flex items-center gap-1 tabular-nums">
+												<Users className="h-3.5 w-3.5" />{" "}
+												{course.student_count}
 											</span>
-											<span className="flex items-center gap-1">
-												<ClipboardList className="h-4 w-4" />{" "}
+											<span className="flex items-center gap-1 tabular-nums">
+												<ClipboardList className="h-3.5 w-3.5" />{" "}
 												{course.upcoming_exams}
 											</span>
-											<span className="font-medium text-primary">
-												{t("teacher.dashboard.courses.view")}
-											</span>
+											<ChevronRight className="h-4 w-4 text-muted-foreground/50" />
 										</div>
-									</div>
-								</Link>
-							))
+									</Link>
+								))}
+							</div>
 						)}
 					</CardContent>
-					<CardFooter className="border-t">
-						<Button variant="link" className="px-0" asChild>
-							<Link to="/teacher/courses">
-								{t("teacher.dashboard.courses.viewAll")}
-							</Link>
-						</Button>
-					</CardFooter>
+					{courses.length > 0 && (
+						<CardFooter className="border-t px-6 py-3">
+							<Button variant="link" className="h-auto p-0 text-primary" asChild>
+								<Link to="/teacher/courses">
+									{t("teacher.dashboard.courses.viewAll")}
+								</Link>
+							</Button>
+						</CardFooter>
+					)}
 				</Card>
 
-				<Card>
-					<CardHeader className="border-b pb-4">
-						<CardTitle>{t("teacher.dashboard.exams.title")}</CardTitle>
+				{/* Upcoming Exams */}
+				<Card className="border-0 shadow-sm">
+					<CardHeader className="pb-3">
+						<CardTitle className="text-lg">
+							{t("teacher.dashboard.exams.title")}
+						</CardTitle>
 					</CardHeader>
-					<CardContent className="divide-y">
+					<CardContent className="p-0">
 						{upcomingExams.length === 0 ? (
-							<div className="flex flex-col items-center gap-3 py-10 text-center">
-								<Calendar className="h-12 w-12 text-muted-foreground/60" />
+							<div className="flex flex-col items-center gap-3 p-10 text-center">
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+									<Calendar className="h-6 w-6 text-muted-foreground" />
+								</div>
 								<div>
-									<p className="font-medium text-foreground text-lg">
+									<p className="font-medium text-foreground">
 										{t("teacher.dashboard.exams.empty.title")}
 									</p>
 									<p className="text-muted-foreground text-sm">
@@ -330,29 +359,34 @@ const TeacherDashboard: React.FC = () => {
 								</div>
 							</div>
 						) : (
-							upcomingExams.map((exam) => (
-								<div key={exam.id} className="px-2 py-3">
-									<div className="flex items-center justify-between gap-3">
-										<div>
-											<p className="font-medium text-base text-foreground">
-												{exam.name}
-											</p>
-											<p className="text-muted-foreground text-sm">
-												{exam.course_name} • {exam.class_name}
-											</p>
+							<div className="divide-y">
+								{upcomingExams.map((exam) => (
+									<div key={exam.id} className="px-6 py-4">
+										<div className="flex items-start justify-between gap-3">
+											<div className="min-w-0">
+												<p className="truncate font-medium text-foreground text-sm">
+													{exam.name}
+												</p>
+												<p className="text-muted-foreground text-xs">
+													{exam.course_name} &middot; {exam.class_name}
+												</p>
+											</div>
+											<Badge
+												variant="outline"
+												className="shrink-0 border-primary/20 bg-primary/5 text-primary"
+											>
+												{t("teacher.dashboard.exams.percentage", {
+													value: exam.percentage,
+												})}
+											</Badge>
 										</div>
-										<Badge variant="outline" className="text-primary">
-											{t("teacher.dashboard.exams.percentage", {
-												value: exam.percentage,
-											})}
-										</Badge>
+										<div className="mt-2 flex items-center text-muted-foreground text-xs">
+											<Clock className="mr-1.5 h-3.5 w-3.5" />
+											{format(new Date(exam.date), "MMMM d, yyyy")}
+										</div>
 									</div>
-									<div className="mt-2 flex items-center text-muted-foreground text-sm">
-										<Clock className="mr-1 h-4 w-4" />
-										{format(new Date(exam.date), "MMMM d, yyyy")}
-									</div>
-								</div>
-							))
+								))}
+							</div>
 						)}
 					</CardContent>
 				</Card>

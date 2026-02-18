@@ -30,39 +30,39 @@ const MonitoringDashboard = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-semibold text-2xl text-gray-900">
+				<h1 className="font-semibold text-2xl text-foreground">
 					{t("admin.monitoring.title")}
 				</h1>
-				<p className="text-gray-600">{t("admin.monitoring.subtitle")}</p>
+				<p className="text-muted-foreground">{t("admin.monitoring.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				{metrics.map((metric) => (
 					<div
 						key={metric.label}
-						className="rounded-xl border bg-white p-4 shadow-sm"
+						className="rounded-xl border bg-card p-4 shadow-sm"
 					>
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-gray-500 text-sm">{metric.label}</p>
-								<p className="font-semibold text-2xl text-gray-900">
+								<p className="text-muted-foreground text-sm">{metric.label}</p>
+								<p className="font-semibold text-2xl text-foreground">
 									{metric.value}
 								</p>
 							</div>
-							<div className="rounded-full bg-gray-50 p-2">{metric.icon}</div>
+							<div className="rounded-full bg-muted p-2">{metric.icon}</div>
 						</div>
 					</div>
 				))}
 			</div>
 
 			<div className="grid gap-4 lg:grid-cols-2">
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
+				<div className="rounded-xl border bg-card p-6 shadow-sm">
 					<div className="mb-4 flex items-center justify-between">
 						<div>
-							<h2 className="font-semibold text-gray-900 text-lg">
+							<h2 className="font-semibold text-foreground text-lg">
 								{t("admin.monitoring.workflows")}
 							</h2>
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.monitoring.workflowsDescription")}
 							</p>
 						</div>
@@ -95,20 +95,20 @@ const MonitoringDashboard = () => {
 						</div>
 					</div>
 				</div>
-				<div className="rounded-xl border bg-white p-6 shadow-sm">
-					<h2 className="mb-2 font-semibold text-gray-900 text-lg">
+				<div className="rounded-xl border bg-card p-6 shadow-sm">
+					<h2 className="mb-2 font-semibold text-foreground text-lg">
 						{t("admin.monitoring.backgroundJobs")}
 					</h2>
-					<p className="text-gray-500 text-sm">
+					<p className="text-muted-foreground text-sm">
 						{t("admin.monitoring.backgroundJobsDesc")}
 					</p>
 					<ul className="mt-4 space-y-2">
-						<li className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+						<li className="flex items-center justify-between rounded-lg bg-muted p-3">
 							<div>
-								<p className="font-medium text-gray-900">
+								<p className="font-medium text-foreground">
 									{t("admin.monitoring.jobExam")}
 								</p>
-								<p className="text-gray-600 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.monitoring.jobExamDesc")}
 								</p>
 							</div>
@@ -116,12 +116,12 @@ const MonitoringDashboard = () => {
 								{t("admin.monitoring.active")}
 							</span>
 						</li>
-						<li className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+						<li className="flex items-center justify-between rounded-lg bg-muted p-3">
 							<div>
-								<p className="font-medium text-gray-900">
+								<p className="font-medium text-foreground">
 									{t("admin.monitoring.jobNotifications")}
 								</p>
-								<p className="text-gray-600 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.monitoring.jobNotificationsDesc")}
 								</p>
 							</div>
