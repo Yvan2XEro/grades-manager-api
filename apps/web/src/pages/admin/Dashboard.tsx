@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import {
 	BookOpen,
 	Building2,
@@ -21,6 +22,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { staggerContainer, staggerItem, fadeUp } from "@/lib/animations";
 import { trpcClient } from "../../utils/trpc";
 
 type StatCard = {
@@ -162,7 +164,12 @@ const AdminDashboard: React.FC = () => {
 	return (
 		<div className="space-y-8">
 			{/* Page Header */}
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<motion.div
+				variants={fadeUp}
+				initial="hidden"
+				animate="visible"
+				className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+			>
 				<div>
 					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.dashboard.title")}
@@ -173,100 +180,114 @@ const AdminDashboard: React.FC = () => {
 						})}
 					</p>
 				</div>
-				<div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2">
+				<motion.div
+					whileHover={{ scale: 1.02 }}
+					transition={{ duration: 0.15 }}
+					className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2"
+				>
 					<Calendar className="h-4 w-4 text-primary" />
 					<span className="font-medium text-primary text-sm">
 						{t("admin.dashboard.activeYear", { year: activeYear })}
 					</span>
-				</div>
-			</div>
+				</motion.div>
+			</motion.div>
 
 			{/* Stats Grid - Bento style */}
-			<div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+			<motion.div
+				variants={staggerContainer}
+				initial="hidden"
+				animate="visible"
+				className="grid grid-cols-2 gap-4 lg:grid-cols-3"
+			>
 				{stats.map((stat) => (
-					<Card
-						key={stat.key}
-						className="border-0 shadow-sm transition-shadow hover:shadow-md"
-					>
-						<CardContent className="flex items-center gap-4 p-5">
-							<div
-								className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
-							>
-								{stat.icon}
-							</div>
-							<div className="min-w-0">
-								<p className="truncate text-muted-foreground text-xs font-medium uppercase tracking-wide">
-									{t(`admin.dashboard.stats.${stat.key}`)}
-								</p>
-								<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
-									{stat.count}
-								</p>
-							</div>
-						</CardContent>
-					</Card>
+					<motion.div key={stat.key} variants={staggerItem}>
+						<Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
+							<CardContent className="flex items-center gap-4 p-5">
+								<div
+									className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
+								>
+									{stat.icon}
+								</div>
+								<div className="min-w-0">
+									<p className="truncate text-muted-foreground text-xs font-medium uppercase tracking-wide">
+										{t(`admin.dashboard.stats.${stat.key}`)}
+									</p>
+									<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
+										{stat.count}
+									</p>
+								</div>
+							</CardContent>
+						</Card>
+					</motion.div>
 				))}
-			</div>
+			</motion.div>
 
 			{/* Program Stats Chart */}
-			<Card className="border-0 shadow-sm">
-				<CardHeader>
-					<CardTitle className="text-lg">
-						{t("admin.dashboard.programStats.title")}
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="h-80">
-						{programStats.length > 0 ? (
-							<ResponsiveContainer width="100%" height="100%">
-								<BarChart
-									data={programStats}
-									margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
-								>
-									<CartesianGrid
-										strokeDasharray="3 3"
-										vertical={false}
-										stroke="var(--border)"
-									/>
-									<XAxis
-										dataKey="name"
-										angle={-45}
-										textAnchor="end"
-										height={80}
-										tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-										axisLine={false}
-										tickLine={false}
-									/>
-									<YAxis
-										tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-										axisLine={false}
-										tickLine={false}
-									/>
-									<Tooltip
-										contentStyle={{
-											borderRadius: "8px",
-											border: "1px solid var(--border)",
-											boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-											fontSize: "13px",
-										}}
-									/>
-									<Bar
-										dataKey="students"
-										fill="var(--primary)"
-										radius={[6, 6, 0, 0]}
-									/>
-								</BarChart>
-							</ResponsiveContainer>
-						) : (
-							<div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
-								<School className="h-10 w-10 opacity-40" />
-								<p className="text-sm">
-									{t("admin.dashboard.programStats.empty")}
-								</p>
-							</div>
-						)}
-					</div>
-				</CardContent>
-			</Card>
+			<motion.div
+				initial={{ opacity: 0, y: 16 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.35, duration: 0.45, ease: "easeOut" }}
+			>
+				<Card className="border-0 shadow-sm">
+					<CardHeader>
+						<CardTitle className="text-lg">
+							{t("admin.dashboard.programStats.title")}
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="h-80">
+							{programStats.length > 0 ? (
+								<ResponsiveContainer width="100%" height="100%">
+									<BarChart
+										data={programStats}
+										margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
+									>
+										<CartesianGrid
+											strokeDasharray="3 3"
+											vertical={false}
+											stroke="var(--border)"
+										/>
+										<XAxis
+											dataKey="name"
+											angle={-45}
+											textAnchor="end"
+											height={80}
+											tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+											axisLine={false}
+											tickLine={false}
+										/>
+										<YAxis
+											tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+											axisLine={false}
+											tickLine={false}
+										/>
+										<Tooltip
+											contentStyle={{
+												borderRadius: "8px",
+												border: "1px solid var(--border)",
+												boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+												fontSize: "13px",
+											}}
+										/>
+										<Bar
+											dataKey="students"
+											fill="var(--primary)"
+											radius={[6, 6, 0, 0]}
+										/>
+									</BarChart>
+								</ResponsiveContainer>
+							) : (
+								<div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+									<School className="h-10 w-10 opacity-40" />
+									<p className="text-sm">
+										{t("admin.dashboard.programStats.empty")}
+									</p>
+								</div>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 		</div>
 	);
 };

@@ -287,7 +287,13 @@ const Sidebar: React.FC = () => {
 					>
 						{/* Logo */}
 						<div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-5">
-							<img src={logo} alt="TKAMS" className="h-8 w-auto" />
+							<motion.img
+								src={logo}
+								alt="TKAMS"
+								className="h-8 w-auto"
+								whileHover={{ scale: 1.04 }}
+								transition={{ duration: 0.2 }}
+							/>
 						</div>
 
 						{/* Navigation */}
@@ -339,7 +345,13 @@ const Sidebar: React.FC = () => {
 																	data-testid={`nav-${link.to}`}
 																	className={navLinkClasses}
 																>
-																	{link.icon}
+																	<motion.span
+																		className="shrink-0"
+																		whileHover={{ scale: 1.2 }}
+																		transition={{ duration: 0.15 }}
+																	>
+																		{link.icon}
+																	</motion.span>
 																	<span>{t(link.labelKey)}</span>
 																</NavLink>
 															))}
@@ -362,7 +374,13 @@ const Sidebar: React.FC = () => {
 											data-testid={`nav-${link.to}`}
 											className={navLinkClasses}
 										>
-											{link.icon}
+											<motion.span
+												className="shrink-0"
+												whileHover={{ scale: 1.2 }}
+												transition={{ duration: 0.15 }}
+											>
+												{link.icon}
+											</motion.span>
 											<span>{t(link.labelKey)}</span>
 										</NavLink>
 									))}

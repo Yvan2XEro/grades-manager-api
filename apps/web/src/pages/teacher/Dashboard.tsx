@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 import {
 	BookOpen,
 	Calendar,
@@ -21,6 +22,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { staggerContainer, staggerItem, fadeUp } from "@/lib/animations";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -203,7 +205,11 @@ const TeacherDashboard: React.FC = () => {
 	return (
 		<div className="space-y-8">
 			{/* Header */}
-			<div>
+			<motion.div
+				variants={fadeUp}
+				initial="hidden"
+				animate="visible"
+			>
 				<h1 className="font-heading font-bold text-2xl text-foreground">
 					{t("teacher.dashboard.title")}
 				</h1>
@@ -212,33 +218,45 @@ const TeacherDashboard: React.FC = () => {
 						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
 					})}
 				</p>
-			</div>
+			</motion.div>
 
 			{/* Stats */}
-			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+			<motion.div
+				variants={staggerContainer}
+				initial="hidden"
+				animate="visible"
+				className="grid grid-cols-2 gap-4 lg:grid-cols-4"
+			>
 				{statCards.map((stat) => (
-					<Card key={stat.label} className="border-0 shadow-sm">
-						<CardContent className="flex items-center gap-4 p-5">
-							<div
-								className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
-							>
-								<stat.Icon className="h-5 w-5" />
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-									{stat.label}
-								</p>
-								<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
-									{stat.value}
-								</p>
-							</div>
-						</CardContent>
-					</Card>
+					<motion.div key={stat.label} variants={staggerItem}>
+						<Card className="border-0 shadow-sm">
+							<CardContent className="flex items-center gap-4 p-5">
+								<div
+									className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
+								>
+									<stat.Icon className="h-5 w-5" />
+								</div>
+								<div>
+									<p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+										{stat.label}
+									</p>
+									<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
+										{stat.value}
+									</p>
+								</div>
+							</CardContent>
+						</Card>
+					</motion.div>
 				))}
-			</div>
+			</motion.div>
 
 			{/* Content Grid */}
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+			<motion.div
+				initial={{ opacity: 0, y: 14 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.3, duration: 0.42, ease: "easeOut" }}
+				className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+			>
 				{/* Courses */}
 				<Card className="border-0 shadow-sm lg:col-span-2">
 					<CardHeader className="pb-3">
@@ -263,64 +281,70 @@ const TeacherDashboard: React.FC = () => {
 							</div>
 						) : (
 							<div className="divide-y">
-								{courses.map((course) => (
-									<Link
+								{courses.map((course, i) => (
+									<motion.div
 										key={course.id}
-										to={`/teacher/grades/${course.id}`}
-										className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-muted/50"
+										initial={{ opacity: 0, x: -8 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: 0.35 + i * 0.05, duration: 0.3 }}
 									>
-										<div className="min-w-0 flex-1">
-											<div className="flex items-start justify-between gap-3">
-												<div className="min-w-0">
-													<p className="truncate font-medium text-foreground">
-														{course.name}
-													</p>
-													<p className="text-muted-foreground text-sm">
-														{course.class_name} &middot;{" "}
-														{course.program_name}
-													</p>
+										<Link
+											to={`/teacher/grades/${course.id}`}
+											className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-muted/50"
+										>
+											<div className="min-w-0 flex-1">
+												<div className="flex items-start justify-between gap-3">
+													<div className="min-w-0">
+														<p className="truncate font-medium text-foreground">
+															{course.name}
+														</p>
+														<p className="text-muted-foreground text-sm">
+															{course.class_name} &middot;{" "}
+															{course.program_name}
+														</p>
+													</div>
+													{course.isDelegated && (
+														<Badge variant="secondary" className="shrink-0">
+															{t("teacher.courses.delegatedBadge", {
+																defaultValue: "Delegated",
+															})}
+														</Badge>
+													)}
 												</div>
-												{course.isDelegated && (
-													<Badge variant="secondary" className="shrink-0">
-														{t("teacher.courses.delegatedBadge", {
-															defaultValue: "Delegated",
-														})}
-													</Badge>
+												{(course.cycle_name || course.cycle_level_name) && (
+													<div className="mt-2 flex flex-wrap gap-1.5">
+														{course.cycle_name && (
+															<Badge variant="outline" className="text-xs">
+																{course.cycle_name}
+																{course.cycle_code
+																	? ` (${course.cycle_code})`
+																	: ""}
+															</Badge>
+														)}
+														{course.cycle_level_name && (
+															<Badge variant="secondary" className="text-xs">
+																{course.cycle_level_name}
+																{course.cycle_level_code
+																	? ` (${course.cycle_level_code})`
+																	: ""}
+															</Badge>
+														)}
+													</div>
 												)}
 											</div>
-											{(course.cycle_name || course.cycle_level_name) && (
-												<div className="mt-2 flex flex-wrap gap-1.5">
-													{course.cycle_name && (
-														<Badge variant="outline" className="text-xs">
-															{course.cycle_name}
-															{course.cycle_code
-																? ` (${course.cycle_code})`
-																: ""}
-														</Badge>
-													)}
-													{course.cycle_level_name && (
-														<Badge variant="secondary" className="text-xs">
-															{course.cycle_level_name}
-															{course.cycle_level_code
-																? ` (${course.cycle_level_code})`
-																: ""}
-														</Badge>
-													)}
-												</div>
-											)}
-										</div>
-										<div className="flex shrink-0 items-center gap-4 text-muted-foreground text-sm">
-											<span className="flex items-center gap-1 tabular-nums">
-												<Users className="h-3.5 w-3.5" />{" "}
-												{course.student_count}
-											</span>
-											<span className="flex items-center gap-1 tabular-nums">
-												<ClipboardList className="h-3.5 w-3.5" />{" "}
-												{course.upcoming_exams}
-											</span>
-											<ChevronRight className="h-4 w-4 text-muted-foreground/50" />
-										</div>
-									</Link>
+											<div className="flex shrink-0 items-center gap-4 text-muted-foreground text-sm">
+												<span className="flex items-center gap-1 tabular-nums">
+													<Users className="h-3.5 w-3.5" />{" "}
+													{course.student_count}
+												</span>
+												<span className="flex items-center gap-1 tabular-nums">
+													<ClipboardList className="h-3.5 w-3.5" />{" "}
+													{course.upcoming_exams}
+												</span>
+												<ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+											</div>
+										</Link>
+									</motion.div>
 								))}
 							</div>
 						)}
@@ -360,8 +384,14 @@ const TeacherDashboard: React.FC = () => {
 							</div>
 						) : (
 							<div className="divide-y">
-								{upcomingExams.map((exam) => (
-									<div key={exam.id} className="px-6 py-4">
+								{upcomingExams.map((exam, i) => (
+									<motion.div
+										key={exam.id}
+										initial={{ opacity: 0, x: 8 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: 0.35 + i * 0.06, duration: 0.3 }}
+										className="px-6 py-4"
+									>
 										<div className="flex items-start justify-between gap-3">
 											<div className="min-w-0">
 												<p className="truncate font-medium text-foreground text-sm">
@@ -384,13 +414,13 @@ const TeacherDashboard: React.FC = () => {
 											<Clock className="mr-1.5 h-3.5 w-3.5" />
 											{format(new Date(exam.date), "MMMM d, yyyy")}
 										</div>
-									</div>
+									</motion.div>
 								))}
 							</div>
 						)}
 					</CardContent>
 				</Card>
-			</div>
+			</motion.div>
 		</div>
 	);
 };

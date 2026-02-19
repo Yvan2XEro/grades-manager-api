@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
 import type { TFunction } from "i18next";
 import { Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
@@ -13,6 +14,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
 import { authClient } from "../../lib/auth-client";
+import { staggerContainer, staggerItem, errorMsg } from "../../lib/animations";
 
 const buildRegisterSchema = (t: TFunction) =>
 	z
@@ -68,8 +70,8 @@ const Register: React.FC = () => {
 	};
 
 	return (
-		<div>
-			<div className="mb-8">
+		<motion.div variants={staggerContainer} initial="hidden" animate="visible">
+			<motion.div variants={staggerItem} className="mb-8">
 				<h2 className="font-heading font-bold text-2xl text-foreground">
 					{t("auth.register.title")}
 				</h2>
@@ -82,10 +84,10 @@ const Register: React.FC = () => {
 						{t("auth.register.loginLink")}
 					</Link>
 				</p>
-			</div>
+			</motion.div>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-				<div className="grid grid-cols-2 gap-4">
+				<motion.div variants={staggerItem} className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<Label htmlFor="firstName">{t("common.fields.firstName")}</Label>
 						<Input
@@ -96,9 +98,9 @@ const Register: React.FC = () => {
 							placeholder={t("auth.register.placeholders.firstName")}
 						/>
 						{errors.firstName && (
-							<p className="text-destructive text-sm">
+							<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
 								{errors.firstName.message}
-							</p>
+							</motion.p>
 						)}
 					</div>
 
@@ -112,14 +114,14 @@ const Register: React.FC = () => {
 							placeholder={t("auth.register.placeholders.lastName")}
 						/>
 						{errors.lastName && (
-							<p className="text-destructive text-sm">
+							<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
 								{errors.lastName.message}
-							</p>
+							</motion.p>
 						)}
 					</div>
-				</div>
+				</motion.div>
 
-				<div className="space-y-2">
+				<motion.div variants={staggerItem} className="space-y-2">
 					<Label htmlFor="email">{t("common.fields.email")}</Label>
 					<Input
 						id="email"
@@ -129,13 +131,13 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.email")}
 					/>
 					{errors.email && (
-						<p className="text-destructive text-sm">
+						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
 							{errors.email.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
+				</motion.div>
 
-				<div className="space-y-2">
+				<motion.div variants={staggerItem} className="space-y-2">
 					<Label htmlFor="password">{t("common.fields.password")}</Label>
 					<PasswordInput
 						id="password"
@@ -144,13 +146,13 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.password")}
 					/>
 					{errors.password && (
-						<p className="text-destructive text-sm">
+						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
 							{errors.password.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
+				</motion.div>
 
-				<div className="space-y-2">
+				<motion.div variants={staggerItem} className="space-y-2">
 					<Label htmlFor="confirmPassword">
 						{t("common.fields.confirmPassword")}
 					</Label>
@@ -161,28 +163,30 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.confirmPassword")}
 					/>
 					{errors.confirmPassword && (
-						<p className="text-destructive text-sm">
+						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
 							{errors.confirmPassword.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
+				</motion.div>
 
-				<Button
-					type="submit"
-					disabled={isSubmitting}
-					className="h-11 w-full font-semibold"
-				>
-					{isSubmitting ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							{t("auth.register.submitting")}
-						</>
-					) : (
-						t("auth.register.submit")
-					)}
-				</Button>
+				<motion.div variants={staggerItem}>
+					<Button
+						type="submit"
+						disabled={isSubmitting}
+						className="h-11 w-full font-semibold"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								{t("auth.register.submitting")}
+							</>
+						) : (
+							t("auth.register.submit")
+						)}
+					</Button>
+				</motion.div>
 			</form>
-		</div>
+		</motion.div>
 	);
 };
 

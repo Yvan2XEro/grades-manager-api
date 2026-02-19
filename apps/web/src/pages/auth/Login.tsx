@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
 import type { TFunction } from "i18next";
 import { Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
@@ -13,6 +14,15 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
 import { authClient } from "../../lib/auth-client";
+
+const container = {
+	hidden: {},
+	visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
+const item = {
+	hidden: { opacity: 0, y: 14 },
+	visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
 
 const buildLoginSchema = (t: TFunction) =>
 	z.object({
@@ -49,8 +59,8 @@ const Login: React.FC = () => {
 	};
 
 	return (
-		<div>
-			<div className="mb-8">
+		<motion.div variants={container} initial="hidden" animate="visible">
+			<motion.div variants={item} className="mb-8">
 				<h2 className="font-heading font-bold text-2xl text-foreground">
 					{t("auth.login.title")}
 				</h2>
@@ -63,10 +73,10 @@ const Login: React.FC = () => {
 						{t("auth.login.registerLink")}
 					</Link>
 				</p>
-			</div>
+			</motion.div>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-				<div className="space-y-2">
+				<motion.div variants={item} className="space-y-2">
 					<Label htmlFor="email">{t("common.fields.email")}</Label>
 					<Input
 						id="email"
@@ -76,13 +86,17 @@ const Login: React.FC = () => {
 						placeholder={t("auth.login.emailPlaceholder")}
 					/>
 					{errors.email && (
-						<p className="text-destructive text-sm">
+						<motion.p
+							initial={{ opacity: 0, y: -4 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="text-destructive text-sm"
+						>
 							{errors.email.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
+				</motion.div>
 
-				<div className="space-y-2">
+				<motion.div variants={item} className="space-y-2">
 					<div className="flex items-center justify-between">
 						<Label htmlFor="password">{t("common.fields.password")}</Label>
 						<Link
@@ -99,28 +113,34 @@ const Login: React.FC = () => {
 						placeholder={t("auth.login.passwordPlaceholder")}
 					/>
 					{errors.password && (
-						<p className="text-destructive text-sm">
+						<motion.p
+							initial={{ opacity: 0, y: -4 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="text-destructive text-sm"
+						>
 							{errors.password.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
+				</motion.div>
 
-				<Button
-					type="submit"
-					disabled={isSubmitting}
-					className="h-11 w-full font-semibold"
-				>
-					{isSubmitting ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							{t("auth.login.submitting")}
-						</>
-					) : (
-						t("auth.login.submit")
-					)}
-				</Button>
+				<motion.div variants={item}>
+					<Button
+						type="submit"
+						disabled={isSubmitting}
+						className="h-11 w-full font-semibold"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								{t("auth.login.submitting")}
+							</>
+						) : (
+							t("auth.login.submit")
+						)}
+					</Button>
+				</motion.div>
 			</form>
-		</div>
+		</motion.div>
 	);
 };
 

@@ -1352,6 +1352,15 @@
 			"actions": {
 				"add": "Add exam"
 			},
+			"filters": {
+				"academicYear": "Academic year",
+				"search": "Search",
+				"searchPlaceholder": "Search exams, classes, or courses...",
+				"class": "Class",
+				"classPlaceholder": "All classes",
+				"semester": "Semester",
+				"semesterPlaceholder": "All semesters"
+			},
 			"empty": {
 				"title": "No exams yet",
 				"description": "Create an exam to start collecting grades."
@@ -1681,6 +1690,10 @@
 		"gradeExport": {
 			"title": "Grade export",
 			"subtitle": "Export student grades by class and exam",
+			"filtersCard": {
+				"title": "Filters",
+				"description": "Select academic year and class before exporting."
+			},
 			"filters": {
 				"academicYear": "Academic year",
 				"academicYearPlaceholder": "Select academic year",
@@ -1689,7 +1702,11 @@
 			},
 			"actions": {
 				"label": "Export",
-				"export": "Export grades"
+				"export": "Export grades",
+				"combinedLabel": "Combined grades",
+				"combinedExport": "Download combined file",
+				"pvLabel": "Grade report",
+				"pvExport": "Download grade report (Excel)"
 			},
 			"exams": {
 				"title": "Select exams to include",
