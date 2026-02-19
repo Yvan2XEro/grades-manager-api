@@ -3,6 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -136,6 +141,7 @@ export default function ClassCourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
@@ -245,25 +251,32 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: classCourses, isLoading } = useQuery({
-		queryKey: ["classCourses"],
+	const { data: classCoursesData, isLoading } = useQuery({
+		queryKey: ["classCourses", pagination.cursor, pagination.pageSize],
 		queryFn: async () => {
-			const { items } = await trpcClient.classCourses.list.query({});
-			return items.map(
-				(cc) =>
-					({
-						id: cc.id,
-						code: cc.code,
-						class: cc.class,
-						course: cc.course,
-						teacher: cc.teacher,
-						semesterId: cc.semesterId ?? null,
-						courseName: cc.courseName,
-						courseCode: cc.courseCode,
-					}) as ClassCourse,
-			);
+			const { items, nextCursor } = await trpcClient.classCourses.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			});
+			return {
+				items: items.map(
+					(cc) =>
+						({
+							id: cc.id,
+							code: cc.code,
+							class: cc.class,
+							course: cc.course,
+							teacher: cc.teacher,
+							semesterId: cc.semesterId ?? null,
+							courseName: cc.courseName,
+							courseCode: cc.courseCode,
+						}) as ClassCourse,
+				),
+				nextCursor,
+			};
 		},
 	});
+	const classCourses = classCoursesData?.items;
 
 	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
@@ -392,6 +405,20 @@ export default function ClassCourseManagement() {
 	const displayedClassCourses = (classCourses ?? []).filter((cc) =>
 		activeClassIds.has(cc.class),
 	);
+
+	const selection = useRowSelection(displayedClassCourses);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.classCourses.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
 
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassCourseFormData) => {
@@ -529,6 +556,18 @@ export default function ClassCourseManagement() {
 				</Button>
 			</div>
 
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
@@ -539,6 +578,13 @@ export default function ClassCourseManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={selection.isAllSelected}
+											onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+											aria-label="Select all"
+										/>
+									</TableHead>
 									<TableHead>
 										{t("admin.classCourses.table.code", {
 											defaultValue: "Code",
@@ -561,6 +607,13 @@ export default function ClassCourseManagement() {
 							<TableBody>
 								{displayedClassCourses.map((classCourse) => (
 									<TableRow key={classCourse.id}>
+										<TableCell>
+											<Checkbox
+												checked={selection.isSelected(classCourse.id)}
+												onCheckedChange={() => selection.toggle(classCourse.id)}
+												aria-label={`Select ${classCourse.code}`}
+											/>
+										</TableCell>
 										<TableCell>
 											<ClipboardCopy
 												value={classCourse.code}
@@ -656,6 +709,14 @@ export default function ClassCourseManagement() {
 					)}
 				</CardContent>
 			</Card>
+
+			<PaginationBar
+				hasPrev={pagination.hasPrev}
+				hasNext={!!classCoursesData?.nextCursor}
+				onPrev={pagination.handlePrev}
+				onNext={() => pagination.handleNext(classCoursesData?.nextCursor)}
+				isLoading={isLoading}
+			/>
 
 			<Dialog
 				open={isFormOpen}

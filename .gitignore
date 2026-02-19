@@ -2,4 +2,7 @@ node_modules
 .turbo
 .alchemy
 .env
+.mcp.json
 seed/local/
+
+docs/guide/

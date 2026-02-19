@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
@@ -76,6 +79,20 @@ const RegistrationNumberFormats = () => {
 		onError: (error) => toast.error(error.message),
 	});
 
+	const selection = useRowSelection(formatsQuery.data ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.registrationNumbers.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			invalidateList();
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
@@ -100,6 +117,18 @@ const RegistrationNumberFormats = () => {
 				</Button>
 			</div>
 
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>
@@ -113,6 +142,12 @@ const RegistrationNumberFormats = () => {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
+											onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+										/>
+									</TableHead>
 									<TableHead>
 										{t("admin.registrationNumbers.table.name", {
 											defaultValue: "Name",
@@ -154,6 +189,12 @@ const RegistrationNumberFormats = () => {
 									)}
 								{formatsQuery.data?.map((format) => (
 									<TableRow key={format.id}>
+										<TableCell className="w-10">
+											<Checkbox
+												checked={selection.isSelected(format.id)}
+												onCheckedChange={() => selection.toggle(format.id)}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
 												{format.name}

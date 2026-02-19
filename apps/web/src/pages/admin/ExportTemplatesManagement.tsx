@@ -16,6 +16,11 @@ import {
 	Upload,
 	Settings,
 } from "lucide-react";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -103,6 +108,7 @@ export default function ExportTemplatesManagement() {
 	const [deletingTemplate, setDeletingTemplate] =
 		useState<ExportTemplate | null>(null);
 	const [selectedType, setSelectedType] = useState<string>("all");
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const renameSchema = z.object({
 		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
@@ -116,15 +122,20 @@ export default function ExportTemplatesManagement() {
 	});
 
 	// Fetch templates
-	const { data: templates, isLoading } = useQuery({
-		queryKey: ["exportTemplates", selectedType],
+	const { data: templatesData, isLoading } = useQuery({
+		queryKey: ["exportTemplates", selectedType, pagination.cursor, pagination.pageSize],
 		queryFn: async () => {
 			const result = await trpcClient.exportTemplates.list.query({
 				type: selectedType === "all" ? undefined : (selectedType as any),
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
 			});
-			return result as ExportTemplate[];
+			return result as { items: ExportTemplate[]; nextCursor?: string };
 		},
 	});
+
+	const templates = templatesData?.items;
+	const selection = useRowSelection(templates ?? []);
 
 	// Rename mutation
 	const renameMutation = useMutation({
@@ -184,6 +195,19 @@ export default function ExportTemplatesManagement() {
 		},
 	});
 
+	// Bulk delete mutation
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.exportTemplates.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const handleOpenRename = (template: ExportTemplate) => {
 		setRenamingTemplate(template);
 		renameForm.reset({ name: template.name });
@@ -240,7 +264,7 @@ export default function ExportTemplatesManagement() {
 								{t("admin.exportTemplates.table.description")}
 							</CardDescription>
 						</div>
-						<Select value={selectedType} onValueChange={setSelectedType}>
+						<Select value={selectedType} onValueChange={(value) => { setSelectedType(value); pagination.reset(); }}>
 							<SelectTrigger className="w-[200px]">
 								<SelectValue />
 							</SelectTrigger>
@@ -258,6 +282,18 @@ export default function ExportTemplatesManagement() {
 					</div>
 				</CardHeader>
 				<CardContent>
+					<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+						<Button
+							variant="destructive"
+							size="sm"
+							onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+							disabled={bulkDeleteMutation.isPending}
+						>
+							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+							{t("common.actions.delete")}
+						</Button>
+					</BulkActionBar>
+
 					{isLoading ? (
 						<div className="flex justify-center py-8">
 							<Spinner />
@@ -266,6 +302,13 @@ export default function ExportTemplatesManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={selection.isAllSelected}
+											onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+											aria-label="Select all"
+										/>
+									</TableHead>
 									<TableHead>{t("admin.exportTemplates.table.name")}</TableHead>
 									<TableHead>{t("admin.exportTemplates.table.type")}</TableHead>
 									<TableHead>
@@ -279,6 +322,13 @@ export default function ExportTemplatesManagement() {
 							<TableBody>
 								{templates.map((template) => (
 									<TableRow key={template.id}>
+										<TableCell>
+											<Checkbox
+												checked={selection.isSelected(template.id)}
+												onCheckedChange={() => selection.toggle(template.id)}
+												aria-label={`Select ${template.name}`}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											{template.name}
 										</TableCell>
@@ -364,6 +414,14 @@ export default function ExportTemplatesManagement() {
 					)}
 				</CardContent>
 			</Card>
+
+			<PaginationBar
+				hasPrev={pagination.hasPrev}
+				hasNext={!!templatesData?.nextCursor}
+				onPrev={pagination.handlePrev}
+				onNext={() => pagination.handleNext(templatesData?.nextCursor)}
+				isLoading={isLoading}
+			/>
 
 			{/* Rename Dialog */}
 			<Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>

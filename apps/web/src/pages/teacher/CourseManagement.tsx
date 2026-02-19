@@ -9,7 +9,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
+import { Checkbox } from "../../components/ui/checkbox";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import {
 	Card,
 	CardContent,
@@ -176,6 +179,20 @@ export default function CourseManagement() {
 		},
 	});
 
+	const selection = useRowSelection(courses ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.courses.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const onSubmit = async (data: CourseFormData) => {
 		if (editingCourse) {
 			updateMutation.mutate({ ...data, id: editingCourse.id });
@@ -228,6 +245,18 @@ export default function CourseManagement() {
 				</Button>
 			</div>
 
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("teacher.courses.manage.title")}</CardTitle>
@@ -236,6 +265,12 @@ export default function CourseManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
+										onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+									/>
+								</TableHead>
 								<TableHead>{t("teacher.courses.manage.table.name")}</TableHead>
 								<TableHead>
 									{t("teacher.courses.manage.table.program")}
@@ -252,6 +287,12 @@ export default function CourseManagement() {
 						<TableBody>
 							{courses?.map((course) => (
 								<TableRow key={course.id}>
+									<TableCell className="w-10">
+										<Checkbox
+											checked={selection.isSelected(course.id)}
+											onCheckedChange={() => selection.toggle(course.id)}
+										/>
+									</TableCell>
 									<TableCell className="font-medium">{course.name}</TableCell>
 									<TableCell>{programMap.get(course.program)}</TableCell>
 									<TableCell>{course.hours}</TableCell>

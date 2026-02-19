@@ -31,7 +31,17 @@
       "Bash(timeout 10 bun run:*)",
       "Bash(yes:*)",
       "Bash(mkdir:*)",
-      "Bash(pdflatex:*)"
+      "Bash(pdflatex:*)",
+      "WebSearch",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:flowbite.com)",
+      "Bash(bunx vite build:*)",
+      "Bash(git status:*)",
+      "Bash(git commit:*)",
+      "Bash(echo:*)",
+      "Bash(findstr:*)",
+      "Bash(tee:*)"
     ]
   }
 }

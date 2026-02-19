@@ -18,6 +18,11 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -132,15 +137,19 @@ export default function ClassManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const { data: classes, isLoading } = useQuery({
-		queryKey: ["classes"],
+	const { data: classesData, isLoading } = useQuery({
+		queryKey: ["classes", pagination.cursor, pagination.pageSize],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
+			const { items, nextCursor } = await trpcClient.classes.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			});
 			// TODO: N+1 Query Problem - This fetches students for each class separately
 			// Better solution: Modify backend classes.list to include studentCount
 			// or create a batch endpoint that returns classes with student counts
-			return Promise.all(
+			const enriched = await Promise.all(
 				items.map(async (cls) => {
 					const students = await trpcClient.students.list.query({
 						classId: cls.id,
@@ -169,8 +178,12 @@ export default function ClassManagement() {
 					} as Class;
 				}),
 			);
+			return { items: enriched, nextCursor };
 		},
 	});
+
+	const classes = classesData?.items;
+	const selection = useRowSelection(classes ?? []);
 
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
@@ -759,6 +772,18 @@ export default function ClassManagement() {
 		},
 	});
 
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.classes.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const onSubmit = async (data: ClassFormData) => {
 		if (editingClass) {
 			updateMutation.mutate({ ...data, id: editingClass.id });
@@ -807,6 +832,18 @@ export default function ClassManagement() {
 				</Button>
 			</div>
 
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card className="overflow-x-auto">
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
@@ -834,6 +871,13 @@ export default function ClassManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={selection.isAllSelected}
+										onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+										aria-label="Select all"
+									/>
+								</TableHead>
 								<TableHead>
 									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
@@ -857,6 +901,13 @@ export default function ClassManagement() {
 						<TableBody>
 							{classes?.map((cls) => (
 								<TableRow key={cls.id}>
+									<TableCell>
+										<Checkbox
+											checked={selection.isSelected(cls.id)}
+											onCheckedChange={() => selection.toggle(cls.id)}
+											aria-label={`Select ${cls.name}`}
+										/>
+									</TableCell>
 									<TableCell>
 										<ClipboardCopy
 											value={cls.code}
@@ -975,6 +1026,14 @@ export default function ClassManagement() {
 					</Table>
 				)}
 			</Card>
+
+			<PaginationBar
+				hasPrev={pagination.hasPrev}
+				hasNext={!!classesData?.nextCursor}
+				onPrev={pagination.handlePrev}
+				onNext={() => pagination.handleNext(classesData?.nextCursor)}
+				isLoading={isLoading}
+			/>
 
 			<FormModal
 				isOpen={isFormOpen}

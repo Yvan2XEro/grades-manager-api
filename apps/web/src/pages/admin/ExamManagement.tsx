@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
+import { Checkbox } from "../../components/ui/checkbox";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import {
 	AcademicYearSelect,
 	ClassSelect,
@@ -270,6 +273,20 @@ export default function ExamManagement() {
 		},
 	});
 
+	const selection = useRowSelection(exams);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.exams.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const onSubmit = async (data: ExamFormData) => {
 		if (editingExam) {
 			updateMutation.mutate({ ...data, id: editingExam.id });
@@ -394,10 +411,27 @@ export default function ExamManagement() {
 						</Empty>
 					) : (
 						<>
+							<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
 							<div className="overflow-x-auto">
 								<Table>
 									<TableHeader>
 										<TableRow>
+											<TableHead className="w-10">
+												<Checkbox
+													checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
+													onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+												/>
+											</TableHead>
 											<TableHead>{t("admin.exams.table.name")}</TableHead>
 											<TableHead>{t("admin.exams.table.course")}</TableHead>
 											<TableHead>{t("admin.exams.table.class")}</TableHead>
@@ -427,6 +461,12 @@ export default function ExamManagement() {
 												t("common.labels.notAvailable");
 											return (
 												<TableRow key={exam.id}>
+													<TableCell className="w-10">
+														<Checkbox
+															checked={selection.isSelected(exam.id)}
+															onCheckedChange={() => selection.toggle(exam.id)}
+														/>
+													</TableCell>
 													<TableCell className="font-medium">
 														{exam.name}
 													</TableCell>

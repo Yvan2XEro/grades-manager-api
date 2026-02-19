@@ -17,7 +17,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import {
 	Card,
 	CardContent,
@@ -288,6 +291,20 @@ export default function ProgramManagement() {
 		},
 	});
 
+	const selection = useRowSelection(programs ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.programs.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["programs"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const onSubmit = (data: ProgramFormData) => {
 		if (editingProgram) {
 			updateMutation.mutate({ ...data, id: editingProgram.id });
@@ -392,6 +409,18 @@ export default function ProgramManagement() {
 				</Button>
 			</div>
 
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("admin.programs.title")}</CardTitle>
@@ -402,6 +431,12 @@ export default function ProgramManagement() {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
+											onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+										/>
+									</TableHead>
 									<TableHead>
 										{t("admin.programs.table.code", { defaultValue: "Code" })}
 									</TableHead>
@@ -415,6 +450,12 @@ export default function ProgramManagement() {
 							<TableBody>
 								{programs.map((program) => (
 									<TableRow key={program.id}>
+										<TableCell className="w-10">
+											<Checkbox
+												checked={selection.isSelected(program.id)}
+												onCheckedChange={() => selection.toggle(program.id)}
+											/>
+										</TableCell>
 										<TableCell>
 											<ClipboardCopy
 												value={program.code}

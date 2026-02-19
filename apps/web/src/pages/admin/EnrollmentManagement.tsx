@@ -1,8 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Loader2, LockOpen, Unlock } from "lucide-react";
+import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -35,6 +40,7 @@ type CourseEnrollmentRow = CourseEnrollmentListResponse["items"][number];
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const pagination = useCursorPagination({ pageSize: 20 });
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
@@ -58,7 +64,8 @@ const EnrollmentManagement = () => {
 		...trpc.enrollments.list.queryOptions({
 			classId: selectedClass || undefined,
 			academicYearId: selectedAcademicYear || undefined,
-			limit: 200,
+			cursor: pagination.cursor,
+			limit: pagination.pageSize,
 		}),
 		enabled: Boolean(selectedAcademicYear && selectedClass),
 	});
@@ -210,6 +217,20 @@ const EnrollmentManagement = () => {
 	});
 
 	const enrollments = enrollmentsQuery.data?.items ?? [];
+	const selection = useRowSelection(enrollments);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(ids.map((id) => trpcClient.enrollments.delete.mutate({ id })));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries(trpc.enrollments.list.queryKey());
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
+
 	const studentsCount = studentsQuery.data?.items?.length ?? 0;
 	const classCoursesCount = classCoursesQuery.data?.items?.length ?? 0;
 	const windowStatus = useMemo(() => {
@@ -224,6 +245,7 @@ const EnrollmentManagement = () => {
 	useEffect(() => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
+		pagination.reset();
 	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
 	const openRosterForStudent = (studentId: string) => {
@@ -304,7 +326,7 @@ const EnrollmentManagement = () => {
 								<SelectItem key={klass.id} value={klass.id}>
 									{klass.name}
 									{klass.programOption?.name
-										? ` • ${klass.programOption.name}`
+										? ` \u2022 ${klass.programOption.name}`
 										: ""}
 								</SelectItem>
 							))}
@@ -506,6 +528,18 @@ const EnrollmentManagement = () => {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
+						<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+								disabled={bulkDeleteMutation.isPending}
+							>
+								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+								{t("common.actions.delete")}
+							</Button>
+						</BulkActionBar>
+
 						{enrollmentsQuery.isLoading ? (
 							<p className="text-muted-foreground text-sm">
 								{t("common.loading", { defaultValue: "Loading..." })}
@@ -515,6 +549,13 @@ const EnrollmentManagement = () => {
 								<table className="min-w-full divide-y divide-border">
 									<thead className="bg-muted">
 										<tr>
+											<th className="w-10 px-4 py-2">
+												<Checkbox
+													checked={selection.isAllSelected}
+													onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+													aria-label="Select all"
+												/>
+											</th>
 											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.student", {
 													defaultValue: "Student",
@@ -549,6 +590,13 @@ const EnrollmentManagement = () => {
 													});
 											return (
 												<tr key={enrollment.id}>
+													<td className="px-4 py-3">
+														<Checkbox
+															checked={selection.isSelected(enrollment.id)}
+															onCheckedChange={() => selection.toggle(enrollment.id)}
+															aria-label={`Select ${fullName}`}
+														/>
+													</td>
 													<td className="px-4 py-3">
 														<div className="space-y-0.5">
 															<p className="font-semibold text-foreground">
@@ -629,6 +677,14 @@ const EnrollmentManagement = () => {
 								})}
 							</p>
 						)}
+
+						<PaginationBar
+							hasPrev={pagination.hasPrev}
+							hasNext={!!enrollmentsQuery.data?.nextCursor}
+							onPrev={pagination.handlePrev}
+							onNext={() => pagination.handleNext(enrollmentsQuery.data?.nextCursor)}
+							isLoading={enrollmentsQuery.isLoading}
+						/>
 					</CardContent>
 				</Card>
 

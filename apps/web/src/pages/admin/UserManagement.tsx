@@ -17,7 +17,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Badge } from "../../components/ui/badge";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
+import { Checkbox } from "../../components/ui/checkbox";
+import { PaginationBar } from "../../components/ui/pagination-bar";
+import { useCursorPagination } from "../../hooks/useCursorPagination";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import {
 	Dialog,
 	DialogContent,
@@ -134,9 +139,7 @@ export default function UserManagement() {
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
 	const [showPassword, setShowPassword] = useState(false);
-	const [cursor, setCursor] = useState<string | undefined>();
-	const [prevCursors, setPrevCursors] = useState<string[]>([]);
-	const pageSize = 10;
+	const pagination = useCursorPagination({ pageSize: 10 });
 	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
 		"all",
 	);
@@ -166,12 +169,12 @@ export default function UserManagement() {
 		[t],
 	);
 
-	const { data } = useQuery({
-		queryKey: ["users", cursor, roleFilter],
+	const { data, isLoading: isLoadingUsers } = useQuery({
+		queryKey: ["users", pagination.cursor, roleFilter],
 		queryFn: async () =>
 			trpcClient.users.list.query({
-				cursor,
-				limit: pageSize,
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
 				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
 			}),
 	});
@@ -184,11 +187,31 @@ export default function UserManagement() {
 		const email = (user.email ?? "").toLowerCase();
 		return name.includes(needle) || email.includes(needle);
 	});
+	const selection = useRowSelection(displayedUsers);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			const usersToDelete = displayedUsers.filter((u) => ids.includes(u.id));
+			await Promise.all(
+				usersToDelete.map(async (user) => {
+					if (user.authUserId) {
+						await authClient.admin.removeUser({ userId: user.authUserId });
+					}
+					await trpcClient.users.deleteProfile.mutate({ id: user.id });
+				}),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["users"] });
+			selection.clear();
+			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+		},
+		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+	});
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
 	useEffect(() => {
-		setCursor(undefined);
-		setPrevCursors([]);
+		pagination.reset();
 	}, [debouncedSearch, roleFilter]);
 
 	const form = useForm<UserForm>({
@@ -398,10 +421,28 @@ export default function UserManagement() {
 					</Select>
 				</div>
 			</div>
+			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<div className="min-h-[50vh] overflow-x-auto">
 				<Table>
 					<TableHeader>
 						<TableRow>
+							<TableHead className="w-10">
+								<Checkbox
+									checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
+									onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+								/>
+							</TableHead>
 							<TableHead>{t("admin.users.table.name")}</TableHead>
 							<TableHead>{t("admin.users.table.email")}</TableHead>
 							<TableHead>{t("admin.users.table.role")}</TableHead>
@@ -414,6 +455,12 @@ export default function UserManagement() {
 					<TableBody>
 						{displayedUsers.map((user) => (
 							<TableRow key={user.id}>
+								<TableCell className="w-10">
+									<Checkbox
+										checked={selection.isSelected(user.id)}
+										onCheckedChange={() => selection.toggle(user.id)}
+									/>
+								</TableCell>
 								<TableCell className="font-medium">
 									{getDisplayName(user)}
 								</TableCell>
@@ -466,7 +513,7 @@ export default function UserManagement() {
 						))}
 						{displayedUsers.length === 0 && (
 							<TableRow>
-								<TableCell colSpan={5} className="py-4 text-center">
+								<TableCell colSpan={6} className="py-4 text-center">
 									{t("admin.users.empty")}
 								</TableCell>
 							</TableRow>
@@ -475,33 +522,13 @@ export default function UserManagement() {
 				</Table>
 			</div>
 
-			<div className="mt-4 flex items-center justify-center gap-2">
-				<button
-					type="button"
-					className="btn btn-sm"
-					onClick={() => {
-						const prev = prevCursors[prevCursors.length - 1];
-						setPrevCursors((p) => p.slice(0, -1));
-						setCursor(prev || undefined);
-					}}
-					disabled={prevCursors.length === 0}
-				>
-					{t("common.pagination.previous")}
-				</button>
-				<button
-					type="button"
-					className="btn btn-sm"
-					onClick={() => {
-						if (nextCursor) {
-							setPrevCursors((p) => [...p, cursor || ""]);
-							setCursor(nextCursor);
-						}
-					}}
-					disabled={!nextCursor}
-				>
-					{t("common.pagination.next")}
-				</button>
-			</div>
+			<PaginationBar
+				hasPrev={pagination.hasPrev}
+				hasNext={Boolean(nextCursor)}
+				onPrev={pagination.handlePrev}
+				onNext={() => pagination.handleNext(nextCursor)}
+				isLoading={isLoadingUsers}
+			/>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
 				<DialogContent className="max-w-xl">

@@ -16,8 +16,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -33,6 +35,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -43,6 +46,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
@@ -71,17 +76,23 @@ export default function StudyCycleManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
 	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const cyclesQuery = useQuery({
-		queryKey: ["studyCycles"],
-		queryFn: () => trpcClient.studyCycles.listCycles.query({ limit: 200 }),
+		queryKey: ["studyCycles", pagination.cursor],
+		queryFn: () =>
+			trpcClient.studyCycles.listCycles.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			}),
 	});
 
+	const cycles = cyclesQuery.data?.items ?? [];
+	const selection = useRowSelection(cycles);
+
 	const activeCycle = useMemo(
-		() =>
-			cyclesQuery.data?.items.find((cycle) => cycle.id === activeCycleId) ??
-			null,
-		[cyclesQuery.data, activeCycleId],
+		() => cycles.find((cycle) => cycle.id === activeCycleId) ?? null,
+		[cycles, activeCycleId],
 	);
 
 	const levelsQuery = useQuery({
@@ -153,6 +164,29 @@ export default function StudyCycleManagement() {
 			if (activeCycleId === deleteId) setActiveCycleId(null);
 		},
 		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.studyCycles.deleteCycle.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["studyCycles"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const updateLevelMutation = useMutation({
@@ -259,98 +293,141 @@ export default function StudyCycleManagement() {
 							<Spinner />
 						</div>
 					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>
-										{t("admin.studyCycles.table.name", {
-											defaultValue: "Name",
-										})}
-									</TableHead>
-									<TableHead>
-										{t("admin.studyCycles.table.credits", {
-											defaultValue: "Credits",
-										})}
-									</TableHead>
-									<TableHead>
-										{t("admin.studyCycles.table.duration", {
-											defaultValue: "Duration",
-										})}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("admin.studyCycles.table.actions", {
-											defaultValue: "Actions",
-										})}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{cyclesQuery.data?.items?.map((cycle) => (
-									<TableRow
-										key={cycle.id}
-										className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
-										onClick={() => setActiveCycleId(cycle.id)}
-									>
-										<TableCell className="font-semibold text-foreground">
-											{cycle.name}
-										</TableCell>
-										<TableCell>{cycle.totalCreditsRequired}</TableCell>
-										<TableCell>
-											{t("admin.studyCycles.table.years", {
-												defaultValue: "{{value}} years",
-												value: cycle.durationYears,
-											})}
-										</TableCell>
-										<TableCell className="text-right">
-											<Button
-												type="button"
-												variant="ghost"
-												className="text-primary-700"
-												onClick={(event) => {
-													event.stopPropagation();
-													setEditingId(cycle.id);
-													form.reset({
-														code: cycle.code,
-														name: cycle.name,
-														description: cycle.description ?? "",
-														totalCreditsRequired: cycle.totalCreditsRequired,
-														durationYears: cycle.durationYears,
-													});
-													setIsFormOpen(true);
-												}}
-											>
-												<Pencil className="mr-2 h-4 w-4" />
-												{t("common.actions.edit")}
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												className="text-primary-700"
-												onClick={(event) => {
-													event.stopPropagation();
-													setDeleteId(cycle.id);
-												}}
-											>
-												<Trash2 className="mr-2 h-4 w-4" />
-												{t("common.actions.delete")}
-											</Button>
-										</TableCell>
-									</TableRow>
-								))}
-								{!cyclesQuery.data?.items?.length && (
+						<>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() =>
+										bulkDeleteMutation.mutate([...selection.selectedIds])
+									}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
+							<Table>
+								<TableHeader>
 									<TableRow>
-										<TableCell
-											colSpan={4}
-											className="py-6 text-center text-muted-foreground text-sm"
-										>
-											{t("admin.studyCycles.empty", {
-												defaultValue: "No study cycles yet.",
+										<TableHead className="w-10">
+											<Checkbox
+												checked={selection.isAllSelected}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(!!checked)
+												}
+												aria-label="Select all"
+											/>
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.name", {
+												defaultValue: "Name",
 											})}
-										</TableCell>
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.credits", {
+												defaultValue: "Credits",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.duration", {
+												defaultValue: "Duration",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("admin.studyCycles.table.actions", {
+												defaultValue: "Actions",
+											})}
+										</TableHead>
 									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+								</TableHeader>
+								<TableBody>
+									{cycles.map((cycle) => (
+										<TableRow
+											key={cycle.id}
+											className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
+											onClick={() => setActiveCycleId(cycle.id)}
+										>
+											<TableCell onClick={(e) => e.stopPropagation()}>
+												<Checkbox
+													checked={selection.isSelected(cycle.id)}
+													onCheckedChange={() => selection.toggle(cycle.id)}
+													aria-label={`Select ${cycle.name}`}
+												/>
+											</TableCell>
+											<TableCell className="font-semibold text-foreground">
+												{cycle.name}
+											</TableCell>
+											<TableCell>{cycle.totalCreditsRequired}</TableCell>
+											<TableCell>
+												{t("admin.studyCycles.table.years", {
+													defaultValue: "{{value}} years",
+													value: cycle.durationYears,
+												})}
+											</TableCell>
+											<TableCell className="text-right">
+												<Button
+													type="button"
+													variant="ghost"
+													className="text-primary-700"
+													onClick={(event) => {
+														event.stopPropagation();
+														setEditingId(cycle.id);
+														form.reset({
+															code: cycle.code,
+															name: cycle.name,
+															description: cycle.description ?? "",
+															totalCreditsRequired: cycle.totalCreditsRequired,
+															durationYears: cycle.durationYears,
+														});
+														setIsFormOpen(true);
+													}}
+												>
+													<Pencil className="mr-2 h-4 w-4" />
+													{t("common.actions.edit")}
+												</Button>
+												<Button
+													type="button"
+													variant="ghost"
+													className="text-primary-700"
+													onClick={(event) => {
+														event.stopPropagation();
+														setDeleteId(cycle.id);
+													}}
+												>
+													<Trash2 className="mr-2 h-4 w-4" />
+													{t("common.actions.delete")}
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+									{!cycles.length && (
+										<TableRow>
+											<TableCell
+												colSpan={5}
+												className="py-6 text-center text-muted-foreground text-sm"
+											>
+												{t("admin.studyCycles.empty", {
+													defaultValue: "No study cycles yet.",
+												})}
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+							<PaginationBar
+								hasPrev={pagination.hasPrev}
+								hasNext={!!cyclesQuery.data?.nextCursor}
+								onPrev={pagination.handlePrev}
+								onNext={() =>
+									pagination.handleNext(cyclesQuery.data?.nextCursor)
+								}
+								isLoading={cyclesQuery.isLoading}
+							/>
+						</>
 					)}
 				</CardContent>
 			</Card>

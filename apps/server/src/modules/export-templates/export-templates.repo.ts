@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import type {
@@ -19,7 +19,10 @@ export async function findTemplatesByInstitution(
 	institutionId: string,
 	type?: ExportTemplateType,
 	isDefault?: boolean,
-): Promise<ExportTemplate[]> {
+	cursor?: string,
+	limit?: number,
+): Promise<{ items: ExportTemplate[]; nextCursor?: string }> {
+	const pageLimit = Math.min(Math.max(limit ?? 50, 1), 100);
 	const conditions = [
 		eq(schema.exportTemplates.institutionId, institutionId),
 	];
@@ -32,10 +35,19 @@ export async function findTemplatesByInstitution(
 		conditions.push(eq(schema.exportTemplates.isDefault, isDefault));
 	}
 
-	return await db.query.exportTemplates.findMany({
+	if (cursor) {
+		conditions.push(gt(schema.exportTemplates.id, cursor));
+	}
+
+	const items = await db.query.exportTemplates.findMany({
 		where: and(...conditions),
-		orderBy: [desc(schema.exportTemplates.createdAt)],
+		orderBy: [asc(schema.exportTemplates.id)],
+		limit: pageLimit,
 	});
+
+	const nextCursor =
+		items.length === pageLimit ? items[items.length - 1].id : undefined;
+	return { items, nextCursor };
 }
 
 export async function findDefaultTemplate(

@@ -20,8 +20,12 @@ export async function sendPending(limit = 25) {
 	return delivered;
 }
 
-export async function list(status?: schema.NotificationStatus) {
-	return repo.listNotifications(status);
+export async function list(
+	status?: schema.NotificationStatus,
+	limit?: number,
+	cursor?: string,
+) {
+	return repo.listNotifications(status, limit ?? 50, cursor);
 }
 
 export async function acknowledge(id: string) {

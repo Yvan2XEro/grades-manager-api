@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -16,6 +17,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
@@ -33,6 +35,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { PaginationBar } from "../../components/ui/pagination-bar";
 import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
@@ -42,6 +45,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useCursorPagination } from "../../hooks/useCursorPagination";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
 const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
@@ -65,6 +70,7 @@ export default function ExamTypes() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingType, setEditingType] = useState<ExamType | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const form = useForm<FormValues>({
 		resolver: zodResolver(schema),
@@ -73,13 +79,19 @@ export default function ExamTypes() {
 
 	const resetForm = () => form.reset({ name: "", description: "" });
 
-	const { data: examTypes, isLoading } = useQuery({
-		queryKey: ["examTypes"],
+	const { data, isLoading } = useQuery({
+		queryKey: ["examTypes", pagination.cursor],
 		queryFn: async () => {
-			const { items } = await trpcClient.examTypes.list.query({});
-			return items as ExamType[];
+			const result = await trpcClient.examTypes.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			});
+			return result as { items: ExamType[]; nextCursor?: string };
 		},
 	});
+
+	const examTypes = data?.items ?? [];
+	const selection = useRowSelection(examTypes);
 
 	const handleOpenCreate = () => {
 		setEditingType(null);
@@ -163,6 +175,29 @@ export default function ExamTypes() {
 		},
 	});
 
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.examTypes.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["examTypes"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const isSaving =
 		createMutation.isPending ||
 		updateMutation.isPending ||
@@ -205,44 +240,85 @@ export default function ExamTypes() {
 						<div className="flex items-center justify-center py-8">
 							<Spinner />
 						</div>
-					) : examTypes && examTypes.length > 0 ? (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>{t("admin.examTypes.table.name")}</TableHead>
-									<TableHead>
-										{t("admin.examTypes.table.description")}
-									</TableHead>
-									<TableHead className="w-[120px] text-right">
-										{t("common.table.actions")}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{examTypes.map((type) => (
-									<TableRow key={type.id}>
-										<TableCell className="font-medium">{type.name}</TableCell>
-										<TableCell>{type.description || "—"}</TableCell>
-										<TableCell className="flex items-center justify-end gap-2">
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => handleOpenEdit(type)}
-											>
-												<Pencil className="h-4 w-4" />
-											</Button>
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => setDeleteId(type.id)}
-											>
-												<Trash2 className="h-4 w-4 text-destructive" />
-											</Button>
-										</TableCell>
+					) : examTypes.length > 0 ? (
+						<>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() =>
+										bulkDeleteMutation.mutate([...selection.selectedIds])
+									}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-10">
+											<Checkbox
+												checked={selection.isAllSelected}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(!!checked)
+												}
+												aria-label="Select all"
+											/>
+										</TableHead>
+										<TableHead>{t("admin.examTypes.table.name")}</TableHead>
+										<TableHead>
+											{t("admin.examTypes.table.description")}
+										</TableHead>
+										<TableHead className="w-[120px] text-right">
+											{t("common.table.actions")}
+										</TableHead>
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+								</TableHeader>
+								<TableBody>
+									{examTypes.map((type) => (
+										<TableRow key={type.id}>
+											<TableCell>
+												<Checkbox
+													checked={selection.isSelected(type.id)}
+													onCheckedChange={() => selection.toggle(type.id)}
+													aria-label={`Select ${type.name}`}
+												/>
+											</TableCell>
+											<TableCell className="font-medium">{type.name}</TableCell>
+											<TableCell>{type.description || "\u2014"}</TableCell>
+											<TableCell className="flex items-center justify-end gap-2">
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={() => handleOpenEdit(type)}
+												>
+													<Pencil className="h-4 w-4" />
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={() => setDeleteId(type.id)}
+												>
+													<Trash2 className="h-4 w-4 text-destructive" />
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+							<PaginationBar
+								hasPrev={pagination.hasPrev}
+								hasNext={!!data?.nextCursor}
+								onPrev={pagination.handlePrev}
+								onNext={() => pagination.handleNext(data?.nextCursor)}
+								isLoading={isLoading}
+							/>
+						</>
 					) : (
 						<Empty>
 							<EmptyHeader>

@@ -21,6 +21,8 @@ export const updateExportTemplateSchema = z.object({
 export const listExportTemplatesSchema = z.object({
 	type: z.enum(["pv", "evaluation", "ue"]).optional(),
 	isDefault: z.boolean().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().min(1).max(100).optional(),
 });
 
 // Get template schema

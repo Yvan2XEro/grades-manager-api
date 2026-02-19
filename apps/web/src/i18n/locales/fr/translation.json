@@ -15,6 +15,7 @@
 			"create": "Créer",
 			"update": "Mettre à jour",
 			"delete": "Supprimer",
+			"edit" : "Editer",
 			"save": "Enregistrer",
 			"saveChanges": "Enregistrer les modifications",
 			"close": "Fermer",

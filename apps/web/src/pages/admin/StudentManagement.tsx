@@ -11,7 +11,9 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
@@ -391,8 +393,7 @@ export default function StudentManagement() {
 
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
-	const [cursor, setCursor] = useState<string | undefined>();
-	const [prevCursors, setPrevCursors] = useState<string[]>([]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<"single" | "import" | "external">(
@@ -425,14 +426,14 @@ export default function StudentManagement() {
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
-	const { data: studentsData } = useQuery<StudentsListResponse>({
-		queryKey: ["students", classFilter, search, cursor],
+	const { data: studentsData, isLoading: isLoadingStudents } = useQuery<StudentsListResponse>({
+		queryKey: ["students", classFilter, search, pagination.cursor],
 		queryFn: async () =>
 			trpcClient.students.list.query({
 				classId: classFilter === "all" ? undefined : classFilter,
 				q: search || undefined,
-				cursor,
-				limit: 20,
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
 			}),
 	});
 
@@ -583,18 +584,6 @@ export default function StudentManagement() {
 			admissionJustification: data.admissionJustification.trim(),
 			admissionDate: data.admissionDate,
 		});
-
-	const handleNext = () => {
-		if (studentsData?.nextCursor) {
-			setPrevCursors((p) => [...p, cursor ?? ""]);
-			setCursor(studentsData.nextCursor);
-		}
-	};
-	const handlePrev = () => {
-		const prev = prevCursors[prevCursors.length - 1];
-		setPrevCursors((p) => p.slice(0, -1));
-		setCursor(prev || undefined);
-	};
 
 	const handleDownloadTemplate = () => {
 		const headers = [
@@ -781,8 +770,7 @@ export default function StudentManagement() {
 					value={classFilter}
 					onValueChange={(value) => {
 						setClassFilter(value);
-						setCursor(undefined);
-						setPrevCursors([]);
+						pagination.reset();
 					}}
 				>
 					<SelectTrigger className="min-w-[200px]">
@@ -808,8 +796,7 @@ export default function StudentManagement() {
 				<Button
 					variant="outline"
 					onClick={() => {
-						setCursor(undefined);
-						setPrevCursors([]);
+						pagination.reset();
 						queryClient.invalidateQueries({ queryKey: ["students"] });
 					}}
 				>
@@ -881,22 +868,13 @@ export default function StudentManagement() {
 						</TableBody>
 					</Table>
 				</CardContent>
-				<CardFooter className="flex items-center justify-between gap-3">
-					<Button
-						variant="outline"
-						disabled={prevCursors.length === 0}
-						onClick={handlePrev}
-					>
-						{t("common.pagination.previous")}
-					</Button>
-					<Button
-						variant="outline"
-						disabled={!studentsData?.nextCursor}
-						onClick={handleNext}
-					>
-						{t("common.pagination.next")}
-					</Button>
-				</CardFooter>
+				<PaginationBar
+					hasPrev={pagination.hasPrev}
+					hasNext={Boolean(studentsData?.nextCursor)}
+					onPrev={pagination.handlePrev}
+					onNext={() => pagination.handleNext(studentsData?.nextCursor)}
+					isLoading={isLoadingStudents}
+				/>
 			</Card>
 
 			<Drawer

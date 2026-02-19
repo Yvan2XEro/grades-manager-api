@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, ClipboardList, Users } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Users } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -26,9 +27,12 @@ interface Course {
 	isDelegated?: boolean;
 }
 
+const PAGE_SIZE = 12;
+
 export default function CourseList() {
 	const { user } = useStore();
 	const { t } = useTranslation();
+	const [page, setPage] = useState(0);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["teacherCourses", user?.id],
@@ -90,7 +94,7 @@ export default function CourseList() {
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{courses?.length ? (
-					courses.map((course) => (
+					courses.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((course) => (
 						<Card key={course.id} className="h-full">
 							<CardHeader className="flex flex-col gap-2">
 								<div className="flex items-start justify-between gap-3">
@@ -144,6 +148,29 @@ export default function CourseList() {
 					</Card>
 				)}
 			</div>
+
+			{courses && courses.length > PAGE_SIZE && (
+				<div className="flex items-center justify-end gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => p - 1)}
+						disabled={page === 0}
+					>
+						<ChevronLeft className="mr-1 h-4 w-4" />
+						{t("common.pagination.previous", { defaultValue: "Previous" })}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => p + 1)}
+						disabled={(page + 1) * PAGE_SIZE >= courses.length}
+					>
+						{t("common.pagination.next", { defaultValue: "Next" })}
+						<ChevronRight className="ml-1 h-4 w-4" />
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }
