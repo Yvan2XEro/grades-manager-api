@@ -1069,36 +1069,76 @@ export default function ClassManagement() {
 							required
 						/>
 
-						<FormField
-							control={form.control}
-							name="academicYearId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.academicYearLabel")}
-									</FormLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.academicYearPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{academicYears?.map((year) => (
-												<SelectItem key={year.id} value={year.id}>
-													{year.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="academicYearId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.academicYearLabel")}
+										</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classes.form.academicYearPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{academicYears?.map((year) => (
+													<SelectItem key={year.id} value={year.id}>
+														{year.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="semesterId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.semesterLabel", {
+												defaultValue: "Semester",
+											})}
+										</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value}
+											disabled={!semesters || semesters.length === 0}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classes.form.semesterPlaceholder",
+															{ defaultValue: "Select a semester" },
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{semesters?.map((semester) => (
+													<SelectItem key={semester.id} value={semester.id}>
+														{semester.name} ({semester.code})
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
 						<CodedEntitySelect
 							items={cycleLevels}
@@ -1167,80 +1207,44 @@ export default function ClassManagement() {
 							required
 						/>
 
-						<FormField
-							control={form.control}
-							name="semesterId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.semesterLabel", {
-											defaultValue: "Semester",
-										})}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-										disabled={!semesters || semesters.length === 0}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.semesterPlaceholder",
-														{ defaultValue: "Select a semester" },
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{semesters?.map((semester) => (
-												<SelectItem key={semester.id} value={semester.id}>
-													{semester.name} ({semester.code})
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="code"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.codeLabel", {
-											defaultValue: "Code",
-										})}
-									</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder={t("admin.classes.form.codePlaceholder", {
-												defaultValue: "INF11-01",
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.codeLabel", {
+												defaultValue: "Code",
 											})}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												placeholder={t("admin.classes.form.codePlaceholder", {
+													defaultValue: "INF11-01",
+												})}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
-									<FormControl>
-										<Input {...field} readOnly />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
+										<FormControl>
+											<Input {...field} readOnly />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
 						<DialogFooter className="gap-2">
 							<Button

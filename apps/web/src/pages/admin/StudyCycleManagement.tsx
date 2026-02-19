@@ -544,40 +544,42 @@ export default function StudyCycleManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.name", {
-												defaultValue: "Name",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Bachelor of Science" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.code", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="BSC" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.name", {
+													defaultValue: "Name",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="Bachelor of Science" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.code", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="BSC" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="description"
@@ -661,46 +663,48 @@ export default function StudyCycleManagement() {
 							className="space-y-4"
 							onSubmit={levelForm.handleSubmit(onLevelSubmit)}
 						>
-							<FormField
-								control={levelForm.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.name", {
-												defaultValue: "Name",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Level 1" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={levelForm.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.code", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="L1" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={levelForm.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.name", {
+													defaultValue: "Name",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="Level 1" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={levelForm.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.code", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="L1" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={levelForm.control}
 								name="minCredits"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
+										<FormLabel required>
 											{t("admin.studyCycles.form.minCredits", {
 												defaultValue: "Minimum credits",
 											})}

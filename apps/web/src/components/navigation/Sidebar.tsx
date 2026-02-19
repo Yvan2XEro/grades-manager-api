@@ -21,6 +21,7 @@ import {
 	UserCog,
 	Users,
 } from "lucide-react";
+import logo from "/logo.png";
 import type React from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -285,13 +286,8 @@ const Sidebar: React.FC = () => {
 						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-gradient-to-b from-sidebar to-sidebar/95 md:static md:z-auto"
 					>
 						{/* Logo */}
-						<div className="flex h-16 shrink-0 items-center gap-3 border-b border-sidebar-border px-5">
-							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-								<GraduationCap className="h-[18px] w-[18px] text-primary-foreground" />
-							</div>
-							<span className="font-heading font-bold text-base text-sidebar-foreground">
-								AcadManager
-							</span>
+						<div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-5">
+							<img src={logo} alt="TKAMS" className="h-8 w-auto" />
 						</div>
 
 						{/* Navigation */}

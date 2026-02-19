@@ -543,44 +543,46 @@ export default function ProgramManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.programs.form.nameLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.programs.form.namePlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.programs.form.codePlaceholder", {
-													defaultValue: "INF-LIC",
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>{t("admin.programs.form.nameLabel")}</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.programs.form.namePlaceholder")}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.programs.form.codeLabel", {
+													defaultValue: "Code",
 												})}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.programs.form.codePlaceholder", {
+														defaultValue: "INF-LIC",
+													})}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="description"
@@ -737,40 +739,42 @@ export default function ProgramManagement() {
 										</Button>
 									</div>
 								) : null}
-								<FormField
-									control={optionForm.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.name", {
-													defaultValue: "Option name",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={optionForm.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.code", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+								<div className="grid gap-3 sm:grid-cols-2">
+									<FormField
+										control={optionForm.control}
+										name="name"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>
+													{t("admin.programs.options.form.name", {
+														defaultValue: "Option name",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={optionForm.control}
+										name="code"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>
+													{t("admin.programs.options.form.code", {
+														defaultValue: "Code",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 								<FormField
 									control={optionForm.control}
 									name="description"

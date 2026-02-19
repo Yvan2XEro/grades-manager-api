@@ -351,87 +351,91 @@ export default function ExamManagement() {
 						)}
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.exams.form.nameLabel")}
-							</span>
-						</label>
-						<input
-							type="text"
-							{...register("name")}
-							className="input input-bordered"
-							placeholder={t("teacher.exams.form.namePlaceholder")}
-						/>
-						{errors.name && (
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="form-control">
 							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.name.message}
+								<span className="label-text">
+									{t("teacher.exams.form.nameLabel")}
 								</span>
 							</label>
-						)}
+							<input
+								type="text"
+								{...register("name")}
+								className="input input-bordered"
+								placeholder={t("teacher.exams.form.namePlaceholder")}
+							/>
+							{errors.name && (
+								<label className="label">
+									<span className="label-text-alt text-error">
+										{errors.name.message}
+									</span>
+								</label>
+							)}
+						</div>
+
+						<div className="form-control">
+							<label className="label">
+								<span className="label-text">
+									{t("teacher.exams.form.typeLabel")}
+								</span>
+							</label>
+							<input
+								type="text"
+								{...register("type")}
+								className="input input-bordered"
+								placeholder={t("teacher.exams.form.typePlaceholder")}
+							/>
+							{errors.type && (
+								<label className="label">
+									<span className="label-text-alt text-error">
+										{errors.type.message}
+									</span>
+								</label>
+							)}
+						</div>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.exams.form.typeLabel")}
-							</span>
-						</label>
-						<input
-							type="text"
-							{...register("type")}
-							className="input input-bordered"
-							placeholder={t("teacher.exams.form.typePlaceholder")}
-						/>
-						{errors.type && (
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="form-control">
 							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.type.message}
+								<span className="label-text">
+									{t("teacher.exams.form.dateLabel")}
 								</span>
 							</label>
-						)}
-					</div>
+							<input
+								type="date"
+								{...register("date")}
+								className="input input-bordered"
+							/>
+							{errors.date && (
+								<label className="label">
+									<span className="label-text-alt text-error">
+										{errors.date.message}
+									</span>
+								</label>
+							)}
+						</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.exams.form.dateLabel")}
-							</span>
-						</label>
-						<input
-							type="date"
-							{...register("date")}
-							className="input input-bordered"
-						/>
-						{errors.date && (
+						<div className="form-control">
 							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.date.message}
+								<span className="label-text">
+									{t("teacher.exams.form.percentageLabel")}
 								</span>
 							</label>
-						)}
-					</div>
-
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">
-								{t("teacher.exams.form.percentageLabel")}
-							</span>
-						</label>
-						<input
-							type="number"
-							{...register("percentage", { valueAsNumber: true })}
-							className="input input-bordered"
-							placeholder={t("teacher.exams.form.percentagePlaceholder")}
-						/>
-						{errors.percentage && (
-							<label className="label">
-								<span className="label-text-alt text-error">
-									{errors.percentage.message}
-								</span>
-							</label>
-						)}
+							<input
+								type="number"
+								{...register("percentage", { valueAsNumber: true })}
+								className="input input-bordered"
+								placeholder={t("teacher.exams.form.percentagePlaceholder")}
+							/>
+							{errors.percentage && (
+								<label className="label">
+									<span className="label-text-alt text-error">
+										{errors.percentage.message}
+									</span>
+								</label>
+							)}
+						</div>
 					</div>
 
 					<div className="modal-action">

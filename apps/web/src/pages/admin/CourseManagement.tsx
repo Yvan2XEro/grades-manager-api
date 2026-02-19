@@ -507,48 +507,107 @@ export default function CourseManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.courses.form.nameLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.namePlaceholder")}
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="hours"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.courses.form.hoursLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												value={field.value ?? ""}
-												onChange={(event) =>
-													field.onChange(
-														event.target.value === ""
-															? undefined
-															: Number(event.target.value),
-													)
-												}
-												placeholder={t("admin.courses.form.hoursPlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>{t("admin.courses.form.nameLabel")}</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.courses.form.namePlaceholder")}
+													{...field}
+													value={field.value ?? ""}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.codeLabel", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.courses.form.codePlaceholder", {
+														defaultValue: "INF111",
+													})}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="hours"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>{t("admin.courses.form.hoursLabel")}</FormLabel>
+											<FormControl>
+												<Input
+													type="number"
+													value={field.value ?? ""}
+													onChange={(event) =>
+														field.onChange(
+															event.target.value === ""
+																? undefined
+																: Number(event.target.value),
+														)
+													}
+													placeholder={t("admin.courses.form.hoursPlaceholder")}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="defaultTeacher"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.teacherLabel")}
+											</FormLabel>
+											<Select
+												onValueChange={field.onChange}
+												value={field.value || undefined}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={t(
+																"admin.courses.form.teacherPlaceholder",
+															)}
+														/>
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{teacherOptions.map((teacher) => (
+														<SelectItem key={teacher.id} value={teacher.id}>
+															{formatTeacherName(teacher)}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<CodedEntitySelect
 								items={programs}
 								onSearch={setProgramSearch}
@@ -565,62 +624,6 @@ export default function CourseManagement() {
 								error={form.formState.errors.program?.message}
 								searchMode="hybrid"
 								required
-							/>
-
-							<FormField
-								control={form.control}
-								name="defaultTeacher"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.teacherLabel")}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.courses.form.teacherPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.codePlaceholder", {
-													defaultValue: "INF111",
-												})}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
 							/>
 							<ModalFooter className="gap-2">
 								<Button

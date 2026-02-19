@@ -406,58 +406,60 @@ export default function ClassCourseManagement() {
 				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-					<div className="space-y-2">
-						<Label htmlFor="class-select">
-							{t("teacher.classCourses.form.classLabel")}
-						</Label>
-						<Select
-							value={watch("class")}
-							onValueChange={(value) => setValue("class", value)}
-						>
-							<SelectTrigger id="class-select">
-								<SelectValue
-									placeholder={t("teacher.classCourses.form.classPlaceholder")}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{classes?.map((cls) => (
-									<SelectItem key={cls.id} value={cls.id}>
-										{cls.name} - {programMap.get(cls.program)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{errors.class ? (
-							<p className="text-destructive text-sm">{errors.class.message}</p>
-						) : null}
-					</div>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="space-y-2">
+							<Label htmlFor="class-select">
+								{t("teacher.classCourses.form.classLabel")}
+							</Label>
+							<Select
+								value={watch("class")}
+								onValueChange={(value) => setValue("class", value)}
+							>
+								<SelectTrigger id="class-select">
+									<SelectValue
+										placeholder={t("teacher.classCourses.form.classPlaceholder")}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{classes?.map((cls) => (
+										<SelectItem key={cls.id} value={cls.id}>
+											{cls.name} - {programMap.get(cls.program)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{errors.class ? (
+								<p className="text-destructive text-sm">{errors.class.message}</p>
+							) : null}
+						</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="course-select">
-							{t("teacher.classCourses.form.courseLabel")}
-						</Label>
-						<Select
-							value={watch("course")}
-							onValueChange={(value) => setValue("course", value)}
-						>
-							<SelectTrigger id="course-select">
-								<SelectValue
-									placeholder={t("teacher.classCourses.form.coursePlaceholder")}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{courses?.map((course) => (
-									<SelectItem key={course.id} value={course.id}>
-										{course.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{errors.course ? (
-							<p className="text-destructive text-sm">
-								{errors.course.message}
-							</p>
-						) : null}
+						<div className="space-y-2">
+							<Label htmlFor="course-select">
+								{t("teacher.classCourses.form.courseLabel")}
+							</Label>
+							<Select
+								value={watch("course")}
+								onValueChange={(value) => setValue("course", value)}
+							>
+								<SelectTrigger id="course-select">
+									<SelectValue
+										placeholder={t("teacher.classCourses.form.coursePlaceholder")}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{courses?.map((course) => (
+										<SelectItem key={course.id} value={course.id}>
+											{course.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{errors.course ? (
+								<p className="text-destructive text-sm">
+									{errors.course.message}
+								</p>
+							) : null}
+						</div>
 					</div>
 
 					<div className="space-y-2">

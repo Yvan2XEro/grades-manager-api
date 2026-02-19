@@ -41,7 +41,11 @@
       "Bash(git commit:*)",
       "Bash(echo:*)",
       "Bash(findstr:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(wc:*)",
+      "Bash(xxd:*)",
+      "Bash(python3:*)",
+      "Bash(bun -e:*)"
     ]
   }
 }

@@ -30,13 +30,13 @@ const DashboardLayout: React.FC = () => {
 	}
 
 	return (
-		<div className="flex h-screen overflow-hidden bg-background">
+		<div className="flex h-dvh overflow-hidden bg-background">
 			<Sidebar />
 
-			<div className="flex flex-1 flex-col overflow-hidden">
+			<div className="flex min-h-0 flex-1 flex-col">
 				<Header />
 
-				<main className="flex-1 overflow-y-auto">
+				<main className="min-h-0 flex-1 overflow-y-auto">
 					<motion.div
 						key={location.pathname}
 						initial={{ opacity: 0, y: 8 }}
