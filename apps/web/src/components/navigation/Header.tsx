@@ -1,7 +1,7 @@
 import { Bell, LogOut, Menu, PanelLeftClose } from "lucide-react";
-import type React from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { authClient } from "../../lib/auth-client";
@@ -17,12 +17,15 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../ui/select";
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "../ui/breadcrumb";
+import { cn } from "@/lib/utils";
+import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
@@ -40,6 +43,8 @@ const Header: React.FC = () => {
 			toast.error(t("auth.logout.error"));
 		}
 	};
+
+	const crumbs = useBreadcrumbs();
 
 	const userInitials =
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
@@ -61,29 +66,49 @@ const Header: React.FC = () => {
 							<Menu className="h-5 w-5" />
 						)}
 					</Button>
+					{crumbs.length > 1 && (
+						<Breadcrumb className="hidden md:flex">
+							<BreadcrumbList>
+								{crumbs.map((crumb, index) => (
+									<React.Fragment key={crumb.label}>
+										{index > 0 && <BreadcrumbSeparator />}
+										<BreadcrumbItem>
+											{crumb.href ? (
+												<BreadcrumbLink asChild>
+													<Link to={crumb.href}>{crumb.label}</Link>
+												</BreadcrumbLink>
+											) : (
+												<BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+											)}
+										</BreadcrumbItem>
+									</React.Fragment>
+								))}
+							</BreadcrumbList>
+						</Breadcrumb>
+					)}
 				</div>
 
 				<div className="flex items-center gap-2">
-					<Select
-						value={i18n.language}
-						onValueChange={(value) => {
-							i18n.changeLanguage(value);
-							localStorage.setItem("lng", value);
-						}}
-					>
-						<SelectTrigger
-							aria-label={t("navigation.header.languageSelectAria")}
-							className="h-9 w-[70px] border-none bg-transparent text-sm shadow-none"
-						>
-							<SelectValue
-								placeholder={t("navigation.header.languageSelectPlaceholder")}
-							/>
-						</SelectTrigger>
-						<SelectContent align="end">
-							<SelectItem value="en">EN</SelectItem>
-							<SelectItem value="fr">FR</SelectItem>
-						</SelectContent>
-					</Select>
+					<div className="flex items-center rounded-full bg-muted p-0.5">
+						{(["en", "fr"] as const).map((lang) => (
+							<button
+								key={lang}
+								type="button"
+								onClick={() => {
+									i18n.changeLanguage(lang);
+									localStorage.setItem("lng", lang);
+								}}
+								className={cn(
+									"rounded-full px-3 py-1 text-xs font-semibold uppercase transition-all duration-200",
+									i18n.language === lang
+										? "bg-background text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{lang}
+							</button>
+						))}
+					</div>
 
 					<Button
 						variant="ghost"
@@ -92,6 +117,7 @@ const Header: React.FC = () => {
 						aria-label={t("navigation.header.notificationsAria")}
 					>
 						<Bell className="h-[18px] w-[18px]" />
+						<span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
 					</Button>
 
 					<DropdownMenu>

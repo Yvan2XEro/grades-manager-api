@@ -11,6 +11,7 @@ import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { PasswordInput } from "../../components/ui/password-input";
 import { authClient } from "../../lib/auth-client";
 
 const buildLoginSchema = (t: TFunction) =>
@@ -91,9 +92,8 @@ const Login: React.FC = () => {
 							{t("auth.login.forgotPassword")}
 						</Link>
 					</div>
-					<Input
+					<PasswordInput
 						id="password"
-						type="password"
 						{...register("password")}
 						className="h-11"
 						placeholder={t("auth.login.passwordPlaceholder")}

@@ -64,6 +64,12 @@
 		"loading": "Chargement..."
 	},
 	"navigation": {
+		"breadcrumbs": {
+			"admin": "Administration",
+			"teacher": "Enseignant",
+			"dean": "Doyen",
+			"student": "Étudiant"
+		},
 		"header": {
 			"adminDashboard": "Tableau de bord administrateur",
 			"teacherDashboard": "Tableau de bord enseignant",
@@ -366,7 +372,8 @@
 				"courses": "Cours",
 				"exams": "Évaluations",
 				"students": "Étudiants",
-				"teachers": "Enseignants"
+				"teachers": "Enseignants",
+				"institutions" : "Institutions"
 			}
 		},
 		"academicYears": {

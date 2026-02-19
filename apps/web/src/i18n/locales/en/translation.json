@@ -597,6 +597,12 @@
 		}
 	},
 	"navigation": {
+		"breadcrumbs": {
+			"admin": "Administration",
+			"teacher": "Teacher",
+			"dean": "Dean",
+			"student": "Student"
+		},
 		"header": {
 			"adminDashboard": "Admin dashboard",
 			"teacherDashboard": "Teacher dashboard",
@@ -753,7 +759,8 @@
 				"courses": "Courses",
 				"exams": "Exams",
 				"students": "Students",
-				"teachers": "Teachers"
+				"teachers": "Teachers",
+				"institutions" : "Institutions"
 			}
 		},
 		"monitoring": {

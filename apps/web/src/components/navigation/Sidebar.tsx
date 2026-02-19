@@ -257,10 +257,10 @@ const Sidebar: React.FC = () => {
 	})();
 
 	const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
-		`group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 ${
+		`group flex items-center gap-3 rounded-r-lg border-l-[3px] px-3 py-2 text-[13px] font-medium transition-all duration-150 ${
 			isActive
-				? "bg-primary text-primary-foreground shadow-sm"
-				: "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+				? "border-l-primary bg-primary/8 text-primary font-semibold"
+				: "border-l-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
 		}`;
 
 	return (
@@ -282,7 +282,7 @@ const Sidebar: React.FC = () => {
 						animate={{ x: 0 }}
 						exit={{ x: -280 }}
 						transition={{ duration: 0.25, ease: "easeOut" }}
-						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar md:static md:z-auto"
+						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-gradient-to-b from-sidebar to-sidebar/95 md:static md:z-auto"
 					>
 						{/* Logo */}
 						<div className="flex h-16 shrink-0 items-center gap-3 border-b border-sidebar-border px-5">
@@ -311,7 +311,8 @@ const Sidebar: React.FC = () => {
 													onClick={() => toggleGroup(groupKey)}
 													className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-sidebar-foreground"
 												>
-													<span>
+													<span className="flex items-center gap-1.5">
+														<span className="h-1 w-1 rounded-full bg-primary/50" />
 														{t(group.title, { defaultValue: group.title })}
 													</span>
 													{isExpanded ? (
@@ -373,8 +374,8 @@ const Sidebar: React.FC = () => {
 
 						{/* User info footer */}
 						<div className="shrink-0 border-t border-sidebar-border p-4">
-							<div className="flex items-center gap-3">
-								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+							<div className="flex items-center gap-3 rounded-lg bg-muted/40 p-2.5">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-2 ring-primary/20">
 									<span className="font-semibold text-primary text-sm">
 										{user?.firstName?.[0]}
 										{user?.lastName?.[0]}
@@ -384,9 +385,9 @@ const Sidebar: React.FC = () => {
 									<p className="truncate font-medium text-sidebar-foreground text-sm">
 										{user?.firstName} {user?.lastName}
 									</p>
-									<p className="truncate text-muted-foreground text-xs capitalize">
+									<span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary capitalize">
 										{user?.role ? t(`navigation.roles.${user.role}`) : ""}
-									</p>
+									</span>
 								</div>
 							</div>
 						</div>

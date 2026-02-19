@@ -11,6 +11,7 @@ import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { PasswordInput } from "../../components/ui/password-input";
 import { authClient } from "../../lib/auth-client";
 
 const buildSchema = (t: TFunction) =>
@@ -74,9 +75,8 @@ const ResetPassword: React.FC = () => {
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 				<div className="space-y-2">
 					<Label htmlFor="password">{t("auth.reset.newPassword")}</Label>
-					<Input
+					<PasswordInput
 						id="password"
-						type="password"
 						{...register("password")}
 						className="h-11"
 						placeholder={t("auth.reset.passwordPlaceholder")}
@@ -92,9 +92,8 @@ const ResetPassword: React.FC = () => {
 					<Label htmlFor="confirmPassword">
 						{t("common.fields.confirmPassword")}
 					</Label>
-					<Input
+					<PasswordInput
 						id="confirmPassword"
-						type="password"
 						{...register("confirmPassword")}
 						className="h-11"
 						placeholder={t("auth.reset.confirmPasswordPlaceholder")}
