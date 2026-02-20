@@ -5,6 +5,7 @@ import { useQueryState } from "nuqs";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Outlet } from "react-router";
+import LoadingScreen from "../ui/LoadingScreen";
 import { useStore } from "../../store";
 import { roleLayoutMap } from "../navigation/Redirector";
 
@@ -14,6 +15,8 @@ const AuthLayout: React.FC = () => {
 
 	const [callbackURL] = useQueryState("return", {});
 	if (user) {
+		// Intermediate state: user is authenticated but org is still being activated
+		if (user.role === "guest") return <LoadingScreen />;
 		if (callbackURL) return <Navigate to={callbackURL} replace />;
 		return roleLayoutMap[user.role];
 	}

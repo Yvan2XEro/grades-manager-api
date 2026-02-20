@@ -61,7 +61,7 @@ function App() {
 		setActiveOrganizationSlug,
 		activeOrganizationSlug,
 	} = useStore();
-	const { data: session, isPending } = authClient.useSession();
+	const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
 	const activatedSlugRef = useRef<string | null>(null);
 
 	const memoUser = useMemo(() => {
@@ -116,6 +116,8 @@ function App() {
 					});
 					if (!cancelled) {
 						activatedSlugRef.current = activeOrganizationSlug;
+						// Force session refetch so activeMembership and role update immediately
+						await refetchSession();
 					}
 				} catch (error) {
 					console.error("Failed to set active organization:", error);

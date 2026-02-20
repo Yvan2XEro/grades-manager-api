@@ -4,7 +4,7 @@ meta:
   dataset: inses
 authUsers:
   - code: ADMIN-ROOT
-    email:  
+    email: admin@inses.cm
     name: Administrateur INSES
     password: ChangeMe123!
     role: admin
