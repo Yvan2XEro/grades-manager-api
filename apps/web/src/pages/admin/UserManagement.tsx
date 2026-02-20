@@ -39,6 +39,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { DatePicker } from "../../components/ui/date-picker";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -642,7 +643,7 @@ export default function UserManagement() {
 												{t("admin.users.form.dateOfBirthLabel")}
 											</FormLabel>
 											<FormControl>
-												<Input type="date" {...field} />
+												<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>

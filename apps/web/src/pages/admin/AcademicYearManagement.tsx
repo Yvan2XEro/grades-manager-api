@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { DatePicker } from "@/components/ui/date-picker";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import {
 	Card,
@@ -498,7 +499,7 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.startDate")}
 									</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -514,7 +515,7 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.endDate")}
 									</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

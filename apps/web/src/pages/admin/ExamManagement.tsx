@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { DatePicker } from "@/components/ui/date-picker";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Checkbox } from "../../components/ui/checkbox";
 import { useRowSelection } from "../../hooks/useRowSelection";
@@ -873,7 +874,7 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -999,7 +1000,7 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

@@ -38,6 +38,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -1089,11 +1090,7 @@ export default function StudentManagement() {
 														{t("admin.students.form.dateOfBirth")}
 													</FormLabel>
 													<FormControl>
-														<Input
-															{...field}
-															type="date"
-															data-testid="date-of-birth-input"
-														/>
+														<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -1708,7 +1705,7 @@ export default function StudentManagement() {
 													{t("admin.students.external.form.admissionDate")}
 												</FormLabel>
 												<FormControl>
-													<Input {...field} type="date" />
+													<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1808,7 +1805,7 @@ export default function StudentManagement() {
 																{t("admin.students.form.dateOfBirth")}
 															</FormLabel>
 															<FormControl>
-																<Input {...field} type="date" />
+																<DatePicker value={field.value ?? ""} onChange={field.onChange} />
 															</FormControl>
 															<FormMessage />
 														</FormItem>

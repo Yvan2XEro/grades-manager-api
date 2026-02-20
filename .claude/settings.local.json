@@ -67,7 +67,11 @@
       "Bash(for f in \"apps/web/src/pages/admin/ExamManagement.tsx\" \"apps/web/src/pages/teacher/ExamManagement.tsx\" \"apps/web/src/pages/teacher/GradeExport.tsx\" \"apps/web/src/pages/teacher/CourseManagement.tsx\")",
       "Bash(for f in \"apps/web/src/pages/admin/promotion-rules/execute-promotion.tsx\" \"apps/web/src/pages/admin/promotion-rules/execution-history.tsx\" \"apps/web/src/pages/admin/promotion-rules/rules-list.tsx\")",
       "Bash(for f in \"apps/web/src/components/admin/TeachingUnitCoursesTable.tsx\" \"apps/web/src/components/navigation/Header.tsx\" \"apps/web/src/App.tsx\")",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(for f in \"apps/web/src/pages/admin/AcademicYearManagement.tsx\" \"apps/web/src/pages/admin/ExamManagement.tsx\" \"apps/web/src/pages/admin/UserManagement.tsx\" \"apps/web/src/pages/teacher/ExamManagement.tsx\")",
+      "Bash(do)",
+      "Bash(__NEW_LINE_0431b0c32590d015__ grep -n 'type=\"\"date\"\"' \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api/$f\")",
+      "Bash(__NEW_LINE_0431b0c32590d015__ done)"
     ]
   }
 }

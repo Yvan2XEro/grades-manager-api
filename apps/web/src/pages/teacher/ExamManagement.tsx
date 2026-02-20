@@ -4,12 +4,13 @@ import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
@@ -440,11 +441,13 @@ export default function ExamManagement() {
 									{t("teacher.exams.form.dateLabel")}
 								</span>
 							</label>
-							<input
-								type="date"
-								{...register("date")}
-								className="input input-bordered"
-							/>
+							<Controller
+							name="date"
+							control={control}
+							render={({ field }) => (
+								<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+							)}
+						/>
 							{errors.date && (
 								<label className="label">
 									<span className="label-text-alt text-error">
