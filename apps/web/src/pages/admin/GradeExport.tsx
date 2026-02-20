@@ -1544,7 +1544,7 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div className="space-y-2">
-				<h2 className="font-bold text-2xl">{t("admin.gradeExport.title")}</h2>
+				<h2 className="font-semibold text-xl text-foreground">{t("admin.gradeExport.title")}</h2>
 				<p className="text-muted-foreground">
 					{t("admin.gradeExport.subtitle")}
 				</p>

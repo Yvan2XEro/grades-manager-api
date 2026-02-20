@@ -204,7 +204,7 @@ export default function ExamManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">{t("teacher.exams.title")}</h1>
+					<h1 className="font-heading font-bold text-2xl text-foreground">{t("teacher.exams.title")}</h1>
 					<p className="text-base-content/60">{t("teacher.exams.subtitle")}</p>
 				</div>
 				<button
@@ -249,7 +249,7 @@ export default function ExamManagement() {
 				{exams?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<ClipboardList className="h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">
+						<h2 className="font-semibold text-lg text-foreground mt-4">
 							{t("teacher.exams.empty.title")}
 						</h2>
 						<p className="text-base-content/60">

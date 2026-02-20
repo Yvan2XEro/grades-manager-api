@@ -242,7 +242,7 @@ export default function ExportTemplatesManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.exportTemplates.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -399,7 +399,7 @@ export default function ExportTemplatesManagement() {
 								<FileText className="h-12 w-12" />
 							</EmptyHeader>
 							<EmptyContent>
-								<h3 className="text-lg font-semibold">
+								<h3 className="text-lg font-semibold text-foreground">
 									{t("admin.exportTemplates.empty.title")}
 								</h3>
 								<p className="text-sm text-muted-foreground">

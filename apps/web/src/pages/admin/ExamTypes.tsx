@@ -220,7 +220,7 @@ export default function ExamTypes() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-semibold text-3xl">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.examTypes.title")}
 					</h1>
 					<p className="text-muted-foreground">

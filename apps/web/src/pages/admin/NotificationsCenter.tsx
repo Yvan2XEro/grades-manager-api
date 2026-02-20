@@ -53,7 +53,7 @@ const NotificationsCenter = () => {
 			<div className="flex items-center space-x-3">
 				<Bell className="h-6 w-6 text-primary-700" />
 				<div>
-					<h1 className="font-semibold text-2xl text-foreground">
+					<h1 className="font-heading font-bold text-2xl text-foreground">
 						{t("admin.notifications.title")}
 					</h1>
 					<p className="text-muted-foreground">{t("admin.notifications.subtitle")}</p>

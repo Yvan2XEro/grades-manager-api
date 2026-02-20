@@ -106,10 +106,10 @@ export default function BatchJobsDashboard() {
 				<div className="flex items-center space-x-3">
 					<PlayCircle className="h-6 w-6 text-primary-700" />
 					<div>
-						<h1 className="font-semibold text-2xl text-gray-900">
+						<h1 className="font-heading font-bold text-2xl text-foreground">
 							{t("admin.batchJobs.title")}
 						</h1>
-						<p className="text-gray-600 text-sm">
+						<p className="text-muted-foreground text-sm">
 							{t("admin.batchJobs.subtitle")}
 						</p>
 					</div>
@@ -150,15 +150,15 @@ export default function BatchJobsDashboard() {
 			<div className="rounded-xl border bg-white shadow-sm">
 				{jobsQuery.isLoading ? (
 					<div className="flex items-center justify-center py-12">
-						<Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
 					</div>
 				) : jobs.length === 0 ? (
 					<div className="py-12 text-center">
-						<PlayCircle className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-						<h3 className="font-medium text-gray-900">
+						<PlayCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
+						<h3 className="font-semibold text-sm text-foreground">
 							{t("admin.batchJobs.empty.title")}
 						</h3>
-						<p className="mt-1 text-gray-500 text-sm">
+						<p className="mt-1 text-muted-foreground text-sm">
 							{t("admin.batchJobs.empty.description")}
 						</p>
 					</div>
@@ -180,7 +180,7 @@ export default function BatchJobsDashboard() {
 							{jobs.map((job) => (
 								<TableRow
 									key={job.id}
-									className="cursor-pointer hover:bg-gray-50"
+									className="cursor-pointer hover:bg-muted/50"
 									onClick={() => navigate(`/admin/batch-jobs/${job.id}`)}
 								>
 									<TableCell className="font-medium">
@@ -207,13 +207,13 @@ export default function BatchJobsDashboard() {
 														}}
 													/>
 												</div>
-												<span className="text-gray-500 text-xs">
+												<span className="text-muted-foreground text-xs">
 													{job.progress.itemsProcessed}/
 													{job.progress.itemsTotal}
 												</span>
 											</div>
 										) : (
-											<span className="text-gray-400 text-sm">-</span>
+											<span className="text-muted-foreground/60 text-sm">-</span>
 										)}
 									</TableCell>
 									<TableCell className="text-sm">
@@ -221,7 +221,7 @@ export default function BatchJobsDashboard() {
 											? `${job.createdByRef.firstName} ${job.createdByRef.lastName}`
 											: "-"}
 									</TableCell>
-									<TableCell className="text-gray-500 text-sm">
+									<TableCell className="text-muted-foreground text-sm">
 										{formatDistanceToNow(new Date(job.createdAt), {
 											addSuffix: true,
 										})}

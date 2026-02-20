@@ -385,7 +385,7 @@ export default function UserManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-semibold text-xl">{t("admin.users.title")}</h1>
+				<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.users.title")}</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}

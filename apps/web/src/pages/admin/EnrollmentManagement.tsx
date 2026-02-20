@@ -63,7 +63,7 @@ const warningMetaMap: Record<
 		translationKey: "mandatory",
 	},
 	recommended: {
-		badgeClass: "border-slate-200 bg-slate-50 text-slate-800",
+		badgeClass: "border-border bg-muted text-foreground",
 		translationKey: "recommended",
 	},
 	corequisite: {
@@ -168,7 +168,7 @@ const PrerequisiteWarningsList = ({
 								<Badge variant="outline" className={meta.badgeClass}>
 									{meta.label}
 								</Badge>
-								<span className="font-medium text-gray-900 text-sm">
+								<span className="font-medium text-foreground text-sm">
 									{prerequisiteLabel}
 								</span>
 							</div>

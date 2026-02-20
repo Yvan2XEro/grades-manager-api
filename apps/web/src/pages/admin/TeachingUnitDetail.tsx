@@ -203,7 +203,7 @@ const TeachingUnitDetail = () => {
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
 					<div>
-						<h1 className="font-semibold text-2xl">
+						<h1 className="font-heading font-bold text-2xl text-foreground">
 							{isCreateMode
 								? t("admin.teachingUnits.detail.createTitle", {
 										defaultValue: "Create teaching unit",

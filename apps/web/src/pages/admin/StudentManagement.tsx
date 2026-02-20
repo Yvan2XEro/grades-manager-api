@@ -759,7 +759,7 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6 p-6">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-bold text-2xl">{t("admin.students.title")}</h1>
+				<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.students.title")}</h1>
 				<Button onClick={() => setIsModalOpen(true)}>
 					<PlusIcon className="mr-2 h-5 w-5" />
 					{t("admin.students.actions.openModal")}

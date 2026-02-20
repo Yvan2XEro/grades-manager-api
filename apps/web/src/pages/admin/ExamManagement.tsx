@@ -447,7 +447,7 @@ export default function ExamManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">{t("admin.exams.title")}</h1>
+					<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.exams.title")}</h1>
 					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
 				<Button
@@ -635,7 +635,7 @@ export default function ExamManagement() {
 																		? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-400/20 dark:text-blue-100"
 																		: exam.status === "rejected"
 																			? "border-red-500 bg-red-50 text-red-700 dark:bg-red-400/20 dark:text-red-100"
-																			: "border-gray-400 bg-gray-50 text-gray-700 dark:bg-gray-400/20 dark:text-gray-100"
+																			: "border-gray-400 bg-muted/50 text-foreground dark:bg-gray-400/20 dark:text-gray-100"
 															}
 														>
 															{t(
