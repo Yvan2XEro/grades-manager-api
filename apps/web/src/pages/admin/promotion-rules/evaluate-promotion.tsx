@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -245,25 +246,13 @@ export function EvaluatePromotionPage() {
 
 						<div className="space-y-2">
 							<Label>{t("admin.promotionRules.evaluate.form.yearLabel")}</Label>
-							<Select
-								value={selectedAcademicYearId}
-								onValueChange={setSelectedAcademicYearId}
-							>
-								<SelectTrigger>
-									<SelectValue
-										placeholder={t(
-											"admin.promotionRules.evaluate.form.yearPlaceholder",
-										)}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{academicYears?.items?.map((year) => (
-										<SelectItem key={year.id} value={year.id}>
-											{year.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<AcademicYearSelect
+								value={selectedAcademicYearId || null}
+								onChange={(v) => setSelectedAcademicYearId(v)}
+								placeholder={t(
+									"admin.promotionRules.evaluate.form.yearPlaceholder",
+								)}
+							/>
 						</div>
 					</div>
 

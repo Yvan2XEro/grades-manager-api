@@ -24,6 +24,7 @@ import { semestersRouter } from "../modules/semesters";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
 import { studentCreditLedgerRouter } from "../modules/student-credit-ledger";
 import { studentsRouter } from "../modules/students";
+import { cycleLevelsRouter } from "../modules/cycle-levels";
 import { studyCyclesRouter } from "../modules/study-cycles";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
@@ -40,6 +41,7 @@ export const appRouter = router({
 	})),
 	programs: programsRouter,
 	studyCycles: studyCyclesRouter,
+	cycleLevels: cycleLevelsRouter,
 	programOptions: programOptionsRouter,
 	teachingUnits: teachingUnitsRouter,
 	academicYears: academicYearsRouter,

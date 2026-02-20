@@ -149,6 +149,9 @@ export default function ClassCourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
+	useEffect(() => { pagination.reset(); }, [filterYear, filterSemester]);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -277,11 +280,13 @@ export default function ClassCourseManagement() {
 	});
 
 	const { data: classCoursesData, isLoading } = useQuery({
-		queryKey: ["classCourses", pagination.cursor, pagination.pageSize],
+		queryKey: ["classCourses", pagination.cursor, pagination.pageSize, filterYear, filterSemester],
 		queryFn: async () => {
 			const { items, nextCursor } = await trpcClient.classCourses.list.query({
 				cursor: pagination.cursor,
 				limit: pagination.pageSize,
+				...(filterYear ? { academicYearId: filterYear } : {}),
+				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
 			return {
 				items: items.map(

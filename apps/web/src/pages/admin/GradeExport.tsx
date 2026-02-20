@@ -13,6 +13,7 @@ import { useCallback, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import {
 	Accordion,
 	AccordionContent,
@@ -1600,22 +1601,12 @@ export default function GradeExport() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={semesterId}>Semestre (pour PV PDF)</Label>
-						<Select
-							value={selectedSemester || undefined}
-							onValueChange={setSelectedSemester}
-						>
-							<SelectTrigger id={semesterId}>
-								<SelectValue placeholder="Sélectionner un semestre" />
-							</SelectTrigger>
-							<SelectContent>
-								{(semesters || []).map((semester) => (
-									<SelectItem key={semester.id} value={semester.id}>
-										{semester.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<Label>Semestre (pour PV PDF)</Label>
+						<SemesterSelect
+							value={selectedSemester || null}
+							onChange={(v) => setSelectedSemester(v ?? "")}
+							placeholder="Sélectionner un semestre"
+						/>
 					</div>
 				</CardContent>
 			</Card>

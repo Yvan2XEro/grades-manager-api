@@ -1,13 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -36,6 +40,151 @@ import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 type CourseEnrollmentListResponse =
 	RouterOutputs["studentCourseEnrollments"]["list"];
 type CourseEnrollmentRow = CourseEnrollmentListResponse["items"][number];
+type EnrollmentCreateResponse =
+	RouterOutputs["studentCourseEnrollments"]["create"];
+type PrerequisiteWarning = EnrollmentCreateResponse["warnings"][number];
+type WarningCategory = "mandatory" | "recommended" | "corequisite";
+
+const warningTranslationDefaults = {
+	mandatory: "Mandatory gap",
+	recommended: "Recommended gap",
+	corequisite: "Co-requisite in progress",
+} as const;
+
+const warningMetaMap: Record<
+	WarningCategory,
+	{
+		badgeClass: string;
+		translationKey: keyof typeof warningTranslationDefaults;
+	}
+> = {
+	mandatory: {
+		badgeClass: "border-amber-200 bg-amber-50 text-amber-900",
+		translationKey: "mandatory",
+	},
+	recommended: {
+		badgeClass: "border-slate-200 bg-slate-50 text-slate-800",
+		translationKey: "recommended",
+	},
+	corequisite: {
+		badgeClass: "border-blue-200 bg-blue-50 text-blue-800",
+		translationKey: "corequisite",
+	},
+};
+
+const resolveWarningCategory = (
+	warning: PrerequisiteWarning,
+): WarningCategory => {
+	if (warning.state === "in-progress") {
+		return "corequisite";
+	}
+	return warning.prerequisiteType === "mandatory" ? "mandatory" : "recommended";
+};
+
+const getWarningMeta = (
+	category: WarningCategory,
+	t: TFunction<"translation", undefined>,
+) => {
+	const meta = warningMetaMap[category];
+	return {
+		badgeClass: meta.badgeClass,
+		label: t(`admin.enrollments.warnings.${meta.translationKey}`, {
+			defaultValue: warningTranslationDefaults[meta.translationKey],
+		}),
+	};
+};
+
+const buildCourseLabel = (
+	name: string | null,
+	code: string | null,
+	fallbackId: string | null,
+	t: TFunction<"translation", undefined>,
+) => {
+	if (name && code) {
+		return t("admin.enrollments.warnings.courseLabel", {
+			defaultValue: "{{name}} ({{code}})",
+			name,
+			code,
+		});
+	}
+	if (name) return name;
+	if (code) return code;
+	return t("admin.enrollments.warnings.courseFallback", {
+		defaultValue: "Course {{courseId}}",
+		courseId: fallbackId ?? "N/A",
+	});
+};
+
+const PrerequisiteWarningsList = ({
+	warnings,
+	t,
+	showDescription = true,
+}: {
+	warnings: PrerequisiteWarning[];
+	t: TFunction<"translation", undefined>;
+	showDescription?: boolean;
+}) => {
+	if (!warnings.length) return null;
+	const alertClass = showDescription
+		? "border-amber-200 bg-amber-50 text-amber-900"
+		: "border-amber-200 bg-amber-50 text-amber-900 text-xs sm:text-sm";
+	return (
+		<Alert className={alertClass}>
+			<AlertTitle className="font-semibold text-sm">
+				{t("admin.enrollments.warnings.title", {
+					defaultValue: "Prerequisite warnings",
+				})}
+			</AlertTitle>
+			<AlertDescription className="grid gap-2">
+				{showDescription ? (
+					<p className="text-muted-foreground text-xs sm:text-sm">
+						{t("admin.enrollments.warnings.description", {
+							defaultValue:
+								"Review these unmet prerequisites before confirming next steps.",
+						})}
+					</p>
+				) : null}
+				{warnings.map((warning, index) => {
+					const category = resolveWarningCategory(warning);
+					const meta = getWarningMeta(category, t);
+					const prerequisiteLabel = buildCourseLabel(
+						warning.prerequisiteCourseName,
+						warning.prerequisiteCourseCode,
+						warning.prerequisiteCourseId,
+						t,
+					);
+					const targetLabel = buildCourseLabel(
+						warning.targetCourseName,
+						warning.targetCourseCode,
+						warning.targetCourseId,
+						t,
+					);
+					return (
+						<div
+							key={`${warning.prerequisiteCourseId}-${warning.targetCourseId}-${index}`}
+							className="space-y-1"
+						>
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge variant="outline" className={meta.badgeClass}>
+									{meta.label}
+								</Badge>
+								<span className="font-medium text-gray-900 text-sm">
+									{prerequisiteLabel}
+								</span>
+							</div>
+							<p className="text-muted-foreground text-xs sm:text-sm">
+								{t("admin.enrollments.warnings.appliesTo", {
+									defaultValue: "Required for {{course}}",
+									course: targetLabel,
+								})}
+							</p>
+						</div>
+					);
+				})}
+			</AlertDescription>
+		</Alert>
+	);
+};
 
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
@@ -90,6 +239,12 @@ const EnrollmentManagement = () => {
 	const [selectedStudent, setSelectedStudent] = useState<string>("");
 	const [rosterModalOpen, setRosterModalOpen] = useState(false);
 	const [autoEnrollDialogOpen, setAutoEnrollDialogOpen] = useState(false);
+	const [courseWarnings, setCourseWarnings] = useState<
+		Record<string, PrerequisiteWarning[]>
+	>({});
+	const [autoEnrollWarnings, setAutoEnrollWarnings] = useState<
+		PrerequisiteWarning[]
+	>([]);
 
 	const courseEnrollmentQuery = useQuery({
 		...trpc.studentCourseEnrollments.list.queryOptions({
@@ -146,12 +301,23 @@ const EnrollmentManagement = () => {
 				classCourseId,
 				status: "active",
 			}),
-		onSuccess: () => {
+		onSuccess: (result, classCourseIdParam) => {
 			toast.success(
 				t("admin.enrollments.toast.courseEnrolled", {
 					defaultValue: "Student enrolled in course",
 				}),
 			);
+			if (classCourseIdParam) {
+				setCourseWarnings((prev) => {
+					const next = { ...prev };
+					if (result.warnings?.length) {
+						next[classCourseIdParam] = result.warnings;
+					} else {
+						delete next[classCourseIdParam];
+					}
+					return next;
+				});
+			}
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryKey(),
 			);
@@ -208,7 +374,13 @@ const EnrollmentManagement = () => {
 					count: result.createdCount,
 				}),
 			);
-			setAutoEnrollDialogOpen(false);
+			if (result.warnings?.length) {
+				setAutoEnrollWarnings(result.warnings);
+				setAutoEnrollDialogOpen(true);
+			} else {
+				setAutoEnrollWarnings([]);
+				setAutoEnrollDialogOpen(false);
+			}
 			queryClient.invalidateQueries(
 				trpc.studentCourseEnrollments.list.queryKey(),
 			);
@@ -248,13 +420,34 @@ const EnrollmentManagement = () => {
 		pagination.reset();
 	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
+	useEffect(() => {
+		if (!rosterModalOpen) {
+			setCourseWarnings({});
+		}
+	}, [rosterModalOpen]);
+
+	useEffect(() => {
+		if (!selectedStudent) {
+			setCourseWarnings({});
+		}
+	}, [selectedStudent]);
+
+	const handleAutoEnrollConfirm = () => {
+		setAutoEnrollWarnings([]);
+		autoEnrollMutation.mutate();
+	};
+
 	const openRosterForStudent = (studentId: string) => {
 		setSelectedStudent(studentId);
+		setCourseWarnings({});
 		setRosterModalOpen(true);
 	};
 
 	const handleRosterModalChange = (open: boolean) => {
 		setRosterModalOpen(open);
+		if (!open) {
+			setCourseWarnings({});
+		}
 	};
 
 	const selectedClassDetails = useMemo(() => {
@@ -278,32 +471,17 @@ const EnrollmentManagement = () => {
 							defaultValue: "Academic year",
 						})}
 					</p>
-					<Select
-						value={selectedAcademicYear}
-						onValueChange={(value) => {
+					<AcademicYearSelect
+						value={selectedAcademicYear || null}
+						onChange={(value) => {
 							setSelectedAcademicYear(value);
 							setSelectedClass("");
 							setSelectedSemester("");
 						}}
-					>
-						<SelectTrigger
-							data-testid="academic-year-select"
-							className="w-full"
-						>
-							<SelectValue
-								placeholder={t("admin.enrollments.selectYear", {
-									defaultValue: "Select academic year",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{years?.items?.map((year) => (
-								<SelectItem key={year.id} value={year.id}>
-									{year.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder={t("admin.enrollments.selectYear", {
+							defaultValue: "Select academic year",
+						})}
+					/>
 				</div>
 				<div className="space-y-1">
 					<p className="font-medium text-muted-foreground text-sm">
@@ -339,33 +517,14 @@ const EnrollmentManagement = () => {
 							defaultValue: "Semester",
 						})}
 					</p>
-					<Select
-						value={selectedSemester || "_ALL_"}
-						onValueChange={(value) =>
-							setSelectedSemester(value === "_ALL_" ? "" : value)
-						}
+					<SemesterSelect
+						value={selectedSemester || null}
+						onChange={(v) => setSelectedSemester(v ?? "")}
 						disabled={!selectedClass}
-					>
-						<SelectTrigger data-testid="semester-select" className="w-full">
-							<SelectValue
-								placeholder={t("admin.enrollments.selectSemester", {
-									defaultValue: "Select semester",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="_ALL_">
-								{t("admin.enrollments.allSemesters", {
-									defaultValue: "All semesters",
-								})}
-							</SelectItem>
-							{semesters?.items?.map((semester) => (
-								<SelectItem key={semester.id} value={semester.id}>
-									{semester.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder={t("admin.enrollments.selectSemester", {
+							defaultValue: "Select semester",
+						})}
+					/>
 				</div>
 				<div className="space-y-2 rounded-lg border border-border border-dashed p-3 text-muted-foreground text-sm">
 					<p className="font-semibold text-foreground">
@@ -443,7 +602,12 @@ const EnrollmentManagement = () => {
 					<div className="flex flex-wrap gap-2">
 						<AlertDialog
 							open={autoEnrollDialogOpen}
-							onOpenChange={setAutoEnrollDialogOpen}
+							onOpenChange={(open) => {
+								setAutoEnrollDialogOpen(open);
+								if (!open) {
+									setAutoEnrollWarnings([]);
+								}
+							}}
 						>
 							<AlertDialogTrigger asChild>
 								<Button
@@ -475,12 +639,20 @@ const EnrollmentManagement = () => {
 										})}
 									</AlertDialogDescription>
 								</AlertDialogHeader>
+								{autoEnrollWarnings.length > 0 ? (
+									<div className="py-2">
+										<PrerequisiteWarningsList
+											warnings={autoEnrollWarnings}
+											t={t}
+										/>
+									</div>
+								) : null}
 								<AlertDialogFooter>
 									<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
 										{t("common.actions.cancel", { defaultValue: "Cancel" })}
 									</AlertDialogCancel>
 									<AlertDialogAction
-										onClick={() => autoEnrollMutation.mutate()}
+										onClick={handleAutoEnrollConfirm}
 										disabled={autoEnrollMutation.isPending}
 									>
 										{autoEnrollMutation.isPending && (
@@ -737,6 +909,8 @@ const EnrollmentManagement = () => {
 														: course.teacher;
 													const canReactivate =
 														enrollment && status === "withdrawn";
+													const warningsForCourse =
+														courseWarnings[course.id] ?? [];
 													const enrollDisabled =
 														!selectedStudent ||
 														status === "active" ||
@@ -754,8 +928,9 @@ const EnrollmentManagement = () => {
 													return (
 														<div
 															key={course.id}
-															className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+															className="space-y-2 px-4 py-3"
 														>
+															<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 															<div className="space-y-1">
 																<p className="font-semibold text-foreground text-sm">
 																	{courseName}
@@ -768,7 +943,8 @@ const EnrollmentManagement = () => {
 																</p>
 															</div>
 															<div className="flex flex-col gap-2 sm:items-end">
-																<Badge
+																<div className="flex items-center gap-2">
+																	<Badge
 																	variant="outline"
 																	className={
 																		status === "active"
@@ -779,16 +955,44 @@ const EnrollmentManagement = () => {
 																					? "border-rose-200 bg-rose-50 text-rose-800"
 																					: "border-border bg-muted text-foreground"
 																	}
-																>
-																	{status === "none"
-																		? t(
+																	>
+																		{status === "none"
+																			? t(
 																				"admin.enrollments.courseRoster.notEnrolled",
 																				{
 																					defaultValue: "Not enrolled",
 																				},
 																			)
 																		: status}
-																</Badge>
+																	</Badge>
+																	{enrollment && enrollment.attempt > 1 && (
+																		<Badge
+																			variant="outline"
+																			className="border-orange-200 bg-orange-50 text-orange-800"
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.attemptBadge",
+																				{
+																					defaultValue: "Attempt {{value}}",
+																					value: enrollment.attempt,
+																				},
+																			)}
+																		</Badge>
+																	)}
+																	{status === "failed" && (
+																		<Badge
+																			variant="outline"
+																			className="border-amber-200 bg-amber-50 text-amber-800"
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.retakeEligible",
+																				{
+																					defaultValue: "Retake eligible",
+																				},
+																			)}
+																		</Badge>
+																	)}
+																</div>
 																<div className="flex flex-wrap gap-2">
 																	<Button
 																		type="button"
@@ -851,6 +1055,14 @@ const EnrollmentManagement = () => {
 																	</Button>
 																</div>
 															</div>
+															</div>
+															{warningsForCourse.length > 0 ? (
+																<PrerequisiteWarningsList
+																	warnings={warningsForCourse}
+																	t={t}
+																	showDescription={false}
+																/>
+															) : null}
 														</div>
 													);
 												}) ?? (

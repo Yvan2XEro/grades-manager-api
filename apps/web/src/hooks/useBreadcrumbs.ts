@@ -34,9 +34,11 @@ const segmentLabels: Record<string, string> = {
   "registration-numbers": "navigation.sidebar.admin.registrationNumbers",
   monitoring: "navigation.sidebar.admin.monitoring",
   notifications: "navigation.sidebar.admin.notifications",
+  "batch-jobs": "navigation.sidebar.admin.batchJobs",
+  "retake-eligibility": "navigation.sidebar.admin.retakeEligibility",
   workflows: "navigation.sidebar.dean.workflows",
   attendance: "navigation.sidebar.teacher.attendance",
-  grades: "navigation.sidebar.teacher.courses",
+  grades: "navigation.sidebar.teacher.grades",
 };
 
 export function useBreadcrumbs(): BreadcrumbItem[] {
@@ -45,6 +47,12 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
   const segments = pathname.split("/").filter(Boolean);
   const crumbs: BreadcrumbItem[] = [];
+
+  // Find the last non-UUID segment index for correct "current page" detection
+  let lastNonUuidIndex = segments.length - 1;
+  while (lastNonUuidIndex >= 0 && UUID_REGEX.test(segments[lastNonUuidIndex])) {
+    lastNonUuidIndex--;
+  }
 
   let currentPath = "";
   for (let i = 0; i < segments.length; i++) {
@@ -55,7 +63,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
     if (UUID_REGEX.test(segment)) continue;
 
     const labelKey = segmentLabels[segment];
-    const isLast = i === segments.length - 1;
+    const isLast = i === lastNonUuidIndex;
 
     crumbs.push({
       label: labelKey ? t(labelKey) : segment.replace(/-/g, " "),

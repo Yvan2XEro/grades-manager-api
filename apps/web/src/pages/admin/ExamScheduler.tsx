@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "../../components/inputs/SemesterSelect";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -577,26 +578,13 @@ export default function ExamScheduler() {
 
 							<div className="space-y-2">
 								<Label>{t("admin.examScheduler.form.semesterLabel")}</Label>
-								<Select
-									value={semesterId}
-									onValueChange={setSemesterId}
-									disabled={semesters.length === 0}
-								>
-									<SelectTrigger>
-										<SelectValue
-											placeholder={t(
-												"admin.examScheduler.form.semesterPlaceholder",
-											)}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{semesters.map((semester) => (
-											<SelectItem key={semester.id} value={semester.id}>
-												{semester.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<SemesterSelect
+									value={semesterId || null}
+									onChange={(v) => setSemesterId(v ?? "")}
+									placeholder={t(
+										"admin.examScheduler.form.semesterPlaceholder",
+									)}
+								/>
 							</div>
 
 							{/* Normal session specific fields */}

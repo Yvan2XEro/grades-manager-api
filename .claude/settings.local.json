@@ -48,7 +48,26 @@
       "Bash(node:*)",
       "mcp__ide__getDiagnostics",
       "Bash(done)",
-      "Bash(git stash pop:*)"
+      "Bash(git stash pop:*)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/components/navigation/Sidebar.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/auth/Login.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/admin/ClassManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/admin/EnrollmentManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/admin/ExamManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/admin/StudentManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" show origin/main:apps/web/src/pages/admin/Dashboard.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff --name-only HEAD origin/main -- apps/web/src/)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff HEAD origin/main -- apps/web/src/pages/admin/AcademicYearManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff HEAD origin/main -- apps/web/src/pages/admin/UserManagement.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff HEAD origin/main -- apps/web/src/pages/teacher/GradeEntry.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff HEAD origin/main -- apps/web/src/pages/teacher/Dashboard.tsx)",
+      "Bash(git -C \"C:/Users/tefba/Desktop/OverBrand/grades-manager-api\" diff origin/main -- apps/web/src/hooks/useBreadcrumbs.ts)",
+      "Bash(for f in apps/web/src/pages/admin/StudyCycleManagement.tsx apps/web/src/pages/admin/TeachingUnitManagement.tsx apps/web/src/pages/admin/CourseManagement.tsx apps/web/src/pages/admin/Dashboard.tsx)",
+      "Bash(do echo \"=== $f ===\")",
+      "Bash(for f in \"apps/web/src/pages/admin/ExamManagement.tsx\" \"apps/web/src/pages/teacher/ExamManagement.tsx\" \"apps/web/src/pages/teacher/GradeExport.tsx\" \"apps/web/src/pages/teacher/CourseManagement.tsx\")",
+      "Bash(for f in \"apps/web/src/pages/admin/promotion-rules/execute-promotion.tsx\" \"apps/web/src/pages/admin/promotion-rules/execution-history.tsx\" \"apps/web/src/pages/admin/promotion-rules/rules-list.tsx\")",
+      "Bash(for f in \"apps/web/src/components/admin/TeachingUnitCoursesTable.tsx\" \"apps/web/src/components/navigation/Header.tsx\" \"apps/web/src/App.tsx\")",
+      "Bash(git stash:*)"
     ]
   }
 }

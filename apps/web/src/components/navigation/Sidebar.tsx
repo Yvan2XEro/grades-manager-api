@@ -16,6 +16,8 @@ import {
 	Landmark,
 	Layers3,
 	LayoutDashboard,
+	PlayCircle,
+	RefreshCw,
 	School,
 	TrendingUp,
 	UserCog,
@@ -147,6 +149,11 @@ const Sidebar: React.FC = () => {
 					labelKey: "navigation.sidebar.admin.examScheduler",
 				},
 				{
+					to: "/admin/retake-eligibility",
+					icon: <RefreshCw className="h-[18px] w-[18px]" />,
+					labelKey: "navigation.sidebar.admin.retakeEligibility",
+				},
+				{
 					to: "/admin/grade-export",
 					icon: <FileSpreadsheet className="h-[18px] w-[18px]" />,
 					labelKey: "navigation.sidebar.admin.gradeExport",
@@ -190,6 +197,11 @@ const Sidebar: React.FC = () => {
 					to: "/admin/notifications",
 					icon: <Bell className="h-[18px] w-[18px]" />,
 					labelKey: "navigation.sidebar.admin.notifications",
+				},
+				{
+					to: "/admin/batch-jobs",
+					icon: <PlayCircle className="h-[18px] w-[18px]" />,
+					labelKey: "navigation.sidebar.admin.batchJobs",
 				},
 			],
 		},

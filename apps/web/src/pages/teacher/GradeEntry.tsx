@@ -76,6 +76,7 @@ type Exam = {
 	percentage: number;
 	isLocked: boolean;
 	canEdit?: boolean;
+	sessionType?: "normal" | "retake";
 };
 
 type GradeInput = {
@@ -248,6 +249,7 @@ const GradeEntry: React.FC = () => {
 					percentage: Number(e.percentage),
 					isLocked: e.isLocked,
 					canEdit: e.canEdit ?? false,
+					sessionType: (e as any).sessionType ?? "normal",
 				}),
 			);
 		},
@@ -866,7 +868,7 @@ const GradeEntry: React.FC = () => {
 								<SelectContent>
 									{exams.map((exam) => (
 										<SelectItem key={exam.id} value={exam.id}>
-											{exam.name} ({exam.percentage}%){" "}
+											{exam.name} ({exam.percentage}%){exam.sessionType === "retake" ? " [Retake]" : ""}{" "}
 											{exam.isLocked
 												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
 												: ""}
