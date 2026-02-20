@@ -7,8 +7,8 @@ import {
 	generateUESchema,
 	previewEvaluationSchema,
 	previewPVSchema,
-	previewUESchema,
 	previewTemplateSourceSchema,
+	previewUESchema,
 } from "./exports.zod";
 
 /**
@@ -27,6 +27,14 @@ export const exportsRouter = router({
 				filename: `PV_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
 				mimeType: result.mimeType,
 			};
+		}),
+
+	/** Get structured PV data (JSON) for frontend Excel export */
+	getPVData: gradingProcedure
+		.input(previewPVSchema)
+		.query(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			return service.getPVDataStructured(input);
 		}),
 
 	/**

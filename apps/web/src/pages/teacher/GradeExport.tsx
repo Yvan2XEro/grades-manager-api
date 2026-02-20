@@ -4,6 +4,7 @@ import { Download, FileSpreadsheet } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -22,12 +23,6 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { trpcClient } from "../../utils/trpc";
-
-interface AcademicYear {
-	id: string;
-	name: string;
-	startDate: string;
-}
 
 interface Class {
 	id: string;
@@ -63,12 +58,14 @@ interface StudentExport {
 
 interface StudentItem {
 	id: string;
-	firstName: string;
-	lastName: string;
 	registrationNumber: string;
-	birthDate: string | null;
-	birthPlace: string | null;
-	gender: string | null;
+	profile: {
+		firstName: string;
+		lastName: string;
+		dateOfBirth: string | null;
+		placeOfBirth: string | null;
+		gender: string | null;
+	};
 }
 
 interface GradeItem {
@@ -80,20 +77,8 @@ export default function GradeExport() {
 	const [selectedYear, setSelectedYear] = useState("");
 	const [selectedClass, setSelectedClass] = useState("");
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
-	const yearId = useId();
 	const classId = useId();
 	const { t } = useTranslation();
-
-	const { data: academicYears } = useQuery({
-		queryKey: ["academicYears"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return (items as AcademicYear[]).sort(
-				(a, b) =>
-					new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-			);
-		},
-	});
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes", selectedYear],
@@ -171,7 +156,9 @@ export default function GradeExport() {
 						});
 					const grades = await Promise.all(
 						gradeItems.map(async (g: GradeItem) => {
-							const exam = await trpcClient.exams.getById.query({ id: g.exam });
+							const exam = await trpcClient.exams.getById.query({
+								id: g.exam,
+							});
 							const classCourse = await trpcClient.classCourses.getById.query({
 								id: exam.classCourse,
 							});
@@ -183,25 +170,33 @@ export default function GradeExport() {
 								exam: {
 									id: exam.id,
 									percentage: Number(exam.percentage),
-									class_course: { course: { name: course.name } },
+									class_course: {
+										course: { name: course.name },
+									},
 								},
 							};
 						}),
 					);
 					return {
 						id: s.id,
-						first_name: s.firstName,
-						last_name: s.lastName,
+						first_name: s.profile.firstName,
+						last_name: s.profile.lastName,
 						registration_number: s.registrationNumber,
-						birth_date: s.birthDate ?? null,
-						birth_place: s.birthPlace ?? null,
-						gender: s.gender ?? null,
+						birth_date: s.profile.dateOfBirth ?? null,
+						birth_place: s.profile.placeOfBirth ?? null,
+						gender: s.profile.gender ?? null,
 						grades,
 					} as StudentExport;
 				}),
 			);
 
-			const exportData = students.map((student) => {
+			// Sort students alphabetically
+			const sortedStudents = students.sort((a, b) =>
+				a.last_name.localeCompare(b.last_name) ||
+				a.first_name.localeCompare(b.first_name),
+			);
+
+			const exportData = sortedStudents.map((student) => {
 				const courseGrades = new Map<string, number[]>();
 				student.grades.forEach((grade) => {
 					const courseName = grade.exam.class_course.course.name;
@@ -258,35 +253,20 @@ export default function GradeExport() {
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				<div className="space-y-2">
-					<Label htmlFor={yearId} className="font-medium text-sm">
+					<Label className="font-medium text-sm">
 						{t("teacher.gradeExport.filters.academicYear")}
 					</Label>
-					<Select
-						value={selectedYear}
-						onValueChange={(value) => {
+					<AcademicYearSelect
+						value={selectedYear || null}
+						onChange={(value) => {
 							setSelectedYear(value);
 							setSelectedClass("");
 							setSelectedExams([]);
 						}}
-					>
-						<SelectTrigger
-							id={yearId}
-							aria-label={t("teacher.gradeExport.filters.academicYear")}
-						>
-							<SelectValue
-								placeholder={t(
-									"teacher.gradeExport.filters.academicYearPlaceholder",
-								)}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{academicYears?.map((year) => (
-								<SelectItem key={year.id} value={year.id}>
-									{year.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder={t(
+							"teacher.gradeExport.filters.academicYearPlaceholder",
+						)}
+					/>
 				</div>
 
 				<div className="space-y-2">

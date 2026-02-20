@@ -76,7 +76,9 @@ export default function StudentManagement() {
 		queryFn: async () => {
 			if (!previousYear) return [];
 			const [classRes, programRes] = await Promise.all([
-				trpcClient.classes.list.query({ academicYearId: previousYear.id }),
+				trpcClient.classes.list.query({
+					academicYearId: previousYear.id,
+				}),
 				trpcClient.programs.list.query({}),
 			]);
 			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
@@ -95,7 +97,9 @@ export default function StudentManagement() {
 		queryFn: async () => {
 			if (!activeYear) return [];
 			const [classRes, programRes] = await Promise.all([
-				trpcClient.classes.list.query({ academicYearId: activeYear.id }),
+				trpcClient.classes.list.query({
+					academicYearId: activeYear.id,
+				}),
 				trpcClient.programs.list.query({}),
 			]);
 			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
@@ -126,7 +130,9 @@ export default function StudentManagement() {
 						});
 					const grades = await Promise.all(
 						gradeItems.map(async (g) => {
-							const exam = await trpcClient.exams.getById.query({ id: g.exam });
+							const exam = await trpcClient.exams.getById.query({
+								id: g.exam,
+							});
 							const classCourse = await trpcClient.classCourses.getById.query({
 								id: exam.classCourse,
 							});
@@ -137,7 +143,9 @@ export default function StudentManagement() {
 								score: Number(g.score),
 								exams: {
 									percentage: Number(exam.percentage),
-									class_courses: { courses: { name: course.name } },
+									class_courses: {
+										courses: { name: course.name },
+									},
 								},
 							};
 						}),

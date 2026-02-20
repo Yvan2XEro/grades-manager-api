@@ -338,9 +338,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 				.click();
 
 			// Should show roster dialog
-			cy.contains(/course.*roster|roster.*cours/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/course.*roster|roster.*cours/i, {
+				timeout: 5000,
+			}).should("exist");
 			cy.contains(/managing|gérer/i).should("exist");
 		});
 
@@ -378,9 +378,9 @@ describe("Enrollment Management - Individual Enrollment", () => {
 						.first()
 						.click();
 
-					cy.contains(/withdrawn|retiré|success/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/withdrawn|retiré|success/i, {
+						timeout: 10000,
+					}).should("exist");
 				} else {
 					cy.log("No withdraw button - might be view-only roster");
 				}

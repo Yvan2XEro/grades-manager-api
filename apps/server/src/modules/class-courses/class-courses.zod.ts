@@ -5,7 +5,11 @@ export const baseSchema = z.object({
 	class: z.string(),
 	course: z.string(),
 	teacher: z.string(),
-	weeklyHours: z.number().int().positive().default(1),
+	/** Coefficient for weighted average calculation within a Teaching Unit (UE).
+	 * Default is 1.0, meaning equal weight for all courses.
+	 * Used to calculate: UE_average = Σ(EC_grade × coefficient) / Σ(coefficient)
+	 */
+	coefficient: z.number().positive().default(1),
 	allowTeacherOverride: z.boolean().optional(),
 	semesterId: z.string().optional(),
 });
@@ -16,6 +20,8 @@ export const listSchema = z.object({
 	classId: z.string().optional(),
 	courseId: z.string().optional(),
 	teacherId: z.string().optional(),
+	academicYearId: z.string().optional(),
+	semesterId: z.string().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

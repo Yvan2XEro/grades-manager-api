@@ -41,7 +41,6 @@ authUsers:
 domainUsers:
   - code: ADMIN-ROOT
     authUserCode: ADMIN-ROOT
-    businessRole: administrator
     firstName: Administrateur
     lastName: INSES
     primaryEmail: admin@inses.cm
@@ -50,46 +49,44 @@ domainUsers:
     memberRole: owner
   - code: TEACH-DR-MBALLA
     authUserCode: TEACH-DR-MBALLA
-    businessRole: teacher
     firstName: Jean
     lastName: Mballa
     primaryEmail: dr.mballa@inses.cm
     status: active
     organizationSlug: inses-institution
+    memberRole: teacher
   - code: TEACH-DR-NGUEMA
     authUserCode: TEACH-DR-NGUEMA
-    businessRole: teacher
     firstName: Marie
     lastName: Nguema
     primaryEmail: dr.nguema@inses.cm
     status: active
     organizationSlug: inses-institution
+    memberRole: teacher
   - code: TEACH-INF-AKONO
     authUserCode: TEACH-INF-AKONO
-    businessRole: teacher
     firstName: Patricia
     lastName: Akono
     primaryEmail: inf.akono@inses.cm
     status: active
     organizationSlug: inses-institution
+    memberRole: teacher
   - code: TEACH-KOMBO
     authUserCode: TEACH-KOMBO
-    businessRole: teacher
     firstName: Francis
     lastName: Kombo
     primaryEmail: kombo@inses.cm
     status: active
     organizationSlug: inses-institution
+    memberRole: teacher
   - code: STUDENT-NDONG
     authUserCode: STUDENT-NDONG
-    businessRole: student
     firstName: Alain
     lastName: Ndong
     primaryEmail: ndong.student@inses.cm
     status: active
   - code: STUDENT-EYEBE
     authUserCode: STUDENT-EYEBE
-    businessRole: student
     firstName: Rachel
     lastName: Eyebe
     primaryEmail: eyebe.student@inses.cm

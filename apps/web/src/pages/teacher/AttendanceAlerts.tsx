@@ -31,7 +31,9 @@ const AttendanceAlerts = () => {
 			}),
 		onSuccess: () => {
 			toast.success(
-				t("teacher.attendance.toast.sent", { defaultValue: "Alert queued" }),
+				t("teacher.attendance.toast.sent", {
+					defaultValue: "Alert queued",
+				}),
 			);
 			setMessage("");
 		},
@@ -112,7 +114,9 @@ const AttendanceAlerts = () => {
 							onClick={() => sendAlert.mutate()}
 						>
 							<BellRing className="mr-2 h-4 w-4" />
-							{t("teacher.attendance.send", { defaultValue: "Send alert" })}
+							{t("teacher.attendance.send", {
+								defaultValue: "Send alert",
+							})}
 						</Button>
 					</CardContent>
 				</Card>

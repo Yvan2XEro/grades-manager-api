@@ -39,9 +39,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show success
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 		});
 
 		it("displays created exam in the list", () => {
@@ -115,9 +115,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show validation error
-			cy.contains(/required|obligatoire|exam.*type/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/required|obligatoire|exam.*type/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("requires date", () => {
@@ -208,9 +208,9 @@ describe("Exam Management - Manual Creation", () => {
 			}).click();
 
 			// Should show validation error
-			cy.contains(/positive|greater.*0|supérieur/i, { timeout: 5000 }).should(
-				"exist",
-			);
+			cy.contains(/positive|greater.*0|supérieur/i, {
+				timeout: 5000,
+			}).should("exist");
 		});
 
 		it("validates date format", () => {

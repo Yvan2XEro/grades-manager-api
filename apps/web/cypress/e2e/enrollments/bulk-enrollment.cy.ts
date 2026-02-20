@@ -23,7 +23,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			}).click();
 
 			// Confirm
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should show success message
 			cy.contains(/class.*roster.*synced|enrolled|inscrit|success/i, {
@@ -45,12 +47,14 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should show count (e.g., "5 students enrolled")
-			cy.contains(/\d+.*student|\d+.*étudiant/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/\d+.*student|\d+.*étudiant/i, {
+				timeout: 15000,
+			}).should("exist");
 		});
 
 		it("handles already enrolled students gracefully", () => {
@@ -68,7 +72,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -78,7 +84,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should handle gracefully (skip already enrolled or show message)
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -104,7 +112,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -137,9 +147,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 
 			// Should show confirmation dialog
 			cy.contains(/confirm|confirmer/i, { timeout: 5000 }).should("exist");
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).should(
-				"exist",
-			);
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).should("exist");
 		});
 
 		it("displays enrollment summary in confirmation", () => {
@@ -184,9 +194,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", { name: /cancel|annuler/i }).click();
 
 			// Should close dialog without enrolling
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).should(
-				"not.exist",
-			);
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).should("not.exist");
 		});
 	});
 
@@ -205,7 +215,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should show summary/report
 			cy.contains(/enrolled|inscrit|synced|success/i, {
@@ -235,7 +247,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -245,7 +259,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should report that students were already enrolled
 			cy.get("body", { timeout: 10000 }).then(($body) => {
@@ -274,7 +290,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 20000 }).then(() => {
 				const duration = Date.now() - startTime;
@@ -297,7 +315,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			// Should show loading state
 			cy.get("body").then(($body) => {
@@ -402,7 +422,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -431,7 +453,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -463,7 +487,9 @@ describe("Enrollment Management - Bulk Enrollment", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",

@@ -1,6 +1,6 @@
 # Guide d'utilisation - TKAMS
 
-Ce répertoire contient le guide d'utilisation complet de **TKAMS (TK Academic Management System)** au format LaTeX.
+Ce répertoire contient le guide d'utilisation complet de **TKAMS (Tefoye and Kana Academic Management System)** au format LaTeX.
 
 TKAMS est un système de gestion académique destiné aux institutions d'enseignement supérieur (facultés, universités, instituts).
 

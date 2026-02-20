@@ -1,6 +1,6 @@
 # Documentation - TKAMS
 
-Ce dossier contient toute la documentation de **TKAMS (TK Academic Management System)**.
+Ce dossier contient toute la documentation de **TKAMS (Tefoye and Kana Academic Management System)**.
 
 TKAMS est un système de gestion académique pour institutions d'enseignement supérieur (facultés, universités, instituts).
 

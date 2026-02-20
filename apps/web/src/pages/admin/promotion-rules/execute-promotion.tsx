@@ -58,7 +58,10 @@ export function ExecutePromotionPage() {
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
-		queryFn: async () => trpcClient.classes.list.query({}),
+		queryFn: async () => {
+			const { items } = await trpcClient.classes.list.query({});
+			return items;
+		},
 	});
 
 	// Mutation
@@ -203,7 +206,7 @@ export function ExecutePromotionPage() {
 								<SelectValue placeholder="Select the next class level" />
 							</SelectTrigger>
 							<SelectContent>
-								{classes?.items
+								{classes
 									.filter((cls) => cls.id !== state.sourceClassId)
 									.map((cls) => (
 										<SelectItem key={cls.id} value={cls.id}>
@@ -229,7 +232,7 @@ export function ExecutePromotionPage() {
 							<ArrowRight className="h-8 w-8 text-primary" />
 							<div className="text-center">
 								<div className="font-semibold">
-									{classes?.items.find((c) => c.id === targetClassId)?.name}
+									{classes.find((c) => c.id === targetClassId)?.name}
 								</div>
 								<Badge variant="default" className="mt-1">
 									Target
@@ -278,7 +281,7 @@ export function ExecutePromotionPage() {
 							<strong>{state.studentIds.length}</strong> student(s) from{" "}
 							<strong>{sourceClass?.name}</strong> to{" "}
 							<strong>
-								{classes?.items.find((c) => c.id === targetClassId)?.name}
+								{classes.find((c) => c.id === targetClassId)?.name}
 							</strong>
 							.
 							<br />

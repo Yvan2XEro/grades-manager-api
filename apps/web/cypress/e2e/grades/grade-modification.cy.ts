@@ -13,7 +13,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Enter initial grades
@@ -38,7 +40,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// The previously entered grade should be loaded
@@ -58,7 +62,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			cy.get(
@@ -98,7 +104,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			cy.get(
@@ -134,7 +142,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Should show the updated grade
@@ -154,7 +164,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			cy.get(
@@ -195,7 +207,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			cy.get(
@@ -255,7 +269,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			const initialGrades = ["14", "15", "16"];
@@ -301,7 +317,9 @@ describe("Grade Modification", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			cy.get(

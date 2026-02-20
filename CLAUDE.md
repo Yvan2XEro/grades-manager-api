@@ -32,7 +32,7 @@ bun db:migrate                 # Run migrations
 ### Seeding
 ```bash
 bun run --filter server seed:scaffold   # Generate sample dataset templates (writes to seed/local)
-bun run --filter server seed             # Populate database from YAML files in seed/local
+bun run --filter server seed             # Populate database from YAML files (includes org linking)
 ```
 
 ### Code Quality

@@ -13,7 +13,7 @@ import { appRouter } from "@/routers";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
-	describe("exam grade delegation", () => {
+describe("exam grade delegation", () => {
 	beforeAll(async () => {
 		await setupTestInstitution();
 	});
@@ -34,7 +34,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",
@@ -93,7 +93,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",
@@ -112,10 +112,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 			score: 150,
 		});
 		let logs = await db.query.gradeEditLogs.findMany({
-			where: eq(
-				schema.gradeEditLogs.actorProfileId,
-				delegateProfile.id,
-			),
+			where: eq(schema.gradeEditLogs.actorProfileId, delegateProfile.id),
 		});
 		expect(logs).toHaveLength(1);
 		expect(logs[0]?.action).toBe("write");
@@ -126,10 +123,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 			score: 160,
 		});
 		logs = await db.query.gradeEditLogs.findMany({
-			where: eq(
-				schema.gradeEditLogs.actorProfileId,
-				delegateProfile.id,
-			),
+			where: eq(schema.gradeEditLogs.actorProfileId, delegateProfile.id),
 		});
 		expect(logs).toHaveLength(2);
 
@@ -137,10 +131,7 @@ const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 			id: written.id,
 		});
 		logs = await db.query.gradeEditLogs.findMany({
-			where: eq(
-				schema.gradeEditLogs.actorProfileId,
-				delegateProfile.id,
-			),
+			where: eq(schema.gradeEditLogs.actorProfileId, delegateProfile.id),
 		});
 		expect(logs).toHaveLength(3);
 		expect(logs.some((log) => log.action === "delete")).toBe(true);

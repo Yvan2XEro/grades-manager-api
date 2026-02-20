@@ -50,11 +50,7 @@ export const router = createRouter({
 	deleteNote: tenantProtectedProcedure
 		.input(idSchema)
 		.mutation(({ ctx, input }) =>
-			service.deleteNote(
-				input.id,
-				ctx.institution.id,
-				actorFromCtx(ctx),
-			),
+			service.deleteNote(input.id, ctx.institution.id, actorFromCtx(ctx)),
 		),
 	importCsv: tenantProtectedProcedure
 		.input(importCsvSchema)

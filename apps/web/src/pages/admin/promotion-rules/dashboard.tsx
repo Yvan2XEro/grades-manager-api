@@ -200,7 +200,9 @@ export function PromotionRulesDashboard() {
 												<div className="font-medium">
 													{t(
 														"admin.promotionRules.dashboard.recentActivity.studentsPromoted",
-														{ count: execution.studentsPromoted },
+														{
+															count: execution.studentsPromoted,
+														},
 													)}
 												</div>
 												<div className="text-muted-foreground text-sm">

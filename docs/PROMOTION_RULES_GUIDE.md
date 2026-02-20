@@ -27,7 +27,7 @@ Complete implementation of automated student promotion system with modern UI.
 ### 1. Apply Database Schema
 
 ```bash
-cd /home/yvan/Workspaces/Projects/sgn/grades-manager-api
+cd /home/yvan/Workspaces/Projects/sgn/tkams
 bun db:push
 ```
 

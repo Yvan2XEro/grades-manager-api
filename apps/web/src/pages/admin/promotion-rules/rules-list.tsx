@@ -173,8 +173,16 @@ export function RulesListPage() {
 		name: "default-promotion-rule",
 		conditions: {
 			all: [
-				{ fact: "overallAverage", operator: "greaterThanInclusive", value: 10 },
-				{ fact: "creditsEarned", operator: "greaterThanInclusive", value: 30 },
+				{
+					fact: "overallAverage",
+					operator: "greaterThanInclusive",
+					value: 10,
+				},
+				{
+					fact: "creditsEarned",
+					operator: "greaterThanInclusive",
+					value: 30,
+				},
 				{ fact: "eliminatoryFailures", operator: "equal", value: 0 },
 			],
 		},
@@ -211,7 +219,9 @@ export function RulesListPage() {
 							variant="outline"
 							size="icon"
 							onClick={() =>
-								queryClient.invalidateQueries({ queryKey: ["promotionRules"] })
+								queryClient.invalidateQueries({
+									queryKey: ["promotionRules"],
+								})
 							}
 						>
 							<RefreshCw className="h-4 w-4" />

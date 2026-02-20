@@ -322,7 +322,11 @@ const AcademicYearManagement: React.FC = () => {
 							type="button"
 							onClick={() => {
 								setEditingYear(null);
-								form.reset({ startDate: "", endDate: "", name: "" });
+								form.reset({
+									startDate: "",
+									endDate: "",
+									name: "",
+								});
 								setIsModalOpen(true);
 							}}
 						>

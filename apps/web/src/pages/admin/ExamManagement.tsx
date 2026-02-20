@@ -7,15 +7,23 @@ import {
 } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+	Check,
+	ClipboardList,
+	MoreHorizontal,
+	Pencil,
+	Plus,
+	RefreshCw,
+	Send,
+	Trash2,
+	X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Checkbox } from "../../components/ui/checkbox";
 import { useRowSelection } from "../../hooks/useRowSelection";
@@ -25,6 +33,8 @@ import {
 	DebouncedSearchField,
 	SemesterSelect,
 } from "@/components/inputs";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -35,6 +45,13 @@ import {
 	CardTitle,
 } from "../../components/ui/card";
 import { DialogFooter } from "../../components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
 import {
 	Empty,
 	EmptyContent,
@@ -69,7 +86,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { trpc, trpcClient, type RouterOutputs } from "../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
@@ -87,6 +104,15 @@ const buildExamSchema = (t: TFunction) =>
 
 type ExamFormData = z.infer<ReturnType<typeof buildExamSchema>>;
 
+const buildRetakeSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().optional(),
+		date: z.string().min(1, t("admin.exams.validation.date")),
+		scoringPolicy: z.enum(["replace", "best_of"]).default("replace"),
+	});
+
+type RetakeFormData = z.infer<ReturnType<typeof buildRetakeSchema>>;
+
 interface Exam {
 	id: string;
 	name: string;
@@ -98,6 +124,9 @@ interface Exam {
 	classCourseCode?: string | null;
 	className?: string | null;
 	courseName?: string | null;
+	sessionType?: "normal" | "retake";
+	parentExamId?: string | null;
+	status?: string;
 }
 
 interface ClassCourse {
@@ -119,7 +148,9 @@ interface Course {
 export default function ExamManagement() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isRetakeFormOpen, setIsRetakeFormOpen] = useState(false);
 	const [editingExam, setEditingExam] = useState<Exam | null>(null);
+	const [retakeParentExam, setRetakeParentExam] = useState<Exam | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
@@ -133,6 +164,7 @@ export default function ExamManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
+	const retakeSchema = useMemo(() => buildRetakeSchema(t), [t]);
 
 	const examsQuery = useInfiniteQuery({
 		queryKey: ["exams", academicYearId, searchTerm, classId, semesterId],
@@ -201,6 +233,13 @@ export default function ExamManagement() {
 
 	const form = useForm<ExamFormData>({
 		resolver: zodResolver(examSchema),
+	});
+
+	const retakeForm = useForm<RetakeFormData>({
+		resolver: zodResolver(retakeSchema),
+		defaultValues: {
+			scoringPolicy: "replace",
+		},
 	});
 
 	const classMap = new Map((classes ?? []).map((c) => [c.id, c.name]));
@@ -287,12 +326,100 @@ export default function ExamManagement() {
 		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
 	});
 
+	const createRetakeMutation = useMutation({
+		mutationFn: async (data: RetakeFormData & { parentExamId: string }) => {
+			await trpcClient.exams.createRetake.mutate({
+				parentExamId: data.parentExamId,
+				name: data.name || undefined,
+				date: new Date(data.date),
+				scoringPolicy: data.scoringPolicy,
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			toast.success(t("admin.exams.toast.retakeSuccess"));
+			setIsRetakeFormOpen(false);
+			setRetakeParentExam(null);
+			retakeForm.reset();
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.retakeError");
+			toast.error(message);
+		},
+	});
+
+	const submitExamMutation = useMutation({
+		mutationFn: async (examId: string) => {
+			await trpcClient.exams.submit.mutate({ examId });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			toast.success(t("admin.exams.toast.submitSuccess"));
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.submitError");
+			toast.error(message);
+		},
+	});
+
+	const validateExamMutation = useMutation({
+		mutationFn: async ({
+			examId,
+			status,
+		}: {
+			examId: string;
+			status: "approved" | "rejected";
+		}) => {
+			await trpcClient.exams.validate.mutate({ examId, status });
+		},
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			if (variables.status === "approved") {
+				toast.success(t("admin.exams.toast.approveSuccess"));
+			} else {
+				toast.success(t("admin.exams.toast.rejectSuccess"));
+			}
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.exams.toast.validateError");
+			toast.error(message);
+		},
+	});
+
 	const onSubmit = async (data: ExamFormData) => {
 		if (editingExam) {
 			updateMutation.mutate({ ...data, id: editingExam.id });
 		} else {
 			createMutation.mutate(data);
 		}
+	};
+
+	const onRetakeSubmit = async (data: RetakeFormData) => {
+		if (retakeParentExam) {
+			createRetakeMutation.mutate({
+				...data,
+				parentExamId: retakeParentExam.id,
+			});
+		}
+	};
+
+	const openRetakeModal = (exam: Exam) => {
+		setRetakeParentExam(exam);
+		retakeForm.reset({
+			name: `${exam.name} - ${t("retakes.badge.retake")}`,
+			date: "",
+			scoringPolicy: "replace",
+		});
+		setIsRetakeFormOpen(true);
 	};
 
 	const openDeleteModal = (id: string) => {
@@ -304,6 +431,15 @@ export default function ExamManagement() {
 		if (deleteId) {
 			deleteMutation.mutate(deleteId);
 		}
+	};
+
+	// Check if exam can have a retake created (must be normal, approved, and not already have a retake)
+	const canCreateRetake = (exam: Exam) => {
+		return (
+			exam.sessionType !== "retake" &&
+			exam.status === "approved" &&
+			!exams.some((e) => e.parentExamId === exam.id)
+		);
 	};
 
 	return (
@@ -345,7 +481,7 @@ export default function ExamManagement() {
 					</Button>
 				</CardHeader>
 				<CardContent>
-					<div className="mb-6 gap-4 flex flex-row-reverse items-center">
+					<div className="mb-6 flex flex-row-reverse items-center gap-4">
 						<div className="flex items-center gap-3">
 							<div className="flex flex-col gap-2">
 								<Label>{t("admin.exams.filters.academicYear")}</Label>
@@ -370,7 +506,7 @@ export default function ExamManagement() {
 							</div>
 						</div>
 
-						<div className="flex flex-col gap-2 flex-auto">
+						<div className="flex flex-auto flex-col gap-2">
 							<Label>{t("admin.exams.filters.search")}</Label>
 							<DebouncedSearchField
 								value={searchTerm}
@@ -459,6 +595,7 @@ export default function ExamManagement() {
 													? classMap.get(classCourse.class)
 													: null) ??
 												t("common.labels.notAvailable");
+											const isRetake = exam.sessionType === "retake";
 											return (
 												<TableRow key={exam.id}>
 													<TableCell className="w-10">
@@ -468,7 +605,17 @@ export default function ExamManagement() {
 														/>
 													</TableCell>
 													<TableCell className="font-medium">
-														{exam.name}
+														<div className="flex items-center gap-2">
+															{exam.name}
+															{isRetake && (
+																<Badge
+																	variant="outline"
+																	className="border-amber-500 text-amber-600"
+																>
+																	{t("retakes.badge.retake")}
+																</Badge>
+															)}
+														</div>
 													</TableCell>
 													<TableCell>{resolvedCourse}</TableCell>
 													<TableCell>{resolvedClass}</TableCell>
@@ -479,59 +626,140 @@ export default function ExamManagement() {
 													<TableCell>{exam.percentage}%</TableCell>
 													<TableCell>
 														<Badge
-															variant={exam.isLocked ? "secondary" : "default"}
+															variant="outline"
 															className={
-																exam.isLocked
-																	? "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-400/20 dark:text-amber-100"
-																	: "bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-400/20 dark:text-emerald-100"
+																exam.status === "approved"
+																	? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-100"
+																	: exam.status === "submitted"
+																		? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-400/20 dark:text-blue-100"
+																		: exam.status === "rejected"
+																			? "border-red-500 bg-red-50 text-red-700 dark:bg-red-400/20 dark:text-red-100"
+																			: "border-gray-400 bg-gray-50 text-gray-700 dark:bg-gray-400/20 dark:text-gray-100"
 															}
 														>
-															{exam.isLocked
-																? t("admin.exams.status.locked")
-																: t("admin.exams.status.open")}
+															{t(
+																`admin.exams.status.${exam.status || "draft"}`,
+															)}
 														</Badge>
+														{exam.isLocked && (
+															<Badge
+																variant="secondary"
+																className="ml-1 bg-amber-100 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100"
+															>
+																{t("admin.exams.status.locked")}
+															</Badge>
+														)}
 													</TableCell>
 													<TableCell className="text-right">
-														<div className="flex flex-wrap justify-end gap-2">
-															<Button variant="ghost" size="sm" asChild>
-																<Link
-																	to={`/teacher/grades/${exam.classCourse}?examId=${exam.id}`}
+														<DropdownMenu>
+															<DropdownMenuTrigger asChild>
+																<Button variant="ghost" size="icon-sm">
+																	<MoreHorizontal className="h-4 w-4" />
+																	<span className="sr-only">
+																		{t("common.table.actions")}
+																	</span>
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent align="end">
+																{/* Review Grades */}
+																<DropdownMenuItem asChild>
+																	<Link
+																		to={`/teacher/grades/${exam.classCourse}?examId=${exam.id}`}
+																	>
+																		<ClipboardList className="mr-2 h-4 w-4" />
+																		{t("admin.exams.actions.reviewGrades")}
+																	</Link>
+																</DropdownMenuItem>
+
+																{/* Edit */}
+																<DropdownMenuItem
+																	onClick={() => {
+																		setEditingExam(exam);
+																		form.reset({
+																			name: exam.name,
+																			type: exam.type,
+																			date: exam.date.split("T")[0],
+																			percentage: exam.percentage,
+																			classCourseId: exam.classCourse,
+																		});
+																		setIsFormOpen(true);
+																	}}
+																	disabled={exam.isLocked}
 																>
-																	{t("admin.exams.actions.reviewGrades")}
-																</Link>
-															</Button>
-															<Button
-																type="button"
-																size="icon-sm"
-																variant="ghost"
-																onClick={() => {
-																	setEditingExam(exam);
-																	form.reset({
-																		name: exam.name,
-																		type: exam.type,
-																		date: exam.date.split("T")[0],
-																		percentage: exam.percentage,
-																		classCourseId: exam.classCourse,
-																	});
-																	setIsFormOpen(true);
-																}}
-																aria-label={t("admin.exams.form.editTitle")}
-																disabled={exam.isLocked}
-															>
-																<Pencil className="h-4 w-4" />
-															</Button>
-															<Button
-																type="button"
-																size="icon-sm"
-																variant="ghost"
-																className="text-destructive hover:text-destructive"
-																onClick={() => openDeleteModal(exam.id)}
-																aria-label={t("admin.exams.delete.title")}
-																disabled={exam.isLocked}
-															>
-																<Trash2 className="h-4 w-4" />
-															</Button>
-														</div>
+																	<Pencil className="mr-2 h-4 w-4" />
+																	{t("common.actions.edit")}
+																</DropdownMenuItem>
+
+																<DropdownMenuSeparator />
+
+																{/* Workflow actions */}
+																{(exam.status === "draft" ||
+																	exam.status === "scheduled") && (
+																	<DropdownMenuItem
+																		onClick={() =>
+																			submitExamMutation.mutate(exam.id)
+																		}
+																		disabled={submitExamMutation.isPending}
+																	>
+																		<Send className="mr-2 h-4 w-4" />
+																		{t("admin.exams.actions.submit")}
+																	</DropdownMenuItem>
+																)}
+
+																{exam.status === "submitted" && (
+																	<>
+																		<DropdownMenuItem
+																			onClick={() =>
+																				validateExamMutation.mutate({
+																					examId: exam.id,
+																					status: "approved",
+																				})
+																			}
+																			disabled={validateExamMutation.isPending}
+																			className="text-emerald-600 focus:text-emerald-600"
+																		>
+																			<Check className="mr-2 h-4 w-4" />
+																			{t("admin.exams.actions.approve")}
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() =>
+																				validateExamMutation.mutate({
+																					examId: exam.id,
+																					status: "rejected",
+																				})
+																			}
+																			disabled={validateExamMutation.isPending}
+																			className="text-red-600 focus:text-red-600"
+																		>
+																			<X className="mr-2 h-4 w-4" />
+																			{t("admin.exams.actions.reject")}
+																		</DropdownMenuItem>
+																	</>
+																)}
+
+																{/* Create Retake */}
+																{canCreateRetake(exam) && (
+																	<DropdownMenuItem
+																		onClick={() => openRetakeModal(exam)}
+																	>
+																		<RefreshCw className="mr-2 h-4 w-4" />
+																		{t("retakes.actions.createRetake")}
+																	</DropdownMenuItem>
+																)}
+
+																<DropdownMenuSeparator />
+
+																{/* Delete */}
+																<DropdownMenuItem
+																	onClick={() => openDeleteModal(exam.id)}
+																	disabled={exam.isLocked}
+																	className="text-destructive focus:text-destructive"
+																>
+																	<Trash2 className="mr-2 h-4 w-4" />
+																	{t("common.actions.delete")}
+																</DropdownMenuItem>
+															</DropdownMenuContent>
+														</DropdownMenu>
 													</TableCell>
 												</TableRow>
 											);
@@ -715,6 +943,126 @@ export default function ExamManagement() {
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
+
+			{/* Retake Creation Modal */}
+			<FormModal
+				isOpen={isRetakeFormOpen}
+				onClose={() => {
+					setIsRetakeFormOpen(false);
+					setRetakeParentExam(null);
+					retakeForm.reset();
+				}}
+				title={t("retakes.form.title")}
+			>
+				<Form {...retakeForm}>
+					<form
+						onSubmit={retakeForm.handleSubmit(onRetakeSubmit)}
+						className="space-y-4"
+					>
+						{retakeParentExam && (
+							<div className="rounded-md border bg-muted/50 p-4">
+								<p className="text-muted-foreground text-sm">
+									{t("retakes.form.parentExamLabel")}
+								</p>
+								<p className="font-medium">{retakeParentExam.name}</p>
+								<p className="text-muted-foreground text-sm">
+									{retakeParentExam.courseName} - {retakeParentExam.className}
+								</p>
+							</div>
+						)}
+
+						<FormField
+							control={retakeForm.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("retakes.form.nameLabel")}</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={
+												retakeParentExam
+													? `${retakeParentExam.name} - ${t("retakes.badge.retake")}`
+													: t("retakes.form.namePlaceholder")
+											}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={retakeForm.control}
+							name="date"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
+									<FormControl>
+										<Input type="date" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={retakeForm.control}
+							name="scoringPolicy"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("retakes.form.scoringPolicyLabel")}</FormLabel>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											<SelectItem value="replace">
+												{t("retakes.scoringPolicy.replace")}
+											</SelectItem>
+											<SelectItem value="best_of">
+												{t("retakes.scoringPolicy.best_of")}
+											</SelectItem>
+										</SelectContent>
+									</Select>
+									<p className="text-muted-foreground text-sm">
+										{field.value === "replace"
+											? t("retakes.scoringPolicy.replaceDescription")
+											: t("retakes.scoringPolicy.best_ofDescription")}
+									</p>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<DialogFooter className="gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsRetakeFormOpen(false);
+									setRetakeParentExam(null);
+									retakeForm.reset();
+								}}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button
+								type="submit"
+								disabled={retakeForm.formState.isSubmitting}
+							>
+								{retakeForm.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : (
+									t("retakes.form.submit")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
+			</FormModal>
 		</div>
 	);
 }

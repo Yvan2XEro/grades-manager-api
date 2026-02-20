@@ -20,7 +20,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -49,7 +51,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
@@ -77,7 +81,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -116,13 +122,15 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/completed|terminé|closed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/completed|terminé|closed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Verify student is still visible in the system
 					if (studentRegistrationNumber) {
@@ -146,7 +154,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -173,16 +183,20 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/completed|terminé|closed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/completed|terminé|closed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Try to open roster - should be read-only
-					cy.findAllByRole("button", { name: /open.*roster|voir.*roster/i })
+					cy.findAllByRole("button", {
+						name: /open.*roster|voir.*roster/i,
+					})
 						.first()
 						.click();
 
@@ -194,7 +208,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 
 						if (hasWithdrawButton) {
 							// Button should be disabled
-							cy.findAllByRole("button", { name: /withdraw|retirer/i })
+							cy.findAllByRole("button", {
+								name: /withdraw|retirer/i,
+							})
 								.first()
 								.should("be.disabled");
 						} else {
@@ -260,7 +276,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -287,13 +305,15 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/closed|fermé|completed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/closed|fermé|completed/i, {
+						timeout: 10000,
+					}).should("exist");
 				} else {
 					cy.log("Close window feature not found");
 				}
@@ -317,7 +337,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -342,13 +364,15 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/closed|fermé|completed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/closed|fermé|completed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Verify enrollment is prevented (button disabled, hidden, or not present)
 					cy.wait(1000);
@@ -396,7 +420,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -421,16 +447,20 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/closed|fermé|completed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/closed|fermé|completed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Open roster and check withdraw is disabled
-					cy.findAllByRole("button", { name: /open.*roster|voir.*roster/i })
+					cy.findAllByRole("button", {
+						name: /open.*roster|voir.*roster/i,
+					})
 						.first()
 						.click();
 
@@ -461,7 +491,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -486,16 +518,20 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/closed|fermé|completed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/closed|fermé|completed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Should still be able to view (but not modify)
-					cy.findAllByRole("button", { name: /open.*roster|voir.*roster/i })
+					cy.findAllByRole("button", {
+						name: /open.*roster|voir.*roster/i,
+					})
 						.first()
 						.click();
 
@@ -520,7 +556,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -546,7 +584,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 							).length > 0
 						) {
 							cy.log("Confirmation dialog shown");
-							cy.findByRole("button", { name: /confirm/i }).should("exist");
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).should("exist");
 						} else {
 							cy.log("No confirmation dialog - direct action");
 						}
@@ -569,7 +609,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -613,7 +655,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -639,7 +683,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 							).length > 0
 						) {
 							// Cancel the closure
-							cy.findByRole("button", { name: /cancel|annuler/i }).click();
+							cy.findByRole("button", {
+								name: /cancel|annuler/i,
+							}).click();
 
 							// Should remain open
 							cy.contains(/active|actif|open|ouvert/i).should("exist");
@@ -667,7 +713,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 			cy.findByRole("button", {
 				name: /enroll.*entire.*class|enroll.*all/i,
 			}).click();
-			cy.findByRole("button", { name: /confirm.*enrollment|confirm/i }).click();
+			cy.findByRole("button", {
+				name: /confirm.*enrollment|confirm/i,
+			}).click();
 
 			cy.contains(/enrolled|inscrit|synced/i, { timeout: 15000 }).should(
 				"exist",
@@ -693,13 +741,15 @@ describe("Enrollment Management - Enrollment Closure", () => {
 								'button:contains("Confirm"), button:contains("Confirmer")',
 							).length > 0
 						) {
-							cy.findByRole("button", { name: /confirm/i }).click();
+							cy.findByRole("button", {
+								name: /confirm/i,
+							}).click();
 						}
 					});
 
-					cy.contains(/closed|fermé|completed/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/closed|fermé|completed/i, {
+						timeout: 10000,
+					}).should("exist");
 
 					// Check for reopen button
 					cy.get("body").then(($body) => {
@@ -710,7 +760,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 						) {
 							cy.log("Reopen feature exists");
 
-							cy.findByRole("button", { name: /reopen|rouvrir/i }).click();
+							cy.findByRole("button", {
+								name: /reopen|rouvrir/i,
+							}).click();
 
 							// Check if confirmation dialog appears for reopen
 							cy.wait(1000);
@@ -720,7 +772,9 @@ describe("Enrollment Management - Enrollment Closure", () => {
 										'button:contains("Confirm"), button:contains("Confirmer")',
 									).length > 0
 								) {
-									cy.findByRole("button", { name: /confirm/i }).click();
+									cy.findByRole("button", {
+										name: /confirm/i,
+									}).click();
 								}
 							});
 

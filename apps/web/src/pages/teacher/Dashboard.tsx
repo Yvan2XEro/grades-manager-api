@@ -90,7 +90,9 @@ const TeacherDashboard: React.FC = () => {
 			let totalStudents = 0;
 
 			for (const cc of items) {
-				const klass = await trpcClient.classes.getById.query({ id: cc.class });
+				const klass = await trpcClient.classes.getById.query({
+					id: cc.class,
+				});
 				if (klass.academicYear !== activeYear.id) continue;
 
 				const [course, program, students, exams] = await Promise.all([

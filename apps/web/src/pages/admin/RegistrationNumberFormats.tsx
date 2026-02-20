@@ -53,7 +53,10 @@ const RegistrationNumberFormats = () => {
 
 	const activateMutation = useMutation({
 		mutationFn: (id: string) =>
-			trpcClient.registrationNumbers.update.mutate({ id, isActive: true }),
+			trpcClient.registrationNumbers.update.mutate({
+				id,
+				isActive: true,
+			}),
 		onSuccess: () => {
 			toast.success(
 				t("admin.registrationNumbers.toast.activated", {
@@ -164,7 +167,9 @@ const RegistrationNumberFormats = () => {
 										})}
 									</TableHead>
 									<TableHead className="text-right">
-										{t("common.table.actions", { defaultValue: "Actions" })}
+										{t("common.table.actions", {
+											defaultValue: "Actions",
+										})}
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -172,7 +177,9 @@ const RegistrationNumberFormats = () => {
 								{formatsQuery.isPending && (
 									<TableRow>
 										<TableCell colSpan={4}>
-											{t("common.loading", { defaultValue: "Loading..." })}
+											{t("common.loading", {
+												defaultValue: "Loading...",
+											})}
 										</TableCell>
 									</TableRow>
 								)}

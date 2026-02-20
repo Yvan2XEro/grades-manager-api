@@ -192,9 +192,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				}
 			});
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 		});
 
 		it("shows generation report after completion", () => {
@@ -211,9 +211,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show report with numbers
 			cy.get("body").then(($body) => {
@@ -237,9 +237,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show exam count
 			cy.contains(/\d+.*exam|\d+.*examen/i).should("exist");
@@ -324,9 +324,9 @@ describe("Exam Management - Automated Scheduling", () => {
 						name: /generate|schedule|create|planifier|générer/i,
 					}).click();
 
-					cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-						"exist",
-					);
+					cy.contains(/generated|created|success/i, {
+						timeout: 15000,
+					}).should("exist");
 
 					// Should show multiple classes in report
 					cy.get("body").then(($report) => {
@@ -356,9 +356,9 @@ describe("Exam Management - Automated Scheduling", () => {
 						name: /generate|schedule|create|planifier|générer/i,
 					}).click();
 
-					cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-						"exist",
-					);
+					cy.contains(/generated|created|success/i, {
+						timeout: 15000,
+					}).should("exist");
 
 					// All generated exams should follow same rules
 					cy.log("Exams generated with consistent rules");
@@ -382,9 +382,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show list of created exams
 			cy.get("body").then(($body) => {
@@ -410,9 +410,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show class/course information
 			cy.contains(/class|course|classe|cours/i).should("exist");
@@ -432,9 +432,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Should show dates
 			cy.get("body").then(($body) => {
@@ -460,9 +460,9 @@ describe("Exam Management - Automated Scheduling", () => {
 				name: /generate|schedule|create|planifier|générer/i,
 			}).click();
 
-			cy.contains(/generated|created|success/i, { timeout: 15000 }).should(
-				"exist",
-			);
+			cy.contains(/generated|created|success/i, {
+				timeout: 15000,
+			}).should("exist");
 
 			// Navigate to main exam list
 			cy.visit("/admin/exams");

@@ -1,5 +1,5 @@
-import type * as schema from "@/db/schema/app-schema";
 import * as repo from "./student-credit-ledger.repo";
+import { computeUeCredits } from "./compute-ue-credits";
 
 const DEFAULT_REQUIRED_CREDITS = 60;
 
@@ -11,18 +11,38 @@ export async function ensureLedger(
 	return repo.upsert(studentId, academicYearId, requiredCredits);
 }
 
-export async function applyDelta(
+/**
+ * Recompute the credit ledger for a student/year based on UE validation (LMD rules).
+ * This replaces the old delta-based approach.
+ */
+export async function recomputeForStudent(
 	studentId: string,
 	academicYearId: string,
-	deltaProgress: number,
-	deltaEarned: number,
+	passingGrade = 10,
 	requiredCredits = DEFAULT_REQUIRED_CREDITS,
 ) {
-	if (deltaProgress === 0 && deltaEarned === 0) {
-		return repo.upsert(studentId, academicYearId, requiredCredits);
-	}
+	const result = await computeUeCredits(studentId, academicYearId, passingGrade);
+	return repo.setCredits(
+		studentId,
+		academicYearId,
+		requiredCredits,
+		result.creditsInProgress,
+		result.creditsEarned,
+	);
+}
+
+/**
+ * Add transfer credits directly to a student's ledger.
+ * Transfer credits are always "earned" (already validated at another institution).
+ */
+export async function addTransferCredits(
+	studentId: string,
+	academicYearId: string,
+	transferCredits: number,
+	requiredCredits = DEFAULT_REQUIRED_CREDITS,
+) {
 	const ledger = await repo.upsert(studentId, academicYearId, requiredCredits);
-	return repo.applyDelta(ledger.id, deltaProgress, deltaEarned);
+	return repo.applyDelta(ledger.id, 0, transferCredits);
 }
 
 export async function listByStudent(studentId: string) {
@@ -48,16 +68,4 @@ export async function summarizeStudent(studentId: string) {
 		},
 	);
 	return { ledgers, ...totals };
-}
-
-export function contributionForStatus(
-	status: schema.StudentCourseEnrollmentStatus,
-	credits: number,
-) {
-	const isInProgress = status === "planned" || status === "active";
-	const isCompleted = status === "completed";
-	return {
-		inProgress: isInProgress ? credits : 0,
-		earned: isCompleted ? credits : 0,
-	};
 }

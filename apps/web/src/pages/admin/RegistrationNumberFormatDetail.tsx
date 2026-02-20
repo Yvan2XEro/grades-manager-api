@@ -100,7 +100,9 @@ const RegistrationNumberFormatDetail = () => {
 	const classesQuery = useQuery(trpc.classes.list.queryOptions({ limit: 100 }));
 
 	const formatsQuery = useQuery({
-		...trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
+		...trpc.registrationNumbers.list.queryOptions({
+			includeInactive: true,
+		}),
 		enabled: !isCreateMode,
 	});
 
@@ -235,7 +237,9 @@ const RegistrationNumberFormatDetail = () => {
 			);
 			invalidateList();
 			if (!draft.id) {
-				navigate(`/admin/registration-numbers/${result.id}`, { replace: true });
+				navigate(`/admin/registration-numbers/${result.id}`, {
+					replace: true,
+				});
 			} else {
 				setDraft((prev) => ({
 					...prev,
@@ -249,7 +253,9 @@ const RegistrationNumberFormatDetail = () => {
 	const deleteMutation = useMutation({
 		mutationFn: async () => {
 			if (!draft.id) return;
-			return trpcClient.registrationNumbers.delete.mutate({ id: draft.id });
+			return trpcClient.registrationNumbers.delete.mutate({
+				id: draft.id,
+			});
 		},
 		onSuccess: () => {
 			toast.success(
@@ -426,7 +432,10 @@ const RegistrationNumberFormatDetail = () => {
 									<Switch
 										checked={draft.isActive}
 										onCheckedChange={(checked) =>
-											setDraft((prev) => ({ ...prev, isActive: checked }))
+											setDraft((prev) => ({
+												...prev,
+												isActive: checked,
+											}))
 										}
 									/>
 								</div>
@@ -588,7 +597,9 @@ const RegistrationNumberFormatDetail = () => {
 												<Label>
 													{t(
 														"admin.registrationNumbers.segments.literalValue",
-														{ defaultValue: "Text value" },
+														{
+															defaultValue: "Text value",
+														},
 													)}
 												</Label>
 												<Input
@@ -609,7 +620,9 @@ const RegistrationNumberFormatDetail = () => {
 													<Label>
 														{t(
 															"admin.registrationNumbers.segments.fieldSelect",
-															{ defaultValue: "Select field" },
+															{
+																defaultValue: "Select field",
+															},
 														)}
 													</Label>
 													<Select
@@ -655,13 +668,17 @@ const RegistrationNumberFormatDetail = () => {
 															<SelectItem value="upper">
 																{t(
 																	"admin.registrationNumbers.segments.uppercase",
-																	{ defaultValue: "Uppercase" },
+																	{
+																		defaultValue: "Uppercase",
+																	},
 																)}
 															</SelectItem>
 															<SelectItem value="lower">
 																{t(
 																	"admin.registrationNumbers.segments.lowercase",
-																	{ defaultValue: "Lowercase" },
+																	{
+																		defaultValue: "Lowercase",
+																	},
 																)}
 															</SelectItem>
 															<SelectItem value="none">
@@ -717,7 +734,9 @@ const RegistrationNumberFormatDetail = () => {
 														<Label>
 															{t(
 																"admin.registrationNumbers.segments.counterWidth",
-																{ defaultValue: "Width" },
+																{
+																	defaultValue: "Width",
+																},
 															)}
 														</Label>
 														<Input
@@ -738,7 +757,9 @@ const RegistrationNumberFormatDetail = () => {
 														<Label>
 															{t(
 																"admin.registrationNumbers.segments.counterStart",
-																{ defaultValue: "Start value" },
+																{
+																	defaultValue: "Start value",
+																},
 															)}
 														</Label>
 														<Input
@@ -760,7 +781,9 @@ const RegistrationNumberFormatDetail = () => {
 													<Label>
 														{t(
 															"admin.registrationNumbers.segments.counterPad",
-															{ defaultValue: "Pad character" },
+															{
+																defaultValue: "Pad character",
+															},
 														)}
 													</Label>
 													<Input
@@ -778,7 +801,9 @@ const RegistrationNumberFormatDetail = () => {
 													<Label>
 														{t(
 															"admin.registrationNumbers.segments.counterScope",
-															{ defaultValue: "Counter scope" },
+															{
+																defaultValue: "Counter scope",
+															},
 														)}
 													</Label>
 													<div className="flex flex-wrap gap-3">
@@ -838,7 +863,9 @@ const RegistrationNumberFormatDetail = () => {
 										<SelectValue
 											placeholder={t(
 												"admin.registrationNumbers.preview.classPlaceholder",
-												{ defaultValue: "Select class" },
+												{
+													defaultValue: "Select class",
+												},
 											)}
 										/>
 									</SelectTrigger>

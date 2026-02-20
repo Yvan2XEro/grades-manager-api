@@ -6,7 +6,6 @@ import { and, asc, eq } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
-	BusinessRole,
 	DomainUserStatus,
 	EnrollmentStatus,
 	EnrollmentWindowStatus,
@@ -36,7 +35,11 @@ export type FoundationSeed = {
 		name: string;
 		logo?: string;
 	}>;
-	examTypes?: Array<{ name: string; description?: string }>;
+	examTypes?: Array<{
+		name: string;
+		description?: string;
+		defaultPercentage?: number;
+	}>;
 	faculties?: Array<{ code: string; name: string; description?: string }>;
 	studyCycles?: Array<{
 		code: string;
@@ -123,7 +126,6 @@ type ClassCourseSeed = {
 	courseCode: string;
 	teacherCode: string;
 	semesterCode?: string;
-	weeklyHours?: number;
 };
 
 type ExamSeed = {
@@ -192,7 +194,6 @@ type DomainUserSeed = {
 	code: string;
 	authUserCode?: string;
 	authUserEmail?: string;
-	businessRole: BusinessRole;
 	firstName: string;
 	lastName: string;
 	primaryEmail: string;
@@ -205,14 +206,6 @@ type DomainUserSeed = {
 	organizationSlug?: string;
 	memberRole?: OrganizationRoleName;
 };
-
-const STAFF_BUSINESS_ROLES: BusinessRole[] = [
-	"super_admin",
-	"administrator",
-	"dean",
-	"teacher",
-	"staff",
-];
 
 type StudentSeed = {
 	code: string;
@@ -314,7 +307,7 @@ type SeedState = {
 	pendingClassCourses: ClassCourseSeed[];
 	pendingExams: ExamSeed[];
 	authUsers: Map<string, string>;
-	domainUsers: Map<string, { id: string; businessRole: BusinessRole }>;
+	domainUsers: Map<string, { id: string }>;
 	students: Map<string, { id: string }>;
 };
 
@@ -549,7 +542,9 @@ async function seedFoundation(
 		// Resolve parent institution ID from code if provided
 		let parentInstitutionId: string | null = null;
 		if (entry.parentInstitutionCode) {
-			const parent = state.institutions.get(normalizeCode(entry.parentInstitutionCode));
+			const parent = state.institutions.get(
+				normalizeCode(entry.parentInstitutionCode),
+			);
 			if (!parent) {
 				throw new Error(
 					`Parent institution with code "${entry.parentInstitutionCode}" not found for institution ${entry.code}. Ensure parent institutions are defined before children.`,
@@ -632,11 +627,15 @@ async function seedFoundation(
 			.values({
 				name: entry.name,
 				description: entry.description ?? null,
+				defaultPercentage: entry.defaultPercentage ?? null,
 				institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.examTypes.institutionId, schema.examTypes.name],
-				set: { description: entry.description ?? null },
+				set: {
+					description: entry.description ?? null,
+					defaultPercentage: entry.defaultPercentage ?? null,
+				},
 			});
 	}
 	if (data.examTypes?.length) {
@@ -1225,13 +1224,7 @@ function resolveSeedOrganization(
 function determineMemberRole(
 	seed: DomainUserSeed,
 ): OrganizationRoleName | null {
-	if (seed.memberRole) {
-		return seed.memberRole;
-	}
-	if (!STAFF_BUSINESS_ROLES.includes(seed.businessRole)) {
-		return null;
-	}
-	return seed.businessRole;
+	return seed.memberRole ?? null;
 }
 
 async function seedUsers(
@@ -1259,27 +1252,28 @@ async function seedUsers(
 				? await findAuthUserIdByEmail(db, entry.authUserEmail)
 				: undefined) ??
 			null;
-		const [profile] = await db
-			.insert(schema.domainUsers)
-			.values({
-				authUserId,
-				businessRole: entry.businessRole,
-				firstName: entry.firstName,
-				lastName: entry.lastName,
-				primaryEmail: entry.primaryEmail,
-				phone: entry.phone ?? null,
-				dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
-				placeOfBirth: entry.placeOfBirth ?? null,
-				gender: entry.gender ?? null,
-				nationality: entry.nationality ?? null,
-				status: entry.status ?? "active",
-				updatedAt: now,
-			})
-			.onConflictDoUpdate({
-				target: schema.domainUsers.primaryEmail,
-				set: {
+
+		// Since primaryEmail is no longer unique, we need to find by authUserId or email
+		// Priority: authUserId match > email match (first found)
+		let existingProfile = authUserId
+			? await db.query.domainUsers.findFirst({
+					where: eq(schema.domainUsers.authUserId, authUserId),
+				})
+			: null;
+
+		if (!existingProfile) {
+			existingProfile = await db.query.domainUsers.findFirst({
+				where: eq(schema.domainUsers.primaryEmail, entry.primaryEmail),
+			});
+		}
+
+		let profile: { id: string };
+		if (existingProfile) {
+			// Update existing profile
+			const [updated] = await db
+				.update(schema.domainUsers)
+				.set({
 					authUserId,
-					businessRole: entry.businessRole,
 					firstName: entry.firstName,
 					lastName: entry.lastName,
 					phone: entry.phone ?? null,
@@ -1289,12 +1283,33 @@ async function seedUsers(
 					nationality: entry.nationality ?? null,
 					status: entry.status ?? "active",
 					updatedAt: now,
-				},
-			})
-			.returning();
+				})
+				.where(eq(schema.domainUsers.id, existingProfile.id))
+				.returning();
+			profile = updated;
+		} else {
+			// Insert new profile
+			const [created] = await db
+				.insert(schema.domainUsers)
+				.values({
+					authUserId,
+					firstName: entry.firstName,
+					lastName: entry.lastName,
+					primaryEmail: entry.primaryEmail,
+					phone: entry.phone ?? null,
+					dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
+					placeOfBirth: entry.placeOfBirth ?? null,
+					gender: entry.gender ?? null,
+					nationality: entry.nationality ?? null,
+					status: entry.status ?? "active",
+					updatedAt: now,
+				})
+				.returning();
+			profile = created;
+		}
+
 		state.domainUsers.set(code, {
 			id: profile.id,
-			businessRole: profile.businessRole,
 		});
 
 		const targetMemberRole = determineMemberRole(entry);
@@ -1498,12 +1513,10 @@ async function seedUsers(
 
 			// Register transfer credits in student credit ledger if any
 			if (entry.transferCredits && entry.transferCredits > 0) {
-				await studentCreditLedgerService.applyDelta(
+				await studentCreditLedgerService.addTransferCredits(
 					student.id,
 					academicYearId,
-					0, // deltaProgress = 0 (transfer credits are already earned)
-					entry.transferCredits, // deltaEarned
-					60, // Default required credits (will be updated based on class requirements)
+					entry.transferCredits,
 				);
 			}
 		}
@@ -1711,7 +1724,6 @@ async function seedClassCourses(
 				course: courseRecord.id,
 				teacher: teacher.id,
 				semesterId,
-				weeklyHours: entry.weeklyHours ?? 0,
 				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1721,7 +1733,6 @@ async function seedClassCourses(
 					course: courseRecord.id,
 					teacher: teacher.id,
 					semesterId,
-					weeklyHours: entry.weeklyHours ?? 0,
 					institutionId: classRecord.institutionId,
 				},
 			})

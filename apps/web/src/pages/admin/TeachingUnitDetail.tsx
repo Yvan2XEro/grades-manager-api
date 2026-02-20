@@ -418,7 +418,9 @@ const TeachingUnitDetail = () => {
 									{form.formState.isSubmitting ||
 									createMutation.isPending ||
 									updateMutation.isPending
-										? t("common.actions.saving", { defaultValue: "Saving..." })
+										? t("common.actions.saving", {
+												defaultValue: "Saving...",
+											})
 										: isCreateMode
 											? t("admin.teachingUnits.actions.create", {
 													defaultValue: "Create UE",

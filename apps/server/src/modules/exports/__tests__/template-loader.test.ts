@@ -2,8 +2,8 @@ import { beforeAll, describe, expect, it } from "bun:test";
 import { db } from "@/db";
 import { exportTemplates } from "@/db/schema/app-schema";
 import { getTestInstitution } from "@/lib/test-context-state";
-import { setupTestInstitution } from "@/lib/test-utils";
 import { pushSchema, reset, seed } from "@/lib/test-db";
+import { setupTestInstitution } from "@/lib/test-utils";
 import { loadExportTemplate } from "../template-loader";
 
 beforeAll(async () => {

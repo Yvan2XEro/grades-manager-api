@@ -1,11 +1,11 @@
 import { and, asc, desc, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
-import * as schema from "../../db/schema/app-schema";
 import type {
 	ExportTemplate,
 	ExportTemplateType,
 	NewExportTemplate,
 } from "../../db/schema/app-schema";
+import * as schema from "../../db/schema/app-schema";
 
 export async function findTemplateById(
 	id: string,
@@ -85,9 +85,7 @@ export async function updateTemplate(
 	return updated;
 }
 
-export async function deleteTemplate(
-	id: string,
-): Promise<boolean> {
+export async function deleteTemplate(id: string): Promise<boolean> {
 	const result = await db
 		.delete(schema.exportTemplates)
 		.where(eq(schema.exportTemplates.id, id))

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Route, Routes } from "react-router";
-import type { DomainUser } from "../../server/src/db/schema/app-schema";
 import AuthLayout from "./components/layouts/AuthLayout";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import { Redirector } from "./components/navigation/Redirector";
@@ -8,6 +7,8 @@ import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
+import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
 import ClassManagement from "./pages/admin/ClassManagement";
 import CourseManagement from "./pages/admin/CourseManagement";
@@ -16,8 +17,8 @@ import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
-import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
+import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -31,6 +32,7 @@ import {
 } from "./pages/admin/promotion-rules";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import RegistrationNumberFormats from "./pages/admin/RegistrationNumberFormats";
+import RetakeEligibility from "./pages/admin/RetakeEligibility";
 import RuleManagement from "./pages/admin/RuleManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
@@ -65,10 +67,7 @@ function App() {
 	const memoUser = useMemo(() => {
 		if (!session || !session.user) return null;
 		const [firstName, ...rest] = (session.user.name || "").split(" ");
-		const membershipRole =
-			session.activeMembership?.role ??
-			(session.domainProfiles?.[0] as DomainUser | undefined)?.businessRole ??
-			null;
+		const membershipRole = session.activeMembership?.role ?? null;
 		const role = normalizeRole(membershipRole);
 		return {
 			profileId: session.user.id,
@@ -163,10 +162,17 @@ function App() {
 						<Route path="students" element={<StudentManagement />} />
 						<Route path="users" element={<UserManagement />} />
 						<Route path="exams" element={<ExamManagement />} />
+						<Route path="retake-eligibility" element={<RetakeEligibility />} />
 						<Route path="exam-types" element={<ExamTypes />} />
 						<Route path="exam-scheduler" element={<ExamScheduler />} />
-						<Route path="export-templates" element={<ExportTemplatesManagement />} />
-						<Route path="export-templates/:templateId" element={<ExportTemplateEditor />} />
+						<Route
+							path="export-templates"
+							element={<ExportTemplatesManagement />}
+						/>
+						<Route
+							path="export-templates/:templateId"
+							element={<ExportTemplateEditor />}
+						/>
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="rules" element={<RuleManagement />} />
 						<Route
@@ -182,6 +188,8 @@ function App() {
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
+						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
+						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
 						<Route path="enrollments" element={<EnrollmentManagement />} />
 						<Route path="teaching-units" element={<TeachingUnitManagement />} />
 						<Route

@@ -1,8 +1,24 @@
 node_modules
 .turbo
 .alchemy
+
+# Environment variables
 .env
 .mcp.json
+.env.local
+.env.*.local
+.env.dev
+.env.staging
+.env.prod
+
+# Seed data
 seed/local/
+production-seeds/
+
+# Docker override (local customization)
+docker-compose.override.yml
+
+# PGlite data (local development database)
+data/
 
 docs/guide/

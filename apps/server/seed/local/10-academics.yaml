@@ -267,35 +267,30 @@ classCourses:
     courseCode: ANAT101
     teacherCode: TEACH-DR-MBALLA
     semesterCode: S1
-    weeklyHours: 3
   - code: CC-PHYS101-INF1A
     classCode: INF25-BTS1A
     classAcademicYearCode: AY-2025
     courseCode: PHYS101
     teacherCode: TEACH-DR-NGUEMA
     semesterCode: S1
-    weeklyHours: 3
   - code: CC-SOIN101-INF1A
     classCode: INF25-BTS1A
     classAcademicYearCode: AY-2025
     courseCode: SOIN101
     teacherCode: TEACH-INF-AKONO
     semesterCode: S1
-    weeklyHours: 4
   - code: CC-COMPT101-COMPT1A
     classCode: COMPT25-BTS1A
     classAcademicYearCode: AY-2025
     courseCode: COMPT101
     teacherCode: TEACH-KOMBO
     semesterCode: S1
-    weeklyHours: 4
   - code: CC-COMPT102-COMPT1A
     classCode: COMPT25-BTS1A
     classAcademicYearCode: AY-2025
     courseCode: COMPT102
     teacherCode: TEACH-KOMBO
     semesterCode: S1
-    weeklyHours: 3
 exams:
   - id: EXAM-ANAT101-CC
     classCourseCode: CC-ANAT101-INF1A

@@ -3,6 +3,7 @@ import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Users } from "lucid
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -12,7 +13,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
@@ -53,9 +53,15 @@ export default function CourseList() {
 
 					const [course, program, students, exams] = await Promise.all([
 						trpcClient.courses.getById.query({ id: cc.course }),
-						trpcClient.programs.getById.query({ id: klass.program }),
-						trpcClient.students.list.query({ classId: klass.id }),
-						trpcClient.exams.list.query({ classCourseId: cc.id }),
+						trpcClient.programs.getById.query({
+							id: klass.program,
+						}),
+						trpcClient.students.list.query({
+							classId: klass.id,
+						}),
+						trpcClient.exams.list.query({
+							classCourseId: cc.id,
+						}),
 					]);
 
 					return {

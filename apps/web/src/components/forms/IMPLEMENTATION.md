@@ -322,7 +322,7 @@ Tested on:
 
 ## License
 
-Part of the grades-manager-api project (same license as parent project).
+Part of the TKAMS (Tefoye and Kana Academic Management System) project (same license as parent project).
 
 ## Contributors
 

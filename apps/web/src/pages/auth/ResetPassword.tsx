@@ -46,15 +46,16 @@ const ResetPassword: React.FC = () => {
 
 	const [callbackURL] = useQueryState("return", {});
 	const onSubmit = async (data: FormData) => {
-		try {
-			await authClient.resetPassword({
-				token,
-				newPassword: data.password,
-			});
+		const result = await authClient.resetPassword({
+			token,
+			newPassword: data.password,
+		});
+
+		if (result.error) {
+			toast.error(result.error.message || t("auth.reset.error"));
+		} else {
 			toast.success(t("auth.reset.success"));
 			navigate("/auth/login");
-		} catch (error: any) {
-			toast.error(error.message || t("auth.reset.error"));
 		}
 	};
 

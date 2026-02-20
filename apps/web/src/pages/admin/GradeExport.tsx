@@ -12,6 +12,7 @@ import {
 import { useCallback, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import {
 	Accordion,
 	AccordionContent,
@@ -52,12 +53,6 @@ import { trpcClient } from "../../utils/trpc";
 type ExcelCell = string | number | boolean | null | undefined;
 type ExcelRow = ExcelCell[];
 
-interface AcademicYear {
-	id: string;
-	name: string;
-	startDate: string;
-}
-
 interface Class {
 	id: string;
 	name: string;
@@ -73,6 +68,9 @@ interface ExamItem {
 	courseName: string;
 	courseCode?: string | null;
 	classCourseCode?: string | null;
+	sessionType?: "normal" | "retake";
+	parentExamId?: string | null;
+	scoringPolicy?: "replace" | "best_of";
 }
 
 interface StudentExport {
@@ -90,6 +88,9 @@ interface StudentExport {
 			name: string;
 			type: string;
 			percentage: number;
+			sessionType: "normal" | "retake";
+			parentExamId: string | null;
+			scoringPolicy: "replace" | "best_of";
 			class_course: {
 				id: string;
 				code: string | null;
@@ -112,6 +113,75 @@ const slugify = (value: string) =>
 		.replace(/^-+|-+$/g, "")
 		.toLowerCase();
 
+/**
+ * Resolve grades considering retake exams and scoring policy.
+ * Groups exams by type (CC, EXAMEN) and applies scoring policy for retakes.
+ *
+ * @param studentGrades - All grades for a student
+ * @param allExams - All exams (including retakes)
+ * @returns Map of exam ID to effective score (with retake logic applied)
+ */
+function resolveRetakeGrades(
+	studentGrades: Array<{ examId: string; score: number }>,
+	allExams: ExamItem[],
+): Map<string, { score: number; isRetake: boolean }> {
+	const gradeMap = new Map(studentGrades.map((g) => [g.examId, g.score]));
+
+	const normalExams = allExams.filter((e) => e.sessionType === "normal");
+	const retakeExams = allExams.filter((e) => e.sessionType === "retake");
+
+	// Map retakes to their parent exams
+	const retakesByParent = new Map<string, ExamItem>();
+	for (const retake of retakeExams) {
+		if (retake.parentExamId) {
+			retakesByParent.set(retake.parentExamId, retake);
+		}
+	}
+
+	const resolvedGrades = new Map<
+		string,
+		{ score: number; isRetake: boolean }
+	>();
+
+	for (const exam of normalExams) {
+		const normalScore = gradeMap.get(exam.id);
+		const retakeExam = retakesByParent.get(exam.id);
+
+		if (retakeExam) {
+			const retakeScore = gradeMap.get(retakeExam.id);
+
+			if (retakeScore !== undefined) {
+				const policy = retakeExam.scoringPolicy || "replace";
+
+				if (policy === "replace") {
+					// Replace: always use retake score if available
+					resolvedGrades.set(exam.id, { score: retakeScore, isRetake: true });
+				} else {
+					// best_of: use the higher score
+					if (normalScore !== undefined) {
+						const bestScore = Math.max(normalScore, retakeScore);
+						resolvedGrades.set(exam.id, {
+							score: bestScore,
+							isRetake:
+								bestScore === retakeScore && retakeScore !== normalScore,
+						});
+					} else {
+						resolvedGrades.set(exam.id, { score: retakeScore, isRetake: true });
+					}
+				}
+			} else if (normalScore !== undefined) {
+				// No retake grade, use normal score
+				resolvedGrades.set(exam.id, { score: normalScore, isRetake: false });
+			}
+		} else if (normalScore !== undefined) {
+			// No retake, use normal grade
+			resolvedGrades.set(exam.id, { score: normalScore, isRetake: false });
+		}
+	}
+
+	return resolvedGrades;
+}
+
 interface GradeItem {
 	exam: string;
 	score: string | number;
@@ -129,21 +199,10 @@ export default function GradeExport() {
 	const [previewTitle, setPreviewTitle] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<"course" | "date" | "type">("course");
-	const yearId = useId();
+	const [includeRetakes, setIncludeRetakes] = useState(true);
 	const classId = useId();
 	const semesterId = useId();
 	const { t } = useTranslation();
-
-	const { data: academicYears } = useQuery({
-		queryKey: ["academicYears"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return (items as AcademicYear[]).sort(
-				(a, b) =>
-					new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-			);
-		},
-	});
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes", selectedYear],
@@ -183,6 +242,14 @@ export default function GradeExport() {
 				console.error("Error fetching semesters:", error);
 				return [];
 			}
+		},
+	});
+
+	const { data: academicYears } = useQuery({
+		queryKey: ["academicYears"],
+		queryFn: async () => {
+			const { items } = await trpcClient.academicYears.list.query({});
+			return items as Array<{ id: string; name: string }>;
 		},
 	});
 
@@ -236,6 +303,9 @@ export default function GradeExport() {
 						type: string;
 						date: string;
 						percentage: string;
+						sessionType?: "normal" | "retake";
+						parentExamId?: string | null;
+						scoringPolicy?: "replace" | "best_of";
 					}) => {
 						result.push({
 							id: exam.id,
@@ -246,6 +316,9 @@ export default function GradeExport() {
 							courseName: course.name,
 							courseCode: course.code ?? null,
 							classCourseCode: cc.code ?? null,
+							sessionType: exam.sessionType || "normal",
+							parentExamId: exam.parentExamId || null,
+							scoringPolicy: exam.scoringPolicy || "replace",
 						});
 					},
 				);
@@ -375,7 +448,9 @@ export default function GradeExport() {
 					gradeItems.map(async (grade: GradeItem) => {
 						let exam = examCache.get(grade.exam);
 						if (!exam) {
-							exam = await trpcClient.exams.getById.query({ id: grade.exam });
+							exam = await trpcClient.exams.getById.query({
+								id: grade.exam,
+							});
 							examCache.set(grade.exam, exam);
 						}
 						let classCourse = classCourseCache.get(exam.classCourse);
@@ -399,6 +474,13 @@ export default function GradeExport() {
 								name: exam.name,
 								type: exam.type,
 								percentage: Number(exam.percentage),
+								sessionType: (exam.sessionType || "normal") as
+									| "normal"
+									| "retake",
+								parentExamId: exam.parentExamId || null,
+								scoringPolicy: (exam.scoringPolicy || "replace") as
+									| "replace"
+									| "best_of",
 								class_course: {
 									id: classCourse.id,
 									code: classCourse.code ?? null,
@@ -473,21 +555,61 @@ export default function GradeExport() {
 				headerRows.push([""]);
 			}
 
-			const exportData = students.map((student) => {
+			// Sort students alphabetically
+			const sortedStudents = [...students].sort((a, b) =>
+				a.last_name.localeCompare(b.last_name) ||
+				a.first_name.localeCompare(b.first_name),
+			);
+
+			const exportData = sortedStudents.map((student) => {
+				// Build exam list from student's grades for retake resolution
+				const studentExamItems: ExamItem[] = student.grades.map((g) => ({
+					id: g.exam.id,
+					name: g.exam.name,
+					type: g.exam.type,
+					date: "",
+					percentage: g.exam.percentage,
+					courseName: g.exam.class_course.course.name,
+					courseCode: g.exam.class_course.course.code,
+					classCourseCode: g.exam.class_course.code,
+					sessionType: g.exam.sessionType,
+					parentExamId: g.exam.parentExamId,
+					scoringPolicy: g.exam.scoringPolicy,
+				}));
+
+				// Resolve retake grades
+				const studentGradesForResolution = student.grades.map((g) => ({
+					examId: g.exam.id,
+					score: g.score,
+				}));
+				const resolvedGrades = resolveRetakeGrades(
+					studentGradesForResolution,
+					studentExamItems,
+				);
+
+				// Group resolved grades by course
 				const courseGrades = new Map<string, number[]>();
-				student.grades.forEach((grade) => {
+				for (const grade of student.grades) {
+					// Skip retake exams - their scores are merged into parent exams
+					if (grade.exam.sessionType === "retake") continue;
+
 					const columnKey =
 						grade.exam.class_course.code ??
 						grade.exam.class_course.course.code ??
 						grade.exam.class_course.course.name;
-					if (!columnKey) return;
+					if (!columnKey) continue;
 					if (!courseGrades.has(columnKey)) {
 						courseGrades.set(columnKey, []);
 					}
 					if (selectedExams.includes(grade.exam.id)) {
-						courseGrades.get(columnKey)?.push(grade.score);
+						// Use resolved grade (with retake logic applied)
+						const resolved = resolvedGrades.get(grade.exam.id);
+						if (resolved) {
+							courseGrades.get(columnKey)?.push(resolved.score);
+						}
 					}
-				});
+				}
+
 				const courseAverages = new Map<string, number>();
 				courseGrades.forEach((grades, course) => {
 					if (grades.length > 0) {
@@ -566,7 +688,10 @@ export default function GradeExport() {
 			// Style column headers (first data row after header) - Bold, background color
 			const headerRowIndex = headerRows.length;
 			for (let c = range.s.c; c <= range.e.c; c++) {
-				const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+				const cellRef = XLSX.utils.encode_cell({
+					r: headerRowIndex,
+					c,
+				});
 				if (ws[cellRef]) {
 					ws[cellRef].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -636,102 +761,130 @@ export default function GradeExport() {
 	]);
 
 	const handleVerbalReportExport = useCallback(async () => {
-		if (!selectedClass || !hasExamSelection || !exportConfig) return;
+		if (!selectedClass || !selectedSemester || !selectedYear) return;
 		setExporting("pv");
 		try {
-			const students = await fetchStudentsWithGrades();
-			if (students.length === 0) return;
+			// Fetch structured PV data from backend (correct LMD computation)
+			const pvData = await trpcClient.exports.getPVData.query({
+				classId: selectedClass,
+				semesterId: selectedSemester,
+				academicYearId: selectedYear,
+				includeRetakes,
+			});
+
+			if (!pvData.students || pvData.students.length === 0) return;
 
 			const classData = classes?.find((c) => c.id === selectedClass);
 			const semesterData = semesters?.find((s) => s.id === selectedSemester);
 			const yearData = academicYears?.find((y) => y.id === selectedYear);
+			const ues: Array<{
+				code: string;
+				name: string;
+				credits: number;
+				courses: Array<{
+					name: string;
+					code: string;
+					coefficient: number;
+				}>;
+			}> = pvData.ues ?? [];
 
-			const courseGroups = new Map<
-				string,
-				{ label: string; exams: ExamItem[] }
-			>();
-			selectedExamDetails.forEach((exam) => {
-				const key = exam.classCourseCode ?? exam.courseCode ?? exam.courseName;
-				const label = exam.courseCode
-					? `${exam.courseName} (${exam.courseCode})`
-					: exam.courseName;
-				const existing = courseGroups.get(key);
-				if (existing) {
-					existing.exams.push(exam);
-				} else {
-					courseGroups.set(key, { label, exams: [exam] });
-				}
-			});
-			const groupedCourses = Array.from(courseGroups.values());
-			const orderedExams = groupedCourses.flatMap(({ exams }) => exams);
-			const firstHeaderRow = [
+			// Build column layout: Rang | Matricule | Nom | [per UE: per EC(CC,EX,Moy) | Moy UE | Crédits | Décision] | Moy Gén | Total Crédits | Décision
+			// First header row: UE names spanning their courses
+			// Second header row: EC names/details
+
+			// Count total columns per UE: each course has 3 cols (CC, EX, Moy) + 3 for UE summary (Avg, Credits, Decision)
+			const fixedCols = 3; // Rang, Matricule, Nom
+			const trailingCols = 3; // Moy Générale, Total Crédits, Décision
+
+			const firstHeaderRow: ExcelCell[] = [
 				t("admin.gradeExport.pv.table.rank"),
 				t("admin.gradeExport.columns.registration"),
 				t("admin.gradeExport.pv.table.fullName"),
-				...groupedCourses.flatMap(({ label, exams }) => [
-					label,
-					...Array.from({ length: Math.max(exams.length - 1, 0) }, () => ""),
-				]),
-				t("admin.gradeExport.pv.table.average"),
 			];
-			const secondHeaderRow = [
-				"",
-				"",
-				"",
-				...orderedExams.map((exam) => exam.type),
-				"",
-			];
+			const secondHeaderRow: ExcelCell[] = ["", "", ""];
 
-			const tableRows: (string | number)[][] = [];
+			for (const ue of ues) {
+				const courseCols = ue.courses.length * 3; // CC, EX, Moy per course
+				const ueTotalCols = courseCols + 3; // + Moy UE, Crédits, Décision
+				firstHeaderRow.push(
+					`${ue.name} (${ue.code}) [${ue.credits} cr.]`,
+					...Array(ueTotalCols - 1).fill(""),
+				);
+				for (const course of ue.courses) {
+					secondHeaderRow.push(
+						`${course.name} CC`,
+						`${course.name} EX`,
+						`Moy (×${course.coefficient})`,
+					);
+				}
+				secondHeaderRow.push("Moy UE", "Crédits", "Décision");
+			}
+
+			firstHeaderRow.push(t("admin.gradeExport.pv.table.average"), "Total Crédits", "Décision");
+			secondHeaderRow.push("", "", "");
+
+			// Data rows
+			const tableRows: ExcelRow[] = [];
 			const averages: number[] = [];
 
-			students.forEach((student, index) => {
-				const gradeValues = orderedExams.map((exam) => {
-					const grade = student.grades.find((g) => g.exam.id === exam.id);
-					return typeof grade?.score === "number" ? grade.score : "";
-				});
-				const numericScores = gradeValues.filter(
-					(value): value is number => typeof value === "number",
-				);
-				const averageValue =
-					numericScores.length > 0
-						? Number(
-								(
-									numericScores.reduce((sum, value) => sum + value, 0) /
-									numericScores.length
-								).toFixed(2),
-							)
-						: "";
-				if (typeof averageValue === "number") {
-					averages.push(averageValue);
-				}
-				tableRows.push([
-					index + 1,
-					student.registration_number,
-					`${student.last_name} ${student.first_name}`,
-					...gradeValues,
-					averageValue,
-				]);
-			});
+			for (const [index, student] of pvData.students.entries()) {
+				const row: ExcelRow = [
+					student.number ?? index + 1,
+					student.registrationNumber,
+					`${student.lastName} ${student.firstName}`,
+				];
 
-			const totalStudents = students.length;
-			const validated = averages.filter((avg) => avg >= 10).length;
+				for (const ueGrade of student.ueGrades) {
+					for (const cg of ueGrade.courseGrades) {
+						row.push(
+							cg.cc !== null && cg.cc !== undefined ? Number(Number(cg.cc).toFixed(2)) : "",
+							cg.ex !== null && cg.ex !== undefined ? Number(Number(cg.ex).toFixed(2)) : "",
+							cg.average !== null && cg.average !== undefined ? Number(Number(cg.average).toFixed(2)) : "",
+						);
+					}
+					row.push(
+						ueGrade.average !== null && ueGrade.average !== undefined
+							? Number(Number(ueGrade.average).toFixed(2))
+							: "",
+						ueGrade.credits ?? 0,
+						ueGrade.decision ?? "",
+					);
+				}
+
+				row.push(
+					student.generalAverage !== null && student.generalAverage !== undefined
+						? Number(Number(student.generalAverage).toFixed(2))
+						: "",
+					student.totalCredits ?? 0,
+					student.overallDecision ?? "",
+				);
+
+				tableRows.push(row);
+				if (typeof student.generalAverage === "number") {
+					averages.push(student.generalAverage);
+				}
+			}
+
+			// Stats
+			const totalStudents = pvData.students.length;
+			const validated = pvData.students.filter(
+				(s: any) => s.overallDecision === "ACQUIS",
+			).length;
 			const nonValidated = totalStudents - validated;
-			const successRate =
-				totalStudents > 0 ? (validated / totalStudents) * 100 : 0;
+			const successRate = pvData.globalSuccessRate ?? 0;
 			const promotionAverage =
 				averages.length > 0
 					? averages.reduce((sum, avg) => sum + avg, 0) / averages.length
 					: null;
 
-			const statsRows: (string | number)[][] = [
+			const statsRows: ExcelRow[] = [
 				[t("admin.gradeExport.pv.stats.title")],
 				[t("admin.gradeExport.pv.stats.students"), totalStudents],
 				[t("admin.gradeExport.pv.stats.validated"), validated],
 				[t("admin.gradeExport.pv.stats.notValidated"), nonValidated],
 				[
 					t("admin.gradeExport.pv.stats.successRate"),
-					`${successRate.toFixed(1)}%`,
+					`${successRate}%`,
 				],
 				[
 					t("admin.gradeExport.pv.stats.average"),
@@ -739,26 +892,13 @@ export default function GradeExport() {
 				],
 			];
 
-			const legendHeaders = [
-				t("admin.gradeExport.pv.legend.headers.course"),
-				t("admin.gradeExport.pv.legend.headers.exam"),
-				t("admin.gradeExport.pv.legend.headers.weight"),
-			];
-			const legendRows = orderedExams.map((exam) => [
-				exam.courseCode
-					? `${exam.courseName} (${exam.courseCode})`
-					: exam.courseName,
-				exam.type,
-				`${exam.percentage}%`,
-			]);
-
-			// Build institution header
-			const institutionHeader: (string | number)[][] = [];
-			if (exportConfig.institution) {
-				institutionHeader.push([exportConfig.institution.name_fr || ""]);
-				if (exportConfig.institution.faculty_name_fr) {
-					institutionHeader.push([exportConfig.institution.faculty_name_fr]);
-				}
+			// Institution header
+			const institutionHeader: ExcelRow[] = [];
+			if (pvData.name_fr) {
+				institutionHeader.push([pvData.name_fr]);
+			}
+			if (pvData.faculty_name_fr) {
+				institutionHeader.push([pvData.faculty_name_fr]);
 			}
 			institutionHeader.push([""]);
 			institutionHeader.push(["PROCÈS-VERBAL DES RÉSULTATS"]);
@@ -768,14 +908,14 @@ export default function GradeExport() {
 				if (classData) institutionHeader.push([`Classe: ${classData.name}`]);
 				if (classData?.program)
 					institutionHeader.push([`Programme: ${classData.program.name}`]);
-				if (semesterData)
-					institutionHeader.push([`Semestre: ${semesterData.name}`]);
-				if (yearData)
-					institutionHeader.push([`Année Académique: ${yearData.name}`]);
+				if (pvData.semester)
+					institutionHeader.push([`Semestre: ${pvData.semester}`]);
+				if (pvData.academicYear)
+					institutionHeader.push([`Année Académique: ${pvData.academicYear}`]);
 				institutionHeader.push([""]);
 			}
 
-			const aoa: (string | number)[][] = [
+			const aoa: ExcelRow[] = [
 				...institutionHeader,
 				...statsRows,
 				[""],
@@ -783,36 +923,42 @@ export default function GradeExport() {
 				firstHeaderRow,
 				secondHeaderRow,
 				...tableRows,
-				[""],
-				[t("admin.gradeExport.pv.legend.title")],
-				legendHeaders,
-				...legendRows,
 			];
 
 			const ws = XLSX.utils.aoa_to_sheet(aoa);
 			const headerRow1Index = institutionHeader.length + statsRows.length + 1;
 			const headerRow2Index = headerRow1Index + 1;
 			const merges: XLSX.Range[] = [];
-			const verticalColumns = [0, 1, 2, 3 + orderedExams.length];
-			verticalColumns.forEach((columnIndex) => {
-				merges.push({
-					s: { r: headerRow1Index, c: columnIndex },
-					e: { r: headerRow2Index, c: columnIndex },
-				});
-			});
-			let courseColumnStart = 3;
-			groupedCourses.forEach(({ exams }) => {
-				const courseColumnEnd = courseColumnStart + exams.length - 1;
-				merges.push({
-					s: { r: headerRow1Index, c: courseColumnStart },
-					e: { r: headerRow1Index, c: courseColumnEnd },
-				});
-				courseColumnStart = courseColumnEnd + 1;
-			});
-			// Add institution header merges and styling
 			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+			const totalDataCols = (secondHeaderRow as ExcelCell[]).length;
 
-			// Style institution name (row 0) - Bold, larger font, centered
+			// Merge fixed columns across both header rows
+			for (const colIdx of [0, 1, 2]) {
+				merges.push({
+					s: { r: headerRow1Index, c: colIdx },
+					e: { r: headerRow2Index, c: colIdx },
+				});
+			}
+
+			// Merge UE header spans and trailing columns
+			let colOffset = fixedCols;
+			for (const ue of ues) {
+				const ueCols = ue.courses.length * 3 + 3;
+				merges.push({
+					s: { r: headerRow1Index, c: colOffset },
+					e: { r: headerRow1Index, c: colOffset + ueCols - 1 },
+				});
+				colOffset += ueCols;
+			}
+			// Merge trailing columns (Moy Gén, Total Crédits, Décision)
+			for (let i = 0; i < trailingCols; i++) {
+				merges.push({
+					s: { r: headerRow1Index, c: colOffset + i },
+					e: { r: headerRow2Index, c: colOffset + i },
+				});
+			}
+
+			// Institution header merges and styling
 			if (ws["A1"]) {
 				ws["A1"].s = {
 					font: { bold: true, sz: 16 },
@@ -820,8 +966,6 @@ export default function GradeExport() {
 				};
 				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
 			}
-
-			// Style faculty name (row 1) - Bold, centered
 			if (ws["A2"]) {
 				ws["A2"].s = {
 					font: { bold: true, sz: 14 },
@@ -830,7 +974,7 @@ export default function GradeExport() {
 				merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: range.e.c } });
 			}
 
-			// Style document title
+			// Style document title and info rows
 			for (let i = 0; i < institutionHeader.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
 				if (ws[cellRef] && ws[cellRef].v === "PROCÈS-VERBAL DES RÉSULTATS") {
@@ -840,11 +984,6 @@ export default function GradeExport() {
 					};
 					merges.push({ s: { r: i, c: 0 }, e: { r: i, c: range.e.c } });
 				}
-			}
-
-			// Style info rows
-			for (let i = 0; i < institutionHeader.length; i++) {
-				const cellRef = XLSX.utils.encode_cell({ r: i, c: 0 });
 				if (ws[cellRef] && typeof ws[cellRef].v === "string") {
 					const value = ws[cellRef].v;
 					if (
@@ -861,7 +1000,7 @@ export default function GradeExport() {
 				}
 			}
 
-			// Style stats section title
+			// Stats styling
 			const statsStartRow = institutionHeader.length;
 			const statsTitleRef = XLSX.utils.encode_cell({ r: statsStartRow, c: 0 });
 			if (ws[statsTitleRef]) {
@@ -871,8 +1010,6 @@ export default function GradeExport() {
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
-
-			// Style stats rows
 			for (let i = 1; i < statsRows.length; i++) {
 				const cellRef = XLSX.utils.encode_cell({ r: statsStartRow + i, c: 0 });
 				if (ws[cellRef]) {
@@ -880,7 +1017,7 @@ export default function GradeExport() {
 				}
 			}
 
-			// Style table title
+			// Table title
 			const tableTitleRow = institutionHeader.length + statsRows.length + 1;
 			const tableTitleRef = XLSX.utils.encode_cell({ r: tableTitleRow, c: 0 });
 			if (ws[tableTitleRef]) {
@@ -891,19 +1028,14 @@ export default function GradeExport() {
 				};
 			}
 
-			// Style table headers - Bold, background color, borders
+			// Header row styling
 			for (let c = 0; c <= range.e.c; c++) {
-				// First header row
 				const cellRef1 = XLSX.utils.encode_cell({ r: headerRow1Index, c });
 				if (ws[cellRef1]) {
 					ws[cellRef1].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
 						fill: { fgColor: { rgb: "4472C4" } },
-						alignment: {
-							horizontal: "center",
-							vertical: "center",
-							wrapText: true,
-						},
+						alignment: { horizontal: "center", vertical: "center", wrapText: true },
 						border: {
 							top: { style: "thin", color: { rgb: "000000" } },
 							bottom: { style: "thin", color: { rgb: "000000" } },
@@ -912,8 +1044,6 @@ export default function GradeExport() {
 						},
 					};
 				}
-
-				// Second header row
 				const cellRef2 = XLSX.utils.encode_cell({ r: headerRow2Index, c });
 				if (ws[cellRef2]) {
 					ws[cellRef2].s = {
@@ -930,7 +1060,7 @@ export default function GradeExport() {
 				}
 			}
 
-			// Style data rows - add borders and alternate row colors
+			// Data row styling
 			const dataStartRow = headerRow2Index + 1;
 			const dataEndRow = dataStartRow + tableRows.length - 1;
 			for (let r = dataStartRow; r <= dataEndRow; r++) {
@@ -946,8 +1076,6 @@ export default function GradeExport() {
 								right: { style: "thin", color: { rgb: "D0D0D0" } },
 							},
 						};
-
-						// Alternate row colors
 						if ((r - dataStartRow) % 2 === 1) {
 							ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } };
 						}
@@ -955,46 +1083,15 @@ export default function GradeExport() {
 				}
 			}
 
-			// Style legend title
-			const legendTitleRow = dataEndRow + 2;
-			const legendTitleRef = XLSX.utils.encode_cell({
-				r: legendTitleRow,
-				c: 0,
-			});
-			if (ws[legendTitleRef]) {
-				ws[legendTitleRef].s = {
-					font: { bold: true, sz: 14 },
-					fill: { fgColor: { rgb: "E7E6E6" } },
-					alignment: { horizontal: "center", vertical: "center" },
-				};
-			}
-
-			// Style legend headers
-			const legendHeaderRow = legendTitleRow + 1;
-			for (let c = 0; c < 3; c++) {
-				const cellRef = XLSX.utils.encode_cell({ r: legendHeaderRow, c });
-				if (ws[cellRef]) {
-					ws[cellRef].s = {
-						font: { bold: true },
-						fill: { fgColor: { rgb: "D9E2F3" } },
-						alignment: { horizontal: "center", vertical: "center" },
-						border: {
-							top: { style: "thin" },
-							bottom: { style: "thin" },
-							left: { style: "thin" },
-							right: { style: "thin" },
-						},
-					};
-				}
-			}
-
-			// Set column widths
+			// Column widths
 			ws["!cols"] = [
-				{ wch: 8 }, // Rang
-				{ wch: 15 }, // Matricule
-				{ wch: 25 }, // Nom complet
-				...Array(orderedExams.length).fill({ wch: 10 }), // Notes
-				{ wch: 12 }, // Moyenne
+				{ wch: 6 }, // Rang
+				{ wch: 14 }, // Matricule
+				{ wch: 22 }, // Nom
+				...Array(totalDataCols - fixedCols - trailingCols).fill({ wch: 8 }),
+				{ wch: 10 }, // Moy Gén
+				{ wch: 10 }, // Total Crédits
+				{ wch: 12 }, // Décision
 			];
 
 			ws["!merges"] = merges;
@@ -1009,17 +1106,14 @@ export default function GradeExport() {
 		}
 	}, [
 		buildFilename,
-		fetchStudentsWithGrades,
-		hasExamSelection,
+		includeRetakes,
 		selectedClass,
-		selectedExamDetails,
+		selectedSemester,
+		selectedYear,
 		t,
-		exportConfig,
 		classes,
 		semesters,
-		selectedSemester,
 		academicYears,
-		selectedYear,
 	]);
 
 	const handleExamExport = useCallback(
@@ -1065,7 +1159,13 @@ export default function GradeExport() {
 					headerRows.push([""]);
 				}
 
-				const exportData = students.map((student) => {
+				// Sort students alphabetically
+				const sortedStudents = [...students].sort((a, b) =>
+					a.last_name.localeCompare(b.last_name) ||
+					a.first_name.localeCompare(b.first_name),
+				);
+
+				const exportData = sortedStudents.map((student) => {
 					const grade = student.grades.find((g) => g.exam.id === exam.id);
 					return {
 						[t("admin.gradeExport.columns.lastName")]: student.last_name,
@@ -1113,7 +1213,10 @@ export default function GradeExport() {
 								font: { bold: true, sz: 18 },
 								alignment: { horizontal: "center" },
 							};
-							merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 3 } });
+							merges.push({
+								s: { r: i, c: 0 },
+								e: { r: i, c: 3 },
+							});
 						} else if (value.includes(":")) {
 							ws[cellRef].s = { font: { bold: true } };
 						}
@@ -1121,7 +1224,10 @@ export default function GradeExport() {
 				}
 				const headerRowIndex = headerRows.length;
 				for (let c = 0; c <= 3; c++) {
-					const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c });
+					const cellRef = XLSX.utils.encode_cell({
+						r: headerRowIndex,
+						c,
+					});
 					if (ws[cellRef])
 						ws[cellRef].s = {
 							font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -1149,7 +1255,9 @@ export default function GradeExport() {
 								},
 							};
 							if ((r - headerRowIndex - 1) % 2 === 1)
-								ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } };
+								ws[cellRef].s.fill = {
+									fgColor: { rgb: "F2F2F2" },
+								};
 						}
 					}
 				}
@@ -1191,16 +1299,21 @@ export default function GradeExport() {
 				classId: selectedClass,
 				semesterId: selectedSemester,
 				academicYearId: selectedYear,
+				includeRetakes,
 			});
 			setPreviewHtml(html);
-			setPreviewTitle("Prévisualisation - Procès-Verbal");
+			setPreviewTitle(
+				includeRetakes
+					? "Prévisualisation - Procès-Verbal (avec rattrapages)"
+					: "Prévisualisation - Procès-Verbal (sans rattrapages)",
+			);
 			setShowPreview(true);
 		} catch (error) {
 			console.error("PV preview error:", error);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
 
 	const handleGeneratePV = useCallback(async () => {
 		if (!selectedClass || !selectedSemester || !selectedYear) return;
@@ -1211,6 +1324,7 @@ export default function GradeExport() {
 				semesterId: selectedSemester,
 				academicYearId: selectedYear,
 				format: "pdf",
+				includeRetakes,
 			});
 
 			// Convert base64 to blob and download
@@ -1234,7 +1348,7 @@ export default function GradeExport() {
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
 
 	const handlePreviewEvaluation = useCallback(async (examId: string) => {
 		setExporting(`preview-eval-${examId}`);
@@ -1444,32 +1558,18 @@ export default function GradeExport() {
 				</CardHeader>
 				<CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					<div className="space-y-2">
-						<Label htmlFor={yearId}>
-							{t("admin.gradeExport.filters.academicYear")}
-						</Label>
-						<Select
-							value={selectedYear || undefined}
-							onValueChange={(value) => {
+						<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
+						<AcademicYearSelect
+							value={selectedYear || null}
+							onChange={(value) => {
 								setSelectedYear(value);
 								setSelectedClass("");
 								setSelectedExams([]);
 							}}
-						>
-							<SelectTrigger id={yearId}>
-								<SelectValue
-									placeholder={t(
-										"admin.gradeExport.filters.academicYearPlaceholder",
-									)}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{academicYears?.map((year) => (
-									<SelectItem key={year.id} value={year.id}>
-										{year.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							placeholder={t(
+								"admin.gradeExport.filters.academicYearPlaceholder",
+							)}
+						/>
 					</div>
 
 					<div className="space-y-2">
@@ -1741,7 +1841,7 @@ export default function GradeExport() {
 									<Button
 										type="button"
 										onClick={handleVerbalReportExport}
-										disabled={disablePrimaryExports}
+										disabled={!selectedClass || !selectedSemester || !selectedYear || isBusy}
 										className="w-full"
 									>
 										{exporting === "pv" ? (
@@ -1802,6 +1902,22 @@ export default function GradeExport() {
 										Exportez le PV complet avec toutes les UEs et notes pour la
 										classe et le semestre sélectionnés
 									</p>
+									<div className="mb-4 flex items-center gap-2">
+										<Checkbox
+											id="include-retakes"
+											checked={includeRetakes}
+											onCheckedChange={(checked) =>
+												setIncludeRetakes(checked === true)
+											}
+										/>
+										<Label
+											htmlFor="include-retakes"
+											className="cursor-pointer text-sm"
+										>
+											Inclure les notes de rattrapage (applique la politique de
+											scoring)
+										</Label>
+									</div>
 									<div className="flex gap-2">
 										<Button
 											type="button"

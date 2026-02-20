@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
@@ -11,9 +11,9 @@ import {
 	createClass,
 	createCourse,
 	createDomainUser,
-	createRecapFixture,
 	createFaculty,
 	createProgram,
+	createRecapFixture,
 	createStudent,
 	ensureStudentCourseEnrollment,
 	makeTestContext,
@@ -40,15 +40,14 @@ describe("class courses router", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,
-			weeklyHours: 2,
 		});
 		expect(cc.class).toBe(klass.id);
 
 		const updated = await admin.classCourses.update({
 			id: cc.id,
-			weeklyHours: 3,
+			coefficient: 2,
 		});
-		expect(updated.weeklyHours).toBe(3);
+		expect(Number(updated.coefficient)).toBe(2);
 
 		await admin.classCourses.delete({ id: cc.id });
 		const list = await admin.classCourses.list({ classId: klass.id });
@@ -65,7 +64,6 @@ describe("class courses router", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacherId,
-			weeklyHours: 2,
 		});
 		const enrolled = await createStudent({ class: klass.id });
 		await ensureStudentCourseEnrollment(enrolled.id, cc.id, "active");
@@ -101,7 +99,7 @@ describe("class courses router", () => {
 			institutionId: foreignInstitution.id,
 		});
 		const course = await createCourse({ program: program.id });
-		const teacher = await createDomainUser({ businessRole: "teacher" });
+		const teacher = await createDomainUser();
 		const [classCourse] = await db
 			.insert(schema.classCourses)
 			.values({
@@ -109,7 +107,6 @@ describe("class courses router", () => {
 				class: klass.id,
 				course: course.id,
 				teacher: teacher.id,
-				weeklyHours: 2,
 				institutionId: foreignInstitution.id,
 			})
 			.returning();
@@ -136,7 +133,7 @@ describe("class courses router", () => {
 				profileOverrides: teacherProfile,
 			}),
 		);
-		const delegateProfile = await createDomainUser({ businessRole: "staff" });
+		const delegateProfile = await createDomainUser();
 		const delegateCaller = createCaller(
 			makeTestContext({
 				role: "staff",

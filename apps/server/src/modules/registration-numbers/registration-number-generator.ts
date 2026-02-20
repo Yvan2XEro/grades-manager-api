@@ -291,7 +291,9 @@ export async function generateRegistrationNumber(opts: {
 						updatedAt: sql`now()`,
 					},
 				})
-				.returning({ lastValue: schema.registrationNumberCounters.lastValue });
+				.returning({
+					lastValue: schema.registrationNumberCounters.lastValue,
+				});
 			return row.lastValue;
 		},
 	});
@@ -327,7 +329,9 @@ export async function previewRegistrationNumber(opts: {
 				return next;
 			}
 			const [existing] = await db
-				.select({ lastValue: schema.registrationNumberCounters.lastValue })
+				.select({
+					lastValue: schema.registrationNumberCounters.lastValue,
+				})
 				.from(schema.registrationNumberCounters)
 				.where(
 					and(

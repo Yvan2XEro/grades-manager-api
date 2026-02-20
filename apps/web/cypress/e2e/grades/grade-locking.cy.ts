@@ -51,7 +51,9 @@ describe("Grade Locking", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Grade inputs should be disabled or show locked message
@@ -101,7 +103,9 @@ describe("Grade Locking", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Should show locked message
@@ -147,7 +151,9 @@ describe("Grade Locking", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Grade inputs should be disabled
@@ -199,7 +205,9 @@ describe("Grade Locking", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Should show locked indicator (badge, icon, or text)
@@ -315,7 +323,9 @@ describe("Grade Locking", () => {
 			}).click();
 			cy.get("[role=option]").first().click();
 
-			cy.get('[data-testid="exam-select"], #exam', { timeout: 5000 }).click();
+			cy.get('[data-testid="exam-select"], #exam', {
+				timeout: 5000,
+			}).click();
 			cy.get("[role=option]").first().click();
 
 			// Should be able to enter grades

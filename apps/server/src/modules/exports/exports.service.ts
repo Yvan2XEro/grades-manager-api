@@ -10,11 +10,14 @@ import type {
 import {
 	calculateStats,
 	calculateSuccessRate,
+	type ExamWithRetake,
 	formatNumber,
 	getAppreciation,
 	getObservation,
 	loadExportConfig,
 	loadTemplate,
+	normalizeExamType,
+	resolveStudentGradesWithRetakes,
 } from "./template-helper";
 import {
 	loadExportTemplate,
@@ -77,6 +80,21 @@ export class ExportsService {
 		Handlebars.registerHelper("multiply", (a, b) => a * b);
 	}
 
+	/** Return structured PV data (JSON) for frontend Excel export */
+	async getPVDataStructured(input: Omit<GeneratePVInput, "format" | "templateId">) {
+		const config = await this.getConfig();
+		const templateConfig = await loadExportTemplate(this.institutionId, "pv");
+
+		const data = await this.repo.getPVData(
+			input.classId,
+			input.semesterId,
+			input.academicYearId,
+		);
+
+		const includeRetakes = input.includeRetakes ?? true;
+		return this.processPVData(data, config, templateConfig, includeRetakes);
+	}
+
 	/** Generate PV (official minutes) export */
 	async generatePV(input: GeneratePVInput) {
 		const config = await this.getConfig();
@@ -95,7 +113,14 @@ export class ExportsService {
 		);
 
 		// Process data for template with template configuration
-		const templateData = this.processPVData(data, config, templateConfig);
+		// includeRetakes defaults to true if not specified
+		const includeRetakes = input.includeRetakes ?? true;
+		const templateData = this.processPVData(
+			data,
+			config,
+			templateConfig,
+			includeRetakes,
+		);
 
 		// Generate HTML
 		const html = this.renderTemplate("pv", templateData, templateConfig);
@@ -138,7 +163,11 @@ export class ExportsService {
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate("evaluation", templateData, templateConfig);
+		const html = this.renderTemplate(
+			"evaluation",
+			templateData,
+			templateConfig,
+		);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
@@ -175,7 +204,14 @@ export class ExportsService {
 		);
 
 		// Process data for template with template configuration
-		const templateData = this.processUEData(data, config, templateConfig);
+		// includeRetakes defaults to true if not specified
+		const includeRetakes = input.includeRetakes ?? true;
+		const templateData = this.processUEData(
+			data,
+			config,
+			templateConfig,
+			includeRetakes,
+		);
 
 		// Generate HTML
 		const html = this.renderTemplate("ue", templateData, templateConfig);
@@ -211,11 +247,14 @@ export class ExportsService {
 
 	/**
 	 * Process raw data for PV template
+	 * Handles retake exams by applying scoring policy (replace/best_of)
+	 * @param includeRetakes - Whether to include retake grades in the calculation (default: true)
 	 */
 	private processPVData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
 		templateConfig: TemplateConfiguration,
+		includeRetakes = true,
 	) {
 		// Group courses by teaching unit
 		const ueMap = new Map();
@@ -232,37 +271,51 @@ export class ExportsService {
 				});
 			}
 
-			// Get exams for this course
-			const exams = cc.exams || [];
+			// Get exams for this course (including retakes)
+			const exams = (cc.exams || []).map((exam: any) => ({
+				id: exam.id,
+				type: exam.type,
+				percentage: exam.percentage,
+				sessionType: exam.sessionType || "normal",
+				parentExamId: exam.parentExamId || null,
+				scoringPolicy: exam.scoringPolicy || "replace",
+				grades: exam.grades || [],
+			})) as ExamWithRetake[];
+
 			ueMap.get(ueId).courses.push({
 				id: cc.courseRef.id,
 				code: cc.courseRef.code,
 				name: cc.courseRef.name,
+				coefficient: Number(cc.coefficient) || 1,
 				exams,
 			});
 		}
 
+		// Sort students alphabetically by last name, then first name
+		const sortedStudents = [...data.students].sort((a: any, b: any) =>
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		);
+
 		// Process students
-		const students = data.students.map((student: any, index: number) => {
+		const students = sortedStudents.map((student: any, index: number) => {
 			const ueGrades: any[] = [];
 
 			// For each UE, calculate student's grades
 			for (const ue of ueMap.values()) {
 				const courseGrades = ue.courses.map((course: any) => {
-					const examGrades = course.exams.map((exam: any) => {
-						const grade = exam.grades.find(
-							(g: any) => g.studentRef.id === student.id,
-						);
-						return {
-							type: exam.type,
-							score: grade ? Number(grade.score) : null,
-							percentage: Number(exam.percentage),
-						};
-					});
+					// Use the retake-aware grade resolution
+					const resolvedGrades = resolveStudentGradesWithRetakes(
+						course.exams,
+						student.id,
+						includeRetakes,
+					);
 
-					// Calculate course average (CC + EX)
-					const cc = examGrades.find((eg: any) => eg.type === "CC");
-					const ex = examGrades.find((eg: any) => eg.type === "EXAMEN");
+					// Find CC and EXAMEN grades using normalized type
+					const cc = resolvedGrades.find((rg) => rg.normalizedType === "CC");
+					const ex = resolvedGrades.find(
+						(rg) => rg.normalizedType === "EXAMEN",
+					);
 
 					let average = null;
 					if (cc && ex && cc.score !== null && ex.score !== null) {
@@ -274,47 +327,93 @@ export class ExportsService {
 						cc: cc?.score ?? null,
 						ex: ex?.score ?? null,
 						average,
+						coefficient: course.coefficient,
+						// Include retake info for display if needed
+						ccIsRetake: cc?.isRetake ?? false,
+						exIsRetake: ex?.isRetake ?? false,
 					};
 				});
 
-				// Calculate UE average
-				const validAverages = courseGrades
-					.map((cg: any) => cg.average)
-					.filter((a: any): a is number => a !== null);
+				// Calculate UE weighted average
+				// IMPORTANT: ALL ECs must have a grade for the UE to be validated
+				const totalCourses = courseGrades.length;
+				const coursesWithGrades = courseGrades.filter(
+					(cg: any) => cg.average !== null,
+				);
+				const allCoursesHaveGrades = coursesWithGrades.length === totalCourses;
 
-				const ueAverage =
-					validAverages.length > 0
-						? validAverages.reduce((sum, avg) => sum + avg, 0) /
-							validAverages.length
-						: null;
+				let ueAverage: number | null = null;
+				if (allCoursesHaveGrades && coursesWithGrades.length > 0) {
+					// Calculate weighted average: Σ(grade × coefficient) / Σ(coefficient)
+					const sumWeightedGrades = coursesWithGrades.reduce(
+						(sum: number, cg: any) => sum + cg.average * cg.coefficient,
+						0,
+					);
+					const sumCoefficients = coursesWithGrades.reduce(
+						(sum: number, cg: any) => sum + cg.coefficient,
+						0,
+					);
+					ueAverage =
+						sumCoefficients > 0 ? sumWeightedGrades / sumCoefficients : null;
+				}
 
+				// Credits are only awarded if ALL ECs have grades AND UE average >= passing grade
 				const isPassed =
-					ueAverage !== null && ueAverage >= config.grading.passing_grade;
+					allCoursesHaveGrades &&
+					ueAverage !== null &&
+					ueAverage >= config.grading.passing_grade;
 				const creditsEarned = isPassed ? ue.credits : 0;
+
+				// Determine decision based on completeness and grade
+				let decision: string;
+				if (!allCoursesHaveGrades) {
+					decision = "Inc"; // Incomplete - missing grades
+				} else if (isPassed) {
+					decision = "Ac"; // Acquired
+				} else {
+					decision = "Nac"; // Not acquired
+				}
 
 				ueGrades.push({
 					courseGrades,
 					average: ueAverage,
-					decision: isPassed ? "Ac" : "Nac",
+					decision,
 					credits: creditsEarned,
+					ueCredits: Number(ue.credits) || 0,
+					isComplete: allCoursesHaveGrades,
+					missingCourses: totalCourses - coursesWithGrades.length,
 					successRate:
-						validAverages.length > 0
+						ueAverage !== null
 							? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 							: 0,
 				});
 			}
 
-			// Calculate total credits and general average
+			// Calculate total credits and credit-weighted general average
 			const totalCredits = ueGrades.reduce((sum, ug) => sum + ug.credits, 0);
-			const validUEAverages = ueGrades
-				.map((ug) => ug.average)
-				.filter((a): a is number => a !== null);
+			const uesWithAverages = ueGrades.filter(
+				(ug) => ug.average !== null,
+			) as Array<(typeof ueGrades)[number] & { average: number }>;
 
-			const generalAverage =
-				validUEAverages.length > 0
-					? validUEAverages.reduce((sum, avg) => sum + avg, 0) /
-						validUEAverages.length
-					: null;
+			let generalAverage: number | null = null;
+			if (uesWithAverages.length > 0) {
+				const totalUeCredits = uesWithAverages.reduce(
+					(sum, ug) => sum + ug.ueCredits,
+					0,
+				);
+				if (totalUeCredits > 0) {
+					generalAverage =
+						uesWithAverages.reduce(
+							(sum, ug) => sum + ug.average * ug.ueCredits,
+							0,
+						) / totalUeCredits;
+				} else {
+					// Fallback: simple average if no UE credits defined
+					generalAverage =
+						uesWithAverages.reduce((sum, ug) => sum + ug.average, 0) /
+						uesWithAverages.length;
+				}
+			}
 
 			const overallPassed =
 				generalAverage !== null &&
@@ -366,7 +465,13 @@ export class ExportsService {
 		templateConfig: TemplateConfiguration,
 		observations?: string,
 	) {
-		const grades = data.grades.map((grade: any, index: number) => {
+		// Sort grades alphabetically by student last name, then first name
+		const sortedGrades = [...data.grades].sort((a: any, b: any) =>
+			(a.studentRef.profile.lastName ?? "").localeCompare(b.studentRef.profile.lastName ?? "") ||
+			(a.studentRef.profile.firstName ?? "").localeCompare(b.studentRef.profile.firstName ?? ""),
+		);
+
+		const grades = sortedGrades.map((grade: any, index: number) => {
 			const score = grade.score ? Number(grade.score) : null;
 
 			return {
@@ -428,63 +533,114 @@ export class ExportsService {
 
 	/**
 	 * Process raw data for UE template
+	 * Handles retake exams by applying scoring policy (replace/best_of)
+	 * @param includeRetakes - Whether to include retake grades in the calculation (default: true)
 	 */
 	private processUEData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
 		templateConfig: TemplateConfiguration,
+		includeRetakes = true,
 	) {
 		const { teachingUnit, classCourses, students } = data;
 
+		// Sort students alphabetically by last name, then first name
+		const sortedStudents = [...students].sort((a: any, b: any) =>
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		);
+
 		// Process students
-		const studentGrades = students.map((student: any, index: number) => {
+		const studentGrades = sortedStudents.map((student: any, index: number) => {
 			const courseGrades = classCourses.map((cc: any) => {
-				const exams = cc.exams || [];
-				const ccExam = exams.find((e: any) => e.type === "CC");
-				const examExam = exams.find((e: any) => e.type === "EXAMEN");
+				// Convert exams to ExamWithRetake format
+				const exams = (cc.exams || []).map((exam: any) => ({
+					id: exam.id,
+					type: exam.type,
+					percentage: exam.percentage,
+					sessionType: exam.sessionType || "normal",
+					parentExamId: exam.parentExamId || null,
+					scoringPolicy: exam.scoringPolicy || "replace",
+					grades: exam.grades || [],
+				})) as ExamWithRetake[];
 
-				const ccGrade = ccExam?.grades.find(
-					(g: any) => g.studentRef.id === student.id,
-				);
-				const examGrade = examExam?.grades.find(
-					(g: any) => g.studentRef.id === student.id,
+				// Use the retake-aware grade resolution
+				const resolvedGrades = resolveStudentGradesWithRetakes(
+					exams,
+					student.id,
+					includeRetakes,
 				);
 
-				const ccScore = ccGrade ? Number(ccGrade.score) : null;
-				const examScore = examGrade ? Number(examGrade.score) : null;
+				// Find CC and EXAMEN grades using normalized type
+				const ccGrade = resolvedGrades.find((rg) => rg.normalizedType === "CC");
+				const examGrade = resolvedGrades.find(
+					(rg) => rg.normalizedType === "EXAMEN",
+				);
+
+				const ccScore = ccGrade?.score ?? null;
+				const examScore = examGrade?.score ?? null;
 
 				let average = null;
-				if (ccExam && examExam && ccScore !== null && examScore !== null) {
+				if (ccGrade && examGrade && ccScore !== null && examScore !== null) {
 					average =
-						(ccScore * Number(ccExam.percentage) +
-							examScore * Number(examExam.percentage)) /
+						(ccScore * ccGrade.percentage + examScore * examGrade.percentage) /
 						100;
 				}
 
 				return {
 					courseCode: cc.courseRef.code,
 					courseName: cc.courseRef.name,
+					coefficient: Number(cc.coefficient) || 1,
 					cc: ccScore,
 					ex: examScore,
 					average,
+					// Include retake info for display if needed
+					ccIsRetake: ccGrade?.isRetake ?? false,
+					exIsRetake: examGrade?.isRetake ?? false,
 				};
 			});
 
-			// Calculate UE average
-			const validAverages = courseGrades
-				.map((cg: any) => cg.average)
-				.filter((a: any): a is number => a !== null);
+			// Calculate UE weighted average
+			// IMPORTANT: ALL ECs must have a grade for the UE to be validated
+			const totalCourses = courseGrades.length;
+			const coursesWithGrades = courseGrades.filter(
+				(cg: any) => cg.average !== null,
+			);
+			const allCoursesHaveGrades = coursesWithGrades.length === totalCourses;
 
-			const ueAverage =
-				validAverages.length > 0
-					? validAverages.reduce((sum, avg) => sum + avg, 0) /
-						validAverages.length
-					: null;
+			let ueAverage: number | null = null;
+			if (allCoursesHaveGrades && coursesWithGrades.length > 0) {
+				// Calculate weighted average: Σ(grade × coefficient) / Σ(coefficient)
+				const sumWeightedGrades = coursesWithGrades.reduce(
+					(sum: number, cg: any) => sum + cg.average * cg.coefficient,
+					0,
+				);
+				const sumCoefficients = coursesWithGrades.reduce(
+					(sum: number, cg: any) => sum + cg.coefficient,
+					0,
+				);
+				ueAverage =
+					sumCoefficients > 0 ? sumWeightedGrades / sumCoefficients : null;
+			}
 
+			// Credits are only awarded if ALL ECs have grades AND UE average >= passing grade
 			const isPassed =
-				ueAverage !== null && ueAverage >= config.grading.passing_grade;
+				allCoursesHaveGrades &&
+				ueAverage !== null &&
+				ueAverage >= config.grading.passing_grade;
+
+			// Determine decision based on completeness and grade
+			let decision: string;
+			if (!allCoursesHaveGrades) {
+				decision = "Inc"; // Incomplete - missing grades
+			} else if (isPassed) {
+				decision = "Ac"; // Acquired
+			} else {
+				decision = "Nac"; // Not acquired
+			}
+
 			const successRate =
-				validAverages.length > 0
+				ueAverage !== null
 					? calculateSuccessRate([ueAverage], config.grading.passing_grade)
 					: 0;
 
@@ -495,8 +651,10 @@ export class ExportsService {
 				registrationNumber: student.registrationNumber,
 				courseGrades,
 				ueAverage,
-				decision: isPassed ? "Ac" : "Nac",
+				decision,
 				credits: isPassed ? teachingUnit.credits : 0,
+				isComplete: allCoursesHaveGrades,
+				missingCourses: totalCourses - coursesWithGrades.length,
 				successRate,
 			};
 		});
@@ -569,6 +727,7 @@ export class ExportsService {
 		const browser = await puppeteer.launch({
 			headless: true,
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
 		});
 
 		try {

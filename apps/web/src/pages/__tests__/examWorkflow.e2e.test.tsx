@@ -430,7 +430,9 @@ describe("exam workflow UI e2e", () => {
 		const examName = "Algorithms Midterm";
 
 		const examManagement = renderWithProviders(<AdminExamManagement />);
-		const addButton = await screen.findByRole("button", { name: /Add Exam/i });
+		const addButton = await screen.findByRole("button", {
+			name: /Add Exam/i,
+		});
 		fireEvent.click(addButton);
 
 		const courseSelect = await screen.findByLabelText("Linked course");
@@ -454,7 +456,9 @@ describe("exam workflow UI e2e", () => {
 
 		const workflowManager = renderWithProviders(<WorkflowManager />);
 		const classCourseSelect = await screen.findByRole("combobox");
-		fireEvent.change(classCourseSelect, { target: { value: CLASS_COURSE_ID } });
+		fireEvent.change(classCourseSelect, {
+			target: { value: CLASS_COURSE_ID },
+		});
 		await screen.findByText(examName);
 
 		fireEvent.click(screen.getByRole("button", { name: /Submit/i }));

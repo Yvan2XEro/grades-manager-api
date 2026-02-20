@@ -219,7 +219,9 @@ export function FullFormExample() {
 		},
 	});
 
-	const { data: faculties = [] } = trpc.faculties.list.useQuery({ limit: 100 });
+	const { data: faculties = [] } = trpc.faculties.list.useQuery({
+		limit: 100,
+	});
 	const { data: programs = [] } = trpc.programs.list.useQuery(
 		{
 			facultyId: form.watch("facultyCode") || undefined,

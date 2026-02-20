@@ -87,7 +87,6 @@ describe("e2e http", () => {
 			class: klass.id,
 			course: course.id,
 			teacher: teacher.profile.id,
-			weeklyHours: 2,
 		});
 
 		const student = await client.students.create.mutate({
@@ -116,7 +115,10 @@ describe("e2e http", () => {
 		});
 		if (!exam) throw new Error("Failed to create exam");
 		await client.exams.submit.mutate({ examId: exam.id });
-		await client.exams.validate.mutate({ examId: exam.id, status: "approved" });
+		await client.exams.validate.mutate({
+			examId: exam.id,
+			status: "approved",
+		});
 
 		if (exam) {
 			await client.grades.upsertNote.mutate({
@@ -125,7 +127,9 @@ describe("e2e http", () => {
 				score: 90,
 			});
 
-			const list = await client.grades.listByExam.query({ examId: exam.id });
+			const list = await client.grades.listByExam.query({
+				examId: exam.id,
+			});
 			expect(list.items.length).toBe(1);
 		}
 	});

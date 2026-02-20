@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Play, TableProperties } from "lucide-react";
+import { Loader2, Play, RefreshCcw, TableProperties } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
@@ -45,10 +46,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
-type AcademicYear = { id: string; name: string };
-type ExamType = { id: string; name: string };
+type ExamType = { id: string; name: string; defaultPercentage: number | null };
 type Semester = RouterOutputs["semesters"]["list"]["items"][number];
 type PreviewClass = {
 	id: string;
@@ -59,46 +60,58 @@ type PreviewClass = {
 };
 type HistoryItem = RouterOutputs["examScheduler"]["history"]["items"][number];
 type RunDetails = RouterOutputs["examScheduler"]["details"];
+type RetakeExam =
+	RouterOutputs["examScheduler"]["previewRetakes"]["exams"][number];
+type SessionMode = "normal" | "retake";
 
 export default function ExamScheduler() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 	const [detailsRunId, setDetailsRunId] = useState<string | null>(null);
+	const [sessionMode, setSessionMode] = useState<SessionMode>("normal");
+
+	// Common form state
 	const [academicYearId, setAcademicYearId] = useState("");
-	const [examTypeId, setExamTypeId] = useState("");
 	const [semesterId, setSemesterId] = useState("");
-	const [percentage, setPercentage] = useState(40);
 	const [dateStart, setDateStart] = useState("");
 	const [dateEnd, setDateEnd] = useState("");
+
+	// Normal session state
+	const [examTypeId, setExamTypeId] = useState("");
+	const [percentage, setPercentage] = useState(40);
 	const [selectedClasses, setSelectedClasses] = useState<Set<string>>(
 		new Set(),
 	);
 
+	// Retake session state
+	const [selectedExams, setSelectedExams] = useState<Set<string>>(new Set());
+	const [scoringPolicy, setScoringPolicy] = useState<"replace" | "best_of">(
+		"replace",
+	);
+	const [classFilter, setClassFilter] = useState<string>("");
+	const [examTypeFilter, setExamTypeFilter] = useState<string>("");
+
 	const resetForm = () => {
 		setAcademicYearId("");
-		setExamTypeId("");
 		setSemesterId("");
-		setPercentage(40);
 		setDateStart("");
 		setDateEnd("");
+		setExamTypeId("");
+		setPercentage(40);
 		setSelectedClasses(new Set());
+		setSelectedExams(new Set());
+		setScoringPolicy("replace");
+		setClassFilter("");
+		setExamTypeFilter("");
 	};
-
-	const academicYearsQuery = useQuery({
-		queryKey: ["academicYears"],
-		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({
-				limit: 200,
-			});
-			return items as AcademicYear[];
-		},
-	});
 
 	const examTypesQuery = useQuery({
 		queryKey: ["examTypes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.examTypes.list.query({ limit: 200 });
+			const { items } = await trpcClient.examTypes.list.query({
+				limit: 200,
+			});
 			return items as ExamType[];
 		},
 	});
@@ -106,14 +119,33 @@ export default function ExamScheduler() {
 	const semestersQuery = useQuery({
 		queryKey: ["semesters"],
 		queryFn: async () => {
-			const result = await trpcClient.semesters.list.query({ limit: 200 });
+			const result = await trpcClient.semesters.list.query({
+				limit: 200,
+			});
 			return result.items as Semester[];
 		},
 	});
 	const semesters = semestersQuery.data ?? [];
 
+	const classesQuery = useQuery({
+		queryKey: ["classes", academicYearId],
+		enabled: Boolean(academicYearId),
+		queryFn: async () => {
+			const result = await trpcClient.classes.list.query({
+				academicYearId,
+				limit: 500,
+			});
+			return result.items;
+		},
+	});
+	const classes = classesQuery.data ?? [];
+
+	// Normal session preview
 	const previewEnabled =
-		isScheduleOpen && Boolean(academicYearId) && Boolean(semesterId);
+		isScheduleOpen &&
+		sessionMode === "normal" &&
+		Boolean(academicYearId) &&
+		Boolean(semesterId);
 	const previewQuery = useQuery({
 		queryKey: ["examSchedulerPreview", academicYearId, semesterId],
 		enabled: previewEnabled,
@@ -133,7 +165,7 @@ export default function ExamScheduler() {
 	);
 
 	useEffect(() => {
-		if (!previewClassIds.length) {
+		if (sessionMode !== "normal" || !previewClassIds.length) {
 			setSelectedClasses(new Set());
 			return;
 		}
@@ -146,7 +178,55 @@ export default function ExamScheduler() {
 			}
 			return new Set(previewClassIds);
 		});
-	}, [previewClassIds]);
+	}, [previewClassIds, sessionMode]);
+
+	// Retake session preview
+	const retakePreviewEnabled =
+		isScheduleOpen &&
+		sessionMode === "retake" &&
+		Boolean(academicYearId) &&
+		Boolean(semesterId);
+	const retakePreviewQuery = useQuery({
+		queryKey: [
+			"examSchedulerRetakePreview",
+			academicYearId,
+			semesterId,
+			examTypeFilter,
+			classFilter,
+		],
+		enabled: retakePreviewEnabled,
+		queryFn: async () => {
+			if (!academicYearId || !semesterId) return null;
+			return trpcClient.examScheduler.previewRetakes.query({
+				academicYearId,
+				semesterId,
+				examTypeId: examTypeFilter || undefined,
+				classId: classFilter || undefined,
+			});
+		},
+	});
+
+	const retakeExams = (retakePreviewQuery.data?.exams ?? []) as RetakeExam[];
+	const retakeExamIds = useMemo(
+		() => retakeExams.map((exam) => exam.id),
+		[retakeExams],
+	);
+
+	useEffect(() => {
+		if (sessionMode !== "retake" || !retakeExamIds.length) {
+			setSelectedExams(new Set());
+			return;
+		}
+		setSelectedExams((prev) => {
+			if (
+				prev.size === retakeExamIds.length &&
+				retakeExamIds.every((id) => prev.has(id))
+			) {
+				return prev;
+			}
+			return new Set(retakeExamIds);
+		});
+	}, [retakeExamIds, sessionMode]);
 
 	const historyQuery = useQuery({
 		queryKey: ["examSchedulerHistory"],
@@ -159,10 +239,13 @@ export default function ExamScheduler() {
 		enabled: Boolean(detailsRunId),
 		queryFn: async () => {
 			if (!detailsRunId) return null;
-			return trpcClient.examScheduler.details.query({ runId: detailsRunId });
+			return trpcClient.examScheduler.details.query({
+				runId: detailsRunId,
+			});
 		},
 	});
 
+	// Normal session mutation
 	const scheduleMutation = useMutation({
 		mutationFn: async () => {
 			if (
@@ -187,7 +270,9 @@ export default function ExamScheduler() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.examScheduler.toast.success"));
-			queryClient.invalidateQueries({ queryKey: ["examSchedulerHistory"] });
+			queryClient.invalidateQueries({
+				queryKey: ["examSchedulerHistory"],
+			});
 			setIsScheduleOpen(false);
 			resetForm();
 		},
@@ -200,7 +285,54 @@ export default function ExamScheduler() {
 		},
 	});
 
-	const canSubmit =
+	// Retake session mutation
+	const scheduleRetakesMutation = useMutation({
+		mutationFn: async () => {
+			if (
+				!academicYearId ||
+				!semesterId ||
+				!dateStart ||
+				!dateEnd ||
+				!selectedExams.size
+			) {
+				throw new Error(t("admin.examScheduler.toast.retakeError"));
+			}
+			return trpcClient.examScheduler.scheduleRetakes.mutate({
+				academicYearId,
+				semesterId,
+				dateStart: new Date(dateStart),
+				dateEnd: new Date(dateEnd),
+				examIds: Array.from(selectedExams),
+				scoringPolicy,
+				examTypeId: examTypeFilter || undefined,
+				classId: classFilter || undefined,
+			});
+		},
+		onSuccess: (result) => {
+			toast.success(
+				t("admin.examScheduler.toast.retakeSuccess", {
+					count: result.created,
+				}),
+			);
+			queryClient.invalidateQueries({
+				queryKey: ["examSchedulerHistory"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["examSchedulerRetakePreview"],
+			});
+			setIsScheduleOpen(false);
+			resetForm();
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.examScheduler.toast.retakeError");
+			toast.error(message);
+		},
+	});
+
+	const canSubmitNormal =
 		Boolean(
 			academicYearId &&
 				examTypeId &&
@@ -213,8 +345,26 @@ export default function ExamScheduler() {
 		percentage <= 100 &&
 		!scheduleMutation.isPending;
 
+	const canSubmitRetake =
+		Boolean(
+			academicYearId &&
+				semesterId &&
+				dateStart &&
+				dateEnd &&
+				selectedExams.size,
+		) && !scheduleRetakesMutation.isPending;
+
 	const toggleClass = (id: string) => {
 		setSelectedClasses((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	};
+
+	const toggleExam = (id: string) => {
+		setSelectedExams((prev) => {
 			const next = new Set(prev);
 			if (next.has(id)) next.delete(id);
 			else next.add(id);
@@ -227,13 +377,34 @@ export default function ExamScheduler() {
 		setSelectedClasses(checked ? new Set(previewClassIds) : new Set());
 	};
 
+	const setAllExams = (checked: boolean) => {
+		if (!retakeExamIds.length) return;
+		setSelectedExams(checked ? new Set(retakeExamIds) : new Set());
+	};
+
 	const allClassesSelected =
 		previewClassIds.length > 0 &&
 		selectedClasses.size === previewClassIds.length;
 
+	const allExamsSelected =
+		retakeExamIds.length > 0 && selectedExams.size === retakeExamIds.length;
+
 	const closeDetails = () => setDetailsRunId(null);
 
 	const detailsData = runDetailsQuery.data as RunDetails | null;
+
+	const handleSubmit = () => {
+		if (sessionMode === "normal") {
+			scheduleMutation.mutate();
+		} else {
+			scheduleRetakesMutation.mutate();
+		}
+	};
+
+	const isPending =
+		scheduleMutation.isPending || scheduleRetakesMutation.isPending;
+	const canSubmit =
+		sessionMode === "normal" ? canSubmitNormal : canSubmitRetake;
 
 	return (
 		<div className="space-y-6">
@@ -362,78 +533,219 @@ export default function ExamScheduler() {
 							{t("admin.examScheduler.form.description")}
 						</p>
 					</DialogHeader>
+
+					{/* Session Mode Toggle */}
+					<div className="mb-4">
+						<Label className="mb-2 block">
+							{t("admin.examScheduler.sessionMode.label")}
+						</Label>
+						<Tabs
+							value={sessionMode}
+							onValueChange={(v) => setSessionMode(v as SessionMode)}
+						>
+							<TabsList className="grid w-full grid-cols-2">
+								<TabsTrigger value="normal" className="gap-2">
+									<Play className="h-4 w-4" />
+									{t("admin.examScheduler.sessionMode.normal")}
+								</TabsTrigger>
+								<TabsTrigger value="retake" className="gap-2">
+									<RefreshCcw className="h-4 w-4" />
+									{t("admin.examScheduler.sessionMode.retake")}
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
+						<p className="mt-1 text-muted-foreground text-xs">
+							{sessionMode === "normal"
+								? t("admin.examScheduler.sessionMode.normalDescription")
+								: t("admin.examScheduler.sessionMode.retakeDescription")}
+						</p>
+					</div>
+
 					<div className="grid gap-6 lg:grid-cols-3">
 						<div className="space-y-4 lg:col-span-1">
 							<div className="space-y-2">
 								<Label>{t("admin.examScheduler.form.academicYearLabel")}</Label>
+								<AcademicYearSelect
+									value={academicYearId || null}
+									onChange={setAcademicYearId}
+									autoSelectActive
+									placeholder={t(
+										"admin.examScheduler.form.academicYearPlaceholder",
+									)}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label>{t("admin.examScheduler.form.semesterLabel")}</Label>
 								<Select
-									value={academicYearId}
-									onValueChange={(value) => {
-										setAcademicYearId(value);
-									}}
+									value={semesterId}
+									onValueChange={setSemesterId}
+									disabled={semesters.length === 0}
 								>
 									<SelectTrigger>
 										<SelectValue
 											placeholder={t(
-												"admin.examScheduler.form.academicYearPlaceholder",
+												"admin.examScheduler.form.semesterPlaceholder",
 											)}
 										/>
 									</SelectTrigger>
 									<SelectContent>
-										{(academicYearsQuery.data ?? []).map((year) => (
-											<SelectItem key={year.id} value={year.id}>
-												{year.name}
+										{semesters.map((semester) => (
+											<SelectItem key={semester.id} value={semester.id}>
+												{semester.name}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
 							</div>
-			<div className="space-y-2">
-				<Label>{t("admin.examScheduler.form.examTypeLabel")}</Label>
-				<Select
-					value={examTypeId}
-					onValueChange={(value) => setExamTypeId(value)}
-				>
-					<SelectTrigger>
-						<SelectValue
-							placeholder={t(
-								"admin.examScheduler.form.examTypePlaceholder",
+
+							{/* Normal session specific fields */}
+							{sessionMode === "normal" && (
+								<>
+									<div className="space-y-2">
+										<Label>{t("admin.examScheduler.form.examTypeLabel")}</Label>
+										<Select
+											value={examTypeId}
+											onValueChange={(value) => {
+												setExamTypeId(value);
+												const selectedType = examTypesQuery.data?.find(
+													(t) => t.id === value,
+												);
+												if (selectedType?.defaultPercentage != null) {
+													setPercentage(selectedType.defaultPercentage);
+												}
+											}}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.examScheduler.form.examTypePlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{(examTypesQuery.data ?? []).map((type) => (
+													<SelectItem key={type.id} value={type.id}>
+														{type.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="space-y-2">
+										<Label>
+											{t("admin.examScheduler.form.percentageLabel")}
+										</Label>
+										<Input
+											type="number"
+											min={1}
+											max={100}
+											value={percentage}
+											onChange={(event) =>
+												setPercentage(Number(event.target.value) || 0)
+											}
+										/>
+									</div>
+								</>
 							)}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						{(examTypesQuery.data ?? []).map((type) => (
-							<SelectItem key={type.id} value={type.id}>
-								{type.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
-			<div className="space-y-2">
-				<Label>{t("admin.examScheduler.form.semesterLabel")}</Label>
-				<Select
-					value={semesterId}
-					onValueChange={setSemesterId}
-					disabled={semesters.length === 0}
-				>
-					<SelectTrigger>
-						<SelectValue
-							placeholder={t(
-								"admin.examScheduler.form.semesterPlaceholder",
+
+							{/* Retake session specific fields */}
+							{sessionMode === "retake" && (
+								<>
+									<div className="space-y-2">
+										<Label>
+											{t("admin.examScheduler.form.scoringPolicyLabel")}
+										</Label>
+										<Select
+											value={scoringPolicy}
+											onValueChange={(v) =>
+												setScoringPolicy(v as "replace" | "best_of")
+											}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.examScheduler.form.scoringPolicyPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="replace">
+													{t("admin.examScheduler.form.scoringPolicyReplace")}
+												</SelectItem>
+												<SelectItem value="best_of">
+													{t("admin.examScheduler.form.scoringPolicyBestOf")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="space-y-2">
+										<Label>
+											{t("admin.examScheduler.form.classFilterLabel")}
+										</Label>
+										<Select
+											value={classFilter || "__all__"}
+											onValueChange={(v) =>
+												setClassFilter(v === "__all__" ? "" : v)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.examScheduler.form.classFilterPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="__all__">
+													{t("admin.examScheduler.form.classFilterPlaceholder")}
+												</SelectItem>
+												{classes.map((cls) => (
+													<SelectItem key={cls.id} value={cls.id}>
+														{cls.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="space-y-2">
+										<Label>
+											{t("admin.examScheduler.form.examTypeFilterLabel")}
+										</Label>
+										<Select
+											value={examTypeFilter || "__all__"}
+											onValueChange={(v) =>
+												setExamTypeFilter(v === "__all__" ? "" : v)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.examScheduler.form.examTypeFilterPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="__all__">
+													{t(
+														"admin.examScheduler.form.examTypeFilterPlaceholder",
+													)}
+												</SelectItem>
+												{(examTypesQuery.data ?? []).map((type) => (
+													<SelectItem key={type.id} value={type.id}>
+														{type.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+								</>
 							)}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						{semesters.map((semester) => (
-							<SelectItem key={semester.id} value={semester.id}>
-								{semester.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
-			<div className="grid grid-cols-2 gap-4">
+
+							<div className="grid grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label>{t("admin.examScheduler.form.dateStartLabel")}</Label>
 									<Input
@@ -451,93 +763,197 @@ export default function ExamScheduler() {
 									/>
 								</div>
 							</div>
-							<div className="space-y-2">
-								<Label>{t("admin.examScheduler.form.percentageLabel")}</Label>
-								<Input
-									type="number"
-									min={1}
-									max={100}
-									value={percentage}
-									onChange={(event) =>
-										setPercentage(Number(event.target.value) || 0)
-									}
-								/>
-							</div>
+
 							<div className="flex gap-2">
 								<Button
 									className="flex-1"
-									onClick={() => scheduleMutation.mutate()}
+									onClick={handleSubmit}
 									disabled={!canSubmit}
 								>
-									{scheduleMutation.isPending ? (
+									{isPending ? (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									) : null}
-									{t("admin.examScheduler.actions.schedule")}
+									{sessionMode === "normal"
+										? t("admin.examScheduler.actions.schedule")
+										: t("admin.examScheduler.actions.scheduleRetakes")}
 								</Button>
 								<Button variant="ghost" type="button" onClick={resetForm}>
 									{t("common.actions.reset")}
 								</Button>
 							</div>
 						</div>
+
 						<div className="lg:col-span-2">
-							<div className="mb-4 flex items-center justify-between">
-								<div>
-									<p className="font-medium">
-										{t("admin.examScheduler.classes.title")}
-									</p>
-									<p className="text-muted-foreground text-sm">
-										{t("admin.examScheduler.classes.description")}
-									</p>
-								</div>
-								<div className="flex items-center gap-2 text-sm">
-									<Checkbox
-										id="select-all-classes"
-										checked={allClassesSelected}
-										onCheckedChange={(value) => setAllClasses(value === true)}
-										disabled={!previewClasses.length}
-									/>
-									<Label htmlFor="select-all-classes">
-										{t("admin.examScheduler.classes.selectAll")}
-									</Label>
-								</div>
-							</div>
-							<div className="rounded-md border">
-								{previewQuery.isLoading ? (
-									<div className="flex items-center justify-center py-8">
-										<Spinner />
+							{/* Normal session: Classes list */}
+							{sessionMode === "normal" && (
+								<>
+									<div className="mb-4 flex items-center justify-between">
+										<div>
+											<p className="font-medium">
+												{t("admin.examScheduler.classes.title")}
+											</p>
+											<p className="text-muted-foreground text-sm">
+												{t("admin.examScheduler.classes.description")}
+											</p>
+										</div>
+										<div className="flex items-center gap-2 text-sm">
+											<Checkbox
+												id="select-all-classes"
+												checked={allClassesSelected}
+												onCheckedChange={(value) =>
+													setAllClasses(value === true)
+												}
+												disabled={!previewClasses.length}
+											/>
+											<Label htmlFor="select-all-classes">
+												{t("admin.examScheduler.classes.selectAll")}
+											</Label>
+										</div>
 									</div>
-								) : !previewClasses.length ? (
-									<div className="py-12 text-center text-muted-foreground">
-										{t("admin.examScheduler.classes.description")}
-									</div>
-								) : (
-									<div className="max-h-[420px] space-y-3 overflow-y-auto p-3">
-										{previewClasses.map((klass) => (
-											<div
-												key={klass.id}
-												className="flex items-center justify-between rounded-lg border border-border p-3"
-											>
-												<div>
-													<p className="font-medium">{klass.name}</p>
-													<p className="text-muted-foreground text-sm">
-														{klass.programName}
-													</p>
-												</div>
-												<div className="flex items-center gap-4">
-													<Badge variant="outline">
-														{t("admin.exams.table.course")}:{" "}
-														{klass.classCourseCount}
-													</Badge>
-													<Checkbox
-														checked={selectedClasses.has(klass.id)}
-														onCheckedChange={() => toggleClass(klass.id)}
-													/>
-												</div>
+									<div className="rounded-md border">
+										{previewQuery.isLoading ? (
+											<div className="flex items-center justify-center py-8">
+												<Spinner />
 											</div>
-										))}
+										) : !previewClasses.length ? (
+											<div className="py-12 text-center text-muted-foreground">
+												{t("admin.examScheduler.classes.description")}
+											</div>
+										) : (
+											<div className="max-h-[420px] space-y-3 overflow-y-auto p-3">
+												{previewClasses.map((klass) => (
+													<div
+														key={klass.id}
+														className="flex items-center justify-between rounded-lg border border-border p-3"
+													>
+														<div>
+															<p className="font-medium">{klass.name}</p>
+															<p className="text-muted-foreground text-sm">
+																{klass.programName}
+															</p>
+														</div>
+														<div className="flex items-center gap-4">
+															<Badge variant="outline">
+																{t("admin.exams.table.course")}:{" "}
+																{klass.classCourseCount}
+															</Badge>
+															<Checkbox
+																checked={selectedClasses.has(klass.id)}
+																onCheckedChange={() => toggleClass(klass.id)}
+															/>
+														</div>
+													</div>
+												))}
+											</div>
+										)}
 									</div>
-								)}
-							</div>
+								</>
+							)}
+
+							{/* Retake session: Exams list */}
+							{sessionMode === "retake" && (
+								<>
+									<div className="mb-4 flex items-center justify-between">
+										<div>
+											<p className="font-medium">
+												{t("admin.examScheduler.retakeExams.title")}
+											</p>
+											<p className="text-muted-foreground text-sm">
+												{t("admin.examScheduler.retakeExams.description")}
+											</p>
+										</div>
+										<div className="flex items-center gap-4 text-sm">
+											<Badge variant="secondary">
+												{t("admin.examScheduler.retakeExams.examCount", {
+													count: retakeExams.length,
+												})}
+											</Badge>
+											<div className="flex items-center gap-2">
+												<Checkbox
+													id="select-all-exams"
+													checked={allExamsSelected}
+													onCheckedChange={(value) =>
+														setAllExams(value === true)
+													}
+													disabled={!retakeExams.length}
+												/>
+												<Label htmlFor="select-all-exams">
+													{t("admin.examScheduler.retakeExams.selectAll")}
+												</Label>
+											</div>
+										</div>
+									</div>
+									<div className="rounded-md border">
+										{retakePreviewQuery.isLoading ? (
+											<div className="flex items-center justify-center py-8">
+												<Spinner />
+											</div>
+										) : !retakeExams.length ? (
+											<div className="py-12 text-center text-muted-foreground">
+												{t("admin.examScheduler.retakeExams.noExams")}
+											</div>
+										) : (
+											<div className="max-h-[420px] overflow-y-auto">
+												<Table>
+													<TableHeader>
+														<TableRow>
+															<TableHead className="w-12" />
+															<TableHead>
+																{t(
+																	"admin.examScheduler.history.details.table.exam",
+																)}
+															</TableHead>
+															<TableHead>
+																{t(
+																	"admin.examScheduler.history.details.table.course",
+																)}
+															</TableHead>
+															<TableHead>
+																{t(
+																	"admin.examScheduler.history.details.table.class",
+																)}
+															</TableHead>
+															<TableHead>
+																{t(
+																	"admin.examScheduler.history.details.table.type",
+																)}
+															</TableHead>
+															<TableHead>
+																{t(
+																	"admin.examScheduler.history.details.table.date",
+																)}
+															</TableHead>
+														</TableRow>
+													</TableHeader>
+													<TableBody>
+														{retakeExams.map((exam) => (
+															<TableRow key={exam.id}>
+																<TableCell>
+																	<Checkbox
+																		checked={selectedExams.has(exam.id)}
+																		onCheckedChange={() => toggleExam(exam.id)}
+																	/>
+																</TableCell>
+																<TableCell className="font-medium">
+																	{exam.name}
+																</TableCell>
+																<TableCell>{exam.courseName}</TableCell>
+																<TableCell>{exam.className}</TableCell>
+																<TableCell>
+																	<Badge variant="outline">{exam.type}</Badge>
+																</TableCell>
+																<TableCell>
+																	{format(new Date(exam.date), "PP")}
+																</TableCell>
+															</TableRow>
+														))}
+													</TableBody>
+												</Table>
+											</div>
+										)}
+									</div>
+								</>
+							)}
 						</div>
 					</div>
 				</DialogContent>

@@ -90,9 +90,9 @@ Carol,Williams,carol.williams@example.com,2000-11-30,Bafoussam,female`;
 				name: /save|create|submit|enregistrer|créer/i,
 			}).click();
 
-			cy.contains(/created|créé|success|succès/i, { timeout: 10000 }).should(
-				"exist",
-			);
+			cy.contains(/created|créé|success|succès/i, {
+				timeout: 10000,
+			}).should("exist");
 
 			// Now try to import with duplicate
 			cy.findByRole("button", {

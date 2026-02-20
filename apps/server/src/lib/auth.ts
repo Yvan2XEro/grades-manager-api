@@ -24,7 +24,6 @@ export const auth = betterAuth({
 				user.id,
 				{
 					authUserId: user.id,
-					businessRole: "student",
 					primaryEmail: user.email,
 					firstName: user.name,
 					lastName: "",
@@ -63,8 +62,8 @@ export const auth = betterAuth({
 	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
+			sameSite: process.env.BETTER_AUTH_COOKIE_SAMESITE ?? "lax",
+			secure: process.env.BETTER_AUTH_COOKIE_SECURE === "true",
 			httpOnly: true,
 		},
 	},

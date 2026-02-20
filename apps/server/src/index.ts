@@ -50,6 +50,12 @@ app.get("/", (c) => {
 	return c.text("OK");
 });
 
-startBackgroundJobs();
+const cleanupJobs = await startBackgroundJobs();
+
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+	await cleanupJobs();
+	process.exit(0);
+});
 
 export default app;

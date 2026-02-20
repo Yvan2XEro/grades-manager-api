@@ -1,10 +1,17 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Download, Eye, FileCode, Save } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Eye, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,15 +21,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	getTemplateExample,
+	type TemplateType,
+} from "@/lib/export-template-examples";
 import { trpcClient } from "@/utils/trpc";
 
 export default function ExportTemplateEditor() {
@@ -62,7 +66,9 @@ export default function ExportTemplateEditor() {
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 		},
 		onError: (error: any) => {
-			toast.error(error.message || t("admin.exportTemplates.toast.createError"));
+			toast.error(
+				error.message || t("admin.exportTemplates.toast.createError"),
+			);
 		},
 	});
 
@@ -70,7 +76,8 @@ export default function ExportTemplateEditor() {
 	const { data: template, isLoading } = useQuery({
 		queryKey: ["exportTemplate", templateId],
 		queryFn: async () => {
-			if (!templateId || templateId === "new") throw new Error("No template ID");
+			if (!templateId || templateId === "new")
+				throw new Error("No template ID");
 			const result = await trpcClient.exportTemplates.getById.query({
 				id: templateId,
 			});
@@ -85,7 +92,8 @@ export default function ExportTemplateEditor() {
 	// Mutation de sauvegarde
 	const updateMutation = useMutation({
 		mutationFn: async () => {
-			if (!templateId || templateId === "new") throw new Error("No template ID");
+			if (!templateId || templateId === "new")
+				throw new Error("No template ID");
 			await trpcClient.exportTemplates.update.mutate({
 				id: templateId,
 				name: templateName.trim(),
@@ -94,7 +102,9 @@ export default function ExportTemplateEditor() {
 		},
 		onSuccess: () => {
 			toast.success(t("admin.exportTemplates.toast.updateSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["exportTemplate", templateId] });
+			queryClient.invalidateQueries({
+				queryKey: ["exportTemplate", templateId],
+			});
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 		},
 		onError: (error: any) => {
@@ -127,7 +137,7 @@ export default function ExportTemplateEditor() {
 	const handleSave = async () => {
 		if (!templateName.trim()) {
 			toast.error(t("admin.exportTemplates.validation.name"));
-		 return;
+			return;
 		}
 		if (!templateBody.trim()) {
 			toast.error(t("admin.exportTemplates.editor.template.required"));
@@ -165,9 +175,18 @@ export default function ExportTemplateEditor() {
 		URL.revokeObjectURL(url);
 	};
 
+	const handleLoadExample = () => {
+		const currentType = (template?.type || templateType) as TemplateType;
+		const exampleTemplate = getTemplateExample(currentType);
+		if (exampleTemplate) {
+			setTemplateBody(exampleTemplate);
+			toast.success(t("admin.exportTemplates.editor.template.exampleLoaded"));
+		}
+	};
+
 	if (isLoading) {
 		return (
-			<div className="flex justify-center items-center min-h-screen">
+			<div className="flex min-h-screen items-center justify-center">
 				<Spinner />
 			</div>
 		);
@@ -175,15 +194,15 @@ export default function ExportTemplateEditor() {
 
 	if (!template && !isNewTemplate) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen">
-				<h2 className="text-2xl font-bold">
+			<div className="flex min-h-screen flex-col items-center justify-center">
+				<h2 className="font-bold text-2xl">
 					{t("admin.exportTemplates.editor.notFound")}
 				</h2>
 				<Button
 					onClick={() => navigate("/admin/export-templates")}
 					className="mt-4"
 				>
-					<ArrowLeft className="h-4 w-4 mr-2" />
+					<ArrowLeft className="mr-2 h-4 w-4" />
 					{t("common.actions.back")}
 				</Button>
 			</div>
@@ -200,11 +219,11 @@ export default function ExportTemplateEditor() {
 						size="sm"
 						onClick={() => navigate("/admin/export-templates")}
 					>
-						<ArrowLeft className="h-4 w-4 mr-2" />
+						<ArrowLeft className="mr-2 h-4 w-4" />
 						{t("common.actions.back")}
 					</Button>
 					<div>
-						<h1 className="text-3xl font-bold tracking-tight">
+						<h1 className="font-bold text-3xl tracking-tight">
 							{template?.name || templateName}
 						</h1>
 						<p className="text-muted-foreground">
@@ -218,9 +237,11 @@ export default function ExportTemplateEditor() {
 					{isSaving ? (
 						<Spinner className="mr-2" />
 					) : (
-						<Save className="h-4 w-4 mr-2" />
+						<Save className="mr-2 h-4 w-4" />
 					)}
-					{isNewTemplate ? t("common.actions.create") : t("common.actions.save")}
+					{isNewTemplate
+						? t("common.actions.create")
+						: t("common.actions.save")}
 				</Button>
 			</div>
 
@@ -249,14 +270,14 @@ export default function ExportTemplateEditor() {
 							<SelectItem value="ue">UE (Teaching Unit)</SelectItem>
 						</SelectContent>
 					</Select>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						{t("admin.exportTemplates.form.typeDescription")}
 					</p>
 				</div>
 			</div>
 
 			{/* Editor + Preview */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				{/* Éditeur */}
 				<Card>
 					<CardHeader>
@@ -269,33 +290,37 @@ export default function ExportTemplateEditor() {
 					</CardHeader>
 					<CardContent>
 						<div className="space-y-4">
-              <Textarea
-                value={templateBody}
-                onChange={(e) => setTemplateBody(e.target.value)}
+							<Textarea
+								value={templateBody}
+								onChange={(e) => setTemplateBody(e.target.value)}
 								placeholder={t(
 									"admin.exportTemplates.editor.template.placeholder",
 								)}
-								className="font-mono text-sm min-h-[600px]"
+								className="min-h-[600px] font-mono text-sm"
 								spellCheck={false}
 							/>
 							<div className="flex gap-2">
+								<Button variant="outline" onClick={handleLoadExample}>
+									<FileCode className="mr-2 h-4 w-4" />
+									{t("admin.exportTemplates.editor.template.loadExample")}
+								</Button>
 								<Button
 									onClick={handleGeneratePreview}
-                  disabled={isGeneratingPreview || !templateBody.trim()}
+									disabled={isGeneratingPreview || !templateBody.trim()}
 								>
 									{isGeneratingPreview ? (
 										<Spinner className="mr-2" />
 									) : (
-										<Eye className="h-4 w-4 mr-2" />
+										<Eye className="mr-2 h-4 w-4" />
 									)}
 									{t("admin.exportTemplates.editor.template.generatePreview")}
 								</Button>
 							</div>
-							<div className="text-sm text-muted-foreground space-y-2">
+							<div className="space-y-2 text-muted-foreground text-sm">
 								<p className="font-semibold">
 									{t("admin.exportTemplates.editor.template.helpTitle")}
 								</p>
-								<ul className="list-disc list-inside space-y-1">
+								<ul className="list-inside list-disc space-y-1">
 									<li>
 										{t("admin.exportTemplates.editor.template.helpHandlebars")}
 									</li>
@@ -320,7 +345,9 @@ export default function ExportTemplateEditor() {
 									{t("admin.exportTemplates.editor.template.previewTitle")}
 								</CardTitle>
 								<CardDescription>
-									{t("admin.exportTemplates.editor.template.previewDescription")}
+									{t(
+										"admin.exportTemplates.editor.template.previewDescription",
+									)}
 								</CardDescription>
 							</div>
 							{previewHtml && (
@@ -329,7 +356,7 @@ export default function ExportTemplateEditor() {
 									size="sm"
 									onClick={handleDownloadPreview}
 								>
-									<Download className="h-4 w-4 mr-2" />
+									<Download className="mr-2 h-4 w-4" />
 									{t("admin.exportTemplates.editor.template.download")}
 								</Button>
 							)}
@@ -337,21 +364,21 @@ export default function ExportTemplateEditor() {
 					</CardHeader>
 					<CardContent>
 						{previewHtml ? (
-							<div className="border rounded-lg overflow-hidden">
+							<div className="overflow-hidden rounded-lg border">
 								<iframe
 									srcDoc={previewHtml}
-									className="w-full h-[600px]"
+									className="h-[600px] w-full"
 									title="Template Preview"
 									sandbox="allow-same-origin"
 								/>
 							</div>
 						) : (
-							<div className="flex flex-col items-center justify-center h-[600px] border rounded-lg bg-muted/50">
-								<Eye className="h-12 w-12 text-muted-foreground mb-4" />
+							<div className="flex h-[600px] flex-col items-center justify-center rounded-lg border bg-muted/50">
+								<Eye className="mb-4 h-12 w-12 text-muted-foreground" />
 								<p className="text-muted-foreground">
 									{t("admin.exportTemplates.editor.template.noPreview")}
 								</p>
-								<p className="text-sm text-muted-foreground mt-2">
+								<p className="mt-2 text-muted-foreground text-sm">
 									{t("admin.exportTemplates.editor.template.clickGenerate")}
 								</p>
 							</div>

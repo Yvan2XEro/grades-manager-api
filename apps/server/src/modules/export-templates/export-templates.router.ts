@@ -32,13 +32,12 @@ export const exportTemplatesRouter = router({
 
 	getDefault: protectedProcedure
 		.input(
-			zod.listExportTemplatesSchema.pick({ type: true }).required({ type: true }),
+			zod.listExportTemplatesSchema
+				.pick({ type: true })
+				.required({ type: true }),
 		)
 		.query(async ({ ctx, input }) => {
-			return await service.getDefaultTemplate(
-				ctx.institution.id,
-				input.type,
-			);
+			return await service.getDefaultTemplate(ctx.institution.id, input.type);
 		}),
 
 	create: adminProcedure

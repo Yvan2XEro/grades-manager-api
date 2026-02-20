@@ -278,9 +278,9 @@ describe("Exam Management - Scheduling Conflicts", () => {
 						name: /proceed|continue|continuer/i,
 					}).click();
 
-					cy.contains(/created|créé|success/i, { timeout: 10000 }).should(
-						"exist",
-					);
+					cy.contains(/created|créé|success/i, {
+						timeout: 10000,
+					}).should("exist");
 				} else {
 					cy.log("No conflict dialog or automatic override");
 				}

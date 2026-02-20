@@ -1,5 +1,6 @@
-import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
+import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
+import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { gradesRouter } from "@/modules/grades";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -9,8 +10,8 @@ import { coursesRouter } from "../modules/courses";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
-import { exportsRouter } from "../modules/exports";
 import { exportTemplatesRouter } from "../modules/export-templates";
+import { exportsRouter } from "../modules/exports";
 import { filesRouter } from "../modules/files";
 import { institutionsRouter } from "../modules/institutions";
 import { notificationsRouter } from "../modules/notifications";
@@ -27,6 +28,9 @@ import { studyCyclesRouter } from "../modules/study-cycles";
 import { teachingUnitsRouter } from "../modules/teaching-units";
 import { usersRouter } from "../modules/users";
 import { workflowsRouter } from "../modules/workflows";
+
+// Register all batch job type handlers
+registerAllJobTypes();
 
 export const appRouter = router({
 	healthCheck: publicProcedure.query(() => "OK"),
@@ -62,6 +66,7 @@ export const appRouter = router({
 	users: usersRouter,
 	workflows: workflowsRouter,
 	notifications: notificationsRouter,
+	batchJobs: batchJobsRouter,
 });
 
 export type AppRouter = typeof appRouter;
