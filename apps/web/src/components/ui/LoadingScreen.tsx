@@ -93,10 +93,42 @@ const LoadingScreen: React.FC = () => {
 
 					{/* Corner brackets */}
 					<div style={cornersContainerStyle}>
-						<div style={{ ...cornerStyle, top: 0, left: 0, borderWidth: "2px 0 0 2px", borderRadius: "3px 0 0 0" }} />
-						<div style={{ ...cornerStyle, top: 0, right: 0, borderWidth: "2px 2px 0 0", borderRadius: "0 3px 0 0" }} />
-						<div style={{ ...cornerStyle, bottom: 0, left: 0, borderWidth: "0 0 2px 2px", borderRadius: "0 0 0 3px" }} />
-						<div style={{ ...cornerStyle, bottom: 0, right: 0, borderWidth: "0 2px 2px 0", borderRadius: "0 0 3px 0" }} />
+						<div
+							style={{
+								...cornerStyle,
+								top: 0,
+								left: 0,
+								borderWidth: "2px 0 0 2px",
+								borderRadius: "3px 0 0 0",
+							}}
+						/>
+						<div
+							style={{
+								...cornerStyle,
+								top: 0,
+								right: 0,
+								borderWidth: "2px 2px 0 0",
+								borderRadius: "0 3px 0 0",
+							}}
+						/>
+						<div
+							style={{
+								...cornerStyle,
+								bottom: 0,
+								left: 0,
+								borderWidth: "0 0 2px 2px",
+								borderRadius: "0 0 0 3px",
+							}}
+						/>
+						<div
+							style={{
+								...cornerStyle,
+								bottom: 0,
+								right: 0,
+								borderWidth: "0 2px 2px 0",
+								borderRadius: "0 0 3px 0",
+							}}
+						/>
 					</div>
 
 					{/* Logo mark */}

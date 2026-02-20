@@ -11,8 +11,8 @@ import {
 import * as examsRepo from "../exams/exams.repo";
 import { refreshAfterRetakeGrade } from "../promotion-rules/student-facts.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
-import * as studentsRepo from "../students/students.repo";
 import * as creditLedger from "../student-credit-ledger/student-credit-ledger.service";
+import * as studentsRepo from "../students/students.repo";
 import * as repo from "./grades.repo";
 
 const _CSV_HEADERS = ["registrationNumber", "score"];
@@ -67,7 +67,9 @@ function ensureExamEditable(exam: schema.Exam | undefined | null) {
 }
 
 /** Resolve academicYearId from exam → classCourse → class chain. */
-async function resolveAcademicYearId(classCourseId: string): Promise<string | null> {
+async function resolveAcademicYearId(
+	classCourseId: string,
+): Promise<string | null> {
 	const [row] = await db
 		.select({ academicYear: schema.classes.academicYear })
 		.from(schema.classCourses)
@@ -78,7 +80,10 @@ async function resolveAcademicYearId(classCourseId: string): Promise<string | nu
 }
 
 /** Recompute credit ledger for a student after a grade change. */
-async function recomputeCreditsAfterGradeChange(studentId: string, classCourseId: string) {
+async function recomputeCreditsAfterGradeChange(
+	studentId: string,
+	classCourseId: string,
+) {
 	const academicYearId = await resolveAcademicYearId(classCourseId);
 	if (academicYearId) {
 		await creditLedger.recomputeForStudent(studentId, academicYearId);
@@ -466,7 +471,10 @@ export async function getStudentTranscript(
 		id: unit.id,
 		name: unit.name,
 		code: unit.code,
-		average: unit.totalCoefficients > 0 ? unit.weightedScoreSum / unit.totalCoefficients : 0,
+		average:
+			unit.totalCoefficients > 0
+				? unit.weightedScoreSum / unit.totalCoefficients
+				: 0,
 		credits: unit.credits,
 		courses: unit.courses,
 	}));

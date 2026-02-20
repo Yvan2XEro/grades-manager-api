@@ -321,9 +321,7 @@ describe("exports.getPVData", () => {
 		const s = result.students[0];
 
 		const completeUe = s.ueGrades.find((ug: any) => ug.isComplete === true);
-		const incompleteUe = s.ueGrades.find(
-			(ug: any) => ug.isComplete === false,
-		);
+		const incompleteUe = s.ueGrades.find((ug: any) => ug.isComplete === false);
 
 		expect(completeUe).toBeTruthy();
 		expect(completeUe!.decision).toBe("Ac");

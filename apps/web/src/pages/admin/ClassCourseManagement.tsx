@@ -10,16 +10,13 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { useRowSelection } from "@/hooks/useRowSelection";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -30,6 +27,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -38,6 +36,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
@@ -54,6 +53,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -70,9 +71,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
-import { SemesterSelect } from "@/components/inputs/SemesterSelect";
-import { Label } from "@/components/ui/label";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
@@ -151,7 +151,9 @@ export default function ClassCourseManagement() {
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => { pagination.reset(); }, [filterYear, filterSemester]);
+	useEffect(() => {
+		pagination.reset();
+	}, [filterYear, filterSemester]);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -280,7 +282,13 @@ export default function ClassCourseManagement() {
 	});
 
 	const { data: classCoursesData, isLoading } = useQuery({
-		queryKey: ["classCourses", pagination.cursor, pagination.pageSize, filterYear, filterSemester],
+		queryKey: [
+			"classCourses",
+			pagination.cursor,
+			pagination.pageSize,
+			filterYear,
+			filterSemester,
+		],
 		queryFn: async () => {
 			const { items, nextCursor } = await trpcClient.classCourses.list.query({
 				cursor: pagination.cursor,
@@ -487,14 +495,25 @@ export default function ClassCourseManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.classCourses.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.classCourses.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const createMutation = useMutation({
@@ -731,7 +750,7 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.classCourses.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -777,7 +796,10 @@ export default function ClassCourseManagement() {
 				</div>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -802,7 +824,9 @@ export default function ClassCourseManagement() {
 									<TableHead className="w-10">
 										<Checkbox
 											checked={selection.isAllSelected}
-											onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(!!checked)
+											}
 											aria-label="Select all"
 										/>
 									</TableHead>

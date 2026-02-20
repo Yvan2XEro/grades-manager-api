@@ -1,5 +1,5 @@
-import * as repo from "./student-credit-ledger.repo";
 import { computeUeCredits } from "./compute-ue-credits";
+import * as repo from "./student-credit-ledger.repo";
 
 const DEFAULT_REQUIRED_CREDITS = 60;
 
@@ -21,7 +21,11 @@ export async function recomputeForStudent(
 	passingGrade = 10,
 	requiredCredits = DEFAULT_REQUIRED_CREDITS,
 ) {
-	const result = await computeUeCredits(studentId, academicYearId, passingGrade);
+	const result = await computeUeCredits(
+		studentId,
+		academicYearId,
+		passingGrade,
+	);
 	return repo.setCredits(
 		studentId,
 		academicYearId,

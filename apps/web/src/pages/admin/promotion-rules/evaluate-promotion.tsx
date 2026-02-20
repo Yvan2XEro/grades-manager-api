@@ -81,13 +81,11 @@ export function EvaluatePromotionPage() {
 		enabled: false, // Manual trigger only
 	});
 
-	const {
-		mutateAsync: refreshClassFacts,
-		isPending: isRefreshingFacts,
-	} = useMutation({
-		mutationFn: (input: { classId: string; academicYearId: string }) =>
-			trpcClient.promotionRules.refreshClassSummaries.mutate(input),
-	});
+	const { mutateAsync: refreshClassFacts, isPending: isRefreshingFacts } =
+		useMutation({
+			mutationFn: (input: { classId: string; academicYearId: string }) =>
+				trpcClient.promotionRules.refreshClassSummaries.mutate(input),
+		});
 
 	const handleEvaluate = async () => {
 		if (!selectedRuleId || !selectedSourceClassId || !selectedAcademicYearId) {
@@ -111,17 +109,13 @@ export function EvaluatePromotionPage() {
 				classId: selectedSourceClassId,
 				academicYearId: selectedAcademicYearId,
 			});
-			toast.success(
-				t("admin.promotionRules.evaluate.toast.refreshSuccess"),
-			);
+			toast.success(t("admin.promotionRules.evaluate.toast.refreshSuccess"));
 			if (hasEvaluated) {
 				await evaluateClass();
 			}
 		} catch (error) {
 			const message =
-				error instanceof Error
-					? error.message
-					: t("common.errors.unknown");
+				error instanceof Error ? error.message : t("common.errors.unknown");
 			toast.error(
 				t("admin.promotionRules.evaluate.toast.refreshError", {
 					error: message,
@@ -183,7 +177,7 @@ export function EvaluatePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.promotionRules.evaluate.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -262,10 +256,8 @@ export function EvaluatePromotionPage() {
 								<p className="font-medium">
 									{t("admin.promotionRules.evaluate.actions.refreshFacts")}
 								</p>
-								<p className="text-sm text-muted-foreground">
-									{t(
-										"admin.promotionRules.evaluate.form.refreshDescription",
-									)}
+								<p className="text-muted-foreground text-sm">
+									{t("admin.promotionRules.evaluate.form.refreshDescription")}
 								</p>
 							</div>
 							<Button
@@ -281,16 +273,12 @@ export function EvaluatePromotionPage() {
 								{isRefreshingFacts ? (
 									<>
 										<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
-										{t(
-											"admin.promotionRules.evaluate.actions.refreshingFacts",
-										)}
+										{t("admin.promotionRules.evaluate.actions.refreshingFacts")}
 									</>
 								) : (
 									<>
 										<RefreshCcw className="mr-2 h-4 w-4" />
-										{t(
-											"admin.promotionRules.evaluate.actions.refreshFacts",
-										)}
+										{t("admin.promotionRules.evaluate.actions.refreshFacts")}
 									</>
 								)}
 							</Button>

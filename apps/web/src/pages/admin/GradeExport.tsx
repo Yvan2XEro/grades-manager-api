@@ -557,9 +557,10 @@ export default function GradeExport() {
 			}
 
 			// Sort students alphabetically
-			const sortedStudents = [...students].sort((a, b) =>
-				a.last_name.localeCompare(b.last_name) ||
-				a.first_name.localeCompare(b.first_name),
+			const sortedStudents = [...students].sort(
+				(a, b) =>
+					a.last_name.localeCompare(b.last_name) ||
+					a.first_name.localeCompare(b.first_name),
 			);
 
 			const exportData = sortedStudents.map((student) => {
@@ -821,7 +822,11 @@ export default function GradeExport() {
 				secondHeaderRow.push("Moy UE", "Crédits", "Décision");
 			}
 
-			firstHeaderRow.push(t("admin.gradeExport.pv.table.average"), "Total Crédits", "Décision");
+			firstHeaderRow.push(
+				t("admin.gradeExport.pv.table.average"),
+				"Total Crédits",
+				"Décision",
+			);
 			secondHeaderRow.push("", "", "");
 
 			// Data rows
@@ -838,9 +843,15 @@ export default function GradeExport() {
 				for (const ueGrade of student.ueGrades) {
 					for (const cg of ueGrade.courseGrades) {
 						row.push(
-							cg.cc !== null && cg.cc !== undefined ? Number(Number(cg.cc).toFixed(2)) : "",
-							cg.ex !== null && cg.ex !== undefined ? Number(Number(cg.ex).toFixed(2)) : "",
-							cg.average !== null && cg.average !== undefined ? Number(Number(cg.average).toFixed(2)) : "",
+							cg.cc !== null && cg.cc !== undefined
+								? Number(Number(cg.cc).toFixed(2))
+								: "",
+							cg.ex !== null && cg.ex !== undefined
+								? Number(Number(cg.ex).toFixed(2))
+								: "",
+							cg.average !== null && cg.average !== undefined
+								? Number(Number(cg.average).toFixed(2))
+								: "",
 						);
 					}
 					row.push(
@@ -853,7 +864,8 @@ export default function GradeExport() {
 				}
 
 				row.push(
-					student.generalAverage !== null && student.generalAverage !== undefined
+					student.generalAverage !== null &&
+						student.generalAverage !== undefined
 						? Number(Number(student.generalAverage).toFixed(2))
 						: "",
 					student.totalCredits ?? 0,
@@ -883,10 +895,7 @@ export default function GradeExport() {
 				[t("admin.gradeExport.pv.stats.students"), totalStudents],
 				[t("admin.gradeExport.pv.stats.validated"), validated],
 				[t("admin.gradeExport.pv.stats.notValidated"), nonValidated],
-				[
-					t("admin.gradeExport.pv.stats.successRate"),
-					`${successRate}%`,
-				],
+				[t("admin.gradeExport.pv.stats.successRate"), `${successRate}%`],
 				[
 					t("admin.gradeExport.pv.stats.average"),
 					promotionAverage !== null ? promotionAverage.toFixed(2) : "-",
@@ -1036,7 +1045,11 @@ export default function GradeExport() {
 					ws[cellRef1].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
 						fill: { fgColor: { rgb: "4472C4" } },
-						alignment: { horizontal: "center", vertical: "center", wrapText: true },
+						alignment: {
+							horizontal: "center",
+							vertical: "center",
+							wrapText: true,
+						},
 						border: {
 							top: { style: "thin", color: { rgb: "000000" } },
 							bottom: { style: "thin", color: { rgb: "000000" } },
@@ -1161,9 +1174,10 @@ export default function GradeExport() {
 				}
 
 				// Sort students alphabetically
-				const sortedStudents = [...students].sort((a, b) =>
-					a.last_name.localeCompare(b.last_name) ||
-					a.first_name.localeCompare(b.first_name),
+				const sortedStudents = [...students].sort(
+					(a, b) =>
+						a.last_name.localeCompare(b.last_name) ||
+						a.first_name.localeCompare(b.first_name),
 				);
 
 				const exportData = sortedStudents.map((student) => {
@@ -1544,7 +1558,9 @@ export default function GradeExport() {
 	return (
 		<div className="space-y-6 p-6">
 			<div className="space-y-2">
-				<h2 className="font-semibold text-xl text-foreground">{t("admin.gradeExport.title")}</h2>
+				<h2 className="font-semibold text-foreground text-xl">
+					{t("admin.gradeExport.title")}
+				</h2>
 				<p className="text-muted-foreground">
 					{t("admin.gradeExport.subtitle")}
 				</p>
@@ -1832,7 +1848,12 @@ export default function GradeExport() {
 									<Button
 										type="button"
 										onClick={handleVerbalReportExport}
-										disabled={!selectedClass || !selectedSemester || !selectedYear || isBusy}
+										disabled={
+											!selectedClass ||
+											!selectedSemester ||
+											!selectedYear ||
+											isBusy
+										}
 										className="w-full"
 									>
 										{exporting === "pv" ? (

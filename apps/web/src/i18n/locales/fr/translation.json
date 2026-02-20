@@ -16,7 +16,7 @@
 			"create": "Créer",
 			"update": "Mettre à jour",
 			"delete": "Supprimer",
-			"edit" : "Editer",
+			"edit": "Editer",
 			"save": "Enregistrer",
 			"saveChanges": "Enregistrer les modifications",
 			"close": "Fermer",
@@ -362,7 +362,7 @@
 				"exams": "Évaluations",
 				"students": "Étudiants",
 				"teachers": "Enseignants",
-				"institutions" : "Institutions"
+				"institutions": "Institutions"
 			}
 		},
 		"batchJobs": {
@@ -810,35 +810,36 @@
 			}
 		},
 		"faculties": {
-			"title": "Gestion des facultés",
-			"subtitle": "Créez et gérez les facultés de l'établissement",
+			"title": "Facultés",
+			"subtitle": "Gérez les facultés et écoles de l'établissement.",
 			"actions": {
 				"add": "Ajouter une faculté"
 			},
 			"empty": {
 				"title": "Aucune faculté",
-				"description": "Commencez par ajouter votre première faculté."
+				"description": "Créez votre première faculté pour organiser la structure académique."
 			},
 			"table": {
-				"name": "Nom",
+				"title": "Toutes les facultés",
+				"description": "Liste de toutes les facultés et écoles enregistrées dans le système.",
 				"code": "Code",
-				"description": "Description",
-				"noDescription": "Pas de description"
+				"nameFr": "Nom (FR)",
+				"nameEn": "Nom (EN)",
+				"shortName": "Nom court"
 			},
 			"form": {
-				"createTitle": "Ajouter une faculté",
+				"createTitle": "Créer une faculté",
 				"editTitle": "Modifier la faculté",
-				"nameLabel": "Nom de la faculté",
-				"namePlaceholder": "Saisir le nom de la faculté",
 				"codeLabel": "Code",
-				"codePlaceholder": "SCI",
-				"descriptionLabel": "Description",
-				"descriptionPlaceholder": "Décrire la faculté",
-				"submit": "Enregistrer"
-			},
-			"validation": {
-				"name": "Le nom doit comporter au moins 2 caractères",
-				"code": "Le code est obligatoire"
+				"shortNameLabel": "Nom court",
+				"nameFrLabel": "Nom (Français)",
+				"nameEnLabel": "Nom (Anglais)",
+				"descriptionFrLabel": "Description (Français)",
+				"descriptionEnLabel": "Description (Anglais)",
+				"nameFrRequired": "Le nom en français est requis",
+				"nameEnRequired": "Le nom en anglais est requis",
+				"codeRequired": "Le code est requis",
+				"submit": "Créer"
 			},
 			"toast": {
 				"createSuccess": "Faculté créée avec succès",
@@ -850,7 +851,7 @@
 			},
 			"delete": {
 				"title": "Supprimer la faculté",
-				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ?"
+				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ? Cette action est irréversible."
 			}
 		},
 		"programs": {

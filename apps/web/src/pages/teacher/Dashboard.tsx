@@ -22,7 +22,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { staggerContainer, staggerItem, fadeUp } from "@/lib/animations";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -207,12 +207,8 @@ const TeacherDashboard: React.FC = () => {
 	return (
 		<div className="space-y-8">
 			{/* Header */}
-			<motion.div
-				variants={fadeUp}
-				initial="hidden"
-				animate="visible"
-			>
-				<h1 className="font-heading font-bold text-2xl text-foreground">
+			<motion.div variants={fadeUp} initial="hidden" animate="visible">
+				<h1 className="font-bold font-heading text-2xl text-foreground">
 					{t("teacher.dashboard.title")}
 				</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
@@ -239,10 +235,10 @@ const TeacherDashboard: React.FC = () => {
 									<stat.Icon className="h-5 w-5" />
 								</div>
 								<div>
-									<p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+									<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
 										{stat.label}
 									</p>
-									<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
+									<p className="font-bold font-heading text-2xl text-foreground tabular-nums">
 										{stat.value}
 									</p>
 								</div>
@@ -301,8 +297,7 @@ const TeacherDashboard: React.FC = () => {
 															{course.name}
 														</p>
 														<p className="text-muted-foreground text-sm">
-															{course.class_name} &middot;{" "}
-															{course.program_name}
+															{course.class_name} &middot; {course.program_name}
 														</p>
 													</div>
 													{course.isDelegated && (
@@ -353,7 +348,11 @@ const TeacherDashboard: React.FC = () => {
 					</CardContent>
 					{courses.length > 0 && (
 						<CardFooter className="border-t px-6 py-3">
-							<Button variant="link" className="h-auto p-0 text-primary" asChild>
+							<Button
+								variant="link"
+								className="h-auto p-0 text-primary"
+								asChild
+							>
 								<Link to="/teacher/courses">
 									{t("teacher.dashboard.courses.viewAll")}
 								</Link>

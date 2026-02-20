@@ -1,11 +1,15 @@
-import { format, parse, isValid } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
+import { format, isValid, parse } from "date-fns";
+import { enUS, fr } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {

@@ -22,14 +22,12 @@ import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { useRowSelection } from "@/hooks/useRowSelection";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -38,6 +36,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
@@ -50,8 +50,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "../../components/ui/dialog";
-import { Label } from "../../components/ui/label";
-import { ScrollArea } from "../../components/ui/scroll-area";
 import {
 	Form,
 	FormControl,
@@ -61,6 +59,8 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { ScrollArea } from "../../components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -843,14 +843,25 @@ export default function ClassManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.classes.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.classes.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const onSubmit = async (data: ClassFormData) => {
@@ -884,7 +895,9 @@ export default function ClassManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.classes.title")}</h1>
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.classes.title")}
+					</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<Button
@@ -926,7 +939,10 @@ export default function ClassManagement() {
 				</div>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -942,7 +958,7 @@ export default function ClassManagement() {
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<Users className="mx-auto h-16 w-16 text-base-content/20" />
-						<h2 className="font-semibold text-lg text-foreground mt-4">
+						<h2 className="mt-4 font-semibold text-foreground text-lg">
 							{t("admin.classes.empty.title")}
 						</h2>
 						<p className="text-base-content/60">
@@ -968,7 +984,9 @@ export default function ClassManagement() {
 								<TableHead className="w-10">
 									<Checkbox
 										checked={selection.isAllSelected}
-										onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(!!checked)
+										}
 										aria-label="Select all"
 									/>
 								</TableHead>
@@ -1476,7 +1494,9 @@ export default function ClassManagement() {
 											const q = studentSearch.toLowerCase();
 											return (
 												(s.profile?.lastName ?? "").toLowerCase().includes(q) ||
-												(s.profile?.firstName ?? "").toLowerCase().includes(q) ||
+												(s.profile?.firstName ?? "")
+													.toLowerCase()
+													.includes(q) ||
 												(s.registrationNumber ?? "").toLowerCase().includes(q)
 											);
 										})
@@ -1496,7 +1516,9 @@ export default function ClassManagement() {
 												</TableCell>
 												<TableCell>
 													{student.profile?.dateOfBirth
-														? new Date(student.profile.dateOfBirth).toLocaleDateString()
+														? new Date(
+																student.profile.dateOfBirth,
+															).toLocaleDateString()
 														: "—"}
 												</TableCell>
 												<TableCell>
@@ -1504,7 +1526,7 @@ export default function ClassManagement() {
 														? "M"
 														: student.profile?.gender === "female"
 															? "F"
-															: student.profile?.gender ?? "—"}
+															: (student.profile?.gender ?? "—")}
 												</TableCell>
 											</TableRow>
 										))}

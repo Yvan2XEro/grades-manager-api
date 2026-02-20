@@ -1,26 +1,24 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { useNavigate } from "react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	Download,
 	FileText,
 	Pencil,
 	Plus,
+	Settings,
 	Star,
 	Trash2,
-	Download,
 	Upload,
-	Settings,
 } from "lucide-react";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { useRowSelection } from "@/hooks/useRowSelection";
-import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { z } from "zod";
+import ConfirmModal from "@/components/modals/ConfirmModal";
+import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -29,6 +27,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -37,6 +36,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -47,6 +47,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -54,6 +55,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import {
 	Table,
@@ -63,11 +65,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
-import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "@/utils/trpc";
-import ConfirmModal from "@/components/modals/ConfirmModal";
 
 type ExportTemplate = {
 	id: string;
@@ -102,9 +102,8 @@ export default function ExportTemplatesManagement() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const [isRenameOpen, setIsRenameOpen] = useState(false);
-	const [renamingTemplate, setRenamingTemplate] = useState<ExportTemplate | null>(
-		null,
-	);
+	const [renamingTemplate, setRenamingTemplate] =
+		useState<ExportTemplate | null>(null);
 	const [deletingTemplate, setDeletingTemplate] =
 		useState<ExportTemplate | null>(null);
 	const [selectedType, setSelectedType] = useState<string>("all");
@@ -123,7 +122,12 @@ export default function ExportTemplatesManagement() {
 
 	// Fetch templates
 	const { data: templatesData, isLoading } = useQuery({
-		queryKey: ["exportTemplates", selectedType, pagination.cursor, pagination.pageSize],
+		queryKey: [
+			"exportTemplates",
+			selectedType,
+			pagination.cursor,
+			pagination.pageSize,
+		],
 		queryFn: async () => {
 			const result = await trpcClient.exportTemplates.list.query({
 				type: selectedType === "all" ? undefined : (selectedType as any),
@@ -198,14 +202,25 @@ export default function ExportTemplatesManagement() {
 	// Bulk delete mutation
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.exportTemplates.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.exportTemplates.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const handleOpenRename = (template: ExportTemplate) => {
@@ -242,7 +257,7 @@ export default function ExportTemplatesManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.exportTemplates.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -250,7 +265,7 @@ export default function ExportTemplatesManagement() {
 					</p>
 				</div>
 				<Button onClick={() => navigate("/admin/export-templates/new")}>
-					<Plus className="h-4 w-4 mr-2" />
+					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.exportTemplates.actions.add")}
 				</Button>
 			</div>
@@ -264,7 +279,13 @@ export default function ExportTemplatesManagement() {
 								{t("admin.exportTemplates.table.description")}
 							</CardDescription>
 						</div>
-						<Select value={selectedType} onValueChange={(value) => { setSelectedType(value); pagination.reset(); }}>
+						<Select
+							value={selectedType}
+							onValueChange={(value) => {
+								setSelectedType(value);
+								pagination.reset();
+							}}
+						>
 							<SelectTrigger className="w-[200px]">
 								<SelectValue />
 							</SelectTrigger>
@@ -282,11 +303,16 @@ export default function ExportTemplatesManagement() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+					<BulkActionBar
+						selectedCount={selection.selectedCount}
+						onClear={selection.clear}
+					>
 						<Button
 							variant="destructive"
 							size="sm"
-							onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+							onClick={() =>
+								bulkDeleteMutation.mutate([...selection.selectedIds])
+							}
 							disabled={bulkDeleteMutation.isPending}
 						>
 							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -305,7 +331,9 @@ export default function ExportTemplatesManagement() {
 									<TableHead className="w-10">
 										<Checkbox
 											checked={selection.isAllSelected}
-											onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(!!checked)
+											}
 											aria-label="Select all"
 										/>
 									</TableHead>
@@ -340,7 +368,7 @@ export default function ExportTemplatesManagement() {
 										<TableCell>
 											{template.isDefault ? (
 												<Badge className="bg-yellow-500">
-													<Star className="h-3 w-3 mr-1" />
+													<Star className="mr-1 h-3 w-3" />
 													{t("admin.exportTemplates.table.default")}
 												</Badge>
 											) : (
@@ -357,7 +385,9 @@ export default function ExportTemplatesManagement() {
 														size="sm"
 														onClick={() => handleSetDefault(template)}
 														disabled={setDefaultMutation.isPending}
-														title={t("admin.exportTemplates.actions.setDefault")}
+														title={t(
+															"admin.exportTemplates.actions.setDefault",
+														)}
 													>
 														<Star className="h-4 w-4" />
 													</Button>
@@ -365,7 +395,9 @@ export default function ExportTemplatesManagement() {
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() => navigate(`/admin/export-templates/${template.id}`)}
+													onClick={() =>
+														navigate(`/admin/export-templates/${template.id}`)
+													}
 													title={t("admin.exportTemplates.actions.edit")}
 												>
 													<Settings className="h-4 w-4" />
@@ -399,14 +431,17 @@ export default function ExportTemplatesManagement() {
 								<FileText className="h-12 w-12" />
 							</EmptyHeader>
 							<EmptyContent>
-								<h3 className="text-lg font-semibold text-foreground">
+								<h3 className="font-semibold text-foreground text-lg">
 									{t("admin.exportTemplates.empty.title")}
 								</h3>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.exportTemplates.empty.description")}
 								</p>
-								<Button onClick={() => navigate("/admin/export-templates/new")} className="mt-4">
-									<Plus className="h-4 w-4 mr-2" />
+								<Button
+									onClick={() => navigate("/admin/export-templates/new")}
+									className="mt-4"
+								>
+									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.exportTemplates.actions.add")}
 								</Button>
 							</EmptyContent>
@@ -468,13 +503,8 @@ export default function ExportTemplatesManagement() {
 								>
 									{t("common.actions.cancel")}
 								</Button>
-								<Button
-									type="submit"
-									disabled={renameMutation.isPending}
-								>
-									{renameMutation.isPending && (
-										<Spinner className="mr-2" />
-									)}
+								<Button type="submit" disabled={renameMutation.isPending}>
+									{renameMutation.isPending && <Spinner className="mr-2" />}
 									{t("common.actions.save")}
 								</Button>
 							</DialogFooter>

@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { staggerContainer, staggerItem, fadeUp } from "@/lib/animations";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { trpcClient } from "../../utils/trpc";
 
 type StatCard = {
@@ -171,7 +171,7 @@ const AdminDashboard: React.FC = () => {
 				className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
 			>
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.dashboard.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground text-sm">
@@ -209,10 +209,10 @@ const AdminDashboard: React.FC = () => {
 									{stat.icon}
 								</div>
 								<div className="min-w-0">
-									<p className="truncate text-muted-foreground text-xs font-medium uppercase tracking-wide">
+									<p className="truncate font-medium text-muted-foreground text-xs uppercase tracking-wide">
 										{t(`admin.dashboard.stats.${stat.key}`)}
 									</p>
-									<p className="font-heading font-bold text-2xl text-foreground tabular-nums">
+									<p className="font-bold font-heading text-2xl text-foreground tabular-nums">
 										{stat.count}
 									</p>
 								</div>

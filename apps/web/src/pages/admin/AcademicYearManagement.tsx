@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
-import { DatePicker } from "@/components/ui/date-picker";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import {
 	Card,
@@ -19,6 +18,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
@@ -279,7 +279,7 @@ const AcademicYearManagement: React.FC = () => {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.academicYears.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -499,7 +499,10 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.startDate")}
 									</FormLabel>
 									<FormControl>
-										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -515,7 +518,10 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.endDate")}
 									</FormLabel>
 									<FormControl>
-										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

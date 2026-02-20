@@ -12,9 +12,8 @@ import * as XLSX from "xlsx";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -38,8 +37,8 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Progress } from "@/components/ui/progress";
 import {
 	Select,
@@ -59,6 +58,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -427,16 +427,17 @@ export default function StudentManagement() {
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
-	const { data: studentsData, isLoading: isLoadingStudents } = useQuery<StudentsListResponse>({
-		queryKey: ["students", classFilter, search, pagination.cursor],
-		queryFn: async () =>
-			trpcClient.students.list.query({
-				classId: classFilter === "all" ? undefined : classFilter,
-				q: search || undefined,
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
-			}),
-	});
+	const { data: studentsData, isLoading: isLoadingStudents } =
+		useQuery<StudentsListResponse>({
+			queryKey: ["students", classFilter, search, pagination.cursor],
+			queryFn: async () =>
+				trpcClient.students.list.query({
+					classId: classFilter === "all" ? undefined : classFilter,
+					q: search || undefined,
+					cursor: pagination.cursor,
+					limit: pagination.pageSize,
+				}),
+		});
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
@@ -759,7 +760,9 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6 p-6">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.students.title")}</h1>
+				<h1 className="font-bold font-heading text-2xl text-foreground">
+					{t("admin.students.title")}
+				</h1>
 				<Button onClick={() => setIsModalOpen(true)}>
 					<PlusIcon className="mr-2 h-5 w-5" />
 					{t("admin.students.actions.openModal")}
@@ -1000,7 +1003,7 @@ export default function StudentManagement() {
 			</Drawer>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
-				<DialogContent className=" overflow-y-auto max-h-[90vh] min-w-[60vw] ">
+				<DialogContent className="max-h-[90vh] min-w-[60vw] overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
 					</DialogHeader>
@@ -1090,7 +1093,10 @@ export default function StudentManagement() {
 														{t("admin.students.form.dateOfBirth")}
 													</FormLabel>
 													<FormControl>
-														<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+														<DatePicker
+															value={field.value ?? ""}
+															onChange={field.onChange}
+														/>
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -1437,17 +1443,17 @@ export default function StudentManagement() {
 											}}
 											disabled={!importClass || bulkMutation.isPending}
 										/>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.students.import.instructions.gender", {
 												values: GENDER_HINT,
 											})}
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.students.import.instructions.admissionType", {
 												values: ADMISSION_TYPE_HINT,
 											})}
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.students.import.instructions.date")}
 										</p>
 									</div>
@@ -1705,7 +1711,10 @@ export default function StudentManagement() {
 													{t("admin.students.external.form.admissionDate")}
 												</FormLabel>
 												<FormControl>
-													<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+													<DatePicker
+														value={field.value ?? ""}
+														onChange={field.onChange}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1805,7 +1814,10 @@ export default function StudentManagement() {
 																{t("admin.students.form.dateOfBirth")}
 															</FormLabel>
 															<FormControl>
-																<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+																<DatePicker
+																	value={field.value ?? ""}
+																	onChange={field.onChange}
+																/>
 															</FormControl>
 															<FormMessage />
 														</FormItem>

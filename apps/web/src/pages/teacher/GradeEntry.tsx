@@ -9,8 +9,8 @@ import {
 	Lock,
 	Save,
 	Trash2,
-	UserPlus,
 	Upload,
+	UserPlus,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -623,7 +623,7 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="font-heading font-bold text-2xl text-foreground">
+					<h2 className="font-bold font-heading text-2xl text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
@@ -868,7 +868,8 @@ const GradeEntry: React.FC = () => {
 								<SelectContent>
 									{exams.map((exam) => (
 										<SelectItem key={exam.id} value={exam.id}>
-											{exam.name} ({exam.percentage}%){exam.sessionType === "retake" ? " [Retake]" : ""}{" "}
+											{exam.name} ({exam.percentage}%)
+											{exam.sessionType === "retake" ? " [Retake]" : ""}{" "}
 											{exam.isLocked
 												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
 												: ""}

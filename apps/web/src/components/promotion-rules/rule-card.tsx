@@ -97,7 +97,10 @@ export function RuleCard({
 								</DropdownMenuItem>
 							)}
 							{onDelete && (
-								<DropdownMenuItem onClick={onDelete} className="text-destructive">
+								<DropdownMenuItem
+									onClick={onDelete}
+									className="text-destructive"
+								>
 									<Trash2 className="mr-2 h-4 w-4" />
 									Delete
 								</DropdownMenuItem>

@@ -1,5 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Users } from "lucide-react";
+import {
+	BookOpen,
+	ChevronLeft,
+	ChevronRight,
+	ClipboardList,
+	Users,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -92,7 +98,7 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6 p-6">
 			<div>
-				<h2 className="font-heading font-bold text-2xl text-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
 					{t("teacher.courses.title")}
 				</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
@@ -100,44 +106,46 @@ export default function CourseList() {
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{courses?.length ? (
-					courses.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((course) => (
-						<Card key={course.id} className="h-full">
-							<CardHeader className="flex flex-col gap-2">
-								<div className="flex items-start justify-between gap-3">
-									<div>
-										<CardTitle>{course.name}</CardTitle>
-										<CardDescription>
-											{course.class_name} • {course.program_name}
-										</CardDescription>
+					courses
+						.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+						.map((course) => (
+							<Card key={course.id} className="h-full">
+								<CardHeader className="flex flex-col gap-2">
+									<div className="flex items-start justify-between gap-3">
+										<div>
+											<CardTitle>{course.name}</CardTitle>
+											<CardDescription>
+												{course.class_name} • {course.program_name}
+											</CardDescription>
+										</div>
+										{course.isDelegated ? (
+											<Badge variant="secondary">
+												{t("teacher.courses.delegatedBadge", {
+													defaultValue: "Delegated",
+												})}
+											</Badge>
+										) : null}
 									</div>
-									{course.isDelegated ? (
-										<Badge variant="secondary">
-											{t("teacher.courses.delegatedBadge", {
-												defaultValue: "Delegated",
-											})}
-										</Badge>
-									) : null}
-								</div>
-							</CardHeader>
-							<CardContent className="flex flex-wrap justify-between gap-4">
-								<div className="flex items-center gap-2 text-muted-foreground">
-									<Users className="h-4 w-4" />
-									<span>{course.student_count}</span>
-								</div>
-								<div className="flex items-center gap-2 text-muted-foreground">
-									<ClipboardList className="h-4 w-4" />
-									<span>{course.exam_count}</span>
-								</div>
-							</CardContent>
-							<CardFooter className="justify-end">
-								<Button asChild size="sm">
-									<Link to={`/teacher/grades/${course.id}`}>
-										{t("teacher.courses.actions.viewGrades")}
-									</Link>
-								</Button>
-							</CardFooter>
-						</Card>
-					))
+								</CardHeader>
+								<CardContent className="flex flex-wrap justify-between gap-4">
+									<div className="flex items-center gap-2 text-muted-foreground">
+										<Users className="h-4 w-4" />
+										<span>{course.student_count}</span>
+									</div>
+									<div className="flex items-center gap-2 text-muted-foreground">
+										<ClipboardList className="h-4 w-4" />
+										<span>{course.exam_count}</span>
+									</div>
+								</CardContent>
+								<CardFooter className="justify-end">
+									<Button asChild size="sm">
+										<Link to={`/teacher/grades/${course.id}`}>
+											{t("teacher.courses.actions.viewGrades")}
+										</Link>
+									</Button>
+								</CardFooter>
+							</Card>
+						))
 				) : (
 					<Card className="col-span-full">
 						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">

@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { staggerContainer, staggerItem, fadeUp } from "@/lib/animations";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { useStore } from "../../store";
 import { trpc } from "../../utils/trpc";
 
@@ -45,7 +45,7 @@ const PerformanceDashboard = () => {
 		<div className="space-y-8">
 			{/* Header */}
 			<motion.div variants={fadeUp} initial="hidden" animate="visible">
-				<h1 className="font-heading font-bold text-2xl text-foreground">
+				<h1 className="font-bold font-heading text-2xl text-foreground">
 					{t("student.performance.title")}
 				</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
@@ -110,7 +110,7 @@ const PerformanceDashboard = () => {
 										defaultValue: "Credits earned",
 									})}
 								</p>
-								<p className="mt-1 font-heading font-bold text-3xl text-foreground tabular-nums">
+								<p className="mt-1 font-bold font-heading text-3xl text-foreground tabular-nums">
 									{ledger?.creditsEarned ?? "\u2014"}{" "}
 									<span className="font-normal text-lg text-muted-foreground">
 										/ {ledger?.requiredCredits ?? "\u2014"}
@@ -187,7 +187,7 @@ const PerformanceDashboard = () => {
 							</div>
 						</CardHeader>
 						<CardContent>
-							<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+							<div className="flex flex-col items-center gap-3 rounded-xl border border-border border-dashed bg-muted/30 p-8 text-center">
 								<BarChart3 className="h-8 w-8 text-muted-foreground/40" />
 								<p className="text-muted-foreground text-sm">
 									{t("student.performance.coursePlaceholder", {

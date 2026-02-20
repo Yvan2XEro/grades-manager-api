@@ -85,7 +85,11 @@ export default function BatchJobDetail() {
 	}
 
 	if (!job) {
-		return <div className="py-12 text-center text-muted-foreground">Job not found</div>;
+		return (
+			<div className="py-12 text-center text-muted-foreground">
+				Job not found
+			</div>
+		);
 	}
 
 	const progress = job.progress as {
@@ -108,7 +112,7 @@ export default function BatchJobDetail() {
 						<ArrowLeft className="h-5 w-5" />
 					</Button>
 					<div>
-						<h1 className="font-heading font-bold text-2xl text-foreground">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{t(`admin.batchJobs.types.${job.type}`, {
 								defaultValue: job.type,
 							})}

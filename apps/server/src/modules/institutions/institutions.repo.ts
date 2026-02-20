@@ -7,6 +7,14 @@ export async function getFirst() {
 	return institution ?? null;
 }
 
+export async function getById(id: string) {
+	const [institution] = await db
+		.select()
+		.from(schema.institutions)
+		.where(eq(schema.institutions.id, id));
+	return institution ?? null;
+}
+
 export async function list() {
 	return db.select().from(schema.institutions);
 }
@@ -29,4 +37,12 @@ export async function update(id: string, data: Partial<schema.NewInstitution>) {
 		.where(eq(schema.institutions.id, id))
 		.returning();
 	return updated ?? null;
+}
+
+export async function deleteById(id: string) {
+	const [deleted] = await db
+		.delete(schema.institutions)
+		.where(eq(schema.institutions.id, id))
+		.returning();
+	return deleted ?? null;
 }

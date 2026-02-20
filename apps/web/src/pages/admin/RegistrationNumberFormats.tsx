@@ -6,9 +6,8 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useRowSelection } from "@/hooks/useRowSelection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Table,
 	TableBody,
@@ -17,6 +16,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -86,21 +86,32 @@ const RegistrationNumberFormats = () => {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.registrationNumbers.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.registrationNumbers.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			invalidateList();
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.registrationNumbers.title", {
 							defaultValue: "Registration number formats",
 						})}
@@ -120,7 +131,10 @@ const RegistrationNumberFormats = () => {
 				</Button>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -147,8 +161,16 @@ const RegistrationNumberFormats = () => {
 								<TableRow>
 									<TableHead className="w-10">
 										<Checkbox
-											checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
-											onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+											checked={
+												selection.isAllSelected
+													? true
+													: selection.isSomeSelected
+														? "indeterminate"
+														: false
+											}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(Boolean(checked))
+											}
 										/>
 									</TableHead>
 									<TableHead>

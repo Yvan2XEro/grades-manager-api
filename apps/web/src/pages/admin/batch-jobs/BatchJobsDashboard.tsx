@@ -106,7 +106,7 @@ export default function BatchJobsDashboard() {
 				<div className="flex items-center space-x-3">
 					<PlayCircle className="h-6 w-6 text-primary-700" />
 					<div>
-						<h1 className="font-heading font-bold text-2xl text-foreground">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{t("admin.batchJobs.title")}
 						</h1>
 						<p className="text-muted-foreground text-sm">
@@ -155,7 +155,7 @@ export default function BatchJobsDashboard() {
 				) : jobs.length === 0 ? (
 					<div className="py-12 text-center">
 						<PlayCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-						<h3 className="font-semibold text-sm text-foreground">
+						<h3 className="font-semibold text-foreground text-sm">
 							{t("admin.batchJobs.empty.title")}
 						</h3>
 						<p className="mt-1 text-muted-foreground text-sm">
@@ -213,7 +213,9 @@ export default function BatchJobsDashboard() {
 												</span>
 											</div>
 										) : (
-											<span className="text-muted-foreground/60 text-sm">-</span>
+											<span className="text-muted-foreground/60 text-sm">
+												-
+											</span>
 										)}
 									</TableCell>
 									<TableCell className="text-sm">

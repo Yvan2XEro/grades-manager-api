@@ -13,8 +13,8 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
+import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
-import { staggerContainer, staggerItem, errorMsg } from "../../lib/animations";
 
 const buildSchema = (t: TFunction) =>
 	z
@@ -69,7 +69,7 @@ const ResetPassword: React.FC = () => {
 				>
 					<KeyRound className="h-6 w-6 text-primary" />
 				</motion.div>
-				<h2 className="font-heading font-bold text-2xl text-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
 					{t("auth.reset.title")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
@@ -89,7 +89,12 @@ const ResetPassword: React.FC = () => {
 						placeholder={t("auth.reset.passwordPlaceholder")}
 					/>
 					{errors.password && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.password.message}
 						</motion.p>
 					)}
@@ -106,7 +111,12 @@ const ResetPassword: React.FC = () => {
 						placeholder={t("auth.reset.confirmPasswordPlaceholder")}
 					/>
 					{errors.confirmPassword && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.confirmPassword.message}
 						</motion.p>
 					)}

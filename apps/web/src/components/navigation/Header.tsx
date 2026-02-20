@@ -3,10 +3,19 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
-
+import { cn } from "@/lib/utils";
+import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "../ui/breadcrumb";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -16,16 +25,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "../ui/breadcrumb";
-import { cn } from "@/lib/utils";
-import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
@@ -50,7 +49,7 @@ const Header: React.FC = () => {
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
 
 	return (
-		<header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur-xl">
+		<header className="sticky top-0 z-30 border-border border-b bg-card/80 backdrop-blur-xl">
 			<div className="flex h-16 items-center justify-between px-4 md:px-6">
 				<div className="flex items-center gap-3">
 					<Button
@@ -99,7 +98,7 @@ const Header: React.FC = () => {
 									localStorage.setItem("lng", lang);
 								}}
 								className={cn(
-									"rounded-full px-3 py-1 text-xs font-semibold uppercase transition-all duration-200",
+									"rounded-full px-3 py-1 font-semibold text-xs uppercase transition-all duration-200",
 									i18n.language === lang
 										? "bg-background text-foreground shadow-sm"
 										: "text-muted-foreground hover:text-foreground",
@@ -147,9 +146,7 @@ const Header: React.FC = () => {
 									<p className="font-medium text-sm">
 										{user?.firstName} {user?.lastName}
 									</p>
-									<p className="text-muted-foreground text-xs">
-										{user?.email}
-									</p>
+									<p className="text-muted-foreground text-xs">{user?.email}</p>
 								</div>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />

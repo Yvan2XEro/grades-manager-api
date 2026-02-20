@@ -79,7 +79,8 @@ export default function ExamTypes() {
 		defaultValues: { name: "", description: "", defaultPercentage: 40 },
 	});
 
-	const resetForm = () => form.reset({ name: "", description: "", defaultPercentage: 40 });
+	const resetForm = () =>
+		form.reset({ name: "", description: "", defaultPercentage: 40 });
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["examTypes", pagination.cursor],
@@ -220,7 +221,7 @@ export default function ExamTypes() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.examTypes.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -300,7 +301,9 @@ export default function ExamTypes() {
 											<TableCell className="font-medium">{type.name}</TableCell>
 											<TableCell>{type.description || "\u2014"}</TableCell>
 											<TableCell>
-												{type.defaultPercentage != null ? `${type.defaultPercentage}%` : "—"}
+												{type.defaultPercentage != null
+													? `${type.defaultPercentage}%`
+													: "—"}
 											</TableCell>
 											<TableCell className="flex items-center justify-end gap-2">
 												<Button

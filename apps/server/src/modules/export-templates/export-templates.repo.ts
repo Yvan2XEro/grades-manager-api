@@ -23,9 +23,7 @@ export async function findTemplatesByInstitution(
 	limit?: number,
 ): Promise<{ items: ExportTemplate[]; nextCursor?: string }> {
 	const pageLimit = Math.min(Math.max(limit ?? 50, 1), 100);
-	const conditions = [
-		eq(schema.exportTemplates.institutionId, institutionId),
-	];
+	const conditions = [eq(schema.exportTemplates.institutionId, institutionId)];
 
 	if (type) {
 		conditions.push(eq(schema.exportTemplates.type, type));

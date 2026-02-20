@@ -57,10 +57,7 @@ export async function computeUeCredits(
 		.where(
 			and(
 				eq(schema.studentCourseEnrollments.studentId, studentId),
-				eq(
-					schema.studentCourseEnrollments.academicYearId,
-					academicYearId,
-				),
+				eq(schema.studentCourseEnrollments.academicYearId, academicYearId),
 				inArray(schema.studentCourseEnrollments.status, [
 					"planned",
 					"active",
@@ -138,12 +135,8 @@ export async function computeUeCredits(
 	>();
 
 	for (const [classCourseId, grades] of gradesByClassCourse) {
-		const normalExams = grades.filter(
-			(g) => g.examSessionType === "normal",
-		);
-		const retakeExams = grades.filter(
-			(g) => g.examSessionType === "retake",
-		);
+		const normalExams = grades.filter((g) => g.examSessionType === "normal");
+		const retakeExams = grades.filter((g) => g.examSessionType === "retake");
 
 		const retakeByParent = new Map<string, (typeof grades)[number]>();
 		for (const retake of retakeExams) {
@@ -161,8 +154,7 @@ export async function computeUeCredits(
 			const retakeGrade = retakeByParent.get(normalGrade.examId);
 			if (retakeGrade) {
 				const retakeScore = Number(retakeGrade.gradeScore);
-				const scoringPolicy =
-					retakeGrade.examScoringPolicy ?? "replace";
+				const scoringPolicy = retakeGrade.examScoringPolicy ?? "replace";
 				if (scoringPolicy === "replace") {
 					effectiveScore = retakeScore;
 				} else if (scoringPolicy === "best_of") {

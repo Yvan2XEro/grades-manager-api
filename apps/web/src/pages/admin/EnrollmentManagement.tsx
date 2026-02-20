@@ -6,11 +6,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { useRowSelection } from "@/hooks/useRowSelection";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -24,9 +19,12 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -35,6 +33,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 type CourseEnrollmentListResponse =
@@ -393,14 +393,25 @@ const EnrollmentManagement = () => {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.enrollments.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.enrollments.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.enrollments.list.queryKey());
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const studentsCount = studentsQuery.data?.items?.length ?? 0;
@@ -700,11 +711,16 @@ const EnrollmentManagement = () => {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+						<BulkActionBar
+							selectedCount={selection.selectedCount}
+							onClear={selection.clear}
+						>
 							<Button
 								variant="destructive"
 								size="sm"
-								onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+								onClick={() =>
+									bulkDeleteMutation.mutate([...selection.selectedIds])
+								}
 								disabled={bulkDeleteMutation.isPending}
 							>
 								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -724,7 +740,9 @@ const EnrollmentManagement = () => {
 											<th className="w-10 px-4 py-2">
 												<Checkbox
 													checked={selection.isAllSelected}
-													onCheckedChange={(checked) => selection.toggleAll(!!checked)}
+													onCheckedChange={(checked) =>
+														selection.toggleAll(!!checked)
+													}
 													aria-label="Select all"
 												/>
 											</th>
@@ -765,7 +783,9 @@ const EnrollmentManagement = () => {
 													<td className="px-4 py-3">
 														<Checkbox
 															checked={selection.isSelected(enrollment.id)}
-															onCheckedChange={() => selection.toggle(enrollment.id)}
+															onCheckedChange={() =>
+																selection.toggle(enrollment.id)
+															}
 															aria-label={`Select ${fullName}`}
 														/>
 													</td>
@@ -854,7 +874,9 @@ const EnrollmentManagement = () => {
 							hasPrev={pagination.hasPrev}
 							hasNext={!!enrollmentsQuery.data?.nextCursor}
 							onPrev={pagination.handlePrev}
-							onNext={() => pagination.handleNext(enrollmentsQuery.data?.nextCursor)}
+							onNext={() =>
+								pagination.handleNext(enrollmentsQuery.data?.nextCursor)
+							}
 							isLoading={enrollmentsQuery.isLoading}
 						/>
 					</CardContent>
@@ -931,130 +953,134 @@ const EnrollmentManagement = () => {
 															className="space-y-2 px-4 py-3"
 														>
 															<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-															<div className="space-y-1">
-																<p className="font-semibold text-foreground text-sm">
-																	{courseName}
-																</p>
-																<p className="text-muted-foreground text-xs">
-																	{t("admin.enrollments.courseRoster.teacher", {
-																		defaultValue: "Teacher: {{value}}",
-																		value: teacherName,
-																	})}
-																</p>
-															</div>
-															<div className="flex flex-col gap-2 sm:items-end">
-																<div className="flex items-center gap-2">
-																	<Badge
-																	variant="outline"
-																	className={
-																		status === "active"
-																			? "border-emerald-200 bg-emerald-50 text-emerald-800"
-																			: status === "completed"
-																				? "border-blue-200 bg-blue-50 text-blue-800"
-																				: status === "failed"
-																					? "border-rose-200 bg-rose-50 text-rose-800"
-																					: "border-border bg-muted text-foreground"
-																	}
-																	>
-																		{status === "none"
-																			? t(
-																				"admin.enrollments.courseRoster.notEnrolled",
-																				{
-																					defaultValue: "Not enrolled",
-																				},
-																			)
-																		: status}
-																	</Badge>
-																	{enrollment && enrollment.attempt > 1 && (
-																		<Badge
-																			variant="outline"
-																			className="border-orange-200 bg-orange-50 text-orange-800"
-																		>
-																			{t(
-																				"admin.enrollments.courseRoster.attemptBadge",
-																				{
-																					defaultValue: "Attempt {{value}}",
-																					value: enrollment.attempt,
-																				},
-																			)}
-																		</Badge>
-																	)}
-																	{status === "failed" && (
-																		<Badge
-																			variant="outline"
-																			className="border-amber-200 bg-amber-50 text-amber-800"
-																		>
-																			{t(
-																				"admin.enrollments.courseRoster.retakeEligible",
-																				{
-																					defaultValue: "Retake eligible",
-																				},
-																			)}
-																		</Badge>
-																	)}
+																<div className="space-y-1">
+																	<p className="font-semibold text-foreground text-sm">
+																		{courseName}
+																	</p>
+																	<p className="text-muted-foreground text-xs">
+																		{t(
+																			"admin.enrollments.courseRoster.teacher",
+																			{
+																				defaultValue: "Teacher: {{value}}",
+																				value: teacherName,
+																			},
+																		)}
+																	</p>
 																</div>
-																<div className="flex flex-wrap gap-2">
-																	<Button
-																		type="button"
-																		size="xs"
-																		variant="outline"
-																		disabled={enrollDisabled}
-																		onClick={handlePrimaryAction}
-																	>
-																		{canReactivate
-																			? t(
-																					"admin.enrollments.courseRoster.reactivateBtn",
+																<div className="flex flex-col gap-2 sm:items-end">
+																	<div className="flex items-center gap-2">
+																		<Badge
+																			variant="outline"
+																			className={
+																				status === "active"
+																					? "border-emerald-200 bg-emerald-50 text-emerald-800"
+																					: status === "completed"
+																						? "border-blue-200 bg-blue-50 text-blue-800"
+																						: status === "failed"
+																							? "border-rose-200 bg-rose-50 text-rose-800"
+																							: "border-border bg-muted text-foreground"
+																			}
+																		>
+																			{status === "none"
+																				? t(
+																						"admin.enrollments.courseRoster.notEnrolled",
+																						{
+																							defaultValue: "Not enrolled",
+																						},
+																					)
+																				: status}
+																		</Badge>
+																		{enrollment && enrollment.attempt > 1 && (
+																			<Badge
+																				variant="outline"
+																				className="border-orange-200 bg-orange-50 text-orange-800"
+																			>
+																				{t(
+																					"admin.enrollments.courseRoster.attemptBadge",
 																					{
-																						defaultValue: "Restore enrollment",
-																					},
-																				)
-																			: t(
-																					"admin.enrollments.courseRoster.enrollBtn",
-																					{
-																						defaultValue: "Enroll",
+																						defaultValue: "Attempt {{value}}",
+																						value: enrollment.attempt,
 																					},
 																				)}
-																	</Button>
-																	<Button
-																		type="button"
-																		size="xs"
-																		variant="secondary"
-																		disabled={
-																			!enrollment || withdrawCourse.isPending
-																		}
-																		onClick={() =>
-																			enrollment &&
-																			withdrawCourse.mutate({
-																				id: enrollment.id,
-																				status: "withdrawn",
-																			})
-																		}
-																	>
-																		{t(
-																			"admin.enrollments.courseRoster.withdrawBtn",
-																			{
-																				defaultValue: "Withdraw",
-																			},
+																			</Badge>
 																		)}
-																	</Button>
-																	<Button
-																		type="button"
-																		size="xs"
-																		variant="ghost"
-																		disabled={!selectedStudent}
-																		onClick={() =>
-																			assignCourse.mutate(course.id)
-																		}
-																	>
-																		{t(
-																			"admin.enrollments.courseRoster.retakeBtn",
-																			{
-																				defaultValue: "Retake",
-																			},
+																		{status === "failed" && (
+																			<Badge
+																				variant="outline"
+																				className="border-amber-200 bg-amber-50 text-amber-800"
+																			>
+																				{t(
+																					"admin.enrollments.courseRoster.retakeEligible",
+																					{
+																						defaultValue: "Retake eligible",
+																					},
+																				)}
+																			</Badge>
 																		)}
-																	</Button>
+																	</div>
+																	<div className="flex flex-wrap gap-2">
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="outline"
+																			disabled={enrollDisabled}
+																			onClick={handlePrimaryAction}
+																		>
+																			{canReactivate
+																				? t(
+																						"admin.enrollments.courseRoster.reactivateBtn",
+																						{
+																							defaultValue:
+																								"Restore enrollment",
+																						},
+																					)
+																				: t(
+																						"admin.enrollments.courseRoster.enrollBtn",
+																						{
+																							defaultValue: "Enroll",
+																						},
+																					)}
+																		</Button>
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="secondary"
+																			disabled={
+																				!enrollment || withdrawCourse.isPending
+																			}
+																			onClick={() =>
+																				enrollment &&
+																				withdrawCourse.mutate({
+																					id: enrollment.id,
+																					status: "withdrawn",
+																				})
+																			}
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.withdrawBtn",
+																				{
+																					defaultValue: "Withdraw",
+																				},
+																			)}
+																		</Button>
+																		<Button
+																			type="button"
+																			size="xs"
+																			variant="ghost"
+																			disabled={!selectedStudent}
+																			onClick={() =>
+																				assignCourse.mutate(course.id)
+																			}
+																		>
+																			{t(
+																				"admin.enrollments.courseRoster.retakeBtn",
+																				{
+																					defaultValue: "Retake",
+																				},
+																			)}
+																		</Button>
+																	</div>
 																</div>
-															</div>
 															</div>
 															{warningsForCourse.length > 0 ? (
 																<PrerequisiteWarningsList

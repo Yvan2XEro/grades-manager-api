@@ -370,7 +370,7 @@ export default function InstitutionSettings() {
 					<Landmark className="h-5 w-5 text-primary" />
 				</div>
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.institution.title", {
 							defaultValue: "Institution settings",
 						})}
@@ -390,16 +390,11 @@ export default function InstitutionSettings() {
 				</div>
 			) : (
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-6"
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 						{/* Section 1: General Information */}
 						<Card>
 							<CardHeader>
-								<CardTitle>
-									{t("admin.institution.form.identity")}
-								</CardTitle>
+								<CardTitle>{t("admin.institution.form.identity")}</CardTitle>
 								<CardDescription>
 									{t("admin.institution.form.identityHint", {
 										defaultValue:
@@ -559,16 +554,21 @@ export default function InstitutionSettings() {
 															<SelectValue
 																placeholder={t(
 																	"admin.institution.form.supervisingFacultyPlaceholder",
-																	{ defaultValue: "Select supervising faculty" },
+																	{
+																		defaultValue: "Select supervising faculty",
+																	},
 																)}
 															/>
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noSupervisingFaculty", {
-																defaultValue: "None",
-															})}
+															{t(
+																"admin.institution.form.noSupervisingFaculty",
+																{
+																	defaultValue: "None",
+																},
+															)}
 														</SelectItem>
 														{faculties.map((faculty) => (
 															<SelectItem key={faculty.id} value={faculty.id}>
@@ -595,7 +595,8 @@ export default function InstitutionSettings() {
 								</CardTitle>
 								<CardDescription>
 									{t("admin.institution.sections.namesHint", {
-										defaultValue: "Official names as they appear on documents, diplomas, and legal paperwork.",
+										defaultValue:
+											"Official names as they appear on documents, diplomas, and legal paperwork.",
 									})}
 								</CardDescription>
 							</CardHeader>
@@ -741,7 +742,8 @@ export default function InstitutionSettings() {
 								</CardTitle>
 								<CardDescription>
 									{t("admin.institution.sections.contactHint", {
-										defaultValue: "Address, phone, email, and other contact details.",
+										defaultValue:
+											"Address, phone, email, and other contact details.",
 									})}
 								</CardDescription>
 							</CardHeader>
@@ -883,7 +885,8 @@ export default function InstitutionSettings() {
 								</CardTitle>
 								<CardDescription>
 									{t("admin.institution.sections.mediaHint", {
-										defaultValue: "Logo and cover image used on documents and the platform.",
+										defaultValue:
+											"Logo and cover image used on documents and the platform.",
 									})}
 								</CardDescription>
 							</CardHeader>
@@ -951,7 +954,8 @@ export default function InstitutionSettings() {
 								</CardTitle>
 								<CardDescription>
 									{t("admin.institution.sections.systemHint", {
-										defaultValue: "Default academic year and registration number format.",
+										defaultValue:
+											"Default academic year and registration number format.",
 									})}
 								</CardDescription>
 							</CardHeader>

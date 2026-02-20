@@ -19,8 +19,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useRowSelection } from "@/hooks/useRowSelection";
 import {
 	Card,
 	CardContent,
@@ -28,6 +26,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
@@ -62,6 +61,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -302,14 +302,25 @@ export default function ProgramManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.programs.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.programs.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const onSubmit = (data: ProgramFormData) => {
@@ -403,7 +414,7 @@ export default function ProgramManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.programs.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -416,7 +427,10 @@ export default function ProgramManagement() {
 				</Button>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -437,7 +451,9 @@ export default function ProgramManagement() {
 					<div className="relative mb-4 w-full max-w-sm">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder={t("admin.programs.search", { defaultValue: "Search programs..." })}
+							placeholder={t("admin.programs.search", {
+								defaultValue: "Search programs...",
+							})}
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className="pl-9"
@@ -449,8 +465,16 @@ export default function ProgramManagement() {
 								<TableRow>
 									<TableHead className="w-10">
 										<Checkbox
-											checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
-											onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+											checked={
+												selection.isAllSelected
+													? true
+													: selection.isSomeSelected
+														? "indeterminate"
+														: false
+											}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(Boolean(checked))
+											}
 										/>
 									</TableHead>
 									<TableHead>
@@ -459,7 +483,9 @@ export default function ProgramManagement() {
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-center">
-										{t("admin.programs.table.options", { defaultValue: "Options" })}
+										{t("admin.programs.table.options", {
+											defaultValue: "Options",
+										})}
 									</TableHead>
 									<TableHead className="text-right">
 										{t("common.table.actions")}
@@ -493,7 +519,9 @@ export default function ProgramManagement() {
 												</span>
 											)}
 										</TableCell>
-										<TableCell className="text-center">{program.optionsCount}</TableCell>
+										<TableCell className="text-center">
+											{program.optionsCount}
+										</TableCell>
 										<TableCell>
 											<div className="flex justify-end gap-2">
 												<Button
@@ -569,7 +597,9 @@ export default function ProgramManagement() {
 									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel required>{t("admin.programs.form.nameLabel")}</FormLabel>
+											<FormLabel required>
+												{t("admin.programs.form.nameLabel")}
+											</FormLabel>
 											<FormControl>
 												<Input
 													placeholder={t("admin.programs.form.namePlaceholder")}
@@ -592,9 +622,12 @@ export default function ProgramManagement() {
 											</FormLabel>
 											<FormControl>
 												<Input
-													placeholder={t("admin.programs.form.codePlaceholder", {
-														defaultValue: "INF-LIC",
-													})}
+													placeholder={t(
+														"admin.programs.form.codePlaceholder",
+														{
+															defaultValue: "INF-LIC",
+														},
+													)}
 													{...field}
 												/>
 											</FormControl>

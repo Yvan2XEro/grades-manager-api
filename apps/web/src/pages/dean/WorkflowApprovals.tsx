@@ -1,10 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	ArrowRight,
-	ClipboardCheck,
-	Clock3,
-	ShieldCheck,
-} from "lucide-react";
+import { ArrowRight, ClipboardCheck, Clock3, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -20,12 +15,16 @@ const WorkflowApprovals = () => {
 	const queryClient = useQueryClient();
 	const examPagination = useCursorPagination({ pageSize: 20 });
 	const notifPagination = useCursorPagination({ pageSize: 20 });
-	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(new Set());
+	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(
+		new Set(),
+	);
 
-	const examsQuery = useQuery(trpc.exams.list.queryOptions({
-		cursor: examPagination.cursor,
-		limit: examPagination.pageSize,
-	}));
+	const examsQuery = useQuery(
+		trpc.exams.list.queryOptions({
+			cursor: examPagination.cursor,
+			limit: examPagination.pageSize,
+		}),
+	);
 	const notificationsQuery = useQuery(
 		trpc.notifications.list.queryOptions({
 			status: "pending",
@@ -66,7 +65,11 @@ const WorkflowApprovals = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.exams.list.queryKey());
 			setSelectedExamIds(new Set());
-			toast.success(t("dean.workflows.toast.bulkValidated", { defaultValue: "Exams approved successfully" }));
+			toast.success(
+				t("dean.workflows.toast.bulkValidated", {
+					defaultValue: "Exams approved successfully",
+				}),
+			);
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -84,16 +87,19 @@ const WorkflowApprovals = () => {
 		examsQuery.data?.items?.filter((exam) => exam.status === "submitted") ?? [];
 	const pendingNotifications = notificationsQuery.data?.items ?? [];
 
-	const allExamsSelected = pendingExams.length > 0 && selectedExamIds.size === pendingExams.length;
+	const allExamsSelected =
+		pendingExams.length > 0 && selectedExamIds.size === pendingExams.length;
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("dean.workflows.title")}
 					</h1>
-					<p className="text-muted-foreground">{t("dean.workflows.subtitle")}</p>
+					<p className="text-muted-foreground">
+						{t("dean.workflows.subtitle")}
+					</p>
 				</div>
 			</div>
 
@@ -112,7 +118,9 @@ const WorkflowApprovals = () => {
 							disabled={bulkValidateMutation.isPending}
 						>
 							<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-							{t("dean.workflows.actions.bulkValidate", { defaultValue: "Approve all selected" })}
+							{t("dean.workflows.actions.bulkValidate", {
+								defaultValue: "Approve all selected",
+							})}
 						</Button>
 					</BulkActionBar>
 					<div className="mt-4 space-y-3">
@@ -123,7 +131,9 @@ const WorkflowApprovals = () => {
 										checked={allExamsSelected}
 										onCheckedChange={(checked) => {
 											if (checked) {
-												setSelectedExamIds(new Set(pendingExams.map((e) => e.id)));
+												setSelectedExamIds(
+													new Set(pendingExams.map((e) => e.id)),
+												);
 											} else {
 												setSelectedExamIds(new Set());
 											}
@@ -131,7 +141,9 @@ const WorkflowApprovals = () => {
 										aria-label="Select all exams"
 									/>
 									<span className="text-muted-foreground text-xs">
-										{t("common.bulkActions.selectAll", { defaultValue: "Select all" })}
+										{t("common.bulkActions.selectAll", {
+											defaultValue: "Select all",
+										})}
 									</span>
 								</div>
 								{pendingExams.map((exam) => (
@@ -146,7 +158,9 @@ const WorkflowApprovals = () => {
 												aria-label={`Select ${exam.name}`}
 											/>
 											<div>
-												<p className="font-medium text-foreground">{exam.name}</p>
+												<p className="font-medium text-foreground">
+													{exam.name}
+												</p>
 												<p className="text-muted-foreground text-xs">
 													{exam.classCourse} • {exam.percentage}%
 												</p>
@@ -176,7 +190,9 @@ const WorkflowApprovals = () => {
 						hasPrev={examPagination.hasPrev}
 						hasNext={!!examsQuery.data?.nextCursor}
 						onPrev={examPagination.handlePrev}
-						onNext={() => examPagination.handleNext(examsQuery.data?.nextCursor)}
+						onNext={() =>
+							examPagination.handleNext(examsQuery.data?.nextCursor)
+						}
 						isLoading={examsQuery.isLoading}
 					/>
 				</div>
@@ -225,7 +241,9 @@ const WorkflowApprovals = () => {
 						hasPrev={notifPagination.hasPrev}
 						hasNext={!!notificationsQuery.data?.nextCursor}
 						onPrev={notifPagination.handlePrev}
-						onNext={() => notifPagination.handleNext(notificationsQuery.data?.nextCursor)}
+						onNext={() =>
+							notifPagination.handleNext(notificationsQuery.data?.nextCursor)
+						}
 						isLoading={notificationsQuery.isLoading}
 					/>
 				</div>
@@ -242,7 +260,9 @@ const WorkflowApprovals = () => {
 							className="rounded-lg border px-4 py-3 text-foreground text-sm"
 						>
 							<p className="font-semibold">{window.classId}</p>
-							<p className="text-muted-foreground text-xs">{window.academicYearId}</p>
+							<p className="text-muted-foreground text-xs">
+								{window.academicYearId}
+							</p>
 							<p className="mt-1 text-primary text-xs uppercase">
 								{window.status}
 							</p>

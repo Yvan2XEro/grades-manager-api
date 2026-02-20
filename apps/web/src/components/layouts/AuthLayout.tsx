@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import logo from "/logo.png";
-import logoBg from "/logo-bg.png";
 import { useQueryState } from "nuqs";
 import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Outlet } from "react-router";
-import LoadingScreen from "../ui/LoadingScreen";
+import logo from "/logo.png";
+import logoBg from "/logo-bg.png";
 import { useStore } from "../../store";
 import { roleLayoutMap } from "../navigation/Redirector";
+import LoadingScreen from "../ui/LoadingScreen";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
@@ -29,19 +29,33 @@ const AuthLayout: React.FC = () => {
 
 				{/* Floating orbs */}
 				<motion.div
-					className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-white/8 blur-3xl"
+					className="-top-24 -right-24 pointer-events-none absolute h-72 w-72 rounded-full bg-white/8 blur-3xl"
 					animate={{ y: [0, -24, 0], scale: [1, 1.06, 1] }}
-					transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
+					transition={{
+						repeat: Number.POSITIVE_INFINITY,
+						duration: 7,
+						ease: "easeInOut",
+					}}
 				/>
 				<motion.div
-					className="pointer-events-none absolute bottom-16 -left-24 h-56 w-56 rounded-full bg-white/6 blur-3xl"
+					className="-left-24 pointer-events-none absolute bottom-16 h-56 w-56 rounded-full bg-white/6 blur-3xl"
 					animate={{ y: [0, 18, 0], scale: [1, 1.09, 1] }}
-					transition={{ repeat: Infinity, duration: 9, ease: "easeInOut", delay: 1.5 }}
+					transition={{
+						repeat: Number.POSITIVE_INFINITY,
+						duration: 9,
+						ease: "easeInOut",
+						delay: 1.5,
+					}}
 				/>
 				<motion.div
 					className="pointer-events-none absolute top-1/2 left-1/3 h-36 w-36 rounded-full bg-white/5 blur-2xl"
 					animate={{ y: [0, -14, 0], x: [0, 10, 0] }}
-					transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.8 }}
+					transition={{
+						repeat: Number.POSITIVE_INFINITY,
+						duration: 5.5,
+						ease: "easeInOut",
+						delay: 0.8,
+					}}
 				/>
 
 				<motion.div
@@ -59,7 +73,7 @@ const AuthLayout: React.FC = () => {
 					transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
 					className="relative z-10 space-y-4"
 				>
-					<h1 className="font-heading font-bold text-4xl leading-tight text-white">
+					<h1 className="font-bold font-heading text-4xl text-white leading-tight">
 						{t("auth.layout.title")}
 					</h1>
 					<p className="max-w-md text-lg text-white/70">
@@ -82,7 +96,8 @@ const AuthLayout: React.FC = () => {
 				<div
 					className="pointer-events-none absolute inset-0 opacity-[0.03]"
 					style={{
-						backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+						backgroundImage:
+							"radial-gradient(circle, currentColor 1px, transparent 1px)",
 						backgroundSize: "24px 24px",
 					}}
 				/>

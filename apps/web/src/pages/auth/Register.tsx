@@ -13,8 +13,8 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
+import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
-import { staggerContainer, staggerItem, errorMsg } from "../../lib/animations";
 
 const buildRegisterSchema = (t: TFunction) =>
 	z
@@ -78,7 +78,7 @@ const Register: React.FC = () => {
 	return (
 		<motion.div variants={staggerContainer} initial="hidden" animate="visible">
 			<motion.div variants={staggerItem} className="mb-8">
-				<h2 className="font-heading font-bold text-2xl text-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
 					{t("auth.register.title")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
@@ -104,7 +104,12 @@ const Register: React.FC = () => {
 							placeholder={t("auth.register.placeholders.firstName")}
 						/>
 						{errors.firstName && (
-							<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+							<motion.p
+								variants={errorMsg}
+								initial="hidden"
+								animate="visible"
+								className="text-destructive text-sm"
+							>
 								{errors.firstName.message}
 							</motion.p>
 						)}
@@ -120,7 +125,12 @@ const Register: React.FC = () => {
 							placeholder={t("auth.register.placeholders.lastName")}
 						/>
 						{errors.lastName && (
-							<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+							<motion.p
+								variants={errorMsg}
+								initial="hidden"
+								animate="visible"
+								className="text-destructive text-sm"
+							>
 								{errors.lastName.message}
 							</motion.p>
 						)}
@@ -137,7 +147,12 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.email")}
 					/>
 					{errors.email && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.email.message}
 						</motion.p>
 					)}
@@ -152,7 +167,12 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.password")}
 					/>
 					{errors.password && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.password.message}
 						</motion.p>
 					)}
@@ -169,7 +189,12 @@ const Register: React.FC = () => {
 						placeholder={t("auth.register.placeholders.confirmPassword")}
 					/>
 					{errors.confirmPassword && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.confirmPassword.message}
 						</motion.p>
 					)}

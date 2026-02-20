@@ -140,7 +140,7 @@ export function ExecutePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						Execute Promotion
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -172,7 +172,9 @@ export function ExecutePromotionPage() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="font-semibold text-foreground">{sourceClass?.name}</div>
+						<div className="font-semibold text-foreground">
+							{sourceClass?.name}
+						</div>
 						<Badge variant="secondary" className="mt-2">
 							{state.studentIds.length} students selected
 						</Badge>

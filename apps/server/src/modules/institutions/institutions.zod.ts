@@ -29,3 +29,14 @@ export const upsertInstitutionSchema = z.object({
 	timezone: z.string().optional(),
 	metadata: z.record(z.unknown()).optional(),
 });
+
+export const createInstitutionSchema = upsertInstitutionSchema;
+
+export const updateInstitutionSchema = z.object({
+	id: z.string().min(1),
+	data: upsertInstitutionSchema.partial(),
+});
+
+export const deleteInstitutionSchema = z.object({
+	id: z.string().min(1),
+});

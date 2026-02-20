@@ -81,7 +81,9 @@ export class ExportsService {
 	}
 
 	/** Return structured PV data (JSON) for frontend Excel export */
-	async getPVDataStructured(input: Omit<GeneratePVInput, "format" | "templateId">) {
+	async getPVDataStructured(
+		input: Omit<GeneratePVInput, "format" | "templateId">,
+	) {
 		const config = await this.getConfig();
 		const templateConfig = await loadExportTemplate(this.institutionId, "pv");
 
@@ -292,9 +294,10 @@ export class ExportsService {
 		}
 
 		// Sort students alphabetically by last name, then first name
-		const sortedStudents = [...data.students].sort((a: any, b: any) =>
-			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		const sortedStudents = [...data.students].sort(
+			(a: any, b: any) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 		);
 
 		// Process students
@@ -466,9 +469,14 @@ export class ExportsService {
 		observations?: string,
 	) {
 		// Sort grades alphabetically by student last name, then first name
-		const sortedGrades = [...data.grades].sort((a: any, b: any) =>
-			(a.studentRef.profile.lastName ?? "").localeCompare(b.studentRef.profile.lastName ?? "") ||
-			(a.studentRef.profile.firstName ?? "").localeCompare(b.studentRef.profile.firstName ?? ""),
+		const sortedGrades = [...data.grades].sort(
+			(a: any, b: any) =>
+				(a.studentRef.profile.lastName ?? "").localeCompare(
+					b.studentRef.profile.lastName ?? "",
+				) ||
+				(a.studentRef.profile.firstName ?? "").localeCompare(
+					b.studentRef.profile.firstName ?? "",
+				),
 		);
 
 		const grades = sortedGrades.map((grade: any, index: number) => {
@@ -545,9 +553,10 @@ export class ExportsService {
 		const { teachingUnit, classCourses, students } = data;
 
 		// Sort students alphabetically by last name, then first name
-		const sortedStudents = [...students].sort((a: any, b: any) =>
-			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		const sortedStudents = [...students].sort(
+			(a: any, b: any) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 		);
 
 		// Process students

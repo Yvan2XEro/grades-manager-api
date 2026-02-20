@@ -24,19 +24,17 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
-import { DatePicker } from "@/components/ui/date-picker";
-import { BulkActionBar } from "../../components/ui/bulk-action-bar";
-import { Checkbox } from "../../components/ui/checkbox";
-import { useRowSelection } from "../../hooks/useRowSelection";
 import {
 	AcademicYearSelect,
 	ClassSelect,
 	DebouncedSearchField,
 	SemesterSelect,
 } from "@/components/inputs";
+import { DatePicker } from "@/components/ui/date-picker";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -45,6 +43,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	DropdownMenu,
@@ -87,6 +86,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
@@ -317,14 +317,25 @@ export default function ExamManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.exams.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.exams.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["exams"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const createRetakeMutation = useMutation({
@@ -447,7 +458,9 @@ export default function ExamManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.exams.title")}</h1>
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.exams.title")}
+					</h1>
 					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
 				<Button
@@ -548,11 +561,16 @@ export default function ExamManagement() {
 						</Empty>
 					) : (
 						<>
-							<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+									onClick={() =>
+										bulkDeleteMutation.mutate([...selection.selectedIds])
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -565,8 +583,16 @@ export default function ExamManagement() {
 										<TableRow>
 											<TableHead className="w-10">
 												<Checkbox
-													checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
-													onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+													checked={
+														selection.isAllSelected
+															? true
+															: selection.isSomeSelected
+																? "indeterminate"
+																: false
+													}
+													onCheckedChange={(checked) =>
+														selection.toggleAll(Boolean(checked))
+													}
 												/>
 											</TableHead>
 											<TableHead>{t("admin.exams.table.name")}</TableHead>
@@ -874,7 +900,10 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -1000,7 +1029,10 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

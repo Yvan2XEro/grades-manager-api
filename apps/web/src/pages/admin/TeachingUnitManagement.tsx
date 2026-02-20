@@ -148,7 +148,7 @@ const TeachingUnitManagement = () => {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -247,8 +247,12 @@ const TeachingUnitManagement = () => {
 													aria-label="Select all"
 												/>
 											</TableHead>
-											<TableHead>{t("admin.teachingUnits.table.code")}</TableHead>
-											<TableHead>{t("admin.teachingUnits.table.name")}</TableHead>
+											<TableHead>
+												{t("admin.teachingUnits.table.code")}
+											</TableHead>
+											<TableHead>
+												{t("admin.teachingUnits.table.name")}
+											</TableHead>
 											<TableHead>
 												{t("admin.teachingUnits.table.program")}
 											</TableHead>
@@ -281,7 +285,9 @@ const TeachingUnitManagement = () => {
 														})}
 													/>
 												</TableCell>
-												<TableCell className="font-medium">{unit.name}</TableCell>
+												<TableCell className="font-medium">
+													{unit.name}
+												</TableCell>
 												<TableCell>
 													{(() => {
 														const programInfo = programMap.get(unit.programId);
@@ -308,7 +314,9 @@ const TeachingUnitManagement = () => {
 																navigate(`/admin/teaching-units/${unit.id}`)
 															}
 														>
-															{t("common.actions.open", { defaultValue: "Open" })}
+															{t("common.actions.open", {
+																defaultValue: "Open",
+															})}
 														</Button>
 														<Button
 															variant="ghost"

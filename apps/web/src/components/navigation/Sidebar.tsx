@@ -3,6 +3,7 @@ import {
 	Bell,
 	BookOpen,
 	BookOpenCheck,
+	Building2,
 	Calendar,
 	CalendarPlus,
 	ChevronDown,
@@ -23,11 +24,11 @@ import {
 	UserCog,
 	Users,
 } from "lucide-react";
-import logo from "/logo.png";
 import type React from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
+import logo from "/logo.png";
 import { useStore } from "../../store";
 
 const Sidebar: React.FC = () => {
@@ -73,6 +74,11 @@ const Sidebar: React.FC = () => {
 		{
 			title: "navigation.sidebar.groups.structure",
 			items: [
+				{
+					to: "/admin/faculties",
+					icon: <Building2 className="h-[18px] w-[18px]" />,
+					labelKey: "navigation.sidebar.admin.faculties",
+				},
 				{
 					to: "/admin/study-cycles",
 					icon: <Layers3 className="h-[18px] w-[18px]" />,
@@ -295,10 +301,10 @@ const Sidebar: React.FC = () => {
 						animate={{ x: 0 }}
 						exit={{ x: -280 }}
 						transition={{ duration: 0.25, ease: "easeOut" }}
-						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-gradient-to-b from-sidebar to-sidebar/95 md:static md:z-auto"
+						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-sidebar-border border-r bg-gradient-to-b from-sidebar to-sidebar/95 md:static md:z-auto"
 					>
 						{/* Logo */}
-						<div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-5">
+						<div className="flex h-16 shrink-0 items-center border-sidebar-border border-b px-5">
 							<motion.img
 								src={logo}
 								alt="TKAMS"
@@ -318,12 +324,12 @@ const Sidebar: React.FC = () => {
 										return (
 											<div key={group.title} className="mb-1">
 												{groupIndex > 0 && (
-													<div className="mx-3 my-3 border-t border-sidebar-border" />
+													<div className="mx-3 my-3 border-sidebar-border border-t" />
 												)}
 												<button
 													type="button"
 													onClick={() => toggleGroup(groupKey)}
-													className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-sidebar-foreground"
+													className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest transition-colors hover:text-sidebar-foreground"
 												>
 													<span className="flex items-center gap-1.5">
 														<span className="h-1 w-1 rounded-full bg-primary/50" />
@@ -399,7 +405,7 @@ const Sidebar: React.FC = () => {
 						</nav>
 
 						{/* User info footer */}
-						<div className="shrink-0 border-t border-sidebar-border p-4">
+						<div className="shrink-0 border-sidebar-border border-t p-4">
 							<div className="flex items-center gap-3 rounded-lg bg-muted/40 p-2.5">
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-2 ring-primary/20">
 									<span className="font-semibold text-primary text-sm">
@@ -411,7 +417,7 @@ const Sidebar: React.FC = () => {
 									<p className="truncate font-medium text-sidebar-foreground text-sm">
 										{user?.firstName} {user?.lastName}
 									</p>
-									<span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary capitalize">
+									<span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 font-medium text-[10px] text-primary capitalize">
 										{user?.role ? t(`navigation.roles.${user.role}`) : ""}
 									</span>
 								</div>

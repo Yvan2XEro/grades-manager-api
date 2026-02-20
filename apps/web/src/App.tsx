@@ -19,6 +19,7 @@ import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
+import FacultyManagement from "./pages/admin/FacultyManagement";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -61,7 +62,11 @@ function App() {
 		setActiveOrganizationSlug,
 		activeOrganizationSlug,
 	} = useStore();
-	const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
+	const {
+		data: session,
+		isPending,
+		refetch: refetchSession,
+	} = authClient.useSession();
 	const activatedSlugRef = useRef<string | null>(null);
 
 	const memoUser = useMemo(() => {
@@ -186,6 +191,7 @@ function App() {
 							element={<RegistrationNumberFormatDetail />}
 						/>
 						<Route path="institution" element={<InstitutionSettings />} />
+						<Route path="faculties" element={<FacultyManagement />} />
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />

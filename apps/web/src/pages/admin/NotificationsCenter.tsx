@@ -2,12 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCircle2, Inbox, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 const NotificationsCenter = () => {
@@ -53,10 +53,12 @@ const NotificationsCenter = () => {
 			<div className="flex items-center space-x-3">
 				<Bell className="h-6 w-6 text-primary-700" />
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.notifications.title")}
 					</h1>
-					<p className="text-muted-foreground">{t("admin.notifications.subtitle")}</p>
+					<p className="text-muted-foreground">
+						{t("admin.notifications.subtitle")}
+					</p>
 				</div>
 			</div>
 
@@ -78,7 +80,10 @@ const NotificationsCenter = () => {
 				</button>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="outline"
 					size="sm"
@@ -169,7 +174,9 @@ const NotificationsCenter = () => {
 				hasPrev={pagination.hasPrev}
 				hasNext={!!notificationsQuery.data?.nextCursor}
 				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(notificationsQuery.data?.nextCursor)}
+				onNext={() =>
+					pagination.handleNext(notificationsQuery.data?.nextCursor)
+				}
 				isLoading={notificationsQuery.isLoading}
 			/>
 		</div>

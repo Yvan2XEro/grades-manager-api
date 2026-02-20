@@ -20,9 +20,7 @@ import { Badge } from "../../components/ui/badge";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
-import { PaginationBar } from "../../components/ui/pagination-bar";
-import { useCursorPagination } from "../../hooks/useCursorPagination";
-import { useRowSelection } from "../../hooks/useRowSelection";
+import { DatePicker } from "../../components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -39,13 +37,13 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { DatePicker } from "../../components/ui/date-picker";
 import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
 	InputGroupInput,
 } from "../../components/ui/input-group";
+import { PaginationBar } from "../../components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -62,7 +60,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useCursorPagination } from "../../hooks/useCursorPagination";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import { authClient } from "../../lib/auth-client";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
@@ -205,9 +205,18 @@ export default function UserManagement() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
@@ -385,7 +394,9 @@ export default function UserManagement() {
 	return (
 		<div className="p-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-heading font-bold text-2xl text-foreground">{t("admin.users.title")}</h1>
+				<h1 className="font-bold font-heading text-2xl text-foreground">
+					{t("admin.users.title")}
+				</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
@@ -422,7 +433,10 @@ export default function UserManagement() {
 					</Select>
 				</div>
 			</div>
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -440,8 +454,16 @@ export default function UserManagement() {
 						<TableRow>
 							<TableHead className="w-10">
 								<Checkbox
-									checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
-									onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+									checked={
+										selection.isAllSelected
+											? true
+											: selection.isSomeSelected
+												? "indeterminate"
+												: false
+									}
+									onCheckedChange={(checked) =>
+										selection.toggleAll(Boolean(checked))
+									}
 								/>
 							</TableHead>
 							<TableHead>{t("admin.users.table.name")}</TableHead>
@@ -643,7 +665,10 @@ export default function UserManagement() {
 												{t("admin.users.form.dateOfBirthLabel")}
 											</FormLabel>
 											<FormControl>
-												<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+												<DatePicker
+													value={field.value ?? ""}
+													onChange={field.onChange}
+												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>

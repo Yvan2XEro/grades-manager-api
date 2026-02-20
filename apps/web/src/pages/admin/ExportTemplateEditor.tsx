@@ -195,7 +195,7 @@ export default function ExportTemplateEditor() {
 	if (!template && !isNewTemplate) {
 		return (
 			<div className="flex min-h-screen flex-col items-center justify-center">
-				<h2 className="font-semibold text-xl text-foreground">
+				<h2 className="font-semibold text-foreground text-xl">
 					{t("admin.exportTemplates.editor.notFound")}
 				</h2>
 				<Button
@@ -223,7 +223,7 @@ export default function ExportTemplateEditor() {
 						{t("common.actions.back")}
 					</Button>
 					<div>
-						<h1 className="font-heading font-bold text-2xl text-foreground">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{template?.name || templateName}
 						</h1>
 						<p className="text-muted-foreground">

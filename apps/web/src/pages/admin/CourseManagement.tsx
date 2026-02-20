@@ -326,7 +326,7 @@ export default function CourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.courses.title", { defaultValue: "Course management" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -513,7 +513,9 @@ export default function CourseManagement() {
 									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel required>{t("admin.courses.form.nameLabel")}</FormLabel>
+											<FormLabel required>
+												{t("admin.courses.form.nameLabel")}
+											</FormLabel>
 											<FormControl>
 												<Input
 													placeholder={t("admin.courses.form.namePlaceholder")}
@@ -554,7 +556,9 @@ export default function CourseManagement() {
 									name="hours"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel required>{t("admin.courses.form.hoursLabel")}</FormLabel>
+											<FormLabel required>
+												{t("admin.courses.form.hoursLabel")}
+											</FormLabel>
 											<FormControl>
 												<Input
 													type="number"

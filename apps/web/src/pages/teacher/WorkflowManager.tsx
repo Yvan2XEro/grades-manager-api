@@ -3,6 +3,8 @@ import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +14,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
-import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -84,7 +84,7 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-heading font-bold text-2xl text-foreground">
+				<h1 className="font-bold font-heading text-2xl text-foreground">
 					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
 				<p className="text-muted-foreground">
@@ -95,27 +95,34 @@ const WorkflowManager = () => {
 				</p>
 			</div>
 
-		<div className="flex flex-wrap items-end gap-4">
-			<div className="w-56">
-				<Label className="mb-1 block font-medium text-sm">
-					{t("admin.classes.filters.academicYear", { defaultValue: "Academic Year" })}
-				</Label>
-				<AcademicYearSelect
-					value={filterYear}
-					onChange={(v) => { setFilterYear(v); setSelectedClassCourse(""); }}
-				/>
+			<div className="flex flex-wrap items-end gap-4">
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.academicYear", {
+							defaultValue: "Academic Year",
+						})}
+					</Label>
+					<AcademicYearSelect
+						value={filterYear}
+						onChange={(v) => {
+							setFilterYear(v);
+							setSelectedClassCourse("");
+						}}
+					/>
+				</div>
+				<div className="w-56">
+					<Label className="mb-1 block font-medium text-sm">
+						{t("admin.classes.filters.semester", { defaultValue: "Semester" })}
+					</Label>
+					<SemesterSelect
+						value={filterSemester}
+						onChange={(v) => {
+							setFilterSemester(v);
+							setSelectedClassCourse("");
+						}}
+					/>
+				</div>
 			</div>
-			<div className="w-56">
-				<Label className="mb-1 block font-medium text-sm">
-					{t("admin.classes.filters.semester", { defaultValue: "Semester" })}
-				</Label>
-				<SemesterSelect
-					value={filterSemester}
-					onChange={(v) => { setFilterSemester(v); setSelectedClassCourse(""); }}
-				/>
-			</div>
-		</div>
-
 
 			<div className="space-y-2">
 				<Label htmlFor="class-course">

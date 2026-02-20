@@ -12,8 +12,8 @@ import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
-import { staggerContainer, staggerItem, errorMsg } from "../../lib/animations";
 
 const buildSchema = (t: TFunction) =>
 	z.object({
@@ -55,7 +55,7 @@ const ForgotPassword: React.FC = () => {
 				>
 					<Mail className="h-6 w-6 text-primary" />
 				</motion.div>
-				<h2 className="font-heading font-bold text-2xl text-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
 					{t("auth.forgot.title")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
@@ -77,7 +77,12 @@ const ForgotPassword: React.FC = () => {
 						placeholder={t("auth.forgot.emailPlaceholder")}
 					/>
 					{errors.email && (
-						<motion.p variants={errorMsg} initial="hidden" animate="visible" className="text-destructive text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.email.message}
 						</motion.p>
 					)}

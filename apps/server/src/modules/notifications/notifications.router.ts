@@ -13,7 +13,9 @@ export const notificationsRouter = router({
 	),
 	list: adminProcedure
 		.input(listSchema)
-		.query(({ input }) => service.list(input.status, input.limit, input.cursor)),
+		.query(({ input }) =>
+			service.list(input.status, input.limit, input.cursor),
+		),
 	flush: adminProcedure.mutation(() => service.sendPending()),
 	acknowledge: adminProcedure
 		.input(idSchema)

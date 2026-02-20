@@ -16,6 +16,7 @@ import {
 	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
+import { DatePicker } from "../../components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -30,7 +31,6 @@ import {
 	EmptyTitle,
 } from "../../components/ui/empty";
 import { Input } from "../../components/ui/input";
-import { DatePicker } from "../../components/ui/date-picker";
 import { Label } from "../../components/ui/label";
 import {
 	Select,
@@ -412,7 +412,7 @@ export default function ExamScheduler() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.examScheduler.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -528,7 +528,7 @@ export default function ExamScheduler() {
 					}
 				}}
 			>
-				<DialogContent className="flex max-h-[90vh] w-[90vw] sm:max-w-[90vw] flex-col gap-0 overflow-hidden p-0">
+				<DialogContent className="flex max-h-[90vh] w-[90vw] flex-col gap-0 overflow-hidden p-0 sm:max-w-[90vw]">
 					{/* ── Header ── */}
 					<div className="shrink-0 border-b px-6 py-4">
 						<DialogHeader>
@@ -563,30 +563,38 @@ export default function ExamScheduler() {
 
 					{/* ── Body ── */}
 					<div className="grid min-h-0 flex-1 grid-cols-[1fr_3fr] overflow-hidden">
-
 						{/* Left sidebar */}
 						<div className="flex flex-col gap-5 overflow-y-auto border-r bg-muted/30 px-5 py-5">
-
 							{/* Période */}
 							<div className="space-y-3">
 								<p className="font-medium text-foreground text-sm">
-									{t("admin.examScheduler.form.periodSection", { defaultValue: "Période" })}
+									{t("admin.examScheduler.form.periodSection", {
+										defaultValue: "Période",
+									})}
 								</p>
 								<div className="space-y-1.5">
-									<Label className="text-xs">{t("admin.examScheduler.form.academicYearLabel")}</Label>
+									<Label className="text-xs">
+										{t("admin.examScheduler.form.academicYearLabel")}
+									</Label>
 									<AcademicYearSelect
 										value={academicYearId || null}
 										onChange={setAcademicYearId}
 										autoSelectActive
-										placeholder={t("admin.examScheduler.form.academicYearPlaceholder")}
+										placeholder={t(
+											"admin.examScheduler.form.academicYearPlaceholder",
+										)}
 									/>
 								</div>
 								<div className="space-y-1.5">
-									<Label className="text-xs">{t("admin.examScheduler.form.semesterLabel")}</Label>
+									<Label className="text-xs">
+										{t("admin.examScheduler.form.semesterLabel")}
+									</Label>
 									<SemesterSelect
 										value={semesterId || null}
 										onChange={(v) => setSemesterId(v ?? "")}
-										placeholder={t("admin.examScheduler.form.semesterPlaceholder")}
+										placeholder={t(
+											"admin.examScheduler.form.semesterPlaceholder",
+										)}
 									/>
 								</div>
 							</div>
@@ -596,25 +604,35 @@ export default function ExamScheduler() {
 							{/* Configuration */}
 							<div className="space-y-3">
 								<p className="font-medium text-foreground text-sm">
-									{t("admin.examScheduler.form.configSection", { defaultValue: "Configuration" })}
+									{t("admin.examScheduler.form.configSection", {
+										defaultValue: "Configuration",
+									})}
 								</p>
 
 								{sessionMode === "normal" && (
 									<>
 										<div className="space-y-1.5">
-											<Label className="text-xs">{t("admin.examScheduler.form.examTypeLabel")}</Label>
+											<Label className="text-xs">
+												{t("admin.examScheduler.form.examTypeLabel")}
+											</Label>
 											<Select
 												value={examTypeId}
 												onValueChange={(value) => {
 													setExamTypeId(value);
-													const selectedType = examTypesQuery.data?.find((t) => t.id === value);
+													const selectedType = examTypesQuery.data?.find(
+														(t) => t.id === value,
+													);
 													if (selectedType?.defaultPercentage != null) {
 														setPercentage(selectedType.defaultPercentage);
 													}
 												}}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder={t("admin.examScheduler.form.examTypePlaceholder")} />
+													<SelectValue
+														placeholder={t(
+															"admin.examScheduler.form.examTypePlaceholder",
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
 													{(examTypesQuery.data ?? []).map((type) => (
@@ -626,13 +644,17 @@ export default function ExamScheduler() {
 											</Select>
 										</div>
 										<div className="space-y-1.5">
-											<Label className="text-xs">{t("admin.examScheduler.form.percentageLabel")}</Label>
+											<Label className="text-xs">
+												{t("admin.examScheduler.form.percentageLabel")}
+											</Label>
 											<Input
 												type="number"
 												min={1}
 												max={100}
 												value={percentage}
-												onChange={(event) => setPercentage(Number(event.target.value) || 0)}
+												onChange={(event) =>
+													setPercentage(Number(event.target.value) || 0)
+												}
 											/>
 										</div>
 									</>
@@ -641,50 +663,90 @@ export default function ExamScheduler() {
 								{sessionMode === "retake" && (
 									<>
 										<div className="space-y-1.5">
-											<Label className="text-xs">{t("admin.examScheduler.form.scoringPolicyLabel")}</Label>
+											<Label className="text-xs">
+												{t("admin.examScheduler.form.scoringPolicyLabel")}
+											</Label>
 											<Select
 												value={scoringPolicy}
-												onValueChange={(v) => setScoringPolicy(v as "replace" | "best_of")}
+												onValueChange={(v) =>
+													setScoringPolicy(v as "replace" | "best_of")
+												}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder={t("admin.examScheduler.form.scoringPolicyPlaceholder")} />
+													<SelectValue
+														placeholder={t(
+															"admin.examScheduler.form.scoringPolicyPlaceholder",
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="replace">{t("admin.examScheduler.form.scoringPolicyReplace")}</SelectItem>
-													<SelectItem value="best_of">{t("admin.examScheduler.form.scoringPolicyBestOf")}</SelectItem>
+													<SelectItem value="replace">
+														{t("admin.examScheduler.form.scoringPolicyReplace")}
+													</SelectItem>
+													<SelectItem value="best_of">
+														{t("admin.examScheduler.form.scoringPolicyBestOf")}
+													</SelectItem>
 												</SelectContent>
 											</Select>
 										</div>
 										<div className="space-y-1.5">
-											<Label className="text-xs">{t("admin.examScheduler.form.classFilterLabel")}</Label>
+											<Label className="text-xs">
+												{t("admin.examScheduler.form.classFilterLabel")}
+											</Label>
 											<Select
 												value={classFilter || "__all__"}
-												onValueChange={(v) => setClassFilter(v === "__all__" ? "" : v)}
+												onValueChange={(v) =>
+													setClassFilter(v === "__all__" ? "" : v)
+												}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder={t("admin.examScheduler.form.classFilterPlaceholder")} />
+													<SelectValue
+														placeholder={t(
+															"admin.examScheduler.form.classFilterPlaceholder",
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="__all__">{t("admin.examScheduler.form.classFilterPlaceholder")}</SelectItem>
+													<SelectItem value="__all__">
+														{t(
+															"admin.examScheduler.form.classFilterPlaceholder",
+														)}
+													</SelectItem>
 													{classes.map((cls) => (
-														<SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
+														<SelectItem key={cls.id} value={cls.id}>
+															{cls.name}
+														</SelectItem>
 													))}
 												</SelectContent>
 											</Select>
 										</div>
 										<div className="space-y-1.5">
-											<Label className="text-xs">{t("admin.examScheduler.form.examTypeFilterLabel")}</Label>
+											<Label className="text-xs">
+												{t("admin.examScheduler.form.examTypeFilterLabel")}
+											</Label>
 											<Select
 												value={examTypeFilter || "__all__"}
-												onValueChange={(v) => setExamTypeFilter(v === "__all__" ? "" : v)}
+												onValueChange={(v) =>
+													setExamTypeFilter(v === "__all__" ? "" : v)
+												}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder={t("admin.examScheduler.form.examTypeFilterPlaceholder")} />
+													<SelectValue
+														placeholder={t(
+															"admin.examScheduler.form.examTypeFilterPlaceholder",
+														)}
+													/>
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="__all__">{t("admin.examScheduler.form.examTypeFilterPlaceholder")}</SelectItem>
+													<SelectItem value="__all__">
+														{t(
+															"admin.examScheduler.form.examTypeFilterPlaceholder",
+														)}
+													</SelectItem>
 													{(examTypesQuery.data ?? []).map((type) => (
-														<SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+														<SelectItem key={type.id} value={type.id}>
+															{type.name}
+														</SelectItem>
 													))}
 												</SelectContent>
 											</Select>
@@ -698,41 +760,45 @@ export default function ExamScheduler() {
 							{/* Plage de dates */}
 							<div className="space-y-3">
 								<p className="font-medium text-foreground text-sm">
-									{t("admin.examScheduler.form.dateRangeSection", { defaultValue: "Plage de dates" })}
+									{t("admin.examScheduler.form.dateRangeSection", {
+										defaultValue: "Plage de dates",
+									})}
 								</p>
 								<div className="space-y-1.5">
-									<Label className="text-xs">{t("admin.examScheduler.form.dateStartLabel")}</Label>
-									<DatePicker
-										value={dateStart}
-										onChange={setDateStart}
-									/>
+									<Label className="text-xs">
+										{t("admin.examScheduler.form.dateStartLabel")}
+									</Label>
+									<DatePicker value={dateStart} onChange={setDateStart} />
 								</div>
 								<div className="space-y-1.5">
-									<Label className="text-xs">{t("admin.examScheduler.form.dateEndLabel")}</Label>
-									<DatePicker
-										value={dateEnd}
-										onChange={setDateEnd}
-									/>
+									<Label className="text-xs">
+										{t("admin.examScheduler.form.dateEndLabel")}
+									</Label>
+									<DatePicker value={dateEnd} onChange={setDateEnd} />
 								</div>
 							</div>
-
 						</div>
 
 						{/* Right panel */}
 						<div className="flex flex-col overflow-hidden">
-
 							{sessionMode === "normal" && (
 								<>
 									<div className="flex shrink-0 items-center justify-between border-b px-5 py-3">
 										<div>
-											<p className="font-medium text-sm">{t("admin.examScheduler.classes.title")}</p>
-											<p className="text-muted-foreground text-xs">{t("admin.examScheduler.classes.description")}</p>
+											<p className="font-medium text-sm">
+												{t("admin.examScheduler.classes.title")}
+											</p>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.examScheduler.classes.description")}
+											</p>
 										</div>
 										<div className="flex items-center gap-2">
 											<Checkbox
 												id="select-all-classes"
 												checked={allClassesSelected}
-												onCheckedChange={(value) => setAllClasses(value === true)}
+												onCheckedChange={(value) =>
+													setAllClasses(value === true)
+												}
 												disabled={!previewClasses.length}
 											/>
 											<Label htmlFor="select-all-classes" className="text-sm">
@@ -742,7 +808,9 @@ export default function ExamScheduler() {
 									</div>
 									<div className="flex-1 overflow-y-auto p-4">
 										{previewQuery.isLoading ? (
-											<div className="flex h-full items-center justify-center"><Spinner /></div>
+											<div className="flex h-full items-center justify-center">
+												<Spinner />
+											</div>
 										) : !previewClasses.length ? (
 											<div className="flex h-full items-center justify-center text-center text-muted-foreground text-sm">
 												{t("admin.examScheduler.classes.description")}
@@ -760,11 +828,18 @@ export default function ExamScheduler() {
 														}`}
 													>
 														<div className="min-w-0 flex-1">
-															<p className="font-medium text-sm">{klass.name}</p>
-															<p className="truncate text-muted-foreground text-xs">{klass.programName}</p>
+															<p className="font-medium text-sm">
+																{klass.name}
+															</p>
+															<p className="truncate text-muted-foreground text-xs">
+																{klass.programName}
+															</p>
 														</div>
 														<div className="ml-3 flex shrink-0 items-center gap-3">
-															<Badge variant="outline" className="text-xs">{klass.classCourseCount} {t("admin.exams.table.course")}</Badge>
+															<Badge variant="outline" className="text-xs">
+																{klass.classCourseCount}{" "}
+																{t("admin.exams.table.course")}
+															</Badge>
 															<Checkbox
 																checked={selectedClasses.has(klass.id)}
 																onCheckedChange={() => toggleClass(klass.id)}
@@ -782,18 +857,26 @@ export default function ExamScheduler() {
 								<>
 									<div className="flex shrink-0 items-center justify-between border-b px-5 py-3">
 										<div>
-											<p className="font-medium text-sm">{t("admin.examScheduler.retakeExams.title")}</p>
-											<p className="text-muted-foreground text-xs">{t("admin.examScheduler.retakeExams.description")}</p>
+											<p className="font-medium text-sm">
+												{t("admin.examScheduler.retakeExams.title")}
+											</p>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.examScheduler.retakeExams.description")}
+											</p>
 										</div>
 										<div className="flex items-center gap-3">
 											<Badge variant="secondary" className="text-xs">
-												{t("admin.examScheduler.retakeExams.examCount", { count: retakeExams.length })}
+												{t("admin.examScheduler.retakeExams.examCount", {
+													count: retakeExams.length,
+												})}
 											</Badge>
 											<div className="flex items-center gap-2">
 												<Checkbox
 													id="select-all-exams"
 													checked={allExamsSelected}
-													onCheckedChange={(value) => setAllExams(value === true)}
+													onCheckedChange={(value) =>
+														setAllExams(value === true)
+													}
 													disabled={!retakeExams.length}
 												/>
 												<Label htmlFor="select-all-exams" className="text-sm">
@@ -804,7 +887,9 @@ export default function ExamScheduler() {
 									</div>
 									<div className="flex-1 overflow-y-auto">
 										{retakePreviewQuery.isLoading ? (
-											<div className="flex h-full items-center justify-center"><Spinner /></div>
+											<div className="flex h-full items-center justify-center">
+												<Spinner />
+											</div>
 										) : !retakeExams.length ? (
 											<div className="flex h-full items-center justify-center text-center text-muted-foreground text-sm">
 												{t("admin.examScheduler.retakeExams.noExams")}
@@ -814,11 +899,31 @@ export default function ExamScheduler() {
 												<TableHeader>
 													<TableRow>
 														<TableHead className="w-12" />
-														<TableHead>{t("admin.examScheduler.history.details.table.exam")}</TableHead>
-														<TableHead>{t("admin.examScheduler.history.details.table.course")}</TableHead>
-														<TableHead>{t("admin.examScheduler.history.details.table.class")}</TableHead>
-														<TableHead>{t("admin.examScheduler.history.details.table.type")}</TableHead>
-														<TableHead>{t("admin.examScheduler.history.details.table.date")}</TableHead>
+														<TableHead>
+															{t(
+																"admin.examScheduler.history.details.table.exam",
+															)}
+														</TableHead>
+														<TableHead>
+															{t(
+																"admin.examScheduler.history.details.table.course",
+															)}
+														</TableHead>
+														<TableHead>
+															{t(
+																"admin.examScheduler.history.details.table.class",
+															)}
+														</TableHead>
+														<TableHead>
+															{t(
+																"admin.examScheduler.history.details.table.type",
+															)}
+														</TableHead>
+														<TableHead>
+															{t(
+																"admin.examScheduler.history.details.table.date",
+															)}
+														</TableHead>
 													</TableRow>
 												</TableHeader>
 												<TableBody>
@@ -830,11 +935,17 @@ export default function ExamScheduler() {
 																	onCheckedChange={() => toggleExam(exam.id)}
 																/>
 															</TableCell>
-															<TableCell className="font-medium">{exam.name}</TableCell>
+															<TableCell className="font-medium">
+																{exam.name}
+															</TableCell>
 															<TableCell>{exam.courseName}</TableCell>
 															<TableCell>{exam.className}</TableCell>
-															<TableCell><Badge variant="outline">{exam.type}</Badge></TableCell>
-															<TableCell>{format(new Date(exam.date), "PP")}</TableCell>
+															<TableCell>
+																<Badge variant="outline">{exam.type}</Badge>
+															</TableCell>
+															<TableCell>
+																{format(new Date(exam.date), "PP")}
+															</TableCell>
 														</TableRow>
 													))}
 												</TableBody>
@@ -843,7 +954,6 @@ export default function ExamScheduler() {
 									</div>
 								</>
 							)}
-
 						</div>
 					</div>
 
@@ -855,16 +965,24 @@ export default function ExamScheduler() {
 						<div className="flex items-center gap-3">
 							{sessionMode === "normal" && selectedClasses.size > 0 && (
 								<span className="text-muted-foreground text-sm">
-									{selectedClasses.size} {t("admin.examScheduler.classes.title", { defaultValue: "classes" })}
+									{selectedClasses.size}{" "}
+									{t("admin.examScheduler.classes.title", {
+										defaultValue: "classes",
+									})}
 								</span>
 							)}
 							{sessionMode === "retake" && selectedExams.size > 0 && (
 								<span className="text-muted-foreground text-sm">
-									{selectedExams.size} {t("admin.examScheduler.retakeExams.title", { defaultValue: "examens sélectionnés" })}
+									{selectedExams.size}{" "}
+									{t("admin.examScheduler.retakeExams.title", {
+										defaultValue: "examens sélectionnés",
+									})}
 								</span>
 							)}
 							<Button onClick={handleSubmit} disabled={!canSubmit}>
-								{isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+								{isPending ? (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								) : null}
 								{sessionMode === "normal"
 									? t("admin.examScheduler.actions.schedule")
 									: t("admin.examScheduler.actions.scheduleRetakes")}

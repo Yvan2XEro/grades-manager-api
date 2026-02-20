@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import { eq } from "drizzle-orm";
 import {
 	createAcademicYear,
 	createClass,
@@ -136,11 +136,7 @@ describe("student course enrollments – credit ledger (UE validation)", () => {
 			});
 
 		for (const { classCourse } of courses) {
-			await ensureStudentCourseEnrollment(
-				student.id,
-				classCourse.id,
-				"active",
-			);
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 		}
 
 		// Grade both courses above 10
@@ -175,11 +171,7 @@ describe("student course enrollments – credit ledger (UE validation)", () => {
 			});
 
 		for (const { classCourse } of courses) {
-			await ensureStudentCourseEnrollment(
-				student.id,
-				classCourse.id,
-				"active",
-			);
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 		}
 
 		// High score on low coefficient, low score on high coefficient
@@ -212,11 +204,7 @@ describe("student course enrollments – credit ledger (UE validation)", () => {
 			});
 
 		for (const { classCourse } of courses) {
-			await ensureStudentCourseEnrollment(
-				student.id,
-				classCourse.id,
-				"active",
-			);
+			await ensureStudentCourseEnrollment(student.id, classCourse.id, "active");
 		}
 
 		// Grade only the first course

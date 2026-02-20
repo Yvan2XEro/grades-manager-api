@@ -11,14 +11,13 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
-import { Checkbox } from "../../components/ui/checkbox";
-import { useRowSelection } from "../../hooks/useRowSelection";
 import {
 	Card,
 	CardContent,
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
@@ -37,6 +36,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -183,14 +183,25 @@ export default function CourseManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
-			await Promise.all(ids.map((id) => trpcClient.courses.delete.mutate({ id })));
+			await Promise.all(
+				ids.map((id) => trpcClient.courses.delete.mutate({ id })),
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
 			selection.clear();
-			toast.success(t("common.bulkActions.deleteSuccess", { defaultValue: "Items deleted successfully" }));
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
 		},
-		onError: () => toast.error(t("common.bulkActions.deleteError", { defaultValue: "Failed to delete items" })),
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const onSubmit = async (data: CourseFormData) => {
@@ -224,7 +235,7 @@ export default function CourseManagement() {
 		<div className="space-y-6 p-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-heading font-bold text-2xl text-foreground">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("teacher.courses.manage.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -245,7 +256,10 @@ export default function CourseManagement() {
 				</Button>
 			</div>
 
-			<BulkActionBar selectedCount={selection.selectedCount} onClear={selection.clear}>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -267,8 +281,16 @@ export default function CourseManagement() {
 							<TableRow>
 								<TableHead className="w-10">
 									<Checkbox
-										checked={selection.isAllSelected ? true : selection.isSomeSelected ? "indeterminate" : false}
-										onCheckedChange={(checked) => selection.toggleAll(Boolean(checked))}
+										checked={
+											selection.isAllSelected
+												? true
+												: selection.isSomeSelected
+													? "indeterminate"
+													: false
+										}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(Boolean(checked))
+										}
 									/>
 								</TableHead>
 								<TableHead>{t("teacher.courses.manage.table.name")}</TableHead>
