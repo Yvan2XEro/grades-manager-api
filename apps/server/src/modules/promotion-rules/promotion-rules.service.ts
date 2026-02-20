@@ -197,6 +197,7 @@ export async function evaluateClassForPromotion(
 				const facts = await getStudentPromotionFacts(
 					student.id,
 					opts.academicYearId,
+					{ rebuildIfMissing: true },
 				);
 				const result = await evaluateStudentAgainstRule(rule.ruleset, facts);
 
