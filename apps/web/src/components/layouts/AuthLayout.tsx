@@ -7,16 +7,14 @@ import logo from "/logo.png";
 import logoBg from "/logo-bg.png";
 import { useStore } from "../../store";
 import { roleLayoutMap } from "../navigation/Redirector";
-import LoadingScreen from "../ui/LoadingScreen";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
 	const { t } = useTranslation();
 
 	const [callbackURL] = useQueryState("return", {});
+	// Redirect if already authenticated
 	if (user) {
-		// Intermediate state: user is authenticated but org is still being activated
-		if (user.role === "guest") return <LoadingScreen />;
 		if (callbackURL) return <Navigate to={callbackURL} replace />;
 		return roleLayoutMap[user.role];
 	}

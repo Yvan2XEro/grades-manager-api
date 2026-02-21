@@ -149,11 +149,6 @@ export default function ClassCourseManagement() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => {
-		pagination.reset();
-	}, [filterYear, filterSemester]);
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
@@ -168,6 +163,11 @@ export default function ClassCourseManagement() {
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
 	const pagination = useCursorPagination({ pageSize: 20 });
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
+	useEffect(() => {
+		pagination.reset();
+	}, [filterYear, filterSemester]);
 
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
@@ -803,7 +803,11 @@ export default function ClassCourseManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => bulkDeleteMutation.mutate([...selection.selectedIds])}
+					onClick={() => {
+						if (window.confirm(t("common.bulkActions.confirmDelete", { defaultValue: "Are you sure you want to delete the selected items?" }))) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1.5 h-3.5 w-3.5" />

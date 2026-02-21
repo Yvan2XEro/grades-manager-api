@@ -1,4 +1,4 @@
-import { and, asc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -35,17 +35,19 @@ export async function listNotifications(
 		conditions.push(eq(schema.notifications.status, status));
 	}
 	if (cursor) {
-		conditions.push(gt(schema.notifications.id, cursor));
+		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
 	}
 
 	const items = await db.query.notifications.findMany({
 		where: conditions.length > 0 ? and(...conditions) : undefined,
 		limit: pageLimit,
-		orderBy: [asc(schema.notifications.id)],
+		orderBy: [desc(schema.notifications.createdAt)],
 	});
 
 	const nextCursor =
-		items.length === pageLimit ? items[items.length - 1].id : undefined;
+		items.length === pageLimit
+			? items[items.length - 1].createdAt.toISOString()
+			: undefined;
 	return { items, nextCursor };
 }
 

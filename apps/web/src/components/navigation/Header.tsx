@@ -65,7 +65,7 @@ const Header: React.FC = () => {
 							<Menu className="h-5 w-5" />
 						)}
 					</Button>
-					{crumbs.length > 1 && (
+					{crumbs.length > 1 ? (
 						<Breadcrumb className="hidden md:flex">
 							<BreadcrumbList>
 								{crumbs.map((crumb, index) => (
@@ -84,6 +84,12 @@ const Header: React.FC = () => {
 								))}
 							</BreadcrumbList>
 						</Breadcrumb>
+					) : (
+						<h1 className="hidden font-semibold text-foreground text-lg md:block">
+							{t(`navigation.header.${user?.role ?? "admin"}Dashboard`, {
+								defaultValue: "Dashboard",
+							})}
+						</h1>
 					)}
 				</div>
 
@@ -116,7 +122,6 @@ const Header: React.FC = () => {
 						aria-label={t("navigation.header.notificationsAria")}
 					>
 						<Bell className="h-[18px] w-[18px]" />
-						<span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
 					</Button>
 
 					<DropdownMenu>

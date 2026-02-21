@@ -77,6 +77,8 @@ type Exam = {
 	isLocked: boolean;
 	canEdit?: boolean;
 	sessionType?: "normal" | "retake";
+	parentExamId?: string | null;
+	scoringPolicy?: "replace" | "best_of";
 };
 
 type GradeInput = {
@@ -87,6 +89,9 @@ type GradeInput = {
 
 type CourseInfo = {
 	course_name: string;
+	course_code: string;
+	teaching_unit_name: string;
+	teaching_unit_code: string;
 	class_name: string;
 	program_name: string;
 };
@@ -179,9 +184,16 @@ const GradeEntry: React.FC = () => {
 				trpcClient.courses.getById.query({ id: classCourse.course }),
 				trpcClient.programs.getById.query({ id: klass.program }),
 			]);
+			// Fetch teaching unit info
+			const teachingUnit = await trpcClient.teachingUnits.getById.query({
+				id: course.teachingUnitId,
+			});
 			return {
 				courseInfo: {
 					course_name: course.name,
+					course_code: course.code,
+					teaching_unit_name: teachingUnit.name,
+					teaching_unit_code: teachingUnit.code,
 					class_name: klass.name,
 					program_name: program.name,
 				} as CourseInfo,
@@ -250,6 +262,8 @@ const GradeEntry: React.FC = () => {
 					isLocked: e.isLocked,
 					canEdit: e.canEdit ?? false,
 					sessionType: (e as any).sessionType ?? "normal",
+					parentExamId: (e as any).parentExamId ?? null,
+					scoringPolicy: (e as any).scoringPolicy ?? "replace",
 				}),
 			);
 		},
@@ -628,8 +642,13 @@ const GradeEntry: React.FC = () => {
 					</h2>
 					{courseInfo && (
 						<p className="text-muted-foreground text-sm">
-							{courseInfo.course_name} • {courseInfo.class_name} •{" "}
-							{courseInfo.program_name}
+							<span className="font-medium">
+								{courseInfo.teaching_unit_code}
+							</span>
+							{" / "}
+							<span className="font-medium">{courseInfo.course_code}</span>
+							{" • "}
+							{courseInfo.class_name}
 						</p>
 					)}
 				</div>
@@ -869,7 +888,9 @@ const GradeEntry: React.FC = () => {
 									{exams.map((exam) => (
 										<SelectItem key={exam.id} value={exam.id}>
 											{exam.name} ({exam.percentage}%)
-											{exam.sessionType === "retake" ? " [Retake]" : ""}{" "}
+											{exam.sessionType === "retake"
+											? ` [${t("teacher.exams.sessionType.retake")}]`
+											: ""}{" "}
 											{exam.isLocked
 												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
 												: ""}

@@ -194,10 +194,6 @@ const EnrollmentManagement = () => {
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
 
-	const { data: years } = useQuery(
-		trpc.academicYears.list.queryOptions({ limit: 100 }),
-	);
-
 	const { data: semesters } = useQuery(
 		trpc.semesters.list.queryOptions({ limit: 100 }),
 	);
@@ -718,9 +714,11 @@ const EnrollmentManagement = () => {
 							<Button
 								variant="destructive"
 								size="sm"
-								onClick={() =>
-									bulkDeleteMutation.mutate([...selection.selectedIds])
-								}
+								onClick={() => {
+									if (window.confirm(t("common.bulkActions.confirmDelete", { defaultValue: "Are you sure you want to delete the selected items?" }))) {
+										bulkDeleteMutation.mutate([...selection.selectedIds]);
+									}
+								}}
 								disabled={bulkDeleteMutation.isPending}
 							>
 								<Trash2 className="mr-1.5 h-3.5 w-3.5" />

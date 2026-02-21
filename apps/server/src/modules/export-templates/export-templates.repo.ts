@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { db } from "../../db";
 import type {
 	ExportTemplate,
@@ -34,17 +34,19 @@ export async function findTemplatesByInstitution(
 	}
 
 	if (cursor) {
-		conditions.push(gt(schema.exportTemplates.id, cursor));
+		conditions.push(lt(schema.exportTemplates.createdAt, new Date(cursor)));
 	}
 
 	const items = await db.query.exportTemplates.findMany({
 		where: and(...conditions),
-		orderBy: [asc(schema.exportTemplates.id)],
+		orderBy: [desc(schema.exportTemplates.createdAt)],
 		limit: pageLimit,
 	});
 
 	const nextCursor =
-		items.length === pageLimit ? items[items.length - 1].id : undefined;
+		items.length === pageLimit
+			? items[items.length - 1].createdAt.toISOString()
+			: undefined;
 	return { items, nextCursor };
 }
 
