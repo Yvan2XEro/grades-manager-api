@@ -193,7 +193,7 @@ export function RulesListPage() {
 	};
 
 	return (
-		<div className="container mx-auto space-y-6 py-8">
+		<div className="space-y-6">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button

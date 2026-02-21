@@ -106,7 +106,7 @@ export function ExecutePromotionPage() {
 
 	if (!state) {
 		return (
-			<div className="container mx-auto py-8">
+			<div>
 				<Card className="border-0 shadow-sm">
 					<CardContent className="pt-6">
 						<div className="py-12 text-center">
@@ -127,7 +127,7 @@ export function ExecutePromotionPage() {
 	}
 
 	return (
-		<div className="container mx-auto space-y-6 py-8">
+		<div className="space-y-6">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button

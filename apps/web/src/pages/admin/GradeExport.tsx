@@ -1556,7 +1556,7 @@ export default function GradeExport() {
 	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="space-y-2">
 				<h2 className="font-semibold text-foreground text-xl">
 					{t("admin.gradeExport.title")}

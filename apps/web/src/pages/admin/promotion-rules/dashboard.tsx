@@ -30,7 +30,7 @@ export function PromotionRulesDashboard() {
 	const totalExecutions = executionsData?.items.length || 0;
 
 	return (
-		<div className="container mx-auto space-y-8 py-8">
+		<div className="space-y-8">
 			{/* Header */}
 			<div>
 				<h1 className="font-bold font-heading text-2xl text-foreground">

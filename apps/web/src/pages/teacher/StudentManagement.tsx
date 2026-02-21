@@ -252,7 +252,7 @@ export default function StudentManagement() {
 	};
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div>
 				<h2 className="font-bold font-heading text-2xl text-foreground">{t("teacher.promotion.title")}</h2>
 				<p className="text-muted-foreground">{t("teacher.promotion.subtitle")}</p>

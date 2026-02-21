@@ -892,8 +892,8 @@ export default function ClassManagement() {
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6">
+			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.classes.title")}

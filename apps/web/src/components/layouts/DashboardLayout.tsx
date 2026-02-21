@@ -38,7 +38,7 @@ const DashboardLayout: React.FC = () => {
 				<Header />
 
 				<main className="min-h-0 flex-1 overflow-y-auto">
-					<div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
+					<div className="px-4 py-6 md:px-8">
 						<Outlet />
 					</div>
 				</main>

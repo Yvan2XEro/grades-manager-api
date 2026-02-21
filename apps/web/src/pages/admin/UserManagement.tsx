@@ -335,7 +335,7 @@ export default function UserManagement() {
 	};
 
 	return (
-		<div className="p-6">
+		<div className="space-y-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
 				<h1 className="font-bold font-heading text-2xl text-foreground">
 					{t("admin.users.title")}
