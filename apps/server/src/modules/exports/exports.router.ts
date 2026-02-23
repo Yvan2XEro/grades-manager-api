@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { adminProcedure, gradingProcedure, router } from "../../lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantGradingProcedure,
+} from "../../lib/trpc";
 import { ExportsService } from "./exports.service";
 import {
 	generateEvaluationSchema,
@@ -16,7 +20,7 @@ import {
  */
 export const exportsRouter = router({
 	/** Generate PV (official minutes) for a class/semester and return PDF or HTML */
-	generatePV: gradingProcedure
+	generatePV: tenantGradingProcedure
 		.input(generatePVSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -30,7 +34,7 @@ export const exportsRouter = router({
 		}),
 
 	/** Get structured PV data (JSON) for frontend Excel export */
-	getPVData: gradingProcedure
+	getPVData: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -40,7 +44,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview PV in HTML format (no PDF generation)
 	 */
-	previewPV: gradingProcedure
+	previewPV: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -56,7 +60,7 @@ export const exportsRouter = router({
 	 * Generate evaluation publication
 	 * Returns PDF or HTML preview
 	 */
-	generateEvaluation: gradingProcedure
+	generateEvaluation: tenantGradingProcedure
 		.input(generateEvaluationSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -72,7 +76,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview evaluation publication in HTML format
 	 */
-	previewEvaluation: gradingProcedure
+	previewEvaluation: tenantGradingProcedure
 		.input(previewEvaluationSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -88,7 +92,7 @@ export const exportsRouter = router({
 	 * Generate UE (Teaching Unit) publication
 	 * Returns PDF or HTML preview
 	 */
-	generateUE: gradingProcedure
+	generateUE: tenantGradingProcedure
 		.input(generateUESchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -104,7 +108,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview UE publication in HTML format
 	 */
-	previewUE: gradingProcedure
+	previewUE: tenantGradingProcedure
 		.input(previewUESchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -116,7 +120,7 @@ export const exportsRouter = router({
 			return result.content;
 		}),
 
-	previewTemplate: adminProcedure
+	previewTemplate: tenantAdminProcedure
 		.input(previewTemplateSourceSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -127,7 +131,7 @@ export const exportsRouter = router({
 	/**
 	 * Get export configuration (for UI customization)
 	 */
-	getConfig: adminProcedure.query(() => {
+	getConfig: tenantAdminProcedure.query(() => {
 		const { loadExportConfig } = require("./template-helper");
 		return loadExportConfig();
 	}),

@@ -93,10 +93,25 @@ export async function list(opts: {
 	return { items, nextCursor };
 }
 
+export async function deleteById(id: string, institutionId: string) {
+	const [deleted] = await db
+		.delete(schema.enrollments)
+		.where(
+			and(
+				eq(schema.enrollments.id, id),
+				eq(schema.enrollments.institutionId, institutionId),
+			),
+		)
+		.returning();
+	return deleted ?? null;
+}
+
 export async function closeActive(
 	studentId: string,
 	status: schema.EnrollmentStatus = "completed",
 	institutionId?: string,
+	// biome-ignore lint/suspicious/noExplicitAny: drizzle tx type differs from DbInstance union
+	txDb?: any,
 ) {
 	const conditions = [
 		eq(schema.enrollments.studentId, studentId),
@@ -106,7 +121,7 @@ export async function closeActive(
 		conditions.push(eq(schema.enrollments.institutionId, institutionId));
 	}
 	const where = conditions.length === 1 ? conditions[0] : and(...conditions);
-	const [record] = await db
+	const [record] = await (txDb ?? db)
 		.update(schema.enrollments)
 		.set({
 			status,

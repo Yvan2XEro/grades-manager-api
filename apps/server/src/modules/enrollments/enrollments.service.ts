@@ -86,6 +86,11 @@ export async function updateEnrollment(
 	return repo.update(id, data, institutionId);
 }
 
+const TERMINAL_ENROLLMENT_STATUSES: schema.EnrollmentStatus[] = [
+	"completed",
+	"withdrawn",
+];
+
 export async function updateStatus(
 	id: string,
 	status: schema.EnrollmentStatus,
@@ -93,7 +98,31 @@ export async function updateStatus(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
-	return repo.update(id, { status, exitedAt: new Date() }, institutionId);
+	const isTerminal = TERMINAL_ENROLLMENT_STATUSES.includes(status);
+	const exitedAt = isTerminal ? new Date() : null;
+	return repo.update(id, { status, exitedAt }, institutionId);
+}
+
+export async function deleteEnrollment(id: string, institutionId: string) {
+	const existing = await repo.findById(id, institutionId);
+	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	if (existing.status === "active") {
+		// Check if there are course enrollments with grades before deleting active enrollments
+		const courseEnrollments = await db.query.studentCourseEnrollments.findMany({
+			where: and(
+				eq(schema.studentCourseEnrollments.studentId, existing.studentId),
+				eq(schema.studentCourseEnrollments.sourceClassId, existing.classId),
+			),
+		});
+		if (courseEnrollments.length > 0) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message:
+					"Cannot delete an active enrollment with existing course enrollments. Change status to withdrawn first.",
+			});
+		}
+	}
+	return repo.deleteById(id, institutionId);
 }
 
 export async function listEnrollments(
@@ -113,6 +142,8 @@ export async function closeActiveEnrollment(
 	studentId: string,
 	status: schema.EnrollmentStatus = "completed",
 	institutionId?: string,
+	// biome-ignore lint/suspicious/noExplicitAny: drizzle tx type differs from DbInstance union
+	txDb?: any,
 ) {
-	return repo.closeActive(studentId, status, institutionId);
+	return repo.closeActive(studentId, status, institutionId, txDb);
 }

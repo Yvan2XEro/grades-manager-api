@@ -456,7 +456,7 @@
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Optional description (objectives, focus)",
 				"submit": "Save program",
-				"cycleLabel": "Cycle d'étude",
+				"cycleLabel": "Study cycle",
 				"cyclePlaceholder": "Select cycle",
 				"selectFacultyFirst": "Select a faculty to load available cycles."
 			},

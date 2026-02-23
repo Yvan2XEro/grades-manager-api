@@ -83,7 +83,7 @@ const Register: React.FC = () => {
 		}
 
 		toast.success(t("auth.register.success"));
-		navigate("/teacher");
+		navigate(callbackURL || "/");
 	};
 
 	return (

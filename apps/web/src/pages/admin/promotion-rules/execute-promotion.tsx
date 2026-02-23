@@ -91,16 +91,57 @@ export function ExecutePromotionPage() {
 		setShowConfirmDialog(true);
 	};
 
+	// Batch job mutation for large promotions
+	const batchPromotionMutation = useMutation({
+		mutationFn: async (data: {
+			ruleId: string;
+			sourceClassId: string;
+			targetClassId: string;
+			academicYearId: string;
+			studentIds: string[];
+		}) => {
+			const job = await trpcClient.batchJobs.preview.mutate({
+				type: "promotion.applyBatch",
+				params: {
+					ruleId: data.ruleId,
+					sourceClassId: data.sourceClassId,
+					targetClassId: data.targetClassId,
+					academicYearId: data.academicYearId,
+					studentIds: data.studentIds,
+					executedBy: "__current__",
+				},
+			});
+			await trpcClient.batchJobs.run.mutate({ jobId: job.id });
+			return job;
+		},
+		onSuccess: () => {
+			toast.success("Batch promotion started! Redirecting to batch jobs...");
+			navigate("/admin/batch-jobs");
+		},
+		onError: (error: any) => {
+			toast.error(`Failed to start batch promotion: ${error.message}`);
+		},
+	});
+
+	const BATCH_THRESHOLD = 20;
+	const useBatch = (state?.studentIds.length ?? 0) > BATCH_THRESHOLD;
+
 	const handleConfirmExecute = () => {
 		if (!state || !targetClassId) return;
 
-		applyPromotionMutation.mutate({
+		const payload = {
 			ruleId: state.ruleId,
 			sourceClassId: state.sourceClassId,
 			targetClassId,
 			academicYearId: state.academicYearId,
 			studentIds: state.studentIds,
-		});
+		};
+
+		if (useBatch) {
+			batchPromotionMutation.mutate(payload);
+		} else {
+			applyPromotionMutation.mutate(payload);
+		}
 		setShowConfirmDialog(false);
 	};
 
@@ -249,25 +290,34 @@ export function ExecutePromotionPage() {
 			<div className="flex items-center gap-4">
 				<Button
 					variant="outline"
-					onClick={() => navigate("/promotion-rules/evaluate")}
+					onClick={() => navigate("/admin/promotion-rules/evaluate")}
 				>
 					Back to Evaluation
 				</Button>
 				<div className="flex-1" />
 				<Button
 					onClick={handleExecute}
-					disabled={!targetClassId || applyPromotionMutation.isPending}
+					disabled={
+						!targetClassId ||
+						applyPromotionMutation.isPending ||
+						batchPromotionMutation.isPending
+					}
 					size="lg"
 				>
-					{applyPromotionMutation.isPending ? (
+					{applyPromotionMutation.isPending ||
+					batchPromotionMutation.isPending ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
-							Applying Promotion...
+							{useBatch
+								? "Starting Batch Job..."
+								: "Applying Promotion..."}
 						</>
 					) : (
 						<>
 							<CheckCircle className="mr-2 h-4 w-4" />
-							Execute Promotion
+							{useBatch
+								? `Execute as Batch Job (${state.studentIds.length} students)`
+								: "Execute Promotion"}
 						</>
 					)}
 				</Button>
@@ -295,6 +345,14 @@ export function ExecutePromotionPage() {
 								<li>Update student class references</li>
 								<li>Record this action in the execution history</li>
 							</ul>
+							<br />
+							{useBatch && (
+								<>
+									<br />
+									This will run as a <strong>background batch job</strong>{" "}
+									since there are more than {BATCH_THRESHOLD} students.
+								</>
+							)}
 							<br />
 							This operation cannot be easily undone. Are you sure?
 						</AlertDialogDescription>

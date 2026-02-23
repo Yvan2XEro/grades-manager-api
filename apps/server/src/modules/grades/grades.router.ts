@@ -26,6 +26,8 @@ const actorFromCtx = (ctx: Context) => ({
 });
 
 export const router = createRouter({
+	// Note: these use tenantProtectedProcedure (not tenantGradingProcedure) because
+	// delegates (staff) need access — service-level ensureActorCanEditExam enforces authorization.
 	upsertNote: tenantProtectedProcedure
 		.input(upsertSchema)
 		.mutation(({ ctx, input }) =>

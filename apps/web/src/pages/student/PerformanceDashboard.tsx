@@ -17,10 +17,6 @@ const PerformanceDashboard = () => {
 		...trpc.studentCreditLedger.summary.queryOptions({ studentId }),
 		enabled: Boolean(studentId),
 	});
-	const promotionQuery = useQuery({
-		...trpc.promotions.evaluateStudent.queryOptions({ studentId }),
-		enabled: Boolean(studentId),
-	});
 	const studentProfileQuery = useQuery({
 		...trpc.students.getById.queryOptions({ id: studentId }),
 		enabled: Boolean(studentId),
@@ -132,38 +128,39 @@ const PerformanceDashboard = () => {
 								</div>
 							</div>
 
-							{promotionQuery.data && (
-								<motion.div
-									initial={{ opacity: 0, scale: 0.97 }}
-									animate={{ opacity: 1, scale: 1 }}
-									transition={{ delay: 0.6, duration: 0.35 }}
-									className={`flex items-start gap-3 rounded-xl p-4 ${
-										promotionQuery.data.eligible
-											? "bg-emerald-50 text-emerald-900"
-											: "bg-amber-50 text-amber-900"
-									}`}
-								>
-									<ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
-									<div>
-										<p className="font-medium text-sm">
-											{promotionQuery.data.eligible
-												? t("student.performance.eligible", {
-														defaultValue: "Eligible for next level",
-													})
-												: t("student.performance.notEligible", {
-														defaultValue:
-															"Keep going! You're almost ready for promotion.",
-													})}
-										</p>
-										<p className="mt-0.5 text-xs opacity-75">
-											{t("student.performance.ruleNotice", {
-												defaultValue:
-													"Evaluated with the promotion rules configured by your faculty.",
-											})}
-										</p>
-									</div>
-								</motion.div>
-							)}
+							{ledger &&
+								ledger.requiredCredits > 0 && (
+									<motion.div
+										initial={{ opacity: 0, scale: 0.97 }}
+										animate={{ opacity: 1, scale: 1 }}
+										transition={{ delay: 0.6, duration: 0.35 }}
+										className={`flex items-start gap-3 rounded-xl p-4 ${
+											ledger.creditsEarned >= ledger.requiredCredits
+												? "bg-emerald-50 text-emerald-900"
+												: "bg-amber-50 text-amber-900"
+										}`}
+									>
+										<ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+										<div>
+											<p className="font-medium text-sm">
+												{ledger.creditsEarned >= ledger.requiredCredits
+													? t("student.performance.eligible", {
+															defaultValue: "Eligible for next level",
+														})
+													: t("student.performance.notEligible", {
+															defaultValue:
+																"Keep going! You're almost ready for promotion.",
+														})}
+											</p>
+											<p className="mt-0.5 text-xs opacity-75">
+												{t("student.performance.ruleNotice", {
+													defaultValue:
+														"Evaluated with the promotion rules configured by your faculty.",
+												})}
+											</p>
+										</div>
+									</motion.div>
+								)}
 						</CardContent>
 					</Card>
 				</motion.div>

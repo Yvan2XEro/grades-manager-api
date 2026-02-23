@@ -28,6 +28,11 @@ export const enrollmentsRouter = router({
 		.mutation(({ ctx, input }) =>
 			service.updateStatus(input.id, input.status, ctx.institution.id),
 		),
+	delete: tenantAdminProcedure
+		.input(idSchema)
+		.mutation(({ ctx, input }) =>
+			service.deleteEnrollment(input.id, ctx.institution.id),
+		),
 	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ ctx, input }) =>

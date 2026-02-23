@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { Engine } from "json-rules-engine";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -353,6 +353,25 @@ export async function applyPromotion(
 
 	// Use a transaction to ensure atomicity
 	return db.transaction(async (tx) => {
+		// Check for duplicate enrollments in target class
+		const existingEnrollments = await tx
+			.select({ studentId: schema.enrollments.studentId })
+			.from(schema.enrollments)
+			.where(
+				and(
+					inArray(schema.enrollments.studentId, opts.studentIds),
+					eq(schema.enrollments.classId, opts.targetClassId),
+					eq(schema.enrollments.status, "active"),
+				),
+			);
+		if (existingEnrollments.length > 0) {
+			const ids = existingEnrollments.map((e) => e.studentId).join(", ");
+			throw new TRPCError({
+				code: "CONFLICT",
+				message: `Students already enrolled in target class: ${ids}`,
+			});
+		}
+
 		// Create promotion execution record
 		const execution = await tx
 			.insert(schema.promotionExecutions)
@@ -387,7 +406,12 @@ export async function applyPromotion(
 		// Update student enrollments
 		for (const studentId of opts.studentIds) {
 			// Close current enrollment
-			await enrollmentsService.closeActiveEnrollment(studentId, "completed");
+			await enrollmentsService.closeActiveEnrollment(
+				studentId,
+				"completed",
+				undefined,
+				tx,
+			);
 
 			// Create new enrollment in target class
 			await tx.insert(schema.enrollments).values({

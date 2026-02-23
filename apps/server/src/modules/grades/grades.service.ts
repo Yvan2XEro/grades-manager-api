@@ -110,7 +110,7 @@ export async function upsertNote(
 			exam: examId,
 			score: score.toString(),
 		});
-		await maybeLogDelegateGradeEdit({
+		await logGradeEdit({
 			access,
 			actor,
 			exam,
@@ -150,7 +150,7 @@ export async function updateNote(
 		exam.classCourse,
 	);
 	const updated = await repo.update(id, score.toString());
-	await maybeLogDelegateGradeEdit({
+	await logGradeEdit({
 		access,
 		actor,
 		exam,
@@ -182,7 +182,7 @@ export async function deleteNote(
 		actor,
 	});
 	ensureExamEditable(exam);
-	await maybeLogDelegateGradeEdit({
+	await logGradeEdit({
 		access,
 		actor,
 		exam,
@@ -349,7 +349,7 @@ export async function importGradesFromCsv(
 		});
 		result.imported++;
 		importedStudentIds.push(student.id);
-		await maybeLogDelegateGradeEdit({
+		await logGradeEdit({
 			access,
 			actor,
 			exam,
@@ -495,8 +495,8 @@ export async function getStudentTranscript(
 	};
 }
 
-type DelegateLogInput = {
-	access: ExamActorAccess;
+type GradeEditLogInput = {
+	access: string;
 	actor: ExamEditorActor;
 	exam: schema.Exam & { classCourseRef?: schema.ClassCourse | null };
 	action: schema.GradeEditLogAction;
@@ -507,26 +507,31 @@ type DelegateLogInput = {
 	metadata?: Record<string, unknown>;
 };
 
-async function maybeLogDelegateGradeEdit(input: DelegateLogInput) {
-	if (input.access !== "delegate") return;
+async function logGradeEdit(input: GradeEditLogInput) {
 	const actorProfileId = input.actor.profileId;
 	if (!actorProfileId) return;
-	await db.insert(schema.gradeEditLogs).values({
-		institutionId: input.exam.institutionId,
-		examId: input.exam.id,
-		classCourseId: input.exam.classCourse,
-		studentId: input.studentId,
-		gradeId: input.gradeId ?? null,
-		actorProfileId,
-		actorRole: "delegate",
-		isDelegate: true,
-		action: input.action,
-		scoreBefore:
-			typeof input.scoreBefore === "number"
-				? input.scoreBefore.toString()
-				: null,
-		scoreAfter:
-			typeof input.scoreAfter === "number" ? input.scoreAfter.toString() : null,
-		metadata: input.metadata ?? {},
-	});
+	try {
+		await db.insert(schema.gradeEditLogs).values({
+			institutionId: input.exam.institutionId,
+			examId: input.exam.id,
+			classCourseId: input.exam.classCourse,
+			studentId: input.studentId,
+			gradeId: input.gradeId ?? null,
+			actorProfileId,
+			actorRole: input.access as schema.GradeEditActorRole,
+			isDelegate: input.access === "delegate",
+			action: input.action,
+			scoreBefore:
+				typeof input.scoreBefore === "number"
+					? input.scoreBefore.toString()
+					: null,
+			scoreAfter:
+				typeof input.scoreAfter === "number"
+					? input.scoreAfter.toString()
+					: null,
+			metadata: input.metadata ?? {},
+		});
+	} catch (err) {
+		console.error("Failed to write grade edit log", err);
+	}
 }

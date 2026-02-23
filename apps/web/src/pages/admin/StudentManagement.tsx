@@ -446,12 +446,6 @@ export default function StudentManagement() {
 		enabled: Boolean(ledgerStudent),
 	});
 
-	const promotionQuery = useQuery({
-		...trpc.promotions.evaluateStudent.queryOptions({
-			studentId: ledgerStudent?.id || "",
-		}),
-		enabled: Boolean(ledgerStudent),
-	});
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
 	const externalAdmissionSchema = useMemo(
@@ -952,28 +946,31 @@ export default function StudentManagement() {
 										/>
 									</div>
 								)}
-								{promotionQuery.data && (
-									<div
-										className={`rounded-xl border p-4 ${promotionQuery.data.eligible ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
-									>
-										<p className="font-semibold text-foreground">
-											{promotionQuery.data.eligible
-												? t("admin.students.ledger.ready", {
-														defaultValue: "Student is eligible for promotion",
-													})
-												: t("admin.students.ledger.notReady", {
-														defaultValue:
-															"More credits required before promotion",
-													})}
-										</p>
-										<p className="text-foreground text-sm">
-											{t("admin.students.ledger.message", {
-												defaultValue:
-													"Rules evaluated via json-rules-engine. Overrides will appear here once published.",
-											})}
-										</p>
-									</div>
-								)}
+								{ledgerSummaryQuery.data &&
+									ledgerSummaryQuery.data.requiredCredits > 0 && (
+										<div
+											className={`rounded-xl border p-4 ${ledgerSummaryQuery.data.creditsEarned >= ledgerSummaryQuery.data.requiredCredits ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
+										>
+											<p className="font-semibold text-foreground">
+												{ledgerSummaryQuery.data.creditsEarned >=
+												ledgerSummaryQuery.data.requiredCredits
+													? t("admin.students.ledger.ready", {
+															defaultValue:
+																"Student is eligible for promotion",
+														})
+													: t("admin.students.ledger.notReady", {
+															defaultValue:
+																"More credits required before promotion",
+														})}
+											</p>
+											<p className="text-foreground text-sm">
+												{t("admin.students.ledger.message", {
+													defaultValue:
+														"Based on credit accumulation. Detailed rules are evaluated in the promotion rules center.",
+												})}
+											</p>
+										</div>
+									)}
 								{ledgerSummaryQuery.data?.ledgers?.length ? (
 									<div className="space-y-3">
 										{ledgerSummaryQuery.data.ledgers.map((entry) => (

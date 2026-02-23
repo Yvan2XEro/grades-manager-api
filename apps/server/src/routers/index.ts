@@ -19,7 +19,6 @@ import { notificationsRouter } from "../modules/notifications";
 import { programOptionsRouter } from "../modules/program-options";
 import { programsRouter } from "../modules/programs";
 import { promotionRulesRouter } from "../modules/promotion-rules";
-import { promotionsRouter } from "../modules/promotions";
 import { registrationNumbersRouter } from "../modules/registration-numbers";
 import { semestersRouter } from "../modules/semesters";
 import { studentCourseEnrollmentsRouter } from "../modules/student-course-enrollments";
@@ -57,7 +56,6 @@ export const appRouter = router({
 	examScheduler: examSchedulerRouter,
 	examGradeEditors: examGradeEditorsRouter,
 	students: studentsRouter,
-	promotions: promotionsRouter,
 	promotionRules: promotionRulesRouter,
 	registrationNumbers: registrationNumbersRouter,
 	files: filesRouter,
