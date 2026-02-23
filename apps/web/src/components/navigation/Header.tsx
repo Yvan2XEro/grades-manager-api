@@ -1,4 +1,4 @@
-import { Bell, LogOut, Menu, PanelLeftClose } from "lucide-react";
+import { Bell, LogOut, Menu, PanelLeftClose, Settings } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
@@ -154,6 +154,17 @@ const Header: React.FC = () => {
 									<p className="text-muted-foreground text-xs">{user?.email}</p>
 								</div>
 							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="gap-2"
+								onSelect={(event) => {
+									event.preventDefault();
+									navigate("/settings");
+								}}
+							>
+								<Settings className="h-4 w-4" />
+								{t("settings.menuLabel")}
+							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								className="gap-2 text-destructive focus:text-destructive"

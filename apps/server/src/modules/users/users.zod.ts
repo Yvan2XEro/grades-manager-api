@@ -40,3 +40,25 @@ export const updateUserProfileSchema = profileSchema
 			value.memberId,
 		{ message: "Missing fields to update" },
 	);
+
+export const updateMyProfileSchema = z
+	.object({
+		firstName: z.string().min(1).optional(),
+		lastName: z.string().min(1).optional(),
+		phone: z.string().nullable().optional(),
+		dateOfBirth: z.coerce.date().nullable().optional(),
+		placeOfBirth: z.string().nullable().optional(),
+		gender: z.enum(genders).optional(),
+		nationality: z.string().nullable().optional(),
+	})
+	.refine(
+		(value) =>
+			value.firstName !== undefined ||
+			value.lastName !== undefined ||
+			value.phone !== undefined ||
+			value.dateOfBirth !== undefined ||
+			value.placeOfBirth !== undefined ||
+			value.gender !== undefined ||
+			value.nationality !== undefined,
+		{ message: "At least one field must be provided" },
+	);

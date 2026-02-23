@@ -6,6 +6,7 @@ import { Redirector } from "./components/navigation/Redirector";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
+import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
@@ -244,6 +245,11 @@ function App() {
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
+					</Route>
+
+					{/* Shared Settings */}
+					<Route path="/settings" element={<DashboardLayout />}>
+						<Route index element={<AccountSettings />} />
 					</Route>
 				</>
 			)}

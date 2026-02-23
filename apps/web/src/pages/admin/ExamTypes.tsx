@@ -256,7 +256,14 @@ export default function ExamTypes() {
 									variant="destructive"
 									size="sm"
 									onClick={() => {
-										if (window.confirm(t("common.bulkActions.confirmDelete", { defaultValue: "Are you sure you want to delete the selected items?" }))) {
+										if (
+											window.confirm(
+												t("common.bulkActions.confirmDelete", {
+													defaultValue:
+														"Are you sure you want to delete the selected items?",
+												}),
+											)
+										) {
 											bulkDeleteMutation.mutate([...selection.selectedIds]);
 										}
 									}}

@@ -18,6 +18,8 @@ interface DatePickerProps {
 	placeholder?: string;
 	className?: string;
 	disabled?: boolean;
+	startMonth?: Date;
+	endMonth?: Date;
 }
 
 export function DatePicker({
@@ -26,6 +28,8 @@ export function DatePicker({
 	placeholder,
 	className,
 	disabled,
+	startMonth = new Date(1940, 0),
+	endMonth = new Date(2035, 11),
 }: DatePickerProps) {
 	const [open, setOpen] = useState(false);
 	const { i18n } = useTranslation();
@@ -81,8 +85,8 @@ export function DatePicker({
 					captionLayout="dropdown"
 					defaultMonth={selected}
 					locale={locale}
-					startMonth={new Date(2020, 0)}
-					endMonth={new Date(2035, 11)}
+					startMonth={startMonth}
+					endMonth={endMonth}
 					initialFocus
 				/>
 			</PopoverContent>

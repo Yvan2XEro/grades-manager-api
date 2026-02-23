@@ -315,7 +315,7 @@ const Sidebar: React.FC = () => {
 						</div>
 
 						{/* Navigation */}
-						<nav className="flex-1 overflow-y-auto px-3 py-4">
+						<nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
 							{menuContent.type === "grouped"
 								? menuContent.groups.map((group, groupIndex) => {
 										const groupKey =

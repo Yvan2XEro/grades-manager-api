@@ -23,5 +23,9 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*"
-	]
+	],
+	"dependencies": {
+		"react-international-phone": "^4.8.0",
+		"web": "^0.0.2"
+	}
 }

@@ -384,7 +384,14 @@ export default function UserManagement() {
 					variant="destructive"
 					size="sm"
 					onClick={() => {
-						if (window.confirm(t("common.bulkActions.confirmDelete", { defaultValue: "Are you sure you want to delete the selected items?" }))) {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
 							bulkDeleteMutation.mutate([...selection.selectedIds]);
 						}
 					}}
@@ -439,9 +446,7 @@ export default function UserManagement() {
 									{user.role
 										? t(
 												`admin.users.roles.${
-													user.role === "administrator"
-														? "admin"
-														: user.role
+													user.role === "administrator" ? "admin" : user.role
 												}`,
 												{ defaultValue: user.role },
 											)
@@ -681,7 +686,7 @@ export default function UserManagement() {
 									)}
 								/>
 							</div>
-								<DialogFooter>
+							<DialogFooter>
 								<Button
 									type="button"
 									variant="outline"

@@ -5,6 +5,7 @@ interface Resources {
 				placeholder: "Select an item";
 				searchPlaceholder: "Search by code or name...";
 				noResults: "No items found. Try a different search.";
+				resultsCount: "{{count}} results";
 				resultsCount_one: "{{count}} result";
 				resultsCount_other: "{{count}} results";
 				loading: "Loading...";
@@ -16,6 +17,7 @@ interface Resources {
 				create: "Create";
 				update: "Update";
 				delete: "Delete";
+				edit: "Edit";
 				save: "Save";
 				saveChanges: "Save Changes";
 				close: "Close";
@@ -62,6 +64,7 @@ interface Resources {
 			};
 			invalidDate: "Invalid date";
 			loading: "Loading...";
+			optional: "Optional";
 		};
 		teacher: {
 			courses: {
@@ -79,6 +82,7 @@ interface Resources {
 			};
 			"courses.manage": {
 				title: "Course Management";
+				subtitle: "Manage courses for programs and faculties";
 				actions: {
 					add: "Add Course";
 				};
@@ -159,6 +163,11 @@ interface Resources {
 				status: {
 					locked: "Locked";
 					open: "Open";
+					approved: "Approved";
+					draft: "Draft";
+					rejected: "Rejected";
+					scheduled: "Scheduled";
+					submitted: "Submitted";
 				};
 				form: {
 					createTitle: "Add New Exam";
@@ -372,6 +381,7 @@ interface Resources {
 						filePrefix: "exam-grades";
 						scoreColumn: "Score";
 					};
+					export: "Export grades";
 				};
 				pv: {
 					sheetName: "Verbal report";
@@ -432,6 +442,7 @@ interface Resources {
 					faculty: "Faculty";
 					description: "Description";
 					noDescription: "No description";
+					cycle: "Cycle";
 				};
 				form: {
 					createTitle: "Add New Program";
@@ -445,11 +456,15 @@ interface Resources {
 					descriptionLabel: "Description";
 					descriptionPlaceholder: "Optional description (objectives, focus)";
 					submit: "Save program";
+					cycleLabel: "Cycle d'étude";
+					cyclePlaceholder: "Select cycle";
+					selectFacultyFirst: "Select a faculty to load available cycles.";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
 					code: "Code is required";
 					faculty: "Please select a faculty";
+					cycle: "Please select a study cycle";
 				};
 				toast: {
 					createSuccess: "Program created successfully";
@@ -463,33 +478,63 @@ interface Resources {
 					title: "Delete Program";
 					message: "Are you sure you want to delete this program? This action cannot be undone.";
 				};
+				options: {
+					cancelEdit: "Cancel edit";
+					delete: "Delete option";
+					edit: "Edit option";
+					editing: "Editing option {{name}}";
+					empty: "No options yet. Add one below.";
+					form: {
+						code: "Code";
+						description: "Description";
+						name: "Option name";
+						submit: "Add option";
+						updateSubmit: "Save changes";
+					};
+					manage: "Manage options";
+					subtitle: "Options represent the different tracks/specializations offered within this program.";
+					title: "Manage options for {{value}}";
+					toast: {
+						create: "Option added";
+						createError: "Could not add option";
+						delete: "Option deleted";
+						deleteError: "Could not delete option";
+						update: "Option updated";
+						updateError: "Could not update option";
+					};
+				};
 			};
 			faculties: {
-				title: "Faculty Management";
-				subtitle: "Create and manage academic faculties";
+				title: "Faculties";
+				subtitle: "Manage faculties and schools within the institution.";
 				actions: {
-					add: "Add Faculty";
+					add: "Add faculty";
 				};
 				empty: {
-					title: "No faculties found";
-					description: "Get started by adding your first faculty.";
+					title: "No faculties yet";
+					description: "Create your first faculty to start organizing your academic structure.";
 				};
 				table: {
-					name: "Name";
-					description: "Description";
-					noDescription: "No description";
+					title: "All faculties";
+					description: "List of all faculties and schools registered in the system.";
+					code: "Code";
+					nameFr: "Name (FR)";
+					nameEn: "Name (EN)";
+					shortName: "Short name";
 				};
 				form: {
-					createTitle: "Add New Faculty";
-					editTitle: "Edit Faculty";
-					nameLabel: "Faculty name";
-					namePlaceholder: "Enter faculty name";
-					descriptionLabel: "Description";
-					descriptionPlaceholder: "Enter faculty description";
-					submit: "Save faculty";
-				};
-				validation: {
-					name: "Name must be at least 2 characters";
+					createTitle: "Create faculty";
+					editTitle: "Edit faculty";
+					codeLabel: "Code";
+					shortNameLabel: "Short name";
+					nameFrLabel: "Name (French)";
+					nameEnLabel: "Name (English)";
+					descriptionFrLabel: "Description (French)";
+					descriptionEnLabel: "Description (English)";
+					nameFrRequired: "French name is required";
+					nameEnRequired: "English name is required";
+					codeRequired: "Code is required";
+					submit: "Create";
 				};
 				toast: {
 					createSuccess: "Faculty created successfully";
@@ -500,7 +545,7 @@ interface Resources {
 					deleteError: "Could not delete the faculty";
 				};
 				delete: {
-					title: "Delete Faculty";
+					title: "Delete faculty";
 					message: "Are you sure you want to delete this faculty? This action cannot be undone.";
 				};
 			};
@@ -670,6 +715,12 @@ interface Resources {
 			};
 		};
 		navigation: {
+			breadcrumbs: {
+				admin: "Administration";
+				teacher: "Teacher";
+				dean: "Dean";
+				student: "Student";
+			};
 			header: {
 				adminDashboard: "Admin dashboard";
 				teacherDashboard: "Teacher dashboard";
@@ -690,6 +741,7 @@ interface Resources {
 					exportTemplates: "Export templates";
 					monitoring: "Monitoring";
 					notifications: "Notifications";
+					batchJobs: "Batch Jobs";
 					students: "Students";
 					studentPromotion: "Student promotion";
 					courses: "Courses";
@@ -828,6 +880,7 @@ interface Resources {
 					exams: "Exams";
 					students: "Students";
 					teachers: "Teachers";
+					institutions: "Institutions";
 				};
 			};
 			monitoring: {
@@ -860,6 +913,7 @@ interface Resources {
 				actions: {
 					clone: "Clone defaults";
 					save: "Save override";
+					attach: "View programs";
 				};
 				studyCycles: "Study cycles";
 				faculty: "Faculty";
@@ -977,6 +1031,78 @@ interface Resources {
 					flushed: "Pending notifications flushed";
 				};
 			};
+			batchJobs: {
+				title: "Batch Jobs";
+				subtitle: "Run and monitor mass operations across your institution";
+				fields: {
+					jobType: "Job type";
+					academicYear: "Academic year";
+					class: "Class";
+				};
+				actions: {
+					create: "New batch job";
+					run: "Run";
+					cancel: "Cancel";
+					rollback: "Rollback";
+					preview: "Preview";
+					confirm: "Confirm & Run";
+				};
+				empty: {
+					title: "No batch jobs yet";
+					description: "Create a batch job to perform mass operations like credit recomputation or student facts refresh.";
+				};
+				columns: {
+					type: "Type";
+					status: "Status";
+					progress: "Progress";
+					createdBy: "Created by";
+					createdAt: "Created";
+					actions: "Actions";
+				};
+				status: {
+					pending: "Pending";
+					previewed: "Previewed";
+					running: "Running";
+					completed: "Completed";
+					failed: "Failed";
+					cancelled: "Cancelled";
+					stale: "Stale";
+					rolled_back: "Rolled back";
+				};
+				types: {
+					"creditLedger.recompute": "Credit Ledger Recomputation";
+					"studentFacts.refreshClass": "Student Facts Refresh (Class)";
+				};
+				preview: {
+					title: "Preview Batch Job";
+					steps: "Steps";
+					totalItems: "Total items";
+					summary: "Summary";
+					confirmRun: "Are you sure you want to execute this batch job? This operation may take several minutes.";
+				};
+				detail: {
+					title: "Job Details";
+					steps: "Steps";
+					logs: "Logs";
+					progress: "Progress";
+					error: "Error";
+					result: "Result";
+					noLogs: "No logs yet";
+				};
+				toast: {
+					previewSuccess: "Preview generated successfully";
+					runSuccess: "Batch job started";
+					cancelSuccess: "Batch job cancelled";
+					rollbackSuccess: "Rollback initiated";
+				};
+				stepStatus: {
+					pending: "Pending";
+					running: "Running";
+					completed: "Completed";
+					failed: "Failed";
+					skipped: "Skipped";
+				};
+			};
 			academicYears: {
 				title: "Academic Year Management";
 				subtitle: "Create and manage academic years, and choose the active one";
@@ -1023,6 +1149,19 @@ interface Resources {
 				subtitle: "Assign teachers and courses to classes";
 				actions: {
 					assign: "Assign course";
+					assignUe: "Assign UE";
+				};
+				ueAssign: {
+					title: "Assign a teaching unit";
+					classLabel: "Class";
+					classPlaceholder: "Select a class";
+					ueLabel: "Teaching unit";
+					uePlaceholder: "Select a UE";
+					noUe: "No UE found for this program";
+					hint: "All ECs from this UE will be assigned to the class with their default teacher and coefficient. ECs without a default teacher will be skipped.";
+					submit: "Assign courses";
+					skippedTitle: "Some courses were not assigned";
+					skippedDesc: "The following courses have no default teacher and were skipped:";
 				};
 				empty: {
 					title: "No course assignments yet";
@@ -1035,6 +1174,7 @@ interface Resources {
 					course: "Course";
 					teacher: "Teacher";
 					semester: "Semester";
+					coefficient: "Coef.";
 				};
 				form: {
 					createTitle: "New course assignment";
@@ -1045,6 +1185,13 @@ interface Resources {
 					coursePlaceholder: "Select a course";
 					teacherLabel: "Teacher";
 					teacherPlaceholder: "Select a teacher";
+					semesterLabel: "Semester";
+					semesterPlaceholder: "Select a semester";
+					codeLabel: "Code";
+					codePlaceholder: "INF11-CLS24-01";
+					coefficientLabel: "Coefficient";
+					coefficientPlaceholder: "1.00";
+					coefficientHelp: "Weight for weighted average calculation within the Teaching Unit";
 					createSubmit: "Assign course";
 				};
 				toast: {
@@ -1054,6 +1201,8 @@ interface Resources {
 					updateError: "Could not update the assignment";
 					deleteSuccess: "Course assignment deleted successfully";
 					deleteError: "Could not delete the assignment";
+					bulkAssignSuccess: "{{count}} courses assigned successfully";
+					bulkAssignError: "Error during assignment";
 				};
 				delete: {
 					title: "Delete course assignment";
@@ -1063,6 +1212,7 @@ interface Resources {
 					class: "Please select a class";
 					course: "Please select a course";
 					teacher: "Please select a teacher";
+					code: "Code is required";
 				};
 			};
 			classes: {
@@ -1118,6 +1268,7 @@ interface Resources {
 					codeLabel: "Code";
 					codePlaceholder: "INF11-S1-01";
 					labelLabel: "Generated class label";
+					programCycleSummary: "Cycle : {{value}}";
 				};
 				toast: {
 					createSuccess: "Class created successfully";
@@ -1140,6 +1291,24 @@ interface Resources {
 					code: "Please provide a class code";
 					name: "Name must be at least 2 characters";
 				};
+				filters: {
+					academicYear: "Academic Year";
+					semester: "Semester";
+				};
+				columns: {
+					registration: "Reg. Number";
+					lastName: "Last Name";
+					firstName: "First Name";
+					birthDate: "Birth Date";
+					gender: "Gender";
+				};
+				students: "students";
+				preview: {
+					button: "View student list";
+				};
+				previewDescription: "List of students enrolled in this class";
+				searchStudents: "Search students...";
+				noStudents: "No students enrolled in this class";
 			};
 			institution: {
 				title: "Institution settings";
@@ -1191,6 +1360,14 @@ interface Resources {
 					defaultAcademicYearPlaceholder: "Select academic year";
 					registrationFormat: "Registration format";
 					registrationFormatPlaceholder: "Use active format";
+					type: "Type";
+					typeUniversity: "University";
+					typeFaculty: "Faculty/School";
+					typeInstitution: "Institution/Institute";
+					parentInstitution: "Parent Institution (University)";
+					noParentInstitution: "None (Top-level)";
+					supervisingFaculty: "Supervising Faculty/School";
+					noSupervisingFaculty: "None";
 				};
 			};
 			studyCycles: {
@@ -1199,6 +1376,8 @@ interface Resources {
 				actions: {
 					add: "Add cycle";
 					addLevel: "Add level";
+					update: "Update cycle";
+					updateLevel: "Update level";
 				};
 				listTitle: "Cycles";
 				empty: "No study cycles yet.";
@@ -1225,11 +1404,14 @@ interface Resources {
 					description: "Description";
 					credits: "Credits required";
 					duration: "Duration (years)";
+					minCredits: "Minimum credits";
 				};
 				toast: {
 					createSuccess: "Study cycle created";
+					updateSuccess: "Study cycle updated";
 					deleteSuccess: "Study cycle deleted";
 					levelCreate: "Level added";
+					levelUpdate: "Level updated";
 					levelDelete: "Level removed";
 				};
 				delete: {
@@ -1284,6 +1466,7 @@ interface Resources {
 			programs: {
 				title: "Program management";
 				subtitle: "Organize academic programs and link them to faculties.";
+				search: "Search programs...";
 				actions: {
 					add: "Add program";
 				};
@@ -1296,6 +1479,7 @@ interface Resources {
 					name: "Program";
 					faculty: "Faculty";
 					cycle: "Cycle";
+					options: "Options";
 					description: "Description";
 					noDescription: "No description";
 				};
@@ -1372,6 +1556,7 @@ interface Resources {
 					hours: "Hours";
 					teacher: "Default teacher";
 					facultyInfo: "Faculty: {{value}}";
+					cycleInfo: "Cycle : {{value}}";
 				};
 				form: {
 					createTitle: "Add course";
@@ -1388,6 +1573,7 @@ interface Resources {
 					programFacultySummary: "Faculty: {{value}}";
 					teacherLabel: "Default teacher";
 					teacherPlaceholder: "Select a teacher";
+					programCycleSummary: "Cycle : {{value}}";
 				};
 				toast: {
 					createSuccess: "Course created successfully";
@@ -1422,6 +1608,15 @@ interface Resources {
 					approve: "Approve";
 					reject: "Reject";
 					reviewGrades: "Grades";
+				};
+				filters: {
+					academicYear: "Academic year";
+					class: "Class";
+					classPlaceholder: "All classes";
+					search: "Search";
+					searchPlaceholder: "Searchr des évaluations, classes ou cours...";
+					semester: "Semester";
+					semesterPlaceholder: "All semesters";
 				};
 				empty: {
 					title: "No exams yet";
@@ -1492,6 +1687,17 @@ interface Resources {
 					};
 					classCourse: "Please select a class course";
 				};
+				pagination: {
+					loadMore: "Load more exams";
+				};
+				scoringPolicy: {
+					best_of: "Keep best grade";
+					replace: "Replace original";
+				};
+				sessionType: {
+					normal: "Normal";
+					retake: "Retake";
+				};
 			};
 			examTypes: {
 				title: "Exam types";
@@ -1504,6 +1710,7 @@ interface Resources {
 					description: "All scheduled exams can reuse the following types.";
 					name: "Name";
 					descriptionColumn: "Description";
+					defaultPercentage: "Default weight";
 				};
 				empty: "No exam types yet.";
 				form: {
@@ -1511,6 +1718,7 @@ interface Resources {
 					editTitle: "Edit exam type";
 					nameLabel: "Name";
 					descriptionLabel: "Description";
+					defaultPercentageLabel: "Default weight (%)";
 					submit: "Save exam type";
 				};
 				toast: {
@@ -1688,6 +1896,13 @@ interface Resources {
 			examScheduler: {
 				title: "Exam scheduler";
 				subtitle: "Plan exams for entire faculties and academic years in a single step.";
+				sessionMode: {
+					label: "Scheduling type";
+					normal: "Exams";
+					normalDescription: "Schedule exams (CC, TP, SN, etc.) for class courses";
+					retake: "Retakes";
+					retakeDescription: "Schedule retakes for approved exams";
+				};
 				form: {
 					title: "Schedule parameters";
 					description: "Choose the faculty, academic year, exam type, weight, and time window.";
@@ -1702,18 +1917,38 @@ interface Resources {
 					percentageLabel: "Weight (%)";
 					dateStartLabel: "Start date";
 					dateEndLabel: "End date";
+					scoringPolicyLabel: "Scoring policy";
+					scoringPolicyPlaceholder: "Select policy";
+					scoringPolicyReplace: "Replace original grade";
+					scoringPolicyBestOf: "Keep best grade";
+					classFilterLabel: "Filter by class";
+					classFilterPlaceholder: "All classes";
+					examTypeFilterLabel: "Filter by exam type";
+					examTypeFilterPlaceholder: "All types";
 				};
 				classes: {
 					title: "Target classes";
 					description: "All classes for the selected year are preselected. Deselect any you wish to exclude.";
 					selectAll: "Select all classes";
 				};
+				retakeExams: {
+					title: "Exams eligible for retake";
+					description: "Approved exams without a scheduled retake. Select the exams to schedule retakes for.";
+					selectAll: "Select all exams";
+					noExams: "No approved exams found without retakes for the selected criteria.";
+					examCount: "{{count}} exams";
+					examCount_one: "{{count}} exam";
+					examCount_other: "{{count}} exams";
+				};
 				actions: {
 					schedule: "Schedule exams";
+					scheduleRetakes: "Schedule retakes";
 				};
 				toast: {
 					success: "Exams scheduled";
 					error: "Unable to schedule exams";
+					retakeSuccess: "Retakes scheduled ({{count}} created)";
+					retakeError: "Unable to schedule retakes";
 				};
 				history: {
 					title: "Scheduling history";
@@ -1748,6 +1983,10 @@ interface Resources {
 			gradeExport: {
 				title: "Grade export";
 				subtitle: "Export student grades by class and exam";
+				filtersCard: {
+					description: "Choose the academic year and class before exporting.";
+					title: "Configuration";
+				};
 				filters: {
 					academicYear: "Academic year";
 					academicYearPlaceholder: "Select academic year";
@@ -1757,6 +1996,16 @@ interface Resources {
 				actions: {
 					label: "Export";
 					export: "Export grades";
+					combinedLabel: "Combined grades";
+					combinedExport: "Download combined workbook";
+					examGroup: {
+						filePrefix: "exam-grades";
+						label: "Per-exam exports ({{count}})";
+						scoreColumn: "Score";
+						sheetName: "Scores examen";
+					};
+					pvLabel: "Grade report";
+					pvExport: "Download grade report (Excel)";
 				};
 				exams: {
 					title: "Select exams to include";
@@ -1774,6 +2023,32 @@ interface Resources {
 				sheetName: "Grades";
 				filePrefix: "grades";
 				unknownClass: "unknown-class";
+				pv: {
+					filePrefix: "pv-grades";
+					legend: {
+						headers: {
+							course: "Course";
+							exam: "Exam";
+							weight: "Weight";
+						};
+						title: "Legend";
+					};
+					sheetName: "Verbal report";
+					stats: {
+						average: "Cohort average";
+						notValidated: "Failed";
+						students: "Students";
+						successRate: "Pass rate";
+						title: "Statistics";
+						validated: "Passed";
+					};
+					table: {
+						average: "Average";
+						fullName: "Full name";
+						rank: "Rank";
+						title: "Results table";
+					};
+				};
 			};
 			students: {
 				title: "Student management";
@@ -1795,6 +2070,9 @@ interface Resources {
 					genderUnknown: "Not specified";
 					actions: "Actions";
 					viewLedger: "Credits";
+					firstName: "First Name";
+					lastName: "Last Name";
+					registrationNumber: "Reg. Number";
 				};
 				gender: {
 					male: "Male";
@@ -2055,6 +2333,8 @@ interface Resources {
 				subtitle: "Monitor cohorts and control enrollment windows.";
 				selectYear: "Select academic year";
 				selectClass: "Select class";
+				selectSemester: "Select semester";
+				allSemesters: "All semesters";
 				filters: {
 					year: "Academic year";
 					class: "Class";
@@ -2064,6 +2344,7 @@ interface Resources {
 					cycleLevel: "Cycle level: {{value}}";
 					option: "Option: {{value}}";
 					window: "Window: {{status}}";
+					semester: "Semester";
 				};
 				listTitle: "Enrollments";
 				fields: {
@@ -2143,6 +2424,7 @@ interface Resources {
 					description: "Description";
 					credits: "ECTS";
 					programFaculty: "Faculty: {{value}}";
+					programCycle: "Cycle : {{value}}";
 				};
 				semesters: {
 					annual: "Annual";
@@ -2194,6 +2476,7 @@ interface Resources {
 						code: "Code";
 						hours: "Hours";
 						teacher: "Default teacher";
+						coefficient: "Coef.";
 					};
 					form: {
 						createTitle: "Add element";
@@ -2206,6 +2489,9 @@ interface Resources {
 						hoursPlaceholder: "Enter hours";
 						teacherLabel: "Default teacher";
 						teacherPlaceholder: "Select a teacher";
+						coefficientLabel: "Default coefficient";
+						coefficientPlaceholder: "1.00";
+						coefficientHelp: "Default weight when assigning to a class";
 						submit: "Save element";
 					};
 					empty: "No elements yet.";
@@ -2230,6 +2516,7 @@ interface Resources {
 					prereqSaved: "Prerequisites saved";
 					programRequired: "Select a program first";
 				};
+				programCycleSummary: "Cycle : {{value}}";
 			};
 			promotionRules: {
 				title: "Promotion Rules";
@@ -2456,6 +2743,65 @@ interface Resources {
 					};
 				};
 			};
+			retake: {
+				actions: {
+					createRetake: "Create Retake Exam";
+					viewEligibility: "View Eligibility";
+				};
+				createRetake: {
+					date: "Retake Date";
+					parentExam: "Exam original";
+					scoringPolicy: "Scoring Policy";
+					scoringPolicyHelp: "How to calculate the final grade when retake is completed";
+					subtitle: "Create a retake session linked to the original exam";
+					title: "Create Retake Exam";
+				};
+				eligible: "Eligible";
+				eligibleCount: "{{count}} eligible";
+				empty: {
+					description: "Select an approved exam to view student eligibility.";
+					title: "No students found";
+				};
+				featureDisabled: "Retake feature is currently disabled";
+				ineligible: "Not Eligible";
+				ineligibleCount: "{{count}} not eligible";
+				override: {
+					confirmMessage: "Are you sure you want to {{action}} this student for retake?";
+					confirmTitle: "Confirm Override";
+					forceEligible: "Force Eligible";
+					forceIneligible: "Block";
+					reason: "Override reason";
+					reasonPlaceholder: "Enter reason for override...";
+					remove: "Remove Override";
+				};
+				reasons: {
+					ATTEMPT_LIMIT_REACHED: "Attempt limit reached";
+					FAILED_EXAM: "Exam échoué";
+					NO_GRADE: "No grade recorded";
+					OVERRIDE_FORCE_ELIGIBLE: "Forced eligible (override)";
+					OVERRIDE_FORCE_INELIGIBLE: "Forced ineligible (override)";
+					PASSED_EXAM: "Exam réussi";
+				};
+				selectExam: "Select an approved exam";
+				selectExamPlaceholder: "Choose an exam to view eligibility";
+				subtitle: "View and manage students eligible for retake exams";
+				table: {
+					attempt: "Attempt";
+					grade: "Score actuelle";
+					override: "Override";
+					reasons: "Reasons";
+					registrationNumber: "Registration No.";
+					status: "Status";
+					student: "Student";
+				};
+				title: "Retake Eligibility";
+				toast: {
+					overrideError: "Could not apply override";
+					overrideSuccess: "Override appliquée avec succès";
+					removeError: "Could not remove override";
+					removeSuccess: "Override supprimée";
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -2564,6 +2910,112 @@ interface Resources {
 			toast: {
 				overrideSuccess: "Override applied successfully";
 				overrideError: "Failed to apply override";
+			};
+		};
+		settings: {
+			menuLabel: "Settings";
+			title: "Account Settings";
+			subtitle: "Manage your profile, password, and sessions";
+			tabs: {
+				account: "Account";
+				profile: "Profile";
+				preferences: "Preferences";
+			};
+			account: {
+				title: "Account Details";
+				description: "Update your sign-in identity";
+				save: "Save account";
+				fields: {
+					name: "Display name";
+					email: "Email";
+					image: "Avatar URL";
+					imagePlaceholder: "https://example.com/avatar.png";
+				};
+				validation: {
+					name: "Name is required";
+					image: "Please provide a valid URL";
+				};
+				toast: {
+					success: "Account updated";
+					error: "Failed to update account";
+				};
+			};
+			profile: {
+				title: "Profile Information";
+				description: "Update your personal details";
+				save: "Save changes";
+				fields: {
+					firstName: "First name";
+					lastName: "Last name";
+					email: "Email";
+					phone: "Phone";
+					dateOfBirth: "Date of birth";
+					dateOfBirthPlaceholder: "Select a date";
+					placeOfBirth: "Place of birth";
+					gender: "Gender";
+					genderPlaceholder: "Select gender";
+					nationality: "Nationality";
+				};
+				gender: {
+					male: "Male";
+					female: "Female";
+					other: "Other";
+				};
+				validation: {
+					firstName: "First name is required";
+					lastName: "Last name is required";
+				};
+				toast: {
+					success: "Profile updated";
+					error: "Failed to update profile";
+				};
+			};
+			password: {
+				title: "Change Password";
+				description: "Update your login credentials";
+				save: "Update password";
+				fields: {
+					current: "Current password";
+					new: "New password";
+					confirm: "Confirm new password";
+					revokeOthers: "Sign out of all other sessions";
+				};
+				validation: {
+					current: "Current password is required";
+					new: "Password must be at least 8 characters";
+					confirm: "Please confirm your password";
+					match: "Passwords do not match";
+				};
+				toast: {
+					success: "Password updated";
+					error: "Failed to update password";
+				};
+			};
+			sessions: {
+				title: "Active Sessions";
+				description: "Manage your active devices";
+				current: "Current session";
+				revoke: "Revoke";
+				revokeAll: "Revoke all other sessions";
+				securityNote: "If you don't recognize a session, revoke it immediately.";
+				empty: "No active sessions found.";
+				unknownTime: "Unknown time";
+				unknownIp: "Unknown IP";
+				toast: {
+					revoked: "Session revoked";
+					revokedAll: "Other sessions revoked";
+					error: "Unable to load sessions";
+				};
+			};
+			preferences: {
+				title: "Preferences";
+				description: "Customize your experience";
+				languageLabel: "Language";
+				languageHint: "Language changes apply immediately across the app.";
+				languages: {
+					en: "English";
+					fr: "French";
+				};
 			};
 		};
 	};

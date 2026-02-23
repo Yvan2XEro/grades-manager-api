@@ -2924,5 +2924,125 @@
 			"overrideSuccess": "Override applied successfully",
 			"overrideError": "Failed to apply override"
 		}
+	},
+	"settings": {
+		"menuLabel": "Settings",
+		"title": "Account Settings",
+		"subtitle": "Manage your profile, password, and sessions",
+		"tabs": {
+			"account": "Account",
+			"profile": "Profile",
+			"preferences": "Preferences"
+		},
+		"account": {
+			"title": "Account Details",
+			"description": "Update your sign-in identity",
+			"save": "Save account",
+			"fields": {
+				"name": "Display name",
+				"email": "Email",
+				"image": "Avatar URL",
+				"imagePlaceholder": "https://example.com/avatar.png"
+			},
+			"validation": {
+				"name": "Name is required",
+				"image": "Please provide a valid URL"
+			},
+			"toast": {
+				"success": "Account updated",
+				"error": "Failed to update account"
+			},
+			"avatar": {
+				"change": "Change avatar",
+				"uploading": "Uploading...",
+				"success": "Avatar updated",
+				"error": "Failed to upload avatar"
+			},
+			"email": {
+				"change": "Change email",
+				"newLabel": "New email",
+				"verificationSent": "A verification link has been sent to your new email",
+				"error": "Failed to send verification email"
+			}
+		},
+		"profile": {
+			"title": "Profile Information",
+			"description": "Update your personal details",
+			"save": "Save changes",
+			"fields": {
+				"firstName": "First name",
+				"lastName": "Last name",
+				"email": "Email",
+				"phone": "Phone",
+				"dateOfBirth": "Date of birth",
+				"dateOfBirthPlaceholder": "Select a date",
+				"placeOfBirth": "Place of birth",
+				"gender": "Gender",
+				"genderPlaceholder": "Select gender",
+				"nationality": "Nationality",
+				"nationalityPlaceholder": "Select a country",
+				"nationalitySearch": "Search countries..."
+			},
+			"gender": {
+				"male": "Male",
+				"female": "Female",
+				"other": "Other"
+			},
+			"validation": {
+				"firstName": "First name is required",
+				"lastName": "Last name is required"
+			},
+			"toast": {
+				"success": "Profile updated",
+				"error": "Failed to update profile"
+			}
+		},
+		"password": {
+			"title": "Change Password",
+			"description": "Update your login credentials",
+			"save": "Update password",
+			"fields": {
+				"current": "Current password",
+				"new": "New password",
+				"confirm": "Confirm new password",
+				"revokeOthers": "Sign out of all other sessions"
+			},
+			"validation": {
+				"current": "Current password is required",
+				"new": "Password must be at least 8 characters",
+				"confirm": "Please confirm your password",
+				"match": "Passwords do not match"
+			},
+			"toast": {
+				"success": "Password updated",
+				"error": "Failed to update password"
+			}
+		},
+		"sessions": {
+			"title": "Active Sessions",
+			"description": "Manage your active devices",
+			"current": "Current session",
+			"revoke": "Revoke",
+			"revokeAll": "Revoke all other sessions",
+			"securityNote": "If you don't recognize a session, revoke it immediately.",
+			"empty": "No active sessions found.",
+			"unknownTime": "Unknown time",
+			"unknownIp": "Unknown IP",
+			"toast": {
+				"revoked": "Session revoked",
+				"revokedAll": "Other sessions revoked",
+				"error": "Unable to load sessions"
+			}
+		},
+		"preferences": {
+			"title": "Preferences",
+			"description": "Customize your experience",
+			"languageLabel": "Language",
+			"languageHint": "Language changes apply immediately across the app.",
+			"languages": {
+				"en": "English",
+				"fr": "French"
+			}
+		}
 	}
 }

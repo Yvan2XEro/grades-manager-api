@@ -889,8 +889,8 @@ const GradeEntry: React.FC = () => {
 										<SelectItem key={exam.id} value={exam.id}>
 											{exam.name} ({exam.percentage}%)
 											{exam.sessionType === "retake"
-											? ` [${t("teacher.exams.sessionType.retake")}]`
-											: ""}{" "}
+												? ` [${t("teacher.exams.sessionType.retake")}]`
+												: ""}{" "}
 											{exam.isLocked
 												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
 												: ""}

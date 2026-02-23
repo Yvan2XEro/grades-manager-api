@@ -80,7 +80,10 @@
       "Bash(git -C /c/Users/tefba/Desktop/OverBrand/grades-manager-api show main:apps/web/src/pages/admin/promotion-rules/ExecutionHistory.tsx)",
       "Bash(git -C /c/Users/tefba/Desktop/OverBrand/grades-manager-api ls-tree:*)",
       "Bash(git push:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "WebFetch(domain:www.better-auth.com)"
     ]
   }
 }

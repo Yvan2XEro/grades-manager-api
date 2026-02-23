@@ -50,30 +50,24 @@ import { trpc, trpcClient } from "../../utils/trpc";
 
 const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 	z.object({
-		nameFr: z
-			.string()
-			.min(
-				2,
-				t("admin.faculties.form.nameFrRequired", {
-					defaultValue: "French name is required",
-				}),
-			),
-		nameEn: z
-			.string()
-			.min(
-				2,
-				t("admin.faculties.form.nameEnRequired", {
-					defaultValue: "English name is required",
-				}),
-			),
-		code: z
-			.string()
-			.min(
-				2,
-				t("admin.faculties.form.codeRequired", {
-					defaultValue: "Code is required",
-				}),
-			),
+		nameFr: z.string().min(
+			2,
+			t("admin.faculties.form.nameFrRequired", {
+				defaultValue: "French name is required",
+			}),
+		),
+		nameEn: z.string().min(
+			2,
+			t("admin.faculties.form.nameEnRequired", {
+				defaultValue: "English name is required",
+			}),
+		),
+		code: z.string().min(
+			2,
+			t("admin.faculties.form.codeRequired", {
+				defaultValue: "Code is required",
+			}),
+		),
 		shortName: z.string().optional(),
 		descriptionFr: z.string().optional(),
 		descriptionEn: z.string().optional(),
@@ -341,7 +335,14 @@ export default function FacultyManagement() {
 									variant="destructive"
 									size="sm"
 									onClick={() => {
-										if (window.confirm(t("common.bulkActions.confirmDelete", { defaultValue: "Are you sure you want to delete the selected items?" }))) {
+										if (
+											window.confirm(
+												t("common.bulkActions.confirmDelete", {
+													defaultValue:
+														"Are you sure you want to delete the selected items?",
+												}),
+											)
+										) {
 											bulkDeleteMutation.mutate([...selection.selectedIds]);
 										}
 									}}

@@ -2915,5 +2915,125 @@
 			"overrideSuccess": "Modification appliquée avec succès",
 			"overrideError": "Échec de l'application de la modification"
 		}
+	},
+	"settings": {
+		"menuLabel": "Paramètres",
+		"title": "Paramètres du compte",
+		"subtitle": "Gérez votre profil, mot de passe et sessions",
+		"tabs": {
+			"account": "Compte",
+			"profile": "Profil",
+			"preferences": "Préférences"
+		},
+		"account": {
+			"title": "Détails du compte",
+			"description": "Mettez à jour votre identité de connexion",
+			"save": "Enregistrer le compte",
+			"fields": {
+				"name": "Nom affiché",
+				"email": "Email",
+				"image": "URL de l'avatar",
+				"imagePlaceholder": "https://exemple.com/avatar.png"
+			},
+			"validation": {
+				"name": "Le nom est requis",
+				"image": "Veuillez fournir une URL valide"
+			},
+			"toast": {
+				"success": "Compte mis à jour",
+				"error": "Échec de la mise à jour du compte"
+			},
+			"avatar": {
+				"change": "Changer l'avatar",
+				"uploading": "Envoi en cours...",
+				"success": "Avatar mis à jour",
+				"error": "Échec de l'envoi de l'avatar"
+			},
+			"email": {
+				"change": "Changer l'email",
+				"newLabel": "Nouvel email",
+				"verificationSent": "Un lien de vérification a été envoyé à votre nouvel email",
+				"error": "Échec de l'envoi de l'email de vérification"
+			}
+		},
+		"profile": {
+			"title": "Informations du profil",
+			"description": "Mettez à jour vos informations personnelles",
+			"save": "Enregistrer",
+			"fields": {
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"email": "Email",
+				"phone": "Téléphone",
+				"dateOfBirth": "Date de naissance",
+				"dateOfBirthPlaceholder": "Choisir une date",
+				"placeOfBirth": "Lieu de naissance",
+				"gender": "Genre",
+				"genderPlaceholder": "Sélectionner un genre",
+				"nationality": "Nationalité",
+				"nationalityPlaceholder": "Sélectionner un pays",
+				"nationalitySearch": "Rechercher un pays..."
+			},
+			"gender": {
+				"male": "Homme",
+				"female": "Femme",
+				"other": "Autre"
+			},
+			"validation": {
+				"firstName": "Le prénom est requis",
+				"lastName": "Le nom est requis"
+			},
+			"toast": {
+				"success": "Profil mis à jour",
+				"error": "Échec de la mise à jour du profil"
+			}
+		},
+		"password": {
+			"title": "Modifier le mot de passe",
+			"description": "Mettez à jour vos identifiants",
+			"save": "Mettre à jour",
+			"fields": {
+				"current": "Mot de passe actuel",
+				"new": "Nouveau mot de passe",
+				"confirm": "Confirmer le mot de passe",
+				"revokeOthers": "Déconnecter toutes les autres sessions"
+			},
+			"validation": {
+				"current": "Le mot de passe actuel est requis",
+				"new": "Le mot de passe doit contenir au moins 8 caractères",
+				"confirm": "Veuillez confirmer le mot de passe",
+				"match": "Les mots de passe ne correspondent pas"
+			},
+			"toast": {
+				"success": "Mot de passe mis à jour",
+				"error": "Échec de la mise à jour du mot de passe"
+			}
+		},
+		"sessions": {
+			"title": "Sessions actives",
+			"description": "Gérez vos appareils actifs",
+			"current": "Session actuelle",
+			"revoke": "Révoquer",
+			"revokeAll": "Révoquer toutes les autres sessions",
+			"securityNote": "Si vous ne reconnaissez pas une session, révoquez-la.",
+			"empty": "Aucune session active trouvée.",
+			"unknownTime": "Temps inconnu",
+			"unknownIp": "IP inconnue",
+			"toast": {
+				"revoked": "Session révoquée",
+				"revokedAll": "Autres sessions révoquées",
+				"error": "Impossible de charger les sessions"
+			}
+		},
+		"preferences": {
+			"title": "Préférences",
+			"description": "Personnalisez votre expérience",
+			"languageLabel": "Langue",
+			"languageHint": "Le changement de langue s'applique immédiatement.",
+			"languages": {
+				"en": "Anglais",
+				"fr": "Français"
+			}
+		}
 	}
 }
