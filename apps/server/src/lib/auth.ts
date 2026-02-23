@@ -1,4 +1,6 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, customSession, organization } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
@@ -10,6 +12,55 @@ import {
 	organizationAccessControl,
 	organizationRoles,
 } from "./organization-roles";
+
+/**
+ * Request-scoped storage to pass the resolved organizationId
+ * from hooks.before to databaseHooks.session.create.before.
+ */
+const orgContext = new AsyncLocalStorage<{ orgId: string }>();
+
+const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
+	if (ctx.path !== "/sign-in/email") return;
+	const slug = ctx.request?.headers.get("X-Organization-Slug");
+	if (!slug) return;
+
+	const [org] = await db
+		.select({ id: schema.organization.id })
+		.from(schema.organization)
+		.where(eq(schema.organization.slug, slug))
+		.limit(1);
+	if (!org) return;
+
+	const email = (ctx.body as Record<string, unknown>)?.email;
+	if (typeof email !== "string") return;
+
+	const [foundUser] = await db
+		.select({ id: schema.user.id })
+		.from(schema.user)
+		.where(eq(schema.user.email, email))
+		.limit(1);
+	// If user not found, let better-auth handle the "invalid credentials" error
+	if (!foundUser) return;
+
+	const [membership] = await db
+		.select({ id: schema.member.id })
+		.from(schema.member)
+		.where(
+			and(
+				eq(schema.member.organizationId, org.id),
+				eq(schema.member.userId, foundUser.id),
+			),
+		)
+		.limit(1);
+	if (!membership) {
+		throw new APIError("FORBIDDEN", {
+			message:
+				"You are not a member of this organization. Contact your administrator.",
+		});
+	}
+
+	orgContext.enterWith({ orgId: org.id });
+});
 
 const resend = process.env.RESEND_API_KEY
 	? new Resend(process.env.RESEND_API_KEY)
@@ -100,6 +151,26 @@ export const auth = betterAuth({
 					subject: "Confirm your email change",
 					html: `<p>A request was made to change your email to <strong>${newEmail}</strong>.</p><a href="${url}">Confirm this change</a><p>If you did not request this, ignore this email.</p>`,
 				});
+			},
+		},
+	},
+	hooks: {
+		before: orgScopedLoginHook,
+	},
+	databaseHooks: {
+		session: {
+			create: {
+				before: async (session) => {
+					const store = orgContext.getStore();
+					if (store?.orgId) {
+						return {
+							data: {
+								...session,
+								activeOrganizationId: store.orgId,
+							},
+						};
+					}
+				},
 			},
 		},
 	},

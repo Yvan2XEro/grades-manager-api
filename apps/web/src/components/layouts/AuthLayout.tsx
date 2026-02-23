@@ -5,12 +5,15 @@ import { useTranslation } from "react-i18next";
 import { Navigate, Outlet } from "react-router";
 import logo from "/logo.png";
 import logoBg from "/logo-bg.png";
+import { useBranding } from "../../hooks/use-branding";
 import { useStore } from "../../store";
 import { roleLayoutMap } from "../navigation/Redirector";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
 	const { t } = useTranslation();
+	const { institutionName, slogan, logoUrl, coverImageUrl, shortName } =
+		useBranding();
 
 	const [callbackURL] = useQueryState("return", {});
 	// Redirect if already authenticated
@@ -56,6 +59,7 @@ const AuthLayout: React.FC = () => {
 					}}
 				/>
 
+				{/* Top: TKAMS logo (always visible) */}
 				<motion.div
 					initial={{ opacity: 0, y: -16 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -65,18 +69,50 @@ const AuthLayout: React.FC = () => {
 					<img src={logoBg} alt="TKAMS" className="h-10 w-auto" />
 				</motion.div>
 
+				{/* Center: Institution branding (if available) + default text */}
 				<motion.div
 					initial={{ opacity: 0, y: 32 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
-					className="relative z-10 space-y-4"
+					className="relative z-10 space-y-6"
 				>
-					<h1 className="font-bold font-heading text-4xl text-white leading-tight">
-						{t("auth.layout.title")}
-					</h1>
-					<p className="max-w-md text-lg text-white/70">
-						{t("auth.layout.subtitle")}
-					</p>
+					{logoUrl && (
+						<div className="flex items-center gap-3">
+							<img
+								src={logoUrl}
+								alt={institutionName ?? ""}
+								className="h-14 w-14 rounded-xl bg-white/10 object-contain p-1.5"
+							/>
+							{institutionName && (
+								<div>
+									<p className="font-semibold text-lg text-white leading-tight">
+										{institutionName}
+									</p>
+									{shortName && (
+										<p className="text-sm text-white/50">{shortName}</p>
+									)}
+								</div>
+							)}
+						</div>
+					)}
+					{!logoUrl && institutionName && (
+						<div>
+							<p className="font-semibold text-xl text-white leading-tight">
+								{institutionName}
+							</p>
+							{shortName && (
+								<p className="mt-1 text-sm text-white/50">{shortName}</p>
+							)}
+						</div>
+					)}
+					<div className="space-y-2">
+						<h1 className="font-bold font-heading text-4xl text-white leading-tight">
+							{t("auth.layout.title")}
+						</h1>
+						<p className="max-w-md text-lg text-white/70">
+							{slogan ?? t("auth.layout.subtitle")}
+						</p>
+					</div>
 				</motion.div>
 
 				<motion.div
@@ -86,6 +122,9 @@ const AuthLayout: React.FC = () => {
 					className="relative z-10 text-sm text-white/50"
 				>
 					&copy; {new Date().getFullYear()} TKAMS
+					{institutionName && (
+						<span> &middot; {shortName ?? institutionName}</span>
+					)}
 				</motion.div>
 			</div>
 
@@ -105,9 +144,19 @@ const AuthLayout: React.FC = () => {
 					transition={{ duration: 0.45, ease: "easeOut" }}
 					className="relative z-10 w-full max-w-md"
 				>
-					{/* Mobile logo */}
-					<div className="mb-8 flex items-center justify-center lg:hidden">
+					{/* Mobile logos */}
+					<div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
 						<img src={logo} alt="TKAMS" className="h-10 w-auto" />
+						{logoUrl && (
+							<>
+								<span className="text-muted-foreground/30">|</span>
+								<img
+									src={logoUrl}
+									alt={institutionName ?? ""}
+									className="h-10 w-auto object-contain"
+								/>
+							</>
+						)}
 					</div>
 					<Outlet />
 				</motion.div>

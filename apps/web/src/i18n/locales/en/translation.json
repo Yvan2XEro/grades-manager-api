@@ -812,7 +812,8 @@
 			"success": "Signed in successfully",
 			"error": "Unable to sign in. Check your credentials.",
 			"noAccount": "Don't have an account?",
-			"registerLink": "Create one"
+			"registerLink": "Create one",
+			"notMember": "You are not a member of this organization. Contact your administrator."
 		},
 		"register": {
 			"title": "Create your account",

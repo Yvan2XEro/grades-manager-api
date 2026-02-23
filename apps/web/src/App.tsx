@@ -110,6 +110,11 @@ function App() {
 			activatedSlugRef.current = null;
 			return;
 		}
+		// Skip if org was already set at login time (via X-Organization-Slug header)
+		if (session.session?.activeOrganizationId) {
+			activatedSlugRef.current = activeOrganizationSlug;
+			return;
+		}
 		if (session?.user && activeOrganizationSlug) {
 			if (activatedSlugRef.current === activeOrganizationSlug) {
 				return;

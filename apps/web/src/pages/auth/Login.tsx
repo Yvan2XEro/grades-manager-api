@@ -14,6 +14,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
 import { authClient } from "../../lib/auth-client";
+import { detectOrganizationSlug } from "../../lib/organization";
 
 const container = {
 	hidden: {},
@@ -45,10 +46,20 @@ const Login: React.FC = () => {
 	});
 	const [callbackURL] = useQueryState("return", {});
 	const onSubmit = async (data: LoginFormData) => {
+		let slug: string | undefined;
+		try {
+			slug = detectOrganizationSlug();
+		} catch {
+			// No slug available
+		}
+
 		const result = await authClient.signIn.email({
 			email: data.email,
 			password: data.password,
 			callbackURL: callbackURL || undefined,
+			fetchOptions: slug
+				? { headers: { "X-Organization-Slug": slug } }
+				: undefined,
 		});
 
 		if (result.error) {

@@ -164,7 +164,8 @@
 			"success": "Connexion réussie",
 			"error": "Impossible de vous connecter. Vérifiez vos identifiants.",
 			"noAccount": "Pas de compte ?",
-			"registerLink": "Créer un compte"
+			"registerLink": "Créer un compte",
+			"notMember": "Vous n'êtes pas membre de cette organisation. Contactez votre administrateur."
 		},
 		"register": {
 			"title": "Créer un compte",

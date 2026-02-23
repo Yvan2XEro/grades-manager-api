@@ -15,6 +15,7 @@ import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
 import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
+import { detectOrganizationSlug } from "../../lib/organization";
 
 const buildRegisterSchema = (t: TFunction) =>
 	z
@@ -60,10 +61,20 @@ const Register: React.FC = () => {
 			return;
 		}
 
+		let slug: string | undefined;
+		try {
+			slug = detectOrganizationSlug();
+		} catch {
+			// No slug available
+		}
+
 		const signInResult = await authClient.signIn.email({
 			email: data.email,
 			password: data.password,
 			callbackURL: callbackURL || undefined,
+			fetchOptions: slug
+				? { headers: { "X-Organization-Slug": slug } }
+				: undefined,
 		});
 
 		if (signInResult.error) {
