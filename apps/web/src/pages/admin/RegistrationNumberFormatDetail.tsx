@@ -316,7 +316,7 @@ const RegistrationNumberFormatDetail = () => {
 					{t("common.actions.back", { defaultValue: "Back" })}
 				</Button>
 				<Card>
-					<CardContent className="py-10 text-center text-gray-600">
+					<CardContent className="py-10 text-center text-muted-foreground">
 						{t("admin.registrationNumbers.errors.notFound", {
 							defaultValue: "Format not found.",
 						})}
@@ -338,7 +338,7 @@ const RegistrationNumberFormatDetail = () => {
 						<ArrowLeft className="h-4 w-4" />
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{draft.id
 							? t("admin.registrationNumbers.dialog.editTitle", {
 									defaultValue: "Edit format",
@@ -347,7 +347,7 @@ const RegistrationNumberFormatDetail = () => {
 									defaultValue: "New format",
 								})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.registrationNumbers.subtitle", {
 							defaultValue:
 								"Design templates for automatic matricule generation.",
@@ -417,12 +417,12 @@ const RegistrationNumberFormatDetail = () => {
 								</div>
 								<div className="flex items-center justify-between rounded-lg border px-4 py-2">
 									<div>
-										<p className="font-medium text-gray-900 text-sm">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.registrationNumbers.form.activeLabel", {
 												defaultValue: "Activate on save",
 											})}
 										</p>
-										<p className="text-gray-600 text-xs">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.registrationNumbers.form.activeHelp", {
 												defaultValue:
 													"Switching on will deactivate other templates.",
@@ -505,7 +505,7 @@ const RegistrationNumberFormatDetail = () => {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{draft.definition.segments.length === 0 && (
-								<p className="text-gray-600 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.registrationNumbers.segments.empty", {
 										defaultValue:
 											"Combine literals, fields, and counters to craft a pattern.",
@@ -516,7 +516,7 @@ const RegistrationNumberFormatDetail = () => {
 								<Card key={`segment-${index}`} className="border border-dashed">
 									<CardContent className="space-y-4 pt-4">
 										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2 font-medium text-gray-900 text-sm">
+											<div className="flex items-center gap-2 font-medium text-foreground text-sm">
 												<Hash className="h-4 w-4" />
 												{t("admin.registrationNumbers.segments.segmentLabel", {
 													defaultValue: "Segment {{index}}",
@@ -810,7 +810,7 @@ const RegistrationNumberFormatDetail = () => {
 														{registrationCounterScopes.map((scope) => (
 															<label
 																key={scope}
-																className="flex items-center gap-2 text-gray-700 text-sm"
+																className="flex items-center gap-2 text-foreground text-sm"
 															>
 																<Checkbox
 																	checked={
@@ -843,7 +843,7 @@ const RegistrationNumberFormatDetail = () => {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<p className="text-gray-600 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.registrationNumbers.preview.subtitle", {
 									defaultValue:
 										"Select a class and optional student info to test the pattern.",
@@ -941,13 +941,13 @@ const RegistrationNumberFormatDetail = () => {
 								})}
 							</Button>
 							{previewResult && (
-								<div className="rounded-lg border bg-white p-4">
-									<p className="font-medium text-gray-700 text-sm">
+								<div className="rounded-lg border bg-card p-4">
+									<p className="font-medium text-foreground text-sm">
 										{t("admin.registrationNumbers.preview.result", {
 											defaultValue: "Preview result",
 										})}
 									</p>
-									<p className="font-semibold text-2xl text-gray-900">
+									<p className="font-semibold text-2xl text-foreground">
 										{previewResult}
 									</p>
 								</div>

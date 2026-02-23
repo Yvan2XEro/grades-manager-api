@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
 import type { TFunction } from "i18next";
 import { Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
@@ -11,6 +12,8 @@ import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { PasswordInput } from "../../components/ui/password-input";
+import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
 
 const buildRegisterSchema = (t: TFunction) =>
@@ -73,128 +76,148 @@ const Register: React.FC = () => {
 	};
 
 	return (
-		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.register.title")}
-			</h2>
-
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<Label htmlFor="firstName" className="mb-1 block">
-							{t("common.fields.firstName")}
-						</Label>
-						<Input
-							id="firstName"
-							type="text"
-							{...register("firstName")}
-							className="w-full"
-							placeholder={t("auth.register.placeholders.firstName")}
-						/>
-						{errors.firstName && (
-							<p className="mt-1 text-error-600 text-sm">
-								{errors.firstName.message}
-							</p>
-						)}
-					</div>
-
-					<div>
-						<Label htmlFor="lastName" className="mb-1 block">
-							{t("common.fields.lastName")}
-						</Label>
-						<Input
-							id="lastName"
-							type="text"
-							{...register("lastName")}
-							className="w-full"
-							placeholder={t("auth.register.placeholders.lastName")}
-						/>
-						{errors.lastName && (
-							<p className="mt-1 text-error-600 text-sm">
-								{errors.lastName.message}
-							</p>
-						)}
-					</div>
-				</div>
-
-				<div>
-					<Label htmlFor="email" className="mb-1 block">
-						{t("common.fields.email")}
-					</Label>
-					<Input
-						id="email"
-						type="email"
-						{...register("email")}
-						className="w-full"
-						placeholder={t("auth.register.placeholders.email")}
-					/>
-					{errors.email && (
-						<p className="mt-1 text-error-600 text-sm">
-							{errors.email.message}
-						</p>
-					)}
-				</div>
-
-				<div>
-					<Label htmlFor="password" className="mb-1 block">
-						{t("common.fields.password")}
-					</Label>
-					<Input
-						id="password"
-						type="password"
-						{...register("password")}
-						className="w-full"
-						placeholder={t("auth.register.placeholders.password")}
-					/>
-					{errors.password && (
-						<p className="mt-1 text-error-600 text-sm">
-							{errors.password.message}
-						</p>
-					)}
-				</div>
-
-				<div>
-					<Label htmlFor="confirmPassword" className="mb-1 block">
-						{t("common.fields.confirmPassword")}
-					</Label>
-					<Input
-						id="confirmPassword"
-						type="password"
-						{...register("confirmPassword")}
-						className="w-full"
-						placeholder={t("auth.register.placeholders.confirmPassword")}
-					/>
-					{errors.confirmPassword && (
-						<p className="mt-1 text-error-600 text-sm">
-							{errors.confirmPassword.message}
-						</p>
-					)}
-				</div>
-
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
-					{isSubmitting ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							{t("auth.register.submitting")}
-						</>
-					) : (
-						t("auth.register.submit")
-					)}
-				</Button>
-			</form>
-
-			<div className="mt-6 text-center">
-				<p className="text-gray-600 text-sm">
+		<motion.div variants={staggerContainer} initial="hidden" animate="visible">
+			<motion.div variants={staggerItem} className="mb-8">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
+					{t("auth.register.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
 					{t("auth.register.haveAccount")}{" "}
 					<Link
 						to={`/auth/login?return=${callbackURL}`}
-						className="font-medium text-primary-600 hover:text-primary-500"
+						className="font-medium text-primary hover:text-primary/80"
 					>
 						{t("auth.register.loginLink")}
 					</Link>
 				</p>
-			</div>
-		</div>
+			</motion.div>
+
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<motion.div variants={staggerItem} className="grid grid-cols-2 gap-4">
+					<div className="space-y-2">
+						<Label htmlFor="firstName">{t("common.fields.firstName")}</Label>
+						<Input
+							id="firstName"
+							type="text"
+							{...register("firstName")}
+							className="h-11"
+							placeholder={t("auth.register.placeholders.firstName")}
+						/>
+						{errors.firstName && (
+							<motion.p
+								variants={errorMsg}
+								initial="hidden"
+								animate="visible"
+								className="text-destructive text-sm"
+							>
+								{errors.firstName.message}
+							</motion.p>
+						)}
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="lastName">{t("common.fields.lastName")}</Label>
+						<Input
+							id="lastName"
+							type="text"
+							{...register("lastName")}
+							className="h-11"
+							placeholder={t("auth.register.placeholders.lastName")}
+						/>
+						{errors.lastName && (
+							<motion.p
+								variants={errorMsg}
+								initial="hidden"
+								animate="visible"
+								className="text-destructive text-sm"
+							>
+								{errors.lastName.message}
+							</motion.p>
+						)}
+					</div>
+				</motion.div>
+
+				<motion.div variants={staggerItem} className="space-y-2">
+					<Label htmlFor="email">{t("common.fields.email")}</Label>
+					<Input
+						id="email"
+						type="email"
+						{...register("email")}
+						className="h-11"
+						placeholder={t("auth.register.placeholders.email")}
+					/>
+					{errors.email && (
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
+							{errors.email.message}
+						</motion.p>
+					)}
+				</motion.div>
+
+				<motion.div variants={staggerItem} className="space-y-2">
+					<Label htmlFor="password">{t("common.fields.password")}</Label>
+					<PasswordInput
+						id="password"
+						{...register("password")}
+						className="h-11"
+						placeholder={t("auth.register.placeholders.password")}
+					/>
+					{errors.password && (
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
+							{errors.password.message}
+						</motion.p>
+					)}
+				</motion.div>
+
+				<motion.div variants={staggerItem} className="space-y-2">
+					<Label htmlFor="confirmPassword">
+						{t("common.fields.confirmPassword")}
+					</Label>
+					<PasswordInput
+						id="confirmPassword"
+						{...register("confirmPassword")}
+						className="h-11"
+						placeholder={t("auth.register.placeholders.confirmPassword")}
+					/>
+					{errors.confirmPassword && (
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
+							{errors.confirmPassword.message}
+						</motion.p>
+					)}
+				</motion.div>
+
+				<motion.div variants={staggerItem}>
+					<Button
+						type="submit"
+						disabled={isSubmitting}
+						className="h-11 w-full font-semibold"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								{t("auth.register.submitting")}
+							</>
+						) : (
+							t("auth.register.submit")
+						)}
+					</Button>
+				</motion.div>
+			</form>
+		</motion.div>
 	);
 };
 

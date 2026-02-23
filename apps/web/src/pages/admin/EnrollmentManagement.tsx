@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { CalendarDays, Loader2, LockOpen, Unlock } from "lucide-react";
+import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -18,9 +19,12 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -29,6 +33,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 type CourseEnrollmentListResponse =
@@ -57,7 +63,7 @@ const warningMetaMap: Record<
 		translationKey: "mandatory",
 	},
 	recommended: {
-		badgeClass: "border-slate-200 bg-slate-50 text-slate-800",
+		badgeClass: "border-border bg-muted text-foreground",
 		translationKey: "recommended",
 	},
 	corequisite: {
@@ -162,7 +168,7 @@ const PrerequisiteWarningsList = ({
 								<Badge variant="outline" className={meta.badgeClass}>
 									{meta.label}
 								</Badge>
-								<span className="font-medium text-gray-900 text-sm">
+								<span className="font-medium text-foreground text-sm">
 									{prerequisiteLabel}
 								</span>
 							</div>
@@ -183,6 +189,7 @@ const PrerequisiteWarningsList = ({
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const pagination = useCursorPagination({ pageSize: 20 });
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
@@ -202,7 +209,8 @@ const EnrollmentManagement = () => {
 		...trpc.enrollments.list.queryOptions({
 			classId: selectedClass || undefined,
 			academicYearId: selectedAcademicYear || undefined,
-			limit: 200,
+			cursor: pagination.cursor,
+			limit: pagination.pageSize,
 		}),
 		enabled: Boolean(selectedAcademicYear && selectedClass),
 	});
@@ -377,6 +385,31 @@ const EnrollmentManagement = () => {
 	});
 
 	const enrollments = enrollmentsQuery.data?.items ?? [];
+	const selection = useRowSelection(enrollments);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.enrollments.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries(trpc.enrollments.list.queryKey());
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const studentsCount = studentsQuery.data?.items?.length ?? 0;
 	const classCoursesCount = classCoursesQuery.data?.items?.length ?? 0;
 	const windowStatus = useMemo(() => {
@@ -391,6 +424,7 @@ const EnrollmentManagement = () => {
 	useEffect(() => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
+		pagination.reset();
 	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
 	useEffect(() => {
@@ -404,6 +438,11 @@ const EnrollmentManagement = () => {
 			setCourseWarnings({});
 		}
 	}, [selectedStudent]);
+
+	const handleAutoEnrollConfirm = () => {
+		setAutoEnrollWarnings([]);
+		autoEnrollMutation.mutate();
+	};
 
 	const openRosterForStudent = (studentId: string) => {
 		setSelectedStudent(studentId);
@@ -430,16 +469,11 @@ const EnrollmentManagement = () => {
 			!autoEnrollMutation.isPending,
 	);
 
-	const handleAutoEnrollConfirm = () => {
-		setAutoEnrollWarnings([]);
-		autoEnrollMutation.mutate();
-	};
-
 	return (
 		<div className="space-y-6">
-			<div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
+			<div className="grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
+					<p className="font-medium text-muted-foreground text-sm">
 						{t("admin.enrollments.filters.year", {
 							defaultValue: "Academic year",
 						})}
@@ -457,10 +491,8 @@ const EnrollmentManagement = () => {
 					/>
 				</div>
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
-						{t("admin.enrollments.filters.class", {
-							defaultValue: "Class",
-						})}
+					<p className="font-medium text-muted-foreground text-sm">
+						{t("admin.enrollments.filters.class", { defaultValue: "Class" })}
 					</p>
 					<Select
 						value={selectedClass}
@@ -479,7 +511,7 @@ const EnrollmentManagement = () => {
 								<SelectItem key={klass.id} value={klass.id}>
 									{klass.name}
 									{klass.programOption?.name
-										? ` • ${klass.programOption.name}`
+										? ` \u2022 ${klass.programOption.name}`
 										: ""}
 								</SelectItem>
 							))}
@@ -487,41 +519,22 @@ const EnrollmentManagement = () => {
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<p className="font-medium text-gray-600 text-sm">
+					<p className="font-medium text-muted-foreground text-sm">
 						{t("admin.enrollments.filters.semester", {
 							defaultValue: "Semester",
 						})}
 					</p>
-					<Select
-						value={selectedSemester || "_ALL_"}
-						onValueChange={(value) =>
-							setSelectedSemester(value === "_ALL_" ? "" : value)
-						}
+					<SemesterSelect
+						value={selectedSemester || null}
+						onChange={(v) => setSelectedSemester(v ?? "")}
 						disabled={!selectedClass}
-					>
-						<SelectTrigger data-testid="semester-select" className="w-full">
-							<SelectValue
-								placeholder={t("admin.enrollments.selectSemester", {
-									defaultValue: "Select semester",
-								})}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="_ALL_">
-								{t("admin.enrollments.allSemesters", {
-									defaultValue: "All semesters",
-								})}
-							</SelectItem>
-							{semesters?.items?.map((semester) => (
-								<SelectItem key={semester.id} value={semester.id}>
-									{semester.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						placeholder={t("admin.enrollments.selectSemester", {
+							defaultValue: "Select semester",
+						})}
+					/>
 				</div>
-				<div className="space-y-2 rounded-lg border border-gray-200 border-dashed p-3 text-gray-600 text-sm">
-					<p className="font-semibold text-gray-900">
+				<div className="space-y-2 rounded-lg border border-border border-dashed p-3 text-muted-foreground text-sm">
+					<p className="font-semibold text-foreground">
 						{t("admin.enrollments.filters.summary", {
 							defaultValue: "Snapshot",
 						})}
@@ -538,9 +551,7 @@ const EnrollmentManagement = () => {
 								defaultValue: "Cycle: {{value}}",
 								value:
 									selectedClassDetails?.cycle?.name ??
-									t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									}),
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
 							})}
 						</li>
 						<li>
@@ -548,9 +559,7 @@ const EnrollmentManagement = () => {
 								defaultValue: "Level: {{value}}",
 								value:
 									selectedClassDetails?.cycleLevel?.name ??
-									t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									}),
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
 							})}
 						</li>
 						<li>
@@ -558,9 +567,7 @@ const EnrollmentManagement = () => {
 								defaultValue: "Option: {{value}}",
 								value:
 									selectedClassDetails?.programOption?.name ??
-									t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									}),
+									t("common.labels.notAvailable", { defaultValue: "N/A" }),
 							})}
 						</li>
 						<li>
@@ -578,7 +585,7 @@ const EnrollmentManagement = () => {
 					<div className="flex items-center gap-3">
 						<CalendarDays className="h-6 w-6 text-primary-700" />
 						<div>
-							<p className="font-semibold text-gray-900">
+							<p className="font-semibold text-foreground">
 								{windowStatus
 									? t("admin.enrollments.windowStatus", {
 											defaultValue: "Window: {{status}}",
@@ -588,7 +595,7 @@ const EnrollmentManagement = () => {
 											defaultValue: "Window not configured",
 										})}
 							</p>
-							<p className="text-gray-600 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{windowStatus?.status === "open"
 									? t("admin.enrollments.windowOpen", {
 											defaultValue: "Students can enroll.",
@@ -649,9 +656,7 @@ const EnrollmentManagement = () => {
 								) : null}
 								<AlertDialogFooter>
 									<AlertDialogCancel disabled={autoEnrollMutation.isPending}>
-										{t("common.actions.cancel", {
-											defaultValue: "Cancel",
-										})}
+										{t("common.actions.cancel", { defaultValue: "Cancel" })}
 									</AlertDialogCancel>
 									<AlertDialogAction
 										onClick={handleAutoEnrollConfirm}
@@ -695,47 +700,80 @@ const EnrollmentManagement = () => {
 			<div>
 				<Card className="lg:col-span-2">
 					<CardHeader className="pb-4">
-						<CardTitle className="font-semibold text-gray-900 text-lg">
+						<CardTitle className="font-semibold text-foreground text-lg">
 							{t("admin.enrollments.listTitle", {
 								defaultValue: "Enrollments",
 							})}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
+						<BulkActionBar
+							selectedCount={selection.selectedCount}
+							onClear={selection.clear}
+						>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={() => {
+									if (
+										window.confirm(
+											t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+										)
+									) {
+										bulkDeleteMutation.mutate([...selection.selectedIds]);
+									}
+								}}
+								disabled={bulkDeleteMutation.isPending}
+							>
+								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+								{t("common.actions.delete")}
+							</Button>
+						</BulkActionBar>
+
 						{enrollmentsQuery.isLoading ? (
-							<p className="text-gray-500 text-sm">
-								{t("common.loading", {
-									defaultValue: "Loading...",
-								})}
+							<p className="text-muted-foreground text-sm">
+								{t("common.loading", { defaultValue: "Loading..." })}
 							</p>
 						) : enrollments.length ? (
 							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-gray-200">
-									<thead className="bg-gray-50">
+								<table className="min-w-full divide-y divide-border">
+									<thead className="bg-muted">
 										<tr>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="w-10 px-4 py-2">
+												<Checkbox
+													checked={selection.isAllSelected}
+													onCheckedChange={(checked) =>
+														selection.toggleAll(!!checked)
+													}
+													aria-label="Select all"
+												/>
+											</th>
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.student", {
 													defaultValue: "Student",
 												})}
 											</th>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.status", {
 													defaultValue: "Status",
 												})}
 											</th>
-											<th className="px-4 py-2 text-left font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.dates", {
 													defaultValue: "Dates",
 												})}
 											</th>
-											<th className="px-4 py-2 text-right font-medium text-gray-600 text-xs uppercase tracking-wider">
+											<th className="px-4 py-2 text-right font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{t("admin.enrollments.fields.actions", {
 													defaultValue: "Actions",
 												})}
 											</th>
 										</tr>
 									</thead>
-									<tbody className="divide-y divide-gray-100">
+									<tbody className="divide-y divide-border">
 										{enrollments.map((enrollment) => {
 											const student = studentsQuery.data?.items?.find(
 												(s) => s.id === enrollment.studentId,
@@ -748,11 +786,20 @@ const EnrollmentManagement = () => {
 											return (
 												<tr key={enrollment.id}>
 													<td className="px-4 py-3">
+														<Checkbox
+															checked={selection.isSelected(enrollment.id)}
+															onCheckedChange={() =>
+																selection.toggle(enrollment.id)
+															}
+															aria-label={`Select ${fullName}`}
+														/>
+													</td>
+													<td className="px-4 py-3">
 														<div className="space-y-0.5">
-															<p className="font-semibold text-gray-900">
+															<p className="font-semibold text-foreground">
 																{fullName}
 															</p>
-															<p className="text-gray-600 text-sm">
+															<p className="text-muted-foreground text-sm">
 																{student?.registrationNumber ??
 																	t(
 																		"admin.enrollments.fields.registrationFallback",
@@ -765,14 +812,14 @@ const EnrollmentManagement = () => {
 														</div>
 													</td>
 													<td className="px-4 py-3">
-														<span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-700 text-xs">
+														<span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-medium text-foreground text-xs">
 															{t("admin.enrollments.fields.statusValue", {
 																defaultValue: "{{value}}",
 																value: enrollment.status,
 															})}
 														</span>
 													</td>
-													<td className="px-4 py-3 text-gray-600 text-sm">
+													<td className="px-4 py-3 text-muted-foreground text-sm">
 														<p>
 															{t("admin.enrollments.fields.enrolledAt", {
 																defaultValue: "Enrolled: {{value}}",
@@ -820,13 +867,23 @@ const EnrollmentManagement = () => {
 								</table>
 							</div>
 						) : (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.enrollments.empty", {
 									defaultValue:
 										"No enrollments found for the selected filters.",
 								})}
 							</p>
 						)}
+
+						<PaginationBar
+							hasPrev={pagination.hasPrev}
+							hasNext={!!enrollmentsQuery.data?.nextCursor}
+							onPrev={pagination.handlePrev}
+							onNext={() =>
+								pagination.handleNext(enrollmentsQuery.data?.nextCursor)
+							}
+							isLoading={enrollmentsQuery.isLoading}
+						/>
 					</CardContent>
 				</Card>
 
@@ -836,12 +893,12 @@ const EnrollmentManagement = () => {
 							<CardHeader className="pb-4">
 								<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 									<div>
-										<CardTitle className="font-semibold text-gray-900 text-lg">
+										<CardTitle className="font-semibold text-foreground text-lg">
 											{t("admin.enrollments.courseRoster.title", {
 												defaultValue: "Course roster (per student)",
 											})}
 										</CardTitle>
-										<p className="text-gray-600 text-sm">
+										<p className="text-muted-foreground text-sm">
 											{t("admin.enrollments.courseRoster.subtitle", {
 												defaultValue:
 													"Select a student to review enrollment attempts, retakes, and status per course.",
@@ -863,7 +920,7 @@ const EnrollmentManagement = () => {
 							<CardContent className="min-w-[70vw] space-y-4">
 								{selectedStudent ? (
 									<>
-										<p className="font-medium text-gray-700 text-sm">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.enrollments.courseRoster.courses", {
 												defaultValue: "Class courses",
 											})}
@@ -879,14 +936,14 @@ const EnrollmentManagement = () => {
 														: course.teacher;
 													const canReactivate =
 														enrollment && status === "withdrawn";
+													const warningsForCourse =
+														courseWarnings[course.id] ?? [];
 													const enrollDisabled =
 														!selectedStudent ||
 														status === "active" ||
 														(canReactivate
 															? reactivateCourse.isPending
 															: assignCourse.isPending);
-													const warningsForCourse =
-														courseWarnings[course.id] ?? [];
 													const handlePrimaryAction = () => {
 														if (!selectedStudent) return;
 														if (canReactivate) {
@@ -902,10 +959,10 @@ const EnrollmentManagement = () => {
 														>
 															<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 																<div className="space-y-1">
-																	<p className="font-semibold text-gray-900 text-sm">
+																	<p className="font-semibold text-foreground text-sm">
 																		{courseName}
 																	</p>
-																	<p className="text-gray-600 text-xs">
+																	<p className="text-muted-foreground text-xs">
 																		{t(
 																			"admin.enrollments.courseRoster.teacher",
 																			{
@@ -926,7 +983,7 @@ const EnrollmentManagement = () => {
 																						? "border-blue-200 bg-blue-50 text-blue-800"
 																						: status === "failed"
 																							? "border-rose-200 bg-rose-50 text-rose-800"
-																							: "border-gray-200 bg-gray-50 text-gray-800"
+																							: "border-border bg-muted text-foreground"
 																			}
 																		>
 																			{status === "none"
@@ -1040,7 +1097,7 @@ const EnrollmentManagement = () => {
 														</div>
 													);
 												}) ?? (
-													<p className="text-gray-500 text-sm">
+													<p className="text-muted-foreground text-sm">
 														{t("admin.enrollments.courseRoster.noCourses", {
 															defaultValue:
 																"This class has no courses assigned yet.",
@@ -1051,7 +1108,7 @@ const EnrollmentManagement = () => {
 										</ScrollArea>
 									</>
 								) : (
-									<p className="text-gray-500 text-sm">
+									<p className="text-muted-foreground text-sm">
 										{t("admin.enrollments.courseRoster.selectStudent", {
 											defaultValue:
 												"Pick a student to manage course enrollments.",

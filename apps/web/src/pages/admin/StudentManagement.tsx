@@ -11,8 +11,9 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -37,6 +38,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Progress } from "@/components/ui/progress";
 import {
 	Select,
@@ -56,6 +58,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -391,8 +394,7 @@ export default function StudentManagement() {
 
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
-	const [cursor, setCursor] = useState<string | undefined>();
-	const [prevCursors, setPrevCursors] = useState<string[]>([]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<"single" | "import" | "external">(
@@ -425,16 +427,17 @@ export default function StudentManagement() {
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
-	const { data: studentsData } = useQuery<StudentsListResponse>({
-		queryKey: ["students", classFilter, search, cursor],
-		queryFn: async () =>
-			trpcClient.students.list.query({
-				classId: classFilter === "all" ? undefined : classFilter,
-				q: search || undefined,
-				cursor,
-				limit: 20,
-			}),
-	});
+	const { data: studentsData, isLoading: isLoadingStudents } =
+		useQuery<StudentsListResponse>({
+			queryKey: ["students", classFilter, search, pagination.cursor],
+			queryFn: async () =>
+				trpcClient.students.list.query({
+					classId: classFilter === "all" ? undefined : classFilter,
+					q: search || undefined,
+					cursor: pagination.cursor,
+					limit: pagination.pageSize,
+				}),
+		});
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
@@ -583,18 +586,6 @@ export default function StudentManagement() {
 			admissionJustification: data.admissionJustification.trim(),
 			admissionDate: data.admissionDate,
 		});
-
-	const handleNext = () => {
-		if (studentsData?.nextCursor) {
-			setPrevCursors((p) => [...p, cursor ?? ""]);
-			setCursor(studentsData.nextCursor);
-		}
-	};
-	const handlePrev = () => {
-		const prev = prevCursors[prevCursors.length - 1];
-		setPrevCursors((p) => p.slice(0, -1));
-		setCursor(prev || undefined);
-	};
 
 	const handleDownloadTemplate = () => {
 		const headers = [
@@ -767,9 +758,11 @@ export default function StudentManagement() {
 	};
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-bold text-2xl">{t("admin.students.title")}</h1>
+				<h1 className="font-bold font-heading text-2xl text-foreground">
+					{t("admin.students.title")}
+				</h1>
 				<Button onClick={() => setIsModalOpen(true)}>
 					<PlusIcon className="mr-2 h-5 w-5" />
 					{t("admin.students.actions.openModal")}
@@ -781,8 +774,7 @@ export default function StudentManagement() {
 					value={classFilter}
 					onValueChange={(value) => {
 						setClassFilter(value);
-						setCursor(undefined);
-						setPrevCursors([]);
+						pagination.reset();
 					}}
 				>
 					<SelectTrigger className="min-w-[200px]">
@@ -808,11 +800,8 @@ export default function StudentManagement() {
 				<Button
 					variant="outline"
 					onClick={() => {
-						setCursor(undefined);
-						setPrevCursors([]);
-						queryClient.invalidateQueries({
-							queryKey: ["students"],
-						});
+						pagination.reset();
+						queryClient.invalidateQueries({ queryKey: ["students"] });
 					}}
 				>
 					{t("common.actions.search")}
@@ -883,22 +872,13 @@ export default function StudentManagement() {
 						</TableBody>
 					</Table>
 				</CardContent>
-				<CardFooter className="flex items-center justify-between gap-3">
-					<Button
-						variant="outline"
-						disabled={prevCursors.length === 0}
-						onClick={handlePrev}
-					>
-						{t("common.pagination.previous")}
-					</Button>
-					<Button
-						variant="outline"
-						disabled={!studentsData?.nextCursor}
-						onClick={handleNext}
-					>
-						{t("common.pagination.next")}
-					</Button>
-				</CardFooter>
+				<PaginationBar
+					hasPrev={pagination.hasPrev}
+					hasNext={Boolean(studentsData?.nextCursor)}
+					onPrev={pagination.handlePrev}
+					onNext={() => pagination.handleNext(studentsData?.nextCursor)}
+					isLoading={isLoadingStudents}
+				/>
 			</Card>
 
 			<Drawer
@@ -923,7 +903,7 @@ export default function StudentManagement() {
 					</DrawerHeader>
 					<div className="space-y-6 px-4 pb-6">
 						{ledgerSummaryQuery.isLoading ? (
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								{t("admin.students.ledger.loading", {
 									defaultValue: "Fetching ledger…",
 								})}
@@ -931,21 +911,21 @@ export default function StudentManagement() {
 						) : (
 							<>
 								{ledgerSummaryQuery.data && (
-									<div className="rounded-xl border bg-gray-50 p-4">
-										<p className="font-medium text-gray-700 text-sm">
+									<div className="rounded-xl border bg-muted p-4">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.students.ledger.progressLabel", {
 												defaultValue: "Progress toward promotion",
 											})}
 										</p>
 										<div className="mt-3 flex items-end justify-between">
 											<div>
-												<p className="font-semibold text-3xl text-gray-900">
+												<p className="font-semibold text-3xl text-foreground">
 													{ledgerSummaryQuery.data.creditsEarned}{" "}
 													{t("admin.students.ledger.credits", {
 														defaultValue: "credits",
 													})}
 												</p>
-												<p className="text-gray-600 text-sm">
+												<p className="text-muted-foreground text-sm">
 													{t("admin.students.ledger.required", {
 														defaultValue: "Required: {{required}}",
 														required: ledgerSummaryQuery.data.requiredCredits,
@@ -953,7 +933,7 @@ export default function StudentManagement() {
 												</p>
 											</div>
 											<div className="text-right text-sm">
-												<p className="text-gray-600">
+												<p className="text-muted-foreground">
 													{t("admin.students.ledger.inProgress", {
 														defaultValue: "In progress: {{value}}",
 														value: ledgerSummaryQuery.data.creditsInProgress,
@@ -976,7 +956,7 @@ export default function StudentManagement() {
 									<div
 										className={`rounded-xl border p-4 ${promotionQuery.data.eligible ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
 									>
-										<p className="font-semibold text-gray-900">
+										<p className="font-semibold text-foreground">
 											{promotionQuery.data.eligible
 												? t("admin.students.ledger.ready", {
 														defaultValue: "Student is eligible for promotion",
@@ -986,7 +966,7 @@ export default function StudentManagement() {
 															"More credits required before promotion",
 													})}
 										</p>
-										<p className="text-gray-700 text-sm">
+										<p className="text-foreground text-sm">
 											{t("admin.students.ledger.message", {
 												defaultValue:
 													"Rules evaluated via json-rules-engine. Overrides will appear here once published.",
@@ -999,12 +979,12 @@ export default function StudentManagement() {
 										{ledgerSummaryQuery.data.ledgers.map((entry) => (
 											<div
 												key={entry.id}
-												className="rounded-lg border bg-white p-3 shadow-sm"
+												className="rounded-lg border bg-card p-3 shadow-sm"
 											>
-												<p className="font-medium text-gray-900">
+												<p className="font-medium text-foreground">
 													{entry.academicYearId}
 												</p>
-												<p className="text-gray-600 text-sm">
+												<p className="text-muted-foreground text-sm">
 													{t("admin.students.ledger.entry", {
 														defaultValue:
 															"Earned {{earned}} • In progress {{progress}}",
@@ -1113,10 +1093,9 @@ export default function StudentManagement() {
 														{t("admin.students.form.dateOfBirth")}
 													</FormLabel>
 													<FormControl>
-														<Input
-															{...field}
-															type="date"
-															data-testid="date-of-birth-input"
+														<DatePicker
+															value={field.value ?? ""}
+															onChange={field.onChange}
 														/>
 													</FormControl>
 													<FormMessage />
@@ -1197,8 +1176,8 @@ export default function StudentManagement() {
 									</div>
 
 									{/* Section: Inscription */}
-									<div className="space-y-4 rounded-lg border bg-gray-50 p-4">
-										<p className="font-medium text-gray-900 text-sm">
+									<div className="space-y-4 rounded-lg border bg-muted p-4">
+										<p className="font-medium text-foreground text-sm">
 											{t("admin.students.form.registrationSection", {
 												defaultValue: "Inscription",
 											})}
@@ -1311,9 +1290,7 @@ export default function StudentManagement() {
 																		{format.isActive
 																			? ` (${t(
 																					"admin.registrationNumbers.list.active",
-																					{
-																						defaultValue: "Active",
-																					},
+																					{ defaultValue: "Active" },
 																				)})`
 																			: ""}
 																	</SelectItem>
@@ -1416,9 +1393,7 @@ export default function StudentManagement() {
 														{format.isActive
 															? ` (${t(
 																	"admin.registrationNumbers.list.active",
-																	{
-																		defaultValue: "Active",
-																	},
+																	{ defaultValue: "Active" },
 																)})`
 															: ""}
 													</SelectItem>
@@ -1736,7 +1711,10 @@ export default function StudentManagement() {
 													{t("admin.students.external.form.admissionDate")}
 												</FormLabel>
 												<FormControl>
-													<Input {...field} type="date" />
+													<DatePicker
+														value={field.value ?? ""}
+														onChange={field.onChange}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1772,8 +1750,8 @@ export default function StudentManagement() {
 										)}
 									/>
 
-									<div className="rounded-lg border bg-gray-50 p-4">
-										<p className="mb-3 font-medium text-gray-900 text-sm">
+									<div className="rounded-lg border bg-muted p-4">
+										<p className="mb-3 font-medium text-foreground text-sm">
 											{t("admin.students.external.form.studentInfoSection")}
 										</p>
 										<div className="grid gap-4">
@@ -1836,7 +1814,10 @@ export default function StudentManagement() {
 																{t("admin.students.form.dateOfBirth")}
 															</FormLabel>
 															<FormControl>
-																<Input {...field} type="date" />
+																<DatePicker
+																	value={field.value ?? ""}
+																	onChange={field.onChange}
+																/>
 															</FormControl>
 															<FormMessage />
 														</FormItem>

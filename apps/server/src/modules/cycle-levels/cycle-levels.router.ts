@@ -14,7 +14,7 @@ import {
 	updateSchema,
 } from "./cycle-levels.zod";
 
-export const router = createRouter({
+export const cycleLevelsRouter = createRouter({
 	create: adminProcedure
 		.input(baseSchema)
 		.mutation(({ input }) => service.createCycleLevel(input)),

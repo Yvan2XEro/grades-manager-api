@@ -183,21 +183,11 @@ if (jsonOutput) {
 	const CYAN = "\x1b[36m";
 	const DIM = "\x1b[2m";
 
-	console.log(
-		`\n${BOLD}${CYAN}═══ i18n Audit Report ═══${RESET}\n`,
-	);
-	console.log(
-		`${DIM}Source files scanned:${RESET} ${sourceFiles.length}`,
-	);
-	console.log(
-		`${DIM}Unique keys found in code:${RESET} ${usedKeys.size}`,
-	);
-	console.log(
-		`${DIM}EN translation keys:${RESET} ${enKeys.size}`,
-	);
-	console.log(
-		`${DIM}FR translation keys:${RESET} ${frKeys.size}`,
-	);
+	console.log(`\n${BOLD}${CYAN}═══ i18n Audit Report ═══${RESET}\n`);
+	console.log(`${DIM}Source files scanned:${RESET} ${sourceFiles.length}`);
+	console.log(`${DIM}Unique keys found in code:${RESET} ${usedKeys.size}`);
+	console.log(`${DIM}EN translation keys:${RESET} ${enKeys.size}`);
+	console.log(`${DIM}FR translation keys:${RESET} ${frKeys.size}`);
 
 	// Missing from EN (used in code but no EN translation)
 	if (missingFromEN.length > 0) {
@@ -215,9 +205,7 @@ if (jsonOutput) {
 			}
 		}
 	} else {
-		console.log(
-			`\n${GREEN}✓ All keys used in code exist in EN${RESET}`,
-		);
+		console.log(`\n${GREEN}✓ All keys used in code exist in EN${RESET}`);
 	}
 
 	// Missing from FR (used in code but no FR translation)
@@ -236,9 +224,7 @@ if (jsonOutput) {
 			}
 		}
 	} else {
-		console.log(
-			`\n${GREEN}✓ All keys used in code exist in FR${RESET}`,
-		);
+		console.log(`\n${GREEN}✓ All keys used in code exist in FR${RESET}`);
 	}
 
 	// EN-only keys (not in FR)
@@ -250,9 +236,7 @@ if (jsonOutput) {
 			console.log(`  ${YELLOW}•${RESET} ${key}`);
 		}
 	} else {
-		console.log(
-			`\n${GREEN}✓ EN and FR have the same keys${RESET}`,
-		);
+		console.log(`\n${GREEN}✓ EN and FR have the same keys${RESET}`);
 	}
 
 	// FR-only keys (not in EN)

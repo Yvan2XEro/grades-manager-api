@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
 import type { TFunction } from "i18next";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, KeyRound, Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +12,8 @@ import { z } from "zod";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { PasswordInput } from "../../components/ui/password-input";
+import { errorMsg, staggerContainer, staggerItem } from "../../lib/animations";
 import { authClient } from "../../lib/auth-client";
 
 const buildSchema = (t: TFunction) =>
@@ -57,65 +60,96 @@ const ResetPassword: React.FC = () => {
 	};
 
 	return (
-		<div>
-			<h2 className="mb-6 text-center font-semibold text-xl">
-				{t("auth.reset.title")}
-			</h2>
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-				<div>
-					<Label htmlFor="password" className="mb-1 block">
-						{t("auth.reset.newPassword")}
-					</Label>
-					<Input
+		<motion.div variants={staggerContainer} initial="hidden" animate="visible">
+			<motion.div variants={staggerItem} className="mb-8">
+				<motion.div
+					className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"
+					whileHover={{ scale: 1.05 }}
+					transition={{ duration: 0.2 }}
+				>
+					<KeyRound className="h-6 w-6 text-primary" />
+				</motion.div>
+				<h2 className="font-bold font-heading text-2xl text-foreground">
+					{t("auth.reset.title")}
+				</h2>
+				<p className="mt-2 text-muted-foreground text-sm">
+					{t("auth.reset.subtitle", {
+						defaultValue: "Choose a strong password for your account.",
+					})}
+				</p>
+			</motion.div>
+
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+				<motion.div variants={staggerItem} className="space-y-2">
+					<Label htmlFor="password">{t("auth.reset.newPassword")}</Label>
+					<PasswordInput
 						id="password"
-						type="password"
 						{...register("password")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.reset.passwordPlaceholder")}
 					/>
 					{errors.password && (
-						<p className="mt-1 text-error-600 text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.password.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
-				<div>
-					<Label htmlFor="confirmPassword" className="mb-1 block">
+				</motion.div>
+
+				<motion.div variants={staggerItem} className="space-y-2">
+					<Label htmlFor="confirmPassword">
 						{t("common.fields.confirmPassword")}
 					</Label>
-					<Input
+					<PasswordInput
 						id="confirmPassword"
-						type="password"
 						{...register("confirmPassword")}
-						className="w-full"
+						className="h-11"
 						placeholder={t("auth.reset.confirmPasswordPlaceholder")}
 					/>
 					{errors.confirmPassword && (
-						<p className="mt-1 text-error-600 text-sm">
+						<motion.p
+							variants={errorMsg}
+							initial="hidden"
+							animate="visible"
+							className="text-destructive text-sm"
+						>
 							{errors.confirmPassword.message}
-						</p>
+						</motion.p>
 					)}
-				</div>
-				<Button type="submit" disabled={isSubmitting} className="mt-6 w-full">
-					{isSubmitting ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							{t("auth.reset.submitting")}
-						</>
-					) : (
-						t("auth.reset.submit")
-					)}
-				</Button>
-				<div className="mt-1 text-right">
+				</motion.div>
+
+				<motion.div variants={staggerItem}>
+					<Button
+						type="submit"
+						disabled={isSubmitting}
+						className="h-11 w-full font-semibold"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								{t("auth.reset.submitting")}
+							</>
+						) : (
+							t("auth.reset.submit")
+						)}
+					</Button>
+				</motion.div>
+
+				<motion.div variants={staggerItem} className="text-center">
 					<Link
 						to={`/auth/login?return=${callbackURL}`}
-						className="text-primary-600 text-sm hover:text-primary-500"
+						className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 					>
+						<ArrowLeft className="h-4 w-4" />
 						{t("auth.reset.backToLogin")}
 					</Link>
-				</div>
+				</motion.div>
 			</form>
-		</div>
+		</motion.div>
 	);
 };
 

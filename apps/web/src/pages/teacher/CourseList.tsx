@@ -1,5 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, ClipboardList, Users } from "lucide-react";
+import {
+	BookOpen,
+	ChevronLeft,
+	ChevronRight,
+	ClipboardList,
+	Users,
+} from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +33,12 @@ interface Course {
 	isDelegated?: boolean;
 }
 
+const PAGE_SIZE = 12;
+
 export default function CourseList() {
 	const { user } = useStore();
 	const { t } = useTranslation();
+	const [page, setPage] = useState(0);
 
 	const { data: courses, isLoading } = useQuery({
 		queryKey: ["teacherCourses", user?.id],
@@ -86,9 +96,9 @@ export default function CourseList() {
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold text-2xl text-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
 					{t("teacher.courses.title")}
 				</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
@@ -96,44 +106,46 @@ export default function CourseList() {
 
 			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{courses?.length ? (
-					courses.map((course) => (
-						<Card key={course.id} className="h-full">
-							<CardHeader className="flex flex-col gap-2">
-								<div className="flex items-start justify-between gap-3">
-									<div>
-										<CardTitle>{course.name}</CardTitle>
-										<CardDescription>
-											{course.class_name} • {course.program_name}
-										</CardDescription>
+					courses
+						.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+						.map((course) => (
+							<Card key={course.id} className="h-full">
+								<CardHeader className="flex flex-col gap-2">
+									<div className="flex items-start justify-between gap-3">
+										<div>
+											<CardTitle>{course.name}</CardTitle>
+											<CardDescription>
+												{course.class_name} • {course.program_name}
+											</CardDescription>
+										</div>
+										{course.isDelegated ? (
+											<Badge variant="secondary">
+												{t("teacher.courses.delegatedBadge", {
+													defaultValue: "Delegated",
+												})}
+											</Badge>
+										) : null}
 									</div>
-									{course.isDelegated ? (
-										<Badge variant="secondary">
-											{t("teacher.courses.delegatedBadge", {
-												defaultValue: "Delegated",
-											})}
-										</Badge>
-									) : null}
-								</div>
-							</CardHeader>
-							<CardContent className="flex flex-wrap justify-between gap-4">
-								<div className="flex items-center gap-2 text-muted-foreground">
-									<Users className="h-4 w-4" />
-									<span>{course.student_count}</span>
-								</div>
-								<div className="flex items-center gap-2 text-muted-foreground">
-									<ClipboardList className="h-4 w-4" />
-									<span>{course.exam_count}</span>
-								</div>
-							</CardContent>
-							<CardFooter className="justify-end">
-								<Button asChild size="sm">
-									<Link to={`/teacher/grades/${course.id}`}>
-										{t("teacher.courses.actions.viewGrades")}
-									</Link>
-								</Button>
-							</CardFooter>
-						</Card>
-					))
+								</CardHeader>
+								<CardContent className="flex flex-wrap justify-between gap-4">
+									<div className="flex items-center gap-2 text-muted-foreground">
+										<Users className="h-4 w-4" />
+										<span>{course.student_count}</span>
+									</div>
+									<div className="flex items-center gap-2 text-muted-foreground">
+										<ClipboardList className="h-4 w-4" />
+										<span>{course.exam_count}</span>
+									</div>
+								</CardContent>
+								<CardFooter className="justify-end">
+									<Button asChild size="sm">
+										<Link to={`/teacher/grades/${course.id}`}>
+											{t("teacher.courses.actions.viewGrades")}
+										</Link>
+									</Button>
+								</CardFooter>
+							</Card>
+						))
 				) : (
 					<Card className="col-span-full">
 						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
@@ -150,6 +162,29 @@ export default function CourseList() {
 					</Card>
 				)}
 			</div>
+
+			{courses && courses.length > PAGE_SIZE && (
+				<div className="flex items-center justify-end gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => p - 1)}
+						disabled={page === 0}
+					>
+						<ChevronLeft className="mr-1 h-4 w-4" />
+						{t("common.pagination.previous", { defaultValue: "Previous" })}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => p + 1)}
+						disabled={(page + 1) * PAGE_SIZE >= courses.length}
+					>
+						{t("common.pagination.next", { defaultValue: "Next" })}
+						<ChevronRight className="ml-1 h-4 w-4" />
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -18,6 +18,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -26,6 +27,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
@@ -44,6 +46,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -60,6 +63,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -109,21 +114,26 @@ export default function CourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const { data: courses, isLoading } = useQuery({
-		queryKey: ["courses"],
+	const { data, isLoading } = useQuery({
+		queryKey: ["courses", pagination.cursor],
 		queryFn: async () => {
-			const { items } = await trpcClient.courses.list.query({});
-			return items as Course[];
+			const result = await trpcClient.courses.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			});
+			return result as { items: Course[]; nextCursor?: string };
 		},
 	});
+
+	const courses = data?.items ?? [];
+	const selection = useRowSelection(courses);
 
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({
-				limit: 100,
-			});
+			const { items } = await trpcClient.programs.list.query({ limit: 100 });
 			return items as ProgramOption[];
 		},
 	});
@@ -226,6 +236,29 @@ export default function CourseManagement() {
 		},
 	});
 
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.courses.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const onSubmit = (data: CourseFormData) => {
 		if (editingCourse) {
 			updateMutation.mutate({ ...data, id: editingCourse.id });
@@ -290,13 +323,11 @@ export default function CourseManagement() {
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">
-						{t("admin.courses.title", {
-							defaultValue: "Course management",
-						})}
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.courses.title", { defaultValue: "Course management" })}
 					</h1>
 					<p className="text-muted-foreground">
 						{t("admin.courses.subtitle", {
@@ -320,81 +351,129 @@ export default function CourseManagement() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					{courses && courses.length > 0 ? (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>
-										{t("admin.courses.table.code", {
-											defaultValue: "Code",
-										})}
-									</TableHead>
-									<TableHead>{t("admin.courses.table.name")}</TableHead>
-									<TableHead>{t("admin.courses.table.program")}</TableHead>
-									<TableHead>{t("admin.courses.table.hours")}</TableHead>
-									<TableHead>{t("admin.courses.table.teacher")}</TableHead>
-									<TableHead className="text-right">
-										{t("common.table.actions")}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{courses.map((course) => (
-									<TableRow key={course.id}>
-										<TableCell>
-											<ClipboardCopy
-												value={course.code}
-												label={t("admin.courses.table.code", {
-													defaultValue: "Code",
-												})}
-											/>
-										</TableCell>
-										<TableCell>{course.name}</TableCell>
-										<TableCell>
-											{(() => {
-												const programInfo = programMap.get(course.program);
-												if (!programInfo) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
+					{courses.length > 0 ? (
+						<>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => {
+										if (
+											window.confirm(
+												t("common.bulkActions.confirmDelete", {
+													defaultValue:
+														"Are you sure you want to delete the selected items?",
+												}),
+											)
+										) {
+											bulkDeleteMutation.mutate([...selection.selectedIds]);
+										}
+									}}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-10">
+											<Checkbox
+												checked={selection.isAllSelected}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(!!checked)
 												}
-												return (
-													<div className="space-y-0.5">
-														<p>{programInfo.name}</p>
-													</div>
-												);
-											})()}
-										</TableCell>
-										<TableCell>{course.hours}</TableCell>
-										<TableCell>
-											{teacherMap.get(course.defaultTeacher) ??
-												t("admin.courses.form.teacherPlaceholder")}
-										</TableCell>
-										<TableCell>
-											<div className="flex justify-end gap-2">
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													onClick={() => startEdit(course)}
-													aria-label={t("admin.courses.form.editTitle")}
-												>
-													<Pencil className="h-4 w-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													className="text-destructive hover:text-destructive"
-													onClick={() => confirmDelete(course.id)}
-													aria-label={t("admin.courses.delete.title")}
-												>
-													<Trash2 className="h-4 w-4" />
-												</Button>
-											</div>
-										</TableCell>
+												aria-label="Select all"
+											/>
+										</TableHead>
+										<TableHead>
+											{t("admin.courses.table.code", { defaultValue: "Code" })}
+										</TableHead>
+										<TableHead>{t("admin.courses.table.name")}</TableHead>
+										<TableHead>{t("admin.courses.table.program")}</TableHead>
+										<TableHead>{t("admin.courses.table.hours")}</TableHead>
+										<TableHead>{t("admin.courses.table.teacher")}</TableHead>
+										<TableHead className="text-right">
+											{t("common.table.actions")}
+										</TableHead>
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+								</TableHeader>
+								<TableBody>
+									{courses.map((course) => (
+										<TableRow key={course.id}>
+											<TableCell>
+												<Checkbox
+													checked={selection.isSelected(course.id)}
+													onCheckedChange={() => selection.toggle(course.id)}
+													aria-label={`Select ${course.name}`}
+												/>
+											</TableCell>
+											<TableCell>
+												<ClipboardCopy
+													value={course.code}
+													label={t("admin.courses.table.code", {
+														defaultValue: "Code",
+													})}
+												/>
+											</TableCell>
+											<TableCell>{course.name}</TableCell>
+											<TableCell>
+												{(() => {
+													const programInfo = programMap.get(course.program);
+													if (!programInfo) {
+														return t("common.labels.notAvailable", {
+															defaultValue: "N/A",
+														});
+													}
+													return (
+														<div className="space-y-0.5">
+															<p>{programInfo.name}</p>
+														</div>
+													);
+												})()}
+											</TableCell>
+											<TableCell>{course.hours}</TableCell>
+											<TableCell>
+												{teacherMap.get(course.defaultTeacher) ??
+													t("admin.courses.form.teacherPlaceholder")}
+											</TableCell>
+											<TableCell>
+												<div className="flex justify-end gap-2">
+													<Button
+														variant="ghost"
+														size="icon-sm"
+														onClick={() => startEdit(course)}
+														aria-label={t("admin.courses.form.editTitle")}
+													>
+														<Pencil className="h-4 w-4" />
+													</Button>
+													<Button
+														variant="ghost"
+														size="icon-sm"
+														className="text-destructive hover:text-destructive"
+														onClick={() => confirmDelete(course.id)}
+														aria-label={t("admin.courses.delete.title")}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+							<PaginationBar
+								hasPrev={pagination.hasPrev}
+								hasNext={!!data?.nextCursor}
+								onPrev={pagination.handlePrev}
+								onNext={() => pagination.handleNext(data?.nextCursor)}
+								isLoading={isLoading}
+							/>
+						</>
 					) : (
 						<div className="py-12 text-center">
 							<p className="font-semibold">
@@ -437,48 +516,111 @@ export default function CourseManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.courses.form.nameLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.namePlaceholder")}
-												{...field}
-												value={field.value ?? ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="hours"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.courses.form.hoursLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												type="number"
-												value={field.value ?? ""}
-												onChange={(event) =>
-													field.onChange(
-														event.target.value === ""
-															? undefined
-															: Number(event.target.value),
-													)
-												}
-												placeholder={t("admin.courses.form.hoursPlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.nameLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.courses.form.namePlaceholder")}
+													{...field}
+													value={field.value ?? ""}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.codeLabel", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.courses.form.codePlaceholder", {
+														defaultValue: "INF111",
+													})}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="hours"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.hoursLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input
+													type="number"
+													value={field.value ?? ""}
+													onChange={(event) =>
+														field.onChange(
+															event.target.value === ""
+																? undefined
+																: Number(event.target.value),
+														)
+													}
+													placeholder={t("admin.courses.form.hoursPlaceholder")}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="defaultTeacher"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.courses.form.teacherLabel")}
+											</FormLabel>
+											<Select
+												onValueChange={field.onChange}
+												value={field.value || undefined}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={t(
+																"admin.courses.form.teacherPlaceholder",
+															)}
+														/>
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{teacherOptions.map((teacher) => (
+														<SelectItem key={teacher.id} value={teacher.id}>
+															{formatTeacherName(teacher)}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<CodedEntitySelect
 								items={programs}
 								onSearch={setProgramSearch}
@@ -495,62 +637,6 @@ export default function CourseManagement() {
 								error={form.formState.errors.program?.message}
 								searchMode="hybrid"
 								required
-							/>
-
-							<FormField
-								control={form.control}
-								name="defaultTeacher"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.teacherLabel")}
-										</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											value={field.value || undefined}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.courses.form.teacherPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.courses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.courses.form.codePlaceholder", {
-													defaultValue: "INF111",
-												})}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
 							/>
 							<ModalFooter className="gap-2">
 								<Button

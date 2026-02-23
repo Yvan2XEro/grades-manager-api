@@ -31,9 +31,7 @@ const RuleManagement = () => {
 	const institutionsQuery = useQuery({
 		queryKey: ["institutions", "faculties"],
 		queryFn: async () => {
-			const result = await trpcClient.institutions.list.query({
-				limit: 100,
-			});
+			const result = await trpcClient.institutions.list.query({ limit: 100 });
 			if (!result) {
 				return { items: [], total: 0 };
 			}
@@ -88,12 +86,12 @@ const RuleManagement = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.rules.title", {
 							defaultValue: "Promotion & Rule Center",
 						})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.rules.subtitle", {
 							defaultValue:
 								"Curate study cycles, tune credit thresholds, and preview upcoming changes.",
@@ -108,9 +106,7 @@ const RuleManagement = () => {
 					}}
 				>
 					<PlusCircle className="mr-2 h-4 w-4" />
-					{t("admin.rules.actions.clone", {
-						defaultValue: "Clone defaults",
-					})}
+					{t("admin.rules.actions.clone", { defaultValue: "Clone defaults" })}
 				</Button>
 			</div>
 
@@ -118,17 +114,13 @@ const RuleManagement = () => {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{t("admin.rules.studyCycles", {
-								defaultValue: "Study cycles",
-							})}
+							{t("admin.rules.studyCycles", { defaultValue: "Study cycles" })}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label className="font-medium text-gray-700 text-sm">
-								{t("admin.rules.faculty", {
-									defaultValue: "Faculty",
-								})}
+							<Label className="font-medium text-foreground text-sm">
+								{t("admin.rules.faculty", { defaultValue: "Faculty" })}
 							</Label>
 							<Select
 								value={selectedInstitution}
@@ -155,10 +147,8 @@ const RuleManagement = () => {
 						</div>
 
 						<div className="space-y-2">
-							<Label className="font-medium text-gray-700 text-sm">
-								{t("admin.rules.cycle", {
-									defaultValue: "Study cycle",
-								})}
+							<Label className="font-medium text-foreground text-sm">
+								{t("admin.rules.cycle", { defaultValue: "Study cycle" })}
 							</Label>
 							<Select
 								value={selectedCycle}
@@ -183,8 +173,8 @@ const RuleManagement = () => {
 						</div>
 
 						{selectedCycleData && (
-							<div className="rounded-lg border bg-gray-50 p-4 text-gray-700 text-sm">
-								<p className="font-semibold text-gray-900">
+							<div className="rounded-lg border bg-muted p-4 text-foreground text-sm">
+								<p className="font-semibold text-foreground">
 									{selectedCycleData.name}
 								</p>
 								<p>
@@ -204,23 +194,21 @@ const RuleManagement = () => {
 
 						{levelsQuery.data && levelsQuery.data.length > 0 && (
 							<div className="space-y-3">
-								<p className="font-semibold text-gray-800 text-sm">
-									{t("admin.rules.levels", {
-										defaultValue: "Cycle levels",
-									})}
+								<p className="font-semibold text-foreground text-sm">
+									{t("admin.rules.levels", { defaultValue: "Cycle levels" })}
 								</p>
 								<div className="space-y-2">
 									{levelsQuery.data.map((level) => (
 										<div
 											key={level.id}
-											className="rounded-lg border bg-white p-3 shadow-sm"
+											className="rounded-lg border bg-card p-3 shadow-sm"
 										>
 											<div className="flex items-center justify-between">
 												<div>
-													<p className="font-medium text-gray-900">
+													<p className="font-medium text-foreground">
 														{level.name}
 													</p>
-													<p className="text-gray-600 text-sm">
+													<p className="text-muted-foreground text-sm">
 														{t("admin.rules.minCredits", {
 															defaultValue: "Required credits: {{value}}",
 															value: level.minCredits,
@@ -251,7 +239,7 @@ const RuleManagement = () => {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-3">
-						<p className="text-gray-600 text-sm">
+						<p className="text-muted-foreground text-sm">
 							{t("admin.rules.rulesHint", {
 								defaultValue:
 									"Default rules come from the server. Clone them to craft faculty-level overrides.",

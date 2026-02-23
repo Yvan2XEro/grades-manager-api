@@ -3,6 +3,8 @@ import { ArrowRight, Check, Users } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {
@@ -36,6 +38,7 @@ export default function StudentManagement() {
 	const [targetClass, setTargetClass] = useState<string>("");
 	const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 	const [isPromoting, setIsPromoting] = useState(false);
+	const pagination = useCursorPagination({ pageSize: 20 });
 	const sourceId = useId();
 	const targetId = useId();
 	const { t } = useTranslation();
@@ -110,14 +113,16 @@ export default function StudentManagement() {
 	});
 
 	// Get students from source class with their grades
-	const { data: students } = useQuery({
-		queryKey: ["students", sourceClass],
+	const { data: studentsData, isLoading: studentsLoading } = useQuery({
+		queryKey: ["students", sourceClass, pagination.cursor],
 		queryFn: async () => {
-			if (!sourceClass) return [];
-			const { items } = await trpcClient.students.list.query({
+			if (!sourceClass) return { items: [] as Student[], nextCursor: undefined };
+			const { items, nextCursor } = await trpcClient.students.list.query({
 				classId: sourceClass,
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
 			});
-			return Promise.all(
+			const enriched = await Promise.all(
 				items.map(async (s) => {
 					const { items: gradeItems } =
 						await trpcClient.grades.listByStudent.query({
@@ -154,9 +159,11 @@ export default function StudentManagement() {
 					} as Student;
 				}),
 			);
+			return { items: enriched, nextCursor };
 		},
 		enabled: !!sourceClass,
 	});
+	const students = studentsData?.items;
 
 	// Calculate average grade for a student
 	const calculateAverage = (student: Student) => {
@@ -245,10 +252,10 @@ export default function StudentManagement() {
 	};
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold text-2xl">{t("teacher.promotion.title")}</h2>
-				<p className="text-gray-600">{t("teacher.promotion.subtitle")}</p>
+				<h2 className="font-bold font-heading text-2xl text-foreground">{t("teacher.promotion.title")}</h2>
+				<p className="text-muted-foreground">{t("teacher.promotion.subtitle")}</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2">
@@ -268,6 +275,7 @@ export default function StudentManagement() {
 						onChange={(e) => {
 							setSourceClass(e.target.value);
 							setSelectedStudents([]);
+							pagination.reset();
 						}}
 					>
 						<option value="">
@@ -310,13 +318,13 @@ export default function StudentManagement() {
 			</div>
 
 			{students && students.length > 0 ? (
-				<div className="overflow-hidden rounded-lg bg-white shadow">
-					<div className="flex items-center justify-between border-gray-200 border-b p-4">
+				<div className="overflow-hidden rounded-lg bg-card shadow-sm">
+					<div className="flex items-center justify-between border-border border-b p-4">
 						<div className="flex items-center space-x-2">
 							<span className="font-medium">
 								{t("teacher.promotion.students.listTitle")}
 							</span>
-							<span className="text-gray-500 text-sm">
+							<span className="text-muted-foreground text-sm">
 								{t("teacher.promotion.students.selectedCount", {
 									count: selectedStudents.length,
 								})}
@@ -443,13 +451,20 @@ export default function StudentManagement() {
 						</table>
 					</div>
 				</div>
+				<PaginationBar
+					hasPrev={pagination.hasPrev}
+					hasNext={!!studentsData?.nextCursor}
+					onPrev={pagination.handlePrev}
+					onNext={() => pagination.handleNext(studentsData?.nextCursor)}
+					isLoading={studentsLoading}
+				/>
 			) : sourceClass ? (
-				<div className="rounded-lg bg-white p-8 text-center">
-					<Users className="mx-auto h-12 w-12 text-gray-400" />
-					<h3 className="mt-2 font-medium text-gray-900 text-sm">
+				<div className="rounded-lg bg-card p-8 text-center">
+					<Users className="mx-auto h-12 w-12 text-muted-foreground/60" />
+					<h3 className="mt-2 font-medium text-foreground text-sm">
 						{t("teacher.promotion.emptyStudents.title")}
 					</h3>
-					<p className="mt-1 text-gray-500 text-sm">
+					<p className="mt-1 text-muted-foreground text-sm">
 						{t("teacher.promotion.emptyStudents.description")}
 					</p>
 				</div>

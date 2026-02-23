@@ -584,7 +584,10 @@ async function getStudentTranscript(studentId: string) {
 	let validatedUnitsCount = 0;
 
 	for (const [unitId, unit] of unitMap.entries()) {
-		const unitAvg = unit.totalCoefficients > 0 ? unit.weightedScoreSum / unit.totalCoefficients : 0;
+		const unitAvg =
+			unit.totalCoefficients > 0
+				? unit.weightedScoreSum / unit.totalCoefficients
+				: 0;
 		averageByTeachingUnit[unitId] = {
 			average: unitAvg,
 			code: unit.code,

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -16,6 +17,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
@@ -34,6 +36,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -176,6 +179,31 @@ export default function CourseManagement() {
 		},
 	});
 
+	const selection = useRowSelection(courses ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.courses.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const onSubmit = async (data: CourseFormData) => {
 		if (editingCourse) {
 			updateMutation.mutate({ ...data, id: editingCourse.id });
@@ -198,16 +226,16 @@ export default function CourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-6 w-6" />
+				<Spinner className="h-6 w-6 text-primary" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("teacher.courses.manage.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -228,6 +256,32 @@ export default function CourseManagement() {
 				</Button>
 			</div>
 
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>{t("teacher.courses.manage.title")}</CardTitle>
@@ -236,6 +290,20 @@ export default function CourseManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={
+											selection.isAllSelected
+												? true
+												: selection.isSomeSelected
+													? "indeterminate"
+													: false
+										}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(Boolean(checked))
+										}
+									/>
+								</TableHead>
 								<TableHead>{t("teacher.courses.manage.table.name")}</TableHead>
 								<TableHead>
 									{t("teacher.courses.manage.table.program")}
@@ -252,6 +320,12 @@ export default function CourseManagement() {
 						<TableBody>
 							{courses?.map((course) => (
 								<TableRow key={course.id}>
+									<TableCell className="w-10">
+										<Checkbox
+											checked={selection.isSelected(course.id)}
+											onCheckedChange={() => selection.toggle(course.id)}
+										/>
+									</TableCell>
 									<TableCell className="font-medium">{course.name}</TableCell>
 									<TableCell>{programMap.get(course.program)}</TableCell>
 									<TableCell>{course.hours}</TableCell>
@@ -408,7 +482,7 @@ export default function CourseManagement() {
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? (
-								<Spinner className="mr-2" />
+								<Spinner className="mr-2 text-primary" />
 							) : editingCourse ? (
 								t("common.actions.saveChanges")
 							) : (

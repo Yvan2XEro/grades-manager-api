@@ -16,6 +16,7 @@
 			"create": "Create",
 			"update": "Update",
 			"delete": "Delete",
+			"edit": "Edit",
 			"save": "Save",
 			"saveChanges": "Save Changes",
 			"close": "Close",
@@ -504,31 +505,36 @@
 			}
 		},
 		"faculties": {
-			"title": "Faculty Management",
-			"subtitle": "Create and manage academic faculties",
+			"title": "Faculties",
+			"subtitle": "Manage faculties and schools within the institution.",
 			"actions": {
-				"add": "Add Faculty"
+				"add": "Add faculty"
 			},
 			"empty": {
-				"title": "No faculties found",
-				"description": "Get started by adding your first faculty."
+				"title": "No faculties yet",
+				"description": "Create your first faculty to start organizing your academic structure."
 			},
 			"table": {
-				"name": "Name",
-				"description": "Description",
-				"noDescription": "No description"
+				"title": "All faculties",
+				"description": "List of all faculties and schools registered in the system.",
+				"code": "Code",
+				"nameFr": "Name (FR)",
+				"nameEn": "Name (EN)",
+				"shortName": "Short name"
 			},
 			"form": {
-				"createTitle": "Add New Faculty",
-				"editTitle": "Edit Faculty",
-				"nameLabel": "Faculty name",
-				"namePlaceholder": "Enter faculty name",
-				"descriptionLabel": "Description",
-				"descriptionPlaceholder": "Enter faculty description",
-				"submit": "Save faculty"
-			},
-			"validation": {
-				"name": "Name must be at least 2 characters"
+				"createTitle": "Create faculty",
+				"editTitle": "Edit faculty",
+				"codeLabel": "Code",
+				"shortNameLabel": "Short name",
+				"nameFrLabel": "Name (French)",
+				"nameEnLabel": "Name (English)",
+				"descriptionFrLabel": "Description (French)",
+				"descriptionEnLabel": "Description (English)",
+				"nameFrRequired": "French name is required",
+				"nameEnRequired": "English name is required",
+				"codeRequired": "Code is required",
+				"submit": "Create"
 			},
 			"toast": {
 				"createSuccess": "Faculty created successfully",
@@ -539,7 +545,7 @@
 				"deleteError": "Could not delete the faculty"
 			},
 			"delete": {
-				"title": "Delete Faculty",
+				"title": "Delete faculty",
 				"message": "Are you sure you want to delete this faculty? This action cannot be undone."
 			}
 		},
@@ -709,6 +715,12 @@
 		}
 	},
 	"navigation": {
+		"breadcrumbs": {
+			"admin": "Administration",
+			"teacher": "Teacher",
+			"dean": "Dean",
+			"student": "Student"
+		},
 		"header": {
 			"adminDashboard": "Admin dashboard",
 			"teacherDashboard": "Teacher dashboard",
@@ -867,7 +879,8 @@
 				"courses": "Courses",
 				"exams": "Exams",
 				"students": "Students",
-				"teachers": "Teachers"
+				"teachers": "Teachers",
+				"institutions": "Institutions"
 			}
 		},
 		"monitoring": {
@@ -1596,6 +1609,15 @@
 				"reject": "Reject",
 				"reviewGrades": "Grades"
 			},
+			"filters": {
+				"academicYear": "Academic year",
+				"search": "Search",
+				"searchPlaceholder": "Search exams, classes, or courses...",
+				"class": "Class",
+				"classPlaceholder": "All classes",
+				"semester": "Semester",
+				"semesterPlaceholder": "All semesters"
+			},
 			"empty": {
 				"title": "No exams yet",
 				"description": "Create an exam to start collecting grades."
@@ -1970,6 +1992,10 @@
 		"gradeExport": {
 			"title": "Grade export",
 			"subtitle": "Export student grades by class and exam",
+			"filtersCard": {
+				"title": "Filters",
+				"description": "Select academic year and class before exporting."
+			},
 			"filters": {
 				"academicYear": "Academic year",
 				"academicYearPlaceholder": "Select academic year",
@@ -1979,16 +2005,16 @@
 			"actions": {
 				"label": "Export",
 				"export": "Export grades",
-				"combinedExport": "Download combined workbook",
 				"combinedLabel": "Combined grades",
+				"combinedExport": "Download combined workbook",
 				"examGroup": {
 					"filePrefix": "exam-grades",
 					"label": "Per-exam exports ({{count}})",
 					"scoreColumn": "Score",
 					"sheetName": "Scores examen"
 				},
-				"pvExport": "Download PV (Excel)",
-				"pvLabel": "Verbal report"
+				"pvLabel": "Grade report",
+				"pvExport": "Download grade report (Excel)"
 			},
 			"exams": {
 				"title": "Select exams to include",
@@ -2897,6 +2923,126 @@
 		"toast": {
 			"overrideSuccess": "Override applied successfully",
 			"overrideError": "Failed to apply override"
+		}
+	},
+	"settings": {
+		"menuLabel": "Settings",
+		"title": "Account Settings",
+		"subtitle": "Manage your profile, password, and sessions",
+		"tabs": {
+			"account": "Account",
+			"profile": "Profile",
+			"preferences": "Preferences"
+		},
+		"account": {
+			"title": "Account Details",
+			"description": "Update your sign-in identity",
+			"save": "Save account",
+			"fields": {
+				"name": "Display name",
+				"email": "Email",
+				"image": "Avatar URL",
+				"imagePlaceholder": "https://example.com/avatar.png"
+			},
+			"validation": {
+				"name": "Name is required",
+				"image": "Please provide a valid URL"
+			},
+			"toast": {
+				"success": "Account updated",
+				"error": "Failed to update account"
+			},
+			"avatar": {
+				"change": "Change avatar",
+				"uploading": "Uploading...",
+				"success": "Avatar updated",
+				"error": "Failed to upload avatar"
+			},
+			"email": {
+				"change": "Change email",
+				"newLabel": "New email",
+				"verificationSent": "A verification link has been sent to your new email",
+				"error": "Failed to send verification email"
+			}
+		},
+		"profile": {
+			"title": "Profile Information",
+			"description": "Update your personal details",
+			"save": "Save changes",
+			"fields": {
+				"firstName": "First name",
+				"lastName": "Last name",
+				"email": "Email",
+				"phone": "Phone",
+				"dateOfBirth": "Date of birth",
+				"dateOfBirthPlaceholder": "Select a date",
+				"placeOfBirth": "Place of birth",
+				"gender": "Gender",
+				"genderPlaceholder": "Select gender",
+				"nationality": "Nationality",
+				"nationalityPlaceholder": "Select a country",
+				"nationalitySearch": "Search countries..."
+			},
+			"gender": {
+				"male": "Male",
+				"female": "Female",
+				"other": "Other"
+			},
+			"validation": {
+				"firstName": "First name is required",
+				"lastName": "Last name is required"
+			},
+			"toast": {
+				"success": "Profile updated",
+				"error": "Failed to update profile"
+			}
+		},
+		"password": {
+			"title": "Change Password",
+			"description": "Update your login credentials",
+			"save": "Update password",
+			"fields": {
+				"current": "Current password",
+				"new": "New password",
+				"confirm": "Confirm new password",
+				"revokeOthers": "Sign out of all other sessions"
+			},
+			"validation": {
+				"current": "Current password is required",
+				"new": "Password must be at least 8 characters",
+				"confirm": "Please confirm your password",
+				"match": "Passwords do not match"
+			},
+			"toast": {
+				"success": "Password updated",
+				"error": "Failed to update password"
+			}
+		},
+		"sessions": {
+			"title": "Active Sessions",
+			"description": "Manage your active devices",
+			"current": "Current session",
+			"revoke": "Revoke",
+			"revokeAll": "Revoke all other sessions",
+			"securityNote": "If you don't recognize a session, revoke it immediately.",
+			"empty": "No active sessions found.",
+			"unknownTime": "Unknown time",
+			"unknownIp": "Unknown IP",
+			"toast": {
+				"revoked": "Session revoked",
+				"revokedAll": "Other sessions revoked",
+				"error": "Unable to load sessions"
+			}
+		},
+		"preferences": {
+			"title": "Preferences",
+			"description": "Customize your experience",
+			"languageLabel": "Language",
+			"languageHint": "Language changes apply immediately across the app.",
+			"languages": {
+				"en": "English",
+				"fr": "French"
+			}
 		}
 	}
 }

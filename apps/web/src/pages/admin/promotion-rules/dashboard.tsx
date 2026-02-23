@@ -30,10 +30,10 @@ export function PromotionRulesDashboard() {
 	const totalExecutions = executionsData?.items.length || 0;
 
 	return (
-		<div className="container mx-auto space-y-8 py-8">
+		<div className="space-y-8">
 			{/* Header */}
 			<div>
-				<h1 className="font-bold text-4xl tracking-tight">
+				<h1 className="font-bold font-heading text-2xl text-foreground">
 					{t("admin.promotionRules.dashboard.title")}
 				</h1>
 				<p className="mt-2 text-lg text-muted-foreground">
@@ -181,7 +181,7 @@ export function PromotionRulesDashboard() {
 			{/* Recent Activity */}
 			{executionsData && executionsData.items.length > 0 && (
 				<div>
-					<h2 className="mb-4 font-bold text-2xl">
+					<h2 className="mb-4 font-semibold text-foreground text-xl">
 						{t("admin.promotionRules.dashboard.recentActivity.title")}
 					</h2>
 					<Card>

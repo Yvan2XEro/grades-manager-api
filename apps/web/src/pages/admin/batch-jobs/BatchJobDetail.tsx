@@ -16,7 +16,7 @@ import { Button } from "../../../components/ui/button";
 import { trpcClient } from "../../../utils/trpc";
 
 const stepStatusColors: Record<string, string> = {
-	pending: "bg-gray-100 text-gray-800",
+	pending: "bg-muted text-foreground",
 	running: "bg-blue-100 text-blue-800",
 	completed: "bg-green-100 text-green-800",
 	failed: "bg-red-100 text-red-800",
@@ -79,13 +79,17 @@ export default function BatchJobDetail() {
 	if (jobQuery.isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
-				<Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+				<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
 			</div>
 		);
 	}
 
 	if (!job) {
-		return <div className="py-12 text-center text-gray-500">Job not found</div>;
+		return (
+			<div className="py-12 text-center text-muted-foreground">
+				Job not found
+			</div>
+		);
 	}
 
 	const progress = job.progress as {
@@ -108,12 +112,12 @@ export default function BatchJobDetail() {
 						<ArrowLeft className="h-5 w-5" />
 					</Button>
 					<div>
-						<h1 className="font-semibold text-gray-900 text-xl">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{t(`admin.batchJobs.types.${job.type}`, {
 								defaultValue: job.type,
 							})}
 						</h1>
-						<p className="text-gray-500 text-sm">
+						<p className="text-muted-foreground text-sm">
 							{formatDistanceToNow(new Date(job.createdAt), {
 								addSuffix: true,
 							})}
@@ -159,7 +163,7 @@ export default function BatchJobDetail() {
 			{/* Status + Progress */}
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="rounded-xl border bg-white p-5 shadow-sm">
-					<h3 className="mb-3 font-medium text-gray-700 text-sm">
+					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.batchJobs.columns.status")}
 					</h3>
 					<Badge
@@ -185,12 +189,12 @@ export default function BatchJobDetail() {
 
 				{progress && (
 					<div className="rounded-xl border bg-white p-5 shadow-sm">
-						<h3 className="mb-3 font-medium text-gray-700 text-sm">
+						<h3 className="mb-3 font-medium text-foreground text-sm">
 							{t("admin.batchJobs.detail.progress")}
 						</h3>
 						<div className="space-y-2">
 							<div className="flex justify-between text-sm">
-								<span className="text-gray-500">
+								<span className="text-muted-foreground">
 									Step {progress.currentStep}/{progress.totalSteps}
 								</span>
 								<span className="font-medium">
@@ -212,7 +216,7 @@ export default function BatchJobDetail() {
 
 			{/* Steps timeline */}
 			<div className="rounded-xl border bg-white p-5 shadow-sm">
-				<h3 className="mb-4 font-medium text-gray-700">
+				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.steps")}
 				</h3>
 				<div className="space-y-3">
@@ -221,14 +225,14 @@ export default function BatchJobDetail() {
 							key={step.id}
 							className="flex items-center gap-4 rounded-lg border p-4"
 						>
-							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 font-medium text-gray-700 text-sm">
+							<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted font-medium text-foreground text-sm">
 								{i + 1}
 							</div>
 							<div className="flex-1">
 								<div className="flex items-center justify-between">
 									<span className="font-medium text-sm">{step.name}</span>
 									<span
-										className={`rounded-full px-2 py-0.5 text-xs ${stepStatusColors[step.status] ?? "bg-gray-100"}`}
+										className={`rounded-full px-2 py-0.5 text-xs ${stepStatusColors[step.status] ?? "bg-muted"}`}
 									>
 										{t(`admin.batchJobs.stepStatus.${step.status}`, {
 											defaultValue: step.status,
@@ -236,7 +240,7 @@ export default function BatchJobDetail() {
 									</span>
 								</div>
 								{(step.itemsProcessed ?? 0) > 0 && (
-									<div className="mt-1 flex gap-3 text-gray-500 text-xs">
+									<div className="mt-1 flex gap-3 text-muted-foreground text-xs">
 										<span>Processed: {step.itemsProcessed}</span>
 										{(step.itemsSkipped ?? 0) > 0 && (
 											<span>Skipped: {step.itemsSkipped}</span>
@@ -252,7 +256,7 @@ export default function BatchJobDetail() {
 									<p className="mt-1 text-red-600 text-xs">{step.error}</p>
 								)}
 							</div>
-							<div className="text-gray-400">
+							<div className="text-muted-foreground/60">
 								{step.status === "completed" && (
 									<CheckCircle2 className="h-5 w-5 text-green-500" />
 								)}
@@ -263,7 +267,7 @@ export default function BatchJobDetail() {
 									<XCircle className="h-5 w-5 text-red-500" />
 								)}
 								{step.status === "pending" && (
-									<Clock className="h-5 w-5 text-gray-300" />
+									<Clock className="h-5 w-5 text-muted-foreground/40" />
 								)}
 							</div>
 						</div>
@@ -273,26 +277,26 @@ export default function BatchJobDetail() {
 
 			{/* Logs */}
 			<div className="rounded-xl border bg-white p-5 shadow-sm">
-				<h3 className="mb-4 font-medium text-gray-700">
+				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.logs")}
 				</h3>
 				{(job.logs ?? []).length === 0 ? (
-					<p className="text-gray-500 text-sm">
+					<p className="text-muted-foreground text-sm">
 						{t("admin.batchJobs.detail.noLogs")}
 					</p>
 				) : (
 					<div className="max-h-96 space-y-1 overflow-y-auto font-mono text-xs">
 						{(job.logs ?? []).map((log) => (
 							<div key={log.id} className="flex gap-2 py-1">
-								<span className="text-gray-400">
+								<span className="text-muted-foreground/60">
 									{new Date(log.timestamp).toLocaleTimeString()}
 								</span>
 								<span
-									className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-gray-600"}`}
+									className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}
 								>
 									[{log.level}]
 								</span>
-								<span className="text-gray-700">{log.message}</span>
+								<span className="text-foreground">{log.message}</span>
 							</div>
 						))}
 					</div>

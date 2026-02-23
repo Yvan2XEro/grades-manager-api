@@ -46,17 +46,17 @@ export function StudentEvaluationCard({
 		<Card
 			className={`transition-all duration-200 ${
 				eligible
-					? "border-green-500/30 bg-green-50/20"
-					: "border-red-500/30 bg-red-50/20"
+					? "border-emerald-500/20 bg-emerald-500/5"
+					: "border-destructive/20 bg-destructive/5"
 			} ${selected ? "ring-2 ring-primary" : ""}`}
 		>
 			<CardHeader className="pb-3">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
 						{eligible ? (
-							<CheckCircle2 className="h-5 w-5 text-green-600" />
+							<CheckCircle2 className="h-5 w-5 text-emerald-600" />
 						) : (
-							<XCircle className="h-5 w-5 text-red-600" />
+							<XCircle className="h-5 w-5 text-destructive" />
 						)}
 						<div>
 							<h4 className="font-semibold">{student.name}</h4>

@@ -68,9 +68,7 @@ const WorkflowManager = () => {
 			trpcClient.exams.lock.mutate({ examId, lock: true }),
 		onSuccess: () => {
 			toast.success(
-				t("teacher.workflow.toast.locked", {
-					defaultValue: "Exam locked",
-				}),
+				t("teacher.workflow.toast.locked", { defaultValue: "Exam locked" }),
 			);
 			queryClient.invalidateQueries(
 				trpc.exams.list.queryKey({
@@ -86,10 +84,8 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-semibold text-2xl text-foreground">
-					{t("teacher.workflow.title", {
-						defaultValue: "Exam workflow",
-					})}
+				<h1 className="font-bold font-heading text-2xl text-foreground">
+					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
 				<p className="text-muted-foreground">
 					{t("teacher.workflow.subtitle", {
@@ -116,9 +112,7 @@ const WorkflowManager = () => {
 				</div>
 				<div className="w-56">
 					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", {
-							defaultValue: "Semester",
-						})}
+						{t("admin.classes.filters.semester", { defaultValue: "Semester" })}
 					</Label>
 					<SemesterSelect
 						value={filterSemester}
@@ -160,9 +154,7 @@ const WorkflowManager = () => {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("teacher.workflow.title", {
-							defaultValue: "Exam workflow",
-						})}
+						{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 					</CardTitle>
 					<CardDescription>
 						{t("teacher.workflow.subtitle", {
@@ -180,9 +172,7 @@ const WorkflowManager = () => {
 						</p>
 					) : examsQuery.isLoading ? (
 						<p className="text-muted-foreground text-sm">
-							{t("common.loading", {
-								defaultValue: "Loading...",
-							})}
+							{t("common.loading", { defaultValue: "Loading..." })}
 						</p>
 					) : exams.length ? (
 						<div className="space-y-3">

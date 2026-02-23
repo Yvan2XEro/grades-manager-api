@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import {
 	BookOpen,
 	Building2,
@@ -13,11 +14,15 @@ import { useTranslation } from "react-i18next";
 import {
 	Bar,
 	BarChart,
+	CartesianGrid,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
 	YAxis,
 } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
 import { trpcClient } from "../../utils/trpc";
 
 type StatCard = {
@@ -30,7 +35,8 @@ type StatCard = {
 		| "teachers";
 	count: number;
 	icon: JSX.Element;
-	color: string;
+	bgColor: string;
+	iconColor: string;
 };
 
 type ProgramStats = {
@@ -59,7 +65,6 @@ const AdminDashboard: React.FC = () => {
 			]);
 
 			const programs = programsRes?.items ?? [];
-			// Compter les institutions de type 'faculty'
 			const institutionsCount =
 				institutionsRes?.items?.filter((i) => i.type === "faculty").length ?? 0;
 			const programsCount = programs.length;
@@ -93,38 +98,44 @@ const AdminDashboard: React.FC = () => {
 				{
 					key: "institutions",
 					count: institutionsCount,
-					icon: <Building2 className="h-8 w-8" />,
-					color: "bg-blue-100 text-blue-600",
+					icon: <Building2 className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-blue-50 to-blue-100/50",
+					iconColor: "text-blue-600",
 				},
 				{
 					key: "programs",
 					count: programsCount,
-					icon: <School className="h-8 w-8" />,
-					color: "bg-purple-100 text-purple-600",
+					icon: <School className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-violet-50 to-violet-100/50",
+					iconColor: "text-violet-600",
 				},
 				{
 					key: "courses",
 					count: coursesCount,
-					icon: <BookOpen className="h-8 w-8" />,
-					color: "bg-emerald-100 text-emerald-600",
+					icon: <BookOpen className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-emerald-50 to-emerald-100/50",
+					iconColor: "text-emerald-600",
 				},
 				{
 					key: "exams",
 					count: examsCount,
-					icon: <ClipboardCheck className="h-8 w-8" />,
-					color: "bg-amber-100 text-amber-600",
+					icon: <ClipboardCheck className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-amber-50 to-amber-100/50",
+					iconColor: "text-amber-600",
 				},
 				{
 					key: "students",
 					count: studentsCount,
-					icon: <Users className="h-8 w-8" />,
-					color: "bg-rose-100 text-rose-600",
+					icon: <Users className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-rose-50 to-rose-100/50",
+					iconColor: "text-rose-600",
 				},
 				{
 					key: "teachers",
 					count: teachersCount,
-					icon: <GraduationCap className="h-8 w-8" />,
-					color: "bg-indigo-100 text-indigo-600",
+					icon: <GraduationCap className="h-5 w-5" />,
+					bgColor: "bg-gradient-to-br from-indigo-50 to-indigo-100/50",
+					iconColor: "text-indigo-600",
 				},
 			];
 
@@ -141,7 +152,7 @@ const AdminDashboard: React.FC = () => {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<div className="h-12 w-12 animate-spin rounded-full border-primary-600 border-t-2 border-b-2" />
+				<Spinner className="h-8 w-8 text-primary" />
 			</div>
 		);
 	}
@@ -151,78 +162,132 @@ const AdminDashboard: React.FC = () => {
 	const activeYear = data?.activeYear ?? t("admin.dashboard.noActiveYear");
 
 	return (
-		<div className="space-y-6">
-			<div className="flex items-center justify-between">
-				<h2 className="font-bold text-2xl text-gray-800">
-					{t("admin.dashboard.title")}
-				</h2>
-				<div className="flex items-center rounded-lg bg-primary-50 px-4 py-2">
-					<Calendar className="mr-2 h-5 w-5 text-primary-700" />
-					<span className="font-medium text-primary-900 text-sm">
+		<div className="space-y-8">
+			{/* Page Header */}
+			<motion.div
+				variants={fadeUp}
+				initial="hidden"
+				animate="visible"
+				className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+			>
+				<div>
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.dashboard.title")}
+					</h1>
+					<p className="mt-1 text-muted-foreground text-sm">
+						{t("admin.dashboard.subtitle", {
+							defaultValue: "Overview of your academic institution",
+						})}
+					</p>
+				</div>
+				<motion.div
+					whileHover={{ scale: 1.02 }}
+					transition={{ duration: 0.15 }}
+					className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2"
+				>
+					<Calendar className="h-4 w-4 text-primary" />
+					<span className="font-medium text-primary text-sm">
 						{t("admin.dashboard.activeYear", { year: activeYear })}
 					</span>
-				</div>
-			</div>
+				</motion.div>
+			</motion.div>
 
-			{/* Stats Grid */}
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{stats.map((stat, index) => (
-					<div
-						key={index}
-						className="rounded-xl bg-white p-6 shadow-sm transition-all hover:shadow-md"
-					>
-						<div className="flex items-center">
-							<div className={`rounded-full p-3 ${stat.color}`}>
-								{stat.icon}
-							</div>
-							<div className="ml-4">
-								<h3 className="font-medium text-gray-700 text-lg">
-									{t(`admin.dashboard.stats.${stat.key}`)}
-								</h3>
-								<p className="font-bold text-2xl text-gray-900">{stat.count}</p>
-							</div>
-						</div>
-					</div>
+			{/* Stats Grid - Bento style */}
+			<motion.div
+				variants={staggerContainer}
+				initial="hidden"
+				animate="visible"
+				className="grid grid-cols-2 gap-4 lg:grid-cols-3"
+			>
+				{stats.map((stat) => (
+					<motion.div key={stat.key} variants={staggerItem}>
+						<Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
+							<CardContent className="flex items-center gap-4 p-5">
+								<div
+									className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} ${stat.iconColor}`}
+								>
+									{stat.icon}
+								</div>
+								<div className="min-w-0">
+									<p className="truncate font-medium text-muted-foreground text-xs uppercase tracking-wide">
+										{t(`admin.dashboard.stats.${stat.key}`)}
+									</p>
+									<p className="font-bold font-heading text-2xl text-foreground tabular-nums">
+										{stat.count}
+									</p>
+								</div>
+							</CardContent>
+						</Card>
+					</motion.div>
 				))}
-			</div>
+			</motion.div>
 
-			{/* Program Stats */}
-			<div className="rounded-xl bg-white p-6 shadow-sm">
-				<h3 className="mb-4 font-medium text-gray-800 text-lg">
-					{t("admin.dashboard.programStats.title")}
-				</h3>
-
-				<div className="h-80">
-					{programStats.length > 0 ? (
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart
-								data={programStats}
-								margin={{
-									top: 20,
-									right: 30,
-									left: 20,
-									bottom: 60,
-								}}
-							>
-								<XAxis
-									dataKey="name"
-									angle={-45}
-									textAnchor="end"
-									height={80}
-									tick={{ fontSize: 12 }}
-								/>
-								<YAxis />
-								<Tooltip />
-								<Bar dataKey="students" fill="#3730A3" radius={[4, 4, 0, 0]} />
-							</BarChart>
-						</ResponsiveContainer>
-					) : (
-						<div className="flex h-full items-center justify-center text-gray-500">
-							{t("admin.dashboard.programStats.empty")}
+			{/* Program Stats Chart */}
+			<motion.div
+				initial={{ opacity: 0, y: 16 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.35, duration: 0.45, ease: "easeOut" }}
+			>
+				<Card className="border-0 shadow-sm">
+					<CardHeader>
+						<CardTitle className="text-lg">
+							{t("admin.dashboard.programStats.title")}
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="h-80">
+							{programStats.length > 0 ? (
+								<ResponsiveContainer width="100%" height="100%">
+									<BarChart
+										data={programStats}
+										margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
+									>
+										<CartesianGrid
+											strokeDasharray="3 3"
+											vertical={false}
+											stroke="var(--border)"
+										/>
+										<XAxis
+											dataKey="name"
+											angle={-45}
+											textAnchor="end"
+											height={80}
+											tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+											axisLine={false}
+											tickLine={false}
+										/>
+										<YAxis
+											tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+											axisLine={false}
+											tickLine={false}
+										/>
+										<Tooltip
+											contentStyle={{
+												borderRadius: "8px",
+												border: "1px solid var(--border)",
+												boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+												fontSize: "13px",
+											}}
+										/>
+										<Bar
+											dataKey="students"
+											fill="var(--primary)"
+											radius={[6, 6, 0, 0]}
+										/>
+									</BarChart>
+								</ResponsiveContainer>
+							) : (
+								<div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+									<School className="h-10 w-10 opacity-40" />
+									<p className="text-sm">
+										{t("admin.dashboard.programStats.empty")}
+									</p>
+								</div>
+							)}
 						</div>
-					)}
-				</div>
-			</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 		</div>
 	);
 };

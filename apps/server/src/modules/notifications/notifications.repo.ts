@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -26,12 +26,29 @@ export async function updateStatus(
 export async function listNotifications(
 	status?: schema.NotificationStatus,
 	limit = 50,
+	cursor?: string,
 ) {
-	return db.query.notifications.findMany({
-		where: status ? eq(schema.notifications.status, status) : undefined,
-		limit,
-		orderBy: (t, { desc }) => [desc(t.createdAt)],
+	const pageLimit = Math.min(Math.max(limit, 1), 100);
+	const conditions = [];
+
+	if (status) {
+		conditions.push(eq(schema.notifications.status, status));
+	}
+	if (cursor) {
+		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
+	}
+
+	const items = await db.query.notifications.findMany({
+		where: conditions.length > 0 ? and(...conditions) : undefined,
+		limit: pageLimit,
+		orderBy: [desc(schema.notifications.createdAt)],
 	});
+
+	const nextCursor =
+		items.length === pageLimit
+			? items[items.length - 1].createdAt.toISOString()
+			: undefined;
+	return { items, nextCursor };
 }
 
 export async function findPending(limit = 25) {

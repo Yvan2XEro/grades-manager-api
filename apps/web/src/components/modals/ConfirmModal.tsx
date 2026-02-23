@@ -53,7 +53,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 						onClick={onConfirm}
 						disabled={isLoading}
 					>
-						{isLoading ? <Spinner className="mr-2" /> : null}
+						{isLoading ? <Spinner className="mr-2 text-primary" /> : null}
 						{confirmLabel}
 					</Button>
 				</DialogFooter>

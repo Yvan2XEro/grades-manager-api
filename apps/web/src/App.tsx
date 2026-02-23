@@ -6,6 +6,7 @@ import { Redirector } from "./components/navigation/Redirector";
 import LoadingScreen from "./components/ui/LoadingScreen";
 import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
+import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
@@ -19,6 +20,7 @@ import ExamScheduler from "./pages/admin/ExamScheduler";
 import ExamTypes from "./pages/admin/ExamTypes";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
+import FacultyManagement from "./pages/admin/FacultyManagement";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -61,7 +63,11 @@ function App() {
 		setActiveOrganizationSlug,
 		activeOrganizationSlug,
 	} = useStore();
-	const { data: session, isPending } = authClient.useSession();
+	const {
+		data: session,
+		isPending,
+		refetch: refetchSession,
+	} = authClient.useSession();
 	const activatedSlugRef = useRef<string | null>(null);
 
 	const memoUser = useMemo(() => {
@@ -116,6 +122,8 @@ function App() {
 					});
 					if (!cancelled) {
 						activatedSlugRef.current = activeOrganizationSlug;
+						// Force session refetch so activeMembership and role update immediately
+						await refetchSession();
 					}
 				} catch (error) {
 					console.error("Failed to set active organization:", error);
@@ -184,6 +192,7 @@ function App() {
 							element={<RegistrationNumberFormatDetail />}
 						/>
 						<Route path="institution" element={<InstitutionSettings />} />
+						<Route path="faculties" element={<FacultyManagement />} />
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />
@@ -236,6 +245,11 @@ function App() {
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
+					</Route>
+
+					{/* Shared Settings */}
+					<Route path="/settings" element={<DashboardLayout />}>
+						<Route index element={<AccountSettings />} />
 					</Route>
 				</>
 			)}

@@ -50,10 +50,12 @@ export function EvaluatePromotionPage() {
 
 	const { data: classes } = useQuery({
 		queryKey: ["classes"],
-		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({});
-			return items;
-		},
+		queryFn: async () => trpcClient.classes.list.query({}),
+	});
+
+	const { data: academicYears } = useQuery({
+		queryKey: ["academicYears"],
+		queryFn: async () => trpcClient.academicYears.list.query({}),
 	});
 
 	// Evaluation query
@@ -162,7 +164,7 @@ export function EvaluatePromotionPage() {
 	};
 
 	return (
-		<div className="container mx-auto space-y-6 py-8">
+		<div className="space-y-6">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -175,7 +177,7 @@ export function EvaluatePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-bold text-3xl tracking-tight">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.promotionRules.evaluate.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -185,7 +187,7 @@ export function EvaluatePromotionPage() {
 			</div>
 
 			{/* Selection Form */}
-			<Card>
+			<Card className="border-0 shadow-sm">
 				<CardHeader>
 					<CardTitle>{t("admin.promotionRules.evaluate.form.title")}</CardTitle>
 				</CardHeader>
@@ -227,7 +229,7 @@ export function EvaluatePromotionPage() {
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									{classes?.map((cls) => (
+									{classes?.items?.map((cls) => (
 										<SelectItem key={cls.id} value={cls.id}>
 											{cls.name}
 										</SelectItem>
@@ -240,7 +242,7 @@ export function EvaluatePromotionPage() {
 							<Label>{t("admin.promotionRules.evaluate.form.yearLabel")}</Label>
 							<AcademicYearSelect
 								value={selectedAcademicYearId || null}
-								onChange={setSelectedAcademicYearId}
+								onChange={(v) => setSelectedAcademicYearId(v)}
 								placeholder={t(
 									"admin.promotionRules.evaluate.form.yearPlaceholder",
 								)}
@@ -270,7 +272,7 @@ export function EvaluatePromotionPage() {
 							>
 								{isRefreshingFacts ? (
 									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
 										{t("admin.promotionRules.evaluate.actions.refreshingFacts")}
 									</>
 								) : (
@@ -296,7 +298,7 @@ export function EvaluatePromotionPage() {
 						>
 							{isEvaluating ? (
 								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
 									{t("admin.promotionRules.evaluate.actions.evaluating")}
 								</>
 							) : (
@@ -315,9 +317,9 @@ export function EvaluatePromotionPage() {
 				<div className="fade-in slide-in-from-bottom-4 animate-in space-y-6">
 					{/* Summary */}
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-						<Card>
+						<Card className="border-0 shadow-sm">
 							<CardContent className="pt-6">
-								<div className="font-bold text-2xl">
+								<div className="font-bold text-2xl text-foreground">
 									{evaluationResult.totalStudents}
 								</div>
 								<p className="text-muted-foreground text-xs">
@@ -325,9 +327,9 @@ export function EvaluatePromotionPage() {
 								</p>
 							</CardContent>
 						</Card>
-						<Card className="border-green-500/30 bg-green-50/20">
+						<Card className="border-emerald-500/20 bg-emerald-500/5">
 							<CardContent className="pt-6">
-								<div className="font-bold text-2xl text-green-600">
+								<div className="font-bold text-2xl text-emerald-600">
 									{evaluationResult.eligible.length}
 								</div>
 								<p className="text-muted-foreground text-xs">
@@ -335,9 +337,9 @@ export function EvaluatePromotionPage() {
 								</p>
 							</CardContent>
 						</Card>
-						<Card className="border-red-500/30 bg-red-50/20">
+						<Card className="border-destructive/20 bg-destructive/5">
 							<CardContent className="pt-6">
-								<div className="font-bold text-2xl text-red-600">
+								<div className="font-bold text-2xl text-destructive">
 									{evaluationResult.notEligible.length}
 								</div>
 								<p className="text-muted-foreground text-xs">

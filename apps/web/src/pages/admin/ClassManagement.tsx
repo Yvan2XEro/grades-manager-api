@@ -22,8 +22,12 @@ import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -32,20 +36,20 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
-import { Badge } from "@/components/ui/badge";
+import ConfirmModal from "../../components/modals/ConfirmModal";
+import FormModal from "../../components/modals/FormModal";
+import { Button } from "../../components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ConfirmModal from "../../components/modals/ConfirmModal";
-import FormModal from "../../components/modals/FormModal";
-import { Button } from "../../components/ui/button";
+} from "../../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -56,6 +60,7 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
+import { ScrollArea } from "../../components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -152,18 +157,27 @@ export default function ClassManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const { data: classes, isLoading } = useQuery({
-		queryKey: ["classes", filterYear, filterSemester],
+	const { data: classesData, isLoading } = useQuery({
+		queryKey: [
+			"classes",
+			pagination.cursor,
+			pagination.pageSize,
+			filterYear,
+			filterSemester,
+		],
 		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({
+			const { items, nextCursor } = await trpcClient.classes.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
 				...(filterYear ? { academicYearId: filterYear } : {}),
 				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
 			// TODO: N+1 Query Problem - This fetches students for each class separately
 			// Better solution: Modify backend classes.list to include studentCount
 			// or create a batch endpoint that returns classes with student counts
-			return Promise.all(
+			const enriched = await Promise.all(
 				items.map(async (cls) => {
 					const students = await trpcClient.students.list.query({
 						classId: cls.id,
@@ -183,9 +197,7 @@ export default function ClassManagement() {
 							cycleName: cls.cycle?.name,
 							cycleCode: cls.cycle?.code,
 						},
-						academicYear: {
-							name: cls.academicYearInfo?.name ?? "",
-						},
+						academicYear: { name: cls.academicYearInfo?.name ?? "" },
 						cycle: cls.cycle ?? undefined,
 						cycleLevel: cls.cycleLevel ?? undefined,
 						programOption: cls.programOption ?? undefined,
@@ -194,15 +206,17 @@ export default function ClassManagement() {
 					} as Class;
 				}),
 			);
+			return { items: enriched, nextCursor };
 		},
 	});
+
+	const classes = classesData?.items;
+	const selection = useRowSelection(classes ?? []);
 
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
 		queryFn: async () => {
-			const { items } = await trpcClient.programs.list.query({
-				limit: 100,
-			});
+			const { items } = await trpcClient.programs.list.query({ limit: 100 });
 			return items;
 		},
 	});
@@ -417,6 +431,10 @@ export default function ClassManagement() {
 	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
 
 	useEffect(() => {
+		pagination.reset();
+	}, [filterYear, filterSemester]);
+
+	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
 		if (selectedProgramOption && year) {
 			const startYear = new Date(year.startDate).getFullYear();
@@ -437,9 +455,10 @@ export default function ClassManagement() {
 				classId: classData.id,
 				limit: 1000,
 			});
-			const sorted = [...studentsData.items].sort((a, b) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			const sorted = [...studentsData.items].sort(
+				(a, b) =>
+					(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+					(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 			);
 			setPreviewStudents(sorted);
 		} catch (error) {
@@ -509,9 +528,10 @@ export default function ClassManagement() {
 			);
 
 			// Sort students alphabetically by last name, then first name
-			const sortedStudents = [...studentsData.items].sort((a, b) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			const sortedStudents = [...studentsData.items].sort(
+				(a, b) =>
+					(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+					(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 			);
 
 			// Student table
@@ -537,18 +557,14 @@ export default function ClassManagement() {
 						t("admin.students.table.registrationNumber", {
 							defaultValue: "Reg. Number",
 						}),
-						t("admin.students.table.lastName", {
-							defaultValue: "Last Name",
-						}),
+						t("admin.students.table.lastName", { defaultValue: "Last Name" }),
 						t("admin.students.table.firstName", {
 							defaultValue: "First Name",
 						}),
 						t("admin.students.table.dateOfBirth", {
 							defaultValue: "Birth Date",
 						}),
-						t("admin.students.table.gender", {
-							defaultValue: "Gender",
-						}),
+						t("admin.students.table.gender", { defaultValue: "Gender" }),
 					],
 				],
 				body: tableData,
@@ -614,11 +630,7 @@ export default function ClassManagement() {
 				[institutionName],
 				[institution?.shortName || ""],
 				[],
-				[
-					t("admin.classes.export.title", {
-						defaultValue: "Student List",
-					}),
-				],
+				[t("admin.classes.export.title", { defaultValue: "Student List" })],
 				[],
 				[`${t("admin.classes.table.name")}: ${classData.name}`],
 				[`${t("admin.classes.table.code")}: ${classData.code}`],
@@ -635,25 +647,20 @@ export default function ClassManagement() {
 					t("admin.students.table.registrationNumber", {
 						defaultValue: "Reg. Number",
 					}),
-					t("admin.students.table.lastName", {
-						defaultValue: "Last Name",
-					}),
-					t("admin.students.table.firstName", {
-						defaultValue: "First Name",
-					}),
+					t("admin.students.table.lastName", { defaultValue: "Last Name" }),
+					t("admin.students.table.firstName", { defaultValue: "First Name" }),
 					t("admin.students.table.dateOfBirth", {
 						defaultValue: "Birth Date",
 					}),
-					t("admin.students.table.gender", {
-						defaultValue: "Gender",
-					}),
+					t("admin.students.table.gender", { defaultValue: "Gender" }),
 				],
 			];
 
 			// Sort students alphabetically by last name, then first name
-			const sortedStudents = [...studentsData.items].sort((a, b) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			const sortedStudents = [...studentsData.items].sort(
+				(a, b) =>
+					(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+					(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 			);
 
 			// Prepare student data rows
@@ -681,9 +688,7 @@ export default function ClassManagement() {
 			XLSX.utils.book_append_sheet(
 				workbook,
 				worksheet,
-				t("admin.classes.export.sheetName", {
-					defaultValue: "Students",
-				}),
+				t("admin.classes.export.sheetName", { defaultValue: "Students" }),
 			);
 
 			// Apply some basic styling to header row
@@ -836,6 +841,29 @@ export default function ClassManagement() {
 		},
 	});
 
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.classes.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const onSubmit = async (data: ClassFormData) => {
 		if (editingClass) {
 			updateMutation.mutate({ ...data, id: editingClass.id });
@@ -864,10 +892,12 @@ export default function ClassManagement() {
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6 flex items-center justify-between">
+		<div className="space-y-6">
+			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">{t("admin.classes.title")}</h1>
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.classes.title")}
+					</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<Button
@@ -909,11 +939,37 @@ export default function ClassManagement() {
 				</div>
 			</div>
 
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card className="overflow-x-auto">
 				{classes?.length === 0 ? (
 					<div className="card-body items-center py-12 text-center">
 						<Users className="mx-auto h-16 w-16 text-base-content/20" />
-						<h2 className="card-title mt-4">
+						<h2 className="mt-4 font-semibold text-foreground text-lg">
 							{t("admin.classes.empty.title")}
 						</h2>
 						<p className="text-base-content/60">
@@ -936,10 +992,17 @@ export default function ClassManagement() {
 					<Table>
 						<TableHeader>
 							<TableRow>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={selection.isAllSelected}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(!!checked)
+										}
+										aria-label="Select all"
+									/>
+								</TableHead>
 								<TableHead>
-									{t("admin.classes.table.code", {
-										defaultValue: "Code",
-									})}
+									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
 								<TableHead>{t("admin.classes.table.name")}</TableHead>
 								<TableHead>{t("admin.classes.table.program")}</TableHead>
@@ -961,6 +1024,13 @@ export default function ClassManagement() {
 						<TableBody>
 							{classes?.map((cls) => (
 								<TableRow key={cls.id}>
+									<TableCell>
+										<Checkbox
+											checked={selection.isSelected(cls.id)}
+											onCheckedChange={() => selection.toggle(cls.id)}
+											aria-label={`Select ${cls.name}`}
+										/>
+									</TableCell>
 									<TableCell>
 										<ClipboardCopy
 											value={cls.code}
@@ -984,9 +1054,7 @@ export default function ClassManagement() {
 												</p>
 											</div>
 										) : (
-											t("common.labels.notAvailable", {
-												defaultValue: "N/A",
-											})
+											t("common.labels.notAvailable", { defaultValue: "N/A" })
 										)}
 									</TableCell>
 									<TableCell>
@@ -1094,6 +1162,14 @@ export default function ClassManagement() {
 				)}
 			</Card>
 
+			<PaginationBar
+				hasPrev={pagination.hasPrev}
+				hasNext={!!classesData?.nextCursor}
+				onPrev={pagination.handlePrev}
+				onNext={() => pagination.handleNext(classesData?.nextCursor)}
+				isLoading={isLoading}
+			/>
+
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={() => {
@@ -1128,27 +1204,67 @@ export default function ClassManagement() {
 							required
 						/>
 
-						<FormField
-							control={form.control}
-							name="academicYearId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.academicYearLabel")}
-									</FormLabel>
-									<FormControl>
-										<AcademicYearSelect
-											value={field.value || null}
-											onChange={field.onChange}
-											placeholder={t(
-												"admin.classes.form.academicYearPlaceholder",
-											)}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="academicYearId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.academicYearLabel")}
+										</FormLabel>
+										<FormControl>
+											<AcademicYearSelect
+												value={field.value || null}
+												onChange={field.onChange}
+												placeholder={t(
+													"admin.classes.form.academicYearPlaceholder",
+												)}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="semesterId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.semesterLabel", {
+												defaultValue: "Semester",
+											})}
+										</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value}
+											disabled={!semesters || semesters.length === 0}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.classes.form.semesterPlaceholder",
+															{ defaultValue: "Select a semester" },
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{semesters?.map((semester) => (
+													<SelectItem key={semester.id} value={semester.id}>
+														{semester.name} ({semester.code})
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
 						<CodedEntitySelect
 							items={cycleLevels}
@@ -1217,82 +1333,44 @@ export default function ClassManagement() {
 							required
 						/>
 
-						<FormField
-							control={form.control}
-							name="semesterId"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.semesterLabel", {
-											defaultValue: "Semester",
-										})}
-									</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										value={field.value}
-										disabled={!semesters || semesters.length === 0}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={t(
-														"admin.classes.form.semesterPlaceholder",
-														{
-															defaultValue: "Select a semester",
-														},
-													)}
-												/>
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{semesters?.map((semester) => (
-												<SelectItem key={semester.id} value={semester.id}>
-													{semester.name} ({semester.code})
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="code"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>
-										{t("admin.classes.form.codeLabel", {
-											defaultValue: "Code",
-										})}
-									</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder={t("admin.classes.form.codePlaceholder", {
-												defaultValue: "INF11-01",
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.classes.form.codeLabel", {
+												defaultValue: "Code",
 											})}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												placeholder={t("admin.classes.form.codePlaceholder", {
+													defaultValue: "INF11-01",
+												})}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
-									<FormControl>
-										<Input {...field} readOnly />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
+										<FormControl>
+											<Input {...field} readOnly />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
 						<DialogFooter className="gap-2">
 							<Button
@@ -1332,7 +1410,6 @@ export default function ClassManagement() {
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
-
 			<Dialog
 				open={!!previewClass}
 				onOpenChange={(open) => {
@@ -1358,8 +1435,7 @@ export default function ClassManagement() {
 						</DialogTitle>
 						<DialogDescription>
 							{t("admin.classes.previewDescription", {
-								defaultValue:
-									"List of students enrolled in this class",
+								defaultValue: "List of students enrolled in this class",
 							})}
 						</DialogDescription>
 					</DialogHeader>
@@ -1385,8 +1461,7 @@ export default function ClassManagement() {
 							<Users className="mx-auto mb-2 h-10 w-10" />
 							<p>
 								{t("admin.classes.noStudents", {
-									defaultValue:
-										"No students enrolled in this class",
+									defaultValue: "No students enrolled in this class",
 								})}
 							</p>
 						</div>
@@ -1429,15 +1504,11 @@ export default function ClassManagement() {
 											if (!studentSearch) return true;
 											const q = studentSearch.toLowerCase();
 											return (
-												(s.profile?.lastName ?? "")
-													.toLowerCase()
-													.includes(q) ||
+												(s.profile?.lastName ?? "").toLowerCase().includes(q) ||
 												(s.profile?.firstName ?? "")
 													.toLowerCase()
 													.includes(q) ||
-												(s.registrationNumber ?? "")
-													.toLowerCase()
-													.includes(q)
+												(s.registrationNumber ?? "").toLowerCase().includes(q)
 											);
 										})
 										.map((student, idx) => (
@@ -1466,7 +1537,7 @@ export default function ClassManagement() {
 														? "M"
 														: student.profile?.gender === "female"
 															? "F"
-															: student.profile?.gender ?? "—"}
+															: (student.profile?.gender ?? "—")}
 												</TableCell>
 											</TableRow>
 										))}

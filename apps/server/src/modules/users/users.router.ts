@@ -2,7 +2,11 @@ import z from "zod";
 import { businessRoles, domainStatuses } from "@/db/schema/app-schema";
 import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
 import * as service from "./users.service";
-import { createUserProfileSchema, updateUserProfileSchema } from "./users.zod";
+import {
+	createUserProfileSchema,
+	updateMyProfileSchema,
+	updateUserProfileSchema,
+} from "./users.zod";
 
 const listSchema = z.object({
 	cursor: z.string().nullish(),
@@ -29,4 +33,18 @@ export const usersRouter = router({
 	deleteProfile: adminProcedure
 		.input(idSchema)
 		.mutation(({ input }) => service.deleteUserProfile(input.id)),
+	getMyProfile: protectedProcedure.query(({ ctx }) => {
+		if (!ctx.profile?.id) {
+			return null;
+		}
+		return service.getMyProfile(ctx.profile.id);
+	}),
+	updateMyProfile: protectedProcedure
+		.input(updateMyProfileSchema)
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile?.id) {
+				throw new Error("No profile found");
+			}
+			return service.updateMyProfile(ctx.profile.id, input);
+		}),
 });

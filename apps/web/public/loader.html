@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TKAMS Loader</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --purple: #7B7BF6;
+    --purple-light: #9D9DFF;
+    --purple-dark: #5C5CD6;
+    --navy: #151538;
+    --navy-light: #1E1E50;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--navy);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Subtle background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(123, 123, 246, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  /* === LOGO MARK === */
+  .logo-mark {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tk-badge {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    background: var(--purple);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    animation: badgePulse 2.4s ease-in-out infinite;
+  }
+
+  .tk-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+  }
+
+  /* Scanning light effect across badge */
+  .tk-badge::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -60%;
+    width: 40%;
+    height: 300%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: rotate(25deg);
+    animation: scanLight 2.4s ease-in-out infinite;
+  }
+
+  @keyframes scanLight {
+    0%, 100% { left: -60%; }
+    50% { left: 120%; }
+  }
+
+  .tk-text {
+    font-size: 42px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ams-text {
+    font-size: 42px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: amsReveal 2.4s ease-in-out infinite;
+  }
+
+  @keyframes amsReveal {
+    0%, 15% { opacity: 0; transform: translateX(-8px); }
+    30%, 70% { opacity: 1; transform: translateX(0); }
+    85%, 100% { opacity: 0; transform: translateX(-8px); }
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(123, 123, 246, 0.4); }
+    50% { transform: scale(1.04); box-shadow: 0 0 30px 8px rgba(123, 123, 246, 0.2); }
+  }
+
+  /* === PROGRESS BAR === */
+  .progress-track {
+    width: 220px;
+    height: 4px;
+    background: rgba(123, 123, 246, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, var(--purple-dark), var(--purple), var(--purple-light));
+    border-radius: 4px;
+    animation: progressSlide 1.6s ease-in-out infinite;
+  }
+
+  @keyframes progressSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  /* === LOADING DOTS === */
+  .loading-text {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(123, 123, 246, 0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(123, 123, 246, 0.5);
+    margin-left: 2px;
+    animation: dotPulse 1.4s ease-in-out infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* === ORBITING PARTICLES === */
+  .orbit-ring {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    animation: orbitSpin 6s linear infinite;
+  }
+
+  .orbit-ring::before,
+  .orbit-ring::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple);
+  }
+
+  .orbit-ring::before {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.7;
+    box-shadow: 0 0 10px rgba(123, 123, 246, 0.5);
+  }
+
+  .orbit-ring::after {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.4;
+    width: 4px;
+    height: 4px;
+  }
+
+  @keyframes orbitSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .orbit-ring-2 {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    animation: orbitSpin 4s linear infinite reverse;
+  }
+
+  .orbit-ring-2::before {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--purple-light);
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    box-shadow: 0 0 8px rgba(157, 157, 255, 0.4);
+  }
+
+  /* === CORNER BRACKETS (tech feel) === */
+  .corners {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    animation: cornerPulse 2.4s ease-in-out infinite;
+  }
+
+  .corners::before,
+  .corners::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-color: rgba(123, 123, 246, 0.25);
+    border-style: solid;
+  }
+
+  .corners::before {
+    top: 0; left: 0;
+    border-width: 2px 0 0 2px;
+    border-radius: 3px 0 0 0;
+  }
+
+  .corners::after {
+    top: 0; right: 0;
+    border-width: 2px 2px 0 0;
+    border-radius: 0 3px 0 0;
+  }
+
+  .corners-bottom {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    animation: cornerPulse 2.4s ease-in-out infinite;
+  }
+
+  .corners-bottom::before,
+  .corners-bottom::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-color: rgba(123, 123, 246, 0.25);
+    border-style: solid;
+  }
+
+  .corners-bottom::before {
+    bottom: 0; left: 0;
+    border-width: 0 0 2px 2px;
+    border-radius: 0 0 0 3px;
+  }
+
+  .corners-bottom::after {
+    bottom: 0; right: 0;
+    border-width: 0 2px 2px 0;
+    border-radius: 0 0 3px 0;
+  }
+
+  @keyframes cornerPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.06); }
+  }
+</style>
+</head>
+<body>
+
+<div class="loader-container">
+
+  <!-- Logo animation area -->
+  <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+    <div class="orbit-ring"></div>
+    <div class="orbit-ring-2"></div>
+    <div class="corners"></div>
+    <div class="corners-bottom"></div>
+
+    <div class="logo-mark">
+      <div class="tk-badge">
+        <span class="tk-text">TK</span>
+      </div>
+      <span class="ams-text">AMS</span>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-track">
+    <div class="progress-fill"></div>
+  </div>
+
+  <!-- Loading text -->
+  <div class="loading-text">
+    Chargement
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+
+</div>
+
+</body>
+</html>

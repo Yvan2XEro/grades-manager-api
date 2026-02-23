@@ -16,11 +16,13 @@ import type {
 export async function listTemplates(
 	institutionId: string,
 	input: ListExportTemplatesInput,
-): Promise<ExportTemplate[]> {
+) {
 	return await repo.findTemplatesByInstitution(
 		institutionId,
 		input.type,
 		input.isDefault,
+		input.cursor,
+		input.limit,
 	);
 }
 

@@ -366,14 +366,16 @@ export default function InstitutionSettings() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-3">
-				<Landmark className="h-10 w-10 text-primary-600" />
+				<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+					<Landmark className="h-5 w-5 text-primary" />
+				</div>
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.institution.title", {
 							defaultValue: "Institution settings",
 						})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground text-sm">
 						{t("admin.institution.subtitle", {
 							defaultValue:
 								"Configure the bilingual identity, branding, and official contacts for generated documents.",
@@ -382,34 +384,32 @@ export default function InstitutionSettings() {
 				</div>
 			</div>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.institution.form.identity")}</CardTitle>
-					<CardDescription>
-						{t("admin.institution.form.identityHint", {
-							defaultValue:
-								"These values appear on document headers and diplomas in French and English.",
-						})}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{institutionQuery.isLoading ? (
-						<div className="flex h-40 items-center justify-center">
-							<Spinner className="h-8 w-8" />
-						</div>
-					) : (
-						<Form {...form}>
-							<form
-								onSubmit={form.handleSubmit(onSubmit)}
-								className="space-y-6"
-							>
-								<div className="grid gap-4 md:grid-cols-2">
+			{institutionQuery.isLoading ? (
+				<div className="flex h-40 items-center justify-center">
+					<Spinner className="h-8 w-8" />
+				</div>
+			) : (
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+						{/* Section 1: General Information */}
+						<Card>
+							<CardHeader>
+								<CardTitle>{t("admin.institution.form.identity")}</CardTitle>
+								<CardDescription>
+									{t("admin.institution.form.identityHint", {
+										defaultValue:
+											"These values appear on document headers and diplomas in French and English.",
+									})}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<div className="grid gap-4 sm:grid-cols-3">
 									<FormField
 										control={form.control}
 										name="code"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
+												<FormLabel required>
 													{t("admin.institution.form.code")}
 												</FormLabel>
 												<FormControl>
@@ -434,9 +434,6 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
-								</div>
-
-								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="type"
@@ -456,9 +453,7 @@ export default function InstitutionSettings() {
 															<SelectValue
 																placeholder={t(
 																	"admin.institution.form.typePlaceholder",
-																	{
-																		defaultValue: "Select type",
-																	},
+																	{ defaultValue: "Select type" },
 																)}
 															/>
 														</SelectTrigger>
@@ -485,6 +480,8 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="parentInstitutionId"
@@ -508,9 +505,7 @@ export default function InstitutionSettings() {
 															<SelectValue
 																placeholder={t(
 																	"admin.institution.form.parentInstitutionPlaceholder",
-																	{
-																		defaultValue: "Select parent institution",
-																	},
+																	{ defaultValue: "Select parent institution" },
 																)}
 															/>
 														</SelectTrigger>
@@ -536,63 +531,83 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
-								</div>
-
-								<FormField
-									control={form.control}
-									name="institutionId"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.institution.form.supervisingFaculty", {
-													defaultValue: "Supervising Faculty/School",
-												})}
-											</FormLabel>
-											<Select
-												value={field.value ?? NO_SELECTION}
-												onValueChange={(value) =>
-													field.onChange(
-														value === NO_SELECTION ? undefined : value,
-													)
-												}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={t(
-																"admin.institution.form.supervisingFacultyPlaceholder",
+									<FormField
+										control={form.control}
+										name="institutionId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.supervisingFaculty", {
+														defaultValue: "Supervising Faculty/School",
+													})}
+												</FormLabel>
+												<Select
+													value={field.value ?? NO_SELECTION}
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.institution.form.supervisingFacultyPlaceholder",
+																	{
+																		defaultValue: "Select supervising faculty",
+																	},
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_SELECTION}>
+															{t(
+																"admin.institution.form.noSupervisingFaculty",
 																{
-																	defaultValue: "Select supervising faculty",
+																	defaultValue: "None",
 																},
 															)}
-														/>
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													<SelectItem value={NO_SELECTION}>
-														{t("admin.institution.form.noSupervisingFaculty", {
-															defaultValue: "None",
-														})}
-													</SelectItem>
-													{faculties.map((faculty) => (
-														<SelectItem key={faculty.id} value={faculty.id}>
-															{faculty.name}
 														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+														{faculties.map((faculty) => (
+															<SelectItem key={faculty.id} value={faculty.id}>
+																{faculty.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</CardContent>
+						</Card>
 
+						{/* Section 2: Bilingual Names */}
+						<Card>
+							<CardHeader>
+								<CardTitle>
+									{t("admin.institution.sections.names", {
+										defaultValue: "Names & Legal Identity",
+									})}
+								</CardTitle>
+								<CardDescription>
+									{t("admin.institution.sections.namesHint", {
+										defaultValue:
+											"Official names as they appear on documents, diplomas, and legal paperwork.",
+									})}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="nameFr"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
+												<FormLabel required>
 													{t("admin.institution.form.nameFr")}
 												</FormLabel>
 												<FormControl>
@@ -607,7 +622,7 @@ export default function InstitutionSettings() {
 										name="nameEn"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
+												<FormLabel required>
 													{t("admin.institution.form.nameEn")}
 												</FormLabel>
 												<FormControl>
@@ -618,7 +633,6 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
-
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
@@ -651,7 +665,6 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
-
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
@@ -684,7 +697,6 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
-
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
@@ -717,7 +729,25 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
+							</CardContent>
+						</Card>
 
+						{/* Section 3: Contact & Location */}
+						<Card>
+							<CardHeader>
+								<CardTitle>
+									{t("admin.institution.sections.contact", {
+										defaultValue: "Contact & Location",
+									})}
+								</CardTitle>
+								<CardDescription>
+									{t("admin.institution.sections.contactHint", {
+										defaultValue:
+											"Address, phone, email, and other contact details.",
+									})}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
@@ -750,8 +780,7 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
-
-								<div className="grid gap-4 md:grid-cols-2">
+								<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 									<FormField
 										control={form.control}
 										name="contactEmail"
@@ -782,9 +811,6 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
-								</div>
-
-								<div className="grid gap-4 md:grid-cols-3">
 									<FormField
 										control={form.control}
 										name="fax"
@@ -798,6 +824,8 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
+								</div>
+								<div className="grid gap-4 sm:grid-cols-3">
 									<FormField
 										control={form.control}
 										name="postalBox"
@@ -805,6 +833,21 @@ export default function InstitutionSettings() {
 											<FormItem>
 												<FormLabel>
 													{t("admin.institution.form.postalBox")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="website"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.website")}
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
@@ -829,80 +872,95 @@ export default function InstitutionSettings() {
 										)}
 									/>
 								</div>
+							</CardContent>
+						</Card>
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<FormField
-										control={form.control}
-										name="website"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.website")}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="logoUrl"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.logoUrl")}
-												</FormLabel>
-												<ImageUploadField
-													label={t("admin.institution.form.logoUploadLabel")}
-													description={t(
-														"admin.institution.form.logoUploadDescription",
-													)}
-													value={field.value}
-													onChange={field.onChange}
-													onClear={() => field.onChange("")}
-													placeholder={t(
-														"admin.institution.form.logoUrlPlaceholder",
-														{
-															defaultValue: "https://...",
-														},
-													)}
-												/>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
+						{/* Section 4: Media / Branding */}
+						<Card>
+							<CardHeader>
+								<CardTitle>
+									{t("admin.institution.sections.media", {
+										defaultValue: "Media & Branding",
+									})}
+								</CardTitle>
+								<CardDescription>
+									{t("admin.institution.sections.mediaHint", {
+										defaultValue:
+											"Logo and cover image used on documents and the platform.",
+									})}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								<FormField
+									control={form.control}
+									name="logoUrl"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.institution.form.logoUrl")}
+											</FormLabel>
+											<ImageUploadField
+												label={t("admin.institution.form.logoUploadLabel")}
+												description={t(
+													"admin.institution.form.logoUploadDescription",
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.logoUrlPlaceholder",
+													{ defaultValue: "https://..." },
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="coverImageUrl"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.institution.form.coverImageUrl")}
+											</FormLabel>
+											<ImageUploadField
+												label={t("admin.institution.form.coverUploadLabel")}
+												description={t(
+													"admin.institution.form.coverUploadDescription",
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.coverImageUrlPlaceholder",
+													{ defaultValue: "https://..." },
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</CardContent>
+						</Card>
 
+						{/* Section 5: System Settings */}
+						<Card>
+							<CardHeader>
+								<CardTitle>
+									{t("admin.institution.sections.system", {
+										defaultValue: "System Configuration",
+									})}
+								</CardTitle>
+								<CardDescription>
+									{t("admin.institution.sections.systemHint", {
+										defaultValue:
+											"Default academic year and registration number format.",
+									})}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
 								<div className="grid gap-4 md:grid-cols-2">
-									<FormField
-										control={form.control}
-										name="coverImageUrl"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.coverImageUrl")}
-												</FormLabel>
-												<ImageUploadField
-													label={t("admin.institution.form.coverUploadLabel")}
-													description={t(
-														"admin.institution.form.coverUploadDescription",
-													)}
-													value={field.value}
-													onChange={field.onChange}
-													onClear={() => field.onChange("")}
-													placeholder={t(
-														"admin.institution.form.coverImageUrlPlaceholder",
-														{
-															defaultValue: "https://...",
-														},
-													)}
-												/>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
 									<FormField
 										control={form.control}
 										name="defaultAcademicYearId"
@@ -945,79 +1003,77 @@ export default function InstitutionSettings() {
 											</FormItem>
 										)}
 									/>
-								</div>
-
-								<FormField
-									control={form.control}
-									name="registrationFormatId"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.institution.form.registrationFormat")}
-											</FormLabel>
-											<Select
-												value={field.value ?? NO_SELECTION}
-												onValueChange={(value) =>
-													field.onChange(
-														value === NO_SELECTION ? undefined : value,
-													)
-												}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={t(
+									<FormField
+										control={form.control}
+										name="registrationFormatId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.registrationFormat")}
+												</FormLabel>
+												<Select
+													value={field.value ?? NO_SELECTION}
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.institution.form.registrationFormatPlaceholder",
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_SELECTION}>
+															{t(
 																"admin.institution.form.registrationFormatPlaceholder",
 															)}
-														/>
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													<SelectItem value={NO_SELECTION}>
-														{t(
-															"admin.institution.form.registrationFormatPlaceholder",
-														)}
-													</SelectItem>
-													{registrationFormats.map((format) => (
-														<SelectItem key={format.id} value={format.id}>
-															{format.name}
-															{format.isActive
-																? ` (${t(
-																		"admin.registrationNumbers.list.active",
-																		{
-																			defaultValue: "Active",
-																		},
-																	)})`
-																: ""}
 														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<div className="flex justify-end gap-3">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => form.reset(defaultValues)}
-									>
-										{t("common.actions.reset")}
-									</Button>
-									<Button type="submit" disabled={upsertMutation.isPending}>
-										{upsertMutation.isPending && (
-											<Spinner className="mr-2 h-4 w-4" />
+														{registrationFormats.map((format) => (
+															<SelectItem key={format.id} value={format.id}>
+																{format.name}
+																{format.isActive
+																	? ` (${t(
+																			"admin.registrationNumbers.list.active",
+																			{ defaultValue: "Active" },
+																		)})`
+																	: ""}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
 										)}
-										{t("admin.institution.actions.save")}
-									</Button>
+									/>
 								</div>
-							</form>
-						</Form>
-					)}
-				</CardContent>
-			</Card>
+							</CardContent>
+						</Card>
+
+						{/* Save Bar */}
+						<div className="sticky bottom-4 z-10 flex justify-end gap-3 rounded-lg border bg-card/95 px-6 py-4 shadow-lg backdrop-blur-sm">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => form.reset(defaultValues)}
+							>
+								{t("common.actions.reset")}
+							</Button>
+							<Button type="submit" disabled={upsertMutation.isPending}>
+								{upsertMutation.isPending && (
+									<Spinner className="mr-2 h-4 w-4" />
+								)}
+								{t("admin.institution.actions.save")}
+							</Button>
+						</div>
+					</form>
+				</Form>
+			)}
 		</div>
 	);
 }

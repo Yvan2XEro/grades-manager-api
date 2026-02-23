@@ -30,9 +30,11 @@ import {
 	DebouncedSearchField,
 	SemesterSelect,
 } from "@/components/inputs";
+import { DatePicker } from "@/components/ui/date-picker";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -41,6 +43,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	DropdownMenu,
@@ -83,6 +86,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
@@ -309,6 +313,31 @@ export default function ExamManagement() {
 		},
 	});
 
+	const selection = useRowSelection(exams);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.exams.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["exams"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const createRetakeMutation = useMutation({
 		mutationFn: async (data: RetakeFormData & { parentExamId: string }) => {
 			await trpcClient.exams.createRetake.mutate({
@@ -426,10 +455,12 @@ export default function ExamManagement() {
 	};
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">{t("admin.exams.title")}</h1>
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.exams.title")}
+					</h1>
 					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
 				</div>
 				<Button
@@ -530,10 +561,49 @@ export default function ExamManagement() {
 						</Empty>
 					) : (
 						<>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => {
+										if (
+											window.confirm(
+												t("common.bulkActions.confirmDelete", {
+													defaultValue:
+														"Are you sure you want to delete the selected items?",
+												}),
+											)
+										) {
+											bulkDeleteMutation.mutate([...selection.selectedIds]);
+										}
+									}}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
 							<div className="overflow-x-auto">
 								<Table>
 									<TableHeader>
 										<TableRow>
+											<TableHead className="w-10">
+												<Checkbox
+													checked={
+														selection.isAllSelected
+															? true
+															: selection.isSomeSelected
+																? "indeterminate"
+																: false
+													}
+													onCheckedChange={(checked) =>
+														selection.toggleAll(Boolean(checked))
+													}
+												/>
+											</TableHead>
 											<TableHead>{t("admin.exams.table.name")}</TableHead>
 											<TableHead>{t("admin.exams.table.course")}</TableHead>
 											<TableHead>{t("admin.exams.table.class")}</TableHead>
@@ -564,6 +634,12 @@ export default function ExamManagement() {
 											const isRetake = exam.sessionType === "retake";
 											return (
 												<TableRow key={exam.id}>
+													<TableCell className="w-10">
+														<Checkbox
+															checked={selection.isSelected(exam.id)}
+															onCheckedChange={() => selection.toggle(exam.id)}
+														/>
+													</TableCell>
 													<TableCell className="font-medium">
 														<div className="flex items-center gap-2">
 															{exam.name}
@@ -594,7 +670,7 @@ export default function ExamManagement() {
 																		? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-400/20 dark:text-blue-100"
 																		: exam.status === "rejected"
 																			? "border-red-500 bg-red-50 text-red-700 dark:bg-red-400/20 dark:text-red-100"
-																			: "border-gray-400 bg-gray-50 text-gray-700 dark:bg-gray-400/20 dark:text-gray-100"
+																			: "border-gray-400 bg-muted/50 text-foreground dark:bg-gray-400/20 dark:text-gray-100"
 															}
 														>
 															{t(
@@ -833,7 +909,10 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("admin.exams.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -959,7 +1038,10 @@ export default function ExamManagement() {
 								<FormItem>
 									<FormLabel>{t("retakes.form.dateLabel")}</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

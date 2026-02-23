@@ -51,7 +51,9 @@ describe("batchJobs router", () => {
 			expect(previewed.type).toBe("creditLedger.recompute");
 			expect(previewed.steps.length).toBe(2);
 			expect(previewed.steps[0].name).toBe("Reset credit ledgers");
-			expect(previewed.steps[1].name).toBe("Recompute from UE validation (LMD rules)");
+			expect(previewed.steps[1].name).toBe(
+				"Recompute from UE validation (LMD rules)",
+			);
 			expect(previewed.previewResult).toBeTruthy();
 			expect(
 				(previewed.previewResult as Record<string, unknown>).studentCount,

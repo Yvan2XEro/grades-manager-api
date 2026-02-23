@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import {
 	Card,
 	CardContent,
@@ -16,6 +17,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -24,6 +28,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import { DialogFooter } from "../../components/ui/dialog";
@@ -79,6 +85,7 @@ const AcademicYearManagement: React.FC = () => {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const form = useForm<FormData>({
 		resolver: zodResolver(academicYearSchema),
@@ -112,12 +119,41 @@ const AcademicYearManagement: React.FC = () => {
 		}
 	}, [startDate, endDate, setValue]);
 
-	const { data: academicYears, isLoading } = useQuery({
-		queryKey: ["academicYears"],
+	const { data, isLoading } = useQuery({
+		queryKey: ["academicYears", pagination.cursor],
 		queryFn: async () => {
-			const result = await trpcClient.academicYears.list.query({});
-			return (result?.items || []) as AcademicYear[];
+			const result = await trpcClient.academicYears.list.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			});
+			return result as { items: AcademicYear[]; nextCursor?: string };
 		},
+	});
+
+	const academicYears = data?.items ?? [];
+	const selection = useRowSelection(academicYears);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.academicYears.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
 	});
 
 	const createMutation = useMutation({
@@ -240,10 +276,10 @@ const AcademicYearManagement: React.FC = () => {
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.academicYears.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -274,13 +310,13 @@ const AcademicYearManagement: React.FC = () => {
 					<div className="flex items-center justify-center p-8">
 						<Spinner />
 					</div>
-				) : academicYears?.length === 0 ? (
+				) : academicYears.length === 0 ? (
 					<div className="p-8 text-center">
-						<Calendar className="mx-auto h-12 w-12 text-gray-400" />
-						<h3 className="mt-4 font-medium text-gray-700 text-lg">
+						<Calendar className="mx-auto h-12 w-12 text-muted-foreground/60" />
+						<h3 className="mt-4 font-medium text-foreground text-lg">
 							{t("admin.academicYears.empty.title")}
 						</h3>
-						<p className="mt-1 text-gray-500">
+						<p className="mt-1 text-muted-foreground">
 							{t("admin.academicYears.empty.description")}
 						</p>
 						<Button
@@ -301,9 +337,43 @@ const AcademicYearManagement: React.FC = () => {
 					</div>
 				) : (
 					<CardContent>
+						<BulkActionBar
+							selectedCount={selection.selectedCount}
+							onClear={selection.clear}
+						>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={() => {
+									if (
+										window.confirm(
+											t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+										)
+									) {
+										bulkDeleteMutation.mutate([...selection.selectedIds]);
+									}
+								}}
+								disabled={bulkDeleteMutation.isPending}
+							>
+								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+								{t("common.actions.delete")}
+							</Button>
+						</BulkActionBar>
 						<Table className="min-w-full">
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={selection.isAllSelected}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(!!checked)
+											}
+											aria-label="Select all"
+										/>
+									</TableHead>
 									<TableHead>{t("admin.academicYears.table.name")}</TableHead>
 									<TableHead>
 										{t("admin.academicYears.table.startDate")}
@@ -316,8 +386,15 @@ const AcademicYearManagement: React.FC = () => {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{academicYears?.map((year) => (
+								{academicYears.map((year) => (
 									<TableRow key={year.id}>
+										<TableCell>
+											<Checkbox
+												checked={selection.isSelected(year.id)}
+												onCheckedChange={() => selection.toggle(year.id)}
+												aria-label={`Select ${year.name}`}
+											/>
+										</TableCell>
 										<TableCell>{year.name}</TableCell>
 										<TableCell>{formatDate(year.startDate)}</TableCell>
 										<TableCell>{formatDate(year.endDate)}</TableCell>
@@ -343,7 +420,7 @@ const AcademicYearManagement: React.FC = () => {
 										<td>
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
-													<span className="text-gray-600 text-sm">
+													<span className="text-muted-foreground text-sm">
 														{t("admin.academicYears.confirmDelete")}
 													</span>
 													<button
@@ -396,6 +473,13 @@ const AcademicYearManagement: React.FC = () => {
 								))}
 							</TableBody>
 						</Table>
+						<PaginationBar
+							hasPrev={pagination.hasPrev}
+							hasNext={!!data?.nextCursor}
+							onPrev={pagination.handlePrev}
+							onNext={() => pagination.handleNext(data?.nextCursor)}
+							isLoading={isLoading}
+						/>
 					</CardContent>
 				)}
 			</Card>
@@ -424,7 +508,10 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.startDate")}
 									</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -440,7 +527,10 @@ const AcademicYearManagement: React.FC = () => {
 										{t("admin.academicYears.modal.endDate")}
 									</FormLabel>
 									<FormControl>
-										<Input type="date" {...field} />
+										<DatePicker
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

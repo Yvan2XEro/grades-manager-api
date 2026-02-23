@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
+import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import {
 	Card,
@@ -16,6 +17,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Empty } from "../../components/ui/empty";
 import { Label } from "../../components/ui/label";
 import {
@@ -34,6 +36,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -215,6 +218,31 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	const selection = useRowSelection(displayedClassCourses);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.classCourses.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const onSubmit = async (data: ClassCourseFormData) => {
 		if (editingClassCourse) {
 			updateMutation.mutate({ ...data, id: editingClassCourse.id });
@@ -237,16 +265,16 @@ export default function ClassCourseManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-6 w-6" />
+				<Spinner className="h-6 w-6 text-primary" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold text-2xl">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("teacher.classCourses.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -264,6 +292,32 @@ export default function ClassCourseManagement() {
 					{t("teacher.classCourses.actions.add")}
 				</Button>
 			</div>
+
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
 
 			<Card>
 				{displayedClassCourses.length === 0 ? (
@@ -287,6 +341,20 @@ export default function ClassCourseManagement() {
 							<Table>
 								<TableHeader>
 									<TableRow>
+										<TableHead className="w-10">
+											<Checkbox
+												checked={
+													selection.isAllSelected
+														? true
+														: selection.isSomeSelected
+															? "indeterminate"
+															: false
+												}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(Boolean(checked))
+												}
+											/>
+										</TableHead>
 										<TableHead>
 											{t("teacher.classCourses.table.class")}
 										</TableHead>
@@ -307,6 +375,12 @@ export default function ClassCourseManagement() {
 								<TableBody>
 									{displayedClassCourses?.map((cc) => (
 										<TableRow key={cc.id}>
+											<TableCell className="w-10">
+												<Checkbox
+													checked={selection.isSelected(cc.id)}
+													onCheckedChange={() => selection.toggle(cc.id)}
+												/>
+											</TableCell>
 											<TableCell className="font-medium">
 												{classMap.get(cc.class)?.name}
 											</TableCell>
@@ -365,58 +439,66 @@ export default function ClassCourseManagement() {
 				}
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-					<div className="space-y-2">
-						<Label htmlFor="class-select">
-							{t("teacher.classCourses.form.classLabel")}
-						</Label>
-						<Select
-							value={watch("class")}
-							onValueChange={(value) => setValue("class", value)}
-						>
-							<SelectTrigger id="class-select">
-								<SelectValue
-									placeholder={t("teacher.classCourses.form.classPlaceholder")}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{classes?.map((cls) => (
-									<SelectItem key={cls.id} value={cls.id}>
-										{cls.name} - {programMap.get(cls.program)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{errors.class ? (
-							<p className="text-destructive text-sm">{errors.class.message}</p>
-						) : null}
-					</div>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="space-y-2">
+							<Label htmlFor="class-select">
+								{t("teacher.classCourses.form.classLabel")}
+							</Label>
+							<Select
+								value={watch("class")}
+								onValueChange={(value) => setValue("class", value)}
+							>
+								<SelectTrigger id="class-select">
+									<SelectValue
+										placeholder={t(
+											"teacher.classCourses.form.classPlaceholder",
+										)}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{classes?.map((cls) => (
+										<SelectItem key={cls.id} value={cls.id}>
+											{cls.name} - {programMap.get(cls.program)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{errors.class ? (
+								<p className="text-destructive text-sm">
+									{errors.class.message}
+								</p>
+							) : null}
+						</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="course-select">
-							{t("teacher.classCourses.form.courseLabel")}
-						</Label>
-						<Select
-							value={watch("course")}
-							onValueChange={(value) => setValue("course", value)}
-						>
-							<SelectTrigger id="course-select">
-								<SelectValue
-									placeholder={t("teacher.classCourses.form.coursePlaceholder")}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								{courses?.map((course) => (
-									<SelectItem key={course.id} value={course.id}>
-										{course.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{errors.course ? (
-							<p className="text-destructive text-sm">
-								{errors.course.message}
-							</p>
-						) : null}
+						<div className="space-y-2">
+							<Label htmlFor="course-select">
+								{t("teacher.classCourses.form.courseLabel")}
+							</Label>
+							<Select
+								value={watch("course")}
+								onValueChange={(value) => setValue("course", value)}
+							>
+								<SelectTrigger id="course-select">
+									<SelectValue
+										placeholder={t(
+											"teacher.classCourses.form.coursePlaceholder",
+										)}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{courses?.map((course) => (
+										<SelectItem key={course.id} value={course.id}>
+											{course.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{errors.course ? (
+								<p className="text-destructive text-sm">
+									{errors.course.message}
+								</p>
+							) : null}
+						</div>
 					</div>
 
 					<div className="space-y-2">
@@ -464,7 +546,7 @@ export default function ClassCourseManagement() {
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? (
-								<Spinner className="mr-2" />
+								<Spinner className="mr-2 text-primary" />
 							) : editingClassCourse ? (
 								t("common.actions.saveChanges")
 							) : (

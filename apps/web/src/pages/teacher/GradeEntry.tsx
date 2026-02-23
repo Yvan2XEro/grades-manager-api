@@ -5,12 +5,12 @@ import {
 	ArrowLeft,
 	Check,
 	Download,
+	Info,
 	Lock,
 	Save,
 	Trash2,
 	Upload,
 	UserPlus,
-	Users,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -327,9 +327,7 @@ const GradeEntry: React.FC = () => {
 		enabled: Boolean(selectedExam),
 		queryFn: async () => {
 			if (!selectedExam) return [] as Delegate[];
-			return trpcClient.examGradeEditors.list.query({
-				examId: selectedExam,
-			});
+			return trpcClient.examGradeEditors.list.query({ examId: selectedExam });
 		},
 	});
 	const delegates = delegateQuery.data ?? [];
@@ -460,10 +458,7 @@ const GradeEntry: React.FC = () => {
 	const lockExamMutation = useMutation({
 		mutationFn: async () => {
 			if (!selectedExam) return;
-			await trpcClient.exams.lock.mutate({
-				examId: selectedExam,
-				lock: true,
-			});
+			await trpcClient.exams.lock.mutate({ examId: selectedExam, lock: true });
 		},
 		onSuccess: () => {
 			toast.success(t("teacher.gradeEntry.toast.lockSuccess"));
@@ -635,19 +630,18 @@ const GradeEntry: React.FC = () => {
 	}
 
 	return (
-		<div className="space-y-4">
-			{/* Compact Header */}
-			<div className="flex items-center gap-3">
+		<div className="space-y-6">
+			<div className="flex items-center gap-4">
 				<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
 					<ArrowLeft className="h-5 w-5" />
 					<span className="sr-only">Back</span>
 				</Button>
-				<div className="min-w-0 flex-1">
-					<h2 className="font-semibold text-foreground text-xl">
+				<div>
+					<h2 className="font-bold font-heading text-2xl text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
-						<p className="truncate text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-sm">
 							<span className="font-medium">
 								{courseInfo.teaching_unit_code}
 							</span>
@@ -660,60 +654,232 @@ const GradeEntry: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Selection Bar - Course & Exam side by side */}
 			<Card>
-				<CardContent className="py-4">
-					<div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-						{/* Course Selector */}
-						<div className="min-w-0 flex-1 space-y-1.5">
-							<Label
-								htmlFor="class-course"
-								className="font-medium text-muted-foreground text-xs"
+				<CardContent className="space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="class-course">
+							{t("teacher.gradeEntry.selectCourse.label")}
+						</Label>
+						<Select
+							value={courseId || undefined}
+							onValueChange={handleCourseChange}
+							disabled={availableClassCourses.length === 0}
+						>
+							<SelectTrigger
+								id="class-course"
+								data-testid="class-course-select"
 							>
-								{t("teacher.gradeEntry.selectCourse.label")}
-							</Label>
-							<Select
-								value={courseId || undefined}
-								onValueChange={handleCourseChange}
-								disabled={availableClassCourses.length === 0}
-							>
-								<SelectTrigger
-									id="class-course"
-									data-testid="class-course-select"
-									className="w-full"
-								>
-									<SelectValue
-										placeholder={t("teacher.gradeEntry.selectCourse.empty")}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{availableClassCourses.map((cc) => (
-										<SelectItem key={cc.id} value={cc.id}>
-											{cc.courseName ?? cc.course} • {cc.code}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
+								<SelectValue
+									placeholder={t("teacher.gradeEntry.selectCourse.empty")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{availableClassCourses.map((cc) => (
+									<SelectItem key={cc.id} value={cc.id}>
+										{cc.courseName ?? cc.course} • {cc.code}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{availableClassCourses.length === 0 &&
+						!classCoursesQuery.isLoading ? (
+							<p className="text-muted-foreground text-sm">
+								{t("teacher.gradeEntry.selectCourse.emptyState")}
+							</p>
+						) : null}
+					</div>
+				</CardContent>
+			</Card>
 
-						{/* Exam Selector */}
-						<div className="min-w-0 flex-1 space-y-1.5">
-							<Label
-								htmlFor="exam"
-								className="font-medium text-muted-foreground text-xs"
+			{selectedExam ? (
+				<Card>
+					<CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+						<div>
+							<CardTitle>{t("teacher.gradeEntry.delegates.title")}</CardTitle>
+							<CardDescription>
+								{t("teacher.gradeEntry.delegates.description")}
+							</CardDescription>
+						</div>
+						{canEditExam && canManageDelegates && (
+							<Dialog
+								open={isDelegateDialogOpen}
+								onOpenChange={(open) => {
+									setDelegateDialogOpen(open);
+									if (!open) {
+										setSelectedEditorProfileId("");
+									}
+								}}
 							>
+								<DialogTrigger asChild>
+									<Button variant="outline" size="sm">
+										<UserPlus className="mr-2 h-4 w-4" />
+										{t("teacher.gradeEntry.delegates.add")}
+									</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>
+											{t("teacher.gradeEntry.delegates.dialogTitle")}
+										</DialogTitle>
+										<DialogDescription>
+											{t("teacher.gradeEntry.delegates.dialogDescription")}
+										</DialogDescription>
+									</DialogHeader>
+									<div className="space-y-2">
+										<Label>
+											{t("teacher.gradeEntry.delegates.selectLabel")}
+										</Label>
+										<Select
+											value={selectedEditorProfileId || undefined}
+											onValueChange={setSelectedEditorProfileId}
+											disabled={candidateUsersQuery.isLoading}
+										>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"teacher.gradeEntry.delegates.selectPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												{candidateUsersQuery.data?.map((user) => (
+													<SelectItem key={user.id} value={user.id}>
+														{user.firstName} {user.lastName} •{" "}
+														{user.primaryEmail ??
+															t("teacher.gradeEntry.delegates.unknownEmail")}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+									<DialogFooter className="gap-2">
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => setDelegateDialogOpen(false)}
+										>
+											{t("common.actions.cancel")}
+										</Button>
+										<Button
+											type="button"
+											onClick={() =>
+												assignDelegateMutation.mutate(selectedEditorProfileId)
+											}
+											disabled={
+												!selectedEditorProfileId ||
+												assignDelegateMutation.isPending
+											}
+										>
+											{assignDelegateMutation.isPending ? (
+												<Spinner className="mr-2 h-4 w-4 text-white" />
+											) : (
+												<UserPlus className="mr-2 h-4 w-4" />
+											)}
+											{t("teacher.gradeEntry.delegates.add")}
+										</Button>
+									</DialogFooter>
+								</DialogContent>
+							</Dialog>
+						)}
+					</CardHeader>
+					<CardContent className="space-y-3">
+						{delegateQuery.isLoading ? (
+							<div className="flex items-center justify-center py-6">
+								<Spinner className="h-6 w-6 text-primary" />
+							</div>
+						) : delegates.length === 0 ? (
+							<p className="text-muted-foreground text-sm">
+								{t("teacher.gradeEntry.delegates.empty")}
+							</p>
+						) : (
+							<div className="space-y-3">
+								{delegates.map((delegate) => {
+									const isSelfDelegate =
+										Boolean(viewerProfileId) &&
+										delegate.editor.id === viewerProfileId;
+									const canRevokeThis =
+										(canManageDelegates && canEditExam) ||
+										Boolean(isSelfDelegate);
+									return (
+										<div
+											key={delegate.id}
+											className="flex flex-col gap-2 rounded-md border p-3 md:flex-row md:items-center md:justify-between"
+										>
+											<div>
+												<p className="font-medium text-sm md:text-base">
+													{delegate.editor.lastName},{" "}
+													{delegate.editor.firstName}
+												</p>
+												<p className="text-muted-foreground text-sm">
+													{delegate.editor.primaryEmail ??
+														t("teacher.gradeEntry.delegates.unknownEmail")}
+												</p>
+												<p className="text-muted-foreground text-xs">
+													{t("teacher.gradeEntry.delegates.grantedAt", {
+														date: format(new Date(delegate.createdAt), "PPp"),
+													})}
+												</p>
+												{delegate.grantedBy?.id ? (
+													<p className="text-muted-foreground text-xs">
+														{t("teacher.gradeEntry.delegates.grantedBy", {
+															name: `${delegate.grantedBy.lastName ?? ""} ${delegate.grantedBy.firstName ?? ""}`.trim(),
+														})}
+													</p>
+												) : null}
+												{!canRevokeThis &&
+												!canManageDelegates &&
+												!isSelfDelegate ? (
+													<p className="text-muted-foreground text-xs">
+														{t(
+															"teacher.gradeEntry.delegates.manageRestriction",
+															{
+																defaultValue:
+																	"Only the course owner can manage other delegates.",
+															},
+														)}
+													</p>
+												) : null}
+											</div>
+											{canRevokeThis ? (
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													onClick={() =>
+														revokeDelegateMutation.mutate(delegate.id)
+													}
+													disabled={revokeDelegateMutation.isPending}
+												>
+													<Trash2 className="mr-2 h-4 w-4" />
+													{isSelfDelegate && !canManageDelegates
+														? t("teacher.gradeEntry.delegates.revokeSelf", {
+																defaultValue: "Leave delegation",
+															})
+														: t("teacher.gradeEntry.delegates.revoke")}
+												</Button>
+											) : null}
+										</div>
+									);
+								})}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			) : null}
+
+			<Card>
+				<CardContent className="space-y-4">
+					<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+						<div className="w-full space-y-2 md:max-w-sm">
+							<Label htmlFor="exam">
 								{t("teacher.gradeEntry.selectExam.label")}
 							</Label>
 							<Select
 								value={selectedExam || undefined}
 								onValueChange={handleExamChange}
-								disabled={exams.length === 0 || !courseId}
+								disabled={exams.length === 0}
 							>
-								<SelectTrigger
-									id="exam"
-									data-testid="exam-select"
-									className="w-full"
-								>
+								<SelectTrigger id="exam" data-testid="exam-select">
 									<SelectValue
 										placeholder={t("teacher.gradeEntry.selectExam.empty")}
 									/>
@@ -722,257 +888,133 @@ const GradeEntry: React.FC = () => {
 									{exams.map((exam) => (
 										<SelectItem key={exam.id} value={exam.id}>
 											{exam.name} ({exam.percentage}%)
-											{exam.sessionType === "retake" && (
-												<span className="ml-1 text-orange-600">
-													[{t("teacher.exams.sessionType.retake")}]
-												</span>
-											)}
-											{exam.isLocked && (
-												<span className="ml-1 text-muted-foreground">
-													({t("teacher.gradeEntry.selectExam.lockedTag")})
-												</span>
-											)}
+											{exam.sessionType === "retake"
+												? ` [${t("teacher.exams.sessionType.retake")}]`
+												: ""}{" "}
+											{exam.isLocked
+												? `(${t("teacher.gradeEntry.selectExam.lockedTag")})`
+												: ""}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 						</div>
-
-						{/* Quick Actions */}
 						{selectedExam && (
-							<div className="flex flex-wrap items-center gap-2">
-								{/* Status Badges */}
-								{selectedExamInfo?.sessionType === "retake" && (
+							<div className="flex items-center gap-3">
+								{isExamLocked ? (
 									<Badge
-										variant="outline"
-										className="border-orange-300 bg-orange-50 text-orange-700"
+										variant="secondary"
+										className="flex items-center gap-2"
 									>
-										{t("teacher.exams.sessionType.retake")}
-									</Badge>
-								)}
-								{isExamLocked && (
-									<Badge variant="secondary" className="gap-1">
-										<Lock className="h-3 w-3" />
+										<Lock className="h-4 w-4" />
 										{t("teacher.gradeEntry.lockedChip")}
 									</Badge>
-								)}
-
-								{/* Delegates Button */}
-								{canManageDelegates && (
-									<Dialog
-										open={isDelegateDialogOpen}
-										onOpenChange={(open) => {
-											setDelegateDialogOpen(open);
-											if (!open) setSelectedEditorProfileId("");
-										}}
-									>
-										<DialogTrigger asChild>
-											<Button variant="outline" size="sm">
-												<Users className="mr-1.5 h-4 w-4" />
-												{delegates.length > 0 && (
-													<span className="mr-1">({delegates.length})</span>
-												)}
-												{t("teacher.gradeEntry.delegates.title")}
-											</Button>
-										</DialogTrigger>
-										<DialogContent className="max-w-lg">
-											<DialogHeader>
-												<DialogTitle>
-													{t("teacher.gradeEntry.delegates.title")}
-												</DialogTitle>
-												<DialogDescription>
-													{t("teacher.gradeEntry.delegates.description")}
-												</DialogDescription>
-											</DialogHeader>
-
-											{/* Existing Delegates */}
-											{delegates.length > 0 && (
-												<div className="max-h-48 space-y-2 overflow-y-auto">
-													{delegates.map((delegate) => {
-														const isSelfDelegate =
-															Boolean(viewerProfileId) &&
-															delegate.editor.id === viewerProfileId;
-														const canRevokeThis =
-															(canManageDelegates && canEditExam) ||
-															Boolean(isSelfDelegate);
-														return (
-															<div
-																key={delegate.id}
-																className="flex items-center justify-between rounded-md border p-2"
-															>
-																<div className="min-w-0 flex-1">
-																	<p className="truncate font-medium text-sm">
-																		{delegate.editor.lastName},{" "}
-																		{delegate.editor.firstName}
-																	</p>
-																	<p className="truncate text-muted-foreground text-xs">
-																		{delegate.editor.primaryEmail}
-																	</p>
-																</div>
-																{canRevokeThis && (
-																	<Button
-																		type="button"
-																		variant="ghost"
-																		size="sm"
-																		onClick={() =>
-																			revokeDelegateMutation.mutate(delegate.id)
-																		}
-																		disabled={revokeDelegateMutation.isPending}
-																	>
-																		<Trash2 className="h-4 w-4" />
-																	</Button>
-																)}
-															</div>
-														);
-													})}
-												</div>
-											)}
-
-											{/* Add New Delegate */}
-											{canEditExam && (
-												<div className="space-y-2 border-t pt-4">
-													<Label>
-														{t("teacher.gradeEntry.delegates.selectLabel")}
-													</Label>
-													<div className="flex gap-2">
-														<Select
-															value={selectedEditorProfileId || undefined}
-															onValueChange={setSelectedEditorProfileId}
-															disabled={candidateUsersQuery.isLoading}
-														>
-															<SelectTrigger className="flex-1">
-																<SelectValue
-																	placeholder={t(
-																		"teacher.gradeEntry.delegates.selectPlaceholder",
-																	)}
-																/>
-															</SelectTrigger>
-															<SelectContent>
-																{candidateUsersQuery.data?.map((user) => (
-																	<SelectItem key={user.id} value={user.id}>
-																		{user.firstName} {user.lastName}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-														<Button
-															type="button"
-															onClick={() =>
-																assignDelegateMutation.mutate(
-																	selectedEditorProfileId,
-																)
-															}
-															disabled={
-																!selectedEditorProfileId ||
-																assignDelegateMutation.isPending
-															}
-														>
-															<UserPlus className="h-4 w-4" />
-														</Button>
-													</div>
-												</div>
-											)}
-										</DialogContent>
-									</Dialog>
-								)}
-							</div>
-						)}
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Read-only Alert */}
-			{selectedExam && !canEditExam && (
-				<Alert variant="destructive">
-					<AlertTriangle className="h-4 w-4" />
-					<AlertTitle>{t("teacher.gradeEntry.readOnly.title")}</AlertTitle>
-					<AlertDescription>
-						{t("teacher.gradeEntry.readOnly.description")}
-					</AlertDescription>
-				</Alert>
-			)}
-
-			{/* Main Grade Entry Table */}
-			{selectedExam && rosterStudents.length > 0 ? (
-				<Card>
-					<form onSubmit={submitGrades} className="flex flex-col">
-						{/* Toolbar */}
-						<div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
-							<div className="flex items-center gap-2 text-muted-foreground text-sm">
-								<span>
-									{rosterStudents.length}{" "}
-									{t("teacher.gradeEntry.table.student").toLowerCase()}s
-								</span>
-								{Object.keys(gradesByStudent).length > 0 && (
-									<Badge variant="secondary" className="text-xs">
-										{Object.keys(gradesByStudent).length} /{" "}
-										{rosterStudents.length}
-									</Badge>
-								)}
-							</div>
-							<div className="flex items-center gap-2">
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={handleExportTemplate}
-									disabled={inputsDisabled}
-								>
-									<Download className="mr-1.5 h-4 w-4" />
-									{t("teacher.gradeEntry.actions.exportTemplate")}
-								</Button>
-								<div>
-									<input
-										type="file"
-										id="import-grades"
-										accept=".xlsx,.xls"
-										className="hidden"
-										onChange={handleImportGrades}
-										disabled={inputsDisabled}
-									/>
+								) : (
 									<Button
 										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={() =>
-											document.getElementById("import-grades")?.click()
-										}
-										disabled={inputsDisabled}
-									>
-										<Upload className="mr-1.5 h-4 w-4" />
-										{t("teacher.gradeEntry.actions.importGrades")}
-									</Button>
-								</div>
-								{!isExamLocked && canEditExam && (
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
+										variant="outline"
 										onClick={() => lockExamMutation.mutate()}
-										disabled={lockExamMutation.isPending}
+										disabled={!selectedExam || lockExamMutation.isPending}
 									>
-										<Lock className="mr-1.5 h-4 w-4" />
+										<Lock className="mr-2 h-4 w-4" />
 										{t("teacher.gradeEntry.actions.lock")}
 									</Button>
 								)}
 							</div>
-						</div>
+						)}
+					</div>
 
-						{/* Table */}
+					{selectedExam && rosterStudents.length > 0 && (
+						<div className="flex flex-wrap items-center gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleExportTemplate}
+								disabled={
+									!selectedExam || !rosterStudents.length || inputsDisabled
+								}
+							>
+								<Download className="mr-2 h-4 w-4" />
+								{t("teacher.gradeEntry.actions.exportTemplate", {
+									defaultValue: "Export Template",
+								})}
+							</Button>
+							<div>
+								<input
+									type="file"
+									id="import-grades"
+									accept=".xlsx,.xls"
+									className="hidden"
+									onChange={handleImportGrades}
+									disabled={inputsDisabled}
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() =>
+										document.getElementById("import-grades")?.click()
+									}
+									disabled={!selectedExam || inputsDisabled}
+								>
+									<Upload className="mr-2 h-4 w-4" />
+									{t("teacher.gradeEntry.actions.importGrades", {
+										defaultValue: "Import Grades",
+									})}
+								</Button>
+							</div>
+						</div>
+					)}
+
+					{selectedExam && exams.length > 0 && (
+						<Alert>
+							<Info className="h-4 w-4" />
+							<AlertTitle>{t("teacher.gradeEntry.info.title")}</AlertTitle>
+							<AlertDescription>
+								{t("teacher.gradeEntry.info.description")}
+							</AlertDescription>
+						</Alert>
+					)}
+
+					{selectedExam && !canEditExam && (
+						<Alert variant="destructive">
+							<AlertTriangle className="h-4 w-4" />
+							<AlertTitle>
+								{t("teacher.gradeEntry.readOnly.title", {
+									defaultValue: "Read-only mode",
+								})}
+							</AlertTitle>
+							<AlertDescription>
+								{t("teacher.gradeEntry.readOnly.description", {
+									defaultValue:
+										"You can view this exam but cannot modify grades.",
+								})}
+							</AlertDescription>
+						</Alert>
+					)}
+
+					{courseId && !selectedExam && (
+						<p className="text-muted-foreground text-sm">
+							{t("teacher.gradeEntry.selectExam.prompt")}
+						</p>
+					)}
+				</CardContent>
+			</Card>
+
+			{selectedExam && rosterStudents.length > 0 ? (
+				<Card>
+					<form onSubmit={submitGrades} className="flex flex-col">
 						<CardContent className="px-0">
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead className="w-36">
+										<TableHead>
 											{t("teacher.gradeEntry.table.registration")}
 										</TableHead>
 										<TableHead>
 											{t("teacher.gradeEntry.table.student")}
 										</TableHead>
-										<TableHead className="w-32">
-											{t("teacher.gradeEntry.table.score")}
-										</TableHead>
-										<TableHead className="w-28">
+										<TableHead>{t("teacher.gradeEntry.table.score")}</TableHead>
+										<TableHead>
 											{t("teacher.gradeEntry.table.status")}
 										</TableHead>
 									</TableRow>
@@ -981,17 +1023,11 @@ const GradeEntry: React.FC = () => {
 									{rosterStudents.map((student) => {
 										const fieldName = `student_${student.id}` as const;
 										const fieldError = errors[fieldName]?.message;
-										const hasGrade = gradesByStudent[student.id] !== undefined;
 										return (
 											<TableRow key={student.id}>
-												<TableCell className="font-mono text-sm">
-													{student.registrationNumber}
-												</TableCell>
+												<TableCell>{student.registrationNumber}</TableCell>
 												<TableCell>
-													<span className="font-medium">
-														{student.lastName}
-													</span>
-													, {student.firstName}
+													{student.lastName}, {student.firstName}
 												</TableCell>
 												<TableCell>
 													<div className="flex flex-col gap-1">
@@ -1002,7 +1038,7 @@ const GradeEntry: React.FC = () => {
 															min="0"
 															max="20"
 															step="0.25"
-															className="h-9 w-24"
+															className="w-28"
 															disabled={inputsDisabled}
 															{...register(`student_${student.id}`, {
 																min: {
@@ -1019,15 +1055,15 @@ const GradeEntry: React.FC = () => {
 																},
 															})}
 														/>
-														{fieldError && (
+														{fieldError ? (
 															<p className="text-destructive text-xs">
 																{fieldError}
 															</p>
-														)}
+														) : null}
 													</div>
 												</TableCell>
 												<TableCell>
-													{hasGrade ? (
+													{gradesByStudent[student.id] !== undefined ? (
 														<Badge variant="secondary" className="gap-1">
 															<Check className="h-3 w-3" />
 															{t("teacher.gradeEntry.status.graded")}
@@ -1044,10 +1080,8 @@ const GradeEntry: React.FC = () => {
 								</TableBody>
 							</Table>
 						</CardContent>
-
-						{/* Footer with Save */}
 						{!inputsDisabled && (
-							<CardFooter className="justify-end gap-2 border-t bg-muted/30">
+							<CardFooter className="justify-end gap-2 border-t">
 								<Button
 									type="submit"
 									disabled={saveGrades.isPending || lockExamMutation.isPending}
@@ -1080,25 +1114,7 @@ const GradeEntry: React.FC = () => {
 						</p>
 					</CardContent>
 				</Card>
-			) : !courseId ? (
-				<Card className="text-center">
-					<CardContent className="py-12">
-						<p className="text-muted-foreground">
-							{availableClassCourses.length === 0
-								? t("teacher.gradeEntry.selectCourse.emptyState")
-								: t("teacher.gradeEntry.selectCourse.empty")}
-						</p>
-					</CardContent>
-				</Card>
-			) : (
-				<Card className="text-center">
-					<CardContent className="py-12">
-						<p className="text-muted-foreground">
-							{t("teacher.gradeEntry.selectExam.prompt")}
-						</p>
-					</CardContent>
-				</Card>
-			)}
+			) : null}
 		</div>
 	);
 };

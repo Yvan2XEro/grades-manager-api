@@ -106,8 +106,8 @@ export function ExecutePromotionPage() {
 
 	if (!state) {
 		return (
-			<div className="container mx-auto py-8">
-				<Card>
+			<div>
+				<Card className="border-0 shadow-sm">
 					<CardContent className="pt-6">
 						<div className="py-12 text-center">
 							<p className="text-muted-foreground">
@@ -127,7 +127,7 @@ export function ExecutePromotionPage() {
 	}
 
 	return (
-		<div className="container mx-auto space-y-6 py-8">
+		<div className="space-y-6">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -140,7 +140,7 @@ export function ExecutePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-bold text-3xl tracking-tight">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						Execute Promotion
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -151,35 +151,37 @@ export function ExecutePromotionPage() {
 
 			{/* Summary */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-				<Card>
+				<Card className="border-0 shadow-sm">
 					<CardHeader>
 						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Rule
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="font-semibold">{rule?.name}</div>
+						<div className="font-semibold text-foreground">{rule?.name}</div>
 						<p className="mt-1 text-muted-foreground text-sm">
 							{rule?.description}
 						</p>
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="border-0 shadow-sm">
 					<CardHeader>
 						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Source Class
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="font-semibold">{sourceClass?.name}</div>
+						<div className="font-semibold text-foreground">
+							{sourceClass?.name}
+						</div>
 						<Badge variant="secondary" className="mt-2">
 							{state.studentIds.length} students selected
 						</Badge>
 					</CardContent>
 				</Card>
 
-				<Card className="border-primary/30 bg-primary/5">
+				<Card className="border-primary/20 bg-primary/5 shadow-sm">
 					<CardHeader>
 						<CardTitle className="font-medium text-muted-foreground text-sm">
 							Students to Promote
@@ -194,7 +196,7 @@ export function ExecutePromotionPage() {
 			</div>
 
 			{/* Target Class Selection */}
-			<Card>
+			<Card className="border-0 shadow-sm">
 				<CardHeader>
 					<CardTitle>Select Target Class</CardTitle>
 				</CardHeader>
@@ -259,7 +261,7 @@ export function ExecutePromotionPage() {
 				>
 					{applyPromotionMutation.isPending ? (
 						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
 							Applying Promotion...
 						</>
 					) : (

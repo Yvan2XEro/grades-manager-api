@@ -191,7 +191,7 @@ const TeachingUnitDetail = () => {
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div className="space-y-2">
 					<button
@@ -203,7 +203,7 @@ const TeachingUnitDetail = () => {
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
 					<div>
-						<h1 className="font-semibold text-2xl">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{isCreateMode
 								? t("admin.teachingUnits.detail.createTitle", {
 										defaultValue: "Create teaching unit",

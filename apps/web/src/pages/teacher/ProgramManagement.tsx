@@ -17,6 +17,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -25,6 +26,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
 	Dialog,
@@ -59,6 +61,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -102,11 +105,12 @@ export default function ProgramManagement() {
 		null,
 	);
 	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
-	const [searchQuery, setSearchQuery] = useState("");
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
+
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const { data: programs, isLoading } = useQuery({
 		queryKey: ["programs", searchQuery],
@@ -294,6 +298,31 @@ export default function ProgramManagement() {
 		},
 	});
 
+	const selection = useRowSelection(programs ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.programs.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["programs"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const onSubmit = (data: ProgramFormData) => {
 		if (editingProgram) {
 			updateMutation.mutate({ ...data, id: editingProgram.id });
@@ -376,16 +405,16 @@ export default function ProgramManagement() {
 	if (isLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8" />
+				<Spinner className="h-8 w-8 text-primary" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.programs.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -398,17 +427,31 @@ export default function ProgramManagement() {
 				</Button>
 			</div>
 
-			<div className="relative w-full max-w-sm">
-				<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-				<Input
-					placeholder={t("admin.programs.search", {
-						defaultValue: "Search programs...",
-					})}
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					className="pl-9"
-				/>
-			</div>
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
 
 			<Card>
 				<CardHeader>
@@ -416,14 +459,37 @@ export default function ProgramManagement() {
 					<CardDescription>{t("admin.programs.subtitle")}</CardDescription>
 				</CardHeader>
 				<CardContent>
+					<div className="relative mb-4 w-full max-w-sm">
+						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder={t("admin.programs.search", {
+								defaultValue: "Search programs...",
+							})}
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="pl-9"
+						/>
+					</div>
 					{programs && programs.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={
+												selection.isAllSelected
+													? true
+													: selection.isSomeSelected
+														? "indeterminate"
+														: false
+											}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(Boolean(checked))
+											}
+										/>
+									</TableHead>
 									<TableHead>
-										{t("admin.programs.table.code", {
-											defaultValue: "Code",
-										})}
+										{t("admin.programs.table.code", { defaultValue: "Code" })}
 									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
@@ -440,6 +506,12 @@ export default function ProgramManagement() {
 							<TableBody>
 								{programs.map((program) => (
 									<TableRow key={program.id}>
+										<TableCell className="w-10">
+											<Checkbox
+												checked={selection.isSelected(program.id)}
+												onCheckedChange={() => selection.toggle(program.id)}
+											/>
+										</TableCell>
 										<TableCell>
 											<ClipboardCopy
 												value={program.code}
@@ -530,44 +602,51 @@ export default function ProgramManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.programs.form.nameLabel")}</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.programs.form.namePlaceholder")}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t("admin.programs.form.codePlaceholder", {
-													defaultValue: "INF-LIC",
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.programs.form.nameLabel")}
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t("admin.programs.form.namePlaceholder")}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.programs.form.codeLabel", {
+													defaultValue: "Code",
 												})}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t(
+														"admin.programs.form.codePlaceholder",
+														{
+															defaultValue: "INF-LIC",
+														},
+													)}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="description"
@@ -642,7 +721,7 @@ export default function ProgramManagement() {
 						<div className="space-y-2">
 							{optionsLoading ? (
 								<div className="flex justify-center py-6">
-									<Spinner className="h-6 w-6" />
+									<Spinner className="h-6 w-6 text-primary" />
 								</div>
 							) : optionList.length ? (
 								<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
@@ -724,40 +803,42 @@ export default function ProgramManagement() {
 										</Button>
 									</div>
 								) : null}
-								<FormField
-									control={optionForm.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.name", {
-													defaultValue: "Option name",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={optionForm.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.code", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+								<div className="grid gap-3 sm:grid-cols-2">
+									<FormField
+										control={optionForm.control}
+										name="name"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>
+													{t("admin.programs.options.form.name", {
+														defaultValue: "Option name",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={optionForm.control}
+										name="code"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel required>
+													{t("admin.programs.options.form.code", {
+														defaultValue: "Code",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 								<FormField
 									control={optionForm.control}
 									name="description"

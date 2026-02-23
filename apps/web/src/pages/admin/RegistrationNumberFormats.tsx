@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Table,
 	TableBody,
@@ -14,6 +16,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -79,16 +82,41 @@ const RegistrationNumberFormats = () => {
 		onError: (error) => toast.error(error.message),
 	});
 
+	const selection = useRowSelection(formatsQuery.data ?? []);
+
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.registrationNumbers.delete.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			invalidateList();
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
+					<h1 className="font-bold font-heading text-2xl text-foreground">
 						{t("admin.registrationNumbers.title", {
 							defaultValue: "Registration number formats",
 						})}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.registrationNumbers.subtitle", {
 							defaultValue:
 								"Design templates for automatic matricule generation.",
@@ -103,6 +131,32 @@ const RegistrationNumberFormats = () => {
 				</Button>
 			</div>
 
+			<BulkActionBar
+				selectedCount={selection.selectedCount}
+				onClear={selection.clear}
+			>
+				<Button
+					variant="destructive"
+					size="sm"
+					onClick={() => {
+						if (
+							window.confirm(
+								t("common.bulkActions.confirmDelete", {
+									defaultValue:
+										"Are you sure you want to delete the selected items?",
+								}),
+							)
+						) {
+							bulkDeleteMutation.mutate([...selection.selectedIds]);
+						}
+					}}
+					disabled={bulkDeleteMutation.isPending}
+				>
+					<Trash2 className="mr-1 h-3.5 w-3.5" />
+					{t("common.actions.delete")}
+				</Button>
+			</BulkActionBar>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>
@@ -116,6 +170,20 @@ const RegistrationNumberFormats = () => {
 						<Table>
 							<TableHeader>
 								<TableRow>
+									<TableHead className="w-10">
+										<Checkbox
+											checked={
+												selection.isAllSelected
+													? true
+													: selection.isSomeSelected
+														? "indeterminate"
+														: false
+											}
+											onCheckedChange={(checked) =>
+												selection.toggleAll(Boolean(checked))
+											}
+										/>
+									</TableHead>
 									<TableHead>
 										{t("admin.registrationNumbers.table.name", {
 											defaultValue: "Name",
@@ -161,6 +229,12 @@ const RegistrationNumberFormats = () => {
 									)}
 								{formatsQuery.data?.map((format) => (
 									<TableRow key={format.id}>
+										<TableCell className="w-10">
+											<Checkbox
+												checked={selection.isSelected(format.id)}
+												onCheckedChange={() => selection.toggle(format.id)}
+											/>
+										</TableCell>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
 												{format.name}
@@ -175,11 +249,11 @@ const RegistrationNumberFormats = () => {
 										</TableCell>
 										<TableCell>{format.description || "-"}</TableCell>
 										<TableCell>
-											<div className="flex flex-wrap gap-2 text-gray-700 text-xs">
+											<div className="flex flex-wrap gap-2 text-foreground text-xs">
 												{format.definition.segments.map((segment, idx) => (
 													<span
 														key={`${format.id}-${idx}`}
-														className="rounded bg-gray-100 px-2 py-1"
+														className="rounded bg-muted px-2 py-1"
 													>
 														{describeSegment(segment)}
 													</span>

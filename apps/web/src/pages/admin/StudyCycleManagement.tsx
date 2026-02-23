@@ -16,8 +16,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -33,6 +35,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -43,6 +46,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
@@ -71,26 +76,30 @@ export default function StudyCycleManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
 	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
+	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const cyclesQuery = useQuery({
-		queryKey: ["studyCycles"],
-		queryFn: () => trpcClient.studyCycles.listCycles.query({ limit: 200 }),
+		queryKey: ["studyCycles", pagination.cursor],
+		queryFn: () =>
+			trpcClient.studyCycles.listCycles.query({
+				cursor: pagination.cursor,
+				limit: pagination.pageSize,
+			}),
 	});
 
+	const cycles = cyclesQuery.data?.items ?? [];
+	const selection = useRowSelection(cycles);
+
 	const activeCycle = useMemo(
-		() =>
-			cyclesQuery.data?.items.find((cycle) => cycle.id === activeCycleId) ??
-			null,
-		[cyclesQuery.data, activeCycleId],
+		() => cycles.find((cycle) => cycle.id === activeCycleId) ?? null,
+		[cycles, activeCycleId],
 	);
 
 	const levelsQuery = useQuery({
 		queryKey: ["cycleLevels", activeCycle?.id],
 		queryFn: () =>
 			activeCycle
-				? trpcClient.studyCycles.listLevels.query({
-						cycleId: activeCycle.id,
-					})
+				? trpcClient.studyCycles.listLevels.query({ cycleId: activeCycle.id })
 				: [],
 		enabled: Boolean(activeCycle?.id),
 	});
@@ -157,6 +166,29 @@ export default function StudyCycleManagement() {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
+	const bulkDeleteMutation = useMutation({
+		mutationFn: async (ids: string[]) => {
+			await Promise.all(
+				ids.map((id) => trpcClient.studyCycles.deleteCycle.mutate({ id })),
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["studyCycles"] });
+			selection.clear();
+			toast.success(
+				t("common.bulkActions.deleteSuccess", {
+					defaultValue: "Items deleted successfully",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("common.bulkActions.deleteError", {
+					defaultValue: "Failed to delete items",
+				}),
+			),
+	});
+
 	const updateLevelMutation = useMutation({
 		mutationFn: async (payload: LevelForm & { id?: string }) => {
 			if (payload.id) {
@@ -220,12 +252,10 @@ export default function StudyCycleManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-semibold text-2xl text-gray-900">
-						{t("admin.studyCycles.title", {
-							defaultValue: "Study cycles",
-						})}
+					<h1 className="font-bold font-heading text-2xl text-foreground">
+						{t("admin.studyCycles.title", { defaultValue: "Study cycles" })}
 					</h1>
-					<p className="text-gray-600">
+					<p className="text-muted-foreground">
 						{t("admin.studyCycles.subtitle", {
 							defaultValue:
 								"Group programs by cycle and tune the credit flow across levels.",
@@ -247,18 +277,14 @@ export default function StudyCycleManagement() {
 					}}
 				>
 					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.studyCycles.actions.add", {
-						defaultValue: "Add cycle",
-					})}
+					{t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })}
 				</Button>
 			</div>
 
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("admin.studyCycles.listTitle", {
-							defaultValue: "Cycles",
-						})}
+						{t("admin.studyCycles.listTitle", { defaultValue: "Cycles" })}
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
@@ -267,98 +293,150 @@ export default function StudyCycleManagement() {
 							<Spinner />
 						</div>
 					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>
-										{t("admin.studyCycles.table.name", {
-											defaultValue: "Name",
-										})}
-									</TableHead>
-									<TableHead>
-										{t("admin.studyCycles.table.credits", {
-											defaultValue: "Credits",
-										})}
-									</TableHead>
-									<TableHead>
-										{t("admin.studyCycles.table.duration", {
-											defaultValue: "Duration",
-										})}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("admin.studyCycles.table.actions", {
-											defaultValue: "Actions",
-										})}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{cyclesQuery.data?.items?.map((cycle) => (
-									<TableRow
-										key={cycle.id}
-										className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-gray-50"}`}
-										onClick={() => setActiveCycleId(cycle.id)}
-									>
-										<TableCell className="font-semibold text-gray-900">
-											{cycle.name}
-										</TableCell>
-										<TableCell>{cycle.totalCreditsRequired}</TableCell>
-										<TableCell>
-											{t("admin.studyCycles.table.years", {
-												defaultValue: "{{value}} years",
-												value: cycle.durationYears,
-											})}
-										</TableCell>
-										<TableCell className="text-right">
-											<Button
-												type="button"
-												variant="ghost"
-												className="text-primary-700"
-												onClick={(event) => {
-													event.stopPropagation();
-													setEditingId(cycle.id);
-													form.reset({
-														code: cycle.code,
-														name: cycle.name,
-														description: cycle.description ?? "",
-														totalCreditsRequired: cycle.totalCreditsRequired,
-														durationYears: cycle.durationYears,
-													});
-													setIsFormOpen(true);
-												}}
-											>
-												<Pencil className="mr-2 h-4 w-4" />
-												{t("common.actions.edit")}
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												className="text-primary-700"
-												onClick={(event) => {
-													event.stopPropagation();
-													setDeleteId(cycle.id);
-												}}
-											>
-												<Trash2 className="mr-2 h-4 w-4" />
-												{t("common.actions.delete")}
-											</Button>
-										</TableCell>
-									</TableRow>
-								))}
-								{!cyclesQuery.data?.items?.length && (
+						<>
+							<BulkActionBar
+								selectedCount={selection.selectedCount}
+								onClear={selection.clear}
+							>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={() => {
+										if (
+											window.confirm(
+												t("common.bulkActions.confirmDelete", {
+													defaultValue:
+														"Are you sure you want to delete the selected items?",
+												}),
+											)
+										) {
+											bulkDeleteMutation.mutate([...selection.selectedIds]);
+										}
+									}}
+									disabled={bulkDeleteMutation.isPending}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("common.actions.delete")}
+								</Button>
+							</BulkActionBar>
+							<Table>
+								<TableHeader>
 									<TableRow>
-										<TableCell
-											colSpan={4}
-											className="py-6 text-center text-gray-500 text-sm"
-										>
-											{t("admin.studyCycles.empty", {
-												defaultValue: "No study cycles yet.",
+										<TableHead className="w-10">
+											<Checkbox
+												checked={selection.isAllSelected}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(!!checked)
+												}
+												aria-label="Select all"
+											/>
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.name", {
+												defaultValue: "Name",
 											})}
-										</TableCell>
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.credits", {
+												defaultValue: "Credits",
+											})}
+										</TableHead>
+										<TableHead>
+											{t("admin.studyCycles.table.duration", {
+												defaultValue: "Duration",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("admin.studyCycles.table.actions", {
+												defaultValue: "Actions",
+											})}
+										</TableHead>
 									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+								</TableHeader>
+								<TableBody>
+									{cycles.map((cycle) => (
+										<TableRow
+											key={cycle.id}
+											className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
+											onClick={() => setActiveCycleId(cycle.id)}
+										>
+											<TableCell onClick={(e) => e.stopPropagation()}>
+												<Checkbox
+													checked={selection.isSelected(cycle.id)}
+													onCheckedChange={() => selection.toggle(cycle.id)}
+													aria-label={`Select ${cycle.name}`}
+												/>
+											</TableCell>
+											<TableCell className="font-semibold text-foreground">
+												{cycle.name}
+											</TableCell>
+											<TableCell>{cycle.totalCreditsRequired}</TableCell>
+											<TableCell>
+												{t("admin.studyCycles.table.years", {
+													defaultValue: "{{value}} years",
+													value: cycle.durationYears,
+												})}
+											</TableCell>
+											<TableCell className="text-right">
+												<Button
+													type="button"
+													variant="ghost"
+													className="text-primary-700"
+													onClick={(event) => {
+														event.stopPropagation();
+														setEditingId(cycle.id);
+														form.reset({
+															code: cycle.code,
+															name: cycle.name,
+															description: cycle.description ?? "",
+															totalCreditsRequired: cycle.totalCreditsRequired,
+															durationYears: cycle.durationYears,
+														});
+														setIsFormOpen(true);
+													}}
+												>
+													<Pencil className="mr-2 h-4 w-4" />
+													{t("common.actions.edit")}
+												</Button>
+												<Button
+													type="button"
+													variant="ghost"
+													className="text-primary-700"
+													onClick={(event) => {
+														event.stopPropagation();
+														setDeleteId(cycle.id);
+													}}
+												>
+													<Trash2 className="mr-2 h-4 w-4" />
+													{t("common.actions.delete")}
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+									{!cycles.length && (
+										<TableRow>
+											<TableCell
+												colSpan={5}
+												className="py-6 text-center text-muted-foreground text-sm"
+											>
+												{t("admin.studyCycles.empty", {
+													defaultValue: "No study cycles yet.",
+												})}
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+							<PaginationBar
+								hasPrev={pagination.hasPrev}
+								hasNext={!!cyclesQuery.data?.nextCursor}
+								onPrev={pagination.handlePrev}
+								onNext={() =>
+									pagination.handleNext(cyclesQuery.data?.nextCursor)
+								}
+								isLoading={cyclesQuery.isLoading}
+							/>
+						</>
 					)}
 				</CardContent>
 			</Card>
@@ -375,7 +453,7 @@ export default function StudyCycleManagement() {
 										cycle: activeCycle.name,
 									})}
 								</CardTitle>
-								<p className="text-gray-600 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.studyCycles.levelsSubtitle", {
 										defaultValue: "Define how students move across years.",
 									})}
@@ -407,11 +485,13 @@ export default function StudyCycleManagement() {
 							{levelsQuery.data?.map((level) => (
 								<div
 									key={level.id}
-									className="flex flex-wrap items-center justify-between rounded-lg border bg-white p-3 shadow-sm"
+									className="flex flex-wrap items-center justify-between rounded-lg border bg-card p-3 shadow-sm"
 								>
 									<div>
-										<p className="font-semibold text-gray-900">{level.name}</p>
-										<p className="text-gray-600 text-sm">
+										<p className="font-semibold text-foreground">
+											{level.name}
+										</p>
+										<p className="text-muted-foreground text-sm">
 											{t("admin.studyCycles.levelCredits", {
 												defaultValue: "Required credits: {{value}}",
 												value: level.minCredits,
@@ -449,7 +529,7 @@ export default function StudyCycleManagement() {
 								</div>
 							))}
 							{!levelsQuery.data?.length && (
-								<p className="text-gray-500 text-sm">
+								<p className="text-muted-foreground text-sm">
 									{t("admin.studyCycles.levelsEmpty", {
 										defaultValue: "No levels defined yet.",
 									})}
@@ -475,40 +555,42 @@ export default function StudyCycleManagement() {
 					</DialogHeader>
 					<Form {...form}>
 						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.name", {
-												defaultValue: "Name",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Bachelor of Science" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.code", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="BSC" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.name", {
+													defaultValue: "Name",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="Bachelor of Science" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.code", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="BSC" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={form.control}
 								name="description"
@@ -592,46 +674,48 @@ export default function StudyCycleManagement() {
 							className="space-y-4"
 							onSubmit={levelForm.handleSubmit(onLevelSubmit)}
 						>
-							<FormField
-								control={levelForm.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.name", {
-												defaultValue: "Name",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="Level 1" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={levelForm.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.code", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Input {...field} placeholder="L1" />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<FormField
+									control={levelForm.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.name", {
+													defaultValue: "Name",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="Level 1" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={levelForm.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.studyCycles.form.code", {
+													defaultValue: "Code",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Input {...field} placeholder="L1" />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 							<FormField
 								control={levelForm.control}
 								name="minCredits"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
+										<FormLabel required>
 											{t("admin.studyCycles.form.minCredits", {
 												defaultValue: "Minimum credits",
 											})}

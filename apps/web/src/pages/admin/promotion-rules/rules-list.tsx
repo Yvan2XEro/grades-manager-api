@@ -193,7 +193,7 @@ export function RulesListPage() {
 	};
 
 	return (
-		<div className="container mx-auto space-y-6 py-8">
+		<div className="space-y-6">
 			{/* Header */}
 			<div className="space-y-4">
 				<Button
@@ -207,7 +207,7 @@ export function RulesListPage() {
 				</Button>
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="font-bold text-3xl tracking-tight">
+						<h1 className="font-bold font-heading text-2xl text-foreground">
 							{t("admin.promotionRules.rulesList.title")}
 						</h1>
 						<p className="mt-1 text-muted-foreground">

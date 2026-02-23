@@ -7,6 +7,7 @@ import { academicYearsRouter } from "../modules/academic-years";
 import { classCoursesRouter } from "../modules/class-courses";
 import { classesRouter } from "../modules/classes";
 import { coursesRouter } from "../modules/courses";
+import { cycleLevelsRouter } from "../modules/cycle-levels";
 import { enrollmentsRouter } from "../modules/enrollments";
 import { examTypesRouter } from "../modules/exam-types";
 import { examsRouter } from "../modules/exams";
@@ -40,6 +41,7 @@ export const appRouter = router({
 	})),
 	programs: programsRouter,
 	studyCycles: studyCyclesRouter,
+	cycleLevels: cycleLevelsRouter,
 	programOptions: programOptionsRouter,
 	teachingUnits: teachingUnitsRouter,
 	academicYears: academicYearsRouter,

@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import type React from "react";
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
@@ -32,21 +31,16 @@ const DashboardLayout: React.FC = () => {
 	}
 
 	return (
-		<div className="flex h-screen overflow-hidden bg-gray-50">
+		<div className="flex h-dvh overflow-hidden bg-background">
 			<Sidebar />
 
-			<div className="flex flex-1 flex-col overflow-hidden">
+			<div className="flex min-h-0 flex-1 flex-col">
 				<Header />
 
-				<main className="flex-1 overflow-y-auto p-4 md:p-6">
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.3 }}
-						className="container mx-auto"
-					>
+				<main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+					<div className="px-4 py-6 md:px-8">
 						<Outlet />
-					</motion.div>
+					</div>
 				</main>
 			</div>
 		</div>

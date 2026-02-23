@@ -13,6 +13,7 @@ import { useCallback, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import {
 	Accordion,
 	AccordionContent,
@@ -556,9 +557,10 @@ export default function GradeExport() {
 			}
 
 			// Sort students alphabetically
-			const sortedStudents = [...students].sort((a, b) =>
-				a.last_name.localeCompare(b.last_name) ||
-				a.first_name.localeCompare(b.first_name),
+			const sortedStudents = [...students].sort(
+				(a, b) =>
+					a.last_name.localeCompare(b.last_name) ||
+					a.first_name.localeCompare(b.first_name),
 			);
 
 			const exportData = sortedStudents.map((student) => {
@@ -820,7 +822,11 @@ export default function GradeExport() {
 				secondHeaderRow.push("Moy UE", "Crédits", "Décision");
 			}
 
-			firstHeaderRow.push(t("admin.gradeExport.pv.table.average"), "Total Crédits", "Décision");
+			firstHeaderRow.push(
+				t("admin.gradeExport.pv.table.average"),
+				"Total Crédits",
+				"Décision",
+			);
 			secondHeaderRow.push("", "", "");
 
 			// Data rows
@@ -837,9 +843,15 @@ export default function GradeExport() {
 				for (const ueGrade of student.ueGrades) {
 					for (const cg of ueGrade.courseGrades) {
 						row.push(
-							cg.cc !== null && cg.cc !== undefined ? Number(Number(cg.cc).toFixed(2)) : "",
-							cg.ex !== null && cg.ex !== undefined ? Number(Number(cg.ex).toFixed(2)) : "",
-							cg.average !== null && cg.average !== undefined ? Number(Number(cg.average).toFixed(2)) : "",
+							cg.cc !== null && cg.cc !== undefined
+								? Number(Number(cg.cc).toFixed(2))
+								: "",
+							cg.ex !== null && cg.ex !== undefined
+								? Number(Number(cg.ex).toFixed(2))
+								: "",
+							cg.average !== null && cg.average !== undefined
+								? Number(Number(cg.average).toFixed(2))
+								: "",
 						);
 					}
 					row.push(
@@ -852,7 +864,8 @@ export default function GradeExport() {
 				}
 
 				row.push(
-					student.generalAverage !== null && student.generalAverage !== undefined
+					student.generalAverage !== null &&
+						student.generalAverage !== undefined
 						? Number(Number(student.generalAverage).toFixed(2))
 						: "",
 					student.totalCredits ?? 0,
@@ -882,10 +895,7 @@ export default function GradeExport() {
 				[t("admin.gradeExport.pv.stats.students"), totalStudents],
 				[t("admin.gradeExport.pv.stats.validated"), validated],
 				[t("admin.gradeExport.pv.stats.notValidated"), nonValidated],
-				[
-					t("admin.gradeExport.pv.stats.successRate"),
-					`${successRate}%`,
-				],
+				[t("admin.gradeExport.pv.stats.successRate"), `${successRate}%`],
 				[
 					t("admin.gradeExport.pv.stats.average"),
 					promotionAverage !== null ? promotionAverage.toFixed(2) : "-",
@@ -1035,7 +1045,11 @@ export default function GradeExport() {
 					ws[cellRef1].s = {
 						font: { bold: true, color: { rgb: "FFFFFF" } },
 						fill: { fgColor: { rgb: "4472C4" } },
-						alignment: { horizontal: "center", vertical: "center", wrapText: true },
+						alignment: {
+							horizontal: "center",
+							vertical: "center",
+							wrapText: true,
+						},
 						border: {
 							top: { style: "thin", color: { rgb: "000000" } },
 							bottom: { style: "thin", color: { rgb: "000000" } },
@@ -1160,9 +1174,10 @@ export default function GradeExport() {
 				}
 
 				// Sort students alphabetically
-				const sortedStudents = [...students].sort((a, b) =>
-					a.last_name.localeCompare(b.last_name) ||
-					a.first_name.localeCompare(b.first_name),
+				const sortedStudents = [...students].sort(
+					(a, b) =>
+						a.last_name.localeCompare(b.last_name) ||
+						a.first_name.localeCompare(b.first_name),
 				);
 
 				const exportData = sortedStudents.map((student) => {
@@ -1541,9 +1556,11 @@ export default function GradeExport() {
 	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
 
 	return (
-		<div className="space-y-6 p-6">
+		<div className="space-y-6">
 			<div className="space-y-2">
-				<h2 className="font-bold text-2xl">{t("admin.gradeExport.title")}</h2>
+				<h2 className="font-semibold text-foreground text-xl">
+					{t("admin.gradeExport.title")}
+				</h2>
 				<p className="text-muted-foreground">
 					{t("admin.gradeExport.subtitle")}
 				</p>
@@ -1600,22 +1617,12 @@ export default function GradeExport() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={semesterId}>Semestre (pour PV PDF)</Label>
-						<Select
-							value={selectedSemester || undefined}
-							onValueChange={setSelectedSemester}
-						>
-							<SelectTrigger id={semesterId}>
-								<SelectValue placeholder="Sélectionner un semestre" />
-							</SelectTrigger>
-							<SelectContent>
-								{(semesters || []).map((semester) => (
-									<SelectItem key={semester.id} value={semester.id}>
-										{semester.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<Label>Semestre (pour PV PDF)</Label>
+						<SemesterSelect
+							value={selectedSemester || null}
+							onChange={(v) => setSelectedSemester(v ?? "")}
+							placeholder="Sélectionner un semestre"
+						/>
 					</div>
 				</CardContent>
 			</Card>
@@ -1841,7 +1848,12 @@ export default function GradeExport() {
 									<Button
 										type="button"
 										onClick={handleVerbalReportExport}
-										disabled={!selectedClass || !selectedSemester || !selectedYear || isBusy}
+										disabled={
+											!selectedClass ||
+											!selectedSemester ||
+											!selectedYear ||
+											isBusy
+										}
 										className="w-full"
 									>
 										{exporting === "pv" ? (
@@ -2107,10 +2119,10 @@ export default function GradeExport() {
 							Prévisualisation HTML avant génération PDF
 						</DialogDescription>
 					</DialogHeader>
-					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-gray-100">
+					<div className="h-[80vh] w-full overflow-hidden rounded-md border bg-muted">
 						<iframe
 							title="preview"
-							className="h-full w-full bg-white"
+							className="h-full w-full bg-card"
 							sandbox="allow-same-origin"
 							srcDoc={previewHtml}
 						/>

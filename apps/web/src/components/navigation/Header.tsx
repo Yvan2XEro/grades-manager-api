@@ -1,12 +1,21 @@
-import { Bell, LogOut, Menu, X } from "lucide-react";
-import type React from "react";
+import { Bell, LogOut, Menu, PanelLeftClose, Settings } from "lucide-react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
-
+import { cn } from "@/lib/utils";
+import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "../ui/breadcrumb";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -16,13 +25,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../ui/select";
 
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
@@ -41,79 +43,131 @@ const Header: React.FC = () => {
 		}
 	};
 
+	const crumbs = useBreadcrumbs();
+
 	const userInitials =
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
 
 	return (
-		<header className="sticky top-0 z-30 border-border border-b bg-background/80 backdrop-blur">
-			<div className="flex items-center justify-between px-4 py-3 md:px-6">
-				<div className="flex items-center gap-2">
+		<header className="sticky top-0 z-30 border-border border-b bg-card/80 backdrop-blur-xl">
+			<div className="flex h-16 items-center justify-between px-4 md:px-6">
+				<div className="flex items-center gap-3">
 					<Button
 						onClick={toggleSidebar}
 						variant="ghost"
 						size="icon"
-						className="text-muted-foreground"
+						className="h-9 w-9 text-muted-foreground hover:text-foreground"
 						aria-label={t("navigation.header.toggleSidebarAria")}
 					>
 						{sidebarOpen ? (
-							<X className="h-5 w-5" />
+							<PanelLeftClose className="h-5 w-5" />
 						) : (
 							<Menu className="h-5 w-5" />
 						)}
 					</Button>
-					<div className="hidden md:block">
-						<h1 className="font-semibold text-lg">
-							{user?.role === "admin"
-								? t("navigation.header.adminDashboard")
-								: t("navigation.header.teacherDashboard")}
+					{crumbs.length > 1 ? (
+						<Breadcrumb className="hidden md:flex">
+							<BreadcrumbList>
+								{crumbs.map((crumb, index) => (
+									<React.Fragment key={crumb.label}>
+										{index > 0 && <BreadcrumbSeparator />}
+										<BreadcrumbItem>
+											{crumb.href ? (
+												<BreadcrumbLink asChild>
+													<Link to={crumb.href}>{crumb.label}</Link>
+												</BreadcrumbLink>
+											) : (
+												<BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+											)}
+										</BreadcrumbItem>
+									</React.Fragment>
+								))}
+							</BreadcrumbList>
+						</Breadcrumb>
+					) : (
+						<h1 className="hidden font-semibold text-foreground text-lg md:block">
+							{t(`navigation.header.${user?.role ?? "admin"}Dashboard`, {
+								defaultValue: "Dashboard",
+							})}
 						</h1>
-					</div>
+					)}
 				</div>
 
-				<div className="flex items-center gap-3">
-					<Select
-						value={i18n.language}
-						onValueChange={(value) => {
-							i18n.changeLanguage(value);
-							localStorage.setItem("lng", value);
-						}}
+				<div className="flex items-center gap-2">
+					<div className="flex items-center rounded-full bg-muted p-0.5">
+						{(["en", "fr"] as const).map((lang) => (
+							<button
+								key={lang}
+								type="button"
+								onClick={() => {
+									i18n.changeLanguage(lang);
+									localStorage.setItem("lng", lang);
+								}}
+								className={cn(
+									"rounded-full px-3 py-1 font-semibold text-xs uppercase transition-all duration-200",
+									i18n.language === lang
+										? "bg-background text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{lang}
+							</button>
+						))}
+					</div>
+
+					<Button
+						variant="ghost"
+						size="icon"
+						className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+						aria-label={t("navigation.header.notificationsAria")}
 					>
-						<SelectTrigger
-							aria-label={t("navigation.header.languageSelectAria")}
-						>
-							<SelectValue
-								placeholder={t("navigation.header.languageSelectPlaceholder")}
-							/>
-						</SelectTrigger>
-						<SelectContent align="end">
-							<SelectItem value="en">En</SelectItem>
-							<SelectItem value="fr">Fr</SelectItem>
-						</SelectContent>
-					</Select>
+						<Bell className="h-[18px] w-[18px]" />
+					</Button>
+
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-10 rounded-full p-0"
+								className="h-9 gap-2 rounded-full px-2"
 								aria-label={t("navigation.header.profileMenuAria")}
 							>
-								<Avatar className="size-10">
+								<Avatar className="h-8 w-8">
 									<AvatarImage
 										src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
 										alt={t("navigation.header.profileMenuAria")}
 									/>
-									<AvatarFallback>{userInitials}</AvatarFallback>
+									<AvatarFallback className="bg-primary/10 font-semibold text-primary text-xs">
+										{userInitials}
+									</AvatarFallback>
 								</Avatar>
+								<span className="hidden font-medium text-foreground text-sm md:inline">
+									{user?.firstName}
+								</span>
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuLabel>
-								{user?.firstName} {user?.lastName}
+							<DropdownMenuLabel className="font-normal">
+								<div className="flex flex-col gap-1">
+									<p className="font-medium text-sm">
+										{user?.firstName} {user?.lastName}
+									</p>
+									<p className="text-muted-foreground text-xs">{user?.email}</p>
+								</div>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								className="gap-2"
+								onSelect={(event) => {
+									event.preventDefault();
+									navigate("/settings");
+								}}
+							>
+								<Settings className="h-4 w-4" />
+								{t("settings.menuLabel")}
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="gap-2 text-destructive focus:text-destructive"
 								onSelect={(event) => {
 									event.preventDefault();
 									handleLogout();
@@ -124,24 +178,6 @@ const Header: React.FC = () => {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-muted-foreground"
-						aria-label={t("navigation.header.notificationsAria")}
-					>
-						<Bell className="h-5 w-5" />
-					</Button>
-					<Button
-						onClick={handleLogout}
-						variant="ghost"
-						size="icon"
-						className="text-muted-foreground"
-						aria-label={t("auth.logout.aria")}
-					>
-						<LogOut className="h-5 w-5" />
-					</Button>
 				</div>
 			</div>
 		</header>

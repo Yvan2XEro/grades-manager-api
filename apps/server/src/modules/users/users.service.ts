@@ -89,3 +89,37 @@ export async function updateUserProfile(id: string, data: UpdateProfileInput) {
 export async function deleteUserProfile(id: string) {
 	await domainUsersRepo.remove(id);
 }
+
+export async function getMyProfile(profileId: string) {
+	return domainUsersRepo.findById(profileId);
+}
+
+export async function updateMyProfile(
+	profileId: string,
+	data: {
+		firstName?: string;
+		lastName?: string;
+		phone?: string | null;
+		dateOfBirth?: Date | null;
+		placeOfBirth?: string | null;
+		gender?: Gender;
+		nationality?: string | null;
+	},
+) {
+	const payload: Record<string, unknown> = {};
+	if (data.firstName !== undefined) payload.firstName = data.firstName;
+	if (data.lastName !== undefined) payload.lastName = data.lastName;
+	if (data.phone !== undefined) payload.phone = data.phone ?? null;
+	if (data.dateOfBirth !== undefined)
+		payload.dateOfBirth = normalizeDate(data.dateOfBirth);
+	if (data.placeOfBirth !== undefined)
+		payload.placeOfBirth = data.placeOfBirth ?? null;
+	if (data.gender !== undefined) payload.gender = data.gender;
+	if (data.nationality !== undefined)
+		payload.nationality = data.nationality ?? null;
+	if (!Object.keys(payload).length) {
+		return domainUsersRepo.findById(profileId);
+	}
+	await domainUsersRepo.update(profileId, payload);
+	return domainUsersRepo.findById(profileId);
+}

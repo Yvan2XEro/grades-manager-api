@@ -42,14 +42,14 @@ export function RuleCard({
 	onToggleActive,
 }: RuleCardProps) {
 	return (
-		<Card className="group transition-shadow duration-200 hover:shadow-md">
+		<Card className="group border-0 shadow-sm transition-shadow duration-200 hover:shadow-md">
 			<CardHeader className="pb-3">
 				<div className="flex items-start justify-between">
 					<div className="flex-1">
 						<CardTitle className="flex items-center gap-2 text-lg">
 							{rule.name}
 							{rule.isActive ? (
-								<Badge variant="default" className="bg-green-500">
+								<Badge variant="default" className="bg-emerald-600">
 									<CheckCircle2 className="mr-1 h-3 w-3" />
 									Active
 								</Badge>
@@ -97,7 +97,10 @@ export function RuleCard({
 								</DropdownMenuItem>
 							)}
 							{onDelete && (
-								<DropdownMenuItem onClick={onDelete} className="text-red-600">
+								<DropdownMenuItem
+									onClick={onDelete}
+									className="text-destructive"
+								>
 									<Trash2 className="mr-2 h-4 w-4" />
 									Delete
 								</DropdownMenuItem>

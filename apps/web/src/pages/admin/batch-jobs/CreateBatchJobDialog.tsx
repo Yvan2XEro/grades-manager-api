@@ -187,7 +187,7 @@ export function CreateBatchJobDialog({
 					/* Preview result */
 					<div className="space-y-4">
 						{/* Summary */}
-						<div className="rounded-lg border bg-gray-50 p-4">
+						<div className="rounded-lg border bg-muted/50 p-4">
 							<h4 className="mb-2 font-medium text-sm">
 								{t("admin.batchJobs.preview.summary")}
 							</h4>
@@ -195,7 +195,7 @@ export function CreateBatchJobDialog({
 								{Object.entries(previewData.previewResult).map(
 									([key, value]) => (
 										<div key={key} className="flex justify-between">
-											<dt className="text-gray-500">{key}</dt>
+											<dt className="text-muted-foreground">{key}</dt>
 											<dd className="font-medium">{String(value)}</dd>
 										</div>
 									),
@@ -217,7 +217,7 @@ export function CreateBatchJobDialog({
 										<span className="text-sm">
 											{i + 1}. {step.name}
 										</span>
-										<span className="text-gray-500 text-xs">
+										<span className="text-muted-foreground text-xs">
 											{step.itemsTotal} items
 										</span>
 									</div>
