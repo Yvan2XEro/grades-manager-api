@@ -273,8 +273,7 @@
                     <tr>
                         <th rowspan="2">RANG</th>
                         <th rowspan="2">MAT</th>
-                        <th rowspan="2">NOM</th>
-                        <th rowspan="2">PRÉNOM</th>
+                        <th rowspan="2">NOM ET PRÉNOM</th>
 
                         {{#each ues}}
                         <th colspan="3" class="ue-header">{{code}} — {{name}} ({{credits}} cr.)</th>
@@ -298,8 +297,7 @@
                     <tr>
                         <td>{{rank}}</td>
                         <td>{{registrationNumber}}</td>
-                        <td class="student-name">{{lastName}}</td>
-                        <td class="student-firstname">{{firstName}}</td>
+                        <td class="student-name">{{lastName}} {{firstName}}</td>
 
                         {{#each ueResults}}
                         <td class="moyenne-ue">{{formatNumber ueAverage}}</td>
