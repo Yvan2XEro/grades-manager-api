@@ -8,10 +8,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { trpc } from "@/utils/trpc";
+import { trpcClient } from "@/utils/trpc";
 
 type ClassSelectProps = {
-	academicYearId: string | null;
+	academicYearId?: string | null;
 	value: string | null;
 	onChange: (value: string | null) => void;
 	disabled?: boolean;
@@ -27,12 +27,10 @@ export function ClassSelect({
 }: ClassSelectProps) {
 	const { t } = useTranslation();
 	const { data, isLoading } = useQuery({
-		queryKey: ["class-select", academicYearId],
-		enabled: Boolean(academicYearId),
+		queryKey: ["class-select", academicYearId ?? "all"],
 		queryFn: async () => {
-			if (!academicYearId) return [];
-			const { items } = await trpc.classes.list.query({
-				academicYearId,
+			const { items } = await trpcClient.classes.list.query({
+				...(academicYearId ? { academicYearId } : {}),
 				limit: 200,
 			});
 			return items;
@@ -40,7 +38,7 @@ export function ClassSelect({
 	});
 
 	useEffect(() => {
-		if (!academicYearId) {
+		if (academicYearId !== undefined && !academicYearId) {
 			onChange(null);
 		}
 	}, [academicYearId, onChange]);
@@ -49,7 +47,7 @@ export function ClassSelect({
 		<Select
 			value={value ?? "__all"}
 			onValueChange={(next) => onChange(next === "__all" ? null : next)}
-			disabled={disabled || !academicYearId || isLoading}
+			disabled={disabled || isLoading}
 		>
 			<SelectTrigger>
 				<SelectValue

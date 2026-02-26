@@ -103,19 +103,14 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 			let failed = 0;
 			for (const studentId of params.studentIds) {
 				try {
-					await getStudentPromotionFacts(
-						studentId,
-						params.academicYearId,
-						{ rebuildIfMissing: true },
-					);
+					await getStudentPromotionFacts(studentId, params.academicYearId, {
+						rebuildIfMissing: true,
+					});
 					processed++;
 				} catch (err) {
 					failed++;
 					const msg = err instanceof Error ? err.message : String(err);
-					await ctx.log(
-						"warn",
-						`Eval failed for student ${studentId}: ${msg}`,
-					);
+					await ctx.log("warn", `Eval failed for student ${studentId}: ${msg}`);
 				}
 				if ((processed + failed) % 10 === 0) {
 					await ctx.reportStepProgress(step.id, {

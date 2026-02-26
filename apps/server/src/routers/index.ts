@@ -1,4 +1,5 @@
 import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
+import { deliberationsRouter } from "@/modules/deliberations";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
 import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
 import { gradesRouter } from "@/modules/grades";
@@ -67,6 +68,7 @@ export const appRouter = router({
 	workflows: workflowsRouter,
 	notifications: notificationsRouter,
 	batchJobs: batchJobsRouter,
+	deliberations: deliberationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

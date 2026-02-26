@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procès-Verbal de Délibération</title>
+    <style>
+        @page {
+            size: {{#if styleConfig.pageSize}}{{styleConfig.pageSize}}{{else}}A4{{/if}} {{#if styleConfig.pageOrientation}}{{styleConfig.pageOrientation}}{{else}}landscape{{/if}};
+            margin: {{#if styleConfig.margins.top}}{{styleConfig.margins.top}}{{else}}8{{/if}}mm {{#if styleConfig.margins.right}}{{styleConfig.margins.right}}{{else}}8{{/if}}mm {{#if styleConfig.margins.bottom}}{{styleConfig.margins.bottom}}{{else}}8{{/if}}mm {{#if styleConfig.margins.left}}{{styleConfig.margins.left}}{{else}}8{{/if}}mm;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: {{#if styleConfig.fontFamily}}{{styleConfig.fontFamily}}{{else}}'Times New Roman', Times, serif{{/if}};
+            font-size: {{#if styleConfig.fontSize}}{{styleConfig.fontSize}}{{else}}10{{/if}}px;
+            background: #fafafa;
+            padding: 10px;
+            position: relative;
+        }
+
+        .container {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 10mm;
+            box-shadow: 0 0 15px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        {{#if styleConfig.watermark.enabled}}
+        .container::before {
+            content: '{{styleConfig.watermark.text}}';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
+            font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}120{{/if}}px;
+            font-weight: bold;
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            color: rgba(200, 200, 200, 1);
+            z-index: 0;
+            pointer-events: none;
+        }
+        {{/if}}
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #666;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: {{#if styleConfig.headerFontSize}}{{styleConfig.headerFontSize}}{{else}}15{{/if}}px;
+            color: {{#if styleConfig.primaryColor}}{{styleConfig.primaryColor}}{{else}}#2c2c2c{{/if}};
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .header h2 {
+            font-size: {{#if styleConfig.headerFontSize}}{{multiply styleConfig.headerFontSize 0.87}}{{else}}13{{/if}}px;
+            color: {{#if styleConfig.secondaryColor}}{{styleConfig.secondaryColor}}{{else}}#4a4a4a{{/if}};
+            margin-bottom: 2px;
+            font-weight: normal;
+        }
+
+        .logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin: 12px 0;
+        }
+
+        .logo-box {
+            width: 70px;
+            height: 70px;
+            border: 2px dashed #bbb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .title {
+            color: #2c2c2c;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .jury-info {
+            margin-bottom: 12px;
+            font-size: 9px;
+            text-align: center;
+        }
+
+        .jury-info strong { color: #2c2c2c; }
+
+        table {
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ccc{{/if}};
+            width: 100%;
+            border-collapse: collapse;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.75}}{{else}}7.5{{/if}}px;
+            margin-bottom: 12px;
+            table-layout: auto;
+        }
+
+        th {
+            background: {{#if styleConfig.headerBackgroundColor}}{{styleConfig.headerBackgroundColor}}{{else}}white{{/if}};
+            color: {{#if styleConfig.headerTextColor}}{{styleConfig.headerTextColor}}{{else}}#2c2c2c{{/if}};
+            padding: 4px 2px;
+            text-align: center;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#bbb{{/if}};
+            font-weight: bold;
+            line-height: 1.2;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.7}}{{else}}7{{/if}}px;
+        }
+
+        .ue-header { border-bottom: 2px solid #999; }
+
+        td {
+            padding: 3px 1px;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ddd{{/if}};
+            text-align: center;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.75}}{{else}}7.5{{/if}}px;
+            color: #333;
+            background: white;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
+        }
+
+        .student-name {
+            text-align: left;
+            font-weight: bold;
+            padding-left: 3px;
+            font-size: 7.5px;
+            color: #2c2c2c;
+            width: 8%;
+        }
+
+        .student-firstname {
+            text-align: left;
+            font-weight: bold;
+            padding-left: 3px;
+            font-size: 7.5px;
+            color: #2c2c2c;
+            width: 8%;
+        }
+
+        .decision-adm { color: #16a34a; font-weight: bold; }
+        .decision-cmp { color: #2563eb; font-weight: bold; }
+        .decision-aj { color: #dc2626; font-weight: bold; }
+        .decision-inc { color: #9ca3af; font-weight: bold; }
+
+        .decision-admitted { color: #16a34a; font-weight: bold; }
+        .decision-compensated { color: #2563eb; font-weight: bold; }
+        .decision-deferred { color: #dc2626; font-weight: bold; }
+        .decision-repeat { color: #ea580c; font-weight: bold; }
+        .decision-excluded { color: #7c2d12; font-weight: bold; }
+        .decision-pending { color: #9ca3af; font-weight: bold; }
+
+        .moyenne-finale { font-weight: bold; border-left: 2px solid #999; }
+        .moyenne-ue { font-weight: bold; }
+
+        .taux-reussite-row { background: white; font-weight: bold; }
+        .taux-reussite-row td { text-align: center; font-size: 11px; padding: 8px; }
+
+        .bottom-section { display: flex; justify-content: space-between; gap: 20px; margin-top: 12px; }
+        .legend-info-wrapper { display: flex; gap: 15px; }
+
+        .info-box { border: 1px solid #ccc; padding: 10px; font-size: 9px; min-width: 200px; }
+        .info-box div { margin-bottom: 5px; }
+        .info-box strong { color: #2c2c2c; }
+
+        .legend-table { border: 1px solid #ccc; border-collapse: collapse; font-size: 7px; width: auto; }
+        .legend-table td { border: 1px solid #ddd; padding: 3px 6px; text-align: left; }
+        .legend-table td:nth-child(odd) { font-weight: bold; color: #2c2c2c; width: 40px; }
+
+        .signatures { display: flex; justify-content: space-between; margin-top: 30px; }
+        .signature-box { text-align: center; width: 30%; }
+        .signature-line { font-size: 10px; color: #2c2c2c; font-weight: normal; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 8mm; width: 297mm; min-height: 210mm; }
+            .container::before { color: rgba(200, 200, 200, 0.15); }
+            table { border: 1px solid #ccc; font-size: 7.5px; }
+            th { font-size: 7px; }
+            td { font-size: 7.5px; color: #333; }
+            .logo-box { border-style: solid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="header">
+                {{#if headerConfig.showInstitutionName}}
+                    {{#if university_name_fr}}
+                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                    {{/if}}
+                {{/if}}
+                {{#if headerConfig.showFacultyName}}
+                    {{#if faculty_name_fr}}
+                    <h2>{{faculty_name_fr}}</h2>
+                    {{/if}}
+                {{/if}}
+                {{#if headerConfig.showInstitutionName}}
+                <h2>{{name_fr}} / {{name_en}}</h2>
+                {{/if}}
+
+                {{#if headerConfig.showLogo}}
+                <div class="logos">
+                    {{#if university_logo_url}}
+                    <div class="logo-box">
+                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                    {{/if}}
+                    {{#if logo_url}}
+                    <div class="logo-box">
+                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                    {{else}}
+                    <div class="logo-box">
+                        <div>LOGO</div>
+                        <div>INSTITUTION</div>
+                    </div>
+                    {{/if}}
+                </div>
+                {{/if}}
+
+                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
+                    {{#if university_contact_email}}Email: {{university_contact_email}}{{/if}}
+                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}{{contact_email}}{{/if}}
+                    {{#if university_postal_box}}<br>BP: {{university_postal_box}}{{/if}}
+                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}{{postal_box}}{{/if}}
+                </div>
+            </div>
+
+            <div class="title">
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DE DÉLIBÉRATION{{/if}}<br>
+                {{#if deliberation.semesterName}}{{deliberation.semesterName}} - {{/if}}ANNÉE ACADÉMIQUE {{deliberation.academicYearName}}<br>
+                ({{deliberation.programName}} — {{deliberation.className}})
+                {{#if deliberation.date}}<br><span style="font-weight:normal; font-size:9px;">Date: {{deliberation.date}}</span>{{/if}}
+            </div>
+
+            {{#if jury.president}}
+            <div class="jury-info">
+                <strong>Président du jury:</strong> {{jury.president.name}} ({{jury.president.role}})
+                {{#if jury.members.length}}
+                &nbsp;|&nbsp; <strong>Membres:</strong>
+                {{#each jury.members}}{{#if @index}}, {{/if}}{{name}}{{/each}}
+                {{/if}}
+            </div>
+            {{/if}}
+
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">RANG</th>
+                        <th rowspan="2">MAT</th>
+                        <th rowspan="2">NOM</th>
+                        <th rowspan="2">PRÉNOM</th>
+
+                        {{#each ues}}
+                        <th colspan="3" class="ue-header">{{code}} — {{name}} ({{credits}} cr.)</th>
+                        {{/each}}
+
+                        <th rowspan="2">MOY<br>GEN</th>
+                        <th rowspan="2">CRÉDITS</th>
+                        <th rowspan="2">DÉCISION</th>
+                        <th rowspan="2">MENTION</th>
+                    </tr>
+                    <tr>
+                        {{#each ues}}
+                        <th>MOY</th>
+                        <th>DEC</th>
+                        <th>CRE</th>
+                        {{/each}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each students}}
+                    <tr>
+                        <td>{{rank}}</td>
+                        <td>{{registrationNumber}}</td>
+                        <td class="student-name">{{lastName}}</td>
+                        <td class="student-firstname">{{firstName}}</td>
+
+                        {{#each ueResults}}
+                        <td class="moyenne-ue">{{formatNumber ueAverage}}</td>
+                        <td class="decision-{{decision}}">{{decision}}</td>
+                        <td>{{creditsEarned}}</td>
+                        {{/each}}
+
+                        <td class="moyenne-finale">{{formatNumber generalAverage}}</td>
+                        <td>{{totalCreditsEarned}} / {{totalCreditsPossible}}</td>
+                        <td class="decision-{{finalDecision}}">{{finalDecisionLabel}}</td>
+                        <td>{{mentionLabel}}</td>
+                    </tr>
+                    {{/each}}
+
+                    <tr class="taux-reussite-row">
+                        <td colspan="1000" style="border-top: 2px solid #666;">
+                            <strong>Taux de Réussite: {{stats.successRate}}% — Admis: {{stats.admittedCount}} | Compensés: {{stats.compensatedCount}} | Ajournés: {{stats.deferredCount}} | En attente: {{stats.pendingCount}}</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="bottom-section">
+                <div class="legend-info-wrapper">
+                    <table class="legend-table">
+                        <tr>
+                            <td>ADM:</td>
+                            <td>Acquise</td>
+                            <td>CMP:</td>
+                            <td>Compensée</td>
+                        </tr>
+                        <tr>
+                            <td>AJ:</td>
+                            <td>Non acquise (Ajournée)</td>
+                            <td>INC:</td>
+                            <td>Incomplète</td>
+                        </tr>
+                        <tr>
+                            <td>MOY:</td>
+                            <td>Moyenne</td>
+                            <td>CRE:</td>
+                            <td>Crédits</td>
+                        </tr>
+                        <tr>
+                            <td>MAT:</td>
+                            <td>Matricule</td>
+                            <td>DEC:</td>
+                            <td>Décision</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box">
+                        <div><strong>Programme:</strong> {{deliberation.programName}}</div>
+                        <div><strong>Classe:</strong> {{deliberation.className}}</div>
+                        {{#if deliberation.semesterName}}
+                        <div><strong>Semestre:</strong> {{deliberation.semesterName}}</div>
+                        {{/if}}
+                        <div><strong>Année académique:</strong> {{deliberation.academicYearName}}</div>
+                        <div><strong>Moyenne générale de la classe:</strong> {{formatNumber stats.classAverage}}</div>
+                        <div><strong>Étudiants inscrits:</strong> {{stats.totalStudents}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="signatures">
+                {{#each signatures}}
+                <div class="signature-box">
+                    <div class="signature-line">{{position}}</div>
+                    {{#if name}}
+                    <div class="signature-name">{{name}}</div>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

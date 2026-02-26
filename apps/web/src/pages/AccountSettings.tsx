@@ -462,23 +462,20 @@ export default function AccountSettings() {
 													reader.readAsDataURL(file);
 												},
 											);
-											const stored =
-												await trpcClient.files.uploadAvatar.mutate({
+											const stored = await trpcClient.files.uploadAvatar.mutate(
+												{
 													filename: file.name,
 													mimeType: file.type,
 													base64,
-												});
+												},
+											);
 											await authClient.updateUser({
 												image: stored.url,
 											});
 											await refetchSession();
-											toast.success(
-												t("settings.account.avatar.success"),
-											);
+											toast.success(t("settings.account.avatar.success"));
 										} catch {
-											toast.error(
-												t("settings.account.avatar.error"),
-											);
+											toast.error(t("settings.account.avatar.error"));
 										} finally {
 											setAvatarUploading(false);
 											e.target.value = "";
@@ -538,7 +535,7 @@ export default function AccountSettings() {
 									{session?.user?.email ?? user?.email}
 								</p>
 								<div className="flex items-end gap-2">
-									<div className="flex-1 max-w-sm">
+									<div className="max-w-sm flex-1">
 										<label
 											className="font-medium text-sm"
 											htmlFor="new-email-input"
@@ -558,8 +555,7 @@ export default function AccountSettings() {
 										disabled={
 											!newEmail.trim() ||
 											emailChanging ||
-											newEmail.trim() ===
-												(session?.user?.email ?? user?.email)
+											newEmail.trim() === (session?.user?.email ?? user?.email)
 										}
 										onClick={async () => {
 											setEmailChanging(true);
@@ -569,15 +565,11 @@ export default function AccountSettings() {
 													callbackURL: "/settings",
 												});
 												toast.success(
-													t(
-														"settings.account.email.verificationSent",
-													),
+													t("settings.account.email.verificationSent"),
 												);
 												setNewEmail("");
 											} catch {
-												toast.error(
-													t("settings.account.email.error"),
-												);
+												toast.error(t("settings.account.email.error"));
 											} finally {
 												setEmailChanging(false);
 											}

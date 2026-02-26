@@ -759,7 +759,9 @@
 				"retakeEligibility": "Retake eligibility",
 				"rules": "Rule center",
 				"registrationNumbers": "Registration numbers",
-				"promotionRules": "Promotion rules"
+				"promotionRules": "Promotion rules",
+				"deliberations": "Deliberations",
+				"deliberationRules": "Deliberation rules"
 			},
 			"groups": {
 				"overview": "Overview",
@@ -1072,7 +1074,8 @@
 			},
 			"types": {
 				"creditLedger.recompute": "Credit Ledger Recomputation",
-				"studentFacts.refreshClass": "Student Facts Refresh (Class)"
+				"studentFacts.refreshClass": "Student Facts Refresh (Class)",
+				"academicYear.setup": "Academic Year Setup"
 			},
 			"preview": {
 				"title": "Preview Batch Job",
@@ -1143,6 +1146,17 @@
 				"endDate": "End date is required",
 				"name": "Name must be at least 2 characters",
 				"order": "End date must be after start date"
+			},
+			"setup": {
+				"button": "Setup from year",
+				"title": "Academic year setup",
+				"description": "Copy classes and course assignments from a previous year into this one.",
+				"sourceYear": "Source year",
+				"sourceYearPlaceholder": "Select the year to copy from",
+				"previewSummary": "{{classCount}} classes and {{classCourseCount}} course assignments will be copied from \"{{sourceYearName}}\" to \"{{targetYearName}}\".",
+				"confirm": "Start setup",
+				"success": "Academic year setup started",
+				"noClasses": "No classes found in the selected year"
 			}
 		},
 		"classCourses": {
@@ -1233,6 +1247,8 @@
 				"academicYear": "Academic year",
 				"cycle": "Cycle / level",
 				"option": "Option",
+				"optionSemester": "Option / Semester",
+				"credits": "Credits",
 				"students": "Students"
 			},
 			"export": {
@@ -1269,6 +1285,8 @@
 				"codeLabel": "Code",
 				"codePlaceholder": "INF11-S1-01",
 				"labelLabel": "Generated class label",
+				"totalCreditsLabel": "Total credits",
+				"totalCreditsPlaceholder": "e.g. 30",
 				"programCycleSummary": "Cycle : {{value}}"
 			},
 			"toast": {
@@ -2814,6 +2832,202 @@
 				"overrideSuccess": "Override appliquée avec succès",
 				"removeError": "Could not remove override",
 				"removeSuccess": "Override supprimée"
+			}
+		},
+		"deliberations": {
+			"title": "Deliberations",
+			"subtitle": "Manage jury deliberations for classes",
+			"actions": {
+				"create": "New deliberation",
+				"open": "Open",
+				"close": "Close",
+				"sign": "Sign",
+				"reopen": "Reopen",
+				"compute": "Compute results",
+				"computing": "Computing...",
+				"export": "Export diplomation",
+				"exporting": "Exporting...",
+				"override": "Override decision",
+				"delete": "Delete"
+			},
+			"columns": {
+				"class": "Class",
+				"semester": "Semester",
+				"year": "Academic year",
+				"type": "Type",
+				"status": "Status",
+				"date": "Date",
+				"actions": "Actions",
+				"createdAt": "Created"
+			},
+			"status": {
+				"draft": "Draft",
+				"open": "Open",
+				"closed": "Closed",
+				"signed": "Signed"
+			},
+			"type": {
+				"semester": "Semester",
+				"annual": "Annual",
+				"retake": "Retake"
+			},
+			"decision": {
+				"admitted": "Admitted",
+				"compensated": "Compensated",
+				"deferred": "Deferred",
+				"repeat": "Repeat",
+				"excluded": "Excluded",
+				"pending": "Pending"
+			},
+			"mention": {
+				"passable": "Passable",
+				"assez_bien": "Fairly good",
+				"bien": "Good",
+				"tres_bien": "Very good",
+				"excellent": "Excellent"
+			},
+			"empty": {
+				"title": "No deliberations yet",
+				"description": "Create a deliberation to start evaluating student results for a class."
+			},
+			"form": {
+				"createTitle": "Create a deliberation",
+				"editTitle": "Edit deliberation",
+				"class": "Class",
+				"classPlaceholder": "Select a class",
+				"semester": "Semester",
+				"semesterPlaceholder": "Leave empty for annual",
+				"academicYear": "Academic year",
+				"type": "Type",
+				"typePlaceholder": "Select a type",
+				"deliberationDate": "Deliberation date",
+				"president": "President",
+				"presidentPlaceholder": "Select a president",
+				"juryMembers": "Jury members"
+			},
+			"detail": {
+				"back": "Back to deliberations",
+				"students": "Student results",
+				"noResults": "No results computed yet. Open the deliberation and compute results.",
+				"rank": "Rank",
+				"student": "Student",
+				"registrationNumber": "Reg. No.",
+				"average": "General avg.",
+				"credits": "Credits",
+				"creditsFormat": "{{earned}}/{{total}}",
+				"decision": "Decision",
+				"mention": "Mention",
+				"overridden": "Overridden",
+				"jury": "Jury composition",
+				"president": "President",
+				"noPresident": "Not assigned",
+				"stats": "Statistics",
+				"successRate": "Success rate",
+				"classAverage": "Class average",
+				"totalStudents": "Total students",
+				"lifecycle": "Lifecycle",
+				"openedAt": "Opened at",
+				"closedAt": "Closed at",
+				"signedAt": "Signed at",
+				"signedBy": "Signed by",
+				"notYet": "Not yet"
+			},
+			"override": {
+				"title": "Override decision",
+				"currentDecision": "Current decision",
+				"newDecision": "New decision",
+				"reason": "Reason",
+				"reasonPlaceholder": "Explain why you are overriding this decision..."
+			},
+			"logs": {
+				"title": "Activity log",
+				"created": "Deliberation created",
+				"opened": "Deliberation opened",
+				"computed": "Results computed",
+				"override_decision": "Decision overridden",
+				"closed": "Deliberation closed",
+				"signed": "Deliberation signed",
+				"reopened": "Deliberation reopened",
+				"exported": "Diplomation exported",
+				"promoted": "Students promoted"
+			},
+			"promote": {
+				"button": "Promote admitted",
+				"title": "Promote admitted students",
+				"description": "{{count}} admitted/compensated students will be enrolled in the target class",
+				"targetAcademicYear": "Target academic year",
+				"targetAcademicYearPlaceholder": "Select the next academic year",
+				"targetClass": "Target class",
+				"targetClassPlaceholder": "Select destination class",
+				"confirm": "Promote",
+				"success": "{{count}} students promoted successfully",
+				"noAdmitted": "No admitted students to promote"
+			},
+			"ueDecision": {
+				"ADM": "Acquired",
+				"CMP": "Compensated",
+				"AJ": "Failed",
+				"INC": "Incomplete"
+			},
+			"toast": {
+				"createSuccess": "Deliberation created",
+				"updateSuccess": "Deliberation updated",
+				"deleteSuccess": "Deliberation deleted",
+				"transitionSuccess": "Status updated",
+				"computeSuccess": "Results computed successfully",
+				"overrideSuccess": "Decision overridden",
+				"exportSuccess": "Export ready",
+				"error": "An error occurred"
+			},
+			"confirm": {
+				"delete": "Are you sure you want to delete this deliberation?",
+				"close": "Close this deliberation? Students will no longer be modifiable.",
+				"sign": "Sign this deliberation? This marks it as officially validated."
+			},
+			"rules": {
+				"title": "Deliberation rules",
+				"subtitle": "Configure rules that automatically determine student decisions",
+				"create": "New rule",
+				"name": "Rule name",
+				"namePlaceholder": "e.g. Admission if average >= 10",
+				"description": "Description",
+				"category": "Category",
+				"categoryPlaceholder": "Select a category",
+				"categories": {
+					"admission": "Admission",
+					"compensation": "Compensation",
+					"deferral": "Deferral",
+					"repeat": "Repeat",
+					"exclusion": "Exclusion"
+				},
+				"decision": "Decision produced",
+				"priority": "Priority",
+				"priorityHelp": "Lower number = evaluated first within the category",
+				"program": "Program scope",
+				"programPlaceholder": "All programs",
+				"cycleLevel": "Cycle level scope",
+				"cycleLevelPlaceholder": "All levels",
+				"deliberationType": "Deliberation type scope",
+				"deliberationTypePlaceholder": "All types",
+				"ruleset": "Rule definition (JSON)",
+				"rulesetHelp": "json-rules-engine format",
+				"active": "Active",
+				"inactive": "Inactive",
+				"empty": {
+					"title": "No rules configured",
+					"description": "Add rules to automatically compute decisions during deliberations."
+				},
+				"toast": {
+					"createSuccess": "Rule created",
+					"updateSuccess": "Rule updated",
+					"deleteSuccess": "Rule deleted",
+					"error": "An error occurred"
+				}
+			},
+			"filters": {
+				"allStatuses": "All statuses",
+				"allTypes": "All types",
+				"allYears": "All years"
 			}
 		}
 	},

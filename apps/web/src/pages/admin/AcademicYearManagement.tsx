@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
-import { Calendar, Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Calendar, Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,7 +44,13 @@ import {
 import { Input } from "../../components/ui/input";
 import { Spinner } from "../../components/ui/spinner";
 import { Switch } from "../../components/ui/switch";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "../../components/ui/tooltip";
 import { trpcClient } from "../../utils/trpc";
+import AcademicYearSetupDialog from "./AcademicYearSetupDialog";
 
 const buildAcademicYearSchema = (t: TFunction) =>
 	z
@@ -82,6 +88,7 @@ const AcademicYearManagement: React.FC = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+	const [setupYear, setSetupYear] = useState<AcademicYear | null>(null);
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
@@ -440,6 +447,21 @@ const AcademicYearManagement: React.FC = () => {
 												</div>
 											) : (
 												<div className="flex items-center space-x-2">
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																type="button"
+																variant="ghost"
+																size={"icon"}
+																onClick={() => setSetupYear(year)}
+															>
+																<Copy className="h-4 w-4" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>
+															{t("admin.academicYears.setup.button")}
+														</TooltipContent>
+													</Tooltip>
 													<Button
 														type="button"
 														variant="ghost"
@@ -574,6 +596,14 @@ const AcademicYearManagement: React.FC = () => {
 					</form>
 				</Form>
 			</FormModal>
+
+			{setupYear && (
+				<AcademicYearSetupDialog
+					open={!!setupYear}
+					onOpenChange={(o) => !o && setSetupYear(null)}
+					targetYear={{ id: setupYear.id, name: setupYear.name }}
+				/>
+			)}
 		</div>
 	);
 };

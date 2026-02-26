@@ -308,9 +308,7 @@ export function ExecutePromotionPage() {
 					batchPromotionMutation.isPending ? (
 						<>
 							<Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
-							{useBatch
-								? "Starting Batch Job..."
-								: "Applying Promotion..."}
+							{useBatch ? "Starting Batch Job..." : "Applying Promotion..."}
 						</>
 					) : (
 						<>
@@ -349,8 +347,8 @@ export function ExecutePromotionPage() {
 							{useBatch && (
 								<>
 									<br />
-									This will run as a <strong>background batch job</strong>{" "}
-									since there are more than {BATCH_THRESHOLD} students.
+									This will run as a <strong>background batch job</strong> since
+									there are more than {BATCH_THRESHOLD} students.
 								</>
 							)}
 							<br />

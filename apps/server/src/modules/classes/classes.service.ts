@@ -232,7 +232,16 @@ export async function listClasses(
 	opts: Parameters<typeof repo.list>[1],
 	institutionId: string,
 ) {
-	return repo.list(institutionId, opts);
+	const result = await repo.list(institutionId, opts);
+	const classIds = result.items.map((c) => c.id);
+	const assignedCreditsMap = await repo.getAssignedCredits(classIds);
+	return {
+		...result,
+		items: result.items.map((c) => ({
+			...c,
+			assignedCredits: assignedCreditsMap[c.id] ?? 0,
+		})),
+	};
 }
 
 export async function getClassById(id: string, institutionId: string) {

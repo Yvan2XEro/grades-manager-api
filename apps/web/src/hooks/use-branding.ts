@@ -54,16 +54,8 @@ export function useBranding() {
 	return {
 		...query,
 		branding: data,
-		institutionName: data
-			? lang === "fr"
-				? data.nameFr
-				: data.nameEn
-			: null,
-		slogan: data
-			? lang === "fr"
-				? data.sloganFr
-				: data.sloganEn
-			: null,
+		institutionName: data ? (lang === "fr" ? data.nameFr : data.nameEn) : null,
+		slogan: data ? (lang === "fr" ? data.sloganFr : data.sloganEn) : null,
 		logoUrl: resolveUrl(data?.logoUrl),
 		coverImageUrl: resolveUrl(data?.coverImageUrl),
 		shortName: data?.shortName ?? null,

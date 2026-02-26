@@ -7,6 +7,7 @@ export const exportTypeSchema = z.enum([
 	"pv", // Semester minutes export
 	"evaluation", // Single evaluation publication
 	"ue", // Teaching Unit (UE) results
+	"deliberation", // Deliberation report
 ]);
 
 export type ExportType = z.infer<typeof exportTypeSchema>;
@@ -68,6 +69,24 @@ export const previewUESchema = generateUESchema.omit({ format: true });
 
 export type PreviewPVInput = z.infer<typeof previewPVSchema>;
 export type PreviewUEInput = z.infer<typeof previewUESchema>;
+
+/** Input schema for generating a deliberation export */
+export const generateDeliberationSchema = z.object({
+	deliberationId: z.string(),
+	format: exportFormatSchema.default("pdf"),
+	templateId: z.string().optional(),
+});
+
+export type GenerateDeliberationInput = z.infer<
+	typeof generateDeliberationSchema
+>;
+
+export const previewDeliberationSchema = generateDeliberationSchema.omit({
+	format: true,
+});
+export type PreviewDeliberationInput = z.infer<
+	typeof previewDeliberationSchema
+>;
 
 export const previewTemplateSourceSchema = z.object({
 	type: exportTypeSchema,

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
@@ -392,6 +393,9 @@ export default function StudentManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 
+	const [academicYearFilter, setAcademicYearFilter] = useState<string | null>(
+		null,
+	);
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
 	const pagination = useCursorPagination({ pageSize: 20 });
@@ -416,9 +420,11 @@ export default function StudentManagement() {
 	const [ledgerStudent, setLedgerStudent] = useState<StudentRow | null>(null);
 
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
+		queryKey: ["classes", academicYearFilter],
 		queryFn: async () => {
-			const result = await trpcClient.classes.list.query({});
+			const result = await trpcClient.classes.list.query({
+				...(academicYearFilter ? { academicYearId: academicYearFilter } : {}),
+			});
 			return (result?.items || []) as Class[];
 		},
 	});
@@ -445,7 +451,6 @@ export default function StudentManagement() {
 		}),
 		enabled: Boolean(ledgerStudent),
 	});
-
 
 	const studentSchema = useMemo(() => buildStudentSchema(t), [t]);
 	const externalAdmissionSchema = useMemo(
@@ -764,6 +769,15 @@ export default function StudentManagement() {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-3">
+				<AcademicYearSelect
+					value={academicYearFilter}
+					onChange={(v) => {
+						setAcademicYearFilter(v);
+						setClassFilter("all");
+						pagination.reset();
+					}}
+					className="min-w-[200px]"
+				/>
 				<Select
 					value={classFilter}
 					onValueChange={(value) => {
@@ -955,8 +969,7 @@ export default function StudentManagement() {
 												{ledgerSummaryQuery.data.creditsEarned >=
 												ledgerSummaryQuery.data.requiredCredits
 													? t("admin.students.ledger.ready", {
-															defaultValue:
-																"Student is eligible for promotion",
+															defaultValue: "Student is eligible for promotion",
 														})
 													: t("admin.students.ledger.notReady", {
 															defaultValue:

@@ -1727,9 +1727,8 @@ async function seedClassCourses(
 				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
-				target: schema.classCourses.code,
+				target: [schema.classCourses.code, schema.classCourses.class],
 				set: {
-					class: classRecord.id,
 					course: courseRecord.id,
 					teacher: teacher.id,
 					semesterId,

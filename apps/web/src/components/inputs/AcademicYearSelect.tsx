@@ -18,6 +18,7 @@ type AcademicYearSelectProps = {
 	placeholder?: string;
 	autoSelectActive?: boolean;
 	className?: string;
+	excludeIds?: string[];
 };
 
 export function AcademicYearSelect({
@@ -27,12 +28,16 @@ export function AcademicYearSelect({
 	placeholder,
 	autoSelectActive = true,
 	className,
+	excludeIds,
 }: AcademicYearSelectProps) {
 	const { t } = useTranslation();
 	const yearQuery = useQuery({
 		...trpc.academicYears.list.queryOptions({}),
 	});
-	const years = yearQuery.data?.items ?? [];
+	const allYears = yearQuery.data?.items ?? [];
+	const years = excludeIds
+		? allYears.filter((y) => !excludeIds.includes(y.id))
+		: allYears;
 	const activeYearId = useMemo(
 		() => years.find((year) => year.isActive)?.id ?? null,
 		[years],

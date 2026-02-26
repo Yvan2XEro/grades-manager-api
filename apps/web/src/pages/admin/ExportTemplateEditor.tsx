@@ -268,6 +268,7 @@ export default function ExportTemplateEditor() {
 							<SelectItem value="pv">PV (Procès-Verbal)</SelectItem>
 							<SelectItem value="evaluation">Evaluation</SelectItem>
 							<SelectItem value="ue">UE (Teaching Unit)</SelectItem>
+							<SelectItem value="deliberation">Délibération</SelectItem>
 						</SelectContent>
 					</Select>
 					<p className="text-muted-foreground text-xs">

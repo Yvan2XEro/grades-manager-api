@@ -97,7 +97,7 @@ const AuthLayout: React.FC = () => {
 					)}
 					{!logoUrl && institutionName && (
 						<div>
-							<p className="font-semibold text-xl text-white leading-tight">
+							<p className="font-semibold text-white text-xl leading-tight">
 								{institutionName}
 							</p>
 							{shortName && (

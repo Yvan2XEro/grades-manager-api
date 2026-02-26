@@ -1,8 +1,10 @@
 import Handlebars from "handlebars";
 import puppeteer from "puppeteer";
 import { db } from "../../db";
+import type { DiplomationExportData } from "../deliberations/deliberations.types";
 import { ExportsRepo } from "./exports.repo";
 import type {
+	GenerateDeliberationInput,
 	GenerateEvaluationInput,
 	GeneratePVInput,
 	GenerateUEInput,
@@ -232,8 +234,163 @@ export class ExportsService {
 		};
 	}
 
+	/** Generate deliberation export (PDF or HTML) */
+	async generateDeliberation(
+		input: GenerateDeliberationInput,
+		diplomationData: DiplomationExportData,
+	) {
+		const config = await this.getConfig();
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"deliberation",
+			input.templateId,
+		);
+
+		const templateData = this.processDeliberationData(
+			diplomationData,
+			config,
+			templateConfig,
+		);
+
+		const html = this.renderTemplate(
+			"deliberation",
+			templateData,
+			templateConfig,
+		);
+
+		if (input.format === "html") {
+			return { content: html, mimeType: "text/html" };
+		}
+
+		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
+		const pdfBuffer = Buffer.from(pdf);
+		return {
+			content: pdfBuffer.toString("base64"),
+			mimeType: "application/pdf",
+		};
+	}
+
+	/** Return structured deliberation data for frontend Excel export */
+	async getDeliberationDataStructured(diplomationData: DiplomationExportData) {
+		const config = await this.getConfig();
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"deliberation",
+		);
+		return this.processDeliberationData(
+			diplomationData,
+			config,
+			templateConfig,
+		);
+	}
+
+	/** Process DiplomationExportData into template-ready format */
+	private processDeliberationData(
+		data: DiplomationExportData,
+		config: ReturnType<typeof loadExportConfig>,
+		_templateConfig: TemplateConfiguration,
+	) {
+		const decisionLabels: Record<string, string> = {
+			admitted: "Admis",
+			compensated: "Compensé",
+			deferred: "Ajourné",
+			repeat: "Redoublant",
+			excluded: "Exclu",
+			pending: "En attente",
+		};
+
+		const mentionLabels: Record<string, string> = {
+			excellent: "Excellent",
+			tres_bien: "Très Bien",
+			bien: "Bien",
+			assez_bien: "Assez Bien",
+			passable: "Passable",
+		};
+
+		// Collect unique UEs across all students
+		const ueMap = new Map<
+			string,
+			{ id: string; code: string; name: string; credits: number }
+		>();
+		for (const student of data.students) {
+			for (const ue of student.ueResults) {
+				if (!ueMap.has(ue.ueId)) {
+					ueMap.set(ue.ueId, {
+						id: ue.ueId,
+						code: ue.ueCode,
+						name: ue.ueName,
+						credits: ue.ueCredits,
+					});
+				}
+			}
+		}
+		const ues = Array.from(ueMap.values());
+
+		// Sort students alphabetically by last name, then first name
+		const sortedStudents = [...data.students].sort(
+			(a, b) =>
+				(a.lastName ?? "").localeCompare(b.lastName ?? "") ||
+				(a.firstName ?? "").localeCompare(b.firstName ?? ""),
+		);
+
+		// Enrich students with labels and ensure UE order matches
+		const students = sortedStudents.map((s) => {
+			// Build ueResults in same order as ues array
+			const orderedUeResults = ues.map((ue) => {
+				const found = s.ueResults.find((r) => r.ueId === ue.id);
+				return (
+					found ?? {
+						ueId: ue.id,
+						ueCode: ue.code,
+						ueName: ue.name,
+						ueCredits: ue.credits,
+						ueAverage: null,
+						isValidated: false,
+						isComplete: false,
+						decision: "INC" as const,
+						creditsEarned: 0,
+						courseResults: [],
+					}
+				);
+			});
+
+			return {
+				...s,
+				ueResults: orderedUeResults,
+				finalDecisionLabel:
+					decisionLabels[s.finalDecision ?? "pending"] ?? s.finalDecision,
+				mentionLabel: s.mention ? (mentionLabels[s.mention] ?? s.mention) : "",
+			};
+		});
+
+		return {
+			...config.institution,
+			deliberation: data.deliberation,
+			jury: data.jury,
+			ues,
+			students,
+			stats: data.stats ?? {
+				totalStudents: students.length,
+				admittedCount: 0,
+				compensatedCount: 0,
+				deferredCount: 0,
+				repeatCount: 0,
+				excludedCount: 0,
+				pendingCount: students.length,
+				classAverage: null,
+				successRate: 0,
+				highestAverage: null,
+				lowestAverage: null,
+			},
+			signatures: data.signatures.length
+				? data.signatures
+				: config.signatures.pv,
+			watermark: config.watermark,
+		};
+	}
+
 	async previewTemplate(input: {
-		type: "pv" | "evaluation" | "ue";
+		type: "pv" | "evaluation" | "ue" | "deliberation";
 		templateBody: string;
 	}) {
 		const config = await this.getConfig();
@@ -707,7 +864,7 @@ export class ExportsService {
 	 * Render template with data using Handlebars
 	 */
 	private renderTemplate(
-		templateName: "pv" | "evaluation" | "ue",
+		templateName: "pv" | "evaluation" | "ue" | "deliberation",
 		data: any,
 		templateConfig: TemplateConfiguration,
 	): string {
@@ -763,7 +920,7 @@ export class ExportsService {
 	}
 
 	private getSampleData(
-		type: "pv" | "evaluation" | "ue",
+		type: "pv" | "evaluation" | "ue" | "deliberation",
 		config: ReturnType<typeof loadExportConfig>,
 	) {
 		switch (type) {
@@ -943,6 +1100,80 @@ export class ExportsService {
 					],
 					globalSuccessRate: 90,
 					signatures: config.signatures.ue,
+					watermark: config.watermark,
+				};
+			}
+			case "deliberation": {
+				const ues = [
+					{ id: "ue1", code: "UE101", name: "Mathématiques", credits: 6 },
+					{ id: "ue2", code: "UE202", name: "Informatique", credits: 6 },
+				];
+				return {
+					...config.institution,
+					deliberation: {
+						programName: "Licence Informatique",
+						className: "L3 Info",
+						semesterName: "Semestre 1",
+						academicYearName: "2024/2025",
+						date: new Date().toLocaleDateString("fr-FR"),
+					},
+					jury: {
+						president: { name: "Pr. Martin", role: "Président" },
+						members: [{ name: "Dr. Dupont" }, { name: "Dr. Bernard" }],
+					},
+					ues,
+					students: [
+						{
+							rank: 1,
+							registrationNumber: "INF23001",
+							lastName: "Doe",
+							firstName: "Jane",
+							ueResults: ues.map((ue) => ({
+								ueAverage: 14.5,
+								decision: "ADM",
+								creditsEarned: ue.credits,
+							})),
+							generalAverage: 14.5,
+							totalCreditsEarned: 12,
+							totalCreditsPossible: 12,
+							finalDecision: "admitted",
+							finalDecisionLabel: "Admis",
+							mention: "bien",
+							mentionLabel: "Bien",
+						},
+						{
+							rank: 2,
+							registrationNumber: "INF23002",
+							lastName: "Smith",
+							firstName: "John",
+							ueResults: ues.map((ue) => ({
+								ueAverage: 11.0,
+								decision: "CMP",
+								creditsEarned: ue.credits,
+							})),
+							generalAverage: 11.0,
+							totalCreditsEarned: 12,
+							totalCreditsPossible: 12,
+							finalDecision: "compensated",
+							finalDecisionLabel: "Compensé",
+							mention: "passable",
+							mentionLabel: "Passable",
+						},
+					],
+					stats: {
+						totalStudents: 2,
+						admittedCount: 1,
+						compensatedCount: 1,
+						deferredCount: 0,
+						repeatCount: 0,
+						excludedCount: 0,
+						pendingCount: 0,
+						classAverage: 12.75,
+						successRate: 100,
+						highestAverage: 14.5,
+						lowestAverage: 11.0,
+					},
+					signatures: config.signatures.pv,
 					watermark: config.watermark,
 				};
 			}
