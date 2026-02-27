@@ -8,6 +8,7 @@ export const baseSchema = z.object({
 	cycleLevelId: z.string().optional(),
 	programOptionId: z.string().optional(),
 	semesterId: z.string().optional(),
+	totalCredits: z.number().int().min(0).default(0),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });

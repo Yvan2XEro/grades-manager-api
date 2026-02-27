@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
@@ -392,6 +393,9 @@ export default function StudentManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 
+	const [academicYearFilter, setAcademicYearFilter] = useState<string | null>(
+		null,
+	);
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
 	const pagination = useCursorPagination({ pageSize: 20 });
@@ -416,9 +420,11 @@ export default function StudentManagement() {
 	const [ledgerStudent, setLedgerStudent] = useState<StudentRow | null>(null);
 
 	const { data: classes } = useQuery({
-		queryKey: ["classes"],
+		queryKey: ["classes", academicYearFilter],
 		queryFn: async () => {
-			const result = await trpcClient.classes.list.query({});
+			const result = await trpcClient.classes.list.query({
+				...(academicYearFilter ? { academicYearId: academicYearFilter } : {}),
+			});
 			return (result?.items || []) as Class[];
 		},
 	});
@@ -441,13 +447,6 @@ export default function StudentManagement() {
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
-			studentId: ledgerStudent?.id || "",
-		}),
-		enabled: Boolean(ledgerStudent),
-	});
-
-	const promotionQuery = useQuery({
-		...trpc.promotions.evaluateStudent.queryOptions({
 			studentId: ledgerStudent?.id || "",
 		}),
 		enabled: Boolean(ledgerStudent),
@@ -770,6 +769,15 @@ export default function StudentManagement() {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-3">
+				<AcademicYearSelect
+					value={academicYearFilter}
+					onChange={(v) => {
+						setAcademicYearFilter(v);
+						setClassFilter("all");
+						pagination.reset();
+					}}
+					className="min-w-[200px]"
+				/>
 				<Select
 					value={classFilter}
 					onValueChange={(value) => {
@@ -952,28 +960,30 @@ export default function StudentManagement() {
 										/>
 									</div>
 								)}
-								{promotionQuery.data && (
-									<div
-										className={`rounded-xl border p-4 ${promotionQuery.data.eligible ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
-									>
-										<p className="font-semibold text-foreground">
-											{promotionQuery.data.eligible
-												? t("admin.students.ledger.ready", {
-														defaultValue: "Student is eligible for promotion",
-													})
-												: t("admin.students.ledger.notReady", {
-														defaultValue:
-															"More credits required before promotion",
-													})}
-										</p>
-										<p className="text-foreground text-sm">
-											{t("admin.students.ledger.message", {
-												defaultValue:
-													"Rules evaluated via json-rules-engine. Overrides will appear here once published.",
-											})}
-										</p>
-									</div>
-								)}
+								{ledgerSummaryQuery.data &&
+									ledgerSummaryQuery.data.requiredCredits > 0 && (
+										<div
+											className={`rounded-xl border p-4 ${ledgerSummaryQuery.data.creditsEarned >= ledgerSummaryQuery.data.requiredCredits ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}
+										>
+											<p className="font-semibold text-foreground">
+												{ledgerSummaryQuery.data.creditsEarned >=
+												ledgerSummaryQuery.data.requiredCredits
+													? t("admin.students.ledger.ready", {
+															defaultValue: "Student is eligible for promotion",
+														})
+													: t("admin.students.ledger.notReady", {
+															defaultValue:
+																"More credits required before promotion",
+														})}
+											</p>
+											<p className="text-foreground text-sm">
+												{t("admin.students.ledger.message", {
+													defaultValue:
+														"Based on credit accumulation. Detailed rules are evaluated in the promotion rules center.",
+												})}
+											</p>
+										</div>
+									)}
 								{ledgerSummaryQuery.data?.ledgers?.length ? (
 									<div className="space-y-3">
 										{ledgerSummaryQuery.data.ledgers.map((entry) => (

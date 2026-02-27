@@ -150,6 +150,14 @@ function getDefaultHeaderConfig(type: ExportTemplateType): ExportHeaderConfig {
 				titleEn: "TEACHING UNIT PUBLICATION",
 			};
 
+		case "deliberation":
+			return {
+				...baseConfig,
+				titleFr: "PROCÈS-VERBAL DE DÉLIBÉRATION",
+				titleEn: "DELIBERATION REPORT",
+				showFacultyName: true,
+			};
+
 		default:
 			return baseConfig;
 	}
@@ -186,8 +194,8 @@ function getDefaultStyleConfig(type: ExportTemplateType): ExportStyleConfig {
 		},
 	};
 
-	// PV uses landscape by default
-	if (type === "pv") {
+	// PV and deliberation use landscape by default
+	if (type === "pv" || type === "deliberation") {
 		return {
 			...baseStyle,
 			pageOrientation: "landscape",

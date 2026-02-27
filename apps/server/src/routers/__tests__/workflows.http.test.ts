@@ -3,8 +3,31 @@ import { trpcServer } from "@hono/trpc-server";
 import { createTRPCProxyClient } from "@trpc/client";
 import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
 import { Hono } from "hono";
-import { asAdmin, createUser } from "../../lib/test-utils";
+import {
+	createDomainUser,
+	createUser,
+	makeTestContext,
+} from "../../lib/test-utils";
 import { type AppRouter, appRouter } from "../index";
+
+// Create a real admin profile in the DB so FK constraints on grade_edit_logs are satisfied
+let adminCtxPromise: ReturnType<typeof createAdminContext> | null = null;
+async function createAdminContext() {
+	const profile = await createDomainUser({
+		firstName: "Workflow",
+		lastName: "Admin",
+	});
+	return makeTestContext({
+		role: "administrator",
+		profileOverrides: { id: profile.id },
+	});
+}
+function getAdminCtx() {
+	if (!adminCtxPromise) {
+		adminCtxPromise = createAdminContext();
+	}
+	return adminCtxPromise;
+}
 
 const app = new Hono();
 
@@ -12,7 +35,7 @@ app.use(
 	"/trpc/*",
 	trpcServer({
 		router: appRouter,
-		createContext: () => asAdmin(),
+		createContext: () => getAdminCtx(),
 	}),
 );
 
@@ -125,6 +148,6 @@ describe("workflows router", () => {
 		expect(windows[0]?.status).toBe("open");
 
 		const notifications = await client.notifications.list.query({});
-		expect(notifications.length).toBeGreaterThanOrEqual(2);
+		expect(notifications.items.length).toBeGreaterThanOrEqual(2);
 	});
 });

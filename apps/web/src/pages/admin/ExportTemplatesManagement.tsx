@@ -73,7 +73,7 @@ type ExportTemplate = {
 	id: string;
 	institutionId: string;
 	name: string;
-	type: "pv" | "evaluation" | "ue";
+	type: "pv" | "evaluation" | "ue" | "deliberation";
 	isDefault: boolean;
 	templateBody: string;
 	createdAt: Date;
@@ -86,12 +86,13 @@ const EXPORT_TYPES = [
 	{ value: "pv", label: "PV (Procès-Verbal)" },
 	{ value: "evaluation", label: "Evaluation" },
 	{ value: "ue", label: "UE (Teaching Unit)" },
+	{ value: "deliberation", label: "Délibération" },
 ] as const;
 
 const buildSchema = (t: any) =>
 	z.object({
 		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
-		type: z.enum(["pv", "evaluation", "ue"]),
+		type: z.enum(["pv", "evaluation", "ue", "deliberation"]),
 		isDefault: z.boolean().default(false),
 	});
 

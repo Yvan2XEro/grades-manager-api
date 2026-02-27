@@ -53,7 +53,7 @@ describe("student promotion summaries", () => {
 		expect(cachedFacts.averageByCourse).not.toEqual({});
 	});
 
-	it("requires cached summaries to evaluate promotion rules", async () => {
+	it("auto-rebuilds missing summaries during evaluation", async () => {
 		const klass = await createClass();
 		const student = await createStudent({ class: klass.id });
 		const classCourse = await createClassCourse({ class: klass.id });
@@ -84,7 +84,8 @@ describe("student promotion summaries", () => {
 			klass.institutionId,
 		);
 
-		const before = await promotionRulesService.evaluateClassForPromotion(
+		// Even without pre-cached summaries, evaluation rebuilds them on the fly
+		const result = await promotionRulesService.evaluateClassForPromotion(
 			{
 				ruleId: rule.id,
 				sourceClassId: klass.id,
@@ -92,24 +93,14 @@ describe("student promotion summaries", () => {
 			},
 			klass.institutionId,
 		);
-		expect(before.eligible).toHaveLength(0);
-		expect(before.notEligible).toHaveLength(1);
-		expect(before.notEligible[0].reasons?.[0]).toContain(
-			"Promotion summary missing",
-		);
+		expect(result.eligible).toHaveLength(1);
+		expect(result.eligible[0].facts.overallAverage).toBeGreaterThanOrEqual(10);
 
-		await refreshStudentPromotionSummary(student.id, klass.academicYear);
-
-		const after = await promotionRulesService.evaluateClassForPromotion(
-			{
-				ruleId: rule.id,
-				sourceClassId: klass.id,
-				academicYearId: klass.academicYear,
-			},
-			klass.institutionId,
-		);
-		expect(after.eligible).toHaveLength(1);
-		expect(after.eligible[0].facts.overallAverage).toBeGreaterThanOrEqual(10);
+		// Summary is now cached after evaluation
+		const summary = await db.query.studentPromotionSummaries.findFirst({
+			where: andSummary(student.id, klass.academicYear),
+		});
+		expect(summary).not.toBeNull();
 	});
 
 	it("requires admin rights to trigger manual refresh", async () => {

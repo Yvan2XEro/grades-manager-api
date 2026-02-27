@@ -1,7 +1,9 @@
 {
 	"name": "tkams",
 	"devDependencies": {
-		"@biomejs/biome": "^2.2.0"
+		"@biomejs/biome": "^2.2.0",
+		"@faker-js/faker": "^10.3.0",
+		"server": "workspace:*"
 	},
 	"packageManager": "bun@1.2.21",
 	"private": true,

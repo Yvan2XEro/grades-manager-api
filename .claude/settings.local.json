@@ -83,7 +83,18 @@
       "Bash(sort:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
-      "WebFetch(domain:www.better-auth.com)"
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(node -e:*)",
+      "WebFetch(domain:www.esisalama.com)",
+      "WebFetch(domain:ics.utc.fr)",
+      "WebFetch(domain:ulpgl.net)",
+      "WebFetch(domain:go2congo.org)",
+      "WebFetch(domain:aefapblog.wordpress.com)",
+      "Bash(xxd:*)",
+      "Bash(node:*)",
+      "Bash(NODE_ENV=development USE_PGLITE=true bun run:*)",
+      "Bash(NODE_ENV=development USE_PGLITE=true bun:*)",
+      "Bash(NODE_ENV=development USE_PGLITE=false DATABASE_URL=postgresql://fake:fake@localhost:5432/fake bun:*)"
     ]
   }
 }

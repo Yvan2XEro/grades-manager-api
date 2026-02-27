@@ -1,10 +1,17 @@
 import { z } from "zod";
-import { adminProcedure, gradingProcedure, router } from "../../lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantGradingProcedure,
+} from "../../lib/trpc";
+import * as deliberationsService from "../deliberations/deliberations.service";
 import { ExportsService } from "./exports.service";
 import {
+	generateDeliberationSchema,
 	generateEvaluationSchema,
 	generatePVSchema,
 	generateUESchema,
+	previewDeliberationSchema,
 	previewEvaluationSchema,
 	previewPVSchema,
 	previewTemplateSourceSchema,
@@ -16,7 +23,7 @@ import {
  */
 export const exportsRouter = router({
 	/** Generate PV (official minutes) for a class/semester and return PDF or HTML */
-	generatePV: gradingProcedure
+	generatePV: tenantGradingProcedure
 		.input(generatePVSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -30,7 +37,7 @@ export const exportsRouter = router({
 		}),
 
 	/** Get structured PV data (JSON) for frontend Excel export */
-	getPVData: gradingProcedure
+	getPVData: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -40,7 +47,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview PV in HTML format (no PDF generation)
 	 */
-	previewPV: gradingProcedure
+	previewPV: tenantGradingProcedure
 		.input(previewPVSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -56,7 +63,7 @@ export const exportsRouter = router({
 	 * Generate evaluation publication
 	 * Returns PDF or HTML preview
 	 */
-	generateEvaluation: gradingProcedure
+	generateEvaluation: tenantGradingProcedure
 		.input(generateEvaluationSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -72,7 +79,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview evaluation publication in HTML format
 	 */
-	previewEvaluation: gradingProcedure
+	previewEvaluation: tenantGradingProcedure
 		.input(previewEvaluationSchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -88,7 +95,7 @@ export const exportsRouter = router({
 	 * Generate UE (Teaching Unit) publication
 	 * Returns PDF or HTML preview
 	 */
-	generateUE: gradingProcedure
+	generateUE: tenantGradingProcedure
 		.input(generateUESchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -104,7 +111,7 @@ export const exportsRouter = router({
 	/**
 	 * Preview UE publication in HTML format
 	 */
-	previewUE: gradingProcedure
+	previewUE: tenantGradingProcedure
 		.input(previewUESchema)
 		.query(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -116,7 +123,55 @@ export const exportsRouter = router({
 			return result.content;
 		}),
 
-	previewTemplate: adminProcedure
+	/** Generate deliberation export as PDF */
+	generateDeliberation: tenantGradingProcedure
+		.input(generateDeliberationSchema)
+		.mutation(async ({ ctx, input }) => {
+			const diplomationData = await deliberationsService.exportDiplomation(
+				{ id: input.deliberationId },
+				ctx.institution.id,
+				ctx.profile.id,
+			);
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.generateDeliberation(input, diplomationData);
+			return {
+				data: result.content,
+				filename: `Deliberation_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
+				mimeType: result.mimeType,
+			};
+		}),
+
+	/** Get structured deliberation data (JSON) for frontend Excel export */
+	getDeliberationData: tenantGradingProcedure
+		.input(previewDeliberationSchema)
+		.query(async ({ ctx, input }) => {
+			const diplomationData = await deliberationsService.exportDiplomation(
+				{ id: input.deliberationId },
+				ctx.institution.id,
+				ctx.profile.id,
+			);
+			const service = new ExportsService(ctx.institution.id);
+			return service.getDeliberationDataStructured(diplomationData);
+		}),
+
+	/** Preview deliberation in HTML format */
+	previewDeliberation: tenantGradingProcedure
+		.input(previewDeliberationSchema)
+		.query(async ({ ctx, input }) => {
+			const diplomationData = await deliberationsService.exportDiplomation(
+				{ id: input.deliberationId },
+				ctx.institution.id,
+				ctx.profile.id,
+			);
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.generateDeliberation(
+				{ ...input, format: "html" },
+				diplomationData,
+			);
+			return result.content;
+		}),
+
+	previewTemplate: tenantAdminProcedure
 		.input(previewTemplateSourceSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
@@ -127,7 +182,7 @@ export const exportsRouter = router({
 	/**
 	 * Get export configuration (for UI customization)
 	 */
-	getConfig: adminProcedure.query(() => {
+	getConfig: tenantAdminProcedure.query(() => {
 		const { loadExportConfig } = require("./template-helper");
 		return loadExportConfig();
 	}),

@@ -90,14 +90,35 @@ async function resolveDomainUserId(userId: string | null | undefined) {
 	return exists ? userId : null;
 }
 
+type ActorContext = {
+	profileId: string | null;
+	memberRole: MemberRole | null;
+};
+
+function assertTeacherOwnership(
+	classCourse: { teacher: string | null },
+	actor: ActorContext,
+) {
+	const isAdmin = roleSatisfies(actor.memberRole, ADMIN_ROLES);
+	if (isAdmin) return;
+	if (!actor.profileId || classCourse.teacher !== actor.profileId) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "You can only manage exams for courses you teach",
+		});
+	}
+}
+
 export async function createExam(
 	data: CreateExamInput,
 	schedulerId: string | null,
 	institutionId: string,
+	actor?: ActorContext,
 ) {
 	let created: schema.Exam | undefined;
 	const resolvedScheduler = await resolveDomainUserId(schedulerId);
 	const classCourse = await requireClassCourse(data.classCourse, institutionId);
+	if (actor) assertTeacherOwnership(classCourse, actor);
 	const tenantId = classCourse.institutionId ?? institutionId;
 	await courseEnrollments.ensureRosterForClassCourse(data.classCourse);
 	await transaction(async (tx) => {
@@ -131,9 +152,17 @@ export async function updateExam(
 	id: string,
 	data: Partial<schema.NewExam>,
 	institutionId: string,
+	actor?: ActorContext,
 ) {
 	const existing = await requireExam(id, institutionId);
 	assertEditable(existing);
+	if (actor) {
+		const classCourse = await requireClassCourse(
+			existing.classCourse,
+			institutionId,
+		);
+		assertTeacherOwnership(classCourse, actor);
+	}
 	const payload = { ...data };
 	if (data.classCourse && data.classCourse !== existing.classCourse) {
 		await requireClassCourse(data.classCourse, institutionId);
@@ -153,9 +182,17 @@ export async function submitExam(
 	examId: string,
 	submitterId: string | null,
 	institutionId: string,
+	actor?: ActorContext,
 ) {
 	const existing = await requireExam(examId, institutionId);
 	assertEditable(existing);
+	if (actor) {
+		const classCourse = await requireClassCourse(
+			existing.classCourse,
+			institutionId,
+		);
+		assertTeacherOwnership(classCourse, actor);
+	}
 	const resolved = await resolveDomainUserId(submitterId);
 	if (!["draft", "scheduled"].includes(existing.status)) {
 		throw new TRPCError({
@@ -199,8 +236,29 @@ export async function validateExam(
 	);
 }
 
-export async function deleteExam(id: string, institutionId: string) {
+export async function deleteExam(
+	id: string,
+	institutionId: string,
+	actor?: ActorContext,
+) {
 	const existing = await requireExam(id, institutionId);
+	if (actor) {
+		const isAdmin = roleSatisfies(actor.memberRole, ADMIN_ROLES);
+		if (!isAdmin) {
+			// Non-admin users can only delete their own draft exams
+			const classCourse = await requireClassCourse(
+				existing.classCourse,
+				institutionId,
+			);
+			assertTeacherOwnership(classCourse, actor);
+			if (existing.status !== "draft") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Teachers can only delete their own draft exams",
+				});
+			}
+		}
+	}
 	assertEditable(existing);
 	await repo.remove(id, institutionId);
 }

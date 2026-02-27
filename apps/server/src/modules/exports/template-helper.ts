@@ -178,11 +178,14 @@ export function institutionToExportConfig(
 /**
  * Load HTML template from file
  */
-export function loadTemplate(templateName: "pv" | "evaluation" | "ue"): string {
+export function loadTemplate(
+	templateName: "pv" | "evaluation" | "ue" | "deliberation",
+): string {
 	const templateMap = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
 		ue: "teaching-unit-publication.html",
+		deliberation: "deliberation-template.html",
 	};
 
 	const templatePath = join(

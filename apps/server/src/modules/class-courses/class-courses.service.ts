@@ -113,8 +113,17 @@ export async function createClassCourse(
 	const { allowTeacherOverride, ...payload } = data;
 	const { semesterId, klass } = await validateConfig(payload, institutionId);
 	const resolvedInstitutionId = klass.institutionId ?? institutionId;
+	// Use defaultTeacher from the course if no teacher specified
+	let teacher = payload.teacher;
+	if (!teacher) {
+		const course = await coursesRepo.findById(payload.course, institutionId);
+		if (course?.defaultTeacher) {
+			teacher = course.defaultTeacher;
+		}
+	}
 	return repo.create({
 		...payload,
+		teacher,
 		institutionId: resolvedInstitutionId,
 		code: normalizeCode(payload.code),
 		semesterId,

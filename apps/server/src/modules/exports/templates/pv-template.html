@@ -357,9 +357,8 @@
                 <thead>
                     <tr>
                         <th rowspan="3">N°</th>
-                        <th rowspan="3">NOM</th>
-                        <th rowspan="3">PRÉNOM</th>
                         <th rowspan="3">MAT</th>
+                        <th rowspan="3">NOM ET PRÉNOM</th>
 
                         {{#each ues}}
                         <th colspan="{{add (multiply courses.length 3) 7}}" class="ue-header">UE {{code}} : {{name}}</th>
@@ -398,9 +397,8 @@
                     {{#each students}}
                     <tr>
                         <td>{{number}}</td>
-                        <td class="student-name">{{lastName}}</td>
-                        <td class="student-firstname">{{firstName}}</td>
                         <td>{{registrationNumber}}</td>
+                        <td class="student-name">{{lastName}} {{firstName}}</td>
 
                         {{#each ueGrades}}
                             {{#each courseGrades}}

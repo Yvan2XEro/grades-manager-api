@@ -12,6 +12,7 @@ import {
 	FileCog,
 	FileSpreadsheet,
 	FileText,
+	Gavel,
 	GraduationCap,
 	Hash,
 	Landmark,
@@ -25,30 +26,54 @@ import {
 	Users,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import logo from "/logo.png";
 import { useStore } from "../../store";
 
 const Sidebar: React.FC = () => {
 	const { user, sidebarOpen } = useStore();
 	const { t } = useTranslation();
-	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+	const location = useLocation();
+	const [pinnedGroups, setPinnedGroups] = useState<Set<string>>(
 		new Set(["overview"]),
 	);
+	const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+	const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const toggleGroup = (groupTitle: string) => {
-		setExpandedGroups((prev) => {
+	const toggleGroup = (groupKey: string) => {
+		setPinnedGroups((prev) => {
 			const newSet = new Set(prev);
-			if (newSet.has(groupTitle)) {
-				newSet.delete(groupTitle);
+			if (newSet.has(groupKey)) {
+				newSet.delete(groupKey);
 			} else {
-				newSet.add(groupTitle);
+				newSet.add(groupKey);
 			}
 			return newSet;
 		});
 	};
+
+	const handleGroupMouseEnter = useCallback((groupKey: string) => {
+		if (hoverTimerRef.current) {
+			clearTimeout(hoverTimerRef.current);
+			hoverTimerRef.current = null;
+		}
+		setHoveredGroup(groupKey);
+	}, []);
+
+	const handleGroupMouseLeave = useCallback(() => {
+		hoverTimerRef.current = setTimeout(() => {
+			setHoveredGroup(null);
+			hoverTimerRef.current = null;
+		}, 300);
+	}, []);
+
+	const isGroupExpanded = useCallback(
+		(groupKey: string) =>
+			pinnedGroups.has(groupKey) || hoveredGroup === groupKey,
+		[pinnedGroups, hoveredGroup],
+	);
 
 	const adminMenuGroups = [
 		{
@@ -175,9 +200,14 @@ const Sidebar: React.FC = () => {
 			title: "navigation.sidebar.groups.promotion",
 			items: [
 				{
-					to: "/admin/promotion-rules",
+					to: "/admin/deliberations",
+					icon: <Gavel className="h-[18px] w-[18px]" />,
+					labelKey: "navigation.sidebar.admin.deliberations",
+				},
+				{
+					to: "/admin/deliberations/rules",
 					icon: <TrendingUp className="h-[18px] w-[18px]" />,
-					labelKey: "navigation.sidebar.admin.promotionRules",
+					labelKey: "navigation.sidebar.admin.deliberationRules",
 				},
 				{
 					to: "/admin/rules",
@@ -275,6 +305,31 @@ const Sidebar: React.FC = () => {
 		}
 	})();
 
+	// Auto-pin only the group that contains the current route, unpin others
+	useEffect(() => {
+		if (menuContent.type !== "grouped") return;
+		const pathname = location.pathname;
+		let activeGroupKey: string | null = null;
+		for (const group of menuContent.groups) {
+			const groupKey = group.title.split(".").pop() || group.title;
+			const hasActiveLink = group.items.some((link) =>
+				link.to === "/admin" ||
+				link.to === "/teacher" ||
+				link.to === "/dean" ||
+				link.to === "/student"
+					? pathname === link.to
+					: pathname.startsWith(link.to),
+			);
+			if (hasActiveLink) {
+				activeGroupKey = groupKey;
+				break;
+			}
+		}
+		if (activeGroupKey) {
+			setPinnedGroups(new Set([activeGroupKey]));
+		}
+	}, [location.pathname, menuContent]);
+
 	const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
 		`group flex items-center gap-3 rounded-r-lg border-l-[3px] px-3 py-2 text-[13px] font-medium transition-all duration-150 ${
 			isActive
@@ -320,9 +375,15 @@ const Sidebar: React.FC = () => {
 								? menuContent.groups.map((group, groupIndex) => {
 										const groupKey =
 											group.title.split(".").pop() || group.title;
-										const isExpanded = expandedGroups.has(groupKey);
+										const expanded = isGroupExpanded(groupKey);
+										const isPinned = pinnedGroups.has(groupKey);
 										return (
-											<div key={group.title} className="mb-1">
+											<div
+												key={group.title}
+												className="mb-1"
+												onMouseEnter={() => handleGroupMouseEnter(groupKey)}
+												onMouseLeave={handleGroupMouseLeave}
+											>
 												{groupIndex > 0 && (
 													<div className="mx-3 my-3 border-sidebar-border border-t" />
 												)}
@@ -332,17 +393,19 @@ const Sidebar: React.FC = () => {
 													className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest transition-colors hover:text-sidebar-foreground"
 												>
 													<span className="flex items-center gap-1.5">
-														<span className="h-1 w-1 rounded-full bg-primary/50" />
+														<span
+															className={`h-1 w-1 rounded-full ${isPinned ? "bg-primary" : "bg-primary/50"}`}
+														/>
 														{t(group.title, { defaultValue: group.title })}
 													</span>
-													{isExpanded ? (
+													{expanded ? (
 														<ChevronDown className="h-3.5 w-3.5" />
 													) : (
 														<ChevronRight className="h-3.5 w-3.5" />
 													)}
 												</button>
 												<AnimatePresence initial={false}>
-													{isExpanded && (
+													{expanded && (
 														<motion.div
 															initial={{ height: 0, opacity: 0 }}
 															animate={{ height: "auto", opacity: 1 }}

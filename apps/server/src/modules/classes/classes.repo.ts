@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
+import { and, eq, gt, ilike, inArray, or, type SQL, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -13,6 +13,7 @@ const classSelection = {
 	cycleLevelId: schema.classes.cycleLevelId,
 	programOptionId: schema.classes.programOptionId,
 	semesterId: schema.classes.semesterId,
+	totalCredits: schema.classes.totalCredits,
 	createdAt: schema.classes.createdAt,
 	programInfo: {
 		id: schema.programs.id,
@@ -253,6 +254,41 @@ export async function search(
 		.orderBy(schema.classes.code)
 		.limit(limit);
 	return items;
+}
+
+/**
+ * Compute assigned credits per class by summing distinct UE credits
+ * for courses assigned via classCourses.
+ */
+export async function getAssignedCredits(
+	classIds: string[],
+): Promise<Record<string, number>> {
+	if (classIds.length === 0) return {};
+	const rows = await db
+		.select({
+			classId: schema.classCourses.class,
+			credits:
+				sql<number>`coalesce(sum(distinct ${schema.teachingUnits.credits}), 0)`.as(
+					"credits",
+				),
+		})
+		.from(schema.classCourses)
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+		)
+		.where(inArray(schema.classCourses.class, classIds))
+		.groupBy(schema.classCourses.class);
+
+	const map: Record<string, number> = {};
+	for (const row of rows) {
+		map[row.classId] = Number(row.credits);
+	}
+	return map;
 }
 
 export type KlassRecord = NonNullable<Awaited<ReturnType<typeof findById>>>;

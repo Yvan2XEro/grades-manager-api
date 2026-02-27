@@ -4,6 +4,8 @@ import type { BatchJobStep } from "@/db/schema/app-schema";
 export const BATCH_JOB_TYPES = [
 	"creditLedger.recompute",
 	"studentFacts.refreshClass",
+	"promotion.applyBatch",
+	"academicYear.setup",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];

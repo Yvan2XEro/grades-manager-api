@@ -4,7 +4,7 @@ import type { ExportTemplateType } from "../../db/schema/app-schema";
 // Create template schema
 export const createExportTemplateSchema = z.object({
 	name: z.string().min(1, "Template name is required"),
-	type: z.enum(["pv", "evaluation", "ue"]),
+	type: z.enum(["pv", "evaluation", "ue", "deliberation"]),
 	isDefault: z.boolean().default(false),
 	templateBody: z.string().min(1).optional(),
 });
@@ -19,7 +19,7 @@ export const updateExportTemplateSchema = z.object({
 
 // List templates schema
 export const listExportTemplatesSchema = z.object({
-	type: z.enum(["pv", "evaluation", "ue"]).optional(),
+	type: z.enum(["pv", "evaluation", "ue", "deliberation"]).optional(),
 	isDefault: z.boolean().optional(),
 	cursor: z.string().optional(),
 	limit: z.number().min(1).max(100).optional(),
@@ -38,7 +38,7 @@ export const deleteExportTemplateSchema = z.object({
 // Set default template schema
 export const setDefaultTemplateSchema = z.object({
 	id: z.string(),
-	type: z.enum(["pv", "evaluation", "ue"]),
+	type: z.enum(["pv", "evaluation", "ue", "deliberation"]),
 });
 
 export type CreateExportTemplateInput = z.infer<

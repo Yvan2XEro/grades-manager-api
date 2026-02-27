@@ -42,6 +42,10 @@ export const router = createRouter({
 			},
 			ctx.profile?.id ?? null,
 			ctx.institution.id,
+			{
+				profileId: ctx.profile?.id ?? null,
+				memberRole: ctx.memberRole ?? null,
+			},
 		),
 	),
 	update: tenantGradingProcedure
@@ -57,13 +61,18 @@ export const router = createRouter({
 							: undefined,
 				},
 				ctx.institution.id,
+				{
+					profileId: ctx.profile?.id ?? null,
+					memberRole: ctx.memberRole ?? null,
+				},
 			),
 		),
-	delete: tenantAdminProcedure
-		.input(idSchema)
-		.mutation(({ ctx, input }) =>
-			service.deleteExam(input.id, ctx.institution.id),
-		),
+	delete: tenantGradingProcedure.input(idSchema).mutation(({ ctx, input }) =>
+		service.deleteExam(input.id, ctx.institution.id, {
+			profileId: ctx.profile?.id ?? null,
+			memberRole: ctx.memberRole ?? null,
+		}),
+	),
 	submit: tenantGradingProcedure
 		.input(submitSchema)
 		.mutation(({ ctx, input }) =>
@@ -71,6 +80,10 @@ export const router = createRouter({
 				input.examId,
 				ctx.profile?.id ?? null,
 				ctx.institution.id,
+				{
+					profileId: ctx.profile?.id ?? null,
+					memberRole: ctx.memberRole ?? null,
+				},
 			),
 		),
 	validate: tenantAdminProcedure

@@ -357,9 +357,8 @@
                 <thead>
                     <tr>
                         <th>N°</th>
-                        <th>NOM</th>
-                        <th>PRÉNOM</th>
                         <th>MATRICULE</th>
+                        <th>NOM ET PRÉNOM</th>
                         <th>NOTE / {{scale}}</th>
                         <th>APPRÉCIATION</th>
                         <th>OBSERVATION</th>
@@ -369,9 +368,8 @@
                     {{#each students}}
                     <tr>
                         <td>{{number}}</td>
-                        <td class="student-name">{{lastName}}</td>
-                        <td class="student-firstname">{{firstName}}</td>
                         <td>{{registrationNumber}}</td>
+                        <td class="student-name">{{lastName}} {{firstName}}</td>
                         <td class="note-cell">{{formatNumber score}}</td>
                         <td>{{appreciation}}</td>
                         <td>{{observation}}</td>

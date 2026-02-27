@@ -7,6 +7,7 @@ import {
 	Eye,
 	FileSpreadsheet,
 	FileText,
+	MoreHorizontal,
 	Pencil,
 	Plus,
 	Search,
@@ -27,6 +28,12 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
@@ -102,6 +109,7 @@ const buildClassSchema = (t: TFunction) =>
 			}),
 		),
 		name: z.string().min(2, t("admin.classes.validation.name")),
+		totalCredits: z.coerce.number().int().min(0).default(0),
 	});
 
 type ClassFormData = z.infer<ReturnType<typeof buildClassSchema>>;
@@ -115,6 +123,8 @@ interface Class {
 	cycleLevelId: string;
 	programOptionId: string;
 	semesterId: string | null;
+	totalCredits: number;
+	assignedCredits: number;
 	program: {
 		name: string;
 		code: string;
@@ -191,6 +201,8 @@ export default function ClassManagement() {
 						cycleLevelId: cls.cycleLevelId,
 						programOptionId: cls.programOptionId,
 						semesterId: cls.semester?.id ?? null,
+						totalCredits: (cls as any).totalCredits ?? 0,
+						assignedCredits: (cls as any).assignedCredits ?? 0,
 						program: {
 							name: cls.programInfo?.name ?? "",
 							code: cls.programInfo?.code ?? "",
@@ -252,6 +264,7 @@ export default function ClassManagement() {
 			semesterId: "",
 			code: "",
 			name: "",
+			totalCredits: 0,
 		},
 	});
 
@@ -776,6 +789,7 @@ export default function ClassManagement() {
 				programOptionId: data.programOptionId,
 				semesterId: data.semesterId,
 				code: data.code,
+				totalCredits: data.totalCredits,
 			});
 		},
 		onSuccess: () => {
@@ -804,6 +818,7 @@ export default function ClassManagement() {
 				programOptionId: data.programOptionId,
 				semesterId: data.semesterId,
 				code: data.code,
+				totalCredits: data.totalCredits,
 			});
 		},
 		onSuccess: () => {
@@ -1004,21 +1019,28 @@ export default function ClassManagement() {
 								<TableHead>
 									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
-								<TableHead>{t("admin.classes.table.name")}</TableHead>
-								<TableHead>{t("admin.classes.table.program")}</TableHead>
-								<TableHead>{t("admin.classes.table.academicYear")}</TableHead>
+								<TableHead>
+									{t("admin.classes.table.classProgram", {
+										defaultValue: "Class / Program",
+									})}
+								</TableHead>
 								<TableHead>
 									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
 									})}
 								</TableHead>
 								<TableHead>
-									{t("admin.classes.table.option", {
-										defaultValue: "Option",
+									{t("admin.classes.table.optionSemester", {
+										defaultValue: "Option / Semester",
+									})}
+								</TableHead>
+								<TableHead>
+									{t("admin.classes.table.credits", {
+										defaultValue: "Credits",
 									})}
 								</TableHead>
 								<TableHead>{t("admin.classes.table.students")}</TableHead>
-								<TableHead>{t("common.table.actions")}</TableHead>
+								<TableHead className="w-10" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -1039,9 +1061,14 @@ export default function ClassManagement() {
 											})}
 										/>
 									</TableCell>
-									<TableCell className="font-medium">{cls.name}</TableCell>
-									<TableCell>{cls.program?.name}</TableCell>
-									<TableCell>{cls.academicYear?.name}</TableCell>
+									<TableCell>
+										<div className="space-y-0.5">
+											<p className="font-medium text-sm">{cls.name}</p>
+											<p className="text-muted-foreground text-xs">
+												{cls.program?.name}
+											</p>
+										</div>
+									</TableCell>
 									<TableCell>
 										{cls.cycle ? (
 											<div className="space-y-0.5">
@@ -1058,20 +1085,43 @@ export default function ClassManagement() {
 										)}
 									</TableCell>
 									<TableCell>
-										{cls.programOption ? (
-											<div className="space-y-0.5">
+										<div className="space-y-0.5">
+											{cls.programOption ? (
 												<p className="font-medium text-sm">
 													{cls.programOption.name}
 												</p>
-												<p className="text-muted-foreground text-xs">
-													{cls.programOption.code}
+											) : (
+												<p className="text-muted-foreground text-sm">
+													{t("common.labels.notAvailable", {
+														defaultValue: "N/A",
+													})}
 												</p>
-											</div>
-										) : (
-											t("common.labels.notAvailable", {
-												defaultValue: "N/A",
-											})
-										)}
+											)}
+											{cls.semester ? (
+												<p className="text-muted-foreground text-xs">
+													{cls.semester.name}
+												</p>
+											) : null}
+										</div>
+									</TableCell>
+									<TableCell>
+										<div className="flex items-center gap-1.5">
+											<span className="font-medium text-sm">
+												{cls.assignedCredits}
+											</span>
+											<span className="text-muted-foreground text-xs">
+												/ {cls.totalCredits}
+											</span>
+											{cls.totalCredits > 0 &&
+												cls.assignedCredits < cls.totalCredits && (
+													<Badge
+														variant="outline"
+														className="border-amber-500/50 bg-amber-500/10 px-1.5 py-0 text-[10px] text-amber-600 dark:text-amber-400"
+													>
+														-{cls.totalCredits - cls.assignedCredits}
+													</Badge>
+												)}
+										</div>
 									</TableCell>
 									<TableCell>
 										<div className="flex items-center gap-2">
@@ -1080,80 +1130,69 @@ export default function ClassManagement() {
 										</div>
 									</TableCell>
 									<TableCell>
-										<div className="flex gap-2">
-											<Button
-												type="button"
-												size="icon"
-												variant="ghost"
-												onClick={() => {
-													setEditingClass(cls);
-													form.reset({
-														name: cls.name,
-														programId: cls.programId,
-														academicYearId: cls.academicYearId,
-														cycleLevelId: cls.cycleLevelId,
-														programOptionId: cls.programOptionId,
-														semesterId: cls.semesterId ?? "",
-														code: cls.code,
-													});
-													setIsFormOpen(true);
-												}}
-												className="btn btn-square btn-sm btn-ghost"
-												title={t("common.actions.edit", {
-													defaultValue: "Edit",
-												})}
-											>
-												<Pencil className="h-4 w-4" />
-											</Button>
-											<Button
-												type="button"
-												size="icon"
-												variant="ghost"
-												onClick={() => handlePreviewStudents(cls)}
-												className="btn btn-square btn-sm btn-ghost"
-												title={t("admin.classes.preview.button", {
-													defaultValue: "View student list",
-												})}
-											>
-												<Eye className="h-4 w-4" />
-											</Button>
-											<Button
-												type="button"
-												size="icon"
-												variant="ghost"
-												onClick={() => handleExportStudentListPDF(cls)}
-												className="btn btn-square btn-sm btn-ghost"
-												title={t("admin.classes.export.button", {
-													defaultValue: "Export student list (PDF)",
-												})}
-											>
-												<FileText className="h-4 w-4" />
-											</Button>
-											<Button
-												type="button"
-												size="icon"
-												variant="ghost"
-												onClick={() => handleExportStudentListExcel(cls)}
-												className="btn btn-square btn-sm btn-ghost"
-												title={t("admin.classes.export.excelButton", {
-													defaultValue: "Export student list (Excel)",
-												})}
-											>
-												<FileSpreadsheet className="h-4 w-4" />
-											</Button>
-											<Button
-												type="button"
-												size="icon"
-												variant="ghost"
-												onClick={() => openDeleteModal(cls.id)}
-												className="btn btn-square btn-sm btn-ghost text-error"
-												title={t("common.actions.delete", {
-													defaultValue: "Delete",
-												})}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button variant="ghost" size="icon" className="h-8 w-8">
+													<MoreHorizontal className="h-4 w-4" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem
+													onClick={() => {
+														setEditingClass(cls);
+														form.reset({
+															name: cls.name,
+															programId: cls.programId,
+															academicYearId: cls.academicYearId,
+															cycleLevelId: cls.cycleLevelId,
+															programOptionId: cls.programOptionId,
+															semesterId: cls.semesterId ?? "",
+															code: cls.code,
+															totalCredits: cls.totalCredits,
+														});
+														setIsFormOpen(true);
+													}}
+												>
+													<Pencil className="mr-2 h-4 w-4" />
+													{t("common.actions.edit", {
+														defaultValue: "Edit",
+													})}
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() => handlePreviewStudents(cls)}
+												>
+													<Eye className="mr-2 h-4 w-4" />
+													{t("admin.classes.preview.button", {
+														defaultValue: "View student list",
+													})}
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() => handleExportStudentListPDF(cls)}
+												>
+													<FileText className="mr-2 h-4 w-4" />
+													{t("admin.classes.export.button", {
+														defaultValue: "Export PDF",
+													})}
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() => handleExportStudentListExcel(cls)}
+												>
+													<FileSpreadsheet className="mr-2 h-4 w-4" />
+													{t("admin.classes.export.excelButton", {
+														defaultValue: "Export Excel",
+													})}
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													className="text-destructive"
+													onClick={() => openDeleteModal(cls.id)}
+												>
+													<Trash2 className="mr-2 h-4 w-4" />
+													{t("common.actions.delete", {
+														defaultValue: "Delete",
+													})}
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
 									</TableCell>
 								</TableRow>
 							))}
@@ -1333,7 +1372,7 @@ export default function ClassManagement() {
 							required
 						/>
 
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div className="grid gap-4 sm:grid-cols-3">
 							<FormField
 								control={form.control}
 								name="code"
@@ -1365,6 +1404,32 @@ export default function ClassManagement() {
 										<FormLabel>{t("admin.classes.form.labelLabel")}</FormLabel>
 										<FormControl>
 											<Input {...field} readOnly />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="totalCredits"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.classes.form.totalCreditsLabel", {
+												defaultValue: "Total credits",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												type="number"
+												min={0}
+												placeholder={t(
+													"admin.classes.form.totalCreditsPlaceholder",
+													{ defaultValue: "e.g. 30" },
+												)}
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

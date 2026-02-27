@@ -14,6 +14,11 @@ import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
 import ClassManagement from "./pages/admin/ClassManagement";
 import CourseManagement from "./pages/admin/CourseManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
+import {
+	DeliberationDetail,
+	DeliberationRules,
+	DeliberationsList,
+} from "./pages/admin/deliberations";
 import EnrollmentManagement from "./pages/admin/EnrollmentManagement";
 import ExamManagement from "./pages/admin/ExamManagement";
 import ExamScheduler from "./pages/admin/ExamScheduler";
@@ -108,6 +113,11 @@ function App() {
 	useEffect(() => {
 		if (!session?.user) {
 			activatedSlugRef.current = null;
+			return;
+		}
+		// Skip if org was already set at login time (via X-Organization-Slug header)
+		if (session.session?.activeOrganizationId) {
+			activatedSlugRef.current = activeOrganizationSlug;
 			return;
 		}
 		if (session?.user && activeOrganizationSlug) {
@@ -206,6 +216,13 @@ function App() {
 							element={<TeachingUnitDetail />}
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
+						{/* Deliberations */}
+						<Route path="deliberations" element={<DeliberationsList />} />
+						<Route
+							path="deliberations/:deliberationId"
+							element={<DeliberationDetail />}
+						/>
+						<Route path="deliberations/rules" element={<DeliberationRules />} />
 						{/* Promotion Rules */}
 						<Route
 							path="promotion-rules"

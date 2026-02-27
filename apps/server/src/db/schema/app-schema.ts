@@ -18,6 +18,12 @@ import {
 	timestamp,
 	unique,
 } from "drizzle-orm/pg-core";
+import type {
+	DeliberationStats,
+	DeliberationUeResult,
+	JuryMember,
+	RuleEvaluationTrace,
+} from "../../modules/deliberations/deliberations.types";
 import { member, organization, user } from "./auth";
 import type { RegistrationNumberFormatDefinition } from "./registration-number-types";
 
@@ -84,6 +90,60 @@ export type ExamSessionType = (typeof examSessionTypes)[number];
 
 export const retakeScoringPolicies = ["replace", "best_of"] as const;
 export type RetakeScoringPolicy = (typeof retakeScoringPolicies)[number];
+
+/** Deliberation lifecycle types. */
+export const deliberationTypes = ["semester", "annual", "retake"] as const;
+export type DeliberationType = (typeof deliberationTypes)[number];
+
+export const deliberationStatuses = [
+	"draft",
+	"open",
+	"closed",
+	"signed",
+] as const;
+export type DeliberationStatus = (typeof deliberationStatuses)[number];
+
+export const deliberationDecisions = [
+	"admitted",
+	"compensated",
+	"deferred",
+	"repeat",
+	"excluded",
+	"pending",
+] as const;
+export type DeliberationDecision = (typeof deliberationDecisions)[number];
+
+export const deliberationMentions = [
+	"passable",
+	"assez_bien",
+	"bien",
+	"tres_bien",
+	"excellent",
+] as const;
+export type DeliberationMention = (typeof deliberationMentions)[number];
+
+export const deliberationLogActions = [
+	"created",
+	"opened",
+	"computed",
+	"override_decision",
+	"closed",
+	"signed",
+	"reopened",
+	"exported",
+	"promoted",
+] as const;
+export type DeliberationLogAction = (typeof deliberationLogActions)[number];
+
+export const deliberationRuleCategories = [
+	"admission",
+	"compensation",
+	"deferral",
+	"repeat",
+	"exclusion",
+] as const;
+export type DeliberationRuleCategory =
+	(typeof deliberationRuleCategories)[number];
 
 /** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
@@ -328,6 +388,7 @@ export const classes = pgTable(
 		programOptionId: text("program_option_id")
 			.notNull()
 			.references(() => programOptions.id, { onDelete: "restrict" }),
+		totalCredits: integer("total_credits").notNull().default(0),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -425,7 +486,7 @@ export const classCourses = pgTable(
 	},
 	(t) => [
 		unique("uq_class_courses").on(t.class, t.course),
-		unique("uq_class_courses_code").on(t.code),
+		unique("uq_class_courses_code").on(t.code, t.class),
 		index("idx_class_courses_institution_id").on(t.institutionId),
 		index("idx_class_courses_class_id").on(t.class),
 		index("idx_class_courses_course_id").on(t.course),
@@ -1277,6 +1338,180 @@ export const studentPromotionSummaries = pgTable(
 	],
 );
 
+// ---------------------------------------------------------------------------
+// Deliberations
+// ---------------------------------------------------------------------------
+
+/** Deliberation sessions where a jury examines class results. */
+export const deliberations = pgTable(
+	"deliberations",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "restrict" }),
+		semesterId: text("semester_id").references(() => semesters.id, {
+			onDelete: "set null",
+		}),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		type: text("type").$type<DeliberationType>().notNull(),
+		status: text("status")
+			.$type<DeliberationStatus>()
+			.notNull()
+			.default("draft"),
+		presidentId: text("president_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		juryMembers: jsonb("jury_members").$type<JuryMember[]>().default([]),
+		deliberationDate: timestamp("deliberation_date", { withTimezone: true }),
+		stats: jsonb("stats").$type<DeliberationStats>(),
+		openedAt: timestamp("opened_at", { withTimezone: true }),
+		closedAt: timestamp("closed_at", { withTimezone: true }),
+		signedAt: timestamp("signed_at", { withTimezone: true }),
+		signedBy: text("signed_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdBy: text("created_by")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "restrict" }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_deliberation_class_semester_year_type").on(
+			t.institutionId,
+			t.classId,
+			t.semesterId,
+			t.academicYearId,
+			t.type,
+		),
+		index("idx_deliberations_institution").on(t.institutionId),
+		index("idx_deliberations_class").on(t.classId),
+		index("idx_deliberations_year").on(t.academicYearId),
+		index("idx_deliberations_status").on(t.status),
+		index("idx_deliberations_type").on(t.type),
+	],
+);
+
+/** Per-student results computed during a deliberation. */
+export const deliberationStudentResults = pgTable(
+	"deliberation_student_results",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		deliberationId: text("deliberation_id")
+			.notNull()
+			.references(() => deliberations.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		generalAverage: doublePrecision("general_average"),
+		totalCreditsEarned: integer("total_credits_earned").notNull().default(0),
+		totalCreditsPossible: integer("total_credits_possible")
+			.notNull()
+			.default(0),
+		ueResults: jsonb("ue_results").$type<DeliberationUeResult[]>().default([]),
+		autoDecision: text("auto_decision").$type<DeliberationDecision>(),
+		finalDecision: text("final_decision").$type<DeliberationDecision>(),
+		isOverridden: boolean("is_overridden").notNull().default(false),
+		overrideReason: text("override_reason"),
+		overriddenBy: text("overridden_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		rank: integer("rank"),
+		mention: text("mention").$type<DeliberationMention>(),
+		rulesEvaluated: jsonb("rules_evaluated")
+			.$type<RuleEvaluationTrace[]>()
+			.default([]),
+		factsSnapshot: jsonb("facts_snapshot").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_deliberation_student_result").on(t.deliberationId, t.studentId),
+		index("idx_deliberation_results_deliberation").on(t.deliberationId),
+		index("idx_deliberation_results_student").on(t.studentId),
+	],
+);
+
+/** Configurable rules for deliberation decision-making. */
+export const deliberationRules = pgTable(
+	"deliberation_rules",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		description: text("description"),
+		category: text("category").$type<DeliberationRuleCategory>().notNull(),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "set null",
+		}),
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
+		deliberationType: text("deliberation_type").$type<DeliberationType>(),
+		priority: integer("priority").notNull().default(0),
+		ruleset: jsonb("ruleset").notNull().$type<Record<string, unknown>>(),
+		decision: text("decision").$type<DeliberationDecision>().notNull(),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_deliberation_rules_institution").on(t.institutionId),
+		index("idx_deliberation_rules_category").on(t.category),
+		index("idx_deliberation_rules_program").on(t.programId),
+		index("idx_deliberation_rules_cycle_level").on(t.cycleLevelId),
+		index("idx_deliberation_rules_type").on(t.deliberationType),
+		index("idx_deliberation_rules_active").on(t.isActive),
+		index("idx_deliberation_rules_priority").on(t.priority),
+	],
+);
+
+/** Audit log for deliberation lifecycle events. */
+export const deliberationLogs = pgTable(
+	"deliberation_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		deliberationId: text("deliberation_id")
+			.notNull()
+			.references(() => deliberations.id, { onDelete: "cascade" }),
+		action: text("action").$type<DeliberationLogAction>().notNull(),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		studentId: text("student_id").references(() => students.id, {
+			onDelete: "set null",
+		}),
+		details: jsonb("details").$type<Record<string, unknown>>().default({}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_deliberation_logs_deliberation").on(t.deliberationId),
+		index("idx_deliberation_logs_action").on(t.action),
+	],
+);
+
 export const academicYearsRelations = relations(academicYears, ({ many }) => ({
 	classes: many(classes),
 }));
@@ -1760,7 +1995,12 @@ export type NewStudentPromotionSummary = InferInsertModel<
 >;
 
 /** Export template types for customizable document generation */
-export const exportTemplateTypes = ["pv", "evaluation", "ue"] as const;
+export const exportTemplateTypes = [
+	"pv",
+	"evaluation",
+	"ue",
+	"deliberation",
+] as const;
 export type ExportTemplateType = (typeof exportTemplateTypes)[number];
 
 /** Export template configuration for flexible headers and columns */
@@ -1981,3 +2221,110 @@ export type BatchJobStep = InferSelectModel<typeof batchJobSteps>;
 export type NewBatchJobStep = InferInsertModel<typeof batchJobSteps>;
 export type BatchJobLog = InferSelectModel<typeof batchJobLogs>;
 export type NewBatchJobLog = InferInsertModel<typeof batchJobLogs>;
+
+// Deliberation relations
+export const deliberationsRelations = relations(
+	deliberations,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [deliberations.institutionId],
+			references: [institutions.id],
+		}),
+		classRef: one(classes, {
+			fields: [deliberations.classId],
+			references: [classes.id],
+		}),
+		semester: one(semesters, {
+			fields: [deliberations.semesterId],
+			references: [semesters.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [deliberations.academicYearId],
+			references: [academicYears.id],
+		}),
+		president: one(domainUsers, {
+			fields: [deliberations.presidentId],
+			references: [domainUsers.id],
+			relationName: "deliberationPresident",
+		}),
+		creator: one(domainUsers, {
+			fields: [deliberations.createdBy],
+			references: [domainUsers.id],
+			relationName: "deliberationCreator",
+		}),
+		signer: one(domainUsers, {
+			fields: [deliberations.signedBy],
+			references: [domainUsers.id],
+			relationName: "deliberationSigner",
+		}),
+		studentResults: many(deliberationStudentResults),
+		logs: many(deliberationLogs),
+	}),
+);
+
+export const deliberationStudentResultsRelations = relations(
+	deliberationStudentResults,
+	({ one }) => ({
+		deliberation: one(deliberations, {
+			fields: [deliberationStudentResults.deliberationId],
+			references: [deliberations.id],
+		}),
+		student: one(students, {
+			fields: [deliberationStudentResults.studentId],
+			references: [students.id],
+		}),
+		overriddenByRef: one(domainUsers, {
+			fields: [deliberationStudentResults.overriddenBy],
+			references: [domainUsers.id],
+		}),
+	}),
+);
+
+export const deliberationRulesRelations = relations(
+	deliberationRules,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [deliberationRules.institutionId],
+			references: [institutions.id],
+		}),
+		program: one(programs, {
+			fields: [deliberationRules.programId],
+			references: [programs.id],
+		}),
+		cycleLevel: one(cycleLevels, {
+			fields: [deliberationRules.cycleLevelId],
+			references: [cycleLevels.id],
+		}),
+	}),
+);
+
+export const deliberationLogsRelations = relations(
+	deliberationLogs,
+	({ one }) => ({
+		deliberation: one(deliberations, {
+			fields: [deliberationLogs.deliberationId],
+			references: [deliberations.id],
+		}),
+		actor: one(domainUsers, {
+			fields: [deliberationLogs.actorId],
+			references: [domainUsers.id],
+		}),
+		student: one(students, {
+			fields: [deliberationLogs.studentId],
+			references: [students.id],
+		}),
+	}),
+);
+
+export type Deliberation = InferSelectModel<typeof deliberations>;
+export type NewDeliberation = InferInsertModel<typeof deliberations>;
+export type DeliberationStudentResult = InferSelectModel<
+	typeof deliberationStudentResults
+>;
+export type NewDeliberationStudentResult = InferInsertModel<
+	typeof deliberationStudentResults
+>;
+export type DeliberationRule = InferSelectModel<typeof deliberationRules>;
+export type NewDeliberationRule = InferInsertModel<typeof deliberationRules>;
+export type DeliberationLog = InferSelectModel<typeof deliberationLogs>;
+export type NewDeliberationLog = InferInsertModel<typeof deliberationLogs>;

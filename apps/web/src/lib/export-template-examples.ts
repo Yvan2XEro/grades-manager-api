@@ -86,9 +86,8 @@ export const TEMPLATE_EXAMPLES = {
             <!-- Ligne 1: En-têtes UE -->
             <tr>
                 <th rowspan="3">N°</th>
-                <th rowspan="3">NOM</th>
-                <th rowspan="3">PRÉNOM</th>
-                <th rowspan="3">MATRICULE</th>
+                <th rowspan="3">MAT</th>
+                <th rowspan="3">NOM ET PRÉNOM</th>
                 {{#each ues}}
                 <th colspan="{{add (multiply courses.length 3) 2}}" class="ue-header">
                     {{code}} - {{name}} ({{credits}} crédits)
@@ -127,9 +126,8 @@ export const TEMPLATE_EXAMPLES = {
             {{#each students}}
             <tr>
                 <td>{{number}}</td>
-                <td class="student-name">{{lastName}}</td>
-                <td class="student-name">{{firstName}}</td>
                 <td>{{registrationNumber}}</td>
+                <td class="student-name">{{lastName}} {{firstName}}</td>
 
                 {{#each ueGrades}}
                     {{#each courseGrades}}
@@ -307,8 +305,7 @@ export const TEMPLATE_EXAMPLES = {
             <tr>
                 <th>N°</th>
                 <th>Matricule</th>
-                <th>Nom</th>
-                <th>Prénom</th>
+                <th>Nom et Prénom</th>
                 <th>Note /{{scale}}</th>
                 <th>Appréciation</th>
                 <th>Observation</th>
@@ -319,8 +316,7 @@ export const TEMPLATE_EXAMPLES = {
             <tr>
                 <td>{{number}}</td>
                 <td>{{registrationNumber}}</td>
-                <td class="student-name">{{lastName}}</td>
-                <td class="student-name">{{firstName}}</td>
+                <td class="student-name">{{lastName}} {{firstName}}</td>
                 <td class="{{#if (gt score 9.99)}}passed{{else}}failed{{/if}}">
                     {{#if score}}{{formatNumber score}}{{else}}ABS{{/if}}
                 </td>
@@ -430,9 +426,8 @@ export const TEMPLATE_EXAMPLES = {
         <thead>
             <tr>
                 <th rowspan="2">N°</th>
-                <th rowspan="2">NOM</th>
-                <th rowspan="2">PRÉNOM</th>
-                <th rowspan="2">MATRICULE</th>
+                <th rowspan="2">MAT</th>
+                <th rowspan="2">NOM ET PRÉNOM</th>
                 {{#each courses}}
                 <th colspan="3" class="course-header">{{code}} - {{name}}</th>
                 {{/each}}
@@ -452,9 +447,8 @@ export const TEMPLATE_EXAMPLES = {
             {{#each students}}
             <tr>
                 <td>{{number}}</td>
-                <td class="student-name">{{lastName}}</td>
-                <td class="student-name">{{firstName}}</td>
                 <td>{{registrationNumber}}</td>
+                <td class="student-name">{{lastName}} {{firstName}}</td>
 
                 {{#each courseGrades}}
                 <td>{{formatNumber cc}}</td>
@@ -478,6 +472,202 @@ export const TEMPLATE_EXAMPLES = {
             </tr>
         </tfoot>
     </table>
+
+    <!-- SIGNATURES -->
+    <div class="signatures">
+        {{#each signatures}}
+        <div class="signature-box">
+            <div style="border-top: 1px solid #333; margin-top: 50px; padding-top: 5px;">
+                {{position}}
+                {{#if name}}<br><em>{{name}}</em>{{/if}}
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</body>
+</html>`,
+	deliberation: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Procès-Verbal de Délibération</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10px;
+            padding: 10px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #666;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .header h1 { font-size: 15px; margin: 3px 0; }
+        .header h2 { font-size: 13px; color: #4a4a4a; margin: 2px 0; }
+        .title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 12px;
+            padding: 10px 0;
+        }
+        .jury-info {
+            text-align: center;
+            font-size: 9px;
+            margin-bottom: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7.5px;
+            margin-bottom: 12px;
+        }
+        th {
+            background: white;
+            padding: 4px 2px;
+            text-align: center;
+            border: 1px solid #bbb;
+            font-weight: bold;
+            font-size: 7px;
+        }
+        td {
+            padding: 3px 1px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 7.5px;
+        }
+        .ue-header { border-bottom: 2px solid #999; }
+        .student-name { text-align: left; font-weight: bold; padding-left: 3px; }
+        .moyenne-finale { font-weight: bold; border-left: 2px solid #999; }
+        .moyenne-ue { font-weight: bold; }
+        .decision-ADM { color: #16a34a; font-weight: bold; }
+        .decision-CMP { color: #2563eb; font-weight: bold; }
+        .decision-AJ { color: #dc2626; font-weight: bold; }
+        .decision-INC { color: #9ca3af; font-weight: bold; }
+        .decision-admitted { color: #16a34a; font-weight: bold; }
+        .decision-compensated { color: #2563eb; font-weight: bold; }
+        .decision-deferred { color: #dc2626; font-weight: bold; }
+        .decision-repeat { color: #ea580c; font-weight: bold; }
+        .decision-excluded { color: #7c2d12; font-weight: bold; }
+        .decision-pending { color: #9ca3af; font-weight: bold; }
+        .taux-reussite-row td { text-align: center; font-size: 11px; padding: 8px; font-weight: bold; }
+        .bottom-section { display: flex; justify-content: space-between; gap: 20px; margin-top: 12px; }
+        .legend-info-wrapper { display: flex; gap: 15px; }
+        .info-box { border: 1px solid #ccc; padding: 10px; font-size: 9px; min-width: 200px; }
+        .info-box div { margin-bottom: 5px; }
+        .legend-table { border: 1px solid #ccc; border-collapse: collapse; font-size: 7px; width: auto; }
+        .legend-table td { border: 1px solid #ddd; padding: 3px 6px; text-align: left; }
+        .legend-table td:nth-child(odd) { font-weight: bold; width: 40px; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 30px; }
+        .signature-box { text-align: center; width: 30%; }
+    </style>
+</head>
+<body>
+    <!-- EN-TÊTE INSTITUTION -->
+    <div class="header">
+        {{#if university_name_fr}}<h1>{{university_name_fr}} / {{university_name_en}}</h1>{{/if}}
+        {{#if faculty_name_fr}}<h2>{{faculty_name_fr}}</h2>{{/if}}
+        <h2>{{name_fr}} / {{name_en}}</h2>
+        <div style="font-size: 9px; color: #666; margin-top: 8px;">
+            {{#if university_contact_email}}Email: {{university_contact_email}}{{/if}}
+            {{#if contact_email}}{{#if university_contact_email}} | {{/if}}{{contact_email}}{{/if}}
+        </div>
+    </div>
+
+    <!-- TITRE -->
+    <div class="title">
+        PROCÈS-VERBAL DE DÉLIBÉRATION<br>
+        {{#if deliberation.semesterName}}{{deliberation.semesterName}} - {{/if}}ANNÉE ACADÉMIQUE {{deliberation.academicYearName}}<br>
+        ({{deliberation.programName}} — {{deliberation.className}})
+        {{#if deliberation.date}}<br><span style="font-weight:normal; font-size:9px;">Date: {{deliberation.date}}</span>{{/if}}
+    </div>
+
+    <!-- JURY -->
+    {{#if jury.president}}
+    <div class="jury-info">
+        <strong>Président du jury:</strong> {{jury.president.name}} ({{jury.president.role}})
+        {{#if jury.members.length}}
+        &nbsp;|&nbsp; <strong>Membres:</strong>
+        {{#each jury.members}}{{#if @index}}, {{/if}}{{name}}{{/each}}
+        {{/if}}
+    </div>
+    {{/if}}
+
+    <!-- TABLEAU PRINCIPAL -->
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">RANG</th>
+                <th rowspan="2">MAT</th>
+                <th rowspan="2">NOM ET PRÉNOM</th>
+                {{#each ues}}
+                <th colspan="3" class="ue-header">{{code}} — {{name}} ({{credits}} cr.)</th>
+                {{/each}}
+                <th rowspan="2">MOY<br>GEN</th>
+                <th rowspan="2">CRÉDITS</th>
+                <th rowspan="2">DÉCISION</th>
+                <th rowspan="2">MENTION</th>
+            </tr>
+            <tr>
+                {{#each ues}}
+                <th>MOY</th>
+                <th>DEC</th>
+                <th>CRE</th>
+                {{/each}}
+            </tr>
+        </thead>
+        <tbody>
+            {{#each students}}
+            <tr>
+                <td>{{rank}}</td>
+                <td>{{registrationNumber}}</td>
+                <td class="student-name">{{lastName}} {{firstName}}</td>
+
+                {{#each ueResults}}
+                <td class="moyenne-ue">{{formatNumber ueAverage}}</td>
+                <td class="decision-{{decision}}">{{decision}}</td>
+                <td>{{creditsEarned}}</td>
+                {{/each}}
+
+                <td class="moyenne-finale">{{formatNumber generalAverage}}</td>
+                <td>{{totalCreditsEarned}} / {{totalCreditsPossible}}</td>
+                <td class="decision-{{finalDecision}}">{{finalDecisionLabel}}</td>
+                <td>{{mentionLabel}}</td>
+            </tr>
+            {{/each}}
+
+            <tr class="taux-reussite-row">
+                <td colspan="1000" style="border-top: 2px solid #666;">
+                    <strong>Taux de Réussite: {{stats.successRate}}% — Admis: {{stats.admittedCount}} | Compensés: {{stats.compensatedCount}} | Ajournés: {{stats.deferredCount}} | En attente: {{stats.pendingCount}}</strong>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- LÉGENDE + INFO -->
+    <div class="bottom-section">
+        <div class="legend-info-wrapper">
+            <table class="legend-table">
+                <tr><td>ADM:</td><td>Acquise</td><td>CMP:</td><td>Compensée</td></tr>
+                <tr><td>AJ:</td><td>Non acquise</td><td>INC:</td><td>Incomplète</td></tr>
+                <tr><td>MOY:</td><td>Moyenne</td><td>CRE:</td><td>Crédits</td></tr>
+                <tr><td>MAT:</td><td>Matricule</td><td>DEC:</td><td>Décision</td></tr>
+            </table>
+            <div class="info-box">
+                <div><strong>Programme:</strong> {{deliberation.programName}}</div>
+                <div><strong>Classe:</strong> {{deliberation.className}}</div>
+                {{#if deliberation.semesterName}}<div><strong>Semestre:</strong> {{deliberation.semesterName}}</div>{{/if}}
+                <div><strong>Année académique:</strong> {{deliberation.academicYearName}}</div>
+                <div><strong>Moyenne générale:</strong> {{formatNumber stats.classAverage}}</div>
+                <div><strong>Étudiants inscrits:</strong> {{stats.totalStudents}}</div>
+            </div>
+        </div>
+    </div>
 
     <!-- SIGNATURES -->
     <div class="signatures">

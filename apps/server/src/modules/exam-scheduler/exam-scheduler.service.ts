@@ -43,13 +43,11 @@ export async function previewEligibleClasses(
 	institutionId: string,
 ) {
 	const context = await resolveContext(input, institutionId);
-	console.log("[DEBUG preview] input:", input, "institutionId:", institutionId);
 	const classes = await repo.getClassesForScheduling({
 		academicYearId: input.academicYearId,
 		institutionId,
 		semesterId: input.semesterId,
 	});
-	console.log("[DEBUG preview] Found classes:", classes.length);
 	return {
 		academicYear: {
 			id: context.academicYear.id,

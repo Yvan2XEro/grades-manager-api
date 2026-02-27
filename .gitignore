@@ -19,6 +19,8 @@ production-seeds/
 docker-compose.override.yml
 
 # PGlite data (local development database)
-data/
+**/data/pglite/
 
 docs/guide/
+_bmad*
+*bmad*

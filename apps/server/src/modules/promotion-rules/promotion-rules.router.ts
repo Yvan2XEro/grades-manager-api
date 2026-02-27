@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	router,
+	tenantAdminProcedure,
+	tenantProtectedProcedure,
+} from "@/lib/trpc";
 import * as service from "./promotion-rules.service";
 import {
 	applyPromotionSchema,
@@ -14,49 +18,49 @@ import {
 
 export const promotionRulesRouter = router({
 	// Rule CRUD (admin only)
-	create: adminProcedure
+	create: tenantAdminProcedure
 		.input(createRuleSchema)
 		.mutation(({ input, ctx }) =>
 			service.createRule(input, ctx.institution.id),
 		),
 
-	update: adminProcedure
+	update: tenantAdminProcedure
 		.input(updateRuleSchema)
 		.mutation(({ input, ctx }) =>
 			service.updateRule(input, ctx.institution.id),
 		),
 
-	delete: adminProcedure
+	delete: tenantAdminProcedure
 		.input(idSchema)
 		.mutation(({ input, ctx }) =>
 			service.deleteRule(input.id, ctx.institution.id),
 		),
 
-	getById: protectedProcedure
+	getById: tenantProtectedProcedure
 		.input(idSchema)
 		.query(({ input, ctx }) =>
 			service.getRuleById(input.id, ctx.institution.id),
 		),
 
-	list: protectedProcedure
+	list: tenantProtectedProcedure
 		.input(listRulesSchema)
 		.query(({ input, ctx }) => service.listRules(input, ctx.institution.id)),
 
-	refreshClassSummaries: adminProcedure
+	refreshClassSummaries: tenantAdminProcedure
 		.input(refreshClassSummariesSchema)
 		.mutation(({ input, ctx }) =>
 			service.refreshClassSummaries(input, ctx.institution.id),
 		),
 
 	// Evaluation (requires protection, but not necessarily admin)
-	evaluateClass: protectedProcedure
+	evaluateClass: tenantProtectedProcedure
 		.input(evaluateClassSchema)
 		.query(({ input, ctx }) =>
 			service.evaluateClassForPromotion(input, ctx.institution.id),
 		),
 
 	// Execution (admin only, modifies enrollments)
-	applyPromotion: adminProcedure
+	applyPromotion: tenantAdminProcedure
 		.input(applyPromotionSchema)
 		.mutation(({ input, ctx }) => {
 			if (!ctx.profile) {
@@ -66,11 +70,11 @@ export const promotionRulesRouter = router({
 		}),
 
 	// Execution history
-	listExecutions: protectedProcedure
+	listExecutions: tenantProtectedProcedure
 		.input(listExecutionsSchema)
 		.query(({ input }) => service.listExecutions(input)),
 
-	getExecutionDetails: protectedProcedure
+	getExecutionDetails: tenantProtectedProcedure
 		.input(executionDetailsSchema)
 		.query(({ input }) => service.getExecutionDetails(input.executionId)),
 });
