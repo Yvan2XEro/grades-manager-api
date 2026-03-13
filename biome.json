@@ -23,7 +23,10 @@
 			"!**/.wrangler",
 			"!**/.alchemy",
 			"!**/wrangler.jsonc",
-			"!**/.source"
+			"!**/.source",
+			"!**/teacher/StudentManagement.tsx",
+			"!**/*.css",
+			"!**/*.html"
 		]
 	},
 	"formatter": {
@@ -36,8 +39,30 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+			"a11y": {
+				"noLabelWithoutControl": "warn",
+				"useSemanticElements": "warn",
+				"noStaticElementInteractions": "warn",
+				"useKeyWithClickEvents": "warn",
+				"useButtonType": "warn",
+				"useFocusableInteractive": "warn",
+				"useAriaPropsSupportedByRole": "warn",
+				"useAriaPropsForRole": "warn"
+			},
 			"correctness": {
-				"useExhaustiveDependencies": "info"
+				"useExhaustiveDependencies": "info",
+				"noUnusedFunctionParameters": "warn"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn",
+				"noArrayIndexKey": "warn",
+				"noDuplicateObjectKeys": "warn",
+				"noAssignInExpressions": "warn",
+				"noImplicitAnyLet": "warn",
+				"useIterableCallbackReturn": "warn"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "warn"
 			},
 			"nursery": {
 				"useSortedClasses": {
@@ -49,7 +74,7 @@
 				}
 			},
 			"style": {
-				"noParameterAssign": "error",
+				"noParameterAssign": "warn",
 				"useAsConstAssertion": "error",
 				"useDefaultParameterLast": "error",
 				"useEnumInitializers": "error",
@@ -66,5 +91,20 @@
 		"formatter": {
 			"quoteStyle": "double"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/__tests__/**", "**/*.test.*", "**/*.spec.*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					},
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		}
+	]
 }

@@ -30,7 +30,7 @@ describe("student promotion summaries", () => {
 			classCourse: classCourse.id,
 			percentage: "100",
 		});
-		await createGrade({ student: student.id, exam: exam.id, score: 14 });
+		await createGrade({ student: student.id, exam: exam.id, score: "14" });
 
 		const facts = await refreshStudentPromotionSummary(
 			student.id,
@@ -61,7 +61,7 @@ describe("student promotion summaries", () => {
 			classCourse: classCourse.id,
 			percentage: "100",
 		});
-		await createGrade({ student: student.id, exam: exam.id, score: 15 });
+		await createGrade({ student: student.id, exam: exam.id, score: "15" });
 
 		const rule = await promotionRulesService.createRule(
 			{

@@ -53,7 +53,9 @@ async function ensureAcademicYear(
 }
 
 export async function createEnrollment(
-	data: schema.NewEnrollment,
+	data: Omit<schema.NewEnrollment, "institutionId"> & {
+		institutionId?: string;
+	},
 	institutionId: string,
 ) {
 	const student = await ensureStudent(data.studentId, institutionId);
@@ -76,14 +78,15 @@ export async function updateEnrollment(
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
 	if (data.studentId) await ensureStudent(data.studentId, institutionId);
+	let updateData = data;
 	if (data.classId) {
 		await ensureClass(data.classId, institutionId);
-		data = { ...data, institutionId };
+		updateData = { ...data, institutionId };
 	}
 	if (data.academicYearId) {
 		await ensureAcademicYear(data.academicYearId, institutionId);
 	}
-	return repo.update(id, data, institutionId);
+	return repo.update(id, updateData, institutionId);
 }
 
 const TERMINAL_ENROLLMENT_STATUSES: schema.EnrollmentStatus[] = [
@@ -126,7 +129,9 @@ export async function deleteEnrollment(id: string, institutionId: string) {
 }
 
 export async function listEnrollments(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId"> & {
+		institutionId?: string;
+	},
 	institutionId: string,
 ) {
 	return repo.list({ ...opts, institutionId });

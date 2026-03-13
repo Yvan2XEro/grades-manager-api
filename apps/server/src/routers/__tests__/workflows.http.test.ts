@@ -85,7 +85,6 @@ describe("workflows router", () => {
 		const course = await client.courses.create.mutate({
 			code: "WF-CRS",
 			name: "Workflow Course",
-			credits: 2,
 			hours: 20,
 			program: program.id,
 			teachingUnitId: teachingUnit.id,
@@ -122,7 +121,7 @@ describe("workflows router", () => {
 			percentage: 40,
 			classCourseId: classCourse.id,
 		});
-		await client.exams.submit.mutate({ examId: exam.id });
+		await client.exams.submit.mutate({ examId: exam!.id });
 
 		await client.workflows.enrollmentWindow.mutate({
 			classId: klass.id,
@@ -132,11 +131,11 @@ describe("workflows router", () => {
 
 		await client.grades.upsertNote.mutate({
 			studentId: student.id,
-			examId: exam.id,
+			examId: exam!.id,
 			score: 15,
 		});
 
-		await client.workflows.validateGrades.mutate({ examId: exam.id });
+		await client.workflows.validateGrades.mutate({ examId: exam!.id });
 
 		await client.workflows.attendanceAlert.mutate({
 			classCourseId: classCourse.id,

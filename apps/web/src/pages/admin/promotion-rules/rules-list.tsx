@@ -113,7 +113,7 @@ export function RulesListPage() {
 
 		try {
 			ruleset = JSON.parse(rulesetText);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 			return;
 		}
@@ -137,7 +137,7 @@ export function RulesListPage() {
 		if (rulesetText) {
 			try {
 				ruleset = JSON.parse(rulesetText);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 				return;
 			}

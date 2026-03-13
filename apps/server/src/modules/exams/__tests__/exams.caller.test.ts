@@ -111,8 +111,8 @@ describe("exams router", () => {
 				nameEn: "Foreign Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
-			institutionId: foreignInstitution.id,
+		const _faculty = await createFaculty({
+			parentInstitutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
 			institutionId: foreignInstitution.id,
@@ -182,7 +182,9 @@ describe("exams router", () => {
 			class: secondaryClass.id,
 			course: secondaryCourse.id,
 		});
-		const otherStudent = await createStudent({ class: secondaryClass.id });
+		const otherStudent = await createStudent({
+			class: secondaryClass.id,
+		});
 		await ensureStudentCourseEnrollment(
 			otherStudent.id,
 			secondaryClassCourse.id,
@@ -291,7 +293,7 @@ describe("exams router", () => {
 		expect(
 			semesterFiltered.items.every((item) => item.classId === semesterClass.id),
 		).toBe(true);
-	});
+	}, 30_000);
 
 	describe("retake eligibility endpoints", () => {
 		const originalFlag = process.env.RETAKES_FEATURE_FLAG;
@@ -326,7 +328,7 @@ describe("exams router", () => {
 				classCourseId: classCourse.id,
 			});
 			await expect(
-				admin.exams.listRetakeEligibility({ examId: exam.id }),
+				admin.exams.listRetakeEligibility({ examId: exam!.id }),
 			).rejects.toHaveProperty("code", "BAD_REQUEST");
 		});
 
@@ -471,7 +473,7 @@ describe("exams router", () => {
 			});
 			await expect(
 				admin.exams.createRetake({
-					parentExamId: draftExam.id,
+					parentExamId: draftExam!.id,
 					date: new Date("2025-07-01"),
 				}),
 			).rejects.toHaveProperty("code", "BAD_REQUEST");

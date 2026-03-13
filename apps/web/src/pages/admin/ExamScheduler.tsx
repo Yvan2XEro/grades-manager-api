@@ -127,7 +127,7 @@ export default function ExamScheduler() {
 			return result.items as Semester[];
 		},
 	});
-	const semesters = semestersQuery.data ?? [];
+	const _semesters = semestersQuery.data ?? [];
 
 	const classesQuery = useQuery({
 		queryKey: ["classes", academicYearId],

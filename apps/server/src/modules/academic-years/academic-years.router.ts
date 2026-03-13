@@ -1,8 +1,8 @@
 import {
-	adminProcedure,
+	tenantAdminProcedure as adminProcedure,
 	router as createRouter,
-	protectedProcedure,
-	superAdminProcedure,
+	tenantProtectedProcedure as protectedProcedure,
+	tenantSuperAdminProcedure as superAdminProcedure,
 } from "../../lib/trpc";
 import * as service from "./academic-years.service";
 import {

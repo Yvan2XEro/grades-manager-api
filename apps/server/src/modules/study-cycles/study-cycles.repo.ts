@@ -40,7 +40,7 @@ export async function findCycleById(id: string, institutionId: string) {
 		.where(eq(schema.institutions.id, institutionId))
 		.limit(1);
 
-	if (!contextInst) return null;
+	if (!contextInst?.organizationId) return null;
 
 	const result = await db
 		.select()
@@ -74,7 +74,7 @@ export async function listCycles(
 		.where(eq(schema.institutions.id, institutionId))
 		.limit(1);
 
-	if (!contextInst) return { items: [], nextCursor: undefined };
+	if (!contextInst?.organizationId) return { items: [], nextCursor: undefined };
 
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 	const conditions = [
@@ -156,7 +156,7 @@ export async function findLevelById(id: string, institutionId: string) {
 		.where(eq(schema.institutions.id, institutionId))
 		.limit(1);
 
-	if (!contextInst) return null;
+	if (!contextInst?.organizationId) return null;
 
 	const result = await db
 		.select()
@@ -187,7 +187,7 @@ export async function listLevels(cycleId: string, institutionId: string) {
 		.where(eq(schema.institutions.id, institutionId))
 		.limit(1);
 
-	if (!contextInst) return [];
+	if (!contextInst?.organizationId) return [];
 
 	const rows = await db
 		.select({

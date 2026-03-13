@@ -1,7 +1,7 @@
 import {
-	adminProcedure,
+	tenantAdminProcedure as adminProcedure,
 	router as createRouter,
-	protectedProcedure,
+	tenantProtectedProcedure as protectedProcedure,
 } from "../../lib/trpc";
 import * as service from "./programs.service";
 import {

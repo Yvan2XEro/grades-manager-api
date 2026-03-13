@@ -41,7 +41,7 @@ async function ensureFormat(
 }
 
 export async function listFormats(
-	opts: { includeInactive?: boolean } = {},
+	opts: { includeInactive?: boolean },
 	institutionId: string,
 ) {
 	return repo.list({ institutionId, includeInactive: opts.includeInactive });

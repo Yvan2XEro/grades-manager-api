@@ -7,7 +7,6 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import {
-	asAdmin,
 	createAcademicYear,
 	createClass,
 	createClassCourse,
@@ -616,7 +615,7 @@ describe("deliberations router", () => {
 			await admin.deliberations.transition({ id: delib.id, action: "open" });
 			const computed = await admin.deliberations.compute({ id: delib.id });
 
-			const studentResultId = computed.results[0].studentId;
+			const _studentResultId = computed.results[0].studentId;
 
 			// Find the DB result to get the actual result id
 			const dbResults = await db.query.deliberationStudentResults.findMany({

@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or } from "drizzle-orm";
+import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -42,7 +42,7 @@ export async function list(opts: {
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
-	let condition: unknown;
+	let condition: SQL | undefined;
 	if (opts.cycleId) {
 		condition = eq(schema.cycleLevels.cycleId, opts.cycleId);
 	}

@@ -79,7 +79,7 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 			permissions: buildPermissions(null),
 			institution,
 			organizationId: institution.organizationId ?? null,
-		} as Context;
+		} as unknown as Context;
 	}
 	const resolvedMemberId =
 		opts.profileOverrides?.memberId !== undefined
@@ -126,7 +126,7 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		permissions: buildPermissions(role),
 		institution,
 		organizationId: institution.organizationId ?? null,
-	} as Context;
+	} as unknown as Context;
 }
 
 export const asAdmin = () => makeTestContext({ role: "administrator" });
@@ -135,7 +135,7 @@ export const asUser = () => makeTestContext({ role: "student" });
 
 const defaultProfilePayload = (
 	data: Partial<NewDomainUser> & {
-		gender?: Gender;
+		gender?: Gender | null;
 	} = {},
 ) => ({
 	authUserId: data.authUserId ?? null,
@@ -144,7 +144,7 @@ const defaultProfilePayload = (
 	lastName: data.lastName ?? "Doe",
 	primaryEmail: data.primaryEmail ?? `profile-${randomUUID()}@example.com`,
 	phone: data.phone ?? null,
-	dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+	dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE.toISOString().split("T")[0],
 	placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	gender: data.gender ?? "other",
 	nationality: data.nationality ?? null,
@@ -295,7 +295,6 @@ export async function createFaculty(
 		name,
 		descriptionFr: description,
 		parentInstitutionId: providedInstitutionId,
-		...rest
 	} = data;
 	const parentInstitution = getTestInstitution();
 	const [facultyInstitution] = await db
@@ -448,8 +447,8 @@ export async function createAcademicYear(
 		.insert(schema.academicYears)
 		.values({
 			name: `AY-${randomUUID()}`,
-			startDate: data.startDate ?? new Date("2024-01-01"),
-			endDate: data.endDate ?? new Date("2024-12-31"),
+			startDate: data.startDate ?? "2024-01-01",
+			endDate: data.endDate ?? "2024-12-31",
 			institutionId,
 			...rest,
 		})
@@ -552,7 +551,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 				programId: program.id,
 			})
 		).id;
-	const resolvedSemesterId = await ensureSemester(semesterId);
+	const resolvedSemesterId = await ensureSemester(semesterId ?? undefined);
 	const [klass] = await db
 		.insert(schema.classes)
 		.values({
@@ -589,7 +588,7 @@ export async function createUser(data: CreateUserOptions = {}) {
 		body: {
 			name,
 			email,
-			role: data.role ?? "admin",
+			role: (data.role ?? "admin") as "admin" | "user",
 			password: data.password ?? "password",
 		},
 	});

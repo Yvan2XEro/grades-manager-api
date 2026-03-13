@@ -49,6 +49,8 @@ export async function list(opts: {
 	limit?: number;
 	query?: string;
 	academicYearId?: string;
+	classId?: string;
+	semesterId?: string;
 }) {
 	const limit = opts.limit ?? 50;
 	const conditions = [

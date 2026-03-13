@@ -21,12 +21,14 @@ function mapProfile(payload: StudentProfilePayload): ServiceProfileInput;
 function mapProfile(
 	payload: Partial<StudentProfilePayload>,
 ): Partial<ServiceProfileInput>;
-function mapProfile(payload: Partial<StudentProfilePayload>) {
+function mapProfile(
+	payload: Partial<StudentProfilePayload>,
+): ServiceProfileInput | Partial<ServiceProfileInput> {
 	return {
 		firstName: payload.firstName,
 		lastName: payload.lastName,
 		primaryEmail: payload.email,
-		dateOfBirth: payload.dateOfBirth,
+		dateOfBirth: payload.dateOfBirth?.toISOString(),
 		placeOfBirth: payload.placeOfBirth,
 		gender: payload.gender,
 		phone: payload.phone,

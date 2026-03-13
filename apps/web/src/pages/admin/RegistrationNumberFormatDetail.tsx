@@ -62,7 +62,6 @@ const createSegment = (kind: Segment["kind"]): Segment => {
 				field: defaultField,
 				transform: "upper",
 			};
-		case "counter":
 		default:
 			return {
 				kind: "counter",

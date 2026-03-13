@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-	ChevronDown,
 	Download,
 	Eye,
 	FileSpreadsheet,
@@ -193,7 +192,7 @@ export default function GradeExport() {
 	const [selectedClass, setSelectedClass] = useState("");
 	const [selectedSemester, setSelectedSemester] = useState("");
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
-	const [selectedUEs, setSelectedUEs] = useState<string[]>([]);
+	const [_selectedUEs, _setSelectedUEs] = useState<string[]>([]);
 	const [exporting, setExporting] = useState<string | null>(null);
 	const [showPreview, setShowPreview] = useState(false);
 	const [previewHtml, setPreviewHtml] = useState("");
@@ -202,7 +201,7 @@ export default function GradeExport() {
 	const [sortBy, setSortBy] = useState<"course" | "date" | "type">("course");
 	const [includeRetakes, setIncludeRetakes] = useState(true);
 	const classId = useId();
-	const semesterId = useId();
+	const _semesterId = useId();
 	const { t } = useTranslation();
 
 	const { data: classes } = useQuery({
@@ -339,7 +338,7 @@ export default function GradeExport() {
 			if (!grouped.has(courseKey)) {
 				grouped.set(courseKey, []);
 			}
-			grouped.get(courseKey)!.push(exam);
+			grouped.get(courseKey)?.push(exam);
 		}
 
 		// Sort exams within each course by date
@@ -642,16 +641,16 @@ export default function GradeExport() {
 			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 
 			// Style institution name (row 0) - Bold, larger font, centered
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
 			// Style faculty name (row 1) - Bold, centered
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -969,15 +968,15 @@ export default function GradeExport() {
 			}
 
 			// Institution header merges and styling
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
 			}
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -1205,15 +1204,15 @@ export default function GradeExport() {
 				// Apply styling
 				const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 				const merges: XLSX.Range[] = [];
-				if (ws["A1"]) {
-					ws["A1"].s = {
+				if (ws.A1) {
+					ws.A1.s = {
 						font: { bold: true, sz: 16 },
 						alignment: { horizontal: "center" },
 					};
 					merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } });
 				}
-				if (ws["A2"]) {
-					ws["A2"].s = {
+				if (ws.A2) {
+					ws.A2.s = {
 						font: { bold: true, sz: 14 },
 						alignment: { horizontal: "center" },
 					};

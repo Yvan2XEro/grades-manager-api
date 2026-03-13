@@ -1,7 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import * as repo from "./exam-types.repo";
 
-type CreateInput = Parameters<typeof repo.create>[0];
+type CreateInput = Omit<Parameters<typeof repo.create>[0], "institutionId"> & {
+	institutionId?: string;
+};
 type UpdateInput = Parameters<typeof repo.update>[2];
 type ListInput = Parameters<typeof repo.list>[1];
 

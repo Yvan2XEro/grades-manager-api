@@ -347,14 +347,14 @@ export async function compute(
 		const exams = (cc.exams || []).map((exam) => ({
 			id: exam.id,
 			type: exam.type,
-			percentage: exam.percentage,
-			sessionType: exam.sessionType || "normal",
+			percentage: Number(exam.percentage),
+			sessionType: (exam.sessionType || "normal") as "normal" | "retake",
 			parentExamId: exam.parentExamId || null,
-			scoringPolicy: exam.scoringPolicy || "replace",
+			scoringPolicy: (exam.scoringPolicy || "replace") as "replace" | "best_of",
 			grades: exam.grades || [],
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: cc.courseRef.id,
 			code: cc.courseRef.code,
 			name: cc.courseRef.name,

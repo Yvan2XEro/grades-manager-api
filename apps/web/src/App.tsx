@@ -144,7 +144,13 @@ function App() {
 				cancelled = true;
 			};
 		}
-	}, [session?.user?.id, activeOrganizationSlug]);
+	}, [
+		session?.user?.id,
+		activeOrganizationSlug,
+		refetchSession,
+		session.session?.activeOrganizationId,
+		session?.user,
+	]);
 
 	useEffect(() => {
 		if (memoUser) {

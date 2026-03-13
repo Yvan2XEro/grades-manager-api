@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import type { RegistrationNumberFormatDefinition } from "@/db/schema/registration-number-types";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
@@ -18,15 +19,15 @@ describe("registration numbers router", () => {
 		});
 		const academicYear = await createAcademicYear({
 			name: "2023/2024",
-			startDate: new Date("2023-09-01"),
-			endDate: new Date("2024-07-01"),
+			startDate: "2023-09-01",
+			endDate: "2024-07-01",
 		});
 		const klass = await createClass({
 			program: program.id,
 			academicYear: academicYear.id,
 			code: "SCI-23",
 		});
-		const definition = {
+		const definition: RegistrationNumberFormatDefinition = {
 			segments: [
 				{ kind: "literal", value: "cm-" },
 				{ kind: "field", field: "programCode", transform: "lower" },
@@ -36,17 +37,19 @@ describe("registration numbers router", () => {
 				{ kind: "counter", width: 2, scope: ["class"] },
 			],
 		};
-		const format = await admin.registrationNumbers.create({
+		const format = (await admin.registrationNumbers.create({
 			name: "Cameroon SCI",
 			definition,
 			isActive: true,
-		});
+		})) as { id: string };
 		const preview = await admin.registrationNumbers.preview({
 			classId: klass.id,
 			formatId: format.id,
 		});
 		expect(preview.preview).toBe("cm-sci-23-01");
 		const list = await admin.registrationNumbers.list({});
-		expect(list.some((entry) => entry.id === format.id)).toBe(true);
+		expect(list.some((entry: { id: string }) => entry.id === format.id)).toBe(
+			true,
+		);
 	});
 });

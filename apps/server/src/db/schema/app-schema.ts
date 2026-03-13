@@ -5,6 +5,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import {
+	type AnyPgColumn,
 	boolean,
 	check,
 	date,
@@ -750,7 +751,7 @@ export const institutions = pgTable(
 		logoUrl: text("logo_url"),
 		coverImageUrl: text("cover_image_url"),
 		parentInstitutionId: text("parent_institution_id").references(
-			(): any => institutions.id,
+			(): AnyPgColumn => institutions.id,
 			{
 				onDelete: "set null",
 			},
@@ -759,13 +760,13 @@ export const institutions = pgTable(
 			onDelete: "set null",
 		}),
 		defaultAcademicYearId: text("default_academic_year_id").references(
-			() => academicYears.id,
+			(): AnyPgColumn => academicYears.id,
 			{
 				onDelete: "set null",
 			},
 		),
 		registrationFormatId: text("registration_format_id").references(
-			() => registrationNumberFormats.id,
+			(): AnyPgColumn => registrationNumberFormats.id,
 			{
 				onDelete: "set null",
 			},

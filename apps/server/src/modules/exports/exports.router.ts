@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
 	router,
 	tenantAdminProcedure,
@@ -127,10 +126,11 @@ export const exportsRouter = router({
 	generateDeliberation: tenantGradingProcedure
 		.input(generateDeliberationSchema)
 		.mutation(async ({ ctx, input }) => {
+			const profileId = ctx.profile?.id ?? "";
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,
-				ctx.profile.id,
+				profileId,
 			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateDeliberation(input, diplomationData);
@@ -145,10 +145,11 @@ export const exportsRouter = router({
 	getDeliberationData: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			const profileId = ctx.profile?.id ?? "";
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,
-				ctx.profile.id,
+				profileId,
 			);
 			const service = new ExportsService(ctx.institution.id);
 			return service.getDeliberationDataStructured(diplomationData);
@@ -158,10 +159,11 @@ export const exportsRouter = router({
 	previewDeliberation: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			const profileId = ctx.profile?.id ?? "";
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,
-				ctx.profile.id,
+				profileId,
 			);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateDeliberation(

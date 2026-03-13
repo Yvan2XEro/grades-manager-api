@@ -30,7 +30,7 @@ export function ClipboardCopy({ value, label, className }: ClipboardCopyProps) {
 						}),
 			);
 			setTimeout(() => setCopied(false), 1500);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(
 				t("common.clipboard.failed", {
 					defaultValue: "Unable to copy",

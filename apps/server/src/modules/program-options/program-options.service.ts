@@ -32,7 +32,9 @@ async function ensureOption(id: string, institutionId: string) {
 }
 
 export async function createOption(
-	data: schema.NewProgramOption,
+	data: Omit<schema.NewProgramOption, "institutionId"> & {
+		institutionId?: string;
+	},
 	institutionId: string,
 ) {
 	await ensureProgram(data.programId, institutionId);

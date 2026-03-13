@@ -13,7 +13,6 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";

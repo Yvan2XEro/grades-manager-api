@@ -264,7 +264,9 @@ export async function deleteExam(
 }
 
 export async function listExams(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId"> & {
+		institutionId?: string;
+	},
 	params: {
 		institutionId: string;
 		profileId: string | null;

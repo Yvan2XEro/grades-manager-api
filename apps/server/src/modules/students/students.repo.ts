@@ -89,7 +89,7 @@ export async function list(opts: {
 	limit?: number;
 }) {
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
-	const extraConditions: SQL<unknown>[] = [];
+	const extraConditions: (SQL<unknown> | undefined)[] = [];
 	if (opts.classId) {
 		extraConditions.push(eq(schema.students.class, opts.classId));
 	}

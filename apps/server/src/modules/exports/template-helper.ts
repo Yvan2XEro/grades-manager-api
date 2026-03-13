@@ -114,22 +114,22 @@ export function institutionToExportConfig(
 			name_fr: institution.nameFr,
 			name_en: institution.nameEn,
 			logo_url: institution.logoUrl || "/logos/institution.png",
-			contact_email: institution.contactEmail,
-			fax: institution.fax,
-			postal_box: institution.postalBox,
+			contact_email: institution.contactEmail ?? undefined,
+			fax: institution.fax ?? undefined,
+			postal_box: institution.postalBox ?? undefined,
 			// Supervising faculty/school information (optionnel)
-			faculty_name_fr: supervisingFaculty?.nameFr,
-			faculty_name_en: supervisingFaculty?.nameEn,
+			faculty_name_fr: supervisingFaculty?.nameFr ?? undefined,
+			faculty_name_en: supervisingFaculty?.nameEn ?? undefined,
 			// Parent university information (optionnel)
-			university_name_fr: university?.nameFr,
-			university_name_en: university?.nameEn,
-			university_logo_url: university?.logoUrl,
-			university_contact_email: university?.contactEmail,
-			university_fax: university?.fax,
-			university_postal_box: university?.postalBox,
+			university_name_fr: university?.nameFr ?? undefined,
+			university_name_en: university?.nameEn ?? undefined,
+			university_logo_url: university?.logoUrl ?? undefined,
+			university_contact_email: university?.contactEmail ?? undefined,
+			university_fax: university?.fax ?? undefined,
+			university_postal_box: university?.postalBox ?? undefined,
 		},
-		grading: exportConfig?.grading || {
-			appreciations: [
+		grading: {
+			appreciations: exportConfig?.grading?.appreciations ?? [
 				{ label: "Excellent", min: 16, max: 20 },
 				{ label: "Très Bien", min: 14, max: 15.99 },
 				{ label: "Bien", min: 12, max: 13.99 },
@@ -137,30 +137,32 @@ export function institutionToExportConfig(
 				{ label: "Passable", min: 8, max: 9.99 },
 				{ label: "Insuffisant", min: 0, max: 7.99 },
 			],
-			passing_grade: 10,
-			scale: 20,
+			passing_grade: exportConfig?.grading?.passing_grade ?? 10,
+			scale: exportConfig?.grading?.scale ?? 20,
 		},
-		signatures: exportConfig?.signatures || {
-			pv: [
+		signatures: {
+			pv: exportConfig?.signatures?.pv ?? [
 				{ position: "Le Rapporteur", name: "" },
 				{ position: "Les Membres du Jury", name: "" },
 				{ position: "Le Président du Jury", name: "" },
 			],
-			evaluation: [
+			evaluation: exportConfig?.signatures?.evaluation ?? [
 				{ position: "L'Enseignant", name: "" },
 				{ position: "Le Chef de Département", name: "" },
 				{ position: "Le Directeur des Études", name: "" },
 			],
-			ue: [
+			ue: exportConfig?.signatures?.ue ?? [
 				{ position: "Le Rapporteur", name: "" },
 				{ position: "Les Membres du Jury", name: "" },
 				{ position: "Le Président du Jury", name: "" },
 			],
 		},
-		exam_settings: exportConfig?.exam_settings || {
-			default_duration_hours: 2,
-			default_coefficient: 1,
-			exam_types: {
+		exam_settings: {
+			default_duration_hours:
+				exportConfig?.exam_settings?.default_duration_hours ?? 2,
+			default_coefficient:
+				exportConfig?.exam_settings?.default_coefficient ?? 1,
+			exam_types: exportConfig?.exam_settings?.exam_types ?? {
 				CC: { label: "Contrôle Continu", coefficient: 0.4 },
 				TPE: { label: "Travaux Pratiques Encadrés", coefficient: 0.3 },
 				TP: { label: "Travaux Pratiques", coefficient: 0.3 },
@@ -168,9 +170,9 @@ export function institutionToExportConfig(
 				RATTRAPAGE: { label: "Rattrapage", coefficient: 1.0 },
 			},
 		},
-		watermark: exportConfig?.watermark || {
-			text: "ORIGINAL",
-			enabled: true,
+		watermark: {
+			text: exportConfig?.watermark?.text ?? "ORIGINAL",
+			enabled: exportConfig?.watermark?.enabled ?? true,
 		},
 	};
 }

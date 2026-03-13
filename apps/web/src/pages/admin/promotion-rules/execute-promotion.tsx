@@ -45,14 +45,14 @@ export function ExecutePromotionPage() {
 	const { data: rule } = useQuery({
 		queryKey: ["promotionRule", state?.ruleId],
 		queryFn: async () =>
-			trpcClient.promotionRules.getById.query({ id: state!.ruleId }),
+			trpcClient.promotionRules.getById.query({ id: state?.ruleId }),
 		enabled: !!state?.ruleId,
 	});
 
 	const { data: sourceClass } = useQuery({
 		queryKey: ["class", state?.sourceClassId],
 		queryFn: async () =>
-			trpcClient.classes.getById.query({ id: state!.sourceClassId }),
+			trpcClient.classes.getById.query({ id: state?.sourceClassId }),
 		enabled: !!state?.sourceClassId,
 	});
 

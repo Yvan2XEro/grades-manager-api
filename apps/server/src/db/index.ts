@@ -7,11 +7,10 @@ import * as authSchema from "./schema/auth";
 const IS_TEST = process.env.NODE_ENV === "test";
 const USE_PGLITE = IS_TEST || process.env.USE_PGLITE === "true";
 
-type DbInstance =
-	| ReturnType<typeof drizzlePg>
-	| ReturnType<typeof drizzlePglite>;
+const allSchema = { ...schema, ...authSchema };
+type AppDb = ReturnType<typeof drizzlePg<typeof allSchema>>;
 
-let db: DbInstance;
+let db: AppDb;
 let pgliteInstance: import("@electric-sql/pglite").PGlite | null = null;
 
 if (USE_PGLITE) {
@@ -33,10 +32,12 @@ if (USE_PGLITE) {
 		console.log(`[DB] Using PGlite (data: ${dataDir})`);
 	}
 
-	db = drizzlePglite(pgliteInstance, { schema: { ...schema, ...authSchema } });
+	db = drizzlePglite(pgliteInstance, {
+		schema: allSchema,
+	}) as unknown as AppDb;
 } else {
 	const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-	db = drizzlePg(pool, { schema: { ...schema, ...authSchema } });
+	db = drizzlePg(pool, { schema: allSchema });
 
 	console.log("[DB] Using PostgreSQL");
 }

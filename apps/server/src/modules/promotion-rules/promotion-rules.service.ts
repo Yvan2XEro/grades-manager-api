@@ -418,6 +418,7 @@ export async function applyPromotion(
 				studentId,
 				classId: opts.targetClassId,
 				academicYearId: opts.academicYearId,
+				institutionId,
 				status: "active",
 			});
 

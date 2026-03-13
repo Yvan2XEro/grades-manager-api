@@ -90,6 +90,9 @@ async function main() {
 		);
 	}
 
+	if (!institution.organizationId) {
+		throw new Error("Institution INSES has no organization linked");
+	}
 	const organization = await db.query.organization.findFirst({
 		where: eq(authSchema.organization.id, institution.organizationId),
 	});

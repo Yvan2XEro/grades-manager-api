@@ -86,11 +86,17 @@ export const auth = betterAuth({
 					lastName: "",
 				},
 			);
+			const orgSession = session as typeof session & {
+				activeOrganizationId?: string;
+			};
 			const activeMembership =
-				session.activeOrganizationId && user.id
+				orgSession.activeOrganizationId && user.id
 					? await db.query.member.findFirst({
 							where: and(
-								eq(schema.member.organizationId, session.activeOrganizationId),
+								eq(
+									schema.member.organizationId,
+									orgSession.activeOrganizationId,
+								),
 								eq(schema.member.userId, user.id),
 							),
 						})
@@ -176,7 +182,10 @@ export const auth = betterAuth({
 	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: process.env.BETTER_AUTH_COOKIE_SAMESITE ?? "lax",
+			sameSite: (process.env.BETTER_AUTH_COOKIE_SAMESITE ?? "lax") as
+				| "lax"
+				| "strict"
+				| "none",
 			secure: process.env.BETTER_AUTH_COOKIE_SECURE === "true",
 			httpOnly: true,
 		},

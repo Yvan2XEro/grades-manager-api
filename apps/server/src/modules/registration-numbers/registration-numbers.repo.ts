@@ -54,7 +54,7 @@ export async function findActive(institutionId: string, agent?: Agent) {
 
 export async function create(
 	data: schema.NewRegistrationNumberFormat,
-	agent = db,
+	agent: Agent = db,
 ) {
 	const [item] = await agent
 		.insert(schema.registrationNumberFormats)
@@ -66,7 +66,7 @@ export async function create(
 export async function update(
 	id: string,
 	data: Partial<schema.NewRegistrationNumberFormat>,
-	agent = db,
+	agent: Agent = db,
 ) {
 	const [item] = await agent
 		.update(schema.registrationNumberFormats)

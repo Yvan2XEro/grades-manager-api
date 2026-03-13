@@ -54,7 +54,10 @@ async function resolveTenantContext(
 	profile: appSchema.DomainUser | null,
 ) {
 	// First, try to get organizationId from the active organization in session
-	let organizationId = session?.session?.activeOrganizationId ?? null;
+	const orgSession = (session as Record<string, unknown> | null)?.session as
+		| { activeOrganizationId?: string }
+		| undefined;
+	let organizationId = orgSession?.activeOrganizationId ?? null;
 	let memberRecord: Awaited<
 		ReturnType<typeof db.query.member.findFirst>
 	> | null = null;

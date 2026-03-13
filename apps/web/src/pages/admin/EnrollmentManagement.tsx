@@ -425,7 +425,7 @@ const EnrollmentManagement = () => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
 		pagination.reset();
-	}, [selectedAcademicYear, selectedClass, selectedSemester]);
+	}, [pagination.reset]);
 
 	useEffect(() => {
 		if (!rosterModalOpen) {

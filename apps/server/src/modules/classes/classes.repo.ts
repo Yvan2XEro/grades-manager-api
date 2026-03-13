@@ -52,7 +52,10 @@ const classSelection = {
 	},
 };
 
-async function selectClass(where: SQL<unknown>, institutionId?: string) {
+async function selectClass(
+	where: SQL<unknown> | undefined,
+	institutionId?: string,
+) {
 	const finalWhere = institutionId
 		? and(eq(schema.classes.institutionId, institutionId), where)
 		: where;

@@ -115,7 +115,7 @@ const TeachingUnitDetail = () => {
 		defaultValues,
 	});
 	const selectedProgramId = form.watch("programId");
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programs?.items?.find((program) => program.id === selectedProgramId),
 		[programs?.items, selectedProgramId],
 	);

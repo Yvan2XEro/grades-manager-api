@@ -6,7 +6,12 @@ import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
 import * as repo from "./courses.repo";
 
-type CourseInput = schema.NewCourse & {
+type CourseInput = Omit<
+	schema.NewCourse,
+	"institutionId" | "defaultCoefficient"
+> & {
+	institutionId?: string;
+	defaultCoefficient?: number | string;
 	prerequisiteCourseIds?: string[];
 };
 
@@ -64,7 +69,7 @@ async function syncPrerequisites(
 }
 
 export async function createCourse(data: CourseInput, institutionId: string) {
-	const { prerequisiteCourseIds, ...courseData } = data;
+	const { prerequisiteCourseIds, institutionId: _iid, ...courseData } = data;
 	await ensureTeachingUnit(
 		courseData.teachingUnitId,
 		courseData.program,
@@ -73,6 +78,10 @@ export async function createCourse(data: CourseInput, institutionId: string) {
 	const created = await repo.create({
 		...courseData,
 		code: normalizeCode(courseData.code),
+		defaultCoefficient:
+			courseData.defaultCoefficient != null
+				? String(courseData.defaultCoefficient)
+				: undefined,
 	});
 	await syncPrerequisites(created.id, prerequisiteCourseIds);
 	return created;
@@ -83,7 +92,12 @@ export async function updateCourse(
 	institutionId: string,
 	data: Partial<CourseInput>,
 ) {
-	const { prerequisiteCourseIds, ...courseData } = data;
+	const {
+		prerequisiteCourseIds,
+		institutionId: _iid,
+		defaultCoefficient,
+		...courseData
+	} = data;
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
 	if (
@@ -99,7 +113,10 @@ export async function updateCourse(
 	const updated = await repo.update(id, institutionId, {
 		...courseData,
 		code: courseData.code ? normalizeCode(courseData.code) : undefined,
+		defaultCoefficient:
+			defaultCoefficient != null ? String(defaultCoefficient) : undefined,
 	});
+	if (!updated) throw notFound();
 	if (prerequisiteCourseIds) {
 		await syncPrerequisites(updated.id, prerequisiteCourseIds);
 	}

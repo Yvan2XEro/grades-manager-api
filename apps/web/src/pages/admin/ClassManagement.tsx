@@ -25,7 +25,7 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -445,7 +445,7 @@ export default function ClassManagement() {
 
 	useEffect(() => {
 		pagination.reset();
-	}, [filterYear, filterSemester]);
+	}, [pagination.reset]);
 
 	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);

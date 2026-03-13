@@ -1,4 +1,8 @@
-import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
+import {
+	tenantAdminProcedure as adminProcedure,
+	tenantProtectedProcedure as protectedProcedure,
+	router,
+} from "@/lib/trpc";
 import * as service from "./program-options.service";
 import {
 	baseSchema,

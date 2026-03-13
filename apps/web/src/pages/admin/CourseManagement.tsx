@@ -174,7 +174,7 @@ export default function CourseManagement() {
 	});
 	const { watch } = form;
 	const selectedProgramId = watch("program");
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programs?.find((program) => program.id === selectedProgramId),
 		[programs, selectedProgramId],
 	);

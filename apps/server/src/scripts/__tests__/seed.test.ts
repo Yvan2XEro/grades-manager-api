@@ -19,7 +19,7 @@ const silentLogger = {
 
 describe("seed runner", () => {
 	let pg: PGlite;
-	let db: ReturnType<typeof drizzle>;
+	let db: ReturnType<typeof drizzle<typeof appSchema & typeof authSchema>>;
 
 	beforeAll(async () => {
 		// Check if migrations exist
@@ -61,7 +61,7 @@ describe("seed runner", () => {
 			logger: silentLogger,
 		});
 		await runSeed({
-			db,
+			db: db as any,
 			logger: silentLogger,
 			baseDir: tmpDir,
 		});

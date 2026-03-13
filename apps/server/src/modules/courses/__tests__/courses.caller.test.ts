@@ -39,7 +39,7 @@ describe("courses router", () => {
 			id: course.id,
 			name: "Math2",
 		});
-		expect(updated.name).toBe("Math2");
+		expect(updated!.name).toBe("Math2");
 
 		await admin.courses.delete({ id: course.id });
 		const list = await admin.courses.list({ programId: program.id });

@@ -62,6 +62,7 @@ const localAdapter: StorageAdapter = {
 export function getStorageAdapter(): StorageAdapter {
 	switch ((process.env.STORAGE_DRIVER ?? "local").toLowerCase()) {
 		case "local":
+			return localAdapter;
 		default:
 			return localAdapter;
 	}

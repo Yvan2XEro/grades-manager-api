@@ -1,4 +1,3 @@
-import type { Context } from "@/lib/context";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
 	router as createRouter,
@@ -17,12 +16,14 @@ import {
 	updateSchema,
 } from "./class-courses.zod";
 
-type ClassCourseListItem = Awaited<
-	ReturnType<typeof service.listClassCourses>
->["items"][number] & { isDelegated?: boolean };
+type ClassCourseItemBase = {
+	id: string;
+	isDelegated?: boolean;
+	[key: string]: unknown;
+};
 
-const markItems = (
-	items: Awaited<ReturnType<typeof service.listClassCourses>>["items"],
+const markItems = <T extends { id: string }>(
+	items: T[],
 	isDelegated: boolean,
 ) =>
 	items.map(
@@ -30,11 +31,11 @@ const markItems = (
 			({
 				...item,
 				isDelegated,
-			}) satisfies ClassCourseListItem,
+			}) as T & { isDelegated: boolean },
 	);
 
-const mergeById = (...lists: ClassCourseListItem[][]) => {
-	const map = new Map<string, ClassCourseListItem>();
+const mergeById = <T extends ClassCourseItemBase>(...lists: T[][]) => {
+	const map = new Map<string, T>();
 	for (const list of lists) {
 		for (const item of list) {
 			if (!map.has(item.id)) {

@@ -173,6 +173,7 @@ export async function search(opts: {
 	query: string;
 	classId?: string;
 	classCourseIds?: string[];
+	teacherId?: string;
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 20;
@@ -186,6 +187,9 @@ export async function search(opts: {
 			ilike(schema.classes.name, searchTerm),
 		),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
+		opts.teacherId
+			? eq(schema.classCourses.teacher, opts.teacherId)
+			: undefined,
 		opts.classCourseIds && opts.classCourseIds.length > 0
 			? inArray(schema.classCourses.id, opts.classCourseIds)
 			: undefined,

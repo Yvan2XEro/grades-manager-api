@@ -402,7 +402,7 @@ export default function ClassCourseManagement() {
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
 		: undefined;
-	const selectedCourse = selectedCourseId
+	const _selectedCourse = selectedCourseId
 		? courseMap.get(selectedCourseId)
 		: undefined;
 	const classCourseCodes = useMemo(

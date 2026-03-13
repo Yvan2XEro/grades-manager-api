@@ -8,12 +8,20 @@ import * as classesRepo from "../classes/classes.repo";
 import * as coursesRepo from "../courses/courses.repo";
 import * as repo from "./class-courses.repo";
 
-type ClassCourseInput = schema.NewClassCourse & {
+type ClassCourseInput = Omit<
+	schema.NewClassCourse,
+	"institutionId" | "coefficient"
+> & {
+	institutionId?: string;
+	coefficient: number | string;
 	allowTeacherOverride?: boolean;
 };
 
 async function validateConfig(
-	config: schema.NewClassCourse,
+	config: Omit<schema.NewClassCourse, "institutionId" | "coefficient"> & {
+		institutionId?: string;
+		coefficient?: string | number;
+	},
 	institutionId: string,
 	existingId?: string,
 ) {
@@ -81,8 +89,8 @@ async function validateConfig(
 	}
 
 	const resolvedSemesterId = await resolveSemesterId(
-		klass.semesterId,
-		config.semesterId,
+		klass.semesterId ?? undefined,
+		config.semesterId ?? undefined,
 	);
 
 	return { semesterId: resolvedSemesterId, klass };
@@ -110,7 +118,7 @@ export async function createClassCourse(
 	data: ClassCourseInput,
 	institutionId: string,
 ) {
-	const { allowTeacherOverride, ...payload } = data;
+	const { allowTeacherOverride: _allowTeacherOverride, ...payload } = data;
 	const { semesterId, klass } = await validateConfig(payload, institutionId);
 	const resolvedInstitutionId = klass.institutionId ?? institutionId;
 	// Use defaultTeacher from the course if no teacher specified
@@ -126,6 +134,7 @@ export async function createClassCourse(
 		teacher,
 		institutionId: resolvedInstitutionId,
 		code: normalizeCode(payload.code),
+		coefficient: String(payload.coefficient),
 		semesterId,
 	});
 }
@@ -137,13 +146,21 @@ export async function updateClassCourse(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
-	const { allowTeacherOverride, ...payload } = data;
+	const {
+		allowTeacherOverride: _allowTeacherOverride2,
+		coefficient,
+		...payload
+	} = data;
 	const merged = {
 		...existing,
 		...payload,
+		coefficient:
+			coefficient != null ? String(coefficient) : existing.coefficient,
 	};
 	const { semesterId, klass } = await validateConfig(
-		merged as schema.NewClassCourse,
+		merged as Omit<schema.NewClassCourse, "institutionId"> & {
+			institutionId?: string;
+		},
 		institutionId,
 		id,
 	);
@@ -153,6 +170,7 @@ export async function updateClassCourse(
 		{
 			...payload,
 			code: payload.code ? normalizeCode(payload.code) : undefined,
+			coefficient: coefficient != null ? String(coefficient) : undefined,
 			semesterId: payload.semesterId ? semesterId : undefined,
 			institutionId: resolvedInstitutionId,
 		},
@@ -167,7 +185,9 @@ export async function deleteClassCourse(id: string, institutionId: string) {
 }
 
 export async function listClassCourses(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId"> & {
+		institutionId?: string;
+	},
 	institutionId: string,
 ) {
 	return repo.list({ ...opts, institutionId });
@@ -237,7 +257,9 @@ export async function getClassCourseRoster(
 }
 
 export async function searchClassCourses(
-	opts: Parameters<typeof repo.search>[0],
+	opts: Omit<Parameters<typeof repo.search>[0], "institutionId"> & {
+		institutionId?: string;
+	},
 	institutionId: string,
 ) {
 	return repo.search({ ...opts, institutionId });

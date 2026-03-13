@@ -17,7 +17,7 @@ const DashboardLayout: React.FC = () => {
 				replace: true,
 			});
 		}
-	}, [user, navigate]);
+	}, [user, navigate, location.pathname]);
 
 	// Close sidebar on mobile when navigating
 	useEffect(() => {

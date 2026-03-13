@@ -123,7 +123,7 @@ describe("Authentication - Login", () => {
 					null;
 
 				// Or check if page content is restricted (empty table, no add button)
-				const hasRestrictedContent =
+				const _hasRestrictedContent =
 					$body.find('button:contains("Add"), button:contains("Ajouter")')
 						.length === 0;
 

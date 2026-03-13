@@ -308,40 +308,36 @@ export default function RetakeEligibility() {
 										<RefreshCw className="mr-1 h-4 w-4" />
 										{t("admin.retake.override.remove")}
 									</Button>
+								) : showEligibleActions ? (
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() =>
+											setOverrideModal({
+												isOpen: true,
+												row,
+												action: "force_ineligible",
+											})
+										}
+									>
+										<ShieldOff className="mr-1 h-4 w-4" />
+										{t("admin.retake.override.forceIneligible")}
+									</Button>
 								) : (
-									<>
-										{showEligibleActions ? (
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													setOverrideModal({
-														isOpen: true,
-														row,
-														action: "force_ineligible",
-													})
-												}
-											>
-												<ShieldOff className="mr-1 h-4 w-4" />
-												{t("admin.retake.override.forceIneligible")}
-											</Button>
-										) : (
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													setOverrideModal({
-														isOpen: true,
-														row,
-														action: "force_eligible",
-													})
-												}
-											>
-												<Shield className="mr-1 h-4 w-4" />
-												{t("admin.retake.override.forceEligible")}
-											</Button>
-										)}
-									</>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() =>
+											setOverrideModal({
+												isOpen: true,
+												row,
+												action: "force_eligible",
+											})
+										}
+									>
+										<Shield className="mr-1 h-4 w-4" />
+										{t("admin.retake.override.forceEligible")}
+									</Button>
 								)}
 							</div>
 						</TableCell>

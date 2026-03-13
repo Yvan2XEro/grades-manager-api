@@ -143,7 +143,14 @@ async function ensureSemester(semesterId?: string) {
 }
 
 export async function createClass(
-	data: Parameters<typeof repo.create>[0],
+	data: Omit<
+		Parameters<typeof repo.create>[0],
+		"institutionId" | "cycleLevelId" | "programOptionId"
+	> & {
+		institutionId?: string;
+		cycleLevelId?: string;
+		programOptionId?: string;
+	},
 	institutionId: string,
 ) {
 	const program = await loadProgram(data.program, institutionId);
@@ -156,7 +163,7 @@ export async function createClass(
 		program,
 		data.programOptionId,
 	);
-	const semesterId = await ensureSemester(data.semesterId);
+	const semesterId = await ensureSemester(data.semesterId ?? undefined);
 	return repo.create({
 		...data,
 		academicYear: academicYear.id,
@@ -200,7 +207,7 @@ export async function updateClass(
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
-		academicYear: academicYear.id ?? existing.academicYear,
+		academicYear: academicYear?.id ?? existing.academicYear,
 		cycleLevelId,
 		programOptionId,
 		code: data.code ? normalizeCode(data.code) : undefined,

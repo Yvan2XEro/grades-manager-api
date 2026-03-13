@@ -33,7 +33,7 @@ describe("class courses router", () => {
 	it("supports CRUD", async () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
-		const teacherId = course.defaultTeacher;
+		const teacherId = course.defaultTeacher!;
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			code: "CC-CRUD",
@@ -57,7 +57,7 @@ describe("class courses router", () => {
 	it("returns roster with enrolled students only", async () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
-		const teacherId = course.defaultTeacher;
+		const teacherId = course.defaultTeacher!;
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			code: "CC-ROSTER",
@@ -84,8 +84,8 @@ describe("class courses router", () => {
 				nameEn: "Foreign Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
-			institutionId: foreignInstitution.id,
+		const _faculty = await createFaculty({
+			parentInstitutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
 			institutionId: foreignInstitution.id,
