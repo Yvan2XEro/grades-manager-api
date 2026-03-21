@@ -81,8 +81,9 @@
   --sidebar-border: oklch(0.88 0.006 80);
   --sidebar-ring: oklch(0.48 0.2 277);
   /* Motif de fond */
-  --pattern-color: oklch(0 0 0 / 5.5%);
-  --pattern-size: 22px;
+  --pattern-color: oklch(0 0 0 / 13%);
+  --pattern-color-subtle: oklch(0 0 0 / 7%);
+  --pattern-size: 20px;
 }
 
 /* Dark Mode */
@@ -122,8 +123,9 @@
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.65 0.17 254);
   /* Motif de fond */
-  --pattern-color: oklch(1 0 0 / 4%);
-  --pattern-size: 22px;
+  --pattern-color: oklch(1 0 0 / 9%);
+  --pattern-color-subtle: oklch(1 0 0 / 5%);
+  --pattern-size: 20px;
 }
 
 @layer base {
@@ -327,13 +329,19 @@
 
 /* ─── Background patterns ─────────────────────────────────────────── */
 
-/* Dot grid — grille de points subtile */
+/* Dot grid — grille de points */
 .bg-dot-pattern {
-  background-image: radial-gradient(circle, var(--pattern-color) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(circle, var(--pattern-color) 1.5px, transparent 1.5px);
   background-size: var(--pattern-size) var(--pattern-size);
 }
 
-/* Line grid — grille de lignes */
+/* Dot grid subtil — pour surfaces de navigation (sidebar, header) */
+.bg-dot-pattern-subtle {
+  background-image: radial-gradient(circle, var(--pattern-color-subtle) 1.5px, transparent 1.5px);
+  background-size: var(--pattern-size) var(--pattern-size);
+}
+
+/* Line grid — grille de lignes croisées */
 .bg-grid-pattern {
   background-image:
     linear-gradient(var(--pattern-color) 1px, transparent 1px),

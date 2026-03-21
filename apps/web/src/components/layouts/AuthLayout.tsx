@@ -25,7 +25,7 @@ const AuthLayout: React.FC = () => {
 	return (
 		<div className="flex min-h-screen">
 			{/* Left panel - Branding */}
-			<div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 lg:flex lg:w-1/2">
+			<div className="bg-dot-pattern-subtle relative hidden flex-col justify-between overflow-hidden bg-primary p-10 lg:flex lg:w-1/2">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15)_0%,_transparent_60%)]" />
 
 				{/* Floating orbs */}
@@ -129,15 +129,7 @@ const AuthLayout: React.FC = () => {
 			</div>
 
 			{/* Right panel - Form */}
-			<div className="relative flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
-				<div
-					className="pointer-events-none absolute inset-0 opacity-[0.03]"
-					style={{
-						backgroundImage:
-							"radial-gradient(circle, currentColor 1px, transparent 1px)",
-						backgroundSize: "24px 24px",
-					}}
-				/>
+			<div className="bg-dot-pattern relative flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
 				<motion.div
 					initial={{ opacity: 0, y: 16, scale: 0.98 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}

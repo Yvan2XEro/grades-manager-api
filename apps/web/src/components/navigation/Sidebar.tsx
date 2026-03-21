@@ -411,7 +411,7 @@ const Sidebar: React.FC = () => {
 						animate={{ x: 0 }}
 						exit={{ x: -280 }}
 						transition={{ duration: 0.22, ease: "easeOut" }}
-						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar md:hidden"
+						className="bg-dot-pattern-subtle fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar md:hidden"
 					>
 						{inner(false)}
 					</motion.aside>
@@ -422,7 +422,7 @@ const Sidebar: React.FC = () => {
 			<motion.aside
 				animate={{ width: sidebarCollapsed ? 56 : 256 }}
 				transition={{ duration: 0.22, ease: "easeInOut" }}
-				className="hidden md:flex flex-col shrink-0 border-r border-sidebar-border bg-sidebar overflow-hidden"
+				className="bg-dot-pattern-subtle hidden md:flex flex-col shrink-0 border-r border-sidebar-border bg-sidebar overflow-hidden"
 			>
 				{inner(sidebarCollapsed)}
 			</motion.aside>

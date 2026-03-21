@@ -31,13 +31,13 @@ const DashboardLayout: React.FC = () => {
 	}
 
 	return (
-		<div className="flex h-dvh overflow-hidden bg-background">
+		<div className="bg-dot-pattern flex h-dvh overflow-hidden bg-background">
 			<Sidebar />
 
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 				<Header />
 
-				<main className="bg-dot-pattern min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+				<main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
 					<div className="min-w-0 px-4 py-6 md:px-8">
 						<Outlet />
 					</div>
