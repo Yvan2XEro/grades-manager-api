@@ -31,9 +31,9 @@ const DashboardLayout: React.FC = () => {
 	}
 
 	return (
-		<div className="relative flex h-dvh overflow-hidden bg-background">
-			{/* Motif de fond isolé — mask-image n'affecte pas les enfants */}
-			<div className="bg-dot-pattern pointer-events-none absolute inset-0" />
+		<div className="relative isolate flex h-dvh overflow-hidden bg-background">
+			{/* Motif de fond — z:-1 pour rester strictement derrière le contenu */}
+			<div className="bg-dot-pattern pointer-events-none absolute inset-0 -z-10" />
 			<Sidebar />
 
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">

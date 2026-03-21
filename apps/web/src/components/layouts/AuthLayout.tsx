@@ -129,8 +129,8 @@ const AuthLayout: React.FC = () => {
 			</div>
 
 			{/* Right panel - Form */}
-			<div className="relative flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
-				<div className="bg-dot-pattern pointer-events-none absolute inset-0" />
+			<div className="relative isolate flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
+				<div className="bg-dot-pattern pointer-events-none absolute inset-0 -z-10" />
 				<motion.div
 					initial={{ opacity: 0, y: 16, scale: 0.98 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}
