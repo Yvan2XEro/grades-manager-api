@@ -83,7 +83,7 @@
   /* Motif de fond */
   --pattern-color: oklch(0 0 0 / 3.5%);
   --pattern-color-subtle: oklch(0 0 0 / 2%);
-  --pattern-size: 14px;
+  --pattern-size: 10px;
 }
 
 /* Dark Mode */
@@ -125,7 +125,7 @@
   /* Motif de fond */
   --pattern-color: oklch(1 0 0 / 3.5%);
   --pattern-color-subtle: oklch(1 0 0 / 2%);
-  --pattern-size: 14px;
+  --pattern-size: 10px;
 }
 
 @layer base {

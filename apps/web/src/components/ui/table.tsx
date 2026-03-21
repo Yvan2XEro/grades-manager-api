@@ -91,7 +91,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 	return (
 		<div
 			ref={outerRef}
-			className="relative w-full"
+			className="relative w-full rounded-xl bg-card"
 			onMouseMove={onMouseMove}
 			onMouseLeave={() => setArrowY(null)}
 		>
