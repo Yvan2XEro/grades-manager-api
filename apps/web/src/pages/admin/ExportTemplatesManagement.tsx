@@ -65,6 +65,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "@/utils/trpc";
@@ -258,7 +263,7 @@ export default function ExportTemplatesManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.exportTemplates.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -331,9 +336,7 @@ export default function ExportTemplatesManagement() {
 					</BulkActionBar>
 
 					{isLoading ? (
-						<div className="flex justify-center py-8">
-							<Spinner />
-						</div>
+						<TableSkeleton columns={5} rows={8} />
 					) : templates && templates.length > 0 ? (
 						<Table>
 							<TableHeader>
@@ -348,8 +351,8 @@ export default function ExportTemplatesManagement() {
 										/>
 									</TableHead>
 									<TableHead>{t("admin.exportTemplates.table.name")}</TableHead>
-									<TableHead>{t("admin.exportTemplates.table.type")}</TableHead>
-									<TableHead>
+									<TableHead className="w-28">{t("admin.exportTemplates.table.type")}</TableHead>
+									<TableHead className="w-28">
 										{t("admin.exportTemplates.table.status")}
 									</TableHead>
 									<TableHead className="text-right">
@@ -359,7 +362,27 @@ export default function ExportTemplatesManagement() {
 							</TableHeader>
 							<TableBody>
 								{templates.map((template) => (
-									<TableRow key={template.id}>
+									<TableRow
+								key={template.id}
+								actions={
+									<>
+										<ContextMenuItem onSelect={() => navigate(`/admin/export-templates/${template.id}`)}>
+											<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+										</ContextMenuItem>
+										<ContextMenuItem onSelect={() => handleOpenRename(template)}>
+											<span>{t("common.actions.rename", { defaultValue: "Rename" })}</span>
+										</ContextMenuItem>
+										<ContextMenuItem onSelect={() => handleSetDefault(template)}>
+											<Star className="h-4 w-4" />
+											<span>{t("admin.exportTemplates.actions.setDefault", { defaultValue: "Set as default" })}</span>
+										</ContextMenuItem>
+										<ContextMenuSeparator />
+										<ContextMenuItem variant="destructive" onSelect={() => setDeletingTemplate(template)}>
+											<span>{t("common.actions.delete")}</span>
+										</ContextMenuItem>
+									</>
+								}
+							>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(template.id)}
@@ -444,7 +467,7 @@ export default function ExportTemplatesManagement() {
 								<h3 className="font-semibold text-foreground text-lg">
 									{t("admin.exportTemplates.empty.title")}
 								</h3>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.exportTemplates.empty.description")}
 								</p>
 								<Button

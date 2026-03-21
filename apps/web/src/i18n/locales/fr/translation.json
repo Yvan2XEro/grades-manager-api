@@ -8,6 +8,13 @@
 			"resultsCount_one": "{{count}} résultat",
 			"resultsCount_other": "{{count}} résultats",
 			"loading": "Chargement..."
+		},
+		"filterBar": {
+			"label": "Filtres",
+			"reset": "Réinitialiser"
+		},
+		"datePicker": {
+			"placeholder": "Choisir une date"
 		}
 	},
 	"common": {
@@ -25,8 +32,7 @@
 			"saving": "Enregistrement...",
 			"reset": "Réinitialiser",
 			"open": "Ouvrir",
-			"back": "Retour",
-			"edit": "Modifier"
+			"back": "Retour"
 		},
 		"fields": {
 			"email": "E-mail",
@@ -83,6 +89,8 @@
 			"profileMenuAria": "Ouvrir le menu profil"
 		},
 		"sidebar": {
+			"search": "Rechercher...",
+			"noResults": "Aucun résultat",
 			"admin": {
 				"dashboard": "Tableau de bord",
 				"academicYears": "Annees academiques",
@@ -117,7 +125,7 @@
 			},
 			"groups": {
 				"overview": "Vue d'ensemble",
-				"structure": "Structure académique",
+				"structure": "Structure acadé...",
 				"users": "Utilisateurs",
 				"teaching": "Enseignement",
 				"evaluation": "Évaluations",
@@ -1830,6 +1838,29 @@
 			"subtitle": "Alertes de workflow envoyées au personnel et aux étudiants",
 			"queueTitle": "Dernières notifications",
 			"empty": "Aucune notification pour le moment.",
+			"pendingBadge": "{{count}} en attente",
+			"viewAll": "Voir toutes les notifications",
+			"results": "{{count}} résultats",
+			"selected": "{{count}} sélectionnée(s)",
+			"deselect": "Désélectionner",
+			"selectAll": "Tout sélectionner",
+			"status": {
+				"pending": "En attente",
+				"sent": "Envoyée",
+				"failed": "Échouée"
+			},
+			"tabs": {
+				"all": "Tout",
+				"pending": "En attente",
+				"sent": "Envoyées",
+				"failed": "Échouées"
+			},
+			"timeAgo": {
+				"justNow": "À l'instant",
+				"minutes": "Il y a {{count}} min",
+				"hours": "Il y a {{count}} h",
+				"days": "Il y a {{count}} j"
+			},
 			"actions": {
 				"flush": "Vider la file",
 				"ack": "Accuser réception"
@@ -2172,6 +2203,204 @@
 					"deselect": "Désélectionner",
 					"viewDetails": "Voir les détails"
 				}
+			}
+		},
+		"deliberations": {
+			"title": "Délibérations",
+			"subtitle": "Gérer les délibérations de jury pour les classes",
+			"actions": {
+				"create": "Nouvelle délibération",
+				"open": "Ouvrir",
+				"close": "Clôturer",
+				"sign": "Signer",
+				"reopen": "Rouvrir",
+				"compute": "Calculer les résultats",
+				"computing": "Calcul en cours...",
+				"export": "Exporter diplomation",
+				"exporting": "Exportation...",
+				"override": "Modifier la décision",
+				"delete": "Supprimer"
+			},
+			"columns": {
+				"class": "Classe",
+				"semester": "Semestre",
+				"year": "Année académique",
+				"type": "Type",
+				"status": "Statut",
+				"date": "Date",
+				"actions": "Actions",
+				"createdAt": "Créé le"
+			},
+			"status": {
+				"draft": "Brouillon",
+				"open": "Ouvert",
+				"closed": "Clôturé",
+				"signed": "Signé"
+			},
+			"type": {
+				"semester": "Semestriel",
+				"annual": "Annuel",
+				"retake": "Rattrapage"
+			},
+			"decision": {
+				"admitted": "Admis",
+				"compensated": "Compensé",
+				"deferred": "Ajourné",
+				"repeat": "Redoublant",
+				"excluded": "Exclu",
+				"pending": "En attente"
+			},
+			"mention": {
+				"passable": "Passable",
+				"assez_bien": "Assez bien",
+				"bien": "Bien",
+				"tres_bien": "Très bien",
+				"excellent": "Excellent"
+			},
+			"empty": {
+				"title": "Aucune délibération",
+				"description": "Créez une délibération pour commencer à évaluer les résultats des étudiants."
+			},
+			"form": {
+				"createTitle": "Créer une délibération",
+				"editTitle": "Modifier la délibération",
+				"class": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"semester": "Semestre",
+				"semesterPlaceholder": "Laisser vide pour annuel",
+				"academicYear": "Année académique",
+				"type": "Type",
+				"typePlaceholder": "Sélectionner un type",
+				"deliberationDate": "Date de délibération",
+				"president": "Président",
+				"presidentPlaceholder": "Sélectionner un président",
+				"juryMembers": "Membres du jury"
+			},
+			"detail": {
+				"back": "Retour aux délibérations",
+				"students": "Résultats des étudiants",
+				"noResults": "Aucun résultat calculé. Ouvrez la délibération et lancez le calcul.",
+				"rank": "Rang",
+				"student": "Étudiant",
+				"registrationNumber": "Matricule",
+				"average": "Moy. gén.",
+				"credits": "Crédits",
+				"creditsFormat": "{{earned}}/{{total}}",
+				"decision": "Décision",
+				"mention": "Mention",
+				"overridden": "Modifié",
+				"jury": "Composition du jury",
+				"president": "Président",
+				"noPresident": "Non désigné",
+				"stats": "Statistiques",
+				"successRate": "Taux de réussite",
+				"classAverage": "Moyenne de classe",
+				"totalStudents": "Total étudiants",
+				"lifecycle": "Cycle de vie",
+				"openedAt": "Ouvert le",
+				"closedAt": "Clôturé le",
+				"signedAt": "Signé le",
+				"signedBy": "Signé par",
+				"notYet": "Pas encore"
+			},
+			"override": {
+				"title": "Modifier la décision",
+				"currentDecision": "Décision actuelle",
+				"newDecision": "Nouvelle décision",
+				"reason": "Motif",
+				"reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision..."
+			},
+			"logs": {
+				"title": "Journal d'activité",
+				"created": "Délibération créée",
+				"opened": "Délibération ouverte",
+				"computed": "Résultats calculés",
+				"override_decision": "Décision modifiée",
+				"closed": "Délibération clôturée",
+				"signed": "Délibération signée",
+				"reopened": "Délibération rouverte",
+				"exported": "Diplomation exportée",
+				"promoted": "Étudiants promus"
+			},
+			"promote": {
+				"button": "Promouvoir les admis",
+				"title": "Promouvoir les admis",
+				"description": "{{count}} étudiants admis/compensés seront inscrits dans la classe cible",
+				"targetAcademicYear": "Année académique cible",
+				"targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
+				"targetClass": "Classe cible",
+				"targetClassPlaceholder": "Sélectionner la classe de destination",
+				"confirm": "Promouvoir",
+				"success": "{{count}} étudiants promus avec succès",
+				"noAdmitted": "Aucun étudiant admis à promouvoir"
+			},
+			"ueDecision": {
+				"ADM": "Acquise",
+				"CMP": "Compensée",
+				"AJ": "Non acquise",
+				"INC": "Incomplète"
+			},
+			"toast": {
+				"createSuccess": "Délibération créée",
+				"updateSuccess": "Délibération mise à jour",
+				"deleteSuccess": "Délibération supprimée",
+				"transitionSuccess": "Statut mis à jour",
+				"computeSuccess": "Résultats calculés avec succès",
+				"overrideSuccess": "Décision modifiée",
+				"exportSuccess": "Export prêt",
+				"error": "Une erreur est survenue"
+			},
+			"confirm": {
+				"delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
+				"close": "Clôturer cette délibération ? Les résultats ne seront plus modifiables.",
+				"sign": "Signer cette délibération ? Cela la valide officiellement."
+			},
+			"rules": {
+				"title": "Règles de délibération",
+				"subtitle": "Configurez les règles qui déterminent automatiquement les décisions",
+				"create": "Nouvelle règle",
+				"name": "Nom de la règle",
+				"namePlaceholder": "ex. Admission si moyenne >= 10",
+				"description": "Description",
+				"category": "Catégorie",
+				"categoryPlaceholder": "Sélectionner une catégorie",
+				"categories": {
+					"admission": "Admission",
+					"compensation": "Compensation",
+					"deferral": "Ajournement",
+					"repeat": "Redoublement",
+					"exclusion": "Exclusion",
+					"other": "Autres"
+				},
+				"decision": "Décision produite",
+				"priority": "Priorité",
+				"priorityHelp": "Nombre plus petit = évalué en premier dans la catégorie",
+				"program": "Programme",
+				"programPlaceholder": "Tous les programmes",
+				"cycleLevel": "Niveau de cycle",
+				"cycleLevelPlaceholder": "Tous les niveaux",
+				"deliberationType": "Type de délibération",
+				"deliberationTypePlaceholder": "Tous les types",
+				"ruleset": "Définition de la règle (JSON)",
+				"rulesetHelp": "Format json-rules-engine",
+				"active": "Active",
+				"inactive": "Inactive",
+				"invalidJson": "Définition de règle JSON invalide",
+				"empty": {
+					"title": "Aucune règle configurée",
+					"description": "Ajoutez des règles pour calculer automatiquement les décisions lors des délibérations."
+				},
+				"toast": {
+					"createSuccess": "Règle créée",
+					"updateSuccess": "Règle mise à jour",
+					"deleteSuccess": "Règle supprimée",
+					"error": "Une erreur est survenue"
+				}
+			},
+			"filters": {
+				"allStatuses": "Tous les statuts",
+				"allTypes": "Tous les types",
+				"allYears": "Toutes les années"
 			}
 		}
 	},
@@ -2764,261 +2993,6 @@
 			"toast": {
 				"submitted": "Examen soumis",
 				"locked": "Examen verrouillé"
-			}
-		},
-		"retake": {
-			"actions": {
-				"createRetake": "Créer un examen de rattrapage",
-				"viewEligibility": "Voir l'éligibilité"
-			},
-			"createRetake": {
-				"date": "Rattrapage Date",
-				"parentExam": "Examen original",
-				"scoringPolicy": "Politique de notation",
-				"scoringPolicyHelp": "Comment calculer la note finale après le rattrapage",
-				"subtitle": "Créez une session de rattrapage liée à l'examen original",
-				"title": "Créer un examen de rattrapage"
-			},
-			"eligible": "Éligibles",
-			"eligibleCount": "{{count}} éligible(s)",
-			"empty": {
-				"description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants.",
-				"title": "Aucun étudiant trouvé"
-			},
-			"featureDisabled": "Rattrapage feature is currently disabled",
-			"ineligible": "Non éligibles",
-			"ineligibleCount": "{{count}} non éligible(s)",
-			"override": {
-				"confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?",
-				"confirmTitle": "Confirmer la dérogation",
-				"forceEligible": "Forcer éligible",
-				"forceIneligible": "Bloquer",
-				"reason": "Motif de la dérogation",
-				"reasonPlaceholder": "Saisissez le motif de la dérogation...",
-				"remove": "Supprimer la dérogation"
-			},
-			"reasons": {
-				"ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
-				"FAILED_EXAM": "Non validés exam",
-				"NO_GRADE": "Aucune note enregistrée",
-				"OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
-				"OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)",
-				"PASSED_EXAM": "Validés exam"
-			},
-			"selectExam": "Sélectionnez un examen approuvé",
-			"selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
-			"subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
-			"table": {
-				"attempt": "Tentative",
-				"grade": "Note actuelle",
-				"override": "Dérogation",
-				"reasons": "Raisons",
-				"registrationNumber": "Matricule",
-				"status": "Statut",
-				"student": "Étudiant"
-			},
-			"title": "Rattrapage Eligibility",
-			"toast": {
-				"overrideError": "Impossible d'appliquer la dérogation",
-				"overrideSuccess": "Dérogation applied successfully",
-				"removeError": "Impossible de supprimer la dérogation",
-				"removeSuccess": "Dérogation removed"
-			}
-		},
-		"deliberations": {
-			"title": "Délibérations",
-			"subtitle": "Gérer les délibérations de jury pour les classes",
-			"actions": {
-				"create": "Nouvelle délibération",
-				"open": "Ouvrir",
-				"close": "Clôturer",
-				"sign": "Signer",
-				"reopen": "Rouvrir",
-				"compute": "Calculer les résultats",
-				"computing": "Calcul en cours...",
-				"export": "Exporter diplomation",
-				"exporting": "Exportation...",
-				"override": "Modifier la décision",
-				"delete": "Supprimer"
-			},
-			"columns": {
-				"class": "Classe",
-				"semester": "Semestre",
-				"year": "Année académique",
-				"type": "Type",
-				"status": "Statut",
-				"date": "Date",
-				"actions": "Actions",
-				"createdAt": "Créé le"
-			},
-			"status": {
-				"draft": "Brouillon",
-				"open": "Ouvert",
-				"closed": "Clôturé",
-				"signed": "Signé"
-			},
-			"type": {
-				"semester": "Semestriel",
-				"annual": "Annuel",
-				"retake": "Rattrapage"
-			},
-			"decision": {
-				"admitted": "Admis",
-				"compensated": "Compensé",
-				"deferred": "Ajourné",
-				"repeat": "Redoublant",
-				"excluded": "Exclu",
-				"pending": "En attente"
-			},
-			"mention": {
-				"passable": "Passable",
-				"assez_bien": "Assez bien",
-				"bien": "Bien",
-				"tres_bien": "Très bien",
-				"excellent": "Excellent"
-			},
-			"empty": {
-				"title": "Aucune délibération",
-				"description": "Créez une délibération pour commencer à évaluer les résultats des étudiants."
-			},
-			"form": {
-				"createTitle": "Créer une délibération",
-				"editTitle": "Modifier la délibération",
-				"class": "Classe",
-				"classPlaceholder": "Sélectionner une classe",
-				"semester": "Semestre",
-				"semesterPlaceholder": "Laisser vide pour annuel",
-				"academicYear": "Année académique",
-				"type": "Type",
-				"typePlaceholder": "Sélectionner un type",
-				"deliberationDate": "Date de délibération",
-				"president": "Président",
-				"presidentPlaceholder": "Sélectionner un président",
-				"juryMembers": "Membres du jury"
-			},
-			"detail": {
-				"back": "Retour aux délibérations",
-				"students": "Résultats des étudiants",
-				"noResults": "Aucun résultat calculé. Ouvrez la délibération et lancez le calcul.",
-				"rank": "Rang",
-				"student": "Étudiant",
-				"registrationNumber": "Matricule",
-				"average": "Moy. gén.",
-				"credits": "Crédits",
-				"creditsFormat": "{{earned}}/{{total}}",
-				"decision": "Décision",
-				"mention": "Mention",
-				"overridden": "Modifié",
-				"jury": "Composition du jury",
-				"president": "Président",
-				"noPresident": "Non désigné",
-				"stats": "Statistiques",
-				"successRate": "Taux de réussite",
-				"classAverage": "Moyenne de classe",
-				"totalStudents": "Total étudiants",
-				"lifecycle": "Cycle de vie",
-				"openedAt": "Ouvert le",
-				"closedAt": "Clôturé le",
-				"signedAt": "Signé le",
-				"signedBy": "Signé par",
-				"notYet": "Pas encore"
-			},
-			"override": {
-				"title": "Modifier la décision",
-				"currentDecision": "Décision actuelle",
-				"newDecision": "Nouvelle décision",
-				"reason": "Motif",
-				"reasonPlaceholder": "Expliquez pourquoi vous modifiez cette décision..."
-			},
-			"logs": {
-				"title": "Journal d'activité",
-				"created": "Délibération créée",
-				"opened": "Délibération ouverte",
-				"computed": "Résultats calculés",
-				"override_decision": "Décision modifiée",
-				"closed": "Délibération clôturée",
-				"signed": "Délibération signée",
-				"reopened": "Délibération rouverte",
-				"exported": "Diplomation exportée",
-				"promoted": "Étudiants promus"
-			},
-			"promote": {
-				"button": "Promouvoir les admis",
-				"title": "Promouvoir les admis",
-				"description": "{{count}} étudiants admis/compensés seront inscrits dans la classe cible",
-				"targetAcademicYear": "Année académique cible",
-				"targetAcademicYearPlaceholder": "Sélectionner l'année suivante",
-				"targetClass": "Classe cible",
-				"targetClassPlaceholder": "Sélectionner la classe de destination",
-				"confirm": "Promouvoir",
-				"success": "{{count}} étudiants promus avec succès",
-				"noAdmitted": "Aucun étudiant admis à promouvoir"
-			},
-			"ueDecision": {
-				"ADM": "Acquise",
-				"CMP": "Compensée",
-				"AJ": "Non acquise",
-				"INC": "Incomplète"
-			},
-			"toast": {
-				"createSuccess": "Délibération créée",
-				"updateSuccess": "Délibération mise à jour",
-				"deleteSuccess": "Délibération supprimée",
-				"transitionSuccess": "Statut mis à jour",
-				"computeSuccess": "Résultats calculés avec succès",
-				"overrideSuccess": "Décision modifiée",
-				"exportSuccess": "Export prêt",
-				"error": "Une erreur est survenue"
-			},
-			"confirm": {
-				"delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
-				"close": "Clôturer cette délibération ? Les résultats ne seront plus modifiables.",
-				"sign": "Signer cette délibération ? Cela la valide officiellement."
-			},
-			"rules": {
-				"title": "Règles de délibération",
-				"subtitle": "Configurez les règles qui déterminent automatiquement les décisions",
-				"create": "Nouvelle règle",
-				"name": "Nom de la règle",
-				"namePlaceholder": "ex. Admission si moyenne >= 10",
-				"description": "Description",
-				"category": "Catégorie",
-				"categoryPlaceholder": "Sélectionner une catégorie",
-				"categories": {
-					"admission": "Admission",
-					"compensation": "Compensation",
-					"deferral": "Ajournement",
-					"repeat": "Redoublement",
-					"exclusion": "Exclusion"
-				},
-				"decision": "Décision produite",
-				"priority": "Priorité",
-				"priorityHelp": "Nombre plus petit = évalué en premier dans la catégorie",
-				"program": "Programme",
-				"programPlaceholder": "Tous les programmes",
-				"cycleLevel": "Niveau de cycle",
-				"cycleLevelPlaceholder": "Tous les niveaux",
-				"deliberationType": "Type de délibération",
-				"deliberationTypePlaceholder": "Tous les types",
-				"ruleset": "Définition de la règle (JSON)",
-				"rulesetHelp": "Format json-rules-engine",
-				"active": "Active",
-				"inactive": "Inactive",
-				"empty": {
-					"title": "Aucune règle configurée",
-					"description": "Ajoutez des règles pour calculer automatiquement les décisions lors des délibérations."
-				},
-				"toast": {
-					"createSuccess": "Règle créée",
-					"updateSuccess": "Règle mise à jour",
-					"deleteSuccess": "Règle supprimée",
-					"error": "Une erreur est survenue"
-				}
-			},
-			"filters": {
-				"allStatuses": "Tous les statuts",
-				"allTypes": "Tous les types",
-				"allYears": "Toutes les années"
 			}
 		}
 	},

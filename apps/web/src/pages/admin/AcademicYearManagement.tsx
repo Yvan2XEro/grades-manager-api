@@ -2,20 +2,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
-import { Calendar, Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
+import { UndrawCalendar } from "@/components/ui/undraw";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import {
 	Card,
 	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -28,6 +26,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import FormModal from "../../components/modals/FormModal";
@@ -286,7 +289,7 @@ const AcademicYearManagement: React.FC = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.academicYears.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -308,18 +311,13 @@ const AcademicYearManagement: React.FC = () => {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.academicYears.title")}</CardTitle>
-					<CardDescription>{t("admin.academicYears.subtitle")}</CardDescription>
-				</CardHeader>
-
 				{isLoading ? (
 					<div className="flex items-center justify-center p-8">
 						<Spinner />
 					</div>
 				) : academicYears.length === 0 ? (
 					<div className="p-8 text-center">
-						<Calendar className="mx-auto h-12 w-12 text-muted-foreground/60" />
+						<UndrawCalendar className="mx-auto h-36 w-auto" />
 						<h3 className="mt-4 font-medium text-foreground text-lg">
 							{t("admin.academicYears.empty.title")}
 						</h3>
@@ -369,6 +367,9 @@ const AcademicYearManagement: React.FC = () => {
 								{t("common.actions.delete")}
 							</Button>
 						</BulkActionBar>
+						{isLoading ? (
+							<TableSkeleton columns={6} rows={8} />
+						) : (
 						<Table className="min-w-full">
 							<TableHeader>
 								<TableRow>
@@ -382,19 +383,36 @@ const AcademicYearManagement: React.FC = () => {
 										/>
 									</TableHead>
 									<TableHead>{t("admin.academicYears.table.name")}</TableHead>
-									<TableHead>
+									<TableHead className="w-28">
 										{t("admin.academicYears.table.startDate")}
 									</TableHead>
-									<TableHead>
+									<TableHead className="w-28">
 										{t("admin.academicYears.table.endDate")}
 									</TableHead>
-									<TableHead>{t("admin.academicYears.table.status")}</TableHead>
-									<TableHead>{t("common.table.actions")}</TableHead>
+									<TableHead className="w-28">{t("admin.academicYears.table.status")}</TableHead>
+									<TableHead className="w-[100px] text-right">{t("common.table.actions")}</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{academicYears.map((year) => (
-									<TableRow key={year.id}>
+									<TableRow
+								key={year.id}
+								actions={
+									<>
+										<ContextMenuItem onSelect={() => { setEditingYear(year); }}>
+											<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+										</ContextMenuItem>
+										<ContextMenuItem onSelect={() => setSetupYear(year)}>
+											<Copy className="h-4 w-4" />
+											<span>{t("admin.academicYears.setup.button", { defaultValue: "Setup" })}</span>
+										</ContextMenuItem>
+										<ContextMenuSeparator />
+										<ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmId(year.id)}>
+											<span>{t("common.actions.delete")}</span>
+										</ContextMenuItem>
+									</>
+								}
+							>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(year.id)}
@@ -416,8 +434,7 @@ const AcademicYearManagement: React.FC = () => {
 												/>
 												<label
 													htmlFor={`academic-year-${year.id}`}
-													className="text-muted-foreground text-sm"
-												>
+													className="text-muted-foreground text-xs">
 													{year.isActive
 														? t("common.status.active")
 														: t("common.status.inactive")}
@@ -427,7 +444,7 @@ const AcademicYearManagement: React.FC = () => {
 										<td>
 											{deleteConfirmId === year.id ? (
 												<div className="flex items-center space-x-2">
-													<span className="text-muted-foreground text-sm">
+													<span className="text-muted-foreground text-xs">
 														{t("admin.academicYears.confirmDelete")}
 													</span>
 													<button
@@ -495,6 +512,7 @@ const AcademicYearManagement: React.FC = () => {
 								))}
 							</TableBody>
 						</Table>
+						)}
 						<PaginationBar
 							hasPrev={pagination.hasPrev}
 							hasNext={!!data?.nextCursor}

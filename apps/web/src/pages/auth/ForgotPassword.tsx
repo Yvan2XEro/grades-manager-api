@@ -55,7 +55,7 @@ const ForgotPassword: React.FC = () => {
 				>
 					<Mail className="h-6 w-6 text-primary" />
 				</motion.div>
-				<h2 className="font-bold font-heading text-2xl text-foreground">
+				<h2 className="text-foreground">
 					{t("auth.forgot.title")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, PlusIcon, Search, Trash2 } from "lucide-react";
+import { Pencil, PlusIcon, Search, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -13,13 +13,8 @@ import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../../components/ui/dialog";
+import { DialogFooter } from "../../components/ui/dialog";
+import FormModal from "../../components/modals/FormModal";
 import {
 	Form,
 	FormControl,
@@ -46,6 +41,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { DebouncedSearchField } from "@/components/inputs";
 import { useCursorPagination } from "../../hooks/useCursorPagination";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useRowSelection } from "../../hooks/useRowSelection";
@@ -121,6 +123,9 @@ export default function UserManagement() {
 	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
 		"all",
 	);
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "active" | "inactive" | "suspended"
+	>("all");
 	const genderOptions = useMemo(
 		() => [
 			{
@@ -148,12 +153,13 @@ export default function UserManagement() {
 	);
 
 	const { data, isLoading: isLoadingUsers } = useQuery({
-		queryKey: ["users", pagination.cursor, roleFilter],
+		queryKey: ["users", pagination.cursor, roleFilter, statusFilter],
 		queryFn: async () =>
 			trpcClient.users.list.query({
 				cursor: pagination.cursor,
 				limit: pagination.pageSize,
 				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
+				status: statusFilter === "all" ? undefined : statusFilter,
 			}),
 	});
 	const users = data?.items ?? [];
@@ -199,7 +205,7 @@ export default function UserManagement() {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
 	useEffect(() => {
 		pagination.reset();
-	}, [debouncedSearch, roleFilter]);
+	}, [debouncedSearch, roleFilter, statusFilter]);
 
 	const form = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
@@ -337,7 +343,7 @@ export default function UserManagement() {
 	return (
 		<div className="space-y-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("admin.users.title")}
 				</h1>
 				<Button onClick={openCreate}>
@@ -346,36 +352,49 @@ export default function UserManagement() {
 				</Button>
 			</div>
 
-			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div className="relative w-full sm:max-w-xs">
-					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 text-muted-foreground" />
-					<Input
-						type="text"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={t("admin.users.filters.searchPlaceholder")}
-						className="pl-9"
-					/>
+			<FilterBar
+				activeCount={[roleFilter !== "all", statusFilter !== "all", !!debouncedSearch].filter(Boolean).length}
+				onReset={() => { setRoleFilter("all"); setStatusFilter("all"); setSearch(""); }}
+				defaultOpen
+			>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Recherche</p>
+						<DebouncedSearchField
+							value={search}
+							onChange={setSearch}
+							placeholder={t("admin.users.filters.searchPlaceholder")}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Rôle</p>
+						<Select value={roleFilter} onValueChange={setRoleFilter}>
+							<SelectTrigger>
+								<SelectValue placeholder={t("admin.users.filters.roles.all")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">{t("admin.users.filters.roles.all")}</SelectItem>
+								<SelectItem value="admin">{t("admin.users.filters.roles.admin")}</SelectItem>
+								<SelectItem value="teacher">{t("admin.users.filters.roles.teacher")}</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Statut</p>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
+							<SelectTrigger>
+								<SelectValue placeholder="Tous les statuts" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Tous les statuts</SelectItem>
+								<SelectItem value="active">{t("admin.users.status.active")}</SelectItem>
+								<SelectItem value="inactive">{t("admin.users.status.inactive")}</SelectItem>
+								<SelectItem value="suspended">{t("admin.users.status.suspended")}</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<Select value={roleFilter} onValueChange={setRoleFilter}>
-						<SelectTrigger className="min-w-[180px]">
-							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{t("admin.users.filters.roles.all")}
-							</SelectItem>
-							<SelectItem value="admin">
-								{t("admin.users.filters.roles.admin")}
-							</SelectItem>
-							<SelectItem value="teacher">
-								{t("admin.users.filters.roles.teacher")}
-							</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
+			</FilterBar>
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
 				onClear={selection.clear}
@@ -403,6 +422,9 @@ export default function UserManagement() {
 			</BulkActionBar>
 
 			<div className="min-h-[50vh] overflow-x-auto">
+				{isLoadingUsers ? (
+					<TableSkeleton columns={6} rows={8} />
+				) : (
 				<Table>
 					<TableHeader>
 						<TableRow>
@@ -422,16 +444,29 @@ export default function UserManagement() {
 							</TableHead>
 							<TableHead>{t("admin.users.table.name")}</TableHead>
 							<TableHead>{t("admin.users.table.email")}</TableHead>
-							<TableHead>{t("admin.users.table.role")}</TableHead>
-							<TableHead>{t("admin.users.table.status")}</TableHead>
-							<TableHead className="w-1 text-right">
+							<TableHead className="w-28">{t("admin.users.table.role")}</TableHead>
+							<TableHead className="w-24">{t("admin.users.table.status")}</TableHead>
+							<TableHead className="w-[100px] text-right">
 								{t("common.table.actions")}
 							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{displayedUsers.map((user) => (
-							<TableRow key={user.id}>
+							<TableRow
+							key={user.id}
+							actions={
+								<>
+									<ContextMenuItem onSelect={() => openEdit(user)}>
+										<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+									</ContextMenuItem>
+									<ContextMenuSeparator />
+									<ContextMenuItem variant="destructive" onSelect={() => setUserToDelete(user)}>
+										<span>{t("common.actions.delete")}</span>
+									</ContextMenuItem>
+								</>
+							}
+						>
 								<TableCell className="w-10">
 									<Checkbox
 										checked={selection.isSelected(user.id)}
@@ -462,15 +497,16 @@ export default function UserManagement() {
 									</Badge>
 								</TableCell>
 								<TableCell className="text-right">
-									<div className="flex justify-end gap-2">
+									<div className="row-action-fade flex justify-end gap-1">
 										<Button
 											type="button"
 											variant="ghost"
 											size="icon"
+											className="h-8 w-8"
 											onClick={() => openEdit(user)}
 											aria-label={t("admin.users.actions.edit")}
 										>
-											<Pencil className="h-4 w-4" />
+											<Pencil className="h-3.5 w-3.5" />
 										</Button>
 										<Button
 											type="button"
@@ -495,6 +531,7 @@ export default function UserManagement() {
 						)}
 					</TableBody>
 				</Table>
+				)}
 			</div>
 
 			<PaginationBar
@@ -505,16 +542,13 @@ export default function UserManagement() {
 				isLoading={isLoadingUsers}
 			/>
 
-			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
-				<DialogContent className="max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingUser
-								? t("admin.users.form.editTitle")
-								: t("admin.users.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
+			<FormModal
+				isOpen={isModalOpen}
+				onClose={closeModal}
+				title={editingUser ? t("admin.users.form.editTitle") : t("admin.users.form.createTitle")}
+				maxWidth="sm:max-w-xl"
+			>
+				<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<div className="grid gap-4 md:grid-cols-2">
 								<FormField
@@ -720,9 +754,8 @@ export default function UserManagement() {
 								</Button>
 							</DialogFooter>
 						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
+				</Form>
+			</FormModal>
 
 			<ConfirmModal
 				isOpen={Boolean(userToDelete)}

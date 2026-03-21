@@ -67,7 +67,7 @@ export function DatePicker({
 					<span className="flex-1 truncate">
 						{selected
 							? format(selected, "d MMMM yyyy", { locale })
-							: (placeholder ?? "Choisir une date")}
+							: (placeholder ?? t("components.datePicker.placeholder"))}
 					</span>
 					{selected && (
 						<X

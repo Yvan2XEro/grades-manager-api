@@ -38,12 +38,14 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import FormModal from "@/components/modals/FormModal";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -52,6 +54,12 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaginationBar } from "@/components/ui/pagination-bar";
@@ -71,6 +79,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
@@ -750,7 +759,7 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.classCourses.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -823,12 +832,10 @@ export default function ClassCourseManagement() {
 			</BulkActionBar>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
-					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
-				</CardHeader>
 				<CardContent>
-					{displayedClassCourses.length > 0 ? (
+					{isLoading ? (
+					<TableSkeleton columns={8} rows={8} />
+				) : displayedClassCourses.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -949,19 +956,19 @@ export default function ClassCourseManagement() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="py-12 text-center">
-							<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-							<p className="mt-4 font-medium">
-								{t("admin.classCourses.empty.title")}
-							</p>
-							<p className="text-muted-foreground text-sm">
-								{t("admin.classCourses.empty.description")}
-							</p>
-							<Button className="mt-4" onClick={startCreate}>
-								<Plus className="mr-2 h-4 w-4" />
-								{t("admin.classCourses.actions.assign")}
-							</Button>
-						</div>
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+								<EmptyTitle>{t("admin.classCourses.empty.title")}</EmptyTitle>
+								<EmptyDescription>{t("admin.classCourses.empty.description")}</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={startCreate}>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.classCourses.actions.assign")}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
@@ -974,22 +981,12 @@ export default function ClassCourseManagement() {
 				isLoading={isLoading}
 			/>
 
-			<Dialog
-				open={isFormOpen}
-				onOpenChange={(open) => {
-					setIsFormOpen(open);
-					if (!open) handleCloseForm();
-				}}
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={handleCloseForm}
+				title={editingClassCourse ? t("admin.classCourses.form.editTitle") : t("admin.classCourses.form.createTitle")}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{editingClassCourse
-								? t("admin.classCourses.form.editTitle")
-								: t("admin.classCourses.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
+				<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<CodedEntitySelect
 								items={classes}
@@ -1186,8 +1183,7 @@ export default function ClassCourseManagement() {
 							</div>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
 			<AlertDialog
 				open={isDeleteOpen}
@@ -1345,7 +1341,7 @@ export default function ClassCourseManagement() {
 								</div>
 							)}
 
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.classCourses.ueAssign.hint", {
 									defaultValue:
 										"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",

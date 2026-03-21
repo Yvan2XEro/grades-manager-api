@@ -29,6 +29,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import { CreateBatchJobDialog } from "./CreateBatchJobDialog";
 
@@ -106,10 +107,10 @@ export default function BatchJobsDashboard() {
 				<div className="flex items-center space-x-3">
 					<PlayCircle className="h-6 w-6 text-primary-700" />
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.batchJobs.title")}
 						</h1>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("admin.batchJobs.subtitle")}
 						</p>
 					</div>
@@ -149,19 +150,17 @@ export default function BatchJobsDashboard() {
 			{/* Table */}
 			<div className="rounded-xl border bg-white shadow-sm">
 				{jobsQuery.isLoading ? (
-					<div className="flex items-center justify-center py-12">
-						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
-					</div>
+					<TableSkeleton columns={6} rows={8} />
 				) : jobs.length === 0 ? (
-					<div className="py-12 text-center">
-						<PlayCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-						<h3 className="font-semibold text-foreground text-sm">
-							{t("admin.batchJobs.empty.title")}
-						</h3>
-						<p className="mt-1 text-muted-foreground text-sm">
-							{t("admin.batchJobs.empty.description")}
-						</p>
-					</div>
+					<Empty className="border border-dashed">
+					<EmptyHeader>
+						<EmptyMedia variant="icon">
+							<PlayCircle className="text-muted-foreground" />
+						</EmptyMedia>
+						<EmptyTitle>{t("admin.batchJobs.empty.title")}</EmptyTitle>
+						<EmptyDescription>{t("admin.batchJobs.empty.description")}</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 				) : (
 					<Table>
 						<TableHeader>
@@ -223,7 +222,7 @@ export default function BatchJobsDashboard() {
 											? `${job.createdByRef.firstName} ${job.createdByRef.lastName}`
 											: "-"}
 									</TableCell>
-									<TableCell className="text-muted-foreground text-sm">
+									<TableCell className="text-muted-foreground text-xs">
 										{formatDistanceToNow(new Date(job.createdAt), {
 											addSuffix: true,
 										})}

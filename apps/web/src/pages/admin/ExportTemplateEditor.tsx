@@ -223,7 +223,7 @@ export default function ExportTemplateEditor() {
 						{t("common.actions.back")}
 					</Button>
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{template?.name || templateName}
 						</h1>
 						<p className="text-muted-foreground">

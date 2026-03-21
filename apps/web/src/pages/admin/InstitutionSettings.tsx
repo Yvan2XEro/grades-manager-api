@@ -179,7 +179,7 @@ function ImageUploadField({
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div>
 					<p className="font-medium text-foreground">{label}</p>
-					<p className="text-muted-foreground text-sm">{description}</p>
+					<p className="text-muted-foreground text-xs">{description}</p>
 				</div>
 				{preview && (
 					<Button
@@ -206,7 +206,7 @@ function ImageUploadField({
 							className="h-full w-full rounded-md object-contain"
 						/>
 					) : (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("admin.institution.form.previewPlaceholder", {
 								defaultValue: "No image yet",
 							})}
@@ -366,16 +366,16 @@ export default function InstitutionSettings() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-3">
-				<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+				<div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/8">
 					<Landmark className="h-5 w-5 text-primary" />
 				</div>
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.institution.title", {
 							defaultValue: "Institution settings",
 						})}
 					</h1>
-					<p className="text-muted-foreground text-sm">
+					<p className="text-muted-foreground text-xs">
 						{t("admin.institution.subtitle", {
 							defaultValue:
 								"Configure the bilingual identity, branding, and official contacts for generated documents.",

@@ -34,6 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import type { RouterOutputs } from "../../../utils/trpc";
 import { trpcClient } from "../../../utils/trpc";
 import OverrideDecisionDialog from "./OverrideDecisionDialog";
@@ -326,7 +327,11 @@ export default function DeliberationDetail() {
 	const delib = deliberationQuery.data;
 	if (!delib) {
 		return (
-			<div className="py-12 text-center text-muted-foreground">Not found</div>
+			<Empty>
+			<EmptyHeader>
+				<EmptyDescription>Not found</EmptyDescription>
+			</EmptyHeader>
+		</Empty>
 		);
 	}
 
@@ -352,7 +357,7 @@ export default function DeliberationDetail() {
 					</Button>
 					<div>
 						<div className="flex items-center gap-2">
-							<h1 className="font-bold font-heading text-2xl text-foreground">
+							<h1 className="text-foreground">
 								{delib.classRef?.name ?? "Deliberation"}
 							</h1>
 							<Badge variant={statusVariants[status] ?? "outline"}>
@@ -362,7 +367,7 @@ export default function DeliberationDetail() {
 								{t(`admin.deliberations.type.${delib.type}`)}
 							</Badge>
 						</div>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{delib.academicYear?.name ?? ""}{" "}
 							{delib.semester ? `— ${delib.semester.name}` : ""}
 						</p>
@@ -536,7 +541,9 @@ export default function DeliberationDetail() {
 						{t("admin.deliberations.detail.students")}
 					</h3>
 				</div>
-				{results.length === 0 ? (
+				{deliberationQuery.isLoading ? (
+					<TableSkeleton columns={8} rows={8} />
+				) : results.length === 0 ? (
 					<div className="py-10 text-center text-muted-foreground text-sm">
 						{t("admin.deliberations.detail.noResults")}
 					</div>

@@ -43,6 +43,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
@@ -910,7 +914,7 @@ export default function ClassManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.classes.title")}
 					</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
@@ -1003,7 +1007,9 @@ export default function ClassManagement() {
 							{t("admin.classes.actions.add")}
 						</Button>
 					</div>
-				) : (
+				) : isLoading ? (
+						<TableSkeleton columns={8} rows={8} />
+					) : (
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -1016,36 +1022,62 @@ export default function ClassManagement() {
 										aria-label="Select all"
 									/>
 								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.code", { defaultValue: "Code" })}
+								<TableHead className="w-24">
+							{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
 								<TableHead>
-									{t("admin.classes.table.classProgram", {
+							{t("admin.classes.table.classProgram", {
 										defaultValue: "Class / Program",
 									})}
 								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.cycle", {
+								<TableHead className="w-36">
+							{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
 									})}
 								</TableHead>
 								<TableHead>
-									{t("admin.classes.table.optionSemester", {
+							{t("admin.classes.table.optionSemester", {
 										defaultValue: "Option / Semester",
 									})}
 								</TableHead>
-								<TableHead>
-									{t("admin.classes.table.credits", {
+								<TableHead className="w-16">
+							{t("admin.classes.table.credits", {
 										defaultValue: "Credits",
 									})}
 								</TableHead>
-								<TableHead>{t("admin.classes.table.students")}</TableHead>
+								<TableHead className="w-24">{t("admin.classes.table.students")}</TableHead>
 								<TableHead className="w-10" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{classes?.map((cls) => (
-								<TableRow key={cls.id}>
+								<TableRow
+							key={cls.id}
+							actions={
+								<>
+									<ContextMenuItem onSelect={() => { setEditingClass(cls); form.reset({ name: cls.name }); setIsFormOpen(true); }}>
+										<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+									</ContextMenuItem>
+									<ContextMenuSeparator />
+									<ContextMenuItem onSelect={() => handlePreviewStudents(cls)}>
+										<Eye className="h-4 w-4" />
+										<span>{t("admin.classes.preview.button", { defaultValue: "View student list" })}</span>
+									</ContextMenuItem>
+									<ContextMenuItem onSelect={() => handleExportStudentListPDF(cls)}>
+										<FileText className="h-4 w-4" />
+										<span>{t("admin.classes.export.button", { defaultValue: "Export PDF" })}</span>
+									</ContextMenuItem>
+									<ContextMenuItem onSelect={() => handleExportStudentListExcel(cls)}>
+										<FileSpreadsheet className="h-4 w-4" />
+										<span>{t("admin.classes.export.excelButton", { defaultValue: "Export Excel" })}</span>
+									</ContextMenuItem>
+									<ContextMenuSeparator />
+									<ContextMenuItem variant="destructive" onSelect={() => openDeleteModal(cls.id)}>
+										<span>{t("common.actions.delete")}</span>
+									</ContextMenuItem>
+								</>
+							}
+						>
 									<TableCell>
 										<Checkbox
 											checked={selection.isSelected(cls.id)}
@@ -1091,7 +1123,7 @@ export default function ClassManagement() {
 													{cls.programOption.name}
 												</p>
 											) : (
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{t("common.labels.notAvailable", {
 														defaultValue: "N/A",
 													})}

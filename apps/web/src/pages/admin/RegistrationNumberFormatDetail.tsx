@@ -338,7 +338,7 @@ const RegistrationNumberFormatDetail = () => {
 						<ArrowLeft className="h-4 w-4" />
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{draft.id
 							? t("admin.registrationNumbers.dialog.editTitle", {
 									defaultValue: "Edit format",
@@ -505,7 +505,7 @@ const RegistrationNumberFormatDetail = () => {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{draft.definition.segments.length === 0 && (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.registrationNumbers.segments.empty", {
 										defaultValue:
 											"Combine literals, fields, and counters to craft a pattern.",
@@ -843,7 +843,7 @@ const RegistrationNumberFormatDetail = () => {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.registrationNumbers.preview.subtitle", {
 									defaultValue:
 										"Select a class and optional student info to test the pattern.",

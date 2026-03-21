@@ -28,13 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import FormModal from "@/components/modals/FormModal";
 import {
 	Form,
 	FormControl,
@@ -414,7 +408,7 @@ export default function ProgramManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.programs.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -568,38 +562,30 @@ export default function ProgramManagement() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="py-12 text-center">
-							<School className="mx-auto h-12 w-12 text-muted-foreground" />
-							<p className="mt-4 font-medium">
-								{t("admin.programs.empty.title")}
-							</p>
-							<p className="text-muted-foreground text-sm">
-								{t("admin.programs.empty.description")}
-							</p>
-							<Button className="mt-4" onClick={startCreate}>
+						<Empty className="border border-dashed">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<School className="text-muted-foreground" />
+							</EmptyMedia>
+							<EmptyTitle>{t("admin.programs.empty.title")}</EmptyTitle>
+							<EmptyDescription>{t("admin.programs.empty.description")}</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button onClick={startCreate}>
 								<Plus className="mr-2 h-4 w-4" />
 								{t("admin.programs.actions.add")}
 							</Button>
-						</div>
+						</EmptyContent>
+					</Empty>
 					)}
 				</CardContent>
 			</Card>
 
-			<Dialog
-				open={isFormOpen}
-				onOpenChange={(open) => {
-					setIsFormOpen(open);
-					if (!open) handleCloseForm();
-				}}
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={handleCloseForm}
+				title={editingProgram ? t("admin.programs.form.editTitle") : t("admin.programs.form.createTitle")}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{editingProgram
-								? t("admin.programs.form.editTitle")
-								: t("admin.programs.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<div className="grid gap-4 sm:grid-cols-2">
@@ -689,34 +675,14 @@ export default function ProgramManagement() {
 							</div>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
-			<Dialog
-				open={isOptionModalOpen}
-				onOpenChange={(open) => {
-					if (!open) {
-						closeOptionsModal();
-					} else {
-						setIsOptionModalOpen(true);
-					}
-				}}
+			<FormModal
+				isOpen={isOptionModalOpen}
+				onClose={closeOptionsModal}
+				title={t("admin.programs.options.title", { defaultValue: "Manage options for {{value}}", value: optionProgram?.name ?? "" })}
+				maxWidth="sm:max-w-xl"
 			>
-				<DialogContent className="max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.programs.options.title", {
-								defaultValue: "Manage options for {{value}}",
-								value: optionProgram?.name ?? "",
-							})}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.programs.options.subtitle", {
-								defaultValue:
-									"Options represent specializations or tracks within a program.",
-							})}
-						</DialogDescription>
-					</DialogHeader>
 					<div className="space-y-4">
 						<div className="space-y-2">
 							{optionsLoading ? (
@@ -771,7 +737,7 @@ export default function ProgramManagement() {
 									))}
 								</div>
 							) : (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.programs.options.empty", {
 										defaultValue: "No options yet. Add one below.",
 									})}
@@ -881,8 +847,7 @@ export default function ProgramManagement() {
 							</form>
 						</Form>
 					</div>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
 			<AlertDialog
 				open={isDeleteOpen}

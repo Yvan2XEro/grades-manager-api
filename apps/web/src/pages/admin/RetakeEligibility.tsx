@@ -5,6 +5,7 @@ import {
 	Ban,
 	CheckCircle,
 	RefreshCw,
+	Search,
 	Shield,
 	ShieldOff,
 	UserCheck,
@@ -60,6 +61,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -106,6 +108,7 @@ export default function RetakeEligibility() {
 		action: null,
 	});
 	const [overrideReason, setOverrideReason] = useState("");
+	const [search, setSearch] = useState("");
 
 	// Fetch approved exams for the selected academic year
 	const examsQuery = useQuery({
@@ -202,8 +205,15 @@ export default function RetakeEligibility() {
 	const eligibilityData = eligibilityQuery.data;
 	const isFeatureEnabled = eligibilityData?.enabled ?? false;
 	const items = (eligibilityData?.items ?? []) as EligibilityRow[];
-	const eligibleStudents = items.filter((r) => r.status === "eligible");
-	const ineligibleStudents = items.filter((r) => r.status === "ineligible");
+
+	const needle = search.trim().toLowerCase();
+	const matchesSearch = (r: EligibilityRow) =>
+		!needle ||
+		r.studentName.toLowerCase().includes(needle) ||
+		r.registrationNumber.toLowerCase().includes(needle);
+
+	const eligibleStudents = items.filter((r) => r.status === "eligible" && matchesSearch(r));
+	const ineligibleStudents = items.filter((r) => r.status === "ineligible" && matchesSearch(r));
 
 	const selectedExam = examsQuery.data?.find((e) => e.id === selectedExamId);
 
@@ -252,8 +262,10 @@ export default function RetakeEligibility() {
 	const renderStudentTable = (
 		students: EligibilityRow[],
 		showEligibleActions: boolean,
-	) => (
-		<Table>
+	) => eligibilityQuery.isLoading ? (
+		<TableSkeleton columns={6} rows={8} />
+	) : (
+	<Table>
 			<TableHeader>
 				<TableRow>
 					<TableHead>{t("admin.retake.table.student")}</TableHead>
@@ -354,7 +366,7 @@ export default function RetakeEligibility() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("admin.retake.title")}
 				</h1>
 				<p className="text-muted-foreground">{t("admin.retake.subtitle")}</p>
@@ -481,21 +493,32 @@ export default function RetakeEligibility() {
 							</Empty>
 						) : (
 							<Tabs defaultValue="eligible">
-								<TabsList className="mb-4">
-									<TabsTrigger value="eligible" className="gap-2">
-										<CheckCircle className="h-4 w-4" />
-										{t("admin.retake.eligible")} ({eligibleStudents.length})
-									</TabsTrigger>
-									<TabsTrigger value="ineligible" className="gap-2">
-										<XCircle className="h-4 w-4" />
-										{t("admin.retake.ineligible")} ({ineligibleStudents.length})
-									</TabsTrigger>
-								</TabsList>
+								<div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<TabsList>
+										<TabsTrigger value="eligible" className="gap-2">
+											<CheckCircle className="h-4 w-4" />
+											{t("admin.retake.eligible")} ({eligibleStudents.length})
+										</TabsTrigger>
+										<TabsTrigger value="ineligible" className="gap-2">
+											<XCircle className="h-4 w-4" />
+											{t("admin.retake.ineligible")} ({ineligibleStudents.length})
+										</TabsTrigger>
+									</TabsList>
+									<div className="relative w-full sm:w-64">
+										<Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+										<Input
+											placeholder="Nom ou n° d’inscription…"
+											value={search}
+											onChange={(e) => setSearch(e.target.value)}
+											className="h-8 pl-8 text-sm"
+										/>
+									</div>
+								</div>
 								<TabsContent value="eligible">
 									{eligibleStudents.length > 0 ? (
 										renderStudentTable(eligibleStudents, true)
 									) : (
-										<p className="py-8 text-center text-muted-foreground">
+										<p className="py-6 text-center text-muted-foreground text-sm">
 											{t("admin.retake.empty.title")}
 										</p>
 									)}
@@ -504,7 +527,7 @@ export default function RetakeEligibility() {
 									{ineligibleStudents.length > 0 ? (
 										renderStudentTable(ineligibleStudents, false)
 									) : (
-										<p className="py-8 text-center text-muted-foreground">
+										<p className="py-6 text-center text-muted-foreground text-sm">
 											{t("admin.retake.empty.title")}
 										</p>
 									)}

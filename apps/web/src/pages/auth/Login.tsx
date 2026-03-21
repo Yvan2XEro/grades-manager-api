@@ -73,7 +73,7 @@ const Login: React.FC = () => {
 	return (
 		<motion.div variants={container} initial="hidden" animate="visible">
 			<motion.div variants={item} className="mb-8">
-				<h2 className="font-bold font-heading text-2xl text-foreground">
+				<h2 className="text-foreground">
 					{t("auth.login.title")}
 				</h2>
 				<p className="mt-2 text-muted-foreground text-sm">

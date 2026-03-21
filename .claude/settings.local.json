@@ -94,7 +94,11 @@
       "Bash(node:*)",
       "Bash(NODE_ENV=development USE_PGLITE=true bun run:*)",
       "Bash(NODE_ENV=development USE_PGLITE=true bun:*)",
-      "Bash(NODE_ENV=development USE_PGLITE=false DATABASE_URL=postgresql://fake:fake@localhost:5432/fake bun:*)"
+      "Bash(NODE_ENV=development USE_PGLITE=false DATABASE_URL=postgresql://fake:fake@localhost:5432/fake bun:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(cd:*)",
+      "Bash(bun -e \":*)"
     ]
   }
 }

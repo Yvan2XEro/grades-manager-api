@@ -17,11 +17,12 @@ import {
 	Send,
 	Trash2,
 	X,
+	RotateCcw,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -31,6 +32,7 @@ import {
 	SemesterSelect,
 } from "@/components/inputs";
 import { DatePicker } from "@/components/ui/date-picker";
+import { FilterBar } from "@/components/ui/filter-bar";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
@@ -39,9 +41,6 @@ import { Button } from "../../components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
@@ -69,7 +68,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -86,6 +84,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
@@ -157,6 +160,8 @@ export default function ExamManagement() {
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classId, setClassId] = useState<string | null>(null);
 	const [semesterId, setSemesterId] = useState<string | null>(null);
+	const [dateFrom, setDateFrom] = useState<Date | null>(null);
+	const [dateTo, setDateTo] = useState<Date | null>(null);
 	useEffect(() => {
 		setClassId(null);
 		setSemesterId(null);
@@ -164,11 +169,12 @@ export default function ExamManagement() {
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 	const retakeSchema = useMemo(() => buildRetakeSchema(t), [t]);
 
 	const examsQuery = useInfiniteQuery({
-		queryKey: ["exams", academicYearId, searchTerm, classId, semesterId],
+		queryKey: ["exams", academicYearId, searchTerm, classId, semesterId, dateFrom, dateTo],
 		queryFn: async ({ pageParam }) => {
 			if (!academicYearId) {
 				return {
@@ -181,6 +187,8 @@ export default function ExamManagement() {
 				query: searchTerm.trim() ? searchTerm.trim() : undefined,
 				classId: classId ?? undefined,
 				semesterId: semesterId ?? undefined,
+				dateFrom: dateFrom ?? undefined,
+				dateTo: dateTo ?? undefined,
 				cursor: pageParam,
 				limit: 20,
 			});
@@ -458,7 +466,7 @@ export default function ExamManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.exams.title")}
 					</h1>
 					<p className="text-muted-foreground">{t("admin.exams.subtitle")}</p>
@@ -477,63 +485,41 @@ export default function ExamManagement() {
 			</div>
 
 			<Card>
-				<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-					<div>
-						<CardTitle>{t("admin.exams.title")}</CardTitle>
-						<CardDescription>{t("admin.exams.subtitle")}</CardDescription>
-					</div>
-					<Button
-						onClick={() => {
-							setEditingExam(null);
-							form.reset();
-							setIsFormOpen(true);
-						}}
-						data-testid="add-exam-button-header"
+				<CardContent className="pt-6">
+					<FilterBar
+						className="mb-6"
+						activeCount={[!!searchTerm, !!academicYearId, !!classId, !!semesterId, !!dateFrom, !!dateTo].filter(Boolean).length}
+						onReset={() => { setSearchTerm(""); setAcademicYearId(null); setClassId(null); setSemesterId(null); setDateFrom(null); setDateTo(null); }}
 					>
-						<Plus className="mr-2 h-4 w-4" />
-						{t("admin.exams.actions.add")}
-					</Button>
-				</CardHeader>
-				<CardContent>
-					<div className="mb-6 flex flex-row-reverse items-center gap-4">
-						<div className="flex items-center gap-3">
-							<div className="flex flex-col gap-2">
-								<Label>{t("admin.exams.filters.academicYear")}</Label>
-								<AcademicYearSelect
-									value={academicYearId}
-									onChange={(value) => setAcademicYearId(value)}
-									disabled={isLoadingExams}
-								/>
+						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.search")}</p>
+								<DebouncedSearchField value={searchTerm} onChange={setSearchTerm} placeholder={t("admin.exams.filters.searchPlaceholder")} disabled={!academicYearId} />
 							</div>
-							<div className="flex flex-col gap-2">
-								<Label>{t("admin.exams.filters.class")}</Label>
-								<ClassSelect
-									academicYearId={academicYearId}
-									value={classId}
-									onChange={setClassId}
-									disabled={!academicYearId}
-								/>
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.academicYear")}</p>
+								<AcademicYearSelect value={academicYearId} onChange={(value) => setAcademicYearId(value)} disabled={isLoadingExams} />
 							</div>
-							<div className="flex flex-col gap-2">
-								<Label>{t("admin.exams.filters.semester")}</Label>
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.class")}</p>
+								<ClassSelect academicYearId={academicYearId} value={classId} onChange={setClassId} disabled={!academicYearId} />
+							</div>
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.semester")}</p>
 								<SemesterSelect value={semesterId} onChange={setSemesterId} />
 							</div>
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Date de début</p>
+								<DatePicker value={dateFrom ?? undefined} onChange={(d) => setDateFrom(d ?? null)} placeholder="Depuis..." disabled={!academicYearId} />
+							</div>
+							<div className="space-y-1.5">
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Date de fin</p>
+								<DatePicker value={dateTo ?? undefined} onChange={(d) => setDateTo(d ?? null)} placeholder="Jusqu'à..." disabled={!academicYearId} />
+							</div>
 						</div>
-
-						<div className="flex flex-auto flex-col gap-2">
-							<Label>{t("admin.exams.filters.search")}</Label>
-							<DebouncedSearchField
-								value={searchTerm}
-								onChange={setSearchTerm}
-								placeholder={t("admin.exams.filters.searchPlaceholder")}
-								disabled={!academicYearId}
-							/>
-						</div>
-					</div>
+					</FilterBar>
 					{isLoadingExams ? (
-						<div className="flex h-48 items-center justify-center">
-							<Spinner className="h-8 w-8" />
-						</div>
+						<TableSkeleton columns={9} rows={8} />
 					) : !exams.length ? (
 						<Empty className="border border-dashed">
 							<EmptyHeader>
@@ -607,11 +593,11 @@ export default function ExamManagement() {
 											<TableHead>{t("admin.exams.table.name")}</TableHead>
 											<TableHead>{t("admin.exams.table.course")}</TableHead>
 											<TableHead>{t("admin.exams.table.class")}</TableHead>
-											<TableHead>{t("admin.exams.table.type")}</TableHead>
-											<TableHead>{t("admin.exams.table.date")}</TableHead>
-											<TableHead>{t("admin.exams.table.percentage")}</TableHead>
-											<TableHead>{t("admin.exams.table.status")}</TableHead>
-											<TableHead className="text-right">
+											<TableHead className="w-28">{t("admin.exams.table.type")}</TableHead>
+											<TableHead className="w-28">{t("admin.exams.table.date")}</TableHead>
+											<TableHead className="w-16">{t("admin.exams.table.percentage")}</TableHead>
+											<TableHead className="w-28">{t("admin.exams.table.status")}</TableHead>
+											<TableHead className="w-[100px] text-right">
 												{t("common.table.actions")}
 											</TableHead>
 										</TableRow>
@@ -633,7 +619,28 @@ export default function ExamManagement() {
 												t("common.labels.notAvailable");
 											const isRetake = exam.sessionType === "retake";
 											return (
-												<TableRow key={exam.id}>
+												<TableRow
+											key={exam.id}
+											actions={
+												<>
+													<ContextMenuItem onSelect={() => { setEditingExam(exam); }}>
+														<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+													</ContextMenuItem>
+													<ContextMenuItem onSelect={() => navigate(`/teacher/grades/${exam.classCourse}?examId=${exam.id}`)}>
+														<ClipboardList className="h-4 w-4" />
+														<span>{t("admin.exams.actions.reviewGrades", { defaultValue: "Review grades" })}</span>
+													</ContextMenuItem>
+													<ContextMenuItem onSelect={() => openRetakeModal(exam)}>
+														<RotateCcw className="h-4 w-4" />
+														<span>{t("admin.exams.actions.retake", { defaultValue: "Add retake" })}</span>
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem variant="destructive" onSelect={() => openDeleteModal(exam.id)}>
+														<span>{t("common.actions.delete")}</span>
+													</ContextMenuItem>
+												</>
+											}
+										>
 													<TableCell className="w-10">
 														<Checkbox
 															checked={selection.isSelected(exam.id)}
@@ -689,7 +696,7 @@ export default function ExamManagement() {
 													<TableCell className="text-right">
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
-																<Button variant="ghost" size="icon-sm">
+																<Button variant="ghost" size="icon-sm" className="row-action-fade">
 																	<MoreHorizontal className="h-4 w-4" />
 																	<span className="sr-only">
 																		{t("common.table.actions")}
@@ -1000,11 +1007,11 @@ export default function ExamManagement() {
 					>
 						{retakeParentExam && (
 							<div className="rounded-md border bg-muted/50 p-4">
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("retakes.form.parentExamLabel")}
 								</p>
 								<p className="font-medium">{retakeParentExam.name}</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{retakeParentExam.courseName} - {retakeParentExam.className}
 								</p>
 							</div>
@@ -1069,7 +1076,7 @@ export default function ExamManagement() {
 											</SelectItem>
 										</SelectContent>
 									</Select>
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{field.value === "replace"
 											? t("retakes.scoringPolicy.replaceDescription")
 											: t("retakes.scoringPolicy.best_ofDescription")}

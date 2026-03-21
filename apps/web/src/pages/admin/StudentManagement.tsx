@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { DebouncedSearchField } from "@/components/inputs/DebouncedSearchField";
+import { FilterBar } from "@/components/ui/filter-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
@@ -57,6 +59,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+} from "@/components/ui/context-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
@@ -398,6 +404,7 @@ export default function StudentManagement() {
 	);
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
+	const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female" | "other">("all");
 	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -435,7 +442,7 @@ export default function StudentManagement() {
 
 	const { data: studentsData, isLoading: isLoadingStudents } =
 		useQuery<StudentsListResponse>({
-			queryKey: ["students", classFilter, search, pagination.cursor],
+			queryKey: ["students", classFilter, search, pagination.cursor, genderFilter],
 			queryFn: async () =>
 				trpcClient.students.list.query({
 					classId: classFilter === "all" ? undefined : classFilter,
@@ -444,6 +451,10 @@ export default function StudentManagement() {
 					limit: pagination.pageSize,
 				}),
 		});
+
+	const filteredStudentItems = genderFilter !== "all"
+		? (studentsData?.items ?? []).filter((s) => s.gender === genderFilter)
+		: (studentsData?.items ?? []);
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
@@ -759,7 +770,7 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("admin.students.title")}
 				</h1>
 				<Button onClick={() => setIsModalOpen(true)}>
@@ -768,65 +779,62 @@ export default function StudentManagement() {
 				</Button>
 			</div>
 
-			<div className="flex flex-wrap items-center gap-3">
-				<AcademicYearSelect
-					value={academicYearFilter}
-					onChange={(v) => {
-						setAcademicYearFilter(v);
-						setClassFilter("all");
-						pagination.reset();
-					}}
-					className="min-w-[200px]"
-				/>
-				<Select
-					value={classFilter}
-					onValueChange={(value) => {
-						setClassFilter(value);
-						pagination.reset();
-					}}
-				>
-					<SelectTrigger className="min-w-[200px]">
-						<SelectValue placeholder={t("admin.students.filters.allClasses")} />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">
-							{t("admin.students.filters.allClasses")}
-						</SelectItem>
-						{classes?.map((c) => (
-							<SelectItem key={c.id} value={c.id}>
-								{c.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Input
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					placeholder={t("admin.students.filters.searchPlaceholder")}
-					className="w-full max-w-md"
-				/>
-				<Button
-					variant="outline"
-					onClick={() => {
-						pagination.reset();
-						queryClient.invalidateQueries({ queryKey: ["students"] });
-					}}
-				>
-					{t("common.actions.search")}
-				</Button>
-			</div>
+			<FilterBar
+				activeCount={[!!academicYearFilter, classFilter !== "all", !!search.trim(), genderFilter !== "all"].filter(Boolean).length}
+				onReset={() => { setAcademicYearFilter(null); setClassFilter("all"); setSearch(""); setGenderFilter("all"); pagination.reset(); }}
+				defaultOpen
+			>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.academicYear", { defaultValue: "Année académique" })}</p>
+						<AcademicYearSelect
+							value={academicYearFilter}
+							onChange={(v) => { setAcademicYearFilter(v); setClassFilter("all"); pagination.reset(); }}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.class", { defaultValue: "Classe" })}</p>
+						<Select value={classFilter} onValueChange={(value) => { setClassFilter(value); pagination.reset(); }}>
+							<SelectTrigger><SelectValue placeholder={t("admin.students.filters.allClasses")} /></SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">{t("admin.students.filters.allClasses")}</SelectItem>
+								{classes?.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.search", { defaultValue: "Recherche" })}</p>
+						<DebouncedSearchField value={search} onChange={(v) => { setSearch(v); pagination.reset(); }} placeholder={t("admin.students.filters.searchPlaceholder")} />
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Genre</p>
+						<Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as typeof genderFilter)}>
+							<SelectTrigger><SelectValue placeholder="Tous les genres" /></SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Tous les genres</SelectItem>
+								<SelectItem value="male">Masculin</SelectItem>
+								<SelectItem value="female">Féminin</SelectItem>
+								<SelectItem value="other">Autre</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+				</div>
+			</FilterBar>
 
 			<Card>
 				<CardContent className="pb-0">
+					{isLoadingStudents ? (
+						<TableSkeleton columns={7} rows={8} className="rounded-none border-0" />
+					) : (
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>{t("admin.students.table.registration")}</TableHead>
+								<TableHead className="w-32">{t("admin.students.table.registration")}</TableHead>
 								<TableHead>{t("admin.students.table.name")}</TableHead>
 								<TableHead>{t("admin.students.table.email")}</TableHead>
-								<TableHead>{t("admin.students.table.gender")}</TableHead>
-								<TableHead>{t("admin.students.table.dateOfBirth")}</TableHead>
-								<TableHead>{t("admin.students.table.placeOfBirth")}</TableHead>
+								<TableHead className="w-20">{t("admin.students.table.gender")}</TableHead>
+								<TableHead className="w-28">{t("admin.students.table.dateOfBirth")}</TableHead>
+								<TableHead className="w-28">{t("admin.students.table.placeOfBirth")}</TableHead>
 								<TableHead className="text-right">
 									{t("admin.students.table.actions", {
 										defaultValue: "Actions",
@@ -835,9 +843,17 @@ export default function StudentManagement() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{studentsData?.items.length ? (
-								studentsData.items.map((student) => (
-									<TableRow key={student.id}>
+							{filteredStudentItems.length ? (
+								filteredStudentItems.map((student) => (
+									<TableRow
+									key={student.id}
+									actions={
+										<ContextMenuItem onSelect={() => setLedgerStudent(student)}>
+											<Sparkles className="h-4 w-4" />
+											{t("admin.students.table.viewLedger", { defaultValue: "Credits" })}
+										</ContextMenuItem>
+									}
+								>
 										<TableCell>
 											<ClipboardCopy
 												value={student.registrationNumber}
@@ -879,6 +895,7 @@ export default function StudentManagement() {
 							)}
 						</TableBody>
 					</Table>
+					)}
 				</CardContent>
 				<PaginationBar
 					hasPrev={pagination.hasPrev}
@@ -911,7 +928,7 @@ export default function StudentManagement() {
 					</DrawerHeader>
 					<div className="space-y-6 px-4 pb-6">
 						{ledgerSummaryQuery.isLoading ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.students.ledger.loading", {
 									defaultValue: "Fetching ledger…",
 								})}
@@ -933,7 +950,7 @@ export default function StudentManagement() {
 														defaultValue: "credits",
 													})}
 												</p>
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{t("admin.students.ledger.required", {
 														defaultValue: "Required: {{required}}",
 														required: ledgerSummaryQuery.data.requiredCredits,
@@ -994,7 +1011,7 @@ export default function StudentManagement() {
 												<p className="font-medium text-foreground">
 													{entry.academicYearId}
 												</p>
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{t("admin.students.ledger.entry", {
 														defaultValue:
 															"Earned {{earned}} • In progress {{progress}}",

@@ -16,6 +16,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -111,7 +116,7 @@ const RegistrationNumberFormats = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.registrationNumbers.title", {
 							defaultValue: "Registration number formats",
 						})}
@@ -158,15 +163,11 @@ const RegistrationNumberFormats = () => {
 			</BulkActionBar>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.registrationNumbers.list.title", {
-							defaultValue: "Existing formats",
-						})}
-					</CardTitle>
-				</CardHeader>
 				<CardContent>
 					<div className="overflow-x-auto">
+						{formatsQuery.isPending ? (
+							<TableSkeleton columns={5} rows={8} />
+						) : (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -185,17 +186,17 @@ const RegistrationNumberFormats = () => {
 										/>
 									</TableHead>
 									<TableHead>
-										{t("admin.registrationNumbers.table.name", {
+							{t("admin.registrationNumbers.table.name", {
 											defaultValue: "Name",
 										})}
 									</TableHead>
 									<TableHead>
-										{t("admin.registrationNumbers.table.description", {
+							{t("admin.registrationNumbers.table.description", {
 											defaultValue: "Description",
 										})}
 									</TableHead>
-									<TableHead>
-										{t("admin.registrationNumbers.table.pattern", {
+									<TableHead className="w-32">
+							{t("admin.registrationNumbers.table.pattern", {
 											defaultValue: "Pattern",
 										})}
 									</TableHead>
@@ -228,7 +229,23 @@ const RegistrationNumberFormats = () => {
 										</TableRow>
 									)}
 								{formatsQuery.data?.map((format) => (
-									<TableRow key={format.id}>
+									<TableRow
+								key={format.id}
+								actions={
+									<>
+										<ContextMenuItem onSelect={() => navigate(`/admin/registration-numbers/${format.id}`)}>
+											<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+										</ContextMenuItem>
+										<ContextMenuItem onSelect={() => activateMutation.mutate(format.id)}>
+											<span>{t("admin.registrationNumbers.actions.activate", { defaultValue: "Activate" })}</span>
+										</ContextMenuItem>
+										<ContextMenuSeparator />
+										<ContextMenuItem variant="destructive" onSelect={() => deleteMutation.mutate(format.id)}>
+											<span>{t("admin.registrationNumbers.list.delete", { defaultValue: "Delete" })}</span>
+										</ContextMenuItem>
+									</>
+								}
+							>
 										<TableCell className="w-10">
 											<Checkbox
 												checked={selection.isSelected(format.id)}
@@ -315,6 +332,7 @@ const RegistrationNumberFormats = () => {
 								))}
 							</TableBody>
 						</Table>
+						)}
 					</div>
 				</CardContent>
 			</Card>

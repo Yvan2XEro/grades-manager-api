@@ -48,6 +48,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { type RouterOutputs, trpcClient } from "../../utils/trpc";
 
@@ -412,7 +413,7 @@ export default function ExamScheduler() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.examScheduler.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -434,9 +435,7 @@ export default function ExamScheduler() {
 				</CardHeader>
 				<CardContent>
 					{historyQuery.isLoading ? (
-						<div className="flex items-center justify-center py-8">
-							<Spinner />
-						</div>
+						<TableSkeleton columns={10} rows={8} />
 					) : historyItems.length === 0 ? (
 						<Empty>
 							<EmptyHeader>
@@ -533,7 +532,7 @@ export default function ExamScheduler() {
 					<div className="shrink-0 border-b px-6 py-4">
 						<DialogHeader>
 							<DialogTitle>{t("admin.examScheduler.form.title")}</DialogTitle>
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.examScheduler.form.description")}
 							</p>
 						</DialogHeader>
@@ -964,7 +963,7 @@ export default function ExamScheduler() {
 						</Button>
 						<div className="flex items-center gap-3">
 							{sessionMode === "normal" && selectedClasses.size > 0 && (
-								<span className="text-muted-foreground text-sm">
+								<span className="text-muted-foreground text-xs">
 									{selectedClasses.size}{" "}
 									{t("admin.examScheduler.classes.title", {
 										defaultValue: "classes",
@@ -972,7 +971,7 @@ export default function ExamScheduler() {
 								</span>
 							)}
 							{sessionMode === "retake" && selectedExams.size > 0 && (
-								<span className="text-muted-foreground text-sm">
+								<span className="text-muted-foreground text-xs">
 									{selectedExams.size}{" "}
 									{t("admin.examScheduler.retakeExams.title", {
 										defaultValue: "examens sélectionnés",
@@ -1009,12 +1008,14 @@ export default function ExamScheduler() {
 							<Spinner />
 						</div>
 					) : !detailsData ? (
-						<div className="py-12 text-center text-muted-foreground">
-							{t("admin.examScheduler.history.emptyDescription")}
-						</div>
+						<Empty>
+						<EmptyHeader>
+							<EmptyDescription>{t("admin.examScheduler.history.emptyDescription")}</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 					) : (
 						<div className="space-y-4">
-							<div className="text-muted-foreground text-sm">
+							<div className="text-muted-foreground text-xs">
 								{t("admin.examScheduler.history.details.subtitle", {
 									date: format(new Date(detailsData.run.createdAt), "PPp"),
 								})}

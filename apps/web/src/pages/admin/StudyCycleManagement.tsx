@@ -20,12 +20,7 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import FormModal from "../../components/modals/FormModal";
 import {
 	Form,
 	FormControl,
@@ -45,6 +40,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
@@ -252,7 +252,7 @@ export default function StudyCycleManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.studyCycles.title", { defaultValue: "Study cycles" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -282,16 +282,9 @@ export default function StudyCycleManagement() {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.studyCycles.listTitle", { defaultValue: "Cycles" })}
-					</CardTitle>
-				</CardHeader>
 				<CardContent>
 					{cyclesQuery.isLoading ? (
-						<div className="flex justify-center py-6">
-							<Spinner />
-						</div>
+						<TableSkeleton columns={5} rows={8} />
 					) : (
 						<>
 							<BulkActionBar
@@ -332,21 +325,21 @@ export default function StudyCycleManagement() {
 											/>
 										</TableHead>
 										<TableHead>
-											{t("admin.studyCycles.table.name", {
+										{t("admin.studyCycles.table.name", {
 												defaultValue: "Name",
 											})}
 										</TableHead>
-										<TableHead>
-											{t("admin.studyCycles.table.credits", {
+										<TableHead className="w-20">
+										{t("admin.studyCycles.table.credits", {
 												defaultValue: "Credits",
 											})}
 										</TableHead>
-										<TableHead>
-											{t("admin.studyCycles.table.duration", {
+										<TableHead className="w-28">
+										{t("admin.studyCycles.table.duration", {
 												defaultValue: "Duration",
 											})}
 										</TableHead>
-										<TableHead className="text-right">
+										<TableHead className="w-[100px] text-right">
 											{t("admin.studyCycles.table.actions", {
 												defaultValue: "Actions",
 											})}
@@ -453,7 +446,7 @@ export default function StudyCycleManagement() {
 										cycle: activeCycle.name,
 									})}
 								</CardTitle>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.studyCycles.levelsSubtitle", {
 										defaultValue: "Define how students move across years.",
 									})}
@@ -491,7 +484,7 @@ export default function StudyCycleManagement() {
 										<p className="font-semibold text-foreground">
 											{level.name}
 										</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.studyCycles.levelCredits", {
 												defaultValue: "Required credits: {{value}}",
 												value: level.minCredits,
@@ -529,7 +522,7 @@ export default function StudyCycleManagement() {
 								</div>
 							))}
 							{!levelsQuery.data?.length && (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.studyCycles.levelsEmpty", {
 										defaultValue: "No levels defined yet.",
 									})}
@@ -540,20 +533,17 @@ export default function StudyCycleManagement() {
 				</Card>
 			)}
 
-			<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingId
-								? t("admin.studyCycles.actions.update", {
-										defaultValue: "Update cycle",
-									})
-								: t("admin.studyCycles.actions.add", {
-										defaultValue: "Add cycle",
-									})}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={() => setIsFormOpen(false)}
+				title={
+					editingId
+						? t("admin.studyCycles.actions.update", { defaultValue: "Update cycle" })
+						: t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })
+				}
+				maxWidth="sm:max-w-xl"
+			>
+				<Form {...form}>
 						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
 							<div className="grid gap-4 sm:grid-cols-2">
 								<FormField
@@ -653,23 +643,19 @@ export default function StudyCycleManagement() {
 							</Button>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
-			<Dialog open={isLevelFormOpen} onOpenChange={setIsLevelFormOpen}>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingLevelId
-								? t("admin.studyCycles.actions.updateLevel", {
-										defaultValue: "Update level",
-									})
-								: t("admin.studyCycles.actions.addLevel", {
-										defaultValue: "Add level",
-									})}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...levelForm}>
+			<FormModal
+				isOpen={isLevelFormOpen}
+				onClose={() => setIsLevelFormOpen(false)}
+				title={
+					editingLevelId
+						? t("admin.studyCycles.actions.updateLevel", { defaultValue: "Update level" })
+						: t("admin.studyCycles.actions.addLevel", { defaultValue: "Add level" })
+				}
+				maxWidth="sm:max-w-xl"
+			>
+				<Form {...levelForm}>
 						<form
 							className="space-y-4"
 							onSubmit={levelForm.handleSubmit(onLevelSubmit)}
@@ -736,8 +722,7 @@ export default function StudyCycleManagement() {
 							</Button>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
 			<AlertDialog
 				open={Boolean(deleteId)}

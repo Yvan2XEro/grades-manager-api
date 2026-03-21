@@ -27,6 +27,7 @@
 		"packages/*"
 	],
 	"dependencies": {
+		"react-image-crop": "^11.0.10",
 		"react-international-phone": "^4.8.0",
 		"web": "^0.0.2"
 	}

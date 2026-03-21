@@ -1,5 +1,13 @@
-import { Bell, LogOut, Menu, PanelLeftClose, Settings } from "lucide-react";
-import React from "react";
+import {
+	Check,
+	Languages,
+	LogOut,
+	Menu,
+	PanelLeftClose,
+	Search,
+	Settings,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -23,13 +31,22 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { CommandPalette } from "./CommandPalette";
+import { NotificationBell } from "./NotificationBell";
+
+const isMac =
+	typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
 	const navigate = useNavigate();
 	const { t, i18n } = useTranslation();
+	const [cmdOpen, setCmdOpen] = useState(false);
 
 	const handleLogout = async () => {
 		try {
@@ -48,139 +65,203 @@ const Header: React.FC = () => {
 	const userInitials =
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
 
-	return (
-		<header className="sticky top-0 z-30 border-border border-b bg-card/80 backdrop-blur-xl">
-			<div className="flex h-16 items-center justify-between px-4 md:px-6">
-				<div className="flex items-center gap-3">
-					<Button
-						onClick={toggleSidebar}
-						variant="ghost"
-						size="icon"
-						className="h-9 w-9 text-muted-foreground hover:text-foreground"
-						aria-label={t("navigation.header.toggleSidebarAria")}
-					>
-						{sidebarOpen ? (
-							<PanelLeftClose className="h-5 w-5" />
-						) : (
-							<Menu className="h-5 w-5" />
-						)}
-					</Button>
-					{crumbs.length > 1 ? (
-						<Breadcrumb className="hidden md:flex">
-							<BreadcrumbList>
-								{crumbs.map((crumb, index) => (
-									<React.Fragment key={crumb.label}>
-										{index > 0 && <BreadcrumbSeparator />}
-										<BreadcrumbItem>
-											{crumb.href ? (
-												<BreadcrumbLink asChild>
-													<Link to={crumb.href}>{crumb.label}</Link>
-												</BreadcrumbLink>
-											) : (
-												<BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-											)}
-										</BreadcrumbItem>
-									</React.Fragment>
-								))}
-							</BreadcrumbList>
-						</Breadcrumb>
-					) : (
-						<h1 className="hidden font-semibold text-foreground text-lg md:block">
-							{t(`navigation.header.${user?.role ?? "admin"}Dashboard`, {
-								defaultValue: "Dashboard",
-							})}
-						</h1>
-					)}
-				</div>
+	// ⌘K / Ctrl+K global shortcut
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+				e.preventDefault();
+				setCmdOpen((v) => !v);
+			}
+		};
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, []);
 
-				<div className="flex items-center gap-2">
-					<div className="flex items-center rounded-full bg-muted p-0.5">
-						{(["en", "fr"] as const).map((lang) => (
-							<button
-								key={lang}
-								type="button"
-								onClick={() => {
-									i18n.changeLanguage(lang);
-									localStorage.setItem("lng", lang);
-								}}
-								className={cn(
-									"rounded-full px-3 py-1 font-semibold text-xs uppercase transition-all duration-200",
-									i18n.language === lang
-										? "bg-background text-foreground shadow-sm"
-										: "text-muted-foreground hover:text-foreground",
-								)}
-							>
-								{lang}
-							</button>
-						))}
+	return (
+		<>
+			<header className="sticky top-0 z-30 border-border border-b bg-background/95 backdrop-blur-sm">
+				<div className="flex h-14 items-center justify-between px-4 md:px-6">
+					{/* ── Left ── */}
+					<div className="flex items-center gap-3">
+						<Button
+							onClick={toggleSidebar}
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-muted-foreground hover:text-foreground"
+							aria-label={t("navigation.header.toggleSidebarAria")}
+						>
+							{sidebarOpen ? (
+								<PanelLeftClose className="h-4 w-4" />
+							) : (
+								<Menu className="h-4 w-4" />
+							)}
+						</Button>
+
+						{crumbs.length > 1 ? (
+							<Breadcrumb className="hidden md:flex">
+								<BreadcrumbList>
+									{crumbs.map((crumb, index) => (
+										<React.Fragment key={crumb.label}>
+											{index > 0 && <BreadcrumbSeparator />}
+											<BreadcrumbItem>
+												{crumb.href ? (
+													<BreadcrumbLink asChild>
+														<Link to={crumb.href}>{crumb.label}</Link>
+													</BreadcrumbLink>
+												) : (
+													<BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+												)}
+											</BreadcrumbItem>
+										</React.Fragment>
+									))}
+								</BreadcrumbList>
+							</Breadcrumb>
+						) : (
+							<h1 className="hidden font-semibold text-foreground text-sm md:block">
+								{t(`navigation.header.${user?.role ?? "admin"}Dashboard`, {
+									defaultValue: "Dashboard",
+								})}
+							</h1>
+						)}
 					</div>
 
-					<Button
-						variant="ghost"
-						size="icon"
-						className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
-						aria-label={t("navigation.header.notificationsAria")}
-					>
-						<Bell className="h-[18px] w-[18px]" />
-					</Button>
+					{/* ── Right ── */}
+					<div className="flex items-center gap-1.5">
+						{/* Search trigger */}
+						<Button
+							variant="outline"
+							size="sm"
+							className="hidden h-8 gap-2 rounded-lg border-border/60 bg-muted/40 px-3 text-muted-foreground hover:bg-muted hover:text-foreground md:flex"
+							onClick={() => setCmdOpen(true)}
+						>
+							<Search className="h-3.5 w-3.5" />
+							<span className="text-xs">Rechercher…</span>
+							<kbd className="ml-1 rounded border bg-background px-1.5 font-mono text-[10px] text-muted-foreground shadow-sm">
+								{isMac ? "⌘K" : "Ctrl K"}
+							</kbd>
+						</Button>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								className="h-9 gap-2 rounded-full px-2"
-								aria-label={t("navigation.header.profileMenuAria")}
-							>
-								<Avatar className="h-8 w-8">
-									<AvatarImage
-										src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp"
-										alt={t("navigation.header.profileMenuAria")}
-									/>
-									<AvatarFallback className="bg-primary/10 font-semibold text-primary text-xs">
-										{userInitials}
-									</AvatarFallback>
-								</Avatar>
-								<span className="hidden font-medium text-foreground text-sm md:inline">
-									{user?.firstName}
-								</span>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuLabel className="font-normal">
-								<div className="flex flex-col gap-1">
-									<p className="font-medium text-sm">
-										{user?.firstName} {user?.lastName}
-									</p>
-									<p className="text-muted-foreground text-xs">{user?.email}</p>
-								</div>
-							</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="gap-2"
-								onSelect={(event) => {
-									event.preventDefault();
-									navigate("/settings");
-								}}
-							>
-								<Settings className="h-4 w-4" />
-								{t("settings.menuLabel")}
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="gap-2 text-destructive focus:text-destructive"
-								onSelect={(event) => {
-									event.preventDefault();
-									handleLogout();
-								}}
-							>
-								<LogOut className="h-4 w-4" />
-								{t("auth.logout.aria")}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+						{/* Search icon-only on mobile */}
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-muted-foreground hover:text-foreground md:hidden"
+							onClick={() => setCmdOpen(true)}
+						>
+							<Search className="h-4 w-4" />
+						</Button>
+
+						<NotificationBell />
+
+						{/* Avatar / profile dropdown */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									className="h-8 w-8 rounded-full p-0"
+									aria-label={t("navigation.header.profileMenuAria")}
+								>
+									<Avatar className="h-8 w-8">
+										<AvatarImage
+											src={user?.image ?? undefined}
+											alt={t("navigation.header.profileMenuAria")}
+										/>
+										<AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
+											{userInitials}
+										</AvatarFallback>
+									</Avatar>
+								</Button>
+							</DropdownMenuTrigger>
+
+							<DropdownMenuContent align="end" className="w-60">
+								{/* User info */}
+								<DropdownMenuLabel className="font-normal">
+									<div className="flex items-center gap-3 py-1">
+										<Avatar className="h-9 w-9">
+											<AvatarImage
+												src={user?.image ?? undefined}
+												alt=""
+											/>
+											<AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
+												{userInitials}
+											</AvatarFallback>
+										</Avatar>
+										<div className="min-w-0">
+											<p className="truncate font-medium text-sm">
+												{user?.firstName} {user?.lastName}
+											</p>
+											<p className="truncate text-muted-foreground text-xs">
+												{user?.email}
+											</p>
+										</div>
+									</div>
+								</DropdownMenuLabel>
+
+								<DropdownMenuSeparator />
+
+								<DropdownMenuItem
+									className="gap-2"
+									onSelect={(e) => {
+										e.preventDefault();
+										navigate("/settings");
+									}}
+								>
+									<Settings className="h-4 w-4" />
+									{t("settings.menuLabel")}
+								</DropdownMenuItem>
+
+								{/* Language sub-menu */}
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger className="gap-2">
+										<Languages className="h-4 w-4" />
+										{t("navigation.header.language", {
+											defaultValue: "Langue",
+										})}
+									</DropdownMenuSubTrigger>
+									<DropdownMenuSubContent>
+										{(["fr", "en"] as const).map((lang) => (
+											<DropdownMenuItem
+												key={lang}
+												className={cn("gap-2", i18n.language === lang && "font-medium")}
+												onSelect={() => {
+													i18n.changeLanguage(lang);
+													localStorage.setItem("lng", lang);
+												}}
+											>
+												<Check
+													className={cn(
+														"h-3.5 w-3.5",
+														i18n.language === lang
+															? "opacity-100"
+															: "opacity-0",
+													)}
+												/>
+												{lang === "fr" ? "Français" : "English"}
+											</DropdownMenuItem>
+										))}
+									</DropdownMenuSubContent>
+								</DropdownMenuSub>
+
+								<DropdownMenuSeparator />
+
+								<DropdownMenuItem
+									className="gap-2 text-destructive focus:text-destructive"
+									onSelect={(e) => {
+										e.preventDefault();
+										handleLogout();
+									}}
+								>
+									<LogOut className="h-4 w-4" />
+									{t("auth.logout.aria")}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
 				</div>
-			</div>
-		</header>
+			</header>
+
+			<CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+		</>
 	);
 };
 

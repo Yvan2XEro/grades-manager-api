@@ -203,7 +203,7 @@ const TeachingUnitDetail = () => {
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{isCreateMode
 								? t("admin.teachingUnits.detail.createTitle", {
 										defaultValue: "Create teaching unit",
@@ -224,18 +224,6 @@ const TeachingUnitDetail = () => {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.teachingUnits.detail.formTitle", {
-							defaultValue: "Teaching unit details",
-						})}
-					</CardTitle>
-					<CardDescription>
-						{t("admin.teachingUnits.detail.formSubtitle", {
-							defaultValue: "Edit code, semester, and description.",
-						})}
-					</CardDescription>
-				</CardHeader>
 				<CardContent>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

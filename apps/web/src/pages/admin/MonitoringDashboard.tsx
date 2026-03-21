@@ -30,7 +30,7 @@ const MonitoringDashboard = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("admin.monitoring.title")}
 				</h1>
 				<p className="text-muted-foreground">
@@ -46,7 +46,7 @@ const MonitoringDashboard = () => {
 					>
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-muted-foreground text-sm">{metric.label}</p>
+								<p className="text-muted-foreground text-xs">{metric.label}</p>
 								<p className="font-semibold text-2xl text-foreground">
 									{metric.value}
 								</p>
@@ -64,7 +64,7 @@ const MonitoringDashboard = () => {
 							<h2 className="font-semibold text-foreground text-lg">
 								{t("admin.monitoring.workflows")}
 							</h2>
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.monitoring.workflowsDescription")}
 							</p>
 						</div>
@@ -101,7 +101,7 @@ const MonitoringDashboard = () => {
 					<h2 className="mb-2 font-semibold text-foreground text-lg">
 						{t("admin.monitoring.backgroundJobs")}
 					</h2>
-					<p className="text-muted-foreground text-sm">
+					<p className="text-muted-foreground text-xs">
 						{t("admin.monitoring.backgroundJobsDesc")}
 					</p>
 					<ul className="mt-4 space-y-2">
@@ -110,7 +110,7 @@ const MonitoringDashboard = () => {
 								<p className="font-medium text-foreground">
 									{t("admin.monitoring.jobExam")}
 								</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.monitoring.jobExamDesc")}
 								</p>
 							</div>
@@ -123,7 +123,7 @@ const MonitoringDashboard = () => {
 								<p className="font-medium text-foreground">
 									{t("admin.monitoring.jobNotifications")}
 								</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.monitoring.jobNotificationsDesc")}
 								</p>
 							</div>

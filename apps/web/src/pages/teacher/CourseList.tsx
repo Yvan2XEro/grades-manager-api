@@ -98,7 +98,7 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold font-heading text-2xl text-foreground">
+				<h2 className="text-foreground">
 					{t("teacher.courses.title")}
 				</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
@@ -154,7 +154,7 @@ export default function CourseList() {
 								<p className="font-semibold text-lg">
 									{t("teacher.courses.empty.title")}
 								</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("teacher.courses.empty.description")}
 								</p>
 							</div>

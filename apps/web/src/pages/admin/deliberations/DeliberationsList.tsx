@@ -29,6 +29,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
 
@@ -90,10 +91,10 @@ export default function DeliberationsList() {
 				<div className="flex items-center space-x-3">
 					<Gavel className="h-6 w-6 text-primary" />
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.deliberations.title")}
 						</h1>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("admin.deliberations.subtitle")}
 						</p>
 					</div>
@@ -148,19 +149,17 @@ export default function DeliberationsList() {
 			{/* Table */}
 			<div className="rounded-xl border bg-white shadow-sm">
 				{deliberationsQuery.isLoading ? (
-					<div className="flex items-center justify-center py-12">
-						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
-					</div>
+					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
-					<div className="py-12 text-center">
-						<Gavel className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-						<h3 className="font-semibold text-foreground text-sm">
-							{t("admin.deliberations.empty.title")}
-						</h3>
-						<p className="mt-1 text-muted-foreground text-sm">
-							{t("admin.deliberations.empty.description")}
-						</p>
-					</div>
+					<Empty className="border border-dashed">
+					<EmptyHeader>
+						<EmptyMedia variant="icon">
+							<Gavel className="text-muted-foreground" />
+						</EmptyMedia>
+						<EmptyTitle>{t("admin.deliberations.empty.title")}</EmptyTitle>
+						<EmptyDescription>{t("admin.deliberations.empty.description")}</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 				) : (
 					<Table>
 						<TableHeader>
@@ -204,7 +203,7 @@ export default function DeliberationsList() {
 											? new Date(d.deliberationDate).toLocaleDateString()
 											: "—"}
 									</TableCell>
-									<TableCell className="text-muted-foreground text-sm">
+									<TableCell className="text-muted-foreground text-xs">
 										{formatDistanceToNow(new Date(d.createdAt), {
 											addSuffix: true,
 										})}

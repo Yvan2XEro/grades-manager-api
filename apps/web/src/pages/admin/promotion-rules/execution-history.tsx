@@ -30,7 +30,16 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { trpcClient } from "@/utils/trpc";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 
 type ExecutionMetadata = {
 	ruleName?: string;
@@ -101,7 +110,7 @@ export function ExecutionHistoryPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.promotionRules.history.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -126,16 +135,9 @@ export function ExecutionHistoryPage() {
 
 			{/* Executions List */}
 			<Card className="border-0 shadow-sm">
-				<CardHeader>
-					<CardTitle>{t("admin.promotionRules.history.table.title")}</CardTitle>
-				</CardHeader>
 				<CardContent>
 					{isLoading ? (
-						<div className="space-y-2">
-							{[...Array(5)].map((_, i) => (
-								<div key={i} className="h-16 animate-pulse rounded bg-muted" />
-							))}
-						</div>
+						<TableSkeleton columns={7} rows={8} />
 					) : executionsData?.items && executionsData.items.length > 0 ? (
 						<Table>
 							<TableHeader>
@@ -225,7 +227,7 @@ export function ExecutionHistoryPage() {
 												</span>
 											</div>
 										</TableCell>
-										<TableCell className="text-muted-foreground text-sm">
+										<TableCell className="text-muted-foreground text-xs">
 											{/* Would need to join with domainUsers to show name */}
 											{t("admin.promotionRules.history.table.user")}
 										</TableCell>
@@ -244,11 +246,11 @@ export function ExecutionHistoryPage() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="py-12 text-center">
-							<p className="text-muted-foreground">
-								{t("admin.promotionRules.history.emptyState")}
-							</p>
-						</div>
+						<Empty className="border border-dashed">
+						<EmptyHeader>
+							<EmptyDescription>{t("admin.promotionRules.history.emptyState")}</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 					)}
 				</CardContent>
 			</Card>

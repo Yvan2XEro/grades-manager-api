@@ -84,6 +84,7 @@ function App() {
 			profileId: session.user.id,
 			authUserId: session.user.id,
 			email: session.user.email,
+			image: session.user.image ?? null,
 			role,
 			firstName,
 			lastName: rest.join(" "),

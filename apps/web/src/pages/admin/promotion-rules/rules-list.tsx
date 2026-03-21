@@ -18,6 +18,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpcClient } from "@/utils/trpc";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 
 type PromotionRule = {
 	id: string;
@@ -207,7 +215,7 @@ export function RulesListPage() {
 				</Button>
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.promotionRules.rulesList.title")}
 						</h1>
 						<p className="mt-1 text-muted-foreground">
@@ -254,18 +262,16 @@ export function RulesListPage() {
 					))}
 				</div>
 			) : (
-				<div className="py-12 text-center">
-					<p className="text-muted-foreground">
-						{t("admin.promotionRules.rulesList.emptyState.noRules")}
-					</p>
-					<Button
-						variant="outline"
-						className="mt-4"
-						onClick={() => setIsCreateDialogOpen(true)}
-					>
+				<Empty className="border border-dashed">
+				<EmptyHeader>
+					<EmptyDescription>{t("admin.promotionRules.rulesList.emptyState.noRules")}</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
+					<Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
 						{t("admin.promotionRules.rulesList.emptyState.createFirst")}
 					</Button>
-				</div>
+				</EmptyContent>
+			</Empty>
 			)}
 
 			{/* Create Dialog */}

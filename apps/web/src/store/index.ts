@@ -26,6 +26,7 @@ export type User = {
 	firstName: string;
 	lastName: string;
 	email: string;
+	image?: string | null;
 	permissions: PermissionSnapshot;
 	domainProfiles?: DomainUser[];
 } | null;
@@ -74,8 +75,10 @@ type StoreState = {
 	setUser: (user: User) => void;
 	clearUser: () => void;
 	sidebarOpen: boolean;
+	sidebarCollapsed: boolean;
 	toggleSidebar: () => void;
 	setSidebarOpen: (open: boolean) => void;
+	setSidebarCollapsed: (collapsed: boolean) => void;
 	activeOrganizationSlug: string | null;
 	setActiveOrganizationSlug: (slug: string) => void;
 };
@@ -95,9 +98,16 @@ export const useStore = create<StoreState>()(
 				}),
 			clearUser: () => set({ user: null, activeOrganizationSlug: null }),
 			sidebarOpen: true,
-			toggleSidebar: () =>
-				set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+			sidebarCollapsed: false,
+			toggleSidebar: () => {
+				if (typeof window !== "undefined" && window.innerWidth >= 768) {
+					set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+				} else {
+					set((state) => ({ sidebarOpen: !state.sidebarOpen }));
+				}
+			},
 			setSidebarOpen: (open) => set({ sidebarOpen: open }),
+			setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
 			activeOrganizationSlug: null,
 			setActiveOrganizationSlug: (slug) =>
 				set({ activeOrganizationSlug: slug }),
@@ -107,6 +117,7 @@ export const useStore = create<StoreState>()(
 			partialize: (state) => ({
 				user: state.user,
 				activeOrganizationSlug: state.activeOrganizationSlug,
+				sidebarCollapsed: state.sidebarCollapsed,
 			}),
 		},
 	),

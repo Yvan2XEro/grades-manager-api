@@ -48,7 +48,7 @@ const AttendanceAlerts = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("teacher.attendance.title")}
 				</h1>
 				<p className="text-muted-foreground">
@@ -76,14 +76,14 @@ const AttendanceAlerts = () => {
 									</div>
 									<div>
 										<p className="font-medium text-foreground">{alert.type}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="text-muted-foreground text-xs">
 											{JSON.stringify(alert.payload)}
 										</p>
 									</div>
 								</div>
 							))
 						) : (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("teacher.attendance.none", {
 									defaultValue: "No alerts yet.",
 								})}

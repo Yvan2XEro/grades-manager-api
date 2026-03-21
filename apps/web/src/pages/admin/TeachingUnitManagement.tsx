@@ -44,6 +44,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 const TeachingUnitManagement = () => {
@@ -148,7 +153,7 @@ const TeachingUnitManagement = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -244,6 +249,9 @@ const TeachingUnitManagement = () => {
 								</Button>
 							</BulkActionBar>
 							<div className="overflow-x-auto">
+								{isLoading ? (
+									<TableSkeleton columns={7} rows={8} />
+								) : (
 								<Table>
 									<TableHeader>
 										<TableRow>
@@ -256,7 +264,7 @@ const TeachingUnitManagement = () => {
 													aria-label="Select all"
 												/>
 											</TableHead>
-											<TableHead>
+											<TableHead className="w-20">
 												{t("admin.teachingUnits.table.code")}
 											</TableHead>
 											<TableHead>
@@ -265,20 +273,33 @@ const TeachingUnitManagement = () => {
 											<TableHead>
 												{t("admin.teachingUnits.table.program")}
 											</TableHead>
-											<TableHead>
+											<TableHead className="w-28">
 												{t("admin.teachingUnits.table.semester")}
 											</TableHead>
-											<TableHead>
+											<TableHead className="w-16">
 												{t("admin.teachingUnits.table.credits")}
 											</TableHead>
-											<TableHead className="text-right">
+											<TableHead className="w-[100px] text-right">
 												{t("common.table.actions")}
 											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{unitItems.map((unit) => (
-											<TableRow key={unit.id}>
+											<TableRow
+												key={unit.id}
+												actions={
+													<>
+														<ContextMenuItem onSelect={() => navigate(`/admin/teaching-units/${unit.id}`)}>
+															<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+														</ContextMenuItem>
+														<ContextMenuSeparator />
+														<ContextMenuItem variant="destructive" onSelect={() => handleOpenDelete(unit.id)}>
+															<span>{t("common.actions.delete")}</span>
+														</ContextMenuItem>
+													</>
+												}
+											>
 												<TableCell>
 													<Checkbox
 														checked={selection.isSelected(unit.id)}
@@ -341,6 +362,7 @@ const TeachingUnitManagement = () => {
 										))}
 									</TableBody>
 								</Table>
+								)}
 							</div>
 							<PaginationBar
 								hasPrev={pagination.hasPrev}

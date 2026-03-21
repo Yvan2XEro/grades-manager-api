@@ -29,14 +29,15 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { DialogFooter as ModalFooter } from "@/components/ui/dialog";
+import FormModal from "@/components/modals/FormModal";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogFooter as ModalFooter,
-} from "@/components/ui/dialog";
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -63,6 +64,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -326,7 +332,7 @@ export default function CourseManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.courses.title", { defaultValue: "Course management" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -342,14 +348,6 @@ export default function CourseManagement() {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.courses.title")}</CardTitle>
-					<CardDescription>
-						{t("admin.courses.subtitle", {
-							defaultValue: "Manage courses, workloads, and default teachers.",
-						})}
-					</CardDescription>
-				</CardHeader>
 				<CardContent>
 					{courses.length > 0 ? (
 						<>
@@ -378,6 +376,9 @@ export default function CourseManagement() {
 									{t("common.actions.delete")}
 								</Button>
 							</BulkActionBar>
+							{isLoading ? (
+								<TableSkeleton columns={7} rows={8} />
+							) : (
 							<Table>
 								<TableHeader>
 									<TableRow>
@@ -390,13 +391,13 @@ export default function CourseManagement() {
 												aria-label="Select all"
 											/>
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-20">
 											{t("admin.courses.table.code", { defaultValue: "Code" })}
 										</TableHead>
 										<TableHead>{t("admin.courses.table.name")}</TableHead>
 										<TableHead>{t("admin.courses.table.program")}</TableHead>
-										<TableHead>{t("admin.courses.table.hours")}</TableHead>
-										<TableHead>{t("admin.courses.table.teacher")}</TableHead>
+										<TableHead className="w-16">{t("admin.courses.table.hours")}</TableHead>
+										<TableHead className="w-36">{t("admin.courses.table.teacher")}</TableHead>
 										<TableHead className="text-right">
 											{t("common.table.actions")}
 										</TableHead>
@@ -404,7 +405,20 @@ export default function CourseManagement() {
 								</TableHeader>
 								<TableBody>
 									{courses.map((course) => (
-										<TableRow key={course.id}>
+										<TableRow
+									key={course.id}
+									actions={
+										<>
+											<ContextMenuItem onSelect={() => startEdit(course)}>
+												<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem variant="destructive" onSelect={() => confirmDelete(course.id)}>
+												<span>{t("common.actions.delete")}</span>
+											</ContextMenuItem>
+										</>
+									}
+								>
 											<TableCell>
 												<Checkbox
 													checked={selection.isSelected(course.id)}
@@ -466,6 +480,7 @@ export default function CourseManagement() {
 									))}
 								</TableBody>
 							</Table>
+							)}
 							<PaginationBar
 								hasPrev={pagination.hasPrev}
 								hasNext={!!data?.nextCursor}
@@ -475,46 +490,32 @@ export default function CourseManagement() {
 							/>
 						</>
 					) : (
-						<div className="py-12 text-center">
-							<p className="font-semibold">
-								{t("admin.courses.empty.title", {
-									defaultValue: "No courses available",
-								})}
-							</p>
-							<p className="text-muted-foreground text-sm">
-								{t("admin.courses.empty.description", {
-									defaultValue: "Create a course to populate the catalog.",
-								})}
-							</p>
-						</div>
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<EmptyTitle>
+									{t("admin.courses.empty.title", { defaultValue: "No courses available" })}
+								</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.courses.empty.description", { defaultValue: "Create a course to populate the catalog." })}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={startCreate}>
+									<PlusIcon className="mr-2 h-4 w-4" />
+									{t("admin.courses.actions.add")}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
 
-			<Dialog
-				open={isFormOpen}
-				onOpenChange={(open) => {
-					setIsFormOpen(open);
-					if (!open) {
-						handleCloseForm();
-					}
-				}}
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={handleCloseForm}
+				title={editingCourse ? t("admin.courses.form.editTitle") : t("admin.courses.form.createTitle")}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{editingCourse
-								? t("admin.courses.form.editTitle")
-								: t("admin.courses.form.createTitle")}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.courses.subtitle", {
-								defaultValue:
-									"Manage courses, workloads, and default teachers.",
-							})}
-						</DialogDescription>
-					</DialogHeader>
-					<Form {...form}>
+				<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<div className="grid gap-4 sm:grid-cols-2">
 								<FormField
@@ -658,8 +659,7 @@ export default function CourseManagement() {
 							</ModalFooter>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 
 			<AlertDialog
 				open={isDeleteOpen}

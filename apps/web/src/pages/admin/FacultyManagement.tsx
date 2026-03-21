@@ -35,6 +35,10 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
@@ -44,6 +48,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { Textarea } from "../../components/ui/textarea";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
@@ -285,14 +290,14 @@ export default function FacultyManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div className="flex items-center gap-3">
-					<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
-						<Building2 className="h-5 w-5 text-primary" />
+					<div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/8">
+						<Building2 className="h-4 w-4 text-primary" />
 					</div>
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.faculties.title", { defaultValue: "Faculties" })}
 						</h1>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs mt-0.5">
 							{t("admin.faculties.subtitle", {
 								defaultValue:
 									"Manage faculties and schools within the institution.",
@@ -307,19 +312,6 @@ export default function FacultyManagement() {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.faculties.table.title", {
-							defaultValue: "All faculties",
-						})}
-					</CardTitle>
-					<CardDescription>
-						{t("admin.faculties.table.description", {
-							defaultValue:
-								"List of all faculties and schools registered in the system.",
-						})}
-					</CardDescription>
-				</CardHeader>
 				<CardContent>
 					{isLoading ? (
 						<div className="flex items-center justify-center py-8">
@@ -352,6 +344,9 @@ export default function FacultyManagement() {
 									{t("common.actions.delete")}
 								</Button>
 							</BulkActionBar>
+							{isLoading ? (
+								<TableSkeleton columns={6} rows={8} />
+							) : (
 							<Table>
 								<TableHeader>
 									<TableRow>
@@ -364,7 +359,7 @@ export default function FacultyManagement() {
 												aria-label="Select all"
 											/>
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-24">
 											{t("admin.faculties.table.code", {
 												defaultValue: "Code",
 											})}
@@ -379,19 +374,34 @@ export default function FacultyManagement() {
 												defaultValue: "Name (EN)",
 											})}
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-28">
 											{t("admin.faculties.table.shortName", {
 												defaultValue: "Short name",
 											})}
 										</TableHead>
-										<TableHead className="w-[120px] text-right">
+										<TableHead className="w-[100px] text-right">
 											{t("common.table.actions")}
 										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{faculties.map((faculty) => (
-										<TableRow key={faculty.id}>
+										<TableRow
+										key={faculty.id}
+										actions={
+											<>
+												<ContextMenuItem onSelect={() => handleOpenEdit(faculty)}>
+													<Pencil className="h-4 w-4" />
+													{t("common.actions.edit", { defaultValue: "Edit" })}
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem variant="destructive" onSelect={() => setDeleteId(faculty.id)}>
+													<Trash2 className="h-4 w-4" />
+													{t("common.actions.delete")}
+												</ContextMenuItem>
+											</>
+										}
+									>
 											<TableCell>
 												<Checkbox
 													checked={selection.isSelected(faculty.id)}
@@ -429,6 +439,7 @@ export default function FacultyManagement() {
 									))}
 								</TableBody>
 							</Table>
+							)}
 						</>
 					) : (
 						<Empty>

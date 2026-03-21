@@ -41,7 +41,7 @@ const PerformanceDashboard = () => {
 		<div className="space-y-8">
 			{/* Header */}
 			<motion.div variants={fadeUp} initial="hidden" animate="visible">
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("student.performance.title")}
 				</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
@@ -93,7 +93,7 @@ const PerformanceDashboard = () => {
 									<CardTitle className="text-lg">
 										{t("student.performance.trendTitle")}
 									</CardTitle>
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{t("student.performance.trendSubtitle")}
 									</p>
 								</div>
@@ -176,7 +176,7 @@ const PerformanceDashboard = () => {
 									<CardTitle className="text-lg">
 										{t("student.performance.courseAverages")}
 									</CardTitle>
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{t("student.performance.courseSubtitle")}
 									</p>
 								</div>
@@ -185,7 +185,7 @@ const PerformanceDashboard = () => {
 						<CardContent>
 							<div className="flex flex-col items-center gap-3 rounded-xl border border-border border-dashed bg-muted/30 p-8 text-center">
 								<BarChart3 className="h-8 w-8 text-muted-foreground/40" />
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("student.performance.coursePlaceholder", {
 										defaultValue:
 											"Detailed course averages will appear once instructors publish grades for the current session.",

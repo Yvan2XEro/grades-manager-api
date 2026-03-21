@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { FilterBar } from "@/components/ui/filter-bar";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -193,6 +194,7 @@ const EnrollmentManagement = () => {
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
+	const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "active" | "completed" | "withdrawn">("all");
 
 	const { data: semesters } = useQuery(
 		trpc.semesters.list.queryOptions({ limit: 100 }),
@@ -209,6 +211,7 @@ const EnrollmentManagement = () => {
 		...trpc.enrollments.list.queryOptions({
 			classId: selectedClass || undefined,
 			academicYearId: selectedAcademicYear || undefined,
+			status: statusFilter === "all" ? undefined : statusFilter,
 			cursor: pagination.cursor,
 			limit: pagination.pageSize,
 		}),
@@ -471,114 +474,51 @@ const EnrollmentManagement = () => {
 
 	return (
 		<div className="space-y-6">
-			<div className="grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm md:grid-cols-2 lg:grid-cols-4">
-				<div className="space-y-1">
-					<p className="font-medium text-muted-foreground text-sm">
-						{t("admin.enrollments.filters.year", {
-							defaultValue: "Academic year",
-						})}
-					</p>
-					<AcademicYearSelect
-						value={selectedAcademicYear || null}
-						onChange={(value) => {
-							setSelectedAcademicYear(value);
-							setSelectedClass("");
-							setSelectedSemester("");
-						}}
-						placeholder={t("admin.enrollments.selectYear", {
-							defaultValue: "Select academic year",
-						})}
-					/>
+			<FilterBar
+			activeCount={[!!selectedAcademicYear, !!selectedClass, !!selectedSemester, statusFilter !== "all"].filter(Boolean).length}
+			onReset={() => { setSelectedAcademicYear(''); setSelectedClass(''); setSelectedSemester(''); setStatusFilter('all'); }}
+			defaultOpen
+		>
+			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				<div className="space-y-1.5">
+					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.year", { defaultValue: "Année académique" })}</p>
+					<AcademicYearSelect value={selectedAcademicYear || null} onChange={(value) => { setSelectedAcademicYear(value); setSelectedClass(''); setSelectedSemester(''); }} placeholder={t("admin.enrollments.selectYear", { defaultValue: "Sélectionner une année" })} />
 				</div>
-				<div className="space-y-1">
-					<p className="font-medium text-muted-foreground text-sm">
-						{t("admin.enrollments.filters.class", { defaultValue: "Class" })}
-					</p>
-					<Select
-						value={selectedClass}
-						onValueChange={(value) => setSelectedClass(value)}
-						disabled={!selectedAcademicYear}
-					>
-						<SelectTrigger data-testid="class-select" className="w-full">
-							<SelectValue
-								placeholder={t("admin.enrollments.selectClass", {
-									defaultValue: "Select class",
-								})}
-							/>
-						</SelectTrigger>
+				<div className="space-y-1.5">
+					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.class", { defaultValue: "Classe" })}</p>
+					<Select value={selectedClass} onValueChange={(value) => setSelectedClass(value)} disabled={!selectedAcademicYear}>
+						<SelectTrigger data-testid="class-select" className="w-full"><SelectValue placeholder={t("admin.enrollments.selectClass", { defaultValue: "Sélectionner une classe" })} /></SelectTrigger>
+						<SelectContent>{classes?.items?.map((klass) => (<SelectItem key={klass.id} value={klass.id}>{klass.name}{klass.programOption?.name ? ` • ${klass.programOption.name}` : ""}</SelectItem>))}</SelectContent>
+					</Select>
+				</div>
+				<div className="space-y-1.5">
+					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.semester", { defaultValue: "Semestre" })}</p>
+					<SemesterSelect value={selectedSemester || null} onChange={(v) => setSelectedSemester(v ?? '')} disabled={!selectedClass} placeholder={t("admin.enrollments.selectSemester", { defaultValue: "Sélectionner un semestre" })} />
+				</div>
+				<div className="space-y-1.5">
+					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Statut</p>
+					<Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} disabled={!selectedClass}>
+						<SelectTrigger><SelectValue placeholder="Tous les statuts" /></SelectTrigger>
 						<SelectContent>
-							{classes?.items?.map((klass) => (
-								<SelectItem key={klass.id} value={klass.id}>
-									{klass.name}
-									{klass.programOption?.name
-										? ` \u2022 ${klass.programOption.name}`
-										: ""}
-								</SelectItem>
-							))}
+							<SelectItem value="all">Tous les statuts</SelectItem>
+							<SelectItem value="active">Actif</SelectItem>
+							<SelectItem value="pending">En attente</SelectItem>
+							<SelectItem value="completed">Terminé</SelectItem>
+							<SelectItem value="withdrawn">Retiré</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="space-y-1">
-					<p className="font-medium text-muted-foreground text-sm">
-						{t("admin.enrollments.filters.semester", {
-							defaultValue: "Semester",
-						})}
-					</p>
-					<SemesterSelect
-						value={selectedSemester || null}
-						onChange={(v) => setSelectedSemester(v ?? "")}
-						disabled={!selectedClass}
-						placeholder={t("admin.enrollments.selectSemester", {
-							defaultValue: "Select semester",
-						})}
-					/>
-				</div>
-				<div className="space-y-2 rounded-lg border border-border border-dashed p-3 text-muted-foreground text-sm">
-					<p className="font-semibold text-foreground">
-						{t("admin.enrollments.filters.summary", {
-							defaultValue: "Snapshot",
-						})}
-					</p>
-					<ul className="space-y-1 text-sm">
-						<li>
-							{t("admin.enrollments.filters.studentsCount", {
-								defaultValue: "Students: {{value}}",
-								value: studentsQuery.data?.items?.length ?? 0,
-							})}
-						</li>
-						<li>
-							{t("admin.enrollments.filters.cycle", {
-								defaultValue: "Cycle: {{value}}",
-								value:
-									selectedClassDetails?.cycle?.name ??
-									t("common.labels.notAvailable", { defaultValue: "N/A" }),
-							})}
-						</li>
-						<li>
-							{t("admin.enrollments.filters.cycleLevel", {
-								defaultValue: "Level: {{value}}",
-								value:
-									selectedClassDetails?.cycleLevel?.name ??
-									t("common.labels.notAvailable", { defaultValue: "N/A" }),
-							})}
-						</li>
-						<li>
-							{t("admin.enrollments.filters.option", {
-								defaultValue: "Option: {{value}}",
-								value:
-									selectedClassDetails?.programOption?.name ??
-									t("common.labels.notAvailable", { defaultValue: "N/A" }),
-							})}
-						</li>
-						<li>
-							{t("admin.enrollments.filters.window", {
-								defaultValue: "Window: {{status}}",
-								status: windowStatus?.status ?? t("common.labels.notAvailable"),
-							})}
-						</li>
-					</ul>
-				</div>
 			</div>
+			{selectedClass && (
+				<div className="mt-3 flex flex-wrap gap-4 rounded-lg border border-dashed bg-muted/30 px-4 py-2.5 text-xs text-muted-foreground">
+					<span><span className="font-medium text-foreground">{studentsQuery.data?.items?.length ?? 0}</span> étudiant(s)</span>
+					{selectedClassDetails?.cycle?.name && <span>Cycle: <span className="font-medium text-foreground">{selectedClassDetails.cycle.name}</span></span>}
+					{selectedClassDetails?.cycleLevel?.name && <span>Niveau: <span className="font-medium text-foreground">{selectedClassDetails.cycleLevel.name}</span></span>}
+					{selectedClassDetails?.programOption?.name && <span>Option: <span className="font-medium text-foreground">{selectedClassDetails.programOption.name}</span></span>}
+					{windowStatus?.status && <span>Fenêtre: <span className="font-medium text-foreground">{windowStatus.status}</span></span>}
+				</div>
+			)}
+		</FilterBar>
 
 			<Card>
 				<CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
@@ -595,7 +535,7 @@ const EnrollmentManagement = () => {
 											defaultValue: "Window not configured",
 										})}
 							</p>
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{windowStatus?.status === "open"
 									? t("admin.enrollments.windowOpen", {
 											defaultValue: "Students can enroll.",
@@ -734,7 +674,7 @@ const EnrollmentManagement = () => {
 						</BulkActionBar>
 
 						{enrollmentsQuery.isLoading ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("common.loading", { defaultValue: "Loading..." })}
 							</p>
 						) : enrollments.length ? (
@@ -799,7 +739,7 @@ const EnrollmentManagement = () => {
 															<p className="font-semibold text-foreground">
 																{fullName}
 															</p>
-															<p className="text-muted-foreground text-sm">
+															<p className="text-muted-foreground text-xs">
 																{student?.registrationNumber ??
 																	t(
 																		"admin.enrollments.fields.registrationFallback",
@@ -867,7 +807,7 @@ const EnrollmentManagement = () => {
 								</table>
 							</div>
 						) : (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.enrollments.empty", {
 									defaultValue:
 										"No enrollments found for the selected filters.",
@@ -898,7 +838,7 @@ const EnrollmentManagement = () => {
 												defaultValue: "Course roster (per student)",
 											})}
 										</CardTitle>
-										<p className="text-muted-foreground text-sm">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.enrollments.courseRoster.subtitle", {
 												defaultValue:
 													"Select a student to review enrollment attempts, retakes, and status per course.",
@@ -1097,7 +1037,7 @@ const EnrollmentManagement = () => {
 														</div>
 													);
 												}) ?? (
-													<p className="text-muted-foreground text-sm">
+													<p className="text-muted-foreground text-xs">
 														{t("admin.enrollments.courseRoster.noCourses", {
 															defaultValue:
 																"This class has no courses assigned yet.",
@@ -1108,7 +1048,7 @@ const EnrollmentManagement = () => {
 										</ScrollArea>
 									</>
 								) : (
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{t("admin.enrollments.courseRoster.selectStudent", {
 											defaultValue:
 												"Pick a student to manage course enrollments.",

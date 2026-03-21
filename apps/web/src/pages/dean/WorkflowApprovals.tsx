@@ -94,7 +94,7 @@ const WorkflowApprovals = () => {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("dean.workflows.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -179,7 +179,7 @@ const WorkflowApprovals = () => {
 								))}
 							</>
 						) : (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("dean.workflows.empty", {
 									defaultValue: "No pending exams.",
 								})}

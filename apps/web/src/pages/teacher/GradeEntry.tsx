@@ -637,11 +637,11 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="font-bold font-heading text-2xl text-foreground">
+					<h2 className="text-foreground">
 						{t("teacher.gradeEntry.title")}
 					</h2>
 					{courseInfo && (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							<span className="font-medium">
 								{courseInfo.teaching_unit_code}
 							</span>
@@ -683,7 +683,7 @@ const GradeEntry: React.FC = () => {
 						</Select>
 						{availableClassCourses.length === 0 &&
 						!classCoursesQuery.isLoading ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("teacher.gradeEntry.selectCourse.emptyState")}
 							</p>
 						) : null}
@@ -788,7 +788,7 @@ const GradeEntry: React.FC = () => {
 								<Spinner className="h-6 w-6 text-primary" />
 							</div>
 						) : delegates.length === 0 ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("teacher.gradeEntry.delegates.empty")}
 							</p>
 						) : (
@@ -810,7 +810,7 @@ const GradeEntry: React.FC = () => {
 													{delegate.editor.lastName},{" "}
 													{delegate.editor.firstName}
 												</p>
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{delegate.editor.primaryEmail ??
 														t("teacher.gradeEntry.delegates.unknownEmail")}
 												</p>
@@ -993,7 +993,7 @@ const GradeEntry: React.FC = () => {
 					)}
 
 					{courseId && !selectedExam && (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.gradeEntry.selectExam.prompt")}
 						</p>
 					)}
@@ -1109,7 +1109,7 @@ const GradeEntry: React.FC = () => {
 						<p className="mt-4 font-medium text-foreground text-lg">
 							{t("teacher.gradeEntry.emptyStudents.title")}
 						</p>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.gradeEntry.emptyStudents.description")}
 						</p>
 					</CardContent>

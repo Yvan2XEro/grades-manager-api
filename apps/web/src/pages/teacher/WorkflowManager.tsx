@@ -84,7 +84,7 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
 				<p className="text-muted-foreground">
@@ -165,13 +165,13 @@ const WorkflowManager = () => {
 				</CardHeader>
 				<CardContent>
 					{!selectedClassCourse ? (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.workflow.placeholder", {
 								defaultValue: "Choose a class course to view exams.",
 							})}
 						</p>
 					) : examsQuery.isLoading ? (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("common.loading", { defaultValue: "Loading..." })}
 						</p>
 					) : exams.length ? (
@@ -223,7 +223,7 @@ const WorkflowManager = () => {
 							))}
 						</div>
 					) : (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.workflow.empty", {
 								defaultValue: "No exams for this class course.",
 							})}
