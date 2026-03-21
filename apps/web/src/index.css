@@ -339,14 +339,12 @@
   -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
 }
 
-/* Grille fine subtile — fondu vertical (haut visible, bas s'efface) */
+/* Grille fine subtile — sidebar et header, sans effet */
 .bg-dot-pattern-subtle {
   background-image:
     linear-gradient(var(--pattern-color-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--pattern-color-subtle) 1px, transparent 1px);
   background-size: var(--pattern-size) var(--pattern-size);
-  mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
 }
 
 /* Line grid — grille de lignes croisées */
