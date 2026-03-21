@@ -81,9 +81,9 @@
   --sidebar-border: oklch(0.88 0.006 80);
   --sidebar-ring: oklch(0.48 0.2 277);
   /* Motif de fond */
-  --pattern-color: oklch(0 0 0 / 13%);
-  --pattern-color-subtle: oklch(0 0 0 / 7%);
-  --pattern-size: 20px;
+  --pattern-color: oklch(0 0 0 / 7%);
+  --pattern-color-subtle: oklch(0 0 0 / 4%);
+  --pattern-size: 28px;
 }
 
 /* Dark Mode */
@@ -123,9 +123,9 @@
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.65 0.17 254);
   /* Motif de fond */
-  --pattern-color: oklch(1 0 0 / 9%);
-  --pattern-color-subtle: oklch(1 0 0 / 5%);
-  --pattern-size: 20px;
+  --pattern-color: oklch(1 0 0 / 7%);
+  --pattern-color-subtle: oklch(1 0 0 / 4%);
+  --pattern-size: 28px;
 }
 
 @layer base {
@@ -329,15 +329,19 @@
 
 /* ─── Background patterns ─────────────────────────────────────────── */
 
-/* Dot grid — grille de points */
+/* Grille fine — lignes croisées 1px */
 .bg-dot-pattern {
-  background-image: radial-gradient(circle, var(--pattern-color) 1.5px, transparent 1.5px);
+  background-image:
+    linear-gradient(var(--pattern-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pattern-color) 1px, transparent 1px);
   background-size: var(--pattern-size) var(--pattern-size);
 }
 
-/* Dot grid subtil — pour surfaces de navigation (sidebar, header) */
+/* Grille fine subtile — pour sidebar et header */
 .bg-dot-pattern-subtle {
-  background-image: radial-gradient(circle, var(--pattern-color-subtle) 1.5px, transparent 1.5px);
+  background-image:
+    linear-gradient(var(--pattern-color-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pattern-color-subtle) 1px, transparent 1px);
   background-size: var(--pattern-size) var(--pattern-size);
 }
 
