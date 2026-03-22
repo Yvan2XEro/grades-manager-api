@@ -20,16 +20,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Drawer,
-	DrawerContent,
-	DrawerDescription,
-	DrawerHeader,
-	DrawerTitle,
-} from "@/components/ui/drawer";
 import {
 	Form,
 	FormControl,
@@ -906,27 +900,27 @@ export default function StudentManagement() {
 				/>
 			</Card>
 
-			<Drawer
+			<Dialog
 				open={Boolean(ledgerStudent)}
 				onOpenChange={(open) => !open && setLedgerStudent(null)}
 			>
-				<DrawerContent>
-					<DrawerHeader>
-						<DrawerTitle>
+				<DialogContent className="max-w-lg">
+					<DialogHeader>
+						<DialogTitle>
 							{t("admin.students.ledger.title", {
 								defaultValue: "Credit overview",
 							})}
-						</DrawerTitle>
-						<DrawerDescription>
+						</DialogTitle>
+						<DialogDescription>
 							{ledgerStudent
 								? t("admin.students.ledger.subtitle", {
 										defaultValue: "Tracking credits for {{student}}",
 										student: getStudentName(ledgerStudent),
 									})
 								: ""}
-						</DrawerDescription>
-					</DrawerHeader>
-					<div className="space-y-6 px-4 pb-6">
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-6 px-6 pb-6">
 						{ledgerSummaryQuery.isLoading ? (
 							<p className="text-muted-foreground text-xs">
 								{t("admin.students.ledger.loading", {
@@ -1026,8 +1020,8 @@ export default function StudentManagement() {
 							</>
 						)}
 					</div>
-				</DrawerContent>
-			</Drawer>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
 				<DialogContent className="max-h-[90vh] min-w-[60vw] overflow-y-auto">

@@ -98,7 +98,8 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Bash(cd:*)",
-      "Bash(bun -e \":*)"
+      "Bash(bun -e \":*)",
+      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/web/src -type f \\\\\\(-name *acult* -o -name *nstit* \\\\\\)\\\\)"
     ]
   }
 }

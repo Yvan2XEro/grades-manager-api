@@ -541,6 +541,8 @@
 				"nameFrRequired": "French name is required",
 				"nameEnRequired": "English name is required",
 				"codeRequired": "Code is required",
+				"parentInstitutionLabel": "Parent institution",
+				"noParentInstitution": "None (top-level)",
 				"submit": "Create"
 			},
 			"toast": {
@@ -554,6 +556,41 @@
 			"delete": {
 				"title": "Delete faculty",
 				"message": "Are you sure you want to delete this faculty? This action cannot be undone."
+			}
+		},
+		"institutions": {
+			"title": "Institutions",
+			"subtitle": "Manage universities, faculties and schools.",
+			"actions": {
+				"add": "Add institution"
+			},
+			"empty": {
+				"title": "No institutions yet",
+				"description": "Create your first institution to start organizing your academic structure."
+			},
+			"table": {
+				"code": "Code",
+				"type": "Type",
+				"nameFr": "Name (FR)",
+				"nameEn": "Name (EN)",
+				"shortName": "Short name"
+			},
+			"form": {
+				"createTitle": "Create institution",
+				"editTitle": "Edit institution",
+				"submit": "Create"
+			},
+			"toast": {
+				"createSuccess": "Institution created successfully",
+				"createError": "Could not create the institution",
+				"updateSuccess": "Institution updated successfully",
+				"updateError": "Could not update the institution",
+				"deleteSuccess": "Institution deleted successfully",
+				"deleteError": "Could not delete the institution"
+			},
+			"delete": {
+				"title": "Delete institution",
+				"message": "Are you sure you want to delete this institution? This action cannot be undone."
 			}
 		},
 		"classCourses": {
@@ -728,6 +765,22 @@
 			"dean": "Dean",
 			"student": "Student"
 		},
+		"command": {
+			"placeholder": "Search a page…",
+			"title": "Quick search",
+			"description": "Quickly navigate to a page",
+			"empty": "No results for \"{{query}}\"",
+			"hint": {
+				"navigate": "navigate",
+				"open": "open",
+				"close": "close"
+			},
+			"groups": {
+				"main": "Main",
+				"academic": "Academic",
+				"tools": "Tools"
+			}
+		},
 		"header": {
 			"adminDashboard": "Admin dashboard",
 			"teacherDashboard": "Teacher dashboard",
@@ -735,7 +788,8 @@
 			"toggleSidebarAria": "Toggle sidebar",
 			"languageSelectAria": "Change language",
 			"languageSelectPlaceholder": "Select language",
-			"profileMenuAria": "Open profile menu"
+			"profileMenuAria": "Open profile menu",
+			"search": "Search…"
 		},
 		"sidebar": {
 			"search": "Search...",
@@ -755,7 +809,7 @@
 				"studentPromotion": "Student promotion",
 				"courses": "Courses",
 				"classes": "Classes",
-				"faculties": "Faculties",
+				"faculties": "Institutions",
 				"institution": "Institution",
 				"studyCycles": "Study cycles",
 				"programs": "Programs",

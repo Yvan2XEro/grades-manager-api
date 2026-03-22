@@ -79,6 +79,22 @@
 			"dean": "Doyen",
 			"student": "Étudiant"
 		},
+		"command": {
+			"placeholder": "Rechercher une page…",
+			"title": "Recherche rapide",
+			"description": "Naviguez rapidement vers une page",
+			"empty": "Aucun résultat pour « {{query}} »",
+			"hint": {
+				"navigate": "naviguer",
+				"open": "ouvrir",
+				"close": "fermer"
+			},
+			"groups": {
+				"main": "Principal",
+				"academic": "Académique",
+				"tools": "Outils"
+			}
+		},
 		"header": {
 			"adminDashboard": "Tableau de bord administrateur",
 			"teacherDashboard": "Tableau de bord enseignant",
@@ -86,7 +102,8 @@
 			"toggleSidebarAria": "Afficher ou masquer le menu latéral",
 			"languageSelectAria": "Changer de langue",
 			"languageSelectPlaceholder": "Sélectionnez la langue",
-			"profileMenuAria": "Ouvrir le menu profil"
+			"profileMenuAria": "Ouvrir le menu profil",
+			"search": "Rechercher…"
 		},
 		"sidebar": {
 			"search": "Rechercher...",
@@ -106,7 +123,7 @@
 				"studentPromotion": "Promotion des etudiants",
 				"courses": "Cours",
 				"classes": "Classes",
-				"faculties": "Facultés",
+				"faculties": "Institutions",
 				"institution": "Institution",
 				"studyCycles": "Cycles d'étude",
 				"programs": "Programmes",
@@ -866,6 +883,8 @@
 				"nameFrRequired": "Le nom en français est requis",
 				"nameEnRequired": "Le nom en anglais est requis",
 				"codeRequired": "Le code est requis",
+				"parentInstitutionLabel": "Établissement parent",
+				"noParentInstitution": "Aucun (niveau racine)",
 				"submit": "Créer"
 			},
 			"toast": {
@@ -879,6 +898,41 @@
 			"delete": {
 				"title": "Supprimer la faculté",
 				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ? Cette action est irréversible."
+			}
+		},
+		"institutions": {
+			"title": "Institutions",
+			"subtitle": "Gérez les universités, facultés et écoles.",
+			"actions": {
+				"add": "Ajouter une institution"
+			},
+			"empty": {
+				"title": "Aucune institution",
+				"description": "Créez votre première institution pour organiser la structure académique."
+			},
+			"table": {
+				"code": "Code",
+				"type": "Type",
+				"nameFr": "Nom (FR)",
+				"nameEn": "Nom (EN)",
+				"shortName": "Nom court"
+			},
+			"form": {
+				"createTitle": "Créer une institution",
+				"editTitle": "Modifier l'institution",
+				"submit": "Créer"
+			},
+			"toast": {
+				"createSuccess": "Institution créée avec succès",
+				"createError": "Impossible de créer l'institution",
+				"updateSuccess": "Institution mise à jour avec succès",
+				"updateError": "Impossible de mettre à jour l'institution",
+				"deleteSuccess": "Institution supprimée avec succès",
+				"deleteError": "Impossible de supprimer l'institution"
+			},
+			"delete": {
+				"title": "Supprimer l'institution",
+				"message": "Êtes-vous sûr de vouloir supprimer cette institution ? Cette action est irréversible."
 			}
 		},
 		"programs": {

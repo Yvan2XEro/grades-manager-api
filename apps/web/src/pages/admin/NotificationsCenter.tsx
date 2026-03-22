@@ -22,7 +22,7 @@ import { trpc, trpcClient } from "../../utils/trpc";
 
 type StatusFilter = "all" | "pending" | "sent" | "failed";
 
-const STATUS_TABS: { key: StatusFilter; label: string }[] = [
+const STATUS_TABS: { key: StatusFilter }[] = [
 	{ key: "all", label: "Tout" },
 	{ key: "pending", label: "En attente" },
 	{ key: "sent", label: "Envoyées" },
@@ -32,19 +32,19 @@ const STATUS_TABS: { key: StatusFilter; label: string }[] = [
 const statusConfig = {
 	pending: {
 		icon: <Clock className="h-4 w-4" />,
-		label: "En attente",
+		labelKey: "admin.notifications.status.pending",
 		badge: "bg-muted text-foreground border-border",
 		dot: "bg-muted-foreground",
 	},
 	sent: {
 		icon: <CheckCircle2 className="h-4 w-4" />,
-		label: "Envoyée",
+		labelKey: "admin.notifications.status.sent",
 		badge: "bg-primary/10 text-primary border-primary/20",
 		dot: "bg-primary",
 	},
 	failed: {
 		icon: <XCircle className="h-4 w-4" />,
-		label: "Échouée",
+		labelKey: "admin.notifications.status.failed",
 		badge: "bg-destructive/10 text-destructive border-destructive/20",
 		dot: "bg-destructive",
 	},
@@ -189,16 +189,16 @@ const NotificationsCenter = () => {
 				<div className="ml-auto flex items-center gap-2 pb-1">
 					<span className="flex items-center gap-1.5 text-muted-foreground text-xs">
 						<Filter className="h-3.5 w-3.5" />
-						{notificationsQuery.data?.items.length ?? 0} résultats
+						{t("admin.notifications.results", { count: notificationsQuery.data?.items.length ?? 0 })}
 					</span>
 				</div>
 			</div>
 
 			{/* Selection bar */}
 			{selection.selectedCount > 0 && (
-				<div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2.5">
+				<div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5">
 					<span className="text-sm font-medium">
-						{selection.selectedCount} sélectionnée(s)
+						{t("admin.notifications.selected", { count: selection.selectedCount })}
 					</span>
 					<div className="ml-auto flex items-center gap-2">
 						<Button
@@ -207,7 +207,7 @@ const NotificationsCenter = () => {
 							onClick={selection.clear}
 							className="h-7 text-xs"
 						>
-							Désélectionner
+							{t("admin.notifications.deselect")}
 						</Button>
 						<Button
 							variant="outline"
@@ -229,12 +229,12 @@ const NotificationsCenter = () => {
 					{[1, 2, 3].map((i) => (
 						<div
 							key={i}
-							className="h-24 animate-pulse rounded-xl border bg-muted/30"
+							className="h-24 animate-pulse rounded-xl border bg-muted"
 						/>
 					))}
 				</div>
 			) : notifications.length === 0 ? (
-				<div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-muted-foreground">
+				<div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-card py-16 text-muted-foreground">
 					<Inbox className="h-10 w-10 opacity-30" />
 					<p className="text-sm">
 						{t("admin.notifications.empty", {
@@ -249,10 +249,10 @@ const NotificationsCenter = () => {
 						<Checkbox
 							checked={selection.isAllSelected}
 							onCheckedChange={(checked) => selection.toggleAll(!!checked)}
-							aria-label="Tout sélectionner"
+							aria-label={t("admin.notifications.selectAll")}
 						/>
 						<span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-							Tout sélectionner
+							{t("admin.notifications.selectAll")}
 						</span>
 					</div>
 
@@ -271,7 +271,7 @@ const NotificationsCenter = () => {
 									<Checkbox
 										checked={selection.isSelected(item.id)}
 										onCheckedChange={() => selection.toggle(item.id)}
-										aria-label={`Sélectionner ${item.type}`}
+										aria-label={item.type}
 										className="mt-1"
 									/>
 
@@ -299,7 +299,7 @@ const NotificationsCenter = () => {
 													)}
 												>
 													<span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
-													{s.label}
+													{t(s.labelKey)}
 												</span>
 											)}
 											{item.channel && (

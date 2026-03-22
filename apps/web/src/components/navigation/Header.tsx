@@ -128,18 +128,17 @@ const Header: React.FC = () => {
 					{/* ── Right ── */}
 					<div className="flex items-center gap-1.5">
 						{/* Search trigger */}
-						<Button
-							variant="outline"
-							size="sm"
-							className="hidden h-8 gap-2 rounded-lg border-border/60 bg-muted/40 px-3 text-muted-foreground hover:bg-muted hover:text-foreground md:flex"
+						<button
+							type="button"
 							onClick={() => setCmdOpen(true)}
+							className="group hidden h-8 w-52 items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/8 hover:text-foreground md:flex"
 						>
-							<Search className="h-3.5 w-3.5" />
-							<span className="text-xs">Rechercher…</span>
-							<kbd className="ml-1 rounded border bg-background px-1.5 font-mono text-[10px] text-muted-foreground shadow-sm">
-								{isMac ? "⌘K" : "Ctrl K"}
+							<Search className="size-3.5 shrink-0 transition-colors duration-200 group-hover:text-primary" />
+							<span className="flex-1 text-left text-xs">{t("navigation.header.search")}</span>
+							<kbd className="flex items-center rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
+								{isMac ? "⌘K" : "Ctrl+K"}
 							</kbd>
-						</Button>
+						</button>
 
 						{/* Search icon-only on mobile */}
 						<Button

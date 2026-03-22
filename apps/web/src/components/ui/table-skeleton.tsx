@@ -33,7 +33,7 @@ export function TableSkeleton({
 							key={`cell-${rowIndex}-${colIndex}`}
 							className="h-3 flex-1 animate-shimmer rounded"
 							style={{
-								animationDelay: `${(rowIndex * columns + colIndex) * 75}ms`,
+								animationDelay: `${(rowIndex * columns + colIndex) * 120}ms`,
 							}}
 						/>
 					))}

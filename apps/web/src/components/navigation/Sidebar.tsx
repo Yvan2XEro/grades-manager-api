@@ -211,21 +211,21 @@ const Sidebar: React.FC = () => {
 
 			{/* Search — expanded only */}
 			{!collapsed && (
-				<div className="shrink-0 border-b border-sidebar-border px-3 py-2">
-					<div className="relative">
-						<Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+				<div className="shrink-0 border-b border-sidebar-border px-3 py-2.5">
+					<div className="group relative">
+						<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/60 transition-colors duration-150 group-focus-within:text-primary" />
 						<input
 							type="text"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							placeholder={t("navigation.sidebar.search", { defaultValue: "Rechercher…" })}
-							className="w-full rounded-md border border-border bg-muted/50 py-1.5 pl-7 pr-6 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+							placeholder={t("navigation.sidebar.search")}
+							className="w-full rounded-lg border border-border bg-background/70 py-1.5 pl-7 pr-6 text-[12px] text-foreground shadow-sm placeholder:text-muted-foreground/50 outline-none transition-all duration-150 focus:border-primary/50 focus:bg-background focus:shadow-md focus:shadow-primary/8 focus:ring-2 focus:ring-primary/10"
 						/>
 						{search && (
 							<button
 								type="button"
 								onClick={() => setSearch("")}
-								className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 							>
 								<X className="size-3" />
 							</button>

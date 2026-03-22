@@ -9,6 +9,7 @@ interface FormModalProps {
 	title: string;
 	children: React.ReactNode;
 	maxWidth?: string;
+	contentClassName?: string;
 }
 
 const FormModal: React.FC<FormModalProps> = ({
@@ -17,6 +18,7 @@ const FormModal: React.FC<FormModalProps> = ({
 	title,
 	children,
 	maxWidth,
+	contentClassName,
 }) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -26,7 +28,7 @@ const FormModal: React.FC<FormModalProps> = ({
 				<DialogHeader className="px-6 pt-5">
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<div className="max-h-[calc(80vh-8rem)] overflow-y-auto px-6 pb-6">
+				<div className={cn("max-h-[calc(80vh-8rem)] overflow-y-auto px-6 pb-6", contentClassName)}>
 					{children}
 				</div>
 			</DialogContent>

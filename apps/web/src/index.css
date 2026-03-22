@@ -177,7 +177,7 @@
 .animate-shimmer {
   background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer 2.4s ease-in-out infinite;
 }
 
 /* Micro-interactions */
@@ -261,7 +261,7 @@
     var(--muted) 100%
   );
   background-size: 800px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 2.4s ease-in-out infinite;
 }
 
 /* Badge pop on mount */
@@ -329,7 +329,7 @@
 
 /* ─── Background patterns ─────────────────────────────────────────── */
 
-/* Grille fine — vignette radiale, la grille s'efface vers les bords */
+/* Grille fine — vignette radiale */
 .bg-dot-pattern {
   background-image:
     linear-gradient(var(--pattern-color) 1px, transparent 1px),
@@ -337,6 +337,98 @@
   background-size: var(--pattern-size) var(--pattern-size);
   mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+}
+
+/*
+  Vague 1 — balayage horizontal lent.
+  Les traits de la grille prennent la couleur primary au passage.
+  Technique : grille colorée masquée par un bandeau animé.
+*/
+.bg-dot-pattern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Grille avec traits colorés (primary) */
+  background-image:
+    linear-gradient(oklch(0.48 0.2 277 / 30%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.48 0.2 277 / 30%) 1px, transparent 1px);
+  background-size: var(--pattern-size) var(--pattern-size);
+  /* Masque en bandeau qui se déplace horizontalement */
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 25%,
+    black        42%,
+    black        58%,
+    transparent 75%,
+    transparent 100%
+  );
+  mask-size: 300% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 25%,
+    black        42%,
+    black        58%,
+    transparent 75%,
+    transparent 100%
+  );
+  -webkit-mask-size: 300% 100%;
+  -webkit-mask-repeat: no-repeat;
+  animation: wave-h 20s ease-in-out infinite;
+}
+
+/*
+  Vague 2 — balayage diagonal lent, décalé.
+  Traits avec une teinte légèrement différente.
+*/
+.bg-dot-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(oklch(0.55 0.18 300 / 25%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.55 0.18 300 / 25%) 1px, transparent 1px);
+  background-size: var(--pattern-size) var(--pattern-size);
+  /* Masque en bandeau diagonal */
+  mask-image: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 25%,
+    black        42%,
+    black        58%,
+    transparent 75%,
+    transparent 100%
+  );
+  mask-size: 300% 300%;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 25%,
+    black        42%,
+    black        58%,
+    transparent 75%,
+    transparent 100%
+  );
+  -webkit-mask-size: 300% 300%;
+  -webkit-mask-repeat: no-repeat;
+  animation: wave-d 28s ease-in-out infinite;
+  animation-delay: -12s;
+}
+
+@keyframes wave-h {
+  0%   { mask-position: -200% center; -webkit-mask-position: -200% center; }
+  50%  { mask-position:  200% center; -webkit-mask-position:  200% center; }
+  100% { mask-position: -200% center; -webkit-mask-position: -200% center; }
+}
+@keyframes wave-d {
+  0%   { mask-position: -200% -200%; -webkit-mask-position: -200% -200%; }
+  50%  { mask-position:  200%  200%; -webkit-mask-position:  200%  200%; }
+  100% { mask-position: -200% -200%; -webkit-mask-position: -200% -200%; }
 }
 
 /* Grille fine subtile — sidebar et header, sans effet */
