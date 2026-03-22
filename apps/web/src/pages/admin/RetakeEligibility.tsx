@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -555,7 +555,7 @@ export default function RetakeEligibility() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 py-4">
+					<div className="space-y-4 px-6 py-4">
 						<div className="space-y-2">
 							<Label>{t("admin.retake.table.student")}</Label>
 							<p className="font-medium">{overrideModal.row?.studentName}</p>

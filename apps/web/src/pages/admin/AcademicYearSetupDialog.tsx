@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Button } from "../../components/ui/button";
 import {
@@ -94,6 +94,7 @@ export default function AcademicYearSetupDialog({
 					</DialogDescription>
 				</DialogHeader>
 
+				<div className="px-6 pb-4">
 				{!previewData ? (
 					<div className="space-y-4">
 						<div className="space-y-2">
@@ -137,6 +138,7 @@ export default function AcademicYearSetupDialog({
 						</div>
 					</div>
 				)}
+				</div>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>

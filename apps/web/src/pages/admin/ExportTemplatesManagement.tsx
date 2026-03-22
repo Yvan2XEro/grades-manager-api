@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
@@ -502,6 +502,7 @@ export default function ExportTemplatesManagement() {
 							{t("admin.exportTemplates.form.renameDescription")}
 						</DialogDescription>
 					</DialogHeader>
+					<div className="px-6 pb-4">
 					<Form {...renameForm}>
 						<form
 							onSubmit={renameForm.handleSubmit(handleRename)}
@@ -543,6 +544,7 @@ export default function ExportTemplatesManagement() {
 							</DialogFooter>
 						</form>
 					</Form>
+					</div>
 				</DialogContent>
 			</Dialog>
 

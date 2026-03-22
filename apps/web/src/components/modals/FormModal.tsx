@@ -1,6 +1,8 @@
 import type React from "react";
+import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
+import { sounds } from "@/lib/sounds";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 interface FormModalProps {
@@ -20,6 +22,13 @@ const FormModal: React.FC<FormModalProps> = ({
 	maxWidth,
 	contentClassName,
 }) => {
+	const prevOpen = useRef(false);
+	useEffect(() => {
+		if (isOpen && !prevOpen.current) sounds.open();
+		else if (!isOpen && prevOpen.current) sounds.close();
+		prevOpen.current = isOpen;
+	}, [isOpen]);
+
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
 			<DialogContent className={cn("max-w-2xl overflow-hidden p-0", maxWidth)}>

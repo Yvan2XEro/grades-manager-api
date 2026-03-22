@@ -5,7 +5,7 @@ import { Pencil, PlusIcon, Search, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Badge } from "../../components/ui/badge";

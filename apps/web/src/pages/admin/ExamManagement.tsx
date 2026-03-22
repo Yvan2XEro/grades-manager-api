@@ -23,7 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
 import {
 	AcademicYearSelect,
@@ -484,14 +484,12 @@ export default function ExamManagement() {
 				</Button>
 			</div>
 
-			<Card>
-				<CardContent className="pt-6">
-					<FilterBar
-						className="mb-6"
-						activeCount={[!!searchTerm, !!academicYearId, !!classId, !!semesterId, !!dateFrom, !!dateTo].filter(Boolean).length}
-						onReset={() => { setSearchTerm(""); setAcademicYearId(null); setClassId(null); setSemesterId(null); setDateFrom(null); setDateTo(null); }}
-					>
-						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<FilterBar
+				className="mb-4"
+				activeCount={[!!searchTerm, !!academicYearId, !!classId, !!semesterId, !!dateFrom, !!dateTo].filter(Boolean).length}
+				onReset={() => { setSearchTerm(""); setAcademicYearId(null); setClassId(null); setSemesterId(null); setDateFrom(null); setDateTo(null); }}
+			>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 							<div className="space-y-1.5">
 								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.search")}</p>
 								<DebouncedSearchField value={searchTerm} onChange={setSearchTerm} placeholder={t("admin.exams.filters.searchPlaceholder")} disabled={!academicYearId} />
@@ -517,7 +515,10 @@ export default function ExamManagement() {
 								<DatePicker value={dateTo ?? undefined} onChange={(d) => setDateTo(d ?? null)} placeholder="Jusqu'à..." disabled={!academicYearId} />
 							</div>
 						</div>
-					</FilterBar>
+			</FilterBar>
+
+			<Card>
+				<CardContent className="pt-4">
 					{isLoadingExams ? (
 						<TableSkeleton columns={9} rows={8} />
 					) : !exams.length ? (

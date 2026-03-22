@@ -12,7 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
@@ -54,12 +54,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaginationBar } from "@/components/ui/pagination-bar";
@@ -675,10 +669,12 @@ export default function ClassCourseManagement() {
 
 	const handleCloseUeAssign = () => {
 		setIsUeAssignOpen(false);
-		setUeAssignClassId("");
-		setUeAssignUeId("");
-		setUeAssignClassSearch("");
-		setSkippedCourses([]);
+		setTimeout(() => {
+			setUeAssignClassId("");
+			setUeAssignUeId("");
+			setUeAssignClassSearch("");
+			setSkippedCourses([]);
+		}, 250);
 	};
 
 	const handleBulkAssign = () => {
@@ -780,30 +776,39 @@ export default function ClassCourseManagement() {
 				</div>
 			</div>
 
-			<div className="flex flex-wrap items-end gap-4">
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
-					</Label>
-					<AcademicYearSelect
-						value={filterYear}
-						onChange={(v) => setFilterYear(v)}
-					/>
-				</div>
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", {
-							defaultValue: "Semester",
-						})}
-					</Label>
-					<SemesterSelect
-						value={filterSemester}
-						onChange={(v) => setFilterSemester(v)}
-					/>
-				</div>
-			</div>
+			<Card className="mb-4">
+				<CardHeader className="pb-3">
+					<CardTitle className="text-sm font-medium text-muted-foreground">
+						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex flex-wrap items-end gap-4">
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.academicYear", {
+									defaultValue: "Academic Year",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={filterYear}
+								onChange={(v) => setFilterYear(v)}
+							/>
+						</div>
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => setFilterSemester(v)}
+							/>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
 
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
@@ -1223,23 +1228,14 @@ export default function ClassCourseManagement() {
 			</AlertDialog>
 
 			{/* UE Bulk Assignment Dialog */}
-			<Dialog
-				open={isUeAssignOpen}
-				onOpenChange={(open) => {
-					if (!open) handleCloseUeAssign();
-					else setIsUeAssignOpen(open);
-				}}
+			<FormModal
+				isOpen={isUeAssignOpen}
+				onClose={handleCloseUeAssign}
+				title={t("admin.classCourses.ueAssign.title", {
+					defaultValue: "Assigner une unité d'enseignement",
+				})}
 			>
-				<DialogContent className="max-w-lg">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.classCourses.ueAssign.title", {
-								defaultValue: "Assigner une unité d'enseignement",
-							})}
-						</DialogTitle>
-					</DialogHeader>
-
-					{skippedCourses.length > 0 ? (
+				{skippedCourses.length > 0 ? (
 						<div className="space-y-4">
 							<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
 								<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
@@ -1376,8 +1372,7 @@ export default function ClassCourseManagement() {
 							</div>
 						</div>
 					)}
-				</DialogContent>
-			</Dialog>
+			</FormModal>
 		</div>
 	);
 }

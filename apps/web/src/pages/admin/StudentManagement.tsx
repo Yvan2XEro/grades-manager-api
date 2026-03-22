@@ -7,7 +7,7 @@ import Papa from "papaparse";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
@@ -1029,6 +1029,7 @@ export default function StudentManagement() {
 						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
 					</DialogHeader>
 
+					<div className="px-6 pb-4">
 					<Tabs
 						value={activeTab}
 						onValueChange={(value) =>
@@ -2050,6 +2051,7 @@ export default function StudentManagement() {
 							</Form>
 						</TabsContent>
 					</Tabs>
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>

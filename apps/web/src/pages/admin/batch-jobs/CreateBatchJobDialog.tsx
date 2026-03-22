@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Button } from "../../../components/ui/button";
 import {
@@ -127,6 +127,7 @@ export function CreateBatchJobDialog({
 					</DialogTitle>
 				</DialogHeader>
 
+				<div className="px-6 pb-4">
 				{!previewData ? (
 					<div className="space-y-4">
 						{/* Job type selection */}
@@ -231,6 +232,7 @@ export function CreateBatchJobDialog({
 					</div>
 				)}
 
+				</div>
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>
 						{t("common.actions.cancel")}

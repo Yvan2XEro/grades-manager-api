@@ -17,7 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -725,7 +725,7 @@ const GradeEntry: React.FC = () => {
 											{t("teacher.gradeEntry.delegates.dialogDescription")}
 										</DialogDescription>
 									</DialogHeader>
-									<div className="space-y-2">
+									<div className="space-y-2 px-6 pb-4">
 										<Label>
 											{t("teacher.gradeEntry.delegates.selectLabel")}
 										</Label>

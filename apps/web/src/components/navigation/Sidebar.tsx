@@ -28,7 +28,7 @@ import {
 	X,
 } from "lucide-react";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -100,7 +100,7 @@ const Sidebar: React.FC = () => {
 			key: "promotion",
 			titleKey: "navigation.sidebar.groups.promotion",
 			items: [
-				{ to: "/admin/deliberations",       icon: <Gavel     className={IC} />, labelKey: "navigation.sidebar.admin.deliberations" },
+				{ to: "/admin/deliberations",       icon: <Gavel     className={IC} />, labelKey: "navigation.sidebar.admin.deliberations",      excludePrefix: "/admin/deliberations/rules" },
 				{ to: "/admin/deliberations/rules", icon: <TrendingUp className={IC} />, labelKey: "navigation.sidebar.admin.deliberationRules" },
 				{ to: "/admin/rules",               icon: <FileCog   className={IC} />, labelKey: "navigation.sidebar.admin.rules" },
 			],
@@ -186,6 +186,15 @@ const Sidebar: React.FC = () => {
 				: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 		);
 
+	const makeLinkClass =
+		(link: { excludePrefix?: string }) =>
+		({ isActive }: { isActive: boolean }) => {
+			const active =
+				isActive &&
+				!(link.excludePrefix && location.pathname.startsWith(link.excludePrefix));
+			return expandedLinkClass({ isActive: active });
+		};
+
 	// Collapsed icon button — fixed 32×32, centered by parent flex items-center
 	const iconBtnClass = ({ isActive }: { isActive: boolean }) =>
 		cn(
@@ -195,6 +204,9 @@ const Sidebar: React.FC = () => {
 				: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 		);
 
+	const [logoHovered, setLogoHovered] = useState(false);
+	const shimmerDone = useRef(false);
+
 	const inner = (collapsed: boolean) => (
 		<>
 			{/* Logo */}
@@ -202,11 +214,62 @@ const Sidebar: React.FC = () => {
 				"flex h-14 shrink-0 items-center border-b border-sidebar-border",
 				collapsed ? "justify-center" : "px-5",
 			)}>
-				{collapsed ? (
-					<img src="/favicon.ico" alt="Logo" className="size-6 object-contain" />
-				) : (
-					<img src="/logo.png" alt="Logo" className="h-7 w-auto" />
-				)}
+				<AnimatePresence mode="wait" initial={false}>
+					{collapsed ? (
+						<motion.img
+							key="favicon"
+							src="/favicon.ico"
+							alt="Logo"
+							className="size-6 object-contain"
+							initial={{ opacity: 0, scale: 0.65, rotate: -15 }}
+							animate={{ opacity: 1, scale: 1, rotate: 0 }}
+							exit={{ opacity: 0, scale: 0.65, rotate: 15 }}
+							transition={{ duration: 0.22, ease: "easeOut" }}
+							whileHover={{ scale: 1.18, rotate: 8 }}
+							whileTap={{ scale: 0.88 }}
+						/>
+					) : (
+						<motion.div
+							key="full-logo"
+							className="relative overflow-hidden cursor-default"
+							initial={{ opacity: 0, x: -14 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -14 }}
+							transition={{ duration: 0.22, ease: "easeOut" }}
+							whileHover={{ scale: 1.04 }}
+							whileTap={{ scale: 0.96 }}
+							onHoverStart={() => { shimmerDone.current = false; setLogoHovered(true); }}
+							onHoverEnd={() => setLogoHovered(false)}
+						>
+							{/* Floating logo */}
+							<motion.img
+								src="/logo.png"
+								alt="Logo"
+								className="h-7 w-auto"
+								animate={{ y: [0, -2, 0] }}
+								transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+							/>
+							{/* Shimmer sweep on hover */}
+							<AnimatePresence>
+								{logoHovered && (
+									<motion.span
+										key="shimmer"
+										className="pointer-events-none absolute inset-0"
+										initial={{ x: "-80%" }}
+										animate={{ x: "180%" }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.55, ease: "easeInOut" }}
+										style={{
+											background:
+												"linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.35) 50%, transparent 80%)",
+											width: "60%",
+										}}
+									/>
+								)}
+							</AnimatePresence>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 
 			{/* Search — expanded only */}
@@ -313,7 +376,7 @@ const Sidebar: React.FC = () => {
 																key={link.to}
 																to={link.to}
 																end={ROOT_PATHS.has(link.to)}
-																className={expandedLinkClass}
+																className={makeLinkClass(link)}
 															>
 																{link.icon}
 																<span>{t(link.labelKey)}</span>
@@ -336,7 +399,7 @@ const Sidebar: React.FC = () => {
 								key={link.to}
 								to={link.to}
 								end={ROOT_PATHS.has(link.to)}
-								className={expandedLinkClass}
+								className={makeLinkClass(link)}
 							>
 								{link.icon}
 								<span>{t(link.labelKey)}</span>

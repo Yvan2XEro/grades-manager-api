@@ -3,15 +3,30 @@ import {
 	Languages,
 	LogOut,
 	Menu,
+	Music2,
 	PanelLeftClose,
 	Search,
 	Settings,
+	Volume,
+	Volume1,
+	Volume2,
+	VolumeX,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import {
+	getTheme,
+	getVolume,
+	isSoundEnabled,
+	setTheme,
+	setVolume,
+	setSoundEnabled,
+	sounds,
+	type SoundTheme,
+} from "@/lib/sounds";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
@@ -36,17 +51,69 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Slider } from "../ui/slider";
 import { CommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 
 const isMac =
 	typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
+const THEMES: { id: SoundTheme; label: string; emoji: string }[] = [
+	{ id: "default", label: "Défaut", emoji: "🎵" },
+	{ id: "soft", label: "Doux", emoji: "🌙" },
+	{ id: "playful", label: "Vif", emoji: "🎮" },
+	{ id: "minimal", label: "Minimal", emoji: "·" },
+];
+
+function VolumeIcon({ vol, enabled }: { vol: number; enabled: boolean }) {
+	if (!enabled || vol === 0) return <VolumeX className="h-4 w-4" />;
+	if (vol < 0.35) return <Volume className="h-4 w-4" />;
+	if (vol < 0.7) return <Volume1 className="h-4 w-4" />;
+	return <Volume2 className="h-4 w-4" />;
+}
+
 const Header: React.FC = () => {
 	const { user, sidebarOpen, toggleSidebar, clearUser } = useStore();
 	const navigate = useNavigate();
 	const { t, i18n } = useTranslation();
 	const [cmdOpen, setCmdOpen] = useState(false);
+	const [soundOn, setSoundOn] = useState(isSoundEnabled);
+	const [volume, setVolumeState] = useState(getVolume);
+	const [theme, setThemeState] = useState<SoundTheme>(getTheme);
+
+	const handleToggleSidebar = () => {
+		toggleSidebar();
+		sounds.swoosh();
+	};
+
+	const handleOpenCmd = () => {
+		setCmdOpen(true);
+		sounds.sparkle();
+	};
+
+	const handleToggleSound = () => {
+		const next = !soundOn;
+		setSoundEnabled(next);
+		setSoundOn(next);
+	};
+
+	const handleVolume = (val: number[]) => {
+		const v = val[0] / 100;
+		setVolume(v);
+		setVolumeState(v);
+		if (!soundOn) {
+			setSoundEnabled(true);
+			setSoundOn(true);
+		}
+	};
+
+	const handleTheme = (t: SoundTheme) => {
+		setTheme(t);
+		setThemeState(t);
+		// play a preview note
+		sounds.notification();
+	};
 
 	const handleLogout = async () => {
 		try {
@@ -71,6 +138,7 @@ const Header: React.FC = () => {
 			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
 				e.preventDefault();
 				setCmdOpen((v) => !v);
+				sounds.sparkle();
 			}
 		};
 		window.addEventListener("keydown", onKey);
@@ -84,7 +152,7 @@ const Header: React.FC = () => {
 					{/* ── Left ── */}
 					<div className="flex items-center gap-3">
 						<Button
-							onClick={toggleSidebar}
+							onClick={handleToggleSidebar}
 							variant="ghost"
 							size="icon"
 							className="h-8 w-8 text-muted-foreground hover:text-foreground"
@@ -130,7 +198,7 @@ const Header: React.FC = () => {
 						{/* Search trigger */}
 						<button
 							type="button"
-							onClick={() => setCmdOpen(true)}
+							onClick={handleOpenCmd}
 							className="group hidden h-8 w-52 items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/8 hover:text-foreground md:flex"
 						>
 							<Search className="size-3.5 shrink-0 transition-colors duration-200 group-hover:text-primary" />
@@ -145,10 +213,82 @@ const Header: React.FC = () => {
 							variant="ghost"
 							size="icon"
 							className="h-8 w-8 text-muted-foreground hover:text-foreground md:hidden"
-							onClick={() => setCmdOpen(true)}
+							onClick={handleOpenCmd}
 						>
 							<Search className="h-4 w-4" />
 						</Button>
+
+						{/* Sound control popover */}
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 text-muted-foreground hover:text-foreground"
+									aria-label="Paramètres sonores"
+								>
+									<VolumeIcon vol={volume} enabled={soundOn} />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent align="end" className="w-64 p-4">
+								<div className="space-y-4">
+									{/* Volume */}
+									<div className="space-y-2">
+										<div className="flex items-center justify-between">
+											<span className="font-medium text-sm">Volume</span>
+											<button
+												type="button"
+												onClick={handleToggleSound}
+												className="text-muted-foreground text-xs underline-offset-2 hover:text-foreground hover:underline"
+											>
+												{soundOn ? "Désactiver" : "Activer"}
+											</button>
+										</div>
+										<div className="flex items-center gap-3">
+											<VolumeX className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+											<Slider
+												min={0}
+												max={100}
+												step={5}
+												value={[Math.round(volume * 100)]}
+												onValueChange={handleVolume}
+												className="flex-1"
+											/>
+											<Volume2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+										</div>
+										<p className="text-center text-muted-foreground text-xs">
+											{Math.round(volume * 100)}%
+										</p>
+									</div>
+
+									{/* Themes */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-1.5">
+											<Music2 className="h-3.5 w-3.5 text-muted-foreground" />
+											<span className="font-medium text-sm">Thème sonore</span>
+										</div>
+										<div className="grid grid-cols-2 gap-1.5">
+											{THEMES.map((th) => (
+												<button
+													key={th.id}
+													type="button"
+													onClick={() => handleTheme(th.id)}
+													className={cn(
+														"flex items-center gap-2 rounded-md border px-3 py-2 text-left text-xs transition-colors",
+														theme === th.id
+															? "border-primary bg-primary/8 text-primary font-medium"
+															: "border-border hover:border-primary/40 hover:bg-muted/60",
+													)}
+												>
+													<span className="text-sm">{th.emoji}</span>
+													{th.label}
+												</button>
+											))}
+										</div>
+									</div>
+								</div>
+							</PopoverContent>
+						</Popover>
 
 						<NotificationBell />
 
@@ -177,10 +317,7 @@ const Header: React.FC = () => {
 								<DropdownMenuLabel className="font-normal">
 									<div className="flex items-center gap-3 py-1">
 										<Avatar className="h-9 w-9">
-											<AvatarImage
-												src={user?.image ?? undefined}
-												alt=""
-											/>
+											<AvatarImage src={user?.image ?? undefined} alt="" />
 											<AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
 												{userInitials}
 											</AvatarFallback>
@@ -230,9 +367,7 @@ const Header: React.FC = () => {
 												<Check
 													className={cn(
 														"h-3.5 w-3.5",
-														i18n.language === lang
-															? "opacity-100"
-															: "opacity-0",
+														i18n.language === lang ? "opacity-100" : "opacity-0",
 													)}
 												/>
 												{lang === "fr" ? "Français" : "English"}

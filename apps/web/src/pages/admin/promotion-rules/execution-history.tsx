@@ -270,6 +270,7 @@ export function ExecutionHistoryPage() {
 						</DialogDescription>
 					</DialogHeader>
 
+					<div className="px-6 pb-4">
 					{executionDetails && (
 						<div className="space-y-6">
 							{/* Summary */}
@@ -409,6 +410,7 @@ export function ExecutionHistoryPage() {
 							</div>
 						</div>
 					)}
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>

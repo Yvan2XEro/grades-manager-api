@@ -17,7 +17,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
@@ -25,7 +25,7 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -933,30 +933,39 @@ export default function ClassManagement() {
 				</Button>
 			</div>
 
-			<div className="mb-4 flex flex-wrap items-end gap-4">
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
-					</Label>
-					<AcademicYearSelect
-						value={filterYear}
-						onChange={(v) => setFilterYear(v)}
-					/>
-				</div>
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", {
-							defaultValue: "Semester",
-						})}
-					</Label>
-					<SemesterSelect
-						value={filterSemester}
-						onChange={(v) => setFilterSemester(v)}
-					/>
-				</div>
-			</div>
+			<Card className="mb-4">
+				<CardHeader className="pb-3">
+					<CardTitle className="text-sm font-medium text-muted-foreground">
+						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex flex-wrap items-end gap-4">
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.academicYear", {
+									defaultValue: "Academic Year",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={filterYear}
+								onChange={(v) => setFilterYear(v)}
+							/>
+						</div>
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => setFilterSemester(v)}
+							/>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
 
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
@@ -1537,7 +1546,7 @@ export default function ClassManagement() {
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="relative shrink-0">
+					<div className="relative shrink-0 px-6 pb-4">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
 							placeholder={t("admin.classes.searchStudents", {

@@ -3,7 +3,7 @@ import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { RuleCard } from "@/components/promotion-rules/rule-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -285,7 +285,7 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.create.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleCreateRule} className="space-y-4">
+					<form onSubmit={handleCreateRule} className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label htmlFor="name">
 								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
@@ -360,7 +360,7 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.edit.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleUpdateRule} className="space-y-4">
+					<form onSubmit={handleUpdateRule} className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label htmlFor="edit-name">
 								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}

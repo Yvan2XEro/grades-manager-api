@@ -8,6 +8,9 @@ import { Toaster } from "sonner";
 import App from "./App";
 import "./i18n";
 import "./index.css";
+import { initClickEffects } from "./lib/click-effects";
+
+initClickEffects();
 
 const queryClient = new QueryClient({
 	defaultOptions: {

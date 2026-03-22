@@ -32,7 +32,7 @@ export function DatePicker({
 	endMonth = new Date(2035, 11),
 }: DatePickerProps) {
 	const [open, setOpen] = useState(false);
-	const { i18n } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const locale = i18n.language.startsWith("fr") ? fr : enUS;
 

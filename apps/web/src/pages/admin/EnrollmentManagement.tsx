@@ -3,7 +3,7 @@ import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";

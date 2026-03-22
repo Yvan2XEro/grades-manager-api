@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
@@ -37,6 +37,13 @@ import {
 } from "../../../components/ui/select";
 import { Textarea } from "../../../components/ui/textarea";
 import { trpcClient } from "../../../utils/trpc";
+import {
+	Empty,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+	EmptyDescription,
+} from "../../../components/ui/empty";
 
 const CATEGORIES = [
 	"admission",
@@ -361,7 +368,7 @@ export default function DeliberationRules() {
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className="space-y-4">
+					<div className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label>{t("admin.deliberations.rules.name")}</Label>
 							<Input

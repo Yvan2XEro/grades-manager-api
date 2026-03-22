@@ -99,7 +99,11 @@
       "Bash(do echo:*)",
       "Bash(cd:*)",
       "Bash(bun -e \":*)",
-      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/web/src -type f \\\\\\(-name *acult* -o -name *nstit* \\\\\\)\\\\)"
+      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/web/src -type f \\\\\\(-name *acult* -o -name *nstit* \\\\\\)\\\\)",
+      "WebFetch(domain:edbartholomew.com)",
+      "WebFetch(domain:www.svgbackgrounds.com)",
+      "mcp__playwright__browser_navigate",
+      "Bash(node -e \":*)"
     ]
   }
 }

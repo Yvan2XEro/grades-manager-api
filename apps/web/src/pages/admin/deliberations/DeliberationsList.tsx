@@ -4,7 +4,7 @@ import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";

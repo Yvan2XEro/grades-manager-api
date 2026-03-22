@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Loader2, Play, RefreshCcw, TableProperties } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "../../components/inputs/SemesterSelect";
 import { Badge } from "../../components/ui/badge";
@@ -536,7 +536,7 @@ export default function ExamScheduler() {
 								{t("admin.examScheduler.form.description")}
 							</p>
 						</DialogHeader>
-						<div className="mt-4">
+						<div className="mt-4 px-6 pb-4">
 							<Tabs
 								value={sessionMode}
 								onValueChange={(v) => setSessionMode(v as SessionMode)}
@@ -1003,6 +1003,7 @@ export default function ExamScheduler() {
 							{t("admin.examScheduler.history.details.title")}
 						</DialogTitle>
 					</DialogHeader>
+					<div className="px-6 pb-4">
 					{runDetailsQuery.isLoading ? (
 						<div className="flex items-center justify-center py-8">
 							<Spinner />
@@ -1076,6 +1077,7 @@ export default function ExamScheduler() {
 							</div>
 						</div>
 					)}
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>
