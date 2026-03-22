@@ -91,19 +91,19 @@
 .dark {
   /* Fond sombre chaud — brun ambré profond */
   --background: oklch(0.095 0.012 38);
-  --foreground: oklch(0.94 0.010 65);
+  --foreground: oklch(0.92 0.022 70);
   /* Cards : surface chaude légèrement plus claire */
   --card: oklch(0.158 0.016 38);
-  --card-foreground: oklch(0.94 0.010 65);
+  --card-foreground: oklch(0.92 0.022 70);
   --popover: oklch(0.158 0.016 38);
-  --popover-foreground: oklch(0.94 0.010 65);
+  --popover-foreground: oklch(0.92 0.022 70);
   /* Primary plus lumineux pour rester lisible sur fond sombre */
   --primary: oklch(0.62 0.18 277);
   --primary-foreground: oklch(0.08 0.010 38);
   --secondary: oklch(0.21 0.014 40);
-  --secondary-foreground: oklch(0.94 0.010 65);
+  --secondary-foreground: oklch(0.92 0.022 70);
   --muted: oklch(0.21 0.014 40);
-  --muted-foreground: oklch(0.58 0.010 52);
+  --muted-foreground: oklch(0.57 0.022 55);
   --accent: oklch(0.22 0.016 42);
   --accent-foreground: oklch(0.62 0.18 277);
   --destructive: oklch(0.62 0.20 27);
@@ -117,7 +117,7 @@
   --chart-5: oklch(0.58 0.24 303);
   /* Sidebar légèrement distincte du fond */
   --sidebar: oklch(0.138 0.015 38);
-  --sidebar-foreground: oklch(0.94 0.010 65);
+  --sidebar-foreground: oklch(0.92 0.022 70);
   --sidebar-primary: oklch(0.62 0.18 277);
   --sidebar-primary-foreground: oklch(0.08 0.010 38);
   --sidebar-accent: oklch(0.22 0.016 42);
