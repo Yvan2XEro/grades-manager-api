@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -204,6 +205,8 @@ const Sidebar: React.FC = () => {
 				: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 		);
 
+	const { resolvedTheme } = useTheme();
+	const logoSrc = resolvedTheme === "dark" ? "/logo-bg.png" : "/logo.png";
 	const [logoHovered, setLogoHovered] = useState(false);
 	const shimmerDone = useRef(false);
 
@@ -243,7 +246,7 @@ const Sidebar: React.FC = () => {
 						>
 							{/* Floating logo */}
 							<motion.img
-								src="/logo.png"
+								src={logoSrc}
 								alt="Logo"
 								className="h-7 w-auto"
 								animate={{ y: [0, -2, 0] }}

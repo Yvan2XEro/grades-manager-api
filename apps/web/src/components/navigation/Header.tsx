@@ -3,10 +3,12 @@ import {
 	Languages,
 	LogOut,
 	Menu,
+	Moon,
 	Music2,
 	PanelLeftClose,
 	Search,
 	Settings,
+	Sun,
 	Volume,
 	Volume1,
 	Volume2,
@@ -15,6 +17,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
+import { useTheme } from "next-themes";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -81,6 +84,11 @@ const Header: React.FC = () => {
 	const [soundOn, setSoundOn] = useState(isSoundEnabled);
 	const [volume, setVolumeState] = useState(getVolume);
 	const [theme, setThemeState] = useState<SoundTheme>(getTheme);
+	const { resolvedTheme, setTheme: setAppTheme } = useTheme();
+
+	const toggleDarkMode = () => {
+		setAppTheme(resolvedTheme === "dark" ? "light" : "dark");
+	};
 
 	const handleToggleSidebar = () => {
 		toggleSidebar();
@@ -218,8 +226,23 @@ const Header: React.FC = () => {
 							<Search className="h-4 w-4" />
 						</Button>
 
-						{/* Sound control popover */}
-						<Popover>
+						{/* Dark mode toggle */}
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-muted-foreground hover:text-foreground"
+						onClick={toggleDarkMode}
+						aria-label={resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"}
+					>
+						{resolvedTheme === "dark" ? (
+							<Sun className="h-4 w-4" />
+						) : (
+							<Moon className="h-4 w-4" />
+						)}
+					</Button>
+
+					{/* Sound control popover */}
+					<Popover>
 							<PopoverTrigger asChild>
 								<Button
 									variant="ghost"
