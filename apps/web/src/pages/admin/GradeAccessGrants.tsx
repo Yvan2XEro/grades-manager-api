@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -196,7 +197,7 @@ export default function GradeAccessGrants() {
 							{t("admin.gradeAccessGrants.dialog.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-3 py-2">
+					<DialogBody className="space-y-3">
 						<Label>{t("admin.gradeAccessGrants.dialog.selectLabel")}</Label>
 						<Select
 							value={selectedProfileId || undefined}
@@ -214,7 +215,7 @@ export default function GradeAccessGrants() {
 								))}
 							</SelectContent>
 						</Select>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setAddOpen(false)}>
 							{t("common.actions.cancel")}

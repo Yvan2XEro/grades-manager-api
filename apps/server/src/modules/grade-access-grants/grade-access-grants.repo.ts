@@ -47,36 +47,47 @@ export async function findByProfileAndInstitution(
 const memberAlias = alias(authSchema.member, "profile_member");
 
 export async function list(institutionId: string) {
-	return db
+	const rows = await db
 		.select({
 			id: schema.gradeAccessGrants.id,
 			createdAt: schema.gradeAccessGrants.createdAt,
-			profile: {
-				id: schema.domainUsers.id,
-				firstName: schema.domainUsers.firstName,
-				lastName: schema.domainUsers.lastName,
-				primaryEmail: schema.domainUsers.primaryEmail,
-				role: memberAlias.role,
-			},
-			grantedBy: {
-				id: grantedByAlias.id,
-				firstName: grantedByAlias.firstName,
-				lastName: grantedByAlias.lastName,
-			},
+			profileId: schema.domainUsers.id,
+			profileFirstName: schema.domainUsers.firstName,
+			profileLastName: schema.domainUsers.lastName,
+			profileEmail: schema.domainUsers.primaryEmail,
+			profileRole: memberAlias.role,
+			grantedById: grantedByAlias.id,
+			grantedByFirstName: grantedByAlias.firstName,
+			grantedByLastName: grantedByAlias.lastName,
 		})
 		.from(schema.gradeAccessGrants)
 		.innerJoin(
 			schema.domainUsers,
 			eq(schema.domainUsers.id, schema.gradeAccessGrants.profileId),
 		)
-		.leftJoin(
-			memberAlias,
-			eq(memberAlias.id, schema.domainUsers.memberId),
-		)
+		.leftJoin(memberAlias, eq(memberAlias.id, schema.domainUsers.memberId))
 		.leftJoin(
 			grantedByAlias,
 			eq(grantedByAlias.id, schema.gradeAccessGrants.grantedByProfileId),
 		)
 		.where(eq(schema.gradeAccessGrants.institutionId, institutionId))
 		.orderBy(schema.gradeAccessGrants.createdAt);
+
+	return rows.map((r) => ({
+		id: r.id,
+		createdAt: r.createdAt,
+		profile: {
+			id: r.profileId,
+			firstName: r.profileFirstName,
+			lastName: r.profileLastName,
+			primaryEmail: r.profileEmail,
+			role: r.profileRole,
+		},
+		grantedBy: r.grantedById
+			? {
+					firstName: r.grantedByFirstName,
+					lastName: r.grantedByLastName,
+				}
+			: null,
+	}));
 }
