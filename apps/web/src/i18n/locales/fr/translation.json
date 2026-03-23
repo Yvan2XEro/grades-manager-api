@@ -116,6 +116,7 @@
 				"users": "Utilisateurs",
 				"classCourses": "Cours de classes",
 				"gradeExport": "Export des notes",
+				"gradeAccess": "Délégation de notes",
 				"exportTemplates": "Modèles d'exportation",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",
@@ -1482,6 +1483,40 @@
 						"locked": "Verrouillé"
 					}
 				}
+			}
+		},
+		"gradeAccessGrants": {
+			"title": "Délégation de saisie des notes",
+			"subtitle": "Accorder l'accès à la saisie des notes à des utilisateurs spécifiques",
+			"info": "Les utilisateurs listés ici peuvent saisir des notes pour n'importe quel examen de cet établissement, indépendamment de l'affectation aux cours.",
+			"actions": {
+				"add": "Ajouter un délégué",
+				"grant": "Accorder l'accès",
+				"revoke": "Révoquer l'accès"
+			},
+			"columns": {
+				"user": "Utilisateur",
+				"email": "Email",
+				"grantedBy": "Accordé par",
+				"since": "Depuis"
+			},
+			"empty": {
+				"title": "Aucun délégué",
+				"description": "Aucun utilisateur n'a encore reçu un accès global à la saisie des notes."
+			},
+			"dialog": {
+				"title": "Ajouter un délégué",
+				"description": "Sélectionnez un utilisateur pour lui accorder l'accès global à la saisie des notes.",
+				"selectLabel": "Utilisateur",
+				"selectPlaceholder": "Sélectionner un utilisateur..."
+			},
+			"revoke": {
+				"title": "Révoquer l'accès",
+				"message": "Cet utilisateur ne pourra plus saisir des notes sauf s'il est l'enseignant assigné ou s'il a une délégation par examen."
+			},
+			"toast": {
+				"granted": "Accès à la saisie des notes accordé avec succès.",
+				"revoked": "Accès à la saisie des notes révoqué."
 			}
 		},
 		"gradeExport": {

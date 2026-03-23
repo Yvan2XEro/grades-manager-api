@@ -362,6 +362,40 @@
 				"sent": "Alert queued"
 			}
 		},
+		"gradeAccessGrants": {
+			"title": "Grade Delegation",
+			"subtitle": "Grant institution-wide grade entry access to specific users",
+			"info": "Users listed here can submit grades for any exam in this institution, regardless of course assignment.",
+			"actions": {
+				"add": "Add delegate",
+				"grant": "Grant access",
+				"revoke": "Revoke access"
+			},
+			"columns": {
+				"user": "User",
+				"email": "Email",
+				"grantedBy": "Granted by",
+				"since": "Since"
+			},
+			"empty": {
+				"title": "No delegates",
+				"description": "No users have been granted institution-wide grade access yet."
+			},
+			"dialog": {
+				"title": "Add grade delegate",
+				"description": "Select a user to grant institution-wide grade entry access.",
+				"selectLabel": "User",
+				"selectPlaceholder": "Select a user..."
+			},
+			"revoke": {
+				"title": "Revoke access",
+				"message": "This user will no longer be able to submit grades unless they are the assigned teacher or have per-exam delegation."
+			},
+			"toast": {
+				"granted": "Grade access granted successfully.",
+				"revoked": "Grade access revoked."
+			}
+		},
 		"gradeExport": {
 			"title": "Grade Export",
 			"subtitle": "Export student grades by class and course",
@@ -801,6 +835,7 @@
 				"users": "Users",
 				"classCourses": "Class courses",
 				"gradeExport": "Grade export",
+				"gradeAccess": "Grade delegation",
 				"exportTemplates": "Export templates",
 				"monitoring": "Monitoring",
 				"notifications": "Notifications",

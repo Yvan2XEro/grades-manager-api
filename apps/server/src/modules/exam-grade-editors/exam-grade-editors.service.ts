@@ -6,6 +6,7 @@ import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
 import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
 import * as repo from "./exam-grade-editors.repo";
+import * as gradeAccessRepo from "@/modules/grade-access-grants/grade-access-grants.repo";
 
 export type ExamEditorActor = {
 	profileId: string | null;
@@ -60,6 +61,13 @@ async function resolveActorAccess(params: {
 	if (params.exam.classCourseRef?.teacher === profileId) {
 		return "teacher";
 	}
+	// Institution-wide grade access delegation
+	const institutionGrant = await gradeAccessRepo.findByProfileAndInstitution(
+		profileId,
+		params.exam.institutionId,
+	);
+	if (institutionGrant) return "delegate";
+	// Per-exam delegation
 	const delegated = await repo.findByExamAndEditor(params.exam.id, profileId);
 	return delegated ? "delegate" : null;
 }

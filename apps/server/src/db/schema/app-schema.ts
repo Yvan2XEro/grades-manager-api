@@ -1176,6 +1176,32 @@ export const examGradeEditors = pgTable(
 	],
 );
 
+/** Institution-wide grade entry delegation: grants a user the right to submit grades for any exam in the institution. */
+export const gradeAccessGrants = pgTable(
+	"grade_access_grants",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		profileId: text("profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		grantedByProfileId: text("granted_by_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_grade_access_grant").on(t.institutionId, t.profileId),
+		index("idx_grade_access_grants_institution").on(t.institutionId),
+		index("idx_grade_access_grants_profile").on(t.profileId),
+	],
+);
+
 export const gradeEditLogActions = ["write", "delete", "import"] as const;
 export type GradeEditLogAction = (typeof gradeEditLogActions)[number];
 
@@ -2329,3 +2355,26 @@ export type DeliberationRule = InferSelectModel<typeof deliberationRules>;
 export type NewDeliberationRule = InferInsertModel<typeof deliberationRules>;
 export type DeliberationLog = InferSelectModel<typeof deliberationLogs>;
 export type NewDeliberationLog = InferInsertModel<typeof deliberationLogs>;
+
+export const gradeAccessGrantsRelations = relations(
+	gradeAccessGrants,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [gradeAccessGrants.institutionId],
+			references: [institutions.id],
+		}),
+		profile: one(domainUsers, {
+			fields: [gradeAccessGrants.profileId],
+			references: [domainUsers.id],
+			relationName: "gradeAccessGrantee",
+		}),
+		grantedBy: one(domainUsers, {
+			fields: [gradeAccessGrants.grantedByProfileId],
+			references: [domainUsers.id],
+			relationName: "gradeAccessGranter",
+		}),
+	}),
+);
+
+export type GradeAccessGrant = InferSelectModel<typeof gradeAccessGrants>;
+export type NewGradeAccessGrant = InferInsertModel<typeof gradeAccessGrants>;

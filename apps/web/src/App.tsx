@@ -27,6 +27,7 @@ import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import FacultyManagement from "./pages/admin/FacultyManagement";
 import GradeExport from "./pages/admin/GradeExport";
+import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
@@ -207,6 +208,7 @@ function App() {
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />
+						<Route path="grade-access" element={<GradeAccessGrants />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
