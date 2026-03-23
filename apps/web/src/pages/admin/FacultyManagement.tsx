@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -182,6 +182,34 @@ export default function FacultyManagement() {
 	const selection = useRowSelection(institutions);
 
 	const resetForm = () => form.reset(defaultValues);
+
+	const watchedParentId = form.watch("parentInstitutionId");
+
+	useEffect(() => {
+		if (!watchedParentId) return;
+		const parent = institutions.find((i) => i.id === watchedParentId);
+		if (!parent) return;
+
+		// Fields to inherit from the parent (only contact / location / config)
+		const inherited: Partial<FormValues> = {
+			addressFr: parent.addressFr ?? "",
+			addressEn: parent.addressEn ?? "",
+			contactEmail: parent.contactEmail ?? "",
+			contactPhone: parent.contactPhone ?? "",
+			fax: parent.fax ?? "",
+			postalBox: parent.postalBox ?? "",
+			website: parent.website ?? "",
+			timezone: parent.timezone ?? "UTC",
+			defaultAcademicYearId: parent.defaultAcademicYearId ?? undefined,
+			registrationFormatId: parent.registrationFormatId ?? undefined,
+		};
+
+		for (const [key, value] of Object.entries(inherited)) {
+			form.setValue(key as keyof FormValues, value as never, {
+				shouldDirty: true,
+			});
+		}
+	}, [watchedParentId, institutions, form]);
 
 	const handleOpenCreate = () => {
 		setEditingInstitution(null);

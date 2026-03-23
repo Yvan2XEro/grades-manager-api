@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Layers3, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -30,7 +30,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -46,7 +45,7 @@ import {
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
@@ -76,18 +75,19 @@ export default function StudyCycleManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
 	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
-	const cyclesQuery = useQuery({
-		queryKey: ["studyCycles", pagination.cursor],
-		queryFn: () =>
+	const cyclesQuery = useInfiniteQuery({
+		queryKey: ["studyCycles"],
+		queryFn: ({ pageParam }) =>
 			trpcClient.studyCycles.listCycles.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const cycles = cyclesQuery.data?.items ?? [];
+	const cycles = cyclesQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(cyclesQuery.fetchNextPage, { enabled: cyclesQuery.hasNextPage && !cyclesQuery.isFetchingNextPage });
 	const selection = useRowSelection(cycles);
 
 	const activeCycle = useMemo(
@@ -438,15 +438,7 @@ export default function StudyCycleManagement() {
 									)}
 								</TableBody>
 							</Table>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!cyclesQuery.data?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() =>
-									pagination.handleNext(cyclesQuery.data?.nextCursor)
-								}
-								isLoading={cyclesQuery.isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					)}
 				</CardContent>

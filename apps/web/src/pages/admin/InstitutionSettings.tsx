@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Landmark, UploadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -279,6 +279,7 @@ function ImageUploadField({
 
 export default function InstitutionSettings() {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
 	const institutionsQuery = useQuery(trpc.institutions.list.queryOptions());
 	const yearsQuery = useQuery(
@@ -343,13 +344,21 @@ export default function InstitutionSettings() {
 				registrationFormatId: values.registrationFormatId || undefined,
 				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 			}),
-		onSuccess: () => {
+		onSuccess: (savedInstitution) => {
 			toast.success(
 				t("admin.institution.toast.saved", {
 					defaultValue: "Institution saved",
 				}),
 			);
-			institutionQuery.refetch();
+			// Update the cache directly with the saved institution instead of
+			// refetching — getFirst() could return the parent institution if it
+			// was created earlier, overwriting the form with the wrong data.
+			if (savedInstitution) {
+				queryClient.setQueryData(
+					trpc.institutions.get.queryKey(),
+					savedInstitution,
+				);
+			}
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});

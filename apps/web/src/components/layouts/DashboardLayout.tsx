@@ -5,6 +5,7 @@ import { useStore } from "../../store";
 import { GridWaveFilter } from "../ui/grid-wave-filter";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
+import { HelpWidget } from "../help/HelpWidget";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
@@ -48,6 +49,7 @@ const DashboardLayout: React.FC = () => {
 					</div>
 				</main>
 			</div>
+			<HelpWidget />
 		</div>
 	);
 };

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Bell,
 	CheckCircle2,
@@ -14,8 +14,7 @@ import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "../../utils/trpc";
@@ -93,17 +92,22 @@ const NotificationsCenter = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const notificationsQuery = useQuery(
-		trpc.notifications.list.queryOptions({
-			status: statusFilter === "all" ? undefined : statusFilter,
-			cursor: pagination.cursor,
-			limit: pagination.pageSize,
-		}),
-	);
+	const notificationsQuery = useInfiniteQuery({
+		queryKey: trpc.notifications.list.queryKey({ status: statusFilter === "all" ? undefined : statusFilter }),
+		queryFn: async ({ pageParam }) => {
+			return trpcClient.notifications.list.query({
+				status: statusFilter === "all" ? undefined : statusFilter,
+				cursor: pageParam,
+				limit: 20,
+			});
+		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+	});
 
-	const notifications = notificationsQuery.data?.items ?? [];
+	const notifications = notificationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(notificationsQuery.fetchNextPage, { enabled: notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage });
 	const selection = useRowSelection(notifications);
 
 	const ackMutation = useMutation({
@@ -173,7 +177,6 @@ const NotificationsCenter = () => {
 						type="button"
 						onClick={() => {
 							setStatusFilter(tab.key);
-							pagination.reset?.();
 						}}
 						className={cn(
 							"relative px-4 py-2.5 text-sm font-medium transition-colors",
@@ -189,7 +192,7 @@ const NotificationsCenter = () => {
 				<div className="ml-auto flex items-center gap-2 pb-1">
 					<span className="flex items-center gap-1.5 text-muted-foreground text-xs">
 						<Filter className="h-3.5 w-3.5" />
-						{t("admin.notifications.results", { count: notificationsQuery.data?.items.length ?? 0 })}
+						{t("admin.notifications.results", { count: notifications.length })}
 					</span>
 				</div>
 			</div>
@@ -342,15 +345,7 @@ const NotificationsCenter = () => {
 				</>
 			)}
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!notificationsQuery.data?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() =>
-					pagination.handleNext(notificationsQuery.data?.nextCursor)
-				}
-				isLoading={notificationsQuery.isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 		</div>
 	);
 };

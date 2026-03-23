@@ -108,7 +108,11 @@
       "Bash(node -e \"const d=require\\(''''./apps/web/src/i18n/locales/en/translation.json''''\\); [''''studyCycles'''',''''deliberations'''',''''classCourses'''',''''academicYears'''',''''programs''''].forEach\\(k => { const v = d?.admin?.[k]; if\\(v\\) { console.log\\(''''admin.''''+k+'''':''''\\); console.log\\(JSON.stringify\\(v,null,2\\).slice\\(0,600\\)\\); console.log\\(''''---''''\\) }}\\)\")",
       "Bash(\"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\server\\\\src\\\\modules\\\\deliberations\\\\deliberations.zod.ts\":*)",
       "Bash(/c/Users/tefba/Desktop/OverBrand/grades-manager-api/node_modules/.bin/tsc --noEmit)",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/server/src -maxdepth 3 -type f \\\\\\(-name *.env* -o -name config* \\\\\\))",
+      "Bash(sed -n '1555,1558p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
+      "Bash(sed -n '1673,1678p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
+      "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))"
     ]
   }
 }

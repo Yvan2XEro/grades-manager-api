@@ -3327,5 +3327,16 @@
 				"fr": "Français"
 			}
 		}
+	},
+	"help": {
+		"title": "Aide",
+		"openButton": "Aide",
+		"footer": "OverBrand · Gestionnaire de notes",
+		"workflow": {
+			"title": "Progression de la configuration",
+			"step": "Étape",
+			"next": "Prochaine étape",
+			"done": "Configuration complète"
+		}
 	}
 }

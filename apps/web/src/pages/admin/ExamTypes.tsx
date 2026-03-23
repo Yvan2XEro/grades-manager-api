@@ -84,18 +84,21 @@ export default function ExamTypes() {
 	const resetForm = () =>
 		form.reset({ name: "", description: "", defaultPercentage: 40 });
 
-	const { data, isLoading } = useQuery({
-		queryKey: ["examTypes", pagination.cursor],
-		queryFn: async () => {
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["examTypes"],
+		queryFn: async ({ pageParam }) => {
 			const result = await trpcClient.examTypes.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			});
 			return result as { items: ExamType[]; nextCursor?: string };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const examTypes = data?.items ?? [];
+	const examTypes = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(examTypes);
 
 	const handleOpenCreate = () => {
@@ -341,13 +344,7 @@ export default function ExamTypes() {
 									))}
 								</TableBody>
 							</Table>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!data?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() => pagination.handleNext(data?.nextCursor)}
-								isLoading={isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty>

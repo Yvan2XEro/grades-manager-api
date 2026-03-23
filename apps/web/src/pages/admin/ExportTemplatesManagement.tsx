@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Download,
 	FileText,
@@ -47,7 +47,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -70,7 +69,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { trpcClient } from "@/utils/trpc";
 
@@ -113,7 +112,6 @@ export default function ExportTemplatesManagement() {
 	const [deletingTemplate, setDeletingTemplate] =
 		useState<ExportTemplate | null>(null);
 	const [selectedType, setSelectedType] = useState<string>("all");
-	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const renameSchema = z.object({
 		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
@@ -127,24 +125,22 @@ export default function ExportTemplatesManagement() {
 	});
 
 	// Fetch templates
-	const { data: templatesData, isLoading } = useQuery({
-		queryKey: [
-			"exportTemplates",
-			selectedType,
-			pagination.cursor,
-			pagination.pageSize,
-		],
-		queryFn: async () => {
+	const { data: templatesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["exportTemplates", selectedType],
+		queryFn: async ({ pageParam }) => {
 			const result = await trpcClient.exportTemplates.list.query({
 				type: selectedType === "all" ? undefined : (selectedType as any),
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			});
 			return result as { items: ExportTemplate[]; nextCursor?: string };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const templates = templatesData?.items;
+	const templates = templatesData?.pages.flatMap((p) => p.items);
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(templates ?? []);
 
 	// Rename mutation
@@ -289,7 +285,6 @@ export default function ExportTemplatesManagement() {
 							value={selectedType}
 							onValueChange={(value) => {
 								setSelectedType(value);
-								pagination.reset();
 							}}
 						>
 							<SelectTrigger className="w-[200px]">
@@ -483,13 +478,7 @@ export default function ExportTemplatesManagement() {
 				</CardContent>
 			</Card>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!templatesData?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(templatesData?.nextCursor)}
-				isLoading={isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
 			{/* Rename Dialog */}
 			<Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>

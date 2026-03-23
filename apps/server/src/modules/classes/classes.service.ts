@@ -209,8 +209,10 @@ export async function updateClass(
 }
 
 export async function deleteClass(id: string, institutionId: string) {
-	const klass = await repo.findById(id, institutionId);
-	if (!klass) throw notFound();
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, id),
+	});
+	if (!klass || klass.institutionId !== institutionId) throw notFound();
 
 	const students = await studentsRepo.list({ classId: id, institutionId });
 	if (students.items.length) {
@@ -326,12 +328,6 @@ export async function bulkGenerateClasses(
 		allLevels = allLevels.filter((l) => cycleLevelIds.includes(l.id));
 	}
 
-	// Default semester
-	const defaultSemester = await db.query.semesters.findFirst({
-		orderBy: (s, { asc }) => asc(s.orderIndex),
-	});
-	if (!defaultSemester) throw notFound("No semesters configured");
-
 	// Existing classes this year
 	const existingClasses = await db.query.classes.findMany({
 		where: and(
@@ -386,7 +382,7 @@ export async function bulkGenerateClasses(
 					institutionId,
 					cycleLevelId: level.id,
 					programOptionId: option.id,
-					semesterId: defaultSemester.id,
+					semesterId: undefined,
 					totalCredits: 0,
 				});
 

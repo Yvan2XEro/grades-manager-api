@@ -1553,16 +1553,18 @@ export default function ClassManagement() {
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="relative shrink-0 px-6 pb-4">
-						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-						<Input
-							placeholder={t("admin.classes.searchStudents", {
-								defaultValue: "Search students...",
-							})}
-							value={studentSearch}
-							onChange={(e) => setStudentSearch(e.target.value)}
-							className="pl-9"
-						/>
+					<div className="shrink-0 px-6 pb-4">
+						<div className="relative">
+							<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder={t("admin.classes.searchStudents", {
+									defaultValue: "Search students...",
+								})}
+								value={studentSearch}
+								onChange={(e) => setStudentSearch(e.target.value)}
+								className="pl-9"
+							/>
+						</div>
 					</div>
 
 					{previewLoading ? (
@@ -1672,7 +1674,7 @@ export default function ClassManagement() {
 							{t("admin.classes.bulkGenerate.description", { defaultValue: "Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées." })}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 py-2">
+					<div className="space-y-4 px-6 py-2">
 						<div className="space-y-2">
 							<Label>{t("admin.classes.bulkGenerate.yearLabel", { defaultValue: "Année académique" })}</Label>
 							<AcademicYearSelect

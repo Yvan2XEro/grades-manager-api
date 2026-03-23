@@ -3375,5 +3375,16 @@
 				"fr": "French"
 			}
 		}
+	},
+	"help": {
+		"title": "Help",
+		"openButton": "Help",
+		"footer": "OverBrand · Grades Manager",
+		"workflow": {
+			"title": "Setup progression",
+			"step": "Step",
+			"next": "Next step",
+			"done": "Setup complete"
+		}
 	}
 }
