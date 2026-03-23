@@ -674,7 +674,8 @@
 			},
 			"delete": {
 				"title": "Supprimer la classe",
-				"message": "Cette action est irréversible et peut supprimer les affectations associées."
+				"message": "Cette action est irréversible et peut supprimer les affectations associées.",
+				"messageWithStudents": "Cette classe a {{count}} étudiant(s) inscrit(s). Ils seront transférés automatiquement vers une autre classe. Cette action est irréversible."
 			},
 			"validation": {
 				"program": "Veuillez sélectionner un programme",

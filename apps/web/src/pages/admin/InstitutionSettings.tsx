@@ -335,6 +335,7 @@ export default function InstitutionSettings() {
 		mutationFn: (values: InstitutionFormValues) =>
 			trpcClient.institutions.upsert.mutate({
 				...values,
+				id: institutionQuery.data?.id,
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,

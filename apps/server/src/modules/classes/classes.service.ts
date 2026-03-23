@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db";
 import { normalizeCode } from "@/lib/strings";
 import * as studentsRepo from "@/modules/students/students.repo";
@@ -216,16 +216,40 @@ export async function deleteClass(id: string, institutionId: string) {
 
 	const students = await studentsRepo.list({ classId: id, institutionId });
 	if (students.items.length) {
-		const { items } = await repo.list(institutionId, {
+		// First, look for another class in the same program + academic year
+		const { items: sameProgramItems } = await repo.list(institutionId, {
 			programId: klass.program,
 			academicYearId: klass.academicYear,
 		});
-		const target = items.find((c) => c.id !== id);
+		let target = sameProgramItems.find((c) => c.id !== id);
+
+		// Fallback: any other class in the institution
+		if (!target) {
+			const { items: allItems } = await repo.list(institutionId, {});
+			target = allItems.find((c) => c.id !== id);
+		}
+
 		if (!target) throw conflict("Cannot delete class with students");
 		for (const s of students.items) {
 			await transferStudent(s.id, target.id, institutionId);
 		}
 	}
+
+	// Clean up records with RESTRICT FK references before deleting the class
+	await db
+		.delete(schema.studentCourseEnrollments)
+		.where(eq(schema.studentCourseEnrollments.sourceClassId, id));
+	await db
+		.delete(schema.promotionExecutions)
+		.where(
+			or(
+				eq(schema.promotionExecutions.sourceClassId, id),
+				eq(schema.promotionExecutions.targetClassId, id),
+			),
+		);
+	await db
+		.delete(schema.deliberations)
+		.where(eq(schema.deliberations.classId, id));
 
 	await repo.remove(id, institutionId);
 }

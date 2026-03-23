@@ -1400,7 +1400,8 @@
 			},
 			"delete": {
 				"title": "Delete class",
-				"message": "This action cannot be undone and may remove related assignments."
+				"message": "This action cannot be undone and may remove related assignments.",
+				"messageWithStudents": "This class has {{count}} enrolled student(s). They will be transferred to another class automatically. This action cannot be undone."
 			},
 			"validation": {
 				"program": "Please select a program",

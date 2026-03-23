@@ -1519,7 +1519,12 @@ export default function ClassManagement() {
 				}}
 				onConfirm={handleDelete}
 				title={t("admin.classes.delete.title")}
-				message={t("admin.classes.delete.message")}
+				message={(() => {
+					const studentCount = classes.find((c) => c.id === deleteId)?.students.length ?? 0;
+					return studentCount > 0
+						? t("admin.classes.delete.messageWithStudents", { count: studentCount })
+						: t("admin.classes.delete.message");
+				})()}
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>

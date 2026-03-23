@@ -27,11 +27,16 @@ export async function listInstitutions() {
 export async function upsertInstitution(
 	data: UpdatableFields & { id?: string },
 ) {
+	const { id, ...fields } = data;
+	const payload = { ...fields, isMain: true };
+	if (id) {
+		return repo.update(id, payload);
+	}
 	const existing = await repo.getFirst();
 	if (existing) {
-		return repo.update(existing.id, data);
+		return repo.update(existing.id, payload);
 	}
-	return repo.create(data);
+	return repo.create(payload);
 }
 
 export async function createInstitution(data: UpdatableFields) {

@@ -770,6 +770,7 @@ export const institutions = pgTable(
 				onDelete: "set null",
 			},
 		),
+		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
