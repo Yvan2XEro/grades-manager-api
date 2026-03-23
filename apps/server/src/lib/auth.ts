@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -14,10 +13,11 @@ import {
 } from "./organization-roles";
 
 /**
- * Request-scoped storage to pass the resolved organizationId
- * from hooks.before to databaseHooks.session.create.before.
+ * Maps userId → orgId for the duration of a sign-in request.
+ * Replaces AsyncLocalStorage which does not reliably propagate across
+ * Better-Auth's internal async boundaries in Bun.
  */
-const orgContext = new AsyncLocalStorage<{ orgId: string }>();
+const pendingOrgByUser = new Map<string, string>();
 
 const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
 	if (ctx.path !== "/sign-in/email") return;
@@ -59,7 +59,7 @@ const orgScopedLoginHook = createAuthMiddleware(async (ctx) => {
 		});
 	}
 
-	orgContext.enterWith({ orgId: org.id });
+	pendingOrgByUser.set(foundUser.id, org.id);
 });
 
 const resend = process.env.RESEND_API_KEY
@@ -161,12 +161,13 @@ export const auth = betterAuth({
 		session: {
 			create: {
 				before: async (session) => {
-					const store = orgContext.getStore();
-					if (store?.orgId) {
+					const orgId = pendingOrgByUser.get(session.userId);
+					if (orgId) {
+						pendingOrgByUser.delete(session.userId);
 						return {
 							data: {
 								...session,
-								activeOrganizationId: store.orgId,
+								activeOrganizationId: orgId,
 							},
 						};
 					}

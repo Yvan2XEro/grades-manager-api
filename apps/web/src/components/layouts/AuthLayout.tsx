@@ -17,8 +17,8 @@ const AuthLayout: React.FC = () => {
 		useBranding();
 
 	const [callbackURL] = useQueryState("return", {});
-	// Redirect if already authenticated
-	if (user) {
+	// Redirect if already authenticated with a real role (guest = no active org, show login form)
+	if (user && user.role !== "guest") {
 		if (callbackURL) return <Navigate to={callbackURL} replace />;
 		return roleLayoutMap[user.role];
 	}

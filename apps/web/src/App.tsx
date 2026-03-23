@@ -117,8 +117,8 @@ function App() {
 			activatedSlugRef.current = null;
 			return;
 		}
-		// Skip if org was already set at login time (via X-Organization-Slug header)
-		if (session.session?.activeOrganizationId) {
+		// Skip if org was already set AND membership is populated (role resolved)
+		if (session.session?.activeOrganizationId && session.activeMembership?.role) {
 			activatedSlugRef.current = activeOrganizationSlug;
 			return;
 		}
@@ -128,17 +128,17 @@ function App() {
 			}
 			let cancelled = false;
 			const activateOrganization = async () => {
-				try {
-					await authClient.organization.setActive({
-						organizationSlug: activeOrganizationSlug,
-					});
-					if (!cancelled) {
-						activatedSlugRef.current = activeOrganizationSlug;
-						// Force session refetch so activeMembership and role update immediately
-						await refetchSession();
-					}
-				} catch (error) {
-					console.error("Failed to set active organization:", error);
+				const result = await authClient.organization.setActive({
+					organizationSlug: activeOrganizationSlug,
+				});
+				if (result.error) {
+					console.error("Failed to set active organization:", result.error);
+					return; // Ne pas marquer comme fait — permettre un retry
+				}
+				if (!cancelled) {
+					activatedSlugRef.current = activeOrganizationSlug;
+					// Force session refetch so activeMembership and role update immediately
+					await refetchSession();
 				}
 			};
 			void activateOrganization();
