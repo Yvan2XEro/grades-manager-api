@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -13,6 +13,7 @@ import {
 	Search,
 	Trash2,
 	Users,
+	Wand2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,7 +35,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -47,8 +47,9 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { generateClassCode } from "@/lib/code-generator";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
@@ -101,11 +102,7 @@ const buildClassSchema = (t: TFunction) =>
 				defaultValue: "Please select a program option",
 			}),
 		}),
-		semesterId: z.string({
-			required_error: t("admin.classes.validation.semester", {
-				defaultValue: "Select a semester",
-			}),
-		}),
+		semesterId: z.string().optional(),
 		code: z.string().min(
 			3,
 			t("admin.classes.validation.code", {
@@ -167,24 +164,19 @@ export default function ClassManagement() {
 	const [previewStudents, setPreviewStudents] = useState<any[]>([]);
 	const [previewLoading, setPreviewLoading] = useState(false);
 	const [studentSearch, setStudentSearch] = useState("");
+	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
+	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const { data: classesData, isLoading } = useQuery({
-		queryKey: [
-			"classes",
-			pagination.cursor,
-			pagination.pageSize,
-			filterYear,
-			filterSemester,
-		],
-		queryFn: async () => {
+	const { data: classesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["classes", filterYear, filterSemester],
+		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classes.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
 				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
@@ -224,9 +216,12 @@ export default function ClassManagement() {
 			);
 			return { items: enriched, nextCursor };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const classes = classesData?.items;
+	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(classes ?? []);
 
 	const { data: defaultPrograms = [] } = useQuery({
@@ -437,19 +432,6 @@ export default function ClassManagement() {
 			setValue("programOptionId", programOptions[0].id);
 		}
 	}, [programOptions, programOptionId, setValue]);
-
-	const semesterDirty = Boolean(form.formState.dirtyFields.semesterId);
-	useEffect(() => {
-		if (editingClass) return;
-		if (semesterDirty) return;
-		if (semesters && semesters.length > 0 && !semesterId) {
-			setValue("semesterId", semesters[0].id, { shouldDirty: false });
-		}
-	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
-
-	useEffect(() => {
-		pagination.reset();
-	}, [filterYear, filterSemester]);
 
 	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
@@ -791,7 +773,7 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
-				semesterId: data.semesterId,
+				semesterId: data.semesterId || undefined,
 				code: data.code,
 				totalCredits: data.totalCredits,
 			});
@@ -820,7 +802,7 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
-				semesterId: data.semesterId,
+				semesterId: data.semesterId || undefined,
 				code: data.code,
 				totalCredits: data.totalCredits,
 			});
@@ -883,6 +865,27 @@ export default function ClassManagement() {
 			),
 	});
 
+	const bulkGenerateMutation = useMutation({
+		mutationFn: () =>
+			trpcClient.classes.bulkGenerate.mutate({
+				academicYearId: bulkGenYearId!,
+			}),
+		onSuccess: (result) => {
+			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			toast.success(
+				t("admin.classes.toast.bulkGenerateSuccess", {
+					created: result.created,
+					skipped: result.skipped,
+					defaultValue: `${result.created} classe(s) créée(s), ${result.skipped} ignorée(s)`,
+				}),
+			);
+			setIsBulkGenOpen(false);
+			setBulkGenYearId(null);
+		},
+		onError: (err) =>
+			toast.error((err as Error).message),
+	});
+
 	const onSubmit = async (data: ClassFormData) => {
 		if (editingClass) {
 			updateMutation.mutate({ ...data, id: editingClass.id });
@@ -919,18 +922,28 @@ export default function ClassManagement() {
 					</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
-				<Button
-					type="button"
-					onClick={() => {
-						setEditingClass(null);
-						form.reset();
-						setIsFormOpen(true);
-					}}
-					className="btn btn-primary"
-				>
-					<Plus className="mr-2 h-5 w-5" />
-					{t("admin.classes.actions.add")}
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setIsBulkGenOpen(true)}
+					>
+						<Wand2 className="mr-2 h-4 w-4" />
+						{t("admin.classes.actions.bulkGenerate", { defaultValue: "Générer les classes" })}
+					</Button>
+					<Button
+						type="button"
+						onClick={() => {
+							setEditingClass(null);
+							form.reset();
+							setIsFormOpen(true);
+						}}
+						className="btn btn-primary"
+					>
+						<Plus className="mr-2 h-5 w-5" />
+						{t("admin.classes.actions.add")}
+					</Button>
+				</div>
 			</div>
 
 			<Card className="mb-4">
@@ -1242,13 +1255,7 @@ export default function ClassManagement() {
 				)}
 			</Card>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!classesData?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(classesData?.nextCursor)}
-				isLoading={isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
 			<FormModal
 				isOpen={isFormOpen}
@@ -1312,7 +1319,7 @@ export default function ClassManagement() {
 								name="semesterId"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel required>
+										<FormLabel>
 											{t("admin.classes.form.semesterLabel", {
 												defaultValue: "Semester",
 											})}
@@ -1651,6 +1658,42 @@ export default function ClassManagement() {
 							</Table>
 						</ScrollArea>
 					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Bulk Generate Dialog */}
+			<Dialog open={isBulkGenOpen} onOpenChange={(o) => { if (!o) { setIsBulkGenOpen(false); setBulkGenYearId(null); } }}>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{t("admin.classes.bulkGenerate.title", { defaultValue: "Générer toutes les classes" })}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.classes.bulkGenerate.description", { defaultValue: "Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées." })}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 py-2">
+						<div className="space-y-2">
+							<Label>{t("admin.classes.bulkGenerate.yearLabel", { defaultValue: "Année académique" })}</Label>
+							<AcademicYearSelect
+								value={bulkGenYearId}
+								onChange={setBulkGenYearId}
+								autoSelectActive
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => { setIsBulkGenOpen(false); setBulkGenYearId(null); }}>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							onClick={() => bulkGenerateMutation.mutate()}
+							disabled={!bulkGenYearId || bulkGenerateMutation.isPending}
+						>
+							{bulkGenerateMutation.isPending && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
+							{t("admin.classes.bulkGenerate.submit", { defaultValue: "Générer" })}
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		</div>

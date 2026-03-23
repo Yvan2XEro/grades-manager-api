@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, Plus, School, Search, Trash2 } from "lucide-react";
+import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -54,6 +54,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -94,6 +98,7 @@ export default function ProgramManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [cloneFromProgramId, setCloneFromProgramId] = useState<string>("");
 	const [optionProgram, setOptionProgram] = useState<Program | null>(null);
 	const [editingOption, setEditingOption] = useState<ProgramOption | null>(
 		null,
@@ -243,13 +248,35 @@ export default function ProgramManagement() {
 		},
 	});
 
+	const cloneCurriculumMutation = useMutation({
+		mutationFn: ({ targetProgramId, sourceProgramId }: { targetProgramId: string; sourceProgramId: string }) =>
+			trpcClient.programs.cloneCurriculum.mutate({ targetProgramId, sourceProgramId }),
+		onSuccess: (result) => {
+			toast.success(
+				t("admin.programs.toast.cloneSuccess", {
+					defaultValue: "Curriculum cloné : {{units}} UE, {{courses}} EC",
+					units: result.unitsCreated,
+					courses: result.coursesCreated,
+				}),
+			);
+		},
+		onError: (err: unknown) =>
+			toast.error((err as Error).message || t("admin.programs.toast.cloneError", { defaultValue: "Erreur lors du clonage" })),
+	});
+
 	const createMutation = useMutation({
 		mutationFn: async (data: ProgramFormData) => {
-			await trpcClient.programs.create.mutate(data);
+			return trpcClient.programs.create.mutate(data);
 		},
-		onSuccess: () => {
+		onSuccess: (newProgram) => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			toast.success(t("admin.programs.toast.createSuccess"));
+			if (cloneFromProgramId && newProgram?.id) {
+				cloneCurriculumMutation.mutate({
+					targetProgramId: newProgram.id,
+					sourceProgramId: cloneFromProgramId,
+				});
+			}
 			handleCloseForm();
 		},
 		onError: (error: unknown) => {
@@ -340,6 +367,7 @@ export default function ProgramManagement() {
 
 	const startCreate = () => {
 		setEditingProgram(null);
+		setCloneFromProgramId("");
 		form.reset({ name: "", code: "", description: "" });
 		setIsFormOpen(true);
 	};
@@ -357,6 +385,7 @@ export default function ProgramManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingProgram(null);
+		setCloneFromProgramId("");
 		form.reset({ name: "", code: "", description: "" });
 	};
 
@@ -499,7 +528,11 @@ export default function ProgramManagement() {
 							</TableHeader>
 							<TableBody>
 								{programs.map((program) => (
-									<TableRow key={program.id}>
+									<TableRow key={program.id} actions={<>
+											<ContextMenuItem onSelect={() => startEdit(program)}>{t("common.actions.edit")}</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem className="text-destructive" onSelect={() => confirmDelete(program.id)}>{t("common.actions.delete")}</ContextMenuItem>
+										</>}>
 										<TableCell className="w-10">
 											<Checkbox
 												checked={selection.isSelected(program.id)}
@@ -654,6 +687,37 @@ export default function ProgramManagement() {
 									</FormItem>
 								)}
 							/>
+							{!editingProgram && (
+								<div className="space-y-2 rounded-lg border border-dashed p-3">
+									<div className="flex items-center gap-2">
+										<Copy className="h-4 w-4 text-muted-foreground" />
+										<span className="font-medium text-sm">
+											{t("admin.programs.form.cloneFrom", { defaultValue: "Cloner le curriculum depuis (optionnel)" })}
+										</span>
+									</div>
+									<Select value={cloneFromProgramId || "__NONE__"} onValueChange={(v) => setCloneFromProgramId(v === "__NONE__" ? "" : v)}>
+										<SelectTrigger>
+											<SelectValue placeholder={t("admin.programs.form.cloneFromPlaceholder", { defaultValue: "Aucun - laisser vide" })} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="__NONE__">
+												{t("admin.programs.form.cloneFromPlaceholder", { defaultValue: "Aucun - laisser vide" })}
+											</SelectItem>
+											{programs?.map((p) => (
+												<SelectItem key={p.id} value={p.id}>
+													{p.code} — {p.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{cloneFromProgramId && (
+										<p className="text-muted-foreground text-xs">
+											{t("admin.programs.form.cloneFromHint", { defaultValue: "Les UE et EC du programme source seront copies apres la creation." })}
+										</p>
+									)}
+								</div>
+							)}
+
 							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 								<Button
 									type="button"
@@ -668,6 +732,8 @@ export default function ProgramManagement() {
 										<Spinner className="mr-2 h-4 w-4" />
 									) : editingProgram ? (
 										t("common.actions.saveChanges")
+									) : cloneFromProgramId ? (
+										t("admin.programs.form.submitWithClone", { defaultValue: "Creer et cloner" })
 									) : (
 										t("admin.programs.form.submit")
 									)}

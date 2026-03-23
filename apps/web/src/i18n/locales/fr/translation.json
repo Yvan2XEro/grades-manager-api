@@ -103,7 +103,8 @@
 			"languageSelectAria": "Changer de langue",
 			"languageSelectPlaceholder": "Sélectionnez la langue",
 			"profileMenuAria": "Ouvrir le menu profil",
-			"search": "Rechercher…"
+			"search": "Rechercher…",
+			"language": "Langue"
 		},
 		"sidebar": {
 			"search": "Rechercher...",
@@ -470,7 +471,8 @@
 			"title": "Gestion des années académiques",
 			"subtitle": "Créez et gérez les années académiques, puis définissez celle active",
 			"actions": {
-				"add": "Ajouter une année académique"
+				"add": "Ajouter une année académique",
+				"createNextYear": "Créer l'année suivante"
 			},
 			"confirmDelete": "Supprimer cette année académique ?",
 			"empty": {
@@ -498,7 +500,9 @@
 				"deleteSuccess": "Année académique supprimée avec succès",
 				"deleteError": "Impossible de supprimer l'année académique",
 				"statusSuccess": "Statut de l'année académique mis à jour",
-				"statusError": "Impossible de mettre à jour le statut de l'année académique"
+				"statusError": "Impossible de mettre à jour le statut de l'année académique",
+				"createNextYearSuccess": "Année suivante créée : {{name}}",
+				"createNextYearError": "Erreur lors de la création de l'année suivante"
 			},
 			"validation": {
 				"startDate": "La date de début est obligatoire",
@@ -523,7 +527,8 @@
 			"subtitle": "Assignez des enseignants et des cours aux classes",
 			"actions": {
 				"assign": "Affecter un cours",
-				"assignUe": "Assigner un UE"
+				"assignUe": "Assigner un UE",
+				"autoEnroll": "Inscrire les étudiants"
 			},
 			"ueAssign": {
 				"title": "Assigner une unité d'enseignement",
@@ -566,7 +571,8 @@
 				"coefficientLabel": "Coefficient",
 				"coefficientPlaceholder": "1.00",
 				"coefficientHelp": "Poids pour le calcul de la moyenne pondérée dans l'UE",
-				"createSubmit": "Affecter le cours"
+				"createSubmit": "Affecter le cours",
+				"autoEnrollOnCreate": "Inscrire automatiquement les étudiants de la classe après l'assignation"
 			},
 			"toast": {
 				"createSuccess": "Affectation créée avec succès",
@@ -576,7 +582,9 @@
 				"deleteSuccess": "Affectation supprimée avec succès",
 				"deleteError": "Impossible de supprimer l'affectation",
 				"bulkAssignSuccess": "{{count}} cours assignés avec succès",
-				"bulkAssignError": "Erreur lors de l'assignation"
+				"bulkAssignError": "Erreur lors de l'assignation",
+				"autoEnrollSuccess": "{{count}} inscription(s) créée(s)",
+				"autoEnrollError": "Erreur lors de l'inscription automatique"
 			},
 			"delete": {
 				"title": "Supprimer l'affectation de cours",
@@ -587,6 +595,14 @@
 				"course": "Veuillez sélectionner un cours",
 				"teacher": "Veuillez sélectionner un enseignant",
 				"code": "Veuillez renseigner un code"
+			},
+			"autoEnroll": {
+				"title": "Inscrire automatiquement les étudiants",
+				"description": "Inscrit automatiquement tous les étudiants d'une classe à leurs cours assignés pour l'année académique choisie.",
+				"classLabel": "Classe",
+				"classPlaceholder": "Sélectionner une classe",
+				"yearLabel": "Année académique",
+				"submit": "Inscrire les étudiants"
 			}
 		},
 		"classes": {
@@ -969,7 +985,12 @@
 				"submit": "Enregistrer",
 				"cycleLabel": "Cycle d'étude",
 				"cyclePlaceholder": "Sélectionner un cycle",
-				"selectFacultyFirst": "Sélectionnez une faculté pour charger les cycles disponibles."
+				"selectFacultyFirst": "Sélectionnez une faculté pour charger les cycles disponibles.",
+				"cloneFrom": "Cloner le curriculum depuis (optionnel)",
+				"cloneFromPlaceholder": "Sélectionner un programme source",
+				"cloneFromNone": "Aucun",
+				"cloneFromHint": "Les UE et EC du programme source seront copiés après la création.",
+				"submitWithClone": "Créer et cloner"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
@@ -983,7 +1004,9 @@
 				"updateSuccess": "Programme mis à jour avec succès",
 				"updateError": "Impossible de mettre à jour le programme",
 				"deleteSuccess": "Programme supprimé avec succès",
-				"deleteError": "Impossible de supprimer le programme"
+				"deleteError": "Impossible de supprimer le programme",
+				"cloneSuccess": "Curriculum cloné : {{units}} UE et {{courses}} EC copiés",
+				"cloneError": "Impossible de cloner le curriculum"
 			},
 			"delete": {
 				"title": "Supprimer le programme",
@@ -1032,7 +1055,11 @@
 				"class": "Classe",
 				"classPlaceholder": "Toutes les classes",
 				"semester": "Semestre",
-				"semesterPlaceholder": "Tous les semestres"
+				"semesterPlaceholder": "Tous les semestres",
+				"dateFrom": "Date de début",
+				"dateFromPlaceholder": "Depuis...",
+				"dateTo": "Date de fin",
+				"dateToPlaceholder": "Jusqu'à..."
 			},
 			"empty": {
 				"title": "Aucune évaluation",
@@ -1417,7 +1444,8 @@
 			},
 			"actions": {
 				"schedule": "Programmer les examens",
-				"scheduleRetakes": "Programmer les rattrapages"
+				"scheduleRetakes": "Programmer les rattrapages",
+				"quickRetakes": "Rattrapages rapides"
 			},
 			"toast": {
 				"success": "Examens programmés",
@@ -1532,7 +1560,8 @@
 			},
 			"filters": {
 				"allClasses": "Toutes les classes",
-				"searchPlaceholder": "Rechercher par nom ou matricule"
+				"searchPlaceholder": "Rechercher par nom ou matricule",
+				"allGenders": "Tous les genres"
 			},
 			"empty": "Aucun étudiant pour cette sélection.",
 			"table": {
@@ -1583,6 +1612,8 @@
 			},
 			"import": {
 				"classLabel": "Classe pour les étudiants importés",
+				"academicYearLabel": "Année académique (pour l'inscription automatique)",
+				"autoEnrollToggle": "Inscrire automatiquement aux cours après l'import",
 				"formatLabel": "Format de matricule (optionnel)",
 				"fileLabel": "Importer un fichier CSV ou XLSX",
 				"downloadTemplate": "Télécharger le modèle",
@@ -1885,6 +1916,13 @@
 				"courseFallback": "Cours {{courseId}}",
 				"courseLabel": "{{name}} ({{code}})",
 				"appliesTo": "Requis pour {{course}}"
+			},
+			"status": {
+				"all": "Tous les statuts",
+				"active": "Actif",
+				"pending": "En attente",
+				"completed": "Terminé",
+				"withdrawn": "Retiré"
 			}
 		},
 		"notifications": {
@@ -2328,7 +2366,10 @@
 				"deliberationDate": "Date de délibération",
 				"president": "Président",
 				"presidentPlaceholder": "Sélectionner un président",
-				"juryMembers": "Membres du jury"
+				"juryMembers": "Membres du jury",
+				"quickStart": "Démarrage rapide",
+				"quickStartHint": "Crée la délibération, l'ouvre et calcule les résultats en une seule étape",
+				"quickStartSubmit": "Créer et calculer"
 			},
 			"detail": {
 				"back": "Retour aux délibérations",
@@ -2402,7 +2443,8 @@
 				"computeSuccess": "Résultats calculés avec succès",
 				"overrideSuccess": "Décision modifiée",
 				"exportSuccess": "Export prêt",
-				"error": "Une erreur est survenue"
+				"error": "Une erreur est survenue",
+				"initAndComputeSuccess": "Délibération créée et résultats calculés"
 			},
 			"confirm": {
 				"delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
@@ -2839,7 +2881,12 @@
 				"descriptionPlaceholder": "Description optionnelle (objectifs, axes)",
 				"submit": "Enregistrer le programme",
 				"codeLabel": "Code du programme",
-				"codePlaceholder": "INF-LIC"
+				"codePlaceholder": "INF-LIC",
+				"cloneFrom": "Cloner le curriculum depuis (optionnel)",
+				"cloneFromPlaceholder": "Sélectionner un programme source",
+				"cloneFromNone": "Aucun",
+				"cloneFromHint": "Les UE et EC du programme source seront copiés après la création.",
+				"submitWithClone": "Créer et cloner"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères",
@@ -2853,7 +2900,9 @@
 				"updateSuccess": "Programme mis à jour avec succès",
 				"updateError": "Impossible de mettre à jour le programme",
 				"deleteSuccess": "Programme supprimé avec succès",
-				"deleteError": "Impossible de supprimer le programme"
+				"deleteError": "Impossible de supprimer le programme",
+				"cloneSuccess": "Curriculum cloné : {{units}} UE et {{courses}} EC copiés",
+				"cloneError": "Impossible de cloner le curriculum"
 			},
 			"delete": {
 				"title": "Supprimer le programme",

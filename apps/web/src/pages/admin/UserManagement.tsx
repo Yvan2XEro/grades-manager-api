@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, PlusIcon, Search, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Pencil, PlusIcon, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -24,7 +24,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { PaginationBar } from "../../components/ui/pagination-bar";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -48,7 +48,6 @@ import {
 } from "@/components/ui/context-menu";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { DebouncedSearchField } from "@/components/inputs";
-import { useCursorPagination } from "../../hooks/useCursorPagination";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { authClient } from "../../lib/auth-client";
@@ -119,7 +118,6 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const pagination = useCursorPagination({ pageSize: 10 });
 	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
 		"all",
 	);
@@ -152,18 +150,20 @@ export default function UserManagement() {
 		[t],
 	);
 
-	const { data, isLoading: isLoadingUsers } = useQuery({
-		queryKey: ["users", pagination.cursor, roleFilter, statusFilter],
-		queryFn: async () =>
+	const { data, isLoading: isLoadingUsers, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["users", roleFilter, statusFilter],
+		queryFn: async ({ pageParam }) =>
 			trpcClient.users.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 10,
 				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
 				status: statusFilter === "all" ? undefined : statusFilter,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
-	const users = data?.items ?? [];
-	const nextCursor = data?.nextCursor;
+	const users = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const displayedUsers = users.filter((user) => {
 		if (!debouncedSearch) return true;
 		const needle = debouncedSearch.toLowerCase();
@@ -201,11 +201,6 @@ export default function UserManagement() {
 				}),
 			),
 	});
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => {
-		pagination.reset();
-	}, [debouncedSearch, roleFilter, statusFilter]);
 
 	const form = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
@@ -380,13 +375,13 @@ export default function UserManagement() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Statut</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.users.table.status")}</p>
 						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger>
-								<SelectValue placeholder="Tous les statuts" />
+								<SelectValue placeholder={t("admin.users.filters.status.all")} />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">Tous les statuts</SelectItem>
+								<SelectItem value="all">{t("admin.users.filters.status.all")}</SelectItem>
 								<SelectItem value="active">{t("admin.users.status.active")}</SelectItem>
 								<SelectItem value="inactive">{t("admin.users.status.inactive")}</SelectItem>
 								<SelectItem value="suspended">{t("admin.users.status.suspended")}</SelectItem>
@@ -534,13 +529,7 @@ export default function UserManagement() {
 				)}
 			</div>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={Boolean(nextCursor)}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(nextCursor)}
-				isLoading={isLoadingUsers}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
 			<FormModal
 				isOpen={isModalOpen}

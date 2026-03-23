@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -23,6 +23,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../../components/ui/select";
+import { Switch } from "../../../components/ui/switch";
 import { trpcClient } from "../../../utils/trpc";
 
 const TYPES = ["semester", "annual", "retake"] as const;
@@ -44,20 +45,36 @@ export default function CreateDeliberationDialog({
 	const [semesterId, setSemesterId] = useState<string | null>(null);
 	const [type, setType] = useState<string>("");
 	const [deliberationDate, setDeliberationDate] = useState("");
+	const [quickStart, setQuickStart] = useState(false);
+
+	const input = {
+		classId: classId!,
+		academicYearId: academicYearId!,
+		type: type as (typeof TYPES)[number],
+		semesterId: semesterId || undefined,
+		deliberationDate: deliberationDate
+			? new Date(deliberationDate).toISOString()
+			: undefined,
+	};
 
 	const createMutation = useMutation({
-		mutationFn: () =>
-			trpcClient.deliberations.create.mutate({
-				classId: classId!,
-				academicYearId: academicYearId!,
-				type: type as (typeof TYPES)[number],
-				semesterId: semesterId || undefined,
-				deliberationDate: deliberationDate
-					? new Date(deliberationDate).toISOString()
-					: undefined,
-			}),
+		mutationFn: () => trpcClient.deliberations.create.mutate(input),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.createSuccess"));
+			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
+			handleClose();
+		},
+		onError: (err) => toast.error((err as Error).message),
+	});
+
+	const initAndComputeMutation = useMutation({
+		mutationFn: () => trpcClient.deliberations.initAndCompute.mutate(input),
+		onSuccess: () => {
+			toast.success(
+				t("admin.deliberations.toast.initAndComputeSuccess", {
+					defaultValue: "Délibération créée et résultats calculés",
+				}),
+			);
 			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
 			handleClose();
 		},
@@ -70,10 +87,12 @@ export default function CreateDeliberationDialog({
 		setSemesterId(null);
 		setType("");
 		setDeliberationDate("");
+		setQuickStart(false);
 		onOpenChange(false);
 	}
 
 	const canSubmit = !!classId && !!academicYearId && !!type;
+	const isPending = createMutation.isPending || initAndComputeMutation.isPending;
 
 	return (
 		<Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -139,6 +158,28 @@ export default function CreateDeliberationDialog({
 							onChange={(e) => setDeliberationDate(e.target.value)}
 						/>
 					</div>
+
+					<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+						<Switch
+							id="quick-start-toggle"
+							checked={quickStart}
+							onCheckedChange={setQuickStart}
+						/>
+						<div>
+							<label htmlFor="quick-start-toggle" className="cursor-pointer font-medium text-sm">
+								<Zap className="mr-1 inline h-3.5 w-3.5 text-yellow-500" />
+								{t("admin.deliberations.form.quickStart", {
+									defaultValue: "Démarrage rapide",
+								})}
+							</label>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.deliberations.form.quickStartHint", {
+									defaultValue:
+										"Crée la délibération, l'ouvre et calcule les résultats en une seule étape",
+								})}
+							</p>
+						</div>
+					</div>
 				</div>
 
 				<DialogFooter>
@@ -146,13 +187,19 @@ export default function CreateDeliberationDialog({
 						{t("common.actions.cancel")}
 					</Button>
 					<Button
-						onClick={() => createMutation.mutate()}
-						disabled={!canSubmit || createMutation.isPending}
+						onClick={() =>
+							quickStart
+								? initAndComputeMutation.mutate()
+								: createMutation.mutate()
+						}
+						disabled={!canSubmit || isPending}
 					>
-						{createMutation.isPending && (
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-						)}
-						{t("common.actions.create")}
+						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						{quickStart
+							? t("admin.deliberations.form.quickStartSubmit", {
+									defaultValue: "Créer et calculer",
+								})
+							: t("common.actions.create")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

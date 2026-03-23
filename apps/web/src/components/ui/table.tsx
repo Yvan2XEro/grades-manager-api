@@ -178,8 +178,13 @@ type TableRowProps = React.ComponentProps<"tr"> & {
 };
 
 function TableRow({ className, actions, ...props }: TableRowProps) {
+	const [contextOpen, setContextOpen] = React.useState(false);
+
 	const rowClass = cn(
-		"group border-b border-border/50 transition-all duration-150 hover:bg-muted/50 data-[state=selected]:bg-primary/5 data-[state=selected]:shadow-[inset_3px_0_0_0_var(--primary)] hover:shadow-[inset_3px_0_0_0_hsl(var(--primary)/0.4)]",
+		"group border-b border-border/50 transition-all duration-150",
+		"hover:bg-muted/50 hover:shadow-[inset_3px_0_0_0_hsl(var(--primary)/0.4)]",
+		"data-[state=selected]:bg-primary/5 data-[state=selected]:shadow-[inset_3px_0_0_0_var(--primary)]",
+		"data-[context=open]:bg-primary/8 data-[context=open]:shadow-[inset_3px_0_0_0_var(--primary)] data-[context=open]:hover:bg-primary/8",
 		actions && "cursor-context-menu",
 		className,
 	);
@@ -189,9 +194,14 @@ function TableRow({ className, actions, ...props }: TableRowProps) {
 	}
 
 	return (
-		<ContextMenu>
+		<ContextMenu onOpenChange={setContextOpen}>
 			<ContextMenuTrigger asChild>
-				<tr data-slot="table-row" className={rowClass} {...props} />
+				<tr
+					data-slot="table-row"
+					data-context={contextOpen ? "open" : undefined}
+					className={rowClass}
+					{...props}
+				/>
 			</ContextMenuTrigger>
 			<ContextMenuContent>{actions}</ContextMenuContent>
 		</ContextMenu>

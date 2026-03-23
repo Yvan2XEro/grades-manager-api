@@ -36,6 +36,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
@@ -319,7 +323,11 @@ export default function CourseManagement() {
 						</TableHeader>
 						<TableBody>
 							{courses?.map((course) => (
-								<TableRow key={course.id}>
+								<TableRow key={course.id} actions={<>
+								<ContextMenuItem onSelect={() => { setEditingCourse(course); reset({ name: course.name, hours: course.hours, program: course.program, defaultTeacher: course.defaultTeacher }); setIsFormOpen(true); }}>{t("common.actions.edit")}</ContextMenuItem>
+								<ContextMenuSeparator />
+								<ContextMenuItem className="text-destructive" onSelect={() => openDeleteModal(course.id)}>{t("common.actions.delete")}</ContextMenuItem>
+							</>}>
 									<TableCell className="w-10">
 										<Checkbox
 											checked={selection.isSelected(course.id)}

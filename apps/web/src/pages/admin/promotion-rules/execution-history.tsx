@@ -30,6 +30,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { trpcClient } from "@/utils/trpc";
 import {
@@ -167,7 +171,7 @@ export function ExecutionHistoryPage() {
 							</TableHeader>
 							<TableBody>
 								{executionsData?.items?.map((execution) => (
-									<TableRow key={execution.id}>
+									<TableRow key={execution.id} actions={<ContextMenuItem onSelect={() => setSelectedExecutionId(execution.id)}>{t("admin.promotionRules.history.table.viewDetails")}</ContextMenuItem>}>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
 												<Clock className="h-4 w-4 text-muted-foreground" />

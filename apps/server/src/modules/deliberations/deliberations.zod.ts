@@ -165,3 +165,7 @@ export type UpdateDeliberationRuleInput = z.infer<
 export type ListDeliberationRulesInput = z.infer<
 	typeof listDeliberationRulesSchema
 >;
+
+// Automation: init + open + compute in one call
+export const initAndComputeSchema = createDeliberationSchema;
+export type InitAndComputeInput = z.infer<typeof initAndComputeSchema>;

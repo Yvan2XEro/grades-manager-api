@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
-import { Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import { CalendarPlus, Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -31,7 +30,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -95,7 +94,6 @@ const AcademicYearManagement: React.FC = () => {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const form = useForm<FormData>({
 		resolver: zodResolver(academicYearSchema),
@@ -129,18 +127,21 @@ const AcademicYearManagement: React.FC = () => {
 		}
 	}, [startDate, endDate, setValue]);
 
-	const { data, isLoading } = useQuery({
-		queryKey: ["academicYears", pagination.cursor],
-		queryFn: async () => {
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["academicYears"],
+		queryFn: async ({ pageParam }) => {
 			const result = await trpcClient.academicYears.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			});
 			return result as { items: AcademicYear[]; nextCursor?: string };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const academicYears = data?.items ?? [];
+	const academicYears = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(academicYears);
 
 	const bulkDeleteMutation = useMutation({
@@ -245,6 +246,32 @@ const AcademicYearManagement: React.FC = () => {
 				error instanceof Error && error.message
 					? error.message
 					: t("admin.academicYears.toast.statusError");
+			toast.error(message);
+		},
+	});
+
+	const createNextYearMutation = useMutation({
+		mutationFn: async (sourceYearId: string) => {
+			return trpcClient.academicYears.createNextYear.mutate({ sourceYearId });
+		},
+		onSuccess: (newYear) => {
+			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			toast.success(
+				t("admin.academicYears.toast.createNextYearSuccess", {
+					defaultValue: "Année suivante créée : {{name}}",
+					name: newYear.name,
+				}),
+			);
+			// Auto-open setup dialog for the new year
+			setSetupYear(newYear as AcademicYear);
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.createNextYearError", {
+							defaultValue: "Erreur lors de la création de l'année suivante",
+						});
 			toast.error(message);
 		},
 	});
@@ -406,6 +433,13 @@ const AcademicYearManagement: React.FC = () => {
 											<Copy className="h-4 w-4" />
 											<span>{t("admin.academicYears.setup.button", { defaultValue: "Setup" })}</span>
 										</ContextMenuItem>
+										<ContextMenuItem
+											onSelect={() => createNextYearMutation.mutate(year.id)}
+											disabled={createNextYearMutation.isPending}
+										>
+											<CalendarPlus className="h-4 w-4" />
+											<span>{t("admin.academicYears.actions.createNextYear", { defaultValue: "Créer l'année suivante" })}</span>
+										</ContextMenuItem>
 										<ContextMenuSeparator />
 										<ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmId(year.id)}>
 											<span>{t("common.actions.delete")}</span>
@@ -479,6 +513,22 @@ const AcademicYearManagement: React.FC = () => {
 															{t("admin.academicYears.setup.button")}
 														</TooltipContent>
 													</Tooltip>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																type="button"
+																variant="ghost"
+																size={"icon"}
+																onClick={() => createNextYearMutation.mutate(year.id)}
+																disabled={createNextYearMutation.isPending}
+															>
+																<CalendarPlus className="h-4 w-4" />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>
+															{t("admin.academicYears.actions.createNextYear", { defaultValue: "Créer l'année suivante" })}
+														</TooltipContent>
+													</Tooltip>
 													<Button
 														type="button"
 														variant="ghost"
@@ -513,13 +563,7 @@ const AcademicYearManagement: React.FC = () => {
 							</TableBody>
 						</Table>
 						)}
-						<PaginationBar
-							hasPrev={pagination.hasPrev}
-							hasNext={!!data?.nextCursor}
-							onPrev={pagination.handlePrev}
-							onNext={() => pagination.handleNext(data?.nextCursor)}
-							isLoading={isLoading}
-						/>
+						<div ref={sentinelRef} className="h-1" />
 					</CardContent>
 				)}
 			</Card>

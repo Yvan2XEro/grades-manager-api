@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +35,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { PaginationBar } from "../../components/ui/pagination-bar";
 import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
@@ -50,7 +49,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { useCursorPagination } from "../../hooks/useCursorPagination";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
@@ -77,8 +76,6 @@ export default function ExamTypes() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingType, setEditingType] = useState<ExamType | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
 	const form = useForm<FormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: { name: "", description: "", defaultPercentage: 40 },

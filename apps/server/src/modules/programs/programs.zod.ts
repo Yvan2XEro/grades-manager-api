@@ -24,3 +24,8 @@ export const searchSchema = z.object({
 	query: z.string().trim(),
 	limit: z.number().optional(),
 });
+
+export const cloneCurriculumSchema = z.object({
+	targetProgramId: z.string(),
+	sourceProgramId: z.string(),
+});

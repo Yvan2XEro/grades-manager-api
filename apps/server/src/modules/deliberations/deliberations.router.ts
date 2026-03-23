@@ -11,6 +11,7 @@ import {
 	exportDiplomationSchema,
 	getLogsSchema,
 	idSchema,
+	initAndComputeSchema,
 	listDeliberationRulesSchema,
 	listDeliberationsSchema,
 	overrideDecisionSchema,
@@ -132,6 +133,15 @@ export const deliberationsRouter = router({
 	getLogs: tenantProtectedProcedure
 		.input(getLogsSchema)
 		.query(({ input }) => service.getLogs(input)),
+
+	initAndCompute: tenantAdminProcedure
+		.input(initAndComputeSchema)
+		.mutation(({ input, ctx }) => {
+			if (!ctx.profile) {
+				throw new Error("Profile required");
+			}
+			return service.initAndCompute(input, ctx.institution.id, ctx.profile.id);
+		}),
 
 	rules: rulesRouter,
 });

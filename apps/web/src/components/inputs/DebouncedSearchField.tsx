@@ -45,7 +45,7 @@ export function DebouncedSearchField({
 	return (
 		<div className={`relative ${className ?? ""}`}>
 			<Input
-				type="search"
+				type="text"
 				value={internalValue}
 				onChange={(event) => setInternalValue(event.target.value)}
 				placeholder={placeholder}

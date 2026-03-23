@@ -1156,3 +1156,22 @@ function computeStats(
 		lowestAverage: averages.length > 0 ? Math.min(...averages) : null,
 	};
 }
+
+// ---------------------------------------------------------------------------
+// Automation: initAndCompute — create → open → compute in one call
+// ---------------------------------------------------------------------------
+
+export async function initAndCompute(
+	input: CreateDeliberationInput,
+	institutionId: string,
+	profileId: string,
+) {
+	const deliberation = await create(input, institutionId, profileId);
+	await transition(
+		{ id: deliberation.id, action: "open" },
+		institutionId,
+		profileId,
+	);
+	await compute(deliberation.id, institutionId, profileId);
+	return getById(deliberation.id, institutionId);
+}

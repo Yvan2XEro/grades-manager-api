@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,8 +8,7 @@ import { CodedEntitySelect } from "@/components/forms";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Button } from "../../components/ui/button";
@@ -59,8 +58,6 @@ const TeachingUnitManagement = () => {
 	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 	const programList = programs?.items ?? [];
 	const selectedProgram = useMemo(
@@ -68,15 +65,21 @@ const TeachingUnitManagement = () => {
 		[programList, selectedProgramId],
 	);
 
-	const { data: units, isLoading } = useQuery(
-		trpc.teachingUnits.list.queryOptions({
-			programId: selectedProgramId || undefined,
-			cursor: pagination.cursor,
-			limit: pagination.pageSize,
-		}),
-	);
+	const { data: unitsData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["teachingUnits", selectedProgramId || undefined],
+		queryFn: async ({ pageParam }) => {
+			return trpcClient.teachingUnits.list.query({
+				programId: selectedProgramId || undefined,
+				cursor: pageParam,
+				limit: 20,
+			});
+		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+	});
 
-	const unitItems = units?.items ?? [];
+	const unitItems = unitsData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(unitItems);
 
 	const programMap = useMemo(
@@ -190,7 +193,6 @@ const TeachingUnitManagement = () => {
 							value={selectedProgramId || undefined}
 							onValueChange={(value) => {
 								setSelectedProgramId(value);
-								pagination.reset();
 							}}
 						>
 							<SelectTrigger className="min-w-48">
@@ -212,7 +214,6 @@ const TeachingUnitManagement = () => {
 							variant="outline"
 							onClick={() => {
 								setSelectedProgramId("");
-								pagination.reset();
 							}}
 							disabled={!selectedProgramId}
 						>
@@ -364,13 +365,7 @@ const TeachingUnitManagement = () => {
 								</Table>
 								)}
 							</div>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!units?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() => pagination.handleNext(units?.nextCursor)}
-								isLoading={isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty>

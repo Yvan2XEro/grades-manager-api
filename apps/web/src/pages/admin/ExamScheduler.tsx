@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Play, RefreshCcw, TableProperties } from "lucide-react";
+import { Loader2, Play, RefreshCcw, TableProperties, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -420,10 +420,24 @@ export default function ExamScheduler() {
 						{t("admin.examScheduler.subtitle")}
 					</p>
 				</div>
-				<Button onClick={() => setIsScheduleOpen(true)}>
-					<Play className="mr-2 h-4 w-4" />
-					{t("admin.examScheduler.actions.schedule")}
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						onClick={() => {
+							setSessionMode("retake");
+							setIsScheduleOpen(true);
+						}}
+					>
+						<Zap className="mr-2 h-4 w-4" />
+						{t("admin.examScheduler.actions.quickRetakes", {
+							defaultValue: "Rattrapages rapides",
+						})}
+					</Button>
+					<Button onClick={() => { setSessionMode("normal"); setIsScheduleOpen(true); }}>
+						<Play className="mr-2 h-4 w-4" />
+						{t("admin.examScheduler.actions.schedule")}
+					</Button>
+				</div>
 			</div>
 
 			<Card>

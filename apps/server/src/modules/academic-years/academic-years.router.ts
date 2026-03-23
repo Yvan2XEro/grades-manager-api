@@ -7,6 +7,7 @@ import {
 import * as service from "./academic-years.service";
 import {
 	baseSchema,
+	createNextYearSchema,
 	idSchema,
 	listSchema,
 	setActiveSchema,
@@ -50,5 +51,10 @@ export const router = createRouter({
 		.input(idSchema)
 		.query(({ ctx, input }) =>
 			service.getAcademicYearById(input.id, ctx.institution.id),
+		),
+	createNextYear: adminProcedure
+		.input(createNextYearSchema)
+		.mutation(({ ctx, input }) =>
+			service.createNextYear(input.sourceYearId, ctx.institution.id),
 		),
 });

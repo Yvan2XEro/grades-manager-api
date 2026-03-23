@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
-import { notFound } from "../_shared/errors";
+import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./academic-years.repo";
 
 type CreateInput = Parameters<typeof repo.create>[0];
@@ -28,6 +28,12 @@ export async function updateAcademicYear(
 export async function deleteAcademicYear(id: string, institutionId: string) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw notFound();
+	const classCount = await repo.countClasses(id);
+	if (classCount > 0) {
+		throw conflict(
+			`Cannot delete academic year: it has ${classCount} class(es) attached. Remove them first.`,
+		);
+	}
 	await repo.remove(id, institutionId);
 }
 
@@ -42,6 +48,32 @@ export async function getAcademicYearById(id: string, institutionId: string) {
 	const item = await repo.findById(id, institutionId);
 	if (!item) throw notFound();
 	return item;
+}
+
+export async function createNextYear(
+	sourceYearId: string,
+	institutionId: string,
+) {
+	const source = await repo.findById(sourceYearId, institutionId);
+	if (!source) throw notFound();
+
+	const start = new Date(source.startDate);
+	const end = new Date(source.endDate);
+	const nextStart = new Date(start);
+	nextStart.setFullYear(nextStart.getFullYear() + 1);
+	const nextEnd = new Date(end);
+	nextEnd.setFullYear(nextEnd.getFullYear() + 1);
+
+	const startY = nextStart.getFullYear();
+	const endY = nextEnd.getFullYear();
+	const name = `${startY}-${endY}`;
+
+	return repo.create({
+		institutionId,
+		name,
+		startDate: nextStart.toISOString(),
+		endDate: nextEnd.toISOString(),
+	});
 }
 
 export async function setActive(

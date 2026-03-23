@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import {
 	AlertTriangle,
@@ -8,6 +8,7 @@ import {
 	Pencil,
 	Plus,
 	Trash2,
+	Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,6 +18,7 @@ import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { Switch } from "@/components/ui/switch";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -56,7 +58,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -73,8 +75,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -155,6 +160,13 @@ export default function ClassCourseManagement() {
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
+	// Auto-enroll state
+	const [isAutoEnrollOpen, setIsAutoEnrollOpen] = useState(false);
+	const [autoEnrollClassId, setAutoEnrollClassId] = useState<string>("");
+	const [autoEnrollYearId, setAutoEnrollYearId] = useState<string | null>(null);
+	const [autoEnrollClassSearch, setAutoEnrollClassSearch] = useState("");
+	const [autoEnrollOnCreate, setAutoEnrollOnCreate] = useState(false);
+
 	// UE bulk assignment state
 	const [isUeAssignOpen, setIsUeAssignOpen] = useState(false);
 	const [ueAssignClassId, setUeAssignClassId] = useState<string>("");
@@ -165,12 +177,6 @@ export default function ClassCourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => {
-		pagination.reset();
-	}, [filterYear, filterSemester]);
 
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
@@ -284,18 +290,12 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: classCoursesData, isLoading } = useQuery({
-		queryKey: [
-			"classCourses",
-			pagination.cursor,
-			pagination.pageSize,
-			filterYear,
-			filterSemester,
-		],
-		queryFn: async () => {
+	const { data: classCoursesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["classCourses", filterYear, filterSemester],
+		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classCourses.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
 				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
@@ -317,8 +317,11 @@ export default function ClassCourseManagement() {
 				nextCursor,
 			};
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
-	const classCourses = classCoursesData?.items;
+	const classCourses = classCoursesData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 
 	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
@@ -522,10 +525,22 @@ export default function ClassCourseManagement() {
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassCourseFormData) => {
 			await trpcClient.classCourses.create.mutate(data);
+			return data;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			toast.success(t("admin.classCourses.toast.createSuccess"));
+			if (autoEnrollOnCreate && data.class) {
+				// Find the academicYear for this class
+				const cls = classes.find((c) => c.id === data.class);
+				const yearId = filterYear ?? null;
+				if (yearId) {
+					autoEnrollMutation.mutate({
+						classId: data.class,
+						academicYearId: yearId,
+					});
+				}
+			}
 			handleCloseForm();
 		},
 		onError: (error: unknown) => {
@@ -667,6 +682,80 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	// Auto-enroll: search classes
+	const { data: autoEnrollSearchClasses = [] } = useQuery({
+		queryKey: ["classes", "search", autoEnrollClassSearch],
+		queryFn: async () => {
+			const items = await trpcClient.classes.search.query({
+				query: autoEnrollClassSearch,
+			});
+			return items.map((cls) => ({
+				id: cls.id,
+				name: cls.name,
+				code: cls.code,
+				program: cls.program,
+				programCode: cls.programInfo?.code ?? null,
+				cycleLevelCode: cls.cycleLevel?.code ?? null,
+				academicYearName: cls.academicYearInfo?.name ?? "",
+				semesterId: cls.semester?.id ?? null,
+				semesterCode: cls.semester?.code ?? null,
+			})) as Class[];
+		},
+		enabled: autoEnrollClassSearch.length >= 2,
+	});
+	const autoEnrollClasses =
+		autoEnrollClassSearch.length >= 2 ? autoEnrollSearchClasses : defaultClasses;
+
+	const autoEnrollMutation = useMutation({
+		mutationFn: ({
+			classId,
+			academicYearId,
+		}: {
+			classId: string;
+			academicYearId: string;
+		}) =>
+			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+				classId,
+				academicYearId,
+			}),
+		onSuccess: (result) => {
+			queryClient.invalidateQueries({ queryKey: ["studentCourseEnrollments"] });
+			toast.success(
+				t("admin.classCourses.toast.autoEnrollSuccess", {
+					defaultValue: "{{count}} inscription(s) créée(s)",
+					count: result.createdCount,
+				}),
+			);
+			handleCloseAutoEnroll();
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.autoEnrollError", {
+							defaultValue: "Erreur lors de l'inscription automatique",
+						});
+			toast.error(message);
+		},
+	});
+
+	const handleCloseAutoEnroll = () => {
+		setIsAutoEnrollOpen(false);
+		setTimeout(() => {
+			setAutoEnrollClassId("");
+			setAutoEnrollYearId(null);
+			setAutoEnrollClassSearch("");
+		}, 250);
+	};
+
+	const handleAutoEnroll = () => {
+		if (!autoEnrollClassId || !autoEnrollYearId) return;
+		autoEnrollMutation.mutate({
+			classId: autoEnrollClassId,
+			academicYearId: autoEnrollYearId,
+		});
+	};
+
 	const handleCloseUeAssign = () => {
 		setIsUeAssignOpen(false);
 		setTimeout(() => {
@@ -763,6 +852,12 @@ export default function ClassCourseManagement() {
 					</p>
 				</div>
 				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setIsAutoEnrollOpen(true)}>
+						<Users className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.autoEnroll", {
+							defaultValue: "Inscrire les étudiants",
+						})}
+					</Button>
 					<Button variant="outline" onClick={() => setIsUeAssignOpen(true)}>
 						<Layers className="mr-2 h-4 w-4" />
 						{t("admin.classCourses.actions.assignUe", {
@@ -874,7 +969,11 @@ export default function ClassCourseManagement() {
 							</TableHeader>
 							<TableBody>
 								{displayedClassCourses.map((classCourse) => (
-									<TableRow key={classCourse.id}>
+									<TableRow key={classCourse.id} actions={<>
+										<ContextMenuItem onSelect={() => startEdit(classCourse)}>{t("common.actions.edit")}</ContextMenuItem>
+										<ContextMenuSeparator />
+										<ContextMenuItem className="text-destructive" onSelect={() => confirmDelete(classCourse.id)}>{t("common.actions.delete")}</ContextMenuItem>
+									</>}>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(classCourse.id)}
@@ -978,13 +1077,7 @@ export default function ClassCourseManagement() {
 				</CardContent>
 			</Card>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!classCoursesData?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(classCoursesData?.nextCursor)}
-				isLoading={isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
 			<FormModal
 				isOpen={isFormOpen}
@@ -1167,7 +1260,22 @@ export default function ClassCourseManagement() {
 								)}
 							/>
 
-							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							{!editingClassCourse && filterYear && (
+						<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+							<Switch
+								id="auto-enroll-toggle"
+								checked={autoEnrollOnCreate}
+								onCheckedChange={setAutoEnrollOnCreate}
+							/>
+							<label htmlFor="auto-enroll-toggle" className="cursor-pointer text-sm">
+								{t("admin.classCourses.form.autoEnrollOnCreate", {
+									defaultValue: "Inscrire automatiquement les étudiants après l'assignation",
+								})}
+							</label>
+						</div>
+					)}
+
+					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 								<Button
 									type="button"
 									variant="outline"
@@ -1372,6 +1480,91 @@ export default function ClassCourseManagement() {
 							</div>
 						</div>
 					)}
+			</FormModal>
+
+			{/* Auto-enroll Dialog */}
+			<FormModal
+				isOpen={isAutoEnrollOpen}
+				onClose={handleCloseAutoEnroll}
+				title={t("admin.classCourses.autoEnroll.title", {
+					defaultValue: "Inscrire automatiquement les étudiants",
+				})}
+			>
+				<div className="space-y-4">
+					<p className="text-muted-foreground text-sm">
+						{t("admin.classCourses.autoEnroll.description", {
+							defaultValue:
+								"Inscrit automatiquement tous les étudiants inscrits dans la classe aux cours qui leur sont assignés pour l'année académique choisie.",
+						})}
+					</p>
+
+					<div>
+						<label className="mb-2 block font-medium text-sm">
+							{t("admin.classCourses.autoEnroll.classLabel", {
+								defaultValue: "Classe",
+							})}
+						</label>
+						<CodedEntitySelect
+							items={autoEnrollClasses}
+							onSearch={setAutoEnrollClassSearch}
+							value={
+								autoEnrollClasses.find((c) => c.id === autoEnrollClassId)
+									?.code || null
+							}
+							onChange={(code) => {
+								const cls = autoEnrollClasses.find((c) => c.code === code);
+								setAutoEnrollClassId(cls?.id || "");
+							}}
+							placeholder={t(
+								"admin.classCourses.autoEnroll.classPlaceholder",
+								{ defaultValue: "Sélectionner une classe" },
+							)}
+							searchMode="hybrid"
+							getItemSubtitle={(cls) =>
+								programs?.find((p) => p.id === cls.program)?.name ?? ""
+							}
+						/>
+					</div>
+
+					<div>
+						<label className="mb-2 block font-medium text-sm">
+							{t("admin.classCourses.autoEnroll.yearLabel", {
+								defaultValue: "Année académique",
+							})}
+						</label>
+						<AcademicYearSelect
+							value={autoEnrollYearId}
+							onChange={setAutoEnrollYearId}
+						/>
+					</div>
+
+					<div className="flex justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={handleCloseAutoEnroll}
+							disabled={autoEnrollMutation.isPending}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							onClick={handleAutoEnroll}
+							disabled={
+								!autoEnrollClassId ||
+								!autoEnrollYearId ||
+								autoEnrollMutation.isPending
+							}
+						>
+							{autoEnrollMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<Users className="mr-2 h-4 w-4" />
+							)}
+							{t("admin.classCourses.autoEnroll.submit", {
+								defaultValue: "Inscrire les étudiants",
+							})}
+						</Button>
+					</div>
+				</div>
 			</FormModal>
 		</div>
 	);

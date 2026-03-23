@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { Download, PlusIcon, Sparkles } from "lucide-react";
@@ -11,6 +11,7 @@ import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { Switch } from "@/components/ui/switch";
 import { DebouncedSearchField } from "@/components/inputs/DebouncedSearchField";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Progress } from "@/components/ui/progress";
 import {
 	Select,
@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -399,7 +399,6 @@ export default function StudentManagement() {
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
 	const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female" | "other">("all");
-	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<"single" | "import" | "external">(
@@ -407,6 +406,8 @@ export default function StudentManagement() {
 	);
 	const [importClass, setImportClass] = useState("");
 	const [importFormatId, setImportFormatId] = useState("");
+	const [importAcademicYear, setImportAcademicYear] = useState<string | null>(null);
+	const [autoEnrollAfterImport, setAutoEnrollAfterImport] = useState(false);
 	const [importResult, setImportResult] = useState<{
 		createdCount: number;
 		conflicts: Array<{ row: number; reason: string }>;
@@ -434,21 +435,26 @@ export default function StudentManagement() {
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
-	const { data: studentsData, isLoading: isLoadingStudents } =
-		useQuery<StudentsListResponse>({
-			queryKey: ["students", classFilter, search, pagination.cursor, genderFilter],
-			queryFn: async () =>
+	const { data: studentsData, isLoading: isLoadingStudents, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery<StudentsListResponse>({
+			queryKey: ["students", classFilter, search, genderFilter],
+			queryFn: async ({ pageParam }) =>
 				trpcClient.students.list.query({
 					classId: classFilter === "all" ? undefined : classFilter,
 					q: search || undefined,
-					cursor: pagination.cursor,
-					limit: pagination.pageSize,
+					cursor: pageParam as string | undefined,
+					limit: 20,
 				}),
+			initialPageParam: undefined as string | undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		});
 
+	const allStudentItems = studentsData?.pages.flatMap((p) => p.items) ?? [];
 	const filteredStudentItems = genderFilter !== "all"
-		? (studentsData?.items ?? []).filter((s) => s.gender === genderFilter)
-		: (studentsData?.items ?? []);
+		? allStudentItems.filter((s) => s.gender === genderFilter)
+		: allStudentItems;
+
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
@@ -530,6 +536,23 @@ export default function StudentManagement() {
 				err instanceof Error
 					? err.message
 					: t("admin.students.toast.importError"),
+			),
+	});
+
+	const autoEnrollMutation = useMutation({
+		mutationFn: ({ classId, academicYearId }: { classId: string; academicYearId: string }) =>
+			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({ classId, academicYearId }),
+		onSuccess: (result) => {
+			toast.success(
+				t("admin.students.import.autoEnrollSuccess", {
+					defaultValue: "{{count}} inscription(s) aux cours créée(s)",
+					count: result.createdCount,
+				}),
+			);
+		},
+		onError: (err: unknown) =>
+			toast.error(
+				err instanceof Error ? err.message : t("admin.students.import.autoEnrollError", { defaultValue: "Erreur lors de l'inscription automatique" }),
 			),
 	});
 
@@ -743,6 +766,10 @@ export default function StudentManagement() {
 					setImportPreview(null);
 					setImportFile(null);
 					setImportFileKey((key) => key + 1);
+					// Auto-enroll in course enrollments if requested
+					if (autoEnrollAfterImport && importClass && importAcademicYear) {
+						autoEnrollMutation.mutate({ classId: importClass, academicYearId: importAcademicYear });
+					}
 				},
 			},
 		);
@@ -753,6 +780,8 @@ export default function StudentManagement() {
 		setActiveTab("single");
 		setImportClass("");
 		setImportFormatId("");
+		setImportAcademicYear(null);
+		setAutoEnrollAfterImport(false);
 		setImportResult(null);
 		setImportFile(null);
 		setImportPreview(null);
@@ -775,7 +804,7 @@ export default function StudentManagement() {
 
 			<FilterBar
 				activeCount={[!!academicYearFilter, classFilter !== "all", !!search.trim(), genderFilter !== "all"].filter(Boolean).length}
-				onReset={() => { setAcademicYearFilter(null); setClassFilter("all"); setSearch(""); setGenderFilter("all"); pagination.reset(); }}
+				onReset={() => { setAcademicYearFilter(null); setClassFilter("all"); setSearch(""); setGenderFilter("all"); }}
 				defaultOpen
 			>
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -783,12 +812,12 @@ export default function StudentManagement() {
 						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.academicYear", { defaultValue: "Année académique" })}</p>
 						<AcademicYearSelect
 							value={academicYearFilter}
-							onChange={(v) => { setAcademicYearFilter(v); setClassFilter("all"); pagination.reset(); }}
+							onChange={(v) => { setAcademicYearFilter(v); setClassFilter("all"); }}
 						/>
 					</div>
 					<div className="space-y-1.5">
 						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.class", { defaultValue: "Classe" })}</p>
-						<Select value={classFilter} onValueChange={(value) => { setClassFilter(value); pagination.reset(); }}>
+						<Select value={classFilter} onValueChange={(value) => { setClassFilter(value); }}>
 							<SelectTrigger><SelectValue placeholder={t("admin.students.filters.allClasses")} /></SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">{t("admin.students.filters.allClasses")}</SelectItem>
@@ -798,16 +827,16 @@ export default function StudentManagement() {
 					</div>
 					<div className="space-y-1.5">
 						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.search", { defaultValue: "Recherche" })}</p>
-						<DebouncedSearchField value={search} onChange={(v) => { setSearch(v); pagination.reset(); }} placeholder={t("admin.students.filters.searchPlaceholder")} />
+						<DebouncedSearchField value={search} onChange={(v) => { setSearch(v); }} placeholder={t("admin.students.filters.searchPlaceholder")} />
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Genre</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.table.gender")}</p>
 						<Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as typeof genderFilter)}>
-							<SelectTrigger><SelectValue placeholder="Tous les genres" /></SelectTrigger>
+							<SelectTrigger><SelectValue placeholder={t("admin.students.filters.allGenders")} /></SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">Tous les genres</SelectItem>
-								<SelectItem value="male">Masculin</SelectItem>
-								<SelectItem value="female">Féminin</SelectItem>
+								<SelectItem value="all">{t("admin.students.filters.allGenders")}</SelectItem>
+								<SelectItem value="male">{t("admin.students.gender.male")}</SelectItem>
+								<SelectItem value="female">{t("admin.students.gender.female")}</SelectItem>
 								<SelectItem value="other">Autre</SelectItem>
 							</SelectContent>
 						</Select>
@@ -890,14 +919,13 @@ export default function StudentManagement() {
 						</TableBody>
 					</Table>
 					)}
+				<div ref={sentinelRef} className="h-1" />
+				{isFetchingNextPage && (
+					<div className="flex justify-center py-2">
+						<Spinner />
+					</div>
+				)}
 				</CardContent>
-				<PaginationBar
-					hasPrev={pagination.hasPrev}
-					hasNext={Boolean(studentsData?.nextCursor)}
-					onPrev={pagination.handlePrev}
-					onNext={() => pagination.handleNext(studentsData?.nextCursor)}
-					isLoading={isLoadingStudents}
-				/>
 			</Card>
 
 			<Dialog
@@ -1423,6 +1451,24 @@ export default function StudentManagement() {
 											</SelectContent>
 										</Select>
 									</div>
+									<div className="space-y-2">
+										<Label>
+											{t("admin.students.import.academicYearLabel", { defaultValue: "Année académique (pour inscription automatique)" })}
+										</Label>
+										<AcademicYearSelect value={importAcademicYear} onChange={setImportAcademicYear} autoSelectActive />
+									</div>
+									{importAcademicYear && importClass && (
+										<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+											<Switch
+												id="auto-enroll-import-toggle"
+												checked={autoEnrollAfterImport}
+												onCheckedChange={setAutoEnrollAfterImport}
+											/>
+											<label htmlFor="auto-enroll-import-toggle" className="cursor-pointer text-sm">
+												{t("admin.students.import.autoEnrollToggle", { defaultValue: "Inscrire automatiquement aux cours apres l'import" })}
+											</label>
+										</div>
+									)}
 									<div className="space-y-2">
 										<Label htmlFor="student-import-file">
 											{t("admin.students.import.fileLabel", {

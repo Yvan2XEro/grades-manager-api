@@ -29,6 +29,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../../components/ui/context-menu";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import { CreateBatchJobDialog } from "./CreateBatchJobDialog";
@@ -179,8 +183,13 @@ export default function BatchJobsDashboard() {
 							{jobs.map((job) => (
 								<TableRow
 									key={job.id}
-									className="cursor-pointer hover:bg-muted/50"
+									className="cursor-pointer"
 									onClick={() => navigate(`/admin/batch-jobs/${job.id}`)}
+									actions={<>
+										<ContextMenuItem onSelect={() => navigate(`/admin/batch-jobs/${job.id}`)}>{t("common.actions.open", { defaultValue: "Open" })}</ContextMenuItem>
+										{job.status === "previewed" && <><ContextMenuSeparator /><ContextMenuItem onSelect={() => runMutation.mutate(job.id)}>{t("admin.batchJobs.actions.run")}</ContextMenuItem></>}
+										{["pending","previewed","running"].includes(job.status) && <><ContextMenuSeparator /><ContextMenuItem className="text-destructive" onSelect={() => cancelMutation.mutate(job.id)}>{t("admin.batchJobs.actions.cancel")}</ContextMenuItem></>}
+									</>}
 								>
 									<TableCell className="font-medium">
 										{t(`admin.batchJobs.types.${job.type}`, {

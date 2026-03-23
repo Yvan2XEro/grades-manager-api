@@ -233,7 +233,7 @@ const AdminDashboard: React.FC = () => {
 			const activeYear = yearsRes?.items?.find((y) => y.isActive);
 
 			const counts = {
-				institutions: institutionsRes?.items?.filter((i) => i.type === "faculty").length ?? 0,
+				institutions: Array.isArray(institutionsRes) ? institutionsRes.length : (institutionsRes?.items?.length ?? 0),
 				programs: programs.length,
 				courses: coursesRes?.items?.length ?? 0,
 				exams: examsRes?.items?.length ?? 0,

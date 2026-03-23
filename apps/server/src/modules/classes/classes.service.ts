@@ -296,3 +296,104 @@ export async function searchClasses(
 ) {
 	return repo.search(opts, institutionId);
 }
+
+export async function bulkGenerateClasses(
+	academicYearId: string,
+	institutionId: string,
+	cycleLevelIds?: string[],
+) {
+	const year = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, academicYearId),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+	if (!year) throw notFound("Academic year not found");
+
+	// All programs with their options
+	const allPrograms = await db.query.programs.findMany({
+		where: eq(schema.programs.institutionId, institutionId),
+		with: { options: true },
+	});
+
+	// All cycle levels (optionally filtered)
+	const cycles = await db.query.studyCycles.findMany({
+		where: eq(schema.studyCycles.institutionId, institutionId),
+		with: { levels: true },
+	});
+	let allLevels = cycles.flatMap((c) => c.levels);
+	if (cycleLevelIds && cycleLevelIds.length > 0) {
+		allLevels = allLevels.filter((l) => cycleLevelIds.includes(l.id));
+	}
+
+	// Default semester
+	const defaultSemester = await db.query.semesters.findFirst({
+		orderBy: (s, { asc }) => asc(s.orderIndex),
+	});
+	if (!defaultSemester) throw notFound("No semesters configured");
+
+	// Existing classes this year
+	const existingClasses = await db.query.classes.findMany({
+		where: and(
+			eq(schema.classes.academicYear, academicYearId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	const existingKeys = new Set(
+		existingClasses.map(
+			(c) => `${c.program}::${c.programOptionId}::${c.cycleLevelId}`,
+		),
+	);
+	const existingCodes = new Set(existingClasses.map((c) => c.code));
+
+	let created = 0;
+	let skipped = 0;
+
+	for (const program of allPrograms) {
+		const options = (program as typeof program & { options: { id: string; name: string; code: string }[] }).options;
+		if (!options || options.length === 0) {
+			skipped++;
+			continue;
+		}
+
+		for (const option of options) {
+			for (const level of allLevels) {
+				const key = `${program.id}::${option.id}::${level.id}`;
+				if (existingKeys.has(key)) {
+					skipped++;
+					continue;
+				}
+
+				// Generate a unique code
+				const baseCode = normalizeCode(`${program.code}-${level.code}`);
+				let code = baseCode;
+				let counter = 1;
+				while (existingCodes.has(code)) {
+					code = `${baseCode}-${String(counter).padStart(2, "0")}`;
+					counter++;
+				}
+				existingCodes.add(code);
+				existingKeys.add(key);
+
+				const yearShort = `${new Date(year.startDate).getFullYear()}`;
+				const name = `${program.name} ${level.code} (${yearShort})`;
+
+				await repo.create({
+					code,
+					name,
+					program: program.id,
+					academicYear: academicYearId,
+					institutionId,
+					cycleLevelId: level.id,
+					programOptionId: option.id,
+					semesterId: defaultSemester.id,
+					totalCredits: 0,
+				});
+
+				created++;
+			}
+		}
+	}
+
+	return { created, skipped };
+}

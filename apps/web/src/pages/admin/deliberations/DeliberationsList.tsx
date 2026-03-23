@@ -29,6 +29,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../../components/ui/context-menu";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
@@ -181,8 +185,12 @@ export default function DeliberationsList() {
 							{items.map((d: any) => (
 								<TableRow
 									key={d.id}
-									className="cursor-pointer hover:bg-muted/50"
+									className="cursor-pointer"
 									onClick={() => navigate(`/admin/deliberations/${d.id}`)}
+									actions={<>
+										<ContextMenuItem onSelect={() => navigate(`/admin/deliberations/${d.id}`)}>{t("common.actions.open", { defaultValue: "Open" })}</ContextMenuItem>
+										{d.status === "draft" && <><ContextMenuSeparator /><ContextMenuItem className="text-destructive" onSelect={() => { if (window.confirm(t("admin.deliberations.confirm.delete"))) {} }}>{t("common.actions.delete")}</ContextMenuItem></>}
+									</>}
 								>
 									<TableCell className="font-medium">
 										{d.class?.name ?? "—"}

@@ -1,5 +1,5 @@
 const RIPPLE_TARGETS =
-	'button:not([data-slot="dialog-close"]), [role="button"], [role="tab"], [role="menuitem"], [role="option"]';
+	'button, [role="button"], [role="tab"], [role="menuitem"], [role="option"]';
 
 function rippleAt(el: HTMLElement, clientX: number, clientY: number) {
 	el.classList.add("ripple-host");
@@ -33,7 +33,10 @@ export function initClickEffects() {
 					RIPPLE_TARGETS,
 				);
 				if (target && !target.hasAttribute("disabled")) {
-					rippleAt(target, e.clientX, e.clientY);
+					const pos = getComputedStyle(target).position;
+					if (pos !== "absolute" && pos !== "fixed") {
+						rippleAt(target, e.clientX, e.clientY);
+					}
 					sounds.click();
 					haptic.light();
 				}

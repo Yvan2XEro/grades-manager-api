@@ -451,6 +451,18 @@ const Sidebar: React.FC = () => {
 					</div>
 				)}
 			</div>
+
+			{/* Copyright */}
+			{!collapsed && (
+				<div className="px-4 pb-3 pt-2 border-t border-sidebar-border/50">
+					<p className="text-[10px] text-muted-foreground/50 leading-relaxed text-center">
+						© {new Date().getFullYear()} OverBrand
+					</p>
+					<p className="text-[10px] text-muted-foreground/40 text-center">
+						Cédric TEFOYE · Kana Yvan
+					</p>
+				</div>
+			)}
 		</>
 	);
 

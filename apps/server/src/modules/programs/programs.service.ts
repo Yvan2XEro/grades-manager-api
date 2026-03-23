@@ -1,4 +1,7 @@
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import { normalizeCode, slugify } from "@/lib/strings";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./programs.repo";
@@ -67,4 +70,65 @@ export async function searchPrograms(
 	institutionId: string,
 ) {
 	return repo.search({ ...opts, institutionId });
+}
+
+export async function cloneCurriculum(
+	targetProgramId: string,
+	sourceProgramId: string,
+	institutionId: string,
+) {
+	const target = await repo.findById(targetProgramId, institutionId);
+	if (!target)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Target program not found" });
+
+	const source = await repo.findById(sourceProgramId, institutionId);
+	if (!source)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Source program not found" });
+
+	const sourceUnits = await db.query.teachingUnits.findMany({
+		where: eq(schema.teachingUnits.programId, sourceProgramId),
+	});
+
+	let unitsCreated = 0;
+	let coursesCreated = 0;
+
+	for (const unit of sourceUnits) {
+		const [newUnit] = await db
+			.insert(schema.teachingUnits)
+			.values({
+				programId: targetProgramId,
+				name: unit.name,
+				code: unit.code,
+				description: unit.description,
+				credits: unit.credits,
+				semester: unit.semester,
+			})
+			.onConflictDoNothing()
+			.returning();
+
+		if (!newUnit) continue;
+		unitsCreated++;
+
+		const sourceCourses = await db.query.courses.findMany({
+			where: eq(schema.courses.teachingUnitId, unit.id),
+		});
+
+		for (const course of sourceCourses) {
+			await db
+				.insert(schema.courses)
+				.values({
+					code: course.code,
+					name: course.name,
+					hours: course.hours,
+					program: targetProgramId,
+					teachingUnitId: newUnit.id,
+					defaultTeacher: null,
+					defaultCoefficient: course.defaultCoefficient,
+				})
+				.onConflictDoNothing();
+			coursesCreated++;
+		}
+	}
+
+	return { unitsCreated, coursesCreated };
 }

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -34,7 +33,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
@@ -190,7 +189,6 @@ const PrerequisiteWarningsList = ({
 const EnrollmentManagement = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const pagination = useCursorPagination({ pageSize: 20 });
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
@@ -207,16 +205,22 @@ const EnrollmentManagement = () => {
 		}),
 	);
 
-	const enrollmentsQuery = useQuery({
-		...trpc.enrollments.list.queryOptions({
-			classId: selectedClass || undefined,
-			academicYearId: selectedAcademicYear || undefined,
-			status: statusFilter === "all" ? undefined : statusFilter,
-			cursor: pagination.cursor,
-			limit: pagination.pageSize,
-		}),
+	const enrollmentsQuery = useInfiniteQuery({
+		queryKey: ["enrollments", selectedClass, selectedAcademicYear, statusFilter],
+		queryFn: async ({ pageParam }) =>
+			trpcClient.enrollments.list.query({
+				classId: selectedClass || undefined,
+				academicYearId: selectedAcademicYear || undefined,
+				status: statusFilter === "all" ? undefined : statusFilter,
+				cursor: pageParam as string | undefined,
+				limit: 20,
+			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		enabled: Boolean(selectedAcademicYear && selectedClass),
 	});
+
+	const sentinelRef = useInfiniteScroll(enrollmentsQuery.fetchNextPage, { enabled: enrollmentsQuery.hasNextPage && !enrollmentsQuery.isFetchingNextPage });
 
 	const studentsQuery = useQuery({
 		...trpc.students.list.queryOptions({
@@ -387,7 +391,7 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const enrollments = enrollmentsQuery.data?.items ?? [];
+	const enrollments = enrollmentsQuery.data?.pages.flatMap((p) => p.items) ?? [];
 	const selection = useRowSelection(enrollments);
 
 	const bulkDeleteMutation = useMutation({
@@ -427,7 +431,6 @@ const EnrollmentManagement = () => {
 	useEffect(() => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
-		pagination.reset();
 	}, [selectedAcademicYear, selectedClass, selectedSemester]);
 
 	useEffect(() => {
@@ -496,15 +499,15 @@ const EnrollmentManagement = () => {
 					<SemesterSelect value={selectedSemester || null} onChange={(v) => setSelectedSemester(v ?? '')} disabled={!selectedClass} placeholder={t("admin.enrollments.selectSemester", { defaultValue: "Sélectionner un semestre" })} />
 				</div>
 				<div className="space-y-1.5">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Statut</p>
+					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.fields.status")}</p>
 					<Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} disabled={!selectedClass}>
-						<SelectTrigger><SelectValue placeholder="Tous les statuts" /></SelectTrigger>
+						<SelectTrigger><SelectValue placeholder={t("admin.enrollments.status.all")} /></SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">Tous les statuts</SelectItem>
-							<SelectItem value="active">Actif</SelectItem>
-							<SelectItem value="pending">En attente</SelectItem>
-							<SelectItem value="completed">Terminé</SelectItem>
-							<SelectItem value="withdrawn">Retiré</SelectItem>
+							<SelectItem value="all">{t("admin.enrollments.status.all")}</SelectItem>
+							<SelectItem value="active">{t("admin.enrollments.status.active")}</SelectItem>
+							<SelectItem value="pending">{t("admin.enrollments.status.pending")}</SelectItem>
+							<SelectItem value="completed">{t("admin.enrollments.status.completed")}</SelectItem>
+							<SelectItem value="withdrawn">{t("admin.enrollments.status.withdrawn")}</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -815,15 +818,7 @@ const EnrollmentManagement = () => {
 							</p>
 						)}
 
-						<PaginationBar
-							hasPrev={pagination.hasPrev}
-							hasNext={!!enrollmentsQuery.data?.nextCursor}
-							onPrev={pagination.handlePrev}
-							onNext={() =>
-								pagination.handleNext(enrollmentsQuery.data?.nextCursor)
-							}
-							isLoading={enrollmentsQuery.isLoading}
-						/>
+						<div ref={sentinelRef} className="h-1" />
 					</CardContent>
 				</Card>
 

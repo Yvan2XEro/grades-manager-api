@@ -61,6 +61,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -284,7 +288,15 @@ export default function RetakeEligibility() {
 			</TableHeader>
 			<TableBody>
 				{students.map((row) => (
-					<TableRow key={row.studentCourseEnrollmentId}>
+					<TableRow key={row.studentCourseEnrollmentId} actions={<>
+						{row.override
+							? <ContextMenuItem onSelect={() => handleRemoveOverride(row)}>{t("admin.retake.override.remove")}</ContextMenuItem>
+							: <>
+								{showEligibleActions && <ContextMenuItem onSelect={() => setOverrideModal({ isOpen: true, type: "eligible", row })}>{t("admin.retake.override.forceEligible", { defaultValue: "Force eligible" })}</ContextMenuItem>}
+								<ContextMenuItem className="text-destructive" onSelect={() => setOverrideModal({ isOpen: true, type: "ineligible", row })}>{t("admin.retake.override.forceIneligible", { defaultValue: "Force ineligible" })}</ContextMenuItem>
+							</>
+						}
+					</>}>
 						<TableCell className="font-medium">{row.studentName}</TableCell>
 						<TableCell>{row.registrationNumber}</TableCell>
 						<TableCell className="text-center">{row.attempt}</TableCell>

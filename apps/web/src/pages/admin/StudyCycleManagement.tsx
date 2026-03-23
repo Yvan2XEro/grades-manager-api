@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Layers3, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -114,6 +114,20 @@ export default function StudyCycleManagement() {
 			durationYears: 3,
 		},
 	});
+
+	const watchedCode = form.watch("code");
+	const watchedDuration = form.watch("durationYears");
+	const watchedCredits = form.watch("totalCreditsRequired");
+	const autoLevelsPreview = useMemo(() => {
+		const duration = Number(watchedDuration);
+		const credits = Number(watchedCredits);
+		if (!duration || duration < 1 || duration > 20) return [];
+		return Array.from({ length: duration }, (_, i) => ({
+			code: watchedCode ? `${watchedCode}-L${i + 1}` : `L${i + 1}`,
+			name: `Level ${i + 1}`,
+			minCredits: credits ? Math.floor(credits / duration) : 0,
+		}));
+	}, [watchedCode, watchedDuration, watchedCredits]);
 
 	const levelForm = useForm<LevelForm>({
 		resolver: zodResolver(levelSchema),
@@ -350,8 +364,12 @@ export default function StudyCycleManagement() {
 									{cycles.map((cycle) => (
 										<TableRow
 											key={cycle.id}
-											className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
 											onClick={() => setActiveCycleId(cycle.id)}
+											actions={<>
+												<ContextMenuItem onSelect={() => { setEditingId(cycle.id); form.reset({ code: cycle.code, name: cycle.name, description: cycle.description ?? "", totalCreditsRequired: cycle.totalCreditsRequired, durationYears: cycle.durationYears }); setIsFormOpen(true); }}>{t("common.actions.edit")}</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem className="text-destructive" onSelect={() => setDeleteId(cycle.id)}>{t("common.actions.delete")}</ContextMenuItem>
+											</>}
 										>
 											<TableCell onClick={(e) => e.stopPropagation()}>
 												<Checkbox
@@ -634,6 +652,25 @@ export default function StudyCycleManagement() {
 									)}
 								/>
 							</div>
+							{!editingId && autoLevelsPreview.length > 0 && (
+								<div className="rounded-lg border border-dashed bg-muted/40 p-3">
+									<p className="mb-2 font-medium text-muted-foreground text-xs">
+										{t("admin.studyCycles.form.autoLevelsPreview", {
+											defaultValue: "Levels that will be auto-created:",
+										})}
+									</p>
+									<div className="flex flex-wrap gap-1.5">
+										{autoLevelsPreview.map((lvl) => (
+											<span
+												key={lvl.code}
+												className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-primary text-xs font-medium"
+											>
+												{lvl.code} · {lvl.minCredits} cr
+											</span>
+										))}
+									</div>
+								</div>
+							)}
 							<Button
 								type="submit"
 								className="w-full"

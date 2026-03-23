@@ -89,6 +89,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
@@ -167,6 +168,16 @@ export default function ExamManagement() {
 		setSemesterId(null);
 	}, [academicYearId]);
 
+	const yearsQuery = useQuery({
+		...trpc.academicYears.list.queryOptions({}),
+	});
+	useEffect(() => {
+		if (!academicYearId && yearsQuery.data?.items) {
+			const active = yearsQuery.data.items.find((y) => y.isActive);
+			if (active) setAcademicYearId(active.id);
+		}
+	}, [yearsQuery.data, academicYearId]);
+
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -208,10 +219,11 @@ export default function ExamManagement() {
 		enabled: Boolean(academicYearId),
 	});
 	const exams = examsQuery.data?.pages.flatMap((page) => page.items) ?? [];
-	const isLoadingExams = examsQuery.isLoading || !academicYearId;
+	const isLoadingExams = examsQuery.isLoading || (!academicYearId && yearsQuery.isLoading);
 	const isFetchingNextPage = examsQuery.isFetchingNextPage;
 	const hasNextPage = Boolean(examsQuery.hasNextPage);
 	const fetchNextPage = examsQuery.fetchNextPage;
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 
 	const semestersQuery = useQuery({
 		...trpc.semesters.list.queryOptions({}),
@@ -507,12 +519,12 @@ export default function ExamManagement() {
 								<SemesterSelect value={semesterId} onChange={setSemesterId} />
 							</div>
 							<div className="space-y-1.5">
-								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Date de début</p>
-								<DatePicker value={dateFrom ?? undefined} onChange={(d) => setDateFrom(d ?? null)} placeholder="Depuis..." disabled={!academicYearId} />
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.dateFrom")}</p>
+								<DatePicker value={dateFrom ?? undefined} onChange={(d) => setDateFrom(d ?? null)} placeholder={t("admin.exams.filters.dateFromPlaceholder")} disabled={!academicYearId} />
 							</div>
 							<div className="space-y-1.5">
-								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Date de fin</p>
-								<DatePicker value={dateTo ?? undefined} onChange={(d) => setDateTo(d ?? null)} placeholder="Jusqu'à..." disabled={!academicYearId} />
+								<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.exams.filters.dateTo")}</p>
+								<DatePicker value={dateTo ?? undefined} onChange={(d) => setDateTo(d ?? null)} placeholder={t("admin.exams.filters.dateToPlaceholder")} disabled={!academicYearId} />
 							</div>
 						</div>
 			</FilterBar>
@@ -811,6 +823,7 @@ export default function ExamManagement() {
 									</TableBody>
 								</Table>
 							</div>
+							<div ref={sentinelRef} className="h-1" />
 							{hasNextPage ? (
 								<div className="mt-4 flex justify-center">
 									<Button

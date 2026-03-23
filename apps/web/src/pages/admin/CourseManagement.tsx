@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -47,7 +47,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -69,7 +69,6 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
@@ -120,20 +119,21 @@ export default function CourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
-	const { data, isLoading } = useQuery({
-		queryKey: ["courses", pagination.cursor],
-		queryFn: async () => {
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+		queryKey: ["courses"],
+		queryFn: async ({ pageParam }) => {
 			const result = await trpcClient.courses.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			});
 			return result as { items: Course[]; nextCursor?: string };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const courses = data?.items ?? [];
+	const courses = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
 	const selection = useRowSelection(courses);
 
 	const { data: defaultPrograms = [] } = useQuery({
@@ -481,13 +481,7 @@ export default function CourseManagement() {
 								</TableBody>
 							</Table>
 							)}
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!data?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() => pagination.handleNext(data?.nextCursor)}
-								isLoading={isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty className="border border-dashed">
