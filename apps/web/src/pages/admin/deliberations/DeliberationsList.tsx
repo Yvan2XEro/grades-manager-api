@@ -200,7 +200,7 @@ export default function DeliberationsList() {
 									</>}
 								>
 									<TableCell className="font-medium">
-										{d.class?.name ?? "—"}
+										{d.classRef?.name ?? "—"}
 									</TableCell>
 									<TableCell>
 										<Badge variant="outline">
