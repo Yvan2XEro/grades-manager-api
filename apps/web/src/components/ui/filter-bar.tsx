@@ -34,9 +34,13 @@ export function FilterBar({
 			)}
 		>
 			{/* Header trigger */}
-			<button
-				type="button"
+			<div
+				role="button"
+				tabIndex={0}
 				onClick={() => setIsOpen((v) => !v)}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") setIsOpen((v) => !v);
+				}}
 				className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
 			>
 				<div
@@ -80,7 +84,7 @@ export function FilterBar({
 						)}
 					/>
 				</div>
-			</button>
+			</div>
 
 			{/* Collapsible body */}
 			<AnimatePresence initial={false}>

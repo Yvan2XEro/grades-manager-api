@@ -217,7 +217,7 @@ export default function ClassManagement() {
 			return { items: enriched, nextCursor };
 		},
 		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
 	});
 
 	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
@@ -245,13 +245,14 @@ export default function ClassManagement() {
 
 	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
-	const { data: academicYears } = useQuery({
+	const { data: academicYearsRaw } = useQuery({
 		queryKey: ["academicYears"],
 		queryFn: async () => {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return items;
 		},
 	});
+	const academicYears = Array.isArray(academicYearsRaw) ? academicYearsRaw : [];
 
 	const form = useForm<ClassFormData>({
 		resolver: zodResolver(classSchema),

@@ -112,10 +112,8 @@ export default function ExamScheduler() {
 	const examTypesQuery = useQuery({
 		queryKey: ["examTypes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.examTypes.list.query({
-				limit: 200,
-			});
-			return items as ExamType[];
+			const { items } = await trpcClient.examTypes.list.query({ limit: 200 });
+			return (Array.isArray(items) ? items : []) as ExamType[];
 		},
 	});
 
