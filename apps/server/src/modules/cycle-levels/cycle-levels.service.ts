@@ -1,5 +1,5 @@
 import { normalizeCode } from "@/lib/strings";
-import { notFound } from "../_shared/errors";
+import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./cycle-levels.repo";
 
 export async function createCycleLevel(
@@ -21,6 +21,12 @@ export async function updateCycleLevel(
 }
 
 export async function deleteCycleLevel(id: string) {
+	const classCount = await repo.countClasses(id);
+	if (classCount > 0) {
+		throw conflict(
+			"Cannot delete cycle level: classes are attached to it. Remove them first.",
+		);
+	}
 	await repo.remove(id);
 }
 

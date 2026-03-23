@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
@@ -34,6 +35,19 @@ export async function deleteAcademicYear(id: string, institutionId: string) {
 			`Cannot delete academic year: it has ${classCount} class(es) attached. Remove them first.`,
 		);
 	}
+	// Clean up child records with RESTRICT FK references before deleting
+	await db
+		.delete(schema.examScheduleRuns)
+		.where(eq(schema.examScheduleRuns.academicYearId, id));
+	await db
+		.delete(schema.promotionExecutions)
+		.where(eq(schema.promotionExecutions.academicYearId, id));
+	await db
+		.delete(schema.deliberations)
+		.where(eq(schema.deliberations.academicYearId, id));
+	await db
+		.delete(schema.studentCourseEnrollments)
+		.where(eq(schema.studentCourseEnrollments.academicYearId, id));
 	await repo.remove(id, institutionId);
 }
 

@@ -29,6 +29,12 @@ export async function remove(id: string, institutionId: string) {
 	const existing = await findById(id, institutionId);
 	if (!existing) return;
 
+	// Clear defaultTeacher FK reference (restrict) before deleting
+	await db
+		.update(schema.courses)
+		.set({ defaultTeacher: null })
+		.where(eq(schema.courses.id, id));
+
 	await db.delete(schema.courses).where(eq(schema.courses.id, id));
 }
 

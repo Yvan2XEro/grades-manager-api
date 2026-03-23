@@ -20,6 +20,15 @@ export async function remove(id: string) {
 	await db.delete(schema.cycleLevels).where(eq(schema.cycleLevels.id, id));
 }
 
+export async function countClasses(cycleLevelId: string) {
+	const rows = await db
+		.select({ id: schema.classes.id })
+		.from(schema.classes)
+		.where(eq(schema.classes.cycleLevelId, cycleLevelId))
+		.limit(1);
+	return rows.length;
+}
+
 export async function findById(id: string) {
 	return db.query.cycleLevels.findFirst({
 		where: eq(schema.cycleLevels.id, id),

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import { conflict } from "../_shared/errors";
 import * as repo from "./program-options.repo";
 
 async function ensureProgram(programId: string, institutionId: string) {
@@ -53,6 +54,12 @@ export async function updateOption(
 
 export async function deleteOption(id: string, institutionId: string) {
 	await ensureOption(id, institutionId);
+	const classCount = await repo.countClasses(id);
+	if (classCount > 0) {
+		throw conflict(
+			"Cannot delete program option: classes are attached to it. Remove them first.",
+		);
+	}
 	await repo.remove(id, institutionId);
 }
 
