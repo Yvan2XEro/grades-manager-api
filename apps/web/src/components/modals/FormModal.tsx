@@ -31,7 +31,7 @@ const FormModal: React.FC<FormModalProps> = ({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className={cn("max-w-2xl overflow-hidden p-0", maxWidth)}>
+			<DialogContent className={cn("overflow-hidden p-0 sm:max-w-2xl", maxWidth)}>
 				{/* Gradient accent bar */}
 				<div className="h-1 w-full bg-gradient-to-r from-primary/80 to-primary/40" />
 				<DialogHeader className="px-6 pt-5">

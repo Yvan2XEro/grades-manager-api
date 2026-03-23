@@ -586,7 +586,7 @@ export default function FacultyManagement() {
 			<FormModal
 				isOpen={isModalOpen}
 				onClose={handleCloseModal}
-				maxWidth="max-w-5xl"
+				maxWidth="sm:max-w-5xl"
 				contentClassName="max-h-[calc(90vh-8rem)]"
 				title={
 					editingInstitution
