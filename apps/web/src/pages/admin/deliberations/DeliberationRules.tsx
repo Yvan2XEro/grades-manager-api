@@ -257,7 +257,7 @@ export default function DeliberationRules() {
 								{group.rules.map((rule: any) => (
 									<div
 										key={rule.id}
-										className="group relative rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+										className="group relative rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
 									>
 										<div className="flex items-start justify-between">
 											<div className="min-w-0 flex-1">
@@ -346,7 +346,7 @@ export default function DeliberationRules() {
 									.map((rule: any) => (
 										<div
 											key={rule.id}
-											className="rounded-xl border bg-white p-4 shadow-sm"
+											className="rounded-xl border bg-card p-4 shadow-sm"
 										>
 											<p className="font-medium text-sm">{rule.name}</p>
 										</div>

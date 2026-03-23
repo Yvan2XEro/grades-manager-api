@@ -164,7 +164,7 @@ export default function BatchJobDetail() {
 
 			{/* Status + Progress */}
 			<div className="grid gap-4 md:grid-cols-2">
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.batchJobs.columns.status")}
 					</h3>
@@ -190,7 +190,7 @@ export default function BatchJobDetail() {
 				</div>
 
 				{progress && (
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<h3 className="mb-3 font-medium text-foreground text-sm">
 							{t("admin.batchJobs.detail.progress")}
 						</h3>
@@ -217,7 +217,7 @@ export default function BatchJobDetail() {
 			</div>
 
 			{/* Steps timeline */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.steps")}
 				</h3>
@@ -278,7 +278,7 @@ export default function BatchJobDetail() {
 			</div>
 
 			{/* Logs */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.logs")}
 				</h3>

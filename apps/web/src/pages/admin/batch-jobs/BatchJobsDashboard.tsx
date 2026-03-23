@@ -152,7 +152,7 @@ export default function BatchJobsDashboard() {
 			</div>
 
 			{/* Table */}
-			<div className="rounded-xl border bg-white shadow-sm">
+			<div className="rounded-xl border bg-card shadow-sm">
 				{jobsQuery.isLoading ? (
 					<TableSkeleton columns={6} rows={8} />
 				) : jobs.length === 0 ? (

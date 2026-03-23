@@ -158,7 +158,7 @@ export default function DeliberationsList() {
 			</div>
 
 			{/* Table */}
-			<div className="rounded-xl border bg-white shadow-sm">
+			<div className="rounded-xl border bg-card shadow-sm">
 				{deliberationsQuery.isLoading ? (
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (

@@ -495,7 +495,7 @@ export default function DeliberationDetail() {
 			{/* Stats cards */}
 			{stats && (
 				<div className="grid gap-4 md:grid-cols-4">
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.totalStudents")}
 						</p>
@@ -503,7 +503,7 @@ export default function DeliberationDetail() {
 							{stats.totalStudents ?? 0}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.successRate")}
 						</p>
@@ -513,7 +513,7 @@ export default function DeliberationDetail() {
 								: "—"}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.classAverage")}
 						</p>
@@ -523,7 +523,7 @@ export default function DeliberationDetail() {
 								: "—"}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.decision.admitted")}
 						</p>
@@ -535,7 +535,7 @@ export default function DeliberationDetail() {
 			)}
 
 			{/* Student results table */}
-			<div className="rounded-xl border bg-white shadow-sm">
+			<div className="rounded-xl border bg-card shadow-sm">
 				<div className="border-b px-5 py-3">
 					<h3 className="font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.students")}
@@ -596,7 +596,7 @@ export default function DeliberationDetail() {
 			{/* Lifecycle info */}
 			<div className="grid gap-4 md:grid-cols-2">
 				{/* Jury */}
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.jury")}
 					</h3>
@@ -623,7 +623,7 @@ export default function DeliberationDetail() {
 				</div>
 
 				{/* Lifecycle */}
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.lifecycle")}
 					</h3>
@@ -663,7 +663,7 @@ export default function DeliberationDetail() {
 			</div>
 
 			{/* Activity log */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-3 font-medium text-foreground text-sm">
 					{t("admin.deliberations.logs.title")}
 				</h3>
