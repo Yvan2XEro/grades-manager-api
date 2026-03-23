@@ -582,7 +582,7 @@ export default function InstitutionSettings() {
 														</SelectItem>
 														{faculties.map((faculty) => (
 															<SelectItem key={faculty.id} value={faculty.id}>
-																{faculty.name}
+																{faculty.nameFr}
 															</SelectItem>
 														))}
 													</SelectContent>
