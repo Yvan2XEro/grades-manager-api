@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Spinner } from "@/components/ui/spinner";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -147,7 +151,20 @@ export default function GradeAccessGrants() {
 						</TableHeader>
 						<TableBody>
 							{grants.map((g: any) => (
-								<TableRow key={g.id}>
+								<TableRow
+									key={g.id}
+									actions={
+										<>
+											<ContextMenuItem
+												variant="destructive"
+												onSelect={() => setRevokeId(g.id)}
+											>
+												<Trash2 className="h-4 w-4" />
+												{t("admin.gradeAccessGrants.actions.revoke")}
+											</ContextMenuItem>
+										</>
+									}
+								>
 									<TableCell className="font-medium">
 										{[g.profile.firstName, g.profile.lastName]
 											.filter(Boolean)
@@ -233,12 +250,12 @@ export default function GradeAccessGrants() {
 
 			{/* Revoke confirm */}
 			<ConfirmModal
-				open={!!revokeId}
-				onOpenChange={(o) => { if (!o) setRevokeId(null); }}
+				isOpen={!!revokeId}
+				onClose={() => setRevokeId(null)}
 				title={t("admin.gradeAccessGrants.revoke.title")}
 				message={t("admin.gradeAccessGrants.revoke.message")}
-				confirmLabel={t("admin.gradeAccessGrants.actions.revoke")}
-				variant="destructive"
+				confirmText={t("admin.gradeAccessGrants.actions.revoke")}
+				isLoading={revokeMutation.isPending}
 				onConfirm={() => { if (revokeId) revokeMutation.mutate(revokeId); }}
 			/>
 		</div>
