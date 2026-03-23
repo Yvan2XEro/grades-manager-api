@@ -32,7 +32,8 @@
 			"saving": "Enregistrement...",
 			"reset": "Réinitialiser",
 			"open": "Ouvrir",
-			"back": "Retour"
+			"back": "Retour",
+			"rename": "Rename (TODO)"
 		},
 		"fields": {
 			"email": "E-mail",
@@ -70,7 +71,18 @@
 		},
 		"invalidDate": "Date invalide",
 		"loading": "Chargement...",
-		"optional": "Facultatif"
+		"optional": "Facultatif",
+		"bulkActions": {
+			"clear": "Clear (TODO)",
+			"confirmDelete": "Confirm Delete (TODO)",
+			"deleteError": "Delete Error (TODO)",
+			"deleteSuccess": "Delete Success (TODO)",
+			"selectAll": "Select All (TODO)",
+			"selected": "Selected (TODO)"
+		},
+		"noResults": "No Results (TODO)",
+		"search": "Search (TODO)",
+		"select": "Select (TODO)"
 	},
 	"navigation": {
 		"breadcrumbs": {
@@ -219,7 +231,8 @@
 			"submitting": "Envoi de l'e-mail...",
 			"success": "E-mail de réinitialisation envoyé",
 			"error": "Impossible d'envoyer l'e-mail de réinitialisation",
-			"backToLogin": "Retour à la connexion"
+			"backToLogin": "Retour à la connexion",
+			"subtitle": "Subtitle (TODO)"
 		},
 		"reset": {
 			"title": "Définir un nouveau mot de passe",
@@ -230,7 +243,8 @@
 			"submitting": "Mise à jour du mot de passe...",
 			"success": "Mot de passe mis à jour avec succès",
 			"error": "Impossible de mettre à jour le mot de passe",
-			"backToLogin": "Retour à la connexion"
+			"backToLogin": "Retour à la connexion",
+			"subtitle": "Subtitle (TODO)"
 		},
 		"logout": {
 			"success": "Déconnexion réussie",
@@ -303,7 +317,8 @@
 				"reset": "Réinitialiser le formulaire",
 				"save": "Enregistrer le format",
 				"clear": "Effacer le formulaire",
-				"new": "Nouveau format"
+				"new": "Nouveau format",
+				"activate": "Activate (TODO)"
 			},
 			"list": {
 				"title": "Formats existants",
@@ -383,7 +398,8 @@
 			"noActiveYear": "Aucune année active",
 			"programStats": {
 				"title": "Étudiants par programme",
-				"empty": "Aucune donnée disponible pour l'année sélectionnée"
+				"empty": "Aucune donnée disponible pour l'année sélectionnée",
+				"subtitle": "Subtitle (TODO)"
 			},
 			"stats": {
 				"faculties": "Facultés",
@@ -393,7 +409,8 @@
 				"students": "Étudiants",
 				"teachers": "Enseignants",
 				"institutions": "Institutions"
-			}
+			},
+			"subtitle": "Subtitle (TODO)"
 		},
 		"batchJobs": {
 			"title": "Traitements par lots",
@@ -610,7 +627,8 @@
 			"title": "Gestion des classes",
 			"subtitle": "Créez des classes pour chaque programme et année académique",
 			"actions": {
-				"add": "Ajouter une classe"
+				"add": "Ajouter une classe",
+				"bulkGenerate": "Bulk Generate (TODO)"
 			},
 			"empty": {
 				"title": "Aucune classe",
@@ -625,7 +643,8 @@
 				"option": "Option",
 				"optionSemester": "Option / Semestre",
 				"credits": "Crédits",
-				"students": "Étudiants"
+				"students": "Étudiants",
+				"classProgram": "Class Program (TODO)"
 			},
 			"export": {
 				"button": "Exporter la liste des étudiants (PDF)",
@@ -671,7 +690,8 @@
 				"updateSuccess": "Classe mise à jour avec succès",
 				"updateError": "Impossible de mettre à jour la classe",
 				"deleteSuccess": "Classe supprimée avec succès",
-				"deleteError": "Impossible de supprimer la classe"
+				"deleteError": "Impossible de supprimer la classe",
+				"bulkGenerateSuccess": "Bulk Generate Success (TODO)"
 			},
 			"delete": {
 				"title": "Supprimer la classe",
@@ -689,7 +709,8 @@
 			},
 			"filters": {
 				"academicYear": "Année académique",
-				"semester": "Semestre"
+				"semester": "Semestre",
+				"title": "Title (TODO)"
 			},
 			"columns": {
 				"registration": "N° matricule",
@@ -704,7 +725,13 @@
 			},
 			"previewDescription": "Liste des étudiants inscrits dans cette classe",
 			"searchStudents": "Rechercher des étudiants...",
-			"noStudents": "Aucun étudiant inscrit dans cette classe"
+			"noStudents": "Aucun étudiant inscrit dans cette classe",
+			"bulkGenerate": {
+				"description": "Description (TODO)",
+				"submit": "Submit (TODO)",
+				"title": "Title (TODO)",
+				"yearLabel": "Year Label (TODO)"
+			}
 		},
 		"institution": {
 			"title": "Paramètres de l’établissement",
@@ -763,7 +790,19 @@
 				"parentInstitution": "Établissement parent (Université)",
 				"noParentInstitution": "Aucun (Premier niveau)",
 				"supervisingFaculty": "Faculté de tutelle",
-				"noSupervisingFaculty": "Aucune"
+				"noSupervisingFaculty": "Aucune",
+				"noDefaultYear": "No Default Year (TODO)",
+				"noRegistrationFormat": "No Registration Format (TODO)"
+			},
+			"sections": {
+				"contact": "Contact (TODO)",
+				"contactHint": "Contact Hint (TODO)",
+				"media": "Media (TODO)",
+				"mediaHint": "Media Hint (TODO)",
+				"names": "Names (TODO)",
+				"namesHint": "Names Hint (TODO)",
+				"system": "System (TODO)",
+				"systemHint": "System Hint (TODO)"
 			}
 		},
 		"studyCycles": {
@@ -800,7 +839,8 @@
 				"description": "Description",
 				"credits": "Crédits requis",
 				"duration": "Durée (années)",
-				"minCredits": "Crédits minimum"
+				"minCredits": "Crédits minimum",
+				"autoLevelsPreview": "Auto Levels Preview (TODO)"
 			},
 			"toast": {
 				"createSuccess": "Cycle créé",
@@ -887,7 +927,9 @@
 				"code": "Code",
 				"nameFr": "Nom (FR)",
 				"nameEn": "Nom (EN)",
-				"shortName": "Nom court"
+				"shortName": "Nom court",
+				"name": "Name (TODO)",
+				"noDescription": "No description (TODO)"
 			},
 			"form": {
 				"createTitle": "Créer une faculté",
@@ -903,7 +945,12 @@
 				"codeRequired": "Le code est requis",
 				"parentInstitutionLabel": "Établissement parent",
 				"noParentInstitution": "Aucun (niveau racine)",
-				"submit": "Créer"
+				"submit": "Créer",
+				"codePlaceholder": "SCI (TODO)",
+				"descriptionLabel": "Description (TODO)",
+				"descriptionPlaceholder": "Enter faculty description (TODO)",
+				"nameLabel": "Faculty name (TODO)",
+				"namePlaceholder": "Enter faculty name (TODO)"
 			},
 			"toast": {
 				"createSuccess": "Faculté créée avec succès",
@@ -916,6 +963,10 @@
 			"delete": {
 				"title": "Supprimer la faculté",
 				"message": "Êtes-vous sûr de vouloir supprimer cette faculté ? Cette action est irréversible."
+			},
+			"validation": {
+				"code": "Code is required (TODO)",
+				"name": "Name must be at least 2 characters (TODO)"
 			}
 		},
 		"institutions": {
@@ -1048,7 +1099,8 @@
 				"reviewGrades": "Consulter les notes",
 				"submit": "Soumettre",
 				"approve": "Approuver",
-				"reject": "Rejeter"
+				"reject": "Rejeter",
+				"retake": "Retake (TODO)"
 			},
 			"filters": {
 				"academicYear": "Année académique",
@@ -1428,7 +1480,10 @@
 				"classFilterLabel": "Filtrer par classe",
 				"classFilterPlaceholder": "Toutes les classes",
 				"examTypeFilterLabel": "Filtrer par type d'examen",
-				"examTypeFilterPlaceholder": "Tous les types"
+				"examTypeFilterPlaceholder": "Tous les types",
+				"configSection": "Config Section (TODO)",
+				"dateRangeSection": "Date Range Section (TODO)",
+				"periodSection": "Period Section (TODO)"
 			},
 			"classes": {
 				"title": "Classes concernées",
@@ -1597,7 +1652,10 @@
 			"filters": {
 				"allClasses": "Toutes les classes",
 				"searchPlaceholder": "Rechercher par nom ou matricule",
-				"allGenders": "Tous les genres"
+				"allGenders": "Tous les genres",
+				"academicYear": "Academic Year (TODO)",
+				"class": "Class (TODO)",
+				"search": "Search (TODO)"
 			},
 			"empty": "Aucun étudiant pour cette sélection.",
 			"table": {
@@ -1692,7 +1750,9 @@
 					"ready": "{{count}} ligne(s) prête(s) à être importée(s).",
 					"errorsTitle": "Problèmes détectés",
 					"noValidRows": "Aucune ligne valide détectée. Corrigez les erreurs listées ci-dessus."
-				}
+				},
+				"autoEnrollError": "Auto Enroll Error (TODO)",
+				"autoEnrollSuccess": "Auto Enroll Success (TODO)"
 			},
 			"templates": {
 				"sheetName": "Étudiants",
@@ -2983,7 +3043,12 @@
 			"table": {
 				"name": "Nom",
 				"description": "Description",
-				"noDescription": "Aucune description"
+				"noDescription": "Aucune description",
+				"code": "Code (TODO)",
+				"nameEn": "Name (EN) (TODO)",
+				"nameFr": "Name (FR) (TODO)",
+				"shortName": "Short name (TODO)",
+				"title": "All faculties (TODO)"
 			},
 			"form": {
 				"createTitle": "Ajouter une faculté",
@@ -2992,7 +3057,18 @@
 				"namePlaceholder": "Saisir le nom de la faculté",
 				"descriptionLabel": "Description",
 				"descriptionPlaceholder": "Description optionnelle",
-				"submit": "Enregistrer la faculté"
+				"submit": "Enregistrer la faculté",
+				"codeLabel": "Code (TODO)",
+				"codeRequired": "Code is required (TODO)",
+				"descriptionEnLabel": "Description (English) (TODO)",
+				"descriptionFrLabel": "Description (French) (TODO)",
+				"nameEnLabel": "Name (English) (TODO)",
+				"nameEnRequired": "English name is required (TODO)",
+				"nameFrLabel": "Name (French) (TODO)",
+				"nameFrRequired": "French name is required (TODO)",
+				"noParentInstitution": "None (top-level) (TODO)",
+				"parentInstitutionLabel": "Parent institution (TODO)",
+				"shortNameLabel": "Short name (TODO)"
 			},
 			"validation": {
 				"name": "Le nom doit comporter au moins 2 caractères"
@@ -3133,6 +3209,134 @@
 				"submitted": "Examen soumis",
 				"locked": "Examen verrouillé"
 			}
+		},
+		"gradeAccessGrants": {
+			"actions": {
+				"add": "Add delegate (TODO)",
+				"grant": "Grant access (TODO)",
+				"revoke": "Revoke access (TODO)"
+			},
+			"columns": {
+				"email": "Email (TODO)",
+				"grantedBy": "Granted by (TODO)",
+				"since": "Since (TODO)",
+				"user": "User (TODO)"
+			},
+			"dialog": {
+				"description": "Select a user to grant institution-wide grade entry access. (TODO)",
+				"selectLabel": "User (TODO)",
+				"selectPlaceholder": "Select a user... (TODO)",
+				"title": "Add grade delegate (TODO)"
+			},
+			"empty": {
+				"description": "No users have been granted institution-wide grade access yet. (TODO)",
+				"title": "No delegates (TODO)"
+			},
+			"info": "Users listed here can submit grades for any exam in this institution, regardless of course assignment. (TODO)",
+			"revoke": {
+				"message": "This user will no longer be able to submit grades unless they are the assigned teacher or have per-exam delegation. (TODO)",
+				"title": "Revoke access (TODO)"
+			},
+			"subtitle": "Grant institution-wide grade entry access to specific users (TODO)",
+			"title": "Grade Delegation (TODO)",
+			"toast": {
+				"granted": "Grade access granted successfully. (TODO)",
+				"revoked": "Grade access revoked. (TODO)"
+			}
+		},
+		"institutions": {
+			"actions": {
+				"add": "Add institution (TODO)"
+			},
+			"delete": {
+				"message": "Are you sure you want to delete this institution? This action cannot be undone. (TODO)",
+				"title": "Delete institution (TODO)"
+			},
+			"empty": {
+				"description": "Create your first institution to start organizing your academic structure. (TODO)",
+				"title": "No institutions yet (TODO)"
+			},
+			"form": {
+				"createTitle": "Create institution (TODO)",
+				"editTitle": "Edit institution (TODO)",
+				"submit": "Create (TODO)"
+			},
+			"subtitle": "Manage universities, faculties and schools. (TODO)",
+			"table": {
+				"code": "Code (TODO)",
+				"nameEn": "Name (EN) (TODO)",
+				"nameFr": "Name (FR) (TODO)",
+				"shortName": "Short name (TODO)",
+				"type": "Type (TODO)"
+			},
+			"title": "Institutions (TODO)",
+			"toast": {
+				"createError": "Could not create the institution (TODO)",
+				"createSuccess": "Institution created successfully (TODO)",
+				"deleteError": "Could not delete the institution (TODO)",
+				"deleteSuccess": "Institution deleted successfully (TODO)",
+				"updateError": "Could not update the institution (TODO)",
+				"updateSuccess": "Institution updated successfully (TODO)"
+			}
+		},
+		"retake": {
+			"actions": {
+				"createRetake": "Create Retake Exam (TODO)",
+				"viewEligibility": "View Eligibility (TODO)"
+			},
+			"createRetake": {
+				"date": "Retake Date (TODO)",
+				"parentExam": "Original Exam (TODO)",
+				"scoringPolicy": "Scoring Policy (TODO)",
+				"scoringPolicyHelp": "How to calculate the final grade when retake is completed (TODO)",
+				"subtitle": "Create a retake session linked to the original exam (TODO)",
+				"title": "Create Retake Exam (TODO)"
+			},
+			"eligible": "Eligible (TODO)",
+			"eligibleCount": "{{count}} eligible (TODO)",
+			"empty": {
+				"description": "Select an approved exam to view student eligibility. (TODO)",
+				"title": "No students found (TODO)"
+			},
+			"featureDisabled": "Retake feature is currently disabled (TODO)",
+			"ineligible": "Not Eligible (TODO)",
+			"ineligibleCount": "{{count}} not eligible (TODO)",
+			"override": {
+				"confirmMessage": "Are you sure you want to {{action}} this student for retake? (TODO)",
+				"confirmTitle": "Confirm Override (TODO)",
+				"forceEligible": "Force Eligible (TODO)",
+				"forceIneligible": "Block (TODO)",
+				"reason": "Override reason (TODO)",
+				"reasonPlaceholder": "Enter reason for override... (TODO)",
+				"remove": "Remove Override (TODO)"
+			},
+			"reasons": {
+				"ATTEMPT_LIMIT_REACHED": "Attempt limit reached (TODO)",
+				"FAILED_EXAM": "Failed exam (TODO)",
+				"NO_GRADE": "No grade recorded (TODO)",
+				"OVERRIDE_FORCE_ELIGIBLE": "Forced eligible (override) (TODO)",
+				"OVERRIDE_FORCE_INELIGIBLE": "Forced ineligible (override) (TODO)",
+				"PASSED_EXAM": "Passed exam (TODO)"
+			},
+			"selectExam": "Select an approved exam (TODO)",
+			"selectExamPlaceholder": "Choose an exam to view eligibility (TODO)",
+			"subtitle": "View and manage students eligible for retake exams (TODO)",
+			"table": {
+				"attempt": "Attempt (TODO)",
+				"grade": "Current Grade (TODO)",
+				"override": "Override (TODO)",
+				"reasons": "Reasons (TODO)",
+				"registrationNumber": "Registration No. (TODO)",
+				"status": "Status (TODO)",
+				"student": "Student (TODO)"
+			},
+			"title": "Retake Eligibility (TODO)",
+			"toast": {
+				"overrideError": "Could not apply override (TODO)",
+				"overrideSuccess": "Override applied successfully (TODO)",
+				"removeError": "Could not remove override (TODO)",
+				"removeSuccess": "Override removed (TODO)"
+			}
 		}
 	},
 	"dean": {
@@ -3142,10 +3346,12 @@
 			"queue": "Examens soumis",
 			"empty": "Aucun examen en attente.",
 			"actions": {
-				"validate": "Valider et verrouiller"
+				"validate": "Valider et verrouiller",
+				"bulkValidate": "Bulk Validate (TODO)"
 			},
 			"toast": {
-				"validated": "Examen approuvé"
+				"validated": "Examen approuvé",
+				"bulkValidated": "Bulk Validated (TODO)"
 			},
 			"notifications": "Notifications du workflow",
 			"notificationsEmpty": "Aucune notification",

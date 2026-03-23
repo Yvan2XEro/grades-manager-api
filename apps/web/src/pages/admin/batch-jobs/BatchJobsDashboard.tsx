@@ -36,6 +36,13 @@ import {
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import { CreateBatchJobDialog } from "./CreateBatchJobDialog";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 
 const statusVariants: Record<
 	string,
@@ -111,9 +118,7 @@ export default function BatchJobsDashboard() {
 				<div className="flex items-center space-x-3">
 					<PlayCircle className="h-6 w-6 text-primary-700" />
 					<div>
-						<h1 className="text-foreground">
-							{t("admin.batchJobs.title")}
-						</h1>
+						<h1 className="text-foreground">{t("admin.batchJobs.title")}</h1>
 						<p className="text-muted-foreground text-xs">
 							{t("admin.batchJobs.subtitle")}
 						</p>
@@ -157,14 +162,16 @@ export default function BatchJobsDashboard() {
 					<TableSkeleton columns={6} rows={8} />
 				) : jobs.length === 0 ? (
 					<Empty className="border border-dashed">
-					<EmptyHeader>
-						<EmptyMedia variant="icon">
-							<PlayCircle className="text-muted-foreground" />
-						</EmptyMedia>
-						<EmptyTitle>{t("admin.batchJobs.empty.title")}</EmptyTitle>
-						<EmptyDescription>{t("admin.batchJobs.empty.description")}</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<PlayCircle className="text-muted-foreground" />
+							</EmptyMedia>
+							<EmptyTitle>{t("admin.batchJobs.empty.title")}</EmptyTitle>
+							<EmptyDescription>
+								{t("admin.batchJobs.empty.description")}
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
 					<Table>
 						<TableHeader>
@@ -185,11 +192,38 @@ export default function BatchJobsDashboard() {
 									key={job.id}
 									className="cursor-pointer"
 									onClick={() => navigate(`/admin/batch-jobs/${job.id}`)}
-									actions={<>
-										<ContextMenuItem onSelect={() => navigate(`/admin/batch-jobs/${job.id}`)}>{t("common.actions.open", { defaultValue: "Open" })}</ContextMenuItem>
-										{job.status === "previewed" && <><ContextMenuSeparator /><ContextMenuItem onSelect={() => runMutation.mutate(job.id)}>{t("admin.batchJobs.actions.run")}</ContextMenuItem></>}
-										{["pending","previewed","running"].includes(job.status) && <><ContextMenuSeparator /><ContextMenuItem className="text-destructive" onSelect={() => cancelMutation.mutate(job.id)}>{t("admin.batchJobs.actions.cancel")}</ContextMenuItem></>}
-									</>}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() => navigate(`/admin/batch-jobs/${job.id}`)}
+											>
+												{t("common.actions.open", { defaultValue: "Open" })}
+											</ContextMenuItem>
+											{job.status === "previewed" && (
+												<>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														onSelect={() => runMutation.mutate(job.id)}
+													>
+														{t("admin.batchJobs.actions.run")}
+													</ContextMenuItem>
+												</>
+											)}
+											{["pending", "previewed", "running"].includes(
+												job.status,
+											) && (
+													<>
+														<ContextMenuSeparator />
+														<ContextMenuItem
+															className="text-destructive"
+															onSelect={() => cancelMutation.mutate(job.id)}
+														>
+															{t("admin.batchJobs.actions.cancel")}
+														</ContextMenuItem>
+													</>
+												)}
+										</>
+									}
 								>
 									<TableCell className="font-medium">
 										{t(`admin.batchJobs.types.${job.type}`, {
@@ -254,15 +288,15 @@ export default function BatchJobsDashboard() {
 											{(job.status === "pending" ||
 												job.status === "previewed" ||
 												job.status === "running") && (
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => cancelMutation.mutate(job.id)}
-													disabled={cancelMutation.isPending}
-												>
-													{t("admin.batchJobs.actions.cancel")}
-												</Button>
-											)}
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => cancelMutation.mutate(job.id)}
+														disabled={cancelMutation.isPending}
+													>
+														{t("admin.batchJobs.actions.cancel")}
+													</Button>
+												)}
 										</div>
 									</TableCell>
 								</TableRow>
