@@ -1,9 +1,11 @@
+import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { businessRoles, domainStatuses } from "@/db/schema/app-schema";
 import { adminProcedure, protectedProcedure, router } from "../../lib/trpc";
 import * as service from "./users.service";
 import {
 	createUserProfileSchema,
+	createUserWithAuthSchema,
 	updateMyProfileSchema,
 	updateUserProfileSchema,
 } from "./users.zod";
@@ -33,6 +35,26 @@ export const usersRouter = router({
 	deleteProfile: adminProcedure
 		.input(idSchema)
 		.mutation(({ input }) => service.deleteUserProfile(input.id)),
+	createWithAuth: adminProcedure
+		.input(createUserWithAuthSchema)
+		.mutation(async ({ input, ctx }) => {
+			if (!ctx.organizationId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "No active organization context",
+				});
+			}
+			try {
+				return await service.createUserWithAuth(input, {
+					organizationId: ctx.organizationId,
+				});
+			} catch (err) {
+				if (err instanceof service.UserAlreadyExistsError) {
+					throw new TRPCError({ code: "CONFLICT", message: err.message });
+				}
+				throw err;
+			}
+		}),
 	getMyProfile: protectedProcedure.query(({ ctx }) => {
 		if (!ctx.profile?.id) {
 			return null;

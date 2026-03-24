@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, PlusIcon, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, PlusIcon, RefreshCw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
+import { Separator } from "../../components/ui/separator";
 import { Spinner } from "../../components/ui/spinner";
+import { Switch } from "../../components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -53,6 +55,14 @@ import { useRowSelection } from "../../hooks/useRowSelection";
 import { authClient } from "../../lib/auth-client";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
+
+const ASSIGNABLE_ROLES = [
+	"administrator",
+	"dean",
+	"teacher",
+	"staff",
+	"student",
+] as const;
 
 type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 
@@ -85,17 +95,45 @@ const buildFullName = (data: Pick<UserForm, "firstName" | "lastName">) =>
 	`${data.firstName} ${data.lastName}`.trim();
 
 const buildUserSchema = (t: TFunction) =>
-	z.object({
-		firstName: z.string().min(1, t("admin.users.validation.firstName")),
-		lastName: z.string().min(1, t("admin.users.validation.lastName")),
-		email: z.string().email(t("admin.users.validation.email")),
-		phone: z.string().optional(),
-		gender: z.enum(["male", "female", "other"]).optional(),
-		dateOfBirth: z.string().optional(),
-		placeOfBirth: z.string().optional(),
-		nationality: z.string().optional(),
-		status: z.enum(["active", "inactive", "suspended"]).optional(),
-	});
+	z
+		.object({
+			firstName: z.string().min(1, t("admin.users.validation.firstName")),
+			lastName: z.string().min(1, t("admin.users.validation.lastName")),
+			email: z.string().email(t("admin.users.validation.email")),
+			phone: z.string().optional(),
+			gender: z.enum(["male", "female", "other"]).optional(),
+			dateOfBirth: z.string().optional(),
+			placeOfBirth: z.string().optional(),
+			nationality: z.string().optional(),
+			status: z.enum(["active", "inactive", "suspended"]).optional(),
+			// System access fields (create mode only)
+			canConnect: z.boolean().default(false),
+			password: z.string().optional(),
+			memberRole: z
+				.enum(ASSIGNABLE_ROLES as unknown as [string, ...string[]])
+				.optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (!data.canConnect) return;
+			if (!data.password || data.password.length < 8) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["password"],
+					message: t("admin.users.validation.passwordMin", {
+						defaultValue: "Password must be at least 8 characters",
+					}),
+				});
+			}
+			if (!data.memberRole) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["memberRole"],
+					message: t("admin.users.validation.memberRoleRequired", {
+						defaultValue: "Role is required when system access is enabled",
+					}),
+				});
+			}
+		});
 
 type UserForm = z.infer<ReturnType<typeof buildUserSchema>>;
 
@@ -181,7 +219,7 @@ export default function UserManagement() {
 					if (user.authUserId) {
 						await authClient.admin.removeUser({ userId: user.authUserId });
 					}
-					await trpcClient.users.deleteProfile.mutate({ id: user.id });
+					return trpcClient.users.deleteProfile.mutate({ id: user.id });
 				}),
 			);
 		},
@@ -214,8 +252,12 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		},
 	});
+	const canConnect = form.watch("canConnect");
 
 	const openCreate = () => {
 		setEditingUser(null);
@@ -229,6 +271,9 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		});
 		setIsModalOpen(true);
 	};
@@ -245,6 +290,9 @@ export default function UserManagement() {
 			placeOfBirth: user.placeOfBirth || "",
 			nationality: user.nationality || "",
 			status: (user.status as UserForm["status"]) || "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		});
 		setIsModalOpen(true);
 	};
@@ -253,21 +301,11 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			const autoPassword = generatePassword();
-			const fullName = buildFullName(data);
-			const response = await authClient.admin.createUser({
-				email: data.email,
-				name: fullName,
-				role: "teacher",
-				password: autoPassword,
-			});
-			const authUserId = response?.user?.id;
-			if (!authUserId) {
-				throw new Error(t("admin.users.toast.createError"));
-			}
-			await trpcClient.users.createProfile.mutate({
+			await trpcClient.users.createWithAuth.mutate({
 				...mapFormToProfile(data),
-				authUserId,
+				canConnect: data.canConnect,
+				password: data.canConnect ? data.password : undefined,
+				memberRole: data.canConnect ? data.memberRole : undefined,
 			});
 		},
 		onSuccess: () => {
@@ -308,10 +346,9 @@ export default function UserManagement() {
 
 	const deleteMutation = useMutation({
 		mutationFn: async (user: DomainUser) => {
-			if (!user.authUserId) {
-				throw new Error(t("admin.users.toast.deleteError"));
+			if (user.authUserId) {
+				await authClient.admin.removeUser({ userId: user.authUserId });
 			}
-			await authClient.admin.removeUser({ userId: user.authUserId });
 			await trpcClient.users.deleteProfile.mutate({ id: user.id });
 		},
 		onSuccess: () => {
@@ -508,7 +545,6 @@ export default function UserManagement() {
 											variant="ghost"
 											size="icon"
 											onClick={() => setUserToDelete(user)}
-											disabled={!user.authUserId}
 											aria-label={t("common.actions.delete")}
 										>
 											<Trash2 className="h-4 w-4" />
@@ -535,214 +571,300 @@ export default function UserManagement() {
 				isOpen={isModalOpen}
 				onClose={closeModal}
 				title={editingUser ? t("admin.users.form.editTitle") : t("admin.users.form.createTitle")}
-				maxWidth="sm:max-w-xl"
+				maxWidth={editingUser ? "sm:max-w-xl" : "sm:max-w-4xl"}
 			>
 				<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="firstName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.firstNameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="lastName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.lastNameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
-										<FormControl>
-											<Input type="email" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						{/* Two-column layout in create mode; single-column in edit mode */}
+						<div className={editingUser ? "space-y-4" : "grid grid-cols-1 gap-x-8 md:grid-cols-2"}>
+							{/* Left column — Profile fields */}
+							<div className="space-y-4">
+								{!editingUser && (
+									<p className="font-semibold text-sm">
+										{t("admin.users.form.profileSection", { defaultValue: "Profile" })}
+									</p>
 								)}
-							/>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="phone"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="gender"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="firstName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.firstNameLabel")}</FormLabel>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={t(
-																"admin.users.form.genderPlaceholder",
-															)}
-														/>
-													</SelectTrigger>
+													<Input {...field} />
 												</FormControl>
-												<SelectContent>
-													{genderOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="dateOfBirth"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.dateOfBirthLabel")}
-											</FormLabel>
-											<FormControl>
-												<DatePicker
-													value={field.value ?? ""}
-													onChange={field.onChange}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="placeOfBirth"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.placeOfBirthLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="nationality"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.nationalityLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="status"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="lastName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.lastNameLabel")}</FormLabel>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue />
-													</SelectTrigger>
+													<Input {...field} />
 												</FormControl>
-												<SelectContent>
-													{statusOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<FormField
+									control={form.control}
+									name="email"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
+											<FormControl>
+												<Input type="email" {...field} />
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="phone"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="gender"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
+												<Select value={field.value} onValueChange={field.onChange}>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue placeholder={t("admin.users.form.genderPlaceholder")} />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{genderOptions.map((option) => (
+															<SelectItem key={option.value} value={option.value}>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="dateOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.dateOfBirthLabel")}</FormLabel>
+												<FormControl>
+													<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="placeOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.placeOfBirthLabel")}</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="nationality"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.nationalityLabel")}</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="status"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
+												<Select value={field.value} onValueChange={field.onChange}>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{statusOptions.map((option) => (
+															<SelectItem key={option.value} value={option.value}>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 							</div>
-							<DialogFooter>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={closeModal}
-									disabled={
-										form.formState.isSubmitting ||
-										createMutation.isPending ||
-										updateMutation.isPending
-									}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button
-									type="submit"
-									disabled={
-										form.formState.isSubmitting ||
-										createMutation.isPending ||
-										updateMutation.isPending
-									}
-								>
-									{form.formState.isSubmitting ||
-									createMutation.isPending ||
-									updateMutation.isPending ? (
+
+							{/* Right column — System access (create mode only) */}
+							{!editingUser && (
+								<div className="space-y-4 border-l pl-8">
+									<div className="flex items-center gap-2">
+										<KeyRound className="h-4 w-4 text-muted-foreground" />
+										<p className="font-semibold text-sm">
+											{t("admin.users.form.systemAccessSection", { defaultValue: "System Access" })}
+										</p>
+									</div>
+									<FormField
+										control={form.control}
+										name="canConnect"
+										render={({ field }) => (
+											<FormItem className="flex items-center gap-3 rounded-lg border p-3">
+												<FormControl>
+													<Switch checked={field.value} onCheckedChange={field.onChange} />
+												</FormControl>
+												<div className="space-y-0.5">
+													<FormLabel className="cursor-pointer text-sm">
+														{t("admin.users.form.canConnectLabel", { defaultValue: "Can log in" })}
+													</FormLabel>
+													<p className="text-muted-foreground text-xs">
+														{t("admin.users.form.canConnectDescription", {
+															defaultValue: "Creates a system account with login access",
+														})}
+													</p>
+												</div>
+											</FormItem>
+										)}
+									/>
+									{canConnect && (
 										<>
-											<Spinner className="mr-2" />
-											{t("common.loading")}
+											<Separator />
+											<FormField
+												control={form.control}
+												name="memberRole"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.users.form.memberRoleLabel", { defaultValue: "Role" })}
+														</FormLabel>
+														<Select value={field.value ?? ""} onValueChange={field.onChange}>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue
+																		placeholder={t("admin.users.form.memberRolePlaceholder", { defaultValue: "Select a role" })}
+																	/>
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																{ASSIGNABLE_ROLES.map((role) => (
+																	<SelectItem key={role} value={role}>
+																		{t(`admin.users.roles.${role}`, { defaultValue: role })}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="password"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.users.form.passwordLabel", { defaultValue: "Password" })}
+														</FormLabel>
+														<FormControl>
+															<div className="flex gap-2">
+																<Input
+																	type="text"
+																	autoComplete="new-password"
+																	className="font-mono"
+																	{...field}
+																/>
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="icon"
+																	onClick={() => form.setValue("password", generatePassword())}
+																	title={t("admin.users.form.generatePassword", { defaultValue: "Generate password" })}
+																>
+																	<RefreshCw className="h-4 w-4" />
+																</Button>
+															</div>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
 										</>
-									) : (
-										t("common.actions.save")
 									)}
-								</Button>
-							</DialogFooter>
-						</form>
+								</div>
+							)}
+						</div>
+
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={closeModal}
+								disabled={
+									form.formState.isSubmitting ||
+									createMutation.isPending ||
+									updateMutation.isPending
+								}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button
+								type="submit"
+								disabled={
+									form.formState.isSubmitting ||
+									createMutation.isPending ||
+									updateMutation.isPending
+								}
+							>
+								{form.formState.isSubmitting ||
+								createMutation.isPending ||
+								updateMutation.isPending ? (
+									<>
+										<Spinner className="mr-2" />
+										{t("common.loading")}
+									</>
+								) : (
+									t("common.actions.save")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
 				</Form>
 			</FormModal>
 
