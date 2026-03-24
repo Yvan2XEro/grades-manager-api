@@ -262,6 +262,14 @@ function App() {
 						<Route path="workflows" element={<WorkflowManager />} />
 					</Route>
 
+					{/* Grade Editor Routes */}
+					<Route path="/grade-editor" element={<DashboardLayout />}>
+						<Route index element={<TeacherDashboard />} />
+						<Route path="courses" element={<CourseList basePath="/grade-editor" />} />
+						<Route path="grades" element={<GradeEntry />} />
+						<Route path="grades/:courseId" element={<GradeEntry />} />
+					</Route>
+
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
@@ -286,6 +294,7 @@ const allowedRoles: BusinessRole[] = [
 	"guest",
 	"student",
 	"staff",
+	"grade_editor",
 	"dean",
 	"teacher",
 	"administrator",

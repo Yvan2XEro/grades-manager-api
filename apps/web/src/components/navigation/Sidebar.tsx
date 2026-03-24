@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { useStore } from "../../store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-const ROOT_PATHS = new Set(["/admin", "/teacher", "/dean", "/student"]);
+const ROOT_PATHS = new Set(["/admin", "/teacher", "/grade-editor", "/dean", "/student"]);
 
 const Sidebar: React.FC = () => {
 	const { user, sidebarOpen, sidebarCollapsed } = useStore();
@@ -96,6 +96,7 @@ const Sidebar: React.FC = () => {
 				{ to: "/admin/retake-eligibility", icon: <RefreshCw       className={IC} />, labelKey: "navigation.sidebar.admin.retakeEligibility" },
 				{ to: "/admin/grade-export",       icon: <FileSpreadsheet className={IC} />, labelKey: "navigation.sidebar.admin.gradeExport" },
 				{ to: "/admin/grade-access",       icon: <ShieldCheck     className={IC} />, labelKey: "navigation.sidebar.admin.gradeAccess" },
+				{ to: "/grade-editor/courses",     icon: <BookOpen        className={IC} />, labelKey: "navigation.sidebar.admin.gradeEntry" },
 				{ to: "/admin/export-templates",   icon: <FileText        className={IC} />, labelKey: "navigation.sidebar.admin.exportTemplates" },
 			],
 		},
@@ -132,6 +133,11 @@ const Sidebar: React.FC = () => {
 		{ to: "/dean/workflows", icon: <ClipboardList   className={IC} />, labelKey: "navigation.sidebar.dean.workflows" },
 	], []);
 
+	const gradeEditorLinks = useMemo(() => [
+		{ to: "/grade-editor",         icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.teacher.dashboard" },
+		{ to: "/grade-editor/courses", icon: <BookOpen        className={IC} />, labelKey: "navigation.sidebar.teacher.courses" },
+	], []);
+
 	const studentLinks = useMemo(() => [
 		{ to: "/student", icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.student.dashboard" },
 	], []);
@@ -143,12 +149,13 @@ const Sidebar: React.FC = () => {
 			case "super_admin":
 			case "owner":
 				return { type: "grouped" as const, groups: adminGroups };
-			case "dean":    return { type: "flat" as const, items: deanLinks };
-			case "teacher": return { type: "flat" as const, items: teacherLinks };
-			case "student": return { type: "flat" as const, items: studentLinks };
-			default:        return { type: "flat" as const, items: teacherLinks };
+			case "dean":         return { type: "flat" as const, items: deanLinks };
+			case "teacher":      return { type: "flat" as const, items: teacherLinks };
+			case "grade_editor": return { type: "flat" as const, items: gradeEditorLinks };
+			case "student":      return { type: "flat" as const, items: studentLinks };
+			default:             return { type: "flat" as const, items: teacherLinks };
 		}
-	}, [user, adminGroups, teacherLinks, deanLinks, studentLinks]);
+	}, [user, adminGroups, teacherLinks, gradeEditorLinks, deanLinks, studentLinks]);
 
 	const allLinks = useMemo(() =>
 		menuContent.type === "grouped"

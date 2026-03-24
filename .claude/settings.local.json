@@ -112,7 +112,9 @@
       "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/server/src -maxdepth 3 -type f \\\\\\(-name *.env* -o -name config* \\\\\\))",
       "Bash(sed -n '1555,1558p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
       "Bash(sed -n '1673,1678p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
-      "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))"
+      "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))",
+      "Bash(bunx drizzle-kit:*)",
+      "Bash(printf '\\\\n')"
     ]
   }
 }

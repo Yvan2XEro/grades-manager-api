@@ -60,6 +60,7 @@ const ASSIGNABLE_ROLES = [
 	"administrator",
 	"dean",
 	"teacher",
+	"grade_editor",
 	"staff",
 	"student",
 ] as const;

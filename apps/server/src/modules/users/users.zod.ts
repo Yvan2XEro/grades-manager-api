@@ -21,6 +21,7 @@ export const assignableMemberRoles = [
 	"administrator",
 	"dean",
 	"teacher",
+	"grade_editor",
 	"staff",
 	"student",
 ] as const;

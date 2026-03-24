@@ -9,6 +9,7 @@ export const roleLayoutMap = {
 	owner: <Navigate to="/admin" replace />,
 	dean: <Navigate to="/dean" replace />,
 	teacher: <Navigate to="/teacher" replace />,
+	grade_editor: <Navigate to="/grade-editor" replace />,
 	student: <Navigate to="/student" replace />,
 	staff: <Navigate to="/staff" replace />,
 	guest: <Navigate to={"/auth/login"} />,

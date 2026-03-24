@@ -56,6 +56,8 @@ async function resolveActorAccess(params: {
 }) {
 	const isAdmin = roleSatisfies(params.actor.memberRole, ADMIN_ROLES);
 	if (isAdmin) return "admin";
+	const isGradeEditor = roleSatisfies(params.actor.memberRole, ["grade_editor"]);
+	if (isGradeEditor) return "delegate";
 	const profileId = params.actor.profileId;
 	if (!profileId) return null;
 	if (params.exam.classCourseRef?.teacher === profileId) {

@@ -33,6 +33,7 @@ export const businessRoles = [
 	"administrator",
 	"dean",
 	"teacher",
+	"grade_editor",
 	"staff",
 	"student",
 ] as const;

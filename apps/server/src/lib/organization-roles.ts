@@ -12,6 +12,7 @@ export const organizationRoleNames = [
 	"administrator",
 	"dean",
 	"teacher",
+	"grade_editor",
 	"staff",
 	"student",
 ] as const;
@@ -34,6 +35,7 @@ export const organizationRoles: Record<OrganizationRoleName, Role<any>> = {
 	administrator: administratorRole,
 	dean: readerRole,
 	teacher: readerRole,
+	grade_editor: readerRole,
 	staff: readerRole,
 	student: readerRole,
 };

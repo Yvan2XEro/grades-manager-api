@@ -6,6 +6,7 @@ export type BusinessRole =
 	| "guest"
 	| "student"
 	| "staff"
+	| "grade_editor"
 	| "dean"
 	| "teacher"
 	| "administrator"
@@ -57,6 +58,7 @@ export const roleGuards = {
 	] as BusinessRole[],
 	grade: [
 		"teacher",
+		"grade_editor",
 		"administrator",
 		"dean",
 		"super_admin",

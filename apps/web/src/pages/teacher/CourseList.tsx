@@ -35,7 +35,7 @@ interface Course {
 
 const PAGE_SIZE = 12;
 
-export default function CourseList() {
+export default function CourseList({ basePath = "/teacher" }: { basePath?: string }) {
 	const { user } = useStore();
 	const { t } = useTranslation();
 	const [page, setPage] = useState(0);
@@ -139,7 +139,7 @@ export default function CourseList() {
 								</CardContent>
 								<CardFooter className="justify-end">
 									<Button asChild size="sm">
-										<Link to={`/teacher/grades/${course.id}`}>
+										<Link to={`${basePath}/grades/${course.id}`}>
 											{t("teacher.courses.actions.viewGrades")}
 										</Link>
 									</Button>
