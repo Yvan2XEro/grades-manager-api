@@ -291,8 +291,8 @@ export class ExportsService {
 		_templateConfig: TemplateConfiguration,
 	) {
 		const decisionLabels: Record<string, string> = {
-			admitted: "Admis",
-			compensated: "Compensé",
+			admitted: "Admis en cl. supérieure",
+			compensated: "Admis par compensation",
 			deferred: "Ajourné",
 			repeat: "Redoublant",
 			excluded: "Exclu",
@@ -1137,7 +1137,7 @@ export class ExportsService {
 							totalCreditsEarned: 12,
 							totalCreditsPossible: 12,
 							finalDecision: "admitted",
-							finalDecisionLabel: "Admis",
+							finalDecisionLabel: "Admis en cl. supérieure",
 							mention: "bien",
 							mentionLabel: "Bien",
 						},
@@ -1155,7 +1155,7 @@ export class ExportsService {
 							totalCreditsEarned: 12,
 							totalCreditsPossible: 12,
 							finalDecision: "compensated",
-							finalDecisionLabel: "Compensé",
+							finalDecisionLabel: "Admis par compensation",
 							mention: "passable",
 							mentionLabel: "Passable",
 						},

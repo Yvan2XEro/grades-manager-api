@@ -1114,11 +1114,11 @@ export async function promoteAdmitted(
 
 function computeMention(average: number | null): DeliberationMention | null {
 	if (average === null) return null;
-	if (average >= 16) return "excellent";
-	if (average >= 14) return "tres_bien";
-	if (average >= 12) return "bien";
-	if (average >= 10) return "assez_bien";
-	if (average >= 8) return "passable";
+	if (average >= 18) return "excellent";
+	if (average >= 16) return "tres_bien";
+	if (average >= 14) return "bien";
+	if (average >= 12) return "assez_bien";
+	if (average >= 10) return "passable";
 	return null;
 }
 

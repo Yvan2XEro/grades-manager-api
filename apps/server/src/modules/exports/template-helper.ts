@@ -130,12 +130,15 @@ export function institutionToExportConfig(
 		},
 		grading: exportConfig?.grading || {
 			appreciations: [
-				{ label: "Excellent", min: 16, max: 20 },
-				{ label: "Très Bien", min: 14, max: 15.99 },
-				{ label: "Bien", min: 12, max: 13.99 },
-				{ label: "Assez Bien", min: 10, max: 11.99 },
-				{ label: "Passable", min: 8, max: 9.99 },
-				{ label: "Insuffisant", min: 0, max: 7.99 },
+				{ label: "Excellent", min: 18, max: 20 },
+				{ label: "Très Bien", min: 16, max: 17.99 },
+				{ label: "Bien", min: 14, max: 15.99 },
+				{ label: "Assez Bien", min: 12, max: 13.99 },
+				{ label: "Passable", min: 10, max: 11.99 },
+				{ label: "Insuffisant", min: 9, max: 9.99 },
+				{ label: "Faible", min: 8, max: 8.99 },
+				{ label: "Très Faible", min: 6, max: 7.99 },
+				{ label: "Nul", min: 0, max: 5.99 },
 			],
 			passing_grade: 10,
 			scale: 20,
@@ -217,7 +220,7 @@ export function getObservation(
 	config: ExportConfig,
 ): string {
 	if (score === null) return "Absent";
-	return score >= config.grading.passing_grade ? "Admis" : "Ajourné";
+	return score >= config.grading.passing_grade ? "Reçu" : "Ajourné";
 }
 
 /**
