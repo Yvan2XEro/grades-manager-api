@@ -68,10 +68,16 @@ const ASSIGNABLE_ROLES = [
 type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 
 const getDisplayName = (user: DomainUser) =>
-	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
+	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.primaryEmail;
 
-const toDomainRole = (role: "admin" | "teacher") =>
-	role === "admin" ? "administrator" : role;
+const ALL_FILTER_ROLES = [
+	"administrator",
+	"dean",
+	"teacher",
+	"grade_editor",
+	"staff",
+	"student",
+] as const;
 
 const formatDateInput = (value?: string | Date | null) => {
 	if (!value) return "";
@@ -157,9 +163,7 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
-		"all",
-	);
+	const [roleFilter, setRoleFilter] = useState<"all" | (typeof ALL_FILTER_ROLES)[number]>("all");
 	const [statusFilter, setStatusFilter] = useState<
 		"all" | "active" | "inactive" | "suspended"
 	>("all");
@@ -195,7 +199,7 @@ export default function UserManagement() {
 			trpcClient.users.list.query({
 				cursor: pageParam,
 				limit: 10,
-				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
+				role: roleFilter === "all" ? undefined : roleFilter,
 				status: statusFilter === "all" ? undefined : statusFilter,
 			}),
 		initialPageParam: undefined as string | undefined,
@@ -207,7 +211,7 @@ export default function UserManagement() {
 		if (!debouncedSearch) return true;
 		const needle = debouncedSearch.toLowerCase();
 		const name = getDisplayName(user).toLowerCase();
-		const email = (user.email ?? "").toLowerCase();
+		const email = (user.primaryEmail ?? "").toLowerCase();
 		return name.includes(needle) || email.includes(needle);
 	});
 	const selection = useRowSelection(displayedUsers);
@@ -284,7 +288,7 @@ export default function UserManagement() {
 		form.reset({
 			firstName: user.firstName || "",
 			lastName: user.lastName || "",
-			email: user.email || "",
+			email: user.primaryEmail || "",
 			phone: user.phone || "",
 			gender: (user.gender as UserForm["gender"]) || undefined,
 			dateOfBirth: formatDateInput(user.dateOfBirth),
@@ -407,8 +411,11 @@ export default function UserManagement() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">{t("admin.users.filters.roles.all")}</SelectItem>
-								<SelectItem value="admin">{t("admin.users.filters.roles.admin")}</SelectItem>
-								<SelectItem value="teacher">{t("admin.users.filters.roles.teacher")}</SelectItem>
+								{ALL_FILTER_ROLES.map((role) => (
+									<SelectItem key={role} value={role}>
+										{t(`admin.users.roles.${role}`, { defaultValue: role })}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
@@ -509,13 +516,11 @@ export default function UserManagement() {
 								<TableCell className="font-medium">
 									{getDisplayName(user)}
 								</TableCell>
-								<TableCell>{user.email}</TableCell>
+								<TableCell>{user.primaryEmail}</TableCell>
 								<TableCell>
 									{user.role
 										? t(
-												`admin.users.roles.${
-													user.role === "administrator" ? "admin" : user.role
-												}`,
+												`admin.users.roles.${user.role}`,
 												{ defaultValue: user.role },
 											)
 										: ""}

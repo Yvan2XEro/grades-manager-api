@@ -37,14 +37,8 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
 import { trpcClient } from "@/utils/trpc";
 
 export default function GradeAccessGrants() {
@@ -64,7 +58,7 @@ export default function GradeAccessGrants() {
 		enabled: addOpen,
 		queryFn: async () => {
 			const { items } = await trpcClient.users.list.query({
-				roles: ["administrator", "dean", "teacher", "staff"],
+				roles: ["super_admin", "administrator", "dean", "teacher", "grade_editor"],
 				limit: 200,
 			});
 			return items;
@@ -216,22 +210,20 @@ export default function GradeAccessGrants() {
 					</DialogHeader>
 					<DialogBody className="space-y-3">
 						<Label>{t("admin.gradeAccessGrants.dialog.selectLabel")}</Label>
-						<Select
-							value={selectedProfileId || undefined}
+						<Combobox
+							value={selectedProfileId}
 							onValueChange={setSelectedProfileId}
 							disabled={candidatesQuery.isLoading}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder={t("admin.gradeAccessGrants.dialog.selectPlaceholder")} />
-							</SelectTrigger>
-							<SelectContent>
-								{candidatesQuery.data?.map((user) => (
-									<SelectItem key={user.id} value={user.id}>
-										{user.firstName} {user.lastName} • {user.primaryEmail}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							placeholder={t("admin.gradeAccessGrants.dialog.selectPlaceholder")}
+							searchPlaceholder={t("common.search", { defaultValue: "Rechercher..." })}
+							options={
+								candidatesQuery.data?.map((user) => ({
+									value: user.id,
+									label: `${user.firstName} ${user.lastName}`.trim(),
+									description: user.primaryEmail ?? undefined,
+								})) ?? []
+							}
+						/>
 					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setAddOpen(false)}>

@@ -1858,8 +1858,12 @@
 				"status": "Statut"
 			},
 			"roles": {
-				"admin": "Administrateur",
-				"teacher": "Enseignant"
+				"administrator": "Administrateur",
+				"dean": "Doyen",
+				"teacher": "Enseignant",
+				"grade_editor": "Éditeur de notes",
+				"staff": "Personnel",
+				"student": "Étudiant"
 			},
 			"status": {
 				"active": "Actif",

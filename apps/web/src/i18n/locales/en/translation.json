@@ -2506,8 +2506,12 @@
 				"status": "Status"
 			},
 			"roles": {
-				"admin": "Admin",
-				"teacher": "Teacher"
+				"administrator": "Administrator",
+				"dean": "Dean",
+				"teacher": "Teacher",
+				"grade_editor": "Grade Editor",
+				"staff": "Staff",
+				"student": "Student"
 			},
 			"status": {
 				"active": "Active",
