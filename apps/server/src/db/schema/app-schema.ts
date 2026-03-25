@@ -828,18 +828,6 @@ export const institutions = pgTable(
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
-		defaultAcademicYearId: text("default_academic_year_id").references(
-			() => academicYears.id,
-			{
-				onDelete: "set null",
-			},
-		),
-		registrationFormatId: text("registration_format_id").references(
-			() => registrationNumberFormats.id,
-			{
-				onDelete: "set null",
-			},
-		),
 		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
@@ -1892,14 +1880,6 @@ export const institutionsRelations = relations(
 		}),
 		childInstitutions: many(institutions, {
 			relationName: "institutionHierarchy",
-		}),
-		defaultAcademicYear: one(academicYears, {
-			fields: [institutions.defaultAcademicYearId],
-			references: [academicYears.id],
-		}),
-		registrationFormat: one(registrationNumberFormats, {
-			fields: [institutions.registrationFormatId],
-			references: [registrationNumberFormats.id],
 		}),
 		organization: one(organization, {
 			fields: [institutions.organizationId],

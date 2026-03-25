@@ -4,8 +4,8 @@ import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
@@ -13,11 +13,14 @@ import { Button } from "../../components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
@@ -42,10 +45,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "../../components/ui/context-menu";
 import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
@@ -85,8 +84,6 @@ const institutionSchema = z.object({
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
 });
 
@@ -115,8 +112,6 @@ const defaultValues: FormValues = {
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
-	defaultAcademicYearId: undefined,
-	registrationFormatId: undefined,
 	timezone: "UTC",
 };
 
@@ -144,8 +139,6 @@ type Institution = {
 	coverImageUrl: string | null;
 	parentInstitutionId: string | null;
 	institutionId: string | null;
-	defaultAcademicYearId: string | null;
-	registrationFormatId: string | null;
 	timezone: string | null;
 };
 
@@ -164,14 +157,6 @@ export default function FacultyManagement() {
 
 	const { data: allInstitutions, isLoading } = useQuery(
 		trpc.institutions.list.queryOptions(),
-	);
-
-	const { data: academicYears } = useQuery(
-		trpc.academicYears.list.queryOptions({ limit: 100 }),
-	);
-
-	const { data: registrationFormats } = useQuery(
-		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
 	const institutions = useMemo(
@@ -200,8 +185,6 @@ export default function FacultyManagement() {
 			postalBox: parent.postalBox ?? "",
 			website: parent.website ?? "",
 			timezone: parent.timezone ?? "UTC",
-			defaultAcademicYearId: parent.defaultAcademicYearId ?? undefined,
-			registrationFormatId: parent.registrationFormatId ?? undefined,
 		};
 
 		for (const [key, value] of Object.entries(inherited)) {
@@ -242,8 +225,6 @@ export default function FacultyManagement() {
 			coverImageUrl: inst.coverImageUrl ?? "",
 			parentInstitutionId: inst.parentInstitutionId ?? undefined,
 			institutionId: inst.institutionId ?? undefined,
-			defaultAcademicYearId: inst.defaultAcademicYearId ?? undefined,
-			registrationFormatId: inst.registrationFormatId ?? undefined,
 			timezone: inst.timezone ?? "UTC",
 		});
 		setIsModalOpen(true);
@@ -270,8 +251,6 @@ export default function FacultyManagement() {
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
-				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
-				registrationFormatId: values.registrationFormatId || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(
@@ -296,9 +275,7 @@ export default function FacultyManagement() {
 					logoUrl: values.logoUrl || undefined,
 					coverImageUrl: values.coverImageUrl || undefined,
 					parentInstitutionId: values.parentInstitutionId || undefined,
-				institutionId: values.institutionId || undefined,
-					defaultAcademicYearId: values.defaultAcademicYearId || undefined,
-					registrationFormatId: values.registrationFormatId || undefined,
+					institutionId: values.institutionId || undefined,
 				},
 			}),
 		onSuccess: () => {
@@ -314,8 +291,7 @@ export default function FacultyManagement() {
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.institutions.delete.mutate({ id }),
+		mutationFn: (id: string) => trpcClient.institutions.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(
 				t("admin.institutions.toast.deleteSuccess", {
@@ -330,7 +306,9 @@ export default function FacultyManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: (ids: string[]) =>
-			Promise.all(ids.map((id) => trpcClient.institutions.delete.mutate({ id }))),
+			Promise.all(
+				ids.map((id) => trpcClient.institutions.delete.mutate({ id })),
+			),
 		onSuccess: () => {
 			invalidate();
 			selection.clear();
@@ -377,9 +355,6 @@ export default function FacultyManagement() {
 		}
 	};
 
-	const years = academicYears?.items ?? [];
-	const formats = registrationFormats ?? [];
-
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -391,10 +366,9 @@ export default function FacultyManagement() {
 						<h1 className="text-foreground">
 							{t("admin.institutions.title", { defaultValue: "Institutions" })}
 						</h1>
-						<p className="text-muted-foreground text-xs mt-0.5">
+						<p className="mt-0.5 text-muted-foreground text-xs">
 							{t("admin.institutions.subtitle", {
-								defaultValue:
-									"Manage universities, faculties and schools.",
+								defaultValue: "Manage universities, faculties and schools.",
 							})}
 						</p>
 					</div>
@@ -599,7 +573,10 @@ export default function FacultyManagement() {
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-2">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-6 pt-2"
+					>
 						{/* Identity */}
 						<Card>
 							<CardHeader className="pb-3">
@@ -687,7 +664,7 @@ export default function FacultyManagement() {
 										)}
 									/>
 								</div>
-																<div className="grid gap-4 md:grid-cols-2">
+								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="parentInstitutionId"
@@ -701,21 +678,31 @@ export default function FacultyManagement() {
 												<Select
 													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
-														field.onChange(value === NO_SELECTION ? undefined : value)
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
 													}
 												>
 													<FormControl>
-														<SelectTrigger><SelectValue /></SelectTrigger>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noParentInstitution", { defaultValue: "None (Top-level)" })}
+															{t("admin.institution.form.noParentInstitution", {
+																defaultValue: "None (Top-level)",
+															})}
 														</SelectItem>
-														{institutions.filter((inst) => inst.id !== editingInstitution?.id).map((inst) => (
-															<SelectItem key={inst.id} value={inst.id}>
-																{inst.nameFr} ({typeLabel(inst.type)})
-															</SelectItem>
-														))}
+														{institutions
+															.filter(
+																(inst) => inst.id !== editingInstitution?.id,
+															)
+															.map((inst) => (
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr} ({typeLabel(inst.type)})
+																</SelectItem>
+															))}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -735,19 +722,34 @@ export default function FacultyManagement() {
 												<Select
 													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
-														field.onChange(value === NO_SELECTION ? undefined : value)
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
 													}
 												>
 													<FormControl>
-														<SelectTrigger><SelectValue /></SelectTrigger>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noSupervisingFaculty", { defaultValue: "None" })}
+															{t(
+																"admin.institution.form.noSupervisingFaculty",
+																{ defaultValue: "None" },
+															)}
 														</SelectItem>
-														{institutions.filter((inst) => inst.type === "faculty" && inst.id !== editingInstitution?.id).map((inst) => (
-															<SelectItem key={inst.id} value={inst.id}>{inst.nameFr}</SelectItem>
-														))}
+														{institutions
+															.filter(
+																(inst) =>
+																	inst.type === "faculty" &&
+																	inst.id !== editingInstitution?.id,
+															)
+															.map((inst) => (
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr}
+																</SelectItem>
+															))}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -1092,10 +1094,7 @@ export default function FacultyManagement() {
 													})}
 												</FormLabel>
 												<FormControl>
-													<Input
-														{...field}
-														placeholder="https://..."
-													/>
+													<Input {...field} placeholder="https://..." />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1112,106 +1111,8 @@ export default function FacultyManagement() {
 													})}
 												</FormLabel>
 												<FormControl>
-													<Input
-														{...field}
-														placeholder="https://..."
-													/>
+													<Input {...field} placeholder="https://..." />
 												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-							</CardContent>
-						</Card>
-
-						{/* System Configuration */}
-						<Card>
-							<CardHeader className="pb-3">
-								<CardTitle className="text-sm">
-									{t("admin.institution.sections.system", {
-										defaultValue: "System Configuration",
-									})}
-								</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className="grid gap-4 md:grid-cols-2">
-									<FormField
-										control={form.control}
-										name="defaultAcademicYearId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.defaultAcademicYear", {
-														defaultValue: "Default academic year",
-													})}
-												</FormLabel>
-												<Select
-													value={field.value ?? NO_SELECTION}
-													onValueChange={(value) =>
-														field.onChange(
-															value === NO_SELECTION ? undefined : value,
-														)
-													}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue />
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noDefaultYear", {
-																defaultValue: "None",
-															})}
-														</SelectItem>
-														{years.map((year) => (
-															<SelectItem key={year.id} value={year.id}>
-																{year.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="registrationFormatId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.registrationFormat", {
-														defaultValue: "Registration format",
-													})}
-												</FormLabel>
-												<Select
-													value={field.value ?? NO_SELECTION}
-													onValueChange={(value) =>
-														field.onChange(
-															value === NO_SELECTION ? undefined : value,
-														)
-													}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue />
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noRegistrationFormat", {
-																defaultValue: "None",
-															})}
-														</SelectItem>
-														{formats.map((fmt) => (
-															<SelectItem key={fmt.id} value={fmt.id}>
-																{fmt.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
 												<FormMessage />
 											</FormItem>
 										)}

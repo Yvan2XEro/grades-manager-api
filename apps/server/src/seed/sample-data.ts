@@ -266,8 +266,6 @@ const sampleFoundation: FoundationSeed = {
 			website: "https://univ-inses.com",
 			logoUrl: "https://univ-inses.com/images/logo/logo-inses.png",
 			coverImageUrl: "https://placehold.co/1200x400.png",
-			defaultAcademicYearCode: "AY-2025",
-			registrationFormatName: "INSES default format",
 			timezone: "Africa/Douala",
 			organizationSlug: "inses-institution",
 		},

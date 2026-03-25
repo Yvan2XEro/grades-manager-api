@@ -92,8 +92,6 @@ export type FoundationSeed = {
 		website?: string;
 		logoUrl?: string;
 		coverImageUrl?: string;
-		defaultAcademicYearCode?: string;
-		registrationFormatName?: string;
 		timezone?: string;
 		organizationSlug?: string;
 		parentInstitutionCode?: string;
@@ -513,19 +511,6 @@ async function seedFoundation(
 	for (let idx = 0; idx < institutions.length; idx++) {
 		const entry = institutions[idx];
 		const code = normalizeCode(entry.code);
-		const defaultAcademicYearId = entry.defaultAcademicYearCode
-			? state.academicYears.get(normalizeCode(entry.defaultAcademicYearCode))
-			: undefined;
-		let registrationFormatId: string | undefined;
-		if (entry.registrationFormatName) {
-			const format = await db.query.registrationNumberFormats.findFirst({
-				where: eq(
-					schema.registrationNumberFormats.name,
-					entry.registrationFormatName,
-				),
-			});
-			registrationFormatId = format?.id;
-		}
 
 		// Resolve organization ID from slug if provided
 		let organizationId: string | null = null;
@@ -574,8 +559,6 @@ async function seedFoundation(
 			website: entry.website ?? null,
 			logoUrl: entry.logoUrl ?? null,
 			coverImageUrl: entry.coverImageUrl ?? null,
-			defaultAcademicYearId: defaultAcademicYearId ?? null,
-			registrationFormatId: registrationFormatId ?? null,
 			timezone: entry.timezone ?? "UTC",
 			organizationId,
 			parentInstitutionId,
@@ -696,7 +679,7 @@ async function seedFoundation(
 			),
 		});
 
-		let faculty;
+		let faculty: schema.Institution;
 		if (existing) {
 			// Mettre à jour
 			const [updated] = await db
@@ -933,7 +916,6 @@ async function seedAcademics(
 	logger: SeedLogger,
 ) {
 	const institutionId = await ensureSeedInstitutionId(db, state);
-	const now = new Date();
 	for (const entry of data.programs ?? []) {
 		const facultyCode = normalizeCode(entry.facultyCode);
 		const faculty = state.faculties.get(facultyCode);
@@ -1860,20 +1842,6 @@ function findClassRecord(
 	}
 	if (byYear.size === 1) {
 		return Array.from(byYear.values())[0];
-	}
-
-	function resolveDomainUserId(
-		state: SeedState,
-		code: string,
-		context: string,
-	) {
-		const record = state.domainUsers.get(normalizeCode(code));
-		if (!record) {
-			throw new Error(
-				`Unknown domain user code "${code}" referenced while seeding ${context}`,
-			);
-		}
-		return record.id;
 	}
 	throw new Error(
 		`Class ${classCode} exists for multiple academic years. Provide classAcademicYearCode to disambiguate.`,

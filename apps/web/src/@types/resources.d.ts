@@ -865,6 +865,7 @@ interface Resources {
 					"classCourses": "Class courses";
 					"gradeExport": "Grade export";
 					"gradeAccess": "Grade delegation";
+					"gradeEntry": "Grade entry";
 					"exportTemplates": "Export templates";
 					"monitoring": "Monitoring";
 					"notifications": "Notifications";
@@ -889,6 +890,7 @@ interface Resources {
 					"promotionRules": "Promotion rules";
 					"deliberations": "Deliberations";
 					"deliberationRules": "Deliberation rules";
+					"apiKeys": "API Keys";
 				};
 				"groups": {
 					"overview": "Overview";
@@ -919,6 +921,7 @@ interface Resources {
 				"guest": "Guest";
 				"student": "Student";
 				"staff": "Staff";
+				"grade_editor": "Grade Editor";
 				"dean": "Dean";
 				"teacher": "Teacher";
 				"administrator": "Administrator";
@@ -1187,6 +1190,58 @@ interface Resources {
 				};
 				"toast": {
 					"flushed": "Pending notifications flushed";
+				};
+			};
+			"apiKeys": {
+				"title": "API Keys";
+				"subtitle": "Manage API keys for the Diplomation integration";
+				"actions": {
+					"create": "New API Key";
+					"generate": "Generate Key";
+					"revoke": "Revoke";
+					"editWebhook": "Edit Webhook";
+				};
+				"table": {
+					"label": "Label";
+					"status": "Status";
+					"webhook": "Webhook URL";
+					"lastUsed": "Last used";
+					"created": "Created";
+				};
+				"status": {
+					"revoked": "Revoked";
+				};
+				"form": {
+					"createTitle": "Create API Key";
+					"label": "Label";
+					"labelPlaceholder": "e.g. Diplomation production";
+					"webhookUrl": "Webhook URL (optional)";
+					"webhookSecret": "Webhook Secret (optional)";
+					"webhookSecretPlaceholder": "Leave empty to skip signing";
+				};
+				"rawKey": {
+					"title": "Your new API Key";
+					"warning": "Copy this key now — it will never be shown again.";
+					"confirm": "I copied it";
+				};
+				"webhook": {
+					"title": "Edit Webhook";
+				};
+				"revoke": {
+					"title": "Revoke API Key";
+					"message": "Are you sure you want to revoke this key? It will stop working immediately.";
+				};
+				"empty": {
+					"title": "No API keys";
+					"description": "Create an API key to allow Diplomation to fetch data from this system.";
+				};
+				"toast": {
+					"createError": "Failed to create API key";
+					"revokeSuccess": "Key revoked";
+					"revokeError": "Failed to revoke key";
+					"webhookUpdated": "Webhook updated";
+					"webhookError": "Failed to update webhook";
+					"copied": "Copied to clipboard";
 				};
 			};
 			"batchJobs": {
@@ -1558,8 +1613,10 @@ interface Resources {
 					"uploadError": "Upload failed";
 					"defaultAcademicYear": "Default academic year";
 					"defaultAcademicYearPlaceholder": "Select academic year";
+					"defaultAcademicYearManagedHint": "Manage the active academic year from Academic Years.";
 					"registrationFormat": "Registration format";
 					"registrationFormatPlaceholder": "Use active format";
+					"registrationFormatManagedHint": "Manage the active registration format from Registration Formats.";
 					"type": "Type";
 					"typeUniversity": "University";
 					"typeFaculty": "Faculty/School";
@@ -1578,8 +1635,8 @@ interface Resources {
 					"mediaHint": "Media Hint (TODO)";
 					"names": "Names (TODO)";
 					"namesHint": "Names Hint (TODO)";
-					"system": "System (TODO)";
-					"systemHint": "System Hint (TODO)";
+					"system": "System configuration";
+					"systemHint": "Active academic year and registration number format are managed in their dedicated modules.";
 				};
 			};
 			"studyCycles": {
@@ -2505,8 +2562,12 @@ interface Resources {
 					"status": "Status";
 				};
 				"roles": {
-					"admin": "Admin";
+					"administrator": "Administrator";
+					"dean": "Dean";
 					"teacher": "Teacher";
+					"grade_editor": "Grade Editor";
+					"staff": "Staff";
+					"student": "Student";
 				};
 				"status": {
 					"active": "Active";

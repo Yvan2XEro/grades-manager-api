@@ -1612,8 +1612,10 @@
 				"uploadError": "Upload failed",
 				"defaultAcademicYear": "Default academic year",
 				"defaultAcademicYearPlaceholder": "Select academic year",
+				"defaultAcademicYearManagedHint": "Manage the active academic year from Academic Years.",
 				"registrationFormat": "Registration format",
 				"registrationFormatPlaceholder": "Use active format",
+				"registrationFormatManagedHint": "Manage the active registration format from Registration Formats.",
 				"type": "Type",
 				"typeUniversity": "University",
 				"typeFaculty": "Faculty/School",
@@ -1632,8 +1634,8 @@
 				"mediaHint": "Media Hint (TODO)",
 				"names": "Names (TODO)",
 				"namesHint": "Names Hint (TODO)",
-				"system": "System (TODO)",
-				"systemHint": "System Hint (TODO)"
+				"system": "System configuration",
+				"systemHint": "Active academic year and registration number format are managed in their dedicated modules."
 			}
 		},
 		"studyCycles": {

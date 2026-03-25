@@ -836,8 +836,10 @@
 				"uploadError": "Échec du téléversement",
 				"defaultAcademicYear": "Année académique par défaut",
 				"defaultAcademicYearPlaceholder": "Sélectionner une année",
+				"defaultAcademicYearManagedHint": "Gérez l’année académique active depuis le module Années académiques.",
 				"registrationFormat": "Format de matricule",
 				"registrationFormatPlaceholder": "Utiliser le format actif",
+				"registrationFormatManagedHint": "Gérez le format de matricule actif depuis le module Formats de matricule.",
 				"type": "Type",
 				"typeUniversity": "Université",
 				"typeFaculty": "Faculté/École",
@@ -856,8 +858,8 @@
 				"mediaHint": "Media Hint (TODO)",
 				"names": "Names (TODO)",
 				"namesHint": "Names Hint (TODO)",
-				"system": "System (TODO)",
-				"systemHint": "System Hint (TODO)"
+				"system": "Configuration système",
+				"systemHint": "L’année académique active et le format de matricule actif sont gérés dans leurs modules dédiés."
 			}
 		},
 		"studyCycles": {

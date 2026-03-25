@@ -25,8 +25,6 @@ export const upsertInstitutionSchema = z.object({
 	organizationId: z.string().optional(),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
 	metadata: z.record(z.unknown()).optional(),
 });
