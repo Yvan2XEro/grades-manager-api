@@ -168,7 +168,7 @@ export class ExportsRepo {
 		teachingUnitId: string,
 		classId: string,
 		semesterId: string,
-		academicYearId: string,
+		_academicYearId: string,
 	) {
 		// Get teaching unit
 		const ueData = await this.db.query.teachingUnits.findFirst({

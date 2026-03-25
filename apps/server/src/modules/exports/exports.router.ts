@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
 	router,
 	tenantAdminProcedure,
@@ -127,6 +126,9 @@ export const exportsRouter = router({
 	generateDeliberation: tenantGradingProcedure
 		.input(generateDeliberationSchema)
 		.mutation(async ({ ctx, input }) => {
+			if (!ctx.profile?.id) {
+				throw new Error("Profile context is missing");
+			}
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,
@@ -145,6 +147,9 @@ export const exportsRouter = router({
 	getDeliberationData: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			if (!ctx.profile?.id) {
+				throw new Error("Profile context is missing");
+			}
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,
@@ -158,6 +163,9 @@ export const exportsRouter = router({
 	previewDeliberation: tenantGradingProcedure
 		.input(previewDeliberationSchema)
 		.query(async ({ ctx, input }) => {
+			if (!ctx.profile?.id) {
+				throw new Error("Profile context is missing");
+			}
 			const diplomationData = await deliberationsService.exportDiplomation(
 				{ id: input.deliberationId },
 				ctx.institution.id,

@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, Plus, School, Search, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
+import FormModal from "@/components/modals/FormModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -29,12 +29,17 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -62,6 +67,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -75,6 +81,7 @@ const buildProgramSchema = (t: TFunction) =>
 			}),
 		),
 		description: z.string().optional(),
+		cycleId: z.string().nullable().optional(),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
@@ -90,6 +97,7 @@ type Program = {
 	code: string;
 	name: string;
 	description: string | null;
+	cycleId: string | null;
 	optionsCount: number;
 };
 
@@ -100,6 +108,7 @@ export default function ProgramManagement() {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [cloneFromProgramId, setCloneFromProgramId] = useState<string>("");
 	const [optionProgram, setOptionProgram] = useState<Program | null>(null);
 	const [editingOption, setEditingOption] = useState<ProgramOption | null>(
 		null,
@@ -110,7 +119,18 @@ export default function ProgramManagement() {
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
+	const [searchInput, _setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
+	useEffect(() => {
+		const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+		return () => clearTimeout(timer);
+	}, [searchInput]);
+
+	const { data: cycles } = useQuery({
+		queryKey: ["study-cycles-select"],
+		queryFn: () => trpcClient.studyCycles.listCycles.query({}),
+	});
+	const cycleMap = new Map((cycles?.items ?? []).map((c) => [c.id, c.name]));
 
 	const { data: programs, isLoading } = useQuery({
 		queryKey: ["programs", searchQuery],
@@ -124,6 +144,7 @@ export default function ProgramManagement() {
 				code: p.code,
 				name: p.name,
 				description: p.description ?? null,
+				cycleId: (p as any).cycleId ?? null,
 				optionsCount: (p as any).optionsCount ?? 0,
 			})) as Program[];
 		},
@@ -135,6 +156,7 @@ export default function ProgramManagement() {
 			name: "",
 			code: "",
 			description: "",
+			cycleId: null,
 		},
 	});
 
@@ -249,13 +271,49 @@ export default function ProgramManagement() {
 		},
 	});
 
+	const cloneCurriculumMutation = useMutation({
+		mutationFn: ({
+			targetProgramId,
+			sourceProgramId,
+		}: {
+			targetProgramId: string;
+			sourceProgramId: string;
+		}) =>
+			trpcClient.programs.cloneCurriculum.mutate({
+				targetProgramId,
+				sourceProgramId,
+			}),
+		onSuccess: (result) => {
+			toast.success(
+				t("admin.programs.toast.cloneSuccess", {
+					defaultValue: "Curriculum cloné : {{units}} UE, {{courses}} EC",
+					units: result.unitsCreated,
+					courses: result.coursesCreated,
+				}),
+			);
+		},
+		onError: (err: unknown) =>
+			toast.error(
+				(err as Error).message ||
+					t("admin.programs.toast.cloneError", {
+						defaultValue: "Erreur lors du clonage",
+					}),
+			),
+	});
+
 	const createMutation = useMutation({
 		mutationFn: async (data: ProgramFormData) => {
-			await trpcClient.programs.create.mutate(data);
+			return trpcClient.programs.create.mutate(data);
 		},
-		onSuccess: () => {
+		onSuccess: (newProgram) => {
 			queryClient.invalidateQueries({ queryKey: ["programs"] });
 			toast.success(t("admin.programs.toast.createSuccess"));
+			if (cloneFromProgramId && newProgram?.id) {
+				cloneCurriculumMutation.mutate({
+					targetProgramId: newProgram.id,
+					sourceProgramId: cloneFromProgramId,
+				});
+			}
 			handleCloseForm();
 		},
 		onError: (error: unknown) => {
@@ -346,7 +404,8 @@ export default function ProgramManagement() {
 
 	const startCreate = () => {
 		setEditingProgram(null);
-		form.reset({ name: "", code: "", description: "" });
+		setCloneFromProgramId("");
+		form.reset({ name: "", code: "", description: "", cycleId: null });
 		setIsFormOpen(true);
 	};
 
@@ -356,6 +415,7 @@ export default function ProgramManagement() {
 			name: program.name,
 			code: program.code,
 			description: program.description ?? "",
+			cycleId: program.cycleId ?? null,
 		});
 		setIsFormOpen(true);
 	};
@@ -363,7 +423,8 @@ export default function ProgramManagement() {
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
 		setEditingProgram(null);
-		form.reset({ name: "", code: "", description: "" });
+		setCloneFromProgramId("");
+		form.reset({ name: "", code: "", description: "", cycleId: null });
 	};
 
 	const confirmDelete = (id: string) => {
@@ -402,21 +463,11 @@ export default function ProgramManagement() {
 		});
 	};
 
-	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8 text-primary" />
-			</div>
-		);
-	}
-
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("admin.programs.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.programs.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.programs.subtitle")}
 					</p>
@@ -470,7 +521,11 @@ export default function ProgramManagement() {
 							className="pl-9"
 						/>
 					</div>
-					{programs && programs.length > 0 ? (
+					{isLoading ? (
+						<div className="flex h-40 items-center justify-center">
+							<Spinner className="h-6 w-6 text-primary" />
+						</div>
+					) : programs && programs.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -492,6 +547,9 @@ export default function ProgramManagement() {
 										{t("admin.programs.table.code", { defaultValue: "Code" })}
 									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
+									<TableHead>
+										{t("admin.programs.table.cycle", { defaultValue: "Cycle" })}
+									</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-center">
 										{t("admin.programs.table.options", {
@@ -505,7 +563,23 @@ export default function ProgramManagement() {
 							</TableHeader>
 							<TableBody>
 								{programs.map((program) => (
-									<TableRow key={program.id}>
+									<TableRow
+										key={program.id}
+										actions={
+											<>
+												<ContextMenuItem onSelect={() => startEdit(program)}>
+													{t("common.actions.edit")}
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem
+													className="text-destructive"
+													onSelect={() => confirmDelete(program.id)}
+												>
+													{t("common.actions.delete")}
+												</ContextMenuItem>
+											</>
+										}
+									>
 										<TableCell className="w-10">
 											<Checkbox
 												checked={selection.isSelected(program.id)}
@@ -522,6 +596,9 @@ export default function ProgramManagement() {
 										</TableCell>
 										<TableCell className="font-medium">
 											{program.name}
+										</TableCell>
+										<TableCell className="text-muted-foreground text-sm">
+											{program.cycleId ? cycleMap.get(program.cycleId) : "—"}
 										</TableCell>
 										<TableCell>
 											{program.description || (
@@ -568,99 +645,50 @@ export default function ProgramManagement() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="py-12 text-center">
-							<School className="mx-auto h-12 w-12 text-muted-foreground" />
-							<p className="mt-4 font-medium">
-								{t("admin.programs.empty.title")}
-							</p>
-							<p className="text-muted-foreground text-sm">
-								{t("admin.programs.empty.description")}
-							</p>
-							<Button className="mt-4" onClick={startCreate}>
-								<Plus className="mr-2 h-4 w-4" />
-								{t("admin.programs.actions.add")}
-							</Button>
-						</div>
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<School className="text-muted-foreground" />
+								</EmptyMedia>
+								<EmptyTitle>{t("admin.programs.empty.title")}</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.programs.empty.description")}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={startCreate}>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.programs.actions.add")}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
 
-			<Dialog
-				open={isFormOpen}
-				onOpenChange={(open) => {
-					setIsFormOpen(open);
-					if (!open) handleCloseForm();
-				}}
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={handleCloseForm}
+				title={
+					editingProgram
+						? t("admin.programs.form.editTitle")
+						: t("admin.programs.form.createTitle")
+				}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{editingProgram
-								? t("admin.programs.form.editTitle")
-								: t("admin.programs.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.form.nameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t("admin.programs.form.namePlaceholder")}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.form.codeLabel", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t(
-														"admin.programs.form.codePlaceholder",
-														{
-															defaultValue: "INF-LIC",
-														},
-													)}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<div className="grid gap-4 sm:grid-cols-2">
 							<FormField
 								control={form.control}
-								name="description"
+								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.descriptionLabel")}
+										<FormLabel required>
+											{t("admin.programs.form.nameLabel")}
 										</FormLabel>
 										<FormControl>
-											<Textarea
-												rows={4}
-												placeholder={t(
-													"admin.programs.form.descriptionPlaceholder",
-												)}
+											<Input
+												placeholder={t("admin.programs.form.namePlaceholder")}
 												{...field}
 											/>
 										</FormControl>
@@ -668,221 +696,342 @@ export default function ProgramManagement() {
 									</FormItem>
 								)}
 							/>
-							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseForm}
-									disabled={form.formState.isSubmitting}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
-									{form.formState.isSubmitting ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : editingProgram ? (
-										t("common.actions.saveChanges")
-									) : (
-										t("admin.programs.form.submit")
-									)}
-								</Button>
-							</div>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
-
-			<Dialog
-				open={isOptionModalOpen}
-				onOpenChange={(open) => {
-					if (!open) {
-						closeOptionsModal();
-					} else {
-						setIsOptionModalOpen(true);
-					}
-				}}
-			>
-				<DialogContent className="max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.programs.options.title", {
-								defaultValue: "Manage options for {{value}}",
-								value: optionProgram?.name ?? "",
-							})}
-						</DialogTitle>
-						<DialogDescription>
-							{t("admin.programs.options.subtitle", {
-								defaultValue:
-									"Options represent specializations or tracks within a program.",
-							})}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-4">
-						<div className="space-y-2">
-							{optionsLoading ? (
-								<div className="flex justify-center py-6">
-									<Spinner className="h-6 w-6 text-primary" />
-								</div>
-							) : optionList.length ? (
-								<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
-									{optionList.map((option) => (
-										<div
-											key={option.id}
-											className="flex items-start justify-between rounded-lg border border-border p-3"
-										>
-											<div>
-												<p className="font-medium text-sm">{option.name}</p>
-												<p className="text-muted-foreground text-xs">
-													{option.code}
-												</p>
-												{option.description && (
-													<p className="text-muted-foreground text-xs">
-														{option.description}
-													</p>
-												)}
-											</div>
-											<div className="flex gap-2">
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													onClick={() => handleEditOption(option)}
-													aria-label={t("admin.programs.options.edit", {
-														defaultValue: "Edit option",
-													})}
-												>
-													<Pencil className="h-4 w-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													disabled={
-														optionList.length <= 1 ||
-														deleteOptionMutation.isPending
-													}
-													onClick={() => handleDeleteOption(option.id)}
-													aria-label={t("admin.programs.options.delete", {
-														defaultValue: "Delete option",
-													})}
-												>
-													<Trash2 className="h-4 w-4 text-destructive" />
-												</Button>
-											</div>
-										</div>
-									))}
-								</div>
-							) : (
-								<p className="text-muted-foreground text-sm">
-									{t("admin.programs.options.empty", {
-										defaultValue: "No options yet. Add one below.",
-									})}
-								</p>
-							)}
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.programs.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.programs.form.codePlaceholder", {
+													defaultValue: "INF-LIC",
+												})}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 						</div>
-						<Form {...optionForm}>
-							<form
-								onSubmit={optionForm.handleSubmit(onSubmitOption)}
-								className="space-y-3 rounded-lg border border-border p-3"
-							>
-								{editingOption ? (
-									<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
-										<span>
-											{t("admin.programs.options.editing", {
-												defaultValue: "Editing option {{name}}",
-												name: editingOption.name,
-											})}
-										</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={resetOptionEditing}
-										>
-											{t("admin.programs.options.cancelEdit", {
-												defaultValue: "Cancel",
-											})}
-										</Button>
-									</div>
-								) : null}
-								<div className="grid gap-3 sm:grid-cols-2">
-									<FormField
-										control={optionForm.control}
-										name="name"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel required>
-													{t("admin.programs.options.form.name", {
-														defaultValue: "Option name",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={optionForm.control}
-										name="code"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel required>
-													{t("admin.programs.options.form.code", {
-														defaultValue: "Code",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+						<FormField
+							control={form.control}
+							name="cycleId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.programs.form.cycleLabel", {
+											defaultValue: "Cycle d'études",
+										})}
+									</FormLabel>
+									<Select
+										value={field.value ?? "__NONE__"}
+										onValueChange={(v) =>
+											field.onChange(v === "__NONE__" ? null : v)
+										}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.programs.form.cyclePlaceholder",
+														{ defaultValue: "Sélectionner un cycle" },
+													)}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											<SelectItem value="__NONE__">
+												{t("admin.programs.form.cloneFromNone", {
+													defaultValue: "Aucun",
+												})}
+											</SelectItem>
+											{(cycles?.items ?? []).map((cyc) => (
+												<SelectItem key={cyc.id} value={cyc.id}>
+													{cyc.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="description"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.programs.form.descriptionLabel")}
+									</FormLabel>
+									<FormControl>
+										<Textarea
+											rows={4}
+											placeholder={t(
+												"admin.programs.form.descriptionPlaceholder",
+											)}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						{!editingProgram && (
+							<div className="space-y-2 rounded-lg border border-dashed p-3">
+								<div className="flex items-center gap-2">
+									<Copy className="h-4 w-4 text-muted-foreground" />
+									<span className="font-medium text-sm">
+										{t("admin.programs.form.cloneFrom", {
+											defaultValue: "Cloner le curriculum depuis (optionnel)",
+										})}
+									</span>
 								</div>
+								<Select
+									value={cloneFromProgramId || "__NONE__"}
+									onValueChange={(v) =>
+										setCloneFromProgramId(v === "__NONE__" ? "" : v)
+									}
+								>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t(
+												"admin.programs.form.cloneFromPlaceholder",
+												{ defaultValue: "Aucun - laisser vide" },
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="__NONE__">
+											{t("admin.programs.form.cloneFromPlaceholder", {
+												defaultValue: "Aucun - laisser vide",
+											})}
+										</SelectItem>
+										{programs?.map((p) => (
+											<SelectItem key={p.id} value={p.id}>
+												{p.code} — {p.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{cloneFromProgramId && (
+									<p className="text-muted-foreground text-xs">
+										{t("admin.programs.form.cloneFromHint", {
+											defaultValue:
+												"Les UE et EC du programme source seront copies apres la creation.",
+										})}
+									</p>
+								)}
+							</div>
+						)}
+
+						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleCloseForm}
+								disabled={form.formState.isSubmitting}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingProgram ? (
+									t("common.actions.saveChanges")
+								) : cloneFromProgramId ? (
+									t("admin.programs.form.submitWithClone", {
+										defaultValue: "Creer et cloner",
+									})
+								) : (
+									t("admin.programs.form.submit")
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</FormModal>
+
+			<FormModal
+				isOpen={isOptionModalOpen}
+				onClose={closeOptionsModal}
+				title={t("admin.programs.options.title", {
+					defaultValue: "Manage options for {{value}}",
+					value: optionProgram?.name ?? "",
+				})}
+				maxWidth="sm:max-w-xl"
+			>
+				<div className="space-y-4">
+					<div className="space-y-2">
+						{optionsLoading ? (
+							<div className="flex justify-center py-6">
+								<Spinner className="h-6 w-6 text-primary" />
+							</div>
+						) : optionList.length ? (
+							<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
+								{optionList.map((option) => (
+									<div
+										key={option.id}
+										className="flex items-start justify-between rounded-lg border border-border p-3"
+									>
+										<div>
+											<p className="font-medium text-sm">{option.name}</p>
+											<p className="text-muted-foreground text-xs">
+												{option.code}
+											</p>
+											{option.description && (
+												<p className="text-muted-foreground text-xs">
+													{option.description}
+												</p>
+											)}
+										</div>
+										<div className="flex gap-2">
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												onClick={() => handleEditOption(option)}
+												aria-label={t("admin.programs.options.edit", {
+													defaultValue: "Edit option",
+												})}
+											>
+												<Pencil className="h-4 w-4" />
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												disabled={
+													optionList.length <= 1 ||
+													deleteOptionMutation.isPending
+												}
+												onClick={() => handleDeleteOption(option.id)}
+												aria-label={t("admin.programs.options.delete", {
+													defaultValue: "Delete option",
+												})}
+											>
+												<Trash2 className="h-4 w-4 text-destructive" />
+											</Button>
+										</div>
+									</div>
+								))}
+							</div>
+						) : (
+							<p className="text-muted-foreground text-xs">
+								{t("admin.programs.options.empty", {
+									defaultValue: "No options yet. Add one below.",
+								})}
+							</p>
+						)}
+					</div>
+					<Form {...optionForm}>
+						<form
+							onSubmit={optionForm.handleSubmit(onSubmitOption)}
+							className="space-y-3 rounded-lg border border-border p-3"
+						>
+							{editingOption ? (
+								<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
+									<span>
+										{t("admin.programs.options.editing", {
+											defaultValue: "Editing option {{name}}",
+											name: editingOption.name,
+										})}
+									</span>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={resetOptionEditing}
+									>
+										{t("admin.programs.options.cancelEdit", {
+											defaultValue: "Cancel",
+										})}
+									</Button>
+								</div>
+							) : null}
+							<div className="grid gap-3 sm:grid-cols-2">
 								<FormField
 									control={optionForm.control}
-									name="description"
+									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.description", {
-													defaultValue: "Description",
+											<FormLabel required>
+												{t("admin.programs.options.form.name", {
+													defaultValue: "Option name",
 												})}
 											</FormLabel>
 											<FormControl>
-												<Textarea rows={2} {...field} />
+												<Input {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
-								<div className="flex justify-end">
-									<Button
-										type="submit"
-										disabled={
-											!optionProgram ||
-											createOptionMutation.isPending ||
-											updateOptionMutation.isPending
-										}
-									>
-										{(createOptionMutation.isPending ||
-											updateOptionMutation.isPending) && (
-											<Spinner className="mr-2 h-4 w-4" />
-										)}
-										{editingOption
-											? t("admin.programs.options.form.updateSubmit", {
-													defaultValue: "Save changes",
-												})
-											: t("admin.programs.options.form.submit", {
-													defaultValue: "Add option",
+								<FormField
+									control={optionForm.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.programs.options.form.code", {
+													defaultValue: "Code",
 												})}
-									</Button>
-								</div>
-							</form>
-						</Form>
-					</div>
-				</DialogContent>
-			</Dialog>
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<FormField
+								control={optionForm.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.programs.options.form.description", {
+												defaultValue: "Description",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Textarea rows={2} {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className="flex justify-end">
+								<Button
+									type="submit"
+									disabled={
+										!optionProgram ||
+										createOptionMutation.isPending ||
+										updateOptionMutation.isPending
+									}
+								>
+									{(createOptionMutation.isPending ||
+										updateOptionMutation.isPending) && (
+										<Spinner className="mr-2 h-4 w-4" />
+									)}
+									{editingOption
+										? t("admin.programs.options.form.updateSubmit", {
+												defaultValue: "Save changes",
+											})
+										: t("admin.programs.options.form.submit", {
+												defaultValue: "Add option",
+											})}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</div>
+			</FormModal>
 
 			<AlertDialog
 				open={isDeleteOpen}

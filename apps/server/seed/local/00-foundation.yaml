@@ -8,16 +8,12 @@ organizations:
 examTypes:
   - name: CC
     description: Contrôle continu
-    defaultPercentage: 30
   - name: TP
     description: Travaux pratiques
-    defaultPercentage: 20
   - name: TPE
     description: Travaux pratiques encadrés
-    defaultPercentage: 10
   - name: FINAL
     description: Examen final
-    defaultPercentage: 40
 studyCycles:
   - code: BTS-SANTE
     name: BTS Sciences de la Santé

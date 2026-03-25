@@ -1,22 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "../../components/ui/card";
+import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
@@ -35,8 +37,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { PaginationBar } from "../../components/ui/pagination-bar";
-import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -45,7 +45,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { useCursorPagination } from "../../hooks/useCursorPagination";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
 
@@ -72,8 +73,6 @@ export default function ExamTypes() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingType, setEditingType] = useState<ExamType | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
 	const form = useForm<FormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: { name: "", description: "", defaultPercentage: 40 },
@@ -82,18 +81,24 @@ export default function ExamTypes() {
 	const resetForm = () =>
 		form.reset({ name: "", description: "", defaultPercentage: 40 });
 
-	const { data, isLoading } = useQuery({
-		queryKey: ["examTypes", pagination.cursor],
-		queryFn: async () => {
-			const result = await trpcClient.examTypes.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
-			});
-			return result as { items: ExamType[]; nextCursor?: string };
-		},
-	});
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery({
+			queryKey: ["examTypes"],
+			queryFn: async ({ pageParam }) => {
+				const result = await trpcClient.examTypes.list.query({
+					cursor: pageParam,
+					limit: 20,
+				});
+				return result as { items: ExamType[]; nextCursor?: string };
+			},
+			initialPageParam: undefined as string | undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		});
 
-	const examTypes = data?.items ?? [];
+	const examTypes = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(examTypes);
 
 	const handleOpenCreate = () => {
@@ -221,9 +226,7 @@ export default function ExamTypes() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("admin.examTypes.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.examTypes.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.examTypes.subtitle")}
 					</p>
@@ -235,17 +238,9 @@ export default function ExamTypes() {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.examTypes.table.title")}</CardTitle>
-					<CardDescription>
-						{t("admin.examTypes.table.description")}
-					</CardDescription>
-				</CardHeader>
 				<CardContent>
 					{isLoading ? (
-						<div className="flex items-center justify-center py-8">
-							<Spinner />
-						</div>
+						<TableSkeleton columns={5} rows={8} />
 					) : examTypes.length > 0 ? (
 						<>
 							<BulkActionBar
@@ -289,17 +284,39 @@ export default function ExamTypes() {
 										<TableHead>
 											{t("admin.examTypes.table.descriptionColumn")}
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-20">
 											{t("admin.examTypes.table.defaultPercentage")}
 										</TableHead>
-										<TableHead className="w-[120px] text-right">
+										<TableHead className="w-[100px] text-right">
 											{t("common.table.actions")}
 										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{examTypes.map((type) => (
-										<TableRow key={type.id}>
+										<TableRow
+											key={type.id}
+											actions={
+												<>
+													<ContextMenuItem
+														onSelect={() => handleOpenEdit(type)}
+													>
+														<span>
+															{t("common.actions.edit", {
+																defaultValue: "Edit",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														variant="destructive"
+														onSelect={() => setDeleteId(type.id)}
+													>
+														<span>{t("common.actions.delete")}</span>
+													</ContextMenuItem>
+												</>
+											}
+										>
 											<TableCell>
 												<Checkbox
 													checked={selection.isSelected(type.id)}
@@ -334,13 +351,7 @@ export default function ExamTypes() {
 									))}
 								</TableBody>
 							</Table>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!data?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() => pagination.handleNext(data?.nextCursor)}
-								isLoading={isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty>

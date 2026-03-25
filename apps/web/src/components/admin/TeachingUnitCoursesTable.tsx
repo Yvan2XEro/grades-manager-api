@@ -5,10 +5,10 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import { generateCourseCode } from "@/lib/code-generator";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -159,7 +159,7 @@ export function TeachingUnitCoursesTable({
 					formatTeacherName(teacher),
 				]),
 			),
-		[teacherOptions],
+		[teacherOptions, formatTeacherName],
 	);
 
 	const form = useForm<CourseFormData>({

@@ -43,7 +43,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<p className="text-muted-foreground text-sm">{message}</p>
+				<div className="px-6 pb-4">
+					<p className="text-muted-foreground text-sm">{message}</p>
+				</div>
 				<DialogFooter className="gap-2 sm:gap-0">
 					<Button variant="ghost" onClick={onClose} disabled={isLoading}>
 						{cancelLabel}

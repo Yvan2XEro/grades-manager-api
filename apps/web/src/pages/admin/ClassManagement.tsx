@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -13,11 +18,11 @@ import {
 	Search,
 	Trash2,
 	Users,
+	Wand2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
@@ -25,16 +30,19 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -43,9 +51,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCode } from "@/lib/code-generator";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -97,11 +107,7 @@ const buildClassSchema = (t: TFunction) =>
 				defaultValue: "Please select a program option",
 			}),
 		}),
-		semesterId: z.string({
-			required_error: t("admin.classes.validation.semester", {
-				defaultValue: "Select a semester",
-			}),
-		}),
+		semesterId: z.string().optional(),
 		code: z.string().min(
 			3,
 			t("admin.classes.validation.code", {
@@ -163,24 +169,25 @@ export default function ClassManagement() {
 	const [previewStudents, setPreviewStudents] = useState<any[]>([]);
 	const [previewLoading, setPreviewLoading] = useState(false);
 	const [studentSearch, setStudentSearch] = useState("");
+	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
+	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
 
-	const { data: classesData, isLoading } = useQuery({
-		queryKey: [
-			"classes",
-			pagination.cursor,
-			pagination.pageSize,
-			filterYear,
-			filterSemester,
-		],
-		queryFn: async () => {
+	const {
+		data: classesData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
+		queryKey: ["classes", filterYear, filterSemester],
+		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classes.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
 				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
@@ -220,9 +227,14 @@ export default function ClassManagement() {
 			);
 			return { items: enriched, nextCursor };
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
 	});
 
-	const classes = classesData?.items;
+	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(classes ?? []);
 
 	const { data: defaultPrograms = [] } = useQuery({
@@ -246,13 +258,14 @@ export default function ClassManagement() {
 
 	const programs = programSearch.length >= 2 ? searchPrograms : defaultPrograms;
 
-	const { data: academicYears } = useQuery({
+	const { data: academicYearsRaw } = useQuery({
 		queryKey: ["academicYears"],
 		queryFn: async () => {
 			const { items } = await trpcClient.academicYears.list.query({});
 			return items;
 		},
 	});
+	const academicYears = Array.isArray(academicYearsRaw) ? academicYearsRaw : [];
 
 	const form = useForm<ClassFormData>({
 		resolver: zodResolver(classSchema),
@@ -433,19 +446,6 @@ export default function ClassManagement() {
 			setValue("programOptionId", programOptions[0].id);
 		}
 	}, [programOptions, programOptionId, setValue]);
-
-	const semesterDirty = Boolean(form.formState.dirtyFields.semesterId);
-	useEffect(() => {
-		if (editingClass) return;
-		if (semesterDirty) return;
-		if (semesters && semesters.length > 0 && !semesterId) {
-			setValue("semesterId", semesters[0].id, { shouldDirty: false });
-		}
-	}, [editingClass, semesterDirty, semesters, semesterId, setValue]);
-
-	useEffect(() => {
-		pagination.reset();
-	}, [filterYear, filterSemester]);
 
 	useEffect(() => {
 		const year = academicYears?.find((y) => y.id === selectedAcademicYearId);
@@ -787,7 +787,7 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
-				semesterId: data.semesterId,
+				semesterId: data.semesterId || undefined,
 				code: data.code,
 				totalCredits: data.totalCredits,
 			});
@@ -816,7 +816,7 @@ export default function ClassManagement() {
 				academicYear: data.academicYearId,
 				cycleLevelId: data.cycleLevelId,
 				programOptionId: data.programOptionId,
-				semesterId: data.semesterId,
+				semesterId: data.semesterId || undefined,
 				code: data.code,
 				totalCredits: data.totalCredits,
 			});
@@ -879,6 +879,26 @@ export default function ClassManagement() {
 			),
 	});
 
+	const bulkGenerateMutation = useMutation({
+		mutationFn: () =>
+			trpcClient.classes.bulkGenerate.mutate({
+				academicYearId: bulkGenYearId!,
+			}),
+		onSuccess: (result) => {
+			queryClient.invalidateQueries({ queryKey: ["classes"] });
+			toast.success(
+				t("admin.classes.toast.bulkGenerateSuccess", {
+					created: result.created,
+					skipped: result.skipped,
+					defaultValue: `${result.created} classe(s) créée(s), ${result.skipped} ignorée(s)`,
+				}),
+			);
+			setIsBulkGenOpen(false);
+			setBulkGenYearId(null);
+		},
+		onError: (err) => toast.error((err as Error).message),
+	});
+
 	const onSubmit = async (data: ClassFormData) => {
 		if (editingClass) {
 			updateMutation.mutate({ ...data, id: editingClass.id });
@@ -910,49 +930,68 @@ export default function ClassManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("admin.classes.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.classes.title")}</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
-				<Button
-					type="button"
-					onClick={() => {
-						setEditingClass(null);
-						form.reset();
-						setIsFormOpen(true);
-					}}
-					className="btn btn-primary"
-				>
-					<Plus className="mr-2 h-5 w-5" />
-					{t("admin.classes.actions.add")}
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setIsBulkGenOpen(true)}
+					>
+						<Wand2 className="mr-2 h-4 w-4" />
+						{t("admin.classes.actions.bulkGenerate", {
+							defaultValue: "Générer les classes",
+						})}
+					</Button>
+					<Button
+						type="button"
+						onClick={() => {
+							setEditingClass(null);
+							form.reset();
+							setIsFormOpen(true);
+						}}
+						className="btn btn-primary"
+					>
+						<Plus className="mr-2 h-5 w-5" />
+						{t("admin.classes.actions.add")}
+					</Button>
+				</div>
 			</div>
 
-			<div className="mb-4 flex flex-wrap items-end gap-4">
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
-					</Label>
-					<AcademicYearSelect
-						value={filterYear}
-						onChange={(v) => setFilterYear(v)}
-					/>
-				</div>
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", {
-							defaultValue: "Semester",
-						})}
-					</Label>
-					<SemesterSelect
-						value={filterSemester}
-						onChange={(v) => setFilterSemester(v)}
-					/>
-				</div>
-			</div>
+			<Card className="mb-4">
+				<CardHeader className="pb-3">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
+						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex flex-wrap items-end gap-4">
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.academicYear", {
+									defaultValue: "Academic Year",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={filterYear}
+								onChange={(v) => setFilterYear(v)}
+							/>
+						</div>
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => setFilterSemester(v)}
+							/>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
 
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
@@ -1003,6 +1042,8 @@ export default function ClassManagement() {
 							{t("admin.classes.actions.add")}
 						</Button>
 					</div>
+				) : isLoading ? (
+					<TableSkeleton columns={8} rows={8} />
 				) : (
 					<Table>
 						<TableHeader>
@@ -1016,7 +1057,7 @@ export default function ClassManagement() {
 										aria-label="Select all"
 									/>
 								</TableHead>
-								<TableHead>
+								<TableHead className="w-24">
 									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
 								<TableHead>
@@ -1024,7 +1065,7 @@ export default function ClassManagement() {
 										defaultValue: "Class / Program",
 									})}
 								</TableHead>
-								<TableHead>
+								<TableHead className="w-36">
 									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
 									})}
@@ -1034,18 +1075,75 @@ export default function ClassManagement() {
 										defaultValue: "Option / Semester",
 									})}
 								</TableHead>
-								<TableHead>
+								<TableHead className="w-16">
 									{t("admin.classes.table.credits", {
 										defaultValue: "Credits",
 									})}
 								</TableHead>
-								<TableHead>{t("admin.classes.table.students")}</TableHead>
+								<TableHead className="w-24">
+									{t("admin.classes.table.students")}
+								</TableHead>
 								<TableHead className="w-10" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{classes?.map((cls) => (
-								<TableRow key={cls.id}>
+								<TableRow
+									key={cls.id}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() => {
+													setEditingClass(cls);
+													form.reset({ name: cls.name });
+													setIsFormOpen(true);
+												}}
+											>
+												<span>
+													{t("common.actions.edit", { defaultValue: "Edit" })}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												onSelect={() => handlePreviewStudents(cls)}
+											>
+												<Eye className="h-4 w-4" />
+												<span>
+													{t("admin.classes.preview.button", {
+														defaultValue: "View student list",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuItem
+												onSelect={() => handleExportStudentListPDF(cls)}
+											>
+												<FileText className="h-4 w-4" />
+												<span>
+													{t("admin.classes.export.button", {
+														defaultValue: "Export PDF",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuItem
+												onSelect={() => handleExportStudentListExcel(cls)}
+											>
+												<FileSpreadsheet className="h-4 w-4" />
+												<span>
+													{t("admin.classes.export.excelButton", {
+														defaultValue: "Export Excel",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												variant="destructive"
+												onSelect={() => openDeleteModal(cls.id)}
+											>
+												<span>{t("common.actions.delete")}</span>
+											</ContextMenuItem>
+										</>
+									}
+								>
 									<TableCell>
 										<Checkbox
 											checked={selection.isSelected(cls.id)}
@@ -1091,7 +1189,7 @@ export default function ClassManagement() {
 													{cls.programOption.name}
 												</p>
 											) : (
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{t("common.labels.notAvailable", {
 														defaultValue: "N/A",
 													})}
@@ -1201,13 +1299,7 @@ export default function ClassManagement() {
 				)}
 			</Card>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!classesData?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(classesData?.nextCursor)}
-				isLoading={isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
 			<FormModal
 				isOpen={isFormOpen}
@@ -1271,7 +1363,7 @@ export default function ClassManagement() {
 								name="semesterId"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel required>
+										<FormLabel>
 											{t("admin.classes.form.semesterLabel", {
 												defaultValue: "Semester",
 											})}
@@ -1471,7 +1563,15 @@ export default function ClassManagement() {
 				}}
 				onConfirm={handleDelete}
 				title={t("admin.classes.delete.title")}
-				message={t("admin.classes.delete.message")}
+				message={(() => {
+					const studentCount =
+						classes.find((c) => c.id === deleteId)?.students.length ?? 0;
+					return studentCount > 0
+						? t("admin.classes.delete.messageWithStudents", {
+								count: studentCount,
+							})
+						: t("admin.classes.delete.message");
+				})()}
 				confirmText={t("common.actions.delete")}
 				isLoading={deleteMutation.isPending}
 			/>
@@ -1505,16 +1605,18 @@ export default function ClassManagement() {
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="relative shrink-0">
-						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-						<Input
-							placeholder={t("admin.classes.searchStudents", {
-								defaultValue: "Search students...",
-							})}
-							value={studentSearch}
-							onChange={(e) => setStudentSearch(e.target.value)}
-							className="pl-9"
-						/>
+					<div className="shrink-0 px-6 pb-4">
+						<div className="relative">
+							<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder={t("admin.classes.searchStudents", {
+									defaultValue: "Search students...",
+								})}
+								value={studentSearch}
+								onChange={(e) => setStudentSearch(e.target.value)}
+								className="pl-9"
+							/>
+						</div>
 					</div>
 
 					{previewLoading ? (
@@ -1610,6 +1712,69 @@ export default function ClassManagement() {
 							</Table>
 						</ScrollArea>
 					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* Bulk Generate Dialog */}
+			<Dialog
+				open={isBulkGenOpen}
+				onOpenChange={(o) => {
+					if (!o) {
+						setIsBulkGenOpen(false);
+						setBulkGenYearId(null);
+					}
+				}}
+			>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{t("admin.classes.bulkGenerate.title", {
+								defaultValue: "Générer toutes les classes",
+							})}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.classes.bulkGenerate.description", {
+								defaultValue:
+									"Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées.",
+							})}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 px-6 py-2">
+						<div className="space-y-2">
+							<Label>
+								{t("admin.classes.bulkGenerate.yearLabel", {
+									defaultValue: "Année académique",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={bulkGenYearId}
+								onChange={setBulkGenYearId}
+								autoSelectActive
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setIsBulkGenOpen(false);
+								setBulkGenYearId(null);
+							}}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							onClick={() => bulkGenerateMutation.mutate()}
+							disabled={!bulkGenYearId || bulkGenerateMutation.isPending}
+						>
+							{bulkGenerateMutation.isPending && (
+								<Spinner className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							{t("admin.classes.bulkGenerate.submit", {
+								defaultValue: "Générer",
+							})}
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		</div>

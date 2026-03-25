@@ -32,7 +32,7 @@ export function DatePicker({
 	endMonth = new Date(2035, 11),
 }: DatePickerProps) {
 	const [open, setOpen] = useState(false);
-	const { i18n } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const locale = i18n.language.startsWith("fr") ? fr : enUS;
 
@@ -67,7 +67,7 @@ export function DatePicker({
 					<span className="flex-1 truncate">
 						{selected
 							? format(selected, "d MMMM yyyy", { locale })
-							: (placeholder ?? "Choisir une date")}
+							: (placeholder ?? t("components.datePicker.placeholder"))}
 					</span>
 					{selected && (
 						<X

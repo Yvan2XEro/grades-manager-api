@@ -28,6 +28,15 @@ export async function update(
 	return option;
 }
 
+export async function countClasses(programOptionId: string) {
+	const rows = await db
+		.select({ id: schema.classes.id })
+		.from(schema.classes)
+		.where(eq(schema.classes.programOptionId, programOptionId))
+		.limit(1);
+	return rows.length;
+}
+
 export async function remove(id: string, institutionId: string) {
 	await db
 		.delete(schema.programOptions)

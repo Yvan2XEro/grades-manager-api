@@ -9,6 +9,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import * as appSchema from "../../db/schema/app-schema";
 import * as authSchema from "../../db/schema/auth";
+import type { DbInstance } from "../../db/type-fix-db";
 import { runSeed } from "../../seed/runner";
 import { scaffoldSampleSeeds } from "../../seed/sample-data";
 
@@ -19,7 +20,7 @@ const silentLogger = {
 
 describe("seed runner", () => {
 	let pg: PGlite;
-	let db: ReturnType<typeof drizzle>;
+	let db: DbInstance;
 
 	beforeAll(async () => {
 		// Check if migrations exist
@@ -39,7 +40,9 @@ describe("seed runner", () => {
 		}
 
 		pg = new PGlite();
-		db = drizzle(pg, { schema: { ...appSchema, ...authSchema } });
+		db = drizzle(pg, {
+			schema: { ...appSchema, ...authSchema },
+		}) as unknown as DbInstance;
 		await migrate(db, { migrationsFolder });
 	});
 

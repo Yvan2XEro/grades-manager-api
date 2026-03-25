@@ -201,6 +201,7 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 
 					// Create new enrollment in target class
 					await tx.insert(schema.enrollments).values({
+						institutionId: ctx.institutionId,
 						studentId,
 						classId: params.targetClassId,
 						academicYearId: params.academicYearId,
@@ -253,7 +254,7 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 		await db.transaction(async (tx) => {
 			for (const studentId of params.studentIds) {
 				// Reopen source enrollment (set back to active)
-				const [sourceEnrollment] = await tx
+				const [_sourceEnrollment] = await tx
 					.update(schema.enrollments)
 					.set({ status: "active", exitedAt: null })
 					.where(

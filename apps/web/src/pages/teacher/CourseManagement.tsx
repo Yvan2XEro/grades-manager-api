@@ -5,8 +5,8 @@ import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
@@ -18,6 +18,10 @@ import {
 	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
@@ -235,7 +239,7 @@ export default function CourseManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("teacher.courses.manage.title")}
 					</h1>
 					<p className="text-muted-foreground">
@@ -319,7 +323,34 @@ export default function CourseManagement() {
 						</TableHeader>
 						<TableBody>
 							{courses?.map((course) => (
-								<TableRow key={course.id}>
+								<TableRow
+									key={course.id}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() => {
+													setEditingCourse(course);
+													reset({
+														name: course.name,
+														hours: course.hours,
+														program: course.program,
+														defaultTeacher: course.defaultTeacher,
+													});
+													setIsFormOpen(true);
+												}}
+											>
+												{t("common.actions.edit")}
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												className="text-destructive"
+												onSelect={() => openDeleteModal(course.id)}
+											>
+												{t("common.actions.delete")}
+											</ContextMenuItem>
+										</>
+									}
+								>
 									<TableCell className="w-10">
 										<Checkbox
 											checked={selection.isSelected(course.id)}

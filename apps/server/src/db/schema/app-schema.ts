@@ -33,6 +33,7 @@ export const businessRoles = [
 	"administrator",
 	"dean",
 	"teacher",
+	"grade_editor",
 	"staff",
 	"student",
 ] as const;
@@ -301,6 +302,13 @@ export const programs = pgTable(
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
 		description: text("description"),
+		diplomaTitleFr: text("diploma_title_fr"),
+		diplomaTitleEn: text("diploma_title_en"),
+		attestationValidityFr: text("attestation_validity_fr"),
+		attestationValidityEn: text("attestation_validity_en"),
+		cycleId: text("cycle_id").references(() => studyCycles.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -336,6 +344,32 @@ export const programOptions = pgTable(
 		index("idx_program_options_institution_id").on(t.institutionId),
 	],
 );
+
+/** API keys for DIPLOMATION integration. */
+export const diplomationApiKeys = pgTable(
+	"diplomation_api_keys",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		keyHash: text("key_hash").notNull(),
+		label: text("label").notNull(),
+		webhookUrl: text("webhook_url"),
+		webhookSecret: text("webhook_secret"),
+		isActive: boolean("is_active").notNull().default(true),
+		lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_api_keys_institution").on(t.institutionId),
+		index("idx_diplomation_api_keys_hash").on(t.keyHash),
+	],
+);
+export type DiplomationApiKey = InferSelectModel<typeof diplomationApiKeys>;
+export type NewDiplomationApiKey = InferInsertModel<typeof diplomationApiKeys>;
 
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
@@ -625,6 +659,36 @@ export const students = pgTable(
 	],
 );
 
+/** Documents generated via DIPLOMATION integration. */
+export const diplomationDocuments = pgTable(
+	"diplomation_documents",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		sourceId: text("source_id").notNull(),
+		documentType: text("document_type").notNull(),
+		studentId: text("student_id").references(() => students.id),
+		generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+		fileReference: text("file_reference"),
+		generatedByApiKeyId: text("generated_by_api_key_id").references(
+			() => diplomationApiKeys.id,
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_documents_institution").on(t.institutionId),
+		index("idx_diplomation_documents_source").on(t.sourceId),
+	],
+);
+export type DiplomationDocument = InferSelectModel<typeof diplomationDocuments>;
+export type NewDiplomationDocument = InferInsertModel<
+	typeof diplomationDocuments
+>;
+
 /** Configurable templates for student registration numbers. */
 export const registrationNumberFormats = pgTable(
 	"registration_number_formats",
@@ -711,6 +775,12 @@ export interface InstitutionMetadata {
 			enabled?: boolean;
 		};
 	};
+	/** Document generation params (signatory, city) used by Diplomation */
+	document_params?: {
+		signatoryName?: string;
+		signatoryTitle?: string;
+		city?: string;
+	};
 	[key: string]: unknown;
 }
 
@@ -758,18 +828,7 @@ export const institutions = pgTable(
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
-		defaultAcademicYearId: text("default_academic_year_id").references(
-			() => academicYears.id,
-			{
-				onDelete: "set null",
-			},
-		),
-		registrationFormatId: text("registration_format_id").references(
-			() => registrationNumberFormats.id,
-			{
-				onDelete: "set null",
-			},
-		),
+		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -1175,6 +1234,32 @@ export const examGradeEditors = pgTable(
 	],
 );
 
+/** Institution-wide grade entry delegation: grants a user the right to submit grades for any exam in the institution. */
+export const gradeAccessGrants = pgTable(
+	"grade_access_grants",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		profileId: text("profile_id")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "cascade" }),
+		grantedByProfileId: text("granted_by_profile_id").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_grade_access_grant").on(t.institutionId, t.profileId),
+		index("idx_grade_access_grants_institution").on(t.institutionId),
+		index("idx_grade_access_grants_profile").on(t.profileId),
+	],
+);
+
 export const gradeEditLogActions = ["write", "delete", "import"] as const;
 export type GradeEditLogAction = (typeof gradeEditLogActions)[number];
 
@@ -1521,6 +1606,10 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 	classes: many(classes),
 	courses: many(courses),
 	teachingUnits: many(teachingUnits),
+	studyCycle: one(studyCycles, {
+		fields: [programs.cycleId],
+		references: [studyCycles.id],
+	}),
 }));
 
 export const programOptionsRelations = relations(
@@ -1791,14 +1880,6 @@ export const institutionsRelations = relations(
 		}),
 		childInstitutions: many(institutions, {
 			relationName: "institutionHierarchy",
-		}),
-		defaultAcademicYear: one(academicYears, {
-			fields: [institutions.defaultAcademicYearId],
-			references: [academicYears.id],
-		}),
-		registrationFormat: one(registrationNumberFormats, {
-			fields: [institutions.registrationFormatId],
-			references: [registrationNumberFormats.id],
 		}),
 		organization: one(organization, {
 			fields: [institutions.organizationId],
@@ -2328,3 +2409,54 @@ export type DeliberationRule = InferSelectModel<typeof deliberationRules>;
 export type NewDeliberationRule = InferInsertModel<typeof deliberationRules>;
 export type DeliberationLog = InferSelectModel<typeof deliberationLogs>;
 export type NewDeliberationLog = InferInsertModel<typeof deliberationLogs>;
+
+export const gradeAccessGrantsRelations = relations(
+	gradeAccessGrants,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [gradeAccessGrants.institutionId],
+			references: [institutions.id],
+		}),
+		profile: one(domainUsers, {
+			fields: [gradeAccessGrants.profileId],
+			references: [domainUsers.id],
+			relationName: "gradeAccessGrantee",
+		}),
+		grantedBy: one(domainUsers, {
+			fields: [gradeAccessGrants.grantedByProfileId],
+			references: [domainUsers.id],
+			relationName: "gradeAccessGranter",
+		}),
+	}),
+);
+
+export type GradeAccessGrant = InferSelectModel<typeof gradeAccessGrants>;
+export type NewGradeAccessGrant = InferInsertModel<typeof gradeAccessGrants>;
+
+export const diplomationApiKeysRelations = relations(
+	diplomationApiKeys,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [diplomationApiKeys.institutionId],
+			references: [institutions.id],
+		}),
+	}),
+);
+
+export const diplomationDocumentsRelations = relations(
+	diplomationDocuments,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [diplomationDocuments.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [diplomationDocuments.studentId],
+			references: [students.id],
+		}),
+		generatedByApiKey: one(diplomationApiKeys, {
+			fields: [diplomationDocuments.generatedByApiKeyId],
+			references: [diplomationApiKeys.id],
+		}),
+	}),
+);

@@ -5,8 +5,8 @@ import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
@@ -18,6 +18,10 @@ import {
 	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { Empty } from "../../components/ui/empty";
 import { Label } from "../../components/ui/label";
 import {
@@ -274,9 +278,7 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("teacher.classCourses.title")}
-					</h1>
+					<h1 className="text-foreground">{t("teacher.classCourses.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("teacher.classCourses.subtitle")}
 					</p>
@@ -374,7 +376,33 @@ export default function ClassCourseManagement() {
 								</TableHeader>
 								<TableBody>
 									{displayedClassCourses?.map((cc) => (
-										<TableRow key={cc.id}>
+										<TableRow
+											key={cc.id}
+											actions={
+												<>
+													<ContextMenuItem
+														onSelect={() => {
+															setEditingClassCourse(cc);
+															reset({
+																class: cc.class,
+																course: cc.course,
+																teacher: cc.teacher,
+															});
+															setIsFormOpen(true);
+														}}
+													>
+														{t("common.actions.edit")}
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														className="text-destructive"
+														onSelect={() => openDeleteModal(cc.id)}
+													>
+														{t("common.actions.delete")}
+													</ContextMenuItem>
+												</>
+											}
+										>
 											<TableCell className="w-10">
 												<Checkbox
 													checked={selection.isSelected(cc.id)}

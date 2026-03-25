@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Button } from "../../../components/ui/button";
 import {
@@ -127,110 +127,111 @@ export function CreateBatchJobDialog({
 					</DialogTitle>
 				</DialogHeader>
 
-				{!previewData ? (
-					<div className="space-y-4">
-						{/* Job type selection */}
-						<div className="space-y-2">
-							<Label>{t("admin.batchJobs.fields.jobType")}</Label>
-							<Select value={jobType} onValueChange={setJobType}>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a job type..." />
-								</SelectTrigger>
-								<SelectContent>
-									{JOB_TYPES.map((type) => (
-										<SelectItem key={type} value={type}>
-											{t(`admin.batchJobs.types.${type}`, {
-												defaultValue: type,
-											})}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						{/* Academic year */}
-						{jobType && (
+				<div className="px-6 pb-4">
+					{!previewData ? (
+						<div className="space-y-4">
+							{/* Job type selection */}
 							<div className="space-y-2">
-								<Label>{t("admin.batchJobs.fields.academicYear")}</Label>
-								<AcademicYearSelect
-									value={academicYearId || null}
-									onChange={setAcademicYearId}
-									autoSelectActive
-								/>
-							</div>
-						)}
-
-						{/* Class (optional for creditLedger, required for studentFacts) */}
-						{jobType && (
-							<div className="space-y-2">
-								<Label>
-									{t("admin.batchJobs.fields.class")}{" "}
-									{jobType !== "studentFacts.refreshClass" &&
-										`(${t("common.optional")})`}
-								</Label>
-								<Select value={classId} onValueChange={setClassId}>
+								<Label>{t("admin.batchJobs.fields.jobType")}</Label>
+								<Select value={jobType} onValueChange={setJobType}>
 									<SelectTrigger>
-										<SelectValue placeholder="Select class..." />
+										<SelectValue placeholder="Select a job type..." />
 									</SelectTrigger>
 									<SelectContent>
-										{classes.map((c) => (
-											<SelectItem key={c.id} value={c.id}>
-												{c.name} ({c.code})
+										{JOB_TYPES.map((type) => (
+											<SelectItem key={type} value={type}>
+												{t(`admin.batchJobs.types.${type}`, {
+													defaultValue: type,
+												})}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
 							</div>
-						)}
-					</div>
-				) : (
-					/* Preview result */
-					<div className="space-y-4">
-						{/* Summary */}
-						<div className="rounded-lg border bg-muted/50 p-4">
-							<h4 className="mb-2 font-medium text-sm">
-								{t("admin.batchJobs.preview.summary")}
-							</h4>
-							<dl className="space-y-1 text-sm">
-								{Object.entries(previewData.previewResult).map(
-									([key, value]) => (
-										<div key={key} className="flex justify-between">
-											<dt className="text-muted-foreground">{key}</dt>
-											<dd className="font-medium">{String(value)}</dd>
-										</div>
-									),
-								)}
-							</dl>
-						</div>
 
-						{/* Steps */}
-						<div>
-							<h4 className="mb-2 font-medium text-sm">
-								{t("admin.batchJobs.preview.steps")}
-							</h4>
-							<div className="space-y-2">
-								{previewData.steps.map((step, i) => (
-									<div
-										key={i}
-										className="flex items-center justify-between rounded-lg border p-3"
-									>
-										<span className="text-sm">
-											{i + 1}. {step.name}
-										</span>
-										<span className="text-muted-foreground text-xs">
-											{step.itemsTotal} items
-										</span>
-									</div>
-								))}
+							{/* Academic year */}
+							{jobType && (
+								<div className="space-y-2">
+									<Label>{t("admin.batchJobs.fields.academicYear")}</Label>
+									<AcademicYearSelect
+										value={academicYearId || null}
+										onChange={setAcademicYearId}
+										autoSelectActive
+									/>
+								</div>
+							)}
+
+							{/* Class (optional for creditLedger, required for studentFacts) */}
+							{jobType && (
+								<div className="space-y-2">
+									<Label>
+										{t("admin.batchJobs.fields.class")}{" "}
+										{jobType !== "studentFacts.refreshClass" &&
+											`(${t("common.optional")})`}
+									</Label>
+									<Select value={classId} onValueChange={setClassId}>
+										<SelectTrigger>
+											<SelectValue placeholder="Select class..." />
+										</SelectTrigger>
+										<SelectContent>
+											{classes.map((c) => (
+												<SelectItem key={c.id} value={c.id}>
+													{c.name} ({c.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+							)}
+						</div>
+					) : (
+						/* Preview result */
+						<div className="space-y-4">
+							{/* Summary */}
+							<div className="rounded-lg border bg-muted/50 p-4">
+								<h4 className="mb-2 font-medium text-sm">
+									{t("admin.batchJobs.preview.summary")}
+								</h4>
+								<dl className="space-y-1 text-sm">
+									{Object.entries(previewData.previewResult).map(
+										([key, value]) => (
+											<div key={key} className="flex justify-between">
+												<dt className="text-muted-foreground">{key}</dt>
+												<dd className="font-medium">{String(value)}</dd>
+											</div>
+										),
+									)}
+								</dl>
 							</div>
+
+							{/* Steps */}
+							<div>
+								<h4 className="mb-2 font-medium text-sm">
+									{t("admin.batchJobs.preview.steps")}
+								</h4>
+								<div className="space-y-2">
+									{previewData.steps.map((step, i) => (
+										<div
+											key={i}
+											className="flex items-center justify-between rounded-lg border p-3"
+										>
+											<span className="text-sm">
+												{i + 1}. {step.name}
+											</span>
+											<span className="text-muted-foreground text-xs">
+												{step.itemsTotal} items
+											</span>
+										</div>
+									))}
+								</div>
+							</div>
+
+							<p className="text-amber-600 text-sm">
+								{t("admin.batchJobs.preview.confirmRun")}
+							</p>
 						</div>
-
-						<p className="text-amber-600 text-sm">
-							{t("admin.batchJobs.preview.confirmRun")}
-						</p>
-					</div>
-				)}
-
+					)}
+				</div>
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>
 						{t("common.actions.cancel")}

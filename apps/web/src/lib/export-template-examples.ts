@@ -643,7 +643,7 @@ export const TEMPLATE_EXAMPLES = {
 
             <tr class="taux-reussite-row">
                 <td colspan="1000" style="border-top: 2px solid #666;">
-                    <strong>Taux de Réussite: {{stats.successRate}}% — Admis: {{stats.admittedCount}} | Compensés: {{stats.compensatedCount}} | Ajournés: {{stats.deferredCount}} | En attente: {{stats.pendingCount}}</strong>
+                    <strong>Taux de Réussite: {{stats.successRate}}% — Admis cl. sup.: {{stats.admittedCount}} | Admis par comp.: {{stats.compensatedCount}} | Ajournés: {{stats.deferredCount}} | En attente: {{stats.pendingCount}}</strong>
                 </td>
             </tr>
         </tbody>
@@ -653,8 +653,8 @@ export const TEMPLATE_EXAMPLES = {
     <div class="bottom-section">
         <div class="legend-info-wrapper">
             <table class="legend-table">
-                <tr><td>ADM:</td><td>Acquise</td><td>CMP:</td><td>Compensée</td></tr>
-                <tr><td>AJ:</td><td>Non acquise</td><td>INC:</td><td>Incomplète</td></tr>
+                <tr><td>ADM:</td><td>UE Acquise (crédits obtenus)</td><td>CMP:</td><td>UE Compensée (crédits obtenus)</td></tr>
+                <tr><td>AJ:</td><td>UE Non acquise (crédits non obtenus)</td><td>INC:</td><td>UE Incomplète (notes manquantes)</td></tr>
                 <tr><td>MOY:</td><td>Moyenne</td><td>CRE:</td><td>Crédits</td></tr>
                 <tr><td>MAT:</td><td>Matricule</td><td>DEC:</td><td>Décision</td></tr>
             </table>

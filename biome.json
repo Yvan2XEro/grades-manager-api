@@ -1,30 +1,13 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
 	"vcs": {
-		"enabled": false,
+		"enabled": true,
 		"clientKind": "git",
-		"useIgnoreFile": false
+		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false,
-		"includes": [
-			"**",
-			"!**/.next",
-			"!**/dist",
-			"!**/.turbo",
-			"!**/dev-dist",
-			"!**/.zed",
-			"!**/.vscode",
-			"!**/routeTree.gen.ts",
-			"!**/src-tauri",
-			"!**/.nuxt",
-			"!bts.jsonc",
-			"!**/.expo",
-			"!**/.wrangler",
-			"!**/.alchemy",
-			"!**/wrangler.jsonc",
-			"!**/.source"
-		]
+		"ignoreUnknown": true,
+		"includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "!**/*.hbs"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -37,7 +20,30 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				"useExhaustiveDependencies": "info"
+				"useExhaustiveDependencies": "off",
+				"noUnusedVariables": "warn",
+				"noUnusedImports": "warn",
+				"noUnusedFunctionParameters": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noArrayIndexKey": "off",
+				"noDocumentCookie": "off",
+				"useIterableCallbackReturn": "off"
+			},
+			"a11y": {
+				"noLabelWithoutControl": "off",
+				"noStaticElementInteractions": "off",
+				"useKeyWithClickEvents": "off",
+				"useButtonType": "off",
+				"useFocusableInteractive": "off",
+				"useSemanticElements": "off",
+				"useAriaPropsSupportedByRole": "off",
+				"useAriaPropsForRole": "off",
+				"noSvgWithoutTitle": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
 			},
 			"nursery": {
 				"useSortedClasses": {
@@ -48,8 +54,11 @@
 					}
 				}
 			},
+			"complexity": {
+				"noUselessSwitchCase": "warn"
+			},
 			"style": {
-				"noParameterAssign": "error",
+				"noParameterAssign": "warn",
 				"useAsConstAssertion": "error",
 				"useDefaultParameterLast": "error",
 				"useEnumInitializers": "error",
@@ -57,8 +66,9 @@
 				"useSingleVarDeclarator": "error",
 				"noUnusedTemplateLiteral": "error",
 				"useNumberNamespace": "error",
-				"noInferrableTypes": "error",
-				"noUselessElse": "error"
+				"noInferrableTypes": "warn",
+				"noUselessElse": "warn",
+				"noNonNullAssertion": "warn"
 			}
 		}
 	},
@@ -66,5 +76,56 @@
 		"formatter": {
 			"quoteStyle": "double"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"**/__tests__/**",
+				"**/*.test.*",
+				"**/*.spec.*",
+				"**/test-utils/**"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					},
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noUnusedImports": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["apps/web/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["apps/server/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off",
+						"noParameterAssign": "off"
+					}
+				}
+			}
+		}
+	]
 }

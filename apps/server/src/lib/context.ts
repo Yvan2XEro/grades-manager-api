@@ -13,6 +13,10 @@ export type CreateContextOptions = {
 	context: HonoContext;
 };
 
+type SessionWithActiveOrganization = {
+	activeOrganizationId?: string | null;
+};
+
 export async function createContext({ context }: CreateContextOptions) {
 	const session = await auth.api.getSession({
 		headers: context.req.raw.headers,
@@ -29,7 +33,9 @@ export async function createContext({ context }: CreateContextOptions) {
 			});
 		}
 	}
-	const tenant = await resolveTenantContext(session, profile);
+	const orgSlugHint =
+		context.req.raw.headers.get("X-Organization-Slug") ?? undefined;
+	const tenant = await resolveTenantContext(session, profile, orgSlugHint);
 	const memberRole = deriveMemberRole(tenant.member?.role);
 	return {
 		session,
@@ -52,9 +58,13 @@ export type Context = Awaited<ReturnType<typeof createContext>>;
 async function resolveTenantContext(
 	session: Awaited<ReturnType<typeof auth.api.getSession>>,
 	profile: appSchema.DomainUser | null,
+	orgSlugHint?: string,
 ) {
+	const authSession = session?.session as
+		| SessionWithActiveOrganization
+		| undefined;
 	// First, try to get organizationId from the active organization in session
-	let organizationId = session?.session?.activeOrganizationId ?? null;
+	let organizationId = authSession?.activeOrganizationId ?? null;
 	let memberRecord: Awaited<
 		ReturnType<typeof db.query.member.findFirst>
 	> | null = null;
@@ -69,13 +79,39 @@ async function resolveTenantContext(
 		});
 	}
 
-	// Otherwise fall back to the linked member on the domain profile
+	// Fall back to the linked member on the domain profile
 	if (!memberRecord && profile?.memberId) {
 		memberRecord = await db.query.member.findFirst({
 			where: eq(authSchema.member.id, profile.memberId),
 		});
 		if (!organizationId) {
 			organizationId = memberRecord?.organizationId ?? null;
+		}
+	}
+
+	// Final fallback: resolve via the X-Organization-Slug header sent by the client
+	if (!organizationId && orgSlugHint && session?.user?.id) {
+		const org = await db
+			.select({ id: authSchema.organization.id })
+			.from(authSchema.organization)
+			.where(eq(authSchema.organization.slug, orgSlugHint))
+			.limit(1)
+			.then((rows) => rows[0]);
+		if (org) {
+			const [member] = await db
+				.select()
+				.from(authSchema.member)
+				.where(
+					and(
+						eq(authSchema.member.organizationId, org.id),
+						eq(authSchema.member.userId, session.user.id),
+					),
+				)
+				.limit(1);
+			if (member) {
+				organizationId = org.id;
+				memberRecord = member;
+			}
 		}
 	}
 

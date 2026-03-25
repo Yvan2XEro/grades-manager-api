@@ -1,18 +1,146 @@
-import type * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuTrigger,
+} from "./context-menu";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+	const containerRef = React.useRef<HTMLDivElement>(null);
+	const tableRef = React.useRef<HTMLTableElement>(null);
+	const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+	const [canScrollRight, setCanScrollRight] = React.useState(false);
+	const [isDragging, setIsDragging] = React.useState(false);
+	const dragStart = React.useRef<{ x: number; scrollLeft: number } | null>(
+		null,
+	);
+	const [arrowY, setArrowY] = React.useState<number | null>(null);
+	const outerRef = React.useRef<HTMLDivElement>(null);
+
+	const checkScroll = React.useCallback(() => {
+		const el = containerRef.current;
+		if (!el) return;
+		setCanScrollLeft(el.scrollLeft > 0);
+		setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+	}, []);
+
+	React.useLayoutEffect(() => {
+		checkScroll();
+	});
+
+	React.useEffect(() => {
+		const el = containerRef.current;
+		const table = tableRef.current;
+		if (!el) return;
+		el.addEventListener("scroll", checkScroll);
+		const ro = new ResizeObserver(checkScroll);
+		ro.observe(el);
+		if (table) ro.observe(table);
+		return () => {
+			el.removeEventListener("scroll", checkScroll);
+			ro.disconnect();
+		};
+	}, [checkScroll]);
+
+	const scroll = (dir: "left" | "right") => {
+		containerRef.current?.scrollBy({
+			left: dir === "left" ? -240 : 240,
+			behavior: "smooth",
+		});
+	};
+
+	const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		const el = containerRef.current;
+		if (!el) return;
+		dragStart.current = { x: e.clientX, scrollLeft: el.scrollLeft };
+		setIsDragging(true);
+	};
+
+	React.useEffect(() => {
+		const onMouseMove = (e: MouseEvent) => {
+			if (!dragStart.current || !containerRef.current) return;
+			const dx = e.clientX - dragStart.current.x;
+			containerRef.current.scrollLeft = dragStart.current.scrollLeft - dx;
+		};
+		const onMouseUp = () => {
+			dragStart.current = null;
+			setIsDragging(false);
+		};
+		window.addEventListener("mousemove", onMouseMove);
+		window.addEventListener("mouseup", onMouseUp);
+		return () => {
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseup", onMouseUp);
+		};
+	}, []);
+
+	const onMouseMove = React.useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			const el = outerRef.current;
+			if (!el) return;
+			const rect = el.getBoundingClientRect();
+			const y = e.clientY - rect.top;
+			const clamped = Math.max(16, Math.min(y, rect.height - 16));
+			setArrowY(clamped);
+		},
+		[],
+	);
+
+	const arrowStyle =
+		arrowY !== null
+			? { top: arrowY, transform: "translateY(-50%)" }
+			: undefined;
+
 	return (
 		<div
-			data-slot="table-container"
-			className="relative w-full overflow-x-auto"
+			ref={outerRef}
+			className="relative w-full rounded-xl bg-card"
+			onMouseMove={onMouseMove}
+			onMouseLeave={() => setArrowY(null)}
 		>
-			<table
-				data-slot="table"
-				className={cn("w-full caption-bottom text-sm", className)}
-				{...props}
-			/>
+			<div
+				data-slot="table-container"
+				ref={containerRef}
+				onMouseDown={onMouseDown}
+				className={cn(
+					"table-scroll w-full overflow-x-auto",
+					canScrollLeft || canScrollRight
+						? isDragging
+							? "cursor-grabbing select-none"
+							: "cursor-grab"
+						: "",
+				)}
+			>
+				<table
+					ref={tableRef}
+					data-slot="table"
+					className={cn("w-full caption-bottom text-sm", className)}
+					{...props}
+				/>
+			</div>
+			{canScrollLeft && (
+				<button
+					type="button"
+					onClick={() => scroll("left")}
+					style={arrowStyle}
+					className="absolute left-0 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-md backdrop-blur-sm transition-[background-color] hover:bg-muted"
+				>
+					<ChevronLeft className="h-4 w-4" />
+				</button>
+			)}
+			{canScrollRight && (
+				<button
+					type="button"
+					onClick={() => scroll("right")}
+					style={arrowStyle}
+					className="absolute right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/90 text-foreground shadow-md backdrop-blur-sm transition-[background-color] hover:bg-muted"
+				>
+					<ChevronRight className="h-4 w-4" />
+				</button>
+			)}
 		</div>
 	);
 }
@@ -21,7 +149,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 	return (
 		<thead
 			data-slot="table-header"
-			className={cn("bg-muted/50 [&_tr]:border-b", className)}
+			className={cn("border-border border-b bg-muted/40", className)}
 			{...props}
 		/>
 	);
@@ -42,7 +170,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 		<tfoot
 			data-slot="table-footer"
 			className={cn(
-				"border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+				"border-border border-t bg-muted/40 font-medium [&>tr]:last:border-b-0",
 				className,
 			)}
 			{...props}
@@ -50,16 +178,39 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 	);
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+type TableRowProps = React.ComponentProps<"tr"> & {
+	/** Content rendered inside a right-click context menu for this row. */
+	actions?: React.ReactNode;
+};
+
+function TableRow({ className, actions, ...props }: TableRowProps) {
+	const [contextOpen, setContextOpen] = React.useState(false);
+
+	const rowClass = cn(
+		"group border-border/50 border-b transition-all duration-150",
+		"hover:bg-muted/50 hover:shadow-[inset_3px_0_0_0_hsl(var(--primary)/0.4)]",
+		"data-[state=selected]:bg-primary/5 data-[state=selected]:shadow-[inset_3px_0_0_0_var(--primary)]",
+		"data-[context=open]:bg-primary/8 data-[context=open]:shadow-[inset_3px_0_0_0_var(--primary)] data-[context=open]:hover:bg-primary/8",
+		actions && "cursor-context-menu",
+		className,
+	);
+
+	if (!actions) {
+		return <tr data-slot="table-row" className={rowClass} {...props} />;
+	}
+
 	return (
-		<tr
-			data-slot="table-row"
-			className={cn(
-				"border-b transition-colors even:bg-muted/30 hover:bg-primary/5 data-[state=selected]:bg-muted",
-				className,
-			)}
-			{...props}
-		/>
+		<ContextMenu onOpenChange={setContextOpen}>
+			<ContextMenuTrigger asChild>
+				<tr
+					data-slot="table-row"
+					data-context={contextOpen ? "open" : undefined}
+					className={rowClass}
+					{...props}
+				/>
+			</ContextMenuTrigger>
+			<ContextMenuContent>{actions}</ContextMenuContent>
+		</ContextMenu>
 	);
 }
 
@@ -68,7 +219,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 		<th
 			data-slot="table-head"
 			className={cn(
-				"h-11 whitespace-nowrap px-4 py-3 text-left align-middle font-semibold text-foreground text-xs uppercase tracking-wider [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+				"h-9 px-4 py-2.5 text-left align-middle font-medium text-[11px] text-muted-foreground uppercase tracking-wider [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
 				className,
 			)}
 			{...props}
@@ -81,7 +232,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
 		<td
 			data-slot="table-cell"
 			className={cn(
-				"whitespace-nowrap px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+				"px-4 py-3 align-middle text-sm [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
 				className,
 			)}
 			{...props}
@@ -96,7 +247,7 @@ function TableCaption({
 	return (
 		<caption
 			data-slot="table-caption"
-			className={cn("mt-4 text-muted-foreground text-sm", className)}
+			className={cn("mt-4 text-muted-foreground text-xs", className)}
 			{...props}
 		/>
 	);
@@ -107,8 +258,8 @@ export {
 	TableHeader,
 	TableBody,
 	TableFooter,
-	TableHead,
 	TableRow,
+	TableHead,
 	TableCell,
 	TableCaption,
 };

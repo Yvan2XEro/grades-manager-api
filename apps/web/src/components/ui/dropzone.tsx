@@ -182,10 +182,10 @@ type UseDropzoneProps<TUploadRes, TUploadError> = {
 	shiftOnMaxFiles?: boolean;
 } & (TUploadError extends string
 	? {
-			shapeUploadError?: (error: TUploadError) => string | void;
+			shapeUploadError?: (error: TUploadError) => string | undefined;
 		}
 	: {
-			shapeUploadError: (error: TUploadError) => string | void;
+			shapeUploadError: (error: TUploadError) => string | undefined;
 		});
 
 interface UseDropzoneReturn<TUploadRes, TUploadError> {
@@ -233,7 +233,7 @@ const useDropzone = <TUploadRes, TUploadError = string>(
 				pOnRootError(error);
 			}
 		},
-		[pOnRootError, _setRootError],
+		[pOnRootError],
 	);
 
 	const [fileStatuses, dispatch] = useReducer(fileStatusReducer, []);

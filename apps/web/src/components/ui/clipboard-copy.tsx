@@ -1,7 +1,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -30,7 +30,7 @@ export function ClipboardCopy({ value, label, className }: ClipboardCopyProps) {
 						}),
 			);
 			setTimeout(() => setCopied(false), 1500);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(
 				t("common.clipboard.failed", {
 					defaultValue: "Unable to copy",

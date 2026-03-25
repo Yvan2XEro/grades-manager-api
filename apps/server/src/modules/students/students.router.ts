@@ -17,10 +17,6 @@ import {
 type CreateStudentInput = Parameters<typeof service.createStudent>[0];
 type ServiceProfileInput = CreateStudentInput["profile"];
 
-function mapProfile(payload: StudentProfilePayload): ServiceProfileInput;
-function mapProfile(
-	payload: Partial<StudentProfilePayload>,
-): Partial<ServiceProfileInput>;
 function mapProfile(payload: Partial<StudentProfilePayload>) {
 	return {
 		firstName: payload.firstName,
@@ -32,7 +28,7 @@ function mapProfile(payload: Partial<StudentProfilePayload>) {
 		phone: payload.phone,
 		nationality: payload.nationality,
 		authUserId: payload.authUserId,
-	};
+	} as Partial<ServiceProfileInput>;
 }
 
 const hasProfileData = (payload: Partial<ServiceProfileInput>) =>
@@ -45,7 +41,7 @@ export const studentsRouter = router({
 				classId: input.classId,
 				registrationNumber: input.registrationNumber,
 				registrationFormatId: input.registrationFormatId,
-				profile: mapProfile(input),
+				profile: mapProfile(input) as ServiceProfileInput,
 				admissionType: input.admissionType,
 				transferInstitution: input.transferInstitution,
 				transferCredits: input.transferCredits,
@@ -64,7 +60,7 @@ export const studentsRouter = router({
 					classId: input.classId,
 					registrationNumber: input.registrationNumber,
 					registrationFormatId: input.registrationFormatId,
-					profile: mapProfile(input),
+					profile: mapProfile(input) as ServiceProfileInput,
 					admissionType: input.admissionType,
 					transferInstitution: input.transferInstitution,
 					transferCredits: input.transferCredits,

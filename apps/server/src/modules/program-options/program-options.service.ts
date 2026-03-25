@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import { conflict } from "../_shared/errors";
 import * as repo from "./program-options.repo";
 
 async function ensureProgram(programId: string, institutionId: string) {
@@ -31,10 +32,10 @@ async function ensureOption(id: string, institutionId: string) {
 	return option;
 }
 
-export async function createOption(
-	data: schema.NewProgramOption,
-	institutionId: string,
-) {
+type CreateInput = Omit<schema.NewProgramOption, "institutionId">;
+type UpdateInput = Partial<CreateInput>;
+
+export async function createOption(data: CreateInput, institutionId: string) {
 	await ensureProgram(data.programId, institutionId);
 	return repo.create({ ...data, institutionId });
 }
@@ -42,7 +43,7 @@ export async function createOption(
 export async function updateOption(
 	id: string,
 	institutionId: string,
-	data: Partial<schema.NewProgramOption>,
+	data: UpdateInput,
 ) {
 	const existing = await ensureOption(id, institutionId);
 	if (data.programId && data.programId !== existing.programId) {
@@ -53,11 +54,17 @@ export async function updateOption(
 
 export async function deleteOption(id: string, institutionId: string) {
 	await ensureOption(id, institutionId);
+	const classCount = await repo.countClasses(id);
+	if (classCount > 0) {
+		throw conflict(
+			"Cannot delete program option: classes are attached to it. Remove them first.",
+		);
+	}
 	await repo.remove(id, institutionId);
 }
 
 export async function listOptions(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.list(opts, institutionId);
@@ -72,7 +79,7 @@ export async function getOptionById(id: string, institutionId: string) {
 }
 
 export async function searchProgramOptions(
-	opts: Parameters<typeof repo.search>[0],
+	opts: Omit<Parameters<typeof repo.search>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.search(opts, institutionId);

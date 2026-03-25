@@ -5,6 +5,7 @@ import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
 import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
+import * as gradeAccessRepo from "@/modules/grade-access-grants/grade-access-grants.repo";
 import * as repo from "./exam-grade-editors.repo";
 
 export type ExamEditorActor = {
@@ -55,11 +56,22 @@ async function resolveActorAccess(params: {
 }) {
 	const isAdmin = roleSatisfies(params.actor.memberRole, ADMIN_ROLES);
 	if (isAdmin) return "admin";
+	const isGradeEditor = roleSatisfies(params.actor.memberRole, [
+		"grade_editor",
+	]);
+	if (isGradeEditor) return "delegate";
 	const profileId = params.actor.profileId;
 	if (!profileId) return null;
 	if (params.exam.classCourseRef?.teacher === profileId) {
 		return "teacher";
 	}
+	// Institution-wide grade access delegation
+	const institutionGrant = await gradeAccessRepo.findByProfileAndInstitution(
+		profileId,
+		params.exam.institutionId,
+	);
+	if (institutionGrant) return "delegate";
+	// Per-exam delegation
 	const delegated = await repo.findByExamAndEditor(params.exam.id, profileId);
 	return delegated ? "delegate" : null;
 }
@@ -126,7 +138,7 @@ export async function assignEditor(opts: {
 			editorProfileId,
 			grantedByProfileId: grantedBy,
 		});
-	} catch (error) {
+	} catch (_error) {
 		throw new TRPCError({
 			code: "CONFLICT",
 			message: "Editor already assigned",

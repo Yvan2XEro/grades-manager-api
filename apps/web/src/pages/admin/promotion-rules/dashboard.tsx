@@ -33,7 +33,7 @@ export function PromotionRulesDashboard() {
 		<div className="space-y-8">
 			{/* Header */}
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("admin.promotionRules.dashboard.title")}
 				</h1>
 				<p className="mt-2 text-lg text-muted-foreground">
@@ -205,7 +205,7 @@ export function PromotionRulesDashboard() {
 														},
 													)}
 												</div>
-												<div className="text-muted-foreground text-sm">
+												<div className="text-muted-foreground text-xs">
 													{new Date(execution.executedAt).toLocaleDateString()}{" "}
 													•{" "}
 													{(execution as any).metadata?.ruleName ||

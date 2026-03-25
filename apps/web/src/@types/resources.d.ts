@@ -10,6 +10,13 @@ interface Resources {
 				resultsCount_other: "{{count}} results";
 				loading: "Loading...";
 			};
+			filterBar: {
+				label: "Filters";
+				reset: "Reset";
+			};
+			datePicker: {
+				placeholder: "Choose a date";
+			};
 		};
 		common: {
 			actions: {
@@ -27,6 +34,7 @@ interface Resources {
 				reset: "Reset";
 				open: "Open";
 				back: "Back";
+				rename: "Rename (TODO)";
 			};
 			fields: {
 				email: "Email";
@@ -65,6 +73,17 @@ interface Resources {
 			invalidDate: "Invalid date";
 			loading: "Loading...";
 			optional: "Optional";
+			bulkActions: {
+				clear: "Clear (TODO)";
+				confirmDelete: "Confirm Delete (TODO)";
+				deleteError: "Delete Error (TODO)";
+				deleteSuccess: "Delete Success (TODO)";
+				selectAll: "Select All (TODO)";
+				selected: "Selected (TODO)";
+			};
+			noResults: "No Results (TODO)";
+			search: "Search (TODO)";
+			select: "Select (TODO)";
 		};
 		teacher: {
 			courses: {
@@ -356,6 +375,40 @@ interface Resources {
 					sent: "Alert queued";
 				};
 			};
+			gradeAccessGrants: {
+				title: "Grade Delegation";
+				subtitle: "Grant institution-wide grade entry access to specific users";
+				info: "Users listed here can submit grades for any exam in this institution, regardless of course assignment.";
+				actions: {
+					add: "Add delegate";
+					grant: "Grant access";
+					revoke: "Revoke access";
+				};
+				columns: {
+					user: "User";
+					email: "Email";
+					grantedBy: "Granted by";
+					since: "Since";
+				};
+				empty: {
+					title: "No delegates";
+					description: "No users have been granted institution-wide grade access yet.";
+				};
+				dialog: {
+					title: "Add grade delegate";
+					description: "Select a user to grant institution-wide grade entry access.";
+					selectLabel: "User";
+					selectPlaceholder: "Select a user...";
+				};
+				revoke: {
+					title: "Revoke access";
+					message: "This user will no longer be able to submit grades unless they are the assigned teacher or have per-exam delegation.";
+				};
+				toast: {
+					granted: "Grade access granted successfully.";
+					revoked: "Grade access revoked.";
+				};
+			};
 			gradeExport: {
 				title: "Grade Export";
 				subtitle: "Export student grades by class and course";
@@ -456,9 +509,14 @@ interface Resources {
 					descriptionLabel: "Description";
 					descriptionPlaceholder: "Optional description (objectives, focus)";
 					submit: "Save program";
-					cycleLabel: "Cycle d'étude";
+					cycleLabel: "Study cycle";
 					cyclePlaceholder: "Select cycle";
 					selectFacultyFirst: "Select a faculty to load available cycles.";
+					cloneFrom: "Cloner le curriculum depuis (optionnel) (TODO)";
+					cloneFromHint: "Les UE et EC du programme source seront copiés après la création. (TODO)";
+					cloneFromNone: "Aucun (TODO)";
+					cloneFromPlaceholder: "Sélectionner un programme source (TODO)";
+					submitWithClone: "Créer et cloner (TODO)";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
@@ -473,6 +531,8 @@ interface Resources {
 					updateError: "Could not update the program";
 					deleteSuccess: "Program deleted successfully";
 					deleteError: "Could not delete the program";
+					cloneError: "Impossible de cloner le curriculum (TODO)";
+					cloneSuccess: "Curriculum cloné : {{units}} UE et {{courses}} EC copiés (TODO)";
 				};
 				delete: {
 					title: "Delete Program";
@@ -521,6 +581,8 @@ interface Resources {
 					nameFr: "Name (FR)";
 					nameEn: "Name (EN)";
 					shortName: "Short name";
+					name: "Nom (TODO)";
+					noDescription: "Aucune description (TODO)";
 				};
 				form: {
 					createTitle: "Create faculty";
@@ -534,7 +596,13 @@ interface Resources {
 					nameFrRequired: "French name is required";
 					nameEnRequired: "English name is required";
 					codeRequired: "Code is required";
+					parentInstitutionLabel: "Parent institution";
+					noParentInstitution: "None (top-level)";
 					submit: "Create";
+					descriptionLabel: "Description (TODO)";
+					descriptionPlaceholder: "Description optionnelle (TODO)";
+					nameLabel: "Nom de la faculté (TODO)";
+					namePlaceholder: "Saisir le nom de la faculté (TODO)";
 				};
 				toast: {
 					createSuccess: "Faculty created successfully";
@@ -547,6 +615,44 @@ interface Resources {
 				delete: {
 					title: "Delete faculty";
 					message: "Are you sure you want to delete this faculty? This action cannot be undone.";
+				};
+				validation: {
+					name: "Le nom doit comporter au moins 2 caractères (TODO)";
+				};
+			};
+			institutions: {
+				title: "Institutions";
+				subtitle: "Manage universities, faculties and schools.";
+				actions: {
+					add: "Add institution";
+				};
+				empty: {
+					title: "No institutions yet";
+					description: "Create your first institution to start organizing your academic structure.";
+				};
+				table: {
+					code: "Code";
+					type: "Type";
+					nameFr: "Name (FR)";
+					nameEn: "Name (EN)";
+					shortName: "Short name";
+				};
+				form: {
+					createTitle: "Create institution";
+					editTitle: "Edit institution";
+					submit: "Create";
+				};
+				toast: {
+					createSuccess: "Institution created successfully";
+					createError: "Could not create the institution";
+					updateSuccess: "Institution updated successfully";
+					updateError: "Could not update the institution";
+					deleteSuccess: "Institution deleted successfully";
+					deleteError: "Could not delete the institution";
+				};
+				delete: {
+					title: "Delete institution";
+					message: "Are you sure you want to delete this institution? This action cannot be undone.";
 				};
 			};
 			classCourses: {
@@ -721,6 +827,22 @@ interface Resources {
 				dean: "Dean";
 				student: "Student";
 			};
+			command: {
+				placeholder: "Search a page…";
+				title: "Quick search";
+				description: "Quickly navigate to a page";
+				empty: 'No results for "{{query}}"';
+				hint: {
+					navigate: "navigate";
+					open: "open";
+					close: "close";
+				};
+				groups: {
+					main: "Main";
+					academic: "Academic";
+					tools: "Tools";
+				};
+			};
 			header: {
 				adminDashboard: "Admin dashboard";
 				teacherDashboard: "Teacher dashboard";
@@ -729,8 +851,12 @@ interface Resources {
 				languageSelectAria: "Change language";
 				languageSelectPlaceholder: "Select language";
 				profileMenuAria: "Open profile menu";
+				search: "Search…";
+				language: "Language";
 			};
 			sidebar: {
+				search: "Search...";
+				noResults: "No results";
 				admin: {
 					dashboard: "Overview";
 					academicYears: "Academic years";
@@ -738,6 +864,8 @@ interface Resources {
 					users: "Users";
 					classCourses: "Class courses";
 					gradeExport: "Grade export";
+					gradeAccess: "Grade delegation";
+					gradeEntry: "Grade entry";
 					exportTemplates: "Export templates";
 					monitoring: "Monitoring";
 					notifications: "Notifications";
@@ -746,7 +874,7 @@ interface Resources {
 					studentPromotion: "Student promotion";
 					courses: "Courses";
 					classes: "Classes";
-					faculties: "Faculties";
+					faculties: "Institutions";
 					institution: "Institution";
 					studyCycles: "Study cycles";
 					programs: "Programs";
@@ -760,6 +888,9 @@ interface Resources {
 					rules: "Rule center";
 					registrationNumbers: "Registration numbers";
 					promotionRules: "Promotion rules";
+					deliberations: "Deliberations";
+					deliberationRules: "Deliberation rules";
+					apiKeys: "API Keys";
 				};
 				groups: {
 					overview: "Overview";
@@ -790,6 +921,7 @@ interface Resources {
 				guest: "Guest";
 				student: "Student";
 				staff: "Staff";
+				grade_editor: "Grade Editor";
 				dean: "Dean";
 				teacher: "Teacher";
 				administrator: "Administrator";
@@ -813,6 +945,7 @@ interface Resources {
 				error: "Unable to sign in. Check your credentials.";
 				noAccount: "Don't have an account?";
 				registerLink: "Create one";
+				notMember: "You are not a member of this organization. Contact your administrator.";
 			};
 			register: {
 				title: "Create your account";
@@ -838,6 +971,7 @@ interface Resources {
 				success: "Password reset email sent";
 				error: "Unable to send the reset email";
 				backToLogin: "Back to sign in";
+				subtitle: "Subtitle (TODO)";
 			};
 			reset: {
 				title: "Choose a new password";
@@ -849,6 +983,7 @@ interface Resources {
 				success: "Password updated successfully";
 				error: "Unable to update the password";
 				backToLogin: "Return to sign in";
+				subtitle: "Subtitle (TODO)";
 			};
 			logout: {
 				success: "Signed out successfully";
@@ -872,6 +1007,7 @@ interface Resources {
 				programStats: {
 					title: "Students per program";
 					empty: "No data available for the selected year";
+					subtitle: "Subtitle (TODO)";
 				};
 				stats: {
 					faculties: "Faculties";
@@ -882,6 +1018,7 @@ interface Resources {
 					teachers: "Teachers";
 					institutions: "Institutions";
 				};
+				subtitle: "Subtitle (TODO)";
 			};
 			monitoring: {
 				title: "Service monitoring";
@@ -940,6 +1077,7 @@ interface Resources {
 					save: "Save format";
 					clear: "Clear form";
 					new: "New format";
+					activate: "Activate (TODO)";
 				};
 				list: {
 					title: "Existing formats";
@@ -1023,12 +1161,87 @@ interface Resources {
 				justNow: "Just now";
 				queueTitle: "Latest notifications";
 				empty: "No notifications yet.";
+				pendingBadge: "{{count}} pending";
+				viewAll: "View all notifications";
+				results: "{{count}} results";
+				selected: "{{count}} selected";
+				deselect: "Deselect";
+				selectAll: "Select all";
+				status: {
+					pending: "Pending";
+					sent: "Sent";
+					failed: "Failed";
+				};
+				tabs: {
+					all: "All";
+					pending: "Pending";
+					sent: "Sent";
+					failed: "Failed";
+				};
+				timeAgo: {
+					justNow: "Just now";
+					minutes: "{{count}} min ago";
+					hours: "{{count}}h ago";
+					days: "{{count}}d ago";
+				};
 				actions: {
 					flush: "Flush pending";
 					ack: "Acknowledge";
 				};
 				toast: {
 					flushed: "Pending notifications flushed";
+				};
+			};
+			apiKeys: {
+				title: "API Keys";
+				subtitle: "Manage API keys for the Diplomation integration";
+				actions: {
+					create: "New API Key";
+					generate: "Generate Key";
+					revoke: "Revoke";
+					editWebhook: "Edit Webhook";
+				};
+				table: {
+					label: "Label";
+					status: "Status";
+					webhook: "Webhook URL";
+					lastUsed: "Last used";
+					created: "Created";
+				};
+				status: {
+					revoked: "Revoked";
+				};
+				form: {
+					createTitle: "Create API Key";
+					label: "Label";
+					labelPlaceholder: "e.g. Diplomation production";
+					webhookUrl: "Webhook URL (optional)";
+					webhookSecret: "Webhook Secret (optional)";
+					webhookSecretPlaceholder: "Leave empty to skip signing";
+				};
+				rawKey: {
+					title: "Your new API Key";
+					warning: "Copy this key now — it will never be shown again.";
+					confirm: "I copied it";
+				};
+				webhook: {
+					title: "Edit Webhook";
+				};
+				revoke: {
+					title: "Revoke API Key";
+					message: "Are you sure you want to revoke this key? It will stop working immediately.";
+				};
+				empty: {
+					title: "No API keys";
+					description: "Create an API key to allow Diplomation to fetch data from this system.";
+				};
+				toast: {
+					createError: "Failed to create API key";
+					revokeSuccess: "Key revoked";
+					revokeError: "Failed to revoke key";
+					webhookUpdated: "Webhook updated";
+					webhookError: "Failed to update webhook";
+					copied: "Copied to clipboard";
 				};
 			};
 			batchJobs: {
@@ -1072,6 +1285,7 @@ interface Resources {
 				types: {
 					"creditLedger.recompute": "Credit Ledger Recomputation";
 					"studentFacts.refreshClass": "Student Facts Refresh (Class)";
+					"academicYear.setup": "Academic Year Setup";
 				};
 				preview: {
 					title: "Preview Batch Job";
@@ -1108,6 +1322,7 @@ interface Resources {
 				subtitle: "Create and manage academic years, and choose the active one";
 				actions: {
 					add: "Add academic year";
+					createNextYear: "Create next year";
 				};
 				confirmDelete: "Delete this academic year?";
 				empty: {
@@ -1136,12 +1351,25 @@ interface Resources {
 					deleteError: "Could not delete the academic year";
 					statusSuccess: "Academic year status updated";
 					statusError: "Could not update the academic year status";
+					createNextYearSuccess: "Next year created: {{name}}";
+					createNextYearError: "Failed to create next year";
 				};
 				validation: {
 					startDate: "Start date is required";
 					endDate: "End date is required";
 					name: "Name must be at least 2 characters";
 					order: "End date must be after start date";
+				};
+				setup: {
+					button: "Setup from year";
+					title: "Academic year setup";
+					description: "Copy classes and course assignments from a previous year into this one.";
+					sourceYear: "Source year";
+					sourceYearPlaceholder: "Select the year to copy from";
+					previewSummary: '{{classCount}} classes and {{classCourseCount}} course assignments will be copied from "{{sourceYearName}}" to "{{targetYearName}}".';
+					confirm: "Start setup";
+					success: "Academic year setup started";
+					noClasses: "No classes found in the selected year";
 				};
 			};
 			classCourses: {
@@ -1150,6 +1378,7 @@ interface Resources {
 				actions: {
 					assign: "Assign course";
 					assignUe: "Assign UE";
+					autoEnroll: "Enroll students";
 				};
 				ueAssign: {
 					title: "Assign a teaching unit";
@@ -1193,6 +1422,7 @@ interface Resources {
 					coefficientPlaceholder: "1.00";
 					coefficientHelp: "Weight for weighted average calculation within the Teaching Unit";
 					createSubmit: "Assign course";
+					autoEnrollOnCreate: "Auto-enroll class students after assigning this course";
 				};
 				toast: {
 					createSuccess: "Course assignment created successfully";
@@ -1203,6 +1433,8 @@ interface Resources {
 					deleteError: "Could not delete the assignment";
 					bulkAssignSuccess: "{{count}} courses assigned successfully";
 					bulkAssignError: "Error during assignment";
+					autoEnrollSuccess: "{{count}} enrollment(s) created";
+					autoEnrollError: "Failed to auto-enroll students";
 				};
 				delete: {
 					title: "Delete course assignment";
@@ -1214,12 +1446,21 @@ interface Resources {
 					teacher: "Please select a teacher";
 					code: "Code is required";
 				};
+				autoEnroll: {
+					title: "Auto-enroll students";
+					description: "Automatically enrolls all students of a class in their assigned courses for the selected academic year.";
+					classLabel: "Class";
+					classPlaceholder: "Select a class";
+					yearLabel: "Academic Year";
+					submit: "Enroll students";
+				};
 			};
 			classes: {
 				title: "Class management";
 				subtitle: "Create classes for each program and academic year";
 				actions: {
 					add: "Add class";
+					bulkGenerate: "Bulk Generate (TODO)";
 				};
 				empty: {
 					title: "No classes yet";
@@ -1232,7 +1473,10 @@ interface Resources {
 					academicYear: "Academic year";
 					cycle: "Cycle / level";
 					option: "Option";
+					optionSemester: "Option / Semester";
+					credits: "Credits";
 					students: "Students";
+					classProgram: "Class Program (TODO)";
 				};
 				export: {
 					button: "Export student list (PDF)";
@@ -1268,6 +1512,8 @@ interface Resources {
 					codeLabel: "Code";
 					codePlaceholder: "INF11-S1-01";
 					labelLabel: "Generated class label";
+					totalCreditsLabel: "Total credits";
+					totalCreditsPlaceholder: "e.g. 30";
 					programCycleSummary: "Cycle : {{value}}";
 				};
 				toast: {
@@ -1277,10 +1523,12 @@ interface Resources {
 					updateError: "Could not update the class";
 					deleteSuccess: "Class deleted successfully";
 					deleteError: "Could not delete the class";
+					bulkGenerateSuccess: "Bulk Generate Success (TODO)";
 				};
 				delete: {
 					title: "Delete class";
 					message: "This action cannot be undone and may remove related assignments.";
+					messageWithStudents: "This class has {{count}} enrolled student(s). They will be transferred to another class automatically. This action cannot be undone.";
 				};
 				validation: {
 					program: "Please select a program";
@@ -1294,6 +1542,7 @@ interface Resources {
 				filters: {
 					academicYear: "Academic Year";
 					semester: "Semester";
+					title: "Title (TODO)";
 				};
 				columns: {
 					registration: "Reg. Number";
@@ -1309,6 +1558,12 @@ interface Resources {
 				previewDescription: "List of students enrolled in this class";
 				searchStudents: "Search students...";
 				noStudents: "No students enrolled in this class";
+				bulkGenerate: {
+					description: "Description (TODO)";
+					submit: "Submit (TODO)";
+					title: "Title (TODO)";
+					yearLabel: "Year Label (TODO)";
+				};
 			};
 			institution: {
 				title: "Institution settings";
@@ -1358,8 +1613,10 @@ interface Resources {
 					uploadError: "Upload failed";
 					defaultAcademicYear: "Default academic year";
 					defaultAcademicYearPlaceholder: "Select academic year";
+					defaultAcademicYearManagedHint: "Manage the active academic year from Academic Years.";
 					registrationFormat: "Registration format";
 					registrationFormatPlaceholder: "Use active format";
+					registrationFormatManagedHint: "Manage the active registration format from Registration Formats.";
 					type: "Type";
 					typeUniversity: "University";
 					typeFaculty: "Faculty/School";
@@ -1368,6 +1625,18 @@ interface Resources {
 					noParentInstitution: "None (Top-level)";
 					supervisingFaculty: "Supervising Faculty/School";
 					noSupervisingFaculty: "None";
+					noDefaultYear: "No Default Year (TODO)";
+					noRegistrationFormat: "No Registration Format (TODO)";
+				};
+				sections: {
+					contact: "Contact (TODO)";
+					contactHint: "Contact Hint (TODO)";
+					media: "Media (TODO)";
+					mediaHint: "Media Hint (TODO)";
+					names: "Names (TODO)";
+					namesHint: "Names Hint (TODO)";
+					system: "System configuration";
+					systemHint: "Active academic year and registration number format are managed in their dedicated modules.";
 				};
 			};
 			studyCycles: {
@@ -1405,6 +1674,7 @@ interface Resources {
 					credits: "Credits required";
 					duration: "Duration (years)";
 					minCredits: "Minimum credits";
+					autoLevelsPreview: "Auto Levels Preview (TODO)";
 				};
 				toast: {
 					createSuccess: "Study cycle created";
@@ -1434,6 +1704,10 @@ interface Resources {
 					code: "Code";
 					description: "Description";
 					noDescription: "No description";
+					nameEn: "Nom (EN) (TODO)";
+					nameFr: "Nom (FR) (TODO)";
+					shortName: "Nom court (TODO)";
+					title: "Toutes les facultés (TODO)";
 				};
 				form: {
 					createTitle: "Add new faculty";
@@ -1445,6 +1719,16 @@ interface Resources {
 					descriptionLabel: "Description";
 					descriptionPlaceholder: "Enter faculty description";
 					submit: "Save faculty";
+					codeRequired: "Le code est requis (TODO)";
+					descriptionEnLabel: "Description (Anglais) (TODO)";
+					descriptionFrLabel: "Description (Français) (TODO)";
+					nameEnLabel: "Nom (Anglais) (TODO)";
+					nameEnRequired: "Le nom en anglais est requis (TODO)";
+					nameFrLabel: "Nom (Français) (TODO)";
+					nameFrRequired: "Le nom en français est requis (TODO)";
+					noParentInstitution: "Aucun (niveau racine) (TODO)";
+					parentInstitutionLabel: "Établissement parent (TODO)";
+					shortNameLabel: "Nom court (TODO)";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
@@ -1498,6 +1782,11 @@ interface Resources {
 					descriptionLabel: "Description";
 					descriptionPlaceholder: "Describe this program";
 					submit: "Save program";
+					cloneFrom: "Clone curriculum from (optional)";
+					cloneFromPlaceholder: "Select source program";
+					cloneFromNone: "None";
+					cloneFromHint: "Teaching units and courses from the source program will be copied after creation.";
+					submitWithClone: "Create and clone";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
@@ -1512,6 +1801,8 @@ interface Resources {
 					updateError: "Could not update the program";
 					deleteSuccess: "Program deleted successfully";
 					deleteError: "Could not delete the program";
+					cloneSuccess: "Curriculum cloned: {{units}} units and {{courses}} courses copied";
+					cloneError: "Could not clone curriculum";
 				};
 				delete: {
 					title: "Delete program";
@@ -1608,15 +1899,20 @@ interface Resources {
 					approve: "Approve";
 					reject: "Reject";
 					reviewGrades: "Grades";
+					retake: "Retake (TODO)";
 				};
 				filters: {
 					academicYear: "Academic year";
 					class: "Class";
 					classPlaceholder: "All classes";
 					search: "Search";
-					searchPlaceholder: "Searchr des évaluations, classes ou cours...";
+					searchPlaceholder: "Search exams, classes or courses...";
 					semester: "Semester";
 					semesterPlaceholder: "All semesters";
+					dateFrom: "Start date";
+					dateFromPlaceholder: "From...";
+					dateTo: "End date";
+					dateToPlaceholder: "Until...";
 				};
 				empty: {
 					title: "No exams yet";
@@ -1925,6 +2221,9 @@ interface Resources {
 					classFilterPlaceholder: "All classes";
 					examTypeFilterLabel: "Filter by exam type";
 					examTypeFilterPlaceholder: "All types";
+					configSection: "Config Section (TODO)";
+					dateRangeSection: "Date Range Section (TODO)";
+					periodSection: "Period Section (TODO)";
 				};
 				classes: {
 					title: "Target classes";
@@ -1943,6 +2242,7 @@ interface Resources {
 				actions: {
 					schedule: "Schedule exams";
 					scheduleRetakes: "Schedule retakes";
+					quickRetakes: "Quick retakes";
 				};
 				toast: {
 					success: "Exams scheduled";
@@ -2058,6 +2358,10 @@ interface Resources {
 				filters: {
 					allClasses: "All classes";
 					searchPlaceholder: "Search by name or registration number";
+					allGenders: "All genders";
+					academicYear: "Academic Year (TODO)";
+					class: "Class (TODO)";
+					search: "Search (TODO)";
 				};
 				empty: "No students found for this selection.";
 				table: {
@@ -2108,6 +2412,8 @@ interface Resources {
 				};
 				import: {
 					classLabel: "Class for imported students";
+					academicYearLabel: "Academic year (for auto-enrollment)";
+					autoEnrollToggle: "Auto-enroll students in courses after import";
 					formatLabel: "Registration format (optional)";
 					fileLabel: "Upload CSV or XLSX file";
 					downloadTemplate: "Download template";
@@ -2151,6 +2457,8 @@ interface Resources {
 						errorsTitle: "Issues detected";
 						noValidRows: "No valid rows detected. Check the errors above.";
 					};
+					autoEnrollError: "Auto Enroll Error (TODO)";
+					autoEnrollSuccess: "Auto Enroll Success (TODO)";
 				};
 				templates: {
 					sheetName: "Students";
@@ -2254,8 +2562,12 @@ interface Resources {
 					status: "Status";
 				};
 				roles: {
-					admin: "Admin";
+					administrator: "Administrator";
+					dean: "Dean";
 					teacher: "Teacher";
+					grade_editor: "Grade Editor";
+					staff: "Staff";
+					student: "Student";
 				};
 				status: {
 					active: "Active";
@@ -2410,6 +2722,13 @@ interface Resources {
 					courseFallback: "Course {{courseId}}";
 					courseLabel: "{{name}} ({{code}})";
 					appliesTo: "Required for {{course}}";
+				};
+				status: {
+					all: "All statuses";
+					active: "Active";
+					pending: "Pending";
+					completed: "Completed";
+					withdrawn: "Withdrawn";
 				};
 			};
 			teachingUnits: {
@@ -2802,6 +3121,277 @@ interface Resources {
 					removeSuccess: "Override supprimée";
 				};
 			};
+			deliberations: {
+				title: "Deliberations";
+				subtitle: "Manage jury deliberations for classes";
+				actions: {
+					create: "New deliberation";
+					open: "Open";
+					close: "Close";
+					sign: "Sign";
+					reopen: "Reopen";
+					compute: "Compute results";
+					computing: "Computing...";
+					export: "Export diplomation";
+					exporting: "Exporting...";
+					override: "Override decision";
+					delete: "Delete";
+				};
+				columns: {
+					class: "Class";
+					semester: "Semester";
+					year: "Academic year";
+					type: "Type";
+					status: "Status";
+					date: "Date";
+					actions: "Actions";
+					createdAt: "Created";
+				};
+				status: {
+					draft: "Draft";
+					open: "Open";
+					closed: "Closed";
+					signed: "Signed";
+				};
+				type: {
+					semester: "Semester";
+					annual: "Annual";
+					retake: "Retake";
+				};
+				decision: {
+					admitted: "Admitted";
+					compensated: "Compensated";
+					deferred: "Deferred";
+					repeat: "Repeat";
+					excluded: "Excluded";
+					pending: "Pending";
+				};
+				mention: {
+					passable: "Passable";
+					assez_bien: "Fairly good";
+					bien: "Good";
+					tres_bien: "Very good";
+					excellent: "Excellent";
+				};
+				empty: {
+					title: "No deliberations yet";
+					description: "Create a deliberation to start evaluating student results for a class.";
+				};
+				form: {
+					createTitle: "Create a deliberation";
+					editTitle: "Edit deliberation";
+					class: "Class";
+					classPlaceholder: "Select a class";
+					semester: "Semester";
+					semesterPlaceholder: "Leave empty for annual";
+					academicYear: "Academic year";
+					type: "Type";
+					typePlaceholder: "Select a type";
+					deliberationDate: "Deliberation date";
+					president: "President";
+					presidentPlaceholder: "Select a president";
+					juryMembers: "Jury members";
+					quickStart: "Quick start";
+					quickStartHint: "Creates the deliberation, opens it and computes results in one step";
+					quickStartSubmit: "Create & compute";
+				};
+				detail: {
+					back: "Back to deliberations";
+					students: "Student results";
+					noResults: "No results computed yet. Open the deliberation and compute results.";
+					rank: "Rank";
+					student: "Student";
+					registrationNumber: "Reg. No.";
+					average: "General avg.";
+					credits: "Credits";
+					creditsFormat: "{{earned}}/{{total}}";
+					decision: "Decision";
+					mention: "Mention";
+					overridden: "Overridden";
+					jury: "Jury composition";
+					president: "President";
+					noPresident: "Not assigned";
+					stats: "Statistics";
+					successRate: "Success rate";
+					classAverage: "Class average";
+					totalStudents: "Total students";
+					lifecycle: "Lifecycle";
+					openedAt: "Opened at";
+					closedAt: "Closed at";
+					signedAt: "Signed at";
+					signedBy: "Signed by";
+					notYet: "Not yet";
+				};
+				override: {
+					title: "Override decision";
+					currentDecision: "Current decision";
+					newDecision: "New decision";
+					reason: "Reason";
+					reasonPlaceholder: "Explain why you are overriding this decision...";
+				};
+				logs: {
+					title: "Activity log";
+					created: "Deliberation created";
+					opened: "Deliberation opened";
+					computed: "Results computed";
+					override_decision: "Decision overridden";
+					closed: "Deliberation closed";
+					signed: "Deliberation signed";
+					reopened: "Deliberation reopened";
+					exported: "Diplomation exported";
+					promoted: "Students promoted";
+				};
+				promote: {
+					button: "Promote admitted";
+					title: "Promote admitted students";
+					description: "{{count}} admitted/compensated students will be enrolled in the target class";
+					targetAcademicYear: "Target academic year";
+					targetAcademicYearPlaceholder: "Select the next academic year";
+					targetClass: "Target class";
+					targetClassPlaceholder: "Select destination class";
+					confirm: "Promote";
+					success: "{{count}} students promoted successfully";
+					noAdmitted: "No admitted students to promote";
+				};
+				ueDecision: {
+					ADM: "Acquired";
+					CMP: "Compensated";
+					AJ: "Failed";
+					INC: "Incomplete";
+				};
+				toast: {
+					createSuccess: "Deliberation created";
+					updateSuccess: "Deliberation updated";
+					deleteSuccess: "Deliberation deleted";
+					transitionSuccess: "Status updated";
+					computeSuccess: "Results computed successfully";
+					overrideSuccess: "Decision overridden";
+					exportSuccess: "Export ready";
+					error: "An error occurred";
+					initAndComputeSuccess: "Deliberation created and results computed";
+				};
+				confirm: {
+					delete: "Are you sure you want to delete this deliberation?";
+					close: "Close this deliberation? Students will no longer be modifiable.";
+					sign: "Sign this deliberation? This marks it as officially validated.";
+				};
+				rules: {
+					title: "Deliberation rules";
+					subtitle: "Configure rules that automatically determine student decisions";
+					create: "New rule";
+					name: "Rule name";
+					namePlaceholder: "e.g. Admission if average >= 10";
+					description: "Description";
+					category: "Category";
+					categoryPlaceholder: "Select a category";
+					categories: {
+						admission: "Admission";
+						compensation: "Compensation";
+						deferral: "Deferral";
+						repeat: "Repeat";
+						exclusion: "Exclusion";
+						other: "Other";
+					};
+					decision: "Decision produced";
+					priority: "Priority";
+					priorityHelp: "Lower number = evaluated first within the category";
+					program: "Program scope";
+					programPlaceholder: "All programs";
+					cycleLevel: "Cycle level scope";
+					cycleLevelPlaceholder: "All levels";
+					deliberationType: "Deliberation type scope";
+					deliberationTypePlaceholder: "All types";
+					ruleset: "Rule definition (JSON)";
+					rulesetHelp: "json-rules-engine format";
+					active: "Active";
+					inactive: "Inactive";
+					invalidJson: "Invalid JSON ruleset";
+					empty: {
+						title: "No rules configured";
+						description: "Add rules to automatically compute decisions during deliberations.";
+					};
+					toast: {
+						createSuccess: "Rule created";
+						updateSuccess: "Rule updated";
+						deleteSuccess: "Rule deleted";
+						error: "An error occurred";
+					};
+				};
+				filters: {
+					allStatuses: "All statuses";
+					allTypes: "All types";
+					allYears: "All years";
+				};
+			};
+			gradeAccessGrants: {
+				actions: {
+					add: "Add (TODO)";
+					grant: "Grant (TODO)";
+					revoke: "Revoke (TODO)";
+				};
+				columns: {
+					email: "Email (TODO)";
+					grantedBy: "Granted By (TODO)";
+					since: "Since (TODO)";
+					user: "User (TODO)";
+				};
+				dialog: {
+					description: "Description (TODO)";
+					selectLabel: "Select Label (TODO)";
+					selectPlaceholder: "Select Placeholder (TODO)";
+					title: "Title (TODO)";
+				};
+				empty: {
+					description: "Description (TODO)";
+					title: "Title (TODO)";
+				};
+				info: "Info (TODO)";
+				revoke: {
+					message: "Message (TODO)";
+					title: "Title (TODO)";
+				};
+				subtitle: "Subtitle (TODO)";
+				title: "Title (TODO)";
+				toast: {
+					granted: "Granted (TODO)";
+					revoked: "Revoked (TODO)";
+				};
+			};
+			institutions: {
+				actions: {
+					add: "Add (TODO)";
+				};
+				delete: {
+					message: "Message (TODO)";
+					title: "Title (TODO)";
+				};
+				empty: {
+					description: "Description (TODO)";
+					title: "Title (TODO)";
+				};
+				form: {
+					createTitle: "Create Title (TODO)";
+					editTitle: "Edit Title (TODO)";
+					submit: "Submit (TODO)";
+				};
+				subtitle: "Subtitle (TODO)";
+				table: {
+					code: "Code (TODO)";
+					nameEn: "Name En (TODO)";
+					nameFr: "Name Fr (TODO)";
+					shortName: "Short Name (TODO)";
+					type: "Type (TODO)";
+				};
+				title: "Title (TODO)";
+				toast: {
+					createSuccess: "Create Success (TODO)";
+					deleteSuccess: "Delete Success (TODO)";
+					updateSuccess: "Update Success (TODO)";
+					createError: "Impossible de créer l'institution (TODO)";
+					deleteError: "Impossible de supprimer l'institution (TODO)";
+					updateError: "Impossible de mettre à jour l'institution (TODO)";
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -2826,9 +3416,11 @@ interface Resources {
 				empty: "No pending exams.";
 				actions: {
 					validate: "Approve & lock";
+					bulkValidate: "Bulk Validate (TODO)";
 				};
 				toast: {
 					validated: "Exam approved";
+					bulkValidated: "Bulk Validated (TODO)";
 				};
 				notificationsEmpty: "No notifications";
 				windows: "Enrollment windows";
@@ -2939,6 +3531,18 @@ interface Resources {
 					success: "Account updated";
 					error: "Failed to update account";
 				};
+				avatar: {
+					change: "Change avatar";
+					uploading: "Uploading...";
+					success: "Avatar updated";
+					error: "Failed to upload avatar";
+				};
+				email: {
+					change: "Change email";
+					newLabel: "New email";
+					verificationSent: "A verification link has been sent to your new email";
+					error: "Failed to send verification email";
+				};
 			};
 			profile: {
 				title: "Profile Information";
@@ -2955,6 +3559,8 @@ interface Resources {
 					gender: "Gender";
 					genderPlaceholder: "Select gender";
 					nationality: "Nationality";
+					nationalityPlaceholder: "Select a country";
+					nationalitySearch: "Search countries...";
 				};
 				gender: {
 					male: "Male";
@@ -3016,6 +3622,17 @@ interface Resources {
 					en: "English";
 					fr: "French";
 				};
+			};
+		};
+		help: {
+			title: "Help";
+			openButton: "Help";
+			footer: "OverBrand · Grades Manager";
+			workflow: {
+				title: "Setup progression";
+				step: "Step";
+				next: "Next step";
+				done: "Setup complete";
 			};
 		};
 	};

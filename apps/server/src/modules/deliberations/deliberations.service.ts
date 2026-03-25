@@ -7,6 +7,7 @@ import type {
 	DeliberationStatus,
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
+import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import * as enrollmentsService from "../enrollments/enrollments.service";
 import {
 	type ExamWithRetake,
@@ -44,6 +45,22 @@ const PASSING_GRADE = 10;
 // LMD default thresholds
 const DEFAULT_VALIDATION_THRESHOLD = 10; // UE validated if average >= 10
 const DEFAULT_COMPENSATION_BAR = 8; // UE compensable if average >= 8
+
+const MENTION_TO_GRADE: Record<string, string> = {
+	passable: "E",
+	assez_bien: "D",
+	bien: "C",
+	tres_bien: "B",
+	excellent: "A",
+};
+
+const MENTION_TO_EN: Record<string, string> = {
+	passable: "Satisfactory",
+	assez_bien: "Fair",
+	bien: "Good",
+	tres_bien: "Very Good",
+	excellent: "Excellent",
+};
 
 // ---------------------------------------------------------------------------
 // State machine transitions
@@ -240,6 +257,18 @@ export async function transition(
 		actorId,
 	});
 
+	if (input.action === "sign" && updates.signedAt) {
+		dispatchWebhook(institutionId, {
+			event: "deliberation.signed",
+			deliberationId: input.id,
+			institutionId,
+			deliberationType: delib.type,
+			signedAt: updates.signedAt.toISOString(),
+			classId: delib.classId,
+			academicYearId: delib.academicYearId,
+		}).catch(() => {});
+	}
+
 	return updated;
 }
 
@@ -347,14 +376,17 @@ export async function compute(
 		const exams = (cc.exams || []).map((exam) => ({
 			id: exam.id,
 			type: exam.type,
-			percentage: exam.percentage,
+			percentage: Number(exam.percentage),
 			sessionType: exam.sessionType || "normal",
 			parentExamId: exam.parentExamId || null,
 			scoringPolicy: exam.scoringPolicy || "replace",
-			grades: exam.grades || [],
+			grades: (exam.grades || []).map((grade) => ({
+				studentRef: { id: grade.studentRef.id },
+				score: grade.score,
+			})),
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: cc.courseRef.id,
 			code: cc.courseRef.code,
 			name: cc.courseRef.name,
@@ -863,22 +895,32 @@ export async function exportDiplomation(
 		(a, b) => (a.rank ?? 999) - (b.rank ?? 999),
 	);
 
-	// Log export
-	await repo.createLog({
-		deliberationId: input.id,
-		action: "exported",
-		actorId,
-	});
+	// Log export (skip for system/API-key calls — actorId is not a valid domain user)
+	if (actorId && actorId !== "system") {
+		await repo.createLog({
+			deliberationId: input.id,
+			action: "exported",
+			actorId,
+		});
+	}
 
 	const signatures =
 		(institution.metadata as schema.InstitutionMetadata)?.export_config
 			?.signatures?.pv ?? [];
 
+	const docParams = (institution.metadata as schema.InstitutionMetadata)
+		?.document_params;
 	return {
 		institution: {
 			name: institution.nameFr,
+			nameEn: institution.nameEn,
 			code: institution.code,
 			logoUrl: institution.logoUrl,
+			sloganFr: institution.sloganFr ?? null,
+			address: institution.addressFr ?? null,
+			signatoryName: docParams?.signatoryName ?? null,
+			signatoryTitle: docParams?.signatoryTitle ?? null,
+			city: docParams?.city ?? null,
 		},
 		deliberation: {
 			id: delib.id,
@@ -889,6 +931,16 @@ export async function exportDiplomation(
 			programName: (delib as any).classRef?.program?.name ?? "",
 			academicYearName: (delib as any).academicYear?.name ?? "",
 			semesterName: (delib as any).semester?.name ?? null,
+			admissionDate: (delib as any).signedAt?.toISOString() ?? null,
+		},
+		program: {
+			diplomaTitleFr: (delib as any).classRef?.program?.diplomaTitleFr ?? null,
+			diplomaTitleEn: (delib as any).classRef?.program?.diplomaTitleEn ?? null,
+			specialite: (delib as any).classRef?.programOption?.name ?? null,
+			attestationValidityFr:
+				(delib as any).classRef?.program?.attestationValidityFr ?? null,
+			attestationValidityEn:
+				(delib as any).classRef?.program?.attestationValidityEn ?? null,
 		},
 		jury: {
 			president: delib.presidentId
@@ -906,11 +958,15 @@ export async function exportDiplomation(
 			registrationNumber: (r as any).student?.registrationNumber ?? "",
 			lastName: (r as any).student?.profile?.lastName ?? "",
 			firstName: (r as any).student?.profile?.firstName ?? "",
+			dateOfBirth: (r as any).student?.profile?.dateOfBirth ?? null,
+			placeOfBirth: (r as any).student?.profile?.placeOfBirth ?? null,
 			generalAverage: r.generalAverage,
 			totalCreditsEarned: r.totalCreditsEarned,
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
 			mention: r.mention,
+			gradeLetter: r.mention ? (MENTION_TO_GRADE[r.mention] ?? null) : null,
+			mentionEn: r.mention ? (MENTION_TO_EN[r.mention] ?? null) : null,
 			ueResults: (r.ueResults as DeliberationUeResult[]) ?? [],
 		})),
 		stats: delib.stats as DeliberationStats | null,
@@ -1114,11 +1170,11 @@ export async function promoteAdmitted(
 
 function computeMention(average: number | null): DeliberationMention | null {
 	if (average === null) return null;
-	if (average >= 16) return "excellent";
-	if (average >= 14) return "tres_bien";
-	if (average >= 12) return "bien";
-	if (average >= 10) return "assez_bien";
-	if (average >= 8) return "passable";
+	if (average >= 18) return "excellent";
+	if (average >= 16) return "tres_bien";
+	if (average >= 14) return "bien";
+	if (average >= 12) return "assez_bien";
+	if (average >= 10) return "passable";
 	return null;
 }
 
@@ -1155,4 +1211,23 @@ function computeStats(
 		highestAverage: averages.length > 0 ? Math.max(...averages) : null,
 		lowestAverage: averages.length > 0 ? Math.min(...averages) : null,
 	};
+}
+
+// ---------------------------------------------------------------------------
+// Automation: initAndCompute — create → open → compute in one call
+// ---------------------------------------------------------------------------
+
+export async function initAndCompute(
+	input: CreateDeliberationInput,
+	institutionId: string,
+	profileId: string,
+) {
+	const deliberation = await create(input, institutionId, profileId);
+	await transition(
+		{ id: deliberation.id, action: "open" },
+		institutionId,
+		profileId,
+	);
+	await compute(deliberation.id, institutionId, profileId);
+	return getById(deliberation.id, institutionId);
 }

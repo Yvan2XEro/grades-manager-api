@@ -1,7 +1,9 @@
 import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
 import { deliberationsRouter } from "@/modules/deliberations";
+import { diplomationKeysRouter } from "@/modules/diplomation-keys";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
 import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.router";
+import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { gradesRouter } from "@/modules/grades";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -69,6 +71,8 @@ export const appRouter = router({
 	notifications: notificationsRouter,
 	batchJobs: batchJobsRouter,
 	deliberations: deliberationsRouter,
+	gradeAccessGrants: gradeAccessGrantsRouter,
+	diplomationKeys: diplomationKeysRouter,
 });
 
 export type AppRouter = typeof appRouter;

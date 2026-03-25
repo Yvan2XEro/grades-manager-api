@@ -7,5 +7,5 @@ export type TransactionClient = Parameters<
 export function transaction<_T>(
 	fn: (tx: TransactionClient) => Promise<_T> | _T,
 ) {
-	return db.transaction(fn);
+	return db.transaction(async (tx) => fn(tx));
 }

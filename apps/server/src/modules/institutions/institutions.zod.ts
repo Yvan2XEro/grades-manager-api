@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const upsertInstitutionSchema = z.object({
+	id: z.string().optional(),
 	code: z.string().min(1),
 	type: z.enum(["university", "institution", "faculty"]).default("institution"),
 	shortName: z.string().optional(),
@@ -24,10 +25,8 @@ export const upsertInstitutionSchema = z.object({
 	organizationId: z.string().optional(),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
-	metadata: z.record(z.unknown()).optional(),
+	metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const createInstitutionSchema = upsertInstitutionSchema;

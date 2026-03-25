@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
@@ -26,6 +26,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../../components/ui/empty";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import {
@@ -168,7 +175,7 @@ export default function DeliberationRules() {
 		try {
 			parsedRuleset = JSON.parse(form.ruleset);
 		} catch {
-			toast.error("Invalid JSON ruleset");
+			toast.error(t("admin.deliberations.rules.invalidJson"));
 			return;
 		}
 
@@ -205,10 +212,10 @@ export default function DeliberationRules() {
 				<div className="flex items-center space-x-3">
 					<FileCog className="h-6 w-6 text-primary" />
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.deliberations.rules.title")}
 						</h1>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("admin.deliberations.rules.subtitle")}
 						</p>
 					</div>
@@ -230,15 +237,19 @@ export default function DeliberationRules() {
 					<Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" />
 				</div>
 			) : rules.length === 0 ? (
-				<div className="rounded-xl border bg-white py-12 text-center shadow-sm">
-					<FileCog className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-					<h3 className="font-semibold text-foreground text-sm">
-						{t("admin.deliberations.rules.empty.title")}
-					</h3>
-					<p className="mt-1 text-muted-foreground text-sm">
-						{t("admin.deliberations.rules.empty.description")}
-					</p>
-				</div>
+				<Empty className="border border-dashed">
+					<EmptyHeader>
+						<EmptyMedia variant="icon">
+							<FileCog className="text-muted-foreground" />
+						</EmptyMedia>
+						<EmptyTitle>
+							{t("admin.deliberations.rules.empty.title")}
+						</EmptyTitle>
+						<EmptyDescription>
+							{t("admin.deliberations.rules.empty.description")}
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			) : (
 				<div className="space-y-6">
 					{grouped.map((group) => (
@@ -250,7 +261,7 @@ export default function DeliberationRules() {
 								{group.rules.map((rule: any) => (
 									<div
 										key={rule.id}
-										className="group relative rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+										className="group relative rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
 									>
 										<div className="flex items-start justify-between">
 											<div className="min-w-0 flex-1">
@@ -331,7 +342,7 @@ export default function DeliberationRules() {
 						.length > 0 && (
 						<div>
 							<h2 className="mb-3 font-semibold text-foreground text-sm uppercase tracking-wide">
-								Other
+								{t("admin.deliberations.rules.categories.other")}
 							</h2>
 							<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 								{rules
@@ -339,7 +350,7 @@ export default function DeliberationRules() {
 									.map((rule: any) => (
 										<div
 											key={rule.id}
-											className="rounded-xl border bg-white p-4 shadow-sm"
+											className="rounded-xl border bg-card p-4 shadow-sm"
 										>
 											<p className="font-medium text-sm">{rule.name}</p>
 										</div>
@@ -361,7 +372,7 @@ export default function DeliberationRules() {
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className="space-y-4">
+					<div className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label>{t("admin.deliberations.rules.name")}</Label>
 							<Input

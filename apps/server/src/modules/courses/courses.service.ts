@@ -6,7 +6,8 @@ import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
 import * as repo from "./courses.repo";
 
-type CourseInput = schema.NewCourse & {
+type CourseInput = Omit<schema.NewCourse, "defaultCoefficient"> & {
+	defaultCoefficient?: number;
 	prerequisiteCourseIds?: string[];
 };
 
@@ -73,6 +74,10 @@ export async function createCourse(data: CourseInput, institutionId: string) {
 	const created = await repo.create({
 		...courseData,
 		code: normalizeCode(courseData.code),
+		defaultCoefficient:
+			courseData.defaultCoefficient !== undefined
+				? courseData.defaultCoefficient.toString()
+				: undefined,
 	});
 	await syncPrerequisites(created.id, prerequisiteCourseIds);
 	return created;
@@ -99,7 +104,12 @@ export async function updateCourse(
 	const updated = await repo.update(id, institutionId, {
 		...courseData,
 		code: courseData.code ? normalizeCode(courseData.code) : undefined,
+		defaultCoefficient:
+			courseData.defaultCoefficient !== undefined
+				? courseData.defaultCoefficient.toString()
+				: undefined,
 	});
+	if (!updated) throw notFound();
 	if (prerequisiteCourseIds) {
 		await syncPrerequisites(updated.id, prerequisiteCourseIds);
 	}

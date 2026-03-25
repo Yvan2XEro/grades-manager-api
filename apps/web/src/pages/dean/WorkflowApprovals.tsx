@@ -2,12 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, ClipboardCheck, Clock3, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 const WorkflowApprovals = () => {
@@ -94,9 +94,7 @@ const WorkflowApprovals = () => {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("dean.workflows.title")}
-					</h1>
+					<h1 className="text-foreground">{t("dean.workflows.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("dean.workflows.subtitle")}
 					</p>
@@ -179,7 +177,7 @@ const WorkflowApprovals = () => {
 								))}
 							</>
 						) : (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("dean.workflows.empty", {
 									defaultValue: "No pending exams.",
 								})}

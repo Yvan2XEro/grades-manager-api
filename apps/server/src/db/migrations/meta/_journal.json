@@ -15,6 +15,13 @@
 			"when": 1772077116561,
 			"tag": "0001_tiresome_silhouette",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1774386013658,
+			"tag": "0002_foamy_stranger",
+			"breakpoints": true
 		}
 	]
 }

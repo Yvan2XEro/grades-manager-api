@@ -1,4 +1,4 @@
-import { and, count, eq, gt, ilike, or, sql } from "drizzle-orm";
+import { and, count, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -8,6 +8,11 @@ const programSelection = {
 	code: schema.programs.code,
 	name: schema.programs.name,
 	description: schema.programs.description,
+	diplomaTitleFr: schema.programs.diplomaTitleFr,
+	diplomaTitleEn: schema.programs.diplomaTitleEn,
+	attestationValidityFr: schema.programs.attestationValidityFr,
+	attestationValidityEn: schema.programs.attestationValidityEn,
+	cycleId: schema.programs.cycleId,
 	createdAt: schema.programs.createdAt,
 };
 
@@ -112,6 +117,11 @@ export async function list(
 			schema.programs.code,
 			schema.programs.name,
 			schema.programs.description,
+			schema.programs.diplomaTitleFr,
+			schema.programs.diplomaTitleEn,
+			schema.programs.attestationValidityFr,
+			schema.programs.attestationValidityEn,
+			schema.programs.cycleId,
 			schema.programs.createdAt,
 		)
 		.orderBy(schema.programs.name)
@@ -122,6 +132,7 @@ export async function list(
 		code: r.code,
 		name: r.name,
 		description: r.description,
+		cycleId: r.cycleId,
 		createdAt: r.createdAt,
 		optionsCount: r.optionsCount,
 	}));

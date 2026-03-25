@@ -16,8 +16,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ClipboardCopy } from "../../../components/ui/clipboard-copy";
@@ -34,6 +34,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
+import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import type { RouterOutputs } from "../../../utils/trpc";
 import { trpcClient } from "../../../utils/trpc";
 import OverrideDecisionDialog from "./OverrideDecisionDialog";
@@ -326,7 +327,11 @@ export default function DeliberationDetail() {
 	const delib = deliberationQuery.data;
 	if (!delib) {
 		return (
-			<div className="py-12 text-center text-muted-foreground">Not found</div>
+			<Empty>
+				<EmptyHeader>
+					<EmptyDescription>Not found</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		);
 	}
 
@@ -352,7 +357,7 @@ export default function DeliberationDetail() {
 					</Button>
 					<div>
 						<div className="flex items-center gap-2">
-							<h1 className="font-bold font-heading text-2xl text-foreground">
+							<h1 className="text-foreground">
 								{delib.classRef?.name ?? "Deliberation"}
 							</h1>
 							<Badge variant={statusVariants[status] ?? "outline"}>
@@ -362,7 +367,7 @@ export default function DeliberationDetail() {
 								{t(`admin.deliberations.type.${delib.type}`)}
 							</Badge>
 						</div>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{delib.academicYear?.name ?? ""}{" "}
 							{delib.semester ? `— ${delib.semester.name}` : ""}
 						</p>
@@ -490,7 +495,7 @@ export default function DeliberationDetail() {
 			{/* Stats cards */}
 			{stats && (
 				<div className="grid gap-4 md:grid-cols-4">
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.totalStudents")}
 						</p>
@@ -498,7 +503,7 @@ export default function DeliberationDetail() {
 							{stats.totalStudents ?? 0}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.successRate")}
 						</p>
@@ -508,7 +513,7 @@ export default function DeliberationDetail() {
 								: "—"}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.detail.classAverage")}
 						</p>
@@ -518,7 +523,7 @@ export default function DeliberationDetail() {
 								: "—"}
 						</p>
 					</div>
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<p className="text-muted-foreground text-xs uppercase tracking-wide">
 							{t("admin.deliberations.decision.admitted")}
 						</p>
@@ -530,13 +535,15 @@ export default function DeliberationDetail() {
 			)}
 
 			{/* Student results table */}
-			<div className="rounded-xl border bg-white shadow-sm">
+			<div className="rounded-xl border bg-card shadow-sm">
 				<div className="border-b px-5 py-3">
 					<h3 className="font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.students")}
 					</h3>
 				</div>
-				{results.length === 0 ? (
+				{deliberationQuery.isLoading ? (
+					<TableSkeleton columns={8} rows={8} />
+				) : results.length === 0 ? (
 					<div className="py-10 text-center text-muted-foreground text-sm">
 						{t("admin.deliberations.detail.noResults")}
 					</div>
@@ -589,7 +596,7 @@ export default function DeliberationDetail() {
 			{/* Lifecycle info */}
 			<div className="grid gap-4 md:grid-cols-2">
 				{/* Jury */}
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.jury")}
 					</h3>
@@ -616,7 +623,7 @@ export default function DeliberationDetail() {
 				</div>
 
 				{/* Lifecycle */}
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.deliberations.detail.lifecycle")}
 					</h3>
@@ -656,7 +663,7 @@ export default function DeliberationDetail() {
 			</div>
 
 			{/* Activity log */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-3 font-medium text-foreground text-sm">
 					{t("admin.deliberations.logs.title")}
 				</h3>

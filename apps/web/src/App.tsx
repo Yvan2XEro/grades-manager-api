@@ -8,6 +8,7 @@ import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
@@ -26,6 +27,7 @@ import ExamTypes from "./pages/admin/ExamTypes";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import FacultyManagement from "./pages/admin/FacultyManagement";
+import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
@@ -84,6 +86,7 @@ function App() {
 			profileId: session.user.id,
 			authUserId: session.user.id,
 			email: session.user.email,
+			image: session.user.image ?? null,
 			role,
 			firstName,
 			lastName: rest.join(" "),
@@ -115,8 +118,11 @@ function App() {
 			activatedSlugRef.current = null;
 			return;
 		}
-		// Skip if org was already set at login time (via X-Organization-Slug header)
-		if (session.session?.activeOrganizationId) {
+		// Skip if org was already set AND membership is populated (role resolved)
+		if (
+			session.session?.activeOrganizationId &&
+			session.activeMembership?.role
+		) {
 			activatedSlugRef.current = activeOrganizationSlug;
 			return;
 		}
@@ -126,17 +132,17 @@ function App() {
 			}
 			let cancelled = false;
 			const activateOrganization = async () => {
-				try {
-					await authClient.organization.setActive({
-						organizationSlug: activeOrganizationSlug,
-					});
-					if (!cancelled) {
-						activatedSlugRef.current = activeOrganizationSlug;
-						// Force session refetch so activeMembership and role update immediately
-						await refetchSession();
-					}
-				} catch (error) {
-					console.error("Failed to set active organization:", error);
+				const result = await authClient.organization.setActive({
+					organizationSlug: activeOrganizationSlug,
+				});
+				if (result.error) {
+					console.error("Failed to set active organization:", result.error);
+					return; // Ne pas marquer comme fait — permettre un retry
+				}
+				if (!cancelled) {
+					activatedSlugRef.current = activeOrganizationSlug;
+					// Force session refetch so activeMembership and role update immediately
+					await refetchSession();
 				}
 			};
 			void activateOrganization();
@@ -144,7 +150,14 @@ function App() {
 				cancelled = true;
 			};
 		}
-	}, [session?.user?.id, activeOrganizationSlug]);
+	}, [
+		session?.user?.id,
+		activeOrganizationSlug,
+		refetchSession,
+		session.activeMembership?.role,
+		session.session?.activeOrganizationId,
+		session?.user,
+	]);
 
 	useEffect(() => {
 		if (memoUser) {
@@ -206,6 +219,7 @@ function App() {
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
 						<Route path="grade-export" element={<GradeExport />} />
+						<Route path="grade-access" element={<GradeAccessGrants />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
@@ -216,6 +230,7 @@ function App() {
 							element={<TeachingUnitDetail />}
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
+						<Route path="api-keys" element={<ApiKeysManagement />} />
 						{/* Deliberations */}
 						<Route path="deliberations" element={<DeliberationsList />} />
 						<Route
@@ -259,6 +274,17 @@ function App() {
 						<Route path="workflows" element={<WorkflowManager />} />
 					</Route>
 
+					{/* Grade Editor Routes */}
+					<Route path="/grade-editor" element={<DashboardLayout />}>
+						<Route index element={<TeacherDashboard />} />
+						<Route
+							path="courses"
+							element={<CourseList basePath="/grade-editor" />}
+						/>
+						<Route path="grades" element={<GradeEntry />} />
+						<Route path="grades/:courseId" element={<GradeEntry />} />
+					</Route>
+
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
@@ -283,6 +309,7 @@ const allowedRoles: BusinessRole[] = [
 	"guest",
 	"student",
 	"staff",
+	"grade_editor",
 	"dean",
 	"teacher",
 	"administrator",

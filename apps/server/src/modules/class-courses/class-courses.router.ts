@@ -1,4 +1,3 @@
-import type { Context } from "@/lib/context";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
 	router as createRouter,
@@ -6,6 +5,7 @@ import {
 	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import { classCourseIdsForEditor } from "../exam-grade-editors/exam-grade-editors.repo";
+import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
 import { logDelegateCourseAccess } from "./class-course-access-logs.service";
 import * as service from "./class-courses.service";
 import {
@@ -18,11 +18,11 @@ import {
 } from "./class-courses.zod";
 
 type ClassCourseListItem = Awaited<
-	ReturnType<typeof service.listClassCourses>
->["items"][number] & { isDelegated?: boolean };
+	ReturnType<typeof service.searchClassCourses>
+>[number] & { isDelegated?: boolean };
 
-const markItems = (
-	items: Awaited<ReturnType<typeof service.listClassCourses>>["items"],
+const markItems = <T extends { id: string }>(
+	items: T[],
 	isDelegated: boolean,
 ) =>
 	items.map(
@@ -30,11 +30,13 @@ const markItems = (
 			({
 				...item,
 				isDelegated,
-			}) satisfies ClassCourseListItem,
+			}) as T & { isDelegated: boolean },
 	);
 
-const mergeById = (...lists: ClassCourseListItem[][]) => {
-	const map = new Map<string, ClassCourseListItem>();
+const mergeById = <T extends { id: string }>(
+	...lists: Array<Array<T & { isDelegated: boolean }>>
+) => {
+	const map = new Map<string, T & { isDelegated: boolean }>();
 	for (const list of lists) {
 		for (const item of list) {
 			if (!map.has(item.id)) {
@@ -65,44 +67,49 @@ export const router = createRouter({
 		.input(listSchema)
 		.query(async ({ ctx, input }) => {
 			const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
-			const teacherId = ctx.profile?.id ?? null;
-			const baseRaw = isAdmin
+			const isGradeEditor = ctx.memberRole === "grade_editor";
+			const profileId = ctx.profile?.id ?? null;
+
+			const hasInstitutionGrant =
+				!isAdmin && !isGradeEditor && profileId
+					? !!(await gradeAccessRepo.findByProfileAndInstitution(
+							profileId,
+							ctx.institution.id,
+						))
+					: false;
+
+			const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+			const baseRaw = hasFullAccess
 				? await service.listClassCourses(input, ctx.institution.id)
-				: teacherId && ctx.memberRole === "teacher"
+				: profileId && ctx.memberRole === "teacher"
 					? await service.listClassCourses(
-							{ ...input, teacherId },
+							{ ...input, teacherId: profileId },
 							ctx.institution.id,
 						)
 					: { items: [], nextCursor: undefined };
-			if (isAdmin || !teacherId) {
-				return {
-					...baseRaw,
-					items: markItems(baseRaw.items, false),
-				};
+
+			if (hasFullAccess || !profileId) {
+				return { ...baseRaw, items: markItems(baseRaw.items, false) };
 			}
+
 			const delegateCourseIds = await classCourseIdsForEditor(
-				teacherId,
+				profileId,
 				ctx.institution.id,
 			);
 			if (!delegateCourseIds.length) {
-				return {
-					...baseRaw,
-					items: markItems(baseRaw.items, false),
-				};
+				return { ...baseRaw, items: markItems(baseRaw.items, false) };
 			}
 			const delegatedRaw = await service.listClassCourses(
-				{
-					...input,
-					classCourseIds: delegateCourseIds,
-				},
+				{ ...input, classCourseIds: delegateCourseIds },
 				ctx.institution.id,
 			);
 			const baseItems = markItems(baseRaw.items, false);
 			const delegatedItems = markItems(delegatedRaw.items, true);
-			if (delegatedItems.length > 0 && teacherId) {
+			if (delegatedItems.length > 0 && profileId) {
 				await logDelegateCourseAccess({
 					classCourseIds: delegatedItems.map((item) => item.id),
-					profileId: teacherId,
+					profileId,
 					institutionId: ctx.institution.id,
 					source: "list",
 				});
@@ -136,20 +143,34 @@ export const router = createRouter({
 		.input(searchSchema)
 		.query(async ({ ctx, input }) => {
 			const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
-			const teacherId = ctx.profile?.id ?? null;
-			const baseRaw = isAdmin
+			const isGradeEditor = ctx.memberRole === "grade_editor";
+			const profileId = ctx.profile?.id ?? null;
+
+			const hasInstitutionGrant =
+				!isAdmin && !isGradeEditor && profileId
+					? !!(await gradeAccessRepo.findByProfileAndInstitution(
+							profileId,
+							ctx.institution.id,
+						))
+					: false;
+
+			const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+			const baseRaw = hasFullAccess
 				? await service.searchClassCourses(input, ctx.institution.id)
-				: teacherId && ctx.memberRole === "teacher"
+				: profileId && ctx.memberRole === "teacher"
 					? await service.searchClassCourses(
-							{ ...input, teacherId },
+							{ ...input, teacherId: profileId },
 							ctx.institution.id,
 						)
 					: [];
-			if (isAdmin || !teacherId) {
+
+			if (hasFullAccess || !profileId) {
 				return markItems(baseRaw, false);
 			}
+
 			const delegateCourseIds = await classCourseIdsForEditor(
-				teacherId,
+				profileId,
 				ctx.institution.id,
 			);
 			if (!delegateCourseIds.length) {
@@ -160,10 +181,10 @@ export const router = createRouter({
 				ctx.institution.id,
 			);
 			const delegatedItems = markItems(delegatedRaw, true);
-			if (delegatedItems.length > 0 && teacherId) {
+			if (delegatedItems.length > 0 && profileId) {
 				await logDelegateCourseAccess({
 					classCourseIds: delegatedItems.map((item) => item.id),
-					profileId: teacherId,
+					profileId,
 					institutionId: ctx.institution.id,
 					source: "search",
 				});

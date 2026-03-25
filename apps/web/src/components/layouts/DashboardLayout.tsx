@@ -2,8 +2,10 @@ import type React from "react";
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useStore } from "../../store";
+import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
+import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
@@ -17,7 +19,7 @@ const DashboardLayout: React.FC = () => {
 				replace: true,
 			});
 		}
-	}, [user, navigate]);
+	}, [user, navigate, location.pathname]);
 
 	// Close sidebar on mobile when navigating
 	useEffect(() => {
@@ -31,18 +33,23 @@ const DashboardLayout: React.FC = () => {
 	}
 
 	return (
-		<div className="flex h-dvh overflow-hidden bg-background">
+		<div className="relative isolate flex h-dvh overflow-hidden bg-background">
+			{/* Définition du filtre SVG d'ondulation — doit précéder le motif */}
+			<GridWaveFilter />
+			{/* Motif de fond — z:-1 pour rester strictement derrière le contenu */}
+			<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 			<Sidebar />
 
-			<div className="flex min-h-0 flex-1 flex-col">
+			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 				<Header />
 
-				<main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-					<div className="px-4 py-6 md:px-8">
+				<main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+					<div className="min-w-0 px-4 py-6 md:px-8">
 						<Outlet />
 					</div>
 				</main>
 			</div>
+			<HelpWidget />
 		</div>
 	);
 };

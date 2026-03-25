@@ -3,7 +3,6 @@ import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 import { RuleCard } from "@/components/promotion-rules/rule-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +13,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 type PromotionRule = {
@@ -113,7 +119,7 @@ export function RulesListPage() {
 
 		try {
 			ruleset = JSON.parse(rulesetText);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 			return;
 		}
@@ -137,7 +143,7 @@ export function RulesListPage() {
 		if (rulesetText) {
 			try {
 				ruleset = JSON.parse(rulesetText);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 				return;
 			}
@@ -207,7 +213,7 @@ export function RulesListPage() {
 				</Button>
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t("admin.promotionRules.rulesList.title")}
 						</h1>
 						<p className="mt-1 text-muted-foreground">
@@ -254,18 +260,21 @@ export function RulesListPage() {
 					))}
 				</div>
 			) : (
-				<div className="py-12 text-center">
-					<p className="text-muted-foreground">
-						{t("admin.promotionRules.rulesList.emptyState.noRules")}
-					</p>
-					<Button
-						variant="outline"
-						className="mt-4"
-						onClick={() => setIsCreateDialogOpen(true)}
-					>
-						{t("admin.promotionRules.rulesList.emptyState.createFirst")}
-					</Button>
-				</div>
+				<Empty className="border border-dashed">
+					<EmptyHeader>
+						<EmptyDescription>
+							{t("admin.promotionRules.rulesList.emptyState.noRules")}
+						</EmptyDescription>
+					</EmptyHeader>
+					<EmptyContent>
+						<Button
+							variant="outline"
+							onClick={() => setIsCreateDialogOpen(true)}
+						>
+							{t("admin.promotionRules.rulesList.emptyState.createFirst")}
+						</Button>
+					</EmptyContent>
+				</Empty>
 			)}
 
 			{/* Create Dialog */}
@@ -279,7 +288,7 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.create.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleCreateRule} className="space-y-4">
+					<form onSubmit={handleCreateRule} className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label htmlFor="name">
 								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
@@ -354,7 +363,7 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.edit.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleUpdateRule} className="space-y-4">
+					<form onSubmit={handleUpdateRule} className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label htmlFor="edit-name">
 								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { ClassSelect } from "../../../components/inputs/ClassSelect";
 import { Button } from "../../../components/ui/button";

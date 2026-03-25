@@ -17,7 +17,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +56,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -608,7 +608,7 @@ const GradeEntry: React.FC = () => {
 						count: importedCount,
 					}),
 				);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(
 					t("teacher.gradeEntry.toast.importError", {
 						defaultValue: "Failed to import grades",
@@ -637,11 +637,9 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="font-bold font-heading text-2xl text-foreground">
-						{t("teacher.gradeEntry.title")}
-					</h2>
+					<h2 className="text-foreground">{t("teacher.gradeEntry.title")}</h2>
 					{courseInfo && (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							<span className="font-medium">
 								{courseInfo.teaching_unit_code}
 							</span>
@@ -683,7 +681,7 @@ const GradeEntry: React.FC = () => {
 						</Select>
 						{availableClassCourses.length === 0 &&
 						!classCoursesQuery.isLoading ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("teacher.gradeEntry.selectCourse.emptyState")}
 							</p>
 						) : null}
@@ -725,7 +723,7 @@ const GradeEntry: React.FC = () => {
 											{t("teacher.gradeEntry.delegates.dialogDescription")}
 										</DialogDescription>
 									</DialogHeader>
-									<div className="space-y-2">
+									<div className="space-y-2 px-6 pb-4">
 										<Label>
 											{t("teacher.gradeEntry.delegates.selectLabel")}
 										</Label>
@@ -788,7 +786,7 @@ const GradeEntry: React.FC = () => {
 								<Spinner className="h-6 w-6 text-primary" />
 							</div>
 						) : delegates.length === 0 ? (
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("teacher.gradeEntry.delegates.empty")}
 							</p>
 						) : (
@@ -810,7 +808,7 @@ const GradeEntry: React.FC = () => {
 													{delegate.editor.lastName},{" "}
 													{delegate.editor.firstName}
 												</p>
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{delegate.editor.primaryEmail ??
 														t("teacher.gradeEntry.delegates.unknownEmail")}
 												</p>
@@ -993,7 +991,7 @@ const GradeEntry: React.FC = () => {
 					)}
 
 					{courseId && !selectedExam && (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.gradeEntry.selectExam.prompt")}
 						</p>
 					)}
@@ -1109,7 +1107,7 @@ const GradeEntry: React.FC = () => {
 						<p className="mt-4 font-medium text-foreground text-lg">
 							{t("teacher.gradeEntry.emptyStudents.title")}
 						</p>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.gradeEntry.emptyStudents.description")}
 						</p>
 					</CardContent>

@@ -19,3 +19,7 @@ export const setActiveSchema = z.object({
 	id: z.string(),
 	isActive: z.boolean(),
 });
+
+export const createNextYearSchema = z.object({
+	sourceYearId: z.string(),
+});

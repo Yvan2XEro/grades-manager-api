@@ -7,8 +7,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { toast } from "sonner";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -73,9 +73,7 @@ const Login: React.FC = () => {
 	return (
 		<motion.div variants={container} initial="hidden" animate="visible">
 			<motion.div variants={item} className="mb-8">
-				<h2 className="font-bold font-heading text-2xl text-foreground">
-					{t("auth.login.title")}
-				</h2>
+				<h2 className="text-foreground">{t("auth.login.title")}</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
 					{t("auth.login.noAccount")}{" "}
 					<Link

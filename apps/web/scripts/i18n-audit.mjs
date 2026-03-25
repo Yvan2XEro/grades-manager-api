@@ -59,7 +59,7 @@ function walkDir(dir, extensions) {
 }
 
 /** Extract t("key") / t('key') / t(`key`) calls from source code */
-function extractKeysFromFile(filePath) {
+function _extractKeysFromFile(filePath) {
 	const content = fs.readFileSync(filePath, "utf8");
 	const keys = new Set();
 
@@ -297,13 +297,13 @@ if (fixMissing) {
 	}
 
 	if (frModified) {
-		fs.writeFileSync(FR_PATH, JSON.stringify(fr, null, "\t") + "\n");
+		fs.writeFileSync(FR_PATH, `${JSON.stringify(fr, null, "\t")}\n`);
 		console.log(
 			`Updated ${path.relative(process.cwd(), FR_PATH)} — added ${enOnlyKeys.length} missing keys`,
 		);
 	}
 	if (enModified) {
-		fs.writeFileSync(EN_PATH, JSON.stringify(en, null, "\t") + "\n");
+		fs.writeFileSync(EN_PATH, `${JSON.stringify(en, null, "\t")}\n`);
 		console.log(
 			`Updated ${path.relative(process.cwd(), EN_PATH)} — added ${frOnlyKeys.length} missing keys`,
 		);

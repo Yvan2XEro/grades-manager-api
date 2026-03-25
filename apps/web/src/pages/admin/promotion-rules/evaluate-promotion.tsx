@@ -10,12 +10,11 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 export function EvaluatePromotionPage() {
@@ -177,7 +177,7 @@ export function EvaluatePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.promotionRules.evaluate.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground">
@@ -256,7 +256,7 @@ export function EvaluatePromotionPage() {
 								<p className="font-medium">
 									{t("admin.promotionRules.evaluate.actions.refreshFacts")}
 								</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.promotionRules.evaluate.form.refreshDescription")}
 								</p>
 							</div>
@@ -319,7 +319,7 @@ export function EvaluatePromotionPage() {
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
 						<Card className="border-0 shadow-sm">
 							<CardContent className="pt-6">
-								<div className="font-bold text-2xl text-foreground">
+								<div className="text-foreground">
 									{evaluationResult.totalStudents}
 								</div>
 								<p className="text-muted-foreground text-xs">
@@ -401,9 +401,13 @@ export function EvaluatePromotionPage() {
 
 						<TabsContent value="eligible" className="mt-6 space-y-4">
 							{evaluationResult.eligible.length === 0 ? (
-								<div className="py-12 text-center text-muted-foreground">
-									{t("admin.promotionRules.evaluate.emptyState.noEligible")}
-								</div>
+								<Empty className="border border-dashed">
+									<EmptyHeader>
+										<EmptyDescription>
+											{t("admin.promotionRules.evaluate.emptyState.noEligible")}
+										</EmptyDescription>
+									</EmptyHeader>
+								</Empty>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.eligible.map((result) => (
@@ -425,9 +429,15 @@ export function EvaluatePromotionPage() {
 
 						<TabsContent value="not-eligible" className="mt-6 space-y-4">
 							{evaluationResult.notEligible.length === 0 ? (
-								<div className="py-12 text-center text-muted-foreground">
-									{t("admin.promotionRules.evaluate.emptyState.allEligible")}
-								</div>
+								<Empty className="border border-dashed">
+									<EmptyHeader>
+										<EmptyDescription>
+											{t(
+												"admin.promotionRules.evaluate.emptyState.allEligible",
+											)}
+										</EmptyDescription>
+									</EmptyHeader>
+								</Empty>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.notEligible.map((result) => (

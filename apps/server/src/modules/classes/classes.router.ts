@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
 	router as createRouter,
 	tenantAdminProcedure,
@@ -60,5 +61,19 @@ export const router = createRouter({
 		.input(searchSchema)
 		.query(({ ctx, input }) =>
 			service.searchClasses(input, ctx.institution.id),
+		),
+	bulkGenerate: tenantAdminProcedure
+		.input(
+			z.object({
+				academicYearId: z.string(),
+				cycleLevelIds: z.array(z.string()).optional(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			service.bulkGenerateClasses(
+				input.academicYearId,
+				ctx.institution.id,
+				input.cycleLevelIds,
+			),
 		),
 });

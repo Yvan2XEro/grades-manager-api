@@ -75,7 +75,6 @@ describe("e2e http", () => {
 		const course = await client.courses.create.mutate({
 			code: "CRS-E2E",
 			name: "Math",
-			credits: 3,
 			hours: 30,
 			program: program.id,
 			teachingUnitId: teachingUnit.id,

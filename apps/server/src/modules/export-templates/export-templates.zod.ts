@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { ExportTemplateType } from "../../db/schema/app-schema";
 
 // Create template schema
 export const createExportTemplateSchema = z.object({

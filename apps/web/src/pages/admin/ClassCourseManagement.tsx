@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import {
 	AlertTriangle,
@@ -8,15 +13,16 @@ import {
 	Pencil,
 	Plus,
 	Trash2,
+	Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import FormModal from "@/components/modals/FormModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -29,21 +35,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -54,7 +59,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -63,6 +67,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -71,9 +76,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -152,6 +159,13 @@ export default function ClassCourseManagement() {
 	const [classSearch, setClassSearch] = useState("");
 	const [courseSearch, setCourseSearch] = useState("");
 
+	// Auto-enroll state
+	const [isAutoEnrollOpen, setIsAutoEnrollOpen] = useState(false);
+	const [autoEnrollClassId, setAutoEnrollClassId] = useState<string>("");
+	const [autoEnrollYearId, setAutoEnrollYearId] = useState<string | null>(null);
+	const [autoEnrollClassSearch, setAutoEnrollClassSearch] = useState("");
+	const [autoEnrollOnCreate, setAutoEnrollOnCreate] = useState(false);
+
 	// UE bulk assignment state
 	const [isUeAssignOpen, setIsUeAssignOpen] = useState(false);
 	const [ueAssignClassId, setUeAssignClassId] = useState<string>("");
@@ -162,12 +176,6 @@ export default function ClassCourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const classCourseSchema = useMemo(() => buildClassCourseSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => {
-		pagination.reset();
-	}, [filterYear, filterSemester]);
 
 	const { data: defaultClasses = [] } = useQuery({
 		queryKey: ["classes"],
@@ -281,18 +289,18 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: classCoursesData, isLoading } = useQuery({
-		queryKey: [
-			"classCourses",
-			pagination.cursor,
-			pagination.pageSize,
-			filterYear,
-			filterSemester,
-		],
-		queryFn: async () => {
+	const {
+		data: classCoursesData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
+		queryKey: ["classCourses", filterYear, filterSemester],
+		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classCourses.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
 				...(filterSemester ? { semesterId: filterSemester } : {}),
 			});
@@ -314,8 +322,13 @@ export default function ClassCourseManagement() {
 				nextCursor,
 			};
 		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
-	const classCourses = classCoursesData?.items;
+	const classCourses = classCoursesData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 
 	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
@@ -402,7 +415,7 @@ export default function ClassCourseManagement() {
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
 		: undefined;
-	const selectedCourse = selectedCourseId
+	const _selectedCourse = selectedCourseId
 		? courseMap.get(selectedCourseId)
 		: undefined;
 	const classCourseCodes = useMemo(
@@ -519,10 +532,22 @@ export default function ClassCourseManagement() {
 	const createMutation = useMutation({
 		mutationFn: async (data: ClassCourseFormData) => {
 			await trpcClient.classCourses.create.mutate(data);
+			return data;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["classCourses"] });
 			toast.success(t("admin.classCourses.toast.createSuccess"));
+			if (autoEnrollOnCreate && data.class) {
+				// Find the academicYear for this class
+				const _cls = classes.find((c) => c.id === data.class);
+				const yearId = filterYear ?? null;
+				if (yearId) {
+					autoEnrollMutation.mutate({
+						classId: data.class,
+						academicYearId: yearId,
+					});
+				}
+			}
 			handleCloseForm();
 		},
 		onError: (error: unknown) => {
@@ -664,12 +689,90 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	// Auto-enroll: search classes
+	const { data: autoEnrollSearchClasses = [] } = useQuery({
+		queryKey: ["classes", "search", autoEnrollClassSearch],
+		queryFn: async () => {
+			const items = await trpcClient.classes.search.query({
+				query: autoEnrollClassSearch,
+			});
+			return items.map((cls) => ({
+				id: cls.id,
+				name: cls.name,
+				code: cls.code,
+				program: cls.program,
+				programCode: cls.programInfo?.code ?? null,
+				cycleLevelCode: cls.cycleLevel?.code ?? null,
+				academicYearName: cls.academicYearInfo?.name ?? "",
+				semesterId: cls.semester?.id ?? null,
+				semesterCode: cls.semester?.code ?? null,
+			})) as Class[];
+		},
+		enabled: autoEnrollClassSearch.length >= 2,
+	});
+	const autoEnrollClasses =
+		autoEnrollClassSearch.length >= 2
+			? autoEnrollSearchClasses
+			: defaultClasses;
+
+	const autoEnrollMutation = useMutation({
+		mutationFn: ({
+			classId,
+			academicYearId,
+		}: {
+			classId: string;
+			academicYearId: string;
+		}) =>
+			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+				classId,
+				academicYearId,
+			}),
+		onSuccess: (result) => {
+			queryClient.invalidateQueries({ queryKey: ["studentCourseEnrollments"] });
+			toast.success(
+				t("admin.classCourses.toast.autoEnrollSuccess", {
+					defaultValue: "{{count}} inscription(s) créée(s)",
+					count: result.createdCount,
+				}),
+			);
+			handleCloseAutoEnroll();
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.classCourses.toast.autoEnrollError", {
+							defaultValue: "Erreur lors de l'inscription automatique",
+						});
+			toast.error(message);
+		},
+	});
+
+	const handleCloseAutoEnroll = () => {
+		setIsAutoEnrollOpen(false);
+		setTimeout(() => {
+			setAutoEnrollClassId("");
+			setAutoEnrollYearId(null);
+			setAutoEnrollClassSearch("");
+		}, 250);
+	};
+
+	const handleAutoEnroll = () => {
+		if (!autoEnrollClassId || !autoEnrollYearId) return;
+		autoEnrollMutation.mutate({
+			classId: autoEnrollClassId,
+			academicYearId: autoEnrollYearId,
+		});
+	};
+
 	const handleCloseUeAssign = () => {
 		setIsUeAssignOpen(false);
-		setUeAssignClassId("");
-		setUeAssignUeId("");
-		setUeAssignClassSearch("");
-		setSkippedCourses([]);
+		setTimeout(() => {
+			setUeAssignClassId("");
+			setUeAssignUeId("");
+			setUeAssignClassSearch("");
+			setSkippedCourses([]);
+		}, 250);
 	};
 
 	const handleBulkAssign = () => {
@@ -750,14 +853,18 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("admin.classCourses.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.classCourses.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.classCourses.subtitle")}
 					</p>
 				</div>
 				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setIsAutoEnrollOpen(true)}>
+						<Users className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.autoEnroll", {
+							defaultValue: "Inscrire les étudiants",
+						})}
+					</Button>
 					<Button variant="outline" onClick={() => setIsUeAssignOpen(true)}>
 						<Layers className="mr-2 h-4 w-4" />
 						{t("admin.classCourses.actions.assignUe", {
@@ -771,30 +878,39 @@ export default function ClassCourseManagement() {
 				</div>
 			</div>
 
-			<div className="flex flex-wrap items-end gap-4">
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.academicYear", {
-							defaultValue: "Academic Year",
-						})}
-					</Label>
-					<AcademicYearSelect
-						value={filterYear}
-						onChange={(v) => setFilterYear(v)}
-					/>
-				</div>
-				<div className="w-56">
-					<Label className="mb-1 block font-medium text-sm">
-						{t("admin.classes.filters.semester", {
-							defaultValue: "Semester",
-						})}
-					</Label>
-					<SemesterSelect
-						value={filterSemester}
-						onChange={(v) => setFilterSemester(v)}
-					/>
-				</div>
-			</div>
+			<Card className="mb-4">
+				<CardHeader className="pb-3">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
+						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex flex-wrap items-end gap-4">
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.academicYear", {
+									defaultValue: "Academic Year",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={filterYear}
+								onChange={(v) => setFilterYear(v)}
+							/>
+						</div>
+						<div className="w-56">
+							<Label className="mb-1 block font-medium text-sm">
+								{t("admin.classes.filters.semester", {
+									defaultValue: "Semester",
+								})}
+							</Label>
+							<SemesterSelect
+								value={filterSemester}
+								onChange={(v) => setFilterSemester(v)}
+							/>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
 
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
@@ -823,12 +939,10 @@ export default function ClassCourseManagement() {
 			</BulkActionBar>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.classCourses.title")}</CardTitle>
-					<CardDescription>{t("admin.classCourses.subtitle")}</CardDescription>
-				</CardHeader>
 				<CardContent>
-					{displayedClassCourses.length > 0 ? (
+					{isLoading ? (
+						<TableSkeleton columns={8} rows={8} />
+					) : displayedClassCourses.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -862,7 +976,25 @@ export default function ClassCourseManagement() {
 							</TableHeader>
 							<TableBody>
 								{displayedClassCourses.map((classCourse) => (
-									<TableRow key={classCourse.id}>
+									<TableRow
+										key={classCourse.id}
+										actions={
+											<>
+												<ContextMenuItem
+													onSelect={() => startEdit(classCourse)}
+												>
+													{t("common.actions.edit")}
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem
+													className="text-destructive"
+													onSelect={() => confirmDelete(classCourse.id)}
+												>
+													{t("common.actions.delete")}
+												</ContextMenuItem>
+											</>
+										}
+									>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(classCourse.id)}
@@ -949,245 +1081,251 @@ export default function ClassCourseManagement() {
 							</TableBody>
 						</Table>
 					) : (
-						<div className="py-12 text-center">
-							<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-							<p className="mt-4 font-medium">
-								{t("admin.classCourses.empty.title")}
-							</p>
-							<p className="text-muted-foreground text-sm">
-								{t("admin.classCourses.empty.description")}
-							</p>
-							<Button className="mt-4" onClick={startCreate}>
-								<Plus className="mr-2 h-4 w-4" />
-								{t("admin.classCourses.actions.assign")}
-							</Button>
-						</div>
+						<Empty className="border border-dashed">
+							<EmptyHeader>
+								<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+								<EmptyTitle>{t("admin.classCourses.empty.title")}</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.classCourses.empty.description")}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={startCreate}>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.classCourses.actions.assign")}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={!!classCoursesData?.nextCursor}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(classCoursesData?.nextCursor)}
-				isLoading={isLoading}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
-			<Dialog
-				open={isFormOpen}
-				onOpenChange={(open) => {
-					setIsFormOpen(open);
-					if (!open) handleCloseForm();
-				}}
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={handleCloseForm}
+				title={
+					editingClassCourse
+						? t("admin.classCourses.form.editTitle")
+						: t("admin.classCourses.form.createTitle")
+				}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>
-							{editingClassCourse
-								? t("admin.classCourses.form.editTitle")
-								: t("admin.classCourses.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<CodedEntitySelect
-								items={classes}
-								onSearch={setClassSearch}
-								value={
-									classes.find((c) => c.id === form.watch("class"))?.code ||
-									null
-								}
-								onChange={(code) => {
-									const cls = classes.find((c) => c.code === code);
-									form.setValue("class", cls?.id || "");
-								}}
-								label={t("admin.classCourses.form.classLabel")}
-								placeholder={t("admin.classCourses.form.classPlaceholder")}
-								error={form.formState.errors.class?.message}
-								searchMode="hybrid"
-								getItemSubtitle={(cls) =>
-									programMap.get(cls.program)?.name ??
-									t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									})
-								}
-								required
-							/>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<CodedEntitySelect
+							items={classes}
+							onSearch={setClassSearch}
+							value={
+								classes.find((c) => c.id === form.watch("class"))?.code || null
+							}
+							onChange={(code) => {
+								const cls = classes.find((c) => c.code === code);
+								form.setValue("class", cls?.id || "");
+							}}
+							label={t("admin.classCourses.form.classLabel")}
+							placeholder={t("admin.classCourses.form.classPlaceholder")}
+							error={form.formState.errors.class?.message}
+							searchMode="hybrid"
+							getItemSubtitle={(cls) =>
+								programMap.get(cls.program)?.name ??
+								t("common.labels.notAvailable", {
+									defaultValue: "N/A",
+								})
+							}
+							required
+						/>
 
-							<CodedEntitySelect
-								items={courses}
-								onSearch={setCourseSearch}
-								value={
-									courses.find((c) => c.id === form.watch("course"))?.code ||
-									null
-								}
-								onChange={(code) => {
-									const course = courses.find((c) => c.code === code);
-									form.setValue("course", course?.id || "");
-								}}
-								label={t("admin.classCourses.form.courseLabel")}
-								placeholder={t("admin.classCourses.form.coursePlaceholder")}
-								error={form.formState.errors.course?.message}
-								searchMode="hybrid"
-								required
-							/>
+						<CodedEntitySelect
+							items={courses}
+							onSearch={setCourseSearch}
+							value={
+								courses.find((c) => c.id === form.watch("course"))?.code || null
+							}
+							onChange={(code) => {
+								const course = courses.find((c) => c.code === code);
+								form.setValue("course", course?.id || "");
+							}}
+							label={t("admin.classCourses.form.courseLabel")}
+							placeholder={t("admin.classCourses.form.coursePlaceholder")}
+							error={form.formState.errors.course?.message}
+							searchMode="hybrid"
+							required
+						/>
 
-							<FormField
-								control={form.control}
-								name="teacher"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.teacherLabel")}
-										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.teacherPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="semesterId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.semesterLabel", {
-												defaultValue: "Semester",
-											})}
-										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-											disabled={!semesters || semesters.length === 0}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.semesterPlaceholder",
-															{
-																defaultValue: "Select semester",
-															},
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{semesters?.map((semester) => (
-													<SelectItem key={semester.id} value={semester.id}>
-														{semester.name} ({semester.code})
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
+						<FormField
+							control={form.control}
+							name="teacher"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.teacherLabel")}
+									</FormLabel>
+									<Select value={field.value} onValueChange={field.onChange}>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder={t(
-													"admin.classCourses.form.codePlaceholder",
-													{
-														defaultValue: "INF11-CLS24-01",
-													},
-												)}
-											/>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.teacherPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
 										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+										<SelectContent>
+											{teacherOptions.map((teacher) => (
+												<SelectItem key={teacher.id} value={teacher.id}>
+													{formatTeacherName(teacher)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<FormField
-								control={form.control}
-								name="coefficient"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.coefficientLabel", {
-												defaultValue: "Coefficient",
-											})}
-										</FormLabel>
+						<FormField
+							control={form.control}
+							name="semesterId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.semesterLabel", {
+											defaultValue: "Semester",
+										})}
+									</FormLabel>
+									<Select
+										value={field.value}
+										onValueChange={field.onChange}
+										disabled={!semesters || semesters.length === 0}
+									>
 										<FormControl>
-											<Input
-												{...field}
-												type="number"
-												step="0.01"
-												min="0.01"
-												placeholder={t(
-													"admin.classCourses.form.coefficientPlaceholder",
-													{
-														defaultValue: "1.00",
-													},
-												)}
-											/>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.semesterPlaceholder",
+														{
+															defaultValue: "Select semester",
+														},
+													)}
+												/>
+											</SelectTrigger>
 										</FormControl>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classCourses.form.coefficientHelp", {
-												defaultValue:
-													"Poids pour le calcul de la moyenne pondérée dans l'UE",
-											})}
-										</p>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+										<SelectContent>
+											{semesters?.map((semester) => (
+												<SelectItem key={semester.id} value={semester.id}>
+													{semester.name} ({semester.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseForm}
-									disabled={form.formState.isSubmitting}
+						<FormField
+							control={form.control}
+							name="code"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.codeLabel", {
+											defaultValue: "Code",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t(
+												"admin.classCourses.form.codePlaceholder",
+												{
+													defaultValue: "INF11-CLS24-01",
+												},
+											)}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="coefficient"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.coefficientLabel", {
+											defaultValue: "Coefficient",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											type="number"
+											step="0.01"
+											min="0.01"
+											placeholder={t(
+												"admin.classCourses.form.coefficientPlaceholder",
+												{
+													defaultValue: "1.00",
+												},
+											)}
+										/>
+									</FormControl>
+									<p className="text-muted-foreground text-xs">
+										{t("admin.classCourses.form.coefficientHelp", {
+											defaultValue:
+												"Poids pour le calcul de la moyenne pondérée dans l'UE",
+										})}
+									</p>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						{!editingClassCourse && filterYear && (
+							<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+								<Switch
+									id="auto-enroll-toggle"
+									checked={autoEnrollOnCreate}
+									onCheckedChange={setAutoEnrollOnCreate}
+								/>
+								<label
+									htmlFor="auto-enroll-toggle"
+									className="cursor-pointer text-sm"
 								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
-									{form.formState.isSubmitting ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : editingClassCourse ? (
-										t("common.actions.saveChanges")
-									) : (
-										t("admin.classCourses.form.createSubmit")
-									)}
-								</Button>
+									{t("admin.classCourses.form.autoEnrollOnCreate", {
+										defaultValue:
+											"Inscrire automatiquement les étudiants après l'assignation",
+									})}
+								</label>
 							</div>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
+						)}
+
+						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleCloseForm}
+								disabled={form.formState.isSubmitting}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingClassCourse ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.classCourses.form.createSubmit")
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</FormModal>
 
 			<AlertDialog
 				open={isDeleteOpen}
@@ -1227,161 +1365,232 @@ export default function ClassCourseManagement() {
 			</AlertDialog>
 
 			{/* UE Bulk Assignment Dialog */}
-			<Dialog
-				open={isUeAssignOpen}
-				onOpenChange={(open) => {
-					if (!open) handleCloseUeAssign();
-					else setIsUeAssignOpen(open);
-				}}
+			<FormModal
+				isOpen={isUeAssignOpen}
+				onClose={handleCloseUeAssign}
+				title={t("admin.classCourses.ueAssign.title", {
+					defaultValue: "Assigner une unité d'enseignement",
+				})}
 			>
-				<DialogContent className="max-w-lg">
-					<DialogHeader>
-						<DialogTitle>
-							{t("admin.classCourses.ueAssign.title", {
-								defaultValue: "Assigner une unité d'enseignement",
-							})}
-						</DialogTitle>
-					</DialogHeader>
-
-					{skippedCourses.length > 0 ? (
-						<div className="space-y-4">
-							<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-								<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
-								<div>
-									<p className="font-medium text-yellow-800">
-										{t("admin.classCourses.ueAssign.skippedTitle", {
-											defaultValue: "Certains cours n'ont pas été assignés",
-										})}
-									</p>
-									<p className="mt-1 text-sm text-yellow-700">
-										{t("admin.classCourses.ueAssign.skippedDesc", {
-											defaultValue:
-												"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
-										})}
-									</p>
-									<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
-										{skippedCourses.map((name) => (
-											<li key={name}>{name}</li>
-										))}
-									</ul>
-								</div>
-							</div>
-							<div className="flex justify-end">
-								<Button onClick={handleCloseUeAssign}>
-									{t("common.actions.close")}
-								</Button>
+				{skippedCourses.length > 0 ? (
+					<div className="space-y-4">
+						<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+							<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
+							<div>
+								<p className="font-medium text-yellow-800">
+									{t("admin.classCourses.ueAssign.skippedTitle", {
+										defaultValue: "Certains cours n'ont pas été assignés",
+									})}
+								</p>
+								<p className="mt-1 text-sm text-yellow-700">
+									{t("admin.classCourses.ueAssign.skippedDesc", {
+										defaultValue:
+											"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
+									})}
+								</p>
+								<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
+									{skippedCourses.map((name) => (
+										<li key={name}>{name}</li>
+									))}
+								</ul>
 							</div>
 						</div>
-					) : (
-						<div className="space-y-4">
+						<div className="flex justify-end">
+							<Button onClick={handleCloseUeAssign}>
+								{t("common.actions.close")}
+							</Button>
+						</div>
+					</div>
+				) : (
+					<div className="space-y-4">
+						<div>
+							<label className="mb-2 block font-medium text-sm">
+								{t("admin.classCourses.ueAssign.classLabel", {
+									defaultValue: "Classe",
+								})}
+							</label>
+							<CodedEntitySelect
+								items={ueAssignClasses}
+								onSearch={setUeAssignClassSearch}
+								value={
+									ueAssignClasses.find((c) => c.id === ueAssignClassId)?.code ||
+									null
+								}
+								onChange={(code) => {
+									const cls = ueAssignClasses.find((c) => c.code === code);
+									setUeAssignClassId(cls?.id || "");
+									setUeAssignUeId(""); // Reset UE when class changes
+								}}
+								placeholder={t("admin.classCourses.ueAssign.classPlaceholder", {
+									defaultValue: "Sélectionner une classe",
+								})}
+								searchMode="hybrid"
+								getItemSubtitle={(cls) =>
+									programs?.find((p) => p.id === cls.program)?.name ?? ""
+								}
+							/>
+						</div>
+
+						{ueAssignClassId && (
 							<div>
 								<label className="mb-2 block font-medium text-sm">
-									{t("admin.classCourses.ueAssign.classLabel", {
-										defaultValue: "Classe",
+									{t("admin.classCourses.ueAssign.ueLabel", {
+										defaultValue: "Unité d'enseignement",
 									})}
 								</label>
-								<CodedEntitySelect
-									items={ueAssignClasses}
-									onSearch={setUeAssignClassSearch}
-									value={
-										ueAssignClasses.find((c) => c.id === ueAssignClassId)
-											?.code || null
-									}
-									onChange={(code) => {
-										const cls = ueAssignClasses.find((c) => c.code === code);
-										setUeAssignClassId(cls?.id || "");
-										setUeAssignUeId(""); // Reset UE when class changes
-									}}
-									placeholder={t(
-										"admin.classCourses.ueAssign.classPlaceholder",
-										{
-											defaultValue: "Sélectionner une classe",
-										},
-									)}
-									searchMode="hybrid"
-									getItemSubtitle={(cls) =>
-										programs?.find((p) => p.id === cls.program)?.name ?? ""
-									}
-								/>
-							</div>
-
-							{ueAssignClassId && (
-								<div>
-									<label className="mb-2 block font-medium text-sm">
-										{t("admin.classCourses.ueAssign.ueLabel", {
-											defaultValue: "Unité d'enseignement",
+								<Select
+									value={ueAssignUeId}
+									onValueChange={setUeAssignUeId}
+									disabled={teachingUnits.length === 0}
+								>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t(
+												"admin.classCourses.ueAssign.uePlaceholder",
+												{
+													defaultValue: "Sélectionner une UE",
+												},
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{teachingUnits.map((ue) => (
+											<SelectItem key={ue.id} value={ue.id}>
+												{ue.code} - {ue.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{teachingUnits.length === 0 && ueAssignClassId && (
+									<p className="mt-1 text-muted-foreground text-xs">
+										{t("admin.classCourses.ueAssign.noUe", {
+											defaultValue: "Aucune UE trouvée pour ce programme",
 										})}
-									</label>
-									<Select
-										value={ueAssignUeId}
-										onValueChange={setUeAssignUeId}
-										disabled={teachingUnits.length === 0}
-									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t(
-													"admin.classCourses.ueAssign.uePlaceholder",
-													{
-														defaultValue: "Sélectionner une UE",
-													},
-												)}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{teachingUnits.map((ue) => (
-												<SelectItem key={ue.id} value={ue.id}>
-													{ue.code} - {ue.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{teachingUnits.length === 0 && ueAssignClassId && (
-										<p className="mt-1 text-muted-foreground text-xs">
-											{t("admin.classCourses.ueAssign.noUe", {
-												defaultValue: "Aucune UE trouvée pour ce programme",
-											})}
-										</p>
-									)}
-								</div>
-							)}
-
-							<p className="text-muted-foreground text-sm">
-								{t("admin.classCourses.ueAssign.hint", {
-									defaultValue:
-										"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
-								})}
-							</p>
-
-							<div className="flex justify-end gap-2">
-								<Button
-									variant="outline"
-									onClick={handleCloseUeAssign}
-									disabled={bulkAssignMutation.isPending}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button
-									onClick={handleBulkAssign}
-									disabled={
-										!ueAssignClassId ||
-										!ueAssignUeId ||
-										bulkAssignMutation.isPending
-									}
-								>
-									{bulkAssignMutation.isPending ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : (
-										<Layers className="mr-2 h-4 w-4" />
-									)}
-									{t("admin.classCourses.ueAssign.submit", {
-										defaultValue: "Assigner les cours",
-									})}
-								</Button>
+									</p>
+								)}
 							</div>
+						)}
+
+						<p className="text-muted-foreground text-xs">
+							{t("admin.classCourses.ueAssign.hint", {
+								defaultValue:
+									"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+							})}
+						</p>
+
+						<div className="flex justify-end gap-2">
+							<Button
+								variant="outline"
+								onClick={handleCloseUeAssign}
+								disabled={bulkAssignMutation.isPending}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button
+								onClick={handleBulkAssign}
+								disabled={
+									!ueAssignClassId ||
+									!ueAssignUeId ||
+									bulkAssignMutation.isPending
+								}
+							>
+								{bulkAssignMutation.isPending ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : (
+									<Layers className="mr-2 h-4 w-4" />
+								)}
+								{t("admin.classCourses.ueAssign.submit", {
+									defaultValue: "Assigner les cours",
+								})}
+							</Button>
 						</div>
-					)}
-				</DialogContent>
-			</Dialog>
+					</div>
+				)}
+			</FormModal>
+
+			{/* Auto-enroll Dialog */}
+			<FormModal
+				isOpen={isAutoEnrollOpen}
+				onClose={handleCloseAutoEnroll}
+				title={t("admin.classCourses.autoEnroll.title", {
+					defaultValue: "Inscrire automatiquement les étudiants",
+				})}
+			>
+				<div className="space-y-4">
+					<p className="text-muted-foreground text-sm">
+						{t("admin.classCourses.autoEnroll.description", {
+							defaultValue:
+								"Inscrit automatiquement tous les étudiants inscrits dans la classe aux cours qui leur sont assignés pour l'année académique choisie.",
+						})}
+					</p>
+
+					<div>
+						<label className="mb-2 block font-medium text-sm">
+							{t("admin.classCourses.autoEnroll.classLabel", {
+								defaultValue: "Classe",
+							})}
+						</label>
+						<CodedEntitySelect
+							items={autoEnrollClasses}
+							onSearch={setAutoEnrollClassSearch}
+							value={
+								autoEnrollClasses.find((c) => c.id === autoEnrollClassId)
+									?.code || null
+							}
+							onChange={(code) => {
+								const cls = autoEnrollClasses.find((c) => c.code === code);
+								setAutoEnrollClassId(cls?.id || "");
+							}}
+							placeholder={t("admin.classCourses.autoEnroll.classPlaceholder", {
+								defaultValue: "Sélectionner une classe",
+							})}
+							searchMode="hybrid"
+							getItemSubtitle={(cls) =>
+								programs?.find((p) => p.id === cls.program)?.name ?? ""
+							}
+						/>
+					</div>
+
+					<div>
+						<label className="mb-2 block font-medium text-sm">
+							{t("admin.classCourses.autoEnroll.yearLabel", {
+								defaultValue: "Année académique",
+							})}
+						</label>
+						<AcademicYearSelect
+							value={autoEnrollYearId}
+							onChange={setAutoEnrollYearId}
+						/>
+					</div>
+
+					<div className="flex justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={handleCloseAutoEnroll}
+							disabled={autoEnrollMutation.isPending}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							onClick={handleAutoEnroll}
+							disabled={
+								!autoEnrollClassId ||
+								!autoEnrollYearId ||
+								autoEnrollMutation.isPending
+							}
+						>
+							{autoEnrollMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<Users className="mr-2 h-4 w-4" />
+							)}
+							{t("admin.classCourses.autoEnroll.submit", {
+								defaultValue: "Inscrire les étudiants",
+							})}
+						</Button>
+					</div>
+				</div>
+			</FormModal>
 		</div>
 	);
 }

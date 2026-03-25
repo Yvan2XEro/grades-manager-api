@@ -1,10 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { Layers3, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
 import {
 	AlertDialog,
@@ -21,11 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import {
 	Form,
 	FormControl,
@@ -35,8 +37,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -45,9 +45,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
+import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
 
 const cycleSchema = z.object({
@@ -76,18 +79,21 @@ export default function StudyCycleManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
 	const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
-	const cyclesQuery = useQuery({
-		queryKey: ["studyCycles", pagination.cursor],
-		queryFn: () =>
+	const cyclesQuery = useInfiniteQuery({
+		queryKey: ["studyCycles"],
+		queryFn: ({ pageParam }) =>
 			trpcClient.studyCycles.listCycles.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+				cursor: pageParam,
+				limit: 20,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const cycles = cyclesQuery.data?.items ?? [];
+	const cycles = cyclesQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(cyclesQuery.fetchNextPage, {
+		enabled: cyclesQuery.hasNextPage && !cyclesQuery.isFetchingNextPage,
+	});
 	const selection = useRowSelection(cycles);
 
 	const activeCycle = useMemo(
@@ -114,6 +120,20 @@ export default function StudyCycleManagement() {
 			durationYears: 3,
 		},
 	});
+
+	const watchedCode = form.watch("code");
+	const watchedDuration = form.watch("durationYears");
+	const watchedCredits = form.watch("totalCreditsRequired");
+	const autoLevelsPreview = useMemo(() => {
+		const duration = Number(watchedDuration);
+		const credits = Number(watchedCredits);
+		if (!duration || duration < 1 || duration > 20) return [];
+		return Array.from({ length: duration }, (_, i) => ({
+			code: watchedCode ? `${watchedCode}-L${i + 1}` : `L${i + 1}`,
+			name: `Level ${i + 1}`,
+			minCredits: credits ? Math.floor(credits / duration) : 0,
+		}));
+	}, [watchedCode, watchedDuration, watchedCredits]);
 
 	const levelForm = useForm<LevelForm>({
 		resolver: zodResolver(levelSchema),
@@ -252,7 +272,7 @@ export default function StudyCycleManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.studyCycles.title", { defaultValue: "Study cycles" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -282,16 +302,9 @@ export default function StudyCycleManagement() {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>
-						{t("admin.studyCycles.listTitle", { defaultValue: "Cycles" })}
-					</CardTitle>
-				</CardHeader>
 				<CardContent>
 					{cyclesQuery.isLoading ? (
-						<div className="flex justify-center py-6">
-							<Spinner />
-						</div>
+						<TableSkeleton columns={5} rows={8} />
 					) : (
 						<>
 							<BulkActionBar
@@ -336,17 +349,17 @@ export default function StudyCycleManagement() {
 												defaultValue: "Name",
 											})}
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-20">
 											{t("admin.studyCycles.table.credits", {
 												defaultValue: "Credits",
 											})}
 										</TableHead>
-										<TableHead>
+										<TableHead className="w-28">
 											{t("admin.studyCycles.table.duration", {
 												defaultValue: "Duration",
 											})}
 										</TableHead>
-										<TableHead className="text-right">
+										<TableHead className="w-[100px] text-right">
 											{t("admin.studyCycles.table.actions", {
 												defaultValue: "Actions",
 											})}
@@ -357,8 +370,34 @@ export default function StudyCycleManagement() {
 									{cycles.map((cycle) => (
 										<TableRow
 											key={cycle.id}
-											className={`${activeCycleId === cycle.id ? "bg-primary-50" : "cursor-pointer hover:bg-muted"}`}
 											onClick={() => setActiveCycleId(cycle.id)}
+											actions={
+												<>
+													<ContextMenuItem
+														onSelect={() => {
+															setEditingId(cycle.id);
+															form.reset({
+																code: cycle.code,
+																name: cycle.name,
+																description: cycle.description ?? "",
+																totalCreditsRequired:
+																	cycle.totalCreditsRequired,
+																durationYears: cycle.durationYears,
+															});
+															setIsFormOpen(true);
+														}}
+													>
+														{t("common.actions.edit")}
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														className="text-destructive"
+														onSelect={() => setDeleteId(cycle.id)}
+													>
+														{t("common.actions.delete")}
+													</ContextMenuItem>
+												</>
+											}
 										>
 											<TableCell onClick={(e) => e.stopPropagation()}>
 												<Checkbox
@@ -427,15 +466,7 @@ export default function StudyCycleManagement() {
 									)}
 								</TableBody>
 							</Table>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!cyclesQuery.data?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() =>
-									pagination.handleNext(cyclesQuery.data?.nextCursor)
-								}
-								isLoading={cyclesQuery.isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					)}
 				</CardContent>
@@ -453,7 +484,7 @@ export default function StudyCycleManagement() {
 										cycle: activeCycle.name,
 									})}
 								</CardTitle>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.studyCycles.levelsSubtitle", {
 										defaultValue: "Define how students move across years.",
 									})}
@@ -491,7 +522,7 @@ export default function StudyCycleManagement() {
 										<p className="font-semibold text-foreground">
 											{level.name}
 										</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="text-muted-foreground text-xs">
 											{t("admin.studyCycles.levelCredits", {
 												defaultValue: "Required credits: {{value}}",
 												value: level.minCredits,
@@ -529,7 +560,7 @@ export default function StudyCycleManagement() {
 								</div>
 							))}
 							{!levelsQuery.data?.length && (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.studyCycles.levelsEmpty", {
 										defaultValue: "No levels defined yet.",
 									})}
@@ -540,204 +571,221 @@ export default function StudyCycleManagement() {
 				</Card>
 			)}
 
-			<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingId
-								? t("admin.studyCycles.actions.update", {
-										defaultValue: "Update cycle",
-									})
-								: t("admin.studyCycles.actions.add", {
-										defaultValue: "Add cycle",
-									})}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
-						<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.studyCycles.form.name", {
-													defaultValue: "Name",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} placeholder="Bachelor of Science" />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.studyCycles.form.code", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} placeholder="BSC" />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+			<FormModal
+				isOpen={isFormOpen}
+				onClose={() => setIsFormOpen(false)}
+				title={
+					editingId
+						? t("admin.studyCycles.actions.update", {
+								defaultValue: "Update cycle",
+							})
+						: t("admin.studyCycles.actions.add", { defaultValue: "Add cycle" })
+				}
+				maxWidth="sm:max-w-xl"
+			>
+				<Form {...form}>
+					<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+						<div className="grid gap-4 sm:grid-cols-2">
 							<FormField
 								control={form.control}
-								name="description"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.studyCycles.form.description", {
-												defaultValue: "Description",
-											})}
-										</FormLabel>
-										<FormControl>
-											<Textarea {...field} rows={3} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="totalCreditsRequired"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.studyCycles.form.credits", {
-													defaultValue: "Credits",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input type="number" min={30} {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="durationYears"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.studyCycles.form.duration", {
-													defaultValue: "Years",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input type="number" min={1} {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<Button
-								type="submit"
-								className="w-full"
-								disabled={createCycleMutation.isPending}
-							>
-								{t("common.actions.save")}
-							</Button>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
-
-			<Dialog open={isLevelFormOpen} onOpenChange={setIsLevelFormOpen}>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingLevelId
-								? t("admin.studyCycles.actions.updateLevel", {
-										defaultValue: "Update level",
-									})
-								: t("admin.studyCycles.actions.addLevel", {
-										defaultValue: "Add level",
-									})}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...levelForm}>
-						<form
-							className="space-y-4"
-							onSubmit={levelForm.handleSubmit(onLevelSubmit)}
-						>
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={levelForm.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.studyCycles.form.name", {
-													defaultValue: "Name",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} placeholder="Level 1" />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={levelForm.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.studyCycles.form.code", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} placeholder="L1" />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<FormField
-								control={levelForm.control}
-								name="minCredits"
+								name="name"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel required>
-											{t("admin.studyCycles.form.minCredits", {
-												defaultValue: "Minimum credits",
+											{t("admin.studyCycles.form.name", {
+												defaultValue: "Name",
 											})}
 										</FormLabel>
 										<FormControl>
-											<Input type="number" min={0} {...field} />
+											<Input {...field} placeholder="Bachelor of Science" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
-							<Button
-								type="submit"
-								className="w-full"
-								disabled={updateLevelMutation.isPending}
-							>
-								{t("common.actions.save")}
-							</Button>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.studyCycles.form.code", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="BSC" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<FormField
+							control={form.control}
+							name="description"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.studyCycles.form.description", {
+											defaultValue: "Description",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Textarea {...field} rows={3} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="totalCreditsRequired"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.credits", {
+												defaultValue: "Credits",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input type="number" min={30} {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="durationYears"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.duration", {
+												defaultValue: "Years",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input type="number" min={1} {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						{!editingId && autoLevelsPreview.length > 0 && (
+							<div className="rounded-lg border border-dashed bg-muted/40 p-3">
+								<p className="mb-2 font-medium text-muted-foreground text-xs">
+									{t("admin.studyCycles.form.autoLevelsPreview", {
+										defaultValue: "Levels that will be auto-created:",
+									})}
+								</p>
+								<div className="flex flex-wrap gap-1.5">
+									{autoLevelsPreview.map((lvl) => (
+										<span
+											key={lvl.code}
+											className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs"
+										>
+											{lvl.code} · {lvl.minCredits} cr
+										</span>
+									))}
+								</div>
+							</div>
+						)}
+						<Button
+							type="submit"
+							className="w-full"
+							disabled={createCycleMutation.isPending}
+						>
+							{t("common.actions.save")}
+						</Button>
+					</form>
+				</Form>
+			</FormModal>
+
+			<FormModal
+				isOpen={isLevelFormOpen}
+				onClose={() => setIsLevelFormOpen(false)}
+				title={
+					editingLevelId
+						? t("admin.studyCycles.actions.updateLevel", {
+								defaultValue: "Update level",
+							})
+						: t("admin.studyCycles.actions.addLevel", {
+								defaultValue: "Add level",
+							})
+				}
+				maxWidth="sm:max-w-xl"
+			>
+				<Form {...levelForm}>
+					<form
+						className="space-y-4"
+						onSubmit={levelForm.handleSubmit(onLevelSubmit)}
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={levelForm.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.studyCycles.form.name", {
+												defaultValue: "Name",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="Level 1" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={levelForm.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.studyCycles.form.code", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="L1" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<FormField
+							control={levelForm.control}
+							name="minCredits"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel required>
+										{t("admin.studyCycles.form.minCredits", {
+											defaultValue: "Minimum credits",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input type="number" min={0} {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<Button
+							type="submit"
+							className="w-full"
+							disabled={updateLevelMutation.isPending}
+						>
+							{t("common.actions.save")}
+						</Button>
+					</form>
+				</Form>
+			</FormModal>
 
 			<AlertDialog
 				open={Boolean(deleteId)}

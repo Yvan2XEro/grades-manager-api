@@ -10,7 +10,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type {
@@ -62,7 +62,6 @@ const createSegment = (kind: Segment["kind"]): Segment => {
 				field: defaultField,
 				transform: "upper",
 			};
-		case "counter":
 		default:
 			return {
 				kind: "counter",
@@ -338,7 +337,7 @@ const RegistrationNumberFormatDetail = () => {
 						<ArrowLeft className="h-4 w-4" />
 						{t("common.actions.back", { defaultValue: "Back" })}
 					</button>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{draft.id
 							? t("admin.registrationNumbers.dialog.editTitle", {
 									defaultValue: "Edit format",
@@ -505,7 +504,7 @@ const RegistrationNumberFormatDetail = () => {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{draft.definition.segments.length === 0 && (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("admin.registrationNumbers.segments.empty", {
 										defaultValue:
 											"Combine literals, fields, and counters to craft a pattern.",
@@ -843,7 +842,7 @@ const RegistrationNumberFormatDetail = () => {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<p className="text-muted-foreground text-sm">
+							<p className="text-muted-foreground text-xs">
 								{t("admin.registrationNumbers.preview.subtitle", {
 									defaultValue:
 										"Select a class and optional student info to test the pattern.",

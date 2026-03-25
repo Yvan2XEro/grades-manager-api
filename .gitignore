@@ -1,6 +1,8 @@
 node_modules
 .turbo
 .alchemy
+.claude
+settings.local.json
 
 # Environment variables
 .env

@@ -35,7 +35,11 @@ interface Course {
 
 const PAGE_SIZE = 12;
 
-export default function CourseList() {
+export default function CourseList({
+	basePath = "/teacher",
+}: {
+	basePath?: string;
+}) {
 	const { user } = useStore();
 	const { t } = useTranslation();
 	const [page, setPage] = useState(0);
@@ -98,9 +102,7 @@ export default function CourseList() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="font-bold font-heading text-2xl text-foreground">
-					{t("teacher.courses.title")}
-				</h2>
+				<h2 className="text-foreground">{t("teacher.courses.title")}</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
 			</div>
 
@@ -139,7 +141,7 @@ export default function CourseList() {
 								</CardContent>
 								<CardFooter className="justify-end">
 									<Button asChild size="sm">
-										<Link to={`/teacher/grades/${course.id}`}>
+										<Link to={`${basePath}/grades/${course.id}`}>
 											{t("teacher.courses.actions.viewGrades")}
 										</Link>
 									</Button>
@@ -154,7 +156,7 @@ export default function CourseList() {
 								<p className="font-semibold text-lg">
 									{t("teacher.courses.empty.title")}
 								</p>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("teacher.courses.empty.description")}
 								</p>
 							</div>

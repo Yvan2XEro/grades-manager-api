@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-	ChevronDown,
 	Download,
 	Eye,
 	FileSpreadsheet,
@@ -46,8 +45,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -188,19 +185,43 @@ interface GradeItem {
 	score: string | number;
 }
 
+const PREFS_KEY = "gradeExport.prefs";
+
+function loadPrefs() {
+	try {
+		return JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}");
+	} catch {
+		return {};
+	}
+}
+
+function savePrefs(patch: Record<string, unknown>) {
+	try {
+		const current = loadPrefs();
+		localStorage.setItem(PREFS_KEY, JSON.stringify({ ...current, ...patch }));
+	} catch {}
+}
+
 export default function GradeExport() {
-	const [selectedYear, setSelectedYear] = useState("");
-	const [selectedClass, setSelectedClass] = useState("");
-	const [selectedSemester, setSelectedSemester] = useState("");
+	const prefs = loadPrefs();
+	const [selectedYear, setSelectedYear] = useState<string>(prefs.year ?? "");
+	const [selectedClass, setSelectedClass] = useState<string>(prefs.class ?? "");
+	const [selectedSemester, setSelectedSemester] = useState<string>(
+		prefs.semester ?? "",
+	);
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
-	const [selectedUEs, setSelectedUEs] = useState<string[]>([]);
+	const [_selectedUEs, _setSelectedUEs] = useState<string[]>([]);
 	const [exporting, setExporting] = useState<string | null>(null);
 	const [showPreview, setShowPreview] = useState(false);
 	const [previewHtml, setPreviewHtml] = useState("");
 	const [previewTitle, setPreviewTitle] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortBy, setSortBy] = useState<"course" | "date" | "type">("course");
-	const [includeRetakes, setIncludeRetakes] = useState(true);
+	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(
+		prefs.sortBy ?? "course",
+	);
+	const [includeRetakes, setIncludeRetakes] = useState<boolean>(
+		prefs.includeRetakes ?? true,
+	);
 	const classId = useId();
 	const semesterId = useId();
 	const { t } = useTranslation();
@@ -339,7 +360,7 @@ export default function GradeExport() {
 			if (!grouped.has(courseKey)) {
 				grouped.set(courseKey, []);
 			}
-			grouped.get(courseKey)!.push(exam);
+			grouped.get(courseKey)?.push(exam);
 		}
 
 		// Sort exams within each course by date
@@ -642,16 +663,16 @@ export default function GradeExport() {
 			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 
 			// Style institution name (row 0) - Bold, larger font, centered
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
 			// Style faculty name (row 1) - Bold, centered
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -969,15 +990,15 @@ export default function GradeExport() {
 			}
 
 			// Institution header merges and styling
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
 			}
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -1205,15 +1226,15 @@ export default function GradeExport() {
 				// Apply styling
 				const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 				const merges: XLSX.Range[] = [];
-				if (ws["A1"]) {
-					ws["A1"].s = {
+				if (ws.A1) {
+					ws.A1.s = {
 						font: { bold: true, sz: 16 },
 						alignment: { horizontal: "center" },
 					};
 					merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } });
 				}
-				if (ws["A2"]) {
-					ws["A2"].s = {
+				if (ws.A2) {
+					ws.A2.s = {
 						font: { bold: true, sz: 14 },
 						alignment: { horizontal: "center" },
 					};
@@ -1555,25 +1576,30 @@ export default function GradeExport() {
 		}
 	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
 
+	const pvReady = !!selectedClass && !!selectedSemester && !!selectedYear;
+
 	return (
 		<div className="space-y-6">
-			<div className="space-y-2">
+			<div className="space-y-1">
 				<h2 className="font-semibold text-foreground text-xl">
 					{t("admin.gradeExport.title")}
 				</h2>
-				<p className="text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					{t("admin.gradeExport.subtitle")}
 				</p>
 			</div>
 
+			{/* ─── Étape 1 — Contexte ───────────────────────────────────────── */}
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.gradeExport.filtersCard.title")}</CardTitle>
-					<CardDescription>
-						{t("admin.gradeExport.filtersCard.description")}
-					</CardDescription>
+				<CardHeader className="pb-3">
+					<CardTitle className="flex items-center gap-3 text-base">
+						<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+							1
+						</span>
+						Contexte
+					</CardTitle>
 				</CardHeader>
-				<CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+				<CardContent className="grid gap-4 md:grid-cols-2">
 					<div className="space-y-2">
 						<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
 						<AcademicYearSelect
@@ -1582,13 +1608,13 @@ export default function GradeExport() {
 								setSelectedYear(value);
 								setSelectedClass("");
 								setSelectedExams([]);
+								savePrefs({ year: value, class: "" });
 							}}
 							placeholder={t(
 								"admin.gradeExport.filters.academicYearPlaceholder",
 							)}
 						/>
 					</div>
-
 					<div className="space-y-2">
 						<Label htmlFor={classId}>
 							{t("admin.gradeExport.filters.class")}
@@ -1599,6 +1625,7 @@ export default function GradeExport() {
 							onValueChange={(value) => {
 								setSelectedClass(value);
 								setSelectedExams([]);
+								savePrefs({ class: value });
 							}}
 						>
 							<SelectTrigger id={classId}>
@@ -1615,501 +1642,550 @@ export default function GradeExport() {
 							</SelectContent>
 						</Select>
 					</div>
-
-					<div className="space-y-2">
-						<Label>Semestre (pour PV PDF)</Label>
-						<SemesterSelect
-							value={selectedSemester || null}
-							onChange={(v) => setSelectedSemester(v ?? "")}
-							placeholder="Sélectionner un semestre"
-						/>
-					</div>
 				</CardContent>
 			</Card>
 
-			{exams && exams.length > 0 ? (
-				<Card>
-					<CardHeader>
-						<div className="flex items-center justify-between">
-							<div className="space-y-1">
-								<CardTitle>{t("admin.gradeExport.exams.title")}</CardTitle>
-								<CardDescription>
-									{selectedExams.length} / {exams.length} évaluations
-									sélectionnées
-								</CardDescription>
+			{/* ─── Étape 2 — Sélection des évaluations ─────────────────────── */}
+			{selectedClass &&
+				(exams && exams.length > 0 ? (
+					<Card>
+						<CardHeader className="pb-3">
+							<div className="flex items-center justify-between">
+								<div className="space-y-0.5">
+									<CardTitle className="flex items-center gap-3 text-base">
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+											2
+										</span>
+										{t("admin.gradeExport.exams.title")}
+									</CardTitle>
+									<CardDescription>
+										{selectedExams.length} / {exams.length} évaluations
+										sélectionnées
+									</CardDescription>
+								</div>
+								<div className="flex gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleSelectAll}
+										disabled={selectedExams.length === exams.length}
+									>
+										Tout sélectionner
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleDeselectAll}
+										disabled={selectedExams.length === 0}
+									>
+										Tout désélectionner
+									</Button>
+								</div>
 							</div>
-							<div className="flex gap-2">
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={handleSelectAll}
-									disabled={selectedExams.length === exams.length}
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="flex gap-3">
+								<div className="relative flex-1">
+									<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+									<Input
+										placeholder="Rechercher une matière ou une évaluation..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="pl-9"
+									/>
+								</div>
+								<Select
+									value={sortBy}
+									onValueChange={(value: any) => {
+										setSortBy(value);
+										savePrefs({ sortBy: value });
+									}}
 								>
-									Tout sélectionner
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={handleDeselectAll}
-									disabled={selectedExams.length === 0}
-								>
-									Tout désélectionner
-								</Button>
+									<SelectTrigger className="w-44">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="course">Par matière</SelectItem>
+										<SelectItem value="date">Par date</SelectItem>
+										<SelectItem value="type">Par type</SelectItem>
+									</SelectContent>
+								</Select>
 							</div>
-						</div>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{/* Search and sort controls */}
-						<div className="flex gap-4">
-							<div className="relative flex-1">
-								<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									placeholder="Rechercher une matière ou une évaluation..."
-									value={searchQuery}
-									onChange={(e) => setSearchQuery(e.target.value)}
-									className="pl-9"
+
+							{filteredAndSortedCourses.length > 0 ? (
+								<Accordion type="multiple" className="w-full">
+									{filteredAndSortedCourses.map(([courseKey, courseExams]) => {
+										const courseSelectedCount = courseExams.filter((e) =>
+											selectedExams.includes(e.id),
+										).length;
+										const allCourseSelected =
+											courseSelectedCount === courseExams.length;
+
+										return (
+											<AccordionItem key={courseKey} value={courseKey}>
+												<div className="flex items-center gap-2">
+													<Checkbox
+														checked={allCourseSelected}
+														onCheckedChange={() =>
+															handleToggleCourse(courseExams)
+														}
+														className="ml-4"
+													/>
+													<AccordionTrigger className="flex-1 hover:no-underline">
+														<div className="flex flex-1 items-center gap-3">
+															<div className="flex-1 text-left">
+																<div className="font-medium">
+																	{courseExams[0].courseName}
+																	{courseExams[0].courseCode && (
+																		<span className="ml-2 font-normal text-muted-foreground">
+																			({courseExams[0].courseCode})
+																		</span>
+																	)}
+																</div>
+																<div className="text-muted-foreground text-xs">
+																	{courseSelectedCount} / {courseExams.length}{" "}
+																	évaluations
+																</div>
+															</div>
+															<Badge
+																variant={
+																	allCourseSelected ? "default" : "secondary"
+																}
+															>
+																{courseExams.length}
+															</Badge>
+														</div>
+													</AccordionTrigger>
+												</div>
+												<AccordionContent>
+													<div className="space-y-2 pt-2 pl-9">
+														{courseExams.map((exam) => (
+															<div
+																key={exam.id}
+																className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
+															>
+																<Checkbox
+																	id={`exam-${exam.id}`}
+																	checked={selectedExams.includes(exam.id)}
+																	onCheckedChange={(checked) => {
+																		if (checked) {
+																			setSelectedExams((prev) => [
+																				...prev,
+																				exam.id,
+																			]);
+																		} else {
+																			setSelectedExams((prev) =>
+																				prev.filter((id) => id !== exam.id),
+																			);
+																		}
+																	}}
+																/>
+																<label
+																	htmlFor={`exam-${exam.id}`}
+																	className="flex-1 cursor-pointer"
+																>
+																	<div className="font-medium text-sm">
+																		{exam.name} • {exam.type}
+																	</div>
+																	<div className="text-muted-foreground text-xs">
+																		{format(new Date(exam.date), "dd MMM yyyy")}{" "}
+																		• {exam.percentage}%
+																	</div>
+																</label>
+															</div>
+														))}
+													</div>
+												</AccordionContent>
+											</AccordionItem>
+										);
+									})}
+								</Accordion>
+							) : (
+								<p className="py-6 text-center text-muted-foreground text-sm">
+									Aucune évaluation trouvée pour &ldquo;{searchQuery}&rdquo;
+								</p>
+							)}
+						</CardContent>
+					</Card>
+				) : (
+					<Card>
+						<CardContent className="flex flex-col items-center gap-2 py-10 text-center">
+							<FileSpreadsheet className="h-10 w-10 text-muted-foreground" />
+							<p className="font-medium text-sm">
+								{t("admin.gradeExport.exams.emptyTitle")}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.gradeExport.exams.emptyDescription")}
+							</p>
+						</CardContent>
+					</Card>
+				))}
+
+			{/* ─── Étape 3 — Exports ────────────────────────────────────────── */}
+			{selectedClass && (
+				<div className="space-y-4">
+					{/* Relevé de notes Excel */}
+					<Card>
+						<CardHeader className="pb-3">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<CardTitle className="flex items-center gap-3 text-base">
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+											3
+										</span>
+										<FileSpreadsheet className="h-4 w-4" />
+										{t("admin.gradeExport.actions.combinedLabel")}
+									</CardTitle>
+									<CardDescription className="mt-1">
+										Export Excel combiné avec la moyenne par cours pour les
+										évaluations sélectionnées
+									</CardDescription>
+								</div>
+								{!hasExamSelection && (
+									<span className="shrink-0 rounded-md bg-muted px-2 py-1 text-muted-foreground text-xs">
+										Sélectionnez des évaluations
+									</span>
+								)}
+							</div>
+						</CardHeader>
+						<CardContent>
+							<Button
+								type="button"
+								onClick={handleCombinedExport}
+								disabled={disablePrimaryExports}
+							>
+								{exporting === "combined" ? (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								) : (
+									<Download className="mr-2 h-4 w-4" />
+								)}
+								{t("admin.gradeExport.actions.combinedExport")}
+							</Button>
+						</CardContent>
+					</Card>
+
+					{/* Procès-Verbal (Excel + PDF) */}
+					<Card>
+						<CardHeader className="pb-3">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<CardTitle className="flex items-center gap-3 text-base">
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 font-bold text-primary text-xs">
+											3
+										</span>
+										<FileText className="h-4 w-4" />
+										Procès-Verbal
+									</CardTitle>
+									<CardDescription className="mt-1">
+										PV complet avec toutes les UEs, moyennes et décisions
+									</CardDescription>
+								</div>
+								{!pvReady && (
+									<span className="shrink-0 rounded-md bg-muted px-2 py-1 text-muted-foreground text-xs">
+										Sélectionnez un semestre
+									</span>
+								)}
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor={semesterId}>Semestre</Label>
+								<SemesterSelect
+									value={selectedSemester || null}
+									onChange={(v) => {
+										setSelectedSemester(v ?? "");
+										savePrefs({ semester: v ?? "" });
+									}}
+									placeholder="Sélectionner un semestre"
 								/>
 							</div>
-							<Select
-								value={sortBy}
-								onValueChange={(value: any) => setSortBy(value)}
-							>
-								<SelectTrigger className="w-48">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="course">Trier par matière</SelectItem>
-									<SelectItem value="date">Trier par date</SelectItem>
-									<SelectItem value="type">Trier par type</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-
-						{/* Grouped exams by course */}
-						{filteredAndSortedCourses.length > 0 ? (
-							<Accordion type="multiple" className="w-full">
-								{filteredAndSortedCourses.map(([courseKey, courseExams]) => {
-									const courseSelectedCount = courseExams.filter((e) =>
-										selectedExams.includes(e.id),
-									).length;
-									const allCourseSelected =
-										courseSelectedCount === courseExams.length;
-
-									return (
-										<AccordionItem key={courseKey} value={courseKey}>
-											<div className="flex items-center gap-2">
-												<Checkbox
-													checked={allCourseSelected}
-													onCheckedChange={() =>
-														handleToggleCourse(courseExams)
-													}
-													className="ml-4"
-												/>
-												<AccordionTrigger className="flex-1 hover:no-underline">
-													<div className="flex flex-1 items-center gap-3">
-														<div className="flex-1 text-left">
-															<div className="font-medium">
-																{courseExams[0].courseName}
-																{courseExams[0].courseCode && (
-																	<span className="ml-2 font-normal text-muted-foreground">
-																		({courseExams[0].courseCode})
-																	</span>
-																)}
-															</div>
-															<div className="text-muted-foreground text-xs">
-																{courseSelectedCount} / {courseExams.length}{" "}
-																évaluations
-															</div>
-														</div>
-														<Badge
-															variant={
-																allCourseSelected ? "default" : "secondary"
-															}
-														>
-															{courseExams.length}
-														</Badge>
-													</div>
-												</AccordionTrigger>
-											</div>
-											<AccordionContent>
-												<div className="space-y-2 pt-2 pl-9">
-													{courseExams.map((exam) => (
-														<div
-															key={exam.id}
-															className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
-														>
-															<Checkbox
-																id={`exam-${exam.id}`}
-																checked={selectedExams.includes(exam.id)}
-																onCheckedChange={(checked) => {
-																	if (checked) {
-																		setSelectedExams((prev) => [
-																			...prev,
-																			exam.id,
-																		]);
-																	} else {
-																		setSelectedExams((prev) =>
-																			prev.filter((id) => id !== exam.id),
-																		);
-																	}
-																}}
-															/>
-															<label
-																htmlFor={`exam-${exam.id}`}
-																className="flex-1 cursor-pointer"
-															>
-																<div className="flex items-center justify-between">
-																	<div>
-																		<div className="font-medium text-sm">
-																			{exam.name} • {exam.type}
-																		</div>
-																		<div className="text-muted-foreground text-xs">
-																			{format(
-																				new Date(exam.date),
-																				"dd MMM yyyy",
-																			)}{" "}
-																			• {exam.percentage}%
-																		</div>
-																	</div>
-																</div>
-															</label>
-														</div>
-													))}
-												</div>
-											</AccordionContent>
-										</AccordionItem>
-									);
-								})}
-							</Accordion>
-						) : (
-							<div className="py-8 text-center text-muted-foreground">
-								<Search className="mx-auto mb-4 h-12 w-12 opacity-50" />
-								<p>Aucune évaluation trouvée pour "{searchQuery}"</p>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="include-retakes"
+									checked={includeRetakes}
+									onCheckedChange={(checked) => {
+										setIncludeRetakes(checked === true);
+										savePrefs({ includeRetakes: checked === true });
+									}}
+								/>
+								<Label
+									htmlFor="include-retakes"
+									className="cursor-pointer font-normal text-sm"
+								>
+									Inclure les notes de rattrapage
+								</Label>
 							</div>
-						)}
-					</CardContent>
-				</Card>
-			) : selectedClass ? (
-				<Card className="items-center text-center">
-					<CardContent className="flex flex-col items-center gap-2 py-10">
-						<FileSpreadsheet className="h-12 w-12 text-muted-foreground" />
-						<h3 className="font-medium text-sm">
-							{t("admin.gradeExport.exams.emptyTitle")}
-						</h3>
-						<p className="text-muted-foreground text-sm">
-							{t("admin.gradeExport.exams.emptyDescription")}
-						</p>
-					</CardContent>
-				</Card>
-			) : null}
-
-			<Tabs defaultValue="excel" className="w-full">
-				<TabsList className="grid w-full grid-cols-2">
-					<TabsTrigger value="excel">
-						<FileSpreadsheet className="mr-2 h-4 w-4" />
-						Exports Excel
-					</TabsTrigger>
-					<TabsTrigger value="pdf">
-						<FileText className="mr-2 h-4 w-4" />
-						Exports PDF
-					</TabsTrigger>
-				</TabsList>
-
-				<TabsContent value="excel" className="space-y-6">
-					<Card>
-						<CardHeader>
-							<CardTitle>{t("admin.gradeExport.actions.label")}</CardTitle>
-							<CardDescription>
-								{t("admin.gradeExport.subtitle")}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-6">
-							<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-								<div className="space-y-2">
-									<Label>{t("admin.gradeExport.actions.combinedLabel")}</Label>
-									<Button
-										type="button"
-										onClick={handleCombinedExport}
-										disabled={disablePrimaryExports}
-										className="w-full"
-									>
-										{exporting === "combined" ? (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										) : (
-											<Download className="mr-2 h-4 w-4" />
-										)}
-										{t("admin.gradeExport.actions.combinedExport")}
-									</Button>
-								</div>
-								<div className="space-y-2">
-									<Label>{t("admin.gradeExport.actions.pvLabel")}</Label>
-									<Button
-										type="button"
-										onClick={handleVerbalReportExport}
-										disabled={
-											!selectedClass ||
-											!selectedSemester ||
-											!selectedYear ||
-											isBusy
-										}
-										className="w-full"
-									>
-										{exporting === "pv" ? (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										) : (
-											<FileSpreadsheet className="mr-2 h-4 w-4" />
-										)}
-										{t("admin.gradeExport.actions.pvExport")}
-									</Button>
-								</div>
+							<div className="flex flex-wrap gap-2">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={handleVerbalReportExport}
+									disabled={!pvReady || isBusy}
+								>
+									{exporting === "pv" ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<FileSpreadsheet className="mr-2 h-4 w-4" />
+									)}
+									{t("admin.gradeExport.actions.pvExport")}
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={handlePreviewPV}
+									disabled={!pvReady || isBusy}
+								>
+									{exporting === "preview-pv" ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<Eye className="mr-2 h-4 w-4" />
+									)}
+									Prévisualiser PDF
+								</Button>
+								<Button
+									type="button"
+									onClick={handleGeneratePV}
+									disabled={!pvReady || isBusy}
+								>
+									{exporting === "generate-pv" ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<FileText className="mr-2 h-4 w-4" />
+									)}
+									Générer PDF
+								</Button>
 							</div>
-
-							{hasExamSelection ? (
-								<div className="space-y-2">
-									<Label>
-										{t("admin.gradeExport.actions.examGroup.label", {
-											count: selectedExamDetails.length,
-										})}
-									</Label>
-									<div className="flex flex-wrap gap-2">
-										{selectedExamDetails.map((exam) => (
-											<Button
-												key={exam.id}
-												type="button"
-												variant="outline"
-												disabled={disableExamExports}
-												onClick={() => handleExamExport(exam)}
-											>
-												{exporting === exam.id && (
-													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												)}
-												{exam.courseName} • {exam.type}
-											</Button>
-										))}
-									</div>
-								</div>
-							) : null}
 						</CardContent>
 					</Card>
-				</TabsContent>
 
-				<TabsContent value="pdf" className="space-y-6">
-					<Card>
-						<CardHeader>
-							<CardTitle>Export PDF (Procès-Verbaux et Publications)</CardTitle>
-							<CardDescription>
-								Générez des documents PDF professionnels pour les PV,
-								évaluations et UEs
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-6">
-							<div className="space-y-4">
-								<div>
-									<h4 className="mb-3 font-semibold text-sm">
-										Procès-Verbal (PV) PDF
-									</h4>
-									<p className="mb-4 text-muted-foreground text-sm">
-										Exportez le PV complet avec toutes les UEs et notes pour la
-										classe et le semestre sélectionnés
-									</p>
-									<div className="mb-4 flex items-center gap-2">
-										<Checkbox
-											id="include-retakes"
-											checked={includeRetakes}
-											onCheckedChange={(checked) =>
-												setIncludeRetakes(checked === true)
-											}
-										/>
-										<Label
-											htmlFor="include-retakes"
-											className="cursor-pointer text-sm"
-										>
-											Inclure les notes de rattrapage (applique la politique de
-											scoring)
-										</Label>
-									</div>
-									<div className="flex gap-2">
-										<Button
-											type="button"
-											variant="outline"
-											onClick={handlePreviewPV}
-											disabled={
-												!selectedClass ||
-												!selectedSemester ||
-												!selectedYear ||
-												isBusy
-											}
-										>
-											{exporting === "preview-pv" ? (
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											) : (
-												<Eye className="mr-2 h-4 w-4" />
-											)}
-											Prévisualiser PV
-										</Button>
-										<Button
-											type="button"
-											onClick={handleGeneratePV}
-											disabled={
-												!selectedClass ||
-												!selectedSemester ||
-												!selectedYear ||
-												isBusy
-											}
-										>
-											{exporting === "generate-pv" ? (
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											) : (
-												<FileText className="mr-2 h-4 w-4" />
-											)}
-											Générer PV PDF
-										</Button>
-									</div>
-								</div>
-
-								<Separator />
-
-								{hasExamSelection && (
+					{/* Par évaluation */}
+					{hasExamSelection && (
+						<Card>
+							<CardHeader className="pb-3">
+								<div className="flex items-center justify-between">
 									<div>
-										<h4 className="mb-3 font-semibold text-sm">
-											Publications des Évaluations PDF
-										</h4>
-										<p className="mb-4 text-muted-foreground text-sm">
-											Exportez les publications PDF pour chaque évaluation
-											sélectionnée
-										</p>
-										<div className="mb-4">
-											<Button
-												type="button"
-												onClick={handleBulkGenerateEvaluations}
-												disabled={disableExamExports}
-											>
-												{exporting === "bulk-evaluations" ? (
-													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												) : (
-													<Download className="mr-2 h-4 w-4" />
-												)}
-												Télécharger toutes les évaluations (
-												{selectedExamDetails.length})
-											</Button>
-										</div>
-										<div className="flex flex-wrap gap-2">
+										<CardTitle className="text-base">
+											Par évaluation{" "}
+											<Badge variant="secondary" className="ml-1">
+												{selectedExamDetails.length}
+											</Badge>
+										</CardTitle>
+										<CardDescription className="mt-1">
+											Export individuel par évaluation sélectionnée
+										</CardDescription>
+									</div>
+									<Button
+										type="button"
+										size="sm"
+										onClick={handleBulkGenerateEvaluations}
+										disabled={disableExamExports}
+									>
+										{exporting === "bulk-evaluations" ? (
+											<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+										) : (
+											<Download className="mr-1 h-3 w-3" />
+										)}
+										Tout télécharger PDF
+									</Button>
+								</div>
+							</CardHeader>
+							<CardContent>
+								<div className="overflow-hidden rounded-md border">
+									<table className="w-full text-sm">
+										<thead className="bg-muted/50">
+											<tr>
+												<th className="px-4 py-2 text-left font-medium">
+													Cours
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Type
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Date
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Excel
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													PDF
+												</th>
+											</tr>
+										</thead>
+										<tbody className="divide-y">
 											{selectedExamDetails.map((exam) => (
-												<div key={exam.id} className="flex gap-1">
-													<Button
-														type="button"
-														variant="outline"
-														size="sm"
-														disabled={disableExamExports}
-														onClick={() => handlePreviewEvaluation(exam.id)}
-													>
-														{exporting === `preview-eval-${exam.id}` ? (
-															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-														) : (
-															<Eye className="mr-1 h-3 w-3" />
+												<tr key={exam.id} className="hover:bg-muted/30">
+													<td className="px-4 py-2">
+														<span className="font-medium">
+															{exam.courseName}
+														</span>
+														{exam.courseCode && (
+															<span className="ml-1 text-muted-foreground text-xs">
+																({exam.courseCode})
+															</span>
 														)}
-														{exam.courseName} • {exam.type}
-													</Button>
-													<Button
-														type="button"
-														size="sm"
-														disabled={disableExamExports}
-														onClick={() => handleGenerateEvaluation(exam.id)}
-													>
-														{exporting === `generate-eval-${exam.id}` ? (
-															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-														) : (
-															<Download className="mr-1 h-3 w-3" />
-														)}
-														PDF
-													</Button>
-												</div>
+													</td>
+													<td className="px-4 py-2 text-muted-foreground">
+														{exam.type}
+													</td>
+													<td className="px-4 py-2 text-muted-foreground">
+														{format(new Date(exam.date), "dd MMM yyyy")}
+													</td>
+													<td className="px-4 py-2 text-right">
+														<Button
+															type="button"
+															variant="outline"
+															size="sm"
+															disabled={disableExamExports}
+															onClick={() => handleExamExport(exam)}
+														>
+															{exporting === exam.id ? (
+																<Loader2 className="h-3 w-3 animate-spin" />
+															) : (
+																<Download className="h-3 w-3" />
+															)}
+														</Button>
+													</td>
+													<td className="px-4 py-2 text-right">
+														<div className="flex justify-end gap-1">
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																disabled={disableExamExports}
+																onClick={() => handlePreviewEvaluation(exam.id)}
+															>
+																{exporting === `preview-eval-${exam.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Eye className="h-3 w-3" />
+																)}
+															</Button>
+															<Button
+																type="button"
+																size="sm"
+																disabled={disableExamExports}
+																onClick={() =>
+																	handleGenerateEvaluation(exam.id)
+																}
+															>
+																{exporting === `generate-eval-${exam.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Download className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</td>
+												</tr>
 											))}
-										</div>
-									</div>
-								)}
+										</tbody>
+									</table>
+								</div>
+							</CardContent>
+						</Card>
+					)}
 
-								<Separator />
-
-								{teachingUnits && teachingUnits.length > 0 && (
+					{/* Par UE */}
+					{teachingUnits && teachingUnits.length > 0 && (
+						<Card>
+							<CardHeader className="pb-3">
+								<div className="flex items-center justify-between">
 									<div>
-										<h4 className="mb-3 font-semibold text-sm">
-											Publications des Unités d'Enseignement (UE) PDF
-										</h4>
-										<p className="mb-4 text-muted-foreground text-sm">
-											Exportez les publications PDF pour chaque UE sélectionnée
-										</p>
-										<div className="mb-4">
-											<Button
-												type="button"
-												onClick={handleBulkGenerateUEs}
-												disabled={
-													!selectedClass ||
-													!selectedSemester ||
-													!selectedYear ||
-													isBusy
-												}
-											>
-												{exporting === "bulk-ues" ? (
-													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												) : (
-													<Download className="mr-2 h-4 w-4" />
-												)}
-												Télécharger toutes les UEs ({teachingUnits.length})
-											</Button>
-										</div>
-										<div className="flex flex-wrap gap-2">
-											{teachingUnits.map((ue) => (
-												<div key={ue.id} className="flex gap-1">
-													<Button
-														type="button"
-														variant="outline"
-														size="sm"
-														disabled={
-															!selectedClass ||
-															!selectedSemester ||
-															!selectedYear ||
-															isBusy
-														}
-														onClick={() => handlePreviewUE(ue.id)}
-													>
-														{exporting === `preview-ue-${ue.id}` ? (
-															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-														) : (
-															<Eye className="mr-1 h-3 w-3" />
-														)}
-														{ue.code} - {ue.name}
-													</Button>
-													<Button
-														type="button"
-														size="sm"
-														disabled={
-															!selectedClass ||
-															!selectedSemester ||
-															!selectedYear ||
-															isBusy
-														}
-														onClick={() => handleGenerateUE(ue.id)}
-													>
-														{exporting === `generate-ue-${ue.id}` ? (
-															<Loader2 className="mr-1 h-3 w-3 animate-spin" />
-														) : (
-															<Download className="mr-1 h-3 w-3" />
-														)}
-														PDF
-													</Button>
-												</div>
-											))}
-										</div>
+										<CardTitle className="text-base">
+											Par Unité d&apos;Enseignement{" "}
+											<Badge variant="secondary" className="ml-1">
+												{teachingUnits.length}
+											</Badge>
+										</CardTitle>
+										<CardDescription className="mt-1">
+											Publication PDF par UE — nécessite un semestre sélectionné
+										</CardDescription>
 									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
-				</TabsContent>
-			</Tabs>
+									<Button
+										type="button"
+										size="sm"
+										onClick={handleBulkGenerateUEs}
+										disabled={!pvReady || isBusy}
+									>
+										{exporting === "bulk-ues" ? (
+											<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+										) : (
+											<Download className="mr-1 h-3 w-3" />
+										)}
+										Tout télécharger
+									</Button>
+								</div>
+							</CardHeader>
+							<CardContent>
+								<div className="overflow-hidden rounded-md border">
+									<table className="w-full text-sm">
+										<thead className="bg-muted/50">
+											<tr>
+												<th className="px-4 py-2 text-left font-medium">
+													Code
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Nom de l&apos;UE
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Crédits
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Actions
+												</th>
+											</tr>
+										</thead>
+										<tbody className="divide-y">
+											{teachingUnits.map((ue) => (
+												<tr key={ue.id} className="hover:bg-muted/30">
+													<td className="px-4 py-2 font-mono text-xs">
+														{ue.code}
+													</td>
+													<td className="px-4 py-2 font-medium">{ue.name}</td>
+													<td className="px-4 py-2 text-muted-foreground">
+														{ue.credits} cr.
+													</td>
+													<td className="px-4 py-2 text-right">
+														<div className="flex justify-end gap-1">
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																disabled={!pvReady || isBusy}
+																onClick={() => handlePreviewUE(ue.id)}
+															>
+																{exporting === `preview-ue-${ue.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Eye className="h-3 w-3" />
+																)}
+															</Button>
+															<Button
+																type="button"
+																size="sm"
+																disabled={!pvReady || isBusy}
+																onClick={() => handleGenerateUE(ue.id)}
+															>
+																{exporting === `generate-ue-${ue.id}` ? (
+																	<Loader2 className="h-3 w-3 animate-spin" />
+																) : (
+																	<Download className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</CardContent>
+						</Card>
+					)}
+				</div>
+			)}
 
 			<Dialog open={showPreview} onOpenChange={setShowPreview}>
 				<DialogContent className="max-h-[90vh] min-w-[80vw] overflow-auto">

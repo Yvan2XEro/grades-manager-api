@@ -1,25 +1,33 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { format, isValid, parseISO } from "date-fns";
 import type { TFunction } from "i18next";
-import { Calendar, Check, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+	CalendarPlus,
+	Check,
+	Copy,
+	Pencil,
+	Plus,
+	Trash2,
+	X,
+} from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { DatePicker } from "@/components/ui/date-picker";
-import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
 	Table,
 	TableBody,
@@ -28,8 +36,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { UndrawCalendar } from "@/components/ui/undraw";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import { DialogFooter } from "../../components/ui/dialog";
@@ -92,7 +103,6 @@ const AcademicYearManagement: React.FC = () => {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const academicYearSchema = useMemo(() => buildAcademicYearSchema(t), [t]);
-	const pagination = useCursorPagination({ pageSize: 20 });
 
 	const form = useForm<FormData>({
 		resolver: zodResolver(academicYearSchema),
@@ -126,18 +136,24 @@ const AcademicYearManagement: React.FC = () => {
 		}
 	}, [startDate, endDate, setValue]);
 
-	const { data, isLoading } = useQuery({
-		queryKey: ["academicYears", pagination.cursor],
-		queryFn: async () => {
-			const result = await trpcClient.academicYears.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
-			});
-			return result as { items: AcademicYear[]; nextCursor?: string };
-		},
-	});
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery({
+			queryKey: ["academicYears"],
+			queryFn: async ({ pageParam }) => {
+				const result = await trpcClient.academicYears.list.query({
+					cursor: pageParam,
+					limit: 20,
+				});
+				return result as { items: AcademicYear[]; nextCursor?: string };
+			},
+			initialPageParam: undefined as string | undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		});
 
-	const academicYears = data?.items ?? [];
+	const academicYears = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(academicYears);
 
 	const bulkDeleteMutation = useMutation({
@@ -246,6 +262,32 @@ const AcademicYearManagement: React.FC = () => {
 		},
 	});
 
+	const createNextYearMutation = useMutation({
+		mutationFn: async (sourceYearId: string) => {
+			return trpcClient.academicYears.createNextYear.mutate({ sourceYearId });
+		},
+		onSuccess: (newYear) => {
+			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			toast.success(
+				t("admin.academicYears.toast.createNextYearSuccess", {
+					defaultValue: "Année suivante créée : {{name}}",
+					name: newYear.name,
+				}),
+			);
+			// Auto-open setup dialog for the new year
+			setSetupYear(newYear as AcademicYear);
+		},
+		onError: (error: unknown) => {
+			const message =
+				error instanceof Error && error.message
+					? error.message
+					: t("admin.academicYears.toast.createNextYearError", {
+							defaultValue: "Erreur lors de la création de l'année suivante",
+						});
+			toast.error(message);
+		},
+	});
+
 	const onSubmit = async (data: FormData) => {
 		if (editingYear) {
 			updateMutation.mutate({ id: editingYear.id, data });
@@ -286,9 +328,7 @@ const AcademicYearManagement: React.FC = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
-						{t("admin.academicYears.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.academicYears.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.academicYears.subtitle")}
 					</p>
@@ -308,18 +348,13 @@ const AcademicYearManagement: React.FC = () => {
 			</div>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>{t("admin.academicYears.title")}</CardTitle>
-					<CardDescription>{t("admin.academicYears.subtitle")}</CardDescription>
-				</CardHeader>
-
 				{isLoading ? (
 					<div className="flex items-center justify-center p-8">
 						<Spinner />
 					</div>
 				) : academicYears.length === 0 ? (
 					<div className="p-8 text-center">
-						<Calendar className="mx-auto h-12 w-12 text-muted-foreground/60" />
+						<UndrawCalendar className="mx-auto h-36 w-auto" />
 						<h3 className="mt-4 font-medium text-foreground text-lg">
 							{t("admin.academicYears.empty.title")}
 						</h3>
@@ -369,139 +404,207 @@ const AcademicYearManagement: React.FC = () => {
 								{t("common.actions.delete")}
 							</Button>
 						</BulkActionBar>
-						<Table className="min-w-full">
-							<TableHeader>
-								<TableRow>
-									<TableHead className="w-10">
-										<Checkbox
-											checked={selection.isAllSelected}
-											onCheckedChange={(checked) =>
-												selection.toggleAll(!!checked)
-											}
-											aria-label="Select all"
-										/>
-									</TableHead>
-									<TableHead>{t("admin.academicYears.table.name")}</TableHead>
-									<TableHead>
-										{t("admin.academicYears.table.startDate")}
-									</TableHead>
-									<TableHead>
-										{t("admin.academicYears.table.endDate")}
-									</TableHead>
-									<TableHead>{t("admin.academicYears.table.status")}</TableHead>
-									<TableHead>{t("common.table.actions")}</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{academicYears.map((year) => (
-									<TableRow key={year.id}>
-										<TableCell>
+						{isLoading ? (
+							<TableSkeleton columns={6} rows={8} />
+						) : (
+							<Table className="min-w-full">
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-10">
 											<Checkbox
-												checked={selection.isSelected(year.id)}
-												onCheckedChange={() => selection.toggle(year.id)}
-												aria-label={`Select ${year.name}`}
+												checked={selection.isAllSelected}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(!!checked)
+												}
+												aria-label="Select all"
 											/>
-										</TableCell>
-										<TableCell>{year.name}</TableCell>
-										<TableCell>{formatDate(year.startDate)}</TableCell>
-										<TableCell>{formatDate(year.endDate)}</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<Switch
-													id={`academic-year-${year.id}`}
-													checked={year.isActive}
-													onCheckedChange={() =>
-														handleToggleActive(year.id, year.isActive)
-													}
-												/>
-												<label
-													htmlFor={`academic-year-${year.id}`}
-													className="text-muted-foreground text-sm"
-												>
-													{year.isActive
-														? t("common.status.active")
-														: t("common.status.inactive")}
-												</label>
-											</div>
-										</TableCell>
-										<td>
-											{deleteConfirmId === year.id ? (
-												<div className="flex items-center space-x-2">
-													<span className="text-muted-foreground text-sm">
-														{t("admin.academicYears.confirmDelete")}
-													</span>
-													<button
-														type="button"
-														onClick={() => handleDelete(year.id)}
-														className="btn btn-error btn-sm"
-													>
-														<Check className="h-4 w-4" />
-													</button>
-													<button
-														type="button"
-														onClick={() => setDeleteConfirmId(null)}
-														className="btn btn-ghost btn-sm"
-													>
-														<X className="h-4 w-4" />
-													</button>
-												</div>
-											) : (
-												<div className="flex items-center space-x-2">
-													<Tooltip>
-														<TooltipTrigger asChild>
-															<Button
-																type="button"
-																variant="ghost"
-																size={"icon"}
-																onClick={() => setSetupYear(year)}
-															>
-																<Copy className="h-4 w-4" />
-															</Button>
-														</TooltipTrigger>
-														<TooltipContent>
-															{t("admin.academicYears.setup.button")}
-														</TooltipContent>
-													</Tooltip>
-													<Button
-														type="button"
-														variant="ghost"
-														size={"icon"}
-														onClick={() => {
-															setEditingYear(year);
-															form.reset({
-																startDate: year.startDate.slice(0, 10),
-																endDate: year.endDate.slice(0, 10),
-																name: year.name,
-															});
-															setIsModalOpen(true);
-														}}
-														className="btn btn-ghost btn-sm"
-													>
-														<Pencil className="h-4 w-4" />
-													</Button>
-													<Button
-														type="button"
-														variant="ghost"
-														size={"icon"}
-														onClick={() => setDeleteConfirmId(year.id)}
-														className="btn btn-ghost btn-sm"
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											)}
-										</td>
+										</TableHead>
+										<TableHead>{t("admin.academicYears.table.name")}</TableHead>
+										<TableHead className="w-28">
+											{t("admin.academicYears.table.startDate")}
+										</TableHead>
+										<TableHead className="w-28">
+											{t("admin.academicYears.table.endDate")}
+										</TableHead>
+										<TableHead className="w-28">
+											{t("admin.academicYears.table.status")}
+										</TableHead>
+										<TableHead className="w-[100px] text-right">
+											{t("common.table.actions")}
+										</TableHead>
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-						<PaginationBar
-							hasPrev={pagination.hasPrev}
-							hasNext={!!data?.nextCursor}
-							onPrev={pagination.handlePrev}
-							onNext={() => pagination.handleNext(data?.nextCursor)}
-							isLoading={isLoading}
-						/>
+								</TableHeader>
+								<TableBody>
+									{academicYears.map((year) => (
+										<TableRow
+											key={year.id}
+											actions={
+												<>
+													<ContextMenuItem
+														onSelect={() => {
+															setEditingYear(year);
+														}}
+													>
+														<span>
+															{t("common.actions.edit", {
+																defaultValue: "Edit",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuItem onSelect={() => setSetupYear(year)}>
+														<Copy className="h-4 w-4" />
+														<span>
+															{t("admin.academicYears.setup.button", {
+																defaultValue: "Setup",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuItem
+														onSelect={() =>
+															createNextYearMutation.mutate(year.id)
+														}
+														disabled={createNextYearMutation.isPending}
+													>
+														<CalendarPlus className="h-4 w-4" />
+														<span>
+															{t("admin.academicYears.actions.createNextYear", {
+																defaultValue: "Créer l'année suivante",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														variant="destructive"
+														onSelect={() => setDeleteConfirmId(year.id)}
+													>
+														<span>{t("common.actions.delete")}</span>
+													</ContextMenuItem>
+												</>
+											}
+										>
+											<TableCell>
+												<Checkbox
+													checked={selection.isSelected(year.id)}
+													onCheckedChange={() => selection.toggle(year.id)}
+													aria-label={`Select ${year.name}`}
+												/>
+											</TableCell>
+											<TableCell>{year.name}</TableCell>
+											<TableCell>{formatDate(year.startDate)}</TableCell>
+											<TableCell>{formatDate(year.endDate)}</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<Switch
+														id={`academic-year-${year.id}`}
+														checked={year.isActive}
+														onCheckedChange={() =>
+															handleToggleActive(year.id, year.isActive)
+														}
+													/>
+													<label
+														htmlFor={`academic-year-${year.id}`}
+														className="text-muted-foreground text-xs"
+													>
+														{year.isActive
+															? t("common.status.active")
+															: t("common.status.inactive")}
+													</label>
+												</div>
+											</TableCell>
+											<td>
+												{deleteConfirmId === year.id ? (
+													<div className="flex items-center space-x-2">
+														<span className="text-muted-foreground text-xs">
+															{t("admin.academicYears.confirmDelete")}
+														</span>
+														<button
+															type="button"
+															onClick={() => handleDelete(year.id)}
+															className="btn btn-error btn-sm"
+														>
+															<Check className="h-4 w-4" />
+														</button>
+														<button
+															type="button"
+															onClick={() => setDeleteConfirmId(null)}
+															className="btn btn-ghost btn-sm"
+														>
+															<X className="h-4 w-4" />
+														</button>
+													</div>
+												) : (
+													<div className="flex items-center space-x-2">
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size={"icon"}
+																	onClick={() => setSetupYear(year)}
+																>
+																	<Copy className="h-4 w-4" />
+																</Button>
+															</TooltipTrigger>
+															<TooltipContent>
+																{t("admin.academicYears.setup.button")}
+															</TooltipContent>
+														</Tooltip>
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size={"icon"}
+																	onClick={() =>
+																		createNextYearMutation.mutate(year.id)
+																	}
+																	disabled={createNextYearMutation.isPending}
+																>
+																	<CalendarPlus className="h-4 w-4" />
+																</Button>
+															</TooltipTrigger>
+															<TooltipContent>
+																{t(
+																	"admin.academicYears.actions.createNextYear",
+																	{ defaultValue: "Créer l'année suivante" },
+																)}
+															</TooltipContent>
+														</Tooltip>
+														<Button
+															type="button"
+															variant="ghost"
+															size={"icon"}
+															onClick={() => {
+																setEditingYear(year);
+																form.reset({
+																	startDate: year.startDate.slice(0, 10),
+																	endDate: year.endDate.slice(0, 10),
+																	name: year.name,
+																});
+																setIsModalOpen(true);
+															}}
+															className="btn btn-ghost btn-sm"
+														>
+															<Pencil className="h-4 w-4" />
+														</Button>
+														<Button
+															type="button"
+															variant="ghost"
+															size={"icon"}
+															onClick={() => setDeleteConfirmId(year.id)}
+															className="btn btn-ghost btn-sm"
+														>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</div>
+												)}
+											</td>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						)}
+						<div ref={sentinelRef} className="h-1" />
 					</CardContent>
 				)}
 			</Card>

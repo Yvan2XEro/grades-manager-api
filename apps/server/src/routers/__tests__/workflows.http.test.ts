@@ -85,7 +85,6 @@ describe("workflows router", () => {
 		const course = await client.courses.create.mutate({
 			code: "WF-CRS",
 			name: "Workflow Course",
-			credits: 2,
 			hours: 20,
 			program: program.id,
 			teachingUnitId: teachingUnit.id,

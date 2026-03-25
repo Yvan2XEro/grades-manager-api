@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { paginate } from "../_shared/pagination";
@@ -26,6 +26,14 @@ export async function update(
 	return item;
 }
 
+export async function countClasses(academicYearId: string): Promise<number> {
+	const [row] = await db
+		.select({ n: count() })
+		.from(schema.classes)
+		.where(eq(schema.classes.academicYear, academicYearId));
+	return row?.n ?? 0;
+}
+
 export async function remove(id: string, institutionId: string) {
 	await db
 		.delete(schema.academicYears)
@@ -42,6 +50,15 @@ export async function findById(id: string, institutionId: string) {
 		where: and(
 			eq(schema.academicYears.id, id),
 			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+}
+
+export async function findActive(institutionId: string) {
+	return db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.institutionId, institutionId),
+			eq(schema.academicYears.isActive, true),
 		),
 	});
 }

@@ -1,16 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
-import { CodedEntitySelect } from "@/components/forms";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import { PaginationBar } from "@/components/ui/pagination-bar";
-import { useCursorPagination } from "@/hooks/useCursorPagination";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Button } from "../../components/ui/button";
 import {
@@ -54,24 +62,36 @@ const TeachingUnitManagement = () => {
 	const [selectedProgramId, setSelectedProgramId] = useState<string>("");
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const pagination = useCursorPagination({ pageSize: 20 });
-
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 	const programList = programs?.items ?? [];
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programList.find((program) => program.id === selectedProgramId),
 		[programList, selectedProgramId],
 	);
 
-	const { data: units, isLoading } = useQuery(
-		trpc.teachingUnits.list.queryOptions({
-			programId: selectedProgramId || undefined,
-			cursor: pagination.cursor,
-			limit: pagination.pageSize,
-		}),
-	);
+	const {
+		data: unitsData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
+		queryKey: ["teachingUnits", selectedProgramId || undefined],
+		queryFn: async ({ pageParam }) => {
+			return trpcClient.teachingUnits.list.query({
+				programId: selectedProgramId || undefined,
+				cursor: pageParam,
+				limit: 20,
+			});
+		},
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+	});
 
-	const unitItems = units?.items ?? [];
+	const unitItems = unitsData?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(unitItems);
 
 	const programMap = useMemo(
@@ -148,7 +168,7 @@ const TeachingUnitManagement = () => {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.teachingUnits.title", { defaultValue: "Teaching units" })}
 					</h1>
 					<p className="text-muted-foreground">
@@ -185,7 +205,6 @@ const TeachingUnitManagement = () => {
 							value={selectedProgramId || undefined}
 							onValueChange={(value) => {
 								setSelectedProgramId(value);
-								pagination.reset();
 							}}
 						>
 							<SelectTrigger className="min-w-48">
@@ -207,7 +226,6 @@ const TeachingUnitManagement = () => {
 							variant="outline"
 							onClick={() => {
 								setSelectedProgramId("");
-								pagination.reset();
 							}}
 							disabled={!selectedProgramId}
 						>
@@ -244,111 +262,138 @@ const TeachingUnitManagement = () => {
 								</Button>
 							</BulkActionBar>
 							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead className="w-10">
-												<Checkbox
-													checked={selection.isAllSelected}
-													onCheckedChange={(checked) =>
-														selection.toggleAll(!!checked)
-													}
-													aria-label="Select all"
-												/>
-											</TableHead>
-											<TableHead>
-												{t("admin.teachingUnits.table.code")}
-											</TableHead>
-											<TableHead>
-												{t("admin.teachingUnits.table.name")}
-											</TableHead>
-											<TableHead>
-												{t("admin.teachingUnits.table.program")}
-											</TableHead>
-											<TableHead>
-												{t("admin.teachingUnits.table.semester")}
-											</TableHead>
-											<TableHead>
-												{t("admin.teachingUnits.table.credits")}
-											</TableHead>
-											<TableHead className="text-right">
-												{t("common.table.actions")}
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{unitItems.map((unit) => (
-											<TableRow key={unit.id}>
-												<TableCell>
+								{isLoading ? (
+									<TableSkeleton columns={7} rows={8} />
+								) : (
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead className="w-10">
 													<Checkbox
-														checked={selection.isSelected(unit.id)}
-														onCheckedChange={() => selection.toggle(unit.id)}
-														aria-label={`Select ${unit.name}`}
-													/>
-												</TableCell>
-												<TableCell>
-													<ClipboardCopy
-														value={unit.code}
-														label={t("admin.teachingUnits.table.code", {
-															defaultValue: "Code",
-														})}
-													/>
-												</TableCell>
-												<TableCell className="font-medium">
-													{unit.name}
-												</TableCell>
-												<TableCell>
-													{(() => {
-														const programInfo = programMap.get(unit.programId);
-														if (!programInfo) {
-															return t("common.labels.notAvailable", {
-																defaultValue: "N/A",
-															});
+														checked={selection.isAllSelected}
+														onCheckedChange={(checked) =>
+															selection.toggleAll(!!checked)
 														}
-														return <p>{programInfo.name}</p>;
-													})()}
-												</TableCell>
-												<TableCell>
-													{t(`admin.teachingUnits.semesters.${unit.semester}`, {
-														defaultValue: unit.semester,
-													})}
-												</TableCell>
-												<TableCell>{unit.credits}</TableCell>
-												<TableCell className="text-right">
-													<div className="flex justify-end gap-2">
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() =>
-																navigate(`/admin/teaching-units/${unit.id}`)
-															}
-														>
-															{t("common.actions.open", {
-																defaultValue: "Open",
-															})}
-														</Button>
-														<Button
-															variant="ghost"
-															size="icon-sm"
-															className="text-destructive hover:text-destructive"
-															onClick={() => handleOpenDelete(unit.id)}
-														>
-															<Trash2 className="h-4 w-4" />
-														</Button>
-													</div>
-												</TableCell>
+														aria-label="Select all"
+													/>
+												</TableHead>
+												<TableHead className="w-20">
+													{t("admin.teachingUnits.table.code")}
+												</TableHead>
+												<TableHead>
+													{t("admin.teachingUnits.table.name")}
+												</TableHead>
+												<TableHead>
+													{t("admin.teachingUnits.table.program")}
+												</TableHead>
+												<TableHead className="w-28">
+													{t("admin.teachingUnits.table.semester")}
+												</TableHead>
+												<TableHead className="w-16">
+													{t("admin.teachingUnits.table.credits")}
+												</TableHead>
+												<TableHead className="w-[100px] text-right">
+													{t("common.table.actions")}
+												</TableHead>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
+										</TableHeader>
+										<TableBody>
+											{unitItems.map((unit) => (
+												<TableRow
+													key={unit.id}
+													actions={
+														<>
+															<ContextMenuItem
+																onSelect={() =>
+																	navigate(`/admin/teaching-units/${unit.id}`)
+																}
+															>
+																<span>
+																	{t("common.actions.edit", {
+																		defaultValue: "Edit",
+																	})}
+																</span>
+															</ContextMenuItem>
+															<ContextMenuSeparator />
+															<ContextMenuItem
+																variant="destructive"
+																onSelect={() => handleOpenDelete(unit.id)}
+															>
+																<span>{t("common.actions.delete")}</span>
+															</ContextMenuItem>
+														</>
+													}
+												>
+													<TableCell>
+														<Checkbox
+															checked={selection.isSelected(unit.id)}
+															onCheckedChange={() => selection.toggle(unit.id)}
+															aria-label={`Select ${unit.name}`}
+														/>
+													</TableCell>
+													<TableCell>
+														<ClipboardCopy
+															value={unit.code}
+															label={t("admin.teachingUnits.table.code", {
+																defaultValue: "Code",
+															})}
+														/>
+													</TableCell>
+													<TableCell className="font-medium">
+														{unit.name}
+													</TableCell>
+													<TableCell>
+														{(() => {
+															const programInfo = programMap.get(
+																unit.programId,
+															);
+															if (!programInfo) {
+																return t("common.labels.notAvailable", {
+																	defaultValue: "N/A",
+																});
+															}
+															return <p>{programInfo.name}</p>;
+														})()}
+													</TableCell>
+													<TableCell>
+														{t(
+															`admin.teachingUnits.semesters.${unit.semester}`,
+															{
+																defaultValue: unit.semester,
+															},
+														)}
+													</TableCell>
+													<TableCell>{unit.credits}</TableCell>
+													<TableCell className="text-right">
+														<div className="flex justify-end gap-2">
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() =>
+																	navigate(`/admin/teaching-units/${unit.id}`)
+																}
+															>
+																{t("common.actions.open", {
+																	defaultValue: "Open",
+																})}
+															</Button>
+															<Button
+																variant="ghost"
+																size="icon-sm"
+																className="text-destructive hover:text-destructive"
+																onClick={() => handleOpenDelete(unit.id)}
+															>
+																<Trash2 className="h-4 w-4" />
+															</Button>
+														</div>
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								)}
 							</div>
-							<PaginationBar
-								hasPrev={pagination.hasPrev}
-								hasNext={!!units?.nextCursor}
-								onPrev={pagination.handlePrev}
-								onNext={() => pagination.handleNext(units?.nextCursor)}
-								isLoading={isLoading}
-							/>
+							<div ref={sentinelRef} className="h-1" />
 						</>
 					) : (
 						<Empty>

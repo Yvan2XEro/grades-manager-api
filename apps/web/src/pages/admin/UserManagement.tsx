@@ -1,25 +1,30 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { Pencil, PlusIcon, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { KeyRound, Pencil, PlusIcon, RefreshCw, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
+import { DebouncedSearchField } from "@/components/inputs";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
+import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../../components/ui/dialog";
+import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -29,7 +34,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { PaginationBar } from "../../components/ui/pagination-bar";
 import {
 	Select,
 	SelectContent,
@@ -37,7 +41,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
+import { Separator } from "../../components/ui/separator";
 import { Spinner } from "../../components/ui/spinner";
+import { Switch } from "../../components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -46,20 +52,37 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
-import { useCursorPagination } from "../../hooks/useCursorPagination";
+import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { authClient } from "../../lib/auth-client";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
+const ASSIGNABLE_ROLES = [
+	"administrator",
+	"dean",
+	"teacher",
+	"grade_editor",
+	"staff",
+	"student",
+] as const;
+
 type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 
 const getDisplayName = (user: DomainUser) =>
-	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
+	[user.firstName, user.lastName].filter(Boolean).join(" ") ||
+	user.primaryEmail;
 
-const toDomainRole = (role: "admin" | "teacher") =>
-	role === "admin" ? "administrator" : role;
+const ALL_FILTER_ROLES = [
+	"administrator",
+	"dean",
+	"teacher",
+	"grade_editor",
+	"staff",
+	"student",
+] as const;
 
 const formatDateInput = (value?: string | Date | null) => {
 	if (!value) return "";
@@ -84,17 +107,45 @@ const buildFullName = (data: Pick<UserForm, "firstName" | "lastName">) =>
 	`${data.firstName} ${data.lastName}`.trim();
 
 const buildUserSchema = (t: TFunction) =>
-	z.object({
-		firstName: z.string().min(1, t("admin.users.validation.firstName")),
-		lastName: z.string().min(1, t("admin.users.validation.lastName")),
-		email: z.string().email(t("admin.users.validation.email")),
-		phone: z.string().optional(),
-		gender: z.enum(["male", "female", "other"]).optional(),
-		dateOfBirth: z.string().optional(),
-		placeOfBirth: z.string().optional(),
-		nationality: z.string().optional(),
-		status: z.enum(["active", "inactive", "suspended"]).optional(),
-	});
+	z
+		.object({
+			firstName: z.string().min(1, t("admin.users.validation.firstName")),
+			lastName: z.string().min(1, t("admin.users.validation.lastName")),
+			email: z.string().email(t("admin.users.validation.email")),
+			phone: z.string().optional(),
+			gender: z.enum(["male", "female", "other"]).optional(),
+			dateOfBirth: z.string().optional(),
+			placeOfBirth: z.string().optional(),
+			nationality: z.string().optional(),
+			status: z.enum(["active", "inactive", "suspended"]).optional(),
+			// System access fields (create mode only)
+			canConnect: z.boolean().default(false),
+			password: z.string().optional(),
+			memberRole: z
+				.enum(ASSIGNABLE_ROLES as unknown as [string, ...string[]])
+				.optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (!data.canConnect) return;
+			if (!data.password || data.password.length < 8) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["password"],
+					message: t("admin.users.validation.passwordMin", {
+						defaultValue: "Password must be at least 8 characters",
+					}),
+				});
+			}
+			if (!data.memberRole) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["memberRole"],
+					message: t("admin.users.validation.memberRoleRequired", {
+						defaultValue: "Role is required when system access is enabled",
+					}),
+				});
+			}
+		});
 
 type UserForm = z.infer<ReturnType<typeof buildUserSchema>>;
 
@@ -117,10 +168,12 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const pagination = useCursorPagination({ pageSize: 10 });
-	const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "teacher">(
-		"all",
-	);
+	const [roleFilter, setRoleFilter] = useState<
+		"all" | (typeof ALL_FILTER_ROLES)[number]
+	>("all");
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "active" | "inactive" | "suspended"
+	>("all");
 	const genderOptions = useMemo(
 		() => [
 			{
@@ -147,22 +200,33 @@ export default function UserManagement() {
 		[t],
 	);
 
-	const { data, isLoading: isLoadingUsers } = useQuery({
-		queryKey: ["users", pagination.cursor, roleFilter],
-		queryFn: async () =>
+	const {
+		data,
+		isLoading: isLoadingUsers,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
+		queryKey: ["users", roleFilter, statusFilter],
+		queryFn: async ({ pageParam }) =>
 			trpcClient.users.list.query({
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
-				role: roleFilter === "all" ? undefined : toDomainRole(roleFilter),
+				cursor: pageParam,
+				limit: 10,
+				role: roleFilter === "all" ? undefined : roleFilter,
+				status: statusFilter === "all" ? undefined : statusFilter,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
-	const users = data?.items ?? [];
-	const nextCursor = data?.nextCursor;
+	const users = data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const displayedUsers = users.filter((user) => {
 		if (!debouncedSearch) return true;
 		const needle = debouncedSearch.toLowerCase();
 		const name = getDisplayName(user).toLowerCase();
-		const email = (user.email ?? "").toLowerCase();
+		const email = (user.primaryEmail ?? "").toLowerCase();
 		return name.includes(needle) || email.includes(needle);
 	});
 	const selection = useRowSelection(displayedUsers);
@@ -175,7 +239,7 @@ export default function UserManagement() {
 					if (user.authUserId) {
 						await authClient.admin.removeUser({ userId: user.authUserId });
 					}
-					await trpcClient.users.deleteProfile.mutate({ id: user.id });
+					return trpcClient.users.deleteProfile.mutate({ id: user.id });
 				}),
 			);
 		},
@@ -196,11 +260,6 @@ export default function UserManagement() {
 			),
 	});
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cursor when filters change
-	useEffect(() => {
-		pagination.reset();
-	}, [debouncedSearch, roleFilter]);
-
 	const form = useForm<UserForm>({
 		resolver: zodResolver(userSchema),
 		defaultValues: {
@@ -213,8 +272,12 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		},
 	});
+	const canConnect = form.watch("canConnect");
 
 	const openCreate = () => {
 		setEditingUser(null);
@@ -228,6 +291,9 @@ export default function UserManagement() {
 			placeOfBirth: "",
 			nationality: "",
 			status: "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		});
 		setIsModalOpen(true);
 	};
@@ -237,13 +303,16 @@ export default function UserManagement() {
 		form.reset({
 			firstName: user.firstName || "",
 			lastName: user.lastName || "",
-			email: user.email || "",
+			email: user.primaryEmail || "",
 			phone: user.phone || "",
 			gender: (user.gender as UserForm["gender"]) || undefined,
 			dateOfBirth: formatDateInput(user.dateOfBirth),
 			placeOfBirth: user.placeOfBirth || "",
 			nationality: user.nationality || "",
 			status: (user.status as UserForm["status"]) || "active",
+			canConnect: false,
+			password: "",
+			memberRole: undefined,
 		});
 		setIsModalOpen(true);
 	};
@@ -252,21 +321,11 @@ export default function UserManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: async (data: UserForm) => {
-			const autoPassword = generatePassword();
-			const fullName = buildFullName(data);
-			const response = await authClient.admin.createUser({
-				email: data.email,
-				name: fullName,
-				role: "teacher",
-				password: autoPassword,
-			});
-			const authUserId = response?.user?.id;
-			if (!authUserId) {
-				throw new Error(t("admin.users.toast.createError"));
-			}
-			await trpcClient.users.createProfile.mutate({
+			await trpcClient.users.createWithAuth.mutate({
 				...mapFormToProfile(data),
-				authUserId,
+				canConnect: data.canConnect,
+				password: data.canConnect ? data.password : undefined,
+				memberRole: data.canConnect ? data.memberRole : undefined,
 			});
 		},
 		onSuccess: () => {
@@ -307,10 +366,9 @@ export default function UserManagement() {
 
 	const deleteMutation = useMutation({
 		mutationFn: async (user: DomainUser) => {
-			if (!user.authUserId) {
-				throw new Error(t("admin.users.toast.deleteError"));
+			if (user.authUserId) {
+				await authClient.admin.removeUser({ userId: user.authUserId });
 			}
-			await authClient.admin.removeUser({ userId: user.authUserId });
 			await trpcClient.users.deleteProfile.mutate({ id: user.id });
 		},
 		onSuccess: () => {
@@ -337,45 +395,87 @@ export default function UserManagement() {
 	return (
 		<div className="space-y-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="font-bold font-heading text-2xl text-foreground">
-					{t("admin.users.title")}
-				</h1>
+				<h1 className="text-foreground">{t("admin.users.title")}</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
 				</Button>
 			</div>
 
-			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div className="relative w-full sm:max-w-xs">
-					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 text-muted-foreground" />
-					<Input
-						type="text"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={t("admin.users.filters.searchPlaceholder")}
-						className="pl-9"
-					/>
+			<FilterBar
+				activeCount={
+					[
+						roleFilter !== "all",
+						statusFilter !== "all",
+						!!debouncedSearch,
+					].filter(Boolean).length
+				}
+				onReset={() => {
+					setRoleFilter("all");
+					setStatusFilter("all");
+					setSearch("");
+				}}
+				defaultOpen
+			>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							Recherche
+						</p>
+						<DebouncedSearchField
+							value={search}
+							onChange={setSearch}
+							placeholder={t("admin.users.filters.searchPlaceholder")}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							Rôle
+						</p>
+						<Select value={roleFilter} onValueChange={setRoleFilter}>
+							<SelectTrigger>
+								<SelectValue placeholder={t("admin.users.filters.roles.all")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									{t("admin.users.filters.roles.all")}
+								</SelectItem>
+								{ALL_FILTER_ROLES.map((role) => (
+									<SelectItem key={role} value={role}>
+										{t(`admin.users.roles.${role}`, { defaultValue: role })}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.users.table.status")}
+						</p>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={t("admin.users.filters.status.all")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									{t("admin.users.filters.status.all")}
+								</SelectItem>
+								<SelectItem value="active">
+									{t("admin.users.status.active")}
+								</SelectItem>
+								<SelectItem value="inactive">
+									{t("admin.users.status.inactive")}
+								</SelectItem>
+								<SelectItem value="suspended">
+									{t("admin.users.status.suspended")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<Select value={roleFilter} onValueChange={setRoleFilter}>
-						<SelectTrigger className="min-w-[180px]">
-							<SelectValue placeholder={t("admin.users.filters.roles.all")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">
-								{t("admin.users.filters.roles.all")}
-							</SelectItem>
-							<SelectItem value="admin">
-								{t("admin.users.filters.roles.admin")}
-							</SelectItem>
-							<SelectItem value="teacher">
-								{t("admin.users.filters.roles.teacher")}
-							</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
+			</FilterBar>
 			<BulkActionBar
 				selectedCount={selection.selectedCount}
 				onClear={selection.clear}
@@ -403,326 +503,502 @@ export default function UserManagement() {
 			</BulkActionBar>
 
 			<div className="min-h-[50vh] overflow-x-auto">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead className="w-10">
-								<Checkbox
-									checked={
-										selection.isAllSelected
-											? true
-											: selection.isSomeSelected
-												? "indeterminate"
-												: false
-									}
-									onCheckedChange={(checked) =>
-										selection.toggleAll(Boolean(checked))
-									}
-								/>
-							</TableHead>
-							<TableHead>{t("admin.users.table.name")}</TableHead>
-							<TableHead>{t("admin.users.table.email")}</TableHead>
-							<TableHead>{t("admin.users.table.role")}</TableHead>
-							<TableHead>{t("admin.users.table.status")}</TableHead>
-							<TableHead className="w-1 text-right">
-								{t("common.table.actions")}
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{displayedUsers.map((user) => (
-							<TableRow key={user.id}>
-								<TableCell className="w-10">
-									<Checkbox
-										checked={selection.isSelected(user.id)}
-										onCheckedChange={() => selection.toggle(user.id)}
-									/>
-								</TableCell>
-								<TableCell className="font-medium">
-									{getDisplayName(user)}
-								</TableCell>
-								<TableCell>{user.email}</TableCell>
-								<TableCell>
-									{user.role
-										? t(
-												`admin.users.roles.${
-													user.role === "administrator" ? "admin" : user.role
-												}`,
-												{ defaultValue: user.role },
-											)
-										: ""}
-								</TableCell>
-								<TableCell>
-									<Badge
-										variant={user.status === "active" ? "default" : "secondary"}
-									>
-										{t(`admin.users.status.${user.status}`, {
-											defaultValue: user.status,
-										})}
-									</Badge>
-								</TableCell>
-								<TableCell className="text-right">
-									<div className="flex justify-end gap-2">
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => openEdit(user)}
-											aria-label={t("admin.users.actions.edit")}
-										>
-											<Pencil className="h-4 w-4" />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => setUserToDelete(user)}
-											disabled={!user.authUserId}
-											aria-label={t("common.actions.delete")}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-								</TableCell>
-							</TableRow>
-						))}
-						{displayedUsers.length === 0 && (
+				{isLoadingUsers ? (
+					<TableSkeleton columns={6} rows={8} />
+				) : (
+					<Table>
+						<TableHeader>
 							<TableRow>
-								<TableCell colSpan={6} className="py-4 text-center">
-									{t("admin.users.empty")}
-								</TableCell>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={
+											selection.isAllSelected
+												? true
+												: selection.isSomeSelected
+													? "indeterminate"
+													: false
+										}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(Boolean(checked))
+										}
+									/>
+								</TableHead>
+								<TableHead>{t("admin.users.table.name")}</TableHead>
+								<TableHead>{t("admin.users.table.email")}</TableHead>
+								<TableHead className="w-28">
+									{t("admin.users.table.role")}
+								</TableHead>
+								<TableHead className="w-24">
+									{t("admin.users.table.status")}
+								</TableHead>
+								<TableHead className="w-[100px] text-right">
+									{t("common.table.actions")}
+								</TableHead>
 							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+						</TableHeader>
+						<TableBody>
+							{displayedUsers.map((user) => (
+								<TableRow
+									key={user.id}
+									actions={
+										<>
+											<ContextMenuItem onSelect={() => openEdit(user)}>
+												<span>
+													{t("common.actions.edit", { defaultValue: "Edit" })}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												variant="destructive"
+												onSelect={() => setUserToDelete(user)}
+											>
+												<span>{t("common.actions.delete")}</span>
+											</ContextMenuItem>
+										</>
+									}
+								>
+									<TableCell className="w-10">
+										<Checkbox
+											checked={selection.isSelected(user.id)}
+											onCheckedChange={() => selection.toggle(user.id)}
+										/>
+									</TableCell>
+									<TableCell className="font-medium">
+										{getDisplayName(user)}
+									</TableCell>
+									<TableCell>{user.primaryEmail}</TableCell>
+									<TableCell>
+										{user.role
+											? t(`admin.users.roles.${user.role}`, {
+													defaultValue: user.role,
+												})
+											: ""}
+									</TableCell>
+									<TableCell>
+										<Badge
+											variant={
+												user.status === "active" ? "default" : "secondary"
+											}
+										>
+											{t(`admin.users.status.${user.status}`, {
+												defaultValue: user.status,
+											})}
+										</Badge>
+									</TableCell>
+									<TableCell className="text-right">
+										<div className="row-action-fade flex justify-end gap-1">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="h-8 w-8"
+												onClick={() => openEdit(user)}
+												aria-label={t("admin.users.actions.edit")}
+											>
+												<Pencil className="h-3.5 w-3.5" />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												onClick={() => setUserToDelete(user)}
+												aria-label={t("common.actions.delete")}
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							))}
+							{displayedUsers.length === 0 && (
+								<TableRow>
+									<TableCell colSpan={6} className="py-4 text-center">
+										{t("admin.users.empty")}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				)}
 			</div>
 
-			<PaginationBar
-				hasPrev={pagination.hasPrev}
-				hasNext={Boolean(nextCursor)}
-				onPrev={pagination.handlePrev}
-				onNext={() => pagination.handleNext(nextCursor)}
-				isLoading={isLoadingUsers}
-			/>
+			<div ref={sentinelRef} className="h-1" />
 
-			<Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
-				<DialogContent className="max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
-							{editingUser
-								? t("admin.users.form.editTitle")
-								: t("admin.users.form.createTitle")}
-						</DialogTitle>
-					</DialogHeader>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="firstName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.firstNameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="lastName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.lastNameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
-										<FormControl>
-											<Input type="email" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
+			<FormModal
+				isOpen={isModalOpen}
+				onClose={closeModal}
+				title={
+					editingUser
+						? t("admin.users.form.editTitle")
+						: t("admin.users.form.createTitle")
+				}
+				maxWidth={editingUser ? "sm:max-w-xl" : "sm:max-w-4xl"}
+			>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						{/* Two-column layout in create mode; single-column in edit mode */}
+						<div
+							className={
+								editingUser
+									? "space-y-4"
+									: "grid grid-cols-1 gap-x-8 md:grid-cols-2"
+							}
+						>
+							{/* Left column — Profile fields */}
+							<div className="space-y-4">
+								{!editingUser && (
+									<p className="font-semibold text-sm">
+										{t("admin.users.form.profileSection", {
+											defaultValue: "Profile",
+										})}
+									</p>
 								)}
-							/>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="phone"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="gender"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="firstName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.firstNameLabel")}
+												</FormLabel>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={t(
-																"admin.users.form.genderPlaceholder",
-															)}
-														/>
-													</SelectTrigger>
+													<Input {...field} />
 												</FormControl>
-												<SelectContent>
-													{genderOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="dateOfBirth"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.dateOfBirthLabel")}
-											</FormLabel>
-											<FormControl>
-												<DatePicker
-													value={field.value ?? ""}
-													onChange={field.onChange}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="placeOfBirth"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.placeOfBirthLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="nationality"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{t("admin.users.form.nationalityLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="status"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="lastName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.lastNameLabel")}
+												</FormLabel>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue />
-													</SelectTrigger>
+													<Input {...field} />
 												</FormControl>
-												<SelectContent>
-													{statusOptions.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
-															{option.label}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<FormField
+									control={form.control}
+									name="email"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("admin.users.form.emailLabel")}</FormLabel>
+											<FormControl>
+												<Input type="email" {...field} />
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="phone"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.phoneLabel")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="gender"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.genderLabel")}
+												</FormLabel>
+												<Select
+													value={field.value}
+													onValueChange={field.onChange}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue
+																placeholder={t(
+																	"admin.users.form.genderPlaceholder",
+																)}
+															/>
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{genderOptions.map((option) => (
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="dateOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.dateOfBirthLabel")}
+												</FormLabel>
+												<FormControl>
+													<DatePicker
+														value={field.value ?? ""}
+														onChange={field.onChange}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="placeOfBirth"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.placeOfBirthLabel")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<FormField
+										control={form.control}
+										name="nationality"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.nationalityLabel")}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="status"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.users.form.statusLabel")}
+												</FormLabel>
+												<Select
+													value={field.value}
+													onValueChange={field.onChange}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{statusOptions.map((option) => (
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
+																{option.label}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 							</div>
-							<DialogFooter>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={closeModal}
-									disabled={
-										form.formState.isSubmitting ||
-										createMutation.isPending ||
-										updateMutation.isPending
-									}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button
-									type="submit"
-									disabled={
-										form.formState.isSubmitting ||
-										createMutation.isPending ||
-										updateMutation.isPending
-									}
-								>
-									{form.formState.isSubmitting ||
-									createMutation.isPending ||
-									updateMutation.isPending ? (
+
+							{/* Right column — System access (create mode only) */}
+							{!editingUser && (
+								<div className="space-y-4 border-l pl-8">
+									<div className="flex items-center gap-2">
+										<KeyRound className="h-4 w-4 text-muted-foreground" />
+										<p className="font-semibold text-sm">
+											{t("admin.users.form.systemAccessSection", {
+												defaultValue: "System Access",
+											})}
+										</p>
+									</div>
+									<FormField
+										control={form.control}
+										name="canConnect"
+										render={({ field }) => (
+											<FormItem className="flex items-center gap-3 rounded-lg border p-3">
+												<FormControl>
+													<Switch
+														checked={field.value}
+														onCheckedChange={field.onChange}
+													/>
+												</FormControl>
+												<div className="space-y-0.5">
+													<FormLabel className="cursor-pointer text-sm">
+														{t("admin.users.form.canConnectLabel", {
+															defaultValue: "Can log in",
+														})}
+													</FormLabel>
+													<p className="text-muted-foreground text-xs">
+														{t("admin.users.form.canConnectDescription", {
+															defaultValue:
+																"Creates a system account with login access",
+														})}
+													</p>
+												</div>
+											</FormItem>
+										)}
+									/>
+									{canConnect && (
 										<>
-											<Spinner className="mr-2" />
-											{t("common.loading")}
+											<Separator />
+											<FormField
+												control={form.control}
+												name="memberRole"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.users.form.memberRoleLabel", {
+																defaultValue: "Role",
+															})}
+														</FormLabel>
+														<Select
+															value={field.value ?? ""}
+															onValueChange={field.onChange}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue
+																		placeholder={t(
+																			"admin.users.form.memberRolePlaceholder",
+																			{ defaultValue: "Select a role" },
+																		)}
+																	/>
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																{ASSIGNABLE_ROLES.map((role) => (
+																	<SelectItem key={role} value={role}>
+																		{t(`admin.users.roles.${role}`, {
+																			defaultValue: role,
+																		})}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="password"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.users.form.passwordLabel", {
+																defaultValue: "Password",
+															})}
+														</FormLabel>
+														<FormControl>
+															<div className="flex gap-2">
+																<Input
+																	type="text"
+																	autoComplete="new-password"
+																	className="font-mono"
+																	{...field}
+																/>
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="icon"
+																	onClick={() =>
+																		form.setValue(
+																			"password",
+																			generatePassword(),
+																		)
+																	}
+																	title={t(
+																		"admin.users.form.generatePassword",
+																		{ defaultValue: "Generate password" },
+																	)}
+																>
+																	<RefreshCw className="h-4 w-4" />
+																</Button>
+															</div>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
 										</>
-									) : (
-										t("common.actions.save")
 									)}
-								</Button>
-							</DialogFooter>
-						</form>
-					</Form>
-				</DialogContent>
-			</Dialog>
+								</div>
+							)}
+						</div>
+
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={closeModal}
+								disabled={
+									form.formState.isSubmitting ||
+									createMutation.isPending ||
+									updateMutation.isPending
+								}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button
+								type="submit"
+								disabled={
+									form.formState.isSubmitting ||
+									createMutation.isPending ||
+									updateMutation.isPending
+								}
+							>
+								{form.formState.isSubmitting ||
+								createMutation.isPending ||
+								updateMutation.isPending ? (
+									<>
+										<Spinner className="mr-2" />
+										{t("common.loading")}
+									</>
+								) : (
+									t("common.actions.save")
+								)}
+							</Button>
+						</DialogFooter>
+					</form>
+				</Form>
+			</FormModal>
 
 			<ConfirmModal
 				isOpen={Boolean(userToDelete)}

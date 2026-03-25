@@ -208,9 +208,7 @@ const TeacherDashboard: React.FC = () => {
 		<div className="space-y-8">
 			{/* Header */}
 			<motion.div variants={fadeUp} initial="hidden" animate="visible">
-				<h1 className="font-bold font-heading text-2xl text-foreground">
-					{t("teacher.dashboard.title")}
-				</h1>
+				<h1 className="text-foreground">{t("teacher.dashboard.title")}</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
 					{t("teacher.dashboard.subtitle", {
 						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
@@ -272,7 +270,7 @@ const TeacherDashboard: React.FC = () => {
 									<p className="font-medium text-foreground">
 										{t("teacher.dashboard.courses.empty.title")}
 									</p>
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{t("teacher.dashboard.courses.empty.description")}
 									</p>
 								</div>
@@ -296,7 +294,7 @@ const TeacherDashboard: React.FC = () => {
 														<p className="truncate font-medium text-foreground">
 															{course.name}
 														</p>
-														<p className="text-muted-foreground text-sm">
+														<p className="text-muted-foreground text-xs">
 															{course.class_name} &middot; {course.program_name}
 														</p>
 													</div>
@@ -378,7 +376,7 @@ const TeacherDashboard: React.FC = () => {
 									<p className="font-medium text-foreground">
 										{t("teacher.dashboard.exams.empty.title")}
 									</p>
-									<p className="text-muted-foreground text-sm">
+									<p className="text-muted-foreground text-xs">
 										{t("teacher.dashboard.exams.empty.description")}
 									</p>
 								</div>

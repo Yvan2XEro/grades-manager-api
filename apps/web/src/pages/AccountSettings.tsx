@@ -6,6 +6,7 @@ import {
 	Camera,
 	Check,
 	ChevronsUpDown,
+	CropIcon,
 	KeyRound,
 	Languages,
 	Loader2,
@@ -15,12 +16,21 @@ import {
 	Settings as SettingsIcon,
 	ShieldCheck,
 	UserCircle,
+	ZoomIn,
+	ZoomOut,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import ReactCrop, {
+	type Crop,
+	centerCrop,
+	makeAspectCrop,
+	type PixelCrop,
+} from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -42,6 +52,13 @@ import {
 	CommandList,
 } from "../components/ui/command";
 import { DatePicker } from "../components/ui/date-picker";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -162,12 +179,144 @@ const getBrowserLabel = (userAgent?: string | null) => {
 };
 
 const resolveToken = (session: Record<string, unknown> | null | undefined) =>
-	(session?.["token"] as string | undefined) ??
-	(session?.["sessionToken"] as string | undefined) ??
-	(session?.["id"] as string | undefined);
+	(session?.token as string | undefined) ??
+	(session?.sessionToken as string | undefined) ??
+	(session?.id as string | undefined);
 
 const resolveSessionToken = (session: SessionInfo) =>
 	resolveToken(session as Record<string, unknown>);
+
+/* ─── Crop helper ─────────────────────────────────────── */
+
+function centerAspectCrop(w: number, h: number) {
+	return centerCrop(makeAspectCrop({ unit: "%", width: 80 }, 1, w, h), w, h);
+}
+
+async function cropToBlob(
+	image: HTMLImageElement,
+	crop: PixelCrop,
+	size = 256,
+): Promise<Blob> {
+	const canvas = document.createElement("canvas");
+	canvas.width = size;
+	canvas.height = size;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) throw new Error("No 2d context");
+	const scaleX = image.naturalWidth / image.width;
+	const scaleY = image.naturalHeight / image.height;
+	ctx.drawImage(
+		image,
+		crop.x * scaleX,
+		crop.y * scaleY,
+		crop.width * scaleX,
+		crop.height * scaleY,
+		0,
+		0,
+		size,
+		size,
+	);
+	return new Promise((resolve, reject) =>
+		canvas.toBlob(
+			(b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+			"image/jpeg",
+			0.9,
+		),
+	);
+}
+
+/* ─── Crop modal ──────────────────────────────────────── */
+
+type CropModalProps = {
+	src: string;
+	open: boolean;
+	onClose: () => void;
+	onConfirm: (blob: Blob) => void;
+};
+
+function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
+	const imgRef = useRef<HTMLImageElement>(null);
+	const [crop, setCrop] = useState<Crop>();
+	const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+	const [scale, setScale] = useState(1);
+
+	const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+		const { width, height } = e.currentTarget;
+		setCrop(centerAspectCrop(width, height));
+	};
+
+	const handleConfirm = async () => {
+		if (!imgRef.current || !completedCrop) return;
+		try {
+			const blob = await cropToBlob(imgRef.current, completedCrop);
+			onConfirm(blob);
+		} catch {
+			toast.error("Erreur lors du recadrage");
+		}
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="max-w-xl gap-0 p-0">
+				<DialogHeader className="px-6 pt-5 pb-4">
+					<DialogTitle className="flex items-center gap-2 text-base">
+						<CropIcon className="h-4 w-4 text-primary" />
+						Recadrer la photo de profil
+					</DialogTitle>
+				</DialogHeader>
+
+				{/* Crop area */}
+				<div className="flex items-center justify-center bg-muted/40 px-6 py-4">
+					<ReactCrop
+						crop={crop}
+						onChange={(c) => setCrop(c)}
+						onComplete={(c) => setCompletedCrop(c)}
+						aspect={1}
+						circularCrop
+						className="max-h-[480px] max-w-full overflow-hidden rounded-lg"
+					>
+						<img
+							ref={imgRef}
+							src={src}
+							alt="Aperçu"
+							style={{
+								transform: `scale(${scale})`,
+								transformOrigin: "center",
+							}}
+							onLoad={onImageLoad}
+							className="max-h-[480px] max-w-full object-contain"
+						/>
+					</ReactCrop>
+				</div>
+
+				{/* Zoom slider */}
+				<div className="flex items-center gap-3 border-t px-6 py-3">
+					<ZoomOut className="h-4 w-4 shrink-0 text-muted-foreground" />
+					<input
+						type="range"
+						min={1}
+						max={2}
+						step={0.05}
+						value={scale}
+						onChange={(e) => setScale(Number(e.target.value))}
+						className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
+					/>
+					<ZoomIn className="h-4 w-4 shrink-0 text-muted-foreground" />
+				</div>
+
+				<DialogFooter className="px-6 pt-2 pb-5">
+					<Button variant="outline" onClick={onClose}>
+						Annuler
+					</Button>
+					<Button onClick={handleConfirm} disabled={!completedCrop}>
+						Appliquer
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+/* ─── Main component ──────────────────────────────────── */
 
 export default function AccountSettings() {
 	const queryClient = useQueryClient();
@@ -202,6 +351,8 @@ export default function AccountSettings() {
 
 	const avatarInputRef = useRef<HTMLInputElement>(null);
 	const [avatarUploading, setAvatarUploading] = useState(false);
+	const [cropSrc, setCropSrc] = useState<string | null>(null);
+	const [cropModalOpen, setCropModalOpen] = useState(false);
 	const [newEmail, setNewEmail] = useState("");
 	const [emailChanging, setEmailChanging] = useState(false);
 
@@ -374,8 +525,49 @@ export default function AccountSettings() {
 		`${profile?.firstName?.[0] ?? ""}${profile?.lastName?.[0] ?? ""}`.trim() ||
 		"?";
 
+	const uploadCroppedBlob = async (blob: Blob) => {
+		setCropModalOpen(false);
+		setAvatarUploading(true);
+		try {
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve((reader.result as string).split(",")[1]);
+				reader.onerror = reject;
+				reader.readAsDataURL(blob);
+			});
+			const stored = await trpcClient.files.uploadAvatar.mutate({
+				filename: "avatar.jpg",
+				mimeType: "image/jpeg",
+				base64,
+			});
+			await authClient.updateUser({ image: stored.url });
+			await refetchSession();
+			toast.success(t("settings.account.avatar.success"));
+		} catch {
+			toast.error(t("settings.account.avatar.error"));
+		} finally {
+			setAvatarUploading(false);
+			if (cropSrc) {
+				URL.revokeObjectURL(cropSrc);
+				setCropSrc(null);
+			}
+		}
+	};
+
 	return (
 		<div className="space-y-6">
+			{cropSrc && (
+				<AvatarCropModal
+					src={cropSrc}
+					open={cropModalOpen}
+					onClose={() => {
+						setCropModalOpen(false);
+						URL.revokeObjectURL(cropSrc);
+						setCropSrc(null);
+					}}
+					onConfirm={uploadCroppedBlob}
+				/>
+			)}
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -446,40 +638,13 @@ export default function AccountSettings() {
 									type="file"
 									accept="image/*"
 									className="hidden"
-									onChange={async (e) => {
+									onChange={(e) => {
 										const file = e.target.files?.[0];
 										if (!file) return;
-										setAvatarUploading(true);
-										try {
-											const base64 = await new Promise<string>(
-												(resolve, reject) => {
-													const reader = new FileReader();
-													reader.onload = () => {
-														const result = reader.result as string;
-														resolve(result.split(",")[1]);
-													};
-													reader.onerror = reject;
-													reader.readAsDataURL(file);
-												},
-											);
-											const stored = await trpcClient.files.uploadAvatar.mutate(
-												{
-													filename: file.name,
-													mimeType: file.type,
-													base64,
-												},
-											);
-											await authClient.updateUser({
-												image: stored.url,
-											});
-											await refetchSession();
-											toast.success(t("settings.account.avatar.success"));
-										} catch {
-											toast.error(t("settings.account.avatar.error"));
-										} finally {
-											setAvatarUploading(false);
-											e.target.value = "";
-										}
+										const url = URL.createObjectURL(file);
+										setCropSrc(url);
+										setCropModalOpen(true);
+										e.target.value = "";
 									}}
 								/>
 								<div>
@@ -531,7 +696,7 @@ export default function AccountSettings() {
 								<label className="font-medium text-sm">
 									{t("settings.account.fields.email")}
 								</label>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{session?.user?.email ?? user?.email}
 								</p>
 								<div className="flex items-end gap-2">
@@ -710,7 +875,7 @@ export default function AccountSettings() {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{sessions.length === 0 ? (
-								<p className="text-muted-foreground text-sm">
+								<p className="text-muted-foreground text-xs">
 									{t("settings.sessions.empty")}
 								</p>
 							) : (
@@ -741,7 +906,7 @@ export default function AccountSettings() {
 														</Badge>
 													)}
 												</div>
-												<p className="text-muted-foreground text-sm">
+												<p className="text-muted-foreground text-xs">
 													{entry.ipAddress ?? t("settings.sessions.unknownIp")}
 													{" · "}
 													{relative}
@@ -808,7 +973,7 @@ export default function AccountSettings() {
 											<p className="font-medium">
 												{profile?.firstName} {profile?.lastName}
 											</p>
-											<p className="text-muted-foreground text-sm">
+											<p className="text-muted-foreground text-xs">
 												{session?.user?.email ?? user?.email}
 											</p>
 										</div>

@@ -1,6 +1,8 @@
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
-import type * as React from "react";
+import * as React from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { haptic } from "@/lib/haptic";
+import { sounds } from "@/lib/sounds";
 import { cn } from "@/lib/utils";
 
 function AlertDialog({
@@ -45,6 +47,11 @@ function AlertDialogContent({
 	className,
 	...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
+	React.useEffect(() => {
+		sounds.warning();
+		haptic.warning();
+	}, []);
+
 	return (
 		<AlertDialogPortal>
 			<AlertDialogOverlay />

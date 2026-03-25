@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db";
 import { normalizeCode } from "@/lib/strings";
 import * as studentsRepo from "@/modules/students/students.repo";
@@ -119,7 +119,7 @@ async function ensureProgramOption(
 	return option.id;
 }
 
-async function ensureSemester(semesterId?: string) {
+async function ensureSemester(semesterId?: string | null) {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -142,8 +142,18 @@ async function ensureSemester(semesterId?: string) {
 	return created.id;
 }
 
+type CreateClassInput = Pick<
+	schema.NewKlass,
+	"code" | "name" | "program" | "academicYear"
+> & {
+	cycleLevelId?: string;
+	programOptionId?: string;
+	semesterId?: string | null;
+	totalCredits?: number;
+};
+
 export async function createClass(
-	data: Parameters<typeof repo.create>[0],
+	data: CreateClassInput,
 	institutionId: string,
 ) {
 	const program = await loadProgram(data.program, institutionId);
@@ -170,7 +180,7 @@ export async function createClass(
 
 export async function updateClass(
 	id: string,
-	data: Parameters<typeof repo.update>[2],
+	data: Partial<CreateClassInput>,
 	institutionId: string,
 ) {
 	const existing = await repo.findById(id, institutionId);
@@ -200,7 +210,7 @@ export async function updateClass(
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
-		academicYear: academicYear.id ?? existing.academicYear,
+		academicYear: academicYear?.id ?? existing.academicYear,
 		cycleLevelId,
 		programOptionId,
 		code: data.code ? normalizeCode(data.code) : undefined,
@@ -209,21 +219,47 @@ export async function updateClass(
 }
 
 export async function deleteClass(id: string, institutionId: string) {
-	const klass = await repo.findById(id, institutionId);
-	if (!klass) throw notFound();
+	const klass = await db.query.classes.findFirst({
+		where: eq(schema.classes.id, id),
+	});
+	if (!klass || klass.institutionId !== institutionId) throw notFound();
 
 	const students = await studentsRepo.list({ classId: id, institutionId });
 	if (students.items.length) {
-		const { items } = await repo.list(institutionId, {
+		// First, look for another class in the same program + academic year
+		const { items: sameProgramItems } = await repo.list(institutionId, {
 			programId: klass.program,
 			academicYearId: klass.academicYear,
 		});
-		const target = items.find((c) => c.id !== id);
+		let target = sameProgramItems.find((c) => c.id !== id);
+
+		// Fallback: any other class in the institution
+		if (!target) {
+			const { items: allItems } = await repo.list(institutionId, {});
+			target = allItems.find((c) => c.id !== id);
+		}
+
 		if (!target) throw conflict("Cannot delete class with students");
 		for (const s of students.items) {
 			await transferStudent(s.id, target.id, institutionId);
 		}
 	}
+
+	// Clean up records with RESTRICT FK references before deleting the class
+	await db
+		.delete(schema.studentCourseEnrollments)
+		.where(eq(schema.studentCourseEnrollments.sourceClassId, id));
+	await db
+		.delete(schema.promotionExecutions)
+		.where(
+			or(
+				eq(schema.promotionExecutions.sourceClassId, id),
+				eq(schema.promotionExecutions.targetClassId, id),
+			),
+		);
+	await db
+		.delete(schema.deliberations)
+		.where(eq(schema.deliberations.classId, id));
 
 	await repo.remove(id, institutionId);
 }
@@ -295,4 +331,115 @@ export async function searchClasses(
 	institutionId: string,
 ) {
 	return repo.search(opts, institutionId);
+}
+
+export async function bulkGenerateClasses(
+	academicYearId: string,
+	institutionId: string,
+	cycleLevelIds?: string[],
+) {
+	const year = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, academicYearId),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+	if (!year) throw notFound("Academic year not found");
+
+	// All programs with their options and linked cycle levels
+	const allPrograms = await db.query.programs.findMany({
+		where: eq(schema.programs.institutionId, institutionId),
+		with: { options: true },
+	});
+
+	// All cycles with their levels (indexed by cycleId for fast lookup)
+	const cycles = await db.query.studyCycles.findMany({
+		where: eq(schema.studyCycles.institutionId, institutionId),
+		with: { levels: true },
+	});
+	const levelsByCycle = new Map(cycles.map((c) => [c.id, c.levels]));
+
+	// Existing classes this year
+	const existingClasses = await db.query.classes.findMany({
+		where: and(
+			eq(schema.classes.academicYear, academicYearId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	const existingKeys = new Set(
+		existingClasses.map(
+			(c) => `${c.program}::${c.programOptionId}::${c.cycleLevelId}`,
+		),
+	);
+	const existingCodes = new Set(existingClasses.map((c) => c.code));
+
+	let created = 0;
+	let skipped = 0;
+
+	for (const program of allPrograms) {
+		const options = (
+			program as typeof program & {
+				options: { id: string; name: string; code: string }[];
+			}
+		).options;
+		if (!options || options.length === 0) {
+			skipped++;
+			continue;
+		}
+
+		// Skip programs with no assigned cycle
+		if (!program.cycleId) {
+			skipped++;
+			continue;
+		}
+
+		let programLevels = levelsByCycle.get(program.cycleId) ?? [];
+		if (cycleLevelIds && cycleLevelIds.length > 0) {
+			programLevels = programLevels.filter((l) => cycleLevelIds.includes(l.id));
+		}
+		if (programLevels.length === 0) {
+			skipped++;
+			continue;
+		}
+
+		for (const option of options) {
+			for (const level of programLevels) {
+				const key = `${program.id}::${option.id}::${level.id}`;
+				if (existingKeys.has(key)) {
+					skipped++;
+					continue;
+				}
+
+				// Generate a unique code
+				const baseCode = normalizeCode(`${program.code}-${level.code}`);
+				let code = baseCode;
+				let counter = 1;
+				while (existingCodes.has(code)) {
+					code = `${baseCode}-${String(counter).padStart(2, "0")}`;
+					counter++;
+				}
+				existingCodes.add(code);
+				existingKeys.add(key);
+
+				const yearShort = `${new Date(year.startDate).getFullYear()}`;
+				const name = `${program.name} ${level.code} (${yearShort})`;
+
+				await repo.create({
+					code,
+					name,
+					program: program.id,
+					academicYear: academicYearId,
+					institutionId,
+					cycleLevelId: level.id,
+					programOptionId: option.id,
+					semesterId: undefined,
+					totalCredits: 0,
+				});
+
+				created++;
+			}
+		}
+	}
+
+	return { created, skipped };
 }

@@ -4,6 +4,11 @@ export const baseSchema = z.object({
 	code: z.string().trim().min(1),
 	name: z.string(),
 	description: z.string().optional(),
+	diplomaTitleFr: z.string().optional(),
+	diplomaTitleEn: z.string().optional(),
+	attestationValidityFr: z.string().optional(),
+	attestationValidityEn: z.string().optional(),
+	cycleId: z.string().optional().nullable(),
 });
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });
@@ -23,4 +28,9 @@ export const codeSchema = z.object({
 export const searchSchema = z.object({
 	query: z.string().trim(),
 	limit: z.number().optional(),
+});
+
+export const cloneCurriculumSchema = z.object({
+	targetProgramId: z.string(),
+	sourceProgramId: z.string(),
 });

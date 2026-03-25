@@ -1,10 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Landmark, UploadIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FileSignature, Landmark, UploadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -58,8 +58,6 @@ const institutionSchema = z.object({
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
 });
 
@@ -90,8 +88,6 @@ const defaultValues: InstitutionFormValues = {
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
-	defaultAcademicYearId: undefined,
-	registrationFormatId: undefined,
 	timezone: "UTC",
 };
 
@@ -179,7 +175,7 @@ function ImageUploadField({
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div>
 					<p className="font-medium text-foreground">{label}</p>
-					<p className="text-muted-foreground text-sm">{description}</p>
+					<p className="text-muted-foreground text-xs">{description}</p>
 				</div>
 				{preview && (
 					<Button
@@ -206,7 +202,7 @@ function ImageUploadField({
 							className="h-full w-full rounded-md object-contain"
 						/>
 					) : (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("admin.institution.form.previewPlaceholder", {
 								defaultValue: "No image yet",
 							})}
@@ -279,6 +275,7 @@ function ImageUploadField({
 
 export default function InstitutionSettings() {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 	const institutionQuery = useQuery(trpc.institutions.get.queryOptions());
 	const institutionsQuery = useQuery(trpc.institutions.list.queryOptions());
 	const yearsQuery = useQuery(
@@ -295,18 +292,11 @@ export default function InstitutionSettings() {
 
 	useEffect(() => {
 		if (institutionQuery.data) {
-			const {
-				defaultAcademicYearId,
-				registrationFormatId,
-				parentInstitutionId,
-				institutionId,
-				...rest
-			} = institutionQuery.data;
+			const { parentInstitutionId, institutionId, ...rest } =
+				institutionQuery.data;
 			const normalized: InstitutionFormValues = {
 				...defaultValues,
 				...rest,
-				defaultAcademicYearId: defaultAcademicYearId ?? undefined,
-				registrationFormatId: registrationFormatId ?? undefined,
 				parentInstitutionId: parentInstitutionId ?? undefined,
 				institutionId: institutionId ?? undefined,
 				contactEmail: rest.contactEmail ?? "",
@@ -334,22 +324,29 @@ export default function InstitutionSettings() {
 		mutationFn: (values: InstitutionFormValues) =>
 			trpcClient.institutions.upsert.mutate({
 				...values,
+				id: institutionQuery.data?.id,
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
-				registrationFormatId: values.registrationFormatId || undefined,
-				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 			}),
-		onSuccess: () => {
+		onSuccess: (savedInstitution) => {
 			toast.success(
 				t("admin.institution.toast.saved", {
 					defaultValue: "Institution saved",
 				}),
 			);
-			institutionQuery.refetch();
+			// Update the cache directly with the saved institution instead of
+			// refetching — getFirst() could return the parent institution if it
+			// was created earlier, overwriting the form with the wrong data.
+			if (savedInstitution) {
+				queryClient.setQueryData(
+					trpc.institutions.get.queryKey(),
+					savedInstitution,
+				);
+			}
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -360,22 +357,26 @@ export default function InstitutionSettings() {
 
 	const registrationFormats = registrationFormatsQuery.data ?? [];
 	const academicYears = yearsQuery.data?.items ?? [];
+	const activeAcademicYear =
+		academicYears.find((year) => year.isActive) ?? null;
+	const activeRegistrationFormat =
+		registrationFormats.find((format) => format.isActive) ?? null;
 	const institutions = institutionsQuery.data ?? [];
 	const faculties = institutions.filter((i) => i.type === "faculty");
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-3">
-				<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+				<div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/8">
 					<Landmark className="h-5 w-5 text-primary" />
 				</div>
 				<div>
-					<h1 className="font-bold font-heading text-2xl text-foreground">
+					<h1 className="text-foreground">
 						{t("admin.institution.title", {
 							defaultValue: "Institution settings",
 						})}
 					</h1>
-					<p className="text-muted-foreground text-sm">
+					<p className="text-muted-foreground text-xs">
 						{t("admin.institution.subtitle", {
 							defaultValue:
 								"Configure the bilingual identity, branding, and official contacts for generated documents.",
@@ -572,7 +573,7 @@ export default function InstitutionSettings() {
 														</SelectItem>
 														{faculties.map((faculty) => (
 															<SelectItem key={faculty.id} value={faculty.id}>
-																{faculty.name}
+																{faculty.nameFr}
 															</SelectItem>
 														))}
 													</SelectContent>
@@ -955,102 +956,52 @@ export default function InstitutionSettings() {
 								<CardDescription>
 									{t("admin.institution.sections.systemHint", {
 										defaultValue:
-											"Default academic year and registration number format.",
+											"Active academic year and registration number format are managed in their dedicated modules.",
 									})}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="grid gap-4 md:grid-cols-2">
-									<FormField
-										control={form.control}
-										name="defaultAcademicYearId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.defaultAcademicYear")}
-												</FormLabel>
-												<Select
-													value={field.value ?? NO_SELECTION}
-													onValueChange={(value) =>
-														field.onChange(
-															value === NO_SELECTION ? undefined : value,
-														)
-													}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t(
-																	"admin.institution.form.defaultAcademicYearPlaceholder",
-																)}
-															/>
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value={NO_SELECTION}>
-															{t(
-																"admin.institution.form.defaultAcademicYearPlaceholder",
-															)}
-														</SelectItem>
-														{academicYears.map((year) => (
-															<SelectItem key={year.id} value={year.id}>
-																{year.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="registrationFormatId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.registrationFormat")}
-												</FormLabel>
-												<Select
-													value={field.value ?? NO_SELECTION}
-													onValueChange={(value) =>
-														field.onChange(
-															value === NO_SELECTION ? undefined : value,
-														)
-													}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t(
-																	"admin.institution.form.registrationFormatPlaceholder",
-																)}
-															/>
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value={NO_SELECTION}>
-															{t(
-																"admin.institution.form.registrationFormatPlaceholder",
-															)}
-														</SelectItem>
-														{registrationFormats.map((format) => (
-															<SelectItem key={format.id} value={format.id}>
-																{format.name}
-																{format.isActive
-																	? ` (${t(
-																			"admin.registrationNumbers.list.active",
-																			{ defaultValue: "Active" },
-																		)})`
-																	: ""}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+									<div className="space-y-2 rounded-lg border p-4">
+										<p className="font-medium text-sm">
+											{t("admin.institution.form.defaultAcademicYear")}
+										</p>
+										<p className="text-sm">
+											{activeAcademicYear?.name ??
+												t(
+													"admin.institution.form.defaultAcademicYearPlaceholder",
+												)}
+										</p>
+										<p className="text-muted-foreground text-xs">
+											{t(
+												"admin.institution.form.defaultAcademicYearManagedHint",
+												{
+													defaultValue:
+														"Manage the active academic year from Academic Years.",
+												},
+											)}
+										</p>
+									</div>
+									<div className="space-y-2 rounded-lg border p-4">
+										<p className="font-medium text-sm">
+											{t("admin.institution.form.registrationFormat")}
+										</p>
+										<p className="text-sm">
+											{activeRegistrationFormat?.name ??
+												t(
+													"admin.institution.form.registrationFormatPlaceholder",
+												)}
+										</p>
+										<p className="text-muted-foreground text-xs">
+											{t(
+												"admin.institution.form.registrationFormatManagedHint",
+												{
+													defaultValue:
+														"Manage the active registration format from Registration Formats.",
+												},
+											)}
+										</p>
+									</div>
 								</div>
 							</CardContent>
 						</Card>
@@ -1074,6 +1025,134 @@ export default function InstitutionSettings() {
 					</form>
 				</Form>
 			)}
+
+			{/* Document generation params — separate form saved to metadata */}
+			{!institutionQuery.isLoading && institutionQuery.data && (
+				<DocumentParamsCard
+					institutionId={institutionQuery.data.id}
+					initialParams={
+						(institutionQuery.data.metadata as any)?.document_params ?? {}
+					}
+				/>
+			)}
 		</div>
+	);
+}
+
+type DocParams = {
+	signatoryName?: string;
+	signatoryTitle?: string;
+	city?: string;
+};
+
+function DocumentParamsCard({
+	institutionId,
+	initialParams,
+}: {
+	institutionId: string;
+	initialParams: DocParams;
+}) {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [params, setParams] = useState<DocParams>(initialParams);
+
+	const update = (key: keyof DocParams, value: string) =>
+		setParams((prev) => ({ ...prev, [key]: value }));
+
+	const saveMutation = useMutation({
+		mutationFn: async () => {
+			await trpcClient.institutions.update.mutate({
+				id: institutionId,
+				data: {
+					metadata: {
+						document_params: {
+							signatoryName: params.signatoryName || undefined,
+							signatoryTitle: params.signatoryTitle || undefined,
+							city: params.city || undefined,
+						},
+					},
+				},
+			});
+		},
+		onSuccess: () => {
+			toast.success(
+				t("admin.institution.toast.saved", {
+					defaultValue: "Institution saved",
+				}),
+			);
+			queryClient.invalidateQueries({
+				queryKey: trpc.institutions.get.queryKey(),
+			});
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<FileSignature className="h-5 w-5" />
+					{t("admin.institution.sections.documentParams", {
+						defaultValue: "Document Generation",
+					})}
+				</CardTitle>
+				<CardDescription>
+					{t("admin.institution.sections.documentParamsHint", {
+						defaultValue:
+							"Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation.",
+					})}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="grid gap-4 md:grid-cols-2">
+					<div className="space-y-1.5">
+						<label className="font-medium text-sm">
+							{t("admin.institution.form.signatoryName", {
+								defaultValue: "Signatory name",
+							})}
+						</label>
+						<Input
+							value={params.signatoryName ?? ""}
+							onChange={(e) => update("signatoryName", e.target.value)}
+							placeholder="Dr. Jean DUPONT"
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<label className="font-medium text-sm">
+							{t("admin.institution.form.signatoryTitle", {
+								defaultValue: "Signatory title",
+							})}
+						</label>
+						<Input
+							value={params.signatoryTitle ?? ""}
+							onChange={(e) => update("signatoryTitle", e.target.value)}
+							placeholder="Directeur Général"
+						/>
+					</div>
+				</div>
+				<div className="max-w-sm space-y-1.5">
+					<label className="font-medium text-sm">
+						{t("admin.institution.form.city", {
+							defaultValue: "City (for document date line)",
+						})}
+					</label>
+					<Input
+						value={params.city ?? ""}
+						onChange={(e) => update("city", e.target.value)}
+						placeholder="Yaoundé"
+					/>
+				</div>
+				<div className="flex justify-end">
+					<Button
+						type="button"
+						disabled={saveMutation.isPending}
+						onClick={() => saveMutation.mutate()}
+					>
+						{saveMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
+						{t("common.actions.save")}
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

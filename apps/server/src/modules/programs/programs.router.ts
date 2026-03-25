@@ -6,6 +6,7 @@ import {
 import * as service from "./programs.service";
 import {
 	baseSchema,
+	cloneCurriculumSchema,
 	codeSchema,
 	idSchema,
 	listSchema,
@@ -46,5 +47,14 @@ export const router = createRouter({
 		.input(searchSchema)
 		.query(({ ctx, input }) =>
 			service.searchPrograms(input, ctx.institution.id),
+		),
+	cloneCurriculum: adminProcedure
+		.input(cloneCurriculumSchema)
+		.mutation(({ ctx, input }) =>
+			service.cloneCurriculum(
+				input.targetProgramId,
+				input.sourceProgramId,
+				ctx.institution.id,
+			),
 		),
 });

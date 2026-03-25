@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +21,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 const WorkflowManager = () => {
@@ -84,7 +84,7 @@ const WorkflowManager = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
+				<h1 className="text-foreground">
 					{t("teacher.workflow.title", { defaultValue: "Exam workflow" })}
 				</h1>
 				<p className="text-muted-foreground">
@@ -165,13 +165,13 @@ const WorkflowManager = () => {
 				</CardHeader>
 				<CardContent>
 					{!selectedClassCourse ? (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.workflow.placeholder", {
 								defaultValue: "Choose a class course to view exams.",
 							})}
 						</p>
 					) : examsQuery.isLoading ? (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("common.loading", { defaultValue: "Loading..." })}
 						</p>
 					) : exams.length ? (
@@ -223,7 +223,7 @@ const WorkflowManager = () => {
 							))}
 						</div>
 					) : (
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{t("teacher.workflow.empty", {
 								defaultValue: "No exams for this class course.",
 							})}

@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Button } from "../../components/ui/button";
 import {
@@ -94,49 +94,51 @@ export default function AcademicYearSetupDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				{!previewData ? (
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label>{t("admin.academicYears.setup.sourceYear")}</Label>
-							<AcademicYearSelect
-								value={sourceYearId}
-								onChange={setSourceYearId}
-								autoSelectActive={false}
-								placeholder={t(
-									"admin.academicYears.setup.sourceYearPlaceholder",
-								)}
-								excludeIds={[targetYear.id]}
-							/>
+				<div className="px-6 pb-4">
+					{!previewData ? (
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label>{t("admin.academicYears.setup.sourceYear")}</Label>
+								<AcademicYearSelect
+									value={sourceYearId}
+									onChange={setSourceYearId}
+									autoSelectActive={false}
+									placeholder={t(
+										"admin.academicYears.setup.sourceYearPlaceholder",
+									)}
+									excludeIds={[targetYear.id]}
+								/>
+							</div>
 						</div>
-					</div>
-				) : (
-					<div className="space-y-4">
-						<p className="text-sm">
-							{t("admin.academicYears.setup.previewSummary", {
-								classCount: previewData.summary.classCount,
-								classCourseCount: previewData.summary.classCourseCount,
-								sourceYearName: previewData.summary.sourceYearName,
-								targetYearName: previewData.summary.targetYearName,
-							})}
-						</p>
+					) : (
+						<div className="space-y-4">
+							<p className="text-sm">
+								{t("admin.academicYears.setup.previewSummary", {
+									classCount: previewData.summary.classCount,
+									classCourseCount: previewData.summary.classCourseCount,
+									sourceYearName: previewData.summary.sourceYearName,
+									targetYearName: previewData.summary.targetYearName,
+								})}
+							</p>
 
-						<div className="space-y-2">
-							{previewData.steps.map((step, i) => (
-								<div
-									key={i}
-									className="flex items-center justify-between rounded-lg border p-3"
-								>
-									<span className="text-sm">
-										{i + 1}. {step.name}
-									</span>
-									<span className="text-muted-foreground text-xs">
-										{step.itemsTotal} items
-									</span>
-								</div>
-							))}
+							<div className="space-y-2">
+								{previewData.steps.map((step, i) => (
+									<div
+										key={i}
+										className="flex items-center justify-between rounded-lg border p-3"
+									>
+										<span className="text-sm">
+											{i + 1}. {step.name}
+										</span>
+										<span className="text-muted-foreground text-xs">
+											{step.itemsTotal} items
+										</span>
+									</div>
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
+				</div>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>

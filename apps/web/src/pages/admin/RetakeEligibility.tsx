@@ -5,6 +5,7 @@ import {
 	Ban,
 	CheckCircle,
 	RefreshCw,
+	Search,
 	Shield,
 	ShieldOff,
 	UserCheck,
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -26,6 +26,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
 	DialogContent,
@@ -60,7 +61,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 type RetakeEligibilityReason =
@@ -106,6 +109,7 @@ export default function RetakeEligibility() {
 		action: null,
 	});
 	const [overrideReason, setOverrideReason] = useState("");
+	const [search, setSearch] = useState("");
 
 	// Fetch approved exams for the selected academic year
 	const examsQuery = useQuery({
@@ -202,8 +206,19 @@ export default function RetakeEligibility() {
 	const eligibilityData = eligibilityQuery.data;
 	const isFeatureEnabled = eligibilityData?.enabled ?? false;
 	const items = (eligibilityData?.items ?? []) as EligibilityRow[];
-	const eligibleStudents = items.filter((r) => r.status === "eligible");
-	const ineligibleStudents = items.filter((r) => r.status === "ineligible");
+
+	const needle = search.trim().toLowerCase();
+	const matchesSearch = (r: EligibilityRow) =>
+		!needle ||
+		r.studentName.toLowerCase().includes(needle) ||
+		r.registrationNumber.toLowerCase().includes(needle);
+
+	const eligibleStudents = items.filter(
+		(r) => r.status === "eligible" && matchesSearch(r),
+	);
+	const ineligibleStudents = items.filter(
+		(r) => r.status === "ineligible" && matchesSearch(r),
+	);
 
 	const selectedExam = examsQuery.data?.find((e) => e.id === selectedExamId);
 
@@ -252,111 +267,149 @@ export default function RetakeEligibility() {
 	const renderStudentTable = (
 		students: EligibilityRow[],
 		showEligibleActions: boolean,
-	) => (
-		<Table>
-			<TableHeader>
-				<TableRow>
-					<TableHead>{t("admin.retake.table.student")}</TableHead>
-					<TableHead>{t("admin.retake.table.registrationNumber")}</TableHead>
-					<TableHead className="text-center">
-						{t("admin.retake.table.attempt")}
-					</TableHead>
-					<TableHead className="text-center">
-						{t("admin.retake.table.grade")}
-					</TableHead>
-					<TableHead>{t("admin.retake.table.reasons")}</TableHead>
-					<TableHead className="text-right">
-						{t("admin.retake.table.override")}
-					</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{students.map((row) => (
-					<TableRow key={row.studentCourseEnrollmentId}>
-						<TableCell className="font-medium">{row.studentName}</TableCell>
-						<TableCell>{row.registrationNumber}</TableCell>
-						<TableCell className="text-center">{row.attempt}</TableCell>
-						<TableCell className="text-center">
-							{row.grade !== null ? (
-								<span
-									className={
-										row.grade < 10
-											? "font-medium text-destructive"
-											: "font-medium text-green-600"
-									}
-								>
-									{row.grade.toFixed(2)}
-								</span>
-							) : (
-								<span className="text-muted-foreground">—</span>
-							)}
-						</TableCell>
-						<TableCell>
-							<div className="flex flex-wrap gap-1">
-								{row.reasons.map(renderReasonBadge)}
-							</div>
-						</TableCell>
-						<TableCell className="text-right">
-							<div className="flex justify-end gap-2">
-								{row.override ? (
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => handleRemoveOverride(row)}
-										disabled={deleteOverrideMutation.isPending}
-									>
-										<RefreshCw className="mr-1 h-4 w-4" />
+	) =>
+		eligibilityQuery.isLoading ? (
+			<TableSkeleton columns={6} rows={8} />
+		) : (
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>{t("admin.retake.table.student")}</TableHead>
+						<TableHead>{t("admin.retake.table.registrationNumber")}</TableHead>
+						<TableHead className="text-center">
+							{t("admin.retake.table.attempt")}
+						</TableHead>
+						<TableHead className="text-center">
+							{t("admin.retake.table.grade")}
+						</TableHead>
+						<TableHead>{t("admin.retake.table.reasons")}</TableHead>
+						<TableHead className="text-right">
+							{t("admin.retake.table.override")}
+						</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{students.map((row) => (
+						<TableRow
+							key={row.studentCourseEnrollmentId}
+							actions={
+								row.override ? (
+									<ContextMenuItem onSelect={() => handleRemoveOverride(row)}>
 										{t("admin.retake.override.remove")}
-									</Button>
+									</ContextMenuItem>
 								) : (
 									<>
-										{showEligibleActions ? (
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
+										{showEligibleActions && (
+											<ContextMenuItem
+												onSelect={() =>
 													setOverrideModal({
 														isOpen: true,
+														type: "eligible",
 														row,
-														action: "force_ineligible",
 													})
 												}
 											>
-												<ShieldOff className="mr-1 h-4 w-4" />
-												{t("admin.retake.override.forceIneligible")}
-											</Button>
-										) : (
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													setOverrideModal({
-														isOpen: true,
-														row,
-														action: "force_eligible",
-													})
-												}
-											>
-												<Shield className="mr-1 h-4 w-4" />
-												{t("admin.retake.override.forceEligible")}
-											</Button>
+												{t("admin.retake.override.forceEligible", {
+													defaultValue: "Force eligible",
+												})}
+											</ContextMenuItem>
 										)}
+										<ContextMenuItem
+											className="text-destructive"
+											onSelect={() =>
+												setOverrideModal({
+													isOpen: true,
+													type: "ineligible",
+													row,
+												})
+											}
+										>
+											{t("admin.retake.override.forceIneligible", {
+												defaultValue: "Force ineligible",
+											})}
+										</ContextMenuItem>
 									</>
+								)
+							}
+						>
+							<TableCell className="font-medium">{row.studentName}</TableCell>
+							<TableCell>{row.registrationNumber}</TableCell>
+							<TableCell className="text-center">{row.attempt}</TableCell>
+							<TableCell className="text-center">
+								{row.grade !== null ? (
+									<span
+										className={
+											row.grade < 10
+												? "font-medium text-destructive"
+												: "font-medium text-green-600"
+										}
+									>
+										{row.grade.toFixed(2)}
+									</span>
+								) : (
+									<span className="text-muted-foreground">—</span>
 								)}
-							</div>
-						</TableCell>
-					</TableRow>
-				))}
-			</TableBody>
-		</Table>
-	);
+							</TableCell>
+							<TableCell>
+								<div className="flex flex-wrap gap-1">
+									{row.reasons.map(renderReasonBadge)}
+								</div>
+							</TableCell>
+							<TableCell className="text-right">
+								<div className="flex justify-end gap-2">
+									{row.override ? (
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => handleRemoveOverride(row)}
+											disabled={deleteOverrideMutation.isPending}
+										>
+											<RefreshCw className="mr-1 h-4 w-4" />
+											{t("admin.retake.override.remove")}
+										</Button>
+									) : showEligibleActions ? (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setOverrideModal({
+													isOpen: true,
+													row,
+													action: "force_ineligible",
+												})
+											}
+										>
+											<ShieldOff className="mr-1 h-4 w-4" />
+											{t("admin.retake.override.forceIneligible")}
+										</Button>
+									) : (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setOverrideModal({
+													isOpen: true,
+													row,
+													action: "force_eligible",
+												})
+											}
+										>
+											<Shield className="mr-1 h-4 w-4" />
+											{t("admin.retake.override.forceEligible")}
+										</Button>
+									)}
+								</div>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		);
 
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="font-bold font-heading text-2xl text-foreground">
-					{t("admin.retake.title")}
-				</h1>
+				<h1 className="text-foreground">{t("admin.retake.title")}</h1>
 				<p className="text-muted-foreground">{t("admin.retake.subtitle")}</p>
 			</div>
 
@@ -481,21 +534,33 @@ export default function RetakeEligibility() {
 							</Empty>
 						) : (
 							<Tabs defaultValue="eligible">
-								<TabsList className="mb-4">
-									<TabsTrigger value="eligible" className="gap-2">
-										<CheckCircle className="h-4 w-4" />
-										{t("admin.retake.eligible")} ({eligibleStudents.length})
-									</TabsTrigger>
-									<TabsTrigger value="ineligible" className="gap-2">
-										<XCircle className="h-4 w-4" />
-										{t("admin.retake.ineligible")} ({ineligibleStudents.length})
-									</TabsTrigger>
-								</TabsList>
+								<div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<TabsList>
+										<TabsTrigger value="eligible" className="gap-2">
+											<CheckCircle className="h-4 w-4" />
+											{t("admin.retake.eligible")} ({eligibleStudents.length})
+										</TabsTrigger>
+										<TabsTrigger value="ineligible" className="gap-2">
+											<XCircle className="h-4 w-4" />
+											{t("admin.retake.ineligible")} (
+											{ineligibleStudents.length})
+										</TabsTrigger>
+									</TabsList>
+									<div className="relative w-full sm:w-64">
+										<Search className="-translate-y-1/2 absolute top-1/2 left-2.5 h-3.5 w-3.5 text-muted-foreground" />
+										<Input
+											placeholder="Nom ou n° d’inscription…"
+											value={search}
+											onChange={(e) => setSearch(e.target.value)}
+											className="h-8 pl-8 text-sm"
+										/>
+									</div>
+								</div>
 								<TabsContent value="eligible">
 									{eligibleStudents.length > 0 ? (
 										renderStudentTable(eligibleStudents, true)
 									) : (
-										<p className="py-8 text-center text-muted-foreground">
+										<p className="py-6 text-center text-muted-foreground text-sm">
 											{t("admin.retake.empty.title")}
 										</p>
 									)}
@@ -504,7 +569,7 @@ export default function RetakeEligibility() {
 									{ineligibleStudents.length > 0 ? (
 										renderStudentTable(ineligibleStudents, false)
 									) : (
-										<p className="py-8 text-center text-muted-foreground">
+										<p className="py-6 text-center text-muted-foreground text-sm">
 											{t("admin.retake.empty.title")}
 										</p>
 									)}
@@ -532,7 +597,7 @@ export default function RetakeEligibility() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 py-4">
+					<div className="space-y-4 px-6 py-4">
 						<div className="space-y-2">
 							<Label>{t("admin.retake.table.student")}</Label>
 							<p className="font-medium">{overrideModal.row?.studentName}</p>

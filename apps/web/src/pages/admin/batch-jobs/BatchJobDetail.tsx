@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { trpcClient } from "../../../utils/trpc";
@@ -86,9 +86,11 @@ export default function BatchJobDetail() {
 
 	if (!job) {
 		return (
-			<div className="py-12 text-center text-muted-foreground">
-				Job not found
-			</div>
+			<Empty>
+				<EmptyHeader>
+					<EmptyDescription>Job not found</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		);
 	}
 
@@ -112,12 +114,12 @@ export default function BatchJobDetail() {
 						<ArrowLeft className="h-5 w-5" />
 					</Button>
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{t(`admin.batchJobs.types.${job.type}`, {
 								defaultValue: job.type,
 							})}
 						</h1>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-muted-foreground text-xs">
 							{formatDistanceToNow(new Date(job.createdAt), {
 								addSuffix: true,
 							})}
@@ -162,7 +164,7 @@ export default function BatchJobDetail() {
 
 			{/* Status + Progress */}
 			<div className="grid gap-4 md:grid-cols-2">
-				<div className="rounded-xl border bg-white p-5 shadow-sm">
+				<div className="rounded-xl border bg-card p-5 shadow-sm">
 					<h3 className="mb-3 font-medium text-foreground text-sm">
 						{t("admin.batchJobs.columns.status")}
 					</h3>
@@ -188,7 +190,7 @@ export default function BatchJobDetail() {
 				</div>
 
 				{progress && (
-					<div className="rounded-xl border bg-white p-5 shadow-sm">
+					<div className="rounded-xl border bg-card p-5 shadow-sm">
 						<h3 className="mb-3 font-medium text-foreground text-sm">
 							{t("admin.batchJobs.detail.progress")}
 						</h3>
@@ -215,7 +217,7 @@ export default function BatchJobDetail() {
 			</div>
 
 			{/* Steps timeline */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.steps")}
 				</h3>
@@ -276,12 +278,12 @@ export default function BatchJobDetail() {
 			</div>
 
 			{/* Logs */}
-			<div className="rounded-xl border bg-white p-5 shadow-sm">
+			<div className="rounded-xl border bg-card p-5 shadow-sm">
 				<h3 className="mb-4 font-medium text-foreground text-sm">
 					{t("admin.batchJobs.detail.logs")}
 				</h3>
 				{(job.logs ?? []).length === 0 ? (
-					<p className="text-muted-foreground text-sm">
+					<p className="text-muted-foreground text-xs">
 						{t("admin.batchJobs.detail.noLogs")}
 					</p>
 				) : (

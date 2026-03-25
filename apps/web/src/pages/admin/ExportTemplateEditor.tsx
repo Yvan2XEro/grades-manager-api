@@ -3,7 +3,6 @@ import { ArrowLeft, Download, Eye, FileCode, Save } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -27,6 +26,7 @@ import {
 	getTemplateExample,
 	type TemplateType,
 } from "@/lib/export-template-examples";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 export default function ExportTemplateEditor() {
@@ -223,7 +223,7 @@ export default function ExportTemplateEditor() {
 						{t("common.actions.back")}
 					</Button>
 					<div>
-						<h1 className="font-bold font-heading text-2xl text-foreground">
+						<h1 className="text-foreground">
 							{template?.name || templateName}
 						</h1>
 						<p className="text-muted-foreground">

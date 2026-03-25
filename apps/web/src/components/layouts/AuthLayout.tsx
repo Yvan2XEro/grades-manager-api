@@ -8,6 +8,7 @@ import logoBg from "/logo-bg.png";
 import { useBranding } from "../../hooks/use-branding";
 import { useStore } from "../../store";
 import { roleLayoutMap } from "../navigation/Redirector";
+import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const AuthLayout: React.FC = () => {
 	const { user } = useStore();
@@ -16,8 +17,8 @@ const AuthLayout: React.FC = () => {
 		useBranding();
 
 	const [callbackURL] = useQueryState("return", {});
-	// Redirect if already authenticated
-	if (user) {
+	// Redirect if already authenticated with a real role (guest = no active org, show login form)
+	if (user && user.role !== "guest") {
 		if (callbackURL) return <Navigate to={callbackURL} replace />;
 		return roleLayoutMap[user.role];
 	}
@@ -25,7 +26,7 @@ const AuthLayout: React.FC = () => {
 	return (
 		<div className="flex min-h-screen">
 			{/* Left panel - Branding */}
-			<div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 lg:flex lg:w-1/2">
+			<div className="relative hidden flex-col justify-between overflow-hidden bg-dot-pattern-subtle bg-primary p-10 lg:flex lg:w-1/2">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15)_0%,_transparent_60%)]" />
 
 				{/* Floating orbs */}
@@ -129,15 +130,9 @@ const AuthLayout: React.FC = () => {
 			</div>
 
 			{/* Right panel - Form */}
-			<div className="relative flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
-				<div
-					className="pointer-events-none absolute inset-0 opacity-[0.03]"
-					style={{
-						backgroundImage:
-							"radial-gradient(circle, currentColor 1px, transparent 1px)",
-						backgroundSize: "24px 24px",
-					}}
-				/>
+			<div className="relative isolate flex flex-1 items-center justify-center bg-background p-6 lg:p-10">
+				<GridWaveFilter />
+				<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 				<motion.div
 					initial={{ opacity: 0, y: 16, scale: 0.98 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -7,6 +7,7 @@ import { notFound } from "../_shared/errors";
 import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
+import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
 import * as gradesRepo from "../grades/grades.repo";
 import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
@@ -145,6 +146,12 @@ export async function createExam(
 			})
 			.returning();
 	});
+	if (!created) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Failed to create exam",
+		});
+	}
 	return created;
 }
 
@@ -264,7 +271,7 @@ export async function deleteExam(
 }
 
 export async function listExams(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	params: {
 		institutionId: string;
 		profileId: string | null;
@@ -281,8 +288,21 @@ export async function listExams(
 	);
 	const teacherMap = await getTeacherMap(classCourseIds);
 	const examIds = exams.map((exam) => exam.id);
+	const isAdmin = roleSatisfies(params.memberRole, ADMIN_ROLES);
+	const isGradeEditor = params.memberRole === "grade_editor";
+
+	const hasInstitutionGrant =
+		!isAdmin && !isGradeEditor && params.profileId && params.institutionId
+			? !!(await gradeAccessRepo.findByProfileAndInstitution(
+					params.profileId,
+					params.institutionId,
+				))
+			: false;
+
+	const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
 	const delegateSet =
-		params.profileId && examIds.length > 0
+		!hasFullAccess && params.profileId && examIds.length > 0
 			? new Set(
 					await examGradeEditorsRepo.examIdsForEditor(
 						params.profileId,
@@ -290,20 +310,20 @@ export async function listExams(
 					),
 				)
 			: new Set<string>();
-	const isAdmin = roleSatisfies(params.memberRole, ADMIN_ROLES);
+
 	const enriched = exams.map((exam) => {
 		const isTeacher =
 			params.profileId !== null &&
 			teacherMap.get(exam.classCourse) === params.profileId;
 		const canEdit =
-			isAdmin ||
+			hasFullAccess ||
 			isTeacher ||
 			(params.profileId ? delegateSet.has(exam.id) : false);
 		return { ...exam, canEdit };
 	});
 	return {
 		...result,
-		items: isAdmin ? enriched : enriched.filter((exam) => exam.canEdit),
+		items: hasFullAccess ? enriched : enriched.filter((exam) => exam.canEdit),
 	};
 }
 

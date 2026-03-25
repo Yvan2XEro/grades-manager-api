@@ -94,7 +94,27 @@
       "Bash(node:*)",
       "Bash(NODE_ENV=development USE_PGLITE=true bun run:*)",
       "Bash(NODE_ENV=development USE_PGLITE=true bun:*)",
-      "Bash(NODE_ENV=development USE_PGLITE=false DATABASE_URL=postgresql://fake:fake@localhost:5432/fake bun:*)"
+      "Bash(NODE_ENV=development USE_PGLITE=false DATABASE_URL=postgresql://fake:fake@localhost:5432/fake bun:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(cd:*)",
+      "Bash(bun -e \":*)",
+      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/web/src -type f \\\\\\(-name *acult* -o -name *nstit* \\\\\\)\\\\)",
+      "WebFetch(domain:edbartholomew.com)",
+      "WebFetch(domain:www.svgbackgrounds.com)",
+      "mcp__playwright__browser_navigate",
+      "Bash(node -e \":*)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); keys=[''''admin.studyCycles'''',''''admin.deliberations'''',''''admin.classCourses'''',''''admin.academicYears'''',''''admin.programs'''',''''automation'''']; [print\\(k, json.dumps\\(d.get\\(k.split\\(''''.''''\\)[0],{}\\).get\\(k.split\\(''''.''''\\)[1] if ''''.'''' in k else k,{}\\), indent=2\\)[:500]\\) for k in keys]\")",
+      "Bash(node -e \"const d=require\\(''''./apps/web/src/i18n/locales/en/translation.json''''\\); [''''studyCycles'''',''''deliberations'''',''''classCourses'''',''''academicYears'''',''''programs''''].forEach\\(k => { const v = d?.admin?.[k]; if\\(v\\) { console.log\\(''''admin.''''+k+'''':''''\\); console.log\\(JSON.stringify\\(v,null,2\\).slice\\(0,600\\)\\); console.log\\(''''---''''\\) }}\\)\")",
+      "Bash(\"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\server\\\\src\\\\modules\\\\deliberations\\\\deliberations.zod.ts\":*)",
+      "Bash(/c/Users/tefba/Desktop/OverBrand/grades-manager-api/node_modules/.bin/tsc --noEmit)",
+      "Skill(claude-api)",
+      "Bash(find /c/Users/tefba/Desktop/OverBrand/grades-manager-api/apps/server/src -maxdepth 3 -type f \\\\\\(-name *.env* -o -name config* \\\\\\))",
+      "Bash(sed -n '1555,1558p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
+      "Bash(sed -n '1673,1678p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
+      "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))",
+      "Bash(bunx drizzle-kit:*)",
+      "Bash(printf '\\\\n')"
     ]
   }
 }

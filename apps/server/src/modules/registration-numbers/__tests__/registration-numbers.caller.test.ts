@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import type { RegistrationNumberFormatDefinition } from "@/db/schema/registration-number-types";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
@@ -18,15 +19,15 @@ describe("registration numbers router", () => {
 		});
 		const academicYear = await createAcademicYear({
 			name: "2023/2024",
-			startDate: new Date("2023-09-01"),
-			endDate: new Date("2024-07-01"),
+			startDate: "2023-09-01",
+			endDate: "2024-07-01",
 		});
 		const klass = await createClass({
 			program: program.id,
 			academicYear: academicYear.id,
 			code: "SCI-23",
 		});
-		const definition = {
+		const definition: RegistrationNumberFormatDefinition = {
 			segments: [
 				{ kind: "literal", value: "cm-" },
 				{ kind: "field", field: "programCode", transform: "lower" },
