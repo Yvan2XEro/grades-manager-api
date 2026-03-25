@@ -302,6 +302,13 @@ export const programs = pgTable(
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
 		description: text("description"),
+		diplomaTitleFr: text("diploma_title_fr"),
+		diplomaTitleEn: text("diploma_title_en"),
+		attestationValidityFr: text("attestation_validity_fr"),
+		attestationValidityEn: text("attestation_validity_en"),
+		cycleId: text("cycle_id").references(() => studyCycles.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -337,6 +344,32 @@ export const programOptions = pgTable(
 		index("idx_program_options_institution_id").on(t.institutionId),
 	],
 );
+
+/** API keys for DIPLOMATION integration. */
+export const diplomationApiKeys = pgTable(
+	"diplomation_api_keys",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		keyHash: text("key_hash").notNull(),
+		label: text("label").notNull(),
+		webhookUrl: text("webhook_url"),
+		webhookSecret: text("webhook_secret"),
+		isActive: boolean("is_active").notNull().default(true),
+		lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_api_keys_institution").on(t.institutionId),
+		index("idx_diplomation_api_keys_hash").on(t.keyHash),
+	],
+);
+export type DiplomationApiKey = InferSelectModel<typeof diplomationApiKeys>;
+export type NewDiplomationApiKey = InferInsertModel<typeof diplomationApiKeys>;
 
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
@@ -626,6 +659,36 @@ export const students = pgTable(
 	],
 );
 
+/** Documents generated via DIPLOMATION integration. */
+export const diplomationDocuments = pgTable(
+	"diplomation_documents",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		sourceId: text("source_id").notNull(),
+		documentType: text("document_type").notNull(),
+		studentId: text("student_id").references(() => students.id),
+		generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+		fileReference: text("file_reference"),
+		generatedByApiKeyId: text("generated_by_api_key_id").references(
+			() => diplomationApiKeys.id,
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_documents_institution").on(t.institutionId),
+		index("idx_diplomation_documents_source").on(t.sourceId),
+	],
+);
+export type DiplomationDocument = InferSelectModel<typeof diplomationDocuments>;
+export type NewDiplomationDocument = InferInsertModel<
+	typeof diplomationDocuments
+>;
+
 /** Configurable templates for student registration numbers. */
 export const registrationNumberFormats = pgTable(
 	"registration_number_formats",
@@ -711,6 +774,12 @@ export interface InstitutionMetadata {
 			text?: string;
 			enabled?: boolean;
 		};
+	};
+	/** Document generation params (signatory, city) used by Diplomation */
+	document_params?: {
+		signatoryName?: string;
+		signatoryTitle?: string;
+		city?: string;
 	};
 	[key: string]: unknown;
 }
@@ -1549,6 +1618,10 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 	classes: many(classes),
 	courses: many(courses),
 	teachingUnits: many(teachingUnits),
+	studyCycle: one(studyCycles, {
+		fields: [programs.cycleId],
+		references: [studyCycles.id],
+	}),
 }));
 
 export const programOptionsRelations = relations(
@@ -2379,3 +2452,31 @@ export const gradeAccessGrantsRelations = relations(
 
 export type GradeAccessGrant = InferSelectModel<typeof gradeAccessGrants>;
 export type NewGradeAccessGrant = InferInsertModel<typeof gradeAccessGrants>;
+
+export const diplomationApiKeysRelations = relations(
+	diplomationApiKeys,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [diplomationApiKeys.institutionId],
+			references: [institutions.id],
+		}),
+	}),
+);
+
+export const diplomationDocumentsRelations = relations(
+	diplomationDocuments,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [diplomationDocuments.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [diplomationDocuments.studentId],
+			references: [students.id],
+		}),
+		generatedByApiKey: one(diplomationApiKeys, {
+			fields: [diplomationDocuments.generatedByApiKeyId],
+			references: [diplomationApiKeys.id],
+		}),
+	}),
+);

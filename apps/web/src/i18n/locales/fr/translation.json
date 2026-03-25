@@ -153,7 +153,8 @@
 				"examScheduler": "Programmation des examens",
 				"retakeEligibility": "Éligibilité rattrapage",
 				"rules": "Centre des règles",
-				"registrationNumbers": "Formats de matricule"
+				"registrationNumbers": "Formats de matricule",
+				"apiKeys": "Clés API"
 			},
 			"groups": {
 				"overview": "Vue d'ensemble",
@@ -413,6 +414,58 @@
 				"institutions": "Institutions"
 			},
 			"subtitle": "Subtitle (TODO)"
+		},
+		"apiKeys": {
+			"title": "Clés API",
+			"subtitle": "Gérez les clés API pour l'intégration Diplomation",
+			"actions": {
+				"create": "Nouvelle clé API",
+				"generate": "Générer la clé",
+				"revoke": "Révoquer",
+				"editWebhook": "Modifier le webhook"
+			},
+			"table": {
+				"label": "Libellé",
+				"status": "Statut",
+				"webhook": "URL Webhook",
+				"lastUsed": "Dernière utilisation",
+				"created": "Créée le"
+			},
+			"status": {
+				"revoked": "Révoquée"
+			},
+			"form": {
+				"createTitle": "Créer une clé API",
+				"label": "Libellé",
+				"labelPlaceholder": "ex. Diplomation production",
+				"webhookUrl": "URL Webhook (optionnel)",
+				"webhookSecret": "Secret Webhook (optionnel)",
+				"webhookSecretPlaceholder": "Laisser vide pour désactiver la signature"
+			},
+			"rawKey": {
+				"title": "Votre nouvelle clé API",
+				"warning": "Copiez cette clé maintenant — elle ne sera plus affichée.",
+				"confirm": "Je l'ai copiée"
+			},
+			"webhook": {
+				"title": "Modifier le Webhook"
+			},
+			"revoke": {
+				"title": "Révoquer la clé API",
+				"message": "Êtes-vous sûr de vouloir révoquer cette clé ? Elle cessera de fonctionner immédiatement."
+			},
+			"empty": {
+				"title": "Aucune clé API",
+				"description": "Créez une clé API pour permettre à Diplomation de récupérer les données."
+			},
+			"toast": {
+				"createError": "Échec de la création de la clé API",
+				"revokeSuccess": "Clé révoquée",
+				"revokeError": "Échec de la révocation",
+				"webhookUpdated": "Webhook mis à jour",
+				"webhookError": "Échec de la mise à jour du webhook",
+				"copied": "Copié dans le presse-papiers"
+			}
 		},
 		"batchJobs": {
 			"title": "Traitements par lots",

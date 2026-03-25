@@ -1,4 +1,5 @@
 import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
+import { diplomationKeysRouter } from "@/modules/diplomation-keys";
 import { deliberationsRouter } from "@/modules/deliberations";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { examGradeEditorsRouter } from "@/modules/exam-grade-editors";
@@ -71,6 +72,7 @@ export const appRouter = router({
 	batchJobs: batchJobsRouter,
 	deliberations: deliberationsRouter,
 	gradeAccessGrants: gradeAccessGrantsRouter,
+	diplomationKeys: diplomationKeysRouter,
 });
 
 export type AppRouter = typeof appRouter;

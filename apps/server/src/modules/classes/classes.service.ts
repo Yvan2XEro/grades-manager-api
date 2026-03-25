@@ -336,21 +336,18 @@ export async function bulkGenerateClasses(
 	});
 	if (!year) throw notFound("Academic year not found");
 
-	// All programs with their options
+	// All programs with their options and linked cycle levels
 	const allPrograms = await db.query.programs.findMany({
 		where: eq(schema.programs.institutionId, institutionId),
 		with: { options: true },
 	});
 
-	// All cycle levels (optionally filtered)
+	// All cycles with their levels (indexed by cycleId for fast lookup)
 	const cycles = await db.query.studyCycles.findMany({
 		where: eq(schema.studyCycles.institutionId, institutionId),
 		with: { levels: true },
 	});
-	let allLevels = cycles.flatMap((c) => c.levels);
-	if (cycleLevelIds && cycleLevelIds.length > 0) {
-		allLevels = allLevels.filter((l) => cycleLevelIds.includes(l.id));
-	}
+	const levelsByCycle = new Map(cycles.map((c) => [c.id, c.levels]));
 
 	// Existing classes this year
 	const existingClasses = await db.query.classes.findMany({
@@ -376,8 +373,23 @@ export async function bulkGenerateClasses(
 			continue;
 		}
 
+		// Skip programs with no assigned cycle
+		if (!program.cycleId) {
+			skipped++;
+			continue;
+		}
+
+		let programLevels = levelsByCycle.get(program.cycleId) ?? [];
+		if (cycleLevelIds && cycleLevelIds.length > 0) {
+			programLevels = programLevels.filter((l) => cycleLevelIds.includes(l.id));
+		}
+		if (programLevels.length === 0) {
+			skipped++;
+			continue;
+		}
+
 		for (const option of options) {
-			for (const level of allLevels) {
+			for (const level of programLevels) {
 				const key = `${program.id}::${option.id}::${level.id}`;
 				if (existingKeys.has(key)) {
 					skipped++;

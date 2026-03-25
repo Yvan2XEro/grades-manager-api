@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
+import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import type {
 	DeliberationDecision,
 	DeliberationMention,
@@ -44,6 +45,22 @@ const PASSING_GRADE = 10;
 // LMD default thresholds
 const DEFAULT_VALIDATION_THRESHOLD = 10; // UE validated if average >= 10
 const DEFAULT_COMPENSATION_BAR = 8; // UE compensable if average >= 8
+
+const MENTION_TO_GRADE: Record<string, string> = {
+	passable: "E",
+	assez_bien: "D",
+	bien: "C",
+	tres_bien: "B",
+	excellent: "A",
+};
+
+const MENTION_TO_EN: Record<string, string> = {
+	passable: "Satisfactory",
+	assez_bien: "Fair",
+	bien: "Good",
+	tres_bien: "Very Good",
+	excellent: "Excellent",
+};
 
 // ---------------------------------------------------------------------------
 // State machine transitions
@@ -239,6 +256,18 @@ export async function transition(
 		action: logAction as schema.DeliberationLogAction,
 		actorId,
 	});
+
+	if (input.action === "sign") {
+		dispatchWebhook(institutionId, {
+			event: "deliberation.signed",
+			deliberationId: input.id,
+			institutionId,
+			deliberationType: delib.type,
+			signedAt: updates.signedAt!.toISOString(),
+			classId: delib.classId,
+			academicYearId: delib.academicYearId,
+		}).catch(() => {});
+	}
 
 	return updated;
 }
@@ -863,22 +892,31 @@ export async function exportDiplomation(
 		(a, b) => (a.rank ?? 999) - (b.rank ?? 999),
 	);
 
-	// Log export
-	await repo.createLog({
-		deliberationId: input.id,
-		action: "exported",
-		actorId,
-	});
+	// Log export (skip for system/API-key calls — actorId is not a valid domain user)
+	if (actorId && actorId !== "system") {
+		await repo.createLog({
+			deliberationId: input.id,
+			action: "exported",
+			actorId,
+		});
+	}
 
 	const signatures =
 		(institution.metadata as schema.InstitutionMetadata)?.export_config
 			?.signatures?.pv ?? [];
 
+	const docParams = (institution.metadata as schema.InstitutionMetadata)?.document_params;
 	return {
 		institution: {
 			name: institution.nameFr,
+			nameEn: institution.nameEn,
 			code: institution.code,
 			logoUrl: institution.logoUrl,
+			sloganFr: institution.sloganFr ?? null,
+			address: institution.addressFr ?? null,
+			signatoryName: docParams?.signatoryName ?? null,
+			signatoryTitle: docParams?.signatoryTitle ?? null,
+			city: docParams?.city ?? null,
 		},
 		deliberation: {
 			id: delib.id,
@@ -889,6 +927,19 @@ export async function exportDiplomation(
 			programName: (delib as any).classRef?.program?.name ?? "",
 			academicYearName: (delib as any).academicYear?.name ?? "",
 			semesterName: (delib as any).semester?.name ?? null,
+			admissionDate: (delib as any).signedAt?.toISOString() ?? null,
+		},
+		program: {
+			diplomaTitleFr:
+				(delib as any).classRef?.program?.diplomaTitleFr ?? null,
+			diplomaTitleEn:
+				(delib as any).classRef?.program?.diplomaTitleEn ?? null,
+			specialite:
+				(delib as any).classRef?.programOption?.name ?? null,
+			attestationValidityFr:
+				(delib as any).classRef?.program?.attestationValidityFr ?? null,
+			attestationValidityEn:
+				(delib as any).classRef?.program?.attestationValidityEn ?? null,
 		},
 		jury: {
 			president: delib.presidentId
@@ -906,11 +957,17 @@ export async function exportDiplomation(
 			registrationNumber: (r as any).student?.registrationNumber ?? "",
 			lastName: (r as any).student?.profile?.lastName ?? "",
 			firstName: (r as any).student?.profile?.firstName ?? "",
+			dateOfBirth: (r as any).student?.profile?.dateOfBirth ?? null,
+			placeOfBirth: (r as any).student?.profile?.placeOfBirth ?? null,
 			generalAverage: r.generalAverage,
 			totalCreditsEarned: r.totalCreditsEarned,
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
 			mention: r.mention,
+			gradeLetter: r.mention
+				? (MENTION_TO_GRADE[r.mention] ?? null)
+				: null,
+			mentionEn: r.mention ? (MENTION_TO_EN[r.mention] ?? null) : null,
 			ueResults: (r.ueResults as DeliberationUeResult[]) ?? [],
 		})),
 		stats: delib.stats as DeliberationStats | null,

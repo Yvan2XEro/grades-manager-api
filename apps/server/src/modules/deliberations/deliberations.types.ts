@@ -107,8 +107,14 @@ export type DeliberationComputeResult = {
 export type DiplomationExportData = {
 	institution: {
 		name: string;
+		nameEn: string;
 		code: string;
 		logoUrl: string | null;
+		sloganFr: string | null;
+		address: string | null;
+		signatoryName: string | null;
+		signatoryTitle: string | null;
+		city: string | null;
 	};
 	deliberation: {
 		id: string;
@@ -119,6 +125,14 @@ export type DiplomationExportData = {
 		programName: string;
 		academicYearName: string;
 		semesterName: string | null;
+		admissionDate: string | null;
+	};
+	program: {
+		diplomaTitleFr: string | null;
+		diplomaTitleEn: string | null;
+		specialite: string | null;
+		attestationValidityFr: string | null;
+		attestationValidityEn: string | null;
 	};
 	jury: {
 		president: { name: string; role: string } | null;
@@ -129,13 +143,71 @@ export type DiplomationExportData = {
 		registrationNumber: string;
 		lastName: string;
 		firstName: string;
+		dateOfBirth: string | null;
+		placeOfBirth: string | null;
 		generalAverage: number | null;
 		totalCreditsEarned: number;
 		totalCreditsPossible: number;
 		finalDecision: DeliberationDecision | null;
 		mention: DeliberationMention | null;
+		gradeLetter: string | null;
+		mentionEn: string | null;
 		ueResults: DeliberationUeResult[];
 	}>;
 	stats: DeliberationStats | null;
 	signatures: Array<{ position: string; name: string }>;
+};
+
+export type TranscriptCourseResult = {
+	code: string;
+	name: string;
+	coefficient: number;
+	grade: number | null;
+	session: "normal" | "retake";
+};
+
+export type TranscriptUeResult = {
+	code: string;
+	name: string;
+	credits: number;
+	average: number | null;
+	decision: "ADM" | "AJ";
+	courses: TranscriptCourseResult[];
+};
+
+export type TranscriptStudentData = {
+	registrationNumber: string;
+	lastName: string;
+	firstName: string;
+	dateOfBirth: string | null;
+	placeOfBirth: string | null;
+	totalCredits: number;
+	generalAverage: number | null;
+	ues: TranscriptUeResult[];
+};
+
+export type TranscriptExportData = {
+	institution: {
+		name: string;
+		nameEn: string;
+		code: string;
+		logoUrl: string | null;
+		sloganFr: string | null;
+		address: string | null;
+		signatoryName: string | null;
+		signatoryTitle: string | null;
+		city: string | null;
+	};
+	academicYear: { name: string };
+	program: {
+		name: string;
+		cycle: string;
+		level: string;
+	};
+	semester: {
+		name: string;
+		code: string;
+	};
+	className: string;
+	students: TranscriptStudentData[];
 };

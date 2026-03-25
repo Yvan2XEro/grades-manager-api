@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -59,6 +59,7 @@ import {
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { Textarea } from "@/components/ui/textarea";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
@@ -73,6 +74,7 @@ const buildProgramSchema = (t: TFunction) =>
 			}),
 		),
 		description: z.string().optional(),
+		cycleId: z.string().nullable().optional(),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
@@ -88,6 +90,7 @@ type Program = {
 	code: string;
 	name: string;
 	description: string | null;
+	cycleId: string | null;
 	optionsCount: number;
 };
 
@@ -109,7 +112,18 @@ export default function ProgramManagement() {
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
+	const [searchInput, setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
+	useEffect(() => {
+		const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+		return () => clearTimeout(timer);
+	}, [searchInput]);
+
+	const { data: cycles } = useQuery({
+		queryKey: ["study-cycles-select"],
+		queryFn: () => trpcClient.studyCycles.listCycles.query({}),
+	});
+	const cycleMap = new Map((cycles?.items ?? []).map((c) => [c.id, c.name]));
 
 	const { data: programs, isLoading } = useQuery({
 		queryKey: ["programs", searchQuery],
@@ -123,6 +137,7 @@ export default function ProgramManagement() {
 				code: p.code,
 				name: p.name,
 				description: p.description ?? null,
+				cycleId: (p as any).cycleId ?? null,
 				optionsCount: (p as any).optionsCount ?? 0,
 			})) as Program[];
 		},
@@ -134,6 +149,7 @@ export default function ProgramManagement() {
 			name: "",
 			code: "",
 			description: "",
+			cycleId: null,
 		},
 	});
 
@@ -368,7 +384,7 @@ export default function ProgramManagement() {
 	const startCreate = () => {
 		setEditingProgram(null);
 		setCloneFromProgramId("");
-		form.reset({ name: "", code: "", description: "" });
+		form.reset({ name: "", code: "", description: "", cycleId: null });
 		setIsFormOpen(true);
 	};
 
@@ -378,6 +394,7 @@ export default function ProgramManagement() {
 			name: program.name,
 			code: program.code,
 			description: program.description ?? "",
+			cycleId: program.cycleId ?? null,
 		});
 		setIsFormOpen(true);
 	};
@@ -386,7 +403,7 @@ export default function ProgramManagement() {
 		setIsFormOpen(false);
 		setEditingProgram(null);
 		setCloneFromProgramId("");
-		form.reset({ name: "", code: "", description: "" });
+		form.reset({ name: "", code: "", description: "", cycleId: null });
 	};
 
 	const confirmDelete = (id: string) => {
@@ -424,14 +441,6 @@ export default function ProgramManagement() {
 			description: option.description ?? "",
 		});
 	};
-
-	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<Spinner className="h-8 w-8 text-primary" />
-			</div>
-		);
-	}
 
 	return (
 		<div className="space-y-6">
@@ -493,7 +502,11 @@ export default function ProgramManagement() {
 							className="pl-9"
 						/>
 					</div>
-					{programs && programs.length > 0 ? (
+					{isLoading ? (
+					<div className="flex h-40 items-center justify-center">
+						<Spinner className="h-6 w-6 text-primary" />
+					</div>
+				) : programs && programs.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -515,6 +528,7 @@ export default function ProgramManagement() {
 										{t("admin.programs.table.code", { defaultValue: "Code" })}
 									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
+									<TableHead>{t("admin.programs.table.cycle", { defaultValue: "Cycle" })}</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-center">
 										{t("admin.programs.table.options", {
@@ -549,6 +563,9 @@ export default function ProgramManagement() {
 										</TableCell>
 										<TableCell className="font-medium">
 											{program.name}
+										</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{program.cycleId ? cycleMap.get(program.cycleId) : "—"}
 										</TableCell>
 										<TableCell>
 											{program.description || (
@@ -666,27 +683,53 @@ export default function ProgramManagement() {
 									)}
 								/>
 							</div>
-							<FormField
-								control={form.control}
-								name="description"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.programs.form.descriptionLabel")}
-										</FormLabel>
+						<FormField
+							control={form.control}
+							name="cycleId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("admin.programs.form.cycleLabel", { defaultValue: "Cycle d'études" })}</FormLabel>
+									<Select
+										value={field.value ?? "__NONE__"}
+										onValueChange={(v) => field.onChange(v === "__NONE__" ? null : v)}
+									>
 										<FormControl>
-											<Textarea
-												rows={4}
-												placeholder={t(
-													"admin.programs.form.descriptionPlaceholder",
-												)}
-												{...field}
-											/>
+											<SelectTrigger>
+												<SelectValue placeholder={t("admin.programs.form.cyclePlaceholder", { defaultValue: "Sélectionner un cycle" })} />
+											</SelectTrigger>
 										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+										<SelectContent>
+											<SelectItem value="__NONE__">{t("admin.programs.form.cloneFromNone", { defaultValue: "Aucun" })}</SelectItem>
+											{(cycles?.items ?? []).map((cyc) => (
+												<SelectItem key={cyc.id} value={cyc.id}>{cyc.name}</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="description"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.programs.form.descriptionLabel")}
+									</FormLabel>
+									<FormControl>
+										<Textarea
+											rows={4}
+											placeholder={t(
+												"admin.programs.form.descriptionPlaceholder",
+											)}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 							{!editingProgram && (
 								<div className="space-y-2 rounded-lg border border-dashed p-3">
 									<div className="flex items-center gap-2">

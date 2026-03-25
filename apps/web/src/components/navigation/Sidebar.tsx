@@ -15,6 +15,7 @@ import {
 	Gavel,
 	GraduationCap,
 	Hash,
+	Key,
 	Landmark,
 	Layers3,
 	LayoutDashboard,
@@ -117,6 +118,7 @@ const Sidebar: React.FC = () => {
 				{ to: "/admin/monitoring",           icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.admin.monitoring" },
 				{ to: "/admin/notifications",        icon: <Bell            className={IC} />, labelKey: "navigation.sidebar.admin.notifications" },
 				{ to: "/admin/batch-jobs",           icon: <PlayCircle      className={IC} />, labelKey: "navigation.sidebar.admin.batchJobs" },
+			{ to: "/admin/api-keys",             icon: <Key             className={IC} />, labelKey: "navigation.sidebar.admin.apiKeys" },
 			],
 		},
 	], []);

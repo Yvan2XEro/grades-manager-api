@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Landmark, UploadIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { FileSignature, Landmark, UploadIcon } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -1084,6 +1084,126 @@ export default function InstitutionSettings() {
 					</form>
 				</Form>
 			)}
+
+			{/* Document generation params — separate form saved to metadata */}
+			{!institutionQuery.isLoading && institutionQuery.data && (
+				<DocumentParamsCard
+					institutionId={institutionQuery.data.id}
+					initialParams={
+						(institutionQuery.data.metadata as any)?.document_params ?? {}
+					}
+				/>
+			)}
 		</div>
+	);
+}
+
+type DocParams = {
+	signatoryName?: string;
+	signatoryTitle?: string;
+	city?: string;
+};
+
+function DocumentParamsCard({
+	institutionId,
+	initialParams,
+}: {
+	institutionId: string;
+	initialParams: DocParams;
+}) {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+	const [params, setParams] = useState<DocParams>(initialParams);
+
+	const update = (key: keyof DocParams, value: string) =>
+		setParams((prev) => ({ ...prev, [key]: value }));
+
+	const saveMutation = useMutation({
+		mutationFn: async () => {
+			await trpcClient.institutions.update.mutate({
+				id: institutionId,
+				data: {
+					metadata: {
+						document_params: {
+							signatoryName: params.signatoryName || undefined,
+							signatoryTitle: params.signatoryTitle || undefined,
+							city: params.city || undefined,
+						},
+					},
+				},
+			});
+		},
+		onSuccess: () => {
+			toast.success(t("admin.institution.toast.saved", { defaultValue: "Institution saved" }));
+			queryClient.invalidateQueries({ queryKey: trpc.institutions.get.queryKey() });
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<FileSignature className="h-5 w-5" />
+					{t("admin.institution.sections.documentParams", {
+						defaultValue: "Document Generation",
+					})}
+				</CardTitle>
+				<CardDescription>
+					{t("admin.institution.sections.documentParamsHint", {
+						defaultValue:
+							"Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation.",
+					})}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="grid gap-4 md:grid-cols-2">
+					<div className="space-y-1.5">
+						<label className="text-sm font-medium">
+							{t("admin.institution.form.signatoryName", {
+								defaultValue: "Signatory name",
+							})}
+						</label>
+						<Input
+							value={params.signatoryName ?? ""}
+							onChange={(e) => update("signatoryName", e.target.value)}
+							placeholder="Dr. Jean DUPONT"
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<label className="text-sm font-medium">
+							{t("admin.institution.form.signatoryTitle", {
+								defaultValue: "Signatory title",
+							})}
+						</label>
+						<Input
+							value={params.signatoryTitle ?? ""}
+							onChange={(e) => update("signatoryTitle", e.target.value)}
+							placeholder="Directeur Général"
+						/>
+					</div>
+				</div>
+				<div className="max-w-sm space-y-1.5">
+					<label className="text-sm font-medium">
+						{t("admin.institution.form.city", { defaultValue: "City (for document date line)" })}
+					</label>
+					<Input
+						value={params.city ?? ""}
+						onChange={(e) => update("city", e.target.value)}
+						placeholder="Yaoundé"
+					/>
+				</div>
+				<div className="flex justify-end">
+					<Button
+						type="button"
+						disabled={saveMutation.isPending}
+						onClick={() => saveMutation.mutate()}
+					>
+						{saveMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
+						{t("common.actions.save")}
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

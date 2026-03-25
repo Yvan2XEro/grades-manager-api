@@ -46,6 +46,7 @@ import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
+import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -219,6 +220,7 @@ function App() {
 							element={<TeachingUnitDetail />}
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
+					<Route path="api-keys" element={<ApiKeysManagement />} />
 						{/* Deliberations */}
 						<Route path="deliberations" element={<DeliberationsList />} />
 						<Route
