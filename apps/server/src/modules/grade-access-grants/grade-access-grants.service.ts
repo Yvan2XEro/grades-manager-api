@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
@@ -24,7 +24,8 @@ async function requireProfileInInstitution(
 		.limit(1)
 		.then((rows) => rows[0]);
 
-	if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+	if (!row)
+		throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
 
 	const institution = await db
 		.select({ organizationId: schema.institutions.organizationId })
@@ -33,7 +34,10 @@ async function requireProfileInInstitution(
 		.limit(1)
 		.then((rows) => rows[0]);
 	if (!institution)
-		throw new TRPCError({ code: "NOT_FOUND", message: "Institution not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Institution not found",
+		});
 
 	if (row.memberOrg && row.memberOrg !== institution.organizationId) {
 		throw new TRPCError({

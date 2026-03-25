@@ -206,16 +206,22 @@ export default function GradeExport() {
 	const prefs = loadPrefs();
 	const [selectedYear, setSelectedYear] = useState<string>(prefs.year ?? "");
 	const [selectedClass, setSelectedClass] = useState<string>(prefs.class ?? "");
-	const [selectedSemester, setSelectedSemester] = useState<string>(prefs.semester ?? "");
+	const [selectedSemester, setSelectedSemester] = useState<string>(
+		prefs.semester ?? "",
+	);
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
-	const [selectedUEs, setSelectedUEs] = useState<string[]>([]);
+	const [_selectedUEs, _setSelectedUEs] = useState<string[]>([]);
 	const [exporting, setExporting] = useState<string | null>(null);
 	const [showPreview, setShowPreview] = useState(false);
 	const [previewHtml, setPreviewHtml] = useState("");
 	const [previewTitle, setPreviewTitle] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(prefs.sortBy ?? "course");
-	const [includeRetakes, setIncludeRetakes] = useState<boolean>(prefs.includeRetakes ?? true);
+	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(
+		prefs.sortBy ?? "course",
+	);
+	const [includeRetakes, setIncludeRetakes] = useState<boolean>(
+		prefs.includeRetakes ?? true,
+	);
 	const classId = useId();
 	const semesterId = useId();
 	const { t } = useTranslation();
@@ -354,7 +360,7 @@ export default function GradeExport() {
 			if (!grouped.has(courseKey)) {
 				grouped.set(courseKey, []);
 			}
-			grouped.get(courseKey)!.push(exam);
+			grouped.get(courseKey)?.push(exam);
 		}
 
 		// Sort exams within each course by date
@@ -657,16 +663,16 @@ export default function GradeExport() {
 			const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 
 			// Style institution name (row 0) - Bold, larger font, centered
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 			}
 
 			// Style faculty name (row 1) - Bold, centered
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -984,15 +990,15 @@ export default function GradeExport() {
 			}
 
 			// Institution header merges and styling
-			if (ws["A1"]) {
-				ws["A1"].s = {
+			if (ws.A1) {
+				ws.A1.s = {
 					font: { bold: true, sz: 16 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
 				merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } });
 			}
-			if (ws["A2"]) {
-				ws["A2"].s = {
+			if (ws.A2) {
+				ws.A2.s = {
 					font: { bold: true, sz: 14 },
 					alignment: { horizontal: "center", vertical: "center" },
 				};
@@ -1220,15 +1226,15 @@ export default function GradeExport() {
 				// Apply styling
 				const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
 				const merges: XLSX.Range[] = [];
-				if (ws["A1"]) {
-					ws["A1"].s = {
+				if (ws.A1) {
+					ws.A1.s = {
 						font: { bold: true, sz: 16 },
 						alignment: { horizontal: "center" },
 					};
 					merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } });
 				}
-				if (ws["A2"]) {
-					ws["A2"].s = {
+				if (ws.A2) {
+					ws.A2.s = {
 						font: { bold: true, sz: 14 },
 						alignment: { horizontal: "center" },
 					};
@@ -1587,242 +1593,235 @@ export default function GradeExport() {
 			<Card>
 				<CardHeader className="pb-3">
 					<CardTitle className="flex items-center gap-3 text-base">
-						<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+						<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+							1
+						</span>
 						Contexte
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
-							<AcademicYearSelect
-								value={selectedYear || null}
-								onChange={(value) => {
-									setSelectedYear(value);
-									setSelectedClass("");
-									setSelectedExams([]);
-									savePrefs({ year: value, class: "" });
-								}}
-								placeholder={t(
-									"admin.gradeExport.filters.academicYearPlaceholder",
-								)}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor={classId}>
-								{t("admin.gradeExport.filters.class")}
-							</Label>
-							<Select
-								disabled={!selectedYear}
-								value={selectedClass || undefined}
-								onValueChange={(value) => {
-									setSelectedClass(value);
-									setSelectedExams([]);
-									savePrefs({ class: value });
-								}}
-							>
-								<SelectTrigger id={classId}>
-									<SelectValue
-										placeholder={t(
-											"admin.gradeExport.filters.classPlaceholder",
-										)}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{classes?.map((cls) => (
-										<SelectItem key={cls.id} value={cls.id}>
-											{cls.name} - {cls.program.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</CardContent>
+					<div className="space-y-2">
+						<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
+						<AcademicYearSelect
+							value={selectedYear || null}
+							onChange={(value) => {
+								setSelectedYear(value);
+								setSelectedClass("");
+								setSelectedExams([]);
+								savePrefs({ year: value, class: "" });
+							}}
+							placeholder={t(
+								"admin.gradeExport.filters.academicYearPlaceholder",
+							)}
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor={classId}>
+							{t("admin.gradeExport.filters.class")}
+						</Label>
+						<Select
+							disabled={!selectedYear}
+							value={selectedClass || undefined}
+							onValueChange={(value) => {
+								setSelectedClass(value);
+								setSelectedExams([]);
+								savePrefs({ class: value });
+							}}
+						>
+							<SelectTrigger id={classId}>
+								<SelectValue
+									placeholder={t("admin.gradeExport.filters.classPlaceholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{classes?.map((cls) => (
+									<SelectItem key={cls.id} value={cls.id}>
+										{cls.name} - {cls.program.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</CardContent>
 			</Card>
 
 			{/* ─── Étape 2 — Sélection des évaluations ─────────────────────── */}
-			{selectedClass && (
-				<>
-				{exams && exams.length > 0 ? (
+			{selectedClass &&
+				(exams && exams.length > 0 ? (
 					<Card>
 						<CardHeader className="pb-3">
 							<div className="flex items-center justify-between">
 								<div className="space-y-0.5">
 									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+											2
+										</span>
 										{t("admin.gradeExport.exams.title")}
-										</CardTitle>
-										<CardDescription>
-											{selectedExams.length} / {exams.length} évaluations
-											sélectionnées
-										</CardDescription>
-									</div>
-									<div className="flex gap-2">
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={handleSelectAll}
-											disabled={selectedExams.length === exams.length}
-										>
-											Tout sélectionner
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={handleDeselectAll}
-											disabled={selectedExams.length === 0}
-										>
-											Tout désélectionner
-										</Button>
-									</div>
+									</CardTitle>
+									<CardDescription>
+										{selectedExams.length} / {exams.length} évaluations
+										sélectionnées
+									</CardDescription>
 								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className="flex gap-3">
-									<div className="relative flex-1">
-										<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-										<Input
-											placeholder="Rechercher une matière ou une évaluation..."
-											value={searchQuery}
-											onChange={(e) => setSearchQuery(e.target.value)}
-											className="pl-9"
-										/>
-									</div>
-									<Select
-										value={sortBy}
-										onValueChange={(value: any) => { setSortBy(value); savePrefs({ sortBy: value }); }}
+								<div className="flex gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleSelectAll}
+										disabled={selectedExams.length === exams.length}
 									>
-										<SelectTrigger className="w-44">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="course">Par matière</SelectItem>
-											<SelectItem value="date">Par date</SelectItem>
-											<SelectItem value="type">Par type</SelectItem>
-										</SelectContent>
-									</Select>
+										Tout sélectionner
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleDeselectAll}
+										disabled={selectedExams.length === 0}
+									>
+										Tout désélectionner
+									</Button>
 								</div>
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="flex gap-3">
+								<div className="relative flex-1">
+									<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+									<Input
+										placeholder="Rechercher une matière ou une évaluation..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="pl-9"
+									/>
+								</div>
+								<Select
+									value={sortBy}
+									onValueChange={(value: any) => {
+										setSortBy(value);
+										savePrefs({ sortBy: value });
+									}}
+								>
+									<SelectTrigger className="w-44">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="course">Par matière</SelectItem>
+										<SelectItem value="date">Par date</SelectItem>
+										<SelectItem value="type">Par type</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
 
-								{filteredAndSortedCourses.length > 0 ? (
-									<Accordion type="multiple" className="w-full">
-										{filteredAndSortedCourses.map(
-											([courseKey, courseExams]) => {
-												const courseSelectedCount = courseExams.filter((e) =>
-													selectedExams.includes(e.id),
-												).length;
-												const allCourseSelected =
-													courseSelectedCount === courseExams.length;
+							{filteredAndSortedCourses.length > 0 ? (
+								<Accordion type="multiple" className="w-full">
+									{filteredAndSortedCourses.map(([courseKey, courseExams]) => {
+										const courseSelectedCount = courseExams.filter((e) =>
+											selectedExams.includes(e.id),
+										).length;
+										const allCourseSelected =
+											courseSelectedCount === courseExams.length;
 
-												return (
-													<AccordionItem key={courseKey} value={courseKey}>
-														<div className="flex items-center gap-2">
-															<Checkbox
-																checked={allCourseSelected}
-																onCheckedChange={() =>
-																	handleToggleCourse(courseExams)
-																}
-																className="ml-4"
-															/>
-															<AccordionTrigger className="flex-1 hover:no-underline">
-																<div className="flex flex-1 items-center gap-3">
-																	<div className="flex-1 text-left">
-																		<div className="font-medium">
-																			{courseExams[0].courseName}
-																			{courseExams[0].courseCode && (
-																				<span className="ml-2 font-normal text-muted-foreground">
-																					({courseExams[0].courseCode})
-																				</span>
-																			)}
-																		</div>
-																		<div className="text-muted-foreground text-xs">
-																			{courseSelectedCount} /{" "}
-																			{courseExams.length} évaluations
-																		</div>
-																	</div>
-																	<Badge
-																		variant={
-																			allCourseSelected
-																				? "default"
-																				: "secondary"
-																		}
-																	>
-																		{courseExams.length}
-																	</Badge>
+										return (
+											<AccordionItem key={courseKey} value={courseKey}>
+												<div className="flex items-center gap-2">
+													<Checkbox
+														checked={allCourseSelected}
+														onCheckedChange={() =>
+															handleToggleCourse(courseExams)
+														}
+														className="ml-4"
+													/>
+													<AccordionTrigger className="flex-1 hover:no-underline">
+														<div className="flex flex-1 items-center gap-3">
+															<div className="flex-1 text-left">
+																<div className="font-medium">
+																	{courseExams[0].courseName}
+																	{courseExams[0].courseCode && (
+																		<span className="ml-2 font-normal text-muted-foreground">
+																			({courseExams[0].courseCode})
+																		</span>
+																	)}
 																</div>
-															</AccordionTrigger>
-														</div>
-														<AccordionContent>
-															<div className="space-y-2 pt-2 pl-9">
-																{courseExams.map((exam) => (
-																	<div
-																		key={exam.id}
-																		className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
-																	>
-																		<Checkbox
-																			id={`exam-${exam.id}`}
-																			checked={selectedExams.includes(exam.id)}
-																			onCheckedChange={(checked) => {
-																				if (checked) {
-																					setSelectedExams((prev) => [
-																						...prev,
-																						exam.id,
-																					]);
-																				} else {
-																					setSelectedExams((prev) =>
-																						prev.filter(
-																							(id) => id !== exam.id,
-																						),
-																					);
-																				}
-																			}}
-																		/>
-																		<label
-																			htmlFor={`exam-${exam.id}`}
-																			className="flex-1 cursor-pointer"
-																		>
-																			<div className="font-medium text-sm">
-																				{exam.name} • {exam.type}
-																			</div>
-																			<div className="text-muted-foreground text-xs">
-																				{format(
-																					new Date(exam.date),
-																					"dd MMM yyyy",
-																				)}{" "}
-																				• {exam.percentage}%
-																			</div>
-																		</label>
-																	</div>
-																))}
+																<div className="text-muted-foreground text-xs">
+																	{courseSelectedCount} / {courseExams.length}{" "}
+																	évaluations
+																</div>
 															</div>
-														</AccordionContent>
-													</AccordionItem>
-												);
-											},
-										)}
-									</Accordion>
-								) : (
-									<p className="py-6 text-center text-muted-foreground text-sm">
-										Aucune évaluation trouvée pour &ldquo;{searchQuery}&rdquo;
-									</p>
-								)}
-							</CardContent>
-				</Card>
-			) : (
-				<Card>
-					<CardContent className="flex flex-col items-center gap-2 py-10 text-center">
-								<FileSpreadsheet className="h-10 w-10 text-muted-foreground" />
-								<p className="font-medium text-sm">
-									{t("admin.gradeExport.exams.emptyTitle")}
+															<Badge
+																variant={
+																	allCourseSelected ? "default" : "secondary"
+																}
+															>
+																{courseExams.length}
+															</Badge>
+														</div>
+													</AccordionTrigger>
+												</div>
+												<AccordionContent>
+													<div className="space-y-2 pt-2 pl-9">
+														{courseExams.map((exam) => (
+															<div
+																key={exam.id}
+																className="flex items-start gap-3 rounded-lg border px-3 py-2 hover:bg-accent"
+															>
+																<Checkbox
+																	id={`exam-${exam.id}`}
+																	checked={selectedExams.includes(exam.id)}
+																	onCheckedChange={(checked) => {
+																		if (checked) {
+																			setSelectedExams((prev) => [
+																				...prev,
+																				exam.id,
+																			]);
+																		} else {
+																			setSelectedExams((prev) =>
+																				prev.filter((id) => id !== exam.id),
+																			);
+																		}
+																	}}
+																/>
+																<label
+																	htmlFor={`exam-${exam.id}`}
+																	className="flex-1 cursor-pointer"
+																>
+																	<div className="font-medium text-sm">
+																		{exam.name} • {exam.type}
+																	</div>
+																	<div className="text-muted-foreground text-xs">
+																		{format(new Date(exam.date), "dd MMM yyyy")}{" "}
+																		• {exam.percentage}%
+																	</div>
+																</label>
+															</div>
+														))}
+													</div>
+												</AccordionContent>
+											</AccordionItem>
+										);
+									})}
+								</Accordion>
+							) : (
+								<p className="py-6 text-center text-muted-foreground text-sm">
+									Aucune évaluation trouvée pour &ldquo;{searchQuery}&rdquo;
 								</p>
-								<p className="text-muted-foreground text-xs">
-									{t("admin.gradeExport.exams.emptyDescription")}
-								</p>
-							</CardContent>
-				</Card>
-				)}
-				</>
-			)}
+							)}
+						</CardContent>
+					</Card>
+				) : (
+					<Card>
+						<CardContent className="flex flex-col items-center gap-2 py-10 text-center">
+							<FileSpreadsheet className="h-10 w-10 text-muted-foreground" />
+							<p className="font-medium text-sm">
+								{t("admin.gradeExport.exams.emptyTitle")}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.gradeExport.exams.emptyDescription")}
+							</p>
+						</CardContent>
+					</Card>
+				))}
 
 			{/* ─── Étape 3 — Exports ────────────────────────────────────────── */}
 			{selectedClass && (
@@ -1833,7 +1832,9 @@ export default function GradeExport() {
 							<div className="flex items-start justify-between gap-4">
 								<div>
 									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+											3
+										</span>
 										<FileSpreadsheet className="h-4 w-4" />
 										{t("admin.gradeExport.actions.combinedLabel")}
 									</CardTitle>
@@ -1871,7 +1872,9 @@ export default function GradeExport() {
 							<div className="flex items-start justify-between gap-4">
 								<div>
 									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">3</span>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 font-bold text-primary text-xs">
+											3
+										</span>
 										<FileText className="h-4 w-4" />
 										Procès-Verbal
 									</CardTitle>
@@ -1891,7 +1894,10 @@ export default function GradeExport() {
 								<Label htmlFor={semesterId}>Semestre</Label>
 								<SemesterSelect
 									value={selectedSemester || null}
-									onChange={(v) => { setSelectedSemester(v ?? ""); savePrefs({ semester: v ?? "" }); }}
+									onChange={(v) => {
+										setSelectedSemester(v ?? "");
+										savePrefs({ semester: v ?? "" });
+									}}
 									placeholder="Sélectionner un semestre"
 								/>
 							</div>
@@ -1904,7 +1910,10 @@ export default function GradeExport() {
 										savePrefs({ includeRetakes: checked === true });
 									}}
 								/>
-								<Label htmlFor="include-retakes" className="cursor-pointer text-sm font-normal">
+								<Label
+									htmlFor="include-retakes"
+									className="cursor-pointer font-normal text-sm"
+								>
 									Inclure les notes de rattrapage
 								</Label>
 							</div>
@@ -1987,18 +1996,30 @@ export default function GradeExport() {
 									<table className="w-full text-sm">
 										<thead className="bg-muted/50">
 											<tr>
-												<th className="px-4 py-2 text-left font-medium">Cours</th>
-												<th className="px-4 py-2 text-left font-medium">Type</th>
-												<th className="px-4 py-2 text-left font-medium">Date</th>
-												<th className="px-4 py-2 text-right font-medium">Excel</th>
-												<th className="px-4 py-2 text-right font-medium">PDF</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Cours
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Type
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Date
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Excel
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													PDF
+												</th>
 											</tr>
 										</thead>
 										<tbody className="divide-y">
 											{selectedExamDetails.map((exam) => (
 												<tr key={exam.id} className="hover:bg-muted/30">
 													<td className="px-4 py-2">
-														<span className="font-medium">{exam.courseName}</span>
+														<span className="font-medium">
+															{exam.courseName}
+														</span>
 														{exam.courseCode && (
 															<span className="ml-1 text-muted-foreground text-xs">
 																({exam.courseCode})
@@ -2033,12 +2054,9 @@ export default function GradeExport() {
 																variant="outline"
 																size="sm"
 																disabled={disableExamExports}
-																onClick={() =>
-																	handlePreviewEvaluation(exam.id)
-																}
+																onClick={() => handlePreviewEvaluation(exam.id)}
 															>
-																{exporting ===
-																`preview-eval-${exam.id}` ? (
+																{exporting === `preview-eval-${exam.id}` ? (
 																	<Loader2 className="h-3 w-3 animate-spin" />
 																) : (
 																	<Eye className="h-3 w-3" />
@@ -2052,8 +2070,7 @@ export default function GradeExport() {
 																	handleGenerateEvaluation(exam.id)
 																}
 															>
-																{exporting ===
-																`generate-eval-${exam.id}` ? (
+																{exporting === `generate-eval-${exam.id}` ? (
 																	<Loader2 className="h-3 w-3 animate-spin" />
 																) : (
 																	<Download className="h-3 w-3" />
@@ -2083,8 +2100,7 @@ export default function GradeExport() {
 											</Badge>
 										</CardTitle>
 										<CardDescription className="mt-1">
-											Publication PDF par UE — nécessite un semestre
-											sélectionné
+											Publication PDF par UE — nécessite un semestre sélectionné
 										</CardDescription>
 									</div>
 									<Button
@@ -2107,7 +2123,9 @@ export default function GradeExport() {
 									<table className="w-full text-sm">
 										<thead className="bg-muted/50">
 											<tr>
-												<th className="px-4 py-2 text-left font-medium">Code</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Code
+												</th>
 												<th className="px-4 py-2 text-left font-medium">
 													Nom de l&apos;UE
 												</th>

@@ -6,12 +6,12 @@ import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
@@ -204,9 +204,7 @@ export default function ExamManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-foreground">
-						{t("teacher.exams.title")}
-					</h1>
+					<h1 className="text-foreground">{t("teacher.exams.title")}</h1>
 					<p className="text-base-content/60">{t("teacher.exams.subtitle")}</p>
 				</div>
 				<button

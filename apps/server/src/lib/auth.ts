@@ -177,7 +177,13 @@ export const auth = betterAuth({
 	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: process.env.BETTER_AUTH_COOKIE_SAMESITE ?? "lax",
+			sameSite: (process.env.BETTER_AUTH_COOKIE_SAMESITE ?? "lax") as
+				| "lax"
+				| "strict"
+				| "none"
+				| "Lax"
+				| "None"
+				| "Strict",
 			secure: process.env.BETTER_AUTH_COOKIE_SECURE === "true",
 			httpOnly: true,
 		},

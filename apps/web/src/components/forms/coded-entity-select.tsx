@@ -1,10 +1,4 @@
-import {
-	Check,
-	ChevronsUpDown,
-	Loader2,
-	SearchIcon,
-	XIcon,
-} from "lucide-react";
+import { Check, ChevronsUpDown, SearchIcon, XIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +7,6 @@ import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
-	CommandInput,
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";

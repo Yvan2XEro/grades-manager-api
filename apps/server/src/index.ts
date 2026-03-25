@@ -8,13 +8,13 @@ import { logger } from "hono/logger";
 import { db } from "./db";
 import * as schema from "./db/schema/app-schema";
 import {
-	diplomationDocuments,
 	type DiplomationApiKey,
+	diplomationDocuments,
 	institutions,
 } from "./db/schema/app-schema";
 import { organization } from "./db/schema/auth";
-import { auth } from "./lib/auth";
 import { apiKeyMiddleware } from "./lib/api-key-auth";
+import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { startBackgroundJobs } from "./lib/jobs";
 import { exportDiplomation } from "./modules/deliberations/deliberations.service";
@@ -118,9 +118,7 @@ diplomationApi.get("/deliberations", async (c) => {
 	const rows = await db.query.deliberations.findMany({
 		where: and(
 			eq(schema.deliberations.institutionId, apiKey.institutionId),
-			status
-				? eq(schema.deliberations.status, status as any)
-				: undefined,
+			status ? eq(schema.deliberations.status, status as any) : undefined,
 		),
 		with: {
 			classRef: { with: { program: true } },
@@ -136,7 +134,11 @@ diplomationApi.get("/deliberations/:id", async (c) => {
 	const apiKey = c.get("apiKeyRecord") as any;
 	const id = c.req.param("id");
 	try {
-		const data = await exportDiplomation({ id }, apiKey.institutionId, "system");
+		const data = await exportDiplomation(
+			{ id },
+			apiKey.institutionId,
+			"system",
+		);
 		return c.json(data);
 	} catch (err: any) {
 		if (err?.code === "NOT_FOUND") return c.json({ error: "Not found" }, 404);
@@ -171,7 +173,10 @@ diplomationApi.get("/deliberations/:id/transcript", async (c) => {
 	});
 	if (!delib) return c.json({ error: "Not found" }, 404);
 	try {
-		const data = await buildTranscriptExport(delib.classId, apiKey.institutionId);
+		const data = await buildTranscriptExport(
+			delib.classId,
+			apiKey.institutionId,
+		);
 		return c.json(data);
 	} catch (err: any) {
 		if (err?.code === "NOT_FOUND") return c.json({ error: "Not found" }, 404);
@@ -201,7 +206,8 @@ diplomationApi.get("/config", async (c) => {
 	});
 	if (!institution) return c.json({ error: "Institution not found" }, 404);
 
-	const docParams = (institution.metadata as schema.InstitutionMetadata)?.document_params;
+	const docParams = (institution.metadata as schema.InstitutionMetadata)
+		?.document_params;
 
 	const programs = await db.query.programs.findMany({
 		where: eq(schema.programs.institutionId, institutionId),
@@ -218,7 +224,13 @@ diplomationApi.get("/config", async (c) => {
 
 	const academicYears = await db.query.academicYears.findMany({
 		where: eq(schema.academicYears.institutionId, institutionId),
-		columns: { id: true, name: true, startDate: true, endDate: true, isActive: true },
+		columns: {
+			id: true,
+			name: true,
+			startDate: true,
+			endDate: true,
+			isActive: true,
+		},
 		orderBy: [desc(schema.academicYears.startDate)],
 	});
 

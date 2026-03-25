@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
 	deliberationDecisions,
-	deliberationLogActions,
 	deliberationMentions,
 	deliberationRuleCategories,
 	deliberationTypes,

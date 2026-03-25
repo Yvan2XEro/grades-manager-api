@@ -16,8 +16,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
+import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ClipboardCopy } from "../../../components/ui/clipboard-copy";
@@ -328,10 +328,10 @@ export default function DeliberationDetail() {
 	if (!delib) {
 		return (
 			<Empty>
-			<EmptyHeader>
-				<EmptyDescription>Not found</EmptyDescription>
-			</EmptyHeader>
-		</Empty>
+				<EmptyHeader>
+					<EmptyDescription>Not found</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		);
 	}
 

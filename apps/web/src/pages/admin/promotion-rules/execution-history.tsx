@@ -13,7 +13,8 @@ import { useNavigate } from "react-router";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
 	DialogContent,
@@ -21,6 +22,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import {
 	Table,
@@ -30,20 +32,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { trpcClient } from "@/utils/trpc";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@/components/ui/empty";
 
 type ExecutionMetadata = {
 	ruleName?: string;
@@ -171,7 +161,16 @@ export function ExecutionHistoryPage() {
 							</TableHeader>
 							<TableBody>
 								{executionsData?.items?.map((execution) => (
-									<TableRow key={execution.id} actions={<ContextMenuItem onSelect={() => setSelectedExecutionId(execution.id)}>{t("admin.promotionRules.history.table.viewDetails")}</ContextMenuItem>}>
+									<TableRow
+										key={execution.id}
+										actions={
+											<ContextMenuItem
+												onSelect={() => setSelectedExecutionId(execution.id)}
+											>
+												{t("admin.promotionRules.history.table.viewDetails")}
+											</ContextMenuItem>
+										}
+									>
 										<TableCell className="font-medium">
 											<div className="flex items-center gap-2">
 												<Clock className="h-4 w-4 text-muted-foreground" />
@@ -251,10 +250,12 @@ export function ExecutionHistoryPage() {
 						</Table>
 					) : (
 						<Empty className="border border-dashed">
-						<EmptyHeader>
-							<EmptyDescription>{t("admin.promotionRules.history.emptyState")}</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
+							<EmptyHeader>
+								<EmptyDescription>
+									{t("admin.promotionRules.history.emptyState")}
+								</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
@@ -275,145 +276,150 @@ export function ExecutionHistoryPage() {
 					</DialogHeader>
 
 					<div className="px-6 pb-4">
-					{executionDetails && (
-						<div className="space-y-6">
-							{/* Summary */}
-							<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-								<Card>
-									<CardContent className="pt-4">
-										<div className="font-bold text-2xl">
-											{executionDetails.execution.studentsEvaluated}
-										</div>
-										<p className="text-muted-foreground text-xs">
-											{t(
-												"admin.promotionRules.history.details.stats.evaluated",
-											)}
-										</p>
-									</CardContent>
-								</Card>
-								<Card className="border-emerald-500/20 bg-emerald-500/5">
-									<CardContent className="pt-4">
-										<div className="font-bold text-2xl text-emerald-600">
-											{executionDetails.execution.studentsPromoted}
-										</div>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.promotionRules.history.details.stats.promoted")}
-										</p>
-									</CardContent>
-								</Card>
-								<Card>
-									<CardContent className="pt-4">
-										<div className="font-semibold text-lg">
-											{new Date(
-												executionDetails.execution.executedAt,
-											).toLocaleString()}
-										</div>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.promotionRules.history.details.stats.date")}
-										</p>
-									</CardContent>
-								</Card>
-								<Card>
-									<CardContent className="pt-4">
-										<div className="font-semibold text-lg">
-											{(executionDetails.execution as PromotionExecution)
-												.metadata?.ruleName || "N/A"}
-										</div>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.promotionRules.history.details.stats.rule")}
-										</p>
-									</CardContent>
-								</Card>
-							</div>
+						{executionDetails && (
+							<div className="space-y-6">
+								{/* Summary */}
+								<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+									<Card>
+										<CardContent className="pt-4">
+											<div className="font-bold text-2xl">
+												{executionDetails.execution.studentsEvaluated}
+											</div>
+											<p className="text-muted-foreground text-xs">
+												{t(
+													"admin.promotionRules.history.details.stats.evaluated",
+												)}
+											</p>
+										</CardContent>
+									</Card>
+									<Card className="border-emerald-500/20 bg-emerald-500/5">
+										<CardContent className="pt-4">
+											<div className="font-bold text-2xl text-emerald-600">
+												{executionDetails.execution.studentsPromoted}
+											</div>
+											<p className="text-muted-foreground text-xs">
+												{t(
+													"admin.promotionRules.history.details.stats.promoted",
+												)}
+											</p>
+										</CardContent>
+									</Card>
+									<Card>
+										<CardContent className="pt-4">
+											<div className="font-semibold text-lg">
+												{new Date(
+													executionDetails.execution.executedAt,
+												).toLocaleString()}
+											</div>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.promotionRules.history.details.stats.date")}
+											</p>
+										</CardContent>
+									</Card>
+									<Card>
+										<CardContent className="pt-4">
+											<div className="font-semibold text-lg">
+												{(executionDetails.execution as PromotionExecution)
+													.metadata?.ruleName || "N/A"}
+											</div>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.promotionRules.history.details.stats.rule")}
+											</p>
+										</CardContent>
+									</Card>
+								</div>
 
-							{/* Student Results */}
-							<div>
-								<h3 className="mb-4 font-semibold text-lg">
-									{t(
-										"admin.promotionRules.history.details.studentResults.title",
-									)}
-								</h3>
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>
-												{t(
-													"admin.promotionRules.history.details.studentResults.studentId",
-												)}
-											</TableHead>
-											<TableHead>
-												{t(
-													"admin.promotionRules.history.details.studentResults.status",
-												)}
-											</TableHead>
-											<TableHead>
-												{t(
-													"admin.promotionRules.history.details.studentResults.average",
-												)}
-											</TableHead>
-											<TableHead>
-												{t(
-													"admin.promotionRules.history.details.studentResults.credits",
-												)}
-											</TableHead>
-											<TableHead>
-												{t(
-													"admin.promotionRules.history.details.studentResults.successRate",
-												)}
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{executionDetails.results.map((result) => (
-											<TableRow key={result.id}>
-												<TableCell className="font-medium">
-													{result.studentId}
-												</TableCell>
-												<TableCell>
-													{result.wasPromoted ? (
-														<Badge variant="default" className="bg-emerald-600">
-															<CheckCircle2 className="mr-1 h-3 w-3" />
-															{t(
-																"admin.promotionRules.history.details.studentResults.promoted",
-															)}
-														</Badge>
-													) : (
-														<Badge variant="secondary">
-															<XCircle className="mr-1 h-3 w-3" />
-															{t(
-																"admin.promotionRules.history.details.studentResults.notPromoted",
-															)}
-														</Badge>
+								{/* Student Results */}
+								<div>
+									<h3 className="mb-4 font-semibold text-lg">
+										{t(
+											"admin.promotionRules.history.details.studentResults.title",
+										)}
+									</h3>
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>
+													{t(
+														"admin.promotionRules.history.details.studentResults.studentId",
 													)}
-												</TableCell>
-												<TableCell>
-													{(result.evaluationData as EvaluationData)
-														.overallAverage
-														? `${(
-																(result.evaluationData as EvaluationData)
-																	.overallAverage
-															).toFixed(2)}/20`
-														: "N/A"}
-												</TableCell>
-												<TableCell>
-													{(result.evaluationData as EvaluationData)
-														.creditsEarned !== undefined
-														? `${(result.evaluationData as EvaluationData).creditsEarned}/${(result.evaluationData as EvaluationData).requiredCredits}`
-														: "N/A"}
-												</TableCell>
-												<TableCell>
-													{(result.evaluationData as EvaluationData)
-														.successRate !== undefined
-														? `${((result.evaluationData as EvaluationData).successRate * 100).toFixed(0)}%`
-														: "N/A"}
-												</TableCell>
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.promotionRules.history.details.studentResults.status",
+													)}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.promotionRules.history.details.studentResults.average",
+													)}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.promotionRules.history.details.studentResults.credits",
+													)}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.promotionRules.history.details.studentResults.successRate",
+													)}
+												</TableHead>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
+										</TableHeader>
+										<TableBody>
+											{executionDetails.results.map((result) => (
+												<TableRow key={result.id}>
+													<TableCell className="font-medium">
+														{result.studentId}
+													</TableCell>
+													<TableCell>
+														{result.wasPromoted ? (
+															<Badge
+																variant="default"
+																className="bg-emerald-600"
+															>
+																<CheckCircle2 className="mr-1 h-3 w-3" />
+																{t(
+																	"admin.promotionRules.history.details.studentResults.promoted",
+																)}
+															</Badge>
+														) : (
+															<Badge variant="secondary">
+																<XCircle className="mr-1 h-3 w-3" />
+																{t(
+																	"admin.promotionRules.history.details.studentResults.notPromoted",
+																)}
+															</Badge>
+														)}
+													</TableCell>
+													<TableCell>
+														{(result.evaluationData as EvaluationData)
+															.overallAverage
+															? `${(
+																	(result.evaluationData as EvaluationData)
+																		.overallAverage
+																).toFixed(2)}/20`
+															: "N/A"}
+													</TableCell>
+													<TableCell>
+														{(result.evaluationData as EvaluationData)
+															.creditsEarned !== undefined
+															? `${(result.evaluationData as EvaluationData).creditsEarned}/${(result.evaluationData as EvaluationData).requiredCredits}`
+															: "N/A"}
+													</TableCell>
+													<TableCell>
+														{(result.evaluationData as EvaluationData)
+															.successRate !== undefined
+															? `${((result.evaluationData as EvaluationData).successRate * 100).toFixed(0)}%`
+															: "N/A"}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
 							</div>
-						</div>
-					)}
+						)}
 					</div>
 				</DialogContent>
 			</Dialog>

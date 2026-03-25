@@ -1,20 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-	Download,
-	FileText,
-	Pencil,
-	Plus,
-	Settings,
-	Star,
-	Trash2,
-	Upload,
-} from "lucide-react";
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
+import { FileText, Pencil, Plus, Settings, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +23,10 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -40,7 +38,6 @@ import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -55,7 +52,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -65,12 +61,9 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 type ExportTemplate = {
@@ -125,7 +118,13 @@ export default function ExportTemplatesManagement() {
 	});
 
 	// Fetch templates
-	const { data: templatesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+	const {
+		data: templatesData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
 		queryKey: ["exportTemplates", selectedType],
 		queryFn: async ({ pageParam }) => {
 			const result = await trpcClient.exportTemplates.list.query({
@@ -140,7 +139,9 @@ export default function ExportTemplatesManagement() {
 	});
 
 	const templates = templatesData?.pages.flatMap((p) => p.items);
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(templates ?? []);
 
 	// Rename mutation
@@ -346,7 +347,9 @@ export default function ExportTemplatesManagement() {
 										/>
 									</TableHead>
 									<TableHead>{t("admin.exportTemplates.table.name")}</TableHead>
-									<TableHead className="w-28">{t("admin.exportTemplates.table.type")}</TableHead>
+									<TableHead className="w-28">
+										{t("admin.exportTemplates.table.type")}
+									</TableHead>
 									<TableHead className="w-28">
 										{t("admin.exportTemplates.table.status")}
 									</TableHead>
@@ -358,26 +361,47 @@ export default function ExportTemplatesManagement() {
 							<TableBody>
 								{templates.map((template) => (
 									<TableRow
-								key={template.id}
-								actions={
-									<>
-										<ContextMenuItem onSelect={() => navigate(`/admin/export-templates/${template.id}`)}>
-											<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
-										</ContextMenuItem>
-										<ContextMenuItem onSelect={() => handleOpenRename(template)}>
-											<span>{t("common.actions.rename", { defaultValue: "Rename" })}</span>
-										</ContextMenuItem>
-										<ContextMenuItem onSelect={() => handleSetDefault(template)}>
-											<Star className="h-4 w-4" />
-											<span>{t("admin.exportTemplates.actions.setDefault", { defaultValue: "Set as default" })}</span>
-										</ContextMenuItem>
-										<ContextMenuSeparator />
-										<ContextMenuItem variant="destructive" onSelect={() => setDeletingTemplate(template)}>
-											<span>{t("common.actions.delete")}</span>
-										</ContextMenuItem>
-									</>
-								}
-							>
+										key={template.id}
+										actions={
+											<>
+												<ContextMenuItem
+													onSelect={() =>
+														navigate(`/admin/export-templates/${template.id}`)
+													}
+												>
+													<span>
+														{t("common.actions.edit", { defaultValue: "Edit" })}
+													</span>
+												</ContextMenuItem>
+												<ContextMenuItem
+													onSelect={() => handleOpenRename(template)}
+												>
+													<span>
+														{t("common.actions.rename", {
+															defaultValue: "Rename",
+														})}
+													</span>
+												</ContextMenuItem>
+												<ContextMenuItem
+													onSelect={() => handleSetDefault(template)}
+												>
+													<Star className="h-4 w-4" />
+													<span>
+														{t("admin.exportTemplates.actions.setDefault", {
+															defaultValue: "Set as default",
+														})}
+													</span>
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem
+													variant="destructive"
+													onSelect={() => setDeletingTemplate(template)}
+												>
+													<span>{t("common.actions.delete")}</span>
+												</ContextMenuItem>
+											</>
+										}
+									>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(template.id)}
@@ -492,47 +516,47 @@ export default function ExportTemplatesManagement() {
 						</DialogDescription>
 					</DialogHeader>
 					<div className="px-6 pb-4">
-					<Form {...renameForm}>
-						<form
-							onSubmit={renameForm.handleSubmit(handleRename)}
-							className="space-y-4"
-						>
-							<FormField
-								control={renameForm.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.exportTemplates.form.name")}
-										</FormLabel>
-										<FormControl>
-											<Input
-												placeholder={t(
-													"admin.exportTemplates.form.namePlaceholder",
-												)}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+						<Form {...renameForm}>
+							<form
+								onSubmit={renameForm.handleSubmit(handleRename)}
+								className="space-y-4"
+							>
+								<FormField
+									control={renameForm.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.exportTemplates.form.name")}
+											</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t(
+														"admin.exportTemplates.form.namePlaceholder",
+													)}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-							<DialogFooter>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseRename}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={renameMutation.isPending}>
-									{renameMutation.isPending && <Spinner className="mr-2" />}
-									{t("common.actions.save")}
-								</Button>
-							</DialogFooter>
-						</form>
-					</Form>
+								<DialogFooter>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={handleCloseRename}
+									>
+										{t("common.actions.cancel")}
+									</Button>
+									<Button type="submit" disabled={renameMutation.isPending}>
+										{renameMutation.isPending && <Spinner className="mr-2" />}
+										{t("common.actions.save")}
+									</Button>
+								</DialogFooter>
+							</form>
+						</Form>
 					</div>
 				</DialogContent>
 			</Dialog>

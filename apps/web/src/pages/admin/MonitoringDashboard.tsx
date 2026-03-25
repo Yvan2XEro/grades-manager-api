@@ -30,9 +30,7 @@ const MonitoringDashboard = () => {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="text-foreground">
-					{t("admin.monitoring.title")}
-				</h1>
+				<h1 className="text-foreground">{t("admin.monitoring.title")}</h1>
 				<p className="text-muted-foreground">
 					{t("admin.monitoring.subtitle")}
 				</p>

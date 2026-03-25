@@ -5,17 +5,10 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { TeachingUnitCoursesTable } from "@/components/admin/TeachingUnitCoursesTable";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -34,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 type TeachingUnit = {
@@ -115,7 +109,7 @@ const TeachingUnitDetail = () => {
 		defaultValues,
 	});
 	const selectedProgramId = form.watch("programId");
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programs?.items?.find((program) => program.id === selectedProgramId),
 		[programs?.items, selectedProgramId],
 	);

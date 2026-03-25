@@ -2,17 +2,17 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import {
-	type ExamWithRetake,
-	type ResolvedGrade,
-	resolveStudentGradesWithRetakes,
-} from "./template-helper";
 import type {
 	TranscriptCourseResult,
 	TranscriptExportData,
 	TranscriptStudentData,
 	TranscriptUeResult,
 } from "../deliberations/deliberations.types";
+import {
+	type ExamWithRetake,
+	type ResolvedGrade,
+	resolveStudentGradesWithRetakes,
+} from "./template-helper";
 
 export async function buildTranscriptExport(
 	classId: string,
@@ -111,7 +111,7 @@ export async function buildTranscriptExport(
 			grades: exam.grades || [],
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: (cc as any).courseRef.id,
 			code: (cc as any).courseRef.code,
 			name: (cc as any).courseRef.name,
@@ -126,8 +126,8 @@ export async function buildTranscriptExport(
 	const students: TranscriptStudentData[] = (klass as any).students.map(
 		(student: any) => {
 			const ueResults: TranscriptUeResult[] = [];
-			let totalWeightedAvg = 0;
-			let totalUeCredits = 0;
+			const _totalWeightedAvg = 0;
+			let _totalUeCredits = 0;
 			let validWeightedSum = 0;
 			let validCredits = 0;
 
@@ -172,7 +172,8 @@ export async function buildTranscriptExport(
 						code: course.code,
 						name: course.name,
 						coefficient: course.coefficient,
-						grade: courseAvg !== null ? Math.round(courseAvg * 100) / 100 : null,
+						grade:
+							courseAvg !== null ? Math.round(courseAvg * 100) / 100 : null,
 						session,
 					});
 
@@ -205,12 +206,13 @@ export async function buildTranscriptExport(
 					code: ue.code,
 					name: ue.name,
 					credits: ue.credits,
-					average: ueAverage !== null ? Math.round(ueAverage * 100) / 100 : null,
+					average:
+						ueAverage !== null ? Math.round(ueAverage * 100) / 100 : null,
 					decision,
 					courses,
 				});
 
-				totalUeCredits += ue.credits;
+				_totalUeCredits += ue.credits;
 				if (ueAverage !== null) {
 					validWeightedSum += ueAverage * ue.credits;
 					validCredits += ue.credits;
@@ -246,7 +248,8 @@ export async function buildTranscriptExport(
 			a.firstName.localeCompare(b.firstName),
 	);
 
-	const docParams = (institution.metadata as schema.InstitutionMetadata)?.document_params;
+	const docParams = (institution.metadata as schema.InstitutionMetadata)
+		?.document_params;
 	return {
 		institution: {
 			name: institution.nameFr,

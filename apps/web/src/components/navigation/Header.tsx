@@ -14,22 +14,22 @@ import {
 	Volume2,
 	VolumeX,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { useTheme } from "next-themes";
-import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import {
 	getTheme,
 	getVolume,
 	isSoundEnabled,
+	type SoundTheme,
+	setSoundEnabled,
 	setTheme,
 	setVolume,
-	setSoundEnabled,
 	sounds,
-	type SoundTheme,
 } from "@/lib/sounds";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import { authClient } from "../../lib/auth-client";
 import { useStore } from "../../store";
@@ -155,7 +155,7 @@ const Header: React.FC = () => {
 
 	return (
 		<>
-			<header className="bg-dot-pattern-subtle sticky top-0 z-30 border-border border-b bg-sidebar/95 backdrop-blur-sm">
+			<header className="sticky top-0 z-30 border-border border-b bg-dot-pattern-subtle bg-sidebar/95 backdrop-blur-sm">
 				<div className="flex h-14 items-center justify-between px-4 md:px-6">
 					{/* ── Left ── */}
 					<div className="flex items-center gap-3">
@@ -207,10 +207,12 @@ const Header: React.FC = () => {
 						<button
 							type="button"
 							onClick={handleOpenCmd}
-							className="group hidden h-8 w-52 items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/8 hover:text-foreground md:flex"
+							className="group hidden h-8 w-52 items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:text-foreground hover:shadow-md hover:shadow-primary/8 md:flex"
 						>
 							<Search className="size-3.5 shrink-0 transition-colors duration-200 group-hover:text-primary" />
-							<span className="flex-1 text-left text-xs">{t("navigation.header.search")}</span>
+							<span className="flex-1 text-left text-xs">
+								{t("navigation.header.search")}
+							</span>
 							<kbd className="flex items-center rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
 								{isMac ? "⌘K" : "Ctrl+K"}
 							</kbd>
@@ -227,22 +229,24 @@ const Header: React.FC = () => {
 						</Button>
 
 						{/* Dark mode toggle */}
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-muted-foreground hover:text-foreground"
-						onClick={toggleDarkMode}
-						aria-label={resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"}
-					>
-						{resolvedTheme === "dark" ? (
-							<Sun className="h-4 w-4" />
-						) : (
-							<Moon className="h-4 w-4" />
-						)}
-					</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-muted-foreground hover:text-foreground"
+							onClick={toggleDarkMode}
+							aria-label={
+								resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"
+							}
+						>
+							{resolvedTheme === "dark" ? (
+								<Sun className="h-4 w-4" />
+							) : (
+								<Moon className="h-4 w-4" />
+							)}
+						</Button>
 
-					{/* Sound control popover */}
-					<Popover>
+						{/* Sound control popover */}
+						<Popover>
 							<PopoverTrigger asChild>
 								<Button
 									variant="ghost"
@@ -299,7 +303,7 @@ const Header: React.FC = () => {
 													className={cn(
 														"flex items-center gap-2 rounded-md border px-3 py-2 text-left text-xs transition-colors",
 														theme === th.id
-															? "border-primary bg-primary/8 text-primary font-medium"
+															? "border-primary bg-primary/8 font-medium text-primary"
 															: "border-border hover:border-primary/40 hover:bg-muted/60",
 													)}
 												>
@@ -381,7 +385,10 @@ const Header: React.FC = () => {
 										{(["fr", "en"] as const).map((lang) => (
 											<DropdownMenuItem
 												key={lang}
-												className={cn("gap-2", i18n.language === lang && "font-medium")}
+												className={cn(
+													"gap-2",
+													i18n.language === lang && "font-medium",
+												)}
 												onSelect={() => {
 													i18n.changeLanguage(lang);
 													localStorage.setItem("lng", lang);
@@ -390,7 +397,9 @@ const Header: React.FC = () => {
 												<Check
 													className={cn(
 														"h-3.5 w-3.5",
-														i18n.language === lang ? "opacity-100" : "opacity-0",
+														i18n.language === lang
+															? "opacity-100"
+															: "opacity-0",
 													)}
 												/>
 												{lang === "fr" ? "Français" : "English"}

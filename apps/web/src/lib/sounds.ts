@@ -30,7 +30,7 @@ let soundEnabled = true;
 // Init from localStorage
 try {
 	const v = localStorage.getItem(VOLUME_KEY);
-	if (v !== null) masterVolume = Math.max(0, Math.min(1, parseFloat(v)));
+	if (v !== null) masterVolume = Math.max(0, Math.min(1, Number.parseFloat(v)));
 	const t = localStorage.getItem(THEME_KEY);
 	if (t && t in THEMES) currentTheme = t as SoundTheme;
 	const e = localStorage.getItem(ENABLED_KEY);

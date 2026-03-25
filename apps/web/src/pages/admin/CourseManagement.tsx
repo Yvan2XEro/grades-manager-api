@@ -1,13 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Pencil, PlusIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
+import FormModal from "@/components/modals/FormModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,17 +25,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { DialogFooter as ModalFooter } from "@/components/ui/dialog";
-import FormModal from "@/components/modals/FormModal";
 import {
 	Empty,
 	EmptyContent,
@@ -47,7 +49,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -65,11 +66,9 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -119,21 +118,24 @@ export default function CourseManagement() {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
 	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
-	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-		queryKey: ["courses"],
-		queryFn: async ({ pageParam }) => {
-			const result = await trpcClient.courses.list.query({
-				cursor: pageParam,
-				limit: 20,
-			});
-			return result as { items: Course[]; nextCursor?: string };
-		},
-		initialPageParam: undefined as string | undefined,
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
+	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery({
+			queryKey: ["courses"],
+			queryFn: async ({ pageParam }) => {
+				const result = await trpcClient.courses.list.query({
+					cursor: pageParam,
+					limit: 20,
+				});
+				return result as { items: Course[]; nextCursor?: string };
+			},
+			initialPageParam: undefined as string | undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		});
 
 	const courses = data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(courses);
 
 	const { data: defaultPrograms = [] } = useQuery({
@@ -180,7 +182,7 @@ export default function CourseManagement() {
 	});
 	const { watch } = form;
 	const selectedProgramId = watch("program");
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programs?.find((program) => program.id === selectedProgramId),
 		[programs, selectedProgramId],
 	);
@@ -379,107 +381,120 @@ export default function CourseManagement() {
 							{isLoading ? (
 								<TableSkeleton columns={7} rows={8} />
 							) : (
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="w-10">
-											<Checkbox
-												checked={selection.isAllSelected}
-												onCheckedChange={(checked) =>
-													selection.toggleAll(!!checked)
-												}
-												aria-label="Select all"
-											/>
-										</TableHead>
-										<TableHead className="w-20">
-											{t("admin.courses.table.code", { defaultValue: "Code" })}
-										</TableHead>
-										<TableHead>{t("admin.courses.table.name")}</TableHead>
-										<TableHead>{t("admin.courses.table.program")}</TableHead>
-										<TableHead className="w-16">{t("admin.courses.table.hours")}</TableHead>
-										<TableHead className="w-36">{t("admin.courses.table.teacher")}</TableHead>
-										<TableHead className="text-right">
-											{t("common.table.actions")}
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{courses.map((course) => (
-										<TableRow
-									key={course.id}
-									actions={
-										<>
-											<ContextMenuItem onSelect={() => startEdit(course)}>
-												<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
-											</ContextMenuItem>
-											<ContextMenuSeparator />
-											<ContextMenuItem variant="destructive" onSelect={() => confirmDelete(course.id)}>
-												<span>{t("common.actions.delete")}</span>
-											</ContextMenuItem>
-										</>
-									}
-								>
-											<TableCell>
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="w-10">
 												<Checkbox
-													checked={selection.isSelected(course.id)}
-													onCheckedChange={() => selection.toggle(course.id)}
-													aria-label={`Select ${course.name}`}
-												/>
-											</TableCell>
-											<TableCell>
-												<ClipboardCopy
-													value={course.code}
-													label={t("admin.courses.table.code", {
-														defaultValue: "Code",
-													})}
-												/>
-											</TableCell>
-											<TableCell>{course.name}</TableCell>
-											<TableCell>
-												{(() => {
-													const programInfo = programMap.get(course.program);
-													if (!programInfo) {
-														return t("common.labels.notAvailable", {
-															defaultValue: "N/A",
-														});
+													checked={selection.isAllSelected}
+													onCheckedChange={(checked) =>
+														selection.toggleAll(!!checked)
 													}
-													return (
-														<div className="space-y-0.5">
-															<p>{programInfo.name}</p>
-														</div>
-													);
-												})()}
-											</TableCell>
-											<TableCell>{course.hours}</TableCell>
-											<TableCell>
-												{teacherMap.get(course.defaultTeacher) ??
-													t("admin.courses.form.teacherPlaceholder")}
-											</TableCell>
-											<TableCell>
-												<div className="flex justify-end gap-2">
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														onClick={() => startEdit(course)}
-														aria-label={t("admin.courses.form.editTitle")}
-													>
-														<Pencil className="h-4 w-4" />
-													</Button>
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														className="text-destructive hover:text-destructive"
-														onClick={() => confirmDelete(course.id)}
-														aria-label={t("admin.courses.delete.title")}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											</TableCell>
+													aria-label="Select all"
+												/>
+											</TableHead>
+											<TableHead className="w-20">
+												{t("admin.courses.table.code", {
+													defaultValue: "Code",
+												})}
+											</TableHead>
+											<TableHead>{t("admin.courses.table.name")}</TableHead>
+											<TableHead>{t("admin.courses.table.program")}</TableHead>
+											<TableHead className="w-16">
+												{t("admin.courses.table.hours")}
+											</TableHead>
+											<TableHead className="w-36">
+												{t("admin.courses.table.teacher")}
+											</TableHead>
+											<TableHead className="text-right">
+												{t("common.table.actions")}
+											</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{courses.map((course) => (
+											<TableRow
+												key={course.id}
+												actions={
+													<>
+														<ContextMenuItem onSelect={() => startEdit(course)}>
+															<span>
+																{t("common.actions.edit", {
+																	defaultValue: "Edit",
+																})}
+															</span>
+														</ContextMenuItem>
+														<ContextMenuSeparator />
+														<ContextMenuItem
+															variant="destructive"
+															onSelect={() => confirmDelete(course.id)}
+														>
+															<span>{t("common.actions.delete")}</span>
+														</ContextMenuItem>
+													</>
+												}
+											>
+												<TableCell>
+													<Checkbox
+														checked={selection.isSelected(course.id)}
+														onCheckedChange={() => selection.toggle(course.id)}
+														aria-label={`Select ${course.name}`}
+													/>
+												</TableCell>
+												<TableCell>
+													<ClipboardCopy
+														value={course.code}
+														label={t("admin.courses.table.code", {
+															defaultValue: "Code",
+														})}
+													/>
+												</TableCell>
+												<TableCell>{course.name}</TableCell>
+												<TableCell>
+													{(() => {
+														const programInfo = programMap.get(course.program);
+														if (!programInfo) {
+															return t("common.labels.notAvailable", {
+																defaultValue: "N/A",
+															});
+														}
+														return (
+															<div className="space-y-0.5">
+																<p>{programInfo.name}</p>
+															</div>
+														);
+													})()}
+												</TableCell>
+												<TableCell>{course.hours}</TableCell>
+												<TableCell>
+													{teacherMap.get(course.defaultTeacher) ??
+														t("admin.courses.form.teacherPlaceholder")}
+												</TableCell>
+												<TableCell>
+													<div className="flex justify-end gap-2">
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															onClick={() => startEdit(course)}
+															aria-label={t("admin.courses.form.editTitle")}
+														>
+															<Pencil className="h-4 w-4" />
+														</Button>
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															className="text-destructive hover:text-destructive"
+															onClick={() => confirmDelete(course.id)}
+															aria-label={t("admin.courses.delete.title")}
+														>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
 							)}
 							<div ref={sentinelRef} className="h-1" />
 						</>
@@ -487,10 +502,14 @@ export default function CourseManagement() {
 						<Empty className="border border-dashed">
 							<EmptyHeader>
 								<EmptyTitle>
-									{t("admin.courses.empty.title", { defaultValue: "No courses available" })}
+									{t("admin.courses.empty.title", {
+										defaultValue: "No courses available",
+									})}
 								</EmptyTitle>
 								<EmptyDescription>
-									{t("admin.courses.empty.description", { defaultValue: "Create a course to populate the catalog." })}
+									{t("admin.courses.empty.description", {
+										defaultValue: "Create a course to populate the catalog.",
+									})}
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
@@ -507,152 +526,152 @@ export default function CourseManagement() {
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={handleCloseForm}
-				title={editingCourse ? t("admin.courses.form.editTitle") : t("admin.courses.form.createTitle")}
+				title={
+					editingCourse
+						? t("admin.courses.form.editTitle")
+						: t("admin.courses.form.createTitle")
+				}
 			>
 				<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.courses.form.nameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t("admin.courses.form.namePlaceholder")}
-													{...field}
-													value={field.value ?? ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.courses.form.codeLabel", {
-													defaultValue: "Code",
-												})}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t("admin.courses.form.codePlaceholder", {
-														defaultValue: "INF111",
-													})}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="hours"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.courses.form.hoursLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input
-													type="number"
-													value={field.value ?? ""}
-													onChange={(event) =>
-														field.onChange(
-															event.target.value === ""
-																? undefined
-																: Number(event.target.value),
-														)
-													}
-													placeholder={t("admin.courses.form.hoursPlaceholder")}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="defaultTeacher"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.courses.form.teacherLabel")}
-											</FormLabel>
-											<Select
-												onValueChange={field.onChange}
-												value={field.value || undefined}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={t(
-																"admin.courses.form.teacherPlaceholder",
-															)}
-														/>
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{teacherOptions.map((teacher) => (
-														<SelectItem key={teacher.id} value={teacher.id}>
-															{formatTeacherName(teacher)}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<CodedEntitySelect
-								items={programs}
-								onSearch={setProgramSearch}
-								value={
-									programs.find((p) => p.id === form.watch("program"))?.code ||
-									null
-								}
-								onChange={(code) => {
-									const program = programs.find((p) => p.code === code);
-									form.setValue("program", program?.id || "");
-								}}
-								label={t("admin.courses.form.programLabel")}
-								placeholder={t("admin.courses.form.programPlaceholder")}
-								error={form.formState.errors.program?.message}
-								searchMode="hybrid"
-								required
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.courses.form.nameLabel")}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.courses.form.namePlaceholder")}
+												{...field}
+												value={field.value ?? ""}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-							<ModalFooter className="gap-2">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseForm}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
-									{form.formState.isSubmitting ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : editingCourse ? (
-										t("common.actions.saveChanges")
-									) : (
-										t("admin.courses.form.createSubmit")
-									)}
-								</Button>
-							</ModalFooter>
-						</form>
-					</Form>
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.courses.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.courses.form.codePlaceholder", {
+													defaultValue: "INF111",
+												})}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="hours"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.courses.form.hoursLabel")}
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="number"
+												value={field.value ?? ""}
+												onChange={(event) =>
+													field.onChange(
+														event.target.value === ""
+															? undefined
+															: Number(event.target.value),
+													)
+												}
+												placeholder={t("admin.courses.form.hoursPlaceholder")}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="defaultTeacher"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.courses.form.teacherLabel")}
+										</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value || undefined}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.courses.form.teacherPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{teacherOptions.map((teacher) => (
+													<SelectItem key={teacher.id} value={teacher.id}>
+														{formatTeacherName(teacher)}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<CodedEntitySelect
+							items={programs}
+							onSearch={setProgramSearch}
+							value={
+								programs.find((p) => p.id === form.watch("program"))?.code ||
+								null
+							}
+							onChange={(code) => {
+								const program = programs.find((p) => p.code === code);
+								form.setValue("program", program?.id || "");
+							}}
+							label={t("admin.courses.form.programLabel")}
+							placeholder={t("admin.courses.form.programPlaceholder")}
+							error={form.formState.errors.program?.message}
+							searchMode="hybrid"
+							required
+						/>
+						<ModalFooter className="gap-2">
+							<Button type="button" variant="outline" onClick={handleCloseForm}>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingCourse ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.courses.form.createSubmit")
+								)}
+							</Button>
+						</ModalFooter>
+					</form>
+				</Form>
 			</FormModal>
 
 			<AlertDialog

@@ -4,8 +4,8 @@
  * Also exports `celebrate()` for major success actions (sound + confetti + haptic).
  */
 import { toast as sonner } from "sonner";
-import { sounds } from "./sounds";
 import { haptic } from "./haptic";
+import { sounds } from "./sounds";
 
 type SonnerToast = typeof sonner;
 

@@ -3,7 +3,6 @@ import { ArrowLeft, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import { RuleCard } from "@/components/promotion-rules/rule-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,18 +13,17 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { trpcClient } from "@/utils/trpc";
 import {
 	Empty,
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
+import { trpcClient } from "@/utils/trpc";
 
 type PromotionRule = {
 	id: string;
@@ -121,7 +119,7 @@ export function RulesListPage() {
 
 		try {
 			ruleset = JSON.parse(rulesetText);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 			return;
 		}
@@ -145,7 +143,7 @@ export function RulesListPage() {
 		if (rulesetText) {
 			try {
 				ruleset = JSON.parse(rulesetText);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 				return;
 			}
@@ -263,15 +261,20 @@ export function RulesListPage() {
 				</div>
 			) : (
 				<Empty className="border border-dashed">
-				<EmptyHeader>
-					<EmptyDescription>{t("admin.promotionRules.rulesList.emptyState.noRules")}</EmptyDescription>
-				</EmptyHeader>
-				<EmptyContent>
-					<Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
-						{t("admin.promotionRules.rulesList.emptyState.createFirst")}
-					</Button>
-				</EmptyContent>
-			</Empty>
+					<EmptyHeader>
+						<EmptyDescription>
+							{t("admin.promotionRules.rulesList.emptyState.noRules")}
+						</EmptyDescription>
+					</EmptyHeader>
+					<EmptyContent>
+						<Button
+							variant="outline"
+							onClick={() => setIsCreateDialogOpen(true)}
+						>
+							{t("admin.promotionRules.rulesList.emptyState.createFirst")}
+						</Button>
+					</EmptyContent>
+				</Empty>
 			)}
 
 			{/* Create Dialog */}

@@ -79,11 +79,17 @@ export async function cloneCurriculum(
 ) {
 	const target = await repo.findById(targetProgramId, institutionId);
 	if (!target)
-		throw new TRPCError({ code: "NOT_FOUND", message: "Target program not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Target program not found",
+		});
 
 	const source = await repo.findById(sourceProgramId, institutionId);
 	if (!source)
-		throw new TRPCError({ code: "NOT_FOUND", message: "Source program not found" });
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Source program not found",
+		});
 
 	const sourceUnits = await db.query.teachingUnits.findMany({
 		where: eq(schema.teachingUnits.programId, sourceProgramId),

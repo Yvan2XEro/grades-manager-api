@@ -2,15 +2,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Eye, EyeOff, Key, Plus, Trash2, Webhook } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
-import {
-	Card,
-	CardContent,
-} from "../../components/ui/card";
+import { Card, CardContent } from "../../components/ui/card";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
@@ -31,10 +32,6 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { trpcClient } from "../../utils/trpc";
 
 type ApiKey = {
@@ -89,7 +86,10 @@ export default function ApiKeysManagement() {
 			setNewRawKey(data.rawKey);
 		},
 		onError: (error: unknown) => {
-			const message = error instanceof Error ? error.message : t("admin.apiKeys.toast.createError");
+			const message =
+				error instanceof Error
+					? error.message
+					: t("admin.apiKeys.toast.createError");
 			toast.error(message);
 		},
 	});
@@ -104,7 +104,10 @@ export default function ApiKeysManagement() {
 			setRevokeId(null);
 		},
 		onError: (error: unknown) => {
-			const message = error instanceof Error ? error.message : t("admin.apiKeys.toast.revokeError");
+			const message =
+				error instanceof Error
+					? error.message
+					: t("admin.apiKeys.toast.revokeError");
 			toast.error(message);
 		},
 	});
@@ -125,7 +128,10 @@ export default function ApiKeysManagement() {
 			setEditingKey(null);
 		},
 		onError: (error: unknown) => {
-			const message = error instanceof Error ? error.message : t("admin.apiKeys.toast.webhookError");
+			const message =
+				error instanceof Error
+					? error.message
+					: t("admin.apiKeys.toast.webhookError");
 			toast.error(message);
 		},
 	});
@@ -186,7 +192,9 @@ export default function ApiKeysManagement() {
 										key={key.id}
 										actions={
 											<>
-												<ContextMenuItem onSelect={() => handleOpenWebhook(key)}>
+												<ContextMenuItem
+													onSelect={() => handleOpenWebhook(key)}
+												>
 													<span>{t("admin.apiKeys.actions.editWebhook")}</span>
 												</ContextMenuItem>
 												<ContextMenuSeparator />
@@ -215,17 +223,17 @@ export default function ApiKeysManagement() {
 										</TableCell>
 										<TableCell>
 											{key.webhookUrl ? (
-												<span className="text-xs text-muted-foreground truncate max-w-[200px] block">
+												<span className="block max-w-[200px] truncate text-muted-foreground text-xs">
 													{key.webhookUrl}
 												</span>
 											) : (
 												"—"
 											)}
 										</TableCell>
-										<TableCell className="text-sm text-muted-foreground">
+										<TableCell className="text-muted-foreground text-sm">
 											{formatDate(key.lastUsedAt)}
 										</TableCell>
-										<TableCell className="text-sm text-muted-foreground">
+										<TableCell className="text-muted-foreground text-sm">
 											{formatDate(key.createdAt)}
 										</TableCell>
 										<TableCell className="flex items-center justify-end gap-2">
@@ -255,7 +263,9 @@ export default function ApiKeysManagement() {
 						<Empty>
 							<EmptyHeader>
 								<EmptyTitle>{t("admin.apiKeys.empty.title")}</EmptyTitle>
-								<EmptyDescription>{t("admin.apiKeys.empty.description")}</EmptyDescription>
+								<EmptyDescription>
+									{t("admin.apiKeys.empty.description")}
+								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent />
 						</Empty>
@@ -266,7 +276,12 @@ export default function ApiKeysManagement() {
 			{/* Create key modal */}
 			<FormModal
 				isOpen={isCreateOpen}
-				onClose={() => { setIsCreateOpen(false); setLabel(""); setWebhookUrl(""); setWebhookSecret(""); }}
+				onClose={() => {
+					setIsCreateOpen(false);
+					setLabel("");
+					setWebhookUrl("");
+					setWebhookSecret("");
+				}}
 				title={t("admin.apiKeys.form.createTitle")}
 			>
 				<div className="space-y-4">
@@ -280,7 +295,9 @@ export default function ApiKeysManagement() {
 						/>
 					</div>
 					<div className="space-y-1.5">
-						<Label htmlFor="webhook-url">{t("admin.apiKeys.form.webhookUrl")}</Label>
+						<Label htmlFor="webhook-url">
+							{t("admin.apiKeys.form.webhookUrl")}
+						</Label>
 						<Input
 							id="webhook-url"
 							value={webhookUrl}
@@ -289,7 +306,9 @@ export default function ApiKeysManagement() {
 						/>
 					</div>
 					<div className="space-y-1.5">
-						<Label htmlFor="webhook-secret">{t("admin.apiKeys.form.webhookSecret")}</Label>
+						<Label htmlFor="webhook-secret">
+							{t("admin.apiKeys.form.webhookSecret")}
+						</Label>
 						<div className="relative">
 							<Input
 								id="webhook-secret"
@@ -302,14 +321,22 @@ export default function ApiKeysManagement() {
 							<button
 								type="button"
 								onClick={() => setShowSecret((v) => !v)}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								className="-translate-y-1/2 absolute top-1/2 right-2.5 text-muted-foreground hover:text-foreground"
 							>
-								{showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+								{showSecret ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
 							</button>
 						</div>
 					</div>
 					<DialogFooter className="gap-2 sm:gap-0">
-						<Button variant="ghost" type="button" onClick={() => setIsCreateOpen(false)}>
+						<Button
+							variant="ghost"
+							type="button"
+							onClick={() => setIsCreateOpen(false)}
+						>
 							{t("common.actions.cancel")}
 						</Button>
 						<Button
@@ -317,7 +344,9 @@ export default function ApiKeysManagement() {
 							disabled={!label.trim() || createMutation.isPending}
 							onClick={() => createMutation.mutate()}
 						>
-							{createMutation.isPending ? <Spinner className="mr-2 h-4 w-4" /> : null}
+							{createMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : null}
 							{t("admin.apiKeys.actions.generate")}
 						</Button>
 					</DialogFooter>
@@ -331,11 +360,11 @@ export default function ApiKeysManagement() {
 				title={t("admin.apiKeys.rawKey.title")}
 			>
 				<div className="space-y-4">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						{t("admin.apiKeys.rawKey.warning")}
 					</p>
 					<div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
-						<code className="flex-1 break-all text-xs font-mono select-all">
+						<code className="flex-1 select-all break-all font-mono text-xs">
 							{newRawKey}
 						</code>
 						<Button
@@ -357,12 +386,17 @@ export default function ApiKeysManagement() {
 			{/* Edit webhook modal */}
 			<FormModal
 				isOpen={isWebhookOpen}
-				onClose={() => { setIsWebhookOpen(false); setEditingKey(null); }}
+				onClose={() => {
+					setIsWebhookOpen(false);
+					setEditingKey(null);
+				}}
 				title={t("admin.apiKeys.webhook.title")}
 			>
 				<div className="space-y-4">
 					<div className="space-y-1.5">
-						<Label htmlFor="edit-webhook-url">{t("admin.apiKeys.form.webhookUrl")}</Label>
+						<Label htmlFor="edit-webhook-url">
+							{t("admin.apiKeys.form.webhookUrl")}
+						</Label>
 						<Input
 							id="edit-webhook-url"
 							value={editWebhookUrl}
@@ -386,14 +420,22 @@ export default function ApiKeysManagement() {
 							<button
 								type="button"
 								onClick={() => setShowEditSecret((v) => !v)}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								className="-translate-y-1/2 absolute top-1/2 right-2.5 text-muted-foreground hover:text-foreground"
 							>
-								{showEditSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+								{showEditSecret ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
 							</button>
 						</div>
 					</div>
 					<DialogFooter className="gap-2 sm:gap-0">
-						<Button variant="ghost" type="button" onClick={() => setIsWebhookOpen(false)}>
+						<Button
+							variant="ghost"
+							type="button"
+							onClick={() => setIsWebhookOpen(false)}
+						>
 							{t("common.actions.cancel")}
 						</Button>
 						<Button
@@ -401,7 +443,9 @@ export default function ApiKeysManagement() {
 							disabled={updateWebhookMutation.isPending}
 							onClick={() => updateWebhookMutation.mutate()}
 						>
-							{updateWebhookMutation.isPending ? <Spinner className="mr-2 h-4 w-4" /> : null}
+							{updateWebhookMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : null}
 							{t("common.actions.save")}
 						</Button>
 					</DialogFooter>

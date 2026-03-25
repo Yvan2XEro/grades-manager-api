@@ -367,7 +367,11 @@ export async function bulkGenerateClasses(
 	let skipped = 0;
 
 	for (const program of allPrograms) {
-		const options = (program as typeof program & { options: { id: string; name: string; code: string }[] }).options;
+		const options = (
+			program as typeof program & {
+				options: { id: string; name: string; code: string }[];
+			}
+		).options;
 		if (!options || options.length === 0) {
 			skipped++;
 			continue;

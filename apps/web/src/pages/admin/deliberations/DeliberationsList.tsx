@@ -1,13 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
-import {
-	Empty,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "../../../components/ui/empty";
+import { Gavel, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -16,11 +9,22 @@ import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelec
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../../components/ui/context-menu";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../../components/ui/empty";
 import {
 	Select,
 	SelectContent,
@@ -36,10 +40,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "../../../components/ui/context-menu";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
@@ -163,14 +163,16 @@ export default function DeliberationsList() {
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
 					<Empty className="border border-dashed">
-					<EmptyHeader>
-						<EmptyMedia variant="icon">
-							<Gavel className="text-muted-foreground" />
-						</EmptyMedia>
-						<EmptyTitle>{t("admin.deliberations.empty.title")}</EmptyTitle>
-						<EmptyDescription>{t("admin.deliberations.empty.description")}</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Gavel className="text-muted-foreground" />
+							</EmptyMedia>
+							<EmptyTitle>{t("admin.deliberations.empty.title")}</EmptyTitle>
+							<EmptyDescription>
+								{t("admin.deliberations.empty.description")}
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
 					<Table>
 						<TableHeader>
@@ -194,10 +196,35 @@ export default function DeliberationsList() {
 									key={d.id}
 									className="cursor-pointer"
 									onClick={() => navigate(`/admin/deliberations/${d.id}`)}
-									actions={<>
-										<ContextMenuItem onSelect={() => navigate(`/admin/deliberations/${d.id}`)}>{t("common.actions.open", { defaultValue: "Open" })}</ContextMenuItem>
-										{d.status === "draft" && <><ContextMenuSeparator /><ContextMenuItem className="text-destructive" onSelect={() => { if (window.confirm(t("admin.deliberations.confirm.delete"))) {} }}>{t("common.actions.delete")}</ContextMenuItem></>}
-									</>}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() =>
+													navigate(`/admin/deliberations/${d.id}`)
+												}
+											>
+												{t("common.actions.open", { defaultValue: "Open" })}
+											</ContextMenuItem>
+											{d.status === "draft" && (
+												<>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														className="text-destructive"
+														onSelect={() => {
+															if (
+																window.confirm(
+																	t("admin.deliberations.confirm.delete"),
+																)
+															) {
+															}
+														}}
+													>
+														{t("common.actions.delete")}
+													</ContextMenuItem>
+												</>
+											)}
+										</>
+									}
 								>
 									<TableCell className="font-medium">
 										{d.classRef?.name ?? "—"}

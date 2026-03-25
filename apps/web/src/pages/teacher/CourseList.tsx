@@ -35,7 +35,11 @@ interface Course {
 
 const PAGE_SIZE = 12;
 
-export default function CourseList({ basePath = "/teacher" }: { basePath?: string }) {
+export default function CourseList({
+	basePath = "/teacher",
+}: {
+	basePath?: string;
+}) {
 	const { user } = useStore();
 	const { t } = useTranslation();
 	const [page, setPage] = useState(0);
@@ -98,9 +102,7 @@ export default function CourseList({ basePath = "/teacher" }: { basePath?: strin
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-foreground">
-					{t("teacher.courses.title")}
-				</h2>
+				<h2 className="text-foreground">{t("teacher.courses.title")}</h2>
 				<p className="text-muted-foreground">{t("teacher.courses.subtitle")}</p>
 			</div>
 

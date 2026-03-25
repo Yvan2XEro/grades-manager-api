@@ -1,11 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-	CheckSquare2,
-	Loader2,
-	Square,
-	Users,
-	Zap,
-} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckSquare2, Loader2, Square, Users, Zap } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
@@ -34,7 +28,7 @@ import {
 	SelectValue,
 } from "../../../components/ui/select";
 import { Switch } from "../../../components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { trpcClient } from "../../../utils/trpc";
 
 const TYPES = ["semester", "annual", "retake"] as const;
@@ -52,7 +46,10 @@ interface SharedFields {
 	quickStart: boolean;
 }
 
-export default function CreateDeliberationDialog({ open, onOpenChange }: Props) {
+export default function CreateDeliberationDialog({
+	open,
+	onOpenChange,
+}: Props) {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [tab, setTab] = useState<"single" | "multi">("single");
@@ -77,7 +74,13 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 	}
 
 	function handleClose() {
-		setFields({ academicYearId: null, type: "", semesterId: null, deliberationDate: "", quickStart: false });
+		setFields({
+			academicYearId: null,
+			type: "",
+			semesterId: null,
+			deliberationDate: "",
+			quickStart: false,
+		});
 		setSingleClassId(null);
 		setSelectedClassIds([]);
 		setBatchProgress(null);
@@ -99,7 +102,8 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 
 	// ── Single class mutations ────────────────────────────────────────────────
 	const createMutation = useMutation({
-		mutationFn: () => trpcClient.deliberations.create.mutate(buildInput(singleClassId!)),
+		mutationFn: () =>
+			trpcClient.deliberations.create.mutate(buildInput(singleClassId!)),
 		onSuccess: () => {
 			toast.success(t("admin.deliberations.toast.createSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["deliberations"] });
@@ -110,7 +114,9 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 
 	const initAndComputeMutation = useMutation({
 		mutationFn: () =>
-			trpcClient.deliberations.initAndCompute.mutate(buildInput(singleClassId!)),
+			trpcClient.deliberations.initAndCompute.mutate(
+				buildInput(singleClassId!),
+			),
 		onSuccess: () => {
 			toast.success(
 				t("admin.deliberations.toast.initAndComputeSuccess", {
@@ -145,12 +151,15 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 
 	function toggleAll() {
 		setSelectedClassIds(
-			selectedClassIds.length === allClasses.length ? [] : allClasses.map((c) => c.id),
+			selectedClassIds.length === allClasses.length
+				? []
+				: allClasses.map((c) => c.id),
 		);
 	}
 
 	async function handleBatchCreate() {
-		if (!selectedClassIds.length || !fields.academicYearId || !fields.type) return;
+		if (!selectedClassIds.length || !fields.academicYearId || !fields.type)
+			return;
 		const errors: string[] = [];
 		setBatchProgress({ done: 0, total: selectedClassIds.length, errors: [] });
 
@@ -162,10 +171,16 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 			try {
 				await fn(buildInput(selectedClassIds[i]));
 			} catch {
-				const name = allClasses.find((c) => c.id === selectedClassIds[i])?.name ?? selectedClassIds[i];
+				const name =
+					allClasses.find((c) => c.id === selectedClassIds[i])?.name ??
+					selectedClassIds[i];
 				errors.push(name);
 			}
-			setBatchProgress({ done: i + 1, total: selectedClassIds.length, errors: [...errors] });
+			setBatchProgress({
+				done: i + 1,
+				total: selectedClassIds.length,
+				errors: [...errors],
+			});
 		}
 
 		queryClient.invalidateQueries({ queryKey: ["deliberations"] });
@@ -186,10 +201,14 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 		}
 	}
 
-	const singleCanSubmit = !!singleClassId && !!fields.academicYearId && !!fields.type;
-	const multiCanSubmit = !!selectedClassIds.length && !!fields.academicYearId && !!fields.type;
-	const singlePending = createMutation.isPending || initAndComputeMutation.isPending;
-	const batchRunning = !!batchProgress && batchProgress.done < batchProgress.total;
+	const singleCanSubmit =
+		!!singleClassId && !!fields.academicYearId && !!fields.type;
+	const multiCanSubmit =
+		!!selectedClassIds.length && !!fields.academicYearId && !!fields.type;
+	const singlePending =
+		createMutation.isPending || initAndComputeMutation.isPending;
+	const batchRunning =
+		!!batchProgress && batchProgress.done < batchProgress.total;
 
 	return (
 		<Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -198,21 +217,29 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 					<DialogTitle>{t("admin.deliberations.form.createTitle")}</DialogTitle>
 					<DialogDescription>
 						{t("admin.deliberations.form.createDescription", {
-							defaultValue: "Configurez et lancez une nouvelle session de délibération",
+							defaultValue:
+								"Configurez et lancez une nouvelle session de délibération",
 						})}
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 px-6 pb-4">
 					{/* ── Tabs ── */}
-					<Tabs value={tab} onValueChange={(v) => setTab(v as "single" | "multi")}>
+					<Tabs
+						value={tab}
+						onValueChange={(v) => setTab(v as "single" | "multi")}
+					>
 						<TabsList className="grid w-full grid-cols-2">
 							<TabsTrigger value="single">
-								{t("admin.deliberations.form.tabSingle", { defaultValue: "Classe unique" })}
+								{t("admin.deliberations.form.tabSingle", {
+									defaultValue: "Classe unique",
+								})}
 							</TabsTrigger>
 							<TabsTrigger value="multi" className="gap-1.5">
 								<Users className="h-3.5 w-3.5" />
-								{t("admin.deliberations.form.tabMulti", { defaultValue: "Multi-classes" })}
+								{t("admin.deliberations.form.tabMulti", {
+									defaultValue: "Multi-classes",
+								})}
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>
@@ -238,7 +265,9 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 								onValueChange={(v) => patch({ type: v, semesterId: null })}
 							>
 								<SelectTrigger>
-									<SelectValue placeholder={t("admin.deliberations.form.typePlaceholder")} />
+									<SelectValue
+										placeholder={t("admin.deliberations.form.typePlaceholder")}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{TYPES.map((ty) => (
@@ -259,7 +288,9 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 								<SemesterSelect
 									value={fields.semesterId}
 									onChange={(v) => patch({ semesterId: v })}
-									placeholder={t("admin.deliberations.form.semesterPlaceholder")}
+									placeholder={t(
+										"admin.deliberations.form.semesterPlaceholder",
+									)}
 								/>
 							</div>
 						)}
@@ -290,7 +321,9 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 										</span>
 									) : (
 										<SelectValue
-											placeholder={t("admin.deliberations.form.classPlaceholder")}
+											placeholder={t(
+												"admin.deliberations.form.classPlaceholder",
+											)}
 										/>
 									)}
 								</SelectTrigger>
@@ -305,7 +338,11 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 						</div>
 					) : (
 						<div className="space-y-2">
-							<Label>{t("admin.deliberations.form.classes", { defaultValue: "Classes" })}</Label>
+							<Label>
+								{t("admin.deliberations.form.classes", {
+									defaultValue: "Classes",
+								})}
+							</Label>
 							{!fields.academicYearId ? (
 								<p className="rounded-lg border border-dashed py-5 text-center text-muted-foreground text-sm">
 									{t("admin.deliberations.form.selectYearFirst", {
@@ -328,7 +365,7 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 										<button
 											type="button"
 											onClick={toggleAll}
-											className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+											className="flex items-center gap-1.5 text-primary text-sm hover:underline"
 										>
 											{selectedClassIds.length === allClasses.length ? (
 												<CheckSquare2 className="h-4 w-4" />
@@ -336,8 +373,12 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 												<Square className="h-4 w-4" />
 											)}
 											{selectedClassIds.length === allClasses.length
-												? t("common.actions.deselectAll", { defaultValue: "Tout désélectionner" })
-												: t("common.actions.selectAll", { defaultValue: "Tout sélectionner" })}
+												? t("common.actions.deselectAll", {
+														defaultValue: "Tout désélectionner",
+													})
+												: t("common.actions.selectAll", {
+														defaultValue: "Tout sélectionner",
+													})}
 										</button>
 										{selectedClassIds.length > 0 && (
 											<Badge variant="secondary">
@@ -363,15 +404,19 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 									</ScrollArea>
 									{batchProgress && (
 										<div className="space-y-1.5 rounded-lg border bg-muted/30 p-3">
-											<div className="flex items-center justify-between text-xs text-muted-foreground">
-												<span>{batchProgress.done} / {batchProgress.total}</span>
+											<div className="flex items-center justify-between text-muted-foreground text-xs">
+												<span>
+													{batchProgress.done} / {batchProgress.total}
+												</span>
 												{batchProgress.errors.length > 0 && (
 													<span className="text-destructive">
 														{batchProgress.errors.length} erreur(s)
 													</span>
 												)}
 											</div>
-											<Progress value={(batchProgress.done / batchProgress.total) * 100} />
+											<Progress
+												value={(batchProgress.done / batchProgress.total) * 100}
+											/>
 											{batchProgress.errors.length > 0 && (
 												<p className="text-destructive text-xs">
 													Échecs : {batchProgress.errors.join(", ")}
@@ -392,13 +437,19 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 							onCheckedChange={(v) => patch({ quickStart: v })}
 						/>
 						<div>
-							<label htmlFor="quick-start" className="cursor-pointer font-medium text-sm">
+							<label
+								htmlFor="quick-start"
+								className="cursor-pointer font-medium text-sm"
+							>
 								<Zap className="mr-1 inline h-3.5 w-3.5 text-yellow-500" />
-								{t("admin.deliberations.form.quickStart", { defaultValue: "Démarrage rapide" })}
+								{t("admin.deliberations.form.quickStart", {
+									defaultValue: "Démarrage rapide",
+								})}
 							</label>
 							<p className="text-muted-foreground text-xs">
 								{t("admin.deliberations.form.quickStartHint", {
-									defaultValue: "Crée, ouvre et calcule les résultats en une seule étape",
+									defaultValue:
+										"Crée, ouvre et calcule les résultats en une seule étape",
 								})}
 							</p>
 						</div>
@@ -406,30 +457,45 @@ export default function CreateDeliberationDialog({ open, onOpenChange }: Props) 
 				</div>
 
 				<DialogFooter>
-					<Button variant="outline" onClick={handleClose} disabled={batchRunning}>
+					<Button
+						variant="outline"
+						onClick={handleClose}
+						disabled={batchRunning}
+					>
 						{t("common.actions.cancel")}
 					</Button>
 					{tab === "single" ? (
 						<Button
 							onClick={() =>
-								fields.quickStart ? initAndComputeMutation.mutate() : createMutation.mutate()
+								fields.quickStart
+									? initAndComputeMutation.mutate()
+									: createMutation.mutate()
 							}
 							disabled={!singleCanSubmit || singlePending}
 						>
-							{singlePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+							{singlePending && (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							)}
 							{fields.quickStart
-								? t("admin.deliberations.form.quickStartSubmit", { defaultValue: "Créer et calculer" })
+								? t("admin.deliberations.form.quickStartSubmit", {
+										defaultValue: "Créer et calculer",
+									})
 								: t("common.actions.create")}
 						</Button>
 					) : (
-						<Button onClick={handleBatchCreate} disabled={!multiCanSubmit || batchRunning}>
+						<Button
+							onClick={handleBatchCreate}
+							disabled={!multiCanSubmit || batchRunning}
+						>
 							{batchRunning ? (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							) : (
 								<Users className="mr-2 h-4 w-4" />
 							)}
 							{batchRunning
-								? t("admin.deliberations.form.batchCreating", { defaultValue: "Création en cours…" })
+								? t("admin.deliberations.form.batchCreating", {
+										defaultValue: "Création en cours…",
+									})
 								: t("admin.deliberations.form.batchSubmit", {
 										defaultValue: `Créer pour ${selectedClassIds.length || "…"} classe(s)`,
 									})}

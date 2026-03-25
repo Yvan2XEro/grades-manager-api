@@ -1,6 +1,5 @@
 import Handlebars from "handlebars";
 import puppeteer from "puppeteer";
-import { db } from "../../db";
 import type { DiplomationExportData } from "../deliberations/deliberations.types";
 import { ExportsRepo } from "./exports.repo";
 import type {
@@ -18,7 +17,6 @@ import {
 	getObservation,
 	loadExportConfig,
 	loadTemplate,
-	normalizeExamType,
 	resolveStudentGradesWithRetakes,
 } from "./template-helper";
 import {
@@ -412,7 +410,7 @@ export class ExportsService {
 	private processPVData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
-		templateConfig: TemplateConfiguration,
+		_templateConfig: TemplateConfiguration,
 		includeRetakes = true,
 	) {
 		// Group courses by teaching unit
@@ -622,7 +620,7 @@ export class ExportsService {
 	private processEvaluationData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
-		templateConfig: TemplateConfiguration,
+		_templateConfig: TemplateConfiguration,
 		observations?: string,
 	) {
 		// Sort grades alphabetically by student last name, then first name
@@ -704,7 +702,7 @@ export class ExportsService {
 	private processUEData(
 		data: any,
 		config: ReturnType<typeof loadExportConfig>,
-		templateConfig: TemplateConfiguration,
+		_templateConfig: TemplateConfiguration,
 		includeRetakes = true,
 	) {
 		const { teachingUnit, classCourses, students } = data;

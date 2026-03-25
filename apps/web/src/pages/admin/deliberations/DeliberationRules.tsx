@@ -26,6 +26,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../../components/ui/empty";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import {
@@ -37,13 +44,6 @@ import {
 } from "../../../components/ui/select";
 import { Textarea } from "../../../components/ui/textarea";
 import { trpcClient } from "../../../utils/trpc";
-import {
-	Empty,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-	EmptyDescription,
-} from "../../../components/ui/empty";
 
 const CATEGORIES = [
 	"admission",
@@ -238,14 +238,18 @@ export default function DeliberationRules() {
 				</div>
 			) : rules.length === 0 ? (
 				<Empty className="border border-dashed">
-				<EmptyHeader>
-					<EmptyMedia variant="icon">
-						<FileCog className="text-muted-foreground" />
-					</EmptyMedia>
-					<EmptyTitle>{t("admin.deliberations.rules.empty.title")}</EmptyTitle>
-					<EmptyDescription>{t("admin.deliberations.rules.empty.description")}</EmptyDescription>
-				</EmptyHeader>
-			</Empty>
+					<EmptyHeader>
+						<EmptyMedia variant="icon">
+							<FileCog className="text-muted-foreground" />
+						</EmptyMedia>
+						<EmptyTitle>
+							{t("admin.deliberations.rules.empty.title")}
+						</EmptyTitle>
+						<EmptyDescription>
+							{t("admin.deliberations.rules.empty.description")}
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			) : (
 				<div className="space-y-6">
 					{grouped.map((group) => (

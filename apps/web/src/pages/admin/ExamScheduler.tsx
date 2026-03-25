@@ -126,7 +126,7 @@ export default function ExamScheduler() {
 			return result.items as Semester[];
 		},
 	});
-	const semesters = semestersQuery.data ?? [];
+	const _semesters = semestersQuery.data ?? [];
 
 	const classesQuery = useQuery({
 		queryKey: ["classes", academicYearId],
@@ -411,9 +411,7 @@ export default function ExamScheduler() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 className="text-foreground">
-						{t("admin.examScheduler.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.examScheduler.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.examScheduler.subtitle")}
 					</p>
@@ -431,7 +429,12 @@ export default function ExamScheduler() {
 							defaultValue: "Rattrapages rapides",
 						})}
 					</Button>
-					<Button onClick={() => { setSessionMode("normal"); setIsScheduleOpen(true); }}>
+					<Button
+						onClick={() => {
+							setSessionMode("normal");
+							setIsScheduleOpen(true);
+						}}
+					>
 						<Play className="mr-2 h-4 w-4" />
 						{t("admin.examScheduler.actions.schedule")}
 					</Button>
@@ -1016,79 +1019,87 @@ export default function ExamScheduler() {
 						</DialogTitle>
 					</DialogHeader>
 					<div className="px-6 pb-4">
-					{runDetailsQuery.isLoading ? (
-						<div className="flex items-center justify-center py-8">
-							<Spinner />
-						</div>
-					) : !detailsData ? (
-						<Empty>
-						<EmptyHeader>
-							<EmptyDescription>{t("admin.examScheduler.history.emptyDescription")}</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-					) : (
-						<div className="space-y-4">
-							<div className="text-muted-foreground text-xs">
-								{t("admin.examScheduler.history.details.subtitle", {
-									date: format(new Date(detailsData.run.createdAt), "PPp"),
-								})}
+						{runDetailsQuery.isLoading ? (
+							<div className="flex items-center justify-center py-8">
+								<Spinner />
 							</div>
-							<div className="overflow-x-auto">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.exam")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.course")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.class")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.type")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.date")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.status")}
-											</TableHead>
-											<TableHead>
-												{t("admin.examScheduler.history.details.table.locked")}
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{detailsData.exams.map((exam) => (
-											<TableRow key={exam.id}>
-												<TableCell>{exam.name}</TableCell>
-												<TableCell>{exam.courseName ?? "—"}</TableCell>
-												<TableCell>{exam.className ?? "—"}</TableCell>
-												<TableCell>{exam.type}</TableCell>
-												<TableCell>
-													{format(new Date(exam.date), "PP")}
-												</TableCell>
-												<TableCell>
-													<Badge variant="outline">{exam.status}</Badge>
-												</TableCell>
-												<TableCell>
-													<Badge
-														variant={exam.isLocked ? "default" : "secondary"}
-													>
-														{exam.isLocked
-															? t("admin.exams.status.locked")
-															: t("admin.exams.status.open")}
-													</Badge>
-												</TableCell>
+						) : !detailsData ? (
+							<Empty>
+								<EmptyHeader>
+									<EmptyDescription>
+										{t("admin.examScheduler.history.emptyDescription")}
+									</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						) : (
+							<div className="space-y-4">
+								<div className="text-muted-foreground text-xs">
+									{t("admin.examScheduler.history.details.subtitle", {
+										date: format(new Date(detailsData.run.createdAt), "PPp"),
+									})}
+								</div>
+								<div className="overflow-x-auto">
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>
+													{t("admin.examScheduler.history.details.table.exam")}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.examScheduler.history.details.table.course",
+													)}
+												</TableHead>
+												<TableHead>
+													{t("admin.examScheduler.history.details.table.class")}
+												</TableHead>
+												<TableHead>
+													{t("admin.examScheduler.history.details.table.type")}
+												</TableHead>
+												<TableHead>
+													{t("admin.examScheduler.history.details.table.date")}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.examScheduler.history.details.table.status",
+													)}
+												</TableHead>
+												<TableHead>
+													{t(
+														"admin.examScheduler.history.details.table.locked",
+													)}
+												</TableHead>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
+										</TableHeader>
+										<TableBody>
+											{detailsData.exams.map((exam) => (
+												<TableRow key={exam.id}>
+													<TableCell>{exam.name}</TableCell>
+													<TableCell>{exam.courseName ?? "—"}</TableCell>
+													<TableCell>{exam.className ?? "—"}</TableCell>
+													<TableCell>{exam.type}</TableCell>
+													<TableCell>
+														{format(new Date(exam.date), "PP")}
+													</TableCell>
+													<TableCell>
+														<Badge variant="outline">{exam.status}</Badge>
+													</TableCell>
+													<TableCell>
+														<Badge
+															variant={exam.isLocked ? "default" : "secondary"}
+														>
+															{exam.isLocked
+																? t("admin.exams.status.locked")
+																: t("admin.exams.status.open")}
+														</Badge>
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
 							</div>
-						</div>
-					)}
+						)}
 					</div>
 				</DialogContent>
 			</Dialog>

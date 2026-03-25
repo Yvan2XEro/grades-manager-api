@@ -5,8 +5,8 @@ import type { DomainUserStatus, Gender } from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { domainUsersRepo } from "@/modules/domain-users";
-import type { CreateUserWithAuthInput } from "./users.zod";
 import * as repo from "./users.repo";
+import type { CreateUserWithAuthInput } from "./users.zod";
 
 type CreateProfileInput = {
 	firstName: string;

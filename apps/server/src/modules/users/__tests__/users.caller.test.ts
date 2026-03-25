@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 import { randomUUID } from "node:crypto";
 import type { Context } from "@/lib/context";
-import { auth as testAuth, db as testDb } from "@/lib/test-db";
+import { auth as testAuth } from "@/lib/test-db";
 import {
 	asAdmin,
 	asUser,

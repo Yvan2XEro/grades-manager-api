@@ -1,5 +1,5 @@
-import { and, eq, isNotNull } from "drizzle-orm";
 import { createHmac } from "node:crypto";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { diplomationApiKeys } from "@/db/schema/app-schema";
 

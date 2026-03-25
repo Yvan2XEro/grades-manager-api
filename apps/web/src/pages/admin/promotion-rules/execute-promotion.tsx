@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,6 +16,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+} from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -25,15 +30,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@/components/ui/empty";
 
 export function ExecutePromotionPage() {
 	const { t } = useTranslation();
@@ -53,14 +51,14 @@ export function ExecutePromotionPage() {
 	const { data: rule } = useQuery({
 		queryKey: ["promotionRule", state?.ruleId],
 		queryFn: async () =>
-			trpcClient.promotionRules.getById.query({ id: state!.ruleId }),
+			trpcClient.promotionRules.getById.query({ id: state?.ruleId }),
 		enabled: !!state?.ruleId,
 	});
 
 	const { data: sourceClass } = useQuery({
 		queryKey: ["class", state?.sourceClassId],
 		queryFn: async () =>
-			trpcClient.classes.getById.query({ id: state!.sourceClassId }),
+			trpcClient.classes.getById.query({ id: state?.sourceClassId }),
 		enabled: !!state?.sourceClassId,
 	});
 
@@ -159,15 +157,20 @@ export function ExecutePromotionPage() {
 				<Card className="border-0 shadow-sm">
 					<CardContent className="pt-6">
 						<Empty className="border border-dashed">
-						<EmptyHeader>
-							<EmptyDescription>No promotion data found. Please start from the evaluation page.</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button onClick={() => navigate("/admin/promotion-rules/evaluate")}>
-								Go to Evaluation
-							</Button>
-						</EmptyContent>
-					</Empty>
+							<EmptyHeader>
+								<EmptyDescription>
+									No promotion data found. Please start from the evaluation
+									page.
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									onClick={() => navigate("/admin/promotion-rules/evaluate")}
+								>
+									Go to Evaluation
+								</Button>
+							</EmptyContent>
+						</Empty>
 					</CardContent>
 				</Card>
 			</div>
@@ -188,9 +191,7 @@ export function ExecutePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="text-foreground">
-						Execute Promotion
-					</h1>
+					<h1 className="text-foreground">Execute Promotion</h1>
 					<p className="mt-1 text-muted-foreground">
 						Confirm and apply the promotion to selected students
 					</p>

@@ -14,17 +14,15 @@ const badgeVariants = cva(
 				secondary:
 					"border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/80",
 				destructive:
-					"border-transparent bg-destructive/12 text-destructive border-destructive/20 dark:bg-destructive/20 [a&]:hover:bg-destructive/20",
+					"border-destructive/20 border-transparent bg-destructive/12 text-destructive dark:bg-destructive/20 [a&]:hover:bg-destructive/20",
 				outline:
 					"border-border bg-transparent text-foreground [a&]:hover:bg-accent",
 				success:
-					"border-transparent bg-emerald-500/12 text-emerald-700 border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/20",
+					"border-emerald-500/25 border-transparent bg-emerald-500/12 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-400",
 				warning:
-					"border-transparent bg-amber-500/12 text-amber-700 border-amber-500/25 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/20",
-				info:
-					"border-transparent bg-sky-500/12 text-sky-700 border-sky-500/25 dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-500/20",
-				muted:
-					"border-border bg-muted text-muted-foreground",
+					"border-amber-500/25 border-transparent bg-amber-500/12 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400",
+				info: "border-sky-500/25 border-transparent bg-sky-500/12 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/15 dark:text-sky-400",
+				muted: "border-border bg-muted text-muted-foreground",
 			},
 		},
 		defaultVariants: {

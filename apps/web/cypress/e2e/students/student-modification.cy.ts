@@ -161,14 +161,14 @@ describe("Student Management - Modification", () => {
 			cy.loginAs("administrator", { route: "/admin/students" });
 
 			// Capture student name from list
-			let studentName: string;
+			let _studentName: string;
 			cy.get("body")
 				.invoke("text")
 				.then((text) => {
 					// Find a student name (assuming seed data has students)
 					const match = text.match(/ENG\d+-\d+/);
 					if (match) {
-						studentName = match[0];
+						_studentName = match[0];
 					}
 				});
 
@@ -208,7 +208,7 @@ describe("Student Management - Modification", () => {
 			cy.loginAs("administrator", { route: "/admin/students" });
 
 			// Get original first name
-			let originalName: string;
+			let _originalName: string;
 			cy.findAllByRole("button", { name: /edit|modifier/i })
 				.first()
 				.click();
@@ -216,7 +216,7 @@ describe("Student Management - Modification", () => {
 			cy.findByLabelText(/first.*name|prénom/i)
 				.invoke("val")
 				.then((val) => {
-					originalName = val as string;
+					_originalName = val as string;
 				});
 
 			// Change it

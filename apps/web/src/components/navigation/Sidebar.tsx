@@ -29,120 +29,296 @@ import {
 	Users,
 	X,
 } from "lucide-react";
-import type React from "react";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useTheme } from "next-themes";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
 import { useStore } from "../../store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-const ROOT_PATHS = new Set(["/admin", "/teacher", "/grade-editor", "/dean", "/student"]);
+const ROOT_PATHS = new Set([
+	"/admin",
+	"/teacher",
+	"/grade-editor",
+	"/dean",
+	"/student",
+]);
 
 const Sidebar: React.FC = () => {
 	const { user, sidebarOpen, sidebarCollapsed } = useStore();
 	const { t } = useTranslation();
 	const location = useLocation();
-	const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["overview"]));
+	const [openGroups, setOpenGroups] = useState<Set<string>>(
+		new Set(["overview"]),
+	);
 	const [search, setSearch] = useState("");
 
 	const IC = "size-[15px] shrink-0";
 
-	const adminGroups = useMemo(() => [
-		{
-			key: "overview",
-			titleKey: "navigation.sidebar.groups.overview",
-			items: [
-				{ to: "/admin",                icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.admin.dashboard" },
-				{ to: "/admin/institution",    icon: <Landmark        className={IC} />, labelKey: "navigation.sidebar.admin.institution" },
-				{ to: "/admin/academic-years", icon: <Calendar        className={IC} />, labelKey: "navigation.sidebar.admin.academicYears" },
-			],
-		},
-		{
-			key: "structure",
-			titleKey: "navigation.sidebar.groups.structure",
-			items: [
-				{ to: "/admin/faculties",       icon: <Building2     className={IC} />, labelKey: "navigation.sidebar.admin.faculties" },
-				{ to: "/admin/study-cycles",    icon: <Layers3       className={IC} />, labelKey: "navigation.sidebar.admin.studyCycles" },
-				{ to: "/admin/programs",        icon: <School        className={IC} />, labelKey: "navigation.sidebar.admin.programs" },
-				{ to: "/admin/teaching-units",  icon: <BookOpenCheck className={IC} />, labelKey: "navigation.sidebar.admin.teachingUnits" },
-				{ to: "/admin/classes",         icon: <Users         className={IC} />, labelKey: "navigation.sidebar.admin.classes" },
-			],
-		},
-		{
-			key: "users",
-			titleKey: "navigation.sidebar.groups.users",
-			items: [
-				{ to: "/admin/users",    icon: <UserCog       className={IC} />, labelKey: "navigation.sidebar.admin.users" },
-				{ to: "/admin/students", icon: <GraduationCap className={IC} />, labelKey: "navigation.sidebar.admin.students" },
-			],
-		},
-		{
-			key: "teaching",
-			titleKey: "navigation.sidebar.groups.teaching",
-			items: [
-				{ to: "/admin/courses",       icon: <BookOpen      className={IC} />, labelKey: "navigation.sidebar.admin.courses" },
-				{ to: "/admin/class-courses", icon: <BookOpenCheck className={IC} />, labelKey: "navigation.sidebar.admin.courseAssignments" },
-				{ to: "/admin/enrollments",   icon: <Calendar      className={IC} />, labelKey: "navigation.sidebar.admin.enrollments" },
-			],
-		},
-		{
-			key: "evaluation",
-			titleKey: "navigation.sidebar.groups.evaluation",
-			items: [
-				{ to: "/admin/exams",              icon: <ClipboardList   className={IC} />, labelKey: "navigation.sidebar.admin.exams" },
-				{ to: "/admin/exam-types",         icon: <ClipboardList   className={IC} />, labelKey: "navigation.sidebar.admin.examTypes" },
-				{ to: "/admin/exam-scheduler",     icon: <CalendarPlus    className={IC} />, labelKey: "navigation.sidebar.admin.examScheduler" },
-				{ to: "/admin/retake-eligibility", icon: <RefreshCw       className={IC} />, labelKey: "navigation.sidebar.admin.retakeEligibility" },
-				{ to: "/admin/grade-export",       icon: <FileSpreadsheet className={IC} />, labelKey: "navigation.sidebar.admin.gradeExport" },
-				{ to: "/admin/grade-access",       icon: <ShieldCheck     className={IC} />, labelKey: "navigation.sidebar.admin.gradeAccess" },
-				{ to: "/grade-editor/courses",     icon: <BookOpen        className={IC} />, labelKey: "navigation.sidebar.admin.gradeEntry" },
-				{ to: "/admin/export-templates",   icon: <FileText        className={IC} />, labelKey: "navigation.sidebar.admin.exportTemplates" },
-			],
-		},
-		{
-			key: "promotion",
-			titleKey: "navigation.sidebar.groups.promotion",
-			items: [
-				{ to: "/admin/deliberations",       icon: <Gavel     className={IC} />, labelKey: "navigation.sidebar.admin.deliberations",      excludePrefix: "/admin/deliberations/rules" },
-				{ to: "/admin/deliberations/rules", icon: <TrendingUp className={IC} />, labelKey: "navigation.sidebar.admin.deliberationRules" },
-				{ to: "/admin/rules",               icon: <FileCog   className={IC} />, labelKey: "navigation.sidebar.admin.rules" },
-			],
-		},
-		{
-			key: "system",
-			titleKey: "navigation.sidebar.groups.system",
-			items: [
-				{ to: "/admin/registration-numbers", icon: <Hash            className={IC} />, labelKey: "navigation.sidebar.admin.registrationNumbers" },
-				{ to: "/admin/monitoring",           icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.admin.monitoring" },
-				{ to: "/admin/notifications",        icon: <Bell            className={IC} />, labelKey: "navigation.sidebar.admin.notifications" },
-				{ to: "/admin/batch-jobs",           icon: <PlayCircle      className={IC} />, labelKey: "navigation.sidebar.admin.batchJobs" },
-			{ to: "/admin/api-keys",             icon: <Key             className={IC} />, labelKey: "navigation.sidebar.admin.apiKeys" },
-			],
-		},
-	], []);
+	const adminGroups = useMemo(
+		() => [
+			{
+				key: "overview",
+				titleKey: "navigation.sidebar.groups.overview",
+				items: [
+					{
+						to: "/admin",
+						icon: <LayoutDashboard className={IC} />,
+						labelKey: "navigation.sidebar.admin.dashboard",
+					},
+					{
+						to: "/admin/institution",
+						icon: <Landmark className={IC} />,
+						labelKey: "navigation.sidebar.admin.institution",
+					},
+					{
+						to: "/admin/academic-years",
+						icon: <Calendar className={IC} />,
+						labelKey: "navigation.sidebar.admin.academicYears",
+					},
+				],
+			},
+			{
+				key: "structure",
+				titleKey: "navigation.sidebar.groups.structure",
+				items: [
+					{
+						to: "/admin/faculties",
+						icon: <Building2 className={IC} />,
+						labelKey: "navigation.sidebar.admin.faculties",
+					},
+					{
+						to: "/admin/study-cycles",
+						icon: <Layers3 className={IC} />,
+						labelKey: "navigation.sidebar.admin.studyCycles",
+					},
+					{
+						to: "/admin/programs",
+						icon: <School className={IC} />,
+						labelKey: "navigation.sidebar.admin.programs",
+					},
+					{
+						to: "/admin/teaching-units",
+						icon: <BookOpenCheck className={IC} />,
+						labelKey: "navigation.sidebar.admin.teachingUnits",
+					},
+					{
+						to: "/admin/classes",
+						icon: <Users className={IC} />,
+						labelKey: "navigation.sidebar.admin.classes",
+					},
+				],
+			},
+			{
+				key: "users",
+				titleKey: "navigation.sidebar.groups.users",
+				items: [
+					{
+						to: "/admin/users",
+						icon: <UserCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.users",
+					},
+					{
+						to: "/admin/students",
+						icon: <GraduationCap className={IC} />,
+						labelKey: "navigation.sidebar.admin.students",
+					},
+				],
+			},
+			{
+				key: "teaching",
+				titleKey: "navigation.sidebar.groups.teaching",
+				items: [
+					{
+						to: "/admin/courses",
+						icon: <BookOpen className={IC} />,
+						labelKey: "navigation.sidebar.admin.courses",
+					},
+					{
+						to: "/admin/class-courses",
+						icon: <BookOpenCheck className={IC} />,
+						labelKey: "navigation.sidebar.admin.courseAssignments",
+					},
+					{
+						to: "/admin/enrollments",
+						icon: <Calendar className={IC} />,
+						labelKey: "navigation.sidebar.admin.enrollments",
+					},
+				],
+			},
+			{
+				key: "evaluation",
+				titleKey: "navigation.sidebar.groups.evaluation",
+				items: [
+					{
+						to: "/admin/exams",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.admin.exams",
+					},
+					{
+						to: "/admin/exam-types",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.admin.examTypes",
+					},
+					{
+						to: "/admin/exam-scheduler",
+						icon: <CalendarPlus className={IC} />,
+						labelKey: "navigation.sidebar.admin.examScheduler",
+					},
+					{
+						to: "/admin/retake-eligibility",
+						icon: <RefreshCw className={IC} />,
+						labelKey: "navigation.sidebar.admin.retakeEligibility",
+					},
+					{
+						to: "/admin/grade-export",
+						icon: <FileSpreadsheet className={IC} />,
+						labelKey: "navigation.sidebar.admin.gradeExport",
+					},
+					{
+						to: "/admin/grade-access",
+						icon: <ShieldCheck className={IC} />,
+						labelKey: "navigation.sidebar.admin.gradeAccess",
+					},
+					{
+						to: "/grade-editor/courses",
+						icon: <BookOpen className={IC} />,
+						labelKey: "navigation.sidebar.admin.gradeEntry",
+					},
+					{
+						to: "/admin/export-templates",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.exportTemplates",
+					},
+				],
+			},
+			{
+				key: "promotion",
+				titleKey: "navigation.sidebar.groups.promotion",
+				items: [
+					{
+						to: "/admin/deliberations",
+						icon: <Gavel className={IC} />,
+						labelKey: "navigation.sidebar.admin.deliberations",
+						excludePrefix: "/admin/deliberations/rules",
+					},
+					{
+						to: "/admin/deliberations/rules",
+						icon: <TrendingUp className={IC} />,
+						labelKey: "navigation.sidebar.admin.deliberationRules",
+					},
+					{
+						to: "/admin/rules",
+						icon: <FileCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.rules",
+					},
+				],
+			},
+			{
+				key: "system",
+				titleKey: "navigation.sidebar.groups.system",
+				items: [
+					{
+						to: "/admin/registration-numbers",
+						icon: <Hash className={IC} />,
+						labelKey: "navigation.sidebar.admin.registrationNumbers",
+					},
+					{
+						to: "/admin/monitoring",
+						icon: <LayoutDashboard className={IC} />,
+						labelKey: "navigation.sidebar.admin.monitoring",
+					},
+					{
+						to: "/admin/notifications",
+						icon: <Bell className={IC} />,
+						labelKey: "navigation.sidebar.admin.notifications",
+					},
+					{
+						to: "/admin/batch-jobs",
+						icon: <PlayCircle className={IC} />,
+						labelKey: "navigation.sidebar.admin.batchJobs",
+					},
+					{
+						to: "/admin/api-keys",
+						icon: <Key className={IC} />,
+						labelKey: "navigation.sidebar.admin.apiKeys",
+					},
+				],
+			},
+		],
+		[],
+	);
 
-	const teacherLinks = useMemo(() => [
-		{ to: "/teacher",            icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.teacher.dashboard" },
-		{ to: "/teacher/courses",    icon: <BookOpen        className={IC} />, labelKey: "navigation.sidebar.teacher.courses" },
-		{ to: "/teacher/attendance", icon: <ClipboardList   className={IC} />, labelKey: "navigation.sidebar.teacher.attendance" },
-		{ to: "/teacher/workflows",  icon: <Bell            className={IC} />, labelKey: "navigation.sidebar.teacher.workflows" },
-	], []);
+	const teacherLinks = useMemo(
+		() => [
+			{
+				to: "/teacher",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.teacher.dashboard",
+			},
+			{
+				to: "/teacher/courses",
+				icon: <BookOpen className={IC} />,
+				labelKey: "navigation.sidebar.teacher.courses",
+			},
+			{
+				to: "/teacher/attendance",
+				icon: <ClipboardList className={IC} />,
+				labelKey: "navigation.sidebar.teacher.attendance",
+			},
+			{
+				to: "/teacher/workflows",
+				icon: <Bell className={IC} />,
+				labelKey: "navigation.sidebar.teacher.workflows",
+			},
+		],
+		[],
+	);
 
-	const deanLinks = useMemo(() => [
-		{ to: "/dean",           icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.dean.dashboard" },
-		{ to: "/dean/workflows", icon: <ClipboardList   className={IC} />, labelKey: "navigation.sidebar.dean.workflows" },
-	], []);
+	const deanLinks = useMemo(
+		() => [
+			{
+				to: "/dean",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.dean.dashboard",
+			},
+			{
+				to: "/dean/workflows",
+				icon: <ClipboardList className={IC} />,
+				labelKey: "navigation.sidebar.dean.workflows",
+			},
+		],
+		[],
+	);
 
-	const gradeEditorLinks = useMemo(() => [
-		{ to: "/grade-editor",         icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.teacher.dashboard" },
-		{ to: "/grade-editor/courses", icon: <BookOpen        className={IC} />, labelKey: "navigation.sidebar.teacher.courses" },
-	], []);
+	const gradeEditorLinks = useMemo(
+		() => [
+			{
+				to: "/grade-editor",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.teacher.dashboard",
+			},
+			{
+				to: "/grade-editor/courses",
+				icon: <BookOpen className={IC} />,
+				labelKey: "navigation.sidebar.teacher.courses",
+			},
+		],
+		[],
+	);
 
-	const studentLinks = useMemo(() => [
-		{ to: "/student", icon: <LayoutDashboard className={IC} />, labelKey: "navigation.sidebar.student.dashboard" },
-	], []);
+	const studentLinks = useMemo(
+		() => [
+			{
+				to: "/student",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.student.dashboard",
+			},
+		],
+		[],
+	);
 
 	const menuContent = useMemo(() => {
 		if (!user) return { type: "flat" as const, items: teacherLinks };
@@ -151,18 +327,31 @@ const Sidebar: React.FC = () => {
 			case "super_admin":
 			case "owner":
 				return { type: "grouped" as const, groups: adminGroups };
-			case "dean":         return { type: "flat" as const, items: deanLinks };
-			case "teacher":      return { type: "flat" as const, items: teacherLinks };
-			case "grade_editor": return { type: "flat" as const, items: gradeEditorLinks };
-			case "student":      return { type: "flat" as const, items: studentLinks };
-			default:             return { type: "flat" as const, items: teacherLinks };
+			case "dean":
+				return { type: "flat" as const, items: deanLinks };
+			case "teacher":
+				return { type: "flat" as const, items: teacherLinks };
+			case "grade_editor":
+				return { type: "flat" as const, items: gradeEditorLinks };
+			case "student":
+				return { type: "flat" as const, items: studentLinks };
+			default:
+				return { type: "flat" as const, items: teacherLinks };
 		}
-	}, [user, adminGroups, teacherLinks, gradeEditorLinks, deanLinks, studentLinks]);
+	}, [
+		user,
+		adminGroups,
+		teacherLinks,
+		gradeEditorLinks,
+		deanLinks,
+		studentLinks,
+	]);
 
-	const allLinks = useMemo(() =>
-		menuContent.type === "grouped"
-			? menuContent.groups.flatMap((g) => g.items)
-			: menuContent.items,
+	const allLinks = useMemo(
+		() =>
+			menuContent.type === "grouped"
+				? menuContent.groups.flatMap((g) => g.items)
+				: menuContent.items,
 		[menuContent],
 	);
 
@@ -173,16 +362,21 @@ const Sidebar: React.FC = () => {
 			return next;
 		});
 
-	const isOpen = useCallback((key: string) => openGroups.has(key), [openGroups]);
+	const isOpen = useCallback(
+		(key: string) => openGroups.has(key),
+		[openGroups],
+	);
 
 	// Auto-expand active group
 	useEffect(() => {
 		if (menuContent.type !== "grouped") return;
 		const path = location.pathname;
 		for (const g of menuContent.groups) {
-			if (g.items.some((l) =>
-				ROOT_PATHS.has(l.to) ? path === l.to : path.startsWith(l.to),
-			)) {
+			if (
+				g.items.some((l) =>
+					ROOT_PATHS.has(l.to) ? path === l.to : path.startsWith(l.to),
+				)
+			) {
 				setOpenGroups(new Set([g.key]));
 				break;
 			}
@@ -194,7 +388,7 @@ const Sidebar: React.FC = () => {
 		cn(
 			"flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors duration-150",
 			isActive
-				? "bg-primary/10 text-primary font-semibold"
+				? "bg-primary/10 font-semibold text-primary"
 				: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
 		);
 
@@ -203,7 +397,9 @@ const Sidebar: React.FC = () => {
 		({ isActive }: { isActive: boolean }) => {
 			const active =
 				isActive &&
-				!(link.excludePrefix && location.pathname.startsWith(link.excludePrefix));
+				!(
+					link.excludePrefix && location.pathname.startsWith(link.excludePrefix)
+				);
 			return expandedLinkClass({ isActive: active });
 		};
 
@@ -224,10 +420,12 @@ const Sidebar: React.FC = () => {
 	const inner = (collapsed: boolean) => (
 		<>
 			{/* Logo */}
-			<div className={cn(
-				"flex h-14 shrink-0 items-center border-b border-sidebar-border",
-				collapsed ? "justify-center" : "px-5",
-			)}>
+			<div
+				className={cn(
+					"flex h-14 shrink-0 items-center border-sidebar-border border-b",
+					collapsed ? "justify-center" : "px-5",
+				)}
+			>
 				<AnimatePresence mode="wait" initial={false}>
 					{collapsed ? (
 						<motion.img
@@ -245,14 +443,17 @@ const Sidebar: React.FC = () => {
 					) : (
 						<motion.div
 							key="full-logo"
-							className="relative overflow-hidden cursor-default"
+							className="relative cursor-default overflow-hidden"
 							initial={{ opacity: 0, x: -14 }}
 							animate={{ opacity: 1, x: 0 }}
 							exit={{ opacity: 0, x: -14 }}
 							transition={{ duration: 0.22, ease: "easeOut" }}
 							whileHover={{ scale: 1.04 }}
 							whileTap={{ scale: 0.96 }}
-							onHoverStart={() => { shimmerDone.current = false; setLogoHovered(true); }}
+							onHoverStart={() => {
+								shimmerDone.current = false;
+								setLogoHovered(true);
+							}}
 							onHoverEnd={() => setLogoHovered(false)}
 						>
 							{/* Floating logo */}
@@ -261,7 +462,11 @@ const Sidebar: React.FC = () => {
 								alt="Logo"
 								className="h-7 w-auto"
 								animate={{ y: [0, -2, 0] }}
-								transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+								transition={{
+									duration: 5,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "easeInOut",
+								}}
 							/>
 							{/* Shimmer sweep on hover */}
 							<AnimatePresence>
@@ -288,21 +493,21 @@ const Sidebar: React.FC = () => {
 
 			{/* Search — expanded only */}
 			{!collapsed && (
-				<div className="shrink-0 border-b border-sidebar-border px-3 py-2.5">
+				<div className="shrink-0 border-sidebar-border border-b px-3 py-2.5">
 					<div className="group relative">
-						<Search className="pointer-events-none absolute left-2.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/60 transition-colors duration-150 group-focus-within:text-primary" />
+						<Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-3 text-muted-foreground/60 transition-colors duration-150 group-focus-within:text-primary" />
 						<input
 							type="text"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							placeholder={t("navigation.sidebar.search")}
-							className="w-full rounded-lg border border-border bg-background/70 py-1.5 pl-7 pr-6 text-[12px] text-foreground shadow-sm placeholder:text-muted-foreground/50 outline-none transition-all duration-150 focus:border-primary/50 focus:bg-background focus:shadow-md focus:shadow-primary/8 focus:ring-2 focus:ring-primary/10"
+							className="w-full rounded-lg border border-border bg-background/70 py-1.5 pr-6 pl-7 text-[12px] text-foreground shadow-sm outline-none transition-all duration-150 placeholder:text-muted-foreground/50 focus:border-primary/50 focus:bg-background focus:shadow-md focus:shadow-primary/8 focus:ring-2 focus:ring-primary/10"
 						/>
 						{search && (
 							<button
 								type="button"
 								onClick={() => setSearch("")}
-								className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+								className="-translate-y-1/2 absolute top-1/2 right-2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 							>
 								<X className="size-3" />
 							</button>
@@ -343,7 +548,9 @@ const Sidebar: React.FC = () => {
 							.map((g) => ({
 								...g,
 								items: q
-									? g.items.filter((l) => t(l.labelKey).toLowerCase().includes(q))
+									? g.items.filter((l) =>
+											t(l.labelKey).toLowerCase().includes(q),
+										)
 									: g.items,
 							}))
 							.filter((g) => g.items.length > 0);
@@ -351,30 +558,36 @@ const Sidebar: React.FC = () => {
 						if (q && visible.length === 0) {
 							return (
 								<p className="px-3 py-6 text-center text-[12px] text-muted-foreground">
-									{t("navigation.sidebar.noResults", { defaultValue: "Aucun résultat" })}
+									{t("navigation.sidebar.noResults", {
+										defaultValue: "Aucun résultat",
+									})}
 								</p>
 							);
 						}
 
 						return (
-							<div className="px-2 space-y-0.5">
+							<div className="space-y-0.5 px-2">
 								{visible.map((group, gi) => {
 									const expanded = !!q || isOpen(group.key);
 									return (
 										<div key={group.key}>
 											{gi > 0 && (
-												<div className="my-2 border-t border-border" />
+												<div className="my-2 border-border border-t" />
 											)}
 											<button
 												type="button"
 												onClick={() => !q && toggleGroup(group.key)}
-												className="flex w-full items-center justify-between rounded px-1.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+												className="flex w-full items-center justify-between rounded px-1.5 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest transition-colors hover:text-foreground"
 											>
-												<span>{t(group.titleKey, { defaultValue: group.key })}</span>
-												{!q && (expanded
-													? <ChevronDown className="size-3" />
-													: <ChevronRight className="size-3" />
-												)}
+												<span>
+													{t(group.titleKey, { defaultValue: group.key })}
+												</span>
+												{!q &&
+													(expanded ? (
+														<ChevronDown className="size-3" />
+													) : (
+														<ChevronRight className="size-3" />
+													))}
 											</button>
 											<AnimatePresence initial={false}>
 												{expanded && (
@@ -383,7 +596,7 @@ const Sidebar: React.FC = () => {
 														animate={{ height: "auto", opacity: 1 }}
 														exit={{ height: 0, opacity: 0 }}
 														transition={{ duration: 0.18 }}
-														className="overflow-hidden space-y-0.5 mt-0.5"
+														className="mt-0.5 space-y-0.5 overflow-hidden"
 													>
 														{group.items.map((link) => (
 															<NavLink
@@ -407,7 +620,7 @@ const Sidebar: React.FC = () => {
 					})()
 				) : (
 					/* Flat expanded */
-					<div className="px-2 space-y-0.5">
+					<div className="space-y-0.5 px-2">
 						{menuContent.items.map((link) => (
 							<NavLink
 								key={link.to}
@@ -424,22 +637,27 @@ const Sidebar: React.FC = () => {
 			</nav>
 
 			{/* User footer */}
-			<div className={cn(
-				"shrink-0 border-t border-sidebar-border",
-				collapsed ? "flex items-center justify-center py-3" : "px-4 py-3",
-			)}>
+			<div
+				className={cn(
+					"shrink-0 border-sidebar-border border-t",
+					collapsed ? "flex items-center justify-center py-3" : "px-4 py-3",
+				)}
+			>
 				{collapsed ? (
 					<Tooltip delayDuration={80}>
 						<TooltipTrigger asChild>
 							<div className="flex size-8 cursor-default items-center justify-center rounded-full bg-primary/10">
 								<span className="font-semibold text-primary text-xs leading-none">
-									{user?.firstName?.[0]}{user?.lastName?.[0]}
+									{user?.firstName?.[0]}
+									{user?.lastName?.[0]}
 								</span>
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side="right" sideOffset={12}>
-							<p className="font-semibold">{user?.firstName} {user?.lastName}</p>
-							<p className="text-xs mt-0.5 opacity-70 capitalize">
+							<p className="font-semibold">
+								{user?.firstName} {user?.lastName}
+							</p>
+							<p className="mt-0.5 text-xs capitalize opacity-70">
 								{user?.role ? t(`navigation.roles.${user.role}`) : ""}
 							</p>
 						</TooltipContent>
@@ -448,14 +666,15 @@ const Sidebar: React.FC = () => {
 					<div className="flex items-center gap-2.5">
 						<div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
 							<span className="font-semibold text-primary text-xs leading-none">
-								{user?.firstName?.[0]}{user?.lastName?.[0]}
+								{user?.firstName?.[0]}
+								{user?.lastName?.[0]}
 							</span>
 						</div>
 						<div className="min-w-0 flex-1">
-							<p className="truncate font-semibold text-foreground text-[13px] leading-tight">
+							<p className="truncate font-semibold text-[13px] text-foreground leading-tight">
 								{user?.firstName} {user?.lastName}
 							</p>
-							<p className="truncate text-[11px] text-muted-foreground capitalize mt-0.5">
+							<p className="mt-0.5 truncate text-[11px] text-muted-foreground capitalize">
 								{user?.role ? t(`navigation.roles.${user.role}`) : ""}
 							</p>
 						</div>
@@ -465,11 +684,11 @@ const Sidebar: React.FC = () => {
 
 			{/* Copyright */}
 			{!collapsed && (
-				<div className="px-4 pb-3 pt-2 border-t border-sidebar-border/50">
-					<p className="text-[10px] text-muted-foreground/50 leading-relaxed text-center">
+				<div className="border-sidebar-border/50 border-t px-4 pt-2 pb-3">
+					<p className="text-center text-[10px] text-muted-foreground/50 leading-relaxed">
 						© {new Date().getFullYear()} OverBrand
 					</p>
-					<p className="text-[10px] text-muted-foreground/40 text-center">
+					<p className="text-center text-[10px] text-muted-foreground/40">
 						Cédric TEFOYE · Kana Yvan
 					</p>
 				</div>
@@ -500,7 +719,7 @@ const Sidebar: React.FC = () => {
 						animate={{ x: 0 }}
 						exit={{ x: -280 }}
 						transition={{ duration: 0.22, ease: "easeOut" }}
-						className="bg-dot-pattern-subtle fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar md:hidden"
+						className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:hidden"
 					>
 						{inner(false)}
 					</motion.aside>
@@ -511,7 +730,7 @@ const Sidebar: React.FC = () => {
 			<motion.aside
 				animate={{ width: sidebarCollapsed ? 56 : 256 }}
 				transition={{ duration: 0.22, ease: "easeInOut" }}
-				className="bg-dot-pattern-subtle hidden md:flex flex-col shrink-0 border-r border-sidebar-border bg-sidebar overflow-hidden"
+				className="hidden shrink-0 flex-col overflow-hidden border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:flex"
 			>
 				{inner(sidebarCollapsed)}
 			</motion.aside>

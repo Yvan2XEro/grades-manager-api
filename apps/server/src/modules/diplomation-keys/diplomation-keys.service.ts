@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server";
 import { randomBytes } from "node:crypto";
+import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
 import { hashApiKey } from "@/lib/api-key-auth";
 import * as repo from "./diplomation-keys.repo";

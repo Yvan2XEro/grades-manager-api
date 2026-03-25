@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import {
 	Bell,
 	CheckCircle2,
@@ -10,12 +14,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -55,9 +58,7 @@ const channelLabels: Record<string, string> = {
 };
 
 function formatType(type: string) {
-	return type
-		.replace(/[_.-]/g, " ")
-		.replace(/\b\w/g, (c) => c.toUpperCase());
+	return type.replace(/[_.-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatDate(date: string | Date) {
@@ -70,16 +71,19 @@ function formatDate(date: string | Date) {
 }
 
 function PayloadPreview({ payload }: { payload: unknown }) {
-	const entries = Object.entries(payload as Record<string, unknown>).slice(0, 4);
+	const entries = Object.entries(payload as Record<string, unknown>).slice(
+		0,
+		4,
+	);
 	if (entries.length === 0) return null;
 	return (
 		<dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
 			{entries.map(([key, val]) => (
 				<div key={key} className="flex flex-col">
-					<dt className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+					<dt className="font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
 						{key}
 					</dt>
-					<dd className="truncate text-xs text-foreground">
+					<dd className="truncate text-foreground text-xs">
 						{typeof val === "object" ? JSON.stringify(val) : String(val)}
 					</dd>
 				</div>
@@ -94,7 +98,9 @@ const NotificationsCenter = () => {
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
 	const notificationsQuery = useInfiniteQuery({
-		queryKey: trpc.notifications.list.queryKey({ status: statusFilter === "all" ? undefined : statusFilter }),
+		queryKey: trpc.notifications.list.queryKey({
+			status: statusFilter === "all" ? undefined : statusFilter,
+		}),
 		queryFn: async ({ pageParam }) => {
 			return trpcClient.notifications.list.query({
 				status: statusFilter === "all" ? undefined : statusFilter,
@@ -106,8 +112,12 @@ const NotificationsCenter = () => {
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 
-	const notifications = notificationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(notificationsQuery.fetchNextPage, { enabled: notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage });
+	const notifications =
+		notificationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const sentinelRef = useInfiniteScroll(notificationsQuery.fetchNextPage, {
+		enabled:
+			notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage,
+	});
 	const selection = useRowSelection(notifications);
 
 	const ackMutation = useMutation({
@@ -143,7 +153,9 @@ const NotificationsCenter = () => {
 					</div>
 					<div>
 						<h1 className="font-semibold text-foreground text-xl">
-							{t("admin.notifications.title", { defaultValue: "Notifications" })}
+							{t("admin.notifications.title", {
+								defaultValue: "Notifications",
+							})}
 						</h1>
 						<p className="text-muted-foreground text-sm">
 							{t("admin.notifications.subtitle", {
@@ -179,9 +191,9 @@ const NotificationsCenter = () => {
 							setStatusFilter(tab.key);
 						}}
 						className={cn(
-							"relative px-4 py-2.5 text-sm font-medium transition-colors",
+							"relative px-4 py-2.5 font-medium text-sm transition-colors",
 							statusFilter === tab.key
-								? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-primary"
+								? "text-primary after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:rounded-full after:bg-primary"
 								: "text-muted-foreground hover:text-foreground",
 						)}
 					>
@@ -200,8 +212,10 @@ const NotificationsCenter = () => {
 			{/* Selection bar */}
 			{selection.selectedCount > 0 && (
 				<div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5">
-					<span className="text-sm font-medium">
-						{t("admin.notifications.selected", { count: selection.selectedCount })}
+					<span className="font-medium text-sm">
+						{t("admin.notifications.selected", {
+							count: selection.selectedCount,
+						})}
 					</span>
 					<div className="ml-auto flex items-center gap-2">
 						<Button
@@ -254,7 +268,7 @@ const NotificationsCenter = () => {
 							onCheckedChange={(checked) => selection.toggleAll(!!checked)}
 							aria-label={t("admin.notifications.selectAll")}
 						/>
-						<span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+						<span className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
 							{t("admin.notifications.selectAll")}
 						</span>
 					</div>
@@ -267,7 +281,8 @@ const NotificationsCenter = () => {
 									key={item.id}
 									className={cn(
 										"group relative flex items-start gap-4 rounded-xl border bg-card px-5 py-4 transition-shadow hover:shadow-sm",
-										selection.isSelected(item.id) && "border-primary/40 bg-primary/5",
+										selection.isSelected(item.id) &&
+											"border-primary/40 bg-primary/5",
 									)}
 								>
 									{/* Select */}
@@ -297,11 +312,13 @@ const NotificationsCenter = () => {
 											{s && (
 												<span
 													className={cn(
-														"inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+														"inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[11px]",
 														s.badge,
 													)}
 												>
-													<span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
+													<span
+														className={cn("h-1.5 w-1.5 rounded-full", s.dot)}
+													/>
 													{t(s.labelKey)}
 												</span>
 											)}
@@ -312,7 +329,7 @@ const NotificationsCenter = () => {
 											)}
 										</div>
 
-										<p className="mt-0.5 text-xs text-muted-foreground">
+										<p className="mt-0.5 text-muted-foreground text-xs">
 											{formatDate(item.createdAt)}
 										</p>
 

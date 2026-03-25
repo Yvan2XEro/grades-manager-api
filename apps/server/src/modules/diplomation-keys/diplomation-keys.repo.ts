@@ -6,10 +6,7 @@ import {
 } from "@/db/schema/app-schema";
 
 export async function create(data: NewDiplomationApiKey) {
-	const [item] = await db
-		.insert(diplomationApiKeys)
-		.values(data)
-		.returning();
+	const [item] = await db.insert(diplomationApiKeys).values(data).returning();
 	return item;
 }
 

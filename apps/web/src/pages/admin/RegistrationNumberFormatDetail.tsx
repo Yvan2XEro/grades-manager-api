@@ -10,7 +10,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 import type {
@@ -62,7 +62,6 @@ const createSegment = (kind: Segment["kind"]): Segment => {
 				field: defaultField,
 				transform: "upper",
 			};
-		case "counter":
 		default:
 			return {
 				kind: "counter",

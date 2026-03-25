@@ -42,7 +42,7 @@ function SelectTrigger({
 				"data-[size=default]:h-9 data-[size=sm]:h-8",
 				"data-[placeholder]:text-muted-foreground/55",
 				"*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
-				"dark:bg-input/20 dark:hover:bg-input/30 dark:aria-invalid:ring-destructive/40",
+				"dark:bg-input/20 dark:aria-invalid:ring-destructive/40 dark:hover:bg-input/30",
 				"[&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
 				className,
 			)}

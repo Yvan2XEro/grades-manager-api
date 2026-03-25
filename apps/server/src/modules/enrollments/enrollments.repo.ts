@@ -110,7 +110,6 @@ export async function closeActive(
 	studentId: string,
 	status: schema.EnrollmentStatus = "completed",
 	institutionId?: string,
-	// biome-ignore lint/suspicious/noExplicitAny: drizzle tx type differs from DbInstance union
 	txDb?: any,
 ) {
 	const conditions = [

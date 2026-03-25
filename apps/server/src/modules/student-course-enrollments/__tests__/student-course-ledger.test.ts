@@ -1,5 +1,4 @@
 import { describe, expect, it } from "bun:test";
-import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import {

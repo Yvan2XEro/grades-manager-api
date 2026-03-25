@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -18,7 +23,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
@@ -26,9 +30,13 @@ import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -43,14 +51,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
-import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { generateClassCode } from "@/lib/code-generator";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
@@ -171,7 +176,13 @@ export default function ClassManagement() {
 	const { t } = useTranslation();
 	const classSchema = useMemo(() => buildClassSchema(t), [t]);
 
-	const { data: classesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+	const {
+		data: classesData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
 		queryKey: ["classes", filterYear, filterSemester],
 		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classes.list.query({
@@ -221,7 +232,9 @@ export default function ClassManagement() {
 	});
 
 	const classes = classesData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const selection = useRowSelection(classes ?? []);
 
 	const { data: defaultPrograms = [] } = useQuery({
@@ -883,8 +896,7 @@ export default function ClassManagement() {
 			setIsBulkGenOpen(false);
 			setBulkGenYearId(null);
 		},
-		onError: (err) =>
-			toast.error((err as Error).message),
+		onError: (err) => toast.error((err as Error).message),
 	});
 
 	const onSubmit = async (data: ClassFormData) => {
@@ -918,9 +930,7 @@ export default function ClassManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-foreground">
-						{t("admin.classes.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.classes.title")}</h1>
 					<p className="text-base-content/60">{t("admin.classes.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
@@ -930,7 +940,9 @@ export default function ClassManagement() {
 						onClick={() => setIsBulkGenOpen(true)}
 					>
 						<Wand2 className="mr-2 h-4 w-4" />
-						{t("admin.classes.actions.bulkGenerate", { defaultValue: "Générer les classes" })}
+						{t("admin.classes.actions.bulkGenerate", {
+							defaultValue: "Générer les classes",
+						})}
 					</Button>
 					<Button
 						type="button"
@@ -949,7 +961,7 @@ export default function ClassManagement() {
 
 			<Card className="mb-4">
 				<CardHeader className="pb-3">
-					<CardTitle className="text-sm font-medium text-muted-foreground">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
 						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
 					</CardTitle>
 				</CardHeader>
@@ -1031,8 +1043,8 @@ export default function ClassManagement() {
 						</Button>
 					</div>
 				) : isLoading ? (
-						<TableSkeleton columns={8} rows={8} />
-					) : (
+					<TableSkeleton columns={8} rows={8} />
+				) : (
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -1046,61 +1058,92 @@ export default function ClassManagement() {
 									/>
 								</TableHead>
 								<TableHead className="w-24">
-							{t("admin.classes.table.code", { defaultValue: "Code" })}
+									{t("admin.classes.table.code", { defaultValue: "Code" })}
 								</TableHead>
 								<TableHead>
-							{t("admin.classes.table.classProgram", {
+									{t("admin.classes.table.classProgram", {
 										defaultValue: "Class / Program",
 									})}
 								</TableHead>
 								<TableHead className="w-36">
-							{t("admin.classes.table.cycle", {
+									{t("admin.classes.table.cycle", {
 										defaultValue: "Cycle / level",
 									})}
 								</TableHead>
 								<TableHead>
-							{t("admin.classes.table.optionSemester", {
+									{t("admin.classes.table.optionSemester", {
 										defaultValue: "Option / Semester",
 									})}
 								</TableHead>
 								<TableHead className="w-16">
-							{t("admin.classes.table.credits", {
+									{t("admin.classes.table.credits", {
 										defaultValue: "Credits",
 									})}
 								</TableHead>
-								<TableHead className="w-24">{t("admin.classes.table.students")}</TableHead>
+								<TableHead className="w-24">
+									{t("admin.classes.table.students")}
+								</TableHead>
 								<TableHead className="w-10" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{classes?.map((cls) => (
 								<TableRow
-							key={cls.id}
-							actions={
-								<>
-									<ContextMenuItem onSelect={() => { setEditingClass(cls); form.reset({ name: cls.name }); setIsFormOpen(true); }}>
-										<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
-									</ContextMenuItem>
-									<ContextMenuSeparator />
-									<ContextMenuItem onSelect={() => handlePreviewStudents(cls)}>
-										<Eye className="h-4 w-4" />
-										<span>{t("admin.classes.preview.button", { defaultValue: "View student list" })}</span>
-									</ContextMenuItem>
-									<ContextMenuItem onSelect={() => handleExportStudentListPDF(cls)}>
-										<FileText className="h-4 w-4" />
-										<span>{t("admin.classes.export.button", { defaultValue: "Export PDF" })}</span>
-									</ContextMenuItem>
-									<ContextMenuItem onSelect={() => handleExportStudentListExcel(cls)}>
-										<FileSpreadsheet className="h-4 w-4" />
-										<span>{t("admin.classes.export.excelButton", { defaultValue: "Export Excel" })}</span>
-									</ContextMenuItem>
-									<ContextMenuSeparator />
-									<ContextMenuItem variant="destructive" onSelect={() => openDeleteModal(cls.id)}>
-										<span>{t("common.actions.delete")}</span>
-									</ContextMenuItem>
-								</>
-							}
-						>
+									key={cls.id}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() => {
+													setEditingClass(cls);
+													form.reset({ name: cls.name });
+													setIsFormOpen(true);
+												}}
+											>
+												<span>
+													{t("common.actions.edit", { defaultValue: "Edit" })}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												onSelect={() => handlePreviewStudents(cls)}
+											>
+												<Eye className="h-4 w-4" />
+												<span>
+													{t("admin.classes.preview.button", {
+														defaultValue: "View student list",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuItem
+												onSelect={() => handleExportStudentListPDF(cls)}
+											>
+												<FileText className="h-4 w-4" />
+												<span>
+													{t("admin.classes.export.button", {
+														defaultValue: "Export PDF",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuItem
+												onSelect={() => handleExportStudentListExcel(cls)}
+											>
+												<FileSpreadsheet className="h-4 w-4" />
+												<span>
+													{t("admin.classes.export.excelButton", {
+														defaultValue: "Export Excel",
+													})}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												variant="destructive"
+												onSelect={() => openDeleteModal(cls.id)}
+											>
+												<span>{t("common.actions.delete")}</span>
+											</ContextMenuItem>
+										</>
+									}
+								>
 									<TableCell>
 										<Checkbox
 											checked={selection.isSelected(cls.id)}
@@ -1521,9 +1564,12 @@ export default function ClassManagement() {
 				onConfirm={handleDelete}
 				title={t("admin.classes.delete.title")}
 				message={(() => {
-					const studentCount = classes.find((c) => c.id === deleteId)?.students.length ?? 0;
+					const studentCount =
+						classes.find((c) => c.id === deleteId)?.students.length ?? 0;
 					return studentCount > 0
-						? t("admin.classes.delete.messageWithStudents", { count: studentCount })
+						? t("admin.classes.delete.messageWithStudents", {
+								count: studentCount,
+							})
 						: t("admin.classes.delete.message");
 				})()}
 				confirmText={t("common.actions.delete")}
@@ -1670,19 +1716,36 @@ export default function ClassManagement() {
 			</Dialog>
 
 			{/* Bulk Generate Dialog */}
-			<Dialog open={isBulkGenOpen} onOpenChange={(o) => { if (!o) { setIsBulkGenOpen(false); setBulkGenYearId(null); } }}>
+			<Dialog
+				open={isBulkGenOpen}
+				onOpenChange={(o) => {
+					if (!o) {
+						setIsBulkGenOpen(false);
+						setBulkGenYearId(null);
+					}
+				}}
+			>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
 						<DialogTitle>
-							{t("admin.classes.bulkGenerate.title", { defaultValue: "Générer toutes les classes" })}
+							{t("admin.classes.bulkGenerate.title", {
+								defaultValue: "Générer toutes les classes",
+							})}
 						</DialogTitle>
 						<DialogDescription>
-							{t("admin.classes.bulkGenerate.description", { defaultValue: "Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées." })}
+							{t("admin.classes.bulkGenerate.description", {
+								defaultValue:
+									"Crée automatiquement une classe pour chaque combinaison programme × option × niveau pour l'année sélectionnée. Les combinaisons existantes sont ignorées.",
+							})}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6 py-2">
 						<div className="space-y-2">
-							<Label>{t("admin.classes.bulkGenerate.yearLabel", { defaultValue: "Année académique" })}</Label>
+							<Label>
+								{t("admin.classes.bulkGenerate.yearLabel", {
+									defaultValue: "Année académique",
+								})}
+							</Label>
 							<AcademicYearSelect
 								value={bulkGenYearId}
 								onChange={setBulkGenYearId}
@@ -1691,15 +1754,25 @@ export default function ClassManagement() {
 						</div>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => { setIsBulkGenOpen(false); setBulkGenYearId(null); }}>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setIsBulkGenOpen(false);
+								setBulkGenYearId(null);
+							}}
+						>
 							{t("common.actions.cancel")}
 						</Button>
 						<Button
 							onClick={() => bulkGenerateMutation.mutate()}
 							disabled={!bulkGenYearId || bulkGenerateMutation.isPending}
 						>
-							{bulkGenerateMutation.isPending && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
-							{t("admin.classes.bulkGenerate.submit", { defaultValue: "Générer" })}
+							{bulkGenerateMutation.isPending && (
+								<Spinner className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							{t("admin.classes.bulkGenerate.submit", {
+								defaultValue: "Générer",
+							})}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

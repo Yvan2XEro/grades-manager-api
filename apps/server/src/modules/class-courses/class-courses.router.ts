@@ -1,4 +1,3 @@
-import type { Context } from "@/lib/context";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
 	router as createRouter,

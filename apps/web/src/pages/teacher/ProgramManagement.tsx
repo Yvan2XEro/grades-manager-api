@@ -2,11 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { Copy, Pencil, Plus, School, Search, Trash2 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import FormModal from "@/components/modals/FormModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,7 +28,18 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import FormModal from "@/components/modals/FormModal";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
@@ -54,13 +65,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -112,7 +119,7 @@ export default function ProgramManagement() {
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
-	const [searchInput, setSearchInput] = useState("");
+	const [searchInput, _setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	useEffect(() => {
 		const timer = setTimeout(() => setSearchQuery(searchInput), 300);
@@ -265,8 +272,17 @@ export default function ProgramManagement() {
 	});
 
 	const cloneCurriculumMutation = useMutation({
-		mutationFn: ({ targetProgramId, sourceProgramId }: { targetProgramId: string; sourceProgramId: string }) =>
-			trpcClient.programs.cloneCurriculum.mutate({ targetProgramId, sourceProgramId }),
+		mutationFn: ({
+			targetProgramId,
+			sourceProgramId,
+		}: {
+			targetProgramId: string;
+			sourceProgramId: string;
+		}) =>
+			trpcClient.programs.cloneCurriculum.mutate({
+				targetProgramId,
+				sourceProgramId,
+			}),
 		onSuccess: (result) => {
 			toast.success(
 				t("admin.programs.toast.cloneSuccess", {
@@ -277,7 +293,12 @@ export default function ProgramManagement() {
 			);
 		},
 		onError: (err: unknown) =>
-			toast.error((err as Error).message || t("admin.programs.toast.cloneError", { defaultValue: "Erreur lors du clonage" })),
+			toast.error(
+				(err as Error).message ||
+					t("admin.programs.toast.cloneError", {
+						defaultValue: "Erreur lors du clonage",
+					}),
+			),
 	});
 
 	const createMutation = useMutation({
@@ -446,9 +467,7 @@ export default function ProgramManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-foreground">
-						{t("admin.programs.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.programs.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.programs.subtitle")}
 					</p>
@@ -503,10 +522,10 @@ export default function ProgramManagement() {
 						/>
 					</div>
 					{isLoading ? (
-					<div className="flex h-40 items-center justify-center">
-						<Spinner className="h-6 w-6 text-primary" />
-					</div>
-				) : programs && programs.length > 0 ? (
+						<div className="flex h-40 items-center justify-center">
+							<Spinner className="h-6 w-6 text-primary" />
+						</div>
+					) : programs && programs.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -528,7 +547,9 @@ export default function ProgramManagement() {
 										{t("admin.programs.table.code", { defaultValue: "Code" })}
 									</TableHead>
 									<TableHead>{t("admin.programs.table.name")}</TableHead>
-									<TableHead>{t("admin.programs.table.cycle", { defaultValue: "Cycle" })}</TableHead>
+									<TableHead>
+										{t("admin.programs.table.cycle", { defaultValue: "Cycle" })}
+									</TableHead>
 									<TableHead>{t("admin.programs.table.description")}</TableHead>
 									<TableHead className="text-center">
 										{t("admin.programs.table.options", {
@@ -542,11 +563,23 @@ export default function ProgramManagement() {
 							</TableHeader>
 							<TableBody>
 								{programs.map((program) => (
-									<TableRow key={program.id} actions={<>
-											<ContextMenuItem onSelect={() => startEdit(program)}>{t("common.actions.edit")}</ContextMenuItem>
-											<ContextMenuSeparator />
-											<ContextMenuItem className="text-destructive" onSelect={() => confirmDelete(program.id)}>{t("common.actions.delete")}</ContextMenuItem>
-										</>}>
+									<TableRow
+										key={program.id}
+										actions={
+											<>
+												<ContextMenuItem onSelect={() => startEdit(program)}>
+													{t("common.actions.edit")}
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem
+													className="text-destructive"
+													onSelect={() => confirmDelete(program.id)}
+												>
+													{t("common.actions.delete")}
+												</ContextMenuItem>
+											</>
+										}
+									>
 										<TableCell className="w-10">
 											<Checkbox
 												checked={selection.isSelected(program.id)}
@@ -564,7 +597,7 @@ export default function ProgramManagement() {
 										<TableCell className="font-medium">
 											{program.name}
 										</TableCell>
-										<TableCell className="text-sm text-muted-foreground">
+										<TableCell className="text-muted-foreground text-sm">
 											{program.cycleId ? cycleMap.get(program.cycleId) : "—"}
 										</TableCell>
 										<TableCell>
@@ -613,20 +646,22 @@ export default function ProgramManagement() {
 						</Table>
 					) : (
 						<Empty className="border border-dashed">
-						<EmptyHeader>
-							<EmptyMedia variant="icon">
-								<School className="text-muted-foreground" />
-							</EmptyMedia>
-							<EmptyTitle>{t("admin.programs.empty.title")}</EmptyTitle>
-							<EmptyDescription>{t("admin.programs.empty.description")}</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button onClick={startCreate}>
-								<Plus className="mr-2 h-4 w-4" />
-								{t("admin.programs.actions.add")}
-							</Button>
-						</EmptyContent>
-					</Empty>
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<School className="text-muted-foreground" />
+								</EmptyMedia>
+								<EmptyTitle>{t("admin.programs.empty.title")}</EmptyTitle>
+								<EmptyDescription>
+									{t("admin.programs.empty.description")}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button onClick={startCreate}>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("admin.programs.actions.add")}
+								</Button>
+							</EmptyContent>
+						</Empty>
 					)}
 				</CardContent>
 			</Card>
@@ -634,74 +669,92 @@ export default function ProgramManagement() {
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={handleCloseForm}
-				title={editingProgram ? t("admin.programs.form.editTitle") : t("admin.programs.form.createTitle")}
+				title={
+					editingProgram
+						? t("admin.programs.form.editTitle")
+						: t("admin.programs.form.createTitle")
+				}
 			>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<div className="grid gap-4 sm:grid-cols-2">
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.form.nameLabel")}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t("admin.programs.form.namePlaceholder")}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel required>
-												{t("admin.programs.form.codeLabel", {
-													defaultValue: "Code",
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.programs.form.nameLabel")}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.programs.form.namePlaceholder")}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel required>
+											{t("admin.programs.form.codeLabel", {
+												defaultValue: "Code",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder={t("admin.programs.form.codePlaceholder", {
+													defaultValue: "INF-LIC",
 												})}
-											</FormLabel>
-											<FormControl>
-												<Input
-													placeholder={t(
-														"admin.programs.form.codePlaceholder",
-														{
-															defaultValue: "INF-LIC",
-														},
-													)}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 						<FormField
 							control={form.control}
 							name="cycleId"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("admin.programs.form.cycleLabel", { defaultValue: "Cycle d'études" })}</FormLabel>
+									<FormLabel>
+										{t("admin.programs.form.cycleLabel", {
+											defaultValue: "Cycle d'études",
+										})}
+									</FormLabel>
 									<Select
 										value={field.value ?? "__NONE__"}
-										onValueChange={(v) => field.onChange(v === "__NONE__" ? null : v)}
+										onValueChange={(v) =>
+											field.onChange(v === "__NONE__" ? null : v)
+										}
 									>
 										<FormControl>
 											<SelectTrigger>
-												<SelectValue placeholder={t("admin.programs.form.cyclePlaceholder", { defaultValue: "Sélectionner un cycle" })} />
+												<SelectValue
+													placeholder={t(
+														"admin.programs.form.cyclePlaceholder",
+														{ defaultValue: "Sélectionner un cycle" },
+													)}
+												/>
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
-											<SelectItem value="__NONE__">{t("admin.programs.form.cloneFromNone", { defaultValue: "Aucun" })}</SelectItem>
+											<SelectItem value="__NONE__">
+												{t("admin.programs.form.cloneFromNone", {
+													defaultValue: "Aucun",
+												})}
+											</SelectItem>
 											{(cycles?.items ?? []).map((cyc) => (
-												<SelectItem key={cyc.id} value={cyc.id}>{cyc.name}</SelectItem>
+												<SelectItem key={cyc.id} value={cyc.id}>
+													{cyc.name}
+												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
@@ -730,232 +783,254 @@ export default function ProgramManagement() {
 								</FormItem>
 							)}
 						/>
-							{!editingProgram && (
-								<div className="space-y-2 rounded-lg border border-dashed p-3">
-									<div className="flex items-center gap-2">
-										<Copy className="h-4 w-4 text-muted-foreground" />
-										<span className="font-medium text-sm">
-											{t("admin.programs.form.cloneFrom", { defaultValue: "Cloner le curriculum depuis (optionnel)" })}
-										</span>
-									</div>
-									<Select value={cloneFromProgramId || "__NONE__"} onValueChange={(v) => setCloneFromProgramId(v === "__NONE__" ? "" : v)}>
-										<SelectTrigger>
-											<SelectValue placeholder={t("admin.programs.form.cloneFromPlaceholder", { defaultValue: "Aucun - laisser vide" })} />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="__NONE__">
-												{t("admin.programs.form.cloneFromPlaceholder", { defaultValue: "Aucun - laisser vide" })}
-											</SelectItem>
-											{programs?.map((p) => (
-												<SelectItem key={p.id} value={p.id}>
-													{p.code} — {p.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{cloneFromProgramId && (
-										<p className="text-muted-foreground text-xs">
-											{t("admin.programs.form.cloneFromHint", { defaultValue: "Les UE et EC du programme source seront copies apres la creation." })}
-										</p>
-									)}
+						{!editingProgram && (
+							<div className="space-y-2 rounded-lg border border-dashed p-3">
+								<div className="flex items-center gap-2">
+									<Copy className="h-4 w-4 text-muted-foreground" />
+									<span className="font-medium text-sm">
+										{t("admin.programs.form.cloneFrom", {
+											defaultValue: "Cloner le curriculum depuis (optionnel)",
+										})}
+									</span>
 								</div>
-							)}
-
-							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseForm}
-									disabled={form.formState.isSubmitting}
+								<Select
+									value={cloneFromProgramId || "__NONE__"}
+									onValueChange={(v) =>
+										setCloneFromProgramId(v === "__NONE__" ? "" : v)
+									}
 								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
-									{form.formState.isSubmitting ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : editingProgram ? (
-										t("common.actions.saveChanges")
-									) : cloneFromProgramId ? (
-										t("admin.programs.form.submitWithClone", { defaultValue: "Creer et cloner" })
-									) : (
-										t("admin.programs.form.submit")
-									)}
-								</Button>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t(
+												"admin.programs.form.cloneFromPlaceholder",
+												{ defaultValue: "Aucun - laisser vide" },
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="__NONE__">
+											{t("admin.programs.form.cloneFromPlaceholder", {
+												defaultValue: "Aucun - laisser vide",
+											})}
+										</SelectItem>
+										{programs?.map((p) => (
+											<SelectItem key={p.id} value={p.id}>
+												{p.code} — {p.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{cloneFromProgramId && (
+									<p className="text-muted-foreground text-xs">
+										{t("admin.programs.form.cloneFromHint", {
+											defaultValue:
+												"Les UE et EC du programme source seront copies apres la creation.",
+										})}
+									</p>
+								)}
 							</div>
-						</form>
-					</Form>
+						)}
+
+						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleCloseForm}
+								disabled={form.formState.isSubmitting}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingProgram ? (
+									t("common.actions.saveChanges")
+								) : cloneFromProgramId ? (
+									t("admin.programs.form.submitWithClone", {
+										defaultValue: "Creer et cloner",
+									})
+								) : (
+									t("admin.programs.form.submit")
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</FormModal>
 
 			<FormModal
 				isOpen={isOptionModalOpen}
 				onClose={closeOptionsModal}
-				title={t("admin.programs.options.title", { defaultValue: "Manage options for {{value}}", value: optionProgram?.name ?? "" })}
+				title={t("admin.programs.options.title", {
+					defaultValue: "Manage options for {{value}}",
+					value: optionProgram?.name ?? "",
+				})}
 				maxWidth="sm:max-w-xl"
 			>
-					<div className="space-y-4">
-						<div className="space-y-2">
-							{optionsLoading ? (
-								<div className="flex justify-center py-6">
-									<Spinner className="h-6 w-6 text-primary" />
-								</div>
-							) : optionList.length ? (
-								<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
-									{optionList.map((option) => (
-										<div
-											key={option.id}
-											className="flex items-start justify-between rounded-lg border border-border p-3"
-										>
-											<div>
-												<p className="font-medium text-sm">{option.name}</p>
+				<div className="space-y-4">
+					<div className="space-y-2">
+						{optionsLoading ? (
+							<div className="flex justify-center py-6">
+								<Spinner className="h-6 w-6 text-primary" />
+							</div>
+						) : optionList.length ? (
+							<div className="max-h-64 space-y-2 overflow-y-auto pr-2">
+								{optionList.map((option) => (
+									<div
+										key={option.id}
+										className="flex items-start justify-between rounded-lg border border-border p-3"
+									>
+										<div>
+											<p className="font-medium text-sm">{option.name}</p>
+											<p className="text-muted-foreground text-xs">
+												{option.code}
+											</p>
+											{option.description && (
 												<p className="text-muted-foreground text-xs">
-													{option.code}
+													{option.description}
 												</p>
-												{option.description && (
-													<p className="text-muted-foreground text-xs">
-														{option.description}
-													</p>
-												)}
-											</div>
-											<div className="flex gap-2">
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													onClick={() => handleEditOption(option)}
-													aria-label={t("admin.programs.options.edit", {
-														defaultValue: "Edit option",
-													})}
-												>
-													<Pencil className="h-4 w-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													disabled={
-														optionList.length <= 1 ||
-														deleteOptionMutation.isPending
-													}
-													onClick={() => handleDeleteOption(option.id)}
-													aria-label={t("admin.programs.options.delete", {
-														defaultValue: "Delete option",
-													})}
-												>
-													<Trash2 className="h-4 w-4 text-destructive" />
-												</Button>
-											</div>
+											)}
 										</div>
-									))}
-								</div>
-							) : (
-								<p className="text-muted-foreground text-xs">
-									{t("admin.programs.options.empty", {
-										defaultValue: "No options yet. Add one below.",
-									})}
-								</p>
-							)}
-						</div>
-						<Form {...optionForm}>
-							<form
-								onSubmit={optionForm.handleSubmit(onSubmitOption)}
-								className="space-y-3 rounded-lg border border-border p-3"
-							>
-								{editingOption ? (
-									<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
-										<span>
-											{t("admin.programs.options.editing", {
-												defaultValue: "Editing option {{name}}",
-												name: editingOption.name,
-											})}
-										</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={resetOptionEditing}
-										>
-											{t("admin.programs.options.cancelEdit", {
-												defaultValue: "Cancel",
-											})}
-										</Button>
+										<div className="flex gap-2">
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												onClick={() => handleEditOption(option)}
+												aria-label={t("admin.programs.options.edit", {
+													defaultValue: "Edit option",
+												})}
+											>
+												<Pencil className="h-4 w-4" />
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												disabled={
+													optionList.length <= 1 ||
+													deleteOptionMutation.isPending
+												}
+												onClick={() => handleDeleteOption(option.id)}
+												aria-label={t("admin.programs.options.delete", {
+													defaultValue: "Delete option",
+												})}
+											>
+												<Trash2 className="h-4 w-4 text-destructive" />
+											</Button>
+										</div>
 									</div>
-								) : null}
-								<div className="grid gap-3 sm:grid-cols-2">
-									<FormField
-										control={optionForm.control}
-										name="name"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel required>
-													{t("admin.programs.options.form.name", {
-														defaultValue: "Option name",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={optionForm.control}
-										name="code"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel required>
-													{t("admin.programs.options.form.code", {
-														defaultValue: "Code",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+								))}
+							</div>
+						) : (
+							<p className="text-muted-foreground text-xs">
+								{t("admin.programs.options.empty", {
+									defaultValue: "No options yet. Add one below.",
+								})}
+							</p>
+						)}
+					</div>
+					<Form {...optionForm}>
+						<form
+							onSubmit={optionForm.handleSubmit(onSubmitOption)}
+							className="space-y-3 rounded-lg border border-border p-3"
+						>
+							{editingOption ? (
+								<div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
+									<span>
+										{t("admin.programs.options.editing", {
+											defaultValue: "Editing option {{name}}",
+											name: editingOption.name,
+										})}
+									</span>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={resetOptionEditing}
+									>
+										{t("admin.programs.options.cancelEdit", {
+											defaultValue: "Cancel",
+										})}
+									</Button>
 								</div>
+							) : null}
+							<div className="grid gap-3 sm:grid-cols-2">
 								<FormField
 									control={optionForm.control}
-									name="description"
+									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>
-												{t("admin.programs.options.form.description", {
-													defaultValue: "Description",
+											<FormLabel required>
+												{t("admin.programs.options.form.name", {
+													defaultValue: "Option name",
 												})}
 											</FormLabel>
 											<FormControl>
-												<Textarea rows={2} {...field} />
+												<Input {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
-								<div className="flex justify-end">
-									<Button
-										type="submit"
-										disabled={
-											!optionProgram ||
-											createOptionMutation.isPending ||
-											updateOptionMutation.isPending
-										}
-									>
-										{(createOptionMutation.isPending ||
-											updateOptionMutation.isPending) && (
-											<Spinner className="mr-2 h-4 w-4" />
-										)}
-										{editingOption
-											? t("admin.programs.options.form.updateSubmit", {
-													defaultValue: "Save changes",
-												})
-											: t("admin.programs.options.form.submit", {
-													defaultValue: "Add option",
+								<FormField
+									control={optionForm.control}
+									name="code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel required>
+												{t("admin.programs.options.form.code", {
+													defaultValue: "Code",
 												})}
-									</Button>
-								</div>
-							</form>
-						</Form>
-					</div>
+											</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<FormField
+								control={optionForm.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.programs.options.form.description", {
+												defaultValue: "Description",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Textarea rows={2} {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className="flex justify-end">
+								<Button
+									type="submit"
+									disabled={
+										!optionProgram ||
+										createOptionMutation.isPending ||
+										updateOptionMutation.isPending
+									}
+								>
+									{(createOptionMutation.isPending ||
+										updateOptionMutation.isPending) && (
+										<Spinner className="mr-2 h-4 w-4" />
+									)}
+									{editingOption
+										? t("admin.programs.options.form.updateSubmit", {
+												defaultValue: "Save changes",
+											})
+										: t("admin.programs.options.form.submit", {
+												defaultValue: "Add option",
+											})}
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</div>
 			</FormModal>
 
 			<AlertDialog

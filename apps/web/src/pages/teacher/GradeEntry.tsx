@@ -17,7 +17,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +56,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -608,7 +608,7 @@ const GradeEntry: React.FC = () => {
 						count: importedCount,
 					}),
 				);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(
 					t("teacher.gradeEntry.toast.importError", {
 						defaultValue: "Failed to import grades",
@@ -637,9 +637,7 @@ const GradeEntry: React.FC = () => {
 					<span className="sr-only">Back</span>
 				</Button>
 				<div>
-					<h2 className="text-foreground">
-						{t("teacher.gradeEntry.title")}
-					</h2>
+					<h2 className="text-foreground">{t("teacher.gradeEntry.title")}</h2>
 					{courseInfo && (
 						<p className="text-muted-foreground text-xs">
 							<span className="font-medium">

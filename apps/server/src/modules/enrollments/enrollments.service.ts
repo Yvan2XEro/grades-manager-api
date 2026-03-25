@@ -142,7 +142,6 @@ export async function closeActiveEnrollment(
 	studentId: string,
 	status: schema.EnrollmentStatus = "completed",
 	institutionId?: string,
-	// biome-ignore lint/suspicious/noExplicitAny: drizzle tx type differs from DbInstance union
 	txDb?: any,
 ) {
 	return repo.closeActive(studentId, status, institutionId, txDb);

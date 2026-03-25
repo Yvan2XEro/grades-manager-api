@@ -11,9 +11,20 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../../components/ui/context-menu";
 import {
 	Select,
 	SelectContent,
@@ -29,20 +40,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "../../../components/ui/context-menu";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import { CreateBatchJobDialog } from "./CreateBatchJobDialog";
-import {
-	Empty,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@/components/ui/empty";
 
 const statusVariants: Record<
 	string,
@@ -212,16 +212,16 @@ export default function BatchJobsDashboard() {
 											{["pending", "previewed", "running"].includes(
 												job.status,
 											) && (
-													<>
-														<ContextMenuSeparator />
-														<ContextMenuItem
-															className="text-destructive"
-															onSelect={() => cancelMutation.mutate(job.id)}
-														>
-															{t("admin.batchJobs.actions.cancel")}
-														</ContextMenuItem>
-													</>
-												)}
+												<>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														className="text-destructive"
+														onSelect={() => cancelMutation.mutate(job.id)}
+													>
+														{t("admin.batchJobs.actions.cancel")}
+													</ContextMenuItem>
+												</>
+											)}
 										</>
 									}
 								>
@@ -288,15 +288,15 @@ export default function BatchJobsDashboard() {
 											{(job.status === "pending" ||
 												job.status === "previewed" ||
 												job.status === "running") && (
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() => cancelMutation.mutate(job.id)}
-														disabled={cancelMutation.isPending}
-													>
-														{t("admin.batchJobs.actions.cancel")}
-													</Button>
-												)}
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => cancelMutation.mutate(job.id)}
+													disabled={cancelMutation.isPending}
+												>
+													{t("admin.batchJobs.actions.cancel")}
+												</Button>
+											)}
 										</div>
 									</TableCell>
 								</TableRow>

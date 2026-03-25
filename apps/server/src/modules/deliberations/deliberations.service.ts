@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import type {
 	DeliberationDecision,
 	DeliberationMention,
 	DeliberationStatus,
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
+import { dispatchWebhook } from "@/lib/webhook-dispatch";
 import * as enrollmentsService from "../enrollments/enrollments.service";
 import {
 	type ExamWithRetake,
@@ -263,7 +263,7 @@ export async function transition(
 			deliberationId: input.id,
 			institutionId,
 			deliberationType: delib.type,
-			signedAt: updates.signedAt!.toISOString(),
+			signedAt: updates.signedAt?.toISOString(),
 			classId: delib.classId,
 			academicYearId: delib.academicYearId,
 		}).catch(() => {});
@@ -383,7 +383,7 @@ export async function compute(
 			grades: exam.grades || [],
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: cc.courseRef.id,
 			code: cc.courseRef.code,
 			name: cc.courseRef.name,
@@ -905,7 +905,8 @@ export async function exportDiplomation(
 		(institution.metadata as schema.InstitutionMetadata)?.export_config
 			?.signatures?.pv ?? [];
 
-	const docParams = (institution.metadata as schema.InstitutionMetadata)?.document_params;
+	const docParams = (institution.metadata as schema.InstitutionMetadata)
+		?.document_params;
 	return {
 		institution: {
 			name: institution.nameFr,
@@ -930,12 +931,9 @@ export async function exportDiplomation(
 			admissionDate: (delib as any).signedAt?.toISOString() ?? null,
 		},
 		program: {
-			diplomaTitleFr:
-				(delib as any).classRef?.program?.diplomaTitleFr ?? null,
-			diplomaTitleEn:
-				(delib as any).classRef?.program?.diplomaTitleEn ?? null,
-			specialite:
-				(delib as any).classRef?.programOption?.name ?? null,
+			diplomaTitleFr: (delib as any).classRef?.program?.diplomaTitleFr ?? null,
+			diplomaTitleEn: (delib as any).classRef?.program?.diplomaTitleEn ?? null,
+			specialite: (delib as any).classRef?.programOption?.name ?? null,
 			attestationValidityFr:
 				(delib as any).classRef?.program?.attestationValidityFr ?? null,
 			attestationValidityEn:
@@ -964,9 +962,7 @@ export async function exportDiplomation(
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
 			mention: r.mention,
-			gradeLetter: r.mention
-				? (MENTION_TO_GRADE[r.mention] ?? null)
-				: null,
+			gradeLetter: r.mention ? (MENTION_TO_GRADE[r.mention] ?? null) : null,
 			mentionEn: r.mention ? (MENTION_TO_EN[r.mention] ?? null) : null,
 			ueResults: (r.ueResults as DeliberationUeResult[]) ?? [],
 		})),

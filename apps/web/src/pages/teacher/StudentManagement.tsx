@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Users } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {
@@ -116,7 +116,8 @@ export default function StudentManagement() {
 	const { data: studentsData, isLoading: studentsLoading } = useQuery({
 		queryKey: ["students", sourceClass, pagination.cursor],
 		queryFn: async () => {
-			if (!sourceClass) return { items: [] as Student[], nextCursor: undefined };
+			if (!sourceClass)
+				return { items: [] as Student[], nextCursor: undefined };
 			const { items, nextCursor } = await trpcClient.students.list.query({
 				classId: sourceClass,
 				cursor: pagination.cursor,
@@ -255,7 +256,9 @@ export default function StudentManagement() {
 		<div className="space-y-6">
 			<div>
 				<h2 className="text-foreground">{t("teacher.promotion.title")}</h2>
-				<p className="text-muted-foreground">{t("teacher.promotion.subtitle")}</p>
+				<p className="text-muted-foreground">
+					{t("teacher.promotion.subtitle")}
+				</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-2">
@@ -450,14 +453,14 @@ export default function StudentManagement() {
 							</tbody>
 						</table>
 					</div>
+					<PaginationBar
+						hasPrev={pagination.hasPrev}
+						hasNext={!!studentsData?.nextCursor}
+						onPrev={pagination.handlePrev}
+						onNext={() => pagination.handleNext(studentsData?.nextCursor)}
+						isLoading={studentsLoading}
+					/>
 				</div>
-				<PaginationBar
-					hasPrev={pagination.hasPrev}
-					hasNext={!!studentsData?.nextCursor}
-					onPrev={pagination.handlePrev}
-					onNext={() => pagination.handleNext(studentsData?.nextCursor)}
-					isLoading={studentsLoading}
-				/>
 			) : sourceClass ? (
 				<div className="rounded-lg bg-card p-8 text-center">
 					<Users className="mx-auto h-12 w-12 text-muted-foreground/60" />

@@ -204,7 +204,7 @@ async function executeCopyClasses(
 }
 
 async function executeCopyClassCourses(
-	params: Params,
+	_params: Params,
 	step: schema.BatchJobStep,
 	ctx: JobContext,
 ) {

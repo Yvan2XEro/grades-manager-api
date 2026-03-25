@@ -200,7 +200,7 @@ describe("students router", () => {
 				nameEn: "Other Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
+		const _faculty = await createFaculty({
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
@@ -235,7 +235,7 @@ describe("students router", () => {
 				nameEn: "Other Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
+		const _faculty = await createFaculty({
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({
