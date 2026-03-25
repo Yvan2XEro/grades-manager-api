@@ -7,6 +7,7 @@ import { admin, organization } from "better-auth/plugins";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
+import type { DbInstance } from "@/db/type-fix-db";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
 import { adminRoles } from "./auth";
@@ -16,7 +17,9 @@ import {
 } from "./organization-roles";
 
 const pg = new PGlite();
-export const db = drizzle(pg, { schema: { ...schema, ...authSchema } });
+export const db = drizzle(pg, {
+	schema: { ...schema, ...authSchema },
+}) as unknown as DbInstance;
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
