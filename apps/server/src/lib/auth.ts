@@ -67,6 +67,10 @@ const resend = process.env.RESEND_API_KEY
 	: null;
 const emailFrom = process.env.EMAIL_FROM ?? "noreply@example.com";
 
+type SessionWithActiveOrganization = {
+	activeOrganizationId?: string | null;
+};
+
 export const superadminRoles = ["admin"];
 export const adminRoles = ["admin", ...superadminRoles];
 export const auth = betterAuth({
@@ -77,6 +81,8 @@ export const auth = betterAuth({
 	plugins: [
 		admin({ adminRoles }),
 		customSession(async ({ session, user }) => {
+			const sessionWithOrg = session as typeof session &
+				SessionWithActiveOrganization;
 			const domainProfiles = await domainUsersRepo.getDomainsByAuthUserId(
 				user.id,
 				{
@@ -87,10 +93,13 @@ export const auth = betterAuth({
 				},
 			);
 			const activeMembership =
-				session.activeOrganizationId && user.id
+				sessionWithOrg.activeOrganizationId && user.id
 					? await db.query.member.findFirst({
 							where: and(
-								eq(schema.member.organizationId, session.activeOrganizationId),
+								eq(
+									schema.member.organizationId,
+									sessionWithOrg.activeOrganizationId,
+								),
 								eq(schema.member.userId, user.id),
 							),
 						})

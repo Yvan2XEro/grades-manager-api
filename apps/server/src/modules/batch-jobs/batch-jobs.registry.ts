@@ -1,8 +1,10 @@
 import type { BatchJobDefinition, BatchJobType } from "./batch-jobs.types";
 
-const registry = new Map<BatchJobType, BatchJobDefinition>();
+const registry = new Map<BatchJobType, BatchJobDefinition<any>>();
 
-export function registerJobType(definition: BatchJobDefinition): void {
+export function registerJobType<TParams>(
+	definition: BatchJobDefinition<TParams>,
+): void {
 	if (registry.has(definition.type)) {
 		throw new Error(
 			`Batch job type "${definition.type}" is already registered`,
@@ -13,7 +15,7 @@ export function registerJobType(definition: BatchJobDefinition): void {
 
 export function getJobDefinition(
 	type: BatchJobType,
-): BatchJobDefinition | undefined {
+): BatchJobDefinition<any> | undefined {
 	return registry.get(type);
 }
 

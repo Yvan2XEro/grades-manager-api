@@ -53,7 +53,7 @@ async function ensureAcademicYear(
 }
 
 export async function createEnrollment(
-	data: schema.NewEnrollment,
+	data: Omit<schema.NewEnrollment, "institutionId">,
 	institutionId: string,
 ) {
 	const student = await ensureStudent(data.studentId, institutionId);
@@ -70,7 +70,7 @@ export async function createEnrollment(
 
 export async function updateEnrollment(
 	id: string,
-	data: Partial<schema.NewEnrollment>,
+	data: Partial<Omit<schema.NewEnrollment, "institutionId">>,
 	institutionId: string,
 ) {
 	const existing = await repo.findById(id, institutionId);
@@ -78,7 +78,6 @@ export async function updateEnrollment(
 	if (data.studentId) await ensureStudent(data.studentId, institutionId);
 	if (data.classId) {
 		await ensureClass(data.classId, institutionId);
-		data = { ...data, institutionId };
 	}
 	if (data.academicYearId) {
 		await ensureAcademicYear(data.academicYearId, institutionId);
@@ -126,7 +125,7 @@ export async function deleteEnrollment(id: string, institutionId: string) {
 }
 
 export async function listEnrollments(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.list({ ...opts, institutionId });

@@ -24,7 +24,7 @@ async function ensureLevel(levelId: string, institutionId: string) {
 }
 
 export async function createCycle(
-	data: schema.NewStudyCycle,
+	data: Omit<schema.NewStudyCycle, "institutionId">,
 	institutionId: string,
 ) {
 	// Auto-inject institutionId from context if not provided
@@ -33,7 +33,7 @@ export async function createCycle(
 	// Auto-create cycle levels based on durationYears
 	if (data.durationYears && data.durationYears > 0) {
 		const creditsPerLevel = Math.floor(
-			data.totalCreditsRequired / data.durationYears,
+			(data.totalCreditsRequired ?? 180) / data.durationYears,
 		);
 
 		for (let i = 1; i <= data.durationYears; i++) {
@@ -78,7 +78,9 @@ export async function getCycleById(id: string, institutionId: string) {
 }
 
 export async function createLevel(
-	data: schema.NewCycleLevel,
+	data: Omit<schema.NewCycleLevel, "orderIndex"> & {
+		orderIndex?: number;
+	},
 	institutionId: string,
 ) {
 	const cycle = await ensureCycle(data.cycleId, institutionId);

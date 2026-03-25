@@ -201,6 +201,7 @@ export const promotionApplyJob: BatchJobDefinition<Params> = {
 
 					// Create new enrollment in target class
 					await tx.insert(schema.enrollments).values({
+						institutionId: ctx.institutionId,
 						studentId,
 						classId: params.targetClassId,
 						academicYearId: params.academicYearId,

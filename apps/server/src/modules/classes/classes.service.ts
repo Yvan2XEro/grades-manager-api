@@ -119,7 +119,7 @@ async function ensureProgramOption(
 	return option.id;
 }
 
-async function ensureSemester(semesterId?: string) {
+async function ensureSemester(semesterId?: string | null) {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -142,8 +142,18 @@ async function ensureSemester(semesterId?: string) {
 	return created.id;
 }
 
+type CreateClassInput = Pick<
+	schema.NewKlass,
+	"code" | "name" | "program" | "academicYear"
+> & {
+	cycleLevelId?: string;
+	programOptionId?: string;
+	semesterId?: string | null;
+	totalCredits?: number;
+};
+
 export async function createClass(
-	data: Parameters<typeof repo.create>[0],
+	data: CreateClassInput,
 	institutionId: string,
 ) {
 	const program = await loadProgram(data.program, institutionId);
@@ -170,7 +180,7 @@ export async function createClass(
 
 export async function updateClass(
 	id: string,
-	data: Parameters<typeof repo.update>[2],
+	data: Partial<CreateClassInput>,
 	institutionId: string,
 ) {
 	const existing = await repo.findById(id, institutionId);
@@ -200,7 +210,7 @@ export async function updateClass(
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
-		academicYear: academicYear.id ?? existing.academicYear,
+		academicYear: academicYear?.id ?? existing.academicYear,
 		cycleLevelId,
 		programOptionId,
 		code: data.code ? normalizeCode(data.code) : undefined,

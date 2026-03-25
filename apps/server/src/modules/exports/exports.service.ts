@@ -29,7 +29,7 @@ import {
  */
 export class ExportsService {
 	private repo: ExportsRepo;
-	private config: ReturnType<typeof loadExportConfig> | null = null;
+	private config: ReturnType<typeof loadExportConfig> = loadExportConfig();
 
 	constructor(private readonly institutionId: string) {
 		this.repo = new ExportsRepo(this.institutionId);
@@ -42,10 +42,6 @@ export class ExportsService {
 	 * Get export config from institution or fallback to JSON file
 	 */
 	private async getConfig(): Promise<ReturnType<typeof loadExportConfig>> {
-		if (this.config) {
-			return this.config;
-		}
-
 		try {
 			// Try to load from institution
 			const institution = await this.repo.getInstitution();
@@ -911,7 +907,7 @@ export class ExportsService {
 				},
 			});
 
-			return pdf;
+			return Buffer.from(pdf);
 		} finally {
 			await browser.close();
 		}

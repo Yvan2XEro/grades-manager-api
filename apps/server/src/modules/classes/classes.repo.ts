@@ -200,7 +200,7 @@ export async function findByCode(
 		and(
 			eq(schema.classes.code, code),
 			eq(schema.classes.academicYear, academicYearId),
-		),
+		) as SQL<unknown>,
 		institutionId,
 	);
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { randomUUID } from "node:crypto";
 import * as schema from "@/db/schema/app-schema";
+import type { RegistrationNumberFormatDefinition } from "@/db/schema/registration-number-types";
 import type { Context } from "@/lib/context";
 import { db } from "@/lib/test-db";
 import {
@@ -83,11 +84,11 @@ describe("institutions router", () => {
 			isActive: true,
 		});
 
-		const inactiveDefinition = {
-			segments: [{ kind: "literal", value: "OLD" }] as const,
+		const inactiveDefinition: RegistrationNumberFormatDefinition = {
+			segments: [{ kind: "literal", value: "OLD" }],
 		};
-		const activeDefinition = {
-			segments: [{ kind: "literal", value: "NEW" }] as const,
+		const activeDefinition: RegistrationNumberFormatDefinition = {
+			segments: [{ kind: "literal", value: "NEW" }],
 		};
 
 		await db
@@ -113,6 +114,8 @@ describe("institutions router", () => {
 			.returning();
 
 		const read = await admin.institutions.getById({ id: institution.id });
+		expect(read).toBeTruthy();
+		if (!read) return;
 		expect(read.defaultAcademicYearId).toBe(activeYear.id);
 		expect(read.registrationFormatId).toBe(activeFormat.id);
 	});

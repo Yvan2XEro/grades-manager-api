@@ -320,6 +320,28 @@ export type RunSeedOptions = {
 
 const defaultSeedRelativeDir = path.join("seed", "local");
 
+const normalizeInstitutionType = (
+	type?: "main" | "faculty" | "department" | "other",
+): schema.InstitutionType => {
+	if (type === "faculty") return "faculty";
+	return "institution";
+};
+
+const toDateOnly = (value: string) =>
+	new Date(value).toISOString().slice(0, 10);
+
+function resolveDomainUserId(
+	state: SeedState,
+	code: string,
+	entityId: string,
+): string {
+	const profile = state.domainUsers.get(normalizeCode(code));
+	if (!profile) {
+		throw new Error(`Unknown domain user ${code} referenced by ${entityId}`);
+	}
+	return profile.id;
+}
+
 export async function runSeed(options: RunSeedOptions = {}) {
 	const logger = options.logger ?? console;
 	const db = options.db ?? appDb;
@@ -540,7 +562,7 @@ async function seedFoundation(
 
 		const payload = {
 			code,
-			type: entry.type ?? "other",
+			type: normalizeInstitutionType(entry.type),
 			shortName: entry.shortName ?? null,
 			nameFr: entry.nameFr,
 			nameEn: entry.nameEn,
@@ -833,8 +855,8 @@ async function seedFoundation(
 				await db
 					.update(schema.academicYears)
 					.set({
-						startDate: new Date(entry.startDate),
-						endDate: new Date(entry.endDate),
+						startDate: toDateOnly(entry.startDate),
+						endDate: toDateOnly(entry.endDate),
 						isActive: entry.isActive ?? existing.isActive,
 						institutionId,
 					})
@@ -847,8 +869,8 @@ async function seedFoundation(
 					.insert(schema.academicYears)
 					.values({
 						name,
-						startDate: new Date(entry.startDate),
-						endDate: new Date(entry.endDate),
+						startDate: toDateOnly(entry.startDate),
+						endDate: toDateOnly(entry.endDate),
 						isActive: entry.isActive ?? false,
 						institutionId,
 					})
@@ -1008,7 +1030,6 @@ async function seedAcademics(
 				name: entry.name,
 				description: entry.description ?? null,
 				credits: entry.credits ?? 0,
-				institutionId: program.institutionId,
 				semester: entry.semester ?? "annual",
 			})
 			.onConflictDoUpdate({
@@ -1056,7 +1077,7 @@ async function seedAcademics(
 				name: entry.name,
 				hours: entry.hours,
 				defaultTeacher: null,
-				institutionId: program.institutionId,
+				defaultCoefficient: "1.00",
 			})
 			.onConflictDoUpdate({
 				target: [schema.courses.program, schema.courses.code],
@@ -1259,7 +1280,7 @@ async function seedUsers(
 					firstName: entry.firstName,
 					lastName: entry.lastName,
 					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
+					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
 					gender: entry.gender ?? null,
 					nationality: entry.nationality ?? null,
@@ -1279,7 +1300,7 @@ async function seedUsers(
 					lastName: entry.lastName,
 					primaryEmail: entry.primaryEmail,
 					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth ? new Date(entry.dateOfBirth) : null,
+					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
 					gender: entry.gender ?? null,
 					nationality: entry.nationality ?? null,
@@ -1757,7 +1778,7 @@ async function seedExams(
 			name: entry.name,
 			type: entry.type,
 			date: new Date(entry.date),
-			percentage: entry.percentage,
+			percentage: entry.percentage.toString(),
 			classCourse: classCourse.id,
 			institutionId: classCourse.institutionId,
 			status: entry.status ?? "draft",
@@ -1767,8 +1788,7 @@ async function seedExams(
 			scheduledAt: entry.scheduledAt ? new Date(entry.scheduledAt) : null,
 			validatedAt: entry.validatedAt ? new Date(entry.validatedAt) : null,
 		};
-		const updatePayload = { ...insertPayload };
-		delete updatePayload.id;
+		const { id: _id, ...updatePayload } = insertPayload;
 		await db.insert(schema.exams).values(insertPayload).onConflictDoUpdate({
 			target: schema.exams.id,
 			set: updatePayload,

@@ -5,8 +5,8 @@ import { transaction } from "../_shared/db-transaction";
 import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./academic-years.repo";
 
-type CreateInput = Parameters<typeof repo.create>[0];
-type UpdateInput = Parameters<typeof repo.update>[2];
+type CreateInput = Omit<Parameters<typeof repo.create>[0], "institutionId">;
+type UpdateInput = Partial<CreateInput>;
 type ListInput = Parameters<typeof repo.list>[1];
 
 export async function createAcademicYear(

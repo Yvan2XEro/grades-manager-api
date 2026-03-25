@@ -257,13 +257,13 @@ export async function transition(
 		actorId,
 	});
 
-	if (input.action === "sign") {
+	if (input.action === "sign" && updates.signedAt) {
 		dispatchWebhook(institutionId, {
 			event: "deliberation.signed",
 			deliberationId: input.id,
 			institutionId,
 			deliberationType: delib.type,
-			signedAt: updates.signedAt?.toISOString(),
+			signedAt: updates.signedAt.toISOString(),
 			classId: delib.classId,
 			academicYearId: delib.academicYearId,
 		}).catch(() => {});
@@ -376,11 +376,14 @@ export async function compute(
 		const exams = (cc.exams || []).map((exam) => ({
 			id: exam.id,
 			type: exam.type,
-			percentage: exam.percentage,
+			percentage: Number(exam.percentage),
 			sessionType: exam.sessionType || "normal",
 			parentExamId: exam.parentExamId || null,
 			scoringPolicy: exam.scoringPolicy || "replace",
-			grades: exam.grades || [],
+			grades: (exam.grades || []).map((grade) => ({
+				studentRef: { id: grade.studentRef.id },
+				score: grade.score,
+			})),
 		})) as ExamWithRetake[];
 
 		ueMap.get(ue.id)?.courses.push({

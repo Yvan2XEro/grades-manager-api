@@ -59,6 +59,57 @@ export interface ExportConfig {
 	};
 }
 
+const defaultGrading: ExportConfig["grading"] = {
+	appreciations: [
+		{ label: "Excellent", min: 18, max: 20 },
+		{ label: "Très Bien", min: 16, max: 17.99 },
+		{ label: "Bien", min: 14, max: 15.99 },
+		{ label: "Assez Bien", min: 12, max: 13.99 },
+		{ label: "Passable", min: 10, max: 11.99 },
+		{ label: "Insuffisant", min: 9, max: 9.99 },
+		{ label: "Faible", min: 8, max: 8.99 },
+		{ label: "Très Faible", min: 6, max: 7.99 },
+		{ label: "Nul", min: 0, max: 5.99 },
+	],
+	passing_grade: 10,
+	scale: 20,
+};
+
+const defaultSignatures: ExportConfig["signatures"] = {
+	pv: [
+		{ position: "Le Rapporteur", name: "" },
+		{ position: "Les Membres du Jury", name: "" },
+		{ position: "Le Président du Jury", name: "" },
+	],
+	evaluation: [
+		{ position: "L'Enseignant", name: "" },
+		{ position: "Le Chef de Département", name: "" },
+		{ position: "Le Directeur des Études", name: "" },
+	],
+	ue: [
+		{ position: "Le Rapporteur", name: "" },
+		{ position: "Les Membres du Jury", name: "" },
+		{ position: "Le Président du Jury", name: "" },
+	],
+};
+
+const defaultExamSettings: ExportConfig["exam_settings"] = {
+	default_duration_hours: 2,
+	default_coefficient: 1,
+	exam_types: {
+		CC: { label: "Contrôle Continu", coefficient: 0.4 },
+		TPE: { label: "Travaux Pratiques Encadrés", coefficient: 0.3 },
+		TP: { label: "Travaux Pratiques", coefficient: 0.3 },
+		EXAMEN: { label: "Examen", coefficient: 0.6 },
+		RATTRAPAGE: { label: "Rattrapage", coefficient: 1.0 },
+	},
+};
+
+const defaultWatermark: ExportConfig["watermark"] = {
+	text: "ORIGINAL",
+	enabled: true,
+};
+
 /**
  * Load export configuration from JSON file (fallback for compatibility)
  */
@@ -114,66 +165,47 @@ export function institutionToExportConfig(
 			name_fr: institution.nameFr,
 			name_en: institution.nameEn,
 			logo_url: institution.logoUrl || "/logos/institution.png",
-			contact_email: institution.contactEmail,
-			fax: institution.fax,
-			postal_box: institution.postalBox,
+			contact_email: institution.contactEmail ?? undefined,
+			fax: institution.fax ?? undefined,
+			postal_box: institution.postalBox ?? undefined,
 			// Supervising faculty/school information (optionnel)
 			faculty_name_fr: supervisingFaculty?.nameFr,
 			faculty_name_en: supervisingFaculty?.nameEn,
 			// Parent university information (optionnel)
 			university_name_fr: university?.nameFr,
 			university_name_en: university?.nameEn,
-			university_logo_url: university?.logoUrl,
-			university_contact_email: university?.contactEmail,
-			university_fax: university?.fax,
-			university_postal_box: university?.postalBox,
+			university_logo_url: university?.logoUrl ?? undefined,
+			university_contact_email: university?.contactEmail ?? undefined,
+			university_fax: university?.fax ?? undefined,
+			university_postal_box: university?.postalBox ?? undefined,
 		},
-		grading: exportConfig?.grading || {
-			appreciations: [
-				{ label: "Excellent", min: 18, max: 20 },
-				{ label: "Très Bien", min: 16, max: 17.99 },
-				{ label: "Bien", min: 14, max: 15.99 },
-				{ label: "Assez Bien", min: 12, max: 13.99 },
-				{ label: "Passable", min: 10, max: 11.99 },
-				{ label: "Insuffisant", min: 9, max: 9.99 },
-				{ label: "Faible", min: 8, max: 8.99 },
-				{ label: "Très Faible", min: 6, max: 7.99 },
-				{ label: "Nul", min: 0, max: 5.99 },
-			],
-			passing_grade: 10,
-			scale: 20,
+		grading: {
+			appreciations:
+				exportConfig?.grading?.appreciations ?? defaultGrading.appreciations,
+			passing_grade:
+				exportConfig?.grading?.passing_grade ?? defaultGrading.passing_grade,
+			scale: exportConfig?.grading?.scale ?? defaultGrading.scale,
 		},
-		signatures: exportConfig?.signatures || {
-			pv: [
-				{ position: "Le Rapporteur", name: "" },
-				{ position: "Les Membres du Jury", name: "" },
-				{ position: "Le Président du Jury", name: "" },
-			],
-			evaluation: [
-				{ position: "L'Enseignant", name: "" },
-				{ position: "Le Chef de Département", name: "" },
-				{ position: "Le Directeur des Études", name: "" },
-			],
-			ue: [
-				{ position: "Le Rapporteur", name: "" },
-				{ position: "Les Membres du Jury", name: "" },
-				{ position: "Le Président du Jury", name: "" },
-			],
+		signatures: {
+			pv: exportConfig?.signatures?.pv ?? defaultSignatures.pv,
+			evaluation:
+				exportConfig?.signatures?.evaluation ?? defaultSignatures.evaluation,
+			ue: exportConfig?.signatures?.ue ?? defaultSignatures.ue,
 		},
-		exam_settings: exportConfig?.exam_settings || {
-			default_duration_hours: 2,
-			default_coefficient: 1,
-			exam_types: {
-				CC: { label: "Contrôle Continu", coefficient: 0.4 },
-				TPE: { label: "Travaux Pratiques Encadrés", coefficient: 0.3 },
-				TP: { label: "Travaux Pratiques", coefficient: 0.3 },
-				EXAMEN: { label: "Examen", coefficient: 0.6 },
-				RATTRAPAGE: { label: "Rattrapage", coefficient: 1.0 },
-			},
+		exam_settings: {
+			default_duration_hours:
+				exportConfig?.exam_settings?.default_duration_hours ??
+				defaultExamSettings.default_duration_hours,
+			default_coefficient:
+				exportConfig?.exam_settings?.default_coefficient ??
+				defaultExamSettings.default_coefficient,
+			exam_types:
+				exportConfig?.exam_settings?.exam_types ??
+				defaultExamSettings.exam_types,
 		},
-		watermark: exportConfig?.watermark || {
-			text: "ORIGINAL",
-			enabled: true,
+		watermark: {
+			text: exportConfig?.watermark?.text ?? defaultWatermark.text,
+			enabled: exportConfig?.watermark?.enabled ?? defaultWatermark.enabled,
 		},
 	};
 }

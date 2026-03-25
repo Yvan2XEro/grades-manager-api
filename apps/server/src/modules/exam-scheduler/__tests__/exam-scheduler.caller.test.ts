@@ -67,12 +67,14 @@ async function bootstrapFixtures() {
 
 describe("exam scheduler router", () => {
 	it("requires admin privileges", async () => {
-		const { institutionId, academicYear, examType } = await bootstrapFixtures();
+		const { institutionId, academicYear, examType, semesterId } =
+			await bootstrapFixtures();
 		const unauthenticated = createCaller(makeTestContext());
 		await expect(
 			unauthenticated.examScheduler.preview({
 				institutionId: institutionId,
 				academicYearId: academicYear.id,
+				semesterId,
 			}),
 		).rejects.toHaveProperty("code", "UNAUTHORIZED");
 
@@ -81,6 +83,7 @@ describe("exam scheduler router", () => {
 			student.examScheduler.schedule({
 				institutionId: institutionId,
 				academicYearId: academicYear.id,
+				semesterId,
 				examTypeId: examType.id,
 				percentage: 30,
 				dateStart: new Date(),
@@ -145,7 +148,8 @@ describe("exam scheduler router", () => {
 		const details = await admin.examScheduler.details({
 			runId: firstRun.runId ?? "",
 		});
-		expect(details.run.id).toBe(firstRun.runId);
+		expect(firstRun.runId).toBeTruthy();
+		expect(details.run.id).toBe(firstRun.runId!);
 		expect(details.exams.length).toBe(fixtures.classCourses.length);
 	});
 

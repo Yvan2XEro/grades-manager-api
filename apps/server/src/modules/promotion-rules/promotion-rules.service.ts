@@ -415,6 +415,7 @@ export async function applyPromotion(
 
 			// Create new enrollment in target class
 			await tx.insert(schema.enrollments).values({
+				institutionId: targetClass.institutionId,
 				studentId,
 				classId: opts.targetClassId,
 				academicYearId: opts.academicYearId,

@@ -2,6 +2,16 @@ import { and, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
+async function getContextOrganizationId(institutionId: string) {
+	const [contextInst] = await db
+		.select({ organizationId: schema.institutions.organizationId })
+		.from(schema.institutions)
+		.where(eq(schema.institutions.id, institutionId))
+		.limit(1);
+
+	return contextInst?.organizationId ?? null;
+}
+
 export async function createCycle(data: schema.NewStudyCycle) {
 	const [cycle] = await db.insert(schema.studyCycles).values(data).returning();
 	return cycle;
@@ -33,14 +43,8 @@ export async function deleteCycle(id: string, institutionId: string) {
 }
 
 export async function findCycleById(id: string, institutionId: string) {
-	// Get the organizationId from the context institution
-	const [contextInst] = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1);
-
-	if (!contextInst) return null;
+	const organizationId = await getContextOrganizationId(institutionId);
+	if (!organizationId) return null;
 
 	const result = await db
 		.select()
@@ -52,7 +56,7 @@ export async function findCycleById(id: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.studyCycles.id, id),
-				eq(schema.institutions.organizationId, contextInst.organizationId),
+				eq(schema.institutions.organizationId, organizationId),
 			),
 		)
 		.limit(1);
@@ -67,18 +71,12 @@ export async function listCycles(
 		limit?: number;
 	},
 ) {
-	// Get the organizationId from the context institution
-	const [contextInst] = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1);
-
-	if (!contextInst) return { items: [], nextCursor: undefined };
+	const organizationId = await getContextOrganizationId(institutionId);
+	if (!organizationId) return { items: [], nextCursor: undefined };
 
 	const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
 	const conditions = [
-		eq(schema.institutions.organizationId, contextInst.organizationId),
+		eq(schema.institutions.organizationId, organizationId),
 		opts.institutionId
 			? eq(schema.studyCycles.institutionId, opts.institutionId)
 			: undefined,
@@ -149,14 +147,8 @@ export async function deleteLevel(id: string, institutionId: string) {
 }
 
 export async function findLevelById(id: string, institutionId: string) {
-	// Get the organizationId from the context institution
-	const [contextInst] = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1);
-
-	if (!contextInst) return null;
+	const organizationId = await getContextOrganizationId(institutionId);
+	if (!organizationId) return null;
 
 	const result = await db
 		.select()
@@ -172,7 +164,7 @@ export async function findLevelById(id: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.cycleLevels.id, id),
-				eq(schema.institutions.organizationId, contextInst.organizationId),
+				eq(schema.institutions.organizationId, organizationId),
 			),
 		)
 		.limit(1);
@@ -180,14 +172,8 @@ export async function findLevelById(id: string, institutionId: string) {
 }
 
 export async function listLevels(cycleId: string, institutionId: string) {
-	// Get the organizationId from the context institution
-	const [contextInst] = await db
-		.select({ organizationId: schema.institutions.organizationId })
-		.from(schema.institutions)
-		.where(eq(schema.institutions.id, institutionId))
-		.limit(1);
-
-	if (!contextInst) return [];
+	const organizationId = await getContextOrganizationId(institutionId);
+	if (!organizationId) return [];
 
 	const rows = await db
 		.select({
@@ -210,7 +196,7 @@ export async function listLevels(cycleId: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.cycleLevels.cycleId, cycleId),
-				eq(schema.institutions.organizationId, contextInst.organizationId),
+				eq(schema.institutions.organizationId, organizationId),
 			),
 		)
 		.orderBy(schema.cycleLevels.orderIndex);

@@ -202,15 +202,16 @@ const resolveScope = (
 	context: FormatContext,
 	scopeList?: RegistrationCounterScope[],
 ): ScopeInfo => {
-	const scopes = scopeList && scopeList.length > 0 ? scopeList : ["global"];
+	const scopes: RegistrationCounterScope[] =
+		scopeList && scopeList.length > 0 ? scopeList : ["global"];
 	const scopeValues: Record<RegistrationCounterScope, string | undefined> = {
 		global: "global",
 		academicYear: context.academicYearId,
-		faculty: context.facultyId,
+		faculty: context.facultyId ?? undefined,
 		program: context.programId,
 		class: context.classId,
 		programOption: context.programOptionId,
-		cycle: context.cycleId,
+		cycle: context.cycleId ?? undefined,
 		cycleLevel: context.cycleLevelId,
 	};
 	const parts = scopes.map((scope) => {

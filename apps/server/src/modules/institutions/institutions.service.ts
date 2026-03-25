@@ -5,27 +5,17 @@ import * as registrationNumbersRepo from "../registration-numbers/registration-n
 import * as repo from "./institutions.repo";
 
 type UpdatableFields = Omit<NewInstitution, "id" | "createdAt" | "updatedAt">;
-type PersistedInstitutionFields = Omit<
-	UpdatableFields,
-	"defaultAcademicYearId" | "registrationFormatId"
->;
+type PersistedInstitutionFields = UpdatableFields;
 
 type InstitutionRecord = Awaited<ReturnType<typeof repo.getById>>;
 
-function toPersistedInstitutionFields(
+function toPersistedInstitutionUpdateFields(
 	data: Partial<UpdatableFields>,
 ): Partial<PersistedInstitutionFields> {
-	const {
-		defaultAcademicYearId: _defaultAcademicYearId,
-		registrationFormatId: _registrationFormatId,
-		...fields
-	} = data;
-	return fields;
+	return data;
 }
 
-async function attachDerivedSettings<T extends InstitutionRecord>(
-	institution: T,
-) {
+async function attachDerivedSettings(institution: InstitutionRecord) {
 	if (!institution) return null;
 	const [activeAcademicYear, activeRegistrationFormat] = await Promise.all([
 		academicYearsRepo.findActive(institution.id),
@@ -40,6 +30,7 @@ async function attachDerivedSettings<T extends InstitutionRecord>(
 
 export async function getInstitution() {
 	const existing = await repo.getFirst();
+	if (!existing) return null;
 	return attachDerivedSettings(existing);
 }
 
@@ -66,9 +57,9 @@ export async function upsertInstitution(
 ) {
 	const { id, ...fields } = data;
 	const payload = {
-		...toPersistedInstitutionFields(fields),
+		...fields,
 		isMain: true,
-	};
+	} as PersistedInstitutionFields;
 	if (id) {
 		const updated = await repo.update(id, payload);
 		return attachDerivedSettings(updated);
@@ -83,9 +74,7 @@ export async function upsertInstitution(
 }
 
 export async function createInstitution(data: UpdatableFields) {
-	const created = await repo.create(
-		toPersistedInstitutionFields(data) as PersistedInstitutionFields,
-	);
+	const created = await repo.create(data);
 	return attachDerivedSettings(created);
 }
 
@@ -100,7 +89,10 @@ export async function updateInstitution(
 			message: "Institution not found",
 		});
 	}
-	const updated = await repo.update(id, toPersistedInstitutionFields(data));
+	const updated = await repo.update(
+		id,
+		toPersistedInstitutionUpdateFields(data),
+	);
 	return attachDerivedSettings(updated);
 }
 

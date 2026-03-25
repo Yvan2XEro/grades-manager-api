@@ -109,7 +109,7 @@ export async function seed() {
 		lastName,
 		primaryEmail: "seed.teacher@example.com",
 		phone: null,
-		dateOfBirth: new Date("1990-01-01"),
+		dateOfBirth: "1990-01-01",
 		placeOfBirth: "Seed City",
 		gender: "other",
 		nationality: null,

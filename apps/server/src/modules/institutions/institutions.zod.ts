@@ -26,7 +26,7 @@ export const upsertInstitutionSchema = z.object({
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
 	timezone: z.string().optional(),
-	metadata: z.record(z.unknown()).optional(),
+	metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const createInstitutionSchema = upsertInstitutionSchema;

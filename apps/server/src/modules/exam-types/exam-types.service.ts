@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import * as repo from "./exam-types.repo";
 
-type CreateInput = Parameters<typeof repo.create>[0];
-type UpdateInput = Parameters<typeof repo.update>[2];
+type CreateInput = Omit<Parameters<typeof repo.create>[0], "institutionId">;
+type UpdateInput = Partial<CreateInput>;
 type ListInput = Parameters<typeof repo.list>[1];
 
 export async function createExamType(data: CreateInput, institutionId: string) {

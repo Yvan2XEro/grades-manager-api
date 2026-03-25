@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
+import type { RegistrationNumberFormatDefinition } from "@/db/schema/registration-number-types";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
@@ -143,7 +144,7 @@ describe("students router", () => {
 		// Clean up any existing formats and counters first
 		await db.delete(schema.registrationNumberCounters);
 		await db.delete(schema.registrationNumberFormats);
-		const definition = {
+		const definition: RegistrationNumberFormatDefinition = {
 			segments: [
 				{ kind: "literal", value: "REG-" },
 				{ kind: "counter", width: 3 },
