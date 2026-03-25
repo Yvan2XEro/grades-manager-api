@@ -29,12 +29,12 @@ fi
 # Re-enable once the types are fixed
 # ──────────────────────────────────────────────
 
-# echo "TypeScript: checking types..."
-# bun run check-types
-# if [ $? -ne 0 ]; then
-#   echo ""
-#   echo "TypeScript type errors found. Please fix them before committing."
-#   exit 1
-# fi
-#
-# echo "TypeScript: all type checks passed"
+echo "TypeScript: checking types..."
+bun run check-types
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "TypeScript type errors found. Please fix them before committing."
+  exit 1
+fi
+
+echo "TypeScript: all type checks passed"
