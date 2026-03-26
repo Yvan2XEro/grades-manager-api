@@ -154,8 +154,8 @@ function App() {
 		session?.user?.id,
 		activeOrganizationSlug,
 		refetchSession,
-		session.activeMembership?.role,
-		session.session?.activeOrganizationId,
+		session?.activeMembership?.role,
+		session?.session?.activeOrganizationId,
 		session?.user,
 	]);
 

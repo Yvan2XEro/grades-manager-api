@@ -65,19 +65,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-
-type ExportTemplate = {
-	id: string;
-	institutionId: string;
-	name: string;
-	type: "pv" | "evaluation" | "ue" | "deliberation";
-	isDefault: boolean;
-	templateBody: string;
-	createdAt: Date;
-	updatedAt: Date;
-	createdBy: string;
-	updatedBy: string;
-};
+import type { ExportTemplate } from "@/utils/type";
 
 const EXPORT_TYPES = [
 	{ value: "pv", label: "PV (Procès-Verbal)" },

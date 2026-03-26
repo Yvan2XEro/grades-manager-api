@@ -61,6 +61,7 @@ import {
 	TooltipTrigger,
 } from "../../components/ui/tooltip";
 import { trpcClient } from "../../utils/trpc";
+import type { AcademicYear } from "../../utils/type";
 import AcademicYearSetupDialog from "./AcademicYearSetupDialog";
 
 const buildAcademicYearSchema = (t: TFunction) =>
@@ -83,15 +84,6 @@ const buildAcademicYearSchema = (t: TFunction) =>
 				path: ["endDate"],
 			},
 		);
-
-type AcademicYear = {
-	id: string;
-	name: string;
-	startDate: string;
-	endDate: string;
-	isActive: boolean;
-	createdAt: string;
-};
 
 type FormData = z.infer<ReturnType<typeof buildAcademicYearSchema>>;
 
@@ -144,7 +136,7 @@ const AcademicYearManagement: React.FC = () => {
 					cursor: pageParam,
 					limit: 20,
 				});
-				return result as { items: AcademicYear[]; nextCursor?: string };
+				return result;
 			},
 			initialPageParam: undefined as string | undefined,
 			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

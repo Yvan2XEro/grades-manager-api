@@ -49,6 +49,7 @@ import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
+import type { ExamType } from "../../utils/type";
 
 const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 	z.object({
@@ -56,13 +57,6 @@ const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 		description: z.string().optional(),
 		defaultPercentage: z.coerce.number().int().min(1).max(100).optional(),
 	});
-
-type ExamType = {
-	id: string;
-	name: string;
-	description: string | null;
-	defaultPercentage: number | null;
-};
 
 type FormValues = z.infer<ReturnType<typeof buildSchema>>;
 

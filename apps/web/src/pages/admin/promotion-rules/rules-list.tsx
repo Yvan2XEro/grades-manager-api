@@ -24,16 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-
-type PromotionRule = {
-	id: string;
-	name: string;
-	description: string;
-	ruleset: Record<string, unknown>;
-	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
-};
+import type { PromotionRule } from "@/utils/type";
 
 export function RulesListPage() {
 	const { t } = useTranslation();

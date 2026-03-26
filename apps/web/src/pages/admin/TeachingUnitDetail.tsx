@@ -29,16 +29,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-type TeachingUnit = {
-	id: string;
-	name: string;
-	code: string;
-	description?: string | null;
-	credits: number;
-	semester: "fall" | "spring" | "annual";
-	programId: string;
-};
+import type { TeachingUnit } from "../../utils/type";
 
 const buildUnitSchema = (
 	t: (key: string, options?: Record<string, any>) => string,
