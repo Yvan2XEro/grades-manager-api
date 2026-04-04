@@ -68,7 +68,7 @@ bun run --filter server start  # Run production server
 ### Backend Architecture (`apps/server/src/`)
 
 #### Core Setup
-- **Entry point**: `index.ts` - Configures Hono server with CORS, auth routes (`/api/auth/**`), and tRPC routes (`/trpc/*`)
+- **Entry point**: `index.ts` - Configures Hono server with CORS, auth routes (`/api/auth/**`), tRPC routes (`/trpc/*`), and REST routes (`/api/diplomation/**`, `/api/public/**`)
 - **tRPC setup**: `lib/trpc.ts` - Defines procedure types:
   - `publicProcedure` - No authentication required
   - `protectedProcedure` - Requires authenticated session
@@ -95,10 +95,11 @@ Key modules include:
 - `registration-numbers` - Auto-generates student/exam registration numbers
 - `rules-engine` - Uses json-rules-engine for configurable business rules
 - `student-credit-ledger` - Tracks credit accumulation
+- `deliberations`, `promotion-rules`, `batch-jobs`, `export-templates`
 
 #### Database Schema (`db/schema/`)
-- `auth.ts` - Better-Auth tables (user, session, account, verification)
-- `app-schema.ts` - Main application schema with all domain tables
+- `auth.ts` - Better-Auth tables (user, session, account, verification, organization, member)
+- `app-schema.ts` - Main application schema with all domain tables (82KB, canonical source of truth)
 - `registration-number-types.ts` - Types for registration number formatting
 
 Key domain tables:
@@ -109,19 +110,23 @@ Key domain tables:
 - `studentCourseEnrollments` - Student attempts at specific courses
 - `exams` → `grades` (assessment structure)
 - `workflows` - Approval workflows for grade changes
+- `deliberations` - End-of-year deliberation records
+- `diplomationApiKeys` - External API key management (hash only, never raw)
 
 #### Authentication & Authorization
 - **Better-Auth** (`lib/auth.ts`) manages authentication with email/password
 - **Domain Users** (`modules/domain-users/`) separate business profiles from auth accounts
 - **Business Roles** (`modules/authz/index.ts`):
-  - Hierarchy: `super_admin` > `administrator` > `dean` > `teacher` > `staff` > `student`
-  - `roleSatisfies()` checks if a role meets requirements
+  - Hierarchy: `super_admin` > `administrator` > `dean` > `teacher` > `grade_editor` > `staff` > `student`
+  - `roleSatisfies()` checks if a role meets requirements (transitive — dean can do teacher things)
   - `assertRole()` throws FORBIDDEN if unauthorized
   - `buildPermissions()` computes permission snapshot (`canManageCatalog`, `canGrade`, etc.)
 
 #### Background Jobs (`lib/jobs.ts`)
-- `closeExpiredApprovedExams()` - Runs every 5 minutes
-- `sendPending()` - Sends pending notifications every 1 minute
+- `closeExpiredApprovedExams()` - Runs every 5 minutes; locks past approved exams
+- `sendPending()` - Sends up to 25 pending notifications every 1 minute
+- `markStaleBatchJobs()` - Marks timed-out batch jobs every 5 minutes
+- **Queue**: pg-boss for PostgreSQL, falls back to `setInterval` with PGlite/test environments
 
 #### Testing Approach
 - Use `makeTestContext()`, `asAdmin()`, `asSuperAdmin()` from `lib/test-utils.ts` to create test contexts
@@ -136,6 +141,46 @@ Key domain tables:
 - **i18n**: `i18n/` - i18next with English and French translations
 - **Routing**: React Router v7
 - **UI**: shadcn/ui components with TailwindCSS v4
+
+## Environment Variables
+
+### Backend (`apps/server/.env`)
+```bash
+# Required
+DATABASE_URL=postgres://user:password@host:5432/db
+BETTER_AUTH_SECRET=<min 32 chars, generate: openssl rand -base64 32>
+BETTER_AUTH_URL=http://localhost:3000
+CORS_ORIGINS=http://localhost:4173
+
+# Auth cookies (production)
+BETTER_AUTH_COOKIE_SAMESITE=none
+BETTER_AUTH_COOKIE_SECURE=true
+
+# Server
+PORT=3000
+SERVER_PUBLIC_URL=http://localhost:3000
+NODE_ENV=development
+
+# Email (optional — notifications degraded without it)
+RESEND_API_KEY=re_...
+EMAIL_FROM=noreply@example.com
+
+# Storage
+STORAGE_DRIVER=local
+STORAGE_LOCAL_ROOT=./storage/uploads
+STORAGE_LOCAL_PUBLIC_PATH=/uploads
+
+# Development only
+USE_PGLITE=true                # In-memory/file DB instead of PostgreSQL
+PGLITE_DATA_DIR=./data/pglite
+RETAKES_FEATURE_FLAG=false
+```
+
+### Frontend (`apps/web/.env`)
+```bash
+VITE_SERVER_URL=http://localhost:3000
+VITE_DEFAULT_ORGANIZATION_SLUG=sgn-institution
+```
 
 ## Important Patterns
 
@@ -166,9 +211,71 @@ Key domain tables:
 - `ctx.session` - Better-Auth session with user info
 - `ctx.profile` - Domain user profile (may be null for guests)
 - `ctx.permissions` - Pre-computed permission snapshot
+- `ctx.institution` - Resolved institution (always set on tenant procedures)
+
+### Error Handling
+Use helpers from `_shared/errors.ts`:
+```typescript
+notFound(message)    // → TRPCError { code: "NOT_FOUND" }
+conflict(message)    // → TRPCError { code: "CONFLICT" }
+```
+Common codes: `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `PRECONDITION_FAILED`
+
+Use `requireXxx()` pattern in services to validate ownership and existence early, then throw.
 
 ### Seeding Data
 - Scaffold templates generate YAML files in `seed/local/` (gitignored)
 - Seed command loads layered YAML files: foundation, academic structure, enrollment data
 - Use `--dir` or `$SEED_DIR` to customize seed directory
 - Override specific files with `--foundation`, etc.
+
+### Batch Jobs Pattern
+Jobs are registered in `BATCH_JOB_TYPES` and implement a `JobHandler` interface:
+- `preview()` - Dry-run, returns estimated steps/items
+- `execute(step, ctx)` - Runs a single step, reports progress via `ctx.reportStepProgress()`
+- `rollback()` - Optional reversal
+- Job context includes `institutionId` — all data access must be institution-scoped
+
+### Diplomation REST API (External Integration)
+Secured by API key (`X-Api-Key` header). Raw keys are never stored — only SHA256 hash.
+Key endpoints in `index.ts`:
+```
+GET  /api/public/branding/:slug               # Public, no auth
+GET  /api/diplomation/deliberations           # List deliberations
+GET  /api/diplomation/deliberations/:id       # Full deliberation export
+GET  /api/diplomation/config                  # Programs, years, params
+POST /api/diplomation/documents               # Log generated document
+```
+Webhooks are dispatched non-blocking (fire-and-forget) with HMAC-SHA256 signature.
+
+## Code Style (Biome)
+
+- **Indentation**: Tabs (width 2)
+- **Quotes**: Double quotes
+- **Semicolons**: Required
+- Import organization is enforced (`organize imports`)
+- Tailwind class sorting via `cn`, `clsx`, `cva` helpers
+- Run `bun check` before committing to auto-fix formatting and linting
+
+## Critical Gotchas
+
+1. **Organization context is mandatory** — Every tRPC request requires an active organization resolved from session, `X-Organization-Slug` header, or profile membership. Missing context throws `PRECONDITION_FAILED`.
+
+2. **Role hierarchy is transitive** — Always use `roleSatisfies()`, never exact role comparison. A dean passes teacher checks.
+
+3. **Three identity layers**:
+   - `user` (Better-Auth) = email/password account
+   - `member` = organization membership record with role
+   - `domainUser`/`profile` = institutional profile (multiple allowed per user)
+
+4. **Exam locking is irreversible** — Once `isLocked = true`, no grade edits are allowed. Locking happens on manual approval or automatic expiry.
+
+5. **API keys store only the hash** — Raw keys must be distributed out-of-band. Key rotation requires generating and re-distributing a new key.
+
+6. **PGlite vs PostgreSQL** — Development defaults to `USE_PGLITE=true` (in-memory, no pg-boss). Production requires PostgreSQL. Tests always use PGlite.
+
+7. **Webhook delivery is non-blocking** — Webhook failures are logged but don't fail the transaction. Don't rely on delivery confirmation in the same request.
+
+8. **Notifications have no explicit "failed" state** — Only `pending` and `sent`. Delivery failures are logged to console, not persisted.
+
+9. **`RETAKES_FEATURE_FLAG`** gates whether students can retry failed courses. Disabled by default.

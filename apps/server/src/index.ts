@@ -100,7 +100,7 @@ type DiplomationVars = { apiKeyRecord: DiplomationApiKey };
 const diplomationApi = new Hono<{ Variables: DiplomationVars }>();
 
 // Permissive CORS for diplomation routes — secured by X-Api-Key, not by origin.
-// Needed for Electron dev (localhost:5173) and any LAN client IP.
+// Needed for Electron dev (localhost:5174) and any LAN client IP.
 diplomationApi.use(
 	"/*",
 	cors({

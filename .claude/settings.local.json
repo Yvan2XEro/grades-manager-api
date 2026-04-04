@@ -114,7 +114,8 @@
       "Bash(sed -n '1673,1678p' \"C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\web\\\\src\\\\pages\\\\admin\\\\ClassManagement.tsx\")",
       "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))",
       "Bash(bunx drizzle-kit:*)",
-      "Bash(printf '\\\\n')"
+      "Bash(printf '\\\\n')",
+      "Bash(PGPASSWORD=root psql -U postgres -h localhost -d grades-manager-api-db -c \"SELECT hash FROM drizzle.__drizzle_migrations ORDER BY created_at;\" 2>&1)"
     ]
   }
 }
