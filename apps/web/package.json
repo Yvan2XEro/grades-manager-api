@@ -15,7 +15,11 @@
 		"cy:run": "cypress run",
 		"i18n:gen": "node ./scripts/generate-i18n-types.mjs",
 		"i18n:audit": "node ./scripts/i18n-audit.mjs",
-		"i18n:audit:fix": "node ./scripts/i18n-audit.mjs --fix-missing"
+		"i18n:audit:fix": "node ./scripts/i18n-audit.mjs --fix-missing",
+		"present:run": "playwright test --config=playwright-presentation/playwright.config.ts",
+		"present:flow": "playwright test --config=playwright-presentation/playwright.config.ts --project",
+		"present:report": "playwright show-report presentation-assets/report",
+		"present:install": "playwright install chromium"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

@@ -26,3 +26,6 @@ docker-compose.override.yml
 docs/guide/
 _bmad*
 *bmad*
+
+# Playwright presentation assets (generated)
+apps/web/presentation-assets/

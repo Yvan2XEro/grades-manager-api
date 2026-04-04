@@ -33,7 +33,7 @@
 			"reset": "Réinitialiser",
 			"open": "Ouvrir",
 			"back": "Retour",
-			"rename": "Rename (TODO)"
+			"rename": "Renommer"
 		},
 		"fields": {
 			"email": "E-mail",
@@ -73,16 +73,16 @@
 		"loading": "Chargement...",
 		"optional": "Facultatif",
 		"bulkActions": {
-			"clear": "Clear (TODO)",
-			"confirmDelete": "Confirm Delete (TODO)",
-			"deleteError": "Delete Error (TODO)",
-			"deleteSuccess": "Delete Success (TODO)",
-			"selectAll": "Select All (TODO)",
-			"selected": "Selected (TODO)"
+			"clear": "Effacer la sélection",
+			"confirmDelete": "Confirmer la suppression",
+			"deleteError": "Impossible de supprimer les éléments sélectionnés",
+			"deleteSuccess": "Éléments supprimés avec succès",
+			"selectAll": "Tout sélectionner",
+			"selected": "{{count}} sélectionné(s)"
 		},
-		"noResults": "No Results (TODO)",
-		"search": "Search (TODO)",
-		"select": "Select (TODO)"
+		"noResults": "Aucun résultat",
+		"search": "Rechercher",
+		"select": "Sélectionner"
 	},
 	"navigation": {
 		"breadcrumbs": {
@@ -235,7 +235,7 @@
 			"success": "E-mail de réinitialisation envoyé",
 			"error": "Impossible d'envoyer l'e-mail de réinitialisation",
 			"backToLogin": "Retour à la connexion",
-			"subtitle": "Subtitle (TODO)"
+			"subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe."
 		},
 		"reset": {
 			"title": "Définir un nouveau mot de passe",
@@ -247,7 +247,7 @@
 			"success": "Mot de passe mis à jour avec succès",
 			"error": "Impossible de mettre à jour le mot de passe",
 			"backToLogin": "Retour à la connexion",
-			"subtitle": "Subtitle (TODO)"
+			"subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte."
 		},
 		"logout": {
 			"success": "Déconnexion réussie",
@@ -321,7 +321,7 @@
 				"save": "Enregistrer le format",
 				"clear": "Effacer le formulaire",
 				"new": "Nouveau format",
-				"activate": "Activate (TODO)"
+				"activate": "Activer"
 			},
 			"list": {
 				"title": "Formats existants",
@@ -402,7 +402,7 @@
 			"programStats": {
 				"title": "Étudiants par programme",
 				"empty": "Aucune donnée disponible pour l'année sélectionnée",
-				"subtitle": "Subtitle (TODO)"
+				"subtitle": "Répartition des étudiants par programme."
 			},
 			"stats": {
 				"faculties": "Facultés",
@@ -413,7 +413,7 @@
 				"teachers": "Enseignants",
 				"institutions": "Institutions"
 			},
-			"subtitle": "Subtitle (TODO)"
+			"subtitle": "Vue d'ensemble de votre établissement académique."
 		},
 		"apiKeys": {
 			"title": "Clés API",
@@ -683,7 +683,7 @@
 			"subtitle": "Créez des classes pour chaque programme et année académique",
 			"actions": {
 				"add": "Ajouter une classe",
-				"bulkGenerate": "Bulk Generate (TODO)"
+				"bulkGenerate": "Génération en masse"
 			},
 			"empty": {
 				"title": "Aucune classe",
