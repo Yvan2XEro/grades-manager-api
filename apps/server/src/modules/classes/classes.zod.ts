@@ -42,3 +42,26 @@ export const searchSchema = z.object({
 	programId: z.string().optional(),
 	limit: z.number().optional(),
 });
+
+export const promoTargetsSchema = z.object({
+	sourceClassId: z.string(),
+	targetAcademicYearId: z.string().optional(),
+});
+
+export const promotionPreviewSchema = z.object({
+	sourceClassId: z.string(),
+	cursor: z.string().optional(),
+	limit: z.number().int().min(1).max(100).default(50),
+});
+
+export const bulkTransferSchema = z.object({
+	studentIds: z.array(z.string()).min(1),
+	toClassId: z.string(),
+});
+
+export const graduatedStudentsSchema = z.object({
+	programId: z.string().optional(),
+	cycleId: z.string().optional(),
+	cursor: z.string().optional(),
+	limit: z.number().int().min(1).max(100).default(50),
+});

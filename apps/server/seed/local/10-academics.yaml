@@ -8,168 +8,200 @@ programs:
     slug: bts-sciences-infirmieres
     description: Formation BTS en sciences infirmières / Nursing Sciences
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-SAGEFEMME
     name: BTS Sage-Femme
     slug: bts-sage-femme
     description: Formation BTS Sage-Femme / Midwifery
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-LABO
     name: BTS Techniques de Laboratoire
     slug: bts-techniques-laboratoire
     description: Formation BTS en Techniques de Laboratoire / Laboratory Techniques
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-KINE
     name: BTS Kinésithérapie
     slug: bts-kinesitherapie
     description: Formation BTS en Kinésithérapie / Physiotherapy
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-DIETETIQUE
     name: BTS Diététique
     slug: bts-dietetique
     description: Formation BTS en Diététique / Dietetics
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-RADIO
     name: BTS Radiologie et Imagérie Médicale
     slug: bts-radiologie-imagerie
     description: Formation BTS en Radiologie et Imagérie Médicale / Radiology and
       Medical Imaging
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: BTS-PHARMA
     name: BTS Techniques Pharmaceutiques
     slug: bts-techniques-pharmaceutiques
     description: Formation BTS en Techniques Pharmaceutiques / Pharmaceutical Techniques
     facultyCode: INSES
+    studyCycleCode: BTS-SANTE
   - code: LP-INFIRMIER
     name: Licence Professionnelle Sciences Infirmières
     slug: licence-pro-sciences-infirmieres
     description: Formation Licence Professionnelle en Sciences Infirmières / Nursing
       Sciences
     facultyCode: INSES
+    studyCycleCode: LP-SANTE
   - code: MP-INFIRMIER
     name: Master Professionnel Sciences Infirmières
     slug: master-pro-sciences-infirmieres
     description: Formation Master Professionnel en Sciences Infirmières / Nursing Sciences
     facultyCode: INSES
+    studyCycleCode: MP-SANTE
   - code: MP-SANTE-PUB
     name: Master Professionnel Santé Publique
     slug: master-pro-sante-publique
     description: Formation Master Professionnel en Santé Publique / Public Health
     facultyCode: INSES
+    studyCycleCode: MP-SANTE
   - code: MP-SANTE-REPRO
     name: Master Professionnel Santé de Reproduction
     slug: master-pro-sante-reproduction
     description: Formation Master Professionnel en Santé de Reproduction /
       Reproductive Health
     facultyCode: INSES
+    studyCycleCode: MP-SANTE
   - code: MP-BIOMED
     name: Master Professionnel Sciences Biomédicales
     slug: master-pro-sciences-biomedicales
     description: Formation Master Professionnel en Sciences Biomédicales /
       Biomedical Sciences
     facultyCode: INSES
+    studyCycleCode: MP-SANTE
   - code: MP-DIETETIQUE
     name: Master Professionnel Diététique et Nutrition
     slug: master-pro-dietetique-nutrition
     description: Formation Master Professionnel en Diététique et Nutrition /
       Dietetics and Nutrition
     facultyCode: INSES
+    studyCycleCode: MP-SANTE
   - code: BTS-COMPTA
     name: BTS Comptabilité et Gestion des Entreprises
     slug: bts-comptabilite-gestion
     description: Formation BTS en Comptabilité et Gestion des Entreprises /
       Accounting and Business Management
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-GRH
     name: BTS Gestion des Ressources Humaines
     slug: bts-gestion-rh
     description: Formation BTS en Gestion des Ressources Humaines / Human Resources
       Management
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-DOUANE
     name: BTS Douane et Transit
     slug: bts-douane-transit
     description: Formation BTS en Douane et Transit / Customs and Transit
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-BANQUE
     name: BTS Banque et Finance
     slug: bts-banque-finance
     description: Formation BTS en Banque et Finance / Banking and Finance
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-LOGISTIQUE
     name: BTS Logistique et Transport
     slug: bts-logistique-transport
     description: Formation BTS en Logistique et Transport / Logistics and Transport
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-ASSURANCE
     name: BTS Assurance
     slug: bts-assurance
     description: Formation BTS en Assurance / Insurance
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: BTS-MARKETING
     name: BTS Marketing-Commerce-Vente
     slug: bts-marketing-commerce-vente
     description: Formation BTS en Marketing-Commerce-Vente / Marketing-Commerce-Sales
     facultyCode: INSES
+    studyCycleCode: BTS-COMMERCE
   - code: CQP-KINE-ASST
     name: CQP Assistant Kinésithérapie
     slug: cqp-assistant-kinesitherapie
     description: Formation CQP en Assistant Kinésithérapie / Physiotherapy Assistant
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-CHIMISTE
     name: CQP Aide Chimiste Biologiste
     slug: cqp-aide-chimiste-biologiste
     description: Formation CQP en Aide Chimiste Biologiste / Assistant Chemist Biologist
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-DIETETIQUE
     name: CQP Diététique
     slug: cqp-dietetique
     description: Formation CQP en Diététique / Dietetics
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-MASSAGE
     name: CQP Massothérapie
     slug: cqp-massotherapie
     description: Formation CQP en Massothérapie / Massage Therapy
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-DELEGUE-PHARMA
     name: CQP Délégué Pharmaceutique
     slug: cqp-delegue-pharmaceutique
     description: Formation CQP en Délégué Pharmaceutique / Pharmaceutical Delegate
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-DELEGUE-ASSUR
     name: CQP Délégué de l'Assurance Maladie
     slug: cqp-delegue-assurance-maladie
     description: Formation CQP en Délégué de l'Assurance Maladie / Health Insurance Delegate
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: CQP-DELEGUE-MED
     name: CQP Délégué Médical
     slug: cqp-delegue-medical
     description: Formation CQP en Délégué Médical / Medical Delegate
     facultyCode: INSES
+    studyCycleCode: CQP-PARAM
   - code: DQP-VENDEUR-PHARMA
     name: DQP Vendeur en Pharmacie
     slug: dqp-vendeur-pharmacie
     description: Formation DQP en Vendeur en Pharmacie / Pharmacy Salesperson
     facultyCode: INSES
+    studyCycleCode: DQP-PARAM
   - code: DQP-SECRET-MED
     name: DQP Secrétariat Médical
     slug: dqp-secretariat-medical
     description: Formation DQP en Secrétariat Médical / Medical Secretariat
     facultyCode: INSES
+    studyCycleCode: DQP-PARAM
   - code: BTS-SOINS-INF
     name: BTS Soins Infirmiers
     slug: bts-soins-infirmiers
     description: Formation BTS en Soins Infirmiers / Nurse
     facultyCode: INSES
+    studyCycleCode: BTS-PARAM
   - code: BTS-ASST-CABINET
     name: BTS Assistant en Cabinet Médical
     slug: bts-assistant-cabinet-medical
     description: Formation BTS en Assistant en Cabinet Médical / Medical Office Assistant
     facultyCode: INSES
+    studyCycleCode: BTS-PARAM
   - code: BTS-PREPOSE
     name: BTS Préposé aux Bénéficiaires
     slug: bts-prepose-beneficiaires
     description: Formation BTS en Préposé aux Bénéficiaires / Beneficial Assistant
     facultyCode: INSES
+    studyCycleCode: BTS-PARAM
 programOptions:
   - programCode: BTS-INFIRMIER
     code: GENERAL
@@ -260,6 +292,54 @@ classes:
     studyCycleCode: BTS-COMMERCE
     cycleLevelCode: BTS1-COM
     semesterCode: S1
+  - code: INF25-BTS2A
+    name: BTS Sciences Infirmières 2ème année - Groupe A
+    programCode: BTS-INFIRMIER
+    programOptionCode: GENERAL
+    academicYearCode: AY-2025
+    studyCycleCode: BTS-SANTE
+    cycleLevelCode: BTS2
+    semesterCode: S1
+  - code: COMPT25-BTS2A
+    name: BTS Comptabilité 2ème année - Groupe A
+    programCode: BTS-COMPTA
+    programOptionCode: GENERAL
+    academicYearCode: AY-2025
+    studyCycleCode: BTS-COMMERCE
+    cycleLevelCode: BTS2-COM
+    semesterCode: S1
+  - code: INF26-BTS1A
+    name: BTS Sciences Infirmières 1ère année 2026 - Groupe A
+    programCode: BTS-INFIRMIER
+    programOptionCode: GENERAL
+    academicYearCode: AY-2026
+    studyCycleCode: BTS-SANTE
+    cycleLevelCode: BTS1
+    semesterCode: S1
+  - code: INF26-BTS2A
+    name: BTS Sciences Infirmières 2ème année 2026 - Groupe A
+    programCode: BTS-INFIRMIER
+    programOptionCode: GENERAL
+    academicYearCode: AY-2026
+    studyCycleCode: BTS-SANTE
+    cycleLevelCode: BTS2
+    semesterCode: S1
+  - code: COMPT26-BTS1A
+    name: BTS Comptabilité 1ère année 2026 - Groupe A
+    programCode: BTS-COMPTA
+    programOptionCode: GENERAL
+    academicYearCode: AY-2026
+    studyCycleCode: BTS-COMMERCE
+    cycleLevelCode: BTS1-COM
+    semesterCode: S1
+  - code: COMPT26-BTS2A
+    name: BTS Comptabilité 2ème année 2026 - Groupe A
+    programCode: BTS-COMPTA
+    programOptionCode: GENERAL
+    academicYearCode: AY-2026
+    studyCycleCode: BTS-COMMERCE
+    cycleLevelCode: BTS2-COM
+    semesterCode: S1
 classCourses:
   - code: CC-ANAT101-INF1A
     classCode: INF25-BTS1A
@@ -291,6 +371,96 @@ classCourses:
     courseCode: COMPT102
     teacherCode: TEACH-KOMBO
     semesterCode: S1
+  - code: CC-ANAT101-INF2A
+    classCode: INF25-BTS2A
+    classAcademicYearCode: AY-2025
+    courseCode: ANAT101
+    teacherCode: TEACH-DR-MBALLA
+    semesterCode: S1
+  - code: CC-PHYS101-INF2A
+    classCode: INF25-BTS2A
+    classAcademicYearCode: AY-2025
+    courseCode: PHYS101
+    teacherCode: TEACH-DR-NGUEMA
+    semesterCode: S1
+  - code: CC-SOIN101-INF2A
+    classCode: INF25-BTS2A
+    classAcademicYearCode: AY-2025
+    courseCode: SOIN101
+    teacherCode: TEACH-INF-AKONO
+    semesterCode: S1
+  - code: CC-COMPT101-COMPT2A
+    classCode: COMPT25-BTS2A
+    classAcademicYearCode: AY-2025
+    courseCode: COMPT101
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
+  - code: CC-COMPT102-COMPT2A
+    classCode: COMPT25-BTS2A
+    classAcademicYearCode: AY-2025
+    courseCode: COMPT102
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
+  - code: CC-ANAT101-INF1A-26
+    classCode: INF26-BTS1A
+    classAcademicYearCode: AY-2026
+    courseCode: ANAT101
+    teacherCode: TEACH-DR-MBALLA
+    semesterCode: S1
+  - code: CC-PHYS101-INF1A-26
+    classCode: INF26-BTS1A
+    classAcademicYearCode: AY-2026
+    courseCode: PHYS101
+    teacherCode: TEACH-DR-NGUEMA
+    semesterCode: S1
+  - code: CC-SOIN101-INF1A-26
+    classCode: INF26-BTS1A
+    classAcademicYearCode: AY-2026
+    courseCode: SOIN101
+    teacherCode: TEACH-INF-AKONO
+    semesterCode: S1
+  - code: CC-ANAT101-INF2A-26
+    classCode: INF26-BTS2A
+    classAcademicYearCode: AY-2026
+    courseCode: ANAT101
+    teacherCode: TEACH-DR-MBALLA
+    semesterCode: S1
+  - code: CC-PHYS101-INF2A-26
+    classCode: INF26-BTS2A
+    classAcademicYearCode: AY-2026
+    courseCode: PHYS101
+    teacherCode: TEACH-DR-NGUEMA
+    semesterCode: S1
+  - code: CC-SOIN101-INF2A-26
+    classCode: INF26-BTS2A
+    classAcademicYearCode: AY-2026
+    courseCode: SOIN101
+    teacherCode: TEACH-INF-AKONO
+    semesterCode: S1
+  - code: CC-COMPT101-COMPT1A-26
+    classCode: COMPT26-BTS1A
+    classAcademicYearCode: AY-2026
+    courseCode: COMPT101
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
+  - code: CC-COMPT102-COMPT1A-26
+    classCode: COMPT26-BTS1A
+    classAcademicYearCode: AY-2026
+    courseCode: COMPT102
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
+  - code: CC-COMPT101-COMPT2A-26
+    classCode: COMPT26-BTS2A
+    classAcademicYearCode: AY-2026
+    courseCode: COMPT101
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
+  - code: CC-COMPT102-COMPT2A-26
+    classCode: COMPT26-BTS2A
+    classAcademicYearCode: AY-2026
+    courseCode: COMPT102
+    teacherCode: TEACH-KOMBO
+    semesterCode: S1
 exams:
   - id: EXAM-ANAT101-CC
     classCourseCode: CC-ANAT101-INF1A
@@ -315,4 +485,22 @@ enrollmentWindows:
     status: open
   - classCode: COMPT25-BTS1A
     academicYearCode: AY-2025
+    status: open
+  - classCode: INF25-BTS2A
+    academicYearCode: AY-2025
+    status: open
+  - classCode: COMPT25-BTS2A
+    academicYearCode: AY-2025
+    status: open
+  - classCode: INF26-BTS1A
+    academicYearCode: AY-2026
+    status: open
+  - classCode: INF26-BTS2A
+    academicYearCode: AY-2026
+    status: open
+  - classCode: COMPT26-BTS1A
+    academicYearCode: AY-2026
+    status: open
+  - classCode: COMPT26-BTS2A
+    academicYearCode: AY-2026
     status: open

@@ -83,9 +83,10 @@ export const getLogsSchema = z.object({
 });
 
 // Promote admitted students
+// targetClassId is optional: omit it for last-cycle-level (graduation) promotions
 export const promoteAdmittedSchema = z.object({
 	deliberationId: z.string(),
-	targetClassId: z.string(),
+	targetClassId: z.string().optional(),
 });
 
 export type PromoteAdmittedInput = z.infer<typeof promoteAdmittedSchema>;

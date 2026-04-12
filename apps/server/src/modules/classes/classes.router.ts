@@ -7,9 +7,13 @@ import {
 import * as service from "./classes.service";
 import {
 	baseSchema,
+	bulkTransferSchema,
 	codeSchema,
+	graduatedStudentsSchema,
 	idSchema,
 	listSchema,
+	promoTargetsSchema,
+	promotionPreviewSchema,
 	searchSchema,
 	transferSchema,
 	updateSchema,
@@ -62,11 +66,43 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.searchClasses(input, ctx.institution.id),
 		),
+	promoTargets: tenantProtectedProcedure
+		.input(promoTargetsSchema)
+		.query(({ ctx, input }) =>
+			service.getPromoTargets(
+				input.sourceClassId,
+				ctx.institution.id,
+				input.targetAcademicYearId,
+			),
+		),
+	promotionPreview: tenantProtectedProcedure
+		.input(promotionPreviewSchema)
+		.query(({ ctx, input }) =>
+			service.promotionPreview(input.sourceClassId, ctx.institution.id, {
+				cursor: input.cursor,
+				limit: input.limit,
+			}),
+		),
+	bulkTransfer: tenantAdminProcedure
+		.input(bulkTransferSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkTransfer(
+				input.studentIds,
+				input.toClassId,
+				ctx.institution.id,
+			),
+		),
+	graduatedStudents: tenantAdminProcedure
+		.input(graduatedStudentsSchema)
+		.query(({ ctx, input }) =>
+			service.listGraduatedStudents(ctx.institution.id, input),
+		),
 	bulkGenerate: tenantAdminProcedure
 		.input(
 			z.object({
 				academicYearId: z.string(),
 				cycleLevelIds: z.array(z.string()).optional(),
+				sourceAcademicYearId: z.string().optional(),
 			}),
 		)
 		.mutation(({ ctx, input }) =>
@@ -74,6 +110,7 @@ export const router = createRouter({
 				input.academicYearId,
 				ctx.institution.id,
 				input.cycleLevelIds,
+				input.sourceAcademicYearId,
 			),
 		),
 });

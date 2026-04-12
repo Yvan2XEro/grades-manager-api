@@ -130,7 +130,7 @@ const AcademicYearManagement: React.FC = () => {
 
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
-			queryKey: ["academicYears"],
+			queryKey: ["academicYears", "infinite"],
 			queryFn: async ({ pageParam }) => {
 				const result = await trpcClient.academicYears.list.query({
 					cursor: pageParam,
@@ -155,7 +155,9 @@ const AcademicYearManagement: React.FC = () => {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {
@@ -180,7 +182,9 @@ const AcademicYearManagement: React.FC = () => {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			toast.success(t("admin.academicYears.toast.createSuccess"));
 			setIsModalOpen(false);
 			form.reset();
@@ -204,7 +208,9 @@ const AcademicYearManagement: React.FC = () => {
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			toast.success(t("admin.academicYears.toast.updateSuccess"));
 			setIsModalOpen(false);
 			setEditingYear(null);
@@ -224,7 +230,9 @@ const AcademicYearManagement: React.FC = () => {
 			await trpcClient.academicYears.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			toast.success(t("admin.academicYears.toast.deleteSuccess"));
 			setDeleteConfirmId(null);
 		},
@@ -242,7 +250,9 @@ const AcademicYearManagement: React.FC = () => {
 			await trpcClient.academicYears.setActive.mutate({ id, isActive });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			toast.success(t("admin.academicYears.toast.statusSuccess"));
 		},
 		onError: (error: unknown) => {
@@ -259,7 +269,9 @@ const AcademicYearManagement: React.FC = () => {
 			return trpcClient.academicYears.createNextYear.mutate({ sourceYearId });
 		},
 		onSuccess: (newYear) => {
-			queryClient.invalidateQueries({ queryKey: ["academicYears"] });
+			queryClient.invalidateQueries({
+				queryKey: ["academicYears", "infinite"],
+			});
 			toast.success(
 				t("admin.academicYears.toast.createNextYearSuccess", {
 					defaultValue: "Année suivante créée : {{name}}",

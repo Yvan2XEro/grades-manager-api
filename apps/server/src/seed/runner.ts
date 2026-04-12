@@ -104,6 +104,7 @@ type ProgramSeed = {
 	slug?: string;
 	description?: string;
 	facultyCode: string;
+	studyCycleCode?: string;
 };
 
 type ClassSeed = {
@@ -948,6 +949,19 @@ async function seedAcademics(
 		}
 		const code = normalizeCode(entry.code);
 		const slug = entry.slug ?? slugify(entry.name);
+		let cycleId: string | null = null;
+		if (entry.studyCycleCode) {
+			const cycleCode = normalizeCode(entry.studyCycleCode);
+			const cycle =
+				state.studyCycles.get(`${facultyCode}::${cycleCode}`) ??
+				state.studyCycles.get(`inses::${cycleCode}`);
+			if (!cycle) {
+				throw new Error(
+					`Unknown studyCycleCode "${entry.studyCycleCode}" for program ${entry.code}`,
+				);
+			}
+			cycleId = cycle.id;
+		}
 		const [program] = await db
 			.insert(schema.programs)
 			.values({
@@ -956,6 +970,7 @@ async function seedAcademics(
 				slug,
 				description: entry.description ?? null,
 				institutionId: faculty.id,
+				cycleId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.programs.code, schema.programs.institutionId],
@@ -963,6 +978,7 @@ async function seedAcademics(
 					name: entry.name,
 					slug,
 					description: entry.description ?? null,
+					cycleId,
 				},
 			})
 			.returning();

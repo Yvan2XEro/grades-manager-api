@@ -171,6 +171,9 @@ export default function ClassManagement() {
 	const [studentSearch, setStudentSearch] = useState("");
 	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
 	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
+	const [bulkGenSourceYearId, setBulkGenSourceYearId] = useState<string | null>(
+		null,
+	);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -883,6 +886,7 @@ export default function ClassManagement() {
 		mutationFn: () =>
 			trpcClient.classes.bulkGenerate.mutate({
 				academicYearId: bulkGenYearId!,
+				sourceAcademicYearId: bulkGenSourceYearId ?? undefined,
 			}),
 		onSuccess: (result) => {
 			queryClient.invalidateQueries({ queryKey: ["classes"] });
@@ -1722,6 +1726,7 @@ export default function ClassManagement() {
 					if (!o) {
 						setIsBulkGenOpen(false);
 						setBulkGenYearId(null);
+						setBulkGenSourceYearId(null);
 					}
 				}}
 			>
@@ -1743,7 +1748,7 @@ export default function ClassManagement() {
 						<div className="space-y-2">
 							<Label>
 								{t("admin.classes.bulkGenerate.yearLabel", {
-									defaultValue: "Année académique",
+									defaultValue: "Année académique cible",
 								})}
 							</Label>
 							<AcademicYearSelect
@@ -1752,6 +1757,25 @@ export default function ClassManagement() {
 								autoSelectActive
 							/>
 						</div>
+						<div className="space-y-2">
+							<Label>
+								{t("admin.classes.bulkGenerate.sourceYearLabel", {
+									defaultValue: "Cloner les affectations depuis (optionnel)",
+								})}
+							</Label>
+							<AcademicYearSelect
+								value={bulkGenSourceYearId}
+								onChange={setBulkGenSourceYearId}
+								autoSelectActive={false}
+								placeholder="Aucune (optionnel)"
+							/>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.classes.bulkGenerate.sourceYearHint", {
+									defaultValue:
+										"Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.",
+								})}
+							</p>
+						</div>
 					</div>
 					<DialogFooter>
 						<Button
@@ -1759,6 +1783,7 @@ export default function ClassManagement() {
 							onClick={() => {
 								setIsBulkGenOpen(false);
 								setBulkGenYearId(null);
+								setBulkGenSourceYearId(null);
 							}}
 						>
 							{t("common.actions.cancel")}
