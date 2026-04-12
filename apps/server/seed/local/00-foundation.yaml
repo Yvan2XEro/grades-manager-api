@@ -154,6 +154,11 @@ academicYears:
     startDate: 2024-09-02
     endDate: 2025-06-30
     isActive: false
+  - code: AY-2026
+    name: 2026-2027
+    startDate: 2026-09-01
+    endDate: 2027-06-30
+    isActive: false
 registrationNumberFormats:
   - name: INSES default format
     description: INSES-{year}-XXXX (per program/year)
@@ -197,7 +202,5 @@ institutions:
     website: https://univ-inses.com
     logoUrl: https://univ-inses.com/images/logo/logo-inses.png
     coverImageUrl: https://placehold.co/1200x400.png
-    defaultAcademicYearCode: AY-2025
-    registrationFormatName: INSES default format
     timezone: Africa/Douala
     organizationSlug: inses-institution

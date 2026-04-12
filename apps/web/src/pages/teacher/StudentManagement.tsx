@@ -1,477 +1,626 @@
-import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Check, Users } from "lucide-react";
-import { useId, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+	ArrowRight,
+	CheckCheck,
+	GraduationCap,
+	Loader2,
+	Trophy,
+	Users,
+} from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PaginationBar } from "@/components/ui/pagination-bar";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { toast } from "@/lib/toast";
 import { trpcClient } from "../../utils/trpc";
 
-interface Student {
-	id: string;
-	first_name: string;
-	last_name: string;
-	registration_number: string;
-	grades: {
-		score: number;
-		exams: {
-			percentage: number;
-			class_courses: {
-				courses: {
-					name: string;
-				};
-			};
-		};
-	}[];
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type DecisionVariant =
+	| "success"
+	| "warning"
+	| "destructive"
+	| "muted"
+	| "secondary";
+type Decision =
+	| "admitted"
+	| "compensated"
+	| "deferred"
+	| "repeat"
+	| "excluded"
+	| "pending";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const PROMOTABLE_DECISIONS: Decision[] = ["admitted", "compensated"];
+
+function decisionVariant(
+	decision: Decision | null | undefined,
+): DecisionVariant {
+	switch (decision) {
+		case "admitted":
+			return "success";
+		case "compensated":
+			return "warning";
+		case "deferred":
+			return "info" as DecisionVariant;
+		case "repeat":
+		case "excluded":
+			return "destructive";
+		default:
+			return "muted";
+	}
 }
 
-interface Class {
-	id: string;
-	name: string;
-	program: {
-		name: string;
-	};
+function decisionLabel(
+	decision: Decision | null | undefined,
+	t: (key: string) => string,
+): string {
+	if (!decision) return t("teacher.promotion.decision.noData");
+	return t(`teacher.promotion.decision.${decision}`);
 }
+
+function mentionLabel(mention: string | null | undefined): string {
+	if (!mention) return "—";
+	const labels: Record<string, string> = {
+		excellent: "Excellent",
+		tres_bien: "Très bien",
+		bien: "Bien",
+		assez_bien: "Assez bien",
+		passable: "Passable",
+	};
+	return labels[mention] ?? mention;
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function ClassOption({
+	name,
+	levelCode,
+	programName,
+}: {
+	name: string;
+	levelCode?: string | null;
+	programName?: string | null;
+}) {
+	return (
+		<span className="flex items-center gap-2">
+			{levelCode && (
+				<span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-semibold text-primary text-xs">
+					{levelCode}
+				</span>
+			)}
+			<span>{name}</span>
+			{programName && (
+				<span className="text-muted-foreground text-xs">· {programName}</span>
+			)}
+		</span>
+	);
+}
+
+function StudentRowSkeleton() {
+	return (
+		<TableRow>
+			{Array.from({ length: 6 }).map((_, i) => (
+				<TableCell key={i}>
+					<Skeleton className="h-4 w-full" />
+				</TableCell>
+			))}
+		</TableRow>
+	);
+}
+
+function EmptyStudents({
+	sourceClassSelected,
+}: {
+	sourceClassSelected: boolean;
+}) {
+	const { t } = useTranslation();
+	if (!sourceClassSelected) return null;
+	return (
+		<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-12 text-center">
+			<div className="rounded-full bg-muted p-3">
+				<Users className="h-6 w-6 text-muted-foreground" />
+			</div>
+			<div>
+				<p className="font-medium text-sm">
+					{t("teacher.promotion.emptyStudents.title")}
+				</p>
+				<p className="mt-1 text-muted-foreground text-sm">
+					{t("teacher.promotion.emptyStudents.description")}
+				</p>
+			</div>
+		</div>
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 export default function StudentManagement() {
-	const [sourceClass, setSourceClass] = useState<string>("");
-	const [targetClass, setTargetClass] = useState<string>("");
-	const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-	const [isPromoting, setIsPromoting] = useState(false);
-	const pagination = useCursorPagination({ pageSize: 20 });
-	const sourceId = useId();
-	const targetId = useId();
+	const [sourceClassId, setSourceClassId] = useState<string>("");
+	const [targetClassId, setTargetClassId] = useState<string>("");
+	const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
+		new Set(),
+	);
+	const pagination = useCursorPagination({ pageSize: 30 });
 	const { t } = useTranslation();
 
-	// Get active academic year
-	const { data: activeYear } = useQuery({
-		queryKey: ["activeYear"],
+	// Get previous academic year classes (source)
+	const { data: sourceClasses, isLoading: sourceLoading } = useQuery({
+		queryKey: ["promotion-source-classes"],
 		queryFn: async () => {
-			const { items } = await trpcClient.academicYears.list.query({});
-			return items.find((y) => y.isActive) ?? null;
-		},
-	});
-
-	// Get previous academic year
-	const { data: previousYear } = useQuery({
-		queryKey: ["previousYear", activeYear?.startDate],
-		queryFn: async () => {
-			if (!activeYear) return null;
-			const { items } = await trpcClient.academicYears.list.query({});
-			return (
-				items
-					.filter((y) => new Date(y.startDate) < new Date(activeYear.startDate))
-					.sort(
-						(a, b) =>
-							new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-					)[0] ?? null
-			);
-		},
-		enabled: !!activeYear,
-	});
-
-	// Get source classes (from previous year)
-	const { data: sourceClasses } = useQuery({
-		queryKey: ["sourceClasses", previousYear?.id],
-		queryFn: async () => {
-			if (!previousYear) return [];
-			const [classRes, programRes] = await Promise.all([
-				trpcClient.classes.list.query({
-					academicYearId: previousYear.id,
-				}),
-				trpcClient.programs.list.query({}),
-			]);
-			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
-			return classRes.items.map((cls) => ({
-				id: cls.id,
-				name: cls.name,
-				program: { name: programMap.get(cls.program) ?? "" },
-			})) as Class[];
-		},
-		enabled: !!previousYear,
-	});
-
-	// Get target classes (from active year)
-	const { data: targetClasses } = useQuery({
-		queryKey: ["targetClasses", activeYear?.id],
-		queryFn: async () => {
+			const allYears = await trpcClient.academicYears.list.query({});
+			const activeYear = allYears.items.find((y) => y.isActive);
 			if (!activeYear) return [];
-			const [classRes, programRes] = await Promise.all([
-				trpcClient.classes.list.query({
-					academicYearId: activeYear.id,
-				}),
-				trpcClient.programs.list.query({}),
-			]);
-			const programMap = new Map(programRes.items.map((p) => [p.id, p.name]));
-			return classRes.items.map((cls) => ({
-				id: cls.id,
-				name: cls.name,
-				program: { name: programMap.get(cls.program) ?? "" },
-			})) as Class[];
-		},
-		enabled: !!activeYear,
-	});
-
-	// Get students from source class with their grades
-	const { data: studentsData, isLoading: studentsLoading } = useQuery({
-		queryKey: ["students", sourceClass, pagination.cursor],
-		queryFn: async () => {
-			if (!sourceClass)
-				return { items: [] as Student[], nextCursor: undefined };
-			const { items, nextCursor } = await trpcClient.students.list.query({
-				classId: sourceClass,
-				cursor: pagination.cursor,
-				limit: pagination.pageSize,
+			const previousYear = allYears.items
+				.filter((y) => new Date(y.startDate) < new Date(activeYear.startDate))
+				.sort(
+					(a, b) =>
+						new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+				)[0];
+			if (!previousYear) return [];
+			const { items } = await trpcClient.classes.list.query({
+				academicYearId: previousYear.id,
+				limit: 200,
 			});
-			const enriched = await Promise.all(
-				items.map(async (s) => {
-					const { items: gradeItems } =
-						await trpcClient.grades.listByStudent.query({
-							studentId: s.id,
-						});
-					const grades = await Promise.all(
-						gradeItems.map(async (g) => {
-							const exam = await trpcClient.exams.getById.query({
-								id: g.exam,
-							});
-							const classCourse = await trpcClient.classCourses.getById.query({
-								id: exam.classCourse,
-							});
-							const course = await trpcClient.courses.getById.query({
-								id: classCourse.course,
-							});
-							return {
-								score: Number(g.score),
-								exams: {
-									percentage: Number(exam.percentage),
-									class_courses: {
-										courses: { name: course.name },
-									},
-								},
-							};
-						}),
-					);
-					return {
-						id: s.id,
-						first_name: s.firstName,
-						last_name: s.lastName,
-						registration_number: s.registrationNumber,
-						grades,
-					} as Student;
-				}),
-			);
-			return { items: enriched, nextCursor };
+			return items;
 		},
-		enabled: !!sourceClass,
 	});
-	const students = studentsData?.items;
 
-	// Calculate average grade for a student
-	const calculateAverage = (student: Student) => {
-		if (!student.grades || student.grades.length === 0) return 0;
+	// Get promotion targets (filtered: same program, next level, active year)
+	const { data: promoData, isLoading: targetsLoading } = useQuery({
+		queryKey: ["promo-targets", sourceClassId],
+		queryFn: () => trpcClient.classes.promoTargets.query({ sourceClassId }),
+		enabled: !!sourceClassId,
+	});
 
-		let totalWeightedScore = 0;
-		let totalWeight = 0;
+	// Students with deliberation results
+	const { data: preview, isLoading: studentsLoading } = useQuery({
+		queryKey: ["promotion-preview", sourceClassId, pagination.cursor],
+		queryFn: () =>
+			trpcClient.classes.promotionPreview.query({
+				sourceClassId,
+				cursor: pagination.cursor,
+				limit: 30,
+			}),
+		enabled: !!sourceClassId,
+	});
 
-		student.grades.forEach((grade) => {
-			const weight = (grade.exams.percentage || 0) / 100;
-			totalWeightedScore += grade.score * weight;
-			totalWeight += weight;
-		});
-
-		return totalWeight > 0
-			? Number((totalWeightedScore / totalWeight).toFixed(2))
-			: 0;
-	};
-
-	// Get course averages for a student
-	const getCourseAverages = (student: Student) => {
-		const courseGrades = new Map<string, { total: number; count: number }>();
-
-		student.grades.forEach((grade) => {
-			const courseName = grade.exams.class_courses.courses.name;
-			if (!courseGrades.has(courseName)) {
-				courseGrades.set(courseName, { total: 0, count: 0 });
-			}
-			const current = courseGrades.get(courseName);
-			if (current) {
-				current.total += grade.score;
-				current.count += 1;
-			}
-		});
-
-		const averages = new Map<string, number>();
-		courseGrades.forEach((value, course) => {
-			averages.set(course, Number((value.total / value.count).toFixed(2)));
-		});
-
-		return averages;
-	};
-
-	// Handle automatic selection of students with average >= 10
-	const handleAutoSelect = () => {
-		if (!students) return;
-
-		const qualifiedStudents = students
-			.filter((student) => calculateAverage(student) >= 10)
-			.map((student) => student.id);
-
-		setSelectedStudents(qualifiedStudents);
-	};
-
-	// Handle promotion of selected students
-	const handlePromote = async () => {
-		if (!selectedStudents.length || !targetClass) {
-			toast.error(t("teacher.promotion.toast.missingSelection"));
-			return;
-		}
-
-		setIsPromoting(true);
-		try {
-			await Promise.all(
-				selectedStudents.map((id) =>
-					trpcClient.classes.transferStudent.mutate({
-						studentId: id,
-						toClassId: targetClass,
-					}),
-				),
-			);
-
+	const bulkTransferMutation = useMutation({
+		mutationFn: () =>
+			trpcClient.classes.bulkTransfer.mutate({
+				studentIds: Array.from(selectedStudentIds),
+				toClassId: targetClassId,
+			}),
+		onSuccess: (data) => {
 			toast.success(
-				t("teacher.promotion.toast.success", {
-					count: selectedStudents.length,
-				}),
+				t("teacher.promotion.toast.success", { count: data.transferred }),
 			);
-			setSelectedStudents([]);
-		} catch (error: unknown) {
-			toast.error(
-				(error as Error).message || t("teacher.promotion.toast.error"),
-			);
-		} finally {
-			setIsPromoting(false);
-		}
-	};
+			setSelectedStudentIds(new Set());
+			pagination.reset();
+		},
+		onError: (err) => toast.error((err as Error).message),
+	});
+
+	// ---------------------------------------------------------------------------
+	// Selection helpers
+	// ---------------------------------------------------------------------------
+
+	const students = preview?.items ?? [];
+	const allIds = students.map((s) => s.student.id);
+	const allSelected =
+		allIds.length > 0 && allIds.every((id) => selectedStudentIds.has(id));
+	const someSelected = allIds.some((id) => selectedStudentIds.has(id));
+
+	function toggleAll(checked: boolean) {
+		setSelectedStudentIds((prev) => {
+			const next = new Set(prev);
+			if (checked) {
+				for (const id of allIds) next.add(id);
+			} else {
+				for (const id of allIds) next.delete(id);
+			}
+			return next;
+		});
+	}
+
+	function toggleStudent(id: string, checked: boolean) {
+		setSelectedStudentIds((prev) => {
+			const next = new Set(prev);
+			if (checked) next.add(id);
+			else next.delete(id);
+			return next;
+		});
+	}
+
+	function handleAutoSelect() {
+		const promotable = students
+			.filter((s) =>
+				PROMOTABLE_DECISIONS.includes(
+					s.deliberationResult?.finalDecision as Decision,
+				),
+			)
+			.map((s) => s.student.id);
+		setSelectedStudentIds(new Set(promotable));
+	}
+
+	function handleSourceChange(value: string) {
+		setSourceClassId(value);
+		setTargetClassId("");
+		setSelectedStudentIds(new Set());
+		pagination.reset();
+	}
+
+	// ---------------------------------------------------------------------------
+	// Derived state
+	// ---------------------------------------------------------------------------
+
+	const sourceClass = sourceClasses?.find((c) => c.id === sourceClassId);
+	const isLastLevel = promoData?.isLastLevel ?? false;
+	const targetClasses = promoData?.targetClasses ?? [];
+	const canPromote =
+		selectedStudentIds.size > 0 &&
+		!!targetClassId &&
+		!bulkTransferMutation.isPending;
+
+	// ---------------------------------------------------------------------------
+	// Render
+	// ---------------------------------------------------------------------------
 
 	return (
 		<div className="space-y-6">
+			{/* Header */}
 			<div>
-				<h2 className="text-foreground">{t("teacher.promotion.title")}</h2>
-				<p className="text-muted-foreground">
+				<h2 className="font-bold font-heading text-2xl text-foreground">
+					{t("teacher.promotion.title")}
+				</h2>
+				<p className="mt-1 text-muted-foreground text-sm">
 					{t("teacher.promotion.subtitle")}
 				</p>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-2">
-				{/* Source Class Selection */}
-				<div className="form-control">
-					<label className="label" htmlFor={sourceId}>
-						<span className="label-text">
-							{t("teacher.promotion.sourceClassLabel", {
-								year: previousYear?.name ?? t("teacher.promotion.unknownYear"),
-							})}
-						</span>
+			{/* Class selectors */}
+			<div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
+				{/* Source class */}
+				<div className="space-y-1.5">
+					<label className="font-medium text-sm">
+						{t("teacher.promotion.sourceClassLabel")}
 					</label>
-					<select
-						id={sourceId}
-						className="select select-bordered"
-						value={sourceClass}
-						onChange={(e) => {
-							setSourceClass(e.target.value);
-							setSelectedStudents([]);
-							pagination.reset();
-						}}
+					<Select
+						value={sourceClassId}
+						onValueChange={handleSourceChange}
+						disabled={sourceLoading}
 					>
-						<option value="">
-							{t("teacher.promotion.sourceClassPlaceholder")}
-						</option>
-						{sourceClasses?.map((cls) => (
-							<option key={cls.id} value={cls.id}>
-								{cls.name} - {cls.program.name}
-							</option>
-						))}
-					</select>
+						<SelectTrigger className="w-full">
+							{sourceLoading ? (
+								<span className="text-muted-foreground">
+									{t("common.loading")}
+								</span>
+							) : (
+								<SelectValue
+									placeholder={t("teacher.promotion.sourceClassPlaceholder")}
+								/>
+							)}
+						</SelectTrigger>
+						<SelectContent>
+							{sourceClasses?.map((cls) => (
+								<SelectItem key={cls.id} value={cls.id}>
+									<ClassOption
+										name={cls.name}
+										levelCode={cls.cycleLevel?.code}
+										programName={cls.programInfo?.name}
+									/>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					{sourceClass && (
+						<p className="text-muted-foreground text-xs">
+							{sourceClass.academicYearInfo?.name}
+						</p>
+					)}
 				</div>
 
-				{/* Target Class Selection */}
-				<div className="form-control">
-					<label className="label" htmlFor={targetId}>
-						<span className="label-text">
-							{t("teacher.promotion.targetClassLabel", {
-								year: activeYear?.name ?? t("teacher.promotion.unknownYear"),
-							})}
-						</span>
+				{/* Arrow separator */}
+				<div className="flex items-end justify-center pb-2">
+					<ArrowRight className="h-5 w-5 text-muted-foreground" />
+				</div>
+
+				{/* Target class */}
+				<div className="space-y-1.5">
+					<label className="flex items-center gap-2 font-medium text-sm">
+						{t("teacher.promotion.targetClassLabel")}
+						{isLastLevel && sourceClassId && (
+							<Badge variant="warning" className="gap-1">
+								<GraduationCap className="h-3 w-3" />
+								{t("teacher.promotion.lastLevel")}
+							</Badge>
+						)}
 					</label>
-					<select
-						id={targetId}
-						className="select select-bordered"
-						value={targetClass}
-						onChange={(e) => setTargetClass(e.target.value)}
-						disabled={!sourceClass}
+					<Select
+						value={targetClassId}
+						onValueChange={setTargetClassId}
+						disabled={
+							!sourceClassId || targetsLoading || targetClasses.length === 0
+						}
 					>
-						<option value="">
-							{t("teacher.promotion.targetClassPlaceholder")}
-						</option>
-						{targetClasses?.map((cls) => (
-							<option key={cls.id} value={cls.id}>
-								{cls.name} - {cls.program.name}
-							</option>
-						))}
-					</select>
+						<SelectTrigger className="w-full">
+							{targetsLoading && sourceClassId ? (
+								<span className="text-muted-foreground">
+									{t("common.loading")}
+								</span>
+							) : (
+								<SelectValue
+									placeholder={
+										!sourceClassId
+											? t("teacher.promotion.selectSourceFirst")
+											: targetClasses.length === 0
+												? t("teacher.promotion.noTargetAvailable")
+												: t("teacher.promotion.targetClassPlaceholder")
+									}
+								/>
+							)}
+						</SelectTrigger>
+						<SelectContent>
+							{targetClasses.map((cls) => (
+								<SelectItem key={cls.id} value={cls.id}>
+									<ClassOption
+										name={cls.name}
+										levelCode={cls.cycleLevel?.code}
+										programName={cls.programInfo?.name}
+									/>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					{isLastLevel && sourceClassId && (
+						<p className="text-muted-foreground text-xs">
+							{t("teacher.promotion.lastLevelHint")}
+						</p>
+					)}
 				</div>
 			</div>
 
-			{students && students.length > 0 ? (
-				<div className="overflow-hidden rounded-lg bg-card shadow-sm">
-					<div className="flex items-center justify-between border-border border-b p-4">
-						<div className="flex items-center space-x-2">
-							<span className="font-medium">
-								{t("teacher.promotion.students.listTitle")}
-							</span>
-							<span className="text-muted-foreground text-xs">
-								{t("teacher.promotion.students.selectedCount", {
-									count: selectedStudents.length,
-								})}
-							</span>
+			{/* Student list */}
+			{sourceClassId && (
+				<div className="space-y-3">
+					{/* Toolbar */}
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div className="flex items-center gap-2 text-muted-foreground text-sm">
+							<Users className="h-4 w-4" />
+							{selectedStudentIds.size > 0 ? (
+								<span>
+									<span className="font-semibold text-foreground">
+										{selectedStudentIds.size}
+									</span>{" "}
+									{t("teacher.promotion.students.selectedCount", {
+										count: selectedStudentIds.size,
+									})}
+								</span>
+							) : (
+								<span>{t("teacher.promotion.students.listTitle")}</span>
+							)}
 						</div>
-						<div className="flex gap-2">
-							<button
-								type="button"
+						<div className="flex items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
 								onClick={handleAutoSelect}
-								className="btn btn-sm btn-secondary"
+								disabled={studentsLoading || students.length === 0}
 							>
-								<Check className="mr-2 h-4 w-4" />
+								<CheckCheck className="mr-1.5 h-4 w-4" />
 								{t("teacher.promotion.students.autoSelect")}
-							</button>
-							<button
-								type="button"
-								onClick={handlePromote}
-								disabled={
-									selectedStudents.length === 0 || !targetClass || isPromoting
-								}
-								className="btn btn-sm btn-primary"
+							</Button>
+							<Button
+								size="sm"
+								onClick={() => bulkTransferMutation.mutate()}
+								disabled={!canPromote}
 							>
-								{isPromoting ? (
-									<span className="loading loading-spinner loading-sm" />
+								{bulkTransferMutation.isPending ? (
+									<Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
 								) : (
-									<span className="flex items-center gap-2">
-										{t("teacher.promotion.actions.promoteSelected")}
-										<ArrowRight className="h-4 w-4" />
+									<ArrowRight className="mr-1.5 h-4 w-4" />
+								)}
+								{t("teacher.promotion.actions.promoteSelected")}
+								{selectedStudentIds.size > 0 && (
+									<span className="ml-1.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-xs">
+										{selectedStudentIds.size}
 									</span>
 								)}
-							</button>
+							</Button>
 						</div>
 					</div>
 
-					<div className="overflow-x-auto">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>
-										<input
-											type="checkbox"
-											className="checkbox"
-											checked={selectedStudents.length === students.length}
-											onChange={(e) => {
-												if (e.target.checked) {
-													setSelectedStudents(students.map((s) => s.id));
-												} else {
-													setSelectedStudents([]);
-												}
-											}}
+					{/* Table */}
+					<div className="overflow-hidden rounded-xl border">
+						<Table>
+							<TableHeader>
+								<TableRow className="bg-muted/40 hover:bg-muted/40">
+									<TableHead className="w-10">
+										<Checkbox
+											checked={
+												someSelected
+													? allSelected
+														? true
+														: "indeterminate"
+													: false
+											}
+											onCheckedChange={(v) => toggleAll(!!v)}
+											aria-label="Select all"
 										/>
-									</th>
-									<th>{t("teacher.promotion.table.registration")}</th>
-									<th>{t("teacher.promotion.table.name")}</th>
-									<th>{t("teacher.promotion.table.courseAverages")}</th>
-									<th>{t("teacher.promotion.table.overallAverage")}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{students.map((student) => {
-									const average = calculateAverage(student);
-									const courseAverages = getCourseAverages(student);
+									</TableHead>
+									<TableHead>
+										{t("teacher.promotion.table.registration")}
+									</TableHead>
+									<TableHead>{t("teacher.promotion.table.name")}</TableHead>
+									<TableHead className="text-center">
+										{t("teacher.promotion.table.overallAverage")}
+									</TableHead>
+									<TableHead className="text-center">
+										{t("teacher.promotion.table.credits")}
+									</TableHead>
+									<TableHead className="text-center">
+										{t("teacher.promotion.table.decision")}
+									</TableHead>
+									<TableHead className="text-center">
+										{t("teacher.promotion.table.mention")}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{studentsLoading
+									? Array.from({ length: 5 }).map((_, i) => (
+											<StudentRowSkeleton key={i} />
+										))
+									: students.map(({ student, deliberationResult }) => {
+											const isSelected = selectedStudentIds.has(student.id);
+											const decision =
+												deliberationResult?.finalDecision as Decision | null;
+											const isPromotable = PROMOTABLE_DECISIONS.includes(
+												decision as Decision,
+											);
 
-									return (
-										<tr key={student.id}>
-											<td>
-												<input
-													type="checkbox"
-													className="checkbox"
-													checked={selectedStudents.includes(student.id)}
-													onChange={(e) => {
-														if (e.target.checked) {
-															setSelectedStudents([
-																...selectedStudents,
-																student.id,
-															]);
-														} else {
-															setSelectedStudents(
-																selectedStudents.filter(
-																	(id) => id !== student.id,
-																),
-															);
-														}
-													}}
-												/>
-											</td>
-											<td>{student.registration_number}</td>
-											<td>
-												{student.last_name}, {student.first_name}
-											</td>
-											<td>
-												<div className="space-y-1">
-													{Array.from(courseAverages).map(([course, avg]) => (
-														<div key={course} className="text-sm">
-															<span className="font-medium">{course}:</span>{" "}
+											return (
+												<TableRow
+													key={student.id}
+													className={isSelected ? "bg-primary/5" : undefined}
+												>
+													<TableCell>
+														<Checkbox
+															checked={isSelected}
+															onCheckedChange={(v) =>
+																toggleStudent(student.id, !!v)
+															}
+															aria-label={`Select ${student.profile?.firstName}`}
+														/>
+													</TableCell>
+													<TableCell className="font-mono text-muted-foreground text-xs">
+														{student.registrationNumber}
+													</TableCell>
+													<TableCell className="font-medium">
+														{student.profile?.lastName},{" "}
+														{student.profile?.firstName}
+													</TableCell>
+													<TableCell className="text-center">
+														{deliberationResult?.generalAverage != null ? (
 															<span
 																className={
-																	avg >= 10
-																		? "text-success-600"
-																		: "text-error-600"
+																	(deliberationResult.generalAverage ?? 0) >= 10
+																		? "font-semibold text-emerald-600 dark:text-emerald-400"
+																		: "font-semibold text-rose-600 dark:text-rose-400"
 																}
 															>
-																{avg}/20
+																{Number(
+																	deliberationResult.generalAverage,
+																).toFixed(2)}
+																<span className="font-normal text-muted-foreground">
+																	/20
+																</span>
 															</span>
-														</div>
-													))}
-												</div>
-											</td>
-											<td>
-												<span
-													className={`font-bold ${
-														average >= 10
-															? "text-success-600"
-															: "text-error-600"
-													}`}
-												>
-													{average}/20
-												</span>
-											</td>
-										</tr>
-									);
-								})}
-							</tbody>
-						</table>
+														) : (
+															<span className="text-muted-foreground">—</span>
+														)}
+													</TableCell>
+													<TableCell className="text-center text-sm">
+														{deliberationResult ? (
+															<span>
+																<span className="font-semibold">
+																	{deliberationResult.totalCreditsEarned}
+																</span>
+																<span className="text-muted-foreground">
+																	/{deliberationResult.totalCreditsPossible}
+																</span>
+															</span>
+														) : (
+															<span className="text-muted-foreground">—</span>
+														)}
+													</TableCell>
+													<TableCell className="text-center">
+														{decision ? (
+															<Badge
+																variant={decisionVariant(decision)}
+																className={isPromotable ? "gap-1" : undefined}
+															>
+																{isPromotable && <Trophy className="h-3 w-3" />}
+																{decisionLabel(decision, t)}
+															</Badge>
+														) : (
+															<Badge variant="muted">
+																{t("teacher.promotion.decision.noData")}
+															</Badge>
+														)}
+													</TableCell>
+													<TableCell className="text-center text-muted-foreground text-sm">
+														{mentionLabel(deliberationResult?.mention)}
+													</TableCell>
+												</TableRow>
+											);
+										})}
+							</TableBody>
+						</Table>
 					</div>
-					<PaginationBar
-						hasPrev={pagination.hasPrev}
-						hasNext={!!studentsData?.nextCursor}
-						onPrev={pagination.handlePrev}
-						onNext={() => pagination.handleNext(studentsData?.nextCursor)}
-						isLoading={studentsLoading}
-					/>
+
+					{/* Empty state */}
+					{!studentsLoading && students.length === 0 && (
+						<EmptyStudents sourceClassSelected={!!sourceClassId} />
+					)}
+
+					{/* Pagination */}
+					{students.length > 0 && (
+						<PaginationBar
+							hasPrev={pagination.hasPrev}
+							hasNext={!!preview?.nextCursor}
+							onPrev={pagination.handlePrev}
+							onNext={() => pagination.handleNext(preview?.nextCursor)}
+							isLoading={studentsLoading}
+						/>
+					)}
 				</div>
-			) : sourceClass ? (
-				<div className="rounded-lg bg-card p-8 text-center">
-					<Users className="mx-auto h-12 w-12 text-muted-foreground/60" />
-					<h3 className="mt-2 font-medium text-foreground text-sm">
-						{t("teacher.promotion.emptyStudents.title")}
-					</h3>
-					<p className="mt-1 text-muted-foreground text-sm">
-						{t("teacher.promotion.emptyStudents.description")}
-					</p>
+			)}
+
+			{/* Empty state when no source class selected */}
+			{!sourceClassId && (
+				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-12 text-center">
+					<div className="rounded-full bg-muted p-3">
+						<GraduationCap className="h-6 w-6 text-muted-foreground" />
+					</div>
+					<div>
+						<p className="font-medium text-sm">
+							{t("teacher.promotion.emptyState.title")}
+						</p>
+						<p className="mt-1 text-muted-foreground text-sm">
+							{t("teacher.promotion.emptyState.description")}
+						</p>
+					</div>
 				</div>
-			) : null}
+			)}
 		</div>
 	);
 }

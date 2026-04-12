@@ -56,6 +56,7 @@ export const enrollmentStatuses = [
 	"pending",
 	"active",
 	"completed",
+	"graduated",
 	"withdrawn",
 ] as const;
 export type EnrollmentStatus = (typeof enrollmentStatuses)[number];

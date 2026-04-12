@@ -29,6 +29,7 @@ import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import FacultyManagement from "./pages/admin/FacultyManagement";
 import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
 import GradeExport from "./pages/admin/GradeExport";
+import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
@@ -205,6 +206,7 @@ function App() {
 							element={<ExportTemplateEditor />}
 						/>
 						<Route path="student-promotion" element={<StudentManagement />} />
+						<Route path="graduation" element={<GraduatedStudents />} />
 						<Route path="rules" element={<RuleManagement />} />
 						<Route
 							path="registration-numbers"

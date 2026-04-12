@@ -38,6 +38,46 @@ authUsers:
     name: Eyebe Rachel
     password: Password123!
     role: user
+  - code: STUDENT-ATEBA
+    email: ateba.student@inses.cm
+    name: Ateba Marie
+    password: Password123!
+    role: user
+  - code: STUDENT-FOUDA
+    email: fouda.student@inses.cm
+    name: Fouda Paul
+    password: Password123!
+    role: user
+  - code: STUDENT-NKOA
+    email: nkoa.student@inses.cm
+    name: Nkoa Claire
+    password: Password123!
+    role: user
+  - code: STUDENT-TENE
+    email: tene.student@inses.cm
+    name: Tene Joseph
+    password: Password123!
+    role: user
+  - code: STUDENT-MVONDO
+    email: mvondo.student@inses.cm
+    name: Mvondo Agnes
+    password: Password123!
+    role: user
+  - code: STUDENT-BEKONO
+    email: bekono.student@inses.cm
+    name: Bekono Bruno
+    password: Password123!
+    role: user
+  - code: STUDENT-OLAMA
+    email: olama.student@inses.cm
+    name: Olama Suzanne
+    password: Password123!
+    role: user
+  - code: STUDENT-KANA
+    email: kana.student@inses.cm
+    name: Kana Desire
+    password: Password123!
+    role: user
 domainUsers:
   - code: ADMIN-ROOT
     authUserCode: ADMIN-ROOT
@@ -91,6 +131,54 @@ domainUsers:
     lastName: Eyebe
     primaryEmail: eyebe.student@inses.cm
     status: active
+  - code: STUDENT-ATEBA
+    authUserCode: STUDENT-ATEBA
+    firstName: Marie
+    lastName: Ateba
+    primaryEmail: ateba.student@inses.cm
+    status: active
+  - code: STUDENT-FOUDA
+    authUserCode: STUDENT-FOUDA
+    firstName: Paul
+    lastName: Fouda
+    primaryEmail: fouda.student@inses.cm
+    status: active
+  - code: STUDENT-NKOA
+    authUserCode: STUDENT-NKOA
+    firstName: Claire
+    lastName: Nkoa
+    primaryEmail: nkoa.student@inses.cm
+    status: active
+  - code: STUDENT-TENE
+    authUserCode: STUDENT-TENE
+    firstName: Joseph
+    lastName: Tene
+    primaryEmail: tene.student@inses.cm
+    status: active
+  - code: STUDENT-MVONDO
+    authUserCode: STUDENT-MVONDO
+    firstName: Agnes
+    lastName: Mvondo
+    primaryEmail: mvondo.student@inses.cm
+    status: active
+  - code: STUDENT-BEKONO
+    authUserCode: STUDENT-BEKONO
+    firstName: Bruno
+    lastName: Bekono
+    primaryEmail: bekono.student@inses.cm
+    status: active
+  - code: STUDENT-OLAMA
+    authUserCode: STUDENT-OLAMA
+    firstName: Suzanne
+    lastName: Olama
+    primaryEmail: olama.student@inses.cm
+    status: active
+  - code: STUDENT-KANA
+    authUserCode: STUDENT-KANA
+    firstName: Desire
+    lastName: Kana
+    primaryEmail: kana.student@inses.cm
+    status: active
 students:
   - code: STUDENT-NDONG
     domainUserCode: STUDENT-NDONG
@@ -102,6 +190,46 @@ students:
     classCode: COMPT25-BTS1A
     classAcademicYearCode: AY-2025
     registrationNumber: INSES25-0002
+  - code: STUDENT-ATEBA
+    domainUserCode: STUDENT-ATEBA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0003
+  - code: STUDENT-FOUDA
+    domainUserCode: STUDENT-FOUDA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0004
+  - code: STUDENT-NKOA
+    domainUserCode: STUDENT-NKOA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0005
+  - code: STUDENT-TENE
+    domainUserCode: STUDENT-TENE
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0006
+  - code: STUDENT-MVONDO
+    domainUserCode: STUDENT-MVONDO
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0007
+  - code: STUDENT-BEKONO
+    domainUserCode: STUDENT-BEKONO
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0008
+  - code: STUDENT-OLAMA
+    domainUserCode: STUDENT-OLAMA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0009
+  - code: STUDENT-KANA
+    domainUserCode: STUDENT-KANA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-0010
 enrollments:
   - studentCode: STUDENT-NDONG
     classCode: INF25-BTS1A
@@ -111,6 +239,54 @@ enrollments:
     admissionType: normal
   - studentCode: STUDENT-EYEBE
     classCode: COMPT25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-ATEBA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-FOUDA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-NKOA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-TENE
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-MVONDO
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-BEKONO
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-OLAMA
+    classCode: INF25-BTS1A
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STUDENT-KANA
+    classCode: INF25-BTS1A
     classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active
@@ -135,4 +311,244 @@ studentCourseEnrollments:
     status: active
     attempt: 1
     creditsAttempted: 5
+    creditsEarned: 0
+  - studentCode: STUDENT-ATEBA
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-ATEBA
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-ATEBA
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-FOUDA
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-FOUDA
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-FOUDA
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-NKOA
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-NKOA
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-NKOA
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-TENE
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-TENE
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-TENE
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-MVONDO
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-MVONDO
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-MVONDO
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-BEKONO
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-BEKONO
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-BEKONO
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-OLAMA
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-OLAMA
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-OLAMA
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
+    creditsEarned: 0
+  - studentCode: STUDENT-KANA
+    classCourseCode: CC-ANAT101-INF1A
+    courseCode: ANAT101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-KANA
+    classCourseCode: CC-PHYS101-INF1A
+    courseCode: PHYS101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 4
+    creditsEarned: 0
+  - studentCode: STUDENT-KANA
+    classCourseCode: CC-SOIN101-INF1A
+    courseCode: SOIN101
+    sourceClassCode: INF25-BTS1A
+    sourceClassAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    attempt: 1
+    creditsAttempted: 6
     creditsEarned: 0

@@ -197,47 +197,68 @@ export async function seed() {
 	});
 }
 
+const RESET_TABLES = [
+	"deliberation_logs",
+	"deliberation_student_results",
+	"deliberation_rules",
+	"deliberations",
+	"batch_job_logs",
+	"batch_job_steps",
+	"batch_jobs",
+	"diplomation_documents",
+	"diplomation_api_keys",
+	"course_prerequisites",
+	"domain_users",
+	"student_course_enrollments",
+	"student_credit_ledgers",
+	"exam_grade_editors",
+	"grade_edit_logs",
+	"class_course_access_logs",
+	"student_promotion_summaries",
+	"grades",
+	"exams",
+	"class_courses",
+	"enrollments",
+	"courses",
+	"teaching_units",
+	"classes",
+	"programs",
+	"exam_schedule_runs",
+	"academic_years",
+	"students",
+	"semesters",
+	"cycle_levels",
+	"study_cycles",
+	"account",
+	"invitation",
+	"member",
+	"organization",
+	"session",
+	"verification",
+	'"user"',
+];
+
 export async function reset() {
-	await db.execute(sql`
-    TRUNCATE TABLE
-     deliberation_logs,
-     deliberation_student_results,
-     deliberation_rules,
-     deliberations,
-     batch_job_logs,
-     batch_job_steps,
-     batch_jobs,
-     course_prerequisites,
-     domain_users,
-    student_course_enrollments,
-    student_credit_ledgers,
-    exam_grade_editors,
-    grade_edit_logs,
-    class_course_access_logs,
-    student_promotion_summaries,
-     grades,
-     exams,
-     class_courses,
-     enrollments,
-     courses,
-     teaching_units,
-     classes,
-     programs,
-     exam_schedule_runs,
-     academic_years,
-     students,
-     semesters,
-     cycle_levels,
-     study_cycles,
-     account,
-     invitation,
-     member,
-     organization,
-     session,
-     verification,
-     "user"
-    RESTART IDENTITY CASCADE
-  `);
+	// Only truncate tables that actually exist in the DB (migrations may be ahead of schema)
+	await db.execute(
+		sql.raw(`
+		DO $$
+		DECLARE
+			t text;
+		BEGIN
+			FOREACH t IN ARRAY ARRAY[${RESET_TABLES.map((n) => `'${n}'`).join(",")}] LOOP
+				IF EXISTS (
+					SELECT 1 FROM information_schema.tables
+					WHERE table_schema = 'public'
+					AND table_name = TRIM('"' FROM t)
+				) THEN
+					EXECUTE 'TRUNCATE TABLE ' || t || ' RESTART IDENTITY CASCADE';
+				END IF;
+			END LOOP;
+		END;
+		$$;
+	`),
+	);
 }
 
 export async function close() {
