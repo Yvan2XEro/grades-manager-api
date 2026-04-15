@@ -1,0 +1,92 @@
+# Dokploy Docker Compose
+# Usage: docker compose --env-file .env -f docker-compose.dokploy.yml up -d
+#
+# This variant is intended for Dokploy + Traefik deployments.
+# It pulls pre-built images from the registry, like the standard production compose.
+
+services:
+  server:
+    image: ghcr.io/yvan2xero/tkams-server:latest
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgres://grades:grades@postgres:5432/grades}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://${API_DOMAIN}}
+      BETTER_AUTH_COOKIE_SAMESITE: ${BETTER_AUTH_COOKIE_SAMESITE:-none}
+      BETTER_AUTH_COOKIE_SECURE: ${BETTER_AUTH_COOKIE_SECURE:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://${WEB_DOMAIN}}
+      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-https://${API_DOMAIN}}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
+      STORAGE_LOCAL_PUBLIC_PATH: /uploads
+    expose:
+      - "3000"
+    volumes:
+      - server_uploads:/usr/src/app/apps/server/storage/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-dokploy-network}"
+      - "traefik.http.routers.tkams-server.rule=Host(`${API_DOMAIN}`)"
+      - "traefik.http.routers.tkams-server.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
+      - "traefik.http.routers.tkams-server.tls=true"
+      - "traefik.http.routers.tkams-server.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.tkams-server.loadbalancer.server.port=3000"
+
+  web:
+    image: ghcr.io/yvan2xero/tkams-web:latest
+    environment:
+      NODE_ENV: production
+      PORT: 4173
+      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-https://${API_DOMAIN}}
+      DEFAULT_ORGANIZATION_SLUG: ${DEFAULT_ORGANIZATION_SLUG:-sgn-institution}
+    expose:
+      - "4173"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-dokploy-network}"
+      - "traefik.http.routers.tkams-web.rule=Host(`${WEB_DOMAIN}`)"
+      - "traefik.http.routers.tkams-web.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
+      - "traefik.http.routers.tkams-web.tls=true"
+      - "traefik.http.routers.tkams-web.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.tkams-web.loadbalancer.server.port=4173"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-grades}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-grades}
+      POSTGRES_DB: ${POSTGRES_DB:-grades}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - internal
+
+volumes:
+  server_uploads:
+  postgres_data:
+
+networks:
+  internal:
+  traefik:
+    name: ${TRAEFIK_NETWORK:-dokploy-network}
+    external: true

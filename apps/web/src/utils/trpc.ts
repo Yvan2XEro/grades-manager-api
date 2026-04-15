@@ -3,6 +3,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { detectOrganizationSlug } from "@/lib/organization";
+import { getServerUrl } from "@/lib/runtime-config";
 import { toast } from "@/lib/toast";
 import type { AppRouter } from "../../../server/src/routers";
 
@@ -24,7 +25,7 @@ export const queryClient = new QueryClient({
 export const trpcClient = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: `${import.meta.env.VITE_SERVER_URL}/trpc`,
+			url: `${getServerUrl()}/trpc`,
 			fetch(url, options) {
 				let orgSlug: string | undefined;
 				try {
