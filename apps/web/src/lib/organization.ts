@@ -11,6 +11,9 @@ import { getDefaultOrganizationSlug } from "./runtime-config";
 
 export function detectOrganizationSlug(): string {
 	const host = window.location.host;
+	if (getFallbackSlug()) {
+		return getFallbackSlug();
+	}
 
 	// Localhost or IP addresses - use fallback
 	if (
