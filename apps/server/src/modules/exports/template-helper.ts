@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { defaultExportConfig } from "../../config/export-config";
 import type {
 	Institution,
 	InstitutionMetadata,
@@ -111,27 +112,10 @@ const defaultWatermark: ExportConfig["watermark"] = {
 };
 
 /**
- * Load export configuration from JSON file (fallback for compatibility)
+ * Load default export configuration from a compiled TypeScript module.
  */
 export function loadExportConfig(): ExportConfig {
-	const configPath = join(import.meta.dir, "../../config/export-config.json");
-	const configData = readFileSync(configPath, "utf-8");
-	const jsonConfig = JSON.parse(configData);
-
-	// Convert old format to new format
-	return {
-		institution: {
-			name_fr: jsonConfig.institution?.university?.name_fr || "UNIVERSITÉ",
-			name_en: jsonConfig.institution?.university?.name_en || "UNIVERSITY",
-			logo_url: jsonConfig.institution?.university?.logo_url || "",
-			faculty_name_fr: jsonConfig.institution?.faculty?.name_fr,
-			faculty_name_en: jsonConfig.institution?.faculty?.name_en,
-		},
-		grading: jsonConfig.grading,
-		signatures: jsonConfig.signatures,
-		exam_settings: jsonConfig.exam_settings,
-		watermark: jsonConfig.watermark,
-	};
+	return defaultExportConfig;
 }
 
 /**
@@ -158,7 +142,7 @@ export function institutionToExportConfig(
 	// Sinon, utiliser le parent direct
 	const university = supervisingFaculty ? null : parentInst;
 
-	// Default values matching the old export-config.json
+	// Default values matching the previous export-config fallback
 	return {
 		institution: {
 			// Institute/Institution information
