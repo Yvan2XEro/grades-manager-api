@@ -41,6 +41,7 @@ RUN PUPPETEER_SKIP_DOWNLOAD=true bun install --ci --production --filter server -
 COPY --from=build /usr/src/app/apps/server/dist ./apps/server/dist
 COPY --from=build /usr/src/app/apps/server/storage ./apps/server/storage
 COPY --from=build /usr/src/app/apps/server/src/db/migrations ./apps/server/dist/db/migrations
+COPY --from=build /usr/src/app/apps/server/src/modules/exports/templates ./apps/server/dist/src/modules/exports/templates
 
 # Copy database schema and config for migrations/push
 COPY --from=build /usr/src/app/apps/server/src/db ./apps/server/src/db
