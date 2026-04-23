@@ -115,7 +115,10 @@
       "Bash(find C:UserstefbaDesktopOverBrandgrades-manager-api -type f \\\\\\(-iname *assistant* -o -iname *ai* -o -iname *chat* \\\\\\))",
       "Bash(bunx drizzle-kit:*)",
       "Bash(printf '\\\\n')",
-      "Bash(bunx biome:*)"
+      "Bash(bunx biome:*)",
+      "Bash(git -C /home/yvan/Workspaces/Projects/sgn/grades-manager-api.ui-ux-improuve stash list)",
+      "Bash(git -C /home/yvan/Workspaces/Projects/sgn/grades-manager-api.ui-ux-improuve log --oneline --follow apps/web/src/pages/admin/ExamManagement.tsx)",
+      "Bash(git -C /home/yvan/Workspaces/Projects/sgn/grades-manager-api.ui-ux-improuve log --oneline --follow apps/web/src/pages/__tests__/examWorkflow.e2e.test.tsx)"
     ]
   }
 }

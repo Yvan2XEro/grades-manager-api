@@ -2,28 +2,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
 	Bell,
 	BookOpen,
-	BookOpenCheck,
 	Building2,
 	Calendar,
-	CalendarPlus,
 	ChevronDown,
 	ChevronRight,
 	ClipboardList,
 	FileCog,
 	FileSpreadsheet,
-	FileText,
 	Gavel,
 	GraduationCap,
-	Hash,
-	Key,
-	Landmark,
-	Layers3,
 	LayoutDashboard,
 	PlayCircle,
-	RefreshCw,
 	School,
 	Search,
-	ShieldCheck,
+	Settings2,
 	TrendingUp,
 	UserCog,
 	Users,
@@ -69,11 +61,6 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.dashboard",
 					},
 					{
-						to: "/admin/institution",
-						icon: <Landmark className={IC} />,
-						labelKey: "navigation.sidebar.admin.institution",
-					},
-					{
 						to: "/admin/academic-years",
 						icon: <Calendar className={IC} />,
 						labelKey: "navigation.sidebar.admin.academicYears",
@@ -85,24 +72,14 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.structure",
 				items: [
 					{
-						to: "/admin/faculties",
+						to: "/admin/institution",
 						icon: <Building2 className={IC} />,
-						labelKey: "navigation.sidebar.admin.faculties",
-					},
-					{
-						to: "/admin/study-cycles",
-						icon: <Layers3 className={IC} />,
-						labelKey: "navigation.sidebar.admin.studyCycles",
+						labelKey: "navigation.sidebar.admin.institution",
 					},
 					{
 						to: "/admin/programs",
 						icon: <School className={IC} />,
 						labelKey: "navigation.sidebar.admin.programs",
-					},
-					{
-						to: "/admin/teaching-units",
-						icon: <BookOpenCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.teachingUnits",
 					},
 					{
 						to: "/admin/classes",
@@ -112,45 +89,24 @@ const Sidebar: React.FC = () => {
 				],
 			},
 			{
-				key: "users",
-				titleKey: "navigation.sidebar.groups.users",
+				key: "people",
+				titleKey: "navigation.sidebar.groups.people",
 				items: [
-					{
-						to: "/admin/users",
-						icon: <UserCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.users",
-					},
 					{
 						to: "/admin/students",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},
-				],
-			},
-			{
-				key: "teaching",
-				titleKey: "navigation.sidebar.groups.teaching",
-				items: [
 					{
-						to: "/admin/courses",
-						icon: <BookOpen className={IC} />,
-						labelKey: "navigation.sidebar.admin.courses",
-					},
-					{
-						to: "/admin/class-courses",
-						icon: <BookOpenCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.courseAssignments",
-					},
-					{
-						to: "/admin/enrollments",
-						icon: <Calendar className={IC} />,
-						labelKey: "navigation.sidebar.admin.enrollments",
+						to: "/admin/users",
+						icon: <UserCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.users",
 					},
 				],
 			},
 			{
-				key: "evaluation",
-				titleKey: "navigation.sidebar.groups.evaluation",
+				key: "assessment",
+				titleKey: "navigation.sidebar.groups.assessment",
 				items: [
 					{
 						to: "/admin/exams",
@@ -158,46 +114,10 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.exams",
 					},
 					{
-						to: "/admin/exam-types",
-						icon: <ClipboardList className={IC} />,
-						labelKey: "navigation.sidebar.admin.examTypes",
-					},
-					{
-						to: "/admin/exam-scheduler",
-						icon: <CalendarPlus className={IC} />,
-						labelKey: "navigation.sidebar.admin.examScheduler",
-					},
-					{
-						to: "/admin/retake-eligibility",
-						icon: <RefreshCw className={IC} />,
-						labelKey: "navigation.sidebar.admin.retakeEligibility",
-					},
-					{
-						to: "/admin/grade-export",
+						to: "/admin/grades",
 						icon: <FileSpreadsheet className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeExport",
+						labelKey: "navigation.sidebar.admin.gradeManagement",
 					},
-					{
-						to: "/admin/grade-access",
-						icon: <ShieldCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeAccess",
-					},
-					{
-						to: "/grade-editor/courses",
-						icon: <BookOpen className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeEntry",
-					},
-					{
-						to: "/admin/export-templates",
-						icon: <FileText className={IC} />,
-						labelKey: "navigation.sidebar.admin.exportTemplates",
-					},
-				],
-			},
-			{
-				key: "promotion",
-				titleKey: "navigation.sidebar.groups.promotion",
-				items: [
 					{
 						to: "/admin/deliberations",
 						icon: <Gavel className={IC} />,
@@ -205,19 +125,9 @@ const Sidebar: React.FC = () => {
 						excludePrefix: "/admin/deliberations/rules",
 					},
 					{
-						to: "/admin/deliberations/rules",
+						to: "/admin/promotion",
 						icon: <TrendingUp className={IC} />,
-						labelKey: "navigation.sidebar.admin.deliberationRules",
-					},
-					{
-						to: "/admin/graduation",
-						icon: <GraduationCap className={IC} />,
-						labelKey: "navigation.sidebar.admin.graduation",
-					},
-					{
-						to: "/admin/rules",
-						icon: <FileCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.rules",
+						labelKey: "navigation.sidebar.admin.promotion",
 					},
 				],
 			},
@@ -226,9 +136,9 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.system",
 				items: [
 					{
-						to: "/admin/registration-numbers",
-						icon: <Hash className={IC} />,
-						labelKey: "navigation.sidebar.admin.registrationNumbers",
+						to: "/admin/configuration",
+						icon: <Settings2 className={IC} />,
+						labelKey: "navigation.sidebar.admin.configuration",
 					},
 					{
 						to: "/admin/monitoring",
@@ -236,19 +146,14 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.monitoring",
 					},
 					{
-						to: "/admin/notifications",
-						icon: <Bell className={IC} />,
-						labelKey: "navigation.sidebar.admin.notifications",
-					},
-					{
 						to: "/admin/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
 					},
 					{
-						to: "/admin/api-keys",
-						icon: <Key className={IC} />,
-						labelKey: "navigation.sidebar.admin.apiKeys",
+						to: "/admin/notifications",
+						icon: <Bell className={IC} />,
+						labelKey: "navigation.sidebar.admin.notifications",
 					},
 				],
 			},
@@ -260,13 +165,8 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/teacher",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.teacher.dashboard",
-			},
-			{
-				to: "/teacher/courses",
 				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.courses",
+				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
 				to: "/teacher/attendance",
@@ -274,9 +174,9 @@ const Sidebar: React.FC = () => {
 				labelKey: "navigation.sidebar.teacher.attendance",
 			},
 			{
-				to: "/teacher/workflows",
-				icon: <Bell className={IC} />,
-				labelKey: "navigation.sidebar.teacher.workflows",
+				to: "/teacher/exports",
+				icon: <FileSpreadsheet className={IC} />,
+				labelKey: "navigation.sidebar.teacher.exports",
 			},
 		],
 		[],
@@ -286,13 +186,18 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/dean",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.dean.dashboard",
+				icon: <ClipboardList className={IC} />,
+				labelKey: "navigation.sidebar.dean.pendingApprovals",
 			},
 			{
-				to: "/dean/workflows",
-				icon: <ClipboardList className={IC} />,
-				labelKey: "navigation.sidebar.dean.workflows",
+				to: "/dean/history",
+				icon: <FileCog className={IC} />,
+				labelKey: "navigation.sidebar.dean.history",
+			},
+			{
+				to: "/dean/monitoring",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.dean.monitoring",
 			},
 		],
 		[],
@@ -302,13 +207,13 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/grade-editor",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.teacher.dashboard",
+				icon: <BookOpen className={IC} />,
+				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
-				to: "/grade-editor/courses",
-				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.courses",
+				to: "/grade-editor/exports",
+				icon: <FileSpreadsheet className={IC} />,
+				labelKey: "navigation.sidebar.teacher.exports",
 			},
 		],
 		[],
@@ -534,6 +439,7 @@ const Sidebar: React.FC = () => {
 											to={link.to}
 											end={ROOT_PATHS.has(link.to)}
 											className={iconBtnClass}
+											data-testid={`nav-${link.to}`}
 										>
 											{link.icon}
 										</NavLink>
@@ -609,6 +515,7 @@ const Sidebar: React.FC = () => {
 																to={link.to}
 																end={ROOT_PATHS.has(link.to)}
 																className={makeLinkClass(link)}
+																data-testid={`nav-${link.to}`}
 															>
 																{link.icon}
 																<span>{t(link.labelKey)}</span>
@@ -632,6 +539,7 @@ const Sidebar: React.FC = () => {
 								to={link.to}
 								end={ROOT_PATHS.has(link.to)}
 								className={makeLinkClass(link)}
+								data-testid={`nav-${link.to}`}
 							>
 								{link.icon}
 								<span>{t(link.labelKey)}</span>

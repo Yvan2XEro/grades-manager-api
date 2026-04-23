@@ -1658,30 +1658,89 @@ export default function StudentManagement() {
 											</p>
 										</div>
 										{importPreview && (
-											<div className="space-y-2 rounded-md border p-3 text-sm">
-												<p>
-													{t("admin.students.import.preview.ready", {
-														count: importPreview.rows.length,
-													})}
-												</p>
-												{importPreview.errors.length > 0 && (
-													<div className="space-y-1">
-														<p className="font-semibold">
-															{t("admin.students.import.preview.errorsTitle")}
+											<div className="space-y-3">
+												{importPreview.rows.length > 0 && (
+													<div className="space-y-1.5">
+														<p className="flex items-center gap-2 font-medium text-foreground text-sm">
+															<span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700 text-xs dark:bg-emerald-900/30 dark:text-emerald-400">
+																✓
+															</span>
+															{t("admin.students.import.preview.ready", {
+																count: importPreview.rows.length,
+															})}
 														</p>
-														<ul className="ml-4 list-disc space-y-0.5">
-															{importPreview.errors.map((error) => (
-																<li key={`${error.row}-${error.reason}`}>
-																	{t(
-																		"admin.students.import.summary.errors.item",
-																		{
-																			row: error.row,
-																			reason: error.reason,
-																		},
-																	)}
-																</li>
-															))}
-														</ul>
+														<div className="max-h-48 overflow-y-auto rounded-lg border text-sm">
+															<table className="w-full text-left">
+																<thead className="sticky top-0 bg-muted/50">
+																	<tr>
+																		<th className="px-3 py-2 font-medium text-muted-foreground text-xs">
+																			Prénom
+																		</th>
+																		<th className="px-3 py-2 font-medium text-muted-foreground text-xs">
+																			Nom
+																		</th>
+																		<th className="px-3 py-2 font-medium text-muted-foreground text-xs">
+																			Email
+																		</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	{importPreview.rows.map((row, i) => (
+																		<tr key={`valid-${i}`} className="border-t">
+																			<td className="px-3 py-1.5 text-sm">
+																				{row.firstName}
+																			</td>
+																			<td className="px-3 py-1.5 text-sm">
+																				{row.lastName}
+																			</td>
+																			<td className="max-w-[160px] truncate px-3 py-1.5 text-muted-foreground text-sm">
+																				{row.email}
+																			</td>
+																		</tr>
+																	))}
+																</tbody>
+															</table>
+														</div>
+													</div>
+												)}
+												{importPreview.errors.length > 0 && (
+													<div className="space-y-1.5">
+														<p className="flex items-center gap-2 font-medium text-destructive text-sm">
+															<span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-destructive/10 font-bold text-destructive text-xs">
+																✕
+															</span>
+															{t("admin.students.import.preview.errorsTitle")} (
+															{importPreview.errors.length})
+														</p>
+														<div className="max-h-36 overflow-y-auto rounded-lg border border-destructive/20 text-sm">
+															<table className="w-full text-left">
+																<thead className="sticky top-0 bg-destructive/5">
+																	<tr>
+																		<th className="w-16 px-3 py-2 font-medium text-muted-foreground text-xs">
+																			Ligne
+																		</th>
+																		<th className="px-3 py-2 font-medium text-muted-foreground text-xs">
+																			Erreur
+																		</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	{importPreview.errors.map((error) => (
+																		<tr
+																			key={`${error.row}-${error.reason}`}
+																			className="border-destructive/10 border-t"
+																		>
+																			<td className="px-3 py-1.5 font-mono text-muted-foreground text-sm">
+																				{error.row}
+																			</td>
+																			<td className="px-3 py-1.5 text-destructive text-sm">
+																				{error.reason}
+																			</td>
+																		</tr>
+																	))}
+																</tbody>
+															</table>
+														</div>
 													</div>
 												)}
 											</div>
