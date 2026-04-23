@@ -6,8 +6,7 @@ import { vi } from "vitest";
 const mockState = {
 	user: null as unknown,
 	sidebarOpen: false,
-	// Use icon-rail mode — all links render unconditionally (no AnimatePresence gating)
-	sidebarCollapsed: true,
+	sidebarCollapsed: false,
 	setSidebarOpen: vi.fn(),
 	setUser: vi.fn(),
 	clearUser: vi.fn(),
@@ -70,10 +69,10 @@ const makeTeacher = () => ({
 describe("Sidebar navigation", () => {
 	beforeEach(() => {
 		mockState.user = null;
-		mockState.sidebarCollapsed = true;
+		mockState.sidebarCollapsed = false;
 	});
 
-	it("shows hub page links for admin roles", () => {
+	it("shows admin overview links and hides teacher links for admin role", () => {
 		mockState.user = makeAdmin();
 
 		render(
@@ -82,12 +81,16 @@ describe("Sidebar navigation", () => {
 			</MemoryRouter>,
 		);
 
-		expect(screen.getByTestId("nav-/admin/programs")).toBeInTheDocument();
-		expect(screen.getByTestId("nav-/admin/classes")).toBeInTheDocument();
+		// Overview group is open by default — these links are always visible
+		expect(screen.getByTestId("nav-/admin")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/admin/institution")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/admin/academic-years")).toBeInTheDocument();
+
+		// Teacher-specific links must not be present
+		expect(screen.queryByTestId("nav-/teacher")).not.toBeInTheDocument();
 	});
 
-	it("shows my-courses and attendance links for teachers", () => {
+	it("shows flat teacher links and hides admin links for teacher role", () => {
 		mockState.user = makeTeacher();
 
 		render(
@@ -96,7 +99,12 @@ describe("Sidebar navigation", () => {
 			</MemoryRouter>,
 		);
 
+		// Flat mode — all links always rendered
 		expect(screen.getByTestId("nav-/teacher")).toBeInTheDocument();
 		expect(screen.getByTestId("nav-/teacher/attendance")).toBeInTheDocument();
+		expect(screen.getByTestId("nav-/teacher/workflows")).toBeInTheDocument();
+
+		// Admin-specific links must not be present
+		expect(screen.queryByTestId("nav-/admin")).not.toBeInTheDocument();
 	});
 });

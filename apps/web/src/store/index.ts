@@ -102,11 +102,7 @@ export const useStore = create<StoreState>()(
 			sidebarOpen: true,
 			sidebarCollapsed: false,
 			toggleSidebar: () => {
-				if (typeof window !== "undefined" && window.innerWidth >= 768) {
-					set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
-				} else {
-					set((state) => ({ sidebarOpen: !state.sidebarOpen }));
-				}
+				set((state) => ({ sidebarOpen: !state.sidebarOpen }));
 			},
 			setSidebarOpen: (open) => set({ sidebarOpen: open }),
 			setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
@@ -119,7 +115,6 @@ export const useStore = create<StoreState>()(
 			partialize: (state) => ({
 				user: state.user,
 				activeOrganizationSlug: state.activeOrganizationSlug,
-				sidebarCollapsed: state.sidebarCollapsed,
 			}),
 		},
 	),

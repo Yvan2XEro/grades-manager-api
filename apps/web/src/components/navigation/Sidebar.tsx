@@ -639,14 +639,10 @@ const Sidebar: React.FC = () => {
 				)}
 			</AnimatePresence>
 
-			{/* Desktop sidebar — always mounted, width animated */}
-			<motion.aside
-				animate={{ width: sidebarCollapsed ? 56 : 256 }}
-				transition={{ duration: 0.22, ease: "easeInOut" }}
-				className="hidden shrink-0 flex-col overflow-hidden border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:flex"
-			>
-				{inner(sidebarCollapsed)}
-			</motion.aside>
+			{/* Desktop sidebar — always mounted, always expanded */}
+			<aside className="hidden w-64 shrink-0 flex-col overflow-hidden border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:flex">
+				{inner(false)}
+			</aside>
 		</>
 	);
 };

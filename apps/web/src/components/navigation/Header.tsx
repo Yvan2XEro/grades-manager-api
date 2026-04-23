@@ -163,7 +163,7 @@ const Header: React.FC = () => {
 							onClick={handleToggleSidebar}
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8 text-muted-foreground hover:text-foreground"
+							className="h-8 w-8 text-muted-foreground hover:text-foreground md:hidden"
 							aria-label={t("navigation.header.toggleSidebarAria")}
 						>
 							{sidebarOpen ? (
