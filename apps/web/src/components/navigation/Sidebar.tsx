@@ -4,8 +4,6 @@ import {
 	BookOpen,
 	Building2,
 	Calendar,
-	ChevronDown,
-	ChevronRight,
 	ClipboardList,
 	FileCog,
 	FileSpreadsheet,
@@ -23,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -42,9 +40,6 @@ const Sidebar: React.FC = () => {
 	const { user, sidebarOpen, sidebarCollapsed } = useStore();
 	const { t } = useTranslation();
 	const location = useLocation();
-	const [openGroups, setOpenGroups] = useState<Set<string>>(
-		new Set(["overview"]),
-	);
 	const [search, setSearch] = useState("");
 
 	const IC = "size-[15px] shrink-0";
@@ -265,34 +260,6 @@ const Sidebar: React.FC = () => {
 		[menuContent],
 	);
 
-	const toggleGroup = (key: string) =>
-		setOpenGroups((prev) => {
-			const next = new Set(prev);
-			next.has(key) ? next.delete(key) : next.add(key);
-			return next;
-		});
-
-	const isOpen = useCallback(
-		(key: string) => openGroups.has(key),
-		[openGroups],
-	);
-
-	// Auto-expand active group
-	useEffect(() => {
-		if (menuContent.type !== "grouped") return;
-		const path = location.pathname;
-		for (const g of menuContent.groups) {
-			if (
-				g.items.some((l) =>
-					ROOT_PATHS.has(l.to) ? path === l.to : path.startsWith(l.to),
-				)
-			) {
-				setOpenGroups(new Set([g.key]));
-				break;
-			}
-		}
-	}, [location.pathname, menuContent]);
-
 	// Expanded link style
 	const expandedLinkClass = ({ isActive }: { isActive: boolean }) =>
 		cn(
@@ -479,51 +446,28 @@ const Sidebar: React.FC = () => {
 						return (
 							<div className="space-y-0.5 px-2">
 								{visible.map((group, gi) => {
-									const expanded = !!q || isOpen(group.key);
 									return (
 										<div key={group.key}>
 											{gi > 0 && (
 												<div className="my-2 border-border border-t" />
 											)}
-											<button
-												type="button"
-												onClick={() => !q && toggleGroup(group.key)}
-												className="flex w-full items-center justify-between rounded px-1.5 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest transition-colors hover:text-foreground"
-											>
-												<span>
-													{t(group.titleKey, { defaultValue: group.key })}
-												</span>
-												{!q &&
-													(expanded ? (
-														<ChevronDown className="size-3" />
-													) : (
-														<ChevronRight className="size-3" />
-													))}
-											</button>
-											<AnimatePresence initial={false}>
-												{expanded && (
-													<motion.div
-														initial={{ height: 0, opacity: 0 }}
-														animate={{ height: "auto", opacity: 1 }}
-														exit={{ height: 0, opacity: 0 }}
-														transition={{ duration: 0.18 }}
-														className="mt-0.5 space-y-0.5 overflow-hidden"
+											<p className="px-1.5 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest">
+												{t(group.titleKey, { defaultValue: group.key })}
+											</p>
+											<div className="mt-0.5 space-y-0.5">
+												{group.items.map((link) => (
+													<NavLink
+														key={link.to}
+														to={link.to}
+														end={ROOT_PATHS.has(link.to)}
+														className={makeLinkClass(link)}
+														data-testid={`nav-${link.to}`}
 													>
-														{group.items.map((link) => (
-															<NavLink
-																key={link.to}
-																to={link.to}
-																end={ROOT_PATHS.has(link.to)}
-																className={makeLinkClass(link)}
-																data-testid={`nav-${link.to}`}
-															>
-																{link.icon}
-																<span>{t(link.labelKey)}</span>
-															</NavLink>
-														))}
-													</motion.div>
-												)}
-											</AnimatePresence>
+														{link.icon}
+														<span>{t(link.labelKey)}</span>
+													</NavLink>
+												))}
+											</div>
 										</div>
 									);
 								})}
@@ -639,10 +583,14 @@ const Sidebar: React.FC = () => {
 				)}
 			</AnimatePresence>
 
-			{/* Desktop sidebar — always mounted, always expanded */}
-			<aside className="hidden w-64 shrink-0 flex-col overflow-hidden border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:flex">
-				{inner(false)}
-			</aside>
+			{/* Desktop sidebar — always mounted, width animated */}
+			<motion.aside
+				animate={{ width: sidebarCollapsed ? 56 : 256 }}
+				transition={{ duration: 0.22, ease: "easeInOut" }}
+				className="hidden shrink-0 flex-col overflow-hidden border-sidebar-border border-r bg-dot-pattern-subtle bg-sidebar md:flex"
+			>
+				{inner(sidebarCollapsed)}
+			</motion.aside>
 		</>
 	);
 };
