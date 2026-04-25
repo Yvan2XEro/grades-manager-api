@@ -1,43 +1,715 @@
 meta:
-  version: "2024.12"
-  generatedAt: 2024-12-22T00:10:00Z
-  dataset: inses
+  version: "2025.10"
+  generatedAt: 2025-10-01T00:00:00Z
+  dataset: inses-bts-2025
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTH USERS  (Better-Auth accounts — email + password)
+# role: "admin" | "user"
+# ─────────────────────────────────────────────────────────────────────────────
 authUsers:
   - code: ADMIN-ROOT
     email: admin@inses.cm
     name: Administrateur INSES
     password: ChangeMe123!
     role: admin
+
   - code: TEACH-DR-MBALLA
     email: dr.mballa@inses.cm
     name: Dr. Mballa Jean
     password: Password123!
     role: admin
+
   - code: TEACH-DR-NGUEMA
     email: dr.nguema@inses.cm
     name: Dr. Nguema Marie
     password: Password123!
     role: admin
+
   - code: TEACH-INF-AKONO
     email: inf.akono@inses.cm
     name: Inf. Akono Patricia
     password: Password123!
     role: admin
+
   - code: TEACH-KOMBO
     email: kombo@inses.cm
     name: Kombo Francis
     password: Password123!
     role: admin
-  - code: STUDENT-NDONG
-    email: ndong.student@inses.cm
-    name: Ndong Alain
+
+  # ─── Étudiants BTS Santé 2025-2026 (importés depuis docs/student-inses) ───
+  - code: STD-IMM1-001
+    email: hainkreohuberto@gmail.com
+    name: 'Haiwe Hubert'
     password: Password123!
     role: user
-  - code: STUDENT-EYEBE
-    email: eyebe.student@inses.cm
-    name: Eyebe Rachel
+  - code: STD-IMM1-002
+    email: imm1.002@students.inses.cm
+    name: 'Djuikom Fotso Merveille Soreine'
     password: Password123!
     role: user
+  - code: STD-SFM1-001
+    email: joinitoenoh609@gmail.com
+    name: 'Enoh Siema Joinito'
+    password: Password123!
+    role: user
+  - code: STD-SFM1-002
+    email: graceluciel16@gmail.com
+    name: 'Tatsafouo Kenne Lucrece Crace'
+    password: Password123!
+    role: user
+  - code: STD-SFM1-003
+    email: pouttamaeva@gmail.com
+    name: 'Prossie Poutta Maeva'
+    password: Password123!
+    role: user
+  - code: STD-SFM1-004
+    email: youngstyve65@gmail.com
+    name: 'Petga Romilus Dalfane'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-001
+    email: sfm2.001@students.inses.cm
+    name: 'Nguemdjo Ade Berthe'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-002
+    email: sfm2.002@students.inses.cm
+    name: 'Sehkweng Aminata'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-003
+    email: sfm2.003@students.inses.cm
+    name: 'Menka Negou Ange Michelle'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-004
+    email: sfm2.004@students.inses.cm
+    name: 'Tsawoung Ariane Blonde'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-005
+    email: sfm2.005@students.inses.cm
+    name: 'Mazeukui Feudjio Belviane'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-006
+    email: sfm2.006@students.inses.cm
+    name: 'Inna Hawaou'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-007
+    email: sfm2.007@students.inses.cm
+    name: 'Ngwohaho Ndzeuta Lafortune'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-008
+    email: sfm2.008@students.inses.cm
+    name: 'Fadimatou Mamoudou'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-009
+    email: sfm2.009@students.inses.cm
+    name: 'Najela Patricia Babila'
+    password: Password123!
+    role: user
+  - code: STD-SFM2-010
+    email: sfm2.010@students.inses.cm
+    name: 'Keunang Stephanie Kingue'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-001
+    email: sfm3.001@students.inses.cm
+    name: 'Maguieze Andine Martini'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-002
+    email: sfm3.002@students.inses.cm
+    name: 'Massop Silatsa Djinnela Arrienne'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-003
+    email: sfm3.003@students.inses.cm
+    name: 'Soh Ndong Ludelle Ferrelle'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-004
+    email: sfm3.004@students.inses.cm
+    name: 'Mbanga Maxima Fanny'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-005
+    email: sfm3.005@students.inses.cm
+    name: 'Soumaiya Pekassaya'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-006
+    email: sfm3.006@students.inses.cm
+    name: 'Tetsafouet Kengmo Renelle Gabrielle'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-007
+    email: sfm3.007@students.inses.cm
+    name: 'Mawa Fondjo Rodia Durelle'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-008
+    email: sfm3.008@students.inses.cm
+    name: 'Djiala Stephie Nelka'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-009
+    email: sfm3.009@students.inses.cm
+    name: 'Tiomatsa Nzoma Valdine'
+    password: Password123!
+    role: user
+  - code: STD-SFM3-010
+    email: sfm3.010@students.inses.cm
+    name: 'Ngoueka’a Fotouo Vannelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-001
+    email: samanthadetche@icloud.com
+    name: 'Detche Nana Alexia Samantha'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-002
+    email: aliciafokem45@gmail.com
+    name: 'Fokem Moboh Alicia Aurelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-003
+    email: feutcheuloveline@gmail.com
+    name: 'Feutcheu Souop Andriane Loveline'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-004
+    email: angengningahe@gmail.com
+    name: 'Ngningahe Fonkou Ange Grace'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-005
+    email: benambertrand2000@gmail.com
+    name: 'Benam Bertrand'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-006
+    email: ndjerandoubabienvenu734@gmail.com
+    name: 'Ndjerandouba Bienvenu'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-007
+    email: princessestela286@gmail.com
+    name: 'Kouemou Kenfack Brandy Stela'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-008
+    email: fopabrinda0@gmail.com
+    name: 'Fokou Fopa Brinda'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-009
+    email: nanaadeline63@gmail.com
+    name: 'Welaghe Monkam Francis Merlin'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-010
+    email: monkamfrancis0@gmail.com
+    name: 'Toukep Djeutchouang Grace'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-011
+    email: loubacharles369@gmail.com
+    name: 'Bere Herve'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-012
+    email: jessiengapa@gmail.com
+    name: 'Subine Ngapa Jessie'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-013
+    email: mahiever15@gmail.com
+    name: 'Che Frunji Mahiever'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-014
+    email: djembamarie7@gmail.com
+    name: 'Eboule Djemba Marie Louise'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-015
+    email: sin1.015@students.inses.cm
+    name: 'Djuikom Fotso Merveille Soreine'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-016
+    email: andreyinwe18@gmail.com
+    name: 'Wouappi Wouappi Michelle Lafortune'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-017
+    email: milagrosiekeup539@gmail.com
+    name: 'Siekeup Milagro'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-018
+    email: sin1.018@students.inses.cm
+    name: 'Miria Merveille Ndame'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-019
+    email: audreykamdem53@gmail.com
+    name: 'Famegne Noutong Pascale Audrey'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-020
+    email: eyoumreine86@gmail.com
+    name: 'Massop Eyoum Reine Frances'
+    password: Password123!
+    role: user
+  - code: STD-SIN1-021
+    email: graobedaniel@gmail.com
+    name: 'Graodandi Walandi'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-001
+    email: sin2.001@students.inses.cm
+    name: 'Kwedi Moukalla Agnes La Princesse Iris'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-002
+    email: sin2.002@students.inses.cm
+    name: 'Boumeni Alida'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-003
+    email: sin2.003@students.inses.cm
+    name: 'Matho Ngoufo Ange Dinecha'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-004
+    email: sin2.004@students.inses.cm
+    name: 'Nyake Nguea Anne Priscilia'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-005
+    email: sin2.005@students.inses.cm
+    name: 'Mekam Fomba Annielle Kessy'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-006
+    email: sin2.006@students.inses.cm
+    name: 'Tchanda Cendrine Princesse'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-007
+    email: sin2.007@students.inses.cm
+    name: 'Magne Tetzogang Christelle Laitisia'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-008
+    email: sin2.008@students.inses.cm
+    name: 'Ekeu Kameni Christopher'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-009
+    email: sin2.009@students.inses.cm
+    name: 'Nguestsa Dongmo Dorcasse Zobelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-010
+    email: sin2.010@students.inses.cm
+    name: 'Konsebe Esther'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-011
+    email: sin2.011@students.inses.cm
+    name: 'Kiye Makoma Fani Audrey'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-012
+    email: sin2.012@students.inses.cm
+    name: 'Tchatat Ghomffo Flore Emilie'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-013
+    email: sin2.013@students.inses.cm
+    name: 'Feudjio Nguiazon Hornella'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-014
+    email: sin2.014@students.inses.cm
+    name: 'Guekam Tchouansi Ines Therese'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-015
+    email: sin2.015@students.inses.cm
+    name: 'Aloumbe Jeanne Pierrette'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-016
+    email: sin2.016@students.inses.cm
+    name: 'Wandji Paho Juliana Joyce'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-017
+    email: sin2.017@students.inses.cm
+    name: 'Mbeyoun Kevine'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-018
+    email: sin2.018@students.inses.cm
+    name: 'Tchoutang Little Samanta'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-019
+    email: sin2.019@students.inses.cm
+    name: 'Ndame Miss Estelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-020
+    email: sin2.020@students.inses.cm
+    name: 'Tchoupa Leukeulefack Morgane'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-021
+    email: sin2.021@students.inses.cm
+    name: 'Kwuida-teugni Paul Kassandra'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-022
+    email: sin2.022@students.inses.cm
+    name: 'Ateufack Therese'
+    password: Password123!
+    role: user
+  - code: STD-SIN2-023
+    email: sin2.023@students.inses.cm
+    name: 'Donkeng Gninpiezi Vanessa'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-001
+    email: sin3.001@students.inses.cm
+    name: 'Kengni Fokou Adelaide Verone'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-002
+    email: sin3.002@students.inses.cm
+    name: 'Djiogue Zemkouo Ange Fortune'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-003
+    email: sin3.003@students.inses.cm
+    name: 'Dala Ngounou Ange Maeva'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-004
+    email: sin3.004@students.inses.cm
+    name: 'Djeussi Tchioffo Ange Merveille'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-005
+    email: sin3.005@students.inses.cm
+    name: 'Lekane Djouaka Ange Murielle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-006
+    email: sin3.006@students.inses.cm
+    name: 'Manefouet Kenfouet Ange Staelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-007
+    email: sin3.007@students.inses.cm
+    name: 'Fokou Nguemeta Belville La Ville'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-008
+    email: sin3.008@students.inses.cm
+    name: 'Zapa Moffo Beramiss France'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-009
+    email: sin3.009@students.inses.cm
+    name: 'Tchokouaha Daleu Carmelle L’or'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-010
+    email: sin3.010@students.inses.cm
+    name: 'Youndjeu Mbousseu Colette Nadele'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-011
+    email: sin3.011@students.inses.cm
+    name: 'Medonfo Diderole Derrick'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-012
+    email: sin3.012@students.inses.cm
+    name: 'Atsopben Dilane'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-013
+    email: sin3.013@students.inses.cm
+    name: 'Guindo Djeneba'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-014
+    email: sin3.014@students.inses.cm
+    name: 'Dzokem Dorinelle Stadiane'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-015
+    email: sin3.015@students.inses.cm
+    name: 'Djuikem Dadjo Douglas Serena Eleonor'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-016
+    email: sin3.016@students.inses.cm
+    name: 'Toumba Penda Elise Diane'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-017
+    email: sin3.017@students.inses.cm
+    name: 'Ngouegni Nzetouo Florinda Calone'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-018
+    email: sin3.018@students.inses.cm
+    name: 'Tamko Tchoula Guilaine Auriole'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-019
+    email: sin3.019@students.inses.cm
+    name: 'Eno Happy Isaiah Akqan'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-020
+    email: sin3.020@students.inses.cm
+    name: 'Njowe Sonne Jeannette Brenda'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-021
+    email: sin3.021@students.inses.cm
+    name: 'Noubosse Mapi Joel Arielle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-022
+    email: sin3.022@students.inses.cm
+    name: 'Tabeua Landry Wilfried'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-023
+    email: sin3.023@students.inses.cm
+    name: 'Lonlac Tchoffo Laureta Veliane'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-024
+    email: sin3.024@students.inses.cm
+    name: 'Tchuendem Bopda Lesly Ange'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-025
+    email: sin3.025@students.inses.cm
+    name: 'Kengne Teugoum Lorie Francelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-026
+    email: sin3.026@students.inses.cm
+    name: 'Tchouaffi Siewe Lucresse Manuella'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-027
+    email: sin3.027@students.inses.cm
+    name: 'Tagouffo Moho Lyonaire Elise'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-028
+    email: sin3.028@students.inses.cm
+    name: 'Toukam Manuella Dolvine'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-029
+    email: sin3.029@students.inses.cm
+    name: 'Meyouke Marie Prisca'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-030
+    email: sin3.030@students.inses.cm
+    name: 'Ndondoki Edjong Marie Vanelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-031
+    email: sin3.031@students.inses.cm
+    name: 'Togno Yomsi Mariette Blanche'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-032
+    email: sin3.032@students.inses.cm
+    name: 'Ngatchoua Pougoue Marina Patricia'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-033
+    email: sin3.033@students.inses.cm
+    name: 'Mbanga Maxima Fanny'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-034
+    email: sin3.034@students.inses.cm
+    name: 'Djoufack Kenfack Tongo Melvine Ange Arole'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-035
+    email: sin3.035@students.inses.cm
+    name: 'Nangmo Orele Jacqueline'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-036
+    email: sin3.036@students.inses.cm
+    name: 'Nimfeng Foutse Patricia Laure'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-037
+    email: sin3.037@students.inses.cm
+    name: 'Ntondi Paule Michelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-038
+    email: sin3.038@students.inses.cm
+    name: 'Nguestsa Pauline Laure'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-039
+    email: sin3.039@students.inses.cm
+    name: 'Kakanou Deugoue Pharelle Cinthia Martina'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-040
+    email: sin3.040@students.inses.cm
+    name: 'Maguelong Yotebong Raissa'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-041
+    email: sin3.041@students.inses.cm
+    name: 'Tananfoe Tsafack Rivaldo'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-042
+    email: sin3.042@students.inses.cm
+    name: 'Tsapi Saha Romida'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-043
+    email: sin3.043@students.inses.cm
+    name: 'Ajie Djuikem Rosalie Cindy'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-044
+    email: sin3.044@students.inses.cm
+    name: 'Nguimfack Tenekeng Ruchelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-045
+    email: sin3.045@students.inses.cm
+    name: 'Ndoki Sappi Mouyombon Sariette Gatienne'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-046
+    email: sin3.046@students.inses.cm
+    name: 'Manto Sezine Ravina'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-047
+    email: sin3.047@students.inses.cm
+    name: 'Maninang Mabeuntsa Stela Naomie'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-048
+    email: sin3.048@students.inses.cm
+    name: 'Bokengue Anoke Suzanne'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-049
+    email: sin3.049@students.inses.cm
+    name: 'Kengmo Zogang Sylvianie Adriane'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-050
+    email: sin3.050@students.inses.cm
+    name: 'Djionang Ngouajio Vanelle Nadia'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-051
+    email: sin3.051@students.inses.cm
+    name: 'Yameni Moko Vyclane-fleurette'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-052
+    email: sin3.052@students.inses.cm
+    name: 'Tajiotio Ynes Maurelle'
+    password: Password123!
+    role: user
+  - code: STD-SIN3-053
+    email: sin3.053@students.inses.cm
+    name: 'Kenfack Tadonkeng Yvane Tibelle'
+    password: Password123!
+    role: user
+  - code: STD-TLB1-001
+    email: diassiahlammadieunedortgmai@gmail.com
+    name: 'Diassia Hlamma Dieu Ne Dort'
+    password: Password123!
+    role: user
+  - code: STD-TLB1-002
+    email: mariemoukoudi8@gmail.com
+    name: 'Dzamogni Takem Grace Leticia'
+    password: Password123!
+    role: user
+  - code: STD-TLB1-003
+    email: tlb1.003@students.inses.cm
+    name: 'Seruh Preyciouse Tiwa'
+    password: Password123!
+    role: user
+  - code: STD-TLB2-001
+    email: tlb2.001@students.inses.cm
+    name: 'Manimie Danielle'
+    password: Password123!
+    role: user
+  - code: STD-TLB2-002
+    email: tlb2.002@students.inses.cm
+    name: 'Enkak Kamaleu Genevieve Astride'
+    password: Password123!
+    role: user
+  - code: STD-TLB2-003
+    email: tlb2.003@students.inses.cm
+    name: 'Nongni Momo Wilfried'
+    password: Password123!
+    role: user
+  - code: STD-TLB3-001
+    email: tlb3.001@students.inses.cm
+    name: 'Nguemtchuen Bopda Kevine'
+    password: Password123!
+    role: user
+  - code: STD-TLB3-002
+    email: tlb3.002@students.inses.cm
+    name: 'Madonkeng Tefouet Maeva'
+    password: Password123!
+    role: user
+  - code: STD-TLB3-003
+    email: tlb3.003@students.inses.cm
+    name: 'Pondi Fakam Paul Eric'
+    password: Password123!
+    role: user
+  - code: STD-TLB3-004
+    email: tlb3.004@students.inses.cm
+    name: 'Zamo Sylviane Laure'
+    password: Password123!
+    role: user
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOMAIN USERS  (institutional profiles linked to auth accounts)
+# memberRole: "owner" | "teacher" | "administrator" | "dean" | "staff"
+# organizationSlug must match an organization in 00-foundation.yaml
+# ─────────────────────────────────────────────────────────────────────────────
 domainUsers:
   - code: ADMIN-ROOT
     authUserCode: ADMIN-ROOT
@@ -47,6 +719,7 @@ domainUsers:
     status: active
     organizationSlug: inses-institution
     memberRole: owner
+
   - code: TEACH-DR-MBALLA
     authUserCode: TEACH-DR-MBALLA
     firstName: Jean
@@ -55,6 +728,7 @@ domainUsers:
     status: active
     organizationSlug: inses-institution
     memberRole: teacher
+
   - code: TEACH-DR-NGUEMA
     authUserCode: TEACH-DR-NGUEMA
     firstName: Marie
@@ -63,6 +737,7 @@ domainUsers:
     status: active
     organizationSlug: inses-institution
     memberRole: teacher
+
   - code: TEACH-INF-AKONO
     authUserCode: TEACH-INF-AKONO
     firstName: Patricia
@@ -71,6 +746,7 @@ domainUsers:
     status: active
     organizationSlug: inses-institution
     memberRole: teacher
+
   - code: TEACH-KOMBO
     authUserCode: TEACH-KOMBO
     firstName: Francis
@@ -79,60 +755,2945 @@ domainUsers:
     status: active
     organizationSlug: inses-institution
     memberRole: teacher
-  - code: STUDENT-NDONG
-    authUserCode: STUDENT-NDONG
-    firstName: Alain
-    lastName: Ndong
-    primaryEmail: ndong.student@inses.cm
+
+  # ─── Profils étudiants BTS Santé 2025-2026 ───
+  - code: STD-IMM1-001
+    authUserCode: STD-IMM1-001
+    firstName: 'Haiwe'
+    lastName: 'Hubert'
+    primaryEmail: hainkreohuberto@gmail.com
+    phone: '693288796'
+    dateOfBirth: 2004-03-25
+    placeOfBirth: 'SERE'
+    gender: MALE
+    nationality: 'Tchadienne'
     status: active
-  - code: STUDENT-EYEBE
-    authUserCode: STUDENT-EYEBE
-    firstName: Rachel
-    lastName: Eyebe
-    primaryEmail: eyebe.student@inses.cm
+  - code: STD-IMM1-002
+    authUserCode: STD-IMM1-002
+    firstName: 'Djuikom Fotso'
+    lastName: 'Merveille Soreine'
+    primaryEmail: imm1.002@students.inses.cm
+    phone: '678722543'
+    dateOfBirth: 2008-03-12
+    placeOfBirth: 'PORT-GENTIL (GABON)'
+    gender: FEMALE
+    nationality: 'Camerounaise'
     status: active
+  - code: STD-SFM1-001
+    authUserCode: STD-SFM1-001
+    firstName: 'Enoh Siema'
+    lastName: 'Joinito'
+    primaryEmail: joinitoenoh609@gmail.com
+    phone: '671214302'
+    dateOfBirth: 2005-05-22
+    placeOfBirth: 'LOUM'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM1-002
+    authUserCode: STD-SFM1-002
+    firstName: 'Tatsafouo Kenne'
+    lastName: 'Lucrece Crace'
+    primaryEmail: graceluciel16@gmail.com
+    phone: '683767377'
+    dateOfBirth: 2008-04-18
+    placeOfBirth: 'BAMBI-BALESSING'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM1-003
+    authUserCode: STD-SFM1-003
+    firstName: 'Prossie Poutta'
+    lastName: 'Maeva'
+    primaryEmail: pouttamaeva@gmail.com
+    phone: '695286422'
+    dateOfBirth: 2007-07-09
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM1-004
+    authUserCode: STD-SFM1-004
+    firstName: 'Petga'
+    lastName: 'Romilus Dalfane'
+    primaryEmail: youngstyve65@gmail.com
+    phone: '653518363'
+    dateOfBirth: 2006-09-17
+    placeOfBirth: 'LOUM'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-001
+    authUserCode: STD-SFM2-001
+    firstName: 'Nguemdjo'
+    lastName: 'Ade Berthe'
+    primaryEmail: sfm2.001@students.inses.cm
+    phone: '674710502'
+    dateOfBirth: 2005-11-01
+    placeOfBirth: 'MELONG'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-002
+    authUserCode: STD-SFM2-002
+    firstName: 'Sehkweng'
+    lastName: 'Aminata'
+    primaryEmail: sfm2.002@students.inses.cm
+    phone: '693802161'
+    dateOfBirth: 2004-11-12
+    placeOfBirth: 'PONA / GUIGLO'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-003
+    authUserCode: STD-SFM2-003
+    firstName: 'Menka Negou'
+    lastName: 'Ange Michelle'
+    primaryEmail: sfm2.003@students.inses.cm
+    phone: '651311041'
+    dateOfBirth: 2006-08-27
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-004
+    authUserCode: STD-SFM2-004
+    firstName: 'Tsawoung'
+    lastName: 'Ariane Blonde'
+    primaryEmail: sfm2.004@students.inses.cm
+    phone: '681281404'
+    dateOfBirth: 1999-05-20
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-005
+    authUserCode: STD-SFM2-005
+    firstName: 'Mazeukui Feudjio'
+    lastName: 'Belviane'
+    primaryEmail: sfm2.005@students.inses.cm
+    phone: '690486199'
+    dateOfBirth: 2003-03-21
+    placeOfBirth: 'CS DE TAM'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-006
+    authUserCode: STD-SFM2-006
+    firstName: 'Inna'
+    lastName: 'Hawaou'
+    primaryEmail: sfm2.006@students.inses.cm
+    phone: '658345838'
+    dateOfBirth: 2005-08-20
+    placeOfBirth: 'Centre Med Mil de Bertoua'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-007
+    authUserCode: STD-SFM2-007
+    firstName: 'Ngwohaho Ndzeuta'
+    lastName: 'Lafortune'
+    primaryEmail: sfm2.007@students.inses.cm
+    phone: '6514962'
+    dateOfBirth: 2005-02-10
+    placeOfBirth: 'BONASSAMA-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-008
+    authUserCode: STD-SFM2-008
+    firstName: 'Fadimatou'
+    lastName: 'Mamoudou'
+    primaryEmail: sfm2.008@students.inses.cm
+    phone: '678454088'
+    dateOfBirth: 2003-05-22
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-009
+    authUserCode: STD-SFM2-009
+    firstName: 'Najela'
+    lastName: 'Patricia Babila'
+    primaryEmail: sfm2.009@students.inses.cm
+    phone: '677256190'
+    dateOfBirth: 2004-08-05
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM2-010
+    authUserCode: STD-SFM2-010
+    firstName: 'Keunang'
+    lastName: 'Stephanie Kingue'
+    primaryEmail: sfm2.010@students.inses.cm
+    phone: '687277600'
+    dateOfBirth: 2004-05-28
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-001
+    authUserCode: STD-SFM3-001
+    firstName: 'Maguieze'
+    lastName: 'Andine Martini'
+    primaryEmail: sfm3.001@students.inses.cm
+    phone: '659951823'
+    dateOfBirth: 2003-05-09
+    placeOfBirth: 'DOUALA – CAMEROUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-002
+    authUserCode: STD-SFM3-002
+    firstName: 'Massop Silatsa'
+    lastName: 'Djinnela Arrienne'
+    primaryEmail: sfm3.002@students.inses.cm
+    phone: '679917923'
+    dateOfBirth:       04/08/2004
+    placeOfBirth: 'DOUALA-CAMEROUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-003
+    authUserCode: STD-SFM3-003
+    firstName: 'Soh Ndong'
+    lastName: 'Ludelle Ferrelle'
+    primaryEmail: sfm3.003@students.inses.cm
+    phone: '672073019'
+    dateOfBirth: 2001-07-22
+    placeOfBirth: 'Centre de santé développé M.C Njombe'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-004
+    authUserCode: STD-SFM3-004
+    firstName: 'Mbanga'
+    lastName: 'Maxima Fanny'
+    primaryEmail: sfm3.004@students.inses.cm
+    phone: '671187792'
+    dateOfBirth: 2002-07-28
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-005
+    authUserCode: STD-SFM3-005
+    firstName: 'Soumaiya'
+    lastName: 'Pekassaya'
+    primaryEmail: sfm3.005@students.inses.cm
+    phone: '693862665'
+    dateOfBirth: 2002-03-29
+    placeOfBirth: 'FOUMBAN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-006
+    authUserCode: STD-SFM3-006
+    firstName: 'Tetsafouet Kengmo'
+    lastName: 'Renelle Gabrielle'
+    primaryEmail: sfm3.006@students.inses.cm
+    phone: '683356164'
+    dateOfBirth: 2005-10-05
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-007
+    authUserCode: STD-SFM3-007
+    firstName: 'Mawa Fondjo'
+    lastName: 'Rodia Durelle'
+    primaryEmail: sfm3.007@students.inses.cm
+    phone: '657488284'
+    dateOfBirth: 2006-07-26
+    placeOfBirth: 'LA MTE DE FOTOUNI'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-008
+    authUserCode: STD-SFM3-008
+    firstName: 'Djiala'
+    lastName: 'Stephie Nelka'
+    primaryEmail: sfm3.008@students.inses.cm
+    phone: '674197446'
+    dateOfBirth: 2004-02-29
+    placeOfBirth: 'MATERNITE DE MANJO'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-009
+    authUserCode: STD-SFM3-009
+    firstName: 'Tiomatsa Nzoma'
+    lastName: 'Valdine'
+    primaryEmail: sfm3.009@students.inses.cm
+    phone: '683980730'
+    dateOfBirth: 2001-02-15
+    placeOfBirth: 'BALENG'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SFM3-010
+    authUserCode: STD-SFM3-010
+    firstName: 'Ngoueka’a Fotouo'
+    lastName: 'Vannelle'
+    primaryEmail: sfm3.010@students.inses.cm
+    phone: '682680477'
+    dateOfBirth: 2000-05-30
+    placeOfBirth: 'BABADJOU'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-001
+    authUserCode: STD-SIN1-001
+    firstName: 'Detche Nana'
+    lastName: 'Alexia Samantha'
+    primaryEmail: samanthadetche@icloud.com
+    phone: '676175504'
+    dateOfBirth: 2001-08-01
+    placeOfBirth: 'BANKA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-002
+    authUserCode: STD-SIN1-002
+    firstName: 'Fokem Moboh'
+    lastName: 'Alicia Aurelle'
+    primaryEmail: aliciafokem45@gmail.com
+    phone: '678959958'
+    dateOfBirth: 2004-06-16
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-003
+    authUserCode: STD-SIN1-003
+    firstName: 'Feutcheu Souop'
+    lastName: 'Andriane Loveline'
+    primaryEmail: feutcheuloveline@gmail.com
+    phone: '692318600'
+    dateOfBirth: 2006-02-05
+    placeOfBirth: 'BANDJOUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-004
+    authUserCode: STD-SIN1-004
+    firstName: 'Ngningahe Fonkou'
+    lastName: 'Ange Grace'
+    primaryEmail: angengningahe@gmail.com
+    phone: '672446595'
+    dateOfBirth: 2007-06-19
+    placeOfBirth: 'BONABERI'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-005
+    authUserCode: STD-SIN1-005
+    firstName: 'Benam'
+    lastName: 'Bertrand'
+    primaryEmail: benambertrand2000@gmail.com
+    phone: '689495944'
+    dateOfBirth: 2000-07-11
+    placeOfBirth: 'GADJIBIAN'
+    gender: MALE
+    nationality: 'Tchadienne'
+    status: active
+  - code: STD-SIN1-006
+    authUserCode: STD-SIN1-006
+    firstName: 'Ndjerandouba'
+    lastName: 'Bienvenu'
+    primaryEmail: ndjerandoubabienvenu734@gmail.com
+    phone: '695737507'
+    dateOfBirth: 2002-04-12
+    placeOfBirth: 'DOGORO'
+    gender: MALE
+    nationality: 'Tchadienne'
+    status: active
+  - code: STD-SIN1-007
+    authUserCode: STD-SIN1-007
+    firstName: 'Kouemou Kenfack'
+    lastName: 'Brandy Stela'
+    primaryEmail: princessestela286@gmail.com
+    phone: '693898650'
+    dateOfBirth: 2006-01-15
+    placeOfBirth: 'KRIBI'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-008
+    authUserCode: STD-SIN1-008
+    firstName: 'Fokou Fopa'
+    lastName: 'Brinda'
+    primaryEmail: fopabrinda0@gmail.com
+    phone: '683858284'
+    dateOfBirth: 2005-01-05
+    placeOfBirth: 'MBOUDA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-009
+    authUserCode: STD-SIN1-009
+    firstName: 'Welaghe Monkam'
+    lastName: 'Francis Merlin'
+    primaryEmail: nanaadeline63@gmail.com
+    phone: '672620111'
+    dateOfBirth: 2007-01-05
+    placeOfBirth: 'DOUALA'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-010
+    authUserCode: STD-SIN1-010
+    firstName: 'Toukep Djeutchouang'
+    lastName: 'Grace'
+    primaryEmail: monkamfrancis0@gmail.com
+    phone: '676013378'
+    dateOfBirth: 2009-08-22
+    placeOfBirth: 'BANDJOUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-011
+    authUserCode: STD-SIN1-011
+    firstName: 'Bere'
+    lastName: 'Herve'
+    primaryEmail: loubacharles369@gmail.com
+    phone: '697005847'
+    dateOfBirth: 2001-05-17
+    placeOfBirth: 'DOGORO'
+    gender: MALE
+    nationality: 'Tchadienne'
+    status: active
+  - code: STD-SIN1-012
+    authUserCode: STD-SIN1-012
+    firstName: 'Subine Ngapa'
+    lastName: 'Jessie'
+    primaryEmail: jessiengapa@gmail.com
+    phone: '689497814'
+    dateOfBirth: 2007-03-28
+    placeOfBirth: 'NGAOUNDERE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-013
+    authUserCode: STD-SIN1-013
+    firstName: 'Che Frunji'
+    lastName: 'Mahiever'
+    primaryEmail: mahiever15@gmail.com
+    phone: '672222338/653775941'
+    dateOfBirth: 2005-07-05
+    placeOfBirth: 'DOUALA CAMEROUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-014
+    authUserCode: STD-SIN1-014
+    firstName: 'Eboule Djemba'
+    lastName: 'Marie Louise'
+    primaryEmail: djembamarie7@gmail.com
+    phone: '690441093'
+    dateOfBirth: 2006-04-09
+    placeOfBirth: 'NJOMBE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-015
+    authUserCode: STD-SIN1-015
+    firstName: 'Djuikom Fotso'
+    lastName: 'Merveille Soreine'
+    primaryEmail: sin1.015@students.inses.cm
+    phone: '678722543'
+    dateOfBirth: 2008-03-12
+    placeOfBirth: 'PORT-GENTIL (GABON)'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-016
+    authUserCode: STD-SIN1-016
+    firstName: 'Wouappi Wouappi'
+    lastName: 'Michelle Lafortune'
+    primaryEmail: andreyinwe18@gmail.com
+    phone: '674506321'
+    dateOfBirth: 2003-12-14
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-017
+    authUserCode: STD-SIN1-017
+    firstName: 'Siekeup'
+    lastName: 'Milagro'
+    primaryEmail: milagrosiekeup539@gmail.com
+    phone: '670313823'
+    dateOfBirth: 2007-05-25
+    placeOfBirth: 'MBOUDA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-018
+    authUserCode: STD-SIN1-018
+    firstName: 'Miria Merveille'
+    lastName: 'Ndame'
+    primaryEmail: sin1.018@students.inses.cm
+    phone: '691939046'
+    dateOfBirth: 2006-04-10
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-019
+    authUserCode: STD-SIN1-019
+    firstName: 'Famegne Noutong'
+    lastName: 'Pascale Audrey'
+    primaryEmail: audreykamdem53@gmail.com
+    phone: '679351595'
+    dateOfBirth: 2008-10-01
+    placeOfBirth: 'BATOUFAM'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-020
+    authUserCode: STD-SIN1-020
+    firstName: 'Massop Eyoum'
+    lastName: 'Reine Frances'
+    primaryEmail: eyoumreine86@gmail.com
+    phone: '686772833'
+    dateOfBirth: 2006-07-03
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN1-021
+    authUserCode: STD-SIN1-021
+    firstName: 'Graodandi'
+    lastName: 'Walandi'
+    primaryEmail: graobedaniel@gmail.com
+    phone: '655096470/699152062'
+    dateOfBirth: 2004-01-01
+    placeOfBirth: 'GAMBA'
+    gender: MALE
+    nationality: 'Tchadienne'
+    status: active
+  - code: STD-SIN2-001
+    authUserCode: STD-SIN2-001
+    firstName: 'Kwedi Moukalla'
+    lastName: 'Agnes La Princesse Iris'
+    primaryEmail: sin2.001@students.inses.cm
+    phone: '659231332'
+    dateOfBirth: 2005-09-28
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-002
+    authUserCode: STD-SIN2-002
+    firstName: 'Boumeni'
+    lastName: 'Alida'
+    primaryEmail: sin2.002@students.inses.cm
+    phone: '650360690'
+    dateOfBirth: 2004-05-19
+    placeOfBirth: 'KEKEM'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-003
+    authUserCode: STD-SIN2-003
+    firstName: 'Matho Ngoufo'
+    lastName: 'Ange Dinecha'
+    primaryEmail: sin2.003@students.inses.cm
+    phone: '689660444'
+    dateOfBirth: 2006-10-28
+    placeOfBirth: 'BABADJOU'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-004
+    authUserCode: STD-SIN2-004
+    firstName: 'Nyake Nguea'
+    lastName: 'Anne Priscilia'
+    primaryEmail: sin2.004@students.inses.cm
+    phone: '658531966'
+    dateOfBirth: 2005-10-05
+    placeOfBirth: 'DOUALA-CAMEROUN'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-005
+    authUserCode: STD-SIN2-005
+    firstName: 'Mekam Fomba'
+    lastName: 'Annielle Kessy'
+    primaryEmail: sin2.005@students.inses.cm
+    phone: '692786606'
+    dateOfBirth: 2007-12-08
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-006
+    authUserCode: STD-SIN2-006
+    firstName: 'Tchanda'
+    lastName: 'Cendrine Princesse'
+    primaryEmail: sin2.006@students.inses.cm
+    phone: '696267916'
+    dateOfBirth: 2002-06-16
+    placeOfBirth: 'Hôpital mont – coupé de Njombe'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-007
+    authUserCode: STD-SIN2-007
+    firstName: 'Magne Tetzogang'
+    lastName: 'Christelle Laitisia'
+    primaryEmail: sin2.007@students.inses.cm
+    phone: '650290690'
+    dateOfBirth: 2006-01-02
+    placeOfBirth: 'BANSOA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-008
+    authUserCode: STD-SIN2-008
+    firstName: 'Ekeu Kameni'
+    lastName: 'Christopher'
+    primaryEmail: sin2.008@students.inses.cm
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-009
+    authUserCode: STD-SIN2-009
+    firstName: 'Nguestsa Dongmo'
+    lastName: 'Dorcasse Zobelle'
+    primaryEmail: sin2.009@students.inses.cm
+    phone: '697959667'
+    dateOfBirth: 2001-02-20
+    placeOfBirth: 'BAMENDOU-BALEFOCK'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-010
+    authUserCode: STD-SIN2-010
+    firstName: 'Konsebe'
+    lastName: 'Esther'
+    primaryEmail: sin2.010@students.inses.cm
+    phone: '656191227'
+    dateOfBirth: 2001-02-05
+    placeOfBirth: 'GANG – HOU'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-011
+    authUserCode: STD-SIN2-011
+    firstName: 'Kiye Makoma'
+    lastName: 'Fani Audrey'
+    primaryEmail: sin2.011@students.inses.cm
+    phone: '694001628'
+    dateOfBirth: 2003-10-19
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-012
+    authUserCode: STD-SIN2-012
+    firstName: 'Tchatat Ghomffo'
+    lastName: 'Flore Emilie'
+    primaryEmail: sin2.012@students.inses.cm
+    phone: '686823376'
+    dateOfBirth: 2006-06-05
+    placeOfBirth: 'NKONGSAMBA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-013
+    authUserCode: STD-SIN2-013
+    firstName: 'Feudjio Nguiazon'
+    lastName: 'Hornella'
+    primaryEmail: sin2.013@students.inses.cm
+    phone: '654582898'
+    dateOfBirth: 2001-04-01
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-014
+    authUserCode: STD-SIN2-014
+    firstName: 'Guekam Tchouansi'
+    lastName: 'Ines Therese'
+    primaryEmail: sin2.014@students.inses.cm
+    phone: '677924636'
+    dateOfBirth: 2004-04-10
+    placeOfBirth: 'NJOMBE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-015
+    authUserCode: STD-SIN2-015
+    firstName: 'Aloumbe'
+    lastName: 'Jeanne Pierrette'
+    primaryEmail: sin2.015@students.inses.cm
+    phone: '695130523'
+    dateOfBirth: 2005-02-27
+    placeOfBirth: 'YAOUNDE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-016
+    authUserCode: STD-SIN2-016
+    firstName: 'Wandji Paho'
+    lastName: 'Juliana Joyce'
+    primaryEmail: sin2.016@students.inses.cm
+    phone: '693376021'
+    dateOfBirth: 2005-08-26
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-017
+    authUserCode: STD-SIN2-017
+    firstName: 'Mbeyoun'
+    lastName: 'Kevine'
+    primaryEmail: sin2.017@students.inses.cm
+    phone: '658506404'
+    dateOfBirth: 1997-03-23
+    placeOfBirth: 'NKONGSAMBA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-018
+    authUserCode: STD-SIN2-018
+    firstName: 'Tchoutang'
+    lastName: 'Little Samanta'
+    primaryEmail: sin2.018@students.inses.cm
+    phone: '650619898'
+    dateOfBirth: 2007-01-16
+    placeOfBirth: 'LELEM – MANGWETE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-019
+    authUserCode: STD-SIN2-019
+    firstName: 'Ndame'
+    lastName: 'Miss Estelle'
+    primaryEmail: sin2.019@students.inses.cm
+    phone: '698941457'
+    dateOfBirth: 2005-07-08
+    placeOfBirth: 'BONENDALE-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-020
+    authUserCode: STD-SIN2-020
+    firstName: 'Tchoupa Leukeulefack'
+    lastName: 'Morgane'
+    primaryEmail: sin2.020@students.inses.cm
+    phone: '681004105'
+    dateOfBirth: 2005-03-16
+    placeOfBirth: 'FOUMBOT'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-021
+    authUserCode: STD-SIN2-021
+    firstName: 'Kwuida-teugni'
+    lastName: 'Paul Kassandra'
+    primaryEmail: sin2.021@students.inses.cm
+    phone: '677361718'
+    dateOfBirth: 2007-01-18
+    placeOfBirth: 'FOKOUE'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-022
+    authUserCode: STD-SIN2-022
+    firstName: 'Ateufack'
+    lastName: 'Therese'
+    primaryEmail: sin2.022@students.inses.cm
+    phone: '653261530'
+    dateOfBirth: 2008-01-20
+    placeOfBirth: 'FOMBAP'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN2-023
+    authUserCode: STD-SIN2-023
+    firstName: 'Donkeng Gninpiezi'
+    lastName: 'Vanessa'
+    primaryEmail: sin2.023@students.inses.cm
+    phone: '690666577'
+    dateOfBirth: 2001-01-16
+    placeOfBirth: 'BAMENDOU-BALEFOCK'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-SIN3-001
+    authUserCode: STD-SIN3-001
+    firstName: 'Kengni Fokou'
+    lastName: 'Adelaide Verone'
+    primaryEmail: sin3.001@students.inses.cm
+    phone: '676232689'
+    dateOfBirth: 2006-09-28
+    placeOfBirth: 'MTE DE FOTOUNI'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-002
+    authUserCode: STD-SIN3-002
+    firstName: 'Djiogue Zemkouo'
+    lastName: 'Ange Fortune'
+    primaryEmail: sin3.002@students.inses.cm
+    phone: '671585952'
+    dateOfBirth: 2006-04-22
+    placeOfBirth: 'BONABERI –DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-003
+    authUserCode: STD-SIN3-003
+    firstName: 'Dala Ngounou'
+    lastName: 'Ange Maeva'
+    primaryEmail: sin3.003@students.inses.cm
+    phone: '671837906'
+    dateOfBirth:      25/10/2006
+    placeOfBirth: 'NKAPA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-004
+    authUserCode: STD-SIN3-004
+    firstName: 'Djeussi Tchioffo'
+    lastName: 'Ange Merveille'
+    primaryEmail: sin3.004@students.inses.cm
+    phone: '697835439'
+    dateOfBirth: 2007-01-05
+    placeOfBirth: 'BAHAM'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-005
+    authUserCode: STD-SIN3-005
+    firstName: 'Lekane Djouaka'
+    lastName: 'Ange Murielle'
+    primaryEmail: sin3.005@students.inses.cm
+    phone: '657301232'
+    dateOfBirth: 2006-02-04
+    placeOfBirth: 'DOUALA-CAMEROUN'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-006
+    authUserCode: STD-SIN3-006
+    firstName: 'Manefouet Kenfouet'
+    lastName: 'Ange Staelle'
+    primaryEmail: sin3.006@students.inses.cm
+    phone: '673393421'
+    dateOfBirth: 2005-04-23
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-007
+    authUserCode: STD-SIN3-007
+    firstName: 'Fokou Nguemeta'
+    lastName: 'Belville La Ville'
+    primaryEmail: sin3.007@students.inses.cm
+    phone: '679165881'
+    dateOfBirth: 2005-08-21
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-008
+    authUserCode: STD-SIN3-008
+    firstName: 'Zapa Moffo'
+    lastName: 'Beramiss France'
+    primaryEmail: sin3.008@students.inses.cm
+    phone: '656290193'
+    dateOfBirth:      20/05/2006
+    placeOfBirth: 'BONABERI – DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-009
+    authUserCode: STD-SIN3-009
+    firstName: 'Tchokouaha Daleu'
+    lastName: 'Carmelle L’or'
+    primaryEmail: sin3.009@students.inses.cm
+    phone: '682326456'
+    dateOfBirth: 2005-09-11
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-010
+    authUserCode: STD-SIN3-010
+    firstName: 'Youndjeu Mbousseu'
+    lastName: 'Colette Nadele'
+    primaryEmail: sin3.010@students.inses.cm
+    phone: '671011054'
+    dateOfBirth: 1999-03-12
+    placeOfBirth: 'DISP EEC DE BABOUANTOU'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-011
+    authUserCode: STD-SIN3-011
+    firstName: 'Medonfo'
+    lastName: 'Diderole Derrick'
+    primaryEmail: sin3.011@students.inses.cm
+    phone: '671748370'
+    dateOfBirth: 2003-09-10
+    placeOfBirth: 'BAFOU'
+    gender: MALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-012
+    authUserCode: STD-SIN3-012
+    firstName: 'Atsopben'
+    lastName: 'Dilane'
+    primaryEmail: sin3.012@students.inses.cm
+    phone: '655844005'
+    dateOfBirth: 2005-08-12
+    placeOfBirth: 'DOUALA'
+    gender: MALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-013
+    authUserCode: STD-SIN3-013
+    firstName: 'Guindo'
+    lastName: 'Djeneba'
+    primaryEmail: sin3.013@students.inses.cm
+    phone: '691770552'
+    dateOfBirth:      08/09/2004
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-014
+    authUserCode: STD-SIN3-014
+    firstName: 'Dzokem'
+    lastName: 'Dorinelle Stadiane'
+    primaryEmail: sin3.014@students.inses.cm
+    phone: '679136620'
+    dateOfBirth: 2005-05-31
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-015
+    authUserCode: STD-SIN3-015
+    firstName: 'Djuikem Dadjo'
+    lastName: 'Douglas Serena Eleonor'
+    primaryEmail: sin3.015@students.inses.cm
+    phone: '658687607'
+    dateOfBirth: 2004-03-29
+    placeOfBirth: 'NKAPA-SOCAPALM'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-016
+    authUserCode: STD-SIN3-016
+    firstName: 'Toumba Penda'
+    lastName: 'Elise Diane'
+    primaryEmail: sin3.016@students.inses.cm
+    phone: '692042513'
+    dateOfBirth: 2000-02-24
+    placeOfBirth: 'LA MATERNITE DE YABASSI'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-017
+    authUserCode: STD-SIN3-017
+    firstName: 'Ngouegni Nzetouo'
+    lastName: 'Florinda Calone'
+    primaryEmail: sin3.017@students.inses.cm
+    phone: '681857537'
+    dateOfBirth: 2003-05-01
+    placeOfBirth: 'BALEPO'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-018
+    authUserCode: STD-SIN3-018
+    firstName: 'Tamko Tchoula'
+    lastName: 'Guilaine Auriole'
+    primaryEmail: sin3.018@students.inses.cm
+    phone: '694774114'
+    dateOfBirth: 1997-08-30
+    placeOfBirth: 'CSI DE FOMOPEA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-019
+    authUserCode: STD-SIN3-019
+    firstName: 'Eno Happy'
+    lastName: 'Isaiah Akqan'
+    primaryEmail: sin3.019@students.inses.cm
+    phone: '683924085'
+    dateOfBirth: 2003-05-27
+    placeOfBirth: 'DOUALA'
+    gender: MALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-020
+    authUserCode: STD-SIN3-020
+    firstName: 'Njowe Sonne'
+    lastName: 'Jeannette Brenda'
+    primaryEmail: sin3.020@students.inses.cm
+    phone: '683622309'
+    dateOfBirth: 2005-08-26
+    placeOfBirth: 'BOMONO'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-021
+    authUserCode: STD-SIN3-021
+    firstName: 'Noubosse Mapi'
+    lastName: 'Joel Arielle'
+    primaryEmail: sin3.021@students.inses.cm
+    phone: '683617421'
+    dateOfBirth: 2005-01-13
+    placeOfBirth: 'BONABERI-DOUALA IV'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-022
+    authUserCode: STD-SIN3-022
+    firstName: 'Tabeua'
+    lastName: 'Landry Wilfried'
+    primaryEmail: sin3.022@students.inses.cm
+    phone: '671179219'
+    dateOfBirth: 2004-04-22
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-023
+    authUserCode: STD-SIN3-023
+    firstName: 'Lonlac Tchoffo'
+    lastName: 'Laureta Veliane'
+    primaryEmail: sin3.023@students.inses.cm
+    phone: '670079804'
+    dateOfBirth: 2006-10-24
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-024
+    authUserCode: STD-SIN3-024
+    firstName: 'Tchuendem Bopda'
+    lastName: 'Lesly Ange'
+    primaryEmail: sin3.024@students.inses.cm
+    phone: '692422105'
+    dateOfBirth: 2005-10-28
+    placeOfBirth: 'YAOUNDE'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-025
+    authUserCode: STD-SIN3-025
+    firstName: 'Kengne Teugoum'
+    lastName: 'Lorie Francelle'
+    primaryEmail: sin3.025@students.inses.cm
+    phone: '691756290'
+    dateOfBirth: 29/062005
+    placeOfBirth: 'BONABERI – DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-026
+    authUserCode: STD-SIN3-026
+    firstName: 'Tchouaffi Siewe'
+    lastName: 'Lucresse Manuella'
+    primaryEmail: sin3.026@students.inses.cm
+    phone: '656485415'
+    dateOfBirth: 2004-01-20
+    placeOfBirth: 'BONENDALE-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-027
+    authUserCode: STD-SIN3-027
+    firstName: 'Tagouffo Moho'
+    lastName: 'Lyonaire Elise'
+    primaryEmail: sin3.027@students.inses.cm
+    phone: '651545597'
+    dateOfBirth: 2006-03-21
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-028
+    authUserCode: STD-SIN3-028
+    firstName: 'Toukam'
+    lastName: 'Manuella Dolvine'
+    primaryEmail: sin3.028@students.inses.cm
+    phone: '656187054'
+    dateOfBirth: 28/062002
+    placeOfBirth: 'CENTRE DE SANTE DE TOUOPA TESSE'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-029
+    authUserCode: STD-SIN3-029
+    firstName: 'Meyouke'
+    lastName: 'Marie Prisca'
+    primaryEmail: sin3.029@students.inses.cm
+    phone: '653669411'
+    dateOfBirth: 2005-03-29
+    placeOfBirth: 'BOMONO'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-030
+    authUserCode: STD-SIN3-030
+    firstName: 'Ndondoki Edjong'
+    lastName: 'Marie Vanelle'
+    primaryEmail: sin3.030@students.inses.cm
+    phone: '656707325'
+    dateOfBirth: 2005-11-30
+    placeOfBirth: 'BONABERI – DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-031
+    authUserCode: STD-SIN3-031
+    firstName: 'Togno Yomsi'
+    lastName: 'Mariette Blanche'
+    primaryEmail: sin3.031@students.inses.cm
+    phone: '696626121'
+    dateOfBirth: 1997-07-28
+    placeOfBirth: 'HA – BANDJOUN'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-032
+    authUserCode: STD-SIN3-032
+    firstName: 'Ngatchoua Pougoue'
+    lastName: 'Marina Patricia'
+    primaryEmail: sin3.032@students.inses.cm
+    phone: '682852552'
+    dateOfBirth: 2004-08-29
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-033
+    authUserCode: STD-SIN3-033
+    firstName: 'Mbanga'
+    lastName: 'Maxima Fanny'
+    primaryEmail: sin3.033@students.inses.cm
+    phone: '671187792'
+    dateOfBirth:      28/07/2002
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-034
+    authUserCode: STD-SIN3-034
+    firstName: 'Djoufack Kenfack Tongo'
+    lastName: 'Melvine Ange Arole'
+    primaryEmail: sin3.034@students.inses.cm
+    phone: '650584725'
+    dateOfBirth: 2000-10-26
+    placeOfBirth: 'BONABERI – DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-035
+    authUserCode: STD-SIN3-035
+    firstName: 'Nangmo'
+    lastName: 'Orele Jacqueline'
+    primaryEmail: sin3.035@students.inses.cm
+    phone: '678562850'
+    dateOfBirth: 2001-03-03
+    placeOfBirth: 'CSI FONTSA-TOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-036
+    authUserCode: STD-SIN3-036
+    firstName: 'Nimfeng Foutse'
+    lastName: 'Patricia Laure'
+    primaryEmail: sin3.036@students.inses.cm
+    phone: '671210869'
+    dateOfBirth: 2005-07-03
+    placeOfBirth: 'LOUM'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-037
+    authUserCode: STD-SIN3-037
+    firstName: 'Ntondi'
+    lastName: 'Paule Michelle'
+    primaryEmail: sin3.037@students.inses.cm
+    phone: '658585104'
+    dateOfBirth: 2005-01-09
+    placeOfBirth: 'DOUALA-CAMEROUN'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-038
+    authUserCode: STD-SIN3-038
+    firstName: 'Nguestsa'
+    lastName: 'Pauline Laure'
+    primaryEmail: sin3.038@students.inses.cm
+    phone: '675066497'
+    dateOfBirth:      16/08/1999
+    placeOfBirth: 'LA MATERNITE DE DEIDO-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-039
+    authUserCode: STD-SIN3-039
+    firstName: 'Kakanou Deugoue'
+    lastName: 'Pharelle Cinthia Martina'
+    primaryEmail: sin3.039@students.inses.cm
+    phone: '654452576'
+    dateOfBirth: 2004-02-07
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-040
+    authUserCode: STD-SIN3-040
+    firstName: 'Maguelong Yotebong'
+    lastName: 'Raissa'
+    primaryEmail: sin3.040@students.inses.cm
+    phone: '683340597'
+    dateOfBirth: 2005-07-01
+    placeOfBirth: 'PMI NKWEN-BAMENDA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-041
+    authUserCode: STD-SIN3-041
+    firstName: 'Tananfoe Tsafack'
+    lastName: 'Rivaldo'
+    primaryEmail: sin3.041@students.inses.cm
+    phone: '676114387'
+    dateOfBirth: 2002-05-14
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: MALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-042
+    authUserCode: STD-SIN3-042
+    firstName: 'Tsapi Saha'
+    lastName: 'Romida'
+    primaryEmail: sin3.042@students.inses.cm
+    phone: '682950855'
+    dateOfBirth: 2002-10-01
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-043
+    authUserCode: STD-SIN3-043
+    firstName: 'Ajie Djuikem'
+    lastName: 'Rosalie Cindy'
+    primaryEmail: sin3.043@students.inses.cm
+    phone: '672922417'
+    dateOfBirth: 2003-03-09
+    placeOfBirth: 'BONABERI-DOIALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-044
+    authUserCode: STD-SIN3-044
+    firstName: 'Nguimfack Tenekeng'
+    lastName: 'Ruchelle'
+    primaryEmail: sin3.044@students.inses.cm
+    phone: '695823587'
+    dateOfBirth: 2000-10-24
+    placeOfBirth: 'MBOKOU – SANTCHOU'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-045
+    authUserCode: STD-SIN3-045
+    firstName: 'Ndoki Sappi Mouyombon'
+    lastName: 'Sariette Gatienne'
+    primaryEmail: sin3.045@students.inses.cm
+    phone: '679490844'
+    dateOfBirth: 1999-07-31
+    placeOfBirth: 'DOUALA – CAMEROUN'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-046
+    authUserCode: STD-SIN3-046
+    firstName: 'Manto'
+    lastName: 'Sezine Ravina'
+    primaryEmail: sin3.046@students.inses.cm
+    phone: '671106847'
+    dateOfBirth: 2004-05-16
+    placeOfBirth: 'CENTRE DE SANTE DE BAMENDJO'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-047
+    authUserCode: STD-SIN3-047
+    firstName: 'Maninang Mabeuntsa'
+    lastName: 'Stela Naomie'
+    primaryEmail: sin3.047@students.inses.cm
+    phone: '674454297'
+    dateOfBirth: 2005-04-10
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-048
+    authUserCode: STD-SIN3-048
+    firstName: 'Bokengue Anoke'
+    lastName: 'Suzanne'
+    primaryEmail: sin3.048@students.inses.cm
+    phone: '650256603'
+    dateOfBirth: 2001-03-30
+    placeOfBirth: 'MBANGA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-049
+    authUserCode: STD-SIN3-049
+    firstName: 'Kengmo Zogang'
+    lastName: 'Sylvianie Adriane'
+    primaryEmail: sin3.049@students.inses.cm
+    phone: '686847807'
+    dateOfBirth: 2005-01-05
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-050
+    authUserCode: STD-SIN3-050
+    firstName: 'Djionang Ngouajio'
+    lastName: 'Vanelle Nadia'
+    primaryEmail: sin3.050@students.inses.cm
+    phone: '659754212'
+    dateOfBirth: 2000-01-18
+    placeOfBirth: 'FOUMBOT'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-051
+    authUserCode: STD-SIN3-051
+    firstName: 'Yameni Moko'
+    lastName: 'Vyclane-fleurette'
+    primaryEmail: sin3.051@students.inses.cm
+    phone: '697837840'
+    dateOfBirth: 2004-04-13
+    placeOfBirth: 'LA MTE BANDJA-CENTRE'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-052
+    authUserCode: STD-SIN3-052
+    firstName: 'Tajiotio'
+    lastName: 'Ynes Maurelle'
+    primaryEmail: sin3.052@students.inses.cm
+    phone: '672253568'
+    dateOfBirth: 2002-09-06
+    placeOfBirth: 'BATCHAM'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-SIN3-053
+    authUserCode: STD-SIN3-053
+    firstName: 'Kenfack Tadonkeng'
+    lastName: 'Yvane Tibelle'
+    primaryEmail: sin3.053@students.inses.cm
+    phone: '675119253'
+    dateOfBirth: 2004-02-26
+    placeOfBirth: 'CSI DE DOUMBOUO'
+    gender: FEMALE
+    nationality: 'Cameounaise'
+    status: active
+  - code: STD-TLB1-001
+    authUserCode: STD-TLB1-001
+    firstName: 'Diassia Hlamma'
+    lastName: 'Dieu Ne Dort'
+    primaryEmail: diassiahlammadieunedortgmai@gmail.com
+    phone: '693391400'
+    dateOfBirth: 2003-08-22
+    placeOfBirth: 'GOBO'
+    gender: MALE
+    nationality: 'Tchadiene'
+    status: active
+  - code: STD-TLB1-002
+    authUserCode: STD-TLB1-002
+    firstName: 'Dzamogni Takem'
+    lastName: 'Grace Leticia'
+    primaryEmail: mariemoukoudi8@gmail.com
+    phone: '678491481'
+    dateOfBirth: 2006-07-04
+    placeOfBirth: 'BBERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB1-003
+    authUserCode: STD-TLB1-003
+    firstName: 'Seruh Preyciouse'
+    lastName: 'Tiwa'
+    primaryEmail: tlb1.003@students.inses.cm
+    phone: '659028498'
+    dateOfBirth: 2007-08-26
+    placeOfBirth: 'DLA-BONABERI'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB2-001
+    authUserCode: STD-TLB2-001
+    firstName: 'Manimie'
+    lastName: 'Danielle'
+    primaryEmail: tlb2.001@students.inses.cm
+    phone: '679142565'
+    dateOfBirth: 2002-04-01
+    placeOfBirth: 'Hôpital central YAOUNDE II'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB2-002
+    authUserCode: STD-TLB2-002
+    firstName: 'Enkak Kamaleu'
+    lastName: 'Genevieve Astride'
+    primaryEmail: tlb2.002@students.inses.cm
+    phone: '692767467'
+    dateOfBirth: 2003-01-07
+    placeOfBirth: 'MBANGA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB2-003
+    authUserCode: STD-TLB2-003
+    firstName: 'Nongni Momo'
+    lastName: 'Wilfried'
+    primaryEmail: tlb2.003@students.inses.cm
+    phone: '652557596'
+    dateOfBirth: 2002-10-18
+    placeOfBirth: 'BALEVENG'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB3-001
+    authUserCode: STD-TLB3-001
+    firstName: 'Nguemtchuen Bopda'
+    lastName: 'Kevine'
+    primaryEmail: tlb3.001@students.inses.cm
+    phone: '697009626'
+    dateOfBirth: 1998-01-03
+    placeOfBirth: 'BALENG'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB3-002
+    authUserCode: STD-TLB3-002
+    firstName: 'Madonkeng Tefouet'
+    lastName: 'Maeva'
+    primaryEmail: tlb3.002@students.inses.cm
+    phone: '676798249'
+    dateOfBirth: 1999-09-22
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB3-003
+    authUserCode: STD-TLB3-003
+    firstName: 'Pondi Fakam'
+    lastName: 'Paul Eric'
+    primaryEmail: tlb3.003@students.inses.cm
+    phone: '670283797'
+    dateOfBirth: 2006-07-04
+    placeOfBirth: 'MOMBO'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-TLB3-004
+    authUserCode: STD-TLB3-004
+    firstName: 'Zamo'
+    lastName: 'Sylviane Laure'
+    primaryEmail: tlb3.004@students.inses.cm
+    phone: '652069413'
+    dateOfBirth: 2004-04-11
+    placeOfBirth: 'FONGO-NDENG'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENTS  (institutional student records — one par classe)
+# classCode + classAcademicYearCode doivent référencer une classe de 10-academics.yaml.
+# Données issues des feuilles « ... BTS ... » des fichiers Excel
+# situés dans docs/student-inses/.
+# ─────────────────────────────────────────────────────────────────────────────
 students:
-  - code: STUDENT-NDONG
-    domainUserCode: STUDENT-NDONG
-    classCode: INF25-BTS1A
+  - code: STD-IMM1-001
+    domainUserCode: STD-IMM1-001
+    classCode: IMM25-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-0001
-  - code: STUDENT-EYEBE
-    domainUserCode: STUDENT-EYEBE
-    classCode: COMPT25-BTS1A
+    registrationNumber: INSES25-IMM-0001
+  - code: STD-IMM1-002
+    domainUserCode: STD-IMM1-002
+    classCode: IMM25-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-0002
+    registrationNumber: INSES25-IMM-0002
+  - code: STD-SFM1-001
+    domainUserCode: STD-SFM1-001
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0001
+  - code: STD-SFM1-002
+    domainUserCode: STD-SFM1-002
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0002
+  - code: STD-SFM1-003
+    domainUserCode: STD-SFM1-003
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0003
+  - code: STD-SFM1-004
+    domainUserCode: STD-SFM1-004
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0004
+  - code: STD-SFM2-001
+    domainUserCode: STD-SFM2-001
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0005
+  - code: STD-SFM2-002
+    domainUserCode: STD-SFM2-002
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0006
+  - code: STD-SFM2-003
+    domainUserCode: STD-SFM2-003
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0007
+  - code: STD-SFM2-004
+    domainUserCode: STD-SFM2-004
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0008
+  - code: STD-SFM2-005
+    domainUserCode: STD-SFM2-005
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0009
+  - code: STD-SFM2-006
+    domainUserCode: STD-SFM2-006
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0010
+  - code: STD-SFM2-007
+    domainUserCode: STD-SFM2-007
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0011
+  - code: STD-SFM2-008
+    domainUserCode: STD-SFM2-008
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0012
+  - code: STD-SFM2-009
+    domainUserCode: STD-SFM2-009
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0013
+  - code: STD-SFM2-010
+    domainUserCode: STD-SFM2-010
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0014
+  - code: STD-SFM3-001
+    domainUserCode: STD-SFM3-001
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0015
+  - code: STD-SFM3-002
+    domainUserCode: STD-SFM3-002
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0016
+  - code: STD-SFM3-003
+    domainUserCode: STD-SFM3-003
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0017
+  - code: STD-SFM3-004
+    domainUserCode: STD-SFM3-004
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0018
+  - code: STD-SFM3-005
+    domainUserCode: STD-SFM3-005
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0019
+  - code: STD-SFM3-006
+    domainUserCode: STD-SFM3-006
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0020
+  - code: STD-SFM3-007
+    domainUserCode: STD-SFM3-007
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0021
+  - code: STD-SFM3-008
+    domainUserCode: STD-SFM3-008
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0022
+  - code: STD-SFM3-009
+    domainUserCode: STD-SFM3-009
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0023
+  - code: STD-SFM3-010
+    domainUserCode: STD-SFM3-010
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SFM-0024
+  - code: STD-SIN1-001
+    domainUserCode: STD-SIN1-001
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0001
+  - code: STD-SIN1-002
+    domainUserCode: STD-SIN1-002
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0002
+  - code: STD-SIN1-003
+    domainUserCode: STD-SIN1-003
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0003
+  - code: STD-SIN1-004
+    domainUserCode: STD-SIN1-004
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0004
+  - code: STD-SIN1-005
+    domainUserCode: STD-SIN1-005
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0005
+  - code: STD-SIN1-006
+    domainUserCode: STD-SIN1-006
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0006
+  - code: STD-SIN1-007
+    domainUserCode: STD-SIN1-007
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0007
+  - code: STD-SIN1-008
+    domainUserCode: STD-SIN1-008
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0008
+  - code: STD-SIN1-009
+    domainUserCode: STD-SIN1-009
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0009
+  - code: STD-SIN1-010
+    domainUserCode: STD-SIN1-010
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0010
+  - code: STD-SIN1-011
+    domainUserCode: STD-SIN1-011
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0011
+  - code: STD-SIN1-012
+    domainUserCode: STD-SIN1-012
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0012
+  - code: STD-SIN1-013
+    domainUserCode: STD-SIN1-013
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0013
+  - code: STD-SIN1-014
+    domainUserCode: STD-SIN1-014
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0014
+  - code: STD-SIN1-015
+    domainUserCode: STD-SIN1-015
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0015
+  - code: STD-SIN1-016
+    domainUserCode: STD-SIN1-016
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0016
+  - code: STD-SIN1-017
+    domainUserCode: STD-SIN1-017
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0017
+  - code: STD-SIN1-018
+    domainUserCode: STD-SIN1-018
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0018
+  - code: STD-SIN1-019
+    domainUserCode: STD-SIN1-019
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0019
+  - code: STD-SIN1-020
+    domainUserCode: STD-SIN1-020
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0020
+  - code: STD-SIN1-021
+    domainUserCode: STD-SIN1-021
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0021
+  - code: STD-SIN2-001
+    domainUserCode: STD-SIN2-001
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0022
+  - code: STD-SIN2-002
+    domainUserCode: STD-SIN2-002
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0023
+  - code: STD-SIN2-003
+    domainUserCode: STD-SIN2-003
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0024
+  - code: STD-SIN2-004
+    domainUserCode: STD-SIN2-004
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0025
+  - code: STD-SIN2-005
+    domainUserCode: STD-SIN2-005
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0026
+  - code: STD-SIN2-006
+    domainUserCode: STD-SIN2-006
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0027
+  - code: STD-SIN2-007
+    domainUserCode: STD-SIN2-007
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0028
+  - code: STD-SIN2-008
+    domainUserCode: STD-SIN2-008
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0029
+  - code: STD-SIN2-009
+    domainUserCode: STD-SIN2-009
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0030
+  - code: STD-SIN2-010
+    domainUserCode: STD-SIN2-010
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0031
+  - code: STD-SIN2-011
+    domainUserCode: STD-SIN2-011
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0032
+  - code: STD-SIN2-012
+    domainUserCode: STD-SIN2-012
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0033
+  - code: STD-SIN2-013
+    domainUserCode: STD-SIN2-013
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0034
+  - code: STD-SIN2-014
+    domainUserCode: STD-SIN2-014
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0035
+  - code: STD-SIN2-015
+    domainUserCode: STD-SIN2-015
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0036
+  - code: STD-SIN2-016
+    domainUserCode: STD-SIN2-016
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0037
+  - code: STD-SIN2-017
+    domainUserCode: STD-SIN2-017
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0038
+  - code: STD-SIN2-018
+    domainUserCode: STD-SIN2-018
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0039
+  - code: STD-SIN2-019
+    domainUserCode: STD-SIN2-019
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0040
+  - code: STD-SIN2-020
+    domainUserCode: STD-SIN2-020
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0041
+  - code: STD-SIN2-021
+    domainUserCode: STD-SIN2-021
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0042
+  - code: STD-SIN2-022
+    domainUserCode: STD-SIN2-022
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0043
+  - code: STD-SIN2-023
+    domainUserCode: STD-SIN2-023
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0044
+  - code: STD-SIN3-001
+    domainUserCode: STD-SIN3-001
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0045
+  - code: STD-SIN3-002
+    domainUserCode: STD-SIN3-002
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0046
+  - code: STD-SIN3-003
+    domainUserCode: STD-SIN3-003
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0047
+  - code: STD-SIN3-004
+    domainUserCode: STD-SIN3-004
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0048
+  - code: STD-SIN3-005
+    domainUserCode: STD-SIN3-005
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0049
+  - code: STD-SIN3-006
+    domainUserCode: STD-SIN3-006
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0050
+  - code: STD-SIN3-007
+    domainUserCode: STD-SIN3-007
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0051
+  - code: STD-SIN3-008
+    domainUserCode: STD-SIN3-008
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0052
+  - code: STD-SIN3-009
+    domainUserCode: STD-SIN3-009
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0053
+  - code: STD-SIN3-010
+    domainUserCode: STD-SIN3-010
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0054
+  - code: STD-SIN3-011
+    domainUserCode: STD-SIN3-011
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0055
+  - code: STD-SIN3-012
+    domainUserCode: STD-SIN3-012
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0056
+  - code: STD-SIN3-013
+    domainUserCode: STD-SIN3-013
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0057
+  - code: STD-SIN3-014
+    domainUserCode: STD-SIN3-014
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0058
+  - code: STD-SIN3-015
+    domainUserCode: STD-SIN3-015
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0059
+  - code: STD-SIN3-016
+    domainUserCode: STD-SIN3-016
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0060
+  - code: STD-SIN3-017
+    domainUserCode: STD-SIN3-017
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0061
+  - code: STD-SIN3-018
+    domainUserCode: STD-SIN3-018
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0062
+  - code: STD-SIN3-019
+    domainUserCode: STD-SIN3-019
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0063
+  - code: STD-SIN3-020
+    domainUserCode: STD-SIN3-020
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0064
+  - code: STD-SIN3-021
+    domainUserCode: STD-SIN3-021
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0065
+  - code: STD-SIN3-022
+    domainUserCode: STD-SIN3-022
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0066
+  - code: STD-SIN3-023
+    domainUserCode: STD-SIN3-023
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0067
+  - code: STD-SIN3-024
+    domainUserCode: STD-SIN3-024
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0068
+  - code: STD-SIN3-025
+    domainUserCode: STD-SIN3-025
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0069
+  - code: STD-SIN3-026
+    domainUserCode: STD-SIN3-026
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0070
+  - code: STD-SIN3-027
+    domainUserCode: STD-SIN3-027
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0071
+  - code: STD-SIN3-028
+    domainUserCode: STD-SIN3-028
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0072
+  - code: STD-SIN3-029
+    domainUserCode: STD-SIN3-029
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0073
+  - code: STD-SIN3-030
+    domainUserCode: STD-SIN3-030
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0074
+  - code: STD-SIN3-031
+    domainUserCode: STD-SIN3-031
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0075
+  - code: STD-SIN3-032
+    domainUserCode: STD-SIN3-032
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0076
+  - code: STD-SIN3-033
+    domainUserCode: STD-SIN3-033
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0077
+  - code: STD-SIN3-034
+    domainUserCode: STD-SIN3-034
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0078
+  - code: STD-SIN3-035
+    domainUserCode: STD-SIN3-035
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0079
+  - code: STD-SIN3-036
+    domainUserCode: STD-SIN3-036
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0080
+  - code: STD-SIN3-037
+    domainUserCode: STD-SIN3-037
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0081
+  - code: STD-SIN3-038
+    domainUserCode: STD-SIN3-038
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0082
+  - code: STD-SIN3-039
+    domainUserCode: STD-SIN3-039
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0083
+  - code: STD-SIN3-040
+    domainUserCode: STD-SIN3-040
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0084
+  - code: STD-SIN3-041
+    domainUserCode: STD-SIN3-041
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0085
+  - code: STD-SIN3-042
+    domainUserCode: STD-SIN3-042
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0086
+  - code: STD-SIN3-043
+    domainUserCode: STD-SIN3-043
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0087
+  - code: STD-SIN3-044
+    domainUserCode: STD-SIN3-044
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0088
+  - code: STD-SIN3-045
+    domainUserCode: STD-SIN3-045
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0089
+  - code: STD-SIN3-046
+    domainUserCode: STD-SIN3-046
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0090
+  - code: STD-SIN3-047
+    domainUserCode: STD-SIN3-047
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0091
+  - code: STD-SIN3-048
+    domainUserCode: STD-SIN3-048
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0092
+  - code: STD-SIN3-049
+    domainUserCode: STD-SIN3-049
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0093
+  - code: STD-SIN3-050
+    domainUserCode: STD-SIN3-050
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0094
+  - code: STD-SIN3-051
+    domainUserCode: STD-SIN3-051
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0095
+  - code: STD-SIN3-052
+    domainUserCode: STD-SIN3-052
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0096
+  - code: STD-SIN3-053
+    domainUserCode: STD-SIN3-053
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-SIN-0097
+  - code: STD-TLB1-001
+    domainUserCode: STD-TLB1-001
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0001
+  - code: STD-TLB1-002
+    domainUserCode: STD-TLB1-002
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0002
+  - code: STD-TLB1-003
+    domainUserCode: STD-TLB1-003
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0003
+  - code: STD-TLB2-001
+    domainUserCode: STD-TLB2-001
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0004
+  - code: STD-TLB2-002
+    domainUserCode: STD-TLB2-002
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0005
+  - code: STD-TLB2-003
+    domainUserCode: STD-TLB2-003
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0006
+  - code: STD-TLB3-001
+    domainUserCode: STD-TLB3-001
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0007
+  - code: STD-TLB3-002
+    domainUserCode: STD-TLB3-002
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0008
+  - code: STD-TLB3-003
+    domainUserCode: STD-TLB3-003
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0009
+  - code: STD-TLB3-004
+    domainUserCode: STD-TLB3-004
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-TLB-0010
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENROLLMENTS  (étudiant ↔ classe ↔ année académique)
+# admissionType: "normal" | "transfer" | "direct" | "equivalence"
+# ─────────────────────────────────────────────────────────────────────────────
 enrollments:
-  - studentCode: STUDENT-NDONG
-    classCode: INF25-BTS1A
+  - studentCode: STD-IMM1-001
+    classCode: IMM25-BTS1
     classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active
     admissionType: normal
-  - studentCode: STUDENT-EYEBE
-    classCode: COMPT25-BTS1A
+  - studentCode: STD-IMM1-002
+    classCode: IMM25-BTS1
     classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active
     admissionType: normal
-studentCourseEnrollments:
-  - studentCode: STUDENT-NDONG
-    classCourseCode: CC-ANAT101-INF1A
-    courseCode: ANAT101
-    sourceClassCode: INF25-BTS1A
-    sourceClassAcademicYearCode: AY-2025
+  - studentCode: STD-SFM1-001
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active
-    attempt: 1
-    creditsAttempted: 4
-    creditsEarned: 0
-  - studentCode: STUDENT-EYEBE
-    classCourseCode: CC-COMPT101-COMPT1A
-    courseCode: COMPT101
-    sourceClassCode: COMPT25-BTS1A
-    sourceClassAcademicYearCode: AY-2025
+    admissionType: normal
+  - studentCode: STD-SFM1-002
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active
-    attempt: 1
-    creditsAttempted: 5
-    creditsEarned: 0
+    admissionType: normal
+  - studentCode: STD-SFM1-003
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM1-004
+    classCode: SFM25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-001
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-002
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-003
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-004
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-005
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-006
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-007
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-008
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-009
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM2-010
+    classCode: SFM25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-001
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-002
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-003
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-004
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-005
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-006
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-007
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-008
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-009
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SFM3-010
+    classCode: SFM25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-001
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-002
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-003
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-004
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-005
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-006
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-007
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-008
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-009
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-010
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-011
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-012
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-013
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-014
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-015
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-016
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-017
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-018
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-019
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-020
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN1-021
+    classCode: SIN25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-001
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-002
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-003
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-004
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-005
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-006
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-007
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-008
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-009
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-010
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-011
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-012
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-013
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-014
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-015
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-016
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-017
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-018
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-019
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-020
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-021
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-022
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN2-023
+    classCode: SIN25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-001
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-002
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-003
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-004
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-005
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-006
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-007
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-008
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-009
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-010
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-011
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-012
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-013
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-014
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-015
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-016
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-017
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-018
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-019
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-020
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-021
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-022
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-023
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-024
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-025
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-026
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-027
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-028
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-029
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-030
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-031
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-032
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-033
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-034
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-035
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-036
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-037
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-038
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-039
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-040
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-041
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-042
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-043
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-044
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-045
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-046
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-047
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-048
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-049
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-050
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-051
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-052
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-SIN3-053
+    classCode: SIN25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB1-001
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB1-002
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB1-003
+    classCode: TLB25-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB2-001
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB2-002
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB2-003
+    classCode: TLB25-BTS2
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB3-001
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB3-002
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB3-003
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-TLB3-004
+    classCode: TLB25-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+
+# studentCourseEnrollments: omis — pas encore de classCourses dans 10-academics.yaml.
+# Ajouter les classCourses (après affectation des enseignants) puis les studentCourseEnrollments ici.

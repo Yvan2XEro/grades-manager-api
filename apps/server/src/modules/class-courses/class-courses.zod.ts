@@ -22,6 +22,8 @@ export const listSchema = z.object({
 	teacherId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	semesterId: z.string().optional(),
+	/** Filter by teaching-unit semester ("fall" | "spring" | "annual"). */
+	ueSemester: z.enum(["fall", "spring", "annual"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

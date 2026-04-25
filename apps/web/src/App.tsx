@@ -8,6 +8,7 @@ import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
@@ -26,8 +27,8 @@ import ExamTypes from "./pages/admin/ExamTypes";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import FacultyManagement from "./pages/admin/FacultyManagement";
-import GradeExport from "./pages/admin/GradeExport";
 import GradeAccessGrants from "./pages/admin/GradeAccessGrants";
+import GradeExport from "./pages/admin/GradeExport";
 import InstitutionSettings from "./pages/admin/InstitutionSettings";
 import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
@@ -46,7 +47,6 @@ import StudentManagement from "./pages/admin/StudentManagement";
 import StudyCycleManagement from "./pages/admin/StudyCycleManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TeachingUnitManagement from "./pages/admin/TeachingUnitManagement";
-import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -119,7 +119,10 @@ function App() {
 			return;
 		}
 		// Skip if org was already set AND membership is populated (role resolved)
-		if (session.session?.activeOrganizationId && session.activeMembership?.role) {
+		if (
+			session.session?.activeOrganizationId &&
+			session.activeMembership?.role
+		) {
 			activatedSlugRef.current = activeOrganizationSlug;
 			return;
 		}
@@ -220,7 +223,7 @@ function App() {
 							element={<TeachingUnitDetail />}
 						/>
 						<Route path="notifications" element={<NotificationsCenter />} />
-					<Route path="api-keys" element={<ApiKeysManagement />} />
+						<Route path="api-keys" element={<ApiKeysManagement />} />
 						{/* Deliberations */}
 						<Route path="deliberations" element={<DeliberationsList />} />
 						<Route
@@ -267,7 +270,10 @@ function App() {
 					{/* Grade Editor Routes */}
 					<Route path="/grade-editor" element={<DashboardLayout />}>
 						<Route index element={<TeacherDashboard />} />
-						<Route path="courses" element={<CourseList basePath="/grade-editor" />} />
+						<Route
+							path="courses"
+							element={<CourseList basePath="/grade-editor" />}
+						/>
 						<Route path="grades" element={<GradeEntry />} />
 						<Route path="grades/:courseId" element={<GradeEntry />} />
 					</Route>

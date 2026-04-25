@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,15 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { trpcClient } from "@/utils/trpc";
 import {
 	Empty,
 	EmptyContent,
@@ -34,6 +24,16 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/lib/toast";
+import { trpcClient } from "@/utils/trpc";
 
 export function ExecutePromotionPage() {
 	const { t } = useTranslation();
@@ -159,15 +159,20 @@ export function ExecutePromotionPage() {
 				<Card className="border-0 shadow-sm">
 					<CardContent className="pt-6">
 						<Empty className="border border-dashed">
-						<EmptyHeader>
-							<EmptyDescription>No promotion data found. Please start from the evaluation page.</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button onClick={() => navigate("/admin/promotion-rules/evaluate")}>
-								Go to Evaluation
-							</Button>
-						</EmptyContent>
-					</Empty>
+							<EmptyHeader>
+								<EmptyDescription>
+									No promotion data found. Please start from the evaluation
+									page.
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								<Button
+									onClick={() => navigate("/admin/promotion-rules/evaluate")}
+								>
+									Go to Evaluation
+								</Button>
+							</EmptyContent>
+						</Empty>
 					</CardContent>
 				</Card>
 			</div>
@@ -188,9 +193,7 @@ export function ExecutePromotionPage() {
 					{t("common.actions.back")}
 				</Button>
 				<div>
-					<h1 className="text-foreground">
-						Execute Promotion
-					</h1>
+					<h1 className="text-foreground">Execute Promotion</h1>
 					<p className="mt-1 text-muted-foreground">
 						Confirm and apply the promotion to selected students
 					</p>

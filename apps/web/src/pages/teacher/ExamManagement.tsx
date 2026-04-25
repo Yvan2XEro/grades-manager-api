@@ -6,12 +6,12 @@ import { ClipboardList, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { trpcClient } from "../../utils/trpc";
@@ -70,23 +70,36 @@ export default function ExamManagement() {
 	const { t } = useTranslation();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
+	const { data: semestersData } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query({}),
+	});
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: exams, isLoading } = useQuery({
-		queryKey: ["teacherExams", filterYear, filterSemester],
+		queryKey: ["teacherExams", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.exams.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as Exam[];
 		},
 	});
 
 	const { data: classCourses } = useQuery({
-		queryKey: ["teacherClassCourses", filterYear, filterSemester],
+		queryKey: ["teacherClassCourses", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as ClassCourse[];
 		},
@@ -204,9 +217,7 @@ export default function ExamManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-foreground">
-						{t("teacher.exams.title")}
-					</h1>
+					<h1 className="text-foreground">{t("teacher.exams.title")}</h1>
 					<p className="text-base-content/60">{t("teacher.exams.subtitle")}</p>
 				</div>
 				<button

@@ -116,7 +116,28 @@
       "Bash(bunx drizzle-kit:*)",
       "Bash(printf '\\\\n')",
       "Bash(PGPASSWORD=root psql -U postgres -h localhost -d grades-manager-api-db -c \"SELECT hash FROM drizzle.__drizzle_migrations ORDER BY created_at;\" 2>&1)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(printf \"\\\\n\")",
+      "Bash(powershell -Command \"\\(Get-Content 'src/modules/study-cycles/study-cycles.repo.ts' -Raw\\) -replace 'name: schema.studyCycles.name,\\\\r\\\\n\\\\t\\\\t\\\\tdescription:', 'name: schema.studyCycles.name,\\\\r\\\\n\\\\t\\\\t\\\\tnameEn: schema.studyCycles.nameEn,\\\\r\\\\n\\\\t\\\\t\\\\tdescription:' | Set-Content 'src/modules/study-cycles/study-cycles.repo.ts' -NoNewline\")",
+      "Read(//c/Users/tefba/Documents/FMSP/DIPLOMATION/**)",
+      "Read(//c/tmp/**)",
+      "Bash(python *)",
+      "Bash(PYTHONIOENCODING=utf-8 python *)",
+      "Bash(awk 'NR>=2 && NR<=667 {print}' \"C:/tmp/bts_users.yaml\")",
+      "Bash(awk 'NR>=669 && NR<=2129 {print}' \"C:/tmp/bts_users.yaml\")",
+      "Bash(awk 'NR>=2131 && NR<=2796 {print}' \"C:/tmp/bts_users.yaml\")",
+      "Bash(awk 'NR>=2798 {print}' \"C:/tmp/bts_users.yaml\")",
+      "Bash(git fetch *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "postgres",
+    "context7",
+    "playwright",
+    "github",
+    "shadcn",
+    "magicui",
+    "tailwindcss",
+    "iconify"
+  ]
 }

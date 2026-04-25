@@ -9,13 +9,15 @@
  *  - "Comment gérer un étudiant qui change de classe en cours d'année ?"
  */
 import { test } from "@playwright/test";
-import { SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Retrouver un étudiant et consulter son dossier complet
 // Question : "Je cherche Ndong Alain — comment voir son parcours complet ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("03 - Recherche d'un étudiant et consultation de son dossier académique", async ({ page }) => {
+test("03 - Recherche d'un étudiant et consultation de son dossier académique", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Arriver sur la liste — vue d'ensemble ──────────────────────
@@ -34,7 +36,9 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 	// ── ÉTAPE 3 : Recherche par nom "Ndong" ──────────────────────────────────
 	// L'admin tape le nom de l'étudiant dans la barre de recherche
 	const searchInput = page
-		.locator('input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"], input[placeholder*="tudiant"]')
+		.locator(
+			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"], input[placeholder*="tudiant"]',
+		)
 		.first();
 	if (await searchInput.isVisible()) {
 		await searchInput.click();
@@ -49,7 +53,9 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		await capture(page, "02d-search-ndong-resultat");
 
 		// Hover sur le résultat trouvé
-		const ndongRow = page.locator('tr:has-text("Ndong"), [role="row"]:has-text("Ndong")').first();
+		const ndongRow = page
+			.locator('tr:has-text("Ndong"), [role="row"]:has-text("Ndong")')
+			.first();
 		if (await ndongRow.isVisible()) {
 			await ndongRow.hover();
 			await pause(500);
@@ -102,7 +108,9 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 	// "Montrez-moi tout ce qu'on sait sur cet étudiant"
 	// Reset filtre et chercher Ndong
 	const searchInput2 = page
-		.locator('input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]')
+		.locator(
+			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]',
+		)
 		.first();
 	if (await searchInput2.isVisible()) {
 		await searchInput2.fill("Ndong");
@@ -112,9 +120,10 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 	const ndongRow = page
 		.locator('tr:has-text("Ndong"), [role="row"]:has-text("Ndong")')
 		.first();
-	const targetRow = (await ndongRow.count()) > 0
-		? ndongRow
-		: page.locator("table tbody tr").first();
+	const targetRow =
+		(await ndongRow.count()) > 0
+			? ndongRow
+			: page.locator("table tbody tr").first();
 
 	if (await targetRow.isVisible()) {
 		await targetRow.click();
@@ -129,13 +138,17 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 
 		// ── ÉTAPE 7 : Section inscriptions aux cours ──────────────────────────
 		// "Dans quels cours est-il inscrit ?"
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(900);
 		await capture(page, "02l-ndong-inscriptions-cours");
 
 		// ── ÉTAPE 8 : Section notes et résultats ─────────────────────────────
 		// "Quelles sont ses notes dans chaque matière ?"
-		await page.evaluate(() => window.scrollTo({ top: 800, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 800, behavior: "smooth" }),
+		);
 		await pause(900);
 		await capture(page, "02m-ndong-notes-resultats");
 
@@ -146,12 +159,26 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 		for (let i = 0; i < Math.min(tabCount, 4); i++) {
 			await tabs.nth(i).click();
 			await pause(900);
-			await capture(page, `02n-ndong-onglet-${i}-${await tabs.nth(i).textContent().then(t => t?.trim().toLowerCase().replace(/\s+/g, "-").substring(0, 20) ?? i)}`);
+			await capture(
+				page,
+				`02n-ndong-onglet-${i}-${await tabs
+					.nth(i)
+					.textContent()
+					.then(
+						(t) =>
+							t?.trim().toLowerCase().replace(/\s+/g, "-").substring(0, 20) ??
+							i,
+					)}`,
+			);
 			// Scroll pour voir le contenu de l'onglet
-			await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
+			await page.evaluate(() =>
+				window.scrollTo({ top: 300, behavior: "smooth" }),
+			);
 			await pause(600);
 			await capture(page, `02o-ndong-onglet-${i}-contenu`);
-			await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+			await page.evaluate(() =>
+				window.scrollTo({ top: 0, behavior: "smooth" }),
+			);
 			await pause(400);
 		}
 	}
@@ -161,7 +188,9 @@ test("03 - Recherche d'un étudiant et consultation de son dossier académique",
 // SCÉNARIO 2 : Créer un nouvel étudiant et l'inscrire
 // Question : "Comment ajouter un nouvel étudiant qui vient de s'inscrire ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("04 - Création d'un étudiant et inscription dans une classe", async ({ page }) => {
+test("04 - Création d'un étudiant et inscription dans une classe", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 	await page.goto("/admin/students");
 	await page.waitForLoadState("networkidle");
@@ -169,7 +198,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 
 	// ── ÉTAPE 1 : Ouvrir le formulaire de création ────────────────────────────
 	const addButton = page
-		.locator('button:has-text("Ajouter"), button:has-text("Add"), button:has-text("Nouvel étudiant"), button:has-text("New student")')
+		.locator(
+			'button:has-text("Ajouter"), button:has-text("Add"), button:has-text("Nouvel étudiant"), button:has-text("New student")',
+		)
 		.first();
 	if (!(await addButton.isVisible())) {
 		await capture(page, "02p-bouton-ajouter-introuvable");
@@ -185,7 +216,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 
 	// ── ÉTAPE 2 : Remplir le prénom ───────────────────────────────────────────
 	const firstInput = page
-		.locator('input[name*="first"], input[id*="first"], input[placeholder*="rénom"], input[placeholder*="irst name"]')
+		.locator(
+			'input[name*="first"], input[id*="first"], input[placeholder*="rénom"], input[placeholder*="irst name"]',
+		)
 		.first();
 	if (await firstInput.isVisible()) {
 		await firstInput.click();
@@ -196,7 +229,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 
 	// ── ÉTAPE 3 : Remplir le nom de famille ──────────────────────────────────
 	const lastInput = page
-		.locator('input[name*="last"], input[id*="last"], input[placeholder*="om de famille"], input[placeholder*="ast name"]')
+		.locator(
+			'input[name*="last"], input[id*="last"], input[placeholder*="om de famille"], input[placeholder*="ast name"]',
+		)
 		.first();
 	if (await lastInput.isVisible()) {
 		await lastInput.click();
@@ -215,7 +250,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 	await capture(page, "02s-formulaire-identite-rempli");
 
 	// ── ÉTAPE 5 : Sélectionner le genre ──────────────────────────────────────
-	const genderSelect = page.locator('[data-testid="gender-select"], [name*="gender"], [id*="gender"]').first();
+	const genderSelect = page
+		.locator('[data-testid="gender-select"], [name*="gender"], [id*="gender"]')
+		.first();
 	if (await genderSelect.isVisible()) {
 		await genderSelect.click();
 		await pause(600);
@@ -226,7 +263,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 
 	// ── ÉTAPE 6 : Sélectionner la classe INF25-BTS1A ──────────────────────────
 	// "Dans quelle classe inscrire ce nouvel étudiant ?"
-	const classSelect = page.locator('[data-testid="class-select"], [name*="class"], [id*="class"]').first();
+	const classSelect = page
+		.locator('[data-testid="class-select"], [name*="class"], [id*="class"]')
+		.first();
 	if (await classSelect.isVisible()) {
 		await classSelect.click();
 		await pause(700);
@@ -248,7 +287,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 
 	// ── ÉTAPE 8 : Survol du bouton de soumission ──────────────────────────────
 	const submitBtn = page
-		.locator('button[type="submit"], button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Créer"), button:has-text("Create")')
+		.locator(
+			'button[type="submit"], button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Créer"), button:has-text("Create")',
+		)
 		.first();
 	if (await submitBtn.isVisible()) {
 		await submitBtn.scrollIntoViewIfNeeded();
@@ -267,7 +308,9 @@ test("04 - Création d'un étudiant et inscription dans une classe", async ({ pa
 // SCÉNARIO 3 : Vérifier et gérer les inscriptions aux cours d'un étudiant
 // Question : "Comment m'assurer qu'un étudiant est bien inscrit à tous ses cours ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) => {
+test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Aller directement sur le dossier de Ndong Alain ────────────
@@ -276,7 +319,9 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) 
 	await pause(800);
 
 	const searchInput = page
-		.locator('input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]')
+		.locator(
+			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]',
+		)
 		.first();
 	if (await searchInput.isVisible()) {
 		await searchInput.fill("Ndong");
@@ -295,7 +340,11 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) 
 
 	// ── ÉTAPE 2 : Onglet inscriptions aux cours ───────────────────────────────
 	// Chercher l'onglet "Inscriptions" ou "Courses"
-	const enrollTab = page.locator('[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")').first();
+	const enrollTab = page
+		.locator(
+			'[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")',
+		)
+		.first();
 	if (await enrollTab.isVisible()) {
 		await enrollTab.click();
 		await pause(1000);
@@ -312,7 +361,9 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) 
 		}
 		await capture(page, "03a-ndong-cours-inscrits-liste");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "03b-ndong-cours-inscrits-suite");
 	}
@@ -324,7 +375,9 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) 
 	await pause(700);
 
 	const searchInput2 = page
-		.locator('input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]')
+		.locator(
+			'input[type="search"], input[placeholder*="Search"], input[placeholder*="herche"]',
+		)
 		.first();
 	if (await searchInput2.isVisible()) {
 		await searchInput2.fill("Eyebe");
@@ -341,14 +394,20 @@ test("05 - Gestion des inscriptions aux cours d'un étudiant", async ({ page }) 
 		await capture(page, "03c-eyebe-dossier-compta");
 
 		// Voir ses cours — différente filière (Comptabilité)
-		const coursesSection = page.locator('[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")').first();
+		const coursesSection = page
+			.locator(
+				'[role="tab"]:has-text("Inscription"), [role="tab"]:has-text("Course"), [role="tab"]:has-text("Cours")',
+			)
+			.first();
 		if (await coursesSection.isVisible()) {
 			await coursesSection.click();
 			await pause(900);
 			await capture(page, "03d-eyebe-cours-comptabilite");
 		}
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "03e-eyebe-inscriptions-completes");
 	}

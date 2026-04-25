@@ -5,8 +5,8 @@ import * as schema from "@/db/schema/app-schema";
 import * as authSchema from "@/db/schema/auth";
 import { notFound } from "@/modules/_shared/errors";
 import { ADMIN_ROLES, type MemberRole, roleSatisfies } from "@/modules/authz";
-import * as repo from "./exam-grade-editors.repo";
 import * as gradeAccessRepo from "@/modules/grade-access-grants/grade-access-grants.repo";
+import * as repo from "./exam-grade-editors.repo";
 
 export type ExamEditorActor = {
 	profileId: string | null;
@@ -56,7 +56,9 @@ async function resolveActorAccess(params: {
 }) {
 	const isAdmin = roleSatisfies(params.actor.memberRole, ADMIN_ROLES);
 	if (isAdmin) return "admin";
-	const isGradeEditor = roleSatisfies(params.actor.memberRole, ["grade_editor"]);
+	const isGradeEditor = roleSatisfies(params.actor.memberRole, [
+		"grade_editor",
+	]);
 	if (isGradeEditor) return "delegate";
 	const profileId = params.actor.profileId;
 	if (!profileId) return null;

@@ -15,126 +15,141 @@ examTypes:
   - name: FINAL
     description: Examen final
 studyCycles:
-  - code: BTS-SANTE
-    name: BTS Sciences de la Santé
+  - code: BTS
+    name: Brevet de Technicien Supérieur
     facultyCode: INSES
-    description: Cycle de formation professionnelle en sciences de la santé
+    description: Cycle de formation professionnelle de niveau bac+2 (secteur tertiaire,
+      industriel, commercial)
     totalCreditsRequired: 120
     durationYears: 2
-  - code: LP-SANTE
-    name: Licence Professionnelle Santé
+  - code: BTS-SANTE
+    name: Brevet de Technicien Supérieur en Santé
     facultyCode: INSES
-    description: Cycle de licence professionnelle en sciences de la santé
+    description: Cycle de formation professionnelle de niveau bac+3 dédié aux filières
+      Études médico-sanitaires (EMS) et Sciences et techniques biomédicales (STBM)
+      conformément au programme national MINESUP (Volume 6)
     totalCreditsRequired: 180
     durationYears: 3
-  - code: MP-SANTE
-    name: Master Professionnel Santé
+  - code: HND
+    name: Higher National Diploma
     facultyCode: INSES
-    description: Cycle de master professionnel en sciences de la santé
+    description: Cycle de formation professionnelle de niveau bac+3 (système anglophone)
+    totalCreditsRequired: 180
+    durationYears: 3
+  - code: LP
+    name: Licence Professionnelle
+    facultyCode: INSES
+    description: Cycle de licence professionnelle
+    totalCreditsRequired: 180
+    durationYears: 3
+  - code: MP
+    name: Master Professionnel
+    facultyCode: INSES
+    description: Cycle de master professionnel
     totalCreditsRequired: 120
     durationYears: 2
-  - code: BTS-COMMERCE
-    name: BTS Commerce et Gestion
+  - code: CQP
+    name: Certificat de Qualification Professionnelle
     facultyCode: INSES
-    description: Cycle de formation professionnelle en commerce et gestion
-    totalCreditsRequired: 120
-    durationYears: 2
-  - code: CQP-PARAM
-    name: CQP/AQP Paramédical
-    facultyCode: INSES
-    description: Certificat de Qualification Professionnelle Paramédical
+    description: Certificat de qualification professionnelle
     totalCreditsRequired: 60
     durationYears: 1
-  - code: DQP-PARAM
-    name: DQP/AQP Paramédical
+  - code: DQP
+    name: Diplôme de Qualification Professionnelle
     facultyCode: INSES
-    description: Diplôme de Qualification Professionnelle Paramédical
+    description: Diplôme de qualification professionnelle
     totalCreditsRequired: 60
     durationYears: 1
-  - code: BTS-PARAM
-    name: BTS Paramédical
-    facultyCode: INSES
-    description: Cycle BTS en filières paramédicales
-    totalCreditsRequired: 120
-    durationYears: 2
 cycleLevels:
   - code: BTS1
     name: BTS 1ère année
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: BTS-SANTE
+    studyCycleCode: BTS
     facultyCode: INSES
   - code: BTS2
     name: BTS 2ème année
     orderIndex: 2
     minCredits: 120
+    studyCycleCode: BTS
+    facultyCode: INSES
+  - code: BTS-SANTE1
+    name: BTS Santé 1ère année
+    orderIndex: 1
+    minCredits: 60
     studyCycleCode: BTS-SANTE
     facultyCode: INSES
-  - code: BTS1-COM
-    name: BTS 1ère année
-    orderIndex: 1
-    minCredits: 60
-    studyCycleCode: BTS-COMMERCE
-    facultyCode: INSES
-  - code: BTS2-COM
-    name: BTS 2ème année
+  - code: BTS-SANTE2
+    name: BTS Santé 2ème année
     orderIndex: 2
     minCredits: 120
-    studyCycleCode: BTS-COMMERCE
+    studyCycleCode: BTS-SANTE
     facultyCode: INSES
-  - code: BTS1-PAR
-    name: BTS 1ère année
+  - code: BTS-SANTE3
+    name: BTS Santé 3ème année
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: HND1
+    name: HND 1ère année
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: BTS-PARAM
+    studyCycleCode: HND
     facultyCode: INSES
-  - code: BTS2-PAR
-    name: BTS 2ème année
+  - code: HND2
+    name: HND 2ème année
     orderIndex: 2
     minCredits: 120
-    studyCycleCode: BTS-PARAM
+    studyCycleCode: HND
+    facultyCode: INSES
+  - code: HND3
+    name: HND 3ème année
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: HND
     facultyCode: INSES
   - code: LP1
     name: Licence Pro 1ère année
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: LP-SANTE
+    studyCycleCode: LP
     facultyCode: INSES
   - code: LP2
     name: Licence Pro 2ème année
     orderIndex: 2
     minCredits: 120
-    studyCycleCode: LP-SANTE
+    studyCycleCode: LP
     facultyCode: INSES
   - code: LP3
     name: Licence Pro 3ème année
     orderIndex: 3
     minCredits: 180
-    studyCycleCode: LP-SANTE
+    studyCycleCode: LP
     facultyCode: INSES
   - code: MP1
     name: Master Pro 1ère année
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: MP-SANTE
+    studyCycleCode: MP
     facultyCode: INSES
   - code: MP2
     name: Master Pro 2ème année
     orderIndex: 2
     minCredits: 120
-    studyCycleCode: MP-SANTE
+    studyCycleCode: MP
     facultyCode: INSES
-  - code: CQP
+  - code: CQP1
     name: CQP/AQP
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: CQP-PARAM
+    studyCycleCode: CQP
     facultyCode: INSES
-  - code: DQP
+  - code: DQP1
     name: DQP/AQP
     orderIndex: 1
     minCredits: 60
-    studyCycleCode: DQP-PARAM
+    studyCycleCode: DQP
     facultyCode: INSES
 semesters:
   - code: S1
@@ -143,6 +158,18 @@ semesters:
   - code: S2
     name: Semestre 2
     orderIndex: 2
+  - code: S3
+    name: Semestre 3
+    orderIndex: 3
+  - code: S4
+    name: Semestre 4
+    orderIndex: 4
+  - code: S5
+    name: Semestre 5
+    orderIndex: 5
+  - code: S6
+    name: Semestre 6
+    orderIndex: 6
 academicYears:
   - code: AY-2025
     name: 2025-2026

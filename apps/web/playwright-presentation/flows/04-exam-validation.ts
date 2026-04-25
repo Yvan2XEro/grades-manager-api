@@ -10,13 +10,15 @@
  *  - "Comment gérer un workflow d'approbation des notes ?"
  */
 import { test } from "@playwright/test";
-import { SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Explorer les examens existants et comprendre leur structure
 // Question : "Quels examens sont déjà configurés et dans quel état sont-ils ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("08 - Liste des examens : états, types et actions disponibles", async ({ page }) => {
+test("08 - Liste des examens : états, types et actions disponibles", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Liste complète de tous les examens ──────────────────────────
@@ -47,7 +49,9 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({ p
 
 		// Ouvrir le menu actions
 		const actionsBtn = examRow
-			.locator('button:has-text("Actions"), button[aria-label*="actions"], button[aria-haspopup]')
+			.locator(
+				'button:has-text("Actions"), button[aria-label*="actions"], button[aria-haspopup]',
+			)
 			.first();
 		if (await actionsBtn.isVisible()) {
 			await actionsBtn.click();
@@ -63,11 +67,15 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({ p
 		await pause(1200);
 		await capture(page, "04e-exam-detail-complet");
 
-		await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 300, behavior: "smooth" }),
+		);
 		await pause(800);
 		await capture(page, "04f-exam-detail-liste-etudiants-notes");
 
-		await page.evaluate(() => window.scrollTo({ top: 700, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 700, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "04g-exam-detail-statistiques");
 
@@ -125,7 +133,9 @@ test("08 - Liste des examens : états, types et actions disponibles", async ({ p
 // SCÉNARIO 2 : Créer un nouvel examen complet avec workflow d'approbation
 // Question : "Comment créer un examen Final pour Physiologie S1 ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("09 - Création complète d'un examen Final Physiologie avec workflow", async ({ page }) => {
+test("09 - Création complète d'un examen Final Physiologie avec workflow", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 	await page.goto("/admin/exams");
 	await page.waitForLoadState("networkidle");
@@ -133,10 +143,14 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 
 	// ── ÉTAPE 1 : Bouton Ajouter ──────────────────────────────────────────────
 	const addBtn = page
-		.locator('[data-testid="add-exam-button"], [data-testid="add-exam-button-empty"]')
+		.locator(
+			'[data-testid="add-exam-button"], [data-testid="add-exam-button-empty"]',
+		)
 		.first();
 	const fallback = page
-		.locator('button:has-text("Add exam"), button:has-text("Ajouter"), button:has-text("Nouvel examen"), button:has-text("New exam")')
+		.locator(
+			'button:has-text("Add exam"), button:has-text("Ajouter"), button:has-text("Nouvel examen"), button:has-text("New exam")',
+		)
 		.first();
 	const btn = (await addBtn.count()) > 0 ? addBtn : fallback;
 
@@ -174,11 +188,15 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 
 	// ── ÉTAPE 3 : Nom de l'examen ─────────────────────────────────────────────
 	const nameInput = page
-		.locator('input[placeholder*="exam name"], input[placeholder*="nom"], input[name*="name"]')
+		.locator(
+			'input[placeholder*="exam name"], input[placeholder*="nom"], input[name*="name"]',
+		)
 		.first();
 	if (await nameInput.isVisible()) {
 		await nameInput.click();
-		await nameInput.type("Examen Final — Physiologie S1 2025-2026", { delay: 60 });
+		await nameInput.type("Examen Final — Physiologie S1 2025-2026", {
+			delay: 60,
+		});
 		await pause(500);
 		await capture(page, "04q-nom-examen-saisi");
 	}
@@ -186,7 +204,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 	// ── ÉTAPE 4 : Type d'examen : FINAL ──────────────────────────────────────
 	// Note : c'est un textbox libre avec autosuggestion
 	const typeInput = page
-		.locator('input[placeholder*="Midterm"], input[placeholder*="Final"], input[placeholder*="ype"]')
+		.locator(
+			'input[placeholder*="Midterm"], input[placeholder*="Final"], input[placeholder*="ype"]',
+		)
 		.first();
 	if (await typeInput.isVisible()) {
 		await typeInput.click();
@@ -194,7 +214,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 		await pause(600);
 		await capture(page, "04r-type-exam-saisi-final");
 		// Accepter l'autosuggestion si disponible
-		const suggestion = page.locator('[role="option"]:has-text("FINAL")').first();
+		const suggestion = page
+			.locator('[role="option"]:has-text("FINAL")')
+			.first();
 		if (await suggestion.isVisible({ timeout: 1200 }).catch(() => false)) {
 			await suggestion.click();
 		}
@@ -204,7 +226,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 	// ── ÉTAPE 5 : Date de l'examen ────────────────────────────────────────────
 	// "Quand aura lieu cet examen ?"
 	const dateBtn = page
-		.locator('button:has-text("Choose a date"), button[aria-label*="date"], input[type="date"]')
+		.locator(
+			'button:has-text("Choose a date"), button[aria-label*="date"], input[type="date"]',
+		)
 		.first();
 	if (await dateBtn.isVisible()) {
 		await dateBtn.click();
@@ -225,7 +249,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 	// ── ÉTAPE 6 : Poids (coefficient) — 60% de la note finale ────────────────
 	// "Quel est le poids de cet examen dans la note finale du cours ?"
 	const weightInput = page
-		.locator('input[type="number"][name*="weight"], input[placeholder*="Weight"], spinbutton')
+		.locator(
+			'input[type="number"][name*="weight"], input[placeholder*="Weight"], spinbutton',
+		)
 		.first();
 	if (await weightInput.isVisible()) {
 		await weightInput.click();
@@ -239,7 +265,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 
 	// ── ÉTAPE 8 : Bouton de sauvegarde ───────────────────────────────────────
 	const saveBtn = page
-		.locator('button:has-text("Save exam"), button:has-text("Enregistrer"), button:has-text("Créer"), button:has-text("Create")')
+		.locator(
+			'button:has-text("Save exam"), button:has-text("Enregistrer"), button:has-text("Créer"), button:has-text("Create")',
+		)
 		.first();
 	if (await saveBtn.isVisible()) {
 		await saveBtn.scrollIntoViewIfNeeded();
@@ -256,7 +284,9 @@ test("09 - Création complète d'un examen Final Physiologie avec workflow", asy
 // SCÉNARIO 3 : Le planificateur — organiser les examens dans le calendrier
 // Question : "Comment visualiser et organiser tous les examens dans le temps ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("10 - Planificateur d'examens : calendrier et gestion des conflits", async ({ page }) => {
+test("10 - Planificateur d'examens : calendrier et gestion des conflits", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Vue calendrier mensuelle des examens ────────────────────────
@@ -274,7 +304,9 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 
 	// ── ÉTAPE 3 : Survoler un examen dans le calendrier ──────────────────────
 	// "Que se passe-t-il si je survole un examen dans le calendrier ?"
-	const calendarEvent = page.locator('[class*="event"], [class*="exam"], [data-testid*="exam"]').first();
+	const calendarEvent = page
+		.locator('[class*="event"], [class*="exam"], [data-testid*="exam"]')
+		.first();
 	if (await calendarEvent.isVisible()) {
 		await calendarEvent.hover();
 		await pause(700);
@@ -283,7 +315,9 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 
 	// ── ÉTAPE 4 : Navigation vers le mois suivant ────────────────────────────
 	const nextBtn = page
-		.locator('button[aria-label*="next"], button[aria-label*="Next"], button[aria-label*="suivant"]')
+		.locator(
+			'button[aria-label*="next"], button[aria-label*="Next"], button[aria-label*="suivant"]',
+		)
 		.first();
 	if (await nextBtn.isVisible()) {
 		await nextBtn.click();
@@ -292,7 +326,9 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 
 		// Revenir au mois courant
 		const prevBtn = page
-			.locator('button[aria-label*="prev"], button[aria-label*="Prev"], button[aria-label*="précédent"]')
+			.locator(
+				'button[aria-label*="prev"], button[aria-label*="Prev"], button[aria-label*="précédent"]',
+			)
 			.first();
 		if (await prevBtn.isVisible()) {
 			await prevBtn.click();
@@ -302,7 +338,11 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 	}
 
 	// ── ÉTAPE 5 : Vue liste du planificateur (si disponible) ─────────────────
-	const listViewBtn = page.locator('button:has-text("Liste"), button:has-text("List"), [aria-label*="list"]').first();
+	const listViewBtn = page
+		.locator(
+			'button:has-text("Liste"), button:has-text("List"), [aria-label*="list"]',
+		)
+		.first();
 	if (await listViewBtn.isVisible()) {
 		await listViewBtn.click();
 		await pause(900);
@@ -317,7 +357,9 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 
 	// Chercher les examens avec des workflows en attente
 	const workflowBtn = page
-		.locator('button:has-text("Workflows"), button:has-text("Approbation"), a[href*="workflow"]')
+		.locator(
+			'button:has-text("Workflows"), button:has-text("Approbation"), a[href*="workflow"]',
+		)
 		.first();
 	if (await workflowBtn.isVisible()) {
 		await workflowBtn.click();
@@ -325,7 +367,9 @@ test("10 - Planificateur d'examens : calendrier et gestion des conflits", async 
 		await pause(1200);
 		await capture(page, "05d-workflows-approbation-liste");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "05e-workflows-details");
 	} else {

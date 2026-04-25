@@ -54,6 +54,7 @@ export async function list(opts: {
 	teacherId?: string;
 	academicYearId?: string;
 	semesterId?: string;
+	ueSemester?: string;
 	classCourseIds?: string[];
 	cursor?: string;
 	limit?: number;
@@ -78,6 +79,28 @@ export async function list(opts: {
 		}
 	}
 
+	// If filtering by UE semester, resolve matching course IDs via teaching-unit join
+	let courseIdsFromSemester: string[] | undefined;
+	if (opts.ueSemester) {
+		const matchingCourses = await db
+			.select({ id: schema.courses.id })
+			.from(schema.courses)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(
+				eq(
+					schema.teachingUnits.semester,
+					opts.ueSemester as schema.TeachingUnitSemester,
+				),
+			);
+		courseIdsFromSemester = matchingCourses.map((c) => c.id);
+		if (courseIdsFromSemester.length === 0) {
+			return { items: [], nextCursor: undefined };
+		}
+	}
+
 	const conditions = [
 		eq(schema.classCourses.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
@@ -85,11 +108,11 @@ export async function list(opts: {
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
 			: undefined,
-		opts.semesterId
-			? eq(schema.classCourses.semesterId, opts.semesterId)
-			: undefined,
 		classIdsFromYear
 			? inArray(schema.classCourses.class, classIdsFromYear)
+			: undefined,
+		courseIdsFromSemester
+			? inArray(schema.classCourses.course, courseIdsFromSemester)
 			: undefined,
 		opts.classCourseIds && opts.classCourseIds.length > 0
 			? inArray(schema.classCourses.id, opts.classCourseIds)
@@ -111,6 +134,13 @@ export async function list(opts: {
 				columns: {
 					name: true,
 					code: true,
+				},
+				with: {
+					teachingUnit: {
+						columns: {
+							semester: true,
+						},
+					},
 				},
 			},
 			teacherRef: {
@@ -140,6 +170,7 @@ export async function list(opts: {
 		semesterId: row.semesterId,
 		courseName: row.courseRef?.name,
 		courseCode: row.courseRef?.code,
+		ueSemester: row.courseRef?.teachingUnit?.semester ?? null,
 		teacherFirstName: row.teacherRef?.firstName,
 		teacherLastName: row.teacherRef?.lastName,
 	}));

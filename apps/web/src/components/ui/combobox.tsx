@@ -79,12 +79,15 @@ export function Combobox({
 					)}
 				>
 					<span className="flex-1 truncate text-left">
-						{selected ? selected.label : (placeholder ?? t("common.select", { defaultValue: "Sélectionner..." }))}
+						{selected
+							? selected.label
+							: (placeholder ??
+								t("common.select", { defaultValue: "Sélectionner..." }))}
 					</span>
 					<div className="flex shrink-0 items-center gap-1">
 						{clearable && selected && (
 							<X
-								className="h-3.5 w-3.5 opacity-50 hover:opacity-100 transition-opacity"
+								className="h-3.5 w-3.5 opacity-50 transition-opacity hover:opacity-100"
 								onClick={handleClear}
 							/>
 						)}
@@ -92,16 +95,23 @@ export function Combobox({
 					</div>
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-full min-w-[var(--radix-popover-trigger-width)] p-0" align="start">
+			<PopoverContent
+				className="w-full min-w-[var(--radix-popover-trigger-width)] p-0"
+				align="start"
+			>
 				<Command>
 					{options.length > searchThreshold && (
 						<CommandInput
-							placeholder={searchPlaceholder ?? t("common.search", { defaultValue: "Rechercher..." })}
+							placeholder={
+								searchPlaceholder ??
+								t("common.search", { defaultValue: "Rechercher..." })
+							}
 						/>
 					)}
 					<CommandList>
 						<CommandEmpty>
-							{emptyText ?? t("common.noResults", { defaultValue: "Aucun résultat." })}
+							{emptyText ??
+								t("common.noResults", { defaultValue: "Aucun résultat." })}
 						</CommandEmpty>
 						<CommandGroup>
 							{options.map((option) => (
@@ -114,13 +124,15 @@ export function Combobox({
 									<Check
 										className={cn(
 											"h-4 w-4 shrink-0 transition-opacity",
-											value === option.value ? "opacity-100 text-primary" : "opacity-0",
+											value === option.value
+												? "text-primary opacity-100"
+												: "opacity-0",
 										)}
 									/>
-									<div className="flex flex-col min-w-0">
+									<div className="flex min-w-0 flex-col">
 										<span className="truncate">{option.label}</span>
 										{option.description && (
-											<span className="text-muted-foreground text-xs truncate">
+											<span className="truncate text-muted-foreground text-xs">
 												{option.description}
 											</span>
 										)}

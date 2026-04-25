@@ -208,9 +208,7 @@ const TeacherDashboard: React.FC = () => {
 		<div className="space-y-8">
 			{/* Header */}
 			<motion.div variants={fadeUp} initial="hidden" animate="visible">
-				<h1 className="text-foreground">
-					{t("teacher.dashboard.title")}
-				</h1>
+				<h1 className="text-foreground">{t("teacher.dashboard.title")}</h1>
 				<p className="mt-1 text-muted-foreground text-sm">
 					{t("teacher.dashboard.subtitle", {
 						name: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),

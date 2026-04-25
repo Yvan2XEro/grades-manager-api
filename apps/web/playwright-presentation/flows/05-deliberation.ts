@@ -10,13 +10,15 @@
  *  - "Comment consulter l'historique des promotions passées ?"
  */
 import { test } from "@playwright/test";
-import { SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Consulter les délibérations existantes et leurs résultats
 // Question : "Les délibérations de l'année dernière — comment voir les résultats ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("11 - Délibérations : liste, détail et résultats par étudiant", async ({ page }) => {
+test("11 - Délibérations : liste, détail et résultats par étudiant", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Liste des délibérations ─────────────────────────────────────
@@ -51,7 +53,9 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 
 		// ── ÉTAPE 5 : Voir les résultats par étudiant ─────────────────────────
 		// "Quel étudiant a été admis, refusé, ou doit repasser ?"
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(1000);
 		await capture(page, "05e-deliberation-resultats-etudiants");
 
@@ -66,7 +70,9 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 
 		// ── ÉTAPE 6 : Statistiques de la délibération ─────────────────────────
 		// "Quel est le taux de réussite de cette promotion ?"
-		await page.evaluate(() => window.scrollTo({ top: 800, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 800, behavior: "smooth" }),
+		);
 		await pause(900);
 		await capture(page, "05g-deliberation-statistiques-taux");
 
@@ -79,7 +85,9 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 			await tabs.nth(i).click();
 			await pause(900);
 			await capture(page, `05h-deliberation-onglet-${i}`);
-			await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+			await page.evaluate(() =>
+				window.scrollTo({ top: 0, behavior: "smooth" }),
+			);
 			await pause(500);
 		}
 
@@ -92,7 +100,9 @@ test("11 - Délibérations : liste, détail et résultats par étudiant", async 
 // SCÉNARIO 2 : Configurer les règles de promotion
 // Question : "Comment paramétrer les critères de passage en année supérieure ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("12 - Règles de promotion : configuration et compréhension", async ({ page }) => {
+test("12 - Règles de promotion : configuration et compréhension", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Vue d'ensemble des règles de promotion ─────────────────────
@@ -115,7 +125,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 	await capture(page, "05k-editeur-regles-liste");
 
 	// Survoler chaque règle pour voir sa description
-	const rules = page.locator('[class*="card"], li[class*="rule"], table tbody tr');
+	const rules = page.locator(
+		'[class*="card"], li[class*="rule"], table tbody tr',
+	);
 	const ruleCount = await rules.count();
 	for (let i = 0; i < Math.min(ruleCount, 4); i++) {
 		await rules.nth(i).hover();
@@ -132,7 +144,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 		await pause(1000);
 		await capture(page, "05m-regle-detail-criteres");
 
-		await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 300, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "05n-regle-detail-parametres");
 
@@ -148,7 +162,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 	await capture(page, "05o-evaluation-page-landing");
 
 	// ── ÉTAPE 5 : Sélectionner la classe à évaluer ────────────────────────────
-	const classSelect = page.locator('[role="combobox"], [data-testid="class-select"]').first();
+	const classSelect = page
+		.locator('[role="combobox"], [data-testid="class-select"]')
+		.first();
 	if (await classSelect.isVisible()) {
 		await classSelect.click();
 		await pause(700);
@@ -169,7 +185,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 
 	// ── ÉTAPE 6 : Lancer l'évaluation pour voir les résultats prévisionnels ───
 	const evalBtn = page
-		.locator('button:has-text("Évaluer"), button:has-text("Evaluate"), button:has-text("Analyser"), button:has-text("Run"), button:has-text("Simuler")')
+		.locator(
+			'button:has-text("Évaluer"), button:has-text("Evaluate"), button:has-text("Analyser"), button:has-text("Run"), button:has-text("Simuler")',
+		)
 		.first();
 	if (await evalBtn.isVisible()) {
 		await evalBtn.scrollIntoViewIfNeeded();
@@ -182,7 +200,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 		await capture(page, "05s-resultats-evaluation-previsionnel");
 
 		// Voir les résultats étudiant par étudiant
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(900);
 		await capture(page, "05t-resultats-par-etudiant");
 
@@ -203,7 +223,9 @@ test("12 - Règles de promotion : configuration et compréhension", async ({ pag
 // SCÉNARIO 3 : Exécution officielle de la délibération et promotion
 // Question : "Comment lancer officiellement la délibération et valider les résultats ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("13 - Exécution de la délibération et historique des promotions", async ({ page }) => {
+test("13 - Exécution de la délibération et historique des promotions", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Page d'exécution officielle ────────────────────────────────
@@ -218,7 +240,9 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 	await pause(600);
 
 	// Sélectionner une classe pour exécution
-	const classSelect = page.locator('[role="combobox"], [data-testid="class-select"]').first();
+	const classSelect = page
+		.locator('[role="combobox"], [data-testid="class-select"]')
+		.first();
 	if (await classSelect.isVisible()) {
 		await classSelect.click();
 		await pause(700);
@@ -239,7 +263,9 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 
 	// ── Bouton d'exécution (on survole seulement, on ne clique pas) ───────────
 	const execBtn = page
-		.locator('button:has-text("Exécuter"), button:has-text("Execute"), button:has-text("Valider"), button:has-text("Lancer")')
+		.locator(
+			'button:has-text("Exécuter"), button:has-text("Execute"), button:has-text("Valider"), button:has-text("Lancer")',
+		)
 		.first();
 	if (await execBtn.isVisible()) {
 		await execBtn.scrollIntoViewIfNeeded();
@@ -271,7 +297,9 @@ test("13 - Exécution de la délibération et historique des promotions", async 
 		await pause(1200);
 		await capture(page, "06c-historique-record-complet");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "06d-historique-decisions-individuelles");
 

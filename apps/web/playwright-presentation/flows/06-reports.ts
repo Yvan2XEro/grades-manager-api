@@ -10,7 +10,7 @@
  *  - "Comment gérer les numéros d'inscription automatiques ?"
  */
 import { test } from "@playwright/test";
-import { SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import { capture, loginAs, pause, SEED_DATA } from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Générer et exporter le relevé de notes d'une promotion
@@ -68,7 +68,9 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 	await pause(500);
 	const exportBtn = page
-		.locator('button:has-text("Exporter"), button:has-text("Export"), button:has-text("Télécharger"), button:has-text("Download")')
+		.locator(
+			'button:has-text("Exporter"), button:has-text("Export"), button:has-text("Télécharger"), button:has-text("Download")',
+		)
 		.first();
 	if (await exportBtn.isVisible()) {
 		await exportBtn.scrollIntoViewIfNeeded();
@@ -79,7 +81,9 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 		// Si menu déroulant avec formats
 		await exportBtn.click();
 		await pause(700);
-		const exportMenu = page.locator('[role="menu"], [data-testid*="export-menu"]').first();
+		const exportMenu = page
+			.locator('[role="menu"], [data-testid*="export-menu"]')
+			.first();
 		if (await exportMenu.isVisible()) {
 			await capture(page, "06m-export-menu-formats");
 			await page.keyboard.press("Escape");
@@ -102,7 +106,9 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 			await pause(1100);
 			await capture(page, "06n-export-compta-filtre");
 
-			await page.evaluate(() => window.scrollTo({ top: 300, behavior: "smooth" }));
+			await page.evaluate(() =>
+				window.scrollTo({ top: 300, behavior: "smooth" }),
+			);
 			await pause(700);
 			await capture(page, "06o-export-compta-table");
 		} else {
@@ -115,7 +121,9 @@ test("14 - Export des notes : relevé officiel par classe", async ({ page }) => 
 // SCÉNARIO 2 : Configurer les templates d'export personnalisés
 // Question : "Comment créer un template de relevé aux couleurs de l'institution ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("15 - Templates d'export : configuration et personnalisation", async ({ page }) => {
+test("15 - Templates d'export : configuration et personnalisation", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Liste des templates d'export existants ─────────────────────
@@ -142,11 +150,15 @@ test("15 - Templates d'export : configuration et personnalisation", async ({ pag
 		await capture(page, "06r-template-detail-structure");
 
 		// Voir la configuration complète
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(800);
 		await capture(page, "06s-template-detail-config");
 
-		await page.evaluate(() => window.scrollTo({ top: 800, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 800, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "06t-template-detail-bas");
 
@@ -188,7 +200,9 @@ test("15 - Templates d'export : configuration et personnalisation", async ({ pag
 // SCÉNARIO 3 : Monitoring système, batch jobs et administration technique
 // Question : "Comment surveiller la santé du système ? Où voir les erreurs ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("16 - Monitoring, batch jobs et administration système", async ({ page }) => {
+test("16 - Monitoring, batch jobs et administration système", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Dashboard de monitoring ────────────────────────────────────
@@ -232,11 +246,15 @@ test("16 - Monitoring, batch jobs et administration système", async ({ page }) 
 		await pause(1200);
 		await capture(page, "07d-batch-job-detail-status");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(800);
 		await capture(page, "07e-batch-job-logs-progression");
 
-		await page.evaluate(() => window.scrollTo({ top: 800, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 800, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "07f-batch-job-historique-executions");
 
@@ -249,7 +267,9 @@ test("16 - Monitoring, batch jobs et administration système", async ({ page }) 
 // SCÉNARIO 4 : Institution, intégration externe et clés API
 // Question : "Comment configurer l'intégration avec le système de diplomation ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("17 - Configuration institution, API keys et notifications", async ({ page }) => {
+test("17 - Configuration institution, API keys et notifications", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Fiche de l'institution INSES ───────────────────────────────
@@ -294,7 +314,9 @@ test("17 - Configuration institution, API keys et notifications", async ({ page 
 
 	// Bouton "Créer une nouvelle clé"
 	const createKeyBtn = page
-		.locator('button:has-text("Créer"), button:has-text("Create"), button:has-text("Generate"), button:has-text("Ajouter")')
+		.locator(
+			'button:has-text("Créer"), button:has-text("Create"), button:has-text("Generate"), button:has-text("Ajouter")',
+		)
 		.first();
 	if (await createKeyBtn.isVisible()) {
 		await createKeyBtn.scrollIntoViewIfNeeded();

@@ -1,13 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
-import {
-	Empty,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "../../../components/ui/empty";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -16,11 +13,22 @@ import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelec
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../../components/ui/context-menu";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../../../components/ui/empty";
 import {
 	Select,
 	SelectContent,
@@ -36,10 +44,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "../../../components/ui/context-menu";
 import { TableSkeleton } from "../../../components/ui/table-skeleton";
 import { trpcClient } from "../../../utils/trpc";
 import CreateDeliberationDialog from "./CreateDeliberationDialog";
@@ -66,9 +70,9 @@ export default function DeliberationsList() {
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 
-	const deliberationsQuery = useQuery({
+	const deliberationsQuery = useInfiniteQuery({
 		queryKey: ["deliberations", statusFilter, typeFilter, academicYearId],
-		queryFn: () =>
+		queryFn: ({ pageParam }) =>
 			trpcClient.deliberations.list.query({
 				status:
 					statusFilter !== "all"
@@ -79,9 +83,11 @@ export default function DeliberationsList() {
 						? (typeFilter as (typeof TYPES)[number])
 						: undefined,
 				academicYearId: academicYearId || undefined,
-				limit: 100,
-				offset: 0,
+				limit: 50,
+				cursor: pageParam as string | undefined,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor,
 	});
 
 	const deleteMutation = useMutation({
@@ -93,7 +99,7 @@ export default function DeliberationsList() {
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	const items = deliberationsQuery.data?.items ?? [];
+	const items = deliberationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -159,18 +165,21 @@ export default function DeliberationsList() {
 
 			{/* Table */}
 			<div className="rounded-xl border bg-card shadow-sm">
-				{deliberationsQuery.isLoading ? (
+				{deliberationsQuery.isLoading &&
+				!deliberationsQuery.isFetchingNextPage ? (
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
 					<Empty className="border border-dashed">
-					<EmptyHeader>
-						<EmptyMedia variant="icon">
-							<Gavel className="text-muted-foreground" />
-						</EmptyMedia>
-						<EmptyTitle>{t("admin.deliberations.empty.title")}</EmptyTitle>
-						<EmptyDescription>{t("admin.deliberations.empty.description")}</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Gavel className="text-muted-foreground" />
+							</EmptyMedia>
+							<EmptyTitle>{t("admin.deliberations.empty.title")}</EmptyTitle>
+							<EmptyDescription>
+								{t("admin.deliberations.empty.description")}
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
 					<Table>
 						<TableHeader>
@@ -194,10 +203,35 @@ export default function DeliberationsList() {
 									key={d.id}
 									className="cursor-pointer"
 									onClick={() => navigate(`/admin/deliberations/${d.id}`)}
-									actions={<>
-										<ContextMenuItem onSelect={() => navigate(`/admin/deliberations/${d.id}`)}>{t("common.actions.open", { defaultValue: "Open" })}</ContextMenuItem>
-										{d.status === "draft" && <><ContextMenuSeparator /><ContextMenuItem className="text-destructive" onSelect={() => { if (window.confirm(t("admin.deliberations.confirm.delete"))) {} }}>{t("common.actions.delete")}</ContextMenuItem></>}
-									</>}
+									actions={
+										<>
+											<ContextMenuItem
+												onSelect={() =>
+													navigate(`/admin/deliberations/${d.id}`)
+												}
+											>
+												{t("common.actions.open", { defaultValue: "Open" })}
+											</ContextMenuItem>
+											{d.status === "draft" && (
+												<>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														className="text-destructive"
+														onSelect={() => {
+															if (
+																window.confirm(
+																	t("admin.deliberations.confirm.delete"),
+																)
+															) {
+															}
+														}}
+													>
+														{t("common.actions.delete")}
+													</ContextMenuItem>
+												</>
+											)}
+										</>
+									}
 								>
 									<TableCell className="font-medium">
 										{d.classRef?.name ?? "—"}
@@ -263,6 +297,21 @@ export default function DeliberationsList() {
 					</Table>
 				)}
 			</div>
+
+			{deliberationsQuery.hasNextPage && (
+				<div className="flex justify-center">
+					<Button
+						variant="outline"
+						onClick={() => deliberationsQuery.fetchNextPage()}
+						disabled={deliberationsQuery.isFetchingNextPage}
+					>
+						{deliberationsQuery.isFetchingNextPage && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						{t("common.loadMore", { defaultValue: "Charger plus" })}
+					</Button>
+				</div>
+			)}
 
 			<CreateDeliberationDialog
 				open={isCreateOpen}

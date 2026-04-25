@@ -9,13 +9,21 @@
  *  - "En tant qu'étudiant, comment je consulte mes notes ?"
  */
 import { test } from "@playwright/test";
-import { CREDENTIALS, SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import {
+	CREDENTIALS,
+	capture,
+	loginAs,
+	pause,
+	SEED_DATA,
+} from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Connexion et découverte du tableau de bord administrateur
 // Question : "Qu'est-ce que l'admin voit dès qu'il se connecte ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", async ({ page }) => {
+test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", async ({
+	page,
+}) => {
 	// ── ÉTAPE 1 : Page de connexion vierge ────────────────────────────────────
 	// L'admin ouvre l'application pour la première fois de la journée
 	await page.goto("/auth/login");
@@ -46,7 +54,9 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 	await capture(page, "01d-dashboard-admin-complet");
 
 	// ── ÉTAPE 5 : Survol des cartes statistiques pour voir les chiffres ───────
-	const statCards = page.locator('[class*="card"]:visible, [class*="Card"]:visible');
+	const statCards = page.locator(
+		'[class*="card"]:visible, [class*="Card"]:visible',
+	);
 	const cardCount = await statCards.count();
 	for (let i = 0; i < Math.min(cardCount, 6); i++) {
 		await statCards.nth(i).scrollIntoViewIfNeeded();
@@ -75,7 +85,9 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 
 	// Trouver et survoler l'année active 2025-2026
 	const activeYearRow = page
-		.locator(`tr:has-text("${SEED_DATA.academicYear.label}"), [class*="card"]:has-text("${SEED_DATA.academicYear.label}")`)
+		.locator(
+			`tr:has-text("${SEED_DATA.academicYear.label}"), [class*="card"]:has-text("${SEED_DATA.academicYear.label}")`,
+		)
 		.first();
 	if (await activeYearRow.isVisible()) {
 		await activeYearRow.hover();
@@ -107,7 +119,9 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await pause(1000);
 		await capture(page, "01l-faculte-detail-programmes");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "01m-faculte-cycles-etudes");
 		await page.goBack();
@@ -137,7 +151,9 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 		await pause(1200);
 		await capture(page, "01p-classe-detail-composition");
 
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(700);
 		await capture(page, "01q-classe-detail-cours-assigns");
 		await page.goBack();
@@ -155,7 +171,9 @@ test("01 - Tableau de bord admin : vue d'ensemble et navigation complète", asyn
 // SCÉNARIO 2 : Perspective enseignant — accès ciblé sur ses responsabilités
 // Question : "Comment un enseignant navigue-t-il ? Que peut-il voir ou faire ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilités", async ({ page }) => {
+test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilités", async ({
+	page,
+}) => {
 	// L'enseignant se connecte et voit son espace personnel
 	await loginAs(page, "teacher");
 	await pause(1400);
@@ -172,7 +190,9 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 
 	// ── Ses cours assignés — Anatomie Humaine ────────────────────────────────
 	// L'enseignant survole la card de son cours pour voir le résumé
-	const anatCard = page.locator('a:has-text("Anatomie"), [class*="card"]:has-text("Anatomie")').first();
+	const anatCard = page
+		.locator('a:has-text("Anatomie"), [class*="card"]:has-text("Anatomie")')
+		.first();
 	if (await anatCard.isVisible()) {
 		await anatCard.hover();
 		await pause(700);
@@ -196,12 +216,16 @@ test("02 - Tableau de bord enseignant : Dr. Mballa découvre ses responsabilité
 		await capture(page, "01w-teacher-cours-detail");
 
 		// Voir les étudiants inscrits dans ce cours
-		await page.evaluate(() => window.scrollTo({ top: 400, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 400, behavior: "smooth" }),
+		);
 		await pause(800);
 		await capture(page, "01x-teacher-cours-etudiants-inscrits");
 
 		// Voir les examens associés à ce cours
-		await page.evaluate(() => window.scrollTo({ top: 800, behavior: "smooth" }));
+		await page.evaluate(() =>
+			window.scrollTo({ top: 800, behavior: "smooth" }),
+		);
 		await pause(800);
 		await capture(page, "01y-teacher-cours-examens-associes");
 

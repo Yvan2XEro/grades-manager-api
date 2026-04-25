@@ -1,5 +1,5 @@
-import { and, eq, isNotNull } from "drizzle-orm";
 import { createHmac } from "node:crypto";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { diplomationApiKeys } from "@/db/schema/app-schema";
 
@@ -16,6 +16,8 @@ export type WebhookEvent =
 	| {
 			event: "semester.grades_locked";
 			semesterId: string;
+			/** "fall" | "spring" — teachingUnit enum key for this semester */
+			semesterKey: string;
 			institutionId: string;
 			classId: string;
 			academicYearId: string;

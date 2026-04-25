@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
 	router,
@@ -7,6 +8,7 @@ import {
 import * as deliberationsService from "../deliberations/deliberations.service";
 import { ExportsService } from "./exports.service";
 import {
+	generateCourseCatalogSchema,
 	generateDeliberationSchema,
 	generateEvaluationSchema,
 	generatePVSchema,
@@ -169,6 +171,25 @@ export const exportsRouter = router({
 				diplomationData,
 			);
 			return result.content;
+		}),
+
+	/** Generate a PDF catalogue of UEs and ECs for given classes */
+	generateCourseCatalog: tenantAdminProcedure
+		.input(generateCourseCatalogSchema)
+		.mutation(async ({ ctx, input }) => {
+			if (input.classIds.length === 0 && !input.academicYearId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Provide classIds or academicYearId",
+				});
+			}
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.generateCourseCatalog(input);
+			return {
+				data: result.content,
+				filename: `Catalogue_UE_${new Date().toISOString().slice(0, 10)}.${input.format === "html" ? "html" : "pdf"}`,
+				mimeType: result.mimeType,
+			};
 		}),
 
 	previewTemplate: tenantAdminProcedure

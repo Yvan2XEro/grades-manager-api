@@ -7,8 +7,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -55,9 +55,7 @@ const ForgotPassword: React.FC = () => {
 				>
 					<Mail className="h-6 w-6 text-primary" />
 				</motion.div>
-				<h2 className="text-foreground">
-					{t("auth.forgot.title")}
-				</h2>
+				<h2 className="text-foreground">{t("auth.forgot.title")}</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
 					{t("auth.forgot.subtitle", {
 						defaultValue:

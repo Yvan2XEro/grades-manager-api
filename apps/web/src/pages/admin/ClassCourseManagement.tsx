@@ -1,9 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import {
 	AlertTriangle,
 	BookOpen,
+	FileDown,
 	Layers,
 	Pencil,
 	Plus,
@@ -13,12 +19,11 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
-import { Switch } from "@/components/ui/switch";
+import FormModal from "@/components/modals/FormModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -40,7 +45,10 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
-import FormModal from "@/components/modals/FormModal";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import {
 	Empty,
 	EmptyContent,
@@ -58,7 +66,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -67,6 +74,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -75,13 +83,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpcClient } from "@/utils/trpc";
 
@@ -120,6 +126,7 @@ interface ClassCourse {
 	semesterId: string | null;
 	courseName?: string | null;
 	courseCode?: string | null;
+	ueSemester?: string | null;
 	coefficient: number;
 }
 
@@ -166,6 +173,11 @@ export default function ClassCourseManagement() {
 	const [autoEnrollYearId, setAutoEnrollYearId] = useState<string | null>(null);
 	const [autoEnrollClassSearch, setAutoEnrollClassSearch] = useState("");
 	const [autoEnrollOnCreate, setAutoEnrollOnCreate] = useState(false);
+
+	// PDF export state
+	const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
+	const [pdfScope, setPdfScope] = useState<"year" | "selection">("year");
+	const [pdfSelectedClassIds, setPdfSelectedClassIds] = useState<string[]>([]);
 
 	// UE bulk assignment state
 	const [isUeAssignOpen, setIsUeAssignOpen] = useState(false);
@@ -290,14 +302,29 @@ export default function ClassCourseManagement() {
 		},
 	});
 
-	const { data: classCoursesData, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+	// Map catalog semester code (S1/S2) → UE semester value (fall/spring/annual)
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semesters) return undefined;
+		const code = semesters.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semesters]);
+
+	const {
+		data: classCoursesData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
 		queryKey: ["classCourses", filterYear, filterSemester],
 		queryFn: async ({ pageParam }) => {
 			const { items, nextCursor } = await trpcClient.classCourses.list.query({
 				cursor: pageParam,
 				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return {
 				items: items.map(
@@ -311,6 +338,7 @@ export default function ClassCourseManagement() {
 							semesterId: cc.semesterId ?? null,
 							courseName: cc.courseName,
 							courseCode: cc.courseCode,
+							ueSemester: (cc as any).ueSemester ?? null,
 							coefficient: cc.coefficient ?? 1,
 						}) as ClassCourse,
 				),
@@ -321,7 +349,9 @@ export default function ClassCourseManagement() {
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 	const classCourses = classCoursesData?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 
 	const { data: semestersData } = useQuery({
 		queryKey: ["semesters"],
@@ -498,6 +528,41 @@ export default function ClassCourseManagement() {
 	);
 
 	const selection = useRowSelection(displayedClassCourses);
+
+	const exportCatalogMutation = useMutation({
+		mutationFn: async () => {
+			return trpcClient.exports.generateCourseCatalog.mutate({
+				classIds: pdfScope === "selection" ? pdfSelectedClassIds : [],
+				academicYearId:
+					pdfScope === "year" && filterYear ? filterYear : undefined,
+				format: "pdf",
+			});
+		},
+		onSuccess: (result) => {
+			const bytes = atob(result.data as string);
+			const arr = new Uint8Array(bytes.length);
+			for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+			const blob = new Blob([arr], { type: "application/pdf" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = result.filename;
+			a.click();
+			URL.revokeObjectURL(url);
+			setIsPdfExportOpen(false);
+			toast.success(
+				t("admin.classCourses.export.success", {
+					defaultValue: "Catalogue exporté avec succès",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("admin.classCourses.export.error", {
+					defaultValue: "Erreur lors de l'export PDF",
+				}),
+			),
+	});
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -704,7 +769,9 @@ export default function ClassCourseManagement() {
 		enabled: autoEnrollClassSearch.length >= 2,
 	});
 	const autoEnrollClasses =
-		autoEnrollClassSearch.length >= 2 ? autoEnrollSearchClasses : defaultClasses;
+		autoEnrollClassSearch.length >= 2
+			? autoEnrollSearchClasses
+			: defaultClasses;
 
 	const autoEnrollMutation = useMutation({
 		mutationFn: ({
@@ -844,14 +911,18 @@ export default function ClassCourseManagement() {
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
-					<h1 className="text-foreground">
-						{t("admin.classCourses.title")}
-					</h1>
+					<h1 className="text-foreground">{t("admin.classCourses.title")}</h1>
 					<p className="text-muted-foreground">
 						{t("admin.classCourses.subtitle")}
 					</p>
 				</div>
 				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setIsPdfExportOpen(true)}>
+						<FileDown className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.exportPdf", {
+							defaultValue: "Exporter PDF",
+						})}
+					</Button>
 					<Button variant="outline" onClick={() => setIsAutoEnrollOpen(true)}>
 						<Users className="mr-2 h-4 w-4" />
 						{t("admin.classCourses.actions.autoEnroll", {
@@ -873,7 +944,7 @@ export default function ClassCourseManagement() {
 
 			<Card className="mb-4">
 				<CardHeader className="pb-3">
-					<CardTitle className="text-sm font-medium text-muted-foreground">
+					<CardTitle className="font-medium text-muted-foreground text-sm">
 						{t("admin.classes.filters.title", { defaultValue: "Filters" })}
 					</CardTitle>
 				</CardHeader>
@@ -934,8 +1005,8 @@ export default function ClassCourseManagement() {
 			<Card>
 				<CardContent>
 					{isLoading ? (
-					<TableSkeleton columns={8} rows={8} />
-				) : displayedClassCourses.length > 0 ? (
+						<TableSkeleton columns={8} rows={8} />
+					) : displayedClassCourses.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -969,11 +1040,25 @@ export default function ClassCourseManagement() {
 							</TableHeader>
 							<TableBody>
 								{displayedClassCourses.map((classCourse) => (
-									<TableRow key={classCourse.id} actions={<>
-										<ContextMenuItem onSelect={() => startEdit(classCourse)}>{t("common.actions.edit")}</ContextMenuItem>
-										<ContextMenuSeparator />
-										<ContextMenuItem className="text-destructive" onSelect={() => confirmDelete(classCourse.id)}>{t("common.actions.delete")}</ContextMenuItem>
-									</>}>
+									<TableRow
+										key={classCourse.id}
+										actions={
+											<>
+												<ContextMenuItem
+													onSelect={() => startEdit(classCourse)}
+												>
+													{t("common.actions.edit")}
+												</ContextMenuItem>
+												<ContextMenuSeparator />
+												<ContextMenuItem
+													className="text-destructive"
+													onSelect={() => confirmDelete(classCourse.id)}
+												>
+													{t("common.actions.delete")}
+												</ContextMenuItem>
+											</>
+										}
+									>
 										<TableCell>
 											<Checkbox
 												checked={selection.isSelected(classCourse.id)}
@@ -1001,37 +1086,32 @@ export default function ClassCourseManagement() {
 												})}
 										</TableCell>
 										<TableCell>
-											{(() => {
-												const info = courseMap.get(classCourse.course);
-												if (!info) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
-												}
-												return (
-													<div className="space-y-0.5">
-														<p className="font-medium text-sm">{info.name}</p>
-														{info.code && (
-															<p className="text-muted-foreground text-xs">
-																{info.code}
-															</p>
-														)}
-													</div>
-												);
-											})()}
+											{classCourse.courseName ? (
+												<div className="space-y-0.5">
+													<p className="font-medium text-sm">
+														{classCourse.courseName}
+													</p>
+													{classCourse.courseCode && (
+														<p className="text-muted-foreground text-xs">
+															{classCourse.courseCode}
+														</p>
+													)}
+												</div>
+											) : (
+												t("common.labels.notAvailable", { defaultValue: "N/A" })
+											)}
 										</TableCell>
 										<TableCell>
-											{(() => {
-												const semester = semesters?.find(
-													(item) => item.id === classCourse.semesterId,
-												);
-												if (!semester) {
-													return t("common.labels.notAvailable", {
+											{classCourse.ueSemester
+												? t(
+														`admin.teachingUnits.semesters.${classCourse.ueSemester}`,
+														{
+															defaultValue: classCourse.ueSemester,
+														},
+													)
+												: t("common.labels.notAvailable", {
 														defaultValue: "N/A",
-													});
-												}
-												return `${semester.name} (${semester.code})`;
-											})()}
+													})}
 										</TableCell>
 										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
 										<TableCell>
@@ -1064,7 +1144,9 @@ export default function ClassCourseManagement() {
 							<EmptyHeader>
 								<BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
 								<EmptyTitle>{t("admin.classCourses.empty.title")}</EmptyTitle>
-								<EmptyDescription>{t("admin.classCourses.empty.description")}</EmptyDescription>
+								<EmptyDescription>
+									{t("admin.classCourses.empty.description")}
+								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
 								<Button onClick={startCreate}>
@@ -1082,220 +1164,226 @@ export default function ClassCourseManagement() {
 			<FormModal
 				isOpen={isFormOpen}
 				onClose={handleCloseForm}
-				title={editingClassCourse ? t("admin.classCourses.form.editTitle") : t("admin.classCourses.form.createTitle")}
+				title={
+					editingClassCourse
+						? t("admin.classCourses.form.editTitle")
+						: t("admin.classCourses.form.createTitle")
+				}
 			>
 				<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-							<CodedEntitySelect
-								items={classes}
-								onSearch={setClassSearch}
-								value={
-									classes.find((c) => c.id === form.watch("class"))?.code ||
-									null
-								}
-								onChange={(code) => {
-									const cls = classes.find((c) => c.code === code);
-									form.setValue("class", cls?.id || "");
-								}}
-								label={t("admin.classCourses.form.classLabel")}
-								placeholder={t("admin.classCourses.form.classPlaceholder")}
-								error={form.formState.errors.class?.message}
-								searchMode="hybrid"
-								getItemSubtitle={(cls) =>
-									programMap.get(cls.program)?.name ??
-									t("common.labels.notAvailable", {
-										defaultValue: "N/A",
-									})
-								}
-								required
-							/>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<CodedEntitySelect
+							items={classes}
+							onSearch={setClassSearch}
+							value={
+								classes.find((c) => c.id === form.watch("class"))?.code || null
+							}
+							onChange={(code) => {
+								const cls = classes.find((c) => c.code === code);
+								form.setValue("class", cls?.id || "");
+							}}
+							label={t("admin.classCourses.form.classLabel")}
+							placeholder={t("admin.classCourses.form.classPlaceholder")}
+							error={form.formState.errors.class?.message}
+							searchMode="hybrid"
+							getItemSubtitle={(cls) =>
+								programMap.get(cls.program)?.name ??
+								t("common.labels.notAvailable", {
+									defaultValue: "N/A",
+								})
+							}
+							required
+						/>
 
-							<CodedEntitySelect
-								items={courses}
-								onSearch={setCourseSearch}
-								value={
-									courses.find((c) => c.id === form.watch("course"))?.code ||
-									null
-								}
-								onChange={(code) => {
-									const course = courses.find((c) => c.code === code);
-									form.setValue("course", course?.id || "");
-								}}
-								label={t("admin.classCourses.form.courseLabel")}
-								placeholder={t("admin.classCourses.form.coursePlaceholder")}
-								error={form.formState.errors.course?.message}
-								searchMode="hybrid"
-								required
-							/>
+						<CodedEntitySelect
+							items={courses}
+							onSearch={setCourseSearch}
+							value={
+								courses.find((c) => c.id === form.watch("course"))?.code || null
+							}
+							onChange={(code) => {
+								const course = courses.find((c) => c.code === code);
+								form.setValue("course", course?.id || "");
+							}}
+							label={t("admin.classCourses.form.courseLabel")}
+							placeholder={t("admin.classCourses.form.coursePlaceholder")}
+							error={form.formState.errors.course?.message}
+							searchMode="hybrid"
+							required
+						/>
 
-							<FormField
-								control={form.control}
-								name="teacher"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.teacherLabel")}
-										</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.teacherPlaceholder",
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{teacherOptions.map((teacher) => (
-													<SelectItem key={teacher.id} value={teacher.id}>
-														{formatTeacherName(teacher)}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="semesterId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.semesterLabel", {
-												defaultValue: "Semester",
-											})}
-										</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-											disabled={!semesters || semesters.length === 0}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={t(
-															"admin.classCourses.form.semesterPlaceholder",
-															{
-																defaultValue: "Select semester",
-															},
-														)}
-													/>
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{semesters?.map((semester) => (
-													<SelectItem key={semester.id} value={semester.id}>
-														{semester.name} ({semester.code})
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="code"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.codeLabel", {
-												defaultValue: "Code",
-											})}
-										</FormLabel>
+						<FormField
+							control={form.control}
+							name="teacher"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.teacherLabel")}
+									</FormLabel>
+									<Select value={field.value} onValueChange={field.onChange}>
 										<FormControl>
-											<Input
-												{...field}
-												placeholder={t(
-													"admin.classCourses.form.codePlaceholder",
-													{
-														defaultValue: "INF11-CLS24-01",
-													},
-												)}
-											/>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.teacherPlaceholder",
+													)}
+												/>
+											</SelectTrigger>
 										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+										<SelectContent>
+											{teacherOptions.map((teacher) => (
+												<SelectItem key={teacher.id} value={teacher.id}>
+													{formatTeacherName(teacher)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							<FormField
-								control={form.control}
-								name="coefficient"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>
-											{t("admin.classCourses.form.coefficientLabel", {
-												defaultValue: "Coefficient",
-											})}
-										</FormLabel>
+						<FormField
+							control={form.control}
+							name="semesterId"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.semesterLabel", {
+											defaultValue: "Semester",
+										})}
+									</FormLabel>
+									<Select
+										value={field.value}
+										onValueChange={field.onChange}
+										disabled={!semesters || semesters.length === 0}
+									>
 										<FormControl>
-											<Input
-												{...field}
-												type="number"
-												step="0.01"
-												min="0.01"
-												placeholder={t(
-													"admin.classCourses.form.coefficientPlaceholder",
-													{
-														defaultValue: "1.00",
-													},
-												)}
-											/>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t(
+														"admin.classCourses.form.semesterPlaceholder",
+														{
+															defaultValue: "Select semester",
+														},
+													)}
+												/>
+											</SelectTrigger>
 										</FormControl>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.classCourses.form.coefficientHelp", {
-												defaultValue:
-													"Poids pour le calcul de la moyenne pondérée dans l'UE",
-											})}
-										</p>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+										<SelectContent>
+											{semesters?.map((semester) => (
+												<SelectItem key={semester.id} value={semester.id}>
+													{semester.name} ({semester.code})
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-							{!editingClassCourse && filterYear && (
-						<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
-							<Switch
-								id="auto-enroll-toggle"
-								checked={autoEnrollOnCreate}
-								onCheckedChange={setAutoEnrollOnCreate}
-							/>
-							<label htmlFor="auto-enroll-toggle" className="cursor-pointer text-sm">
-								{t("admin.classCourses.form.autoEnrollOnCreate", {
-									defaultValue: "Inscrire automatiquement les étudiants après l'assignation",
-								})}
-							</label>
-						</div>
-					)}
+						<FormField
+							control={form.control}
+							name="code"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.codeLabel", {
+											defaultValue: "Code",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											placeholder={t(
+												"admin.classCourses.form.codePlaceholder",
+												{
+													defaultValue: "INF11-CLS24-01",
+												},
+											)}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={handleCloseForm}
-									disabled={form.formState.isSubmitting}
+						<FormField
+							control={form.control}
+							name="coefficient"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										{t("admin.classCourses.form.coefficientLabel", {
+											defaultValue: "Coefficient",
+										})}
+									</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											type="number"
+											step="0.01"
+											min="0.01"
+											placeholder={t(
+												"admin.classCourses.form.coefficientPlaceholder",
+												{
+													defaultValue: "1.00",
+												},
+											)}
+										/>
+									</FormControl>
+									<p className="text-muted-foreground text-xs">
+										{t("admin.classCourses.form.coefficientHelp", {
+											defaultValue:
+												"Poids pour le calcul de la moyenne pondérée dans l'UE",
+										})}
+									</p>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						{!editingClassCourse && filterYear && (
+							<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+								<Switch
+									id="auto-enroll-toggle"
+									checked={autoEnrollOnCreate}
+									onCheckedChange={setAutoEnrollOnCreate}
+								/>
+								<label
+									htmlFor="auto-enroll-toggle"
+									className="cursor-pointer text-sm"
 								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button type="submit" disabled={form.formState.isSubmitting}>
-									{form.formState.isSubmitting ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : editingClassCourse ? (
-										t("common.actions.saveChanges")
-									) : (
-										t("admin.classCourses.form.createSubmit")
-									)}
-								</Button>
+									{t("admin.classCourses.form.autoEnrollOnCreate", {
+										defaultValue:
+											"Inscrire automatiquement les étudiants après l'assignation",
+									})}
+								</label>
 							</div>
-						</form>
-					</Form>
+						)}
+
+						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleCloseForm}
+								disabled={form.formState.isSubmitting}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : editingClassCourse ? (
+									t("common.actions.saveChanges")
+								) : (
+									t("admin.classCourses.form.createSubmit")
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</FormModal>
 
 			<AlertDialog
@@ -1344,142 +1432,139 @@ export default function ClassCourseManagement() {
 				})}
 			>
 				{skippedCourses.length > 0 ? (
-						<div className="space-y-4">
-							<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-								<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
-								<div>
-									<p className="font-medium text-yellow-800">
-										{t("admin.classCourses.ueAssign.skippedTitle", {
-											defaultValue: "Certains cours n'ont pas été assignés",
-										})}
-									</p>
-									<p className="mt-1 text-sm text-yellow-700">
-										{t("admin.classCourses.ueAssign.skippedDesc", {
-											defaultValue:
-												"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
-										})}
-									</p>
-									<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
-										{skippedCourses.map((name) => (
-											<li key={name}>{name}</li>
-										))}
-									</ul>
-								</div>
-							</div>
-							<div className="flex justify-end">
-								<Button onClick={handleCloseUeAssign}>
-									{t("common.actions.close")}
-								</Button>
+					<div className="space-y-4">
+						<div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+							<AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-600" />
+							<div>
+								<p className="font-medium text-yellow-800">
+									{t("admin.classCourses.ueAssign.skippedTitle", {
+										defaultValue: "Certains cours n'ont pas été assignés",
+									})}
+								</p>
+								<p className="mt-1 text-sm text-yellow-700">
+									{t("admin.classCourses.ueAssign.skippedDesc", {
+										defaultValue:
+											"Les cours suivants n'ont pas d'enseignant par défaut et ont été ignorés :",
+									})}
+								</p>
+								<ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
+									{skippedCourses.map((name) => (
+										<li key={name}>{name}</li>
+									))}
+								</ul>
 							</div>
 						</div>
-					) : (
-						<div className="space-y-4">
+						<div className="flex justify-end">
+							<Button onClick={handleCloseUeAssign}>
+								{t("common.actions.close")}
+							</Button>
+						</div>
+					</div>
+				) : (
+					<div className="space-y-4">
+						<div>
+							<label className="mb-2 block font-medium text-sm">
+								{t("admin.classCourses.ueAssign.classLabel", {
+									defaultValue: "Classe",
+								})}
+							</label>
+							<CodedEntitySelect
+								items={ueAssignClasses}
+								onSearch={setUeAssignClassSearch}
+								value={
+									ueAssignClasses.find((c) => c.id === ueAssignClassId)?.code ||
+									null
+								}
+								onChange={(code) => {
+									const cls = ueAssignClasses.find((c) => c.code === code);
+									setUeAssignClassId(cls?.id || "");
+									setUeAssignUeId(""); // Reset UE when class changes
+								}}
+								placeholder={t("admin.classCourses.ueAssign.classPlaceholder", {
+									defaultValue: "Sélectionner une classe",
+								})}
+								searchMode="hybrid"
+								getItemSubtitle={(cls) =>
+									programs?.find((p) => p.id === cls.program)?.name ?? ""
+								}
+							/>
+						</div>
+
+						{ueAssignClassId && (
 							<div>
 								<label className="mb-2 block font-medium text-sm">
-									{t("admin.classCourses.ueAssign.classLabel", {
-										defaultValue: "Classe",
+									{t("admin.classCourses.ueAssign.ueLabel", {
+										defaultValue: "Unité d'enseignement",
 									})}
 								</label>
-								<CodedEntitySelect
-									items={ueAssignClasses}
-									onSearch={setUeAssignClassSearch}
-									value={
-										ueAssignClasses.find((c) => c.id === ueAssignClassId)
-											?.code || null
-									}
-									onChange={(code) => {
-										const cls = ueAssignClasses.find((c) => c.code === code);
-										setUeAssignClassId(cls?.id || "");
-										setUeAssignUeId(""); // Reset UE when class changes
-									}}
-									placeholder={t(
-										"admin.classCourses.ueAssign.classPlaceholder",
-										{
-											defaultValue: "Sélectionner une classe",
-										},
-									)}
-									searchMode="hybrid"
-									getItemSubtitle={(cls) =>
-										programs?.find((p) => p.id === cls.program)?.name ?? ""
-									}
-								/>
-							</div>
-
-							{ueAssignClassId && (
-								<div>
-									<label className="mb-2 block font-medium text-sm">
-										{t("admin.classCourses.ueAssign.ueLabel", {
-											defaultValue: "Unité d'enseignement",
+								<Select
+									value={ueAssignUeId}
+									onValueChange={setUeAssignUeId}
+									disabled={teachingUnits.length === 0}
+								>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={t(
+												"admin.classCourses.ueAssign.uePlaceholder",
+												{
+													defaultValue: "Sélectionner une UE",
+												},
+											)}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{teachingUnits.map((ue) => (
+											<SelectItem key={ue.id} value={ue.id}>
+												{ue.code} - {ue.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{teachingUnits.length === 0 && ueAssignClassId && (
+									<p className="mt-1 text-muted-foreground text-xs">
+										{t("admin.classCourses.ueAssign.noUe", {
+											defaultValue: "Aucune UE trouvée pour ce programme",
 										})}
-									</label>
-									<Select
-										value={ueAssignUeId}
-										onValueChange={setUeAssignUeId}
-										disabled={teachingUnits.length === 0}
-									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t(
-													"admin.classCourses.ueAssign.uePlaceholder",
-													{
-														defaultValue: "Sélectionner une UE",
-													},
-												)}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{teachingUnits.map((ue) => (
-												<SelectItem key={ue.id} value={ue.id}>
-													{ue.code} - {ue.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{teachingUnits.length === 0 && ueAssignClassId && (
-										<p className="mt-1 text-muted-foreground text-xs">
-											{t("admin.classCourses.ueAssign.noUe", {
-												defaultValue: "Aucune UE trouvée pour ce programme",
-											})}
-										</p>
-									)}
-								</div>
-							)}
-
-							<p className="text-muted-foreground text-xs">
-								{t("admin.classCourses.ueAssign.hint", {
-									defaultValue:
-										"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
-								})}
-							</p>
-
-							<div className="flex justify-end gap-2">
-								<Button
-									variant="outline"
-									onClick={handleCloseUeAssign}
-									disabled={bulkAssignMutation.isPending}
-								>
-									{t("common.actions.cancel")}
-								</Button>
-								<Button
-									onClick={handleBulkAssign}
-									disabled={
-										!ueAssignClassId ||
-										!ueAssignUeId ||
-										bulkAssignMutation.isPending
-									}
-								>
-									{bulkAssignMutation.isPending ? (
-										<Spinner className="mr-2 h-4 w-4" />
-									) : (
-										<Layers className="mr-2 h-4 w-4" />
-									)}
-									{t("admin.classCourses.ueAssign.submit", {
-										defaultValue: "Assigner les cours",
-									})}
-								</Button>
+									</p>
+								)}
 							</div>
+						)}
+
+						<p className="text-muted-foreground text-xs">
+							{t("admin.classCourses.ueAssign.hint", {
+								defaultValue:
+									"Tous les EC de l'UE seront assignés à la classe avec leur enseignant et coefficient par défaut. Les EC sans enseignant par défaut seront ignorés.",
+							})}
+						</p>
+
+						<div className="flex justify-end gap-2">
+							<Button
+								variant="outline"
+								onClick={handleCloseUeAssign}
+								disabled={bulkAssignMutation.isPending}
+							>
+								{t("common.actions.cancel")}
+							</Button>
+							<Button
+								onClick={handleBulkAssign}
+								disabled={
+									!ueAssignClassId ||
+									!ueAssignUeId ||
+									bulkAssignMutation.isPending
+								}
+							>
+								{bulkAssignMutation.isPending ? (
+									<Spinner className="mr-2 h-4 w-4" />
+								) : (
+									<Layers className="mr-2 h-4 w-4" />
+								)}
+								{t("admin.classCourses.ueAssign.submit", {
+									defaultValue: "Assigner les cours",
+								})}
+							</Button>
 						</div>
-					)}
+					</div>
+				)}
 			</FormModal>
 
 			{/* Auto-enroll Dialog */}
@@ -1515,10 +1600,9 @@ export default function ClassCourseManagement() {
 								const cls = autoEnrollClasses.find((c) => c.code === code);
 								setAutoEnrollClassId(cls?.id || "");
 							}}
-							placeholder={t(
-								"admin.classCourses.autoEnroll.classPlaceholder",
-								{ defaultValue: "Sélectionner une classe" },
-							)}
+							placeholder={t("admin.classCourses.autoEnroll.classPlaceholder", {
+								defaultValue: "Sélectionner une classe",
+							})}
 							searchMode="hybrid"
 							getItemSubtitle={(cls) =>
 								programs?.find((p) => p.id === cls.program)?.name ?? ""
@@ -1561,6 +1645,120 @@ export default function ClassCourseManagement() {
 							)}
 							{t("admin.classCourses.autoEnroll.submit", {
 								defaultValue: "Inscrire les étudiants",
+							})}
+						</Button>
+					</div>
+				</div>
+			</FormModal>
+
+			{/* PDF Catalogue Export Dialog */}
+			<FormModal
+				isOpen={isPdfExportOpen}
+				onClose={() => {
+					setIsPdfExportOpen(false);
+					setPdfScope("year");
+					setPdfSelectedClassIds([]);
+				}}
+				title={t("admin.classCourses.export.title", {
+					defaultValue: "Exporter le catalogue UE / EC",
+				})}
+			>
+				<div className="space-y-4">
+					<div className="space-y-1.5">
+						<Label>
+							{t("admin.classCourses.export.scopeLabel", {
+								defaultValue: "Périmètre",
+							})}
+						</Label>
+						<Select
+							value={pdfScope}
+							onValueChange={(v) => setPdfScope(v as "year" | "selection")}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="year">
+									{t("admin.classCourses.export.scopeYear", {
+										defaultValue: "Toutes les classes de l'année filtrée",
+									})}
+									{!filterYear &&
+										` (${t("admin.classCourses.export.noYearWarning", { defaultValue: "aucune année sélectionnée" })})`}
+								</SelectItem>
+								<SelectItem value="selection">
+									{t("admin.classCourses.export.scopeSelection", {
+										defaultValue: "Classes spécifiques",
+									})}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{pdfScope === "selection" && (
+						<div className="space-y-1.5">
+							<Label>
+								{t("admin.classCourses.export.classesLabel", {
+									defaultValue: "Classes à inclure",
+								})}
+							</Label>
+							<div className="max-h-48 space-y-0.5 overflow-y-auto rounded border p-2">
+								{defaultClasses.map((cls) => (
+									<label
+										key={cls.id}
+										className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted"
+									>
+										<Checkbox
+											checked={pdfSelectedClassIds.includes(cls.id)}
+											onCheckedChange={(checked) =>
+												setPdfSelectedClassIds((prev) =>
+													checked
+														? [...prev, cls.id]
+														: prev.filter((id) => id !== cls.id),
+												)
+											}
+										/>
+										<span className="flex-1">{cls.name}</span>
+										<span className="text-muted-foreground text-xs">
+											{cls.code}
+										</span>
+									</label>
+								))}
+							</div>
+							{pdfSelectedClassIds.length > 0 && (
+								<p className="text-muted-foreground text-xs">
+									{pdfSelectedClassIds.length}{" "}
+									{t("admin.classCourses.export.selectedCount", {
+										defaultValue: "classe(s) sélectionnée(s)",
+									})}
+								</p>
+							)}
+						</div>
+					)}
+
+					<div className="flex justify-end gap-2">
+						<Button
+							variant="ghost"
+							type="button"
+							onClick={() => setIsPdfExportOpen(false)}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							type="button"
+							disabled={
+								exportCatalogMutation.isPending ||
+								(pdfScope === "year" && !filterYear) ||
+								(pdfScope === "selection" && pdfSelectedClassIds.length === 0)
+							}
+							onClick={() => exportCatalogMutation.mutate()}
+						>
+							{exportCatalogMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<FileDown className="mr-2 h-4 w-4" />
+							)}
+							{t("admin.classCourses.export.generate", {
+								defaultValue: "Générer le PDF",
 							})}
 						</Button>
 					</div>

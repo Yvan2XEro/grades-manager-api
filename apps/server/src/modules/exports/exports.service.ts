@@ -1,9 +1,12 @@
+import { and, eq, inArray } from "drizzle-orm";
 import Handlebars from "handlebars";
 import puppeteer from "puppeteer";
 import { db } from "../../db";
+import * as schema from "../../db/schema/app-schema";
 import type { DiplomationExportData } from "../deliberations/deliberations.types";
 import { ExportsRepo } from "./exports.repo";
 import type {
+	GenerateCourseCatalogInput,
 	GenerateDeliberationInput,
 	GenerateEvaluationInput,
 	GeneratePVInput,
@@ -25,6 +28,69 @@ import {
 	loadExportTemplate,
 	type TemplateConfiguration,
 } from "./template-loader";
+
+const COURSE_CATALOG_TEMPLATE = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4 landscape; margin: 10mm 12mm 10mm 12mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 9px; color: #222; background: #fff; }
+  .page-title { text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 2mm; letter-spacing: 0.5px; }
+  .page-subtitle { text-align: center; font-size: 9px; color: #666; margin-bottom: 6mm; }
+  .classes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .class-block { border: 1px solid #ccc; border-radius: 3px; overflow: hidden; page-break-inside: avoid; margin-bottom: 0; }
+  .class-header { background: #2c3e50; color: #fff; padding: 2.5mm 3mm; font-size: 10px; font-weight: bold; }
+  .class-header span { font-size: 8px; font-weight: normal; opacity: 0.75; margin-left: 4px; }
+  .ue-block { border-top: 1px solid #e0e0e0; }
+  .ue-header { background: #ecf0f1; padding: 1.5mm 3mm; font-size: 8.5px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; color: #2c3e50; }
+  .ue-meta { font-size: 7.5px; color: #888; font-weight: normal; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #f7f9fa; }
+  th { text-align: left; padding: 1.2mm 3mm; font-size: 7.5px; font-weight: 600; color: #555; border-bottom: 1px solid #e0e0e0; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 1.2mm 3mm; font-size: 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .coef { text-align: center; width: 18mm; }
+  .code { color: #888; font-size: 7.5px; white-space: nowrap; }
+  .teacher { color: #555; }
+</style>
+</head>
+<body>
+  <div class="page-title">Catalogue des Enseignements</div>
+  <div class="page-subtitle">Généré le {{generatedDate}} &nbsp;·&nbsp; {{totalClasses}} classe(s)</div>
+  <div class="classes-grid">
+    {{#each classes}}
+    <div class="class-block">
+      <div class="class-header">{{name}} <span>{{code}}</span></div>
+      {{#each ues}}
+      <div class="ue-block">
+        <div class="ue-header">
+          <span>{{code}} — {{name}}</span>
+          <span class="ue-meta">{{semester}} · {{credits}} crédits</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Code</th><th>Intitulé EC</th><th class="coef">Coef.</th><th>Enseignant</th>
+          </tr></thead>
+          <tbody>
+            {{#each courses}}
+            <tr>
+              <td class="code">{{code}}</td>
+              <td>{{name}}</td>
+              <td class="coef">{{coefficient}}</td>
+              <td class="teacher">{{teacher}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      {{/each}}
+    </div>
+    {{/each}}
+  </div>
+</body>
+</html>`;
 
 /**
  * Service for generating grade exports (PDFs and HTML previews)
@@ -1178,5 +1244,172 @@ export class ExportsService {
 				};
 			}
 		}
+	}
+
+	/** Generate a PDF catalogue of UEs and their ECs for the given classes */
+	async generateCourseCatalog(input: GenerateCourseCatalogInput) {
+		const data = await this.loadCourseCatalogData(
+			input.classIds,
+			input.academicYearId,
+		);
+
+		const template = Handlebars.compile(COURSE_CATALOG_TEMPLATE);
+		const html = template({
+			classes: data,
+			totalClasses: data.length,
+			generatedDate: new Date().toLocaleDateString("fr-FR"),
+		});
+
+		if (input.format === "html") {
+			return { content: html, mimeType: "text/html" };
+		}
+
+		const pdf = await this.generatePDF(html, {
+			pageSize: "A4",
+			pageOrientation: "landscape",
+			margins: { top: 10, right: 12, bottom: 10, left: 12 },
+		} as TemplateConfiguration["styleConfig"]);
+		return {
+			content: Buffer.from(pdf).toString("base64"),
+			mimeType: "application/pdf",
+		};
+	}
+
+	private async loadCourseCatalogData(
+		classIds: string[],
+		academicYearId?: string,
+	) {
+		// Resolve class IDs from academic year if none provided
+		let resolvedClassIds = classIds;
+		if (classIds.length === 0 && academicYearId) {
+			const yearClasses = await db
+				.select({ id: schema.classes.id })
+				.from(schema.classes)
+				.where(
+					and(
+						eq(schema.classes.academicYear, academicYearId),
+						eq(schema.classes.institutionId, this.institutionId),
+					),
+				);
+			resolvedClassIds = yearClasses.map((c) => c.id);
+		}
+		if (resolvedClassIds.length === 0) return [];
+
+		const { asc } = await import("drizzle-orm");
+		const classRows = await db
+			.select({
+				id: schema.classes.id,
+				name: schema.classes.name,
+				code: schema.classes.code,
+			})
+			.from(schema.classes)
+			.where(
+				and(
+					inArray(schema.classes.id, resolvedClassIds),
+					eq(schema.classes.institutionId, this.institutionId),
+				),
+			)
+			.orderBy(asc(schema.classes.name));
+
+		const classCoursesRows = await db
+			.select({
+				id: schema.classCourses.id,
+				class: schema.classCourses.class,
+				coefficient: schema.classCourses.coefficient,
+				courseId: schema.courses.id,
+				courseName: schema.courses.name,
+				courseCode: schema.courses.code,
+				ueId: schema.teachingUnits.id,
+				ueName: schema.teachingUnits.name,
+				ueCode: schema.teachingUnits.code,
+				ueSemester: schema.teachingUnits.semester,
+				ueCredits: schema.teachingUnits.credits,
+				teacherFirstName: schema.domainUsers.firstName,
+				teacherLastName: schema.domainUsers.lastName,
+			})
+			.from(schema.classCourses)
+			.innerJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.leftJoin(
+				schema.domainUsers,
+				eq(schema.domainUsers.id, schema.classCourses.teacher),
+			)
+			.where(
+				and(
+					inArray(schema.classCourses.class, resolvedClassIds),
+					eq(schema.classCourses.institutionId, this.institutionId),
+				),
+			)
+			.orderBy(asc(schema.teachingUnits.code), asc(schema.courses.code));
+
+		type UEEntry = {
+			id: string;
+			name: string;
+			code: string;
+			semester: string;
+			credits: number;
+			courses: Array<{
+				name: string;
+				code: string;
+				coefficient: string | number;
+				teacher: string;
+			}>;
+		};
+		type ClassEntry = {
+			id: string;
+			name: string;
+			code: string;
+			ues: UEEntry[];
+		};
+
+		const classMap = new Map<string, ClassEntry>(
+			classRows.map((c) => [c.id, { ...c, ues: [] }]),
+		);
+		const ueMap = new Map<string, UEEntry>();
+
+		for (const cc of classCoursesRows) {
+			const classEntry = classMap.get(cc.class);
+			if (!classEntry) continue;
+
+			const ueKey = `${cc.class}::${cc.ueId}`;
+			if (!ueMap.has(ueKey)) {
+				const ueEntry: UEEntry = {
+					id: cc.ueId,
+					name: cc.ueName,
+					code: cc.ueCode,
+					semester: cc.ueSemester,
+					credits: cc.ueCredits ?? 0,
+					courses: [],
+				};
+				ueMap.set(ueKey, ueEntry);
+				classEntry.ues.push(ueEntry);
+			}
+			ueMap.get(ueKey)!.courses.push({
+				name: cc.courseName,
+				code: cc.courseCode,
+				coefficient: Number.parseFloat(String(cc.coefficient ?? 1)),
+				teacher:
+					[cc.teacherFirstName, cc.teacherLastName].filter(Boolean).join(" ") ||
+					"—",
+			});
+		}
+
+		for (const cls of classMap.values()) {
+			cls.ues.sort(
+				(a, b) =>
+					a.semester.localeCompare(b.semester) || a.code.localeCompare(b.code),
+			);
+			for (const ue of cls.ues) {
+				ue.courses.sort((a, b) => a.code.localeCompare(b.code));
+			}
+		}
+
+		return [...classMap.values()].filter((c) => c.ues.length > 0);
 	}
 }

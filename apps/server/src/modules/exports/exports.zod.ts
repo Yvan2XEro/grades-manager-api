@@ -88,6 +88,16 @@ export type PreviewDeliberationInput = z.infer<
 	typeof previewDeliberationSchema
 >;
 
+export const generateCourseCatalogSchema = z.object({
+	classIds: z.array(z.string()).default([]),
+	academicYearId: z.string().optional(),
+	format: exportFormatSchema.default("pdf"),
+});
+
+export type GenerateCourseCatalogInput = z.infer<
+	typeof generateCourseCatalogSchema
+>;
+
 export const previewTemplateSourceSchema = z.object({
 	type: exportTypeSchema,
 	templateBody: z.string().min(1),

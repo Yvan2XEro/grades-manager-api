@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Users } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "../../utils/trpc";
 
 interface Student {

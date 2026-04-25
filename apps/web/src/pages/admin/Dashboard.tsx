@@ -57,7 +57,11 @@ type EnrollmentStatus = { name: string; value: number; color: string };
 function StatCard({ stat, label }: { stat: StatCardData; label: string }) {
 	const count = useAnimatedCounter(stat.count);
 	return (
-		<motion.div variants={staggerItem} whileHover={{ y: -3 }} transition={{ duration: 0.15 }}>
+		<motion.div
+			variants={staggerItem}
+			whileHover={{ y: -3 }}
+			transition={{ duration: 0.15 }}
+		>
 			<Link to={stat.href}>
 				<Card className="group cursor-pointer border-0 shadow-sm transition-all duration-200 hover:shadow-lg">
 					<CardContent className="flex items-center gap-4 p-5">
@@ -78,7 +82,7 @@ function StatCard({ stat, label }: { stat: StatCardData; label: string }) {
 								{count.toLocaleString()}
 							</p>
 						</div>
-						<ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+						<ArrowUpRight className="group-hover:-translate-y-0.5 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
 					</CardContent>
 				</Card>
 			</Link>
@@ -160,31 +164,36 @@ const QUICK_ACTIONS = [
 		label: "Ajouter un étudiant",
 		icon: <UserPlus className="h-4 w-4" />,
 		href: "/admin/students",
-		color: "text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
+		color:
+			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 	{
 		label: "Planifier un examen",
 		icon: <ClipboardCheck className="h-4 w-4" />,
 		href: "/admin/exams",
-		color: "text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
+		color:
+			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 	{
 		label: "Gérer les inscriptions",
 		icon: <ClipboardList className="h-4 w-4" />,
 		href: "/admin/enrollments",
-		color: "text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
+		color:
+			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 	{
 		label: "Années académiques",
 		icon: <CalendarDays className="h-4 w-4" />,
 		href: "/admin/academic-years",
-		color: "text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
+		color:
+			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 	{
 		label: "Résultats & exports",
 		icon: <TrendingUp className="h-4 w-4" />,
 		href: "/admin/grade-export",
-		color: "text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
+		color:
+			"text-foreground bg-muted hover:bg-accent hover:text-accent-foreground",
 	},
 ];
 
@@ -193,9 +202,15 @@ const QUICK_ACTIONS = [
 const examStatusConfig: Record<string, { label: string; className: string }> = {
 	draft: { label: "Brouillon", className: "bg-muted text-muted-foreground" },
 	open: { label: "Ouvert", className: "bg-primary/10 text-primary" },
-	submitted: { label: "Soumis", className: "bg-muted text-foreground border border-border" },
+	submitted: {
+		label: "Soumis",
+		className: "bg-muted text-foreground border border-border",
+	},
 	approved: { label: "Approuvé", className: "bg-primary/20 text-primary" },
-	rejected: { label: "Rejeté", className: "bg-destructive/10 text-destructive" },
+	rejected: {
+		label: "Rejeté",
+		className: "bg-destructive/10 text-destructive",
+	},
 	closed: { label: "Clôturé", className: "bg-muted text-muted-foreground" },
 };
 
@@ -224,16 +239,24 @@ const AdminDashboard: React.FC = () => {
 				trpcClient.exams.list.query({ limit: 100 }),
 				trpcClient.students.list.query({}),
 				trpcClient.academicYears.list.query({}),
-				trpcClient.enrollments.list.query({ status: "active", limit: 500 }).catch(() => ({ items: [] })),
-				trpcClient.enrollments.list.query({ status: "pending", limit: 500 }).catch(() => ({ items: [] })),
-				trpcClient.enrollments.list.query({ status: "completed", limit: 500 }).catch(() => ({ items: [] })),
+				trpcClient.enrollments.list
+					.query({ status: "active", limit: 500 })
+					.catch(() => ({ items: [] })),
+				trpcClient.enrollments.list
+					.query({ status: "pending", limit: 500 })
+					.catch(() => ({ items: [] })),
+				trpcClient.enrollments.list
+					.query({ status: "completed", limit: 500 })
+					.catch(() => ({ items: [] })),
 			]);
 
 			const programs = programsRes?.items ?? [];
 			const activeYear = yearsRes?.items?.find((y) => y.isActive);
 
 			const counts = {
-				institutions: Array.isArray(institutionsRes) ? institutionsRes.length : (institutionsRes?.items?.length ?? 0),
+				institutions: Array.isArray(institutionsRes)
+					? institutionsRes.length
+					: (institutionsRes?.items?.length ?? 0),
 				programs: programs.length,
 				courses: coursesRes?.items?.length ?? 0,
 				exams: examsRes?.items?.length ?? 0,
@@ -243,9 +266,21 @@ const AdminDashboard: React.FC = () => {
 
 			// Enrollment distribution for donut chart
 			const enrollmentStatus: EnrollmentStatus[] = [
-				{ name: "Actif", value: activeEnrollsRes?.items?.length ?? 0, color: "var(--chart-2)" },
-				{ name: "En attente", value: pendingEnrollsRes?.items?.length ?? 0, color: "var(--chart-3)" },
-				{ name: "Terminé", value: completedEnrollsRes?.items?.length ?? 0, color: "var(--chart-1)" },
+				{
+					name: "Actif",
+					value: activeEnrollsRes?.items?.length ?? 0,
+					color: "var(--chart-2)",
+				},
+				{
+					name: "En attente",
+					value: pendingEnrollsRes?.items?.length ?? 0,
+					color: "var(--chart-3)",
+				},
+				{
+					name: "Terminé",
+					value: completedEnrollsRes?.items?.length ?? 0,
+					color: "var(--chart-1)",
+				},
 			].filter((e) => e.value > 0);
 
 			// Program stats (students per program)
@@ -352,7 +387,7 @@ const AdminDashboard: React.FC = () => {
 				className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
 			>
 				<div>
-					<h1 className="font-bold text-foreground text-2xl">
+					<h1 className="font-bold text-2xl text-foreground">
 						{t("admin.dashboard.title")}
 					</h1>
 					<p className="mt-1 text-muted-foreground text-sm">
@@ -427,8 +462,16 @@ const AdminDashboard: React.FC = () => {
 									>
 										<defs>
 											<linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-												<stop offset="0%" stopColor="var(--primary)" stopOpacity={0.9} />
-												<stop offset="100%" stopColor="var(--primary)" stopOpacity={0.5} />
+												<stop
+													offset="0%"
+													stopColor="var(--primary)"
+													stopOpacity={0.9}
+												/>
+												<stop
+													offset="100%"
+													stopColor="var(--primary)"
+													stopOpacity={0.5}
+												/>
 											</linearGradient>
 										</defs>
 										<CartesianGrid
@@ -474,7 +517,9 @@ const AdminDashboard: React.FC = () => {
 							) : (
 								<div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
 									<School className="h-10 w-10 opacity-30" />
-									<p className="text-sm">{t("admin.dashboard.programStats.empty")}</p>
+									<p className="text-sm">
+										{t("admin.dashboard.programStats.empty")}
+									</p>
 								</div>
 							)}
 						</div>
@@ -489,8 +534,12 @@ const AdminDashboard: React.FC = () => {
 								<CheckCircle2 className="h-4 w-4 text-primary" />
 							</div>
 							<div>
-								<CardTitle className="text-base">Statut des inscriptions</CardTitle>
-								<p className="text-muted-foreground text-xs">Répartition par état</p>
+								<CardTitle className="text-base">
+									Statut des inscriptions
+								</CardTitle>
+								<p className="text-muted-foreground text-xs">
+									Répartition par état
+								</p>
 							</div>
 						</div>
 					</CardHeader>
@@ -532,13 +581,18 @@ const AdminDashboard: React.FC = () => {
 								{/* Legend */}
 								<div className="space-y-2">
 									{enrollmentStatus.map((entry) => (
-										<div key={entry.name} className="flex items-center justify-between">
+										<div
+											key={entry.name}
+											className="flex items-center justify-between"
+										>
 											<div className="flex items-center gap-2">
 												<span
 													className="h-3 w-3 rounded-full"
 													style={{ backgroundColor: entry.color }}
 												/>
-												<span className="text-muted-foreground text-xs">{entry.name}</span>
+												<span className="text-muted-foreground text-xs">
+													{entry.name}
+												</span>
 											</div>
 											<span className="font-semibold text-foreground text-sm tabular-nums">
 												{entry.value.toLocaleString()}
@@ -575,7 +629,7 @@ const AdminDashboard: React.FC = () => {
 						</div>
 						<Link
 							to="/admin/exams"
-							className="flex items-center gap-1 text-muted-foreground text-xs hover:text-primary transition-colors"
+							className="flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-primary"
 						>
 							Voir tout
 							<ArrowUpRight className="h-3.5 w-3.5" />
@@ -591,7 +645,8 @@ const AdminDashboard: React.FC = () => {
 							<div className="divide-y">
 								{recentExams.map((exam) => {
 									const status = exam.status ?? "draft";
-									const cfg = examStatusConfig[status] ?? examStatusConfig.draft;
+									const cfg =
+										examStatusConfig[status] ?? examStatusConfig.draft;
 									return (
 										<div
 											key={exam.id}
@@ -608,7 +663,7 @@ const AdminDashboard: React.FC = () => {
 											<div className="flex shrink-0 items-center gap-3">
 												<span
 													className={cn(
-														"rounded-full px-2 py-0.5 text-[11px] font-medium",
+														"rounded-full px-2 py-0.5 font-medium text-[11px]",
 														cfg.className,
 													)}
 												>
@@ -645,7 +700,7 @@ const AdminDashboard: React.FC = () => {
 								key={action.href}
 								to={action.href}
 								className={cn(
-									"group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+									"group flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium text-sm transition-all duration-150",
 									action.color,
 								)}
 							>

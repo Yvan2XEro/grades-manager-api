@@ -49,6 +49,8 @@ export async function list(opts: {
 	limit?: number;
 	query?: string;
 	academicYearId?: string;
+	classId?: string;
+	ueSemester?: string;
 }) {
 	const limit = opts.limit ?? 50;
 	const conditions = [
@@ -63,8 +65,11 @@ export async function list(opts: {
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,
 		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
-		opts.semesterId
-			? eq(schema.classes.semesterId, opts.semesterId)
+		opts.ueSemester
+			? eq(
+					schema.teachingUnits.semester,
+					opts.ueSemester as schema.TeachingUnitSemester,
+				)
 			: undefined,
 		opts.query
 			? or(
@@ -100,6 +105,10 @@ export async function list(opts: {
 		.innerJoin(
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
 		)
 		.where(condition)
 		.orderBy(asc(schema.exams.id))

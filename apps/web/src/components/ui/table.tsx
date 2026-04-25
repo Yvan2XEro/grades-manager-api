@@ -1,5 +1,5 @@
-import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -14,7 +14,9 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 	const [canScrollLeft, setCanScrollLeft] = React.useState(false);
 	const [canScrollRight, setCanScrollRight] = React.useState(false);
 	const [isDragging, setIsDragging] = React.useState(false);
-	const dragStart = React.useRef<{ x: number; scrollLeft: number } | null>(null);
+	const dragStart = React.useRef<{ x: number; scrollLeft: number } | null>(
+		null,
+	);
 	const [arrowY, setArrowY] = React.useState<number | null>(null);
 	const outerRef = React.useRef<HTMLDivElement>(null);
 
@@ -75,18 +77,22 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 		};
 	}, []);
 
-	const onMouseMove = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-		const el = outerRef.current;
-		if (!el) return;
-		const rect = el.getBoundingClientRect();
-		const y = e.clientY - rect.top;
-		const clamped = Math.max(16, Math.min(y, rect.height - 16));
-		setArrowY(clamped);
-	}, []);
+	const onMouseMove = React.useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			const el = outerRef.current;
+			if (!el) return;
+			const rect = el.getBoundingClientRect();
+			const y = e.clientY - rect.top;
+			const clamped = Math.max(16, Math.min(y, rect.height - 16));
+			setArrowY(clamped);
+		},
+		[],
+	);
 
-	const arrowStyle = arrowY !== null
-		? { top: arrowY, transform: "translateY(-50%)" }
-		: undefined;
+	const arrowStyle =
+		arrowY !== null
+			? { top: arrowY, transform: "translateY(-50%)" }
+			: undefined;
 
 	return (
 		<div
@@ -143,7 +149,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 	return (
 		<thead
 			data-slot="table-header"
-			className={cn("border-b border-border bg-muted/40", className)}
+			className={cn("border-border border-b bg-muted/40", className)}
 			{...props}
 		/>
 	);
@@ -164,7 +170,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 		<tfoot
 			data-slot="table-footer"
 			className={cn(
-				"border-t border-border bg-muted/40 font-medium [&>tr]:last:border-b-0",
+				"border-border border-t bg-muted/40 font-medium [&>tr]:last:border-b-0",
 				className,
 			)}
 			{...props}
@@ -181,7 +187,7 @@ function TableRow({ className, actions, ...props }: TableRowProps) {
 	const [contextOpen, setContextOpen] = React.useState(false);
 
 	const rowClass = cn(
-		"group border-b border-border/50 transition-all duration-150",
+		"group border-border/50 border-b transition-all duration-150",
 		"hover:bg-muted/50 hover:shadow-[inset_3px_0_0_0_hsl(var(--primary)/0.4)]",
 		"data-[state=selected]:bg-primary/5 data-[state=selected]:shadow-[inset_3px_0_0_0_var(--primary)]",
 		"data-[context=open]:bg-primary/8 data-[context=open]:shadow-[inset_3px_0_0_0_var(--primary)] data-[context=open]:hover:bg-primary/8",

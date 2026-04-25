@@ -26,6 +26,7 @@ export const createDeliberationSchema = z.object({
 	presidentId: z.string().optional(),
 	juryMembers: z.array(juryMemberSchema).default([]),
 	deliberationDate: z.string().datetime().optional(),
+	juryNumber: z.string().optional().nullable(),
 });
 
 export const updateDeliberationSchema = z.object({
@@ -33,6 +34,7 @@ export const updateDeliberationSchema = z.object({
 	presidentId: z.string().optional(),
 	juryMembers: z.array(juryMemberSchema).optional(),
 	deliberationDate: z.string().datetime().optional(),
+	juryNumber: z.string().optional().nullable(),
 });
 
 // State transitions

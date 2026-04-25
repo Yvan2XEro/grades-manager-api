@@ -1,17 +1,16 @@
-import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	ArrowRight,
 	Bell,
 	CheckCircle2,
 	Clock,
 	Inbox,
 	RefreshCw,
 	XCircle,
-	ArrowRight,
 } from "lucide-react";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -43,19 +43,24 @@ const statusConfig: Record<
 };
 
 function formatType(type: string) {
-	return type
-		.replace(/[_.-]/g, " ")
-		.replace(/\b\w/g, (c) => c.toUpperCase());
+	return type.replace(/[_.-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function timeAgo(date: string | Date, t: (k: string, o?: Record<string, unknown>) => string) {
+function timeAgo(
+	date: string | Date,
+	t: (k: string, o?: Record<string, unknown>) => string,
+) {
 	const diff = Date.now() - new Date(date).getTime();
 	const mins = Math.floor(diff / 60000);
 	if (mins < 1) return t("admin.notifications.timeAgo.justNow");
-	if (mins < 60) return t("admin.notifications.timeAgo.minutes", { count: mins });
+	if (mins < 60)
+		return t("admin.notifications.timeAgo.minutes", { count: mins });
 	const hours = Math.floor(mins / 60);
-	if (hours < 24) return t("admin.notifications.timeAgo.hours", { count: hours });
-	return t("admin.notifications.timeAgo.days", { count: Math.floor(hours / 24) });
+	if (hours < 24)
+		return t("admin.notifications.timeAgo.hours", { count: hours });
+	return t("admin.notifications.timeAgo.days", {
+		count: Math.floor(hours / 24),
+	});
 }
 
 export const NotificationBell: React.FC = () => {
@@ -75,7 +80,11 @@ export const NotificationBell: React.FC = () => {
 	const flushMutation = useMutation({
 		mutationFn: () => trpcClient.notifications.flush.mutate(),
 		onSuccess: () => {
-			toast.success(t("admin.notifications.toast.flushed", { defaultValue: "Notifications envoyées" }));
+			toast.success(
+				t("admin.notifications.toast.flushed", {
+					defaultValue: "Notifications envoyées",
+				}),
+			);
 			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
 		},
 		onError: (err: Error) => toast.error(err.message),
@@ -105,24 +114,22 @@ export const NotificationBell: React.FC = () => {
 						)}
 					/>
 					{pendingCount > 0 && (
-						<span className="animate-badge-pop absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary font-semibold text-[10px] text-primary-foreground leading-none">
+						<span className="absolute top-1 right-1 flex h-4 w-4 animate-badge-pop items-center justify-center rounded-full bg-primary font-semibold text-[10px] text-primary-foreground leading-none">
 							{pendingCount > 9 ? "9+" : pendingCount}
 						</span>
 					)}
 				</Button>
 			</PopoverTrigger>
 
-			<PopoverContent
-				align="end"
-				sideOffset={8}
-				className="w-80 p-0 shadow-lg"
-			>
+			<PopoverContent align="end" sideOffset={8} className="w-80 p-0 shadow-lg">
 				{/* Header */}
 				<div className="flex items-center justify-between border-b px-4 py-3">
 					<div className="flex items-center gap-2">
 						<Inbox className="h-4 w-4 text-muted-foreground" />
 						<span className="font-semibold text-sm">
-							{t("admin.notifications.title", { defaultValue: "Notifications" })}
+							{t("admin.notifications.title", {
+								defaultValue: "Notifications",
+							})}
 						</span>
 						{pendingCount > 0 && (
 							<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
@@ -138,7 +145,12 @@ export const NotificationBell: React.FC = () => {
 							onClick={() => flushMutation.mutate()}
 							disabled={flushMutation.isPending}
 						>
-							<RefreshCw className={cn("h-3 w-3", flushMutation.isPending && "animate-spin")} />
+							<RefreshCw
+								className={cn(
+									"h-3 w-3",
+									flushMutation.isPending && "animate-spin",
+								)}
+							/>
 							Flush
 						</Button>
 					)}
@@ -154,7 +166,9 @@ export const NotificationBell: React.FC = () => {
 						<div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
 							<Bell className="h-8 w-8 opacity-30" />
 							<p className="text-xs">
-								{t("admin.notifications.empty", { defaultValue: "Aucune notification" })}
+								{t("admin.notifications.empty", {
+									defaultValue: "Aucune notification",
+								})}
 							</p>
 						</div>
 					) : (
@@ -164,7 +178,7 @@ export const NotificationBell: React.FC = () => {
 								return (
 									<li
 										key={item.id}
-										className="group flex items-start gap-3 border-b px-4 py-3 last:border-0 hover:bg-muted/40 transition-colors"
+										className="group flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-0 hover:bg-muted/40"
 									>
 										<div
 											className={cn(
@@ -175,7 +189,7 @@ export const NotificationBell: React.FC = () => {
 											{s?.icon}
 										</div>
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium text-xs text-foreground">
+											<p className="truncate font-medium text-foreground text-xs">
 												{formatType(item.type)}
 											</p>
 											<p className="text-[11px] text-muted-foreground">
@@ -190,7 +204,7 @@ export const NotificationBell: React.FC = () => {
 										{item.status === "pending" && (
 											<button
 												type="button"
-												className="shrink-0 self-center rounded px-1.5 py-0.5 text-[10px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100 hover:underline"
+												className="shrink-0 self-center rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
 												onClick={() => ackMutation.mutate(item.id)}
 											>
 												{t("admin.notifications.actions.ack")}
@@ -207,7 +221,7 @@ export const NotificationBell: React.FC = () => {
 				<div className="border-t px-4 py-2.5">
 					<Link
 						to="/admin/notifications"
-						className="flex items-center justify-center gap-1.5 text-xs text-primary font-medium hover:underline"
+						className="flex items-center justify-center gap-1.5 font-medium text-primary text-xs hover:underline"
 					>
 						{t("admin.notifications.viewAll")}
 						<ArrowRight className="h-3.5 w-3.5" />

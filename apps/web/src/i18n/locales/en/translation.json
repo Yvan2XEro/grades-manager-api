@@ -511,11 +511,11 @@
 				"cycleLabel": "Study cycle",
 				"cyclePlaceholder": "Select cycle",
 				"selectFacultyFirst": "Select a faculty to load available cycles.",
-				"cloneFrom": "Cloner le curriculum depuis (optionnel) (TODO)",
-				"cloneFromHint": "Les UE et EC du programme source seront copiés après la création. (TODO)",
-				"cloneFromNone": "Aucun (TODO)",
-				"cloneFromPlaceholder": "Sélectionner un programme source (TODO)",
-				"submitWithClone": "Créer et cloner (TODO)"
+				"cloneFrom": "Clone curriculum from (optional)",
+				"cloneFromHint": "Teaching units and courses from the source program will be copied after creation.",
+				"cloneFromNone": "None",
+				"cloneFromPlaceholder": "Select source program",
+				"submitWithClone": "Create and clone"
 			},
 			"validation": {
 				"name": "Name must be at least 2 characters",
@@ -530,8 +530,8 @@
 				"updateError": "Could not update the program",
 				"deleteSuccess": "Program deleted successfully",
 				"deleteError": "Could not delete the program",
-				"cloneError": "Impossible de cloner le curriculum (TODO)",
-				"cloneSuccess": "Curriculum cloné : {{units}} UE et {{courses}} EC copiés (TODO)"
+				"cloneError": "Could not clone curriculum",
+				"cloneSuccess": "Curriculum cloned: {{units}} units and {{courses}} courses copied"
 			},
 			"delete": {
 				"title": "Delete Program",
@@ -580,8 +580,8 @@
 				"nameFr": "Name (FR)",
 				"nameEn": "Name (EN)",
 				"shortName": "Short name",
-				"name": "Nom (TODO)",
-				"noDescription": "Aucune description (TODO)"
+				"name": "Name",
+				"noDescription": "No description"
 			},
 			"form": {
 				"createTitle": "Create faculty",
@@ -598,10 +598,10 @@
 				"parentInstitutionLabel": "Parent institution",
 				"noParentInstitution": "None (top-level)",
 				"submit": "Create",
-				"descriptionLabel": "Description (TODO)",
-				"descriptionPlaceholder": "Description optionnelle (TODO)",
-				"nameLabel": "Nom de la faculté (TODO)",
-				"namePlaceholder": "Saisir le nom de la faculté (TODO)"
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Optional description",
+				"nameLabel": "Faculty name",
+				"namePlaceholder": "Enter faculty name"
 			},
 			"toast": {
 				"createSuccess": "Faculty created successfully",
@@ -616,7 +616,7 @@
 				"message": "Are you sure you want to delete this faculty? This action cannot be undone."
 			},
 			"validation": {
-				"name": "Le nom doit comporter au moins 2 caractères (TODO)"
+				"name": "Name must be at least 2 characters"
 			}
 		},
 		"institutions": {
@@ -2744,8 +2744,8 @@
 			},
 			"semesters": {
 				"annual": "Annual",
-				"fall": "Fall",
-				"spring": "Spring"
+				"fall": "Semester 1",
+				"spring": "Semester 2"
 			},
 			"actions": {
 				"create": "Create UE",

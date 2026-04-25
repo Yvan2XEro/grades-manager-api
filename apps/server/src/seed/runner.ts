@@ -18,6 +18,7 @@ import * as authSchema from "../db/schema/auth";
 import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import type { OrganizationRoleName } from "../lib/organization-roles";
 import { normalizeCode, slugify } from "../lib/strings";
+import * as deliberationsService from "../modules/deliberations/deliberations.service";
 import * as studentCreditLedgerService from "../modules/student-credit-ledger/student-credit-ledger.service";
 
 type SeedLogger = Pick<Console, "log" | "error">;
@@ -103,8 +104,20 @@ export type FoundationSeed = {
 type ProgramSeed = {
 	code: string;
 	name: string;
+	nameEn?: string;
+	abbreviation?: string;
 	slug?: string;
 	description?: string;
+	domainFr?: string;
+	domainEn?: string;
+	specialiteFr?: string;
+	specialiteEn?: string;
+	diplomaTitleFr?: string;
+	diplomaTitleEn?: string;
+	attestationValidityFr?: string;
+	attestationValidityEn?: string;
+	/** Links the program to a study cycle (e.g. BTS, LP, MP). */
+	studyCycleCode?: string;
 	facultyCode: string;
 };
 
@@ -117,6 +130,8 @@ type ClassSeed = {
 	studyCycleCode: string;
 	cycleLevelCode: string;
 	semesterCode?: string;
+	/** Total credits for this class (defaults to 0). */
+	totalCredits?: number;
 };
 
 type ClassCourseSeed = {
@@ -126,6 +141,8 @@ type ClassCourseSeed = {
 	courseCode: string;
 	teacherCode: string;
 	semesterCode?: string;
+	/** Coefficient for weighted-average within the UE (defaults to 1.00). */
+	coefficient?: number;
 };
 
 type ExamSeed = {
@@ -175,6 +192,8 @@ export type AcademicsSeed = {
 		name: string;
 		hours: number;
 		defaultTeacherCode?: string;
+		/** Coefficient for weighted-average within the UE (defaults to 1.00). */
+		defaultCoefficient?: number;
 	}>;
 	classes?: ClassSeed[];
 	classCourses?: ClassCourseSeed[];
@@ -241,6 +260,46 @@ type StudentCourseEnrollmentSeed = {
 	attempt?: number;
 	creditsAttempted: number;
 	creditsEarned?: number;
+};
+
+type ExamUpdateSeed = {
+	id: string;
+	status?: "draft" | "scheduled" | "submitted" | "approved" | "rejected";
+	isLocked?: boolean;
+};
+
+type GradeSeed = {
+	examId: string;
+	studentCode: string;
+	score: number;
+};
+
+type JuryMemberSeed = {
+	userCode: string;
+	name: string;
+	role: string;
+};
+
+type DeliberationSeedEntry = {
+	code: string;
+	classCode: string;
+	classAcademicYearCode?: string;
+	academicYearCode: string;
+	type: string;
+	presidentCode?: string;
+	juryMembers?: JuryMemberSeed[];
+	juryNumber?: string;
+	deliberationDate?: string;
+	actorCode: string;
+	targetStatus: "draft" | "open" | "closed" | "signed";
+};
+
+export type GradesDeliberationsSeed = {
+	meta?: SeedMeta;
+	additionalExams?: ExamSeed[];
+	examUpdates?: ExamUpdateSeed[];
+	grades?: GradeSeed[];
+	deliberations?: DeliberationSeedEntry[];
 };
 
 export type UsersSeed = {
@@ -318,6 +377,7 @@ export type RunSeedOptions = {
 	foundationPath?: string;
 	academicsPath?: string;
 	usersPath?: string;
+	gradesPath?: string;
 };
 
 const defaultSeedRelativeDir = path.join("seed", "local");
@@ -330,10 +390,12 @@ export async function runSeed(options: RunSeedOptions = {}) {
 		foundationPath: path.join(seedBaseDir, "00-foundation.yaml"),
 		academicsPath: path.join(seedBaseDir, "10-academics.yaml"),
 		usersPath: path.join(seedBaseDir, "20-users.yaml"),
+		gradesPath: path.join(seedBaseDir, "40-grades-deliberations.yaml"),
 	};
 	const foundationPath = options.foundationPath ?? defaults.foundationPath;
 	const academicsPath = options.academicsPath ?? defaults.academicsPath;
 	const usersPath = options.usersPath ?? defaults.usersPath;
+	const gradesPath = options.gradesPath ?? defaults.gradesPath;
 
 	const state = createSeedState();
 	const foundation = await loadSeedFile<FoundationSeed>(foundationPath, logger);
@@ -363,7 +425,19 @@ export async function runSeed(options: RunSeedOptions = {}) {
 		);
 		await seedUsers(db, state, users, logger);
 	}
-	if (!foundation && !academics && !users) {
+	const gradesData = await loadSeedFile<GradesDeliberationsSeed>(
+		gradesPath,
+		logger,
+	);
+	if (gradesData) {
+		logger.log(
+			`[seed] Applying grades & deliberations layer${
+				gradesData.meta?.version ? ` (${gradesData.meta.version})` : ""
+			}`,
+		);
+		await seedGradesAndDeliberations(db, state, gradesData, logger);
+	}
+	if (!foundation && !academics && !users && !gradesData) {
 		logger.log(
 			"[seed] No seed layers were applied. Provide at least one file or override the paths.",
 		);
@@ -944,21 +1018,56 @@ async function seedAcademics(
 		}
 		const code = normalizeCode(entry.code);
 		const slug = entry.slug ?? slugify(entry.name);
+		// Resolve optional study cycle link
+		let cycleId: string | null = null;
+		if (entry.studyCycleCode) {
+			const cycleKey = `${facultyCode}::${normalizeCode(entry.studyCycleCode)}`;
+			const cycle = state.studyCycles.get(cycleKey);
+			if (!cycle) {
+				throw new Error(
+					`Unknown study cycle "${entry.studyCycleCode}" for program ${entry.code}`,
+				);
+			}
+			cycleId = cycle.id;
+		}
+		const programPayload = {
+			code,
+			name: entry.name,
+			nameEn: entry.nameEn ?? null,
+			abbreviation: entry.abbreviation ?? null,
+			slug,
+			description: entry.description ?? null,
+			domainFr: entry.domainFr ?? null,
+			domainEn: entry.domainEn ?? null,
+			specialiteFr: entry.specialiteFr ?? null,
+			specialiteEn: entry.specialiteEn ?? null,
+			diplomaTitleFr: entry.diplomaTitleFr ?? null,
+			diplomaTitleEn: entry.diplomaTitleEn ?? null,
+			attestationValidityFr: entry.attestationValidityFr ?? null,
+			attestationValidityEn: entry.attestationValidityEn ?? null,
+			cycleId,
+			institutionId: faculty.id,
+		};
 		const [program] = await db
 			.insert(schema.programs)
-			.values({
-				code,
-				name: entry.name,
-				slug,
-				description: entry.description ?? null,
-				institutionId: faculty.id,
-			})
+			.values(programPayload)
 			.onConflictDoUpdate({
 				target: [schema.programs.code, schema.programs.institutionId],
 				set: {
-					name: entry.name,
-					slug,
-					description: entry.description ?? null,
+					name: programPayload.name,
+					nameEn: programPayload.nameEn,
+					abbreviation: programPayload.abbreviation,
+					slug: programPayload.slug,
+					description: programPayload.description,
+					domainFr: programPayload.domainFr,
+					domainEn: programPayload.domainEn,
+					specialiteFr: programPayload.specialiteFr,
+					specialiteEn: programPayload.specialiteEn,
+					diplomaTitleFr: programPayload.diplomaTitleFr,
+					diplomaTitleEn: programPayload.diplomaTitleEn,
+					attestationValidityFr: programPayload.attestationValidityFr,
+					attestationValidityEn: programPayload.attestationValidityEn,
+					cycleId: programPayload.cycleId,
 				},
 			})
 			.returning();
@@ -1018,6 +1127,14 @@ async function seedAcademics(
 			);
 		}
 		const code = normalizeCode(entry.code);
+		// Normalize semester: YAML may use "S1"/"S2" aliases; DB expects "fall"/"spring"/"annual"
+		const rawSemester = entry.semester as string | undefined;
+		const semester: schema.TeachingUnitSemester =
+			rawSemester === "S1"
+				? "fall"
+				: rawSemester === "S2"
+					? "spring"
+					: ((rawSemester as schema.TeachingUnitSemester) ?? "annual");
 		const [unit] = await db
 			.insert(schema.teachingUnits)
 			.values({
@@ -1026,8 +1143,7 @@ async function seedAcademics(
 				name: entry.name,
 				description: entry.description ?? null,
 				credits: entry.credits ?? 0,
-				institutionId: program.institutionId,
-				semester: entry.semester ?? "annual",
+				semester,
 			})
 			.onConflictDoUpdate({
 				target: [schema.teachingUnits.programId, schema.teachingUnits.code],
@@ -1035,7 +1151,7 @@ async function seedAcademics(
 					name: entry.name,
 					description: entry.description ?? null,
 					credits: entry.credits ?? 0,
-					semester: entry.semester ?? "annual",
+					semester,
 				},
 			})
 			.returning();
@@ -1074,6 +1190,7 @@ async function seedAcademics(
 				name: entry.name,
 				hours: entry.hours,
 				defaultTeacher: null,
+				defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 				institutionId: program.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1081,6 +1198,7 @@ async function seedAcademics(
 				set: {
 					name: entry.name,
 					hours: entry.hours,
+					defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 				},
 			})
 			.returning();
@@ -1151,6 +1269,7 @@ async function seedAcademics(
 				cycleLevelId: cycleLevel.id,
 				programOptionId: option.id,
 				semesterId,
+				totalCredits: entry.totalCredits ?? 0,
 				institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1160,6 +1279,7 @@ async function seedAcademics(
 					programOptionId: option.id,
 					cycleLevelId: cycleLevel.id,
 					semesterId,
+					totalCredits: entry.totalCredits ?? 0,
 					institutionId: program.institutionId,
 				},
 			})
@@ -1724,6 +1844,7 @@ async function seedClassCourses(
 				course: courseRecord.id,
 				teacher: teacher.id,
 				semesterId,
+				coefficient: entry.coefficient?.toString() ?? "1.00",
 				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1732,6 +1853,7 @@ async function seedClassCourses(
 					course: courseRecord.id,
 					teacher: teacher.id,
 					semesterId,
+					coefficient: entry.coefficient?.toString() ?? "1.00",
 					institutionId: classRecord.institutionId,
 				},
 			})
@@ -1845,6 +1967,152 @@ async function seedEnrollmentWindows(
 	if (windows.length) {
 		logger.log(`[seed] • Enrollment windows: ${windows.length}`);
 	}
+}
+
+async function seedGradesAndDeliberations(
+	db: typeof appDb,
+	state: SeedState,
+	data: GradesDeliberationsSeed,
+	logger: SeedLogger,
+) {
+	// 1. Seed additional exams (e.g. Final exams missing from the academics layer)
+	if (data.additionalExams?.length) {
+		state.pendingExams.push(...data.additionalExams);
+		await seedExams(db, state, logger);
+	}
+
+	// 2. Update existing exam statuses (e.g. promote draft → approved+locked)
+	for (const entry of data.examUpdates ?? []) {
+		await db
+			.update(schema.exams)
+			.set({
+				...(entry.status !== undefined ? { status: entry.status } : {}),
+				...(entry.isLocked !== undefined ? { isLocked: entry.isLocked } : {}),
+			})
+			.where(eq(schema.exams.id, entry.id));
+	}
+	if (data.examUpdates?.length) {
+		logger.log(`[seed] • Exam status updates: ${data.examUpdates.length}`);
+	}
+
+	// 3. Seed grades
+	for (const entry of data.grades ?? []) {
+		const student = state.students.get(normalizeCode(entry.studentCode));
+		if (!student) {
+			throw new Error(
+				`Unknown student code "${entry.studentCode}" for grade on exam ${entry.examId}`,
+			);
+		}
+		await db
+			.insert(schema.grades)
+			.values({
+				student: student.id,
+				exam: entry.examId,
+				score: String(entry.score),
+			})
+			.onConflictDoUpdate({
+				target: [schema.grades.student, schema.grades.exam],
+				set: {
+					score: String(entry.score),
+					updatedAt: new Date(),
+				},
+			});
+	}
+	if (data.grades?.length) {
+		logger.log(`[seed] • Grades: ${data.grades.length}`);
+	}
+
+	// 4. Seed deliberations (draft → open → compute → close → sign)
+	for (const entry of data.deliberations ?? []) {
+		const klass = findClassRecord(
+			state,
+			entry.classCode,
+			entry.classAcademicYearCode,
+		);
+		if (!klass) {
+			throw new Error(
+				`Unknown class "${entry.classCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const academicYearId = state.academicYears.get(
+			normalizeCode(entry.academicYearCode),
+		);
+		if (!academicYearId) {
+			throw new Error(
+				`Unknown academic year "${entry.academicYearCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const actor = state.domainUsers.get(normalizeCode(entry.actorCode));
+		if (!actor) {
+			throw new Error(
+				`Unknown actor code "${entry.actorCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const presidentId = entry.presidentCode
+			? state.domainUsers.get(normalizeCode(entry.presidentCode))?.id
+			: undefined;
+
+		const juryMembers = (entry.juryMembers ?? []).map((m) => {
+			const member = state.domainUsers.get(normalizeCode(m.userCode));
+			if (!member) {
+				throw new Error(
+					`Unknown jury member code "${m.userCode}" for deliberation ${entry.code}`,
+				);
+			}
+			return { domainUserId: member.id, name: m.name, role: m.role };
+		});
+
+		const delib = await deliberationsService.create(
+			{
+				classId: klass.id,
+				academicYearId,
+				type: entry.type,
+				presidentId,
+				juryMembers,
+				juryNumber: entry.juryNumber,
+				deliberationDate: entry.deliberationDate
+					? new Date(entry.deliberationDate).toISOString()
+					: undefined,
+			},
+			klass.institutionId,
+			actor.id,
+		);
+
+		if (
+			entry.targetStatus === "open" ||
+			entry.targetStatus === "closed" ||
+			entry.targetStatus === "signed"
+		) {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "open" },
+				klass.institutionId,
+				actor.id,
+			);
+			await deliberationsService.compute(
+				delib.id,
+				klass.institutionId,
+				actor.id,
+			);
+		}
+		if (entry.targetStatus === "closed" || entry.targetStatus === "signed") {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "close" },
+				klass.institutionId,
+				actor.id,
+			);
+		}
+		if (entry.targetStatus === "signed") {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "sign" },
+				klass.institutionId,
+				actor.id,
+			);
+		}
+
+		logger.log(`[seed] • Deliberation ${entry.code} → ${entry.targetStatus}`);
+	}
+
+	logger.log("[seed] Grades & deliberations layer applied.");
 }
 
 function findClassRecord(

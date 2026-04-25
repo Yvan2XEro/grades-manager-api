@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
 import { Download, PlusIcon, Sparkles } from "lucide-react";
@@ -7,16 +12,14 @@ import Papa from "papaparse";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
-import { Switch } from "@/components/ui/switch";
 import { DebouncedSearchField } from "@/components/inputs/DebouncedSearchField";
-import { FilterBar } from "@/components/ui/filter-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
@@ -25,6 +28,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { FilterBar } from "@/components/ui/filter-bar";
 import {
 	Form,
 	FormControl,
@@ -45,6 +49,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -54,12 +59,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-} from "@/components/ui/context-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -398,7 +401,9 @@ export default function StudentManagement() {
 	);
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [search, setSearch] = useState("");
-	const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female" | "other">("all");
+	const [genderFilter, setGenderFilter] = useState<
+		"all" | "male" | "female" | "other"
+	>("all");
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<"single" | "import" | "external">(
@@ -406,7 +411,9 @@ export default function StudentManagement() {
 	);
 	const [importClass, setImportClass] = useState("");
 	const [importFormatId, setImportFormatId] = useState("");
-	const [importAcademicYear, setImportAcademicYear] = useState<string | null>(null);
+	const [importAcademicYear, setImportAcademicYear] = useState<string | null>(
+		null,
+	);
 	const [autoEnrollAfterImport, setAutoEnrollAfterImport] = useState(false);
 	const [importResult, setImportResult] = useState<{
 		createdCount: number;
@@ -435,26 +442,34 @@ export default function StudentManagement() {
 		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
-	const { data: studentsData, isLoading: isLoadingStudents, fetchNextPage, hasNextPage, isFetchingNextPage } =
-		useInfiniteQuery<StudentsListResponse>({
-			queryKey: ["students", classFilter, search, genderFilter],
-			queryFn: async ({ pageParam }) =>
-				trpcClient.students.list.query({
-					classId: classFilter === "all" ? undefined : classFilter,
-					q: search || undefined,
-					cursor: pageParam as string | undefined,
-					limit: 20,
-				}),
-			initialPageParam: undefined as string | undefined,
-			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		});
+	const {
+		data: studentsData,
+		isLoading: isLoadingStudents,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery<StudentsListResponse>({
+		queryKey: ["students", classFilter, search, genderFilter],
+		queryFn: async ({ pageParam }) =>
+			trpcClient.students.list.query({
+				classId: classFilter === "all" ? undefined : classFilter,
+				q: search || undefined,
+				cursor: pageParam as string | undefined,
+				limit: 20,
+			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+	});
 
 	const allStudentItems = studentsData?.pages.flatMap((p) => p.items) ?? [];
-	const filteredStudentItems = genderFilter !== "all"
-		? allStudentItems.filter((s) => s.gender === genderFilter)
-		: allStudentItems;
+	const filteredStudentItems =
+		genderFilter !== "all"
+			? allStudentItems.filter((s) => s.gender === genderFilter)
+			: allStudentItems;
 
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 
 	const ledgerSummaryQuery = useQuery({
 		...trpc.studentCreditLedger.summary.queryOptions({
@@ -540,8 +555,17 @@ export default function StudentManagement() {
 	});
 
 	const autoEnrollMutation = useMutation({
-		mutationFn: ({ classId, academicYearId }: { classId: string; academicYearId: string }) =>
-			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({ classId, academicYearId }),
+		mutationFn: ({
+			classId,
+			academicYearId,
+		}: {
+			classId: string;
+			academicYearId: string;
+		}) =>
+			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+				classId,
+				academicYearId,
+			}),
 		onSuccess: (result) => {
 			toast.success(
 				t("admin.students.import.autoEnrollSuccess", {
@@ -552,7 +576,11 @@ export default function StudentManagement() {
 		},
 		onError: (err: unknown) =>
 			toast.error(
-				err instanceof Error ? err.message : t("admin.students.import.autoEnrollError", { defaultValue: "Erreur lors de l'inscription automatique" }),
+				err instanceof Error
+					? err.message
+					: t("admin.students.import.autoEnrollError", {
+							defaultValue: "Erreur lors de l'inscription automatique",
+						}),
 			),
 	});
 
@@ -768,7 +796,10 @@ export default function StudentManagement() {
 					setImportFileKey((key) => key + 1);
 					// Auto-enroll in course enrollments if requested
 					if (autoEnrollAfterImport && importClass && importAcademicYear) {
-						autoEnrollMutation.mutate({ classId: importClass, academicYearId: importAcademicYear });
+						autoEnrollMutation.mutate({
+							classId: importClass,
+							academicYearId: importAcademicYear,
+						});
 					}
 				},
 			},
@@ -793,9 +824,7 @@ export default function StudentManagement() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between gap-4">
-				<h1 className="text-foreground">
-					{t("admin.students.title")}
-				</h1>
+				<h1 className="text-foreground">{t("admin.students.title")}</h1>
 				<Button onClick={() => setIsModalOpen(true)}>
 					<PlusIcon className="mr-2 h-5 w-5" />
 					{t("admin.students.actions.openModal")}
@@ -803,40 +832,101 @@ export default function StudentManagement() {
 			</div>
 
 			<FilterBar
-				activeCount={[!!academicYearFilter, classFilter !== "all", !!search.trim(), genderFilter !== "all"].filter(Boolean).length}
-				onReset={() => { setAcademicYearFilter(null); setClassFilter("all"); setSearch(""); setGenderFilter("all"); }}
+				activeCount={
+					[
+						!!academicYearFilter,
+						classFilter !== "all",
+						!!search.trim(),
+						genderFilter !== "all",
+					].filter(Boolean).length
+				}
+				onReset={() => {
+					setAcademicYearFilter(null);
+					setClassFilter("all");
+					setSearch("");
+					setGenderFilter("all");
+				}}
 				defaultOpen
 			>
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.academicYear", { defaultValue: "Année académique" })}</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.students.filters.academicYear", {
+								defaultValue: "Année académique",
+							})}
+						</p>
 						<AcademicYearSelect
 							value={academicYearFilter}
-							onChange={(v) => { setAcademicYearFilter(v); setClassFilter("all"); }}
+							onChange={(v) => {
+								setAcademicYearFilter(v);
+								setClassFilter("all");
+							}}
 						/>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.class", { defaultValue: "Classe" })}</p>
-						<Select value={classFilter} onValueChange={(value) => { setClassFilter(value); }}>
-							<SelectTrigger><SelectValue placeholder={t("admin.students.filters.allClasses")} /></SelectTrigger>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.students.filters.class", { defaultValue: "Classe" })}
+						</p>
+						<Select
+							value={classFilter}
+							onValueChange={(value) => {
+								setClassFilter(value);
+							}}
+						>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={t("admin.students.filters.allClasses")}
+								/>
+							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">{t("admin.students.filters.allClasses")}</SelectItem>
-								{classes?.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+								<SelectItem value="all">
+									{t("admin.students.filters.allClasses")}
+								</SelectItem>
+								{classes?.map((c) => (
+									<SelectItem key={c.id} value={c.id}>
+										{c.name}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.filters.search", { defaultValue: "Recherche" })}</p>
-						<DebouncedSearchField value={search} onChange={(v) => { setSearch(v); }} placeholder={t("admin.students.filters.searchPlaceholder")} />
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.students.filters.search", {
+								defaultValue: "Recherche",
+							})}
+						</p>
+						<DebouncedSearchField
+							value={search}
+							onChange={(v) => {
+								setSearch(v);
+							}}
+							placeholder={t("admin.students.filters.searchPlaceholder")}
+						/>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.students.table.gender")}</p>
-						<Select value={genderFilter} onValueChange={(v) => setGenderFilter(v as typeof genderFilter)}>
-							<SelectTrigger><SelectValue placeholder={t("admin.students.filters.allGenders")} /></SelectTrigger>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.students.table.gender")}
+						</p>
+						<Select
+							value={genderFilter}
+							onValueChange={(v) => setGenderFilter(v as typeof genderFilter)}
+						>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={t("admin.students.filters.allGenders")}
+								/>
+							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">{t("admin.students.filters.allGenders")}</SelectItem>
-								<SelectItem value="male">{t("admin.students.gender.male")}</SelectItem>
-								<SelectItem value="female">{t("admin.students.gender.female")}</SelectItem>
+								<SelectItem value="all">
+									{t("admin.students.filters.allGenders")}
+								</SelectItem>
+								<SelectItem value="male">
+									{t("admin.students.gender.male")}
+								</SelectItem>
+								<SelectItem value="female">
+									{t("admin.students.gender.female")}
+								</SelectItem>
 								<SelectItem value="other">Autre</SelectItem>
 							</SelectContent>
 						</Select>
@@ -847,84 +937,102 @@ export default function StudentManagement() {
 			<Card>
 				<CardContent className="pb-0">
 					{isLoadingStudents ? (
-						<TableSkeleton columns={7} rows={8} className="rounded-none border-0" />
+						<TableSkeleton
+							columns={7}
+							rows={8}
+							className="rounded-none border-0"
+						/>
 					) : (
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead className="w-32">{t("admin.students.table.registration")}</TableHead>
-								<TableHead>{t("admin.students.table.name")}</TableHead>
-								<TableHead>{t("admin.students.table.email")}</TableHead>
-								<TableHead className="w-20">{t("admin.students.table.gender")}</TableHead>
-								<TableHead className="w-28">{t("admin.students.table.dateOfBirth")}</TableHead>
-								<TableHead className="w-28">{t("admin.students.table.placeOfBirth")}</TableHead>
-								<TableHead className="text-right">
-									{t("admin.students.table.actions", {
-										defaultValue: "Actions",
-									})}
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{filteredStudentItems.length ? (
-								filteredStudentItems.map((student) => (
-									<TableRow
-									key={student.id}
-									actions={
-										<ContextMenuItem onSelect={() => setLedgerStudent(student)}>
-											<Sparkles className="h-4 w-4" />
-											{t("admin.students.table.viewLedger", { defaultValue: "Credits" })}
-										</ContextMenuItem>
-									}
-								>
-										<TableCell>
-											<ClipboardCopy
-												value={student.registrationNumber}
-												label={t("admin.students.table.registration")}
-											/>
-										</TableCell>
-										<TableCell>{getStudentName(student)}</TableCell>
-										<TableCell>{student.profile.primaryEmail}</TableCell>
-										<TableCell>
-											{formatStudentGender(t, student.profile.gender)}
-										</TableCell>
-										<TableCell>
-											{formatDate(student.profile.dateOfBirth)}
-										</TableCell>
-										<TableCell>{student.profile.placeOfBirth || "—"}</TableCell>
-										<TableCell className="text-right">
-											<Button
-												type="button"
-												variant="ghost"
-												className="text-primary-700"
-												onClick={() => setLedgerStudent(student)}
-											>
-												<Sparkles className="mr-2 h-4 w-4" />
-												{t("admin.students.table.viewLedger", {
-													defaultValue: "Credits",
-												})}
-											</Button>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead className="w-32">
+										{t("admin.students.table.registration")}
+									</TableHead>
+									<TableHead>{t("admin.students.table.name")}</TableHead>
+									<TableHead>{t("admin.students.table.email")}</TableHead>
+									<TableHead className="w-20">
+										{t("admin.students.table.gender")}
+									</TableHead>
+									<TableHead className="w-28">
+										{t("admin.students.table.dateOfBirth")}
+									</TableHead>
+									<TableHead className="w-28">
+										{t("admin.students.table.placeOfBirth")}
+									</TableHead>
+									<TableHead className="text-right">
+										{t("admin.students.table.actions", {
+											defaultValue: "Actions",
+										})}
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{filteredStudentItems.length ? (
+									filteredStudentItems.map((student) => (
+										<TableRow
+											key={student.id}
+											actions={
+												<ContextMenuItem
+													onSelect={() => setLedgerStudent(student)}
+												>
+													<Sparkles className="h-4 w-4" />
+													{t("admin.students.table.viewLedger", {
+														defaultValue: "Credits",
+													})}
+												</ContextMenuItem>
+											}
+										>
+											<TableCell>
+												<ClipboardCopy
+													value={student.registrationNumber}
+													label={t("admin.students.table.registration")}
+												/>
+											</TableCell>
+											<TableCell>{getStudentName(student)}</TableCell>
+											<TableCell>{student.profile.primaryEmail}</TableCell>
+											<TableCell>
+												{formatStudentGender(t, student.profile.gender)}
+											</TableCell>
+											<TableCell>
+												{formatDate(student.profile.dateOfBirth)}
+											</TableCell>
+											<TableCell>
+												{student.profile.placeOfBirth || "—"}
+											</TableCell>
+											<TableCell className="text-right">
+												<Button
+													type="button"
+													variant="ghost"
+													className="text-primary-700"
+													onClick={() => setLedgerStudent(student)}
+												>
+													<Sparkles className="mr-2 h-4 w-4" />
+													{t("admin.students.table.viewLedger", {
+														defaultValue: "Credits",
+													})}
+												</Button>
+											</TableCell>
+										</TableRow>
+									))
+								) : (
+									<TableRow>
+										<TableCell colSpan={7} className="py-6 text-center">
+											{t("admin.students.empty", {
+												defaultValue: "No students yet for this selection.",
+											})}
 										</TableCell>
 									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell colSpan={7} className="py-6 text-center">
-										{t("admin.students.empty", {
-											defaultValue: "No students yet for this selection.",
-										})}
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
+								)}
+							</TableBody>
+						</Table>
 					)}
-				<div ref={sentinelRef} className="h-1" />
-				{isFetchingNextPage && (
-					<div className="flex justify-center py-2">
-						<Spinner />
-					</div>
-				)}
+					<div ref={sentinelRef} className="h-1" />
+					{isFetchingNextPage && (
+						<div className="flex justify-center py-2">
+							<Spinner />
+						</div>
+					)}
 				</CardContent>
 			</Card>
 
@@ -1058,913 +1166,184 @@ export default function StudentManagement() {
 					</DialogHeader>
 
 					<div className="px-6 pb-4">
-					<Tabs
-						value={activeTab}
-						onValueChange={(value) =>
-							setActiveTab(value as "single" | "import" | "external")
-						}
-						className="space-y-4"
-					>
-						<TabsList>
-							<TabsTrigger value="single">
-								{t("admin.students.modal.tabs.single")}
-							</TabsTrigger>
-							<TabsTrigger value="import">
-								{t("admin.students.modal.tabs.import")}
-							</TabsTrigger>
-							<TabsTrigger value="external">
-								{t("admin.students.modal.tabs.external")}
-							</TabsTrigger>
-						</TabsList>
+						<Tabs
+							value={activeTab}
+							onValueChange={(value) =>
+								setActiveTab(value as "single" | "import" | "external")
+							}
+							className="space-y-4"
+						>
+							<TabsList>
+								<TabsTrigger value="single">
+									{t("admin.students.modal.tabs.single")}
+								</TabsTrigger>
+								<TabsTrigger value="import">
+									{t("admin.students.modal.tabs.import")}
+								</TabsTrigger>
+								<TabsTrigger value="external">
+									{t("admin.students.modal.tabs.external")}
+								</TabsTrigger>
+							</TabsList>
 
-						<TabsContent value="single" className="space-y-4">
-							<Form {...form}>
-								<form
-									onSubmit={form.handleSubmit(onSubmit)}
-									className="space-y-6"
-								>
-									{/* Section: Informations personnelles */}
-									<div className="grid grid-cols-2 gap-4">
-										<FormField
-											control={form.control}
-											name="firstName"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.firstName")}
-													</FormLabel>
-													<FormControl>
-														<Input {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="lastName"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.lastName")}
-													</FormLabel>
-													<FormControl>
-														<Input {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-
-									{/* Section: Contact */}
-									<FormField
-										control={form.control}
-										name="email"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t("admin.students.form.email")}</FormLabel>
-												<FormControl>
-													<Input {...field} type="email" />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									{/* Section: Naissance */}
-									<div className="grid grid-cols-2 gap-4">
-										<FormField
-											control={form.control}
-											name="dateOfBirth"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.dateOfBirth")}
-													</FormLabel>
-													<FormControl>
-														<DatePicker
-															value={field.value ?? ""}
-															onChange={field.onChange}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="placeOfBirth"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.placeOfBirth")}
-													</FormLabel>
-													<FormControl>
-														<Input {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-
-									{/* Section: Identité */}
-									<div className="grid grid-cols-2 gap-4">
-										<FormField
-											control={form.control}
-											name="gender"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.gender")}
-													</FormLabel>
-													<Select
-														onValueChange={field.onChange}
-														value={field.value || ""}
-													>
-														<FormControl>
-															<SelectTrigger data-testid="gender-select">
-																<SelectValue
-																	placeholder={t(
-																		"admin.students.form.genderPlaceholder",
-																	)}
-																/>
-															</SelectTrigger>
-														</FormControl>
-														<SelectContent>
-															<SelectItem value="male">
-																{t("admin.students.gender.male")}
-															</SelectItem>
-															<SelectItem value="female">
-																{t("admin.students.gender.female")}
-															</SelectItem>
-															<SelectItem value="other">
-																{t("admin.students.gender.other")}
-															</SelectItem>
-														</SelectContent>
-													</Select>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="nationality"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.nationality")}
-													</FormLabel>
-													<FormControl>
-														<Input {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-
-									{/* Section: Inscription */}
-									<div className="space-y-4 rounded-lg border bg-muted p-4">
-										<p className="font-medium text-foreground text-sm">
-											{t("admin.students.form.registrationSection", {
-												defaultValue: "Inscription",
-											})}
-										</p>
-										<FormField
-											control={form.control}
-											name="classId"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.form.class")}
-													</FormLabel>
-													<Select
-														onValueChange={field.onChange}
-														value={field.value}
-														disabled={!classes?.length}
-													>
-														<FormControl>
-															<SelectTrigger data-testid="class-select">
-																<SelectValue
-																	placeholder={t(
-																		"admin.students.form.classPlaceholder",
-																	)}
-																/>
-															</SelectTrigger>
-														</FormControl>
-														<SelectContent>
-															{classes?.map((c) => (
-																<SelectItem key={c.id} value={c.id}>
-																	{c.name}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
+							<TabsContent value="single" className="space-y-4">
+								<Form {...form}>
+									<form
+										onSubmit={form.handleSubmit(onSubmit)}
+										className="space-y-6"
+									>
+										{/* Section: Informations personnelles */}
 										<div className="grid grid-cols-2 gap-4">
 											<FormField
 												control={form.control}
-												name="registrationNumber"
+												name="firstName"
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.students.form.registration")}
+															{t("admin.students.form.firstName")}
 														</FormLabel>
 														<FormControl>
 															<Input {...field} />
 														</FormControl>
-														<FormDescription>
-															{t("admin.students.form.registrationHint", {
-																defaultValue:
-																	"Leave blank to auto-generate the next matricule.",
-															})}
-														</FormDescription>
 														<FormMessage />
 													</FormItem>
 												)}
 											/>
 											<FormField
 												control={form.control}
-												name="registrationFormatId"
+												name="lastName"
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.students.form.registrationFormat", {
-																defaultValue: "Registration format",
-															})}
+															{t("admin.students.form.lastName")}
+														</FormLabel>
+														<FormControl>
+															<Input {...field} />
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+
+										{/* Section: Contact */}
+										<FormField
+											control={form.control}
+											name="email"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.form.email")}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} type="email" />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										{/* Section: Naissance */}
+										<div className="grid grid-cols-2 gap-4">
+											<FormField
+												control={form.control}
+												name="dateOfBirth"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.dateOfBirth")}
+														</FormLabel>
+														<FormControl>
+															<DatePicker
+																value={field.value ?? ""}
+																onChange={field.onChange}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="placeOfBirth"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.placeOfBirth")}
+														</FormLabel>
+														<FormControl>
+															<Input {...field} />
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+
+										{/* Section: Identité */}
+										<div className="grid grid-cols-2 gap-4">
+											<FormField
+												control={form.control}
+												name="gender"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>
+															{t("admin.students.form.gender")}
 														</FormLabel>
 														<Select
-															onValueChange={(value) =>
-																field.onChange(
-																	value === NO_REGISTRATION_FORMAT_VALUE
-																		? undefined
-																		: value,
-																)
-															}
-															value={
-																field.value ?? NO_REGISTRATION_FORMAT_VALUE
-															}
+															onValueChange={field.onChange}
+															value={field.value || ""}
 														>
 															<FormControl>
-																<SelectTrigger>
+																<SelectTrigger data-testid="gender-select">
 																	<SelectValue
 																		placeholder={t(
-																			"admin.students.form.registrationFormatPlaceholder",
-																			{
-																				defaultValue: "Use active format",
-																			},
+																			"admin.students.form.genderPlaceholder",
 																		)}
 																	/>
 																</SelectTrigger>
 															</FormControl>
 															<SelectContent>
-																<SelectItem
-																	value={NO_REGISTRATION_FORMAT_VALUE}
-																>
-																	{t(
-																		"admin.students.form.registrationFormatPlaceholder",
-																		{
-																			defaultValue: "Use active format",
-																		},
-																	)}
+																<SelectItem value="male">
+																	{t("admin.students.gender.male")}
 																</SelectItem>
-																{registrationFormats?.map((format) => (
-																	<SelectItem key={format.id} value={format.id}>
-																		{format.name}
-																		{format.isActive
-																			? ` (${t(
-																					"admin.registrationNumbers.list.active",
-																					{ defaultValue: "Active" },
-																				)})`
-																			: ""}
-																	</SelectItem>
-																))}
+																<SelectItem value="female">
+																	{t("admin.students.gender.female")}
+																</SelectItem>
+																<SelectItem value="other">
+																	{t("admin.students.gender.other")}
+																</SelectItem>
 															</SelectContent>
 														</Select>
-														<FormDescription>
-															{t("admin.students.form.registrationFormatHint", {
-																defaultValue:
-																	"Select a specific format to override the active template.",
-															})}
-														</FormDescription>
 														<FormMessage />
 													</FormItem>
 												)}
 											/>
-										</div>
-									</div>
-									<div className="flex justify-end gap-3 pt-2">
-										<Button
-											type="button"
-											variant="outline"
-											onClick={closeModal}
-										>
-											{t("common.actions.cancel")}
-										</Button>
-										<Button
-											type="submit"
-											disabled={form.formState.isSubmitting}
-										>
-											{form.formState.isSubmitting
-												? t("common.loading")
-												: t("admin.students.form.submit")}
-										</Button>
-									</div>
-								</form>
-							</Form>
-						</TabsContent>
-
-						<TabsContent value="import" className="space-y-4">
-							{!importResult && (
-								<>
-									<div className="space-y-2">
-										<Label htmlFor="import-class-select">
-											{t("admin.students.import.classLabel")}
-										</Label>
-										<Select value={importClass} onValueChange={setImportClass}>
-											<SelectTrigger id="import-class-select">
-												<SelectValue
-													placeholder={t(
-														"admin.students.form.classPlaceholder",
-													)}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												{classes?.map((c) => (
-													<SelectItem key={c.id} value={c.id}>
-														{c.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="import-format-select">
-											{t("admin.students.import.formatLabel", {
-												defaultValue: "Registration format (optional)",
-											})}
-										</Label>
-										<Select
-											value={importFormatId || NO_REGISTRATION_FORMAT_VALUE}
-											onValueChange={(value) =>
-												setImportFormatId(
-													value === NO_REGISTRATION_FORMAT_VALUE ? "" : value,
-												)
-											}
-										>
-											<SelectTrigger id="import-format-select">
-												<SelectValue
-													placeholder={t(
-														"admin.students.form.registrationFormatPlaceholder",
-														{
-															defaultValue: "Use active format",
-														},
-													)}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
-													{t(
-														"admin.students.form.registrationFormatPlaceholder",
-														{
-															defaultValue: "Use active format",
-														},
-													)}
-												</SelectItem>
-												{registrationFormats?.map((format) => (
-													<SelectItem key={format.id} value={format.id}>
-														{format.name}
-														{format.isActive
-															? ` (${t(
-																	"admin.registrationNumbers.list.active",
-																	{ defaultValue: "Active" },
-																)})`
-															: ""}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-									<div className="space-y-2">
-										<Label>
-											{t("admin.students.import.academicYearLabel", { defaultValue: "Année académique (pour inscription automatique)" })}
-										</Label>
-										<AcademicYearSelect value={importAcademicYear} onChange={setImportAcademicYear} autoSelectActive />
-									</div>
-									{importAcademicYear && importClass && (
-										<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
-											<Switch
-												id="auto-enroll-import-toggle"
-												checked={autoEnrollAfterImport}
-												onCheckedChange={setAutoEnrollAfterImport}
-											/>
-											<label htmlFor="auto-enroll-import-toggle" className="cursor-pointer text-sm">
-												{t("admin.students.import.autoEnrollToggle", { defaultValue: "Inscrire automatiquement aux cours apres l'import" })}
-											</label>
-										</div>
-									)}
-									<div className="space-y-2">
-										<Label htmlFor="student-import-file">
-											{t("admin.students.import.fileLabel", {
-												defaultValue: "Upload CSV or XLSX",
-											})}
-										</Label>
-										<Input
-											key={importFileKey}
-											id="student-import-file"
-											type="file"
-											accept=".csv,.xlsx"
-											onChange={(e) => {
-												const f = e.target.files?.[0] ?? null;
-												setImportFile(f);
-												setImportResult(null);
-												setImportPreview(null);
-												if (f) {
-													void (async () => {
-														try {
-															const preview = await parseImportFile(f);
-															setImportPreview(preview);
-															if (
-																!preview.rows.length &&
-																preview.errors.length > 0
-															) {
-																toast.error(
-																	t(
-																		"admin.students.import.preview.noValidRows",
-																	),
-																);
-															}
-														} catch (error) {
-															console.error(error);
-															toast.error(
-																t("admin.students.import.invalidFormat"),
-															);
-														}
-													})();
-												}
-											}}
-											disabled={!importClass || bulkMutation.isPending}
-										/>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.students.import.instructions.gender", {
-												values: GENDER_HINT,
-											})}
-										</p>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.students.import.instructions.admissionType", {
-												values: ADMISSION_TYPE_HINT,
-											})}
-										</p>
-										<p className="text-muted-foreground text-xs">
-											{t("admin.students.import.instructions.date")}
-										</p>
-									</div>
-									{importPreview && (
-										<div className="space-y-2 rounded-md border p-3 text-sm">
-											<p>
-												{t("admin.students.import.preview.ready", {
-													count: importPreview.rows.length,
-												})}
-											</p>
-											{importPreview.errors.length > 0 && (
-												<div className="space-y-1">
-													<p className="font-semibold">
-														{t("admin.students.import.preview.errorsTitle")}
-													</p>
-													<ul className="ml-4 list-disc space-y-0.5">
-														{importPreview.errors.map((error) => (
-															<li key={`${error.row}-${error.reason}`}>
-																{t(
-																	"admin.students.import.summary.errors.item",
-																	{
-																		row: error.row,
-																		reason: error.reason,
-																	},
-																)}
-															</li>
-														))}
-													</ul>
-												</div>
-											)}
-										</div>
-									)}
-									<div className="flex flex-wrap gap-2">
-										<Button
-											type="button"
-											variant="outline"
-											onClick={handleDownloadTemplate}
-										>
-											<Download className="mr-2 h-4 w-4" />
-											{t("admin.students.import.downloadTemplate")}
-										</Button>
-										<Button
-											type="button"
-											onClick={() => {
-												if (importFile) {
-													void handleImport();
-												} else {
-													toast.error(
-														t("admin.students.import.fileLabel", {
-															defaultValue: "Upload CSV or XLSX file",
-														}),
-													);
-												}
-											}}
-											disabled={
-												!importClass || !importFile || bulkMutation.isPending
-											}
-										>
-											{bulkMutation.isPending ? (
-												<>
-													<Spinner className="mr-2 h-4 w-4" />
-													{t("common.actions.saving", {
-														defaultValue: "Saving...",
-													})}
-												</>
-											) : (
-												t("admin.students.import.actions.import", {
-													defaultValue: "Import students",
-												})
-											)}
-										</Button>
-									</div>
-								</>
-							)}
-							{importResult && (
-								<div className="space-y-3 text-sm">
-									<p>
-										{t("admin.students.import.summary.created", {
-											count: importResult.createdCount,
-										})}
-									</p>
-									{importResult.conflicts.length > 0 && (
-										<div className="space-y-1">
-											<p className="font-semibold">
-												{t("admin.students.import.summary.conflicts.title")}
-											</p>
-											<ul className="ml-4 list-disc">
-												{importResult.conflicts.map((c) => (
-													<li key={`${c.row}-${c.reason}`}>
-														{t("admin.students.import.summary.conflicts.item", {
-															row: c.row,
-															reason: c.reason,
-														})}
-													</li>
-												))}
-											</ul>
-										</div>
-									)}
-									{importResult.errors.length > 0 && (
-										<div className="space-y-1">
-											<p className="font-semibold">
-												{t("admin.students.import.summary.errors.title")}
-											</p>
-											<ul className="ml-4 list-disc">
-												{importResult.errors.map((c) => (
-													<li key={`${c.row}-${c.reason}`}>
-														{t("admin.students.import.summary.errors.item", {
-															row: c.row,
-															reason: c.reason,
-														})}
-													</li>
-												))}
-											</ul>
-										</div>
-									)}
-									<div className="flex justify-end">
-										<Button variant="outline" onClick={closeModal}>
-											{t("common.actions.close")}
-										</Button>
-									</div>
-								</div>
-							)}
-						</TabsContent>
-
-						<TabsContent value="external" className="space-y-4">
-							<Form {...externalForm}>
-								<form
-									onSubmit={externalForm.handleSubmit(onExternalSubmit)}
-									className="space-y-6"
-								>
-									<div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-										<p className="font-medium text-blue-900 text-sm">
-											{t("admin.students.external.info.title")}
-										</p>
-										<p className="text-blue-700 text-sm">
-											{t("admin.students.external.info.description")}
-										</p>
-									</div>
-
-									<FormField
-										control={externalForm.control}
-										name="admissionType"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.external.form.admissionType")}
-												</FormLabel>
-												<Select
-													onValueChange={field.onChange}
-													value={field.value}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t(
-																	"admin.students.external.form.admissionTypePlaceholder",
-																)}
-															/>
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value="transfer">
-															{t(
-																"admin.students.external.admissionTypes.transfer",
-															)}
-														</SelectItem>
-														<SelectItem value="direct">
-															{t(
-																"admin.students.external.admissionTypes.direct",
-															)}
-														</SelectItem>
-														<SelectItem value="equivalence">
-															{t(
-																"admin.students.external.admissionTypes.equivalence",
-															)}
-														</SelectItem>
-													</SelectContent>
-												</Select>
-												<FormDescription>
-													{t("admin.students.external.form.admissionTypeHint")}
-												</FormDescription>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={externalForm.control}
-										name="transferInstitution"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t(
-														"admin.students.external.form.transferInstitution",
-													)}
-												</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<div className="grid grid-cols-2 gap-4">
-										<FormField
-											control={externalForm.control}
-											name="transferCredits"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.external.form.transferCredits")}
-													</FormLabel>
-													<FormControl>
-														<Input
-															{...field}
-															type="number"
-															min={0}
-															max={300}
-															onChange={(e) =>
-																field.onChange(
-																	Number.parseInt(e.target.value, 10),
-																)
-															}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={externalForm.control}
-											name="transferLevel"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>
-														{t("admin.students.external.form.transferLevel")}
-													</FormLabel>
-													<FormControl>
-														<Input {...field} placeholder="L1, L2, M1, etc." />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-
-									<FormField
-										control={externalForm.control}
-										name="admissionDate"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.students.external.form.admissionDate")}
-												</FormLabel>
-												<FormControl>
-													<DatePicker
-														value={field.value ?? ""}
-														onChange={field.onChange}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={externalForm.control}
-										name="admissionJustification"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t(
-														"admin.students.external.form.admissionJustification",
-													)}
-												</FormLabel>
-												<FormControl>
-													<Textarea
-														{...field}
-														rows={3}
-														placeholder={t(
-															"admin.students.external.form.admissionJustificationPlaceholder",
-														)}
-													/>
-												</FormControl>
-												<FormDescription>
-													{t(
-														"admin.students.external.form.admissionJustificationHint",
-													)}
-												</FormDescription>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<div className="rounded-lg border bg-muted p-4">
-										<p className="mb-3 font-medium text-foreground text-sm">
-											{t("admin.students.external.form.studentInfoSection")}
-										</p>
-										<div className="grid gap-4">
-											<div className="grid grid-cols-2 gap-4">
-												<FormField
-													control={externalForm.control}
-													name="firstName"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.firstName")}
-															</FormLabel>
-															<FormControl>
-																<Input {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={externalForm.control}
-													name="lastName"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.lastName")}
-															</FormLabel>
-															<FormControl>
-																<Input {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
 											<FormField
-												control={externalForm.control}
-												name="email"
+												control={form.control}
+												name="nationality"
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.students.form.email")}
+															{t("admin.students.form.nationality")}
 														</FormLabel>
 														<FormControl>
-															<Input {...field} type="email" />
+															<Input {...field} />
 														</FormControl>
 														<FormMessage />
 													</FormItem>
 												)}
 											/>
+										</div>
 
-											<div className="grid grid-cols-2 gap-4">
-												<FormField
-													control={externalForm.control}
-													name="dateOfBirth"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.dateOfBirth")}
-															</FormLabel>
-															<FormControl>
-																<DatePicker
-																	value={field.value ?? ""}
-																	onChange={field.onChange}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={externalForm.control}
-													name="gender"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.gender")}
-															</FormLabel>
-															<Select
-																onValueChange={field.onChange}
-																value={field.value || ""}
-															>
-																<FormControl>
-																	<SelectTrigger>
-																		<SelectValue
-																			placeholder={t(
-																				"admin.students.form.genderPlaceholder",
-																			)}
-																		/>
-																	</SelectTrigger>
-																</FormControl>
-																<SelectContent>
-																	<SelectItem value="male">
-																		{t("admin.students.gender.male")}
-																	</SelectItem>
-																	<SelectItem value="female">
-																		{t("admin.students.gender.female")}
-																	</SelectItem>
-																	<SelectItem value="other">
-																		{t("admin.students.gender.other")}
-																	</SelectItem>
-																</SelectContent>
-															</Select>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
-											<div className="grid grid-cols-2 gap-4">
-												<FormField
-													control={externalForm.control}
-													name="placeOfBirth"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.placeOfBirth")}
-															</FormLabel>
-															<FormControl>
-																<Input {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={externalForm.control}
-													name="nationality"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>
-																{t("admin.students.form.nationality")}
-															</FormLabel>
-															<FormControl>
-																<Input {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
+										{/* Section: Inscription */}
+										<div className="space-y-4 rounded-lg border bg-muted p-4">
+											<p className="font-medium text-foreground text-sm">
+												{t("admin.students.form.registrationSection", {
+													defaultValue: "Inscription",
+												})}
+											</p>
 											<FormField
-												control={externalForm.control}
+												control={form.control}
 												name="classId"
 												render={({ field }) => (
 													<FormItem>
@@ -1977,7 +1356,7 @@ export default function StudentManagement() {
 															disabled={!classes?.length}
 														>
 															<FormControl>
-																<SelectTrigger>
+																<SelectTrigger data-testid="class-select">
 																	<SelectValue
 																		placeholder={t(
 																			"admin.students.form.classPlaceholder",
@@ -1998,20 +1377,516 @@ export default function StudentManagement() {
 												)}
 											/>
 
+											<div className="grid grid-cols-2 gap-4">
+												<FormField
+													control={form.control}
+													name="registrationNumber"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.registration")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormDescription>
+																{t("admin.students.form.registrationHint", {
+																	defaultValue:
+																		"Leave blank to auto-generate the next matricule.",
+																})}
+															</FormDescription>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={form.control}
+													name="registrationFormatId"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.registrationFormat", {
+																	defaultValue: "Registration format",
+																})}
+															</FormLabel>
+															<Select
+																onValueChange={(value) =>
+																	field.onChange(
+																		value === NO_REGISTRATION_FORMAT_VALUE
+																			? undefined
+																			: value,
+																	)
+																}
+																value={
+																	field.value ?? NO_REGISTRATION_FORMAT_VALUE
+																}
+															>
+																<FormControl>
+																	<SelectTrigger>
+																		<SelectValue
+																			placeholder={t(
+																				"admin.students.form.registrationFormatPlaceholder",
+																				{
+																					defaultValue: "Use active format",
+																				},
+																			)}
+																		/>
+																	</SelectTrigger>
+																</FormControl>
+																<SelectContent>
+																	<SelectItem
+																		value={NO_REGISTRATION_FORMAT_VALUE}
+																	>
+																		{t(
+																			"admin.students.form.registrationFormatPlaceholder",
+																			{
+																				defaultValue: "Use active format",
+																			},
+																		)}
+																	</SelectItem>
+																	{registrationFormats?.map((format) => (
+																		<SelectItem
+																			key={format.id}
+																			value={format.id}
+																		>
+																			{format.name}
+																			{format.isActive
+																				? ` (${t(
+																						"admin.registrationNumbers.list.active",
+																						{ defaultValue: "Active" },
+																					)})`
+																				: ""}
+																		</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+															<FormDescription>
+																{t(
+																	"admin.students.form.registrationFormatHint",
+																	{
+																		defaultValue:
+																			"Select a specific format to override the active template.",
+																	},
+																)}
+															</FormDescription>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+										</div>
+										<div className="flex justify-end gap-3 pt-2">
+											<Button
+												type="button"
+												variant="outline"
+												onClick={closeModal}
+											>
+												{t("common.actions.cancel")}
+											</Button>
+											<Button
+												type="submit"
+												disabled={form.formState.isSubmitting}
+											>
+												{form.formState.isSubmitting
+													? t("common.loading")
+													: t("admin.students.form.submit")}
+											</Button>
+										</div>
+									</form>
+								</Form>
+							</TabsContent>
+
+							<TabsContent value="import" className="space-y-4">
+								{!importResult && (
+									<>
+										<div className="space-y-2">
+											<Label htmlFor="import-class-select">
+												{t("admin.students.import.classLabel")}
+											</Label>
+											<Select
+												value={importClass}
+												onValueChange={setImportClass}
+											>
+												<SelectTrigger id="import-class-select">
+													<SelectValue
+														placeholder={t(
+															"admin.students.form.classPlaceholder",
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													{classes?.map((c) => (
+														<SelectItem key={c.id} value={c.id}>
+															{c.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor="import-format-select">
+												{t("admin.students.import.formatLabel", {
+													defaultValue: "Registration format (optional)",
+												})}
+											</Label>
+											<Select
+												value={importFormatId || NO_REGISTRATION_FORMAT_VALUE}
+												onValueChange={(value) =>
+													setImportFormatId(
+														value === NO_REGISTRATION_FORMAT_VALUE ? "" : value,
+													)
+												}
+											>
+												<SelectTrigger id="import-format-select">
+													<SelectValue
+														placeholder={t(
+															"admin.students.form.registrationFormatPlaceholder",
+															{
+																defaultValue: "Use active format",
+															},
+														)}
+													/>
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value={NO_REGISTRATION_FORMAT_VALUE}>
+														{t(
+															"admin.students.form.registrationFormatPlaceholder",
+															{
+																defaultValue: "Use active format",
+															},
+														)}
+													</SelectItem>
+													{registrationFormats?.map((format) => (
+														<SelectItem key={format.id} value={format.id}>
+															{format.name}
+															{format.isActive
+																? ` (${t(
+																		"admin.registrationNumbers.list.active",
+																		{ defaultValue: "Active" },
+																	)})`
+																: ""}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="space-y-2">
+											<Label>
+												{t("admin.students.import.academicYearLabel", {
+													defaultValue:
+														"Année académique (pour inscription automatique)",
+												})}
+											</Label>
+											<AcademicYearSelect
+												value={importAcademicYear}
+												onChange={setImportAcademicYear}
+												autoSelectActive
+											/>
+										</div>
+										{importAcademicYear && importClass && (
+											<div className="flex items-center gap-3 rounded-lg border border-dashed p-3">
+												<Switch
+													id="auto-enroll-import-toggle"
+													checked={autoEnrollAfterImport}
+													onCheckedChange={setAutoEnrollAfterImport}
+												/>
+												<label
+													htmlFor="auto-enroll-import-toggle"
+													className="cursor-pointer text-sm"
+												>
+													{t("admin.students.import.autoEnrollToggle", {
+														defaultValue:
+															"Inscrire automatiquement aux cours apres l'import",
+													})}
+												</label>
+											</div>
+										)}
+										<div className="space-y-2">
+											<Label htmlFor="student-import-file">
+												{t("admin.students.import.fileLabel", {
+													defaultValue: "Upload CSV or XLSX",
+												})}
+											</Label>
+											<Input
+												key={importFileKey}
+												id="student-import-file"
+												type="file"
+												accept=".csv,.xlsx"
+												onChange={(e) => {
+													const f = e.target.files?.[0] ?? null;
+													setImportFile(f);
+													setImportResult(null);
+													setImportPreview(null);
+													if (f) {
+														void (async () => {
+															try {
+																const preview = await parseImportFile(f);
+																setImportPreview(preview);
+																if (
+																	!preview.rows.length &&
+																	preview.errors.length > 0
+																) {
+																	toast.error(
+																		t(
+																			"admin.students.import.preview.noValidRows",
+																		),
+																	);
+																}
+															} catch (error) {
+																console.error(error);
+																toast.error(
+																	t("admin.students.import.invalidFormat"),
+																);
+															}
+														})();
+													}
+												}}
+												disabled={!importClass || bulkMutation.isPending}
+											/>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.students.import.instructions.gender", {
+													values: GENDER_HINT,
+												})}
+											</p>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.students.import.instructions.admissionType", {
+													values: ADMISSION_TYPE_HINT,
+												})}
+											</p>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.students.import.instructions.date")}
+											</p>
+										</div>
+										{importPreview && (
+											<div className="space-y-2 rounded-md border p-3 text-sm">
+												<p>
+													{t("admin.students.import.preview.ready", {
+														count: importPreview.rows.length,
+													})}
+												</p>
+												{importPreview.errors.length > 0 && (
+													<div className="space-y-1">
+														<p className="font-semibold">
+															{t("admin.students.import.preview.errorsTitle")}
+														</p>
+														<ul className="ml-4 list-disc space-y-0.5">
+															{importPreview.errors.map((error) => (
+																<li key={`${error.row}-${error.reason}`}>
+																	{t(
+																		"admin.students.import.summary.errors.item",
+																		{
+																			row: error.row,
+																			reason: error.reason,
+																		},
+																	)}
+																</li>
+															))}
+														</ul>
+													</div>
+												)}
+											</div>
+										)}
+										<div className="flex flex-wrap gap-2">
+											<Button
+												type="button"
+												variant="outline"
+												onClick={handleDownloadTemplate}
+											>
+												<Download className="mr-2 h-4 w-4" />
+												{t("admin.students.import.downloadTemplate")}
+											</Button>
+											<Button
+												type="button"
+												onClick={() => {
+													if (importFile) {
+														void handleImport();
+													} else {
+														toast.error(
+															t("admin.students.import.fileLabel", {
+																defaultValue: "Upload CSV or XLSX file",
+															}),
+														);
+													}
+												}}
+												disabled={
+													!importClass || !importFile || bulkMutation.isPending
+												}
+											>
+												{bulkMutation.isPending ? (
+													<>
+														<Spinner className="mr-2 h-4 w-4" />
+														{t("common.actions.saving", {
+															defaultValue: "Saving...",
+														})}
+													</>
+												) : (
+													t("admin.students.import.actions.import", {
+														defaultValue: "Import students",
+													})
+												)}
+											</Button>
+										</div>
+									</>
+								)}
+								{importResult && (
+									<div className="space-y-3 text-sm">
+										<p>
+											{t("admin.students.import.summary.created", {
+												count: importResult.createdCount,
+											})}
+										</p>
+										{importResult.conflicts.length > 0 && (
+											<div className="space-y-1">
+												<p className="font-semibold">
+													{t("admin.students.import.summary.conflicts.title")}
+												</p>
+												<ul className="ml-4 list-disc">
+													{importResult.conflicts.map((c) => (
+														<li key={`${c.row}-${c.reason}`}>
+															{t(
+																"admin.students.import.summary.conflicts.item",
+																{
+																	row: c.row,
+																	reason: c.reason,
+																},
+															)}
+														</li>
+													))}
+												</ul>
+											</div>
+										)}
+										{importResult.errors.length > 0 && (
+											<div className="space-y-1">
+												<p className="font-semibold">
+													{t("admin.students.import.summary.errors.title")}
+												</p>
+												<ul className="ml-4 list-disc">
+													{importResult.errors.map((c) => (
+														<li key={`${c.row}-${c.reason}`}>
+															{t("admin.students.import.summary.errors.item", {
+																row: c.row,
+																reason: c.reason,
+															})}
+														</li>
+													))}
+												</ul>
+											</div>
+										)}
+										<div className="flex justify-end">
+											<Button variant="outline" onClick={closeModal}>
+												{t("common.actions.close")}
+											</Button>
+										</div>
+									</div>
+								)}
+							</TabsContent>
+
+							<TabsContent value="external" className="space-y-4">
+								<Form {...externalForm}>
+									<form
+										onSubmit={externalForm.handleSubmit(onExternalSubmit)}
+										className="space-y-6"
+									>
+										<div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+											<p className="font-medium text-blue-900 text-sm">
+												{t("admin.students.external.info.title")}
+											</p>
+											<p className="text-blue-700 text-sm">
+												{t("admin.students.external.info.description")}
+											</p>
+										</div>
+
+										<FormField
+											control={externalForm.control}
+											name="admissionType"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.external.form.admissionType")}
+													</FormLabel>
+													<Select
+														onValueChange={field.onChange}
+														value={field.value}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue
+																	placeholder={t(
+																		"admin.students.external.form.admissionTypePlaceholder",
+																	)}
+																/>
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															<SelectItem value="transfer">
+																{t(
+																	"admin.students.external.admissionTypes.transfer",
+																)}
+															</SelectItem>
+															<SelectItem value="direct">
+																{t(
+																	"admin.students.external.admissionTypes.direct",
+																)}
+															</SelectItem>
+															<SelectItem value="equivalence">
+																{t(
+																	"admin.students.external.admissionTypes.equivalence",
+																)}
+															</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormDescription>
+														{t(
+															"admin.students.external.form.admissionTypeHint",
+														)}
+													</FormDescription>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={externalForm.control}
+											name="transferInstitution"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t(
+															"admin.students.external.form.transferInstitution",
+														)}
+													</FormLabel>
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<div className="grid grid-cols-2 gap-4">
 											<FormField
 												control={externalForm.control}
-												name="registrationNumber"
+												name="transferCredits"
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.students.form.registration")}
+															{t(
+																"admin.students.external.form.transferCredits",
+															)}
 														</FormLabel>
 														<FormControl>
-															<Input {...field} />
+															<Input
+																{...field}
+																type="number"
+																min={0}
+																max={300}
+																onChange={(e) =>
+																	field.onChange(
+																		Number.parseInt(e.target.value, 10),
+																	)
+																}
+															/>
 														</FormControl>
-														<FormDescription>
-															{t("admin.students.form.registrationHint")}
-														</FormDescription>
 														<FormMessage />
 													</FormItem>
 												)}
@@ -2019,84 +1894,356 @@ export default function StudentManagement() {
 
 											<FormField
 												control={externalForm.control}
-												name="registrationFormatId"
+												name="transferLevel"
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.students.form.registrationFormat")}
+															{t("admin.students.external.form.transferLevel")}
 														</FormLabel>
-														<Select
-															onValueChange={(value) =>
-																field.onChange(
-																	value === NO_REGISTRATION_FORMAT_VALUE
-																		? undefined
-																		: value,
-																)
-															}
-															value={
-																field.value ?? NO_REGISTRATION_FORMAT_VALUE
-															}
-														>
-															<FormControl>
-																<SelectTrigger>
-																	<SelectValue
-																		placeholder={t(
-																			"admin.students.form.registrationFormatPlaceholder",
-																		)}
-																	/>
-																</SelectTrigger>
-															</FormControl>
-															<SelectContent>
-																<SelectItem
-																	value={NO_REGISTRATION_FORMAT_VALUE}
-																>
-																	{t(
-																		"admin.students.form.registrationFormatPlaceholder",
-																	)}
-																</SelectItem>
-																{registrationFormats?.map((format) => (
-																	<SelectItem key={format.id} value={format.id}>
-																		{format.name}
-																		{format.isActive
-																			? ` (${t(
-																					"admin.registrationNumbers.list.active",
-																				)})`
-																			: ""}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-														<FormDescription>
-															{t("admin.students.form.registrationFormatHint")}
-														</FormDescription>
+														<FormControl>
+															<Input
+																{...field}
+																placeholder="L1, L2, M1, etc."
+															/>
+														</FormControl>
 														<FormMessage />
 													</FormItem>
 												)}
 											/>
 										</div>
-									</div>
 
-									<div className="flex justify-end gap-3 pt-2">
-										<Button
-											type="button"
-											variant="outline"
-											onClick={closeModal}
-										>
-											{t("common.actions.cancel")}
-										</Button>
-										<Button
-											type="submit"
-											disabled={externalForm.formState.isSubmitting}
-										>
-											{externalForm.formState.isSubmitting
-												? t("common.loading")
-												: t("admin.students.external.form.submit")}
-										</Button>
-									</div>
-								</form>
-							</Form>
-						</TabsContent>
-					</Tabs>
+										<FormField
+											control={externalForm.control}
+											name="admissionDate"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t("admin.students.external.form.admissionDate")}
+													</FormLabel>
+													<FormControl>
+														<DatePicker
+															value={field.value ?? ""}
+															onChange={field.onChange}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={externalForm.control}
+											name="admissionJustification"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t(
+															"admin.students.external.form.admissionJustification",
+														)}
+													</FormLabel>
+													<FormControl>
+														<Textarea
+															{...field}
+															rows={3}
+															placeholder={t(
+																"admin.students.external.form.admissionJustificationPlaceholder",
+															)}
+														/>
+													</FormControl>
+													<FormDescription>
+														{t(
+															"admin.students.external.form.admissionJustificationHint",
+														)}
+													</FormDescription>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<div className="rounded-lg border bg-muted p-4">
+											<p className="mb-3 font-medium text-foreground text-sm">
+												{t("admin.students.external.form.studentInfoSection")}
+											</p>
+											<div className="grid gap-4">
+												<div className="grid grid-cols-2 gap-4">
+													<FormField
+														control={externalForm.control}
+														name="firstName"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.firstName")}
+																</FormLabel>
+																<FormControl>
+																	<Input {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+													<FormField
+														control={externalForm.control}
+														name="lastName"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.lastName")}
+																</FormLabel>
+																<FormControl>
+																	<Input {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+												</div>
+
+												<FormField
+													control={externalForm.control}
+													name="email"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.email")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} type="email" />
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+
+												<div className="grid grid-cols-2 gap-4">
+													<FormField
+														control={externalForm.control}
+														name="dateOfBirth"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.dateOfBirth")}
+																</FormLabel>
+																<FormControl>
+																	<DatePicker
+																		value={field.value ?? ""}
+																		onChange={field.onChange}
+																	/>
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+													<FormField
+														control={externalForm.control}
+														name="gender"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.gender")}
+																</FormLabel>
+																<Select
+																	onValueChange={field.onChange}
+																	value={field.value || ""}
+																>
+																	<FormControl>
+																		<SelectTrigger>
+																			<SelectValue
+																				placeholder={t(
+																					"admin.students.form.genderPlaceholder",
+																				)}
+																			/>
+																		</SelectTrigger>
+																	</FormControl>
+																	<SelectContent>
+																		<SelectItem value="male">
+																			{t("admin.students.gender.male")}
+																		</SelectItem>
+																		<SelectItem value="female">
+																			{t("admin.students.gender.female")}
+																		</SelectItem>
+																		<SelectItem value="other">
+																			{t("admin.students.gender.other")}
+																		</SelectItem>
+																	</SelectContent>
+																</Select>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+												</div>
+
+												<div className="grid grid-cols-2 gap-4">
+													<FormField
+														control={externalForm.control}
+														name="placeOfBirth"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.placeOfBirth")}
+																</FormLabel>
+																<FormControl>
+																	<Input {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+													<FormField
+														control={externalForm.control}
+														name="nationality"
+														render={({ field }) => (
+															<FormItem>
+																<FormLabel>
+																	{t("admin.students.form.nationality")}
+																</FormLabel>
+																<FormControl>
+																	<Input {...field} />
+																</FormControl>
+																<FormMessage />
+															</FormItem>
+														)}
+													/>
+												</div>
+
+												<FormField
+													control={externalForm.control}
+													name="classId"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.class")}
+															</FormLabel>
+															<Select
+																onValueChange={field.onChange}
+																value={field.value}
+																disabled={!classes?.length}
+															>
+																<FormControl>
+																	<SelectTrigger>
+																		<SelectValue
+																			placeholder={t(
+																				"admin.students.form.classPlaceholder",
+																			)}
+																		/>
+																	</SelectTrigger>
+																</FormControl>
+																<SelectContent>
+																	{classes?.map((c) => (
+																		<SelectItem key={c.id} value={c.id}>
+																			{c.name}
+																		</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+
+												<FormField
+													control={externalForm.control}
+													name="registrationNumber"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.registration")}
+															</FormLabel>
+															<FormControl>
+																<Input {...field} />
+															</FormControl>
+															<FormDescription>
+																{t("admin.students.form.registrationHint")}
+															</FormDescription>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+
+												<FormField
+													control={externalForm.control}
+													name="registrationFormatId"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>
+																{t("admin.students.form.registrationFormat")}
+															</FormLabel>
+															<Select
+																onValueChange={(value) =>
+																	field.onChange(
+																		value === NO_REGISTRATION_FORMAT_VALUE
+																			? undefined
+																			: value,
+																	)
+																}
+																value={
+																	field.value ?? NO_REGISTRATION_FORMAT_VALUE
+																}
+															>
+																<FormControl>
+																	<SelectTrigger>
+																		<SelectValue
+																			placeholder={t(
+																				"admin.students.form.registrationFormatPlaceholder",
+																			)}
+																		/>
+																	</SelectTrigger>
+																</FormControl>
+																<SelectContent>
+																	<SelectItem
+																		value={NO_REGISTRATION_FORMAT_VALUE}
+																	>
+																		{t(
+																			"admin.students.form.registrationFormatPlaceholder",
+																		)}
+																	</SelectItem>
+																	{registrationFormats?.map((format) => (
+																		<SelectItem
+																			key={format.id}
+																			value={format.id}
+																		>
+																			{format.name}
+																			{format.isActive
+																				? ` (${t(
+																						"admin.registrationNumbers.list.active",
+																					)})`
+																				: ""}
+																		</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+															<FormDescription>
+																{t(
+																	"admin.students.form.registrationFormatHint",
+																)}
+															</FormDescription>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+										</div>
+
+										<div className="flex justify-end gap-3 pt-2">
+											<Button
+												type="button"
+												variant="outline"
+												onClick={closeModal}
+											>
+												{t("common.actions.cancel")}
+											</Button>
+											<Button
+												type="submit"
+												disabled={externalForm.formState.isSubmitting}
+											>
+												{externalForm.formState.isSubmitting
+													? t("common.loading")
+													: t("admin.students.external.form.submit")}
+											</Button>
+										</div>
+									</form>
+								</Form>
+							</TabsContent>
+						</Tabs>
 					</div>
 				</DialogContent>
 			</Dialog>

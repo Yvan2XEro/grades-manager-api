@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +21,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 const WorkflowManager = () => {
@@ -31,11 +31,23 @@ const WorkflowManager = () => {
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
+	const { data: semestersData } = useQuery(
+		trpc.semesters.list.queryOptions({}),
+	);
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: classCourses } = useQuery(
 		trpc.classCourses.list.queryOptions({
 			limit: 200,
 			...(filterYear ? { academicYearId: filterYear } : {}),
-			...(filterSemester ? { semesterId: filterSemester } : {}),
+			...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 		}),
 	);
 

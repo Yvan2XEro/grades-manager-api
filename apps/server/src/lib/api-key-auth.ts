@@ -1,8 +1,11 @@
+import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { Context, Next } from "hono";
-import { createHash } from "node:crypto";
 import { db } from "@/db";
-import { diplomationApiKeys } from "@/db/schema/app-schema";
+import {
+	diplomationApiCallLogs,
+	diplomationApiKeys,
+} from "@/db/schema/app-schema";
 
 export function hashApiKey(raw: string): string {
 	return createHash("sha256").update(raw).digest("hex");
@@ -30,4 +33,17 @@ export async function apiKeyMiddleware(c: Context, next: Next) {
 		.catch(() => {});
 	c.set("apiKeyRecord", record);
 	await next();
+	// Non-blocking call log (after response is produced)
+	const statusCode = c.res.status;
+	const method = c.req.method;
+	const endpoint = new URL(c.req.url).pathname;
+	db.insert(diplomationApiCallLogs)
+		.values({
+			apiKeyId: record.id,
+			institutionId: record.institutionId,
+			endpoint,
+			method,
+			statusCode,
+		})
+		.catch(() => {});
 }

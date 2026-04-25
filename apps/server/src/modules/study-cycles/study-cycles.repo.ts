@@ -96,6 +96,7 @@ export async function listCycles(
 			institutionId: schema.studyCycles.institutionId,
 			code: schema.studyCycles.code,
 			name: schema.studyCycles.name,
+			nameEn: schema.studyCycles.nameEn,
 			description: schema.studyCycles.description,
 			totalCreditsRequired: schema.studyCycles.totalCreditsRequired,
 			durationYears: schema.studyCycles.durationYears,

@@ -4,8 +4,9 @@ import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
+import { ImageUploadField } from "../../components/inputs/ImageUploadField";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
@@ -18,6 +19,10 @@ import {
 	CardTitle,
 } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "../../components/ui/context-menu";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
 	Empty,
@@ -42,10 +47,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "../../components/ui/context-menu";
 import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
@@ -66,6 +67,7 @@ const institutionSchema = z.object({
 	code: z.string().min(1),
 	type: z.enum(["university", "institution", "faculty"]),
 	shortName: z.string().optional(),
+	abbreviation: z.string().optional(),
 	nameFr: z.string().min(1),
 	nameEn: z.string().min(1),
 	legalNameFr: z.string().optional(),
@@ -96,6 +98,7 @@ const defaultValues: FormValues = {
 	code: "",
 	type: "faculty",
 	shortName: "",
+	abbreviation: "",
 	nameFr: "",
 	nameEn: "",
 	legalNameFr: "",
@@ -126,6 +129,7 @@ type Institution = {
 	nameFr: string;
 	nameEn: string;
 	shortName: string | null;
+	abbreviation: string | null;
 	type: string;
 	legalNameFr: string | null;
 	legalNameEn: string | null;
@@ -223,6 +227,7 @@ export default function FacultyManagement() {
 			code: inst.code,
 			type: inst.type as "university" | "institution" | "faculty",
 			shortName: inst.shortName ?? "",
+			abbreviation: inst.abbreviation ?? "",
 			nameFr: inst.nameFr,
 			nameEn: inst.nameEn,
 			legalNameFr: inst.legalNameFr ?? "",
@@ -296,7 +301,7 @@ export default function FacultyManagement() {
 					logoUrl: values.logoUrl || undefined,
 					coverImageUrl: values.coverImageUrl || undefined,
 					parentInstitutionId: values.parentInstitutionId || undefined,
-				institutionId: values.institutionId || undefined,
+					institutionId: values.institutionId || undefined,
 					defaultAcademicYearId: values.defaultAcademicYearId || undefined,
 					registrationFormatId: values.registrationFormatId || undefined,
 				},
@@ -314,8 +319,7 @@ export default function FacultyManagement() {
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (id: string) =>
-			trpcClient.institutions.delete.mutate({ id }),
+		mutationFn: (id: string) => trpcClient.institutions.delete.mutate({ id }),
 		onSuccess: () => {
 			toast.success(
 				t("admin.institutions.toast.deleteSuccess", {
@@ -330,7 +334,9 @@ export default function FacultyManagement() {
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: (ids: string[]) =>
-			Promise.all(ids.map((id) => trpcClient.institutions.delete.mutate({ id }))),
+			Promise.all(
+				ids.map((id) => trpcClient.institutions.delete.mutate({ id })),
+			),
 		onSuccess: () => {
 			invalidate();
 			selection.clear();
@@ -391,10 +397,9 @@ export default function FacultyManagement() {
 						<h1 className="text-foreground">
 							{t("admin.institutions.title", { defaultValue: "Institutions" })}
 						</h1>
-						<p className="text-muted-foreground text-xs mt-0.5">
+						<p className="mt-0.5 text-muted-foreground text-xs">
 							{t("admin.institutions.subtitle", {
-								defaultValue:
-									"Manage universities, faculties and schools.",
+								defaultValue: "Manage universities, faculties and schools.",
 							})}
 						</p>
 					</div>
@@ -599,7 +604,10 @@ export default function FacultyManagement() {
 				}
 			>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-2">
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-6 pt-2"
+					>
 						{/* Identity */}
 						<Card>
 							<CardHeader className="pb-3">
@@ -610,7 +618,7 @@ export default function FacultyManagement() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid gap-4 sm:grid-cols-3">
+								<div className="grid gap-4 sm:grid-cols-4">
 									<FormField
 										control={form.control}
 										name="code"
@@ -640,6 +648,23 @@ export default function FacultyManagement() {
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="abbreviation"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.abbreviation", {
+														defaultValue: "Abbreviation",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} placeholder="ex: UYI" />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -687,7 +712,7 @@ export default function FacultyManagement() {
 										)}
 									/>
 								</div>
-																<div className="grid gap-4 md:grid-cols-2">
+								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
 										name="parentInstitutionId"
@@ -701,21 +726,31 @@ export default function FacultyManagement() {
 												<Select
 													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
-														field.onChange(value === NO_SELECTION ? undefined : value)
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
 													}
 												>
 													<FormControl>
-														<SelectTrigger><SelectValue /></SelectTrigger>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noParentInstitution", { defaultValue: "None (Top-level)" })}
+															{t("admin.institution.form.noParentInstitution", {
+																defaultValue: "None (Top-level)",
+															})}
 														</SelectItem>
-														{institutions.filter((inst) => inst.id !== editingInstitution?.id).map((inst) => (
-															<SelectItem key={inst.id} value={inst.id}>
-																{inst.nameFr} ({typeLabel(inst.type)})
-															</SelectItem>
-														))}
+														{institutions
+															.filter(
+																(inst) => inst.id !== editingInstitution?.id,
+															)
+															.map((inst) => (
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr} ({typeLabel(inst.type)})
+																</SelectItem>
+															))}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -735,19 +770,34 @@ export default function FacultyManagement() {
 												<Select
 													value={field.value ?? NO_SELECTION}
 													onValueChange={(value) =>
-														field.onChange(value === NO_SELECTION ? undefined : value)
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
 													}
 												>
 													<FormControl>
-														<SelectTrigger><SelectValue /></SelectTrigger>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noSupervisingFaculty", { defaultValue: "None" })}
+															{t(
+																"admin.institution.form.noSupervisingFaculty",
+																{ defaultValue: "None" },
+															)}
 														</SelectItem>
-														{institutions.filter((inst) => inst.type === "faculty" && inst.id !== editingInstitution?.id).map((inst) => (
-															<SelectItem key={inst.id} value={inst.id}>{inst.nameFr}</SelectItem>
-														))}
+														{institutions
+															.filter(
+																(inst) =>
+																	inst.type === "faculty" &&
+																	inst.id !== editingInstitution?.id,
+															)
+															.map((inst) => (
+																<SelectItem key={inst.id} value={inst.id}>
+																	{inst.nameFr}
+																</SelectItem>
+															))}
 													</SelectContent>
 												</Select>
 												<FormMessage />
@@ -1080,48 +1130,66 @@ export default function FacultyManagement() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid gap-4 md:grid-cols-2">
-									<FormField
-										control={form.control}
-										name="logoUrl"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.logoUrl", {
-														defaultValue: "Logo URL",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input
-														{...field}
-														placeholder="https://..."
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="coverImageUrl"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{t("admin.institution.form.coverImageUrl", {
-														defaultValue: "Cover image URL",
-													})}
-												</FormLabel>
-												<FormControl>
-													<Input
-														{...field}
-														placeholder="https://..."
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
+								<FormField
+									control={form.control}
+									name="logoUrl"
+									render={({ field }) => (
+										<FormItem>
+											<ImageUploadField
+												label={t("admin.institution.form.logoUploadLabel", {
+													defaultValue: "Logo",
+												})}
+												description={t(
+													"admin.institution.form.logoUploadDescription",
+													{
+														defaultValue:
+															"Used on document headers and diplomas.",
+													},
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.logoUrlPlaceholder",
+													{
+														defaultValue: "https://...",
+													},
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="coverImageUrl"
+									render={({ field }) => (
+										<FormItem>
+											<ImageUploadField
+												label={t("admin.institution.form.coverUploadLabel", {
+													defaultValue: "Cover image",
+												})}
+												description={t(
+													"admin.institution.form.coverUploadDescription",
+													{
+														defaultValue:
+															"Background image used on the platform.",
+													},
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.coverImageUrlPlaceholder",
+													{
+														defaultValue: "https://...",
+													},
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 							</CardContent>
 						</Card>
 
@@ -1201,9 +1269,12 @@ export default function FacultyManagement() {
 													</FormControl>
 													<SelectContent>
 														<SelectItem value={NO_SELECTION}>
-															{t("admin.institution.form.noRegistrationFormat", {
-																defaultValue: "None",
-															})}
+															{t(
+																"admin.institution.form.noRegistrationFormat",
+																{
+																	defaultValue: "None",
+																},
+															)}
 														</SelectItem>
 														{formats.map((fmt) => (
 															<SelectItem key={fmt.id} value={fmt.id}>

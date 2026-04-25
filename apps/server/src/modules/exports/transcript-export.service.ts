@@ -2,21 +2,22 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
-import {
-	type ExamWithRetake,
-	type ResolvedGrade,
-	resolveStudentGradesWithRetakes,
-} from "./template-helper";
 import type {
 	TranscriptCourseResult,
 	TranscriptExportData,
 	TranscriptStudentData,
 	TranscriptUeResult,
 } from "../deliberations/deliberations.types";
+import {
+	type ExamWithRetake,
+	type ResolvedGrade,
+	resolveStudentGradesWithRetakes,
+} from "./template-helper";
 
 export async function buildTranscriptExport(
 	classId: string,
 	institutionId: string,
+	semesterKey: string | null = null,
 ): Promise<TranscriptExportData> {
 	// Load class with all relations needed
 	const klass = await db.query.classes.findFirst({
@@ -71,7 +72,7 @@ export async function buildTranscriptExport(
 		});
 	}
 
-	// Build UE map from class courses
+	// Build UE map from class courses, optionally filtered to one semester
 	const ueMap = new Map<
 		string,
 		{
@@ -89,7 +90,16 @@ export async function buildTranscriptExport(
 		}
 	>();
 
-	for (const cc of klass.classCourses) {
+	// Filter by semesterKey (teachingUnit.semester text value).
+	// "annual" courses are included in every filtered view.
+	const filteredCourses = semesterKey
+		? klass.classCourses.filter((cc: any) => {
+				const tuSem = (cc as any).courseRef?.teachingUnit?.semester;
+				return tuSem === semesterKey || tuSem === "annual";
+			})
+		: klass.classCourses;
+
+	for (const cc of filteredCourses) {
 		const ue = (cc as any).courseRef.teachingUnit;
 		if (!ueMap.has(ue.id)) {
 			ueMap.set(ue.id, {
@@ -126,7 +136,7 @@ export async function buildTranscriptExport(
 	const students: TranscriptStudentData[] = (klass as any).students.map(
 		(student: any) => {
 			const ueResults: TranscriptUeResult[] = [];
-			let totalWeightedAvg = 0;
+			const totalWeightedAvg = 0;
 			let totalUeCredits = 0;
 			let validWeightedSum = 0;
 			let validCredits = 0;
@@ -172,7 +182,8 @@ export async function buildTranscriptExport(
 						code: course.code,
 						name: course.name,
 						coefficient: course.coefficient,
-						grade: courseAvg !== null ? Math.round(courseAvg * 100) / 100 : null,
+						grade:
+							courseAvg !== null ? Math.round(courseAvg * 100) / 100 : null,
 						session,
 					});
 
@@ -205,7 +216,8 @@ export async function buildTranscriptExport(
 					code: ue.code,
 					name: ue.name,
 					credits: ue.credits,
-					average: ueAverage !== null ? Math.round(ueAverage * 100) / 100 : null,
+					average:
+						ueAverage !== null ? Math.round(ueAverage * 100) / 100 : null,
 					decision,
 					courses,
 				});
@@ -246,15 +258,20 @@ export async function buildTranscriptExport(
 			a.firstName.localeCompare(b.firstName),
 	);
 
-	const docParams = (institution.metadata as schema.InstitutionMetadata)?.document_params;
+	const docParams = (institution.metadata as schema.InstitutionMetadata)
+		?.document_params;
+	const prog = (klass as any).program;
 	return {
 		institution: {
 			name: institution.nameFr,
 			nameEn: institution.nameEn,
 			code: institution.code,
+			abbreviation: institution.abbreviation ?? null,
 			logoUrl: institution.logoUrl,
 			sloganFr: institution.sloganFr ?? null,
 			address: institution.addressFr ?? null,
+			postalBox: institution.postalBox ?? null,
+			phone: institution.contactPhone ?? null,
 			signatoryName: docParams?.signatoryName ?? null,
 			signatoryTitle: docParams?.signatoryTitle ?? null,
 			city: docParams?.city ?? null,
@@ -263,14 +280,35 @@ export async function buildTranscriptExport(
 			name: (klass as any).academicYear?.name ?? "",
 		},
 		program: {
-			name: (klass as any).program?.name ?? "",
+			name: prog?.name ?? "",
+			nameEn: prog?.nameEn ?? null,
+			abbreviation: prog?.abbreviation ?? null,
+			domainFr: prog?.domainFr ?? null,
+			domainEn: prog?.domainEn ?? null,
+			specialiteFr: prog?.specialiteFr ?? null,
+			specialiteEn: prog?.specialiteEn ?? null,
 			cycle: studyCycle?.name ?? "",
+			cycleNameEn: studyCycle?.nameEn ?? null,
 			level: cycleLevel?.name ?? "",
 		},
-		semester: {
-			name: (klass as any).semester?.name ?? "",
-			code: (klass as any).semester?.code ?? "",
-		},
+		semester: (() => {
+			if (semesterKey) {
+				const labels: Record<string, string> = {
+					fall: "Semestre 1",
+					spring: "Semestre 2",
+				};
+				const codes: Record<string, string> = { fall: "S1", spring: "S2" };
+				return {
+					name: labels[semesterKey] ?? semesterKey,
+					code: codes[semesterKey] ?? semesterKey,
+				};
+			}
+			// Fallback: use the class-level semester FK if set
+			return {
+				name: (klass as any).semester?.name ?? "",
+				code: (klass as any).semester?.code ?? "",
+			};
+		})(),
 		className: klass.name,
 		students,
 	};

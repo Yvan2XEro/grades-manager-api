@@ -1,6 +1,9 @@
 import { router, tenantAdminProcedure } from "@/lib/trpc";
+import * as repo from "./diplomation-keys.repo";
 import * as service from "./diplomation-keys.service";
 import {
+	activityStatsSchema,
+	callStatsSchema,
 	createKeySchema,
 	revokeKeySchema,
 	updateWebhookSchema,
@@ -27,5 +30,17 @@ export const diplomationKeysRouter = router({
 		.input(updateWebhookSchema)
 		.mutation(async ({ ctx, input }) => {
 			return service.updateWebhook(input, ctx.institution.id);
+		}),
+
+	activityStats: tenantAdminProcedure
+		.input(activityStatsSchema)
+		.query(async ({ ctx, input }) => {
+			return repo.getActivityStats(ctx.institution.id, input.days);
+		}),
+
+	callStats: tenantAdminProcedure
+		.input(callStatsSchema)
+		.query(async ({ ctx, input }) => {
+			return repo.getCallStats(ctx.institution.id, input.days);
 		}),
 });

@@ -23,14 +23,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import ReactCrop, {
+	type Crop,
 	centerCrop,
 	makeAspectCrop,
-	type Crop,
 	type PixelCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { toast } from "@/lib/toast";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -189,11 +189,7 @@ const resolveSessionToken = (session: SessionInfo) =>
 /* ─── Crop helper ─────────────────────────────────────── */
 
 function centerAspectCrop(w: number, h: number) {
-	return centerCrop(
-		makeAspectCrop({ unit: "%", width: 80 }, 1, w, h),
-		w,
-		h,
-	);
+	return centerCrop(makeAspectCrop({ unit: "%", width: 80 }, 1, w, h), w, h);
 }
 
 async function cropToBlob(
@@ -282,7 +278,10 @@ function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
 							ref={imgRef}
 							src={src}
 							alt="Aperçu"
-							style={{ transform: `scale(${scale})`, transformOrigin: "center" }}
+							style={{
+								transform: `scale(${scale})`,
+								transformOrigin: "center",
+							}}
 							onLoad={onImageLoad}
 							className="max-h-[480px] max-w-full object-contain"
 						/>
@@ -304,7 +303,7 @@ function AvatarCropModal({ src, open, onClose, onConfirm }: CropModalProps) {
 					<ZoomIn className="h-4 w-4 shrink-0 text-muted-foreground" />
 				</div>
 
-				<DialogFooter className="px-6 pb-5 pt-2">
+				<DialogFooter className="px-6 pt-2 pb-5">
 					<Button variant="outline" onClick={onClose}>
 						Annuler
 					</Button>

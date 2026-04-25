@@ -2,12 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import {
 	Table,
 	TableBody,
@@ -17,11 +20,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -168,170 +168,197 @@ const RegistrationNumberFormats = () => {
 						{formatsQuery.isPending ? (
 							<TableSkeleton columns={5} rows={8} />
 						) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="w-10">
-										<Checkbox
-											checked={
-												selection.isAllSelected
-													? true
-													: selection.isSomeSelected
-														? "indeterminate"
-														: false
-											}
-											onCheckedChange={(checked) =>
-												selection.toggleAll(Boolean(checked))
-											}
-										/>
-									</TableHead>
-									<TableHead>
-							{t("admin.registrationNumbers.table.name", {
-											defaultValue: "Name",
-										})}
-									</TableHead>
-									<TableHead>
-							{t("admin.registrationNumbers.table.description", {
-											defaultValue: "Description",
-										})}
-									</TableHead>
-									<TableHead className="w-32">
-							{t("admin.registrationNumbers.table.pattern", {
-											defaultValue: "Pattern",
-										})}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("common.table.actions", {
-											defaultValue: "Actions",
-										})}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{formatsQuery.isPending && (
+							<Table>
+								<TableHeader>
 									<TableRow>
-										<TableCell colSpan={4}>
-											{t("common.loading", {
-												defaultValue: "Loading...",
+										<TableHead className="w-10">
+											<Checkbox
+												checked={
+													selection.isAllSelected
+														? true
+														: selection.isSomeSelected
+															? "indeterminate"
+															: false
+												}
+												onCheckedChange={(checked) =>
+													selection.toggleAll(Boolean(checked))
+												}
+											/>
+										</TableHead>
+										<TableHead>
+											{t("admin.registrationNumbers.table.name", {
+												defaultValue: "Name",
 											})}
-										</TableCell>
+										</TableHead>
+										<TableHead>
+											{t("admin.registrationNumbers.table.description", {
+												defaultValue: "Description",
+											})}
+										</TableHead>
+										<TableHead className="w-32">
+											{t("admin.registrationNumbers.table.pattern", {
+												defaultValue: "Pattern",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.table.actions", {
+												defaultValue: "Actions",
+											})}
+										</TableHead>
 									</TableRow>
-								)}
-								{!formatsQuery.isPending &&
-									(formatsQuery.data?.length ?? 0) === 0 && (
+								</TableHeader>
+								<TableBody>
+									{formatsQuery.isPending && (
 										<TableRow>
 											<TableCell colSpan={4}>
-												{t("admin.registrationNumbers.list.empty", {
-													defaultValue:
-														"No formats yet. Create your first one.",
+												{t("common.loading", {
+													defaultValue: "Loading...",
 												})}
 											</TableCell>
 										</TableRow>
 									)}
-								{formatsQuery.data?.map((format) => (
-									<TableRow
-								key={format.id}
-								actions={
-									<>
-										<ContextMenuItem onSelect={() => navigate(`/admin/registration-numbers/${format.id}`)}>
-											<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
-										</ContextMenuItem>
-										<ContextMenuItem onSelect={() => activateMutation.mutate(format.id)}>
-											<span>{t("admin.registrationNumbers.actions.activate", { defaultValue: "Activate" })}</span>
-										</ContextMenuItem>
-										<ContextMenuSeparator />
-										<ContextMenuItem variant="destructive" onSelect={() => deleteMutation.mutate(format.id)}>
-											<span>{t("admin.registrationNumbers.list.delete", { defaultValue: "Delete" })}</span>
-										</ContextMenuItem>
-									</>
-								}
-							>
-										<TableCell className="w-10">
-											<Checkbox
-												checked={selection.isSelected(format.id)}
-												onCheckedChange={() => selection.toggle(format.id)}
-											/>
-										</TableCell>
-										<TableCell className="font-medium">
-											<div className="flex items-center gap-2">
-												{format.name}
-												{format.isActive && (
-													<Badge variant="secondary">
-														{t("admin.registrationNumbers.list.active", {
-															defaultValue: "Active",
-														})}
-													</Badge>
-												)}
-											</div>
-										</TableCell>
-										<TableCell>{format.description || "-"}</TableCell>
-										<TableCell>
-											<div className="flex flex-wrap gap-2 text-foreground text-xs">
-												{format.definition.segments.map((segment, idx) => (
-													<span
-														key={`${format.id}-${idx}`}
-														className="rounded bg-muted px-2 py-1"
-													>
-														{describeSegment(segment)}
-													</span>
-												))}
-											</div>
-										</TableCell>
-										<TableCell className="text-right">
-											<div className="flex flex-wrap justify-end gap-2">
-												<Button
-													size="sm"
-													variant="outline"
-													onClick={() =>
-														navigate(`/admin/registration-numbers/${format.id}`)
-													}
-												>
-													{t("admin.registrationNumbers.list.edit", {
-														defaultValue: "Edit",
+									{!formatsQuery.isPending &&
+										(formatsQuery.data?.length ?? 0) === 0 && (
+											<TableRow>
+												<TableCell colSpan={4}>
+													{t("admin.registrationNumbers.list.empty", {
+														defaultValue:
+															"No formats yet. Create your first one.",
 													})}
-												</Button>
-												{!format.isActive && (
+												</TableCell>
+											</TableRow>
+										)}
+									{formatsQuery.data?.map((format) => (
+										<TableRow
+											key={format.id}
+											actions={
+												<>
+													<ContextMenuItem
+														onSelect={() =>
+															navigate(
+																`/admin/registration-numbers/${format.id}`,
+															)
+														}
+													>
+														<span>
+															{t("common.actions.edit", {
+																defaultValue: "Edit",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuItem
+														onSelect={() => activateMutation.mutate(format.id)}
+													>
+														<span>
+															{t("admin.registrationNumbers.actions.activate", {
+																defaultValue: "Activate",
+															})}
+														</span>
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														variant="destructive"
+														onSelect={() => deleteMutation.mutate(format.id)}
+													>
+														<span>
+															{t("admin.registrationNumbers.list.delete", {
+																defaultValue: "Delete",
+															})}
+														</span>
+													</ContextMenuItem>
+												</>
+											}
+										>
+											<TableCell className="w-10">
+												<Checkbox
+													checked={selection.isSelected(format.id)}
+													onCheckedChange={() => selection.toggle(format.id)}
+												/>
+											</TableCell>
+											<TableCell className="font-medium">
+												<div className="flex items-center gap-2">
+													{format.name}
+													{format.isActive && (
+														<Badge variant="secondary">
+															{t("admin.registrationNumbers.list.active", {
+																defaultValue: "Active",
+															})}
+														</Badge>
+													)}
+												</div>
+											</TableCell>
+											<TableCell>{format.description || "-"}</TableCell>
+											<TableCell>
+												<div className="flex flex-wrap gap-2 text-foreground text-xs">
+													{format.definition.segments.map((segment, idx) => (
+														<span
+															key={`${format.id}-${idx}`}
+															className="rounded bg-muted px-2 py-1"
+														>
+															{describeSegment(segment)}
+														</span>
+													))}
+												</div>
+											</TableCell>
+											<TableCell className="text-right">
+												<div className="flex flex-wrap justify-end gap-2">
 													<Button
 														size="sm"
-														variant="secondary"
-														onClick={() => activateMutation.mutate(format.id)}
-														disabled={activateMutation.isPending}
+														variant="outline"
+														onClick={() =>
+															navigate(
+																`/admin/registration-numbers/${format.id}`,
+															)
+														}
 													>
-														{t("admin.registrationNumbers.list.activate", {
-															defaultValue: "Activate",
+														{t("admin.registrationNumbers.list.edit", {
+															defaultValue: "Edit",
 														})}
 													</Button>
-												)}
-												<Button
-													size="sm"
-													variant="destructive"
-													onClick={() => {
-														if (
-															window.confirm(
-																t(
-																	"admin.registrationNumbers.list.confirmDelete",
-																	{
-																		defaultValue:
-																			"Delete this format permanently?",
-																	},
-																),
-															)
-														) {
-															deleteMutation.mutate(format.id);
+													{!format.isActive && (
+														<Button
+															size="sm"
+															variant="secondary"
+															onClick={() => activateMutation.mutate(format.id)}
+															disabled={activateMutation.isPending}
+														>
+															{t("admin.registrationNumbers.list.activate", {
+																defaultValue: "Activate",
+															})}
+														</Button>
+													)}
+													<Button
+														size="sm"
+														variant="destructive"
+														onClick={() => {
+															if (
+																window.confirm(
+																	t(
+																		"admin.registrationNumbers.list.confirmDelete",
+																		{
+																			defaultValue:
+																				"Delete this format permanently?",
+																		},
+																	),
+																)
+															) {
+																deleteMutation.mutate(format.id);
+															}
+														}}
+														disabled={
+															format.isActive || deleteMutation.isPending
 														}
-													}}
-													disabled={format.isActive || deleteMutation.isPending}
-												>
-													{t("admin.registrationNumbers.list.delete", {
-														defaultValue: "Delete",
-													})}
-												</Button>
-											</div>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+													>
+														{t("admin.registrationNumbers.list.delete", {
+															defaultValue: "Delete",
+														})}
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						)}
 					</div>
 				</CardContent>

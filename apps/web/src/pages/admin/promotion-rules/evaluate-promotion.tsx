@@ -10,12 +10,19 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -26,15 +33,8 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@/components/ui/empty";
 
 export function EvaluatePromotionPage() {
 	const { t } = useTranslation();
@@ -410,10 +410,12 @@ export function EvaluatePromotionPage() {
 						<TabsContent value="eligible" className="mt-6 space-y-4">
 							{evaluationResult.eligible.length === 0 ? (
 								<Empty className="border border-dashed">
-								<EmptyHeader>
-									<EmptyDescription>{t("admin.promotionRules.evaluate.emptyState.noEligible")}</EmptyDescription>
-								</EmptyHeader>
-							</Empty>
+									<EmptyHeader>
+										<EmptyDescription>
+											{t("admin.promotionRules.evaluate.emptyState.noEligible")}
+										</EmptyDescription>
+									</EmptyHeader>
+								</Empty>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.eligible.map((result) => (
@@ -436,10 +438,14 @@ export function EvaluatePromotionPage() {
 						<TabsContent value="not-eligible" className="mt-6 space-y-4">
 							{evaluationResult.notEligible.length === 0 ? (
 								<Empty className="border border-dashed">
-								<EmptyHeader>
-									<EmptyDescription>{t("admin.promotionRules.evaluate.emptyState.allEligible")}</EmptyDescription>
-								</EmptyHeader>
-							</Empty>
+									<EmptyHeader>
+										<EmptyDescription>
+											{t(
+												"admin.promotionRules.evaluate.emptyState.allEligible",
+											)}
+										</EmptyDescription>
+									</EmptyHeader>
+								</Empty>
 							) : (
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{evaluationResult.notEligible.map((result) => (

@@ -206,7 +206,9 @@ export default function GradeExport() {
 	const prefs = loadPrefs();
 	const [selectedYear, setSelectedYear] = useState<string>(prefs.year ?? "");
 	const [selectedClass, setSelectedClass] = useState<string>(prefs.class ?? "");
-	const [selectedSemester, setSelectedSemester] = useState<string>(prefs.semester ?? "");
+	const [selectedSemester, setSelectedSemester] = useState<string>(
+		prefs.semester ?? "",
+	);
 	const [selectedExams, setSelectedExams] = useState<string[]>([]);
 	const [selectedUEs, setSelectedUEs] = useState<string[]>([]);
 	const [exporting, setExporting] = useState<string | null>(null);
@@ -214,8 +216,12 @@ export default function GradeExport() {
 	const [previewHtml, setPreviewHtml] = useState("");
 	const [previewTitle, setPreviewTitle] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(prefs.sortBy ?? "course");
-	const [includeRetakes, setIncludeRetakes] = useState<boolean>(prefs.includeRetakes ?? true);
+	const [sortBy, setSortBy] = useState<"course" | "date" | "type">(
+		prefs.sortBy ?? "course",
+	);
+	const [includeRetakes, setIncludeRetakes] = useState<boolean>(
+		prefs.includeRetakes ?? true,
+	);
 	const classId = useId();
 	const semesterId = useId();
 	const { t } = useTranslation();
@@ -1587,69 +1593,71 @@ export default function GradeExport() {
 			<Card>
 				<CardHeader className="pb-3">
 					<CardTitle className="flex items-center gap-3 text-base">
-						<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+						<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+							1
+						</span>
 						Contexte
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
-							<AcademicYearSelect
-								value={selectedYear || null}
-								onChange={(value) => {
-									setSelectedYear(value);
-									setSelectedClass("");
-									setSelectedExams([]);
-									savePrefs({ year: value, class: "" });
-								}}
-								placeholder={t(
-									"admin.gradeExport.filters.academicYearPlaceholder",
-								)}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor={classId}>
-								{t("admin.gradeExport.filters.class")}
-							</Label>
-							<Select
-								disabled={!selectedYear}
-								value={selectedClass || undefined}
-								onValueChange={(value) => {
-									setSelectedClass(value);
-									setSelectedExams([]);
-									savePrefs({ class: value });
-								}}
-							>
-								<SelectTrigger id={classId}>
-									<SelectValue
-										placeholder={t(
-											"admin.gradeExport.filters.classPlaceholder",
-										)}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{classes?.map((cls) => (
-										<SelectItem key={cls.id} value={cls.id}>
-											{cls.name} - {cls.program.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</CardContent>
+					<div className="space-y-2">
+						<Label>{t("admin.gradeExport.filters.academicYear")}</Label>
+						<AcademicYearSelect
+							value={selectedYear || null}
+							onChange={(value) => {
+								setSelectedYear(value);
+								setSelectedClass("");
+								setSelectedExams([]);
+								savePrefs({ year: value, class: "" });
+							}}
+							placeholder={t(
+								"admin.gradeExport.filters.academicYearPlaceholder",
+							)}
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor={classId}>
+							{t("admin.gradeExport.filters.class")}
+						</Label>
+						<Select
+							disabled={!selectedYear}
+							value={selectedClass || undefined}
+							onValueChange={(value) => {
+								setSelectedClass(value);
+								setSelectedExams([]);
+								savePrefs({ class: value });
+							}}
+						>
+							<SelectTrigger id={classId}>
+								<SelectValue
+									placeholder={t("admin.gradeExport.filters.classPlaceholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{classes?.map((cls) => (
+									<SelectItem key={cls.id} value={cls.id}>
+										{cls.name} - {cls.program.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</CardContent>
 			</Card>
 
 			{/* ─── Étape 2 — Sélection des évaluations ─────────────────────── */}
 			{selectedClass && (
 				<>
-				{exams && exams.length > 0 ? (
-					<Card>
-						<CardHeader className="pb-3">
-							<div className="flex items-center justify-between">
-								<div className="space-y-0.5">
-									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
-										{t("admin.gradeExport.exams.title")}
+					{exams && exams.length > 0 ? (
+						<Card>
+							<CardHeader className="pb-3">
+								<div className="flex items-center justify-between">
+									<div className="space-y-0.5">
+										<CardTitle className="flex items-center gap-3 text-base">
+											<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+												2
+											</span>
+											{t("admin.gradeExport.exams.title")}
 										</CardTitle>
 										<CardDescription>
 											{selectedExams.length} / {exams.length} évaluations
@@ -1691,7 +1699,10 @@ export default function GradeExport() {
 									</div>
 									<Select
 										value={sortBy}
-										onValueChange={(value: any) => { setSortBy(value); savePrefs({ sortBy: value }); }}
+										onValueChange={(value: any) => {
+											setSortBy(value);
+											savePrefs({ sortBy: value });
+										}}
 									>
 										<SelectTrigger className="w-44">
 											<SelectValue />
@@ -1770,9 +1781,7 @@ export default function GradeExport() {
 																					]);
 																				} else {
 																					setSelectedExams((prev) =>
-																						prev.filter(
-																							(id) => id !== exam.id,
-																						),
+																						prev.filter((id) => id !== exam.id),
 																					);
 																				}
 																			}}
@@ -1807,10 +1816,10 @@ export default function GradeExport() {
 									</p>
 								)}
 							</CardContent>
-				</Card>
-			) : (
-				<Card>
-					<CardContent className="flex flex-col items-center gap-2 py-10 text-center">
+						</Card>
+					) : (
+						<Card>
+							<CardContent className="flex flex-col items-center gap-2 py-10 text-center">
 								<FileSpreadsheet className="h-10 w-10 text-muted-foreground" />
 								<p className="font-medium text-sm">
 									{t("admin.gradeExport.exams.emptyTitle")}
@@ -1819,8 +1828,8 @@ export default function GradeExport() {
 									{t("admin.gradeExport.exams.emptyDescription")}
 								</p>
 							</CardContent>
-				</Card>
-				)}
+						</Card>
+					)}
 				</>
 			)}
 
@@ -1833,7 +1842,9 @@ export default function GradeExport() {
 							<div className="flex items-start justify-between gap-4">
 								<div>
 									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
+											3
+										</span>
 										<FileSpreadsheet className="h-4 w-4" />
 										{t("admin.gradeExport.actions.combinedLabel")}
 									</CardTitle>
@@ -1871,7 +1882,9 @@ export default function GradeExport() {
 							<div className="flex items-start justify-between gap-4">
 								<div>
 									<CardTitle className="flex items-center gap-3 text-base">
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">3</span>
+										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 font-bold text-primary text-xs">
+											3
+										</span>
 										<FileText className="h-4 w-4" />
 										Procès-Verbal
 									</CardTitle>
@@ -1891,7 +1904,10 @@ export default function GradeExport() {
 								<Label htmlFor={semesterId}>Semestre</Label>
 								<SemesterSelect
 									value={selectedSemester || null}
-									onChange={(v) => { setSelectedSemester(v ?? ""); savePrefs({ semester: v ?? "" }); }}
+									onChange={(v) => {
+										setSelectedSemester(v ?? "");
+										savePrefs({ semester: v ?? "" });
+									}}
 									placeholder="Sélectionner un semestre"
 								/>
 							</div>
@@ -1904,7 +1920,10 @@ export default function GradeExport() {
 										savePrefs({ includeRetakes: checked === true });
 									}}
 								/>
-								<Label htmlFor="include-retakes" className="cursor-pointer text-sm font-normal">
+								<Label
+									htmlFor="include-retakes"
+									className="cursor-pointer font-normal text-sm"
+								>
 									Inclure les notes de rattrapage
 								</Label>
 							</div>
@@ -1987,18 +2006,30 @@ export default function GradeExport() {
 									<table className="w-full text-sm">
 										<thead className="bg-muted/50">
 											<tr>
-												<th className="px-4 py-2 text-left font-medium">Cours</th>
-												<th className="px-4 py-2 text-left font-medium">Type</th>
-												<th className="px-4 py-2 text-left font-medium">Date</th>
-												<th className="px-4 py-2 text-right font-medium">Excel</th>
-												<th className="px-4 py-2 text-right font-medium">PDF</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Cours
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Type
+												</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Date
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													Excel
+												</th>
+												<th className="px-4 py-2 text-right font-medium">
+													PDF
+												</th>
 											</tr>
 										</thead>
 										<tbody className="divide-y">
 											{selectedExamDetails.map((exam) => (
 												<tr key={exam.id} className="hover:bg-muted/30">
 													<td className="px-4 py-2">
-														<span className="font-medium">{exam.courseName}</span>
+														<span className="font-medium">
+															{exam.courseName}
+														</span>
 														{exam.courseCode && (
 															<span className="ml-1 text-muted-foreground text-xs">
 																({exam.courseCode})
@@ -2033,12 +2064,9 @@ export default function GradeExport() {
 																variant="outline"
 																size="sm"
 																disabled={disableExamExports}
-																onClick={() =>
-																	handlePreviewEvaluation(exam.id)
-																}
+																onClick={() => handlePreviewEvaluation(exam.id)}
 															>
-																{exporting ===
-																`preview-eval-${exam.id}` ? (
+																{exporting === `preview-eval-${exam.id}` ? (
 																	<Loader2 className="h-3 w-3 animate-spin" />
 																) : (
 																	<Eye className="h-3 w-3" />
@@ -2052,8 +2080,7 @@ export default function GradeExport() {
 																	handleGenerateEvaluation(exam.id)
 																}
 															>
-																{exporting ===
-																`generate-eval-${exam.id}` ? (
+																{exporting === `generate-eval-${exam.id}` ? (
 																	<Loader2 className="h-3 w-3 animate-spin" />
 																) : (
 																	<Download className="h-3 w-3" />
@@ -2083,8 +2110,7 @@ export default function GradeExport() {
 											</Badge>
 										</CardTitle>
 										<CardDescription className="mt-1">
-											Publication PDF par UE — nécessite un semestre
-											sélectionné
+											Publication PDF par UE — nécessite un semestre sélectionné
 										</CardDescription>
 									</div>
 									<Button
@@ -2107,7 +2133,9 @@ export default function GradeExport() {
 									<table className="w-full text-sm">
 										<thead className="bg-muted/50">
 											<tr>
-												<th className="px-4 py-2 text-left font-medium">Code</th>
+												<th className="px-4 py-2 text-left font-medium">
+													Code
+												</th>
 												<th className="px-4 py-2 text-left font-medium">
 													Nom de l&apos;UE
 												</th>

@@ -3,7 +3,13 @@ import { z } from "zod";
 export const baseSchema = z.object({
 	code: z.string().trim().min(1),
 	name: z.string(),
+	nameEn: z.string().optional().nullable(),
+	abbreviation: z.string().optional().nullable(),
 	description: z.string().optional(),
+	domainFr: z.string().optional().nullable(),
+	domainEn: z.string().optional().nullable(),
+	specialiteFr: z.string().optional().nullable(),
+	specialiteEn: z.string().optional().nullable(),
 	diplomaTitleFr: z.string().optional(),
 	diplomaTitleEn: z.string().optional(),
 	attestationValidityFr: z.string().optional(),

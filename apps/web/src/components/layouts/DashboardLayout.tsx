@@ -2,10 +2,10 @@ import type React from "react";
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useStore } from "../../store";
-import { GridWaveFilter } from "../ui/grid-wave-filter";
+import { HelpWidget } from "../help/HelpWidget";
 import Header from "../navigation/Header";
 import Sidebar from "../navigation/Sidebar";
-import { HelpWidget } from "../help/HelpWidget";
+import { GridWaveFilter } from "../ui/grid-wave-filter";
 
 const DashboardLayout: React.FC = () => {
 	const { user, setSidebarOpen } = useStore();
@@ -37,7 +37,7 @@ const DashboardLayout: React.FC = () => {
 			{/* Définition du filtre SVG d'ondulation — doit précéder le motif */}
 			<GridWaveFilter />
 			{/* Motif de fond — z:-1 pour rester strictement derrière le contenu */}
-			<div className="bg-dot-pattern pointer-events-none absolute inset-0 -z-10" />
+			<div className="-z-10 pointer-events-none absolute inset-0 bg-dot-pattern" />
 			<Sidebar />
 
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">

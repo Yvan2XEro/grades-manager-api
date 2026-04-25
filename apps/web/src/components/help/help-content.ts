@@ -431,7 +431,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "How do I create a custom export template?",
-						a: 'Go to Export Templates, create a new template, and use the editor to define the layout.',
+						a: "Go to Export Templates, create a new template, and use the editor to define the layout.",
 					},
 				],
 			},
@@ -626,7 +626,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "Where do I change my password?",
-						a: 'Open your profile from the top-right icon and go to Settings → Security.',
+						a: "Open your profile from the top-right icon and go to Settings → Security.",
 					},
 				],
 			},
@@ -691,7 +691,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "Comment inscrire un étudiant ?",
-						a: 'Cliquez sur "Ajouter une inscription", sélectionnez l\'étudiant, la classe et l\'année académique.',
+						a: "Cliquez sur \"Ajouter une inscription\", sélectionnez l'étudiant, la classe et l'année académique.",
 					},
 					{
 						q: "Que signifient les statuts ?",
@@ -970,7 +970,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "Comment lancer une évaluation de promotion ?",
-						a: 'Allez dans "Évaluer", sélectionnez la classe et l\'année, puis lancez l\'évaluation pour prévisualiser avant d\'exécuter.',
+						a: "Allez dans \"Évaluer\", sélectionnez la classe et l'année, puis lancez l'évaluation pour prévisualiser avant d'exécuter.",
 					},
 				],
 			},
@@ -1217,7 +1217,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "Comment changer la langue d'affichage ?",
-						a: 'Ouvrez l\'onglet "Préférences" et sélectionnez votre langue. Le changement s\'applique immédiatement.',
+						a: "Ouvrez l'onglet \"Préférences\" et sélectionnez votre langue. Le changement s'applique immédiatement.",
 					},
 					{
 						q: "Puis-je changer mon adresse email ?",
@@ -1246,7 +1246,7 @@ const content: Record<"en" | "fr", LangContent> = {
 					},
 					{
 						q: "Où changer mon mot de passe ?",
-						a: 'Ouvrez votre profil depuis l\'icône en haut à droite → Paramètres → Sécurité.',
+						a: "Ouvrez votre profil depuis l'icône en haut à droite → Paramètres → Sécurité.",
 					},
 				],
 			},

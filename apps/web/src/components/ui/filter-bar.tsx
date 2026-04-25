@@ -41,7 +41,7 @@ export function FilterBar({
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") setIsOpen((v) => !v);
 				}}
-				className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
+				className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
 			>
 				<div
 					className={cn(
@@ -54,7 +54,9 @@ export function FilterBar({
 					<Filter className="h-3.5 w-3.5" />
 				</div>
 
-				<span className="font-medium text-sm">{label ?? t("components.filterBar.label")}</span>
+				<span className="font-medium text-sm">
+					{label ?? t("components.filterBar.label")}
+				</span>
 
 				{activeCount > 0 && (
 					<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
@@ -67,7 +69,7 @@ export function FilterBar({
 						<Button
 							variant="ghost"
 							size="sm"
-							className="h-6 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+							className="h-6 gap-1 px-2 text-muted-foreground text-xs hover:text-foreground"
 							onClick={(e) => {
 								e.stopPropagation();
 								onReset();

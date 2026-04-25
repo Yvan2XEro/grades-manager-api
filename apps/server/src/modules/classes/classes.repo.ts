@@ -257,32 +257,44 @@ export async function search(
 }
 
 /**
- * Compute assigned credits per class by summing distinct UE credits
- * for courses assigned via classCourses.
+ * Compute assigned credits per class by summing each distinct teaching unit's
+ * credits once (deduplicating by UE id, not by credit value).
  */
 export async function getAssignedCredits(
 	classIds: string[],
 ): Promise<Record<string, number>> {
 	if (classIds.length === 0) return {};
+
+	// CTE: one row per (class, teachingUnit) pair — prevents double-counting
+	// when a UE has multiple courses (ECs) all assigned to the same class.
+	const uniqueUEsPerClass = db.$with("unique_ues_per_class").as(
+		db
+			.selectDistinctOn([schema.classCourses.class, schema.teachingUnits.id], {
+				classId: schema.classCourses.class,
+				credits: schema.teachingUnits.credits,
+			})
+			.from(schema.classCourses)
+			.innerJoin(
+				schema.courses,
+				eq(schema.courses.id, schema.classCourses.course),
+			)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(inArray(schema.classCourses.class, classIds)),
+	);
+
 	const rows = await db
+		.with(uniqueUEsPerClass)
 		.select({
-			classId: schema.classCourses.class,
-			credits:
-				sql<number>`coalesce(sum(distinct ${schema.teachingUnits.credits}), 0)`.as(
-					"credits",
-				),
+			classId: uniqueUEsPerClass.classId,
+			credits: sql<number>`coalesce(sum(${uniqueUEsPerClass.credits}), 0)`.as(
+				"credits",
+			),
 		})
-		.from(schema.classCourses)
-		.innerJoin(
-			schema.courses,
-			eq(schema.courses.id, schema.classCourses.course),
-		)
-		.innerJoin(
-			schema.teachingUnits,
-			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
-		)
-		.where(inArray(schema.classCourses.class, classIds))
-		.groupBy(schema.classCourses.class);
+		.from(uniqueUEsPerClass)
+		.groupBy(uniqueUEsPerClass.classId);
 
 	const map: Record<string, number> = {};
 	for (const row of rows) {

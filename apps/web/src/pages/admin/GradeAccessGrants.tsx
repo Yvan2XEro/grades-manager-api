@@ -3,7 +3,23 @@ import { formatDistanceToNow } from "date-fns";
 import { ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
+import ConfirmModal from "@/components/modals/ConfirmModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
@@ -11,15 +27,8 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
-import ConfirmModal from "@/components/modals/ConfirmModal";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { TableSkeleton } from "@/components/ui/table-skeleton";
 import {
 	Table,
 	TableBody,
@@ -28,17 +37,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	Dialog,
-	DialogBody,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Combobox } from "@/components/ui/combobox";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 export default function GradeAccessGrants() {
@@ -58,7 +58,13 @@ export default function GradeAccessGrants() {
 		enabled: addOpen,
 		queryFn: async () => {
 			const { items } = await trpcClient.users.list.query({
-				roles: ["super_admin", "administrator", "dean", "teacher", "grade_editor"],
+				roles: [
+					"super_admin",
+					"administrator",
+					"dean",
+					"teacher",
+					"grade_editor",
+				],
 				limit: 200,
 			});
 			return items;
@@ -112,7 +118,7 @@ export default function GradeAccessGrants() {
 			</div>
 
 			{/* Info banner */}
-			<div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+			<div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-primary text-sm">
 				{t("admin.gradeAccessGrants.info")}
 			</div>
 
@@ -126,7 +132,9 @@ export default function GradeAccessGrants() {
 							<EmptyMedia variant="icon">
 								<ShieldCheck className="text-muted-foreground" />
 							</EmptyMedia>
-							<EmptyTitle>{t("admin.gradeAccessGrants.empty.title")}</EmptyTitle>
+							<EmptyTitle>
+								{t("admin.gradeAccessGrants.empty.title")}
+							</EmptyTitle>
 							<EmptyDescription>
 								{t("admin.gradeAccessGrants.empty.description")}
 							</EmptyDescription>
@@ -136,10 +144,18 @@ export default function GradeAccessGrants() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>{t("admin.gradeAccessGrants.columns.user")}</TableHead>
-								<TableHead>{t("admin.gradeAccessGrants.columns.email")}</TableHead>
-								<TableHead>{t("admin.gradeAccessGrants.columns.grantedBy")}</TableHead>
-								<TableHead>{t("admin.gradeAccessGrants.columns.since")}</TableHead>
+								<TableHead>
+									{t("admin.gradeAccessGrants.columns.user")}
+								</TableHead>
+								<TableHead>
+									{t("admin.gradeAccessGrants.columns.email")}
+								</TableHead>
+								<TableHead>
+									{t("admin.gradeAccessGrants.columns.grantedBy")}
+								</TableHead>
+								<TableHead>
+									{t("admin.gradeAccessGrants.columns.since")}
+								</TableHead>
 								<TableHead className="w-[60px]" />
 							</TableRow>
 						</TableHeader>
@@ -200,10 +216,18 @@ export default function GradeAccessGrants() {
 			</div>
 
 			{/* Add delegate dialog */}
-			<Dialog open={addOpen} onOpenChange={(o) => { setAddOpen(o); if (!o) setSelectedProfileId(""); }}>
+			<Dialog
+				open={addOpen}
+				onOpenChange={(o) => {
+					setAddOpen(o);
+					if (!o) setSelectedProfileId("");
+				}}
+			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>{t("admin.gradeAccessGrants.dialog.title")}</DialogTitle>
+						<DialogTitle>
+							{t("admin.gradeAccessGrants.dialog.title")}
+						</DialogTitle>
 						<DialogDescription>
 							{t("admin.gradeAccessGrants.dialog.description")}
 						</DialogDescription>
@@ -214,8 +238,12 @@ export default function GradeAccessGrants() {
 							value={selectedProfileId}
 							onValueChange={setSelectedProfileId}
 							disabled={candidatesQuery.isLoading}
-							placeholder={t("admin.gradeAccessGrants.dialog.selectPlaceholder")}
-							searchPlaceholder={t("common.search", { defaultValue: "Rechercher..." })}
+							placeholder={t(
+								"admin.gradeAccessGrants.dialog.selectPlaceholder",
+							)}
+							searchPlaceholder={t("common.search", {
+								defaultValue: "Rechercher...",
+							})}
 							options={
 								candidatesQuery.data?.map((user) => ({
 									value: user.id,
@@ -231,7 +259,9 @@ export default function GradeAccessGrants() {
 						</Button>
 						<Button
 							disabled={!selectedProfileId || grantMutation.isPending}
-							onClick={() => { if (selectedProfileId) grantMutation.mutate(selectedProfileId); }}
+							onClick={() => {
+								if (selectedProfileId) grantMutation.mutate(selectedProfileId);
+							}}
 						>
 							{grantMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}
 							{t("admin.gradeAccessGrants.actions.grant")}
@@ -248,7 +278,9 @@ export default function GradeAccessGrants() {
 				message={t("admin.gradeAccessGrants.revoke.message")}
 				confirmText={t("admin.gradeAccessGrants.actions.revoke")}
 				isLoading={revokeMutation.isPending}
-				onConfirm={() => { if (revokeId) revokeMutation.mutate(revokeId); }}
+				onConfirm={() => {
+					if (revokeId) revokeMutation.mutate(revokeId);
+				}}
 			/>
 		</div>
 	);

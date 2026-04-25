@@ -1,318 +1,4418 @@
+# =============================================================================
+# INSES - Programmes Santé (BTS Santé, 3 ans, 180 crédits)
+# Source : Programme National du Cycle de BTS au Cameroun - Volume 6 (MINESUP, Avril 2017)
+# 2 filières (EMS, STBM) | 8 spécialités | 6 semestres | ~336 UE
+# Ce fichier référence : studyCycleCode=BTS-SANTE, levels BTS-SANTE1/2/3,
+#                       semesters S1-S6, facultyCode=INSES (cf. inses-config.yaml)
+# =============================================================================
+
 meta:
-  version: "2024.12"
-  generatedAt: 2024-12-22T00:05:00Z
-  dataset: inses
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: Cycle BTS Santé (bac+3, 6 semestres, 180 crédits) - Filières EMS et STBM
+departments:
+- code: EMS
+  nameFr: Études Médico-Sanitaires
+  nameEn: Medical and Health Studies
+  facultyCode: INSES
+  studyCycleCode: BTS-SANTE
+  description: Filière regroupant les spécialités liées aux soins directs aux patients et à la santé communautaire
+    (Sage-femme, Sciences infirmières, Kinésithérapie, Odontostomatologie, Opticien-Lunetier).
+- code: STBM
+  nameFr: Sciences et Techniques Biomédicales
+  nameEn: Biomedical Sciences and Techniques
+  facultyCode: INSES
+  studyCycleCode: BTS-SANTE
+  description: Filière regroupant les spécialités techniques de support au diagnostic et au traitement
+    (Techniques de laboratoire et d'analyse médicale, Techniques pharmaceutiques, Radiologie et imagerie
+    médicale).
 programs:
-  - code: BTS-INFIRMIER
-    name: BTS Sciences Infirmières
-    slug: bts-sciences-infirmieres
-    description: Formation BTS en sciences infirmières / Nursing Sciences
-    facultyCode: INSES
-  - code: BTS-SAGEFEMME
-    name: BTS Sage-Femme
-    slug: bts-sage-femme
-    description: Formation BTS Sage-Femme / Midwifery
-    facultyCode: INSES
-  - code: BTS-LABO
-    name: BTS Techniques de Laboratoire
-    slug: bts-techniques-laboratoire
-    description: Formation BTS en Techniques de Laboratoire / Laboratory Techniques
-    facultyCode: INSES
-  - code: BTS-KINE
-    name: BTS Kinésithérapie
-    slug: bts-kinesitherapie
-    description: Formation BTS en Kinésithérapie / Physiotherapy
-    facultyCode: INSES
-  - code: BTS-DIETETIQUE
-    name: BTS Diététique
-    slug: bts-dietetique
-    description: Formation BTS en Diététique / Dietetics
-    facultyCode: INSES
-  - code: BTS-RADIO
-    name: BTS Radiologie et Imagérie Médicale
-    slug: bts-radiologie-imagerie
-    description: Formation BTS en Radiologie et Imagérie Médicale / Radiology and
-      Medical Imaging
-    facultyCode: INSES
-  - code: BTS-PHARMA
-    name: BTS Techniques Pharmaceutiques
-    slug: bts-techniques-pharmaceutiques
-    description: Formation BTS en Techniques Pharmaceutiques / Pharmaceutical Techniques
-    facultyCode: INSES
-  - code: LP-INFIRMIER
-    name: Licence Professionnelle Sciences Infirmières
-    slug: licence-pro-sciences-infirmieres
-    description: Formation Licence Professionnelle en Sciences Infirmières / Nursing
-      Sciences
-    facultyCode: INSES
-  - code: MP-INFIRMIER
-    name: Master Professionnel Sciences Infirmières
-    slug: master-pro-sciences-infirmieres
-    description: Formation Master Professionnel en Sciences Infirmières / Nursing Sciences
-    facultyCode: INSES
-  - code: MP-SANTE-PUB
-    name: Master Professionnel Santé Publique
-    slug: master-pro-sante-publique
-    description: Formation Master Professionnel en Santé Publique / Public Health
-    facultyCode: INSES
-  - code: MP-SANTE-REPRO
-    name: Master Professionnel Santé de Reproduction
-    slug: master-pro-sante-reproduction
-    description: Formation Master Professionnel en Santé de Reproduction /
-      Reproductive Health
-    facultyCode: INSES
-  - code: MP-BIOMED
-    name: Master Professionnel Sciences Biomédicales
-    slug: master-pro-sciences-biomedicales
-    description: Formation Master Professionnel en Sciences Biomédicales /
-      Biomedical Sciences
-    facultyCode: INSES
-  - code: MP-DIETETIQUE
-    name: Master Professionnel Diététique et Nutrition
-    slug: master-pro-dietetique-nutrition
-    description: Formation Master Professionnel en Diététique et Nutrition /
-      Dietetics and Nutrition
-    facultyCode: INSES
-  - code: BTS-COMPTA
-    name: BTS Comptabilité et Gestion des Entreprises
-    slug: bts-comptabilite-gestion
-    description: Formation BTS en Comptabilité et Gestion des Entreprises /
-      Accounting and Business Management
-    facultyCode: INSES
-  - code: BTS-GRH
-    name: BTS Gestion des Ressources Humaines
-    slug: bts-gestion-rh
-    description: Formation BTS en Gestion des Ressources Humaines / Human Resources
-      Management
-    facultyCode: INSES
-  - code: BTS-DOUANE
-    name: BTS Douane et Transit
-    slug: bts-douane-transit
-    description: Formation BTS en Douane et Transit / Customs and Transit
-    facultyCode: INSES
-  - code: BTS-BANQUE
-    name: BTS Banque et Finance
-    slug: bts-banque-finance
-    description: Formation BTS en Banque et Finance / Banking and Finance
-    facultyCode: INSES
-  - code: BTS-LOGISTIQUE
-    name: BTS Logistique et Transport
-    slug: bts-logistique-transport
-    description: Formation BTS en Logistique et Transport / Logistics and Transport
-    facultyCode: INSES
-  - code: BTS-ASSURANCE
-    name: BTS Assurance
-    slug: bts-assurance
-    description: Formation BTS en Assurance / Insurance
-    facultyCode: INSES
-  - code: BTS-MARKETING
-    name: BTS Marketing-Commerce-Vente
-    slug: bts-marketing-commerce-vente
-    description: Formation BTS en Marketing-Commerce-Vente / Marketing-Commerce-Sales
-    facultyCode: INSES
-  - code: CQP-KINE-ASST
-    name: CQP Assistant Kinésithérapie
-    slug: cqp-assistant-kinesitherapie
-    description: Formation CQP en Assistant Kinésithérapie / Physiotherapy Assistant
-    facultyCode: INSES
-  - code: CQP-CHIMISTE
-    name: CQP Aide Chimiste Biologiste
-    slug: cqp-aide-chimiste-biologiste
-    description: Formation CQP en Aide Chimiste Biologiste / Assistant Chemist Biologist
-    facultyCode: INSES
-  - code: CQP-DIETETIQUE
-    name: CQP Diététique
-    slug: cqp-dietetique
-    description: Formation CQP en Diététique / Dietetics
-    facultyCode: INSES
-  - code: CQP-MASSAGE
-    name: CQP Massothérapie
-    slug: cqp-massotherapie
-    description: Formation CQP en Massothérapie / Massage Therapy
-    facultyCode: INSES
-  - code: CQP-DELEGUE-PHARMA
-    name: CQP Délégué Pharmaceutique
-    slug: cqp-delegue-pharmaceutique
-    description: Formation CQP en Délégué Pharmaceutique / Pharmaceutical Delegate
-    facultyCode: INSES
-  - code: CQP-DELEGUE-ASSUR
-    name: CQP Délégué de l'Assurance Maladie
-    slug: cqp-delegue-assurance-maladie
-    description: Formation CQP en Délégué de l'Assurance Maladie / Health Insurance Delegate
-    facultyCode: INSES
-  - code: CQP-DELEGUE-MED
-    name: CQP Délégué Médical
-    slug: cqp-delegue-medical
-    description: Formation CQP en Délégué Médical / Medical Delegate
-    facultyCode: INSES
-  - code: DQP-VENDEUR-PHARMA
-    name: DQP Vendeur en Pharmacie
-    slug: dqp-vendeur-pharmacie
-    description: Formation DQP en Vendeur en Pharmacie / Pharmacy Salesperson
-    facultyCode: INSES
-  - code: DQP-SECRET-MED
-    name: DQP Secrétariat Médical
-    slug: dqp-secretariat-medical
-    description: Formation DQP en Secrétariat Médical / Medical Secretariat
-    facultyCode: INSES
-  - code: BTS-SOINS-INF
-    name: BTS Soins Infirmiers
-    slug: bts-soins-infirmiers
-    description: Formation BTS en Soins Infirmiers / Nurse
-    facultyCode: INSES
-  - code: BTS-ASST-CABINET
-    name: BTS Assistant en Cabinet Médical
-    slug: bts-assistant-cabinet-medical
-    description: Formation BTS en Assistant en Cabinet Médical / Medical Office Assistant
-    facultyCode: INSES
-  - code: BTS-PREPOSE
-    name: BTS Préposé aux Bénéficiaires
-    slug: bts-prepose-beneficiaires
-    description: Formation BTS en Préposé aux Bénéficiaires / Beneficial Assistant
-    facultyCode: INSES
+- code: SFM
+  nameFr: Sage-femme
+  nameEn: Midwifery
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Sage-femme
+  objective: Former des professionnelles de santé ayant pour mission d'accompagner les femmes enceintes
+    tout au long de leur grossesse, de l'établissement du diagnostic jusqu'au jour de l'accouchement,
+    d'animer les séances de préparation à l'accouchement et d'assurer seule l'accouchement. La Sage-femme
+    assure également le suivi gynécologique de la femme.
+  careerOpportunities:
+  - Fonction publique
+  - Hôpitaux et cliniques privées
+  - ONG
+  - Auto-emploi
+  - Médecine du travail
+  - Recherche et formation
+  - PMI
+  note: L'UE SFM232 (Dystocies – Pathologies obstétricales – Complications obstétricales) a une cellule
+    'crédits' vide dans le document MINESUP original ; valeur fixée à 7 crédits pour atteindre les 30
+    crédits réglementaires du semestre 3.
+- code: SIN
+  nameFr: Sciences Infirmières
+  nameEn: Nursing Sciences
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Sciences Infirmières
+  objective: Former des infirmiers et infirmières polyvalents capables d'assurer des soins de qualité
+    aux patients dans tous les contextes cliniques et communautaires, en hôpital comme en milieu rural.
+  careerOpportunities:
+  - Hôpitaux publics et privés
+  - Cliniques
+  - Centres de santé
+  - ONG sanitaires
+  - Auto-emploi (cabinets de soins)
+  - Santé scolaire
+  - Médecine du travail
+  - Recherche et formation
+  note: Le document officiel attribue 32 crédits au semestre 5 (au lieu de 30) ; valeur conservée telle
+    qu'indiquée dans le programme MINESUP.
+- code: KIN
+  nameFr: Kinésithérapie
+  nameEn: Physiotherapy
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Kinésithérapie
+  objective: Former des kinésithérapeutes capables de prendre en charge la rééducation fonctionnelle,
+    la réadaptation et la prévention des déficiences motrices, neurologiques et respiratoires.
+  careerOpportunities:
+  - Hôpitaux et cliniques
+  - Cabinets privés de kinésithérapie
+  - Centres de réadaptation
+  - Clubs sportifs
+  - Auto-emploi
+  - ONG
+  - Recherche et formation
+- code: ODO
+  nameFr: Odontostomatologie
+  nameEn: Odontostomatology
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Odontostomatologie
+  objective: Former des thérapeutes dentaires hautement qualifiés capables de fournir des soins dentaires
+    holistiques de haute qualité dans les cliniques au niveau local, national ou international.
+  careerOpportunities:
+  - Cliniques dentaires publiques et privées
+  - Cabinets dentaires
+  - Hôpitaux
+  - ONG
+  - Auto-emploi
+  - Recherche et formation
+- code: OPT
+  nameFr: Opticien-Lunetier
+  nameEn: Optician
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Opticien-Lunetier
+  objective: Former des professionnels appelés à lutter contre la malvoyance et la cécité évitable. Ces
+    professionnels ont la charge de corriger les défauts visuels avec des lunettes et d'administrer les
+    soins oculaires d'urgence.
+  careerOpportunities:
+  - Cabinets et magasins d'optique
+  - Hôpitaux et cliniques ophtalmologiques
+  - ONG de lutte contre la cécité
+  - Auto-emploi
+  - Industrie optique
+  note: Le programme officiel laisse certaines UE avec un volume horaire déclaré en semaines (stages,
+    recherches) sans crédits explicites, ce qui explique les semestres à 23 ou 27 crédits déclarés (S3,
+    S5, S6).
+- code: TLB
+  nameFr: Techniques de Laboratoire et d'Analyse Médicale
+  nameEn: Medical Laboratory and Analysis Techniques
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Techniques de Laboratoire et d'Analyse Médicale
+  objective: Former des techniciens de laboratoire capables de réaliser des analyses biomédicales (hématologie,
+    biochimie, microbiologie, parasitologie, immunologie) au service du diagnostic médical.
+  careerOpportunities:
+  - Laboratoires d'analyses médicales publics et privés
+  - Hôpitaux et cliniques
+  - Centres de recherche
+  - Industrie pharmaceutique
+  - Industrie agroalimentaire
+  - Auto-emploi
+  - ONG
+- code: TPH
+  nameFr: Techniques Pharmaceutiques
+  nameEn: Pharmaceutical Techniques
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Techniques Pharmaceutiques
+  objective: Former des techniciens en pharmacie hautement qualifiés, capables de participer à la conception,
+    la fabrication, l'administration et la conservation des médicaments sous la direction d'un pharmacien.
+  careerOpportunities:
+  - Officines (pharmacies)
+  - Hôpitaux et pharmacies hospitalières
+  - Industrie pharmaceutique
+  - Grossistes répartiteurs
+  - ONG sanitaires
+  - Recherche pharmaceutique
+  - Auto-emploi
+- code: IMM
+  nameFr: Radiologie et Imagerie Médicale
+  nameEn: Radiology and Medical Imaging
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Radiologie et Imagerie Médicale
+  objective: Former des techniciens en imagerie médicale répondant aux besoins actuels des hôpitaux en
+    professionnels qualifiés en radiologie conventionnelle, scanographie, IRM, échographie et radiothérapie,
+    avec maîtrise des exigences en radioprotection.
+  careerOpportunities:
+  - Services d'imagerie médicale publics et privés
+  - Cliniques radiologiques
+  - Centres anti-cancéreux (radiothérapie)
+  - Industrie d'équipements médicaux
+  - ONG
+  - Auto-emploi
+  - Recherche et formation
+
+# -----------------------------------------------------------------------------
+# OPTIONS DE PROGRAMME (option par défaut « Générale » par filière)
+# Requis par le seeder pour chaque classe ; pas de spécialisation à ce stade.
+# -----------------------------------------------------------------------------
 programOptions:
-  - programCode: BTS-INFIRMIER
-    code: GENERAL
-    name: Tronc Commun
-    description: Parcours général en sciences infirmières
-  - programCode: BTS-COMPTA
-    code: GENERAL
-    name: Tronc Commun
-    description: Parcours général en comptabilité et gestion
-teachingUnits:
-  - programCode: BTS-INFIRMIER
-    code: UE-SANTE-1
-    name: Sciences Fondamentales de la Santé
-    description: Anatomie, physiologie, biologie
-    credits: 12
-    semester: annual
-  - programCode: BTS-INFIRMIER
-    code: UE-SANTE-2
-    name: Soins Infirmiers de Base
-    description: Techniques de soins et pratiques infirmières
-    credits: 18
-    semester: annual
-  - programCode: BTS-COMPTA
-    code: UE-COMPTA-1
-    name: Comptabilité Générale
-    description: Principes et pratiques comptables
-    credits: 15
-    semester: annual
-  - programCode: BTS-COMPTA
-    code: UE-COMPTA-2
-    name: Gestion Financière
-    description: Analyse financière et gestion budgétaire
-    credits: 12
-    semester: annual
-courses:
-  - programCode: BTS-INFIRMIER
-    teachingUnitCode: UE-SANTE-1
-    code: ANAT101
-    name: Anatomie Humaine
-    hours: 45
-  - programCode: BTS-INFIRMIER
-    teachingUnitCode: UE-SANTE-1
-    code: PHYS101
-    name: Physiologie
-    hours: 40
-  - programCode: BTS-INFIRMIER
-    teachingUnitCode: UE-SANTE-2
-    code: SOIN101
-    name: Soins de Base
-    hours: 60
-  - programCode: BTS-COMPTA
-    teachingUnitCode: UE-COMPTA-1
-    code: COMPT101
-    name: Introduction à la Comptabilité
-    hours: 50
-  - programCode: BTS-COMPTA
-    teachingUnitCode: UE-COMPTA-1
-    code: COMPT102
-    name: Comptabilité Analytique
-    hours: 45
-  - programCode: BTS-COMPTA
-    teachingUnitCode: UE-COMPTA-2
-    code: FIN101
-    name: Gestion Financière
-    hours: 40
+- programCode: IMM
+  code: GEN
+  name: Générale
+  description: Option générale du programme Imagerie Médicale (cycle BTS Santé).
+- programCode: SFM
+  code: GEN
+  name: Générale
+  description: Option générale du programme Sage-femme (cycle BTS Santé).
+- programCode: SIN
+  code: GEN
+  name: Générale
+  description: Option générale du programme Sciences Infirmières (cycle BTS Santé).
+- programCode: TLB
+  code: GEN
+  name: Générale
+  description: Option générale du programme Techniques de Laboratoire (cycle BTS Santé).
+
+# -----------------------------------------------------------------------------
+# CLASSES (cohortes BTS Santé 2025-2026)
+# Une classe par (filière × niveau) pour l'année académique AY-2025.
+# Données dérivées des feuilles « ... BTS ... » des fichiers Excel
+# situés dans docs/student-inses/.
+# -----------------------------------------------------------------------------
 classes:
-  - code: INF25-BTS1A
-    name: BTS Sciences Infirmières 1ère année - Groupe A
-    programCode: BTS-INFIRMIER
-    programOptionCode: GENERAL
-    academicYearCode: AY-2025
-    studyCycleCode: BTS-SANTE
-    cycleLevelCode: BTS1
-    semesterCode: S1
-  - code: INF25-BTS1B
-    name: BTS Sciences Infirmières 1ère année - Groupe B
-    programCode: BTS-INFIRMIER
-    programOptionCode: GENERAL
-    academicYearCode: AY-2025
-    studyCycleCode: BTS-SANTE
-    cycleLevelCode: BTS1
-    semesterCode: S1
-  - code: COMPT25-BTS1A
-    name: BTS Comptabilité 1ère année - Groupe A
-    programCode: BTS-COMPTA
-    programOptionCode: GENERAL
-    academicYearCode: AY-2025
-    studyCycleCode: BTS-COMMERCE
-    cycleLevelCode: BTS1-COM
-    semesterCode: S1
-classCourses:
-  - code: CC-ANAT101-INF1A
-    classCode: INF25-BTS1A
-    classAcademicYearCode: AY-2025
-    courseCode: ANAT101
-    teacherCode: TEACH-DR-MBALLA
-    semesterCode: S1
-  - code: CC-PHYS101-INF1A
-    classCode: INF25-BTS1A
-    classAcademicYearCode: AY-2025
-    courseCode: PHYS101
-    teacherCode: TEACH-DR-NGUEMA
-    semesterCode: S1
-  - code: CC-SOIN101-INF1A
-    classCode: INF25-BTS1A
-    classAcademicYearCode: AY-2025
-    courseCode: SOIN101
-    teacherCode: TEACH-INF-AKONO
-    semesterCode: S1
-  - code: CC-COMPT101-COMPT1A
-    classCode: COMPT25-BTS1A
-    classAcademicYearCode: AY-2025
-    courseCode: COMPT101
-    teacherCode: TEACH-KOMBO
-    semesterCode: S1
-  - code: CC-COMPT102-COMPT1A
-    classCode: COMPT25-BTS1A
-    classAcademicYearCode: AY-2025
-    courseCode: COMPT102
-    teacherCode: TEACH-KOMBO
-    semesterCode: S1
-exams:
-  - id: EXAM-ANAT101-CC
-    classCourseCode: CC-ANAT101-INF1A
-    name: Contrôle Continu Anatomie
-    type: CC
-    date: 2025-10-15T09:00:00Z
-    percentage: 40
-    status: draft
-  - id: EXAM-COMPT101-CC
-    classCourseCode: CC-COMPT101-COMPT1A
-    name: Contrôle Continu Comptabilité
-    type: CC
-    date: 2025-10-20T09:00:00Z
-    percentage: 40
-    status: draft
-enrollmentWindows:
-  - classCode: INF25-BTS1A
-    academicYearCode: AY-2025
-    status: open
-  - classCode: INF25-BTS1B
-    academicYearCode: AY-2025
-    status: open
-  - classCode: COMPT25-BTS1A
-    academicYearCode: AY-2025
-    status: open
+- code: IMM25-BTS1
+  name: 'Imagerie Médicale – BTS 1ère année (2025-2026)'
+  programCode: IMM
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE1
+  totalCredits: 60
+- code: SFM25-BTS1
+  name: 'Sage-femme – BTS 1ère année (2025-2026)'
+  programCode: SFM
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE1
+  totalCredits: 60
+- code: SFM25-BTS2
+  name: 'Sage-femme – BTS 2ème année (2025-2026)'
+  programCode: SFM
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE2
+  totalCredits: 60
+- code: SFM25-BTS3
+  name: 'Sage-femme – BTS 3ème année (2025-2026)'
+  programCode: SFM
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE3
+  totalCredits: 60
+- code: SIN25-BTS1
+  name: 'Sciences Infirmières – BTS 1ère année (2025-2026)'
+  programCode: SIN
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE1
+  totalCredits: 60
+- code: SIN25-BTS2
+  name: 'Sciences Infirmières – BTS 2ème année (2025-2026)'
+  programCode: SIN
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE2
+  totalCredits: 60
+- code: SIN25-BTS3
+  name: 'Sciences Infirmières – BTS 3ème année (2025-2026)'
+  programCode: SIN
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE3
+  totalCredits: 60
+- code: TLB25-BTS1
+  name: 'Techniques de Laboratoire – BTS 1ère année (2025-2026)'
+  programCode: TLB
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE1
+  totalCredits: 60
+- code: TLB25-BTS2
+  name: 'Techniques de Laboratoire – BTS 2ème année (2025-2026)'
+  programCode: TLB
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE2
+  totalCredits: 60
+- code: TLB25-BTS3
+  name: 'Techniques de Laboratoire – BTS 3ème année (2025-2026)'
+  programCode: TLB
+  programOptionCode: GEN
+  academicYearCode: AY-2025
+  studyCycleCode: BTS-SANTE
+  cycleLevelCode: BTS-SANTE3
+  totalCredits: 60
+
+courseUnitCategories:
+- code: FOND
+  name: UE Fondamentales
+  weightPercent: 30
+  description: Unités d'enseignement de base scientifique et théorique
+- code: PROF
+  name: UE Professionnelles
+  weightPercent: 60
+  description: Unités d'enseignement de spécialisation et de pratique professionnelle
+- code: TRAN
+  name: UE Transversales
+  weightPercent: 10
+  description: Unités d'enseignement de compétences générales (langues, TIC, éthique, etc.)
+courseUnits:
+- code: SFM111
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie physiologie 1 – Embryologie - Biologie de la reproduction
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+- code: SFM112
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Puériculture – Nutrition - Diététique
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM113
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Histoire de la profession des Sages-femmes - Éthique et déontologie professionnelle santé - Soins
+    infirmiers de base
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+- code: SFM114
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Législation professionnelle – Système national de santé / Politique de santé – Microbiologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM115
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Pharmacologie générale – Hématologie – Pathologie générale
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+- code: SFM116
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Psychologie-sociologie – Éducation pour la santé – Prévention des infections
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM117
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Méthodes de travail - Langue officielle 1 - Techniques de l’information et de la communication
+    1
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM121
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie 2 – Sémiologie - Pharmacologie spéciale
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+- code: SFM122
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Techniques de laboratoire – Biochimie – Parasitologie/Mycologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM123
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Grossesse /Suivi prénatal-Accouchement en présentation du sommet - Suivi post natal
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+- code: SFM124
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Communication pour le développement-Éducation à la vie familiale -Soins de base à la Naissance/Néonatologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM125
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins de santé primaire – Soins infirmiers/obstétricaux/Néonataux de base – Hygiène et assainissement/Secourisme
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+- code: SFM126
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SFM127
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Démarche de soins - Genre - Droits humains
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM231
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Autres variétés d’accouchement
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+- code: SFM232
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Dystocies – Pathologies obstétricales - Complications obstétricales
+  hoursCM: 66
+  hoursTD: 21
+  hoursTP: 3
+  hoursTPE: 15
+  hoursTotal: 105
+  credits: 7
+- code: SFM233
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Méthodes de la recherche –Statistique - Soins infirmiers avancés
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+- code: SFM234
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Épidémiologie– Démographie–Santé communautaire
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM235
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pédiatrie - Vaccination - Techniques avancées en obstétrique
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+- code: SFM236
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage communautaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SFM237
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Anglais médical/Français médical  1- Techniques de l’information et de la communication 2
+  hoursCM: 24
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM241
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Gynécologie – Soins obstétricaux
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: SFM242
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pédiatrie/néonatologie/pathologies nouveau-né – Pathologies gynécologiques
+  hoursCM: 46
+  hoursTD: 16
+  hoursTP: 3
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+- code: SFM243
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Analgésique en obstétrique - Communication
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: SFM244
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: PTME – IST/SIDA
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: SFM245
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies obstétricales
+  hoursCM: 35
+  hoursTD: 13
+  hoursTP: 4
+  hoursTPE: 8
+  hoursTotal: 60
+  credits: 4
+- code: SFM246
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SFM247
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Planification familiale,  Initiation à la recherche et Education civique
+  hoursCM: 26
+  hoursTD: 11
+  hoursTP: 3
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SFM351
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Anthropologie - Santé génésique et droit sexuel - Toxicologie
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+- code: SFM352
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Anesthésiologie - Réanimation - Infécondité/Infertilité
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+- code: SFM353
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Association grossesse et pathologie PEG
+  hoursCM: 50
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: SFM354
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Gynécologie et pathologies gynécologiques
+  hoursCM: 10
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 15
+  credits: 1
+- code: SFM355
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Urgences obstétricales et néonatales
+  hoursCM: 10
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 15
+  credits: 1
+- code: SFM356
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation maternité - Stage communautaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 180
+  hoursTPE: 0
+  hoursTotal: 180
+  credits: 12
+  isInternship: true
+- code: SFM357
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Éducation civique et éthique – Langue officielle
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+- code: SFM361
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Gérontologie/Gériatrie + IEC 3 – Rédaction administrative – Psychiatrie/Psychopathologie
+  hoursCM: 50
+  hoursTD: 18
+  hoursTP: 3
+  hoursTPE: 13
+  hoursTotal: 90
+  credits: 6
+- code: SFM362
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Imagerie médicale – Assurance qualité - Entreprenariat
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM363
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Économie de la santé – Rédaction de mémoire
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+- code: SFM364
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: PCIME
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM365
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi du travail et manœuvre obstétricales
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+- code: SFM366
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage (MSP maternité) – Stage (MSP Pédiatrie)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 150
+  hoursTPE: 0
+  hoursTotal: 150
+  credits: 10
+  isInternship: true
+- code: SFM367
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Anglais médical/Français médical - NTIC
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+- code: SIN111
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie – Physiologie I – Biologie cellulaire – Histologie – Chimie générale
+  hoursCM: 60
+  hoursTD: 24
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 90
+  credits: 6
+- code: SIN112
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: 'Microbiologie I : Bactériologie – Parasitologie – Biochimie'
+  hoursCM: 30
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: SIN113
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Sociologie – anthropologie et psychologie médicale
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN114
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Fondement de la science infirmière I : concepts et théories en sciences infirmières'
+  hoursCM: 44
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: SIN115
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Histoire de la profession infirmière (cycle de vie)
+  hoursCM: 36
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 45
+  credits: 3
+- code: SIN116
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique I (médecine – pédiatrie)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN117
+  programCode: SIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français médical – Anglais médical - TIC
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SIN121
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie II
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN122
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie – Mycologie – Immunologie)
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: SIN123
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Fondements de la science infirmière II – Démarche des soins infirmiers – Organisation des soins
+    transmissions ciblées – Premiers secours
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN124
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins infirmiers en médecine 1 – Éthique et déontologie professionnelles
+  hoursCM: 40
+  hoursTD: 13
+  hoursTP: 0
+  hoursTPE: 7
+  hoursTotal: 60
+  credits: 4
+- code: SIN125
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Santé publique : Épidémiologie – Démographie – Santé environnementale et Promotion de la santé'
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN126
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage de médecine et pédiatrique II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN127
+  programCode: SIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français médical – Anglais médical – TIC II
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN231
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Mathématiques appliquées – Biostatistique – Biophysiques générale et technologie
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN232
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pharmacologie générale
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: SIN233
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Soins infirmiers en chirurgie et Transfusion sanguine – Soins infirmiers en pédiatrie et puériculture
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: SIN234
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Santé de reproduction : santé mère – enfant – soins Obstétricaux – soins aux femmes atteintes
+    de pathologies obstétricales et gynécologiques'
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: SIN235
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies médicales – Pathologies infectieuses zoonoses et pathologies pédiatriques et infantiles
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: SIN236
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN237
+  programCode: SIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Français médical – Anglais médical – TIC III
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN241
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Communication pour le changement de comportement (CCC) – Santé communautaire – Santé et développement
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 14
+  hoursTotal: 60
+  credits: 4
+- code: SIN242
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Techniques de laboratoire d’analyses médicales – Techniques d’imagerie médicale
+  hoursCM: 20
+  hoursTD: 8
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: SIN243
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies obstétricales et gynécologiques
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN244
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Urgences – Bloc opératoire – Anesthésiologie
+  hoursCM: 45
+  hoursTD: 0
+  hoursTP: 12
+  hoursTPE: 3
+  hoursTotal: 60
+  credits: 4
+- code: SIN245
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pharmacologie clinique – Nutrition et pathologies associées – Médecine alternative
+  hoursCM: 60
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 90
+  credits: 6
+- code: SIN246
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN247
+  programCode: SIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Initiation à la Recherche
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN351
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Pathologies médicales - Programmes prioritaires de santé au Cameroun – CCC III
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: SIN352
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Économie de la santé – Gestion hospitalière – système d’informations sanitaires
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN353
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Santé mentale  - Soins infirmiers en psychiatrie – Soins infirmiers en gériatrie – pharmacologie
+    clinique 2 – surveillance thérapeutique
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN354
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Soins infirmiers en réanimation – Soins aux personnes atteintes de déficiences spéciales
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN355
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage de santé communautaire II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN356
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN357
+  programCode: SIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit médical – Santé au travail – Médecine scolaire
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: SIN361
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Techniques de soins spécifiques 1 (neurologie, ophtalmologie, stomatologie, dermatologie – ORL)
+  hoursCM: 30
+  hoursTD: 0
+  hoursTP: 40
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN362
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Techniques de soins spécifiques 2 – (Urologie – Pneumologie - gastro entérologie- Cardiologie)
+  hoursCM: 20
+  hoursTD: 0
+  hoursTP: 35
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: SIN363
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 1 (MSP 1)
+  hoursCM: 40
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: SIN364
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 2 (MSP 2)
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  isInternship: true
+- code: SIN365
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle 3 (MSP 3)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: SIN366
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Rédaction du projet de recherche (travail de fin d’études)
+  hoursCM: 50
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: SIN367
+  programCode: SIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Éducation civique et éthique
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN111
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Biologie cellulaire – histologie – Anatomie Physiologie I
+  hoursCM: 75
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 105
+  credits: 7
+- code: KIN112
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Neurophysiologie – Kinésiologie – Chimie générale
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+- code: KIN113
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Psychologie – Sociologie – Anthropologie générale – Histoire de la Kinésithérapie
+  hoursCM: 30
+  hoursTD: 24
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: KIN114
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Méthodologie générale de la  Kinésithérapie et de la réadaptation I
+  hoursCM: 35
+  hoursTD: 25
+  hoursTP: 0
+  hoursTPE: 15
+  hoursTotal: 75
+  credits: 5
+- code: KIN115
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Maladies infectieuses et parasitaires (y compris les zoonoses)
+  hoursCM: 55
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: KIN116
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Activités motrices et adaptation y compris la psychomotricité – Éthique et déontologie professionnelle
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: KIN117
+  programCode: KIN
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français médical – Anglais médical – NTIC I
+  hoursCM: 15
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 10
+  hoursTotal: 45
+  credits: 3
+- code: KIN121
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Biomécanique – Anatomie physiologie II
+  hoursCM: 60
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: KIN122
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Pharmacologie générale et pharmacologie clinique
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN123
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 60
+  hoursTPE: 30
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN124
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Épidémiologie -  Bio statistiques – Santé et développement
+  hoursCM: 70
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 15
+  hoursTotal: 105
+  credits: 7
+- code: KIN125
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins infirmiers et secourisme
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 16
+  hoursTPE: 4
+  hoursTotal: 45
+  credits: 3
+- code: KIN126
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Droit lié à la profession
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+- code: KIN127
+  programCode: KIN
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Éducation civique et éthique
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN231
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Anatomie Physiologie III – Chimie physiologie
+  hoursCM: 60
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 90
+  credits: 6
+- code: KIN232
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Chimie minérale – Chimie organique
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN233
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN234
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Méthodologie de kinésithérapie et réadaptation II – Éléments de didactiques et méthodologie des
+    activités motrices
+  hoursCM: 60
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 90
+  credits: 6
+- code: KIN235
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Psychologie appliquée à la kinésithérapie
+  hoursCM: 20
+  hoursTD: 8
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: KIN236
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies spéciales et kinésithérapie spécifique I – IEC 2
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: KIN237
+  programCode: KIN
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Français – Anglais médical – TIC
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN241
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Économie générale – Gestion hospitalière – Initiation à la recherche
+  hoursCM: 70
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: KIN242
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Programmes – Prioritaires de santé
+  hoursCM: 36
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN243
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Méthodologie spéciale de kinésithérapie I
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN244
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies spéciale et Kinésithérapie spécifiques II
+  hoursCM: 40
+  hoursTD: 0
+  hoursTP: 25
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+- code: KIN245
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage communautaire 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN246
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pharmacologie spéciale de kiné II
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+- code: KIN247
+  programCode: KIN
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Droit médical
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN351
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Neurophysiologie – Métabolique humaine et spéciale I – Économie de la santé
+  hoursCM: 60
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 10
+  hoursTotal: 90
+  credits: 6
+- code: KIN352
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Neurophysiologie humaine y compris la physiologie des mouvements
+  hoursCM: 20
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN353
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Méthodologie spéciale de kinésithérapie
+  hoursCM: 20
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN354
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Pathologie spéciales gynécologiques
+  hoursCM: 30
+  hoursTD: 0
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN355
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage communautaire 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN356
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 3
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN357
+  programCode: KIN
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Français – Anglais – TIC 3
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: KIN361
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Projet professionnel
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 20
+  hoursTotal: 60
+  credits: 4
+- code: KIN362
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: IEC 3 – Promotion de la santé
+  hoursCM: 55
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+- code: KIN363
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 4
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: KIN364
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle liées aux pathologies spéciales I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 55
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: KIN365
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation professionnelle liées aux pathologies spéciales Ii
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 55
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: KIN366
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Appareillage et prothèse en kinésithérapie
+  hoursCM: 30
+  hoursTD: 0
+  hoursTP: 25
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: KIN367
+  programCode: KIN
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Initiation à la recherche, Français-Anglais
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: ODO111
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie-Physiologie I, Biologie cellulaire – Histologie- Embryologie
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO112
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Chimie générale et Biochimie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: ODO113
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sciences sociales I : Sociologie médicale, Anthropologie et Psychologie'
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: ODO114
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Microbiologie I : Bactériologie-Parasitologie'
+  hoursCM: 17
+  hoursTD: 8
+  hoursTP: 2
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+- code: ODO115
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Introduction aux Soins infirmiers I : Généralités- Concepts-Histoire-Théories - Développement
+    humain à l''espace de la vie'
+  hoursCM: 50
+  hoursTD: 25
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: ODO116
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Clinique I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO117
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue I,  Méthode de travail et Techniques de l’information et de la communication
+    I
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: ODO121
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et Physiologie II
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO122
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie-Mycologie)-Immunologie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: ODO123
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Généralités sur les soins Infirmiers II : Soins infirmiers et Premiers soins'
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO124
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sante publique I : Epidémiologie-Démographie-Sante Environnement et Promotion de la Santé'
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: ODO125
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins infirmiers I, Ethique professionnelle et Déontologie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: ODO126
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Clinique II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO127
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Anglais et Français spécialisés, Techniques de l’information et de la communication II
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: ODO231
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pharmacologie clinique
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: ODO232
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Santé communautaire (Dentaire)  / Microbiologie orale, Asepsies, Contrôle d'infections dentaires
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO233
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Anatomie dentaire et Physiologie I, Embryologie et Histologie
+  hoursCM: 50
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO234
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Ergonomie dentaire
+  hoursCM: 15
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: ODO235
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologie orale I, Science des matériaux dentaires
+  hoursCM: 50
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO236
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Clinique III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO237
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Formation bilingue II, Techniques de l’information et de la communication II, Méthode de recherche
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: ODO241
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Thérapeutique dentaire
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO242
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Parodontologie/ Epidémiologie, Prophylaxie et Vaccinations
+  hoursCM: 50
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO243
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologie orale II, Diagnostic oral et Planification de traitement, Anesthésiologie dentaire
+  hoursCM: 50
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO244
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Restauration dentaire
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: ODO245
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Endodontique / Odontologie communautaire
+  hoursCM: 40
+  hoursTD: 13
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO246
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Clinique  IV
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO247
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Recherche opérationnelle II, Biostatique I, Système d’information sanitaire
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: ODO351
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Management de la Santé / Structure, Fonction, Maintenance I
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: ODO352
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Radiologie dentaire
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO353
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chirurgie orale mineure
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO354
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Prosthodontique
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO355
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Dentisterie pédiatrique I
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO356
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Clinique V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO357
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit de la Santé,  Médecine du Travail, Biostatistique II, Administration
+  hoursCM: 30
+  hoursTD: 5
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: ODO361
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie de la Santé / Orthodontique élémentaire
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 75
+  credits: 5
+- code: ODO362
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Dentisterie pédiatrique II
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 8
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO363
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chirurgie orale mineure II
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO364
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Urgences dentaire médicale
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO365
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Structure, Fonction et Maintenance II
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+- code: ODO366
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Clinique VI
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO367
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Education civique et éthique, Droit de la Sante, Projet de Recherche
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: OPT111
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie oculaire I
+  hoursCM: 54
+  hoursTD: 18
+  hoursTP: 13
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: OPT112
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Mathématiques-physiques-chimie
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT113
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Connaissances générales sur la profession, Soins oculaires primaires
+  hoursCM: 48
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: OPT114
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optique géométrique et Physique I
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT115
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optométrie théorique et pratique
+  hoursCM: 30
+  hoursTD: 13
+  hoursTP: 13
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: OPT116
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage d’imprégnation dans un cabinet d’optique
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: OPT117
+  programCode: OPT
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: OPT121
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Physique II et Chimie II
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: OPT122
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie oculaire II
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+- code: OPT123
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Optique générale et Géométrique II
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT124
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Etude des systèmes optiques
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: OPT125
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Connaissances des matériels didactiques
+  hoursCM: 48
+  hoursTD: 15
+  hoursTP: 7
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: OPT126
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage académique avancé
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: OPT127
+  programCode: OPT
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Secourisme et soins oculaires d’urgence
+  hoursCM: 30
+  hoursTD: 9
+  hoursTP: 3
+  hoursTPE: 35
+  hoursTotal: 45
+  credits: 3
+- code: OPT231
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Soins oculaires primaires
+  hoursCM: 36
+  hoursTD: 12
+  hoursTP: 8
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: OPT232
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Consultation et examen de vue objectif
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+- code: OPT233
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen de vue subjectif  I
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+- code: OPT234
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hygiène et santé publique
+  hoursCM: 18
+  hoursTD: 6
+  hoursTP: 4
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: OPT235
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen de vue subjectif II
+  hoursCM: 35
+  hoursTD: 20
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: OPT237
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Enseignement sur l’éthique, civisme, et TIC
+  hoursCM: 30
+  hoursTD: 9
+  hoursTP: 3
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT237
+  programCode: OPT
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Enseignement des Langues et acquisition de compétence en TIC
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: OPT241
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Soins oculaires avancés, Examen de vue subjectif III
+  hoursCM: 50
+  hoursTD: 19
+  hoursTP: 12
+  hoursTPE: 9
+  hoursTotal: 90
+  credits: 6
+- code: OPT242
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Mathématiques-physiques-chimie
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: OPT243
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: -Optique de contact,  Réfraction objective
+  hoursCM: 45
+  hoursTD: 15
+  hoursTP: 9
+  hoursTPE: 6
+  hoursTotal: 75
+  credits: 5
+- code: OPT244
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Initiation à la recherche
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: OPT245
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Examen subjectif avancé
+  hoursCM: 27
+  hoursTD: 15
+  hoursTP: 30
+  hoursTPE: 3
+  hoursTotal: 75
+  credits: 5
+- code: OPT246
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pratique professionnelle
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+- code: OPT247
+  programCode: OPT
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Législation, déontologie professionnelle et éthique
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: OPT351
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie et gestion d’entreprise I
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 10
+  hoursTPE: 3
+  hoursTotal: 75
+  credits: 5
+- code: OPT352
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie et gestion d’entreprise II
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 60
+  credits: 4
+- code: OPT353
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Recherche et présentation du protocole
+  hoursCM: 0
+  hoursTD: 28
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: OPT354
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi de la recherche et travail de terrain I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: OPT355
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi de la recherche et travail de terrain II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: OPT356
+  programCode: OPT
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage académique
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: OPT361
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Recherche et présentation du protocole
+  hoursCM: 0
+  hoursTD: 28
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: OPT362
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Recherches
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 105
+  credits: 0
+- code: OPT363
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: OPT364
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: OPT365
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: OPT366
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Soutenance
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 0
+  hoursTotal: 45
+  credits: 3
+- code: OPT367
+  programCode: OPT
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Civisme et éthique
+  hoursCM: 0
+  hoursTD: 3
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: TLB111
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Biologie cellulaire et histologie – Anatomie physiologie 1 –Chimie générale
+  hoursCM: 70
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+- code: TLB112
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie générale 1 – Biochimie générale
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TLB113
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Sociologie et anthropologie médicale – Psychologie médicale – Éthique et déontologie médicale
+  hoursCM: 44
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: TLB114
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Cycle de vie – Soins infirmiers - Secourisme
+  hoursCM: 0
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: TLB115
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Physique – Mathématique - Biostatistique
+  hoursCM: 40
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: TLB116
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB117
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Langue officielle  - Techniques de l’information et de la communication 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: TLB121
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie 2 – Chimie organique
+  hoursCM: 60
+  hoursTD: 22
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+- code: TLB122
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie générale 2 – Parasitologie générale
+  hoursCM: 0
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TLB123
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Techniques de laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: TLB124
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: IEC 1-  Hygiène générale et hospitalière -  Maladies infectieuses et parasitaires
+  hoursCM: 62
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+- code: TLB125
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Pharmacologie générale – Nutrition - Épidémiologie
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TLB126
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB127
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Économie générale – Démographie
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+- code: TLB231
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: IEC 2 - Santé et développement -  Santé communautaire
+  hoursCM: 65
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 20
+  hoursTotal: 105
+  credits: 7
+- code: TLB232
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Initiation à la recherche
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 30
+  credits: 2
+- code: TLB233
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hématologie Clinique 1 - Entomologie médicale - Transfusion sanguine
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 15
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+- code: TLB234
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Biochimie Clinique 1 - Laboratoire
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: TLB235
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Bactériologie Clinique 1 - Laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+- code: TLB236
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage de santé communautaire 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB237
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Anglais médical/Français médical - Techniques de l’information et de la communication 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: TLB241
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Parasitologie Clinique 1 –  Mycologie médicale – Immunologie/Sérologie
+  hoursCM: 60
+  hoursTD: 14
+  hoursTP: 8
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+- code: TLB242
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Économie de la santé – Programme prioritaire de santé au Cameroun
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TLB243
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Bactériologie Clinique 2 - Biochimie Clinique 2 - Laboratoire
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: TLB244
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hématologie Clinique 2 -Laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+- code: TLB245
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 3
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB246
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 4
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB247
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Droitmédical
+  hoursCM: 10
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TLB351
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: IEC3 - Système d’information sanitaire - Gestion sanitaire
+  hoursCM: 60
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 18
+  hoursTotal: 90
+  credits: 6
+- code: TLB352
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Rédactiondemémoire
+  hoursCM: 15
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 30
+  hoursTotal: 45
+  credits: 3
+- code: TLB353
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Parasitologie Clinique 2  - Hématologie Clinique 3 - Laboratoire
+  hoursCM: 40
+  hoursTD: 8
+  hoursTP: 45
+  hoursTPE: 12
+  hoursTotal: 105
+  credits: 7
+- code: TLB354
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Bactériologie Clinique 3  - Laboratoire-Virologie
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: TLB355
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie analytique - Laboratoire
+  hoursCM: 15
+  hoursTD: 4
+  hoursTP: 5
+  hoursTPE: 6
+  hoursTotal: 30
+  credits: 2
+- code: TLB356
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage de santé communautaire 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB357
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Initiation à la recherche - TIC -
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+- code: TLB361
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Microbiologie de l’environnement – Microbiologie des aliments
+  hoursCM: 50
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 75
+  credits: 5
+- code: TLB362
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Histopathologie – Cytologiehumaine
+  hoursCM: 40
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 60
+  credits: 4
+- code: TLB363
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Biochimie Clinique 3  - Parasitologie Clinique 3 - Laboratoire
+  hoursCM: 0
+  hoursTD: 30
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+- code: TLB364
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Biologiemoléculaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 30
+  credits: 2
+- code: TLB365
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 5
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB366
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 6
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TLB367
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Projettutoré
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 15
+  hoursTPE: 20
+  hoursTotal: 45
+  credits: 3
+- code: TPH111
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie-Physiologie I, Biologie Cellulaire, Histologie, Embryologie
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH112
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: 'Microbiologie I : Bactériologie-Parasitologie'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH113
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Chimie générale et Biochimie
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+- code: TPH114
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sciences Sociale I : Sociologies Médicale, Anthropologie'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH115
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Introduction Aux Soins Infirmiers I : Généralités- Concepts-Histoire-Théories- Développement
+    Humain'
+  hoursCM: 50
+  hoursTD: 25
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: TPH116
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Hospitalier I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH117
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue, Techniques de l’information et de la communication I
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH121
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et Physiologie II
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH122
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie-Mycologie-Immunologie)
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH123
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Généralités sur les Soins Infirmiers II : Sciences Des Soins Infirmiers Et Premiers Soins'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH124
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sante Publique I : Epidémiologie-Démographie-Sante Environnement et Promotion de la Santé'
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH125
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins Infirmiers Médicaux I, Ethique Professionnelle et Déontologie
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH126
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage hospitalier II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH127
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Anglais et Français spécialisés,  Techniques de l’information et de la communication II
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH231
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Chimie physique I, Chimie organique I
+  hoursCM: 60
+  hoursTD: 13
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 75
+  credits: 5
+- code: TPH232
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: 'Chimie physique I : Pratique, Chimie organique I : Pratique'
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 35
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH233
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmaceutique I et Pharmacognosie I, Pharmaceutique I et Pharmacognosie I : Pratique'
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 30
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH234
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmacologie clinique I, Pharmacologie clinique I : Pratique I'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: TPH235
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Chimie pharmaceutique I, Chimie pharmaceutique I : Pratique'
+  hoursCM: 0
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH236
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage hospitalier III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH237
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Formation bilingue, Techniques de l’information et de la communication III, Introduction à la
+    Recherche Opérationnelle
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH241
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: 'Analyse Pharmaceutique I, Analyse Pharmaceutique I : Pratique, Chimie Organique II'
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH242
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Epidémiologie, Prophylaxie et Vaccinations
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH243
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pharmaceutique II et Pharmacognosie II
+  hoursCM: 0
+  hoursTD: 30
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH244
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmaceutique II et Pharmacognosie II : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH245
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmacologie Clinique II et Médecine Alternative, Pharmacologie Clinique II : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH246
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Hospitalier IV
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH247
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Recherche opérationnelle II, Biostatique I, Système d’information sanitaire
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TPH351
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: 'Pratique de la Pharmacie communautaire et hospitalière Pratique de la Pharmacie communautaire
+    et hospitalière : Pratique, management de Pharmacie'
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH352
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: La Gestion des soins de sante
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH353
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmaceutique III et Pharmacognosie III, Pharmaceutique III et Pharmacognosie III : Pratique'
+  hoursCM: 40
+  hoursTD: 18
+  hoursTP: 30
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH354
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmacologie clinique III, Pharmacologie clinique III : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH355
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie pharmaceutique III
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH356
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Hospitalier V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH357
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit de la Santé,  Médecine du Travail, Biostatistique II
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH361
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Biotechnologie pharmaceutique, Législation pharmaceutique
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH362
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie de la Santé
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH363
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmaceutique IV et Pharmacognosie IV, Pharmaceutique IV et Pharmacognosie IV : Pratique'
+  hoursCM: 40
+  hoursTD: 20
+  hoursTP: 28
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH364
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmacologie clinique IV, Pharmacologie clinique IV :'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH365
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie pharmaceutique IV
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH366
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Hospitalier VI
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH367
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Education civique et éthique, Droit de la Sante, Projet de Recherche
+  hoursCM: 29
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: IMM111
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Chimie - physique
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM112
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Electronique
+  hoursCM: 10
+  hoursTD: 15
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM113
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Mathématiques - statistiques
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM114
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Anatomie radiologie
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM115
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Physiques des radiations de la résonance magnétique des ultrasons et physique nucléaire, Anatomie
+    physiologie et générale
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM116
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Biologie - Biochimie - Microbiologie
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM117
+  programCode: IMM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Méthodes de travail, Formation bilingue I, Techniques de l’information et de la communication
+    I
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM121
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Psychologie et relation d’aide  - Hygiène générale
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM122
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Techniques des soins - Nursing - Premiers soins I, Relation communication avec le patient, Epidémiologie
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM123
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Radioprotection et effets biologiques des radiations
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM124
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Ergonomie, Description générale des appareils et technologie
+  hoursCM: 30
+  hoursTD: 20
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM125
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Travaux pratiques de chimie, microbiologie, physique et électricité
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM126
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage dosimétrie et Stage échographie
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 45
+  hoursTPE: 15
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: IMM127
+  programCode: IMM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Français - Anglais médical
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM231
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Radio pharmacologie et produit de contraste,  Médecine nucléaire et radiochimie
+  hoursCM: 40
+  hoursTD: 20
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM232
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Radioprotection   et  effets   biologiques   des  radiations ionisantes, Informatique appliquée
+    à l’imagerie I
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM233
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Techniques de positionnement et de formation d’images I (IM2TECDOGY,  IM2 TUrThEx, IM2TAUHGCC)
+  hoursCM: 30
+  hoursTD: 20
+  hoursTP: 35
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: IMM234
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Techniques d’enregistrement, de traitement et d’impression d’images 1 (IM2TRTLM1)
+  hoursCM: 20
+  hoursTD: 20
+  hoursTP: 30
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM235
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Gestion Hospitalière
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM236
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage IRM et Aptitude IRM
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 45
+  hoursTPE: 15
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: IMM237
+  programCode: IMM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Formation bilingue II, Techniques de l’information et de la communication II et Education civique
+    et éthique
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM241
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pathologies générales + Hématologie
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM242
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Techniques des soins - Nursing - Premiers soins II
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM243
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Santé communautaire, Informatique appliquée à l’imagerie II
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM244
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Contrôle de qualité en radiologie conventionnelle et du patient
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM245
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Education pour la santé et cycle de vie
+  hoursCM: 30
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM246
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage médecine nucléaire, Stage  scanner et aptitude
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 60
+  hoursTPE: 30
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: IMM247
+  programCode: IMM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Initiation à la recherche + Economie Générale
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM351
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Planification familiale, santé maternelle et infantile
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM352
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: 'Techniques de position d’image : Radio-conventionnelle, Dosimétrie, IRM - pédiatrie'
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM353
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Pathologies spéciales pédiatries- ORL
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 20
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: IMM354
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Pathologies spéciales gynécologiques et neurologiques
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM355
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Informatique appliquée à l’imagerie III
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM356
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage imagerie conventionnelle
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 45
+  hoursTPE: 15
+  hoursTotal: 60
+  credits: 4
+  isInternship: true
+- code: IMM357
+  programCode: IMM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Environnement juridique
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM361
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Angiographie et radio interventionnelle
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: IMM362
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Droit spécifique et organisation du travail
+  hoursCM: 30
+  hoursTD: 15
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: IMM363
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Imagerie pédiatrique, Dosimétrie
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: IMM364
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage examens spéciaux et salle d’opération
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 55
+  hoursTPE: 20
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: IMM365
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Imagerie d’urgence
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 55
+  hoursTPE: 20
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: IMM366
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage professionnel
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 55
+  hoursTPE: 20
+  hoursTotal: 75
+  credits: 5
+  isInternship: true
+- code: IMM367
+  programCode: IMM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Français – Anglais médical
+  hoursCM: 20
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3

@@ -9,13 +9,21 @@
  *  - "L'admin peut-il corriger une note à la place d'un enseignant ?"
  */
 import { test } from "@playwright/test";
-import { CREDENTIALS, SEED_DATA, capture, loginAs, pause } from "../fixtures/auth";
+import {
+	CREDENTIALS,
+	capture,
+	loginAs,
+	pause,
+	SEED_DATA,
+} from "../fixtures/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCÉNARIO 1 : Dr. Mballa saisit les notes de son CC d'Anatomie Humaine
 // Question : "Comment l'enseignant procède-t-il pour noter tous ses étudiants ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("06 - Saisie des notes CC Anatomie — Dr. Mballa (flux complet)", async ({ page }) => {
+test("06 - Saisie des notes CC Anatomie — Dr. Mballa (flux complet)", async ({
+	page,
+}) => {
 	await loginAs(page, "teacher");
 
 	// ── ÉTAPE 1 : Dashboard enseignant — rappel de l'examen en attente ────────
@@ -132,7 +140,9 @@ test("06 - Saisie des notes CC Anatomie — Dr. Mballa (flux complet)", async ({
 
 	// ── ÉTAPE 9 : Enregistrer les notes ──────────────────────────────────────
 	const saveButton = page
-		.locator('button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Sauvegarder"), button:has-text("Submit")')
+		.locator(
+			'button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Sauvegarder"), button:has-text("Submit")',
+		)
 		.first();
 	if (await saveButton.isVisible()) {
 		await saveButton.scrollIntoViewIfNeeded();
@@ -157,7 +167,9 @@ test("06 - Saisie des notes CC Anatomie — Dr. Mballa (flux complet)", async ({
 // SCÉNARIO 2 : Kombo Francis saisit les notes de Comptabilité
 // Question : "Chaque enseignant travaille indépendamment sur ses propres cours ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("07 - Saisie des notes CC Comptabilité — Kombo Francis", async ({ page }) => {
+test("07 - Saisie des notes CC Comptabilité — Kombo Francis", async ({
+	page,
+}) => {
 	// Connexion d'un deuxième enseignant sur un autre cours
 	await page.goto("/auth/login");
 	await page.waitForLoadState("networkidle");
@@ -235,7 +247,9 @@ test("07 - Saisie des notes CC Comptabilité — Kombo Francis", async ({ page }
 
 	// Enregistrer
 	const saveBtn = page
-		.locator('button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Sauvegarder")')
+		.locator(
+			'button:has-text("Enregistrer"), button:has-text("Save"), button:has-text("Sauvegarder")',
+		)
 		.first();
 	if (await saveBtn.isVisible()) {
 		await saveBtn.scrollIntoViewIfNeeded();
@@ -249,7 +263,9 @@ test("07 - Saisie des notes CC Comptabilité — Kombo Francis", async ({ page }
 // SCÉNARIO 3 : L'admin supervise et vérifie l'avancement de la saisie
 // Question : "Comment l'admin sait-il quels cours ont été notés et lesquels sont en attente ?"
 // ─────────────────────────────────────────────────────────────────────────────
-test("08 - Supervision admin : avancement et vérification de la saisie des notes", async ({ page }) => {
+test("08 - Supervision admin : avancement et vérification de la saisie des notes", async ({
+	page,
+}) => {
 	await loginAs(page, "admin");
 
 	// ── ÉTAPE 1 : Vue export des notes — tableau de bord de la saisie ─────────
@@ -285,7 +301,9 @@ test("08 - Supervision admin : avancement et vérification de la saisie des note
 	// ── ÉTAPE 4 : Bouton export Excel/PDF ────────────────────────────────────
 	// "Comment exporter ce tableau en PDF pour l'imprimer ?"
 	const exportBtn = page
-		.locator('button:has-text("Exporter"), button:has-text("Export"), button:has-text("Télécharger"), button:has-text("Download")')
+		.locator(
+			'button:has-text("Exporter"), button:has-text("Export"), button:has-text("Télécharger"), button:has-text("Download")',
+		)
 		.first();
 	if (await exportBtn.isVisible()) {
 		await exportBtn.scrollIntoViewIfNeeded();

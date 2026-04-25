@@ -1,15 +1,14 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
+	diplomationApiCallLogs,
 	diplomationApiKeys,
+	diplomationDocuments,
 	type NewDiplomationApiKey,
 } from "@/db/schema/app-schema";
 
 export async function create(data: NewDiplomationApiKey) {
-	const [item] = await db
-		.insert(diplomationApiKeys)
-		.values(data)
-		.returning();
+	const [item] = await db.insert(diplomationApiKeys).values(data).returning();
 	return item;
 }
 
@@ -49,6 +48,88 @@ export async function revoke(id: string, institutionId: string) {
 		)
 		.returning();
 	return item;
+}
+
+export async function getActivityStats(institutionId: string, days = 30) {
+	const since = new Date();
+	since.setDate(since.getDate() - days);
+
+	const rows = await db
+		.select({
+			date: sql<string>`date_trunc('day', ${diplomationDocuments.generatedAt})::date::text`,
+			apiKeyId: diplomationDocuments.generatedByApiKeyId,
+			count: sql<number>`cast(count(*) as integer)`,
+		})
+		.from(diplomationDocuments)
+		.where(
+			and(
+				eq(diplomationDocuments.institutionId, institutionId),
+				gte(diplomationDocuments.generatedAt, since),
+			),
+		)
+		.groupBy(
+			sql`date_trunc('day', ${diplomationDocuments.generatedAt})`,
+			diplomationDocuments.generatedByApiKeyId,
+		)
+		.orderBy(sql`date_trunc('day', ${diplomationDocuments.generatedAt}) asc`);
+
+	const keyIds = [
+		...new Set(rows.map((r) => r.apiKeyId).filter(Boolean)),
+	] as string[];
+
+	const keyLabels =
+		keyIds.length > 0
+			? await db
+					.select({
+						id: diplomationApiKeys.id,
+						label: diplomationApiKeys.label,
+					})
+					.from(diplomationApiKeys)
+					.where(inArray(diplomationApiKeys.id, keyIds))
+			: [];
+
+	return { rows, keyLabels };
+}
+
+export async function getCallStats(institutionId: string, days = 30) {
+	const since = new Date();
+	since.setDate(since.getDate() - days);
+
+	const rows = await db
+		.select({
+			date: sql<string>`date_trunc('day', ${diplomationApiCallLogs.calledAt})::date::text`,
+			apiKeyId: diplomationApiCallLogs.apiKeyId,
+			count: sql<number>`cast(count(*) as integer)`,
+		})
+		.from(diplomationApiCallLogs)
+		.where(
+			and(
+				eq(diplomationApiCallLogs.institutionId, institutionId),
+				gte(diplomationApiCallLogs.calledAt, since),
+			),
+		)
+		.groupBy(
+			sql`date_trunc('day', ${diplomationApiCallLogs.calledAt})`,
+			diplomationApiCallLogs.apiKeyId,
+		)
+		.orderBy(sql`date_trunc('day', ${diplomationApiCallLogs.calledAt}) asc`);
+
+	const keyIds = [
+		...new Set(rows.map((r) => r.apiKeyId).filter(Boolean)),
+	] as string[];
+
+	const keyLabels =
+		keyIds.length > 0
+			? await db
+					.select({
+						id: diplomationApiKeys.id,
+						label: diplomationApiKeys.label,
+					})
+					.from(diplomationApiKeys)
+					.where(inArray(diplomationApiKeys.id, keyIds))
+			: [];
+
+	return { rows, keyLabels };
 }
 
 export async function updateWebhook(

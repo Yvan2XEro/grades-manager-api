@@ -44,12 +44,12 @@ export const SEED_DATA = {
 		comptaA: "COMPT25-BTS1A",
 	},
 	courses: {
-		anatomie: "Anatomie Humaine",      // ANAT101
-		physiologie: "Physiologie",         // PHYS101
-		soins: "Soins de Base",            // SOIN101
+		anatomie: "Anatomie Humaine", // ANAT101
+		physiologie: "Physiologie", // PHYS101
+		soins: "Soins de Base", // SOIN101
 		compta: "Introduction à la Comptabilité", // COMPT101
 		comptaAnalytique: "Comptabilité Analytique", // COMPT102
-		finance: "Gestion Financière",      // FIN101
+		finance: "Gestion Financière", // FIN101
 	},
 	exams: {
 		anatomieCC: "Contrôle Continu Anatomie",

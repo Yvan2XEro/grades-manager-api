@@ -5,7 +5,6 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { TeachingUnitCoursesTable } from "@/components/admin/TeachingUnitCoursesTable";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
 type TeachingUnit = {

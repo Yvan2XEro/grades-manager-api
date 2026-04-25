@@ -1,20 +1,30 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { KeyRound, Pencil, PlusIcon, RefreshCw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { DebouncedSearchField } from "@/components/inputs";
+import {
+	ContextMenuItem,
+	ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
+import FormModal from "../../components/modals/FormModal";
 import { Badge } from "../../components/ui/badge";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
 import { DialogFooter } from "../../components/ui/dialog";
-import FormModal from "../../components/modals/FormModal";
 import {
 	Form,
 	FormControl,
@@ -24,7 +34,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import {
 	Select,
 	SelectContent,
@@ -44,13 +53,8 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
-import { FilterBar } from "@/components/ui/filter-bar";
-import { DebouncedSearchField } from "@/components/inputs";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { authClient } from "../../lib/auth-client";
 import type { RouterOutputs } from "../../utils/trpc";
@@ -68,7 +72,8 @@ const ASSIGNABLE_ROLES = [
 type DomainUser = RouterOutputs["users"]["list"]["items"][number];
 
 const getDisplayName = (user: DomainUser) =>
-	[user.firstName, user.lastName].filter(Boolean).join(" ") || user.primaryEmail;
+	[user.firstName, user.lastName].filter(Boolean).join(" ") ||
+	user.primaryEmail;
 
 const ALL_FILTER_ROLES = [
 	"administrator",
@@ -163,7 +168,9 @@ export default function UserManagement() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<DomainUser | null>(null);
 	const [userToDelete, setUserToDelete] = useState<DomainUser | null>(null);
-	const [roleFilter, setRoleFilter] = useState<"all" | (typeof ALL_FILTER_ROLES)[number]>("all");
+	const [roleFilter, setRoleFilter] = useState<
+		"all" | (typeof ALL_FILTER_ROLES)[number]
+	>("all");
 	const [statusFilter, setStatusFilter] = useState<
 		"all" | "active" | "inactive" | "suspended"
 	>("all");
@@ -193,7 +200,13 @@ export default function UserManagement() {
 		[t],
 	);
 
-	const { data, isLoading: isLoadingUsers, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+	const {
+		data,
+		isLoading: isLoadingUsers,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useInfiniteQuery({
 		queryKey: ["users", roleFilter, statusFilter],
 		queryFn: async ({ pageParam }) =>
 			trpcClient.users.list.query({
@@ -206,7 +219,9 @@ export default function UserManagement() {
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 	const users = data?.pages.flatMap((p) => p.items) ?? [];
-	const sentinelRef = useInfiniteScroll(fetchNextPage, { enabled: hasNextPage && !isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(fetchNextPage, {
+		enabled: hasNextPage && !isFetchingNextPage,
+	});
 	const displayedUsers = users.filter((user) => {
 		if (!debouncedSearch) return true;
 		const needle = debouncedSearch.toLowerCase();
@@ -380,9 +395,7 @@ export default function UserManagement() {
 	return (
 		<div className="space-y-6">
 			<div className="mb-4 flex items-center justify-between gap-3">
-				<h1 className="text-foreground">
-					{t("admin.users.title")}
-				</h1>
+				<h1 className="text-foreground">{t("admin.users.title")}</h1>
 				<Button onClick={openCreate}>
 					<PlusIcon className="h-4 w-4" />
 					{t("admin.users.actions.create")}
@@ -390,13 +403,25 @@ export default function UserManagement() {
 			</div>
 
 			<FilterBar
-				activeCount={[roleFilter !== "all", statusFilter !== "all", !!debouncedSearch].filter(Boolean).length}
-				onReset={() => { setRoleFilter("all"); setStatusFilter("all"); setSearch(""); }}
+				activeCount={
+					[
+						roleFilter !== "all",
+						statusFilter !== "all",
+						!!debouncedSearch,
+					].filter(Boolean).length
+				}
+				onReset={() => {
+					setRoleFilter("all");
+					setStatusFilter("all");
+					setSearch("");
+				}}
 				defaultOpen
 			>
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Recherche</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							Recherche
+						</p>
 						<DebouncedSearchField
 							value={search}
 							onChange={setSearch}
@@ -404,13 +429,17 @@ export default function UserManagement() {
 						/>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">Rôle</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							Rôle
+						</p>
 						<Select value={roleFilter} onValueChange={setRoleFilter}>
 							<SelectTrigger>
 								<SelectValue placeholder={t("admin.users.filters.roles.all")} />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">{t("admin.users.filters.roles.all")}</SelectItem>
+								<SelectItem value="all">
+									{t("admin.users.filters.roles.all")}
+								</SelectItem>
 								{ALL_FILTER_ROLES.map((role) => (
 									<SelectItem key={role} value={role}>
 										{t(`admin.users.roles.${role}`, { defaultValue: role })}
@@ -420,16 +449,28 @@ export default function UserManagement() {
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.users.table.status")}</p>
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.users.table.status")}
+						</p>
 						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger>
-								<SelectValue placeholder={t("admin.users.filters.status.all")} />
+								<SelectValue
+									placeholder={t("admin.users.filters.status.all")}
+								/>
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">{t("admin.users.filters.status.all")}</SelectItem>
-								<SelectItem value="active">{t("admin.users.status.active")}</SelectItem>
-								<SelectItem value="inactive">{t("admin.users.status.inactive")}</SelectItem>
-								<SelectItem value="suspended">{t("admin.users.status.suspended")}</SelectItem>
+								<SelectItem value="all">
+									{t("admin.users.filters.status.all")}
+								</SelectItem>
+								<SelectItem value="active">
+									{t("admin.users.status.active")}
+								</SelectItem>
+								<SelectItem value="inactive">
+									{t("admin.users.status.inactive")}
+								</SelectItem>
+								<SelectItem value="suspended">
+									{t("admin.users.status.suspended")}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -465,109 +506,119 @@ export default function UserManagement() {
 				{isLoadingUsers ? (
 					<TableSkeleton columns={6} rows={8} />
 				) : (
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead className="w-10">
-								<Checkbox
-									checked={
-										selection.isAllSelected
-											? true
-											: selection.isSomeSelected
-												? "indeterminate"
-												: false
-									}
-									onCheckedChange={(checked) =>
-										selection.toggleAll(Boolean(checked))
-									}
-								/>
-							</TableHead>
-							<TableHead>{t("admin.users.table.name")}</TableHead>
-							<TableHead>{t("admin.users.table.email")}</TableHead>
-							<TableHead className="w-28">{t("admin.users.table.role")}</TableHead>
-							<TableHead className="w-24">{t("admin.users.table.status")}</TableHead>
-							<TableHead className="w-[100px] text-right">
-								{t("common.table.actions")}
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{displayedUsers.map((user) => (
-							<TableRow
-							key={user.id}
-							actions={
-								<>
-									<ContextMenuItem onSelect={() => openEdit(user)}>
-										<span>{t("common.actions.edit", { defaultValue: "Edit" })}</span>
-									</ContextMenuItem>
-									<ContextMenuSeparator />
-									<ContextMenuItem variant="destructive" onSelect={() => setUserToDelete(user)}>
-										<span>{t("common.actions.delete")}</span>
-									</ContextMenuItem>
-								</>
-							}
-						>
-								<TableCell className="w-10">
-									<Checkbox
-										checked={selection.isSelected(user.id)}
-										onCheckedChange={() => selection.toggle(user.id)}
-									/>
-								</TableCell>
-								<TableCell className="font-medium">
-									{getDisplayName(user)}
-								</TableCell>
-								<TableCell>{user.primaryEmail}</TableCell>
-								<TableCell>
-									{user.role
-										? t(
-												`admin.users.roles.${user.role}`,
-												{ defaultValue: user.role },
-											)
-										: ""}
-								</TableCell>
-								<TableCell>
-									<Badge
-										variant={user.status === "active" ? "default" : "secondary"}
-									>
-										{t(`admin.users.status.${user.status}`, {
-											defaultValue: user.status,
-										})}
-									</Badge>
-								</TableCell>
-								<TableCell className="text-right">
-									<div className="row-action-fade flex justify-end gap-1">
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="h-8 w-8"
-											onClick={() => openEdit(user)}
-											aria-label={t("admin.users.actions.edit")}
-										>
-											<Pencil className="h-3.5 w-3.5" />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => setUserToDelete(user)}
-											aria-label={t("common.actions.delete")}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-								</TableCell>
-							</TableRow>
-						))}
-						{displayedUsers.length === 0 && (
+					<Table>
+						<TableHeader>
 							<TableRow>
-								<TableCell colSpan={6} className="py-4 text-center">
-									{t("admin.users.empty")}
-								</TableCell>
+								<TableHead className="w-10">
+									<Checkbox
+										checked={
+											selection.isAllSelected
+												? true
+												: selection.isSomeSelected
+													? "indeterminate"
+													: false
+										}
+										onCheckedChange={(checked) =>
+											selection.toggleAll(Boolean(checked))
+										}
+									/>
+								</TableHead>
+								<TableHead>{t("admin.users.table.name")}</TableHead>
+								<TableHead>{t("admin.users.table.email")}</TableHead>
+								<TableHead className="w-28">
+									{t("admin.users.table.role")}
+								</TableHead>
+								<TableHead className="w-24">
+									{t("admin.users.table.status")}
+								</TableHead>
+								<TableHead className="w-[100px] text-right">
+									{t("common.table.actions")}
+								</TableHead>
 							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+						</TableHeader>
+						<TableBody>
+							{displayedUsers.map((user) => (
+								<TableRow
+									key={user.id}
+									actions={
+										<>
+											<ContextMenuItem onSelect={() => openEdit(user)}>
+												<span>
+													{t("common.actions.edit", { defaultValue: "Edit" })}
+												</span>
+											</ContextMenuItem>
+											<ContextMenuSeparator />
+											<ContextMenuItem
+												variant="destructive"
+												onSelect={() => setUserToDelete(user)}
+											>
+												<span>{t("common.actions.delete")}</span>
+											</ContextMenuItem>
+										</>
+									}
+								>
+									<TableCell className="w-10">
+										<Checkbox
+											checked={selection.isSelected(user.id)}
+											onCheckedChange={() => selection.toggle(user.id)}
+										/>
+									</TableCell>
+									<TableCell className="font-medium">
+										{getDisplayName(user)}
+									</TableCell>
+									<TableCell>{user.primaryEmail}</TableCell>
+									<TableCell>
+										{user.role
+											? t(`admin.users.roles.${user.role}`, {
+													defaultValue: user.role,
+												})
+											: ""}
+									</TableCell>
+									<TableCell>
+										<Badge
+											variant={
+												user.status === "active" ? "default" : "secondary"
+											}
+										>
+											{t(`admin.users.status.${user.status}`, {
+												defaultValue: user.status,
+											})}
+										</Badge>
+									</TableCell>
+									<TableCell className="text-right">
+										<div className="row-action-fade flex justify-end gap-1">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="h-8 w-8"
+												onClick={() => openEdit(user)}
+												aria-label={t("admin.users.actions.edit")}
+											>
+												<Pencil className="h-3.5 w-3.5" />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												onClick={() => setUserToDelete(user)}
+												aria-label={t("common.actions.delete")}
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							))}
+							{displayedUsers.length === 0 && (
+								<TableRow>
+									<TableCell colSpan={6} className="py-4 text-center">
+										{t("admin.users.empty")}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
 				)}
 			</div>
 
@@ -576,18 +627,30 @@ export default function UserManagement() {
 			<FormModal
 				isOpen={isModalOpen}
 				onClose={closeModal}
-				title={editingUser ? t("admin.users.form.editTitle") : t("admin.users.form.createTitle")}
+				title={
+					editingUser
+						? t("admin.users.form.editTitle")
+						: t("admin.users.form.createTitle")
+				}
 				maxWidth={editingUser ? "sm:max-w-xl" : "sm:max-w-4xl"}
 			>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						{/* Two-column layout in create mode; single-column in edit mode */}
-						<div className={editingUser ? "space-y-4" : "grid grid-cols-1 gap-x-8 md:grid-cols-2"}>
+						<div
+							className={
+								editingUser
+									? "space-y-4"
+									: "grid grid-cols-1 gap-x-8 md:grid-cols-2"
+							}
+						>
 							{/* Left column — Profile fields */}
 							<div className="space-y-4">
 								{!editingUser && (
 									<p className="font-semibold text-sm">
-										{t("admin.users.form.profileSection", { defaultValue: "Profile" })}
+										{t("admin.users.form.profileSection", {
+											defaultValue: "Profile",
+										})}
 									</p>
 								)}
 								<div className="grid gap-4 md:grid-cols-2">
@@ -596,7 +659,9 @@ export default function UserManagement() {
 										name="firstName"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.firstNameLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.firstNameLabel")}
+												</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -609,7 +674,9 @@ export default function UserManagement() {
 										name="lastName"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.lastNameLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.lastNameLabel")}
+												</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -637,7 +704,9 @@ export default function UserManagement() {
 										name="phone"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.phoneLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.phoneLabel")}
+												</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -650,16 +719,28 @@ export default function UserManagement() {
 										name="gender"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.genderLabel")}</FormLabel>
-												<Select value={field.value} onValueChange={field.onChange}>
+												<FormLabel>
+													{t("admin.users.form.genderLabel")}
+												</FormLabel>
+												<Select
+													value={field.value}
+													onValueChange={field.onChange}
+												>
 													<FormControl>
 														<SelectTrigger>
-															<SelectValue placeholder={t("admin.users.form.genderPlaceholder")} />
+															<SelectValue
+																placeholder={t(
+																	"admin.users.form.genderPlaceholder",
+																)}
+															/>
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
 														{genderOptions.map((option) => (
-															<SelectItem key={option.value} value={option.value}>
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
 																{option.label}
 															</SelectItem>
 														))}
@@ -676,9 +757,14 @@ export default function UserManagement() {
 										name="dateOfBirth"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.dateOfBirthLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.dateOfBirthLabel")}
+												</FormLabel>
 												<FormControl>
-													<DatePicker value={field.value ?? ""} onChange={field.onChange} />
+													<DatePicker
+														value={field.value ?? ""}
+														onChange={field.onChange}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -689,7 +775,9 @@ export default function UserManagement() {
 										name="placeOfBirth"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.placeOfBirthLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.placeOfBirthLabel")}
+												</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -704,7 +792,9 @@ export default function UserManagement() {
 										name="nationality"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.nationalityLabel")}</FormLabel>
+												<FormLabel>
+													{t("admin.users.form.nationalityLabel")}
+												</FormLabel>
 												<FormControl>
 													<Input {...field} />
 												</FormControl>
@@ -717,8 +807,13 @@ export default function UserManagement() {
 										name="status"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>{t("admin.users.form.statusLabel")}</FormLabel>
-												<Select value={field.value} onValueChange={field.onChange}>
+												<FormLabel>
+													{t("admin.users.form.statusLabel")}
+												</FormLabel>
+												<Select
+													value={field.value}
+													onValueChange={field.onChange}
+												>
 													<FormControl>
 														<SelectTrigger>
 															<SelectValue />
@@ -726,7 +821,10 @@ export default function UserManagement() {
 													</FormControl>
 													<SelectContent>
 														{statusOptions.map((option) => (
-															<SelectItem key={option.value} value={option.value}>
+															<SelectItem
+																key={option.value}
+																value={option.value}
+															>
 																{option.label}
 															</SelectItem>
 														))}
@@ -745,7 +843,9 @@ export default function UserManagement() {
 									<div className="flex items-center gap-2">
 										<KeyRound className="h-4 w-4 text-muted-foreground" />
 										<p className="font-semibold text-sm">
-											{t("admin.users.form.systemAccessSection", { defaultValue: "System Access" })}
+											{t("admin.users.form.systemAccessSection", {
+												defaultValue: "System Access",
+											})}
 										</p>
 									</div>
 									<FormField
@@ -754,15 +854,21 @@ export default function UserManagement() {
 										render={({ field }) => (
 											<FormItem className="flex items-center gap-3 rounded-lg border p-3">
 												<FormControl>
-													<Switch checked={field.value} onCheckedChange={field.onChange} />
+													<Switch
+														checked={field.value}
+														onCheckedChange={field.onChange}
+													/>
 												</FormControl>
 												<div className="space-y-0.5">
 													<FormLabel className="cursor-pointer text-sm">
-														{t("admin.users.form.canConnectLabel", { defaultValue: "Can log in" })}
+														{t("admin.users.form.canConnectLabel", {
+															defaultValue: "Can log in",
+														})}
 													</FormLabel>
 													<p className="text-muted-foreground text-xs">
 														{t("admin.users.form.canConnectDescription", {
-															defaultValue: "Creates a system account with login access",
+															defaultValue:
+																"Creates a system account with login access",
 														})}
 													</p>
 												</div>
@@ -778,20 +884,30 @@ export default function UserManagement() {
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.users.form.memberRoleLabel", { defaultValue: "Role" })}
+															{t("admin.users.form.memberRoleLabel", {
+																defaultValue: "Role",
+															})}
 														</FormLabel>
-														<Select value={field.value ?? ""} onValueChange={field.onChange}>
+														<Select
+															value={field.value ?? ""}
+															onValueChange={field.onChange}
+														>
 															<FormControl>
 																<SelectTrigger>
 																	<SelectValue
-																		placeholder={t("admin.users.form.memberRolePlaceholder", { defaultValue: "Select a role" })}
+																		placeholder={t(
+																			"admin.users.form.memberRolePlaceholder",
+																			{ defaultValue: "Select a role" },
+																		)}
 																	/>
 																</SelectTrigger>
 															</FormControl>
 															<SelectContent>
 																{ASSIGNABLE_ROLES.map((role) => (
 																	<SelectItem key={role} value={role}>
-																		{t(`admin.users.roles.${role}`, { defaultValue: role })}
+																		{t(`admin.users.roles.${role}`, {
+																			defaultValue: role,
+																		})}
 																	</SelectItem>
 																))}
 															</SelectContent>
@@ -806,7 +922,9 @@ export default function UserManagement() {
 												render={({ field }) => (
 													<FormItem>
 														<FormLabel>
-															{t("admin.users.form.passwordLabel", { defaultValue: "Password" })}
+															{t("admin.users.form.passwordLabel", {
+																defaultValue: "Password",
+															})}
 														</FormLabel>
 														<FormControl>
 															<div className="flex gap-2">
@@ -820,8 +938,16 @@ export default function UserManagement() {
 																	type="button"
 																	variant="outline"
 																	size="icon"
-																	onClick={() => form.setValue("password", generatePassword())}
-																	title={t("admin.users.form.generatePassword", { defaultValue: "Generate password" })}
+																	onClick={() =>
+																		form.setValue(
+																			"password",
+																			generatePassword(),
+																		)
+																	}
+																	title={t(
+																		"admin.users.form.generatePassword",
+																		{ defaultValue: "Generate password" },
+																	)}
 																>
 																	<RefreshCw className="h-4 w-4" />
 																</Button>

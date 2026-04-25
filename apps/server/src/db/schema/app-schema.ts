@@ -217,6 +217,7 @@ export const studyCycles = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
 		description: text("description"),
 		totalCreditsRequired: integer("total_credits_required")
 			.notNull()
@@ -300,8 +301,14 @@ export const programs = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
+		abbreviation: text("abbreviation"),
 		slug: text("slug").notNull(),
 		description: text("description"),
+		domainFr: text("domain_fr"),
+		domainEn: text("domain_en"),
+		specialiteFr: text("specialite_fr"),
+		specialiteEn: text("specialite_en"),
 		diplomaTitleFr: text("diploma_title_fr"),
 		diplomaTitleEn: text("diploma_title_en"),
 		attestationValidityFr: text("attestation_validity_fr"),
@@ -370,6 +377,34 @@ export const diplomationApiKeys = pgTable(
 );
 export type DiplomationApiKey = InferSelectModel<typeof diplomationApiKeys>;
 export type NewDiplomationApiKey = InferInsertModel<typeof diplomationApiKeys>;
+
+/** Per-request call log for diplomation API keys. */
+export const diplomationApiCallLogs = pgTable(
+	"diplomation_api_call_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		apiKeyId: text("api_key_id").references(() => diplomationApiKeys.id, {
+			onDelete: "cascade",
+		}),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		endpoint: text("endpoint").notNull(),
+		method: text("method").notNull(),
+		statusCode: integer("status_code"),
+		calledAt: timestamp("called_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_call_logs_key").on(t.apiKeyId),
+		index("idx_diplomation_call_logs_institution").on(t.institutionId),
+		index("idx_diplomation_call_logs_called_at").on(t.calledAt),
+	],
+);
+export type DiplomationApiCallLog = InferSelectModel<
+	typeof diplomationApiCallLogs
+>;
 
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
@@ -840,6 +875,7 @@ export const institutions = pgTable(
 				onDelete: "set null",
 			},
 		),
+		abbreviation: text("abbreviation"),
 		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
@@ -1469,6 +1505,7 @@ export const deliberations = pgTable(
 		stats: jsonb("stats").$type<DeliberationStats>(),
 		openedAt: timestamp("opened_at", { withTimezone: true }),
 		closedAt: timestamp("closed_at", { withTimezone: true }),
+		juryNumber: text("jury_number"),
 		signedAt: timestamp("signed_at", { withTimezone: true }),
 		signedBy: text("signed_by").references(() => domainUsers.id, {
 			onDelete: "set null",

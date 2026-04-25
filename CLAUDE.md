@@ -279,3 +279,29 @@ Webhooks are dispatched non-blocking (fire-and-forget) with HMAC-SHA256 signatur
 8. **Notifications have no explicit "failed" state** — Only `pending` and `sent`. Delivery failures are logged to console, not persisted.
 
 9. **`RETAKES_FEATURE_FLAG`** gates whether students can retry failed courses. Disabled by default.
+
+## Remotion Video Presentation (`apps/remotion/`)
+
+The project includes a Remotion video presentation in `apps/remotion/`.
+
+### Commands
+```bash
+cd apps/remotion
+bun install                        # Install deps before first use
+bun run dev                        # Open Remotion Studio (live preview)
+bun run render                     # Render all compositions to out/
+bun run render -- --composition=<id>  # Render a specific composition
+```
+
+### Structure
+- `src/Root.tsx` — registers all compositions via `<Composition>`
+- `src/compositions/` — one file per scene/composition
+- `src/components/` — shared UI components (cards, text, icons…)
+- `src/lib/theme.ts` — colors, fonts, spacing constants
+
+### Rules when editing Remotion code
+1. Always `bun install` inside `apps/remotion/` before rendering if deps changed.
+2. Every new composition must be registered in `src/Root.tsx`.
+3. Use `useCurrentFrame()` + `interpolate()` / `spring()` for all animations — never CSS transitions.
+4. Render command: `bun run render` from inside `apps/remotion/`.
+5. Output lands in `apps/remotion/out/`. Never commit rendered videos to git.

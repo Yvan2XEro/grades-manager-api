@@ -1,11 +1,14 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { CalendarDays, Loader2, LockOpen, Trash2, Unlock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
-import { FilterBar } from "@/components/ui/filter-bar";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -25,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { FilterBar } from "@/components/ui/filter-bar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
@@ -35,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
+import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 
 type CourseEnrollmentListResponse =
@@ -192,7 +197,9 @@ const EnrollmentManagement = () => {
 	const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 	const [selectedClass, setSelectedClass] = useState<string>("");
 	const [selectedSemester, setSelectedSemester] = useState<string>("");
-	const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "active" | "completed" | "withdrawn">("all");
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "pending" | "active" | "completed" | "withdrawn"
+	>("all");
 
 	const { data: semesters } = useQuery(
 		trpc.semesters.list.queryOptions({ limit: 100 }),
@@ -206,7 +213,12 @@ const EnrollmentManagement = () => {
 	);
 
 	const enrollmentsQuery = useInfiniteQuery({
-		queryKey: ["enrollments", selectedClass, selectedAcademicYear, statusFilter],
+		queryKey: [
+			"enrollments",
+			selectedClass,
+			selectedAcademicYear,
+			statusFilter,
+		],
 		queryFn: async ({ pageParam }) =>
 			trpcClient.enrollments.list.query({
 				classId: selectedClass || undefined,
@@ -220,7 +232,10 @@ const EnrollmentManagement = () => {
 		enabled: Boolean(selectedAcademicYear && selectedClass),
 	});
 
-	const sentinelRef = useInfiniteScroll(enrollmentsQuery.fetchNextPage, { enabled: enrollmentsQuery.hasNextPage && !enrollmentsQuery.isFetchingNextPage });
+	const sentinelRef = useInfiniteScroll(enrollmentsQuery.fetchNextPage, {
+		enabled:
+			enrollmentsQuery.hasNextPage && !enrollmentsQuery.isFetchingNextPage,
+	});
 
 	const studentsQuery = useQuery({
 		...trpc.students.list.queryOptions({
@@ -391,7 +406,8 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
-	const enrollments = enrollmentsQuery.data?.pages.flatMap((p) => p.items) ?? [];
+	const enrollments =
+		enrollmentsQuery.data?.pages.flatMap((p) => p.items) ?? [];
 	const selection = useRowSelection(enrollments);
 
 	const bulkDeleteMutation = useMutation({
@@ -478,50 +494,159 @@ const EnrollmentManagement = () => {
 	return (
 		<div className="space-y-6">
 			<FilterBar
-			activeCount={[!!selectedAcademicYear, !!selectedClass, !!selectedSemester, statusFilter !== "all"].filter(Boolean).length}
-			onReset={() => { setSelectedAcademicYear(''); setSelectedClass(''); setSelectedSemester(''); setStatusFilter('all'); }}
-			defaultOpen
-		>
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-				<div className="space-y-1.5">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.year", { defaultValue: "Année académique" })}</p>
-					<AcademicYearSelect value={selectedAcademicYear || null} onChange={(value) => { setSelectedAcademicYear(value); setSelectedClass(''); setSelectedSemester(''); }} placeholder={t("admin.enrollments.selectYear", { defaultValue: "Sélectionner une année" })} />
+				activeCount={
+					[
+						!!selectedAcademicYear,
+						!!selectedClass,
+						!!selectedSemester,
+						statusFilter !== "all",
+					].filter(Boolean).length
+				}
+				onReset={() => {
+					setSelectedAcademicYear("");
+					setSelectedClass("");
+					setSelectedSemester("");
+					setStatusFilter("all");
+				}}
+				defaultOpen
+			>
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.enrollments.filters.year", {
+								defaultValue: "Année académique",
+							})}
+						</p>
+						<AcademicYearSelect
+							value={selectedAcademicYear || null}
+							onChange={(value) => {
+								setSelectedAcademicYear(value);
+								setSelectedClass("");
+								setSelectedSemester("");
+							}}
+							placeholder={t("admin.enrollments.selectYear", {
+								defaultValue: "Sélectionner une année",
+							})}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.enrollments.filters.class", { defaultValue: "Classe" })}
+						</p>
+						<Select
+							value={selectedClass}
+							onValueChange={(value) => setSelectedClass(value)}
+							disabled={!selectedAcademicYear}
+						>
+							<SelectTrigger data-testid="class-select" className="w-full">
+								<SelectValue
+									placeholder={t("admin.enrollments.selectClass", {
+										defaultValue: "Sélectionner une classe",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{classes?.items?.map((klass) => (
+									<SelectItem key={klass.id} value={klass.id}>
+										{klass.name}
+										{klass.programOption?.name
+											? ` • ${klass.programOption.name}`
+											: ""}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.enrollments.filters.semester", {
+								defaultValue: "Semestre",
+							})}
+						</p>
+						<SemesterSelect
+							value={selectedSemester || null}
+							onChange={(v) => setSelectedSemester(v ?? "")}
+							disabled={!selectedClass}
+							placeholder={t("admin.enrollments.selectSemester", {
+								defaultValue: "Sélectionner un semestre",
+							})}
+						/>
+					</div>
+					<div className="space-y-1.5">
+						<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+							{t("admin.enrollments.fields.status")}
+						</p>
+						<Select
+							value={statusFilter}
+							onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+							disabled={!selectedClass}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder={t("admin.enrollments.status.all")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									{t("admin.enrollments.status.all")}
+								</SelectItem>
+								<SelectItem value="active">
+									{t("admin.enrollments.status.active")}
+								</SelectItem>
+								<SelectItem value="pending">
+									{t("admin.enrollments.status.pending")}
+								</SelectItem>
+								<SelectItem value="completed">
+									{t("admin.enrollments.status.completed")}
+								</SelectItem>
+								<SelectItem value="withdrawn">
+									{t("admin.enrollments.status.withdrawn")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
-				<div className="space-y-1.5">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.class", { defaultValue: "Classe" })}</p>
-					<Select value={selectedClass} onValueChange={(value) => setSelectedClass(value)} disabled={!selectedAcademicYear}>
-						<SelectTrigger data-testid="class-select" className="w-full"><SelectValue placeholder={t("admin.enrollments.selectClass", { defaultValue: "Sélectionner une classe" })} /></SelectTrigger>
-						<SelectContent>{classes?.items?.map((klass) => (<SelectItem key={klass.id} value={klass.id}>{klass.name}{klass.programOption?.name ? ` • ${klass.programOption.name}` : ""}</SelectItem>))}</SelectContent>
-					</Select>
-				</div>
-				<div className="space-y-1.5">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.filters.semester", { defaultValue: "Semestre" })}</p>
-					<SemesterSelect value={selectedSemester || null} onChange={(v) => setSelectedSemester(v ?? '')} disabled={!selectedClass} placeholder={t("admin.enrollments.selectSemester", { defaultValue: "Sélectionner un semestre" })} />
-				</div>
-				<div className="space-y-1.5">
-					<p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">{t("admin.enrollments.fields.status")}</p>
-					<Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} disabled={!selectedClass}>
-						<SelectTrigger><SelectValue placeholder={t("admin.enrollments.status.all")} /></SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("admin.enrollments.status.all")}</SelectItem>
-							<SelectItem value="active">{t("admin.enrollments.status.active")}</SelectItem>
-							<SelectItem value="pending">{t("admin.enrollments.status.pending")}</SelectItem>
-							<SelectItem value="completed">{t("admin.enrollments.status.completed")}</SelectItem>
-							<SelectItem value="withdrawn">{t("admin.enrollments.status.withdrawn")}</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
-			{selectedClass && (
-				<div className="mt-3 flex flex-wrap gap-4 rounded-lg border border-dashed bg-muted/30 px-4 py-2.5 text-xs text-muted-foreground">
-					<span><span className="font-medium text-foreground">{studentsQuery.data?.items?.length ?? 0}</span> étudiant(s)</span>
-					{selectedClassDetails?.cycle?.name && <span>Cycle: <span className="font-medium text-foreground">{selectedClassDetails.cycle.name}</span></span>}
-					{selectedClassDetails?.cycleLevel?.name && <span>Niveau: <span className="font-medium text-foreground">{selectedClassDetails.cycleLevel.name}</span></span>}
-					{selectedClassDetails?.programOption?.name && <span>Option: <span className="font-medium text-foreground">{selectedClassDetails.programOption.name}</span></span>}
-					{windowStatus?.status && <span>Fenêtre: <span className="font-medium text-foreground">{windowStatus.status}</span></span>}
-				</div>
-			)}
-		</FilterBar>
+				{selectedClass && (
+					<div className="mt-3 flex flex-wrap gap-4 rounded-lg border border-dashed bg-muted/30 px-4 py-2.5 text-muted-foreground text-xs">
+						<span>
+							<span className="font-medium text-foreground">
+								{studentsQuery.data?.items?.length ?? 0}
+							</span>{" "}
+							étudiant(s)
+						</span>
+						{selectedClassDetails?.cycle?.name && (
+							<span>
+								Cycle:{" "}
+								<span className="font-medium text-foreground">
+									{selectedClassDetails.cycle.name}
+								</span>
+							</span>
+						)}
+						{selectedClassDetails?.cycleLevel?.name && (
+							<span>
+								Niveau:{" "}
+								<span className="font-medium text-foreground">
+									{selectedClassDetails.cycleLevel.name}
+								</span>
+							</span>
+						)}
+						{selectedClassDetails?.programOption?.name && (
+							<span>
+								Option:{" "}
+								<span className="font-medium text-foreground">
+									{selectedClassDetails.programOption.name}
+								</span>
+							</span>
+						)}
+						{windowStatus?.status && (
+							<span>
+								Fenêtre:{" "}
+								<span className="font-medium text-foreground">
+									{windowStatus.status}
+								</span>
+							</span>
+						)}
+					</div>
+				)}
+			</FilterBar>
 
 			<Card>
 				<CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
