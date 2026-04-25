@@ -127,7 +127,9 @@
       "Bash(awk 'NR>=669 && NR<=2129 {print}' \"C:/tmp/bts_users.yaml\")",
       "Bash(awk 'NR>=2131 && NR<=2796 {print}' \"C:/tmp/bts_users.yaml\")",
       "Bash(awk 'NR>=2798 {print}' \"C:/tmp/bts_users.yaml\")",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git update-index *)"
     ]
   },
   "enabledMcpjsonServers": [
