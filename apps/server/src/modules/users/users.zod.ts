@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { businessRoles, domainStatuses, genders } from "@/db/schema/app-schema";
+import { domainStatuses, genders } from "@/db/schema/app-schema";
 
 const profileSchema = z.object({
 	firstName: z.string().min(1),

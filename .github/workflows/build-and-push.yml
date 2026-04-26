@@ -11,8 +11,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  SERVER_IMAGE: ghcr.io/yvan2xero/grades-manager-server
-  WEB_IMAGE: ghcr.io/yvan2xero/grades-manager-web
+  SERVER_IMAGE: ghcr.io/yvan2xero/tkams-server
+  WEB_IMAGE: ghcr.io/yvan2xero/tkams-web
 
 jobs:
   docker:
@@ -47,9 +47,6 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: true
-          build-args: |
-            VITE_SERVER_URL=${{ secrets.VITE_SERVER_URL }}
-            VITE_DEFAULT_ORGANIZATION_SLUG=${{ secrets.VITE_DEFAULT_ORGANIZATION_SLUG }}
           tags: |
             ${{ env.WEB_IMAGE }}:latest
             ${{ env.WEB_IMAGE }}:${{ github.sha }}

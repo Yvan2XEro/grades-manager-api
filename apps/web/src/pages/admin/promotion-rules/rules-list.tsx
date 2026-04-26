@@ -18,24 +18,13 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-
-type PromotionRule = {
-	id: string;
-	name: string;
-	description: string;
-	ruleset: Record<string, unknown>;
-	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
-};
+import type { PromotionRule } from "@/utils/type";
 
 export function RulesListPage() {
 	const { t } = useTranslation();
@@ -121,7 +110,7 @@ export function RulesListPage() {
 
 		try {
 			ruleset = JSON.parse(rulesetText);
-		} catch (error) {
+		} catch (_error) {
 			toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 			return;
 		}
@@ -145,7 +134,7 @@ export function RulesListPage() {
 		if (rulesetText) {
 			try {
 				ruleset = JSON.parse(rulesetText);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(t("admin.promotionRules.rulesList.toast.invalidJson"));
 				return;
 			}

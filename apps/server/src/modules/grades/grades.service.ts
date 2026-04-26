@@ -4,7 +4,6 @@ import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
 import {
-	type ExamActorAccess,
 	type ExamEditorActor,
 	ensureActorCanEditExam,
 } from "../exam-grade-editors/exam-grade-editors.service";

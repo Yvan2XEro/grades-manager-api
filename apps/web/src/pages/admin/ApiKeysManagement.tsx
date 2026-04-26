@@ -48,15 +48,7 @@ import {
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { trpc, trpcClient } from "../../utils/trpc";
-
-type ApiKey = {
-	id: string;
-	label: string;
-	isActive: boolean;
-	webhookUrl: string | null;
-	lastUsedAt: string | Date | null;
-	createdAt: string | Date;
-};
+import type { ApiKey } from "../../utils/type";
 
 export default function ApiKeysManagement() {
 	const { t } = useTranslation();

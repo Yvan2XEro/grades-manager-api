@@ -101,7 +101,9 @@ export async function list(opts: {
 			ilike(schema.domainUsers.primaryEmail, likeValue),
 			ilike(schema.students.registrationNumber, likeValue),
 		);
-		extraConditions.push(qCond);
+		if (qCond) {
+			extraConditions.push(qCond);
+		}
 	}
 	if (opts.cursor) {
 		extraConditions.push(gt(schema.students.id, opts.cursor));

@@ -19,6 +19,12 @@ import { auth, db } from "./test-db";
 const DEFAULT_DATE = new Date("1990-01-01");
 const DEFAULT_PLACE = "Yaoundé";
 
+const toDateOnlyString = (value: unknown, fallback: string) => {
+	if (typeof value === "string") return value;
+	if (value instanceof Date) return value.toISOString().slice(0, 10);
+	return fallback;
+};
+
 /**
  * Creates a test organization and institution, then sets it as the global test institution.
  * Call this at the beginning of test files that need tenant context.
@@ -79,7 +85,7 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 			permissions: buildPermissions(null),
 			institution,
 			organizationId: institution.organizationId ?? null,
-		} as Context;
+		} as unknown as Context;
 	}
 	const resolvedMemberId =
 		opts.profileOverrides?.memberId !== undefined
@@ -126,7 +132,7 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 		permissions: buildPermissions(role),
 		institution,
 		organizationId: institution.organizationId ?? null,
-	} as Context;
+	} as unknown as Context;
 }
 
 export const asAdmin = () => makeTestContext({ role: "administrator" });
@@ -135,7 +141,7 @@ export const asUser = () => makeTestContext({ role: "student" });
 
 const defaultProfilePayload = (
 	data: Partial<NewDomainUser> & {
-		gender?: Gender;
+		gender?: Gender | null;
 	} = {},
 ) => ({
 	authUserId: data.authUserId ?? null,
@@ -144,7 +150,10 @@ const defaultProfilePayload = (
 	lastName: data.lastName ?? "Doe",
 	primaryEmail: data.primaryEmail ?? `profile-${randomUUID()}@example.com`,
 	phone: data.phone ?? null,
-	dateOfBirth: data.dateOfBirth ?? DEFAULT_DATE,
+	dateOfBirth: toDateOnlyString(
+		data.dateOfBirth,
+		DEFAULT_DATE.toISOString().slice(0, 10),
+	),
 	placeOfBirth: data.placeOfBirth ?? DEFAULT_PLACE,
 	gender: data.gender ?? "other",
 	nationality: data.nationality ?? null,
@@ -288,15 +297,20 @@ export async function createRecapFixture(
 }
 
 export async function createFaculty(
-	data: Partial<schema.NewInstitution> & { name?: string } = {},
+	data: Partial<schema.NewInstitution> & {
+		name?: string;
+		institutionId?: string;
+	} = {},
 ) {
 	const {
 		code,
 		name,
 		descriptionFr: description,
+		institutionId: parentInstitutionId,
 		parentInstitutionId: providedInstitutionId,
-		...rest
 	} = data;
+	const resolvedParentInstitutionId =
+		parentInstitutionId ?? providedInstitutionId ?? null;
 	const parentInstitution = getTestInstitution();
 	const [facultyInstitution] = await db
 		.insert(schema.institutions)
@@ -307,7 +321,7 @@ export async function createFaculty(
 			nameEn: name ?? `Faculty-${randomUUID()}`,
 			descriptionFr: description ?? null,
 			// parentInstitutionId est optionnel - pas de hiérarchie obligatoire
-			parentInstitutionId: providedInstitutionId,
+			parentInstitutionId: resolvedParentInstitutionId,
 			organizationId: parentInstitution.organizationId,
 		})
 		.returning();
@@ -448,8 +462,8 @@ export async function createAcademicYear(
 		.insert(schema.academicYears)
 		.values({
 			name: `AY-${randomUUID()}`,
-			startDate: data.startDate ?? new Date("2024-01-01"),
-			endDate: data.endDate ?? new Date("2024-12-31"),
+			startDate: toDateOnlyString(data.startDate, "2024-01-01"),
+			endDate: toDateOnlyString(data.endDate, "2024-12-31"),
 			institutionId,
 			...rest,
 		})
@@ -492,7 +506,7 @@ async function ensureCycleLevelForFaculty(
 	return created.id;
 }
 
-async function ensureSemester(semesterId?: string): Promise<string> {
+async function ensureSemester(semesterId?: string | null): Promise<string> {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -573,7 +587,7 @@ export async function createClass(data: Partial<schema.NewKlass> = {}) {
 type CreateUserOptions = {
 	name?: string;
 	email?: string;
-	role?: string;
+	role?: "admin" | "user";
 	password?: string;
 	memberRole?: BusinessRole | null;
 	organizationId?: string;
@@ -842,7 +856,11 @@ export async function ensureStudentCourseEnrollment(
 	return record;
 }
 
-export async function createGrade(data: Partial<schema.NewGrade> = {}) {
+export async function createGrade(
+	data: Omit<Partial<schema.NewGrade>, "score"> & {
+		score?: string | number | null;
+	} = {},
+) {
 	const student = data.student ? { id: data.student } : await createStudent();
 	const exam = data.exam ? { id: data.exam } : await createExam();
 	const examRecord = await db.query.exams.findFirst({

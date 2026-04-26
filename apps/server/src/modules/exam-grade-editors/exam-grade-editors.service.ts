@@ -138,7 +138,7 @@ export async function assignEditor(opts: {
 			editorProfileId,
 			grantedByProfileId: grantedBy,
 		});
-	} catch (error) {
+	} catch (_error) {
 		throw new TRPCError({
 			code: "CONFLICT",
 			message: "Editor already assigned",

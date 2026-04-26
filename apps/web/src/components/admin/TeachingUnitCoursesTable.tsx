@@ -159,7 +159,7 @@ export function TeachingUnitCoursesTable({
 					formatTeacherName(teacher),
 				]),
 			),
-		[teacherOptions],
+		[teacherOptions, formatTeacherName],
 	);
 
 	const form = useForm<CourseFormData>({

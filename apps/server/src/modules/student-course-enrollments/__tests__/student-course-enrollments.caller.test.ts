@@ -118,7 +118,7 @@ describe("studentCourseEnrollments router", () => {
 		expect(result.studentsCount).toBeGreaterThanOrEqual(2);
 		expect(result.classCoursesCount).toBeGreaterThanOrEqual(2);
 		expect(result.createdCount).toBeGreaterThan(0);
-		expect(result.warnings.length).toBeGreaterThanOrEqual(0);
+		expect((result.warnings ?? []).length).toBeGreaterThanOrEqual(0);
 		const roster = await admin.studentCourseEnrollments.list({
 			studentId: newStudent.id,
 		});
@@ -209,7 +209,7 @@ describe("studentCourseEnrollments router", () => {
 			classId: klass.id,
 			academicYearId: academicYear.id,
 		});
-		const hasInProgress = result.warnings.some(
+		const hasInProgress = (result.warnings ?? []).some(
 			(warning) =>
 				warning.prerequisiteCourseId === prereqCourse.id &&
 				warning.state === "in-progress",

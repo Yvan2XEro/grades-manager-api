@@ -54,6 +54,15 @@ export async function findById(id: string, institutionId: string) {
 	});
 }
 
+export async function findActive(institutionId: string) {
+	return db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.institutionId, institutionId),
+			eq(schema.academicYears.isActive, true),
+		),
+	});
+}
+
 export async function list(
 	institutionId: string,
 	opts: { cursor?: string; limit?: number },

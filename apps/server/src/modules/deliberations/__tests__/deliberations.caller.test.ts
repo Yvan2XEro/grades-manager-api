@@ -7,14 +7,15 @@ import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import {
-	asAdmin,
 	createAcademicYear,
 	createClass,
 	createClassCourse,
 	createCourse,
+	createCycleLevel,
 	createDomainUser,
 	createProgram,
 	createStudent,
+	createStudyCycle,
 	createTeachingUnit,
 	ensureStudentCourseEnrollment,
 	makeTestContext,
@@ -45,10 +46,46 @@ async function setupDeliberationFixture(opts?: {
 	coefficients?: [number, number, number, number];
 }) {
 	const program = await createProgram();
-	const academicYear = await createAcademicYear();
+
+	// Two-level cycle (L1 → L2) so promoTargets can auto-find the next class
+	const cycle = await createStudyCycle({
+		institutionId: program.institutionId,
+	});
+	const l1 = await createCycleLevel({
+		cycleId: cycle.id,
+		orderIndex: 1,
+		code: "L1",
+	});
+	const l2 = await createCycleLevel({
+		cycleId: cycle.id,
+		orderIndex: 2,
+		code: "L2",
+	});
+
+	// Source year for the deliberation; target year for promotion
+	const academicYear = await createAcademicYear({
+		name: "2023-2024",
+		startDate: "2023-09-01",
+		endDate: "2024-07-31",
+	});
+	const targetYear = await createAcademicYear({
+		name: "2024-2025",
+		startDate: "2024-09-01",
+		endDate: "2025-07-31",
+	});
+
+	// Source class at L1 in source year
 	const klass = await createClass({
 		program: program.id,
 		academicYear: academicYear.id,
+		cycleLevelId: l1.id,
+	});
+
+	// Target class at L2 in target year — auto-discovered by promoTargets
+	const targetClass = await createClass({
+		program: program.id,
+		academicYear: targetYear.id,
+		cycleLevelId: l2.id,
 	});
 
 	const classRecord = await db.query.classes.findFirst({
@@ -118,8 +155,13 @@ async function setupDeliberationFixture(opts?: {
 
 	return {
 		program,
+		cycle,
+		l1,
+		l2,
 		academicYear,
+		targetYear,
 		klass,
+		targetClass,
 		semesterId,
 		ue1,
 		ue2,
@@ -616,7 +658,7 @@ describe("deliberations router", () => {
 			await admin.deliberations.transition({ id: delib.id, action: "open" });
 			const computed = await admin.deliberations.compute({ id: delib.id });
 
-			const studentResultId = computed.results[0].studentId;
+			const _studentResultId = computed.results[0].studentId;
 
 			// Find the DB result to get the actual result id
 			const dbResults = await db.query.deliberationStudentResults.findMany({
@@ -667,7 +709,7 @@ describe("deliberations router", () => {
 			const {
 				academicYear,
 				klass,
-				program,
+				targetClass,
 				classCourses: { cc1a, cc1b, cc2a, cc2b },
 				student,
 			} = await setupDeliberationFixture({
@@ -691,12 +733,6 @@ describe("deliberations router", () => {
 			await admin.deliberations.transition({ id: delib.id, action: "open" });
 			await admin.deliberations.compute({ id: delib.id });
 			await admin.deliberations.transition({ id: delib.id, action: "close" });
-
-			// Create target class
-			const targetClass = await createClass({
-				program: program.id,
-				academicYear: academicYear.id,
-			});
 
 			const result = await admin.deliberations.promoteAdmitted({
 				deliberationId: delib.id,
@@ -728,7 +764,7 @@ describe("deliberations router", () => {
 			const {
 				academicYear,
 				klass,
-				program,
+				targetClass,
 				classCourses: { cc1a, cc1b, cc2a, cc2b },
 				student,
 			} = await setupDeliberationFixture({
@@ -754,11 +790,6 @@ describe("deliberations router", () => {
 			await admin.deliberations.compute({ id: delib.id });
 			await admin.deliberations.transition({ id: delib.id, action: "close" });
 
-			const targetClass = await createClass({
-				program: program.id,
-				academicYear: academicYear.id,
-			});
-
 			await expect(
 				admin.deliberations.promoteAdmitted({
 					deliberationId: delib.id,
@@ -773,7 +804,7 @@ describe("deliberations router", () => {
 			const {
 				academicYear,
 				klass,
-				program,
+				targetClass,
 				classCourses: { cc1a, cc1b, cc2a, cc2b },
 				student,
 			} = await setupDeliberationFixture({
@@ -803,11 +834,6 @@ describe("deliberations router", () => {
 
 			await admin.deliberations.transition({ id: delib.id, action: "close" });
 
-			const targetClass = await createClass({
-				program: program.id,
-				academicYear: academicYear.id,
-			});
-
 			const result = await admin.deliberations.promoteAdmitted({
 				deliberationId: delib.id,
 				targetClassId: targetClass.id,
@@ -828,7 +854,7 @@ describe("deliberations router", () => {
 			const {
 				academicYear,
 				klass,
-				program,
+				targetClass,
 				classCourses: { cc1a, cc1b, cc2a, cc2b },
 				student,
 			} = await setupDeliberationFixture({
@@ -851,10 +877,6 @@ describe("deliberations router", () => {
 			await admin.deliberations.compute({ id: delib.id });
 			await admin.deliberations.transition({ id: delib.id, action: "close" });
 
-			const targetClass = await createClass({
-				program: program.id,
-				academicYear: academicYear.id,
-			});
 			await admin.deliberations.promoteAdmitted({
 				deliberationId: delib.id,
 				targetClassId: targetClass.id,

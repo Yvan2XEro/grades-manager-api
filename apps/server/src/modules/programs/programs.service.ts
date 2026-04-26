@@ -6,8 +6,11 @@ import { normalizeCode, slugify } from "@/lib/strings";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./programs.repo";
 
-type CreateInput = Parameters<typeof repo.create>[0];
-type UpdateInput = Parameters<typeof repo.update>[2];
+type CreateInput = Omit<
+	Parameters<typeof repo.create>[0],
+	"institutionId" | "slug"
+>;
+type UpdateInput = Partial<CreateInput>;
 type ListInput = Parameters<typeof repo.list>[1];
 type SearchInput = Parameters<typeof repo.search>[0];
 

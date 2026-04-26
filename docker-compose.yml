@@ -30,12 +30,11 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      args:
-        VITE_SERVER_URL: ${VITE_SERVER_URL:-http://localhost:3000}
-        VITE_DEFAULT_ORGANIZATION_SLUG: ${VITE_DEFAULT_ORGANIZATION_SLUG:-sgn-institution}
     environment:
       NODE_ENV: production
       PORT: 4173
+      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-http://localhost:3000}
+      DEFAULT_ORGANIZATION_SLUG: ${DEFAULT_ORGANIZATION_SLUG:-sgn-institution}
     ports:
       - "4173:4173"
     depends_on:

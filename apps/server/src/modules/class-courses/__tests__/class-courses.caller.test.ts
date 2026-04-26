@@ -34,12 +34,13 @@ describe("class courses router", () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
 		const teacherId = course.defaultTeacher;
+		expect(teacherId).toBeTruthy();
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			code: "CC-CRUD",
 			class: klass.id,
 			course: course.id,
-			teacher: teacherId,
+			teacher: teacherId!,
 		});
 		expect(cc.class).toBe(klass.id);
 
@@ -58,12 +59,13 @@ describe("class courses router", () => {
 		const klass = await createClass();
 		const course = await createCourse({ program: klass.program });
 		const teacherId = course.defaultTeacher;
+		expect(teacherId).toBeTruthy();
 		const admin = createCaller(asAdmin());
 		const cc = await admin.classCourses.create({
 			code: "CC-ROSTER",
 			class: klass.id,
 			course: course.id,
-			teacher: teacherId,
+			teacher: teacherId!,
 		});
 		const enrolled = await createStudent({ class: klass.id });
 		await ensureStudentCourseEnrollment(enrolled.id, cc.id, "active");
@@ -84,7 +86,7 @@ describe("class courses router", () => {
 				nameEn: "Foreign Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
+		const _faculty = await createFaculty({
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({

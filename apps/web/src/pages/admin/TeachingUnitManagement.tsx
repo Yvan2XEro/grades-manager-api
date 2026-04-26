@@ -8,7 +8,6 @@ import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { CodedEntitySelect } from "@/components/forms";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
@@ -65,7 +64,7 @@ const TeachingUnitManagement = () => {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 	const programList = programs?.items ?? [];
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programList.find((program) => program.id === selectedProgramId),
 		[programList, selectedProgramId],
 	);

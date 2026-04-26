@@ -139,7 +139,7 @@ export default function ProgramManagement() {
 	const { t } = useTranslation();
 	const programSchema = useMemo(() => buildProgramSchema(t), [t]);
 
-	const [searchInput, setSearchInput] = useState("");
+	const [searchInput, _setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	useEffect(() => {
 		const timer = setTimeout(() => setSearchQuery(searchInput), 300);

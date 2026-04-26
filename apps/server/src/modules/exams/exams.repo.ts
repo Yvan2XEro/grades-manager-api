@@ -43,6 +43,8 @@ export async function findById(id: string) {
 export async function list(opts: {
 	institutionId: string;
 	classCourseId?: string;
+	classId?: string;
+	semesterId?: string;
 	dateFrom?: Date;
 	dateTo?: Date;
 	cursor?: string;

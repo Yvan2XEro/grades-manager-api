@@ -8,12 +8,16 @@ import * as classesRepo from "../classes/classes.repo";
 import * as coursesRepo from "../courses/courses.repo";
 import * as repo from "./class-courses.repo";
 
-type ClassCourseInput = schema.NewClassCourse & {
+type ClassCourseInput = Omit<
+	schema.NewClassCourse,
+	"institutionId" | "coefficient"
+> & {
+	coefficient?: number;
 	allowTeacherOverride?: boolean;
 };
 
 async function validateConfig(
-	config: schema.NewClassCourse,
+	config: Pick<schema.NewClassCourse, "class" | "course" | "semesterId">,
 	institutionId: string,
 	existingId?: string,
 ) {
@@ -89,8 +93,8 @@ async function validateConfig(
 }
 
 async function resolveSemesterId(
-	classSemesterId?: string,
-	overrideSemesterId?: string,
+	classSemesterId?: string | null,
+	overrideSemesterId?: string | null,
 ) {
 	const target = overrideSemesterId ?? classSemesterId;
 	if (!target) {
@@ -126,6 +130,10 @@ export async function createClassCourse(
 		teacher,
 		institutionId: resolvedInstitutionId,
 		code: normalizeCode(payload.code),
+		coefficient:
+			payload.coefficient !== undefined
+				? payload.coefficient.toString()
+				: undefined,
 		semesterId,
 	});
 }
@@ -143,7 +151,7 @@ export async function updateClassCourse(
 		...payload,
 	};
 	const { semesterId, klass } = await validateConfig(
-		merged as schema.NewClassCourse,
+		merged as Omit<schema.NewClassCourse, "institutionId">,
 		institutionId,
 		id,
 	);
@@ -153,6 +161,10 @@ export async function updateClassCourse(
 		{
 			...payload,
 			code: payload.code ? normalizeCode(payload.code) : undefined,
+			coefficient:
+				payload.coefficient !== undefined
+					? payload.coefficient.toString()
+					: undefined,
 			semesterId: payload.semesterId ? semesterId : undefined,
 			institutionId: resolvedInstitutionId,
 		},
@@ -167,7 +179,7 @@ export async function deleteClassCourse(id: string, institutionId: string) {
 }
 
 export async function listClassCourses(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.list({ ...opts, institutionId });
@@ -237,7 +249,7 @@ export async function getClassCourseRoster(
 }
 
 export async function searchClassCourses(
-	opts: Parameters<typeof repo.search>[0],
+	opts: Omit<Parameters<typeof repo.search>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.search({ ...opts, institutionId });

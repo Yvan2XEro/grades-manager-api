@@ -608,7 +608,7 @@ const GradeEntry: React.FC = () => {
 						count: importedCount,
 					}),
 				);
-			} catch (error) {
+			} catch (_error) {
 				toast.error(
 					t("teacher.gradeEntry.toast.importError", {
 						defaultValue: "Failed to import grades",

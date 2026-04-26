@@ -1,4 +1,4 @@
-import { and, count, eq, gt, ilike, or, sql } from "drizzle-orm";
+import { and, count, eq, gt, ilike, or } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 

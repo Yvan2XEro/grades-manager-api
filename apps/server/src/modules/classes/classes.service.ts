@@ -1,4 +1,4 @@
-import { and, eq, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { normalizeCode } from "@/lib/strings";
 import * as studentsRepo from "@/modules/students/students.repo";
@@ -119,7 +119,7 @@ async function ensureProgramOption(
 	return option.id;
 }
 
-async function ensureSemester(semesterId?: string) {
+async function ensureSemester(semesterId?: string | null) {
 	if (semesterId) {
 		const semester = await db.query.semesters.findFirst({
 			where: eq(schema.semesters.id, semesterId),
@@ -142,8 +142,18 @@ async function ensureSemester(semesterId?: string) {
 	return created.id;
 }
 
+type CreateClassInput = Pick<
+	schema.NewKlass,
+	"code" | "name" | "program" | "academicYear"
+> & {
+	cycleLevelId?: string;
+	programOptionId?: string;
+	semesterId?: string | null;
+	totalCredits?: number;
+};
+
 export async function createClass(
-	data: Parameters<typeof repo.create>[0],
+	data: CreateClassInput,
 	institutionId: string,
 ) {
 	const program = await loadProgram(data.program, institutionId);
@@ -170,7 +180,7 @@ export async function createClass(
 
 export async function updateClass(
 	id: string,
-	data: Parameters<typeof repo.update>[2],
+	data: Partial<CreateClassInput>,
 	institutionId: string,
 ) {
 	const existing = await repo.findById(id, institutionId);
@@ -200,7 +210,7 @@ export async function updateClass(
 	return repo.update(id, institutionId, {
 		...data,
 		program: program.id,
-		academicYear: academicYear.id ?? existing.academicYear,
+		academicYear: academicYear?.id ?? existing.academicYear,
 		cycleLevelId,
 		programOptionId,
 		code: data.code ? normalizeCode(data.code) : undefined,
@@ -290,6 +300,22 @@ export async function getClassByCode(
 	return item;
 }
 
+/**
+ * Returns true if `classId` is at the last cycle level (no level with a
+ * higher orderIndex exists in the same cycle).
+ */
+async function isClassLastLevel(classId: string): Promise<boolean> {
+	const klass = await repo.findById(classId);
+	if (!klass?.cycleLevel || !klass.cycle) return false;
+	const nextLevel = await db.query.cycleLevels.findFirst({
+		where: and(
+			eq(schema.cycleLevels.cycleId, klass.cycle.id),
+			eq(schema.cycleLevels.orderIndex, (klass.cycleLevel.orderIndex ?? 0) + 1),
+		),
+	});
+	return nextLevel === undefined;
+}
+
 export async function transferStudent(
 	studentId: string,
 	toClassId: string,
@@ -299,13 +325,18 @@ export async function transferStudent(
 	if (!student) throw notFound("Student not found");
 	const target = await repo.findById(toClassId, institutionId);
 	if (!target) throw notFound("Class not found");
+
+	const closingStatus = (await isClassLastLevel(student.class))
+		? "graduated"
+		: "completed";
+
 	await transaction(async (tx) => {
 		await tx
 			.update(schema.students)
 			.set({ class: toClassId })
 			.where(eq(schema.students.id, studentId));
 	});
-	await enrollmentsRepo.closeActive(studentId, "completed", institutionId);
+	await enrollmentsRepo.closeActive(studentId, closingStatus, institutionId);
 	await enrollmentsRepo.create({
 		studentId,
 		classId: toClassId,
@@ -314,6 +345,220 @@ export async function transferStudent(
 		status: "active",
 	});
 	return studentsRepo.findById(studentId, institutionId);
+}
+
+export async function getPromoTargets(
+	sourceClassId: string,
+	institutionId: string,
+	targetAcademicYearId?: string,
+) {
+	const source = await repo.findById(sourceClassId, institutionId);
+	if (!source) throw notFound("Source class not found");
+
+	// All academic years for the institution so the UI can show a year picker
+	const availableYears = await db.query.academicYears.findMany({
+		where: eq(schema.academicYears.institutionId, institutionId),
+		orderBy: (ay, { desc }) => desc(ay.startDate),
+	});
+
+	// Next cycle level (orderIndex + 1) in the same cycle
+	const nextLevel = source.cycleLevel
+		? await db.query.cycleLevels.findFirst({
+				where: and(
+					eq(schema.cycleLevels.cycleId, source.cycle?.id ?? ""),
+					eq(
+						schema.cycleLevels.orderIndex,
+						(source.cycleLevel.orderIndex ?? 0) + 1,
+					),
+				),
+			})
+		: null;
+
+	const isLastLevel = nextLevel == null; // findFirst returns undefined, not null
+
+	// Only search target classes once the admin has chosen a year
+	const targetClasses =
+		targetAcademicYearId && !isLastLevel && nextLevel
+			? (
+					await repo.list(institutionId, {
+						programId: source.program,
+						academicYearId: targetAcademicYearId,
+						cycleLevelId: nextLevel.id,
+					})
+				).items
+			: [];
+
+	return { targetClasses, isLastLevel, sourceClass: source, availableYears };
+}
+
+export async function promotionPreview(
+	sourceClassId: string,
+	institutionId: string,
+	opts: { cursor?: string; limit?: number },
+) {
+	const source = await repo.findById(sourceClassId, institutionId);
+	if (!source) throw notFound("Source class not found");
+
+	// Get students in source class (paginated)
+	const { items: students, nextCursor } = await studentsRepo.list({
+		classId: sourceClassId,
+		institutionId,
+		cursor: opts.cursor,
+		limit: opts.limit ?? 50,
+	});
+
+	if (students.length === 0) {
+		return { items: [], nextCursor: undefined };
+	}
+
+	// Find the latest signed annual deliberation for this class
+	const deliberation = await db.query.deliberations.findFirst({
+		where: and(
+			eq(schema.deliberations.classId, sourceClassId),
+			eq(schema.deliberations.institutionId, institutionId),
+			eq(schema.deliberations.type, "annual"),
+			eq(schema.deliberations.status, "signed"),
+		),
+		orderBy: (d, { desc }) => desc(d.createdAt),
+	});
+
+	// Fetch deliberation results for all students in one query
+	const studentIds = students.map((s) => s!.id);
+	const deliberationResults = deliberation
+		? await db.query.deliberationStudentResults.findMany({
+				where: and(
+					eq(schema.deliberationStudentResults.deliberationId, deliberation.id),
+					inArray(schema.deliberationStudentResults.studentId, studentIds),
+				),
+				orderBy: asc(schema.deliberationStudentResults.rank),
+			})
+		: [];
+
+	const resultByStudentId = new Map(
+		deliberationResults.map((r) => [r.studentId, r]),
+	);
+
+	const items = students.map((student) => {
+		const result = student ? resultByStudentId.get(student.id) : undefined;
+		return {
+			student: student!,
+			deliberationResult: result
+				? {
+						id: result.id,
+						generalAverage: result.generalAverage,
+						totalCreditsEarned: result.totalCreditsEarned,
+						totalCreditsPossible: result.totalCreditsPossible,
+						finalDecision: result.finalDecision,
+						mention: result.mention,
+						rank: result.rank,
+					}
+				: null,
+		};
+	});
+
+	return { items, nextCursor, deliberationId: deliberation?.id ?? null };
+}
+
+export async function bulkTransfer(
+	studentIds: string[],
+	toClassId: string,
+	institutionId: string,
+) {
+	const target = await repo.findById(toClassId, institutionId);
+	if (!target) throw notFound("Target class not found");
+
+	const students = await db.query.students.findMany({
+		where: and(
+			inArray(schema.students.id, studentIds),
+			eq(schema.students.institutionId, institutionId),
+		),
+	});
+
+	if (students.length !== studentIds.length) {
+		throw notFound("One or more students not found");
+	}
+
+	// Check per source class whether it's the last level (group by class to avoid N queries)
+	const sourceClassIds = [...new Set(students.map((s) => s.class))];
+	const lastLevelFlags = await Promise.all(
+		sourceClassIds.map(async (id) => [id, await isClassLastLevel(id)] as const),
+	);
+	const isLastLevelMap = new Map(lastLevelFlags);
+
+	await transaction(async (tx) => {
+		await tx
+			.update(schema.students)
+			.set({ class: toClassId })
+			.where(inArray(schema.students.id, studentIds));
+	});
+
+	for (const student of students) {
+		const closingStatus = isLastLevelMap.get(student.class)
+			? "graduated"
+			: "completed";
+		await enrollmentsRepo.closeActive(student.id, closingStatus, institutionId);
+		await enrollmentsRepo.create({
+			studentId: student.id,
+			classId: toClassId,
+			academicYearId: target.academicYear,
+			institutionId,
+			status: "active",
+		});
+	}
+
+	return { transferred: students.length };
+}
+
+export async function listGraduatedStudents(
+	institutionId: string,
+	opts: {
+		programId?: string;
+		cycleId?: string;
+		cursor?: string;
+		limit?: number;
+	},
+) {
+	const limit = opts.limit ?? 50;
+	const { items: enrollments, nextCursor } = await enrollmentsRepo.list({
+		institutionId,
+		status: "graduated",
+		cursor: opts.cursor,
+		limit,
+	});
+
+	if (enrollments.length === 0) {
+		return { items: [], nextCursor: undefined };
+	}
+
+	// Enrich with student + class + credit info
+	const enriched = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const student = await studentsRepo.findById(
+				enrollment.studentId,
+				institutionId,
+			);
+			const klass = await repo.findById(enrollment.classId, institutionId);
+			const creditLedger = await db.query.studentCreditLedgers.findFirst({
+				where: and(
+					eq(schema.studentCreditLedgers.studentId, enrollment.studentId),
+					eq(
+						schema.studentCreditLedgers.academicYearId,
+						enrollment.academicYearId,
+					),
+				),
+			});
+			return { enrollment, student, klass, creditLedger };
+		}),
+	);
+
+	// Filter by programId / cycleId if requested
+	const filtered = enriched.filter(({ klass }) => {
+		if (opts.programId && klass?.program !== opts.programId) return false;
+		if (opts.cycleId && klass?.cycle?.id !== opts.cycleId) return false;
+		return true;
+	});
+
+	return { items: filtered, nextCursor };
 }
 
 export async function searchClasses(
@@ -327,6 +572,7 @@ export async function bulkGenerateClasses(
 	academicYearId: string,
 	institutionId: string,
 	cycleLevelIds?: string[],
+	sourceAcademicYearId?: string,
 ) {
 	const year = await db.query.academicYears.findFirst({
 		where: and(
@@ -414,7 +660,7 @@ export async function bulkGenerateClasses(
 				const yearShort = `${new Date(year.startDate).getFullYear()}`;
 				const name = `${program.name} ${level.code} (${yearShort})`;
 
-				await repo.create({
+				const newClass = await repo.create({
 					code,
 					name,
 					program: program.id,
@@ -427,6 +673,43 @@ export async function bulkGenerateClasses(
 				});
 
 				created++;
+
+				if (sourceAcademicYearId && newClass) {
+					// Find the corresponding class in the source academic year
+					const sourceClasses = await db.query.classes.findMany({
+						where: and(
+							eq(schema.classes.program, program.id),
+							eq(schema.classes.cycleLevelId, level.id),
+							eq(schema.classes.programOptionId, option.id),
+							eq(schema.classes.academicYear, sourceAcademicYearId),
+							eq(schema.classes.institutionId, institutionId),
+						),
+					});
+
+					for (const sourceClass of sourceClasses) {
+						const sourceClassCourses = await db.query.classCourses.findMany({
+							where: eq(schema.classCourses.class, sourceClass.id),
+						});
+
+						for (const sourceCC of sourceClassCourses) {
+							const clonedCode = normalizeCode(
+								`${sourceCC.code}-${new Date(year.startDate).getFullYear()}`,
+							);
+							await db
+								.insert(schema.classCourses)
+								.values({
+									code: clonedCode,
+									institutionId,
+									class: newClass.id,
+									course: sourceCC.course,
+									teacher: sourceCC.teacher,
+									semesterId: sourceCC.semesterId,
+									coefficient: sourceCC.coefficient,
+								})
+								.onConflictDoNothing();
+						}
+					}
+				}
 			}
 		}
 	}

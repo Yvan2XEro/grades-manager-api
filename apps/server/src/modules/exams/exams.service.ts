@@ -146,6 +146,12 @@ export async function createExam(
 			})
 			.returning();
 	});
+	if (!created) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Failed to create exam",
+		});
+	}
 	return created;
 }
 
@@ -265,7 +271,7 @@ export async function deleteExam(
 }
 
 export async function listExams(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	params: {
 		institutionId: string;
 		profileId: string | null;

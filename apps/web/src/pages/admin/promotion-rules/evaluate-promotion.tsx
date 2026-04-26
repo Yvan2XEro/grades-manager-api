@@ -12,17 +12,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { StudentEvaluationCard } from "@/components/promotion-rules/student-evaluation-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import {
 	Select,

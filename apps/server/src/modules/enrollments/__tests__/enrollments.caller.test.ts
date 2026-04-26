@@ -59,7 +59,7 @@ describe("enrollments router", () => {
 				nameEn: "Foreign Institution",
 			})
 			.returning();
-		const faculty = await createFaculty({
+		const _faculty = await createFaculty({
 			institutionId: foreignInstitution.id,
 		});
 		const program = await createProgram({

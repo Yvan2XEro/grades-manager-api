@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { detectOrganizationSlug } from "../lib/organization";
+import { getServerUrl } from "../lib/runtime-config";
 
 export interface BrandingData {
 	slug: string;
@@ -15,7 +16,7 @@ export interface BrandingData {
 	website: string | null;
 }
 
-const serverUrl = import.meta.env.VITE_SERVER_URL as string;
+const serverUrl = getServerUrl();
 
 /** Prepend server URL for relative paths, pass through absolute URLs. */
 export function resolveUrl(url: string | null | undefined): string | undefined {

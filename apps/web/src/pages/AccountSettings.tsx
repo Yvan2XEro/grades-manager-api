@@ -179,9 +179,9 @@ const getBrowserLabel = (userAgent?: string | null) => {
 };
 
 const resolveToken = (session: Record<string, unknown> | null | undefined) =>
-	(session?.["token"] as string | undefined) ??
-	(session?.["sessionToken"] as string | undefined) ??
-	(session?.["id"] as string | undefined);
+	(session?.token as string | undefined) ??
+	(session?.sessionToken as string | undefined) ??
+	(session?.id as string | undefined);
 
 const resolveSessionToken = (session: SessionInfo) =>
 	resolveToken(session as Record<string, unknown>);

@@ -210,6 +210,11 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.deliberationRules",
 					},
 					{
+						to: "/admin/graduation",
+						icon: <GraduationCap className={IC} />,
+						labelKey: "navigation.sidebar.admin.graduation",
+					},
+					{
 						to: "/admin/rules",
 						icon: <FileCog className={IC} />,
 						labelKey: "navigation.sidebar.admin.rules",

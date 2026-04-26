@@ -88,7 +88,7 @@ import {
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { useRowSelection } from "../../hooks/useRowSelection";
-import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+import { trpc, trpcClient } from "../../utils/trpc";
 
 const buildExamSchema = (t: TFunction) =>
 	z.object({
@@ -163,7 +163,7 @@ export default function ExamManagement() {
 	useEffect(() => {
 		setClassId(null);
 		setSemesterId(null);
-	}, [academicYearId]);
+	}, []);
 
 	const yearsQuery = useQuery({
 		...trpc.academicYears.list.queryOptions({}),
@@ -233,7 +233,7 @@ export default function ExamManagement() {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
 
-	const semestersQuery = useQuery({
+	const _semestersQuery = useQuery({
 		...trpc.semesters.list.queryOptions({}),
 	});
 	const { data: classCourses } = useQuery({

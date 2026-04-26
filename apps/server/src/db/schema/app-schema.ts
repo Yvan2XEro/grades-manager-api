@@ -56,6 +56,7 @@ export const enrollmentStatuses = [
 	"pending",
 	"active",
 	"completed",
+	"graduated",
 	"withdrawn",
 ] as const;
 export type EnrollmentStatus = (typeof enrollmentStatuses)[number];
@@ -1929,14 +1930,6 @@ export const institutionsRelations = relations(
 		}),
 		childInstitutions: many(institutions, {
 			relationName: "institutionHierarchy",
-		}),
-		defaultAcademicYear: one(academicYears, {
-			fields: [institutions.defaultAcademicYearId],
-			references: [academicYears.id],
-		}),
-		registrationFormat: one(registrationNumberFormats, {
-			fields: [institutions.registrationFormatId],
-			references: [registrationNumberFormats.id],
 		}),
 		organization: one(organization, {
 			fields: [institutions.organizationId],

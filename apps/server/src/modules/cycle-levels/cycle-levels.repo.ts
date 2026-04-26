@@ -1,4 +1,4 @@
-import { and, eq, gt, ilike, or } from "drizzle-orm";
+import { and, eq, gt, ilike, or, type SQL } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -51,18 +51,22 @@ export async function list(opts: {
 	limit?: number;
 }) {
 	const limit = opts.limit ?? 50;
-	let condition: unknown;
+	const conditions: SQL<unknown>[] = [];
 	if (opts.cycleId) {
-		condition = eq(schema.cycleLevels.cycleId, opts.cycleId);
+		conditions.push(eq(schema.cycleLevels.cycleId, opts.cycleId));
 	}
 	if (opts.q) {
-		const qCond = ilike(schema.cycleLevels.name, `%${opts.q}%`);
-		condition = condition ? and(condition, qCond) : qCond;
+		conditions.push(ilike(schema.cycleLevels.name, `%${opts.q}%`));
 	}
 	if (opts.cursor) {
-		const cursorCond = gt(schema.cycleLevels.id, opts.cursor);
-		condition = condition ? and(condition, cursorCond) : cursorCond;
+		conditions.push(gt(schema.cycleLevels.id, opts.cursor));
 	}
+	const condition =
+		conditions.length === 0
+			? undefined
+			: conditions.length === 1
+				? conditions[0]
+				: and(...conditions);
 	const items = await db
 		.select()
 		.from(schema.cycleLevels)

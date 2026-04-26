@@ -4,16 +4,7 @@ import {
 	useMutation,
 	useQueryClient,
 } from "@tanstack/react-query";
-import {
-	Download,
-	FileText,
-	Pencil,
-	Plus,
-	Settings,
-	Star,
-	Trash2,
-	Upload,
-} from "lucide-react";
+import { FileText, Pencil, Plus, Settings, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -47,7 +38,6 @@ import { Empty, EmptyContent, EmptyHeader } from "@/components/ui/empty";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -62,7 +52,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -76,19 +65,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
-
-type ExportTemplate = {
-	id: string;
-	institutionId: string;
-	name: string;
-	type: "pv" | "evaluation" | "ue" | "deliberation";
-	isDefault: boolean;
-	templateBody: string;
-	createdAt: Date;
-	updatedAt: Date;
-	createdBy: string;
-	updatedBy: string;
-};
+import type { ExportTemplate } from "@/utils/type";
 
 const EXPORT_TYPES = [
 	{ value: "pv", label: "PV (Procès-Verbal)" },

@@ -9,9 +9,10 @@ import {
 	organizationAccessControl,
 	organizationRoles,
 } from "../../../server/src/lib/organization-roles";
+import { getServerUrl } from "./runtime-config";
 
 export const authClient = createAuthClient({
-	baseURL: import.meta.env.VITE_SERVER_URL,
+	baseURL: getServerUrl(),
 	plugins: [
 		adminClient(),
 		customSessionClient<typeof auth>(),

@@ -1,14 +1,19 @@
 /**
- * Detects the organization slug from the subdomain or falls back to environment variable.
+ * Detects the organization slug from the subdomain or falls back to runtime configuration.
  *
  * Examples:
- * - `inst-01.domain.com` → `inst-01`
- * - `localhost` → uses `VITE_DEFAULT_ORGANIZATION_SLUG`
- * - `127.0.0.1` → uses `VITE_DEFAULT_ORGANIZATION_SLUG`
- * - `domain.com` (single segment) → uses `VITE_DEFAULT_ORGANIZATION_SLUG`
+ * - `inst-01.domain.com` -> `inst-01`
+ * - `localhost` -> uses runtime/default organization slug
+ * - `127.0.0.1` -> uses runtime/default organization slug
+ * - `domain.com` (single segment) -> uses runtime/default organization slug
  */
+import { getDefaultOrganizationSlug } from "./runtime-config";
+
 export function detectOrganizationSlug(): string {
 	const host = window.location.host;
+	if (getFallbackSlug()) {
+		return getFallbackSlug();
+	}
 
 	// Localhost or IP addresses - use fallback
 	if (
@@ -36,11 +41,5 @@ export function detectOrganizationSlug(): string {
 }
 
 function getFallbackSlug(): string {
-	const fallback = import.meta.env.VITE_DEFAULT_ORGANIZATION_SLUG;
-	if (!fallback) {
-		throw new Error(
-			"VITE_DEFAULT_ORGANIZATION_SLUG environment variable is required when not using subdomain-based organization detection",
-		);
-	}
-	return fallback;
+	return getDefaultOrganizationSlug();
 }

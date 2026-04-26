@@ -259,13 +259,13 @@ export async function transition(
 		actorId,
 	});
 
-	if (input.action === "sign") {
+	if (input.action === "sign" && updates.signedAt) {
 		dispatchWebhook(institutionId, {
 			event: "deliberation.signed",
 			deliberationId: input.id,
 			institutionId,
 			deliberationType: delib.type,
-			signedAt: updates.signedAt!.toISOString(),
+			signedAt: updates.signedAt.toISOString(),
 			classId: delib.classId,
 			academicYearId: delib.academicYearId,
 		}).catch(() => {});
@@ -378,14 +378,17 @@ export async function compute(
 		const exams = (cc.exams || []).map((exam) => ({
 			id: exam.id,
 			type: exam.type,
-			percentage: exam.percentage,
+			percentage: Number(exam.percentage),
 			sessionType: exam.sessionType || "normal",
 			parentExamId: exam.parentExamId || null,
 			scoringPolicy: exam.scoringPolicy || "replace",
-			grades: exam.grades || [],
+			grades: (exam.grades || []).map((grade) => ({
+				studentRef: { id: grade.studentRef.id },
+				score: grade.score,
+			})),
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: cc.courseRef.id,
 			code: cc.courseRef.code,
 			name: cc.courseRef.name,
@@ -1085,20 +1088,6 @@ export async function promoteAdmitted(
 		});
 	}
 
-	// Validate target class
-	const targetClass = await db.query.classes.findFirst({
-		where: and(
-			eq(schema.classes.id, input.targetClassId),
-			eq(schema.classes.institutionId, institutionId),
-		),
-	});
-	if (!targetClass) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Target class not found",
-		});
-	}
-
 	// Get admitted/compensated students
 	const allResults = await repo.findStudentResultsByDeliberationId(
 		input.deliberationId,
@@ -1116,63 +1105,95 @@ export async function promoteAdmitted(
 
 	const studentIds = admittedResults.map((r) => r.studentId);
 
-	await db.transaction(async (tx) => {
-		// Check for duplicate enrollments in target class
-		const existingEnrollments = await tx
-			.select({ studentId: schema.enrollments.studentId })
-			.from(schema.enrollments)
-			.where(
-				and(
-					inArray(schema.enrollments.studentId, studentIds),
-					eq(schema.enrollments.classId, input.targetClassId),
-					eq(schema.enrollments.status, "active"),
-				),
-			);
-		if (existingEnrollments.length > 0) {
-			const ids = existingEnrollments.map((e) => e.studentId).join(", ");
+	if (input.targetClassId) {
+		// --- Normal promotion: enroll students in the next class ---
+		const targetClass = await db.query.classes.findFirst({
+			where: and(
+				eq(schema.classes.id, input.targetClassId),
+				eq(schema.classes.institutionId, institutionId),
+			),
+		});
+		if (!targetClass) {
 			throw new TRPCError({
-				code: "CONFLICT",
-				message: `Students already enrolled in target class: ${ids}`,
+				code: "NOT_FOUND",
+				message: "Target class not found",
 			});
 		}
 
-		for (const studentId of studentIds) {
-			// Close current enrollment
-			await enrollmentsService.closeActiveEnrollment(
-				studentId,
-				"completed",
-				undefined,
-				tx,
-			);
+		await db.transaction(async (tx) => {
+			// Check for duplicate enrollments in target class
+			const existingEnrollments = await tx
+				.select({ studentId: schema.enrollments.studentId })
+				.from(schema.enrollments)
+				.where(
+					and(
+						inArray(schema.enrollments.studentId, studentIds),
+						eq(schema.enrollments.classId, input.targetClassId!),
+						eq(schema.enrollments.status, "active"),
+					),
+				);
+			if (existingEnrollments.length > 0) {
+				const ids = existingEnrollments.map((e) => e.studentId).join(", ");
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: `Students already enrolled in target class: ${ids}`,
+				});
+			}
 
-			// Create new enrollment in target class
-			await tx.insert(schema.enrollments).values({
-				studentId,
-				classId: input.targetClassId,
-				academicYearId: delib.academicYearId,
-				institutionId,
-				status: "active",
-			});
+			for (const studentId of studentIds) {
+				await enrollmentsService.closeActiveEnrollment(
+					studentId,
+					"completed",
+					undefined,
+					tx,
+				);
+				await tx.insert(schema.enrollments).values({
+					studentId,
+					classId: input.targetClassId!,
+					academicYearId: delib.academicYearId,
+					institutionId,
+					status: "active",
+				});
+				await tx
+					.update(schema.students)
+					.set({ class: input.targetClassId! })
+					.where(eq(schema.students.id, studentId));
+			}
+		});
 
-			// Update student's class reference
-			await tx
-				.update(schema.students)
-				.set({ class: input.targetClassId })
-				.where(eq(schema.students.id, studentId));
-		}
-	});
+		await repo.createLog({
+			deliberationId: input.deliberationId,
+			action: "promoted",
+			actorId,
+			details: {
+				promotedCount: studentIds.length,
+				targetClassId: input.targetClassId,
+				targetClassName: targetClass.name,
+			},
+		});
+	} else {
+		// --- Graduation: last cycle level — close enrollments as graduated ---
+		await db.transaction(async (tx) => {
+			for (const studentId of studentIds) {
+				await enrollmentsService.closeActiveEnrollment(
+					studentId,
+					"graduated",
+					undefined,
+					tx,
+				);
+			}
+		});
 
-	// Log outside transaction (repo.createLog uses global db)
-	await repo.createLog({
-		deliberationId: input.deliberationId,
-		action: "promoted",
-		actorId,
-		details: {
-			promotedCount: studentIds.length,
-			targetClassId: input.targetClassId,
-			targetClassName: targetClass.name,
-		},
-	});
+		await repo.createLog({
+			deliberationId: input.deliberationId,
+			action: "promoted",
+			actorId,
+			details: {
+				promotedCount: studentIds.length,
+				graduated: true,
+			},
+		});
+	}
 
 	return { promotedCount: studentIds.length };
 }

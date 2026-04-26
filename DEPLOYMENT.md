@@ -10,6 +10,7 @@ This guide covers different deployment scenarios using Docker Compose.
 | `docker-compose.seed.yml` | Development seeding override | First-time local setup with seed data |
 | `deployments/docker/docker-compose.prod.yml` | Production - pulls from GHCR | Production deployment with pre-built images |
 | `deployments/docker/docker-compose.prod.seed.yml` | Production seeding override | First-time production setup with seed data |
+| `deployments/docker/docker-compose.dokploy.yml` | Dokploy + Traefik deployment | Dokploy deployments driven by `.env` domains |
 | `deployments/docker/.env.example` | Template for prod env vars | Copy to `.env` inside `deployments/docker/` |
 
 > 💡 **Sharing deployment bundle**  
@@ -92,6 +93,31 @@ docker compose --env-file .env -f docker-compose.prod.yml logs -f
 # Stop services
 docker compose --env-file .env -f docker-compose.prod.yml down
 ```
+
+### Dokploy Deployment
+
+Use [`deployments/docker/docker-compose.dokploy.yml`](deployments/docker/docker-compose.dokploy.yml) when Dokploy manages ingress through Traefik labels and you want to pull images from the registry.
+
+Required `.env` values:
+
+```bash
+WEB_DOMAIN=app.example.com
+API_DOMAIN=api.example.com
+SERVER_PUBLIC_URL=https://api.example.com
+BETTER_AUTH_URL=https://api.example.com
+DEFAULT_ORGANIZATION_SLUG=your-organization
+CORS_ORIGINS=https://app.example.com
+TRAEFIK_NETWORK=dokploy-network
+TRAEFIK_ENTRYPOINTS=websecure
+TRAEFIK_CERTRESOLVER=letsencrypt
+```
+
+Notes:
+
+- This variant pulls the same pre-built images from GHCR as the standard production compose.
+- The web container writes a `runtime-config.js` file at startup, so changing `SERVER_PUBLIC_URL` or `DEFAULT_ORGANIZATION_SLUG` only requires a redeploy, not an image rebuild.
+- `server` and `web` are exposed only through Traefik labels; there are no host `ports` bindings.
+- The external Traefik network must already exist in Dokploy and match `TRAEFIK_NETWORK`.
 
 ### First-Time Production Deployment with Seeding
 

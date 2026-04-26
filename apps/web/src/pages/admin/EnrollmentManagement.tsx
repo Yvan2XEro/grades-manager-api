@@ -447,7 +447,7 @@ const EnrollmentManagement = () => {
 	useEffect(() => {
 		setRosterModalOpen(false);
 		setSelectedStudent("");
-	}, [selectedAcademicYear, selectedClass, selectedSemester]);
+	}, []);
 
 	useEffect(() => {
 		if (!rosterModalOpen) {

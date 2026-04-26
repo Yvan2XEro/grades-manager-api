@@ -717,11 +717,12 @@ export default function DeliberationDetail() {
 			)}
 
 			{/* Promote admitted dialog */}
-			{(isClosed || isSigned) && (
+			{(isClosed || isSigned) && delib.classId && (
 				<PromoteAdmittedDialog
 					open={promoteOpen}
 					onOpenChange={setPromoteOpen}
 					deliberationId={deliberationId!}
+					sourceClassId={delib.classId}
 					admittedCount={
 						results.filter(
 							(r) =>

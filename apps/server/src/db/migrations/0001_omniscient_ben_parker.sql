@@ -120,6 +120,39 @@ CREATE TABLE "deliberations" (
 	CONSTRAINT "uq_deliberation_class_semester_year_type" UNIQUE("institution_id","class_id","semester_id","academic_year_id","type")
 );
 --> statement-breakpoint
+CREATE TABLE "diplomation_api_keys" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
+	"key_hash" text NOT NULL,
+	"label" text NOT NULL,
+	"webhook_url" text,
+	"webhook_secret" text,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"last_used_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "diplomation_documents" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
+	"source_id" text NOT NULL,
+	"document_type" text NOT NULL,
+	"student_id" text,
+	"generated_at" timestamp with time zone NOT NULL,
+	"file_reference" text,
+	"generated_by_api_key_id" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "grade_access_grants" (
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"institution_id" text NOT NULL,
+	"profile_id" text NOT NULL,
+	"granted_by_profile_id" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "uq_grade_access_grant" UNIQUE("institution_id","profile_id")
+);
+--> statement-breakpoint
 CREATE TABLE "retake_overrides" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"institution_id" text NOT NULL,
@@ -134,6 +167,10 @@ CREATE TABLE "retake_overrides" (
 --> statement-breakpoint
 ALTER TABLE "class_courses" DROP CONSTRAINT "uq_class_courses_code";--> statement-breakpoint
 ALTER TABLE "domain_users" DROP CONSTRAINT "uq_domain_users_email";--> statement-breakpoint
+ALTER TABLE "institutions" DROP CONSTRAINT "institutions_default_academic_year_id_academic_years_id_fk";
+--> statement-breakpoint
+ALTER TABLE "institutions" DROP CONSTRAINT "institutions_registration_format_id_registration_number_formats_id_fk";
+--> statement-breakpoint
 DROP INDEX "idx_domain_users_role";--> statement-breakpoint
 ALTER TABLE "class_courses" ADD COLUMN "coefficient" numeric(5, 2) DEFAULT '1.00' NOT NULL;--> statement-breakpoint
 ALTER TABLE "classes" ADD COLUMN "total_credits" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
@@ -143,6 +180,12 @@ ALTER TABLE "exam_types" ADD COLUMN "default_percentage" integer DEFAULT 40;--> 
 ALTER TABLE "exams" ADD COLUMN "session_type" text DEFAULT 'normal' NOT NULL;--> statement-breakpoint
 ALTER TABLE "exams" ADD COLUMN "parent_exam_id" text;--> statement-breakpoint
 ALTER TABLE "exams" ADD COLUMN "scoring_policy" text DEFAULT 'replace' NOT NULL;--> statement-breakpoint
+ALTER TABLE "institutions" ADD COLUMN "is_main" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "programs" ADD COLUMN "diploma_title_fr" text;--> statement-breakpoint
+ALTER TABLE "programs" ADD COLUMN "diploma_title_en" text;--> statement-breakpoint
+ALTER TABLE "programs" ADD COLUMN "attestation_validity_fr" text;--> statement-breakpoint
+ALTER TABLE "programs" ADD COLUMN "attestation_validity_en" text;--> statement-breakpoint
+ALTER TABLE "programs" ADD COLUMN "cycle_id" text;--> statement-breakpoint
 ALTER TABLE "batch_job_logs" ADD CONSTRAINT "batch_job_logs_job_id_batch_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."batch_jobs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "batch_job_logs" ADD CONSTRAINT "batch_job_logs_step_id_batch_job_steps_id_fk" FOREIGN KEY ("step_id") REFERENCES "public"."batch_job_steps"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "batch_job_steps" ADD CONSTRAINT "batch_job_steps_job_id_batch_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."batch_jobs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -164,6 +207,13 @@ ALTER TABLE "deliberations" ADD CONSTRAINT "deliberations_academic_year_id_acade
 ALTER TABLE "deliberations" ADD CONSTRAINT "deliberations_president_id_domain_users_id_fk" FOREIGN KEY ("president_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deliberations" ADD CONSTRAINT "deliberations_signed_by_domain_users_id_fk" FOREIGN KEY ("signed_by") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deliberations" ADD CONSTRAINT "deliberations_created_by_domain_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."domain_users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "diplomation_api_keys" ADD CONSTRAINT "diplomation_api_keys_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "diplomation_documents" ADD CONSTRAINT "diplomation_documents_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "diplomation_documents" ADD CONSTRAINT "diplomation_documents_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "diplomation_documents" ADD CONSTRAINT "diplomation_documents_generated_by_api_key_id_diplomation_api_keys_id_fk" FOREIGN KEY ("generated_by_api_key_id") REFERENCES "public"."diplomation_api_keys"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "grade_access_grants" ADD CONSTRAINT "grade_access_grants_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "grade_access_grants" ADD CONSTRAINT "grade_access_grants_profile_id_domain_users_id_fk" FOREIGN KEY ("profile_id") REFERENCES "public"."domain_users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "grade_access_grants" ADD CONSTRAINT "grade_access_grants_granted_by_profile_id_domain_users_id_fk" FOREIGN KEY ("granted_by_profile_id") REFERENCES "public"."domain_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "retake_overrides" ADD CONSTRAINT "retake_overrides_institution_id_institutions_id_fk" FOREIGN KEY ("institution_id") REFERENCES "public"."institutions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "retake_overrides" ADD CONSTRAINT "retake_overrides_exam_id_exams_id_fk" FOREIGN KEY ("exam_id") REFERENCES "public"."exams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "retake_overrides" ADD CONSTRAINT "retake_overrides_student_course_enrollment_id_student_course_enrollments_id_fk" FOREIGN KEY ("student_course_enrollment_id") REFERENCES "public"."student_course_enrollments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -190,11 +240,20 @@ CREATE INDEX "idx_deliberations_class" ON "deliberations" USING btree ("class_id
 CREATE INDEX "idx_deliberations_year" ON "deliberations" USING btree ("academic_year_id");--> statement-breakpoint
 CREATE INDEX "idx_deliberations_status" ON "deliberations" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_deliberations_type" ON "deliberations" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "idx_diplomation_api_keys_institution" ON "diplomation_api_keys" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_diplomation_api_keys_hash" ON "diplomation_api_keys" USING btree ("key_hash");--> statement-breakpoint
+CREATE INDEX "idx_diplomation_documents_institution" ON "diplomation_documents" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_diplomation_documents_source" ON "diplomation_documents" USING btree ("source_id");--> statement-breakpoint
+CREATE INDEX "idx_grade_access_grants_institution" ON "grade_access_grants" USING btree ("institution_id");--> statement-breakpoint
+CREATE INDEX "idx_grade_access_grants_profile" ON "grade_access_grants" USING btree ("profile_id");--> statement-breakpoint
 CREATE INDEX "idx_retake_override_institution" ON "retake_overrides" USING btree ("institution_id");--> statement-breakpoint
 CREATE INDEX "idx_retake_override_exam" ON "retake_overrides" USING btree ("exam_id");--> statement-breakpoint
 CREATE INDEX "idx_retake_override_enrollment" ON "retake_overrides" USING btree ("student_course_enrollment_id");--> statement-breakpoint
+ALTER TABLE "programs" ADD CONSTRAINT "programs_cycle_id_study_cycles_id_fk" FOREIGN KEY ("cycle_id") REFERENCES "public"."study_cycles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_exams_session_type" ON "exams" USING btree ("session_type");--> statement-breakpoint
 CREATE INDEX "idx_exams_parent_exam_id" ON "exams" USING btree ("parent_exam_id");--> statement-breakpoint
 ALTER TABLE "class_courses" DROP COLUMN "weekly_hours";--> statement-breakpoint
 ALTER TABLE "domain_users" DROP COLUMN "business_role";--> statement-breakpoint
+ALTER TABLE "institutions" DROP COLUMN "default_academic_year_id";--> statement-breakpoint
+ALTER TABLE "institutions" DROP COLUMN "registration_format_id";--> statement-breakpoint
 ALTER TABLE "class_courses" ADD CONSTRAINT "uq_class_courses_code" UNIQUE("code","class_id");

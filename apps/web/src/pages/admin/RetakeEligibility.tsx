@@ -26,6 +26,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	ContextMenuItem,
 	ContextMenuSeparator,
@@ -308,45 +309,43 @@ export default function RetakeEligibility() {
 						<TableRow
 							key={row.studentCourseEnrollmentId}
 							actions={
-								<>
-									{row.override ? (
-										<ContextMenuItem onSelect={() => handleRemoveOverride(row)}>
-											{t("admin.retake.override.remove")}
-										</ContextMenuItem>
-									) : (
-										<>
-											{showEligibleActions && (
-												<ContextMenuItem
-													onSelect={() =>
-														setOverrideModal({
-															isOpen: true,
-															type: "eligible",
-															row,
-														})
-													}
-												>
-													{t("admin.retake.override.forceEligible", {
-														defaultValue: "Force eligible",
-													})}
-												</ContextMenuItem>
-											)}
+								row.override ? (
+									<ContextMenuItem onSelect={() => handleRemoveOverride(row)}>
+										{t("admin.retake.override.remove")}
+									</ContextMenuItem>
+								) : (
+									<>
+										{showEligibleActions && (
 											<ContextMenuItem
-												className="text-destructive"
 												onSelect={() =>
 													setOverrideModal({
 														isOpen: true,
-														type: "ineligible",
+														type: "eligible",
 														row,
 													})
 												}
 											>
-												{t("admin.retake.override.forceIneligible", {
-													defaultValue: "Force ineligible",
+												{t("admin.retake.override.forceEligible", {
+													defaultValue: "Force eligible",
 												})}
 											</ContextMenuItem>
-										</>
-									)}
-								</>
+										)}
+										<ContextMenuItem
+											className="text-destructive"
+											onSelect={() =>
+												setOverrideModal({
+													isOpen: true,
+													type: "ineligible",
+													row,
+												})
+											}
+										>
+											{t("admin.retake.override.forceIneligible", {
+												defaultValue: "Force ineligible",
+											})}
+										</ContextMenuItem>
+									</>
+								)
 							}
 						>
 							<TableCell className="font-medium">{row.studentName}</TableCell>
@@ -384,40 +383,36 @@ export default function RetakeEligibility() {
 											<RefreshCw className="mr-1 h-4 w-4" />
 											{t("admin.retake.override.remove")}
 										</Button>
+									) : showEligibleActions ? (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setOverrideModal({
+													isOpen: true,
+													row,
+													action: "force_ineligible",
+												})
+											}
+										>
+											<ShieldOff className="mr-1 h-4 w-4" />
+											{t("admin.retake.override.forceIneligible")}
+										</Button>
 									) : (
-										<>
-											{showEligibleActions ? (
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() =>
-														setOverrideModal({
-															isOpen: true,
-															row,
-															action: "force_ineligible",
-														})
-													}
-												>
-													<ShieldOff className="mr-1 h-4 w-4" />
-													{t("admin.retake.override.forceIneligible")}
-												</Button>
-											) : (
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() =>
-														setOverrideModal({
-															isOpen: true,
-															row,
-															action: "force_eligible",
-														})
-													}
-												>
-													<Shield className="mr-1 h-4 w-4" />
-													{t("admin.retake.override.forceEligible")}
-												</Button>
-											)}
-										</>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setOverrideModal({
+													isOpen: true,
+													row,
+													action: "force_eligible",
+												})
+											}
+										>
+											<Shield className="mr-1 h-4 w-4" />
+											{t("admin.retake.override.forceEligible")}
+										</Button>
 									)}
 								</div>
 							</TableCell>

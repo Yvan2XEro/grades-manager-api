@@ -9,7 +9,7 @@ export function useInfiniteScroll(
 	{ enabled = true }: { enabled?: boolean } = {},
 ) {
 	const ref = useRef<HTMLDivElement>(null);
-	const cb = useCallback(onIntersect, [onIntersect]);
+	const cb = useCallback(onIntersect, []);
 
 	useEffect(() => {
 		if (!enabled || !ref.current) return;

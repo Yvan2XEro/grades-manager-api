@@ -13,6 +13,10 @@ export type CreateContextOptions = {
 	context: HonoContext;
 };
 
+type SessionWithActiveOrganization = {
+	activeOrganizationId?: string | null;
+};
+
 export async function createContext({ context }: CreateContextOptions) {
 	const session = await auth.api.getSession({
 		headers: context.req.raw.headers,
@@ -56,8 +60,11 @@ async function resolveTenantContext(
 	profile: appSchema.DomainUser | null,
 	orgSlugHint?: string,
 ) {
+	const authSession = session?.session as
+		| SessionWithActiveOrganization
+		| undefined;
 	// First, try to get organizationId from the active organization in session
-	let organizationId = session?.session?.activeOrganizationId ?? null;
+	let organizationId = authSession?.activeOrganizationId ?? null;
 	let memberRecord: Awaited<
 		ReturnType<typeof db.query.member.findFirst>
 	> | null = null;

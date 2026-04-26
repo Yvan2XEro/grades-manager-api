@@ -36,13 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -311,6 +305,7 @@ export default function ClassCourseManagement() {
 		return "annual" as const;
 	}, [filterSemester, semesters]);
 
+
 	const {
 		data: classCoursesData,
 		isLoading,
@@ -438,7 +433,7 @@ export default function ClassCourseManagement() {
 	const selectedClass = selectedClassId
 		? classMap.get(selectedClassId)
 		: undefined;
-	const selectedCourse = selectedCourseId
+	const _selectedCourse = selectedCourseId
 		? courseMap.get(selectedCourseId)
 		: undefined;
 	const classCourseCodes = useMemo(
@@ -597,7 +592,7 @@ export default function ClassCourseManagement() {
 			toast.success(t("admin.classCourses.toast.createSuccess"));
 			if (autoEnrollOnCreate && data.class) {
 				// Find the academicYear for this class
-				const cls = classes.find((c) => c.id === data.class);
+				const _cls = classes.find((c) => c.id === data.class);
 				const yearId = filterYear ?? null;
 				if (yearId) {
 					autoEnrollMutation.mutate({

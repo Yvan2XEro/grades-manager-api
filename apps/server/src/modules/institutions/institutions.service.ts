@@ -1,12 +1,37 @@
 import { TRPCError } from "@trpc/server";
 import type { NewInstitution } from "@/db/schema/app-schema";
+import * as academicYearsRepo from "../academic-years/academic-years.repo";
+import * as registrationNumbersRepo from "../registration-numbers/registration-numbers.repo";
 import * as repo from "./institutions.repo";
 
 type UpdatableFields = Omit<NewInstitution, "id" | "createdAt" | "updatedAt">;
+type PersistedInstitutionFields = UpdatableFields;
+
+type InstitutionRecord = Awaited<ReturnType<typeof repo.getById>>;
+
+function toPersistedInstitutionUpdateFields(
+	data: Partial<UpdatableFields>,
+): Partial<PersistedInstitutionFields> {
+	return data;
+}
+
+async function attachDerivedSettings(institution: InstitutionRecord) {
+	if (!institution) return null;
+	const [activeAcademicYear, activeRegistrationFormat] = await Promise.all([
+		academicYearsRepo.findActive(institution.id),
+		registrationNumbersRepo.findActive(institution.id),
+	]);
+	return {
+		...institution,
+		defaultAcademicYearId: activeAcademicYear?.id ?? null,
+		registrationFormatId: activeRegistrationFormat?.id ?? null,
+	};
+}
 
 export async function getInstitution() {
 	const existing = await repo.getFirst();
-	return existing ?? null;
+	if (!existing) return null;
+	return attachDerivedSettings(existing);
 }
 
 export async function getInstitutionById(id: string) {
@@ -17,30 +42,40 @@ export async function getInstitutionById(id: string) {
 			message: "Institution not found",
 		});
 	}
-	return institution;
+	return attachDerivedSettings(institution);
 }
 
 export async function listInstitutions() {
-	return repo.list();
+	const institutions = await repo.list();
+	return Promise.all(
+		institutions.map((institution) => attachDerivedSettings(institution)),
+	);
 }
 
 export async function upsertInstitution(
 	data: UpdatableFields & { id?: string },
 ) {
 	const { id, ...fields } = data;
-	const payload = { ...fields, isMain: true };
+	const payload = {
+		...fields,
+		isMain: true,
+	} as PersistedInstitutionFields;
 	if (id) {
-		return repo.update(id, payload);
+		const updated = await repo.update(id, payload);
+		return attachDerivedSettings(updated);
 	}
 	const existing = await repo.getFirst();
 	if (existing) {
-		return repo.update(existing.id, payload);
+		const updated = await repo.update(existing.id, payload);
+		return attachDerivedSettings(updated);
 	}
-	return repo.create(payload);
+	const created = await repo.create(payload);
+	return attachDerivedSettings(created);
 }
 
 export async function createInstitution(data: UpdatableFields) {
-	return repo.create(data);
+	const created = await repo.create(data);
+	return attachDerivedSettings(created);
 }
 
 export async function updateInstitution(
@@ -54,7 +89,11 @@ export async function updateInstitution(
 			message: "Institution not found",
 		});
 	}
-	return repo.update(id, data);
+	const updated = await repo.update(
+		id,
+		toPersistedInstitutionUpdateFields(data),
+	);
+	return attachDerivedSettings(updated);
 }
 
 export async function deleteInstitution(id: string) {

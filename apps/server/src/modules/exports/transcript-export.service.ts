@@ -121,7 +121,7 @@ export async function buildTranscriptExport(
 			grades: exam.grades || [],
 		})) as ExamWithRetake[];
 
-		ueMap.get(ue.id)!.courses.push({
+		ueMap.get(ue.id)?.courses.push({
 			id: (cc as any).courseRef.id,
 			code: (cc as any).courseRef.code,
 			name: (cc as any).courseRef.name,
@@ -136,8 +136,8 @@ export async function buildTranscriptExport(
 	const students: TranscriptStudentData[] = (klass as any).students.map(
 		(student: any) => {
 			const ueResults: TranscriptUeResult[] = [];
-			const totalWeightedAvg = 0;
-			let totalUeCredits = 0;
+			const _totalWeightedAvg = 0;
+			let _totalUeCredits = 0;
 			let validWeightedSum = 0;
 			let validCredits = 0;
 
@@ -222,7 +222,7 @@ export async function buildTranscriptExport(
 					courses,
 				});
 
-				totalUeCredits += ue.credits;
+				_totalUeCredits += ue.credits;
 				if (ueAverage !== null) {
 					validWeightedSum += ueAverage * ue.credits;
 					validCredits += ue.credits;

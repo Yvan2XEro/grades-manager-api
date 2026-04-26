@@ -1,0 +1,224 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tcolorbox}
+\usepackage{titlesec}
+
+\geometry{
+    left=2.2cm,
+    right=2.2cm,
+    top=2.2cm,
+    bottom=2.2cm
+}
+
+\input{package_variables}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={Forfaits de licences logicielles},
+    pdfauthor={TKAMS},
+    pdfsubject={Proposition commerciale}
+}
+
+\definecolor{PrimaryBlue}{HTML}{123B6D}
+\definecolor{SoftBlue}{HTML}{EEF4FB}
+\definecolor{SoftGray}{HTML}{F6F7F9}
+\definecolor{SoftGreen}{HTML}{EDF7F1}
+
+\titleformat{\section}{\Large\bfseries\color{PrimaryBlue}}{}{0em}{}
+\titleformat{\subsection}{\large\bfseries\color{PrimaryBlue}}{}{0em}{}
+
+\newcommand{\Amount}[1]{#1~\Currency}
+\newcommand{\FeatureListStart}{\begin{itemize}[leftmargin=1.2cm,itemsep=0.3em]}
+\newcommand{\FeatureListEnd}{\end{itemize}}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge\bfseries Proposition de forfaits de licences\par}
+    \vspace{0.6cm}
+    {\Large Acquisition de solutions numériques académiques\par}
+    \vspace{1.5cm}
+
+    \begin{tcolorbox}[colback=SoftBlue,colframe=PrimaryBlue,width=0.92\textwidth]
+        \centering
+        Cette proposition présente trois forfaits commerciaux permettant l'acquisition de \textbf{\AcademicSoftwareName}, de \textbf{\DocumentSoftwareName}, ou des deux solutions dans une offre intégrée.\\[0.4em]
+        Chaque forfait inclut des \textbf{frais d'installation initiaux}, suivis d'une \textbf{licence annuelle} adaptée au périmètre fonctionnel retenu.
+    \end{tcolorbox}
+
+    \vfill
+
+    \begin{tabular}{ll}
+        \textbf{Document} & Proposition commerciale \\
+        \textbf{Objet} & Forfaits de licences logicielles \\
+        \textbf{Date} & \today \\
+    \end{tabular}
+
+    \vfill
+\end{titlepage}
+
+\section{Vue d'ensemble}
+
+Les solutions concernées sont les suivantes :
+\FeatureListStart
+    \item \textbf{\AcademicSoftwareName} (\AcademicSoftwareFullName) : solution de gestion académique couvrant la structure académique, les étudiants, les notes, les délibérations, les utilisateurs, la \textbf{programmation des examens} et le \textbf{suivi des examens}.
+    \item \textbf{\DocumentSoftwareName} (\DocumentSoftwareFullName) : solution de production documentaire permettant de générer des \textbf{attestations de réussite, relevés de notes, diplômes, procès-verbaux, certificats et autres documents académiques}, avec alimentation soit par \AcademicSoftwareName, soit par des \textbf{fichiers Excel externes}.
+    \item \textbf{\BundleSoftwareName} : offre groupée intégrant les deux solutions dans une logique unifiée d'exploitation et d'industrialisation des processus académiques et documentaires.
+\FeatureListEnd
+
+\section{Principes de commercialisation}
+
+\FeatureListStart
+    \item Les deux logiciels peuvent être commercialisés \textbf{séparément} ou \textbf{ensemble}.
+    \item Toute acquisition donne lieu à des \textbf{frais d'installation} couvrant le déploiement, le paramétrage, la formation initiale et l'accompagnement au démarrage.
+    \item La licence annuelle de \AcademicSoftwareName{} est calculée sur la base du \textbf{nombre d'étudiants actifs} et du \textbf{nombre d'utilisateurs habilités}.
+    \item La licence annuelle de \DocumentSoftwareName{} est calculée sur une base \textbf{forfaitaire} avec un \textbf{volume de documents inclus}, puis un tarif complémentaire au-delà du seuil prévu.
+    \item Le forfait intégré accorde une \textbf{optimisation tarifaire} et une meilleure continuité opérationnelle entre la gestion académique et la production documentaire.
+\FeatureListEnd
+
+\section{Forfaits proposés}
+
+\subsection{Forfait 1 : \AcademicSoftwareName}
+
+\begin{tcolorbox}[colback=SoftBlue,colframe=PrimaryBlue,title=Positionnement]
+Solution de gestion académique complète destinée aux établissements souhaitant digitaliser le pilotage des activités académiques, administratives et opérationnelles.
+\end{tcolorbox}
+
+\textbf{Fonctionnalités couvertes}
+\FeatureListStart
+    \item Gestion de la structure académique : cycles, niveaux, programmes, classes, unités d'enseignement et cours.
+    \item Gestion des étudiants, inscriptions, enrôlements et parcours académiques.
+    \item Gestion des notes, calculs, validations, workflows et délibérations.
+    \item Gestion des comptes, rôles, autorisations et traçabilité des opérations.
+    \item \textbf{Programmation des examens} : planification, organisation et allocation des sessions.
+    \item \textbf{Suivi des examens} : pilotage du déroulement, contrôle des états, publications et exploitation des résultats.
+    \item Exports, publications et outils d'aide à la gouvernance académique.
+\FeatureListEnd
+
+\textbf{Frais d'installation}
+\FeatureListStart
+    \item Mise en service et paramétrage initial : \Amount{\SetupAcademic}
+    \item Inclus : installation technique, paramétrage fonctionnel, reprise initiale des référentiels, formation administrateur et assistance au démarrage.
+\FeatureListEnd
+
+\textbf{Licence annuelle}
+\FeatureListStart
+    \item \Amount{\AcademicStudentPrice}~\PricingPerStudentLabel
+    \item \Amount{\AcademicUserPrice}~\PricingPerUserLabel
+    \item Minimum annuel recommandé : \Amount{\AcademicMinimumAnnual}
+\FeatureListEnd
+
+\textbf{Profil de client cible}\\
+Établissements souhaitant structurer durablement la gestion de leur activité académique avec une plateforme centrale et évolutive.
+
+\subsection{Forfait 2 : \DocumentSoftwareName}
+
+\begin{tcolorbox}[colback=SoftGreen,colframe=PrimaryBlue,title=Positionnement]
+Solution de génération documentaire destinée à industrialiser la production, la personnalisation et la fiabilisation des documents académiques officiels.
+\end{tcolorbox}
+
+\textbf{Fonctionnalités couvertes}
+\FeatureListStart
+    \item Génération d'attestations de réussite, relevés de notes, diplômes, certificats, procès-verbaux et autres pièces académiques.
+    \item Génération unitaire ou en masse, avec modèles personnalisables selon la charte de l'établissement.
+    \item Alimentation automatique via \AcademicSoftwareName{} lorsque l'établissement en dispose.
+    \item Alimentation alternative par \textbf{fichiers Excel externes}, pour des établissements ne souhaitant pas déployer immédiatement \AcademicSoftwareName.
+    \item Contrôle des données, historisation des productions et export PDF prêt à l'impression.
+\FeatureListEnd
+
+\textbf{Frais d'installation}
+\FeatureListStart
+    \item Mise en service et paramétrage documentaire : \Amount{\SetupDocument}
+    \item Inclus : installation technique, configuration des gabarits, personnalisation des modèles, paramétrage des sources de données et formation des opérateurs.
+\FeatureListEnd
+
+\textbf{Licence annuelle}
+\FeatureListStart
+    \item Forfait annuel : \Amount{\DocumentAnnualBase} jusqu'à \DocumentIncludedVolume{} documents
+    \item Au-delà : \Amount{\DocumentExtraPrice}~\PricingPerExtraDocumentLabel
+\FeatureListEnd
+
+\textbf{Profil de client cible}\\
+Établissements qui veulent moderniser la production documentaire, qu'ils disposent déjà de \AcademicSoftwareName{} ou qu'ils travaillent encore avec des données externes structurées sous Excel.
+
+\subsection{Forfait 3 : \BundleSoftwareName}
+
+\begin{tcolorbox}[colback=SoftGray,colframe=PrimaryBlue,title=Positionnement]
+Offre premium intégrant \AcademicSoftwareName{} et \DocumentSoftwareName{} dans un environnement cohérent, interopérable et optimisé sur les plans fonctionnel, organisationnel et financier.
+\end{tcolorbox}
+
+\textbf{Fonctionnalités couvertes}
+\FeatureListStart
+    \item Ensemble des fonctionnalités de \AcademicSoftwareName.
+    \item Ensemble des fonctionnalités de \DocumentSoftwareName.
+    \item Intégration native entre la gestion académique et la production documentaire.
+    \item Réduction des doubles saisies, amélioration de la fiabilité des données et accélération de la production des documents officiels.
+    \item Chaîne complète allant de la gestion académique jusqu'à l'édition des documents finaux.
+\FeatureListEnd
+
+\textbf{Frais d'installation}
+\FeatureListStart
+    \item Pack d'installation intégré : \Amount{\SetupBundle}
+    \item Inclus : installation des deux solutions, paramétrage global, interconnexion, personnalisation documentaire, formation élargie et accompagnement au démarrage.
+\FeatureListEnd
+
+\textbf{Licence annuelle}
+\FeatureListStart
+    \item \Amount{\BundleStudentPrice}~\PricingPerStudentLabel
+    \item \Amount{\BundleUserPrice}~\PricingPerUserLabel
+    \item Documents inclus : \BundleIncludedVolume{} documents par an
+    \item Au-delà : \Amount{\BundleExtraPrice}~\PricingPerExtraDocumentLabel
+\FeatureListEnd
+
+\textbf{Profil de client cible}\\
+Universités, facultés, instituts et écoles supérieures recherchant une solution unifiée offrant un meilleur retour sur investissement et un niveau élevé d'automatisation.
+
+\section{Tableau récapitulatif}
+
+\renewcommand{\arraystretch}{1.35}
+\begin{longtable}{>{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.9cm} >{\raggedright\arraybackslash}p{3.4cm}}
+\toprule
+\textbf{Forfait} & \textbf{Installation} & \textbf{Licence annuelle} & \textbf{Cible principale} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Forfait} & \textbf{Installation} & \textbf{Licence annuelle} & \textbf{Cible principale} \\
+\midrule
+\endhead
+\textbf{\AcademicSoftwareName} & \Amount{\SetupAcademic} & \Amount{\AcademicStudentPrice} par étudiant actif / an + \Amount{\AcademicUserPrice} par utilisateur / an & Digitalisation complète de la gestion académique \\
+\textbf{\DocumentSoftwareName} & \Amount{\SetupDocument} & \Amount{\DocumentAnnualBase} jusqu'à \DocumentIncludedVolume{} documents, puis \Amount{\DocumentExtraPrice} par document supplémentaire & Production documentaire avec données \AcademicSoftwareName{} ou Excel \\
+\textbf{\BundleSoftwareName} & \Amount{\SetupBundle} & \Amount{\BundleStudentPrice} par étudiant actif / an + \Amount{\BundleUserPrice} par utilisateur / an + \BundleIncludedVolume{} documents inclus & Offre intégrée avec optimisation économique et opérationnelle \\
+\bottomrule
+\end{longtable}
+
+\section{Recommandation de positionnement commercial}
+
+\FeatureListStart
+    \item Proposer \AcademicSoftwareName{} comme offre coeur de gestion pour les établissements voulant professionnaliser leurs opérations académiques.
+    \item Proposer \DocumentSoftwareName{} comme solution rapide à forte valeur ajoutée pour les établissements confrontés à des volumes élevés de documents académiques.
+    \item Positionner \BundleSoftwareName{} comme l'offre stratégique de référence, en mettant en avant l'intégration native, la réduction des erreurs et la maîtrise de l'ensemble de la chaîne académique et documentaire.
+\FeatureListEnd
+
+\section{Clause de présentation commerciale}
+
+\begin{tcolorbox}[colback=SoftBlue,colframe=PrimaryBlue]
+Les montants présentés dans ce document constituent une base de structuration commerciale. Ils peuvent être ajustés selon la taille de l'établissement, le volume réel d'étudiants, le nombre d'utilisateurs, le volume documentaire attendu, les exigences de personnalisation, le niveau d'accompagnement et les conditions contractuelles retenues.
+\end{tcolorbox}
+
+\end{document}

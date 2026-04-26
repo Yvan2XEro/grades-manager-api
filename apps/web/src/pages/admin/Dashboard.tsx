@@ -30,7 +30,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
@@ -104,7 +103,6 @@ function DashboardSkeleton() {
 			</div>
 			<div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
 				{Array.from({ length: 6 }).map((_, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 					<Skeleton key={i} className="h-24 rounded-xl" />
 				))}
 			</div>

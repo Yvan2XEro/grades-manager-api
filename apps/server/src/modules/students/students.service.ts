@@ -352,7 +352,7 @@ export async function updateStudent(
 }
 
 export async function listStudents(
-	opts: Parameters<typeof repo.list>[0],
+	opts: Omit<Parameters<typeof repo.list>[0], "institutionId">,
 	institutionId: string,
 ) {
 	return repo.list({ ...opts, institutionId });

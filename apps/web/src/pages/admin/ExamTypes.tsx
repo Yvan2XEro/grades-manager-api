@@ -18,13 +18,7 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "../../components/ui/card";
+import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
 import { DialogFooter } from "../../components/ui/dialog";
 import {
@@ -43,7 +37,6 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-import { Spinner } from "../../components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -56,6 +49,7 @@ import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
+import type { ExamType } from "../../utils/type";
 
 const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 	z.object({
@@ -63,13 +57,6 @@ const buildSchema = (t: ReturnType<typeof useTranslation>["t"]) =>
 		description: z.string().optional(),
 		defaultPercentage: z.coerce.number().int().min(1).max(100).optional(),
 	});
-
-type ExamType = {
-	id: string;
-	name: string;
-	description: string | null;
-	defaultPercentage: number | null;
-};
 
 type FormValues = z.infer<ReturnType<typeof buildSchema>>;
 

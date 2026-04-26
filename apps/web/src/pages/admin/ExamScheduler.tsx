@@ -51,9 +51,8 @@ import {
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { type RouterOutputs, trpcClient } from "../../utils/trpc";
+import type { ExamType, Semester } from "../../utils/type";
 
-type ExamType = { id: string; name: string; defaultPercentage: number | null };
-type Semester = RouterOutputs["semesters"]["list"]["items"][number];
 type PreviewClass = {
 	id: string;
 	name: string;
@@ -126,7 +125,7 @@ export default function ExamScheduler() {
 			return result.items as Semester[];
 		},
 	});
-	const semesters = semestersQuery.data ?? [];
+	const _semesters = semestersQuery.data ?? [];
 
 	const classesQuery = useQuery({
 		queryKey: ["classes", academicYearId],

@@ -14,7 +14,6 @@ import { Button } from "../../components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
 } from "../../components/ui/card";
@@ -87,8 +86,6 @@ const institutionSchema = z.object({
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
-	defaultAcademicYearId: z.string().optional(),
-	registrationFormatId: z.string().optional(),
 	timezone: z.string().optional(),
 });
 
@@ -118,8 +115,6 @@ const defaultValues: FormValues = {
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
-	defaultAcademicYearId: undefined,
-	registrationFormatId: undefined,
 	timezone: "UTC",
 };
 
@@ -148,8 +143,6 @@ type Institution = {
 	coverImageUrl: string | null;
 	parentInstitutionId: string | null;
 	institutionId: string | null;
-	defaultAcademicYearId: string | null;
-	registrationFormatId: string | null;
 	timezone: string | null;
 };
 
@@ -168,14 +161,6 @@ export default function FacultyManagement() {
 
 	const { data: allInstitutions, isLoading } = useQuery(
 		trpc.institutions.list.queryOptions(),
-	);
-
-	const { data: academicYears } = useQuery(
-		trpc.academicYears.list.queryOptions({ limit: 100 }),
-	);
-
-	const { data: registrationFormats } = useQuery(
-		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
 	);
 
 	const institutions = useMemo(
@@ -204,8 +189,6 @@ export default function FacultyManagement() {
 			postalBox: parent.postalBox ?? "",
 			website: parent.website ?? "",
 			timezone: parent.timezone ?? "UTC",
-			defaultAcademicYearId: parent.defaultAcademicYearId ?? undefined,
-			registrationFormatId: parent.registrationFormatId ?? undefined,
 		};
 
 		for (const [key, value] of Object.entries(inherited)) {
@@ -247,8 +230,6 @@ export default function FacultyManagement() {
 			coverImageUrl: inst.coverImageUrl ?? "",
 			parentInstitutionId: inst.parentInstitutionId ?? undefined,
 			institutionId: inst.institutionId ?? undefined,
-			defaultAcademicYearId: inst.defaultAcademicYearId ?? undefined,
-			registrationFormatId: inst.registrationFormatId ?? undefined,
 			timezone: inst.timezone ?? "UTC",
 		});
 		setIsModalOpen(true);
@@ -275,8 +256,6 @@ export default function FacultyManagement() {
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
-				defaultAcademicYearId: values.defaultAcademicYearId || undefined,
-				registrationFormatId: values.registrationFormatId || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(
@@ -382,9 +361,6 @@ export default function FacultyManagement() {
 				return type;
 		}
 	};
-
-	const years = academicYears?.items ?? [];
-	const formats = registrationFormats ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -1290,6 +1266,7 @@ export default function FacultyManagement() {
 								</div>
 							</CardContent>
 						</Card>
+
 
 						<DialogFooter className="gap-2 sm:gap-0">
 							<Button variant="ghost" type="button" onClick={handleCloseModal}>

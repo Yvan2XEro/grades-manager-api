@@ -7,10 +7,7 @@ import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
-import {
-	ContextMenuItem,
-	ContextMenuSeparator,
-} from "@/components/ui/context-menu";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
 	DialogBody,
@@ -164,15 +161,13 @@ export default function GradeAccessGrants() {
 								<TableRow
 									key={g.id}
 									actions={
-										<>
-											<ContextMenuItem
-												variant="destructive"
-												onSelect={() => setRevokeId(g.id)}
-											>
-												<Trash2 className="h-4 w-4" />
-												{t("admin.gradeAccessGrants.actions.revoke")}
-											</ContextMenuItem>
-										</>
+										<ContextMenuItem
+											variant="destructive"
+											onSelect={() => setRevokeId(g.id)}
+										>
+											<Trash2 className="h-4 w-4" />
+											{t("admin.gradeAccessGrants.actions.revoke")}
+										</ContextMenuItem>
 									}
 								>
 									<TableCell className="font-medium">

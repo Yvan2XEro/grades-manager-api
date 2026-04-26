@@ -25,13 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClipboardCopy } from "@/components/ui/clipboard-copy";
 import {
@@ -126,7 +120,7 @@ export default function CourseManagement() {
 	const courseSchema = useMemo(() => buildCourseSchema(t), [t]);
 	const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery({
-			queryKey: ["courses"],
+			queryKey: ["courses", "infinite"],
 			queryFn: async ({ pageParam }) => {
 				const result = await trpcClient.courses.list.query({
 					cursor: pageParam,
@@ -188,7 +182,7 @@ export default function CourseManagement() {
 	});
 	const { watch } = form;
 	const selectedProgramId = watch("program");
-	const selectedProgram = useMemo(
+	const _selectedProgram = useMemo(
 		() => programs?.find((program) => program.id === selectedProgramId),
 		[programs, selectedProgramId],
 	);
@@ -211,7 +205,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.create.mutate(data);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
 			toast.success(t("admin.courses.toast.createSuccess"));
 			handleCloseForm();
 		},
@@ -226,7 +220,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.update.mutate({ id, ...updateData });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
 			toast.success(t("admin.courses.toast.updateSuccess"));
 			handleCloseForm();
 		},
@@ -240,7 +234,7 @@ export default function CourseManagement() {
 			await trpcClient.courses.delete.mutate({ id });
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
 			toast.success(t("admin.courses.toast.deleteSuccess"));
 			setIsDeleteOpen(false);
 			setDeleteId(null);
@@ -257,7 +251,7 @@ export default function CourseManagement() {
 			);
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			queryClient.invalidateQueries({ queryKey: ["courses", "infinite"] });
 			selection.clear();
 			toast.success(
 				t("common.bulkActions.deleteSuccess", {

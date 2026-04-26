@@ -28,12 +28,7 @@ import {
 	SelectValue,
 } from "../../../components/ui/select";
 import { Switch } from "../../../components/ui/switch";
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "../../../components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { trpcClient } from "../../../utils/trpc";
 
 const TYPES = ["semester", "annual", "retake"] as const;
