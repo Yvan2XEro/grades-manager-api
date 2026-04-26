@@ -296,6 +296,12 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	const { data: semestersData } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query(),
+	});
+	const semesters = semestersData?.items;
+
 	// Map catalog semester code (S1/S2) → UE semester value (fall/spring/annual)
 	const filterUeSemester = useMemo(() => {
 		if (!filterSemester || !semesters) return undefined;
@@ -304,7 +310,6 @@ export default function ClassCourseManagement() {
 		if (code === "S2") return "spring" as const;
 		return "annual" as const;
 	}, [filterSemester, semesters]);
-
 
 	const {
 		data: classCoursesData,
@@ -347,12 +352,6 @@ export default function ClassCourseManagement() {
 	const sentinelRef = useInfiniteScroll(fetchNextPage, {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
-
-	const { data: semestersData } = useQuery({
-		queryKey: ["semesters"],
-		queryFn: () => trpcClient.semesters.list.query(),
-	});
-	const semesters = semestersData?.items;
 
 	// Query for UE assignment: search classes
 	const { data: ueAssignSearchClasses = [] } = useQuery({
