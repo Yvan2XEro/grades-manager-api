@@ -129,7 +129,18 @@
       "Bash(awk 'NR>=2798 {print}' \"C:/tmp/bts_users.yaml\")",
       "Bash(git fetch *)",
       "Bash(git merge *)",
-      "Bash(git update-index *)"
+      "Bash(git update-index *)",
+      "Bash(PGPASSWORD=root psql -h localhost -U postgres -d grades-manager-api-db -c \"SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id;\")",
+      "Bash(awk NR>=1190 && NR<=1210 { print NR\": \"$0 } *)",
+      "Bash(awk 'NR>=1320 { print NR\": \"$0 }' apps/web/src/pages/admin/ClassCourseManagement.tsx)",
+      "Bash(node /tmp/audit_i18n_full.js)",
+      "Read(//tmp/**)",
+      "Bash(awk NR>=332 && NR<=355 { printf \"%d|%s|\\\\n\", NR, $0 } *)",
+      "Bash(PGPASSWORD=root psql *)",
+      "Bash(docker --version)",
+      "Bash(awk '/^teachingUnits:/{flag=1; next} /^[a-z]/{flag=0} flag && /^- code:/' seed/local/10-academics.yaml)",
+      "Bash(awk '/^courses:/{flag=1; next} /^[a-z]/{flag=0} flag && /^- code:/' seed/local/10-academics.yaml)",
+      "Bash(awk '/^- code: SFM$/,/^- code:/' seed/local/10-academics.yaml)"
     ]
   },
   "enabledMcpjsonServers": [

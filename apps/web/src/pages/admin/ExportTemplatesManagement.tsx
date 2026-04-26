@@ -76,6 +76,7 @@ const EXPORT_TYPES = [
 	{ value: "diploma", label: "Diplôme" },
 	{ value: "transcript", label: "Relevé de notes" },
 	{ value: "attestation", label: "Attestation" },
+	{ value: "student_list", label: "Liste d'étudiants" },
 ] as const;
 
 const buildSchema = (t: any) =>
@@ -89,6 +90,7 @@ const buildSchema = (t: any) =>
 			"diploma",
 			"transcript",
 			"attestation",
+			"student_list",
 		]),
 		isDefault: z.boolean().default(false),
 	});

@@ -10,7 +10,9 @@ import {
 	codeSchema,
 	idSchema,
 	listSchema,
+	programIdSchema,
 	searchSchema,
+	setExportTemplatesSchema,
 	updateSchema,
 } from "./programs.zod";
 
@@ -55,6 +57,20 @@ export const router = createRouter({
 				input.targetProgramId,
 				input.sourceProgramId,
 				ctx.institution.id,
+			),
+		),
+	listExportTemplates: protectedProcedure
+		.input(programIdSchema)
+		.query(({ ctx, input }) =>
+			service.listProgramExportTemplates(input.programId, ctx.institution.id),
+		),
+	setExportTemplates: adminProcedure
+		.input(setExportTemplatesSchema)
+		.mutation(({ ctx, input }) =>
+			service.setProgramExportTemplates(
+				input.programId,
+				ctx.institution.id,
+				input.templates,
 			),
 		),
 });

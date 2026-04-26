@@ -15,6 +15,27 @@
       "when": 1775386560087,
       "tag": "0001_omniscient_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777203467494,
+      "tag": "0002_add_centers_and_program_export_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777204606858,
+      "tag": "0003_extend_centers_with_branding",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777291006858,
+      "tag": "0004_extend_export_templates_for_documents",
+      "breakpoints": true
     }
   ]
 }

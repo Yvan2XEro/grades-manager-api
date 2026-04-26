@@ -19,6 +19,8 @@ const programSelection = {
 	attestationValidityFr: schema.programs.attestationValidityFr,
 	attestationValidityEn: schema.programs.attestationValidityEn,
 	cycleId: schema.programs.cycleId,
+	centerId: schema.programs.centerId,
+	isCenterProgram: schema.programs.isCenterProgram,
 	createdAt: schema.programs.createdAt,
 };
 
@@ -90,6 +92,8 @@ export async function list(
 		q?: string;
 		cursor?: string;
 		limit?: number;
+		centerId?: string;
+		isCenterProgram?: boolean;
 	},
 ) {
 	const limit = opts.limit ?? 50;
@@ -101,6 +105,14 @@ export async function list(
 	if (opts.q) {
 		const qCond = ilike(schema.programs.name, `%${opts.q}%`);
 		condition = condition ? and(condition, qCond) : qCond;
+	}
+	if (opts.centerId) {
+		const cCond = eq(schema.programs.centerId, opts.centerId);
+		condition = condition ? and(condition, cCond) : cCond;
+	}
+	if (opts.isCenterProgram !== undefined) {
+		const ipCond = eq(schema.programs.isCenterProgram, opts.isCenterProgram);
+		condition = condition ? and(condition, ipCond) : ipCond;
 	}
 	if (opts.cursor) {
 		const cursorCond = gt(schema.programs.id, opts.cursor);
@@ -134,6 +146,8 @@ export async function list(
 			schema.programs.attestationValidityFr,
 			schema.programs.attestationValidityEn,
 			schema.programs.cycleId,
+			schema.programs.centerId,
+			schema.programs.isCenterProgram,
 			schema.programs.createdAt,
 		)
 		.orderBy(schema.programs.name)
@@ -155,6 +169,8 @@ export async function list(
 		attestationValidityFr: r.attestationValidityFr,
 		attestationValidityEn: r.attestationValidityEn,
 		cycleId: r.cycleId,
+		centerId: r.centerId,
+		isCenterProgram: r.isCenterProgram,
 		createdAt: r.createdAt,
 		optionsCount: r.optionsCount,
 	}));
@@ -185,4 +201,60 @@ export async function search(opts: {
 		.orderBy(schema.programs.code)
 		.limit(limit);
 	return items;
+}
+
+export async function listExportTemplates(programId: string) {
+	return db
+		.select({
+			id: schema.programExportTemplates.id,
+			templateType: schema.programExportTemplates.templateType,
+			templateId: schema.programExportTemplates.templateId,
+			templateName: schema.exportTemplates.name,
+		})
+		.from(schema.programExportTemplates)
+		.innerJoin(
+			schema.exportTemplates,
+			eq(schema.exportTemplates.id, schema.programExportTemplates.templateId),
+		)
+		.where(eq(schema.programExportTemplates.programId, programId));
+}
+
+export async function setExportTemplates(
+	programId: string,
+	institutionId: string,
+	assignments: Array<{
+		templateType: schema.ExportTemplateType;
+		templateId: string;
+	}>,
+) {
+	await db
+		.delete(schema.programExportTemplates)
+		.where(eq(schema.programExportTemplates.programId, programId));
+	if (!assignments.length) return [];
+	const rows = assignments.map((a) => ({
+		programId,
+		institutionId,
+		templateType: a.templateType,
+		templateId: a.templateId,
+	}));
+	return db.insert(schema.programExportTemplates).values(rows).returning();
+}
+
+export async function findDefaultExportTemplate(
+	programId: string,
+	templateType: schema.ExportTemplateType,
+) {
+	const [row] = await db
+		.select({
+			templateId: schema.programExportTemplates.templateId,
+		})
+		.from(schema.programExportTemplates)
+		.where(
+			and(
+				eq(schema.programExportTemplates.programId, programId),
+				eq(schema.programExportTemplates.templateType, templateType),
+			),
+		)
+		.limit(1);
+	return row?.templateId ?? null;
 }

@@ -3,13 +3,24 @@ import type {
 	ExportTemplateType,
 } from "../../db/schema/app-schema";
 import { loadTemplate } from "../exports/template-helper";
+import {
+	getDefaultTheme,
+	isDocumentThemeKind,
+	type ThemeKind,
+} from "../exports/themes";
+import { getDefaultThemePayload } from "../exports/themes/presets-payload";
 import * as repo from "./export-templates.repo";
 import type {
+	AssignClassTemplateInput,
+	AssignProgramTemplateInput,
 	CreateExportTemplateInput,
 	DeleteExportTemplateInput,
 	GetExportTemplateInput,
 	ListExportTemplatesInput,
+	RemoveClassTemplateAssignmentInput,
+	RemoveProgramTemplateAssignmentInput,
 	SetDefaultTemplateInput,
+	UpdateClassTemplateAssignmentInput,
 	UpdateExportTemplateInput,
 } from "./export-templates.zod";
 
@@ -48,21 +59,29 @@ export async function createTemplate(
 	userId: string,
 	input: CreateExportTemplateInput,
 ): Promise<ExportTemplate> {
-	// If this is set as default, unset other defaults first
 	if (input.isDefault) {
 		await repo.setDefaultTemplate(institutionId, "", input.type);
 	}
 
 	const templateBody =
-		input.templateBody ??
-		loadTemplate(input.type as "pv" | "evaluation" | "ue");
+		input.templateBody?.trim() && input.templateBody.length > 0
+			? input.templateBody
+			: loadTemplate(input.type);
+
+	const themeDefaults = input.themeDefaults
+		? input.themeDefaults
+		: isDocumentThemeKind(input.type)
+			? getDefaultThemePayload(input.type as ThemeKind)
+			: {};
 
 	return await repo.createTemplate({
 		institutionId,
 		name: input.name,
 		type: input.type,
 		isDefault: input.isDefault,
+		description: input.description ?? null,
 		templateBody,
+		themeDefaults,
 		createdBy: userId,
 		updatedBy: userId,
 	});
@@ -80,8 +99,14 @@ export async function updateTemplate(
 	const updated = await repo.updateTemplate(input.id, {
 		...(input.name && { name: input.name }),
 		...(input.isDefault !== undefined && { isDefault: input.isDefault }),
+		...(input.description !== undefined && {
+			description: input.description ?? null,
+		}),
 		...(input.templateBody !== undefined && {
 			templateBody: input.templateBody,
+		}),
+		...(input.themeDefaults !== undefined && {
+			themeDefaults: input.themeDefaults,
 		}),
 		updatedBy: userId,
 	});
@@ -90,7 +115,6 @@ export async function updateTemplate(
 		throw new Error(`Failed to update template ${input.id}`);
 	}
 
-	// If isDefault was set to true, unset other defaults
 	if (input.isDefault === true) {
 		await repo.setDefaultTemplate(
 			existing.institutionId,
@@ -105,6 +129,13 @@ export async function updateTemplate(
 export async function deleteTemplate(
 	input: DeleteExportTemplateInput,
 ): Promise<void> {
+	const existing = await repo.findTemplateById(input.id);
+	if (!existing) {
+		throw new Error(`Export template with id ${input.id} not found`);
+	}
+	// System defaults can be deleted — `seedSystemDefaults` is idempotent and
+	// will recreate them on demand from the "Initialiser modèles officiels"
+	// button.
 	const deleted = await repo.deleteTemplate(input.id);
 	if (!deleted) {
 		throw new Error(`Export template with id ${input.id} not found`);
@@ -129,4 +160,113 @@ export async function setDefault(
 	}
 
 	await repo.setDefaultTemplate(institutionId, input.id, input.type);
+}
+
+// ---------- Class assignments ----------
+
+async function assertOwnership(
+	institutionId: string,
+	templateId: string,
+	type: ExportTemplateType,
+) {
+	const tpl = await repo.findTemplateById(templateId);
+	if (!tpl) throw new Error(`Template ${templateId} not found`);
+	if (tpl.institutionId !== institutionId)
+		throw new Error("Template does not belong to this institution");
+	if (tpl.type !== type) throw new Error("Template type mismatch");
+}
+
+export async function assignClassTemplate(
+	institutionId: string,
+	userId: string,
+	input: AssignClassTemplateInput,
+) {
+	await assertOwnership(institutionId, input.templateId, input.templateType);
+	return await repo.upsertClassAssignment({
+		institutionId,
+		classId: input.classId,
+		templateType: input.templateType,
+		templateId: input.templateId,
+		themeOverrides: input.themeOverrides ?? null,
+		createdBy: userId,
+		updatedBy: userId,
+	});
+}
+
+export async function updateClassTemplateAssignment(
+	institutionId: string,
+	userId: string,
+	input: UpdateClassTemplateAssignmentInput,
+) {
+	const existing = await repo.findClassAssignment(
+		input.classId,
+		input.templateType,
+	);
+	if (!existing) {
+		throw new Error(
+			`No assignment exists for class ${input.classId} / ${input.templateType}`,
+		);
+	}
+	const templateId = input.templateId ?? existing.templateId;
+	await assertOwnership(institutionId, templateId, input.templateType);
+	return await repo.upsertClassAssignment({
+		institutionId,
+		classId: input.classId,
+		templateType: input.templateType,
+		templateId,
+		themeOverrides:
+			input.themeOverrides === undefined
+				? (existing.themeOverrides ?? null)
+				: (input.themeOverrides ?? null),
+		createdBy: existing.createdBy,
+		updatedBy: userId,
+	});
+}
+
+export async function removeClassTemplateAssignment(
+	input: RemoveClassTemplateAssignmentInput,
+) {
+	return await repo.deleteClassAssignment(input.classId, input.templateType);
+}
+
+export async function listClassAssignments(
+	institutionId: string,
+	filters: { classId?: string; templateType?: ExportTemplateType },
+) {
+	return await repo.listClassAssignments(institutionId, filters);
+}
+
+// ---------- Program assignments ----------
+
+export async function assignProgramTemplate(
+	institutionId: string,
+	input: AssignProgramTemplateInput,
+) {
+	await assertOwnership(institutionId, input.templateId, input.templateType);
+	return await repo.upsertProgramAssignment({
+		institutionId,
+		programId: input.programId,
+		templateType: input.templateType,
+		templateId: input.templateId,
+		themeOverrides: input.themeOverrides ?? null,
+	});
+}
+
+export async function removeProgramTemplateAssignment(
+	input: RemoveProgramTemplateAssignmentInput,
+) {
+	return await repo.deleteProgramAssignment(
+		input.programId,
+		input.templateType,
+	);
+}
+
+// ---------- Theme presets / defaults ----------
+
+export function listThemePresets(kind: ThemeKind) {
+	return {
+		kind,
+		default: getDefaultTheme(kind),
+		// presets are populated lazily by the router using getPresetDescriptors
+	};
 }

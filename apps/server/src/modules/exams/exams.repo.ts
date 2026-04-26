@@ -96,6 +96,7 @@ export async function list(opts: {
 			className: schema.classes.name,
 			courseId: schema.courses.id,
 			courseName: schema.courses.name,
+			courseCode: schema.courses.code,
 		})
 		.from(schema.exams)
 		.innerJoin(
@@ -123,6 +124,7 @@ export async function list(opts: {
 		className: row.className,
 		courseId: row.courseId,
 		courseName: row.courseName,
+		courseCode: row.courseCode,
 	}));
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
@@ -133,10 +135,15 @@ export async function setLock(
 	examId: string,
 	lock: boolean,
 	institutionId: string,
+	options?: { promoteToApproved?: boolean },
 ) {
+	const updates: Partial<schema.NewExam> = { isLocked: lock };
+	if (lock && options?.promoteToApproved) {
+		updates.status = "approved";
+	}
 	const [item] = await db
 		.update(schema.exams)
-		.set({ isLocked: lock })
+		.set(updates)
 		.where(
 			and(
 				eq(schema.exams.id, examId),

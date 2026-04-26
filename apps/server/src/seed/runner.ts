@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { hashPassword } from "better-auth/crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
@@ -101,7 +101,8 @@ export type FoundationSeed = {
 
 type ProgramSeed = {
 	code: string;
-	name: string;
+	name?: string;
+	nameFr?: string;
 	nameEn?: string;
 	abbreviation?: string;
 	slug?: string;
@@ -178,17 +179,33 @@ export type AcademicsSeed = {
 	teachingUnits?: Array<{
 		programCode: string;
 		code: string;
-		name: string;
+		/** Libellé de l'UE — accepte `name` ou `title` (alias). */
+		name?: string;
+		title?: string;
 		description?: string;
 		credits?: number;
 		semester?: TeachingUnitSemester;
+		/** Champs métier conservés pour documentation (non stockés en DB). */
+		semesterCode?: string;
+		cycleLevelCode?: string;
+		categoryCode?: string;
+		hoursCM?: number;
+		hoursTD?: number;
+		hoursTP?: number;
+		hoursTPE?: number;
+		hoursTotal?: number;
+		ecCount?: number;
+		isInternship?: boolean;
 	}>;
 	courses?: Array<{
-		programCode: string;
+		programCode?: string;
 		teachingUnitCode: string;
 		code: string;
-		name: string;
-		hours: number;
+		/** Libellé de l'EC — accepte `name` ou `title` (alias). */
+		name?: string;
+		title?: string;
+		hours?: number;
+		credits?: number;
 		defaultTeacherCode?: string;
 		/** Coefficient for weighted-average within the UE (defaults to 1.00). */
 		defaultCoefficient?: number;
@@ -1021,7 +1038,13 @@ async function seedAcademics(
 			);
 		}
 		const code = normalizeCode(entry.code);
-		const slug = entry.slug ?? slugify(entry.name);
+		const programName = entry.name ?? entry.nameFr;
+		if (!programName) {
+			throw new Error(
+				`Program ${entry.code} is missing a "name" (or "nameFr") field.`,
+			);
+		}
+		const slug = entry.slug ?? slugify(programName);
 		// Resolve optional study cycle link
 		let cycleId: string | null = null;
 		if (entry.studyCycleCode) {
@@ -1038,7 +1061,7 @@ async function seedAcademics(
 		}
 		const programPayload = {
 			code,
-			name: entry.name,
+			name: programName,
 			nameEn: entry.nameEn ?? null,
 			abbreviation: entry.abbreviation ?? null,
 			slug,
@@ -1133,12 +1156,21 @@ async function seedAcademics(
 			);
 		}
 		const code = normalizeCode(entry.code);
-		// Normalize semester: YAML may use "S1"/"S2" aliases; DB expects "fall"/"spring"/"annual"
-		const rawSemester = entry.semester as string | undefined;
+		const ueName = entry.name ?? entry.title;
+		if (!ueName) {
+			throw new Error(
+				`Teaching unit ${entry.code} is missing a "name" (or "title") field.`,
+			);
+		}
+		// Normalize semester: YAML may use "S1"/"S2"/"S3"… aliases or `semesterCode`;
+		// DB only knows "fall"/"spring"/"annual".
+		const rawSemester = (entry.semester ?? entry.semesterCode) as
+			| string
+			| undefined;
 		const semester: schema.TeachingUnitSemester =
-			rawSemester === "S1"
+			rawSemester === "S1" || rawSemester === "S3" || rawSemester === "S5"
 				? "fall"
-				: rawSemester === "S2"
+				: rawSemester === "S2" || rawSemester === "S4" || rawSemester === "S6"
 					? "spring"
 					: ((rawSemester as schema.TeachingUnitSemester) ?? "annual");
 		const [unit] = await db
@@ -1146,7 +1178,7 @@ async function seedAcademics(
 			.values({
 				programId: program.id,
 				code,
-				name: entry.name,
+				name: ueName,
 				description: entry.description ?? null,
 				credits: entry.credits ?? 0,
 				semester,
@@ -1154,7 +1186,7 @@ async function seedAcademics(
 			.onConflictDoUpdate({
 				target: [schema.teachingUnits.programId, schema.teachingUnits.code],
 				set: {
-					name: entry.name,
+					name: ueName,
 					description: entry.description ?? null,
 					credits: entry.credits ?? 0,
 					semester,
@@ -1172,37 +1204,60 @@ async function seedAcademics(
 	}
 
 	for (const entry of data.courses ?? []) {
-		const programCode = normalizeCode(entry.programCode);
-		const program = state.programs.get(programCode);
-		if (!program) {
+		const ecName = entry.name ?? entry.title;
+		if (!ecName) {
 			throw new Error(
-				`Unknown program code "${entry.programCode}" for course ${entry.code}`,
+				`Course ${entry.code} is missing a "name" (or "title") field.`,
 			);
 		}
+		// Find the parent UE: explicit programCode wins, else search across all programs.
 		const unitCode = normalizeCode(entry.teachingUnitCode);
-		const teachingUnit = state.teachingUnits.get(`${programCode}::${unitCode}`);
+		let teachingUnit = entry.programCode
+			? state.teachingUnits.get(
+					`${normalizeCode(entry.programCode)}::${unitCode}`,
+				)
+			: undefined;
+		let programCode = entry.programCode
+			? normalizeCode(entry.programCode)
+			: undefined;
 		if (!teachingUnit) {
+			for (const [key, ue] of state.teachingUnits) {
+				if (key.endsWith(`::${unitCode}`)) {
+					teachingUnit = ue;
+					programCode = ue.programCode;
+					break;
+				}
+			}
+		}
+		if (!teachingUnit || !programCode) {
 			throw new Error(
 				`Unknown teaching unit ${entry.teachingUnitCode} for course ${entry.code}`,
 			);
 		}
+		const program = state.programs.get(programCode);
+		if (!program) {
+			throw new Error(
+				`Unknown program code "${programCode}" for course ${entry.code}`,
+			);
+		}
 		const code = normalizeCode(entry.code);
+		const courseHours = entry.hours ?? 0;
 		const [course] = await db
 			.insert(schema.courses)
 			.values({
 				program: program.id,
 				teachingUnitId: teachingUnit.id,
 				code,
-				name: entry.name,
-				hours: entry.hours,
+				name: ecName,
+				hours: courseHours,
 				defaultTeacher: null,
 				defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 			})
 			.onConflictDoUpdate({
 				target: [schema.courses.program, schema.courses.code],
 				set: {
-					name: entry.name,
-					hours: entry.hours,
+					name: ecName,
+					hours: courseHours,
 					defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 				},
 			})
@@ -1726,6 +1781,39 @@ async function seedUsers(
 	if (data.studentCourseEnrollments?.length) {
 		logger.log(
 			`[seed] • Student course enrollments: ${data.studentCourseEnrollments.length}`,
+		);
+	}
+
+	// Auto-enroll: ensure every (student × class_course-of-its-class) pair has a
+	// student_course_enrollment row. Without this, examsService.createExam refuses
+	// to schedule because ensureRosterForClassCourse throws BAD_REQUEST.
+	// Idempotent — ON CONFLICT skips already-enrolled pairs.
+	const autoEnrollResult = await db.execute(sql`
+		INSERT INTO student_course_enrollments (
+			student_id, class_course_id, course_id, source_class_id,
+			academic_year_id, status, credits_attempted, attempt
+		)
+		SELECT
+			s.id,
+			cc.id,
+			cc.course_id,
+			s.class_id,
+			c.academic_year_id,
+			'active',
+			COALESCE(tu.credits, 1) AS credits_attempted,
+			1
+		FROM students s
+		JOIN class_courses cc ON cc.class_id = s.class_id
+		JOIN classes c ON c.id = s.class_id
+		JOIN courses co ON co.id = cc.course_id
+		JOIN teaching_units tu ON tu.id = co.teaching_unit_id
+		ON CONFLICT (student_id, course_id, academic_year_id, attempt) DO NOTHING
+	`);
+	const autoEnrollCount =
+		(autoEnrollResult as unknown as { rowCount?: number })?.rowCount ?? 0;
+	if (autoEnrollCount > 0) {
+		logger.log(
+			`[seed] • Auto-enrolled student × class_course pairs: ${autoEnrollCount}`,
 		);
 	}
 

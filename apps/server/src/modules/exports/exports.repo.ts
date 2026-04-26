@@ -3,6 +3,7 @@ import { db } from "../../db";
 import {
 	classCourses,
 	classes,
+	deliberations,
 	exams,
 	institutions,
 	students,
@@ -16,6 +17,40 @@ export class ExportsRepo {
 	private db = db;
 
 	constructor(private readonly institutionId: string) {}
+
+	/** Lookup the parent class_course of an exam (used by eligibility checks) */
+	async getExamMeta(examId: string) {
+		const exam = await this.db.query.exams.findFirst({
+			where: and(
+				eq(exams.id, examId),
+				eq(exams.institutionId, this.institutionId),
+			),
+		});
+		return exam ? { classCourseId: exam.classCourse } : null;
+	}
+
+	/** Resolve the class an exam belongs to (via class_courses). */
+	async getClassIdForExam(examId: string): Promise<string | null> {
+		const meta = await this.getExamMeta(examId);
+		if (!meta) return null;
+		const cc = await this.db.query.classCourses.findFirst({
+			where: eq(classCourses.id, meta.classCourseId),
+		});
+		return cc?.class ?? null;
+	}
+
+	/** Resolve the class a deliberation targets. */
+	async getClassIdForDeliberation(
+		deliberationId: string,
+	): Promise<string | null> {
+		const row = await this.db.query.deliberations.findFirst({
+			where: and(
+				eq(deliberations.id, deliberationId),
+				eq(deliberations.institutionId, this.institutionId),
+			),
+		});
+		return row?.classId ?? null;
+	}
 
 	/**
 	 * Get institution with its optional parent institution

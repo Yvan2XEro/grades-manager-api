@@ -96,11 +96,12 @@ export const router = createRouter({
 				ctx.institution.id,
 			),
 		),
-	lock: tenantAdminProcedure
-		.input(lockSchema)
-		.mutation(({ ctx, input }) =>
-			service.setLock(input.examId, input.lock, ctx.institution.id),
-		),
+	lock: tenantAdminProcedure.input(lockSchema).mutation(({ ctx, input }) =>
+		service.setLock(input.examId, input.lock, ctx.institution.id, {
+			profileId: ctx.profile?.id ?? null,
+			memberRole: ctx.memberRole ?? null,
+		}),
+	),
 	list: tenantProtectedProcedure.input(listSchema).query(({ ctx, input }) =>
 		service.listExams(input, {
 			institutionId: ctx.institution.id,

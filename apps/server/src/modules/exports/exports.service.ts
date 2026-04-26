@@ -138,9 +138,25 @@ export class ExportsService {
 			getObservation(score, this.config),
 		);
 		Handlebars.registerHelper("eq", (a, b) => a === b);
-		Handlebars.registerHelper("gt", (a, b) => a > b);
-		Handlebars.registerHelper("add", (a, b) => a + b);
-		Handlebars.registerHelper("multiply", (a, b) => a * b);
+		Handlebars.registerHelper("gt", (a, b) => Number(a) > Number(b));
+		Handlebars.registerHelper("gte", (a, b) => Number(a) >= Number(b));
+		Handlebars.registerHelper("lt", (a, b) => Number(a) < Number(b));
+		Handlebars.registerHelper("lte", (a, b) => Number(a) <= Number(b));
+		Handlebars.registerHelper("add", (a, b) => Number(a) + Number(b));
+		Handlebars.registerHelper("subtract", (a, b) => Number(a) - Number(b));
+		Handlebars.registerHelper("multiply", (a, b) => Number(a) * Number(b));
+		Handlebars.registerHelper("divide", (a, b) =>
+			Number(b) === 0 ? 0 : Number(a) / Number(b),
+		);
+		Handlebars.registerHelper("abs", (a) => Math.abs(Number(a)));
+	}
+
+	/** Return the parent class_course of an exam (for eligibility checks) */
+	async getExamClassCourse(
+		examId: string,
+	): Promise<{ classCourseId: string } | null> {
+		const meta = await this.repo.getExamMeta(examId);
+		return meta;
 	}
 
 	/** Return structured PV data (JSON) for frontend Excel export */
@@ -148,7 +164,12 @@ export class ExportsService {
 		input: Omit<GeneratePVInput, "format" | "templateId">,
 	) {
 		const config = await this.getConfig();
-		const templateConfig = await loadExportTemplate(this.institutionId, "pv");
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"pv",
+			undefined,
+			{ classId: input.classId },
+		);
 
 		const data = await this.repo.getPVData(
 			input.classId,
@@ -164,11 +185,12 @@ export class ExportsService {
 	async generatePV(input: GeneratePVInput) {
 		const config = await this.getConfig();
 
-		// Load export template configuration
+		// Resolves program-default template + center branding via classId
 		const templateConfig = await loadExportTemplate(
 			this.institutionId,
 			"pv",
 			input.templateId,
+			{ classId: input.classId },
 		);
 
 		const data = await this.repo.getPVData(
@@ -210,11 +232,14 @@ export class ExportsService {
 	async generateEvaluation(input: GenerateEvaluationInput) {
 		const config = await this.getConfig();
 
-		// Load export template configuration
+		// Resolve classId so we pick up the program's default evaluation template
+		const classId = await this.repo.getClassIdForExam(input.examId);
+
 		const templateConfig = await loadExportTemplate(
 			this.institutionId,
 			"evaluation",
 			input.templateId,
+			{ classId: classId ?? undefined },
 		);
 
 		const data = await this.repo.getEvaluationData(input.examId);
@@ -254,11 +279,12 @@ export class ExportsService {
 	async generateUE(input: GenerateUEInput) {
 		const config = await this.getConfig();
 
-		// Load export template configuration
+		// Resolves program-default template + center branding via classId
 		const templateConfig = await loadExportTemplate(
 			this.institutionId,
 			"ue",
 			input.templateId,
+			{ classId: input.classId },
 		);
 
 		const data = await this.repo.getUEData(
@@ -301,10 +327,14 @@ export class ExportsService {
 		diplomationData: DiplomationExportData,
 	) {
 		const config = await this.getConfig();
+		const classId = await this.repo.getClassIdForDeliberation(
+			input.deliberationId,
+		);
 		const templateConfig = await loadExportTemplate(
 			this.institutionId,
 			"deliberation",
 			input.templateId,
+			{ classId: classId ?? undefined },
 		);
 
 		const templateData = this.processDeliberationData(
@@ -332,11 +362,19 @@ export class ExportsService {
 	}
 
 	/** Return structured deliberation data for frontend Excel export */
-	async getDeliberationDataStructured(diplomationData: DiplomationExportData) {
+	async getDeliberationDataStructured(
+		diplomationData: DiplomationExportData,
+		deliberationId?: string,
+	) {
 		const config = await this.getConfig();
+		const classId = deliberationId
+			? await this.repo.getClassIdForDeliberation(deliberationId)
+			: null;
 		const templateConfig = await loadExportTemplate(
 			this.institutionId,
 			"deliberation",
+			undefined,
+			{ classId: classId ?? undefined },
 		);
 		return this.processDeliberationData(
 			diplomationData,
@@ -451,9 +489,36 @@ export class ExportsService {
 	}
 
 	async previewTemplate(input: {
-		type: "pv" | "evaluation" | "ue" | "deliberation";
+		type:
+			| "pv"
+			| "evaluation"
+			| "ue"
+			| "deliberation"
+			| "diploma"
+			| "transcript"
+			| "attestation"
+			| "student_list";
 		templateBody: string;
 	}) {
+		// Diploma / transcript / attestation / student_list have their own data
+		// shape and theme pipeline — delegate to the academic-documents service
+		// which knows how to render them with sample data.
+		if (
+			input.type === "diploma" ||
+			input.type === "transcript" ||
+			input.type === "attestation" ||
+			input.type === "student_list"
+		) {
+			const academic = await import(
+				"../academic-documents/academic-documents.service"
+			);
+			return await academic.previewTemplateBody(this.institutionId, {
+				kind: input.type,
+				templateBody: input.templateBody,
+				demoMode: true,
+			});
+		}
+
 		const config = await this.getConfig();
 		const baseConfig = await loadExportTemplate(this.institutionId, input.type);
 		const templateConfig: TemplateConfiguration = {
@@ -927,7 +992,7 @@ export class ExportsService {
 	private renderTemplate(
 		templateName: "pv" | "evaluation" | "ue" | "deliberation",
 		data: any,
-		templateConfig: TemplateConfiguration,
+		templateConfig: TemplateConfiguration & { center?: unknown },
 	): string {
 		// Use custom template if provided, otherwise use default
 		const templateSource =
@@ -938,6 +1003,7 @@ export class ExportsService {
 			...data,
 			headerConfig: templateConfig.headerConfig,
 			styleConfig: templateConfig.styleConfig,
+			center: (templateConfig as { center?: unknown }).center ?? null,
 		};
 
 		const template = Handlebars.compile(templateSource);

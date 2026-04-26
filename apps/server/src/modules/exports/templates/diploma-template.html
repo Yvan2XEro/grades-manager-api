@@ -1,0 +1,265 @@
+<!--
+  Diploma template — DOM/CSS structure ported from DIPLOMATION's
+  src/lib/diploma-generator/html-generator.ts to keep the rendered output
+  visually identical when no overrides are applied. The template is driven
+  by Handlebars variables fed by `apps/server/src/modules/academic-documents`,
+  while the structure mirrors DIPLOMATION 1:1 (header in 3 blocks, watermark
+  grid with 4 alternating text styles, signature row with 3 boxes).
+-->
+<!DOCTYPE html>
+<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{document.titleFr}}</title>
+<style>
+@page { size: A4 landscape; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding: 0; }
+.diploma-container { width: 297mm; height: 210mm; background: white; position: relative; margin: 0 auto; overflow: hidden; }
+
+/* Decorative borders */
+.outer-border { position: absolute; top: {{theme.page.margins.top}}mm; left: {{theme.page.margins.left}}mm; right: {{theme.page.margins.right}}mm; bottom: {{theme.page.margins.bottom}}mm; border: {{theme.borders.outerWidth}}px solid {{theme.colors.outerBorder}}; }
+.inner-border { position: absolute; top: 1mm; left: 1mm; right: 1mm; bottom: 1mm; border: {{theme.borders.innerWidth}}px solid {{theme.colors.innerBorder}}; }
+.content { position: absolute; top: 14mm; left: 14mm; right: 14mm; bottom: 14mm; z-index: 10; }
+
+/* Watermark — center logo + repeated text grid (4 alternating styles) */
+.watermark { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 1; z-index: 1; overflow: hidden; display: {{#if theme.watermark.enabled}}block{{else}}none{{/if}}; }
+.watermark-center-logo { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: {{theme.watermark.logoSize}}px; height: auto; opacity: {{theme.watermark.logoOpacity}}; z-index: 2; }
+.watermark-grid { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 45px 70px; width: 180%; height: 180%; padding: 150px; z-index: 1; }
+.watermark-item { display: flex; flex-direction: column; align-items: center; }
+.watermark-text { font-size: {{theme.watermark.textSize}}pt; font-weight: bold; color: {{theme.watermark.color}}; font-family: Arial, Helvetica, sans-serif; white-space: nowrap; letter-spacing: 2px; opacity: {{theme.watermark.textOpacity}}; }
+.watermark-text.style-1 { font-family: 'Times New Roman', Times, serif; font-size: {{add theme.watermark.textSize 4}}pt; font-weight: bold; letter-spacing: 1px; }
+.watermark-text.style-2 { font-family: Georgia, serif; font-size: {{subtract theme.watermark.textSize 2}}pt; font-style: italic; letter-spacing: 4px; font-weight: normal; }
+.watermark-text.style-3 { font-family: Arial, Helvetica, sans-serif; font-size: {{add theme.watermark.textSize 2}}pt; font-weight: 900; letter-spacing: 3px; }
+.watermark-text.style-4 { font-family: 'Courier New', monospace; font-size: {{subtract theme.watermark.textSize 1}}pt; font-weight: bold; letter-spacing: 2px; }
+
+/* Header — 3 columns: FR text | coat of arms | EN text */
+.header { display: flex; justify-content: space-between; align-items: flex-end; text-align: center; margin-bottom: {{theme.spacing.sectionSpacing}}mm; gap: 3mm; }
+.header-block { display: flex; flex-direction: column; }
+.header-text-block { flex: 1; display: flex; }
+.header-text-block-right { align-items: flex-start; }
+.header-text-block-left { align-items: flex-end; }
+.header-text { width: max-content; text-align: center; font-family: {{theme.fonts.header}}; font-size: {{theme.sizes.header}}pt; line-height: {{theme.spacing.headerLineHeight}}; }
+.header-text .country { font-weight: bold; font-size: {{add theme.sizes.header 0.5}}pt; letter-spacing: 0.3px; text-transform: uppercase; }
+.header-text .motto { font-size: {{subtract theme.sizes.header 1}}pt; font-style: italic; letter-spacing: 0.5px; }
+.header-text .stars { font-size: {{subtract theme.sizes.header 2}}pt; letter-spacing: 0.5px; }
+.header-text .institution { font-size: {{subtract theme.sizes.header 0.5}}pt; margin: 1px 0; letter-spacing: 0.2px; }
+.header-text .faculty { font-weight: bold; font-size: {{theme.sizes.header}}pt; letter-spacing: 0.3px; }
+
+.coat-of-arms { width: auto; height: {{theme.logos.coatOfArmsSize}}px; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; margin-left: {{theme.logos.coatOfArmsOffsetX}}px; margin-top: {{theme.logos.coatOfArmsOffsetY}}px; }
+.coat-of-arms img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* Title row — faculty logo | title | ministry logo */
+.title-row { display: flex; justify-content: space-between; align-items: center; margin-top: {{theme.spacing.titleBlockMarginTop}}mm; margin-bottom: {{theme.spacing.titleBlockMarginBottom}}mm; gap: 3mm; }
+.logo-box { width: auto; height: {{theme.logos.facultyLogoSize}}px; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; padding-left: {{theme.logos.facultyLogoOffsetX}}px; margin-top: {{theme.logos.facultyLogoOffsetY}}px; }
+.logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ministry-logo { width: auto; height: {{theme.logos.ministryLogoSize}}px; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; padding-right: {{abs theme.logos.ministryLogoOffsetX}}px; margin-top: {{theme.logos.ministryLogoOffsetY}}px; }
+.ministry-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.title { text-align: center; flex: 1; }
+.title h1 {
+	font-size: {{theme.sizes.title}}pt; font-weight: bold; font-family: {{theme.fonts.title}};
+	color: {{theme.colors.primary}}; margin-bottom: 3px;
+	line-height: {{theme.titleEffects.lineHeight}}; letter-spacing: {{theme.titleEffects.letterSpacing}}px;
+	text-shadow: {{#if theme.titleEffects.shadow}}{{theme.titleEffects.shadowOffsetX}}px {{theme.titleEffects.shadowOffsetY}}px {{theme.titleEffects.shadowBlur}}px {{theme.titleEffects.shadowColor}}40{{else}}none{{/if}};
+	text-transform: uppercase;
+}
+.title .subtitle { font-family: {{theme.fonts.subtitle}}; font-size: {{theme.sizes.subtitle}}pt; font-style: italic; color: {{theme.colors.primary}}; font-weight: 500; }
+.en-text { font-style: italic; display: {{#if theme.display.bilingual}}inline{{else}}none{{/if}}; }
+.en-block { display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
+
+/* Minister section */
+.minister-section { margin-bottom: {{theme.spacing.ministerBlockMarginBottom}}mm; }
+.legal-text { font-family: {{theme.fonts.legalText}}; font-size: {{theme.sizes.legalText}}pt; line-height: 1.25; margin: 1px 0; letter-spacing: 0.1px; font-weight: bold; }
+.legal-text-en { font-family: {{theme.fonts.legalText}}; font-size: {{subtract theme.sizes.legalText 0.7}}pt; font-style: italic; line-height: 1.15; letter-spacing: 0.1px; font-weight: normal; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
+.jury-date-value { font-family: {{theme.fonts.reference}}; font-size: {{theme.sizes.legalText}}pt; color: {{theme.colors.juryDates}}; }
+
+/* Recipient */
+.recipient-section { display: flex; justify-content: space-between; gap: 0mm; margin-bottom: {{theme.spacing.recipientBlockMarginBottom}}mm; }
+.recipient-left { flex: 2.5; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.content}}pt; }
+.recipient-right { flex: 1; padding-left: 4mm; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.studentInfo}}pt; }
+.field { display: flex; align-items: flex-start; margin: 2mm 0; }
+.field-label { font-weight: bold; white-space: nowrap; flex-shrink: 0; }
+.field-value { font-weight: bold; margin-left: 6px; }
+.field-value-fullname { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.fullName}}; }
+.field-value-birthinfo { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.fullName}}; font-weight: bold; }
+.matricule-value { font-family: {{theme.fonts.reference}}; font-size: {{theme.sizes.matricule}}pt; color: {{theme.colors.matricule}}; font-weight: bold; }
+.mention-value { font-family: {{theme.fonts.mention}}; font-size: {{theme.sizes.mention}}pt; color: {{theme.colors.mention}}; font-weight: bold; }
+.mention-box { display: flex; align-items: flex-start; }
+.mention-label { font-weight: bold; white-space: nowrap; flex-shrink: 0; margin-right: 4px; }
+.mention-en { font-style: italic; font-weight: normal; font-size: 8.5pt; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
+.field-value-diploma-title { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.diplomaTitle}}; text-align: center; margin-left: 0; }
+.field-value-option { font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.content}}pt; color: {{theme.colors.diplomaTitle}}; font-weight: bold; }
+.year-obtention-value { font-family: {{theme.fonts.reference}}; font-size: {{theme.sizes.content}}pt; color: {{theme.colors.yearObtention}}; font-weight: bold; }
+
+/* Reference number + QR code */
+.ref-block { width: 35%; padding-left: 5mm; display: flex; flex-direction: column; align-items: flex-end; font-family: {{theme.fonts.reference}}; }
+.ref-row { margin-top: 3mm; width: 100%; position: relative; }
+.ref-number { font-weight: bold; font-size: {{theme.sizes.referenceNumber}}pt; text-align: right; }
+.qr-code { width: {{theme.qrCode.size}}px; height: {{theme.qrCode.size}}px; border: 2px solid {{theme.colors.primary}}; background: white; display: {{#if theme.qrCode.enabled}}flex{{else}}none{{/if}}; align-items: center; justify-content: center; margin: 2mm 0 2mm auto; margin-right: {{theme.qrCode.offsetX}}px; margin-top: {{theme.qrCode.offsetY}}px; }
+.qr-code img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Signatures (3 boxes: holder | rector | minister) */
+.signature-section { display: flex; justify-content: space-between; margin-top: {{theme.spacing.signatureBlockMarginTop}}mm; font-size: {{theme.sizes.studentInfo}}pt; font-family: {{theme.fonts.signature}}; }
+.signature-box { text-align: center; width: 30%; }
+.signature-box-minister { text-align: center; width: 36%; }
+.signature-title { font-weight: bold; line-height: 1.2; }
+.signature-title-en { font-style: italic; font-size: {{subtract theme.sizes.content 1.5}}pt; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
+
+/* Footer (anchored bottom of content area) */
+.footer { position: absolute; bottom: 0; left: 0; right: 0; font-family: {{theme.fonts.footer}}; font-size: {{theme.sizes.footer}}pt; line-height: 1.3; letter-spacing: 0.2px; }
+.footer-en { font-family: {{theme.fonts.footer}}; font-style: italic; font-size: {{subtract theme.sizes.footer 1}}pt; letter-spacing: 0.2px; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
+
+@media print { body { margin: 0; padding: 0; } .diploma-container { page-break-after: always; } }
+</style>
+</head>
+<body>
+<div class="diploma-container">
+	<div class="outer-border"><div class="inner-border"></div></div>
+
+	<div class="watermark">
+		{{#if institution.watermarkLogoUrl}}<img class="watermark-center-logo" src="{{institution.watermarkLogoUrl}}" alt="">{{/if}}
+		<div class="watermark-grid">
+			{{#each watermarkRepeat}}
+			<div class="watermark-item"><div class="watermark-text{{#if (eq (mod @index 4) 0)}}{{else}} style-{{add (mod @index 4) 1}}{{/if}}">{{../theme.watermark.text}}</div></div>
+			{{/each}}
+		</div>
+	</div>
+
+	<div class="content">
+		<div class="header">
+			<div class="header-block header-text-block header-text-block-right">
+				<div class="header-text">
+					<div class="country">{{country.fr}}</div>
+					<div class="motto">{{country.mottoFr}}</div>
+					<div class="stars">********************</div>
+					<div class="institution">{{ministry.fr}}</div>
+					<div class="stars">********************</div>
+					<div class="institution">{{university.fr}}</div>
+					<div class="stars">********************</div>
+					<div class="faculty">{{faculty.fr}}</div>
+				</div>
+			</div>
+			<div class="header-block">
+				{{#if logos.coatOfArms}}<div class="coat-of-arms"><img src="{{logos.coatOfArms}}" alt="Coat of arms"></div>{{/if}}
+			</div>
+			<div class="header-block header-text-block header-text-block-left">
+				<div class="header-text">
+					<div class="country">{{country.en}}</div>
+					<div class="motto">{{country.mottoEn}}</div>
+					<div class="stars">********************</div>
+					<div class="institution">{{ministry.en}}</div>
+					<div class="stars">********************</div>
+					<div class="institution">{{university.en}}</div>
+					<div class="stars">********************</div>
+					<div class="faculty">{{faculty.en}}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="title-row">
+			<div class="header-block">
+				{{#if logos.faculty}}<div class="logo-box"><img src="{{logos.faculty}}" alt="Faculty logo"></div>{{/if}}
+			</div>
+			<div class="title">
+				<h1>{{document.titleFr}}</h1>
+				<div class="subtitle en-text">{{document.titleEn}}</div>
+			</div>
+			<div class="header-block">
+				{{#if logos.ministry}}<div class="ministry-logo"><img src="{{logos.ministry}}" alt="Ministry logo"></div>{{/if}}
+			</div>
+		</div>
+
+		<div class="minister-section">
+			<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2mm;">
+				<div style="flex: 1;">
+					<div class="legal-text">{{minister.titleFr}}</div>
+					<div class="legal-text legal-text-en"><em>{{minister.titleEn}}</em></div>
+					{{#each legalGrounds}}
+						<div class="legal-text">{{this.fr}}</div>
+						<div class="legal-text legal-text-en"><em>{{this.en}}</em></div>
+					{{/each}}
+					<div class="legal-text">Vu le Procès-verbal du jury d'admission, session du <strong class="jury-date-value">{{jury.admissionDate}}</strong></div>
+					<div class="legal-text legal-text-en"><em>Mindful of the results sheet of admission panel of {{jury.admissionDate}}</em></div>
+					<div class="legal-text">Vu le Procès-verbal des délibérations du jury, session du <strong class="jury-date-value">{{jury.deliberationDate}}</strong></div>
+					<div class="legal-text legal-text-en"><em>Mindful of the deliberation minutes of the jury sitting of {{jury.deliberationDate}}</em></div>
+				</div>
+				<div class="ref-block">
+					<div class="ref-row">
+						<div class="ref-number">N°{{document.referenceNumber}}</div>
+						<div class="qr-code">{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR Code">{{/if}}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="recipient-section">
+			<div class="recipient-left">
+				<div class="field">
+					<div class="field-label">Délivre à M./Mlle <br><span class="en-text"><em>Confers to Mr/Ms</em></span></div>
+					<div class="field-value field-value-fullname">{{student.fullName}}</div>
+				</div>
+				<div class="field">
+					<div class="field-label">Né(e) le : <br><span class="en-text"><em>Born on</em></span></div>
+					<div class="field-value field-value-birthinfo">{{student.birthDate}} À {{student.birthPlace}} <br><span class="en-text"><em>{{student.birthDate}} At {{student.birthPlace}}</em></span></div>
+				</div>
+			</div>
+			<div class="recipient-right">
+				<div class="mention-box">
+					<div class="mention-label">Matricule : <br><span class="mention-en"><em>Registration:</em></span></div>
+					<div class="matricule-value">{{student.matricule}} <br><span class="en-text"><em>{{student.matricule}}</em></span></div>
+				</div>
+				<div class="mention-box" style="margin-top: 4mm;">
+					<div class="mention-label">Mention : <br><span class="mention-en"><em>Grade:</em></span></div>
+					<div class="mention-value">{{student.mentionFr}} <br><span class="en-text"><em>{{student.mentionEn}}</em></span></div>
+				</div>
+			</div>
+		</div>
+
+		<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: {{theme.spacing.recipientBlockMarginBottom}}mm;">
+			<div style="flex: 2.5; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.content}}pt;">
+				<div class="field" style="justify-content: center; text-align: center;">
+					<div class="field-value field-value-diploma-title">Le {{document.titleFr}} <br><span class="en-text"><em>The {{document.titleEn}}</em></span></div>
+				</div>
+				{{#if student.option}}
+				<div class="field">
+					<div class="field-label">Option : <br><span class="en-text"><em>Speciality</em></span></div>
+					<div class="field-value field-value-option">{{student.option}} <br><span class="en-text"><em>{{student.optionEn}}</em></span></div>
+				</div>
+				{{/if}}
+			</div>
+			<div style="flex: 1; padding-left: 4mm; text-align: left; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.studentInfo}}pt;">
+				<div>
+					<div style="font-weight: bold; font-size: {{theme.sizes.content}}pt;">Année d'obtention : <span class="year-obtention-value">{{document.yearObtention}}</span></div>
+					<div class="en-text" style="font-style: italic; font-weight: normal; font-size: 8.5pt;"><em>Year of completion</em></div>
+				</div>
+				<div style="margin-top: 2mm; font-size: 9.5pt;">
+					<div style="font-weight: bold;">{{institution.city}}, le {{document.issueDate}}</div>
+					<div class="en-text" style="font-style: italic; font-weight: normal; font-size: 8.5pt;"><em>{{institution.city}}, the {{document.issueDate}}</em></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="signature-section">
+			<div class="signature-box">
+				<div class="signature-title">L'impétrant</div>
+				<div class="signature-title-en"><em>The Holder</em></div>
+			</div>
+			<div class="signature-box">
+				<div class="signature-title">Le Recteur</div>
+				<div class="signature-title-en"><em>The Rector</em></div>
+			</div>
+			<div class="signature-box-minister">
+				<div class="signature-title">Le Ministre d'Etat, Ministre de l'Enseignement Supérieur,<br>Chancelier des Ordres Académiques</div>
+				<div class="signature-title-en"><em>The Minister of State, Minister of Higher Education,<br>Chancellor of Academic Orders</em></div>
+			</div>
+		</div>
+
+		<div class="footer">
+			<div>En foi de quoi ce diplôme lui est délivré pour servir et valoir ce que de droit</div>
+			<div class="footer-en"><em>In witness this diploma is issued to serve when and where necessary</em></div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

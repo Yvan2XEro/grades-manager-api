@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attestation de Réussite - {{student.NOM}} {{student.PRENOM}}</title>
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        width: 210mm;
+        height: 297mm;
+      }
+      body {
+        margin: 20px;
+        padding: 0;
+        width: calc(210mm - 40px);
+        height: calc(297mm - 40px);
+        font-family: {{settings.themeFont}};
+        font-size: 10px !important;
+        color: {{settings.themeColor}};
+        background-color: white;
+        line-height: 1.2;
+        position: relative;
+      }
+      
+      .container {
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        position: relative;
+        border: 1px solid {{settings.themeColor}};
+      }
+
+      /* Filigrane DÉMO */
+      .demo-watermark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        pointer-events: none;
+        display: none;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 100px,
+          rgba(255, 0, 0, 0.1) 100px,
+          rgba(255, 0, 0, 0.1) 120px
+        );
+      }
+      
+      .demo-watermark::before {
+        content: "DÉMO";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 120px;
+        font-weight: bold;
+        color: rgba(255, 0, 0, 0.15);
+        font-family: Arial, sans-serif;
+        letter-spacing: 20px;
+        
+      }
+      
+      .demo-watermark::after {
+        content: "MODE DÉMO - FONCTIONNALITÉS LIMITÉES";
+        position: absolute;
+        bottom: 20%;
+        left: 50%;
+        transform: translate(-50%, 0) rotate(-45deg);
+        font-size: 24px;
+        font-weight: bold;
+        color: rgba(255, 0, 0, 0.2);
+        font-family: Arial, sans-serif;
+        white-space: nowrap;
+      }
+
+      /* Bannière démo en haut */
+      .demo-banner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 0, 0, 0.4);
+        color: white;
+        text-align: center;
+        padding: 5px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 1001;
+        display: none;
+      }
+
+      /* Filigrane {{upper settings.establishmentType}} - modifié pour être sous le filigrane démo */
+      .watermark {
+        position: absolute;
+        top: 25%;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        z-index: -1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0.1;
+        pointer-events: none;
+      }
+      
+      .watermark img {
+        max-width: {{student.CREDITS}}0px;
+        max-height: 400px;
+        object-fit: contain;
+      }
+
+      /* En-tête - STRUCTURE CLASSIQUE MAINTENUE */
+      .header {    
+        line-height: normal;
+        font-size: 9px;
+        font-family: {{settings.themeFont}};
+      }
+      
+      .header-row1 {
+        text-align: center;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+      }
+      
+      .header-content {
+        width: 33%;
+        font-size: 9px;
+        line-height: 1.1;
+      }
+      
+      .header-logo-content {
+        align-content: center;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      
+      .header-logo-content > div {
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        margin: 3px;
+        align-content: center;
+      }
+      
+      .header-logo-content > div > img {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+      }
+
+      /* Masquage conditionnel selon le type d'établissement */
+      {{#if (eq settings.establishmentType 'ipes')}}
+      #to-nothidden { display: none !important; }
+      {{else}}
+      #to-hidden { display: none !important; }
+      {{/if}}
+
+      .header-row2 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      
+      .header-row2 h1 {
+        font-weight: bold;
+        text-align: center;
+        font-size: 17px;
+        color: #000080;
+        margin: 2px 0;
+        text-transform: uppercase;
+        font-family: {{settings.themeFont}};
+      }
+      
+      .header-row2 h2 {
+        font-weight: bold;
+        font-size: 22px;
+        color: #505050;
+        margin: 2px 0;
+        font-style: italic;
+      }
+      
+      .header-row2 p {
+        font-size: 14px;
+        margin: 2px 0;
+      }
+
+      /* Contenu principal */
+      .content {
+        margin: 16px 0;
+      }
+      
+      .student-info, .list-nomination-header {
+        margin: 5px 0;
+      }
+      
+      .student-info p, .list-nomination-header p {
+        margin: 5px 0;
+      }
+
+      /* Tableaux */
+      .table-container {
+        width: 100%;
+        margin: 2px 0;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2px;
+      }
+      
+      th, td {
+        padding: 2px;
+        text-align: center;
+        border: 1px solid {{settings.themeColor}};
+        font-size: 10px;
+        vertical-align: middle;
+      }
+      
+      th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        color: {{settings.themeColor}};
+      }
+      
+      /* Styles de tableau selon le thème choisi */
+      
+      
+      
+      
+      
+      table, th, td {
+        border: none;
+      }
+      th {
+        background: none;
+        border-bottom: 2px solid {{settings.themeColor}};
+      }
+      td {
+        border-bottom: 1px solid #00000040;
+      }
+
+      /* Section nominations */
+      .nomination-list {
+        display: flex;
+        width: 100%;
+        gap: 30%;
+        margin: 8px 0;
+      }
+      
+      .nomination-list-item {
+        border-top: 1px solid {{settings.themeColor}};
+        width: 30%;
+        padding-top: 4px;
+        margin-top: 15px;
+      }
+
+      /* Pied de page et signatures */
+      .footer {
+        margin-top: 8px;
+        display: flex; justify-content: space-between;
+        
+        
+      }
+      
+      .signature {
+        width: 48%;
+        
+        font-size: 10px;
+        
+        /* Styles de signature personnalisables */
+        
+        
+        
+      }
+      
+      .sign-{{settings.establishmentType}} {
+        width: 100%;
+        text-align: center;
+        padding-bottom: 100px;
+      }
+      
+      .recteur-sign {
+        margin-top: 65px;
+        padding-bottom: 100px;
+      }
+
+      /* QR Code */
+      .qr-code {
+        
+        float: left;
+        
+        
+        position: relative;
+      }
+      
+      .qr-image {
+        width: 100px;
+        height: 100px;
+        background-color: #eee;
+        display: block;
+      }
+
+      /* Badge démo sur QR code */
+      .qr-demo-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: red;
+        color: white;
+        font-size: 8px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+        display: none;
+        z-index: 1002;
+      }
+
+      /* Disclaimer */
+      .disclaimer {
+        font-size: 7px;
+        font-style: italic;
+        text-align: left;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        color: #505050;
+        line-height: 1.4;
+      }
+      
+      .disclaimer div {
+        padding-right: 10px;
+      }
+
+      /* Texte bilingue */
+      em {
+        font-style: italic;
+        color: #505050;
+        
+      }
+
+      /* Styles pour différents layouts de contenu */
+      
+      
+      
+
+      /* Responsive pour l'impression */
+      @media print {
+        body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 20px;
+          box-shadow: none;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        .no-print {
+          display: none;
+        }
+        
+        /* S'assurer que le filigrane démo s'imprime */
+        .demo-watermark,
+        .demo-banner,
+        .qr-demo-badge {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    
+
+/* Configuration typographique avancée - Améliore le style existant */
+/* Styles avancés pour attestations */
+
+/* Espacement avancé - Styles personnalisés appliqués */
+
+/* Titre principal */
+.main-title,
+.header-row2 h1,
+h1.main-title {
+  margin-bottom: 8px !important;
+  padding-bottom: 0 !important;
+}
+
+/* Sous-titre */
+.subtitle,
+.header-row2 h2,
+h2.subtitle {
+  margin-bottom: 6px !important;
+  padding-bottom: 0 !important;
+}
+
+/* En-tête */
+.header {
+  margin-bottom: 15px !important;
+}
+
+.header-row2 {
+  margin-bottom: 9px !important;
+}
+
+/* Informations étudiant */
+.list-nomination-header {
+  margin-bottom: 10px !important;
+}
+
+.list-nomination-header p {
+  margin-bottom: 4px !important;
+}
+
+/* Tableaux */
+table {
+  margin-bottom: 8px !important;
+  margin-top: 4px !important;
+}
+
+.table-container {
+  margin-bottom: 8px !important;
+}
+
+/* Paragraphes */
+.content p {
+  margin-bottom: 6px !important;
+}
+
+.list-nomination-header p {
+  margin-bottom: 6px !important;
+}
+
+body p {
+  margin-bottom: 6px !important;
+}
+
+/* Sections */
+.content {
+  margin-top: 20px !important;
+}
+
+.list-nomination-header {
+  margin-top: 14px !important;
+}
+
+/* Pied de page */
+.footer {
+  margin-top: 15px !important;
+  padding-top: 5px !important;
+}
+
+.signature-area {
+  margin-top: 12px !important;
+}
+
+/* Signatures */
+.signature {
+  margin-top: 25px !important;
+}
+
+.recteur-sign {
+  margin-top: 25px !important;
+}
+
+.qr-code {
+  margin-top: 15px !important;
+}
+
+/* Assure la compatibilité entre styles de base et avancés */
+.header-content, .header-content p {
+  /* Préserve l'alignement et l'espacement de base */
+  margin: inherit !important;
+  padding: inherit !important; 
+}
+
+.student-info, .student-info p {
+  /* Préserve la structure de base */
+  display: inherit !important;
+  margin: inherit !important;
+}
+
+table, th, td {
+  /* Préserve la structure de table de base */
+  border-collapse: inherit !important;
+  border-spacing: inherit !important;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        
+        
+        <!-- Logo de fond (slot: watermark) -->
+        
+        <div class="watermark">
+            <img src="{{settings.logo}}" alt="Watermark">
+        </div>
+        
+
+        
+        <div class="header">
+            <div class="header-row1">
+              <div class="header-content">
+                <p>REPUBLIQUE DU CAMEROUN <br>
+                <em>Paix – Travail – Patrie</em><br>
+                ********************<br>
+                MINISTERE DE L'ENSEIGNEMENT SUPERIEUR<br>
+                ********************<br>
+                <strong>UNIVERSITE DE DOUALA</strong><br>
+                ********************<br>
+                <strong>FACULTE DE MEDECINE ET <br> DES SCIENCES PHARMACEUTIQUES</strong><br>
+                ********************<br>
+                B.P 2701, Douala, Cameroun<br>
+                Email: <a href="mailto:contact@fmsp-udo.cm">contact@fmsp-udo.cm</a><br>
+                 <span id="to-hidden">********************<br>
+                <strong>INSTITUT UNIVERSITAIRE  DES <br>BATISSEURS-SIGMEN</strong><br>
+                ********************<br>
+                {{settings.postalBox}}<br>
+                Email: <a href="mailto:{{settings.email}}">{{settings.email}}</a></span></p>
+              </div>
+              
+              <div class="header-logo-content">
+                <div><img src="{{settings.universityLogo}}" alt="University Logo"></div>
+                <div><img src="{{settings.facultyLogo}}" alt="Faculty Logo"></div>
+                <div id="to-hidden"><img src="{{settings.logo}}" alt="{{upper settings.establishmentType}} Logo"></div>
+              </div>
+              
+              <div class="header-content">
+                <p>REPUBLIC OF CAMEROON<br>
+                <em>Peace – Work - Fatherland</em><br>
+                ********************<br>
+                MINISTRY OF HIGHER EDUCATION<br>
+                ********************<br>
+                <strong>UNIVERSITY OF DOUALA</strong><br>
+                ********************<br>
+                <strong>FACULTY OF MEDICINE AND <br>PHARMACEUTICAL SCIENCES</strong><br>
+                ********************<br>
+                PO box 2701, Douala, Cameroon<br>
+                Email: <a href="mailto:contact@fmsp-udo.cm">contact@fmsp-udo.cm</a><br>
+               <span id="to-hidden">********************<br>
+                <strong >UNIVERSITY INSTITUT  OF <br>BUILDERS-SIGMEN</strong><br>
+                ********************<br>
+                {{settings.postalBoxEn}}<br>
+                Email: <a href="mailto:{{settings.email}}">{{settings.email}}</a></span></p>    
+              </div>
+            </div>
+            
+            <div class="header-row2">
+              <h1 class="main-title">ATTESTATION DE REUSSITE DE {{upper student.CYCLE}} {{student.NIVEAU}}</h1>
+              <h2 class="subtitle">ATTESTATION OF COMPLETION OF {{upper student.CYCLE}} {{student.NIVEAU}}</h2>
+              
+              <p style="margin-top: 6px"><strong>Ref N°............./25/UDo/FMSP/VDRC/{{settings.nameAbreviation}}</strong></p>
+            </div>
+        </div>
+        
+
+        
+        <div class="content">
+            <div class="list-nomination-header">
+              <p style="font-size: 6px;" id="to-hidden">{{settings.convTextFr}}<br>
+              <em>{{settings.convTextEn}}</em></p>
+              
+              <p id="to-hidden"><strong>Nous soussignés,</strong><br>
+              <em>We, the undersigned,</em></p>
+
+               <p id="to-nothidden"><strong>Je soussignée, Professeur EBOUMBOU MOUKOKO Carole Else,</strong><br>
+              <em>I, the undersigned, Professor EBOUMBOU MOUKOKO Carole Else,</em></p>
+              
+              <div class="nomination-list" id="to-hidden">
+                <div class="nomination-list-item">
+                  <strong>Directeur de l'{{settings.nameAbreviation}}</strong><br>
+                  <em>Director of the {{settings.nameAbreviation}}</em><br>
+                </div>
+                <div class="nomination-list-item">
+                  <strong>Recteur de l'Université de Douala</strong><br>
+                  <em>Rector of the University of Douala</em>
+                </div>
+              </div>
+              
+              <p><strong>Vu le procès-verbal du jury N° 001 en date du N/D <span id="to-nothidden">atteste</span><span id="to-hidden">attestons</span> que,</strong><br>
+              <em>Considering the jury's decision N° 001 dated N/D Certify that,</em></p>
+            </div> 
+            <div class="student-info">
+                <p>M./Mme/Mlle <strong>{{student.NOM}} {{student.PRENOM}}</strong><br>
+                <em>Mr/Mrs/Miss</em></p>
+                
+                <p>Né(e) le: <strong>27 Janvier 2000</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;à&nbsp;<strong>{{student.[LIEU DE NAISSANCE]}}</strong><br>
+                <em>Born on: <strong style="opacity:0">27 Janvier 2000</strong></em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>at:</em></p>
+                
+                <p id="to-hidden">Inscrit(e) à <strong> {{settings.nameFrench}}</strong> sous le matricule: <strong>{{student.MATRICULE}}</strong><br>
+                <em>Registered at the <strong>{{settings.nameEnglish}}</strong> under the matricule number:</em></p>
+
+                <p id="to-nothidden">A subi avec succès toutes les épreuves de : <strong>{{upper student.CYCLE}} {{student.NIVEAU}}</strong> en <strong>{{upper student.PARCOURS}}</strong><br>
+                <em>Having successfully passed all examinations for: </em></p>
+          
+            </div>
+            
+           
+    <div class="table-container">
+        <table class="academic-table">
+            <tr>
+                <th>Domaine<br><em style="font-weight: normal">Domain of the study</em></th>
+                <th>Parcours<br><em style="font-weight: normal">Course</em></th>
+                <th>Spécialité<br><em style="font-weight: normal">Specialization</em></th>
+                
+            </tr>
+            <tr style="border-top: 1px solid {{settings.themeColor}}; background-color:#f0f0f0">
+                <td><strong>{{student.DOMAINE}}<br><em style="font-weight: normal">{{student.DOMAINE_EN}}</em></strong></td>
+                <td><strong>{{student.PARCOURS}}<br><em style="font-weight: normal">{{student.PARCOURS_EN}}</em></strong></td>
+                <td><strong>{{student.SPECIALITE}}<br><em style="font-weight: normal">{{student.SPECIALITE_EN}}</em></strong></td>
+                
+            </tr>
+        </table>
+    </div>
+
+
+            
+            
+            <div class="table-container">
+                <table class="academic-table">
+                    <tr>
+                        <th>Total de credits<br><em style="font-weight: normal">Credits earned</em></th>
+                        <th>Moyenne<br><em style="font-weight: normal">Average</em></th>
+                        <th>Grade<br><em style="font-weight: normal">Grade</em></th>
+                        <th>MGP<br><em style="font-weight: normal">GPA</em></th>
+                        <th>Mention<br><em style="font-weight: normal">Honor</em></th>
+                        <th>Année académique<br><em style="font-weight: normal">Academic year</em></th>
+                        <th>Finalité/Voie<br><em style="font-weight: normal">Finality/Vocation</em></th>
+                    </tr>
+                    <tr style="border-top: 1px solid {{settings.themeColor}}; background-color:#f0f0f0">
+                        <td><strong>N/D</strong></td>
+                        <td><strong>14,00</strong></td>
+                        <td><strong>{{student.GRADE}}</strong></td>
+                        <td><strong>3,30</strong></td>
+                        <td><strong>{{student.MENTION}}<br><em style="font-weight: normal">{{student.MENTION_EN}}</em></strong></td>
+                        <td><strong>{{student.[ANNEE ACADEMIQUE]}}</strong></td>
+                        <td><strong>{{student.FINALITE}}<br><em style="font-weight: normal">{{student.FINALITE_EN}}</em></strong></td>
+                    </tr>
+                </table>
+            </div>
+            
+            
+            <p>En foi de quoi la présente Attestation est délivrée pour servir et valoir ce que de droit.<br>
+            <em>In witness where of the present testimonial is given with all the privileges there to pertaining.</em></p>
+        </div>
+        
+
+        
+        <div class="footer">
+            <div class="signature signature-area" style="display: flex; flex-direction: column; align-items: center;">
+                <div class="qr-code">
+                    
+                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAAehklEQVR4AezBUY4kyRIcQdNA3//KyvkjCKYPXgV8E9W7JoJ/pKqqqqrWnFRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtOqmqqqqqVT/5CyC/nZoJkE1qbgDZpmYCZKLmCZCJmt8AyETNW4DcULMNyETNNwByQ80NIBM1T4BsU3MDyDdQsw3IRM0EyETNBMhEzSYgEzUTIDfUTIBM1EyAPFEzAfLbqXlyUlVVVVWrTqqqqqpq1UlVVVVVrTqpqqqqqlUnVVVVVbXqpKqqqqpW/eSSmm8B5IaaTUAmam6ouQHkLUAmarYBmaiZqJkA+XZAbqiZqJkAeaJmAmSbmhtAtgH5lJoJkAmQG2reAuRNaiZAJmq2AfmUmt8OyETNJjXfAsinTqqqqqpq1UlVVVVVrTqpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqp/8A4BsU/MNgNwAMlEzATJRM1FzA8in1NwAckPNBMg3UDMBMlEzAXIDyFvUTIBsA/ImNZvUvAnIRM0EyBM1EyATNd8CyDdQMwFyQ802Nd8AyDY1m06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqf/IcBeaJmomYbkImaN6l5AmQC5IaaG0AmaiZA3gJkouaGmgmQbwDkhpobaiZAJmomQCZAnqiZANmmZgLkBpCJmidAJmomQCZqJkBuAJmomQCZqHkCZAJkouaGmm1qJkAmaur/OqmqqqqqVSdVVVVVteqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq35S/x8gEzXb1NwAMlHzmwGZqNmm5gmQbUBuqJmomQDZBOSGmjepuaHmLWomQCZA3gTkiZoJkDepuQHkBpAnat4E5E1q6n9zUlVVVVWrTqqqqqpq1UlVVVVVrTqpqqqqqlUnVVVVVbXqpKqqqqpW/eQfoK{{lower student.GRADE}}d0AmaiZqbgCZqPkGaiZAvoGabUAmQCZqJmq+HZCJmhtAtqn5lJoJkG1qtgH5lJptaiZAJmomaiZAPgVkomYCZKJmAmSiZhuQiZq3qPl2J1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlp1UlVVVVWrTqqqqqpq1U8uAfm3UjMBMlEzATJRMwEyUTMBMlEzAfJEzQTIRM0EyETNDTUTIG8BMlFzQ80EyETNBMhEzRMgEzUTIBM1EyATNTfUTIB8CshEzQ01EyA3gEzUbAIyUTMBMlGzDchEzQTIEzUTIBM1EyATNRMgEzUTIBM1EyBP1NwA8pudVFVVVdWqk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa06qaqqqqpV+Ef+o4A8UTMBMlHzJiATNZuA3FDzJiATNRMgn1KzDcg2NRMgn1KzDchEzTYgN9Q8ATJRsw3IRM02IJ9Ssw3It1OzDcgNNTeA3FBT/9dJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlqFf2QAZKJmG5CJmgmQt6iZAJmomQDZpmYC5FNqbgDZpmYC5IaaJ0C+hZo3AfmUmgmQbWpuAJmo2QTkhpoJkG+g5k1Atqm5AeRTar4FkImaCZCJmidAvoWaG0Amap6cVFVVVdWqk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa36ySUgEzUTIBM1EyATNTeAfArINjUTIBM1v5maCZBtar6BmgmQbUAmaj6l5oaabUAmaiZqJkAmap4A2QbkTWomQJ4AmaiZAJmomai5AWQC5IaaJ0BuALmh5oaaCZBNaiZAJmpuAJkAmaiZqPnUSVVVVVWtOqmqqqqqVSdVVVVVteqkqqqqqladVFVVVdWqk6qqqqpahX9kGZCJmgmQN6l5AmSbmm1AbqiZAHmiZgJkouY3APIpNRMgEzUTIDfUTIBsUnMDyETNBMgNNRMgEzXfAMhEzQTINjWfAnJDzQTIRM0EyETNBMgmNTeATNRMgNxQswnIb6fmUydVVVVVteqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq06qqqqqahX+kQtAJmpuALmh5hsAmai5AWSiZgLkhponQLapuQFkomYC5FNqtgGZqJkAuaFmAuRTaiZAbqi5AWSiZgJkomYC5FNqbgC5oWYbkCdqvgWQiZoJkBtqngDZpuZNQDapmQCZqJkAuaHmBpCJmicnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmoV/pEBkDepmQC5oWYCZJOaCZCJmhtAbqj5FJAbaiZA3qRmAuTbqdkG5FNqtgH5t1IzATJRcwPIRM0NIE/U3ADyLdS8BchEzQTIb6DmU0C2qZkA2abmyUlVVVVVrTqpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWvWTv1BzA8hEzQTIDTUTIBM1T4BM1EyATNS8Sc0mNW9SMwHyFjUTIBM1N4C8Sc0EyBMgEzUTIBM1EyATNRMgEzU3gHwKyETNBMg2IBM1nwJyQ80NIDfUTIDcUPMEyG+g5i1A3gRkouYtJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlp1UlVVVVWrTqqqqqpq1U/+AshEzUTNBMhEzQTIBMgNIJ8Csg3IRM1EzQTIRM0EyKfU/FsBmai5AWSiZgJkouYbALkBZKLmhpoJkImab6dmAmSi5oaaTwGZANmmZgJkomaTmhtAfgMgEzVvUTMBMgEyUbPppKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtwj8yADJRsw3IDTUTIBM1nwJS/zs1EyATNTeAbFIzATJRMwHym6mZAJmouQFkm5q3AJmomQCZqNkGZKLmCZCJmgmQiZoJkImaG0Amaj4FZKJmAuSGmm1ANqmZAJmomQDZpmYCZKLmyUlVVVVVrTqpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWvWTv1AzAbJNzQTIBMgNIJ9S8yYg29RMgDxRMwEyATJRMwHyb6VmAuSGmhtAPgVkouY3ADJRMwHyRM02NduATNRMgHwKyA0g24B8AyATNTeATNRMgEzUTIB8AzU3gEyAbDqpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVavwjwyATNRMgLxJzSYg29TcAHJDzQTIRM0TIBM124DcUDMBMlHz7YDcUHMDyBM1EyA31NwA8iY1T4BsUzMBsk3NBMgTNRMgb1LzJiBP1LwJyETNDSBvUTMBckPNBMg2NU9OqqqqqmrVSVVVVVWtOqmqqqqqVSdVVVVVteqkqqqqqladVFVVVdUq/CMDIDfUTIDcUDMBckPNp4DcUDMBMlEzAfIN1EyATNTcAHJDzaeAfAs1EyA31EyAfDs13w7Im9RMgNxQ8ykgEzW/AZCJmidAbqiZAPkvUjMBMlEzAXJDzadOqqqqqmrVSVVVVVWtOqmqqqqqVSdVVVVVteqkqqqqqlb95F9AzSYg24BM1Hw7NTfUTIDcUHMDyFvUbANyQ80EyETNEyA31EyAbAOyTc2n1GwDckPNBMgEyKfUbANyQ80EyETNBMgTNTeATNTcADJRMwEyUfMpIBM124DcULPppKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtwj+yDMhEzQTIm9Q8AXJDzQ0gN9RMgEzUTIA8UTMBMlHzJiA31DwB8iY1N4BM1NwA8kTNDSATNRMg29S8BchEzQTIRM02IJ9SMwEyUXMDyETNBMhEzQ0gb1EzAfImNZuA3FAzATJRMwEyUfOpk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW16ieXgEzUTIBsU3MDyBM1N4BsU7MNyCY124DcUDMBMgHyRM0EyETNbwBkouYJkImabWomQLYB2aTmhpoJkH8rIG8CckPNEyATNTeAbFMzATIBMlHzKTUTIBMg29RsOqmqqqqqVSdVVVVVteqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq/CPDIBM1GwDMlEzAfLt1EyA3FAzAXJDzVuATNTcAPIWNRMg29TcAHJDzSYg29RMgEzU3ADyKTUTIN9CzSYgEzVvAjJRMwGySc02INvUbAKyTc0EyDY1nzqpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVat+8ksAmaiZAPmUmm1A3qRmAmQTkBtqbgCZqJkAeYuaCZCJmgmQiZqJmgmQCZAnaiZAbqi5AWQbkImaJ0C2qbkBZKLmBpBNQCZqJkBuqJkA2aRmAuSGmm1qJkBuqPmUmm1qvsFJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlqFf+RFQCZqJkBuqJkA+ZSaG0AmaiZAvoGaG0Amat4EZKJmE5Abam4Amai5AeQ3UzMBckPNp4BM1EyATNRMgNxQMwHyKTU3gHwLNRMgT9RsAzJRMwFyQ80EyETNp4D8dmqenFRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtOqmqqqqqVT/5CyATNRMgEzUTIBM1N4BM1DwBMgGyDchEzQTINjVPgLwJyDY1nwIyUXNDzQTIRM02IN9AzQTIRM0EyETNDSBP1NwA8huo+RSQbWomQH4zIBM1N9TcAPIWNRMgEzU3gNxQ86mTqqqqqlp1UlVVVVWrTqqqqqpq1UlVVVVVrTqpqqqqqlUnVVVVVbXqJy8DMlEzAXJDzQTIEzXbgEzU3FCzDchvpmYCZKJmk5oJkG1qbqj5FJCJmhtAtqmZAHmLmhtAJkD+i4BM1LxJzRMgEzUTNRMgb1IzAfIpINuA3FAzAbLppKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWt+skvoeYGkG+gZgJkomYC5BuouQHkTWomQJ6ouQFkomYC5AaQt6i5AWSi5gaQbWreAmSiZhuQG0A+peZbAPkvUjMBMgHyFjXfQs0EyETNk5OqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtOqmqqqqqVfhHLgCZqJkA+c3UTIBM1EyAvEnNp4BM1NwAMlGzDUj9v9RMgDxRMwFyQ80NIDfU3ADyKTUTIP9Fam4A+RZqngCZqJkAmah5E5D636l5clJVVVVVq06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVv3kL4BM1EyATNRMgEzUbAPyRM0EyA0g/1ZAJmq2AfkGarYBmaiZAPl2arapuQHkhponQCZAJmpuAJmo2QbkU2omQCZqJmreBORTaiZA3gRkm5oJkCdqtgGZqLkBZKLmUydVVVVVteqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq06qqqqqatVP/kLNNiDbgEzUfArIDTXbgEzUbAPyKTXbgEzUvAXIDSATNTeATNRMgNxQ8wTIDSATNRMgEzU31EyATIBsAjJRsw3IRM0mINuATNS8CcgmNRMgEzUTNRMg3wDIRM0NIBM1N4BM1Dw5qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlp1UlVVVVWrfvIXQCZqJmomQLap2aRmAmQCZKLmhprfDMgNNRMg307NNjUTIBM1m9T8dkDeomYC5E1qNqn5FkC2qZkA+ZSaCZCJmgmQiZobat6i5jdQ86mTqqqqqlp1UlVVVVWrTqqqqqpq1UlVVVVVrTqpqqqqqlUnVVVVVbXqJ/8AIBM1EyATIL8ZkDepmQCZqHkCZAJkouYGkImatwCZAPntgGxSMwEyUTNRMwGyTc2ngHwLIN8AyETNBMhEzQTIRM0EyATINwDyJiCbgHwLIDeATNQ8OamqqqqqVSdVVVVVteqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq/CPfAkgEzXbgDxR8yYgN9RMgEzUTIB8AzUTIN9OzQTIDTUTIDfUTIB8AzXbgNxQ8wTIDTXbgEzU3ADyKTU3gGxTMwEyUTMB8kTNBMhEzZuATNRsAnJDzQ0gEzUTIDfUPDmpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVat+8g8AMlGzDchEzUTNp4BM1EyA3FAzATJR85sBmai5AeRTaiZAJkDepGabmidAJmomQLYBmaiZqJkA+QZAbqjZpuZTQN6k5oaaCZCJmidAJmomQN6k5tsBmai5AeQtJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlp1UlVVVVWrTqqqqqpq1U/+AshEzUTNBMg2NZuATNTcUDMBsg3IRM1EzaeATNRMgEzUTIDcUDMB8u2ATNTcAPIpNW8CcgPINiBvUbMNyETNp4DcULMNyETNBMhbgLxJzQ0gb1FzA8gNNTeAfOqkqqqqqladVFVVVdWqk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa36yV+o2aZmG5Abap6omQCZqPkvUjMBMlFzQ80NIBM1n1IzAXJDzQ0gN9RMgHwKyA01N4BM1EyATNR8AyATNRMgEzUTIJvUTIC8CcgNNRMgT9S8CcgEyDY1nwJyA8g2IBM1m06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqf/AWQG2puALmh5jdTMwEyUbMNyKfU3AByQ80EyA0gm9RMgEyATNR8AyA31EyATNTcADJRMwHyKTUTIG9SMwEyUTMB8hY1EyATNd8AyA01b1KzDcgTNRMg29R8g5OqqqqqWnVSVVVVVatOqqqqqmrVSVVVVVWtOqmqqqqqVfhHLgC5oWYCZKJmAmSiZgLkiZoJkBtqJkAmaiZAbqiZAHmiZhuQbWpuAHmiZgJkouYGkBtqJkC+nZrfAMgTNRMgN9RMgNxQ8xYg29R8OyA31EyATNRMgEzUTIBM1HwKyETNtwAyUfOpk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW1Cv/IlwByQ80NIJvUTIB8CzW/GZAbajY{{student.GRADE}}e3UTIBsUrMNyG+mZgJkouYGkE1qbgCZqLkBZKJmAuSGmidAJmomQLapmQCZqJkAmah5AuS3U/Opk6qqqqpadVJVVVVVq06qqqqqatVJVVVVVa06qaqqqqpVJ1VVVVW16id/AWSiZgJkomYbkBtqngCZqJkAuaFmAmSi5gaQTWomQLapmQCZAJmo2aRmAmSi5gaQt6j5DdS8BchEzQ0130LNW4BM1EzUTIBM1EyAvEXNBMibgLxFzQTIm9RMgEzUPDmpqqqqqlUnVVVVVbXqpKqqqqpWnVRVVVXVqpOqqqqqWnVSVVVVVavwjywDckPNBMhEzSYgN9RMgEzUbANyQ80TIDfUbAMyUXMDyBM1EyA31EyATNRMgEzU/FsBmah5C5BvoWYCZKJmAuQtaiZAJmpuAPkGaiZAJmomQLap+QZAJmpuAJmo+dRJVVVVVa06qaqqqqpVJ1VVVVW16qSqqqqqVp1UVVVV1aqTqqqqqlr1k0tAJmomQG6omQC5oeZTaiZAbgC5oWYbkCdqbgCZqJkAuQHkhponQCZqJk{{student.GRADE}}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{{student.NIVEAU}}W6j7lmdJkiS56lmSJEmuepYkSZKrniVJkuSqZ0mSJLnqWZIkSa7Cv/ZFwH4LdZ8AO1F3G7Db1J0A+yl1J8DeUHcbsN9A3TcBO1H3BrCb1J0A+yZ1NwE7UXcC7ETdCbA31J0AO1F3E7ATdW8AO1H3BrD8v9SdAPspdSfATtSdADtR9y3PkiRJctWzJEmSXPUsSZIkVz1LkiTJVc+SJEly1bMkSZJchX/tANht6k6Anai7Ddi3qDsB9oa6E2A3qTsBdqLuBNiJutuA/cvUnQB7Q90JsJ9Sdxuw29R9C7A31L0B7F+m7l8A7FvUvQHsRN1v{{student.GRADE}}wNdW8AO1H3U8+SJEly1bMkSZJc9SxJkiRXPUuSJMlVz5IkSXLVsyRJklyFf+0A2BvqToB9k7qfAnai7g1gJ+pOgH2Tum8BdqLuDWAn6m4CdqLuBNhvoe4E2CfqToCdqDsBdqLuBNg3qbsJ2BvqbgN2ou6ngH2TujeAnag7AXaTuhNg36TuBNi3qDsB9luo++RZkiRJrnqWJEmSq54lSZLkqmdJkiS56lmSJEmuepYkSZKr/uwldW+o+yZgNwF7Q91t6k6AfQuwE3Un6k6Anag7UfcvU/cGsDeAnaj7BNht6v5lwE7U/QvU3aTum4CdqHsD2Im630DdbcBO1J0A+0TdCbA31N0G7ETdTz1LkiTJVc+SJEly1bMkSZJc9SxJkiRXPUuSJMlVz5IkSXIV/rUDYG+oOwH2hroTYDep+yZg36TuBNgn6n4LYCfqbgL2hroTYCfqToCdqHsD2Im6T4C9oe4E2Im6E2An6t4A9i9TdxuwT9SdAHtD3Qmw29S9AewmdW8A++3UnQB7Q90bwG5T98mzJEmSXPUsSZIkVz1LkiTJVc+SJEly1bMkSZJc9SxJkiRX/dn/B8BO1L0B7ETdCbATdZ8Ae0PdCbA31P3LgL2h7g1gJ+pOgH2i7l8A7ETdG8A+UfcGsBN1twH7FnVvAHtD3W3AblJ3AuwNdSfAvkndTwF7A9ht6t4AdqLup9SdAPst1P3UsyRJklz1LEmSJFc9S5IkyVXPkiRJctWzJEmSXPUsSZIkV/3ZLwLsRN0JsDeAfYu6E2BvAPsWYCfqTtSdADsBdqLuNnU/Bew2YCfq3gB2ou6ngH0TsBN1J8DeUHcC7BNgJ+puA/aGuhN1NwF7A9gb6k6AvQHsRN1vp+4NYG8A+0TdCbATdf+yZ0mSJLnqWZIkSa56liRJkqueJUmS5KpnSZIkuepZkiRJrvqz/0DdCbATdSfATtSdADtRdwLsNwD2BrA31N0E7A1gb6g7AfaGum9RdwLsDWBvqDsBdqLup9S9AexE3QmwN9SdADtRd5O6E2An6n4DYCfqToCdqHsD2BvAbgJ2ou4E2Im624C9oe6ngJ2oOwF2ou4E2G/wLEmSJFc9S5IkyVXPkiRJctWzJEmSXPUsSZIkVz1LkiTJVfjXDoCdqPstgL2h7hNgb6g7AXabutuAfaLum4CdqDsB9oa6T4D9C9R9C7ATdW8Au03dtwDL/566N4Ddpu4NYJ+oOwF2ou4E2BvqToC9oe4E2L9M3U3PkiRJctWzJEmSXPUsSZIkVz1LkiTJVc+SJEly1Z/9{{student.GRADE}}r+BereAPaJuhNgJ8DeUHcC7DZgNwE7UfdbqDsB9lPqbgN2ou42YD+l7gTYG+pOgH0TsBN1n6g7AfaGuhNgJ+puA/aJuhNgt6k7AXYbsJ8CdqLum4DdBuyn1N0G7ETdG8BO1P3UsyRJklz1LEmSJFc9S5IkyVXPkiRJctWzJEmSXPUsSZIkV/3ZfwDsX6fup4C9oe5foO4E2E+p+y3UnQA7UfcJsDeAnaj7JmAn6k6AfQLsRN0JsDfUfZO6E2D/MmAn6n4DYG+oOwH2hrqfAvZN6k6Anai7DdhPATtR9wawE3Xf8ixJkiRXPUuSJMlVz5IkSXLVsyRJklz1LEmSJFc9S5IkyVV/9pK63wLYG+puAvaGuhN1bwB7Q923ADtRdwLsRN2JuhNgN6n7JmBvADtR91PATtSdAPsmdSfATtR9AuwNdSfAblP326k7AXYC7ETdCbA31P126t4A9i3qfgt1Nz1LkiTJVc+SJEly1bMkSZJc9SxJkiRXPUuSJMlVz5IkSXIV/rUDYCfqToDdpu4E2Im6E2A3qXsD2Im6N4DdpO4NYCfqbgN2ou6ngP0W6t4AdpO6E2An6m4D9oa63w7Yb6futwD2hrpvAXai7g1gt6k7AfYvU/ctz5IkSXLVsyRJklz1LEmSJFc9S5IkyVXPkiRJctWzJEmSXPVn/4ep+ylgbwA7UXcC7ETdbepuUvcGsDfUvQHsp9TdBuwE2BvqToDdpO4E2BvqvgnYibqbgL2h7gTYbwDsRN0JsN8C2E3qblN3AuxE3Qmw30DdCbBvAnai7pNnSZIkuepZkiRJrnqWJEmSq54lSZLkqmdJkiS56lmSJEmu+rNcA+wNYL8FsE/U3QbsRN0bwE7U/ZS6b1J3AuwNYCfqToD9FLATdSfA3lB3m7rfQN0JsBN1bwD7KWC/hboTYG+ouwnYiboTYCfq3gB2ou4NYJ+ou03dCbATYG+o+6lnSZIkuepZkiRJrnqWJEmSq54lSZLkqmdJkiS56lmSJEmuwr92AOxE3W8B7ETdbwDsm9SdADtR9wmwE3UnwE7UnQA7UXcbsN9A3X8rYCfqToB9k7qbgL2h7g1gt6n7BNiJun8BsG9RdwLsRN1twE7UnQA7UXcTsBN1J8BO1J0AO1H3U8+SJEly1bMkSZJc9SxJkiRXPUuSJMlVz5IkSXLVsyRJklz1Zy8{{student.GRADE}}9c{{student.GRADE}}0TdfzN1J8BuUncC7ETdCbA31P0G6m4DdqLuBNiJuk+Anag7UXcC7JvUnQA7UfcJsBN1J8DeAPZNwD5R9wawE3W3ATtR9wawT9R9E7BvUvdTwH4LYG8AO1H3ybMkSZJc9SxJkiRXPUuSJMlVz5IkSXLVsyRJklz1LEmSJFfhX0uSJMk1z5IkSXLVsyRJklz1LEmSJFc9S5IkyVXPkiRJctX/ALfHjNtQTCekAAAAAElFTkSuQmCC" class="qr-image" alt="QR Code (Chiffrement Compact)" />
+                      
+                    
+                </div>
+                <div class="sign-{{settings.establishmentType}}" id="to-hidden">
+                  <p><strong>Le Directeur de L'{{settings.nameAbreviation}}</strong><br>
+                  <em>The Director of the {{settings.nameAbreviation}}</em></p>
+                </div>
+            </div>
+            
+            <div class="signature signature-area">
+              <p><strong>Douala, le</strong><br>
+              <em>Douala, the</em></p>
+          
+              <p id="to-hidden" class="recteur-sign">
+              <strong>Le Recteur de l'Université de Douala</strong><br>
+              <em>The Rector of the University of Douala</em></p>
+              <p id="to-nothidden" class="recteur-sign">
+              <strong>LE CHEF D'ÉTABLISSEMENT</strong><br>
+              <em>The Dean of the Faculty</em></p>
+            </div>
+        </div>
+        
+
+        
+        <div class="disclaimer">
+            <div>
+            
+                Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.
+            </div>
+            
+            <div>
+                <em>This certificate is delivered only once, the owner can make certified copies as necessary.</em>
+            </div>
+            
+        </div>
+        
+    </div>
+</body>
+</html>
+  

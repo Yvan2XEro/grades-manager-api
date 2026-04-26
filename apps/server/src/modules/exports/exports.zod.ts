@@ -8,6 +8,10 @@ export const exportTypeSchema = z.enum([
 	"evaluation", // Single evaluation publication
 	"ue", // Teaching Unit (UE) results
 	"deliberation", // Deliberation report
+	"diploma", // Student diploma (delegated to academic-documents service)
+	"transcript", // Student transcript (delegated to academic-documents service)
+	"attestation", // Student attestation (delegated to academic-documents service)
+	"student_list", // Class/program/year roster (delegated to academic-documents service)
 ]);
 
 export type ExportType = z.infer<typeof exportTypeSchema>;

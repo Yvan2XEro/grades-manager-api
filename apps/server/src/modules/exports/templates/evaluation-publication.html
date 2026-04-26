@@ -36,18 +36,36 @@
 
         {{#if styleConfig.watermark.enabled}}
         .container::before {
-            content: '{{styleConfig.watermark.text}}';
+            content: '{{styleConfig.watermark.text}}{{#if styleConfig.watermark.institutionName}} — {{styleConfig.watermark.institutionName}}{{/if}}';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
             font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}100{{/if}}px;
             font-weight: bold;
-            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.10{{/if}};
             color: rgba(200, 200, 200, 1);
             z-index: 0;
             pointer-events: none;
         }
+        {{#if styleConfig.watermark.logoUrl}}
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 60%;
+            transform: translate(-50%, -50%);
+            background-image: url('{{styleConfig.watermark.logoUrl}}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+        }
+        {{/if}}
         {{/if}}
 
         .content-wrapper {
@@ -337,7 +355,8 @@
             </div>
 
             <div class="title">
-                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PUBLICATION DES RÉSULTATS{{/if}}<br>
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PUBLICATION DES RÉSULTATS{{/if}}
+                {{#if headerConfig.titleEn}} / {{headerConfig.titleEn}}{{else}} / GRADE PUBLICATION{{/if}}<br>
                 {{#if headerConfig.showSemester}}{{semester}} - {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE {{academicYear}}{{/if}}
             </div>
 
@@ -346,7 +365,7 @@
                 <div><strong>Code EC:</strong> {{course.code}}</div>
                 <div><strong>Intitulé EC:</strong> {{course.name}}</div>
                 <div><strong>Code UE:</strong> {{teachingUnit.code}} - {{teachingUnit.name}}</div>
-                <div><strong>Programme:</strong> {{program.name}} - {{program.level}}</div>
+                <div><strong>Programme / Program:</strong> {{program.name}} - {{program.level}}</div>
                 <div><strong>Date de l'évaluation:</strong> {{examDate}}</div>
                 <div><strong>Durée:</strong> {{duration}} heures</div>
                 <div><strong>Coefficient:</strong> {{coefficient}}</div>
@@ -441,9 +460,9 @@
                     </table>
 
                     <div class="info-box">
-                        <div><strong>Programme:</strong> {{program.name}}</div>
+                        <div><strong>Programme / Program:</strong> {{program.name}}</div>
                         <div><strong>Semestre:</strong> {{semester}}</div>
-                        <div><strong>Année académique:</strong> {{academicYear}}</div>
+                        <div><strong>Année académique / Academic Year:</strong> {{academicYear}}</div>
                         <div><strong>Date de publication:</strong> {{publicationDate}}</div>
                     </div>
                 </div>

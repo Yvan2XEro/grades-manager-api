@@ -36,18 +36,36 @@
 
         {{#if styleConfig.watermark.enabled}}
         .container::before {
-            content: '{{styleConfig.watermark.text}}';
+            content: '{{styleConfig.watermark.text}}{{#if styleConfig.watermark.institutionName}} — {{styleConfig.watermark.institutionName}}{{/if}}';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
             font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}120{{/if}}px;
             font-weight: bold;
-            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.10{{/if}};
             color: rgba(200, 200, 200, 1);
             z-index: 0;
             pointer-events: none;
         }
+        {{#if styleConfig.watermark.logoUrl}}
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 60%;
+            transform: translate(-50%, -50%);
+            background-image: url('{{styleConfig.watermark.logoUrl}}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+        }
+        {{/if}}
         {{/if}}
 
         .content-wrapper {
@@ -303,18 +321,47 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if headerConfig.showInstitutionName}}
-                    {{#if university_name_fr}}
-                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                {{#if center}}
+                    {{#if center.administrativeInstances.length}}
+                    <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:30px;margin-bottom:6px;">
+                        {{#each center.administrativeInstances}}
+                            {{#if showOnTranscripts}}
+                            <div style="text-align:center;font-size:8px;line-height:1.2;">
+                                {{#if logoUrl}}<img src="{{logoUrl}}" alt="{{nameFr}}" style="max-height:50px;display:block;margin:0 auto 3px;">{{/if}}
+                                <div style="font-weight:bold">{{nameFr}}{{#if acronymFr}} ({{acronymFr}}){{/if}}</div>
+                                <div style="font-style:italic;color:#666">{{nameEn}}{{#if acronymEn}} ({{acronymEn}}){{/if}}</div>
+                            </div>
+                            {{/if}}
+                        {{/each}}
+                    </div>
                     {{/if}}
-                {{/if}}
-                {{#if headerConfig.showFacultyName}}
-                    {{#if faculty_name_fr}}
-                    <h2>{{faculty_name_fr}}</h2>
+                    {{#if center.legalTexts.length}}
+                    <div style="font-size:8px;color:#555;margin-bottom:6px;text-align:left;line-height:1.4;">
+                        {{#each center.legalTexts}}
+                        <div>• {{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
+                        {{/each}}
+                    </div>
                     {{/if}}
-                {{/if}}
-                {{#if headerConfig.showInstitutionName}}
-                <h2>{{name_fr}} / {{name_en}}</h2>
+                    {{#if center.authorizationOrderFr}}
+                    <div style="font-size:9px;color:#444;font-style:italic;margin-bottom:4px;">
+                        {{center.authorizationOrderFr}}{{#if center.authorizationOrderEn}} / {{center.authorizationOrderEn}}{{/if}}
+                    </div>
+                    {{/if}}
+                    <h2 style="margin-top:6px;">{{center.name}}{{#if center.nameEn}} / {{center.nameEn}}{{/if}}</h2>
+                {{else}}
+                    {{#if headerConfig.showInstitutionName}}
+                        {{#if university_name_fr}}
+                        <h1>{{university_name_fr}} / {{university_name_en}}</h1>
+                        {{/if}}
+                    {{/if}}
+                    {{#if headerConfig.showFacultyName}}
+                        {{#if faculty_name_fr}}
+                        <h2>{{faculty_name_fr}}</h2>
+                        {{/if}}
+                    {{/if}}
+                    {{#if headerConfig.showInstitutionName}}
+                    <h2>{{name_fr}} / {{name_en}}</h2>
+                    {{/if}}
                 {{/if}}
 
                 {{#if headerConfig.showLogo}}
@@ -338,18 +385,19 @@
                 {{/if}}
 
                 <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email Université: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institut: {{contact_email}}{{/if}}
-                    {{#if university_fax}}<br>Fax Université: {{university_fax}}{{/if}}
-                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institut: {{fax}}{{/if}}
-                    {{#if university_postal_box}}<br>BP Université: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP Institut: {{postal_box}}{{/if}}
+                    {{#if university_contact_email}}Email Université / University: {{university_contact_email}}{{/if}}
+                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institution: {{contact_email}}{{/if}}
+                    {{#if university_fax}}<br>Fax Université / University: {{university_fax}}{{/if}}
+                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institution: {{fax}}{{/if}}
+                    {{#if university_postal_box}}<br>BP Université / University PO Box: {{university_postal_box}}{{/if}}
+                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP / PO Box Institution: {{postal_box}}{{/if}}
                 </div>
             </div>
 
             <div class="title">
-                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DES RÉSULTATS{{/if}}<br>
-                {{#if headerConfig.showSemester}}{{semester}} - {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE {{academicYear}}{{/if}}<br>
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DES RÉSULTATS{{/if}}
+                {{#if headerConfig.titleEn}} / {{headerConfig.titleEn}}{{else}} / GRADE RESULTS MINUTES{{/if}}<br>
+                {{#if headerConfig.showSemester}}{{semester}} — {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE / ACADEMIC YEAR {{academicYear}}{{/if}}<br>
                 {{#if headerConfig.showClassName}}({{program.name}} {{program.level}}){{/if}}
             </div>
 
@@ -357,39 +405,39 @@
                 <thead>
                     <tr>
                         <th rowspan="3">N°</th>
-                        <th rowspan="3">MAT</th>
-                        <th rowspan="3">NOM ET PRÉNOM</th>
+                        <th rowspan="3">MAT<br><span style="font-weight:normal">ID</span></th>
+                        <th rowspan="3">NOM ET PRÉNOM<br><span style="font-weight:normal">FULL NAME</span></th>
 
                         {{#each ues}}
                         <th colspan="{{add (multiply courses.length 3) 7}}" class="ue-header">UE {{code}} : {{name}}</th>
                         {{/each}}
 
-                        <th rowspan="3">TOTAL<br>CRE</th>
-                        <th rowspan="3">MOY<br>GEN</th>
-                        <th rowspan="3">BILAN</th>
+                        <th rowspan="3">TOTAL CRE<br><span style="font-weight:normal">CREDITS</span></th>
+                        <th rowspan="3">MOY GEN<br><span style="font-weight:normal">GPA</span></th>
+                        <th rowspan="3">BILAN<br><span style="font-weight:normal">RESULT</span></th>
                     </tr>
                     <tr>
                         {{#each ues}}
                             {{#each courses}}
                             <th colspan="3" class="ec-header">EC {{code}}<br>{{name}}</th>
                             {{/each}}
-                            <th colspan="7" class="ec-header">BILAN UE</th>
+                            <th colspan="7" class="ec-header">BILAN UE / UE RESULT</th>
                         {{/each}}
                     </tr>
                     <tr>
                         {{#each ues}}
                             {{#each courses}}
-                            <th>CC</th>
-                            <th>EX</th>
-                            <th>MOY</th>
+                            <th>CC<br><span style="font-weight:normal">CW</span></th>
+                            <th>EX<br><span style="font-weight:normal">EX</span></th>
+                            <th>MOY<br><span style="font-weight:normal">AVG</span></th>
                             {{/each}}
-                            <th>MOY</th>
-                            <th>DEC</th>
-                            <th>CRE</th>
-                            <th>TR</th>
-                            <th>MOY</th>
-                            <th>DEC</th>
-                            <th>CRE</th>
+                            <th>MOY<br>AVG</th>
+                            <th>DEC<br>RES</th>
+                            <th>CRE<br>CR</th>
+                            <th>TR<br>SR</th>
+                            <th>MOY<br>AVG</th>
+                            <th>DEC<br>RES</th>
+                            <th>CRE<br>CR</th>
                         {{/each}}
                     </tr>
                 </thead>
@@ -427,7 +475,7 @@
 
                     <tr class="taux-reussite-row">
                         <td colspan="1000" style="border-top: 2px solid #666;">
-                            <strong>Taux de Réussite (TR): {{globalSuccessRate}}%</strong>
+                            <strong>Taux de Réussite / Success Rate (TR / SR): {{globalSuccessRate}}%</strong>
                         </td>
                     </tr>
                 </tbody>
@@ -437,43 +485,43 @@
                 <div class="legend-info-wrapper">
                     <table class="legend-table">
                         <tr>
-                            <td>CC:</td>
-                            <td>Contrôle Continu</td>
-                            <td>CRE:</td>
-                            <td>Crédits</td>
+                            <td>CC / CW:</td>
+                            <td>Contrôle Continu / Coursework</td>
+                            <td>CRE / CR:</td>
+                            <td>Crédits / Credits</td>
                             <td>Ac:</td>
-                            <td>Acquis</td>
+                            <td>Acquis / Acquired</td>
                         </tr>
                         <tr>
                             <td>EX:</td>
-                            <td>Examen</td>
+                            <td>Examen / Exam</td>
                             <td>EC:</td>
-                            <td>Élément Constitutif</td>
+                            <td>Élément Constitutif / Course unit</td>
                             <td>Nac:</td>
-                            <td>Non Acquis</td>
+                            <td>Non Acquis / Not Acquired</td>
                         </tr>
                         <tr>
-                            <td>MOY:</td>
-                            <td>Moyenne</td>
+                            <td>MOY / AVG:</td>
+                            <td>Moyenne / Average</td>
                             <td>UE:</td>
-                            <td>Unité d'Enseignement</td>
-                            <td>TR:</td>
-                            <td>Taux de Réussite</td>
+                            <td>Unité d'Enseignement / Teaching Unit</td>
+                            <td>TR / SR:</td>
+                            <td>Taux de Réussite / Success Rate</td>
                         </tr>
                         <tr>
-                            <td>DEC:</td>
-                            <td>Décision</td>
-                            <td>MAT:</td>
-                            <td>Matricule</td>
+                            <td>DEC / RES:</td>
+                            <td>Décision / Decision</td>
+                            <td>MAT / ID:</td>
+                            <td>Matricule / Student ID</td>
                             <td></td>
                             <td></td>
                         </tr>
                     </table>
 
                     <div class="info-box">
-                        <div><strong>Programme:</strong> {{program.name}}</div>
-                        <div><strong>Semestre:</strong> {{semester}}</div>
-                        <div><strong>Année académique:</strong> {{academicYear}}</div>
+                        <div><strong>Programme / Program:</strong> {{program.name}}</div>
+                        <div><strong>Semestre / Semester:</strong> {{semester}}</div>
+                        <div><strong>Année académique / Academic Year:</strong> {{academicYear}}</div>
                     </div>
                 </div>
             </div>

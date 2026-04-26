@@ -1,0 +1,255 @@
+<!--
+  Attestation template — DOM/CSS structure ported from DIPLOMATION's
+  src/lib/attestation-generator/html-generator.ts. The header is split into
+  `.header-row1` (3 columns: FR text | central logos | EN text) and
+  `.header-row2` (title + subtitle + reference number). The content holds an
+  intro nomination block, the student info paragraphs and 1-2 academic tables.
+  The footer carries two signature columns (QR + director on the left,
+  Douala / Rector on the right).
+-->
+<!DOCTYPE html>
+<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attestation — {{student.fullName}}</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { box-sizing: border-box; }
+html { width: 210mm; height: 297mm; }
+body {
+	margin: {{theme.page.margins.top}}mm {{theme.page.margins.right}}mm {{theme.page.margins.bottom}}mm {{theme.page.margins.left}}mm;
+	padding: 0;
+	width: calc(210mm - {{multiply theme.page.margins.left 2}}mm);
+	font-family: {{theme.fonts.main}};
+	font-size: {{theme.sizes.body}}pt;
+	color: {{theme.colors.primary}};
+	background-color: white;
+	line-height: 1.4;
+	position: relative;
+}
+
+.container {
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	box-sizing: border-box;
+	position: relative;
+	{{#if (gt theme.borders.outerWidth 0)}}border: {{theme.borders.outerWidth}}px {{#if theme.borders.decorative}}double{{else}}solid{{/if}} {{theme.colors.border}};{{/if}}
+}
+
+/* Demo mode overlays */
+.demo-watermark { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; display: {{#if demoMode}}block{{else}}none{{/if}}; background: repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(255,0,0,0.1) 100px, rgba(255,0,0,0.1) 120px); }
+.demo-watermark::before { content: "DÉMO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 120px; font-weight: bold; color: rgba(255,0,0,0.15); font-family: Arial, sans-serif; letter-spacing: 20px; }
+.demo-banner { position: absolute; top: 0; left: 0; right: 0; background: rgba(255,0,0,0.4); color: white; text-align: center; padding: 5px; font-size: 12px; font-weight: bold; z-index: 1001; display: {{#if demoMode}}block{{else}}none{{/if}}; }
+
+/* Background watermark logo */
+.watermark { position: absolute; top: 25%; left: 0; width: 100%; height: 50%; z-index: -1; display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}}; justify-content: center; align-items: center; opacity: {{theme.watermark.logoOpacity}}; pointer-events: none; }
+.watermark img { max-width: 600px; max-height: 400px; object-fit: contain; }
+
+/* Header */
+.header { line-height: normal; font-size: {{theme.sizes.header}}pt; font-family: {{theme.fonts.header}}; }
+.header-row1 { text-align: center; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.header-content { width: 33%; font-size: {{theme.sizes.header}}pt; line-height: 1.3; }
+.header-content p { margin: 0; }
+.header-content a { color: inherit; text-decoration: none; }
+.header-logo-content { display: flex; align-items: center; justify-content: space-between; }
+.header-logo-content > div { width: 100%; height: 100%; align-items: center; margin: 3px; align-content: center; display: flex; justify-content: center; }
+.header-logo-content > div > img { max-width: {{theme.logos.institutionLogoSize}}px; max-height: {{theme.logos.institutionLogoSize}}px; object-fit: contain; }
+
+.header-row2 { text-align: center; margin-bottom: 15px; }
+.header-row2 .main-title { font-weight: bold; text-align: center; font-size: {{theme.sizes.title}}pt; color: {{theme.colors.accent}}; margin: 4px 0; text-transform: uppercase; font-family: {{theme.fonts.title}}; }
+.header-row2 .subtitle { font-weight: bold; font-size: {{theme.sizes.subtitle}}pt; color: {{theme.colors.secondary}}; margin: 4px 0; font-style: italic; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; font-family: {{theme.fonts.title}}; }
+.header-row2 .ref-line { font-size: {{add theme.sizes.body 4}}pt; margin: 6px 0 0 0; font-weight: bold; display: {{#if theme.display.showRefNumber}}block{{else}}none{{/if}}; }
+
+/* Main content */
+.content { margin: 25px 0; }
+.student-info, .list-nomination-header { margin: 8px 0; }
+.student-info p, .list-nomination-header p { margin: 8px 0; }
+.nomination-list { display: flex; width: 100%; gap: 30%; margin: 15px 0; }
+.nomination-list-item { border-top: 1px solid {{theme.colors.border}}; width: 30%; padding-top: 4px; margin-top: 15px; }
+
+/* Tables */
+.table-container { width: 100%; margin: 5px 0; }
+.academic-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+.academic-table th, .academic-table td { padding: 4px; text-align: center; border: {{theme.borders.innerWidth}}px solid {{theme.colors.border}}; font-size: {{theme.sizes.body}}pt; vertical-align: middle; }
+.academic-table th { background-color: rgba(0,0,0,0.05); font-weight: bold; color: {{theme.colors.primary}}; }
+.academic-table tr.values-row { border-top: 1px solid {{theme.colors.border}}; background-color: rgba(0,0,0,0.04); }
+.academic-table em { font-style: italic; color: {{theme.colors.secondary}}; font-weight: normal; display: {{#if theme.display.bilingual}}inline{{else}}none{{/if}}; }
+
+/* Footer signatures */
+.footer { margin-top: 15px; display: flex; justify-content: space-between; }
+.signature { width: 48%; font-size: {{theme.sizes.signature}}pt; }
+.signature-area { display: flex; flex-direction: column; align-items: center; }
+.qr-code { display: {{#if theme.qrCode.enabled}}flex{{else}}none{{/if}}; align-items: center; justify-content: center; position: relative; }
+.qr-image { width: {{theme.qrCode.size}}px; height: {{theme.qrCode.size}}px; background-color: #eee; display: block; }
+.qr-image img { width: 100%; height: 100%; object-fit: contain; }
+.sign-ipes { width: 100%; text-align: center; padding-bottom: 100px; }
+.recteur-sign { margin-top: 65px; padding-bottom: 100px; }
+.signature p { margin: 0; }
+
+em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.display.bilingual}}display: none;{{/unless}} }
+
+@media print { body { margin: 0; padding: 0; } .container { page-break-after: always; } }
+</style>
+</head>
+<body>
+<div class="container">
+	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - DOCUMENT NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
+
+	<div class="watermark">
+		{{#if institution.watermarkLogoUrl}}<img src="{{institution.watermarkLogoUrl}}" alt="Watermark">{{/if}}
+	</div>
+
+	<div class="header">
+		<div class="header-row1">
+			<div class="header-content">
+				<p>
+					{{country.fr}}<br>
+					{{#if theme.display.bilingual}}<em>{{country.mottoFr}}</em>{{else}}<strong>{{country.mottoFr}}</strong>{{/if}}<br>
+					********************<br>
+					{{ministry.fr}}<br>
+					{{#if university.fr}}********************<br><strong>{{university.fr}}</strong><br>{{/if}}
+					{{#if faculty.fr}}********************<br><strong>{{faculty.fr}}</strong><br>{{/if}}
+					********************<br>
+					<strong>{{institution.nameFr}}</strong><br>
+					{{#if institution.postalBox}}********************<br>B.P. {{institution.postalBox}}<br>{{/if}}
+					{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+
+			<div class="header-logo-content">
+				<div>{{#if logos.university}}<img src="{{logos.university}}" alt="University Logo">{{/if}}</div>
+				<div>{{#if logos.faculty}}<img src="{{logos.faculty}}" alt="Faculty Logo">{{/if}}</div>
+				<div>{{#if logos.institution}}<img src="{{logos.institution}}" alt="Institution Logo">{{/if}}</div>
+			</div>
+
+			<div class="header-content">
+				<p>
+					{{country.en}}<br>
+					{{#if theme.display.bilingual}}<em>{{country.mottoEn}}</em>{{else}}<strong>{{country.mottoEn}}</strong>{{/if}}<br>
+					********************<br>
+					{{ministry.en}}<br>
+					{{#if university.en}}********************<br><strong>{{university.en}}</strong><br>{{/if}}
+					{{#if faculty.en}}********************<br><strong>{{faculty.en}}</strong><br>{{/if}}
+					********************<br>
+					<strong>{{institution.nameEn}}</strong><br>
+					{{#if institution.postalBox}}********************<br>P.O. Box {{institution.postalBox}}<br>{{/if}}
+					{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+		</div>
+
+		<div class="header-row2">
+			<h1 class="main-title">{{document.titleFr}}</h1>
+			<h2 class="subtitle">{{document.titleEn}}</h2>
+			<p class="ref-line">Réf N° {{document.referenceNumber}}</p>
+		</div>
+	</div>
+
+	<div class="content">
+		<div class="list-nomination-header">
+			<p>
+				<strong>Je soussigné(e), {{authority.name}}, {{authority.role}}{{#if institution.nameFr}} de {{institution.nameFr}}{{/if}},</strong><br>
+				{{#if theme.display.bilingual}}<em>I, the undersigned, {{authority.name}}, {{authority.role}}{{#if institution.nameEn}} of the {{institution.nameEn}}{{/if}},</em>{{/if}}
+			</p>
+
+			<p>
+				<strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}}, atteste que,</strong><br>
+				{{#if theme.display.bilingual}}<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em>{{/if}}
+			</p>
+		</div>
+
+		<div class="student-info">
+			<p>
+				M./Mme/Mlle <strong>{{student.fullName}}</strong><br>
+				{{#if theme.display.bilingual}}<em>Mr/Mrs/Miss</em>{{/if}}
+			</p>
+
+			<p>
+				Né(e) le : <strong>{{student.birthDate}}</strong>&nbsp;&nbsp;&nbsp;à&nbsp;<strong>{{student.birthPlace}}</strong><br>
+				{{#if theme.display.bilingual}}<em>Born on : <strong style="opacity:0">{{student.birthDate}}</strong>&nbsp;&nbsp;&nbsp;at :</em>{{/if}}
+			</p>
+
+			<p>
+				Inscrit(e) à <strong>{{institution.nameFr}}</strong> sous le matricule : <strong>{{student.matricule}}</strong><br>
+				{{#if theme.display.bilingual}}<em>Registered at the <strong>{{institution.nameEn}}</strong> under the matricule number :</em>{{/if}}
+			</p>
+
+			<p>
+				A subi avec succès toutes les épreuves de : <strong>{{class.name}}</strong> en <strong>{{program.name}}</strong><br>
+				{{#if theme.display.bilingual}}<em>Having successfully passed all examinations for {{class.name}} in {{program.name}}</em>{{/if}}
+			</p>
+		</div>
+
+		<div class="table-container">
+			<table class="academic-table">
+				<tr>
+					<th>Domaine{{#if theme.display.bilingual}}<br><em>Domain of the study</em>{{/if}}</th>
+					<th>Parcours{{#if theme.display.bilingual}}<br><em>Course</em>{{/if}}</th>
+					<th>Spécialité{{#if theme.display.bilingual}}<br><em>Specialization</em>{{/if}}</th>
+					{{#if student.option}}<th>Option{{#if theme.display.bilingual}}<br><em>Learning option</em>{{/if}}</th>{{/if}}
+				</tr>
+				<tr class="values-row">
+					<td><strong>{{program.domainFr}}</strong>{{#if theme.display.bilingual}}<br><em>{{program.domainEn}}</em>{{/if}}</td>
+					<td><strong>{{program.name}}</strong>{{#if theme.display.bilingual}}<br><em>{{program.nameEn}}</em>{{/if}}</td>
+					<td><strong>{{program.specialiteFr}}</strong>{{#if theme.display.bilingual}}<br><em>{{program.specialiteEn}}</em>{{/if}}</td>
+					{{#if student.option}}<td><strong>{{student.option}}</strong>{{#if theme.display.bilingual}}<br><em>{{student.optionEn}}</em>{{/if}}</td>{{/if}}
+				</tr>
+			</table>
+		</div>
+
+		{{#if showResults}}
+		<div class="table-container">
+			<table class="academic-table">
+				<tr>
+					<th>Total de crédits{{#if theme.display.bilingual}}<br><em>Credits earned</em>{{/if}}</th>
+					<th>Moyenne{{#if theme.display.bilingual}}<br><em>Average</em>{{/if}}</th>
+					<th>Mention{{#if theme.display.bilingual}}<br><em>Honor</em>{{/if}}</th>
+					<th>Décision{{#if theme.display.bilingual}}<br><em>Decision</em>{{/if}}</th>
+					<th>Année académique{{#if theme.display.bilingual}}<br><em>Academic year</em>{{/if}}</th>
+				</tr>
+				<tr class="values-row">
+					<td><strong>{{summary.creditsEarned}} / {{summary.creditsTotal}}</strong></td>
+					<td><strong>{{formatNumber summary.generalAverage}}</strong></td>
+					<td><strong>{{summary.mention}}</strong></td>
+					<td><strong>{{summary.decision}}</strong></td>
+					<td><strong>{{document.academicYear}}</strong></td>
+				</tr>
+			</table>
+		</div>
+		{{/if}}
+
+		<p>
+			En foi de quoi la présente Attestation est délivrée pour servir et valoir ce que de droit.<br>
+			{{#if theme.display.bilingual}}<em>In witness whereof the present testimonial is given with all the privileges thereto pertaining.</em>{{/if}}
+		</p>
+	</div>
+
+	<div class="footer">
+		<div class="signature signature-area">
+			<div class="qr-code">
+				<div class="qr-image">{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR Code">{{/if}}</div>
+			</div>
+			<div class="sign-ipes">
+				<p>
+					<strong>{{authority.role}}</strong><br>
+					{{#if theme.display.bilingual}}<em>The {{authority.role}}</em>{{/if}}
+				</p>
+			</div>
+		</div>
+
+		<div class="signature signature-area">
+			<p>
+				<strong>{{institution.city}}, le {{document.issueDate}}</strong><br>
+				{{#if theme.display.bilingual}}<em>{{institution.city}}, the {{document.issueDate}}</em>{{/if}}
+			</p>
+			<p class="recteur-sign">
+				<strong>LE CHEF D'ÉTABLISSEMENT</strong><br>
+				{{#if theme.display.bilingual}}<em>The Dean of the Faculty</em>{{/if}}
+			</p>
+		</div>
+	</div>
+</div>
+</body>
+</html>

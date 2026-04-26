@@ -309,48 +309,32 @@ export default function GradeExport() {
 		queryFn: () => trpcClient.exports.getConfig.query(),
 	});
 
-	const { data: exams } = useQuery({
+	const {
+		data: exams,
+		isLoading: examsLoading,
+		isFetching: examsFetching,
+	} = useQuery({
 		queryKey: ["exams", selectedClass],
-		queryFn: async () => {
+		queryFn: async (): Promise<ExamItem[]> => {
 			if (!selectedClass) return [];
-			const { items: classCourses } = await trpcClient.classCourses.list.query({
+			// Single batched call — exams.list returns courseName/courseCode joined.
+			const { items } = await trpcClient.exams.list.query({
 				classId: selectedClass,
+				limit: 500,
 			});
-			const result: ExamItem[] = [];
-			for (const cc of classCourses) {
-				const course = await trpcClient.courses.getById.query({
-					id: cc.course,
-				});
-				const { items: examItems } = await trpcClient.exams.list.query({
-					classCourseId: cc.id,
-				});
-				examItems.forEach(
-					(exam: {
-						id: string;
-						name: string;
-						type: string;
-						date: string;
-						percentage: string;
-						sessionType?: "normal" | "retake";
-						parentExamId?: string | null;
-						scoringPolicy?: "replace" | "best_of";
-					}) => {
-						result.push({
-							id: exam.id,
-							name: exam.name,
-							type: exam.type,
-							date: exam.date,
-							percentage: Number(exam.percentage),
-							courseName: course.name,
-							courseCode: course.code ?? null,
-							classCourseCode: cc.code ?? null,
-							sessionType: exam.sessionType || "normal",
-							parentExamId: exam.parentExamId || null,
-							scoringPolicy: exam.scoringPolicy || "replace",
-						});
-					},
-				);
-			}
+			const result: ExamItem[] = items.map((exam: any) => ({
+				id: exam.id,
+				name: exam.name,
+				type: exam.type,
+				date: exam.date,
+				percentage: Number(exam.percentage),
+				courseName: exam.courseName ?? "",
+				courseCode: exam.courseCode ?? null,
+				classCourseCode: exam.classCourseCode ?? null,
+				sessionType: exam.sessionType || "normal",
+				parentExamId: exam.parentExamId || null,
+				scoringPolicy: exam.scoringPolicy || "replace",
+			}));
 			return result.sort((a, b) => a.courseName.localeCompare(b.courseName));
 		},
 		enabled: !!selectedClass,
@@ -1736,7 +1720,24 @@ export default function GradeExport() {
 
 			{/* ─── Étape 2 — Sélection des évaluations ─────────────────────── */}
 			{selectedClass &&
-				(exams && exams.length > 0 ? (
+				(examsLoading || examsFetching ? (
+					<Card>
+						<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+							<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+							<p className="font-medium text-sm">
+								{t("admin.gradeExport.exams.loadingTitle", {
+									defaultValue: "Chargement des évaluations…",
+								})}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("admin.gradeExport.exams.loadingDescription", {
+									defaultValue:
+										"On récupère tous les examens et leurs cours pour cette classe.",
+								})}
+							</p>
+						</CardContent>
+					</Card>
+				) : exams && exams.length > 0 ? (
 					<Card>
 						<CardHeader className="pb-3">
 							<div className="flex items-center justify-between">

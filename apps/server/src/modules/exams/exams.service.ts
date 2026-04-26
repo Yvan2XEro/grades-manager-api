@@ -335,15 +335,20 @@ export async function setLock(
 	examId: string,
 	lock: boolean,
 	institutionId: string,
+	actor?: ActorContext,
 ) {
 	const existing = await requireExam(examId, institutionId);
-	if (lock && existing.status !== "approved") {
+	const isAdmin = roleSatisfies(actor?.memberRole ?? null, ADMIN_ROLES);
+	if (lock && existing.status !== "approved" && !isAdmin) {
 		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Only approved exams can be locked",
+			code: "PRECONDITION_FAILED",
+			message: `Cannot lock exam: status is "${existing.status}". Only approved exams can be locked (admin can force-lock).`,
 		});
 	}
-	return repo.setLock(examId, lock, institutionId);
+	// Admin can force-lock from any status — auto-promote to approved to keep
+	// downstream invariants (retake eligibility, grade editing) consistent.
+	const promoteToApproved = lock && existing.status !== "approved" && isAdmin;
+	return repo.setLock(examId, lock, institutionId, { promoteToApproved });
 }
 
 const DEFAULT_PASSING_GRADE = 10;

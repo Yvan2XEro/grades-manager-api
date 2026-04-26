@@ -3,6 +3,7 @@ import {
 	Bell,
 	BookOpen,
 	BookOpenCheck,
+	Building,
 	Building2,
 	Calendar,
 	CalendarPlus,
@@ -93,6 +94,11 @@ const Sidebar: React.FC = () => {
 						to: "/admin/study-cycles",
 						icon: <Layers3 className={IC} />,
 						labelKey: "navigation.sidebar.admin.studyCycles",
+					},
+					{
+						to: "/admin/centers",
+						icon: <Building className={IC} />,
+						labelKey: "navigation.sidebar.admin.centers",
 					},
 					{
 						to: "/admin/programs",
@@ -191,6 +197,11 @@ const Sidebar: React.FC = () => {
 						to: "/admin/export-templates",
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.exportTemplates",
+					},
+					{
+						to: "/admin/class-document-templates",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.classDocumentTemplates",
 					},
 				],
 			},

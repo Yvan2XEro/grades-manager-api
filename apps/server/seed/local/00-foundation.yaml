@@ -207,6 +207,8 @@ registrationNumberFormats:
             - academicYear
           start: 1
 institutions:
+  # ===== Main tenant institution (active institution — do NOT change order) =====
+  # Must stay at idx 0 so the seed runner keeps INSES as defaultInstitutionId.
   - code: INSES
     type: main
     shortName: INSES
@@ -231,3 +233,63 @@ institutions:
     coverImageUrl: https://placehold.co/1200x400.png
     timezone: Africa/Douala
     organizationSlug: inses-institution
+
+  # ===== Tutelle hierarchy (Université de Douala → FMSP → ISSAM) =====
+  # Modélise la chaîne académique de supervision telle qu'elle apparaît dans
+  # l'en-tête des relevés/attestations: Ministère (constante) → Université →
+  # Faculté → Institut. ISSAM est traité comme INSES (institut complet) mais
+  # rattaché à la FMSP de l'Université de Douala.
+  - code: UDo
+    type: other
+    shortName: UDo
+    nameFr: Université de Douala
+    nameEn: The University of Douala
+    legalNameFr: Université de Douala
+    legalNameEn: The University of Douala
+    addressFr: B.P. 2701, Douala, Cameroun
+    addressEn: P.O. Box 2701, Douala, Cameroon
+    contactEmail: rectorat@univ-douala.cm
+    postalBox: BP 2701
+    website: https://univ-douala.com
+    logoUrl: https://placehold.co/200x200.png?text=UDo
+    timezone: Africa/Douala
+
+  - code: FMSP
+    type: faculty
+    shortName: FMSP
+    nameFr: Faculté de Médecine et des Sciences Pharmaceutiques
+    nameEn: Faculty of Medicine and Pharmaceutical Sciences
+    legalNameFr: Faculté de Médecine et des Sciences Pharmaceutiques
+    legalNameEn: Faculty of Medicine and Pharmaceutical Sciences
+    addressFr: B.P. 2701, Douala, Cameroun
+    addressEn: P.O. Box 2701, Douala, Cameroon
+    contactEmail: contact@fmsp-udo.cm
+    postalBox: BP 2701
+    logoUrl: https://placehold.co/200x200.png?text=FMSP
+    timezone: Africa/Douala
+    parentInstitutionCode: UDo
+
+  - code: ISSAM
+    type: other
+    shortName: ISSAM
+    nameFr: Institut Supérieur des Sciences, Arts et Métiers
+    nameEn: Higher Institute of Science, Arts and Crafts
+    legalNameFr: Institut Supérieur des Sciences, Arts et Métiers
+    legalNameEn: Higher Institute of Science, Arts and Crafts
+    sloganFr: Sciences, Arts et Métiers au service de l'humain
+    sloganEn: Science, Arts and Crafts at the service of the human being
+    descriptionFr: Établissement d'enseignement supérieur sous tutelle académique
+      de la Faculté de Médecine et des Sciences Pharmaceutiques de l'Université
+      de Douala (filières Sciences Infirmières, Santé, Sciences et Métiers).
+    descriptionEn: Higher education institution under the academic supervision of
+      the Faculty of Medicine and Pharmaceutical Sciences of The University of
+      Douala (Nursing Sciences, Health, Sciences and Crafts programs).
+    addressFr: B.P. 12431, Yaoundé, Cameroun
+    addressEn: P.O. Box 12431, Yaounde, Cameroon
+    contactEmail: contact@issam.online
+    postalBox: BP 12431
+    website: https://issam.online
+    logoUrl: https://placehold.co/200x200.png?text=ISSAM
+    coverImageUrl: https://placehold.co/1200x400.png
+    timezone: Africa/Douala
+    parentInstitutionCode: FMSP

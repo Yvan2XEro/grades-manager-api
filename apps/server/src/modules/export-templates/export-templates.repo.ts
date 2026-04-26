@@ -1,11 +1,17 @@
 import { and, desc, eq, lt } from "drizzle-orm";
 import { db } from "../../db";
 import type {
+	ClassExportTemplate,
 	ExportTemplate,
 	ExportTemplateType,
+	NewClassExportTemplate,
 	NewExportTemplate,
+	NewProgramExportTemplate,
+	ProgramExportTemplate,
 } from "../../db/schema/app-schema";
 import * as schema from "../../db/schema/app-schema";
+
+// ---------- export_templates ----------
 
 export async function findTemplateById(
 	id: string,
@@ -63,6 +69,19 @@ export async function findDefaultTemplate(
 	});
 }
 
+export async function findSystemDefaultTemplate(
+	institutionId: string,
+	type: ExportTemplateType,
+): Promise<ExportTemplate | undefined> {
+	return await db.query.exportTemplates.findFirst({
+		where: and(
+			eq(schema.exportTemplates.institutionId, institutionId),
+			eq(schema.exportTemplates.type, type),
+			eq(schema.exportTemplates.isSystemDefault, true),
+		),
+	});
+}
+
 export async function createTemplate(
 	template: NewExportTemplate,
 ): Promise<ExportTemplate> {
@@ -109,9 +128,134 @@ export async function setDefaultTemplate(
 			),
 		);
 
-	// Then set the new default
-	await db
-		.update(schema.exportTemplates)
-		.set({ isDefault: true, updatedAt: new Date() })
-		.where(eq(schema.exportTemplates.id, templateId));
+	if (templateId) {
+		// Then set the new default
+		await db
+			.update(schema.exportTemplates)
+			.set({ isDefault: true, updatedAt: new Date() })
+			.where(eq(schema.exportTemplates.id, templateId));
+	}
+}
+
+// ---------- class_export_templates ----------
+
+export async function findClassAssignment(
+	classId: string,
+	type: ExportTemplateType,
+): Promise<ClassExportTemplate | undefined> {
+	return await db.query.classExportTemplates.findFirst({
+		where: and(
+			eq(schema.classExportTemplates.classId, classId),
+			eq(schema.classExportTemplates.templateType, type),
+		),
+	});
+}
+
+export async function listClassAssignments(
+	institutionId: string,
+	filters: { classId?: string; templateType?: ExportTemplateType } = {},
+): Promise<ClassExportTemplate[]> {
+	const conditions = [
+		eq(schema.classExportTemplates.institutionId, institutionId),
+	];
+	if (filters.classId) {
+		conditions.push(eq(schema.classExportTemplates.classId, filters.classId));
+	}
+	if (filters.templateType) {
+		conditions.push(
+			eq(schema.classExportTemplates.templateType, filters.templateType),
+		);
+	}
+	return await db.query.classExportTemplates.findMany({
+		where: and(...conditions),
+		orderBy: [desc(schema.classExportTemplates.updatedAt)],
+	});
+}
+
+export async function upsertClassAssignment(
+	row: NewClassExportTemplate,
+): Promise<ClassExportTemplate> {
+	const [created] = await db
+		.insert(schema.classExportTemplates)
+		.values(row)
+		.onConflictDoUpdate({
+			target: [
+				schema.classExportTemplates.classId,
+				schema.classExportTemplates.templateType,
+			],
+			set: {
+				templateId: row.templateId,
+				themeOverrides: row.themeOverrides ?? null,
+				updatedAt: new Date(),
+				updatedBy: row.updatedBy ?? null,
+			},
+		})
+		.returning();
+	return created;
+}
+
+export async function deleteClassAssignment(
+	classId: string,
+	type: ExportTemplateType,
+): Promise<boolean> {
+	const result = await db
+		.delete(schema.classExportTemplates)
+		.where(
+			and(
+				eq(schema.classExportTemplates.classId, classId),
+				eq(schema.classExportTemplates.templateType, type),
+			),
+		)
+		.returning();
+	return result.length > 0;
+}
+
+// ---------- program_export_templates (theme overrides) ----------
+
+export async function findProgramAssignment(
+	programId: string,
+	type: ExportTemplateType,
+): Promise<ProgramExportTemplate | undefined> {
+	return await db.query.programExportTemplates.findFirst({
+		where: and(
+			eq(schema.programExportTemplates.programId, programId),
+			eq(schema.programExportTemplates.templateType, type),
+		),
+	});
+}
+
+export async function upsertProgramAssignment(
+	row: NewProgramExportTemplate,
+): Promise<ProgramExportTemplate> {
+	const [created] = await db
+		.insert(schema.programExportTemplates)
+		.values(row)
+		.onConflictDoUpdate({
+			target: [
+				schema.programExportTemplates.programId,
+				schema.programExportTemplates.templateType,
+			],
+			set: {
+				templateId: row.templateId,
+				themeOverrides: row.themeOverrides ?? null,
+			},
+		})
+		.returning();
+	return created;
+}
+
+export async function deleteProgramAssignment(
+	programId: string,
+	type: ExportTemplateType,
+): Promise<boolean> {
+	const result = await db
+		.delete(schema.programExportTemplates)
+		.where(
+			and(
+				eq(schema.programExportTemplates.programId, programId),
+				eq(schema.programExportTemplates.templateType, type),
+			),
+		)
+		.returning();
+	return result.length > 0;
 }

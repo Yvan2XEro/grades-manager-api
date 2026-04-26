@@ -198,13 +198,28 @@ export function institutionToExportConfig(
  * Load HTML template from file
  */
 export function loadTemplate(
-	templateName: "pv" | "evaluation" | "ue" | "deliberation",
+	templateName:
+		| "pv"
+		| "evaluation"
+		| "ue"
+		| "deliberation"
+		| "diploma"
+		| "transcript"
+		| "attestation"
+		| "student_list",
 ): string {
 	const templateMap = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
 		ue: "teaching-unit-publication.html",
 		deliberation: "deliberation-template.html",
+		diploma: "diploma-template.html",
+		// `releve_template.html` and `attestation_template.html` (with
+		// underscores) are the canonical FMSP/UDo references — they include
+		// the IPES vs faculty branching driven by `settings.establishmentType`.
+		transcript: "releve_template.html",
+		attestation: "attestation_template.html",
+		student_list: "student-list-template.html",
 	};
 
 	const templatePath = join(

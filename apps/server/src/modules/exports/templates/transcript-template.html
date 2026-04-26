@@ -1,0 +1,298 @@
+<!--
+  Transcript template — DOM/CSS structure ported from DIPLOMATION's
+  src/lib/pdfGenerator.ts (createTranscriptHTML). Body uses a double border;
+  header has 3 columns (.header-row1) and a centered title row (.header-row2);
+  content is split into .student_block1 (NOM/MATRICULE) and .student-info
+  (3-column grid with academic context); the table uses class names
+  .table-code/.table-ue/.table-ec/.table-note/.table-average/.table-credit.
+-->
+<!DOCTYPE html>
+<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relevé de notes — {{student.fullName}}</title>
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+body {
+	font-family: {{theme.fonts.main}};
+	width: 200mm;
+	min-height: 287mm;
+	box-sizing: border-box;
+	background-color: white;
+	margin: 5mm;
+	border: {{add theme.table.borderWidth 2}}px double {{theme.colors.primary}};
+	color: {{theme.colors.primary}};
+	position: relative;
+	overflow: hidden;
+}
+
+/* Demo overlays */
+.demo-banner { position: absolute; top: 0; left: 0; right: 0; background: rgba(148,5,5,0.8); color: white; text-align: center; padding: 3px; font-size: 10px; font-weight: bold; z-index: 1001; display: {{#if demoMode}}block{{else}}none{{/if}}; }
+.demo-watermark { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; display: {{#if demoMode}}block{{else}}none{{/if}}; background: repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,0,0,0.08) 80px, rgba(255,0,0,0.08) 100px); }
+.demo-watermark::before { content: "DÉMO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; font-weight: bold; color: rgba(255,0,0,0.12); font-family: Arial, sans-serif; letter-spacing: 15px; }
+
+/* Background watermark logo */
+.watermark { position: absolute; top: 120px; left: 0; width: 100%; height: 100%; z-index: -1; display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}}; justify-content: center; align-items: center; opacity: {{theme.watermark.logoOpacity}}; pointer-events: none; }
+.watermark img { width: 600px; height: auto; }
+
+.container { width: 100%; height: 100%; position: relative; }
+
+/* Header */
+.header { line-height: normal; font-size: {{theme.sizes.header}}pt; font-family: {{theme.fonts.header}}; }
+.header-row1 { text-align: center; margin-bottom: 20px; margin-top: 8px; display: flex; justify-content: space-between; }
+.header-content { width: 35%; }
+.header-content p { margin: 0; }
+.header-content a { color: inherit; text-decoration: none; }
+.header-logo-content { margin-top: 4px; align-content: center; display: flex; align-items: center; justify-content: space-between; }
+.header-logo-content > div { width: 100%; height: 100%; align-items: center; align-content: center; display: flex; justify-content: center; }
+.header-logo-content > div > img { max-height: 70px; max-width: 100%; object-fit: contain; }
+
+.header-row2 { text-align: center; }
+.header-row2 .header-title { color: {{theme.colors.accent}}; font-weight: 100; text-align: center; font-size: {{theme.sizes.title}}pt; margin: 4px 0; }
+.header-row2 p { font-size: {{add theme.sizes.studentInfo 2}}pt; margin: 5px 0; }
+
+em { font-style: italic; }
+{{#unless theme.display.bilingual}}em { display: none !important; }{{/unless}}
+
+/* Student blocks */
+.student_block1, .student-info { width: 90%; margin-left: auto; margin-right: auto; font-size: {{theme.sizes.studentInfo}}pt; gap: 10px; }
+.student_block1 { display: flex; flex-direction: row; justify-content: space-between; }
+.student_block1 p, .student-info p { font-size: {{theme.sizes.studentInfo}}pt; margin: 0; padding: 0; }
+.student-info { display: grid; grid-template-columns: 1fr 1fr 1.2fr; margin-bottom: 20px; }
+.student-info > div { margin: 0; padding: 0; font-size: {{theme.sizes.studentInfo}}pt; }
+
+/* Main grades table */
+.table { padding-left: 20px; }
+table { margin-left: auto; margin-right: auto; width: 96%; border-collapse: collapse; margin-bottom: 20px; font-size: {{theme.sizes.tableBody}}pt; font-family: {{theme.fonts.table}}; }
+th, td { border: {{divide theme.table.borderWidth 2}}px solid {{theme.colors.tableBorder}}; padding: {{add theme.table.borderWidth 2}}px; text-align: center; }
+th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tableHeaderText}}; font-size: {{theme.sizes.tableHeader}}pt; font-weight: bold; }
+.table-head th { text-align: center; }
+.table-ue-code, .table-ue-label, .table-ue-avearage { font-weight: bold; }
+.table-ec, .table-ue-title { text-align: left; }
+.table-code { width: 8%; }
+.table-ue { width: 25%; }
+.table-ec { width: 25%; }
+.table-note { width: 10%; }
+.table-average { width: 12%; }
+.table-credit { width: 10%; }
+{{#if theme.table.alternateRows}}tbody tr:nth-child(even) td { background: {{theme.colors.alternateRow}}; }{{/if}}
+
+.ue-row td { background: {{theme.colors.alternateRow}}; font-weight: bold; }
+.passing { color: {{theme.colors.passingGrade}}; font-weight: bold; }
+.failing { color: {{theme.colors.failingGrade}}; font-weight: bold; }
+
+/* Grade scale + signatures */
+.grade-sign { display: flex; justify-content: space-between; align-items: flex-start; width: 96%; margin: 0 auto; gap: 20px; }
+.grade-scale { display: {{#if theme.display.showSemesterBreakdown}}block{{else}}none{{/if}}; font-size: {{theme.sizes.footer}}pt; width: 50%; }
+.grade-scale table { width: 100%; margin-bottom: 4px; }
+.grade-scale th, .grade-scale td { width: 30px; padding: 1px; border: 0.5px solid {{theme.colors.tableBorder}}; }
+
+.signature { margin-top: 30px; text-align: left; font-size: {{add theme.sizes.studentInfo 2}}pt; margin-right: 20px; padding-right: 20px; min-width: 40%; }
+.signature p { margin: 4px 0; }
+
+.qr-code-block { display: {{#if theme.display.showQRCode}}block{{else}}none{{/if}}; width: {{theme.display.qrCodeSize}}px; height: {{theme.display.qrCodeSize}}px; margin-top: 8px; }
+.qr-code-block img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Footer note */
+.footer-note { position: absolute; width: 100%; bottom: 10px; font-size: {{theme.sizes.footer}}pt; text-align: center; margin-top: 20px; padding-top: 10px; font-style: italic; }
+
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div class="container">
+	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - RELEVÉ NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
+
+	<div class="watermark">
+		{{#if institution.watermarkLogoUrl}}<img src="{{institution.watermarkLogoUrl}}" alt="Watermark">{{/if}}
+	</div>
+
+	<div class="header">
+		<div class="header-row1">
+			<div class="header-content">
+				<p>
+					{{country.fr}}<br>
+					<em>{{country.mottoFr}}</em><br>
+					********************<br>
+					{{ministry.fr}}<br>
+					{{#if university.fr}}********************<br><strong>{{university.fr}}</strong><br>{{/if}}
+					{{#if faculty.fr}}********************<br><strong>{{faculty.fr}}</strong><br>{{/if}}
+					********************<br>
+					<strong>{{institution.nameFr}}</strong>
+					{{#if institution.postalBox}}<br>********************<br>B.P. {{institution.postalBox}}{{/if}}
+					{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+
+			<div class="header-logo-content">
+				<div>{{#if logos.university}}<img src="{{logos.university}}" alt="University Logo">{{/if}}</div>
+				<div>{{#if logos.faculty}}<img src="{{logos.faculty}}" alt="Faculty Logo">{{/if}}</div>
+				<div>{{#if logos.institution}}<img src="{{logos.institution}}" alt="Institution Logo">{{/if}}</div>
+			</div>
+
+			<div class="header-content">
+				<p>
+					{{country.en}}<br>
+					<em>{{country.mottoEn}}</em><br>
+					********************<br>
+					{{ministry.en}}<br>
+					{{#if university.en}}********************<br><strong>{{university.en}}</strong><br>{{/if}}
+					{{#if faculty.en}}********************<br><strong>{{faculty.en}}</strong><br>{{/if}}
+					********************<br>
+					<strong>{{institution.nameEn}}</strong>
+					{{#if institution.postalBox}}<br>********************<br>P.O. Box {{institution.postalBox}}{{/if}}
+					{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+		</div>
+
+		<div class="header-row2">
+			<h1 class="header-title"><strong>RELEVÉ DE NOTES</strong> / TRANSCRIPT</h1>
+			<p><strong>Réf N°</strong>&nbsp;&nbsp;{{document.referenceNumber}}</p>
+		</div>
+	</div>
+
+	<div class="student_block1">
+		<div>
+			<p>
+				<strong>NOM(S) ET PRÉNOM(S) :</strong>
+				<strong>{{student.lastName}}{{#if student.firstName}} {{student.firstName}}{{/if}}</strong><br>
+				<em>Surname and name</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>MATRICULE :</strong>
+				<strong>{{student.matricule}}</strong><br>
+				<em>Registration N°</em>
+			</p>
+		</div>
+	</div>
+
+	<div class="student-info">
+		<div>
+			<p>
+				<strong>NÉ(E) LE :</strong>
+				<strong>{{student.birthDate}}</strong><br>
+				<em>Born on</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>À :</strong>
+				<strong>{{student.birthPlace}}</strong><br>
+				<em>At</em>
+			</p>
+		</div>
+		<div></div>
+		<div>
+			<p>
+				<strong>CYCLE :</strong>
+				<strong>{{program.cycleName}}</strong><br>
+				<em>Training cycle</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>ANNÉE ACADÉMIQUE :</strong>
+				<strong>{{document.academicYear}}</strong><br>
+				<em>Academic Year</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>FILIÈRE :</strong>
+				<strong>{{program.name}}</strong><br>
+				<em>Field of Study</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>NIVEAU :</strong>
+				<strong>{{program.level}}</strong><br>
+				<em>Level</em>
+			</p>
+		</div>
+		<div>
+			<p>
+				<strong>SEMESTRE :</strong>
+				<strong>{{document.semester}}</strong><br>
+				<em>Semester</em>
+			</p>
+		</div>
+		{{#if student.option}}
+		<div>
+			<p>
+				<strong>OPTION :</strong>
+				<strong>{{student.option}}</strong><br>
+				<em>Option</em>
+			</p>
+		</div>
+		{{/if}}
+	</div>
+
+	<div class="table">
+		<table>
+			<thead>
+				<tr class="table-head">
+					<th class="table-code">CODE</th>
+					<th colspan="3" class="table-ue">UNITÉ D'ENSEIGNEMENT<br><em>Teaching Unit</em></th>
+					<th colspan="2" class="table-ec">ÉLÉMENT CONSTITUTIF<br><em>Course</em></th>
+					<th class="table-note">NOTE<br><em>Grade</em></th>
+					<th class="table-average">MOYENNE<br><em>Average</em></th>
+					<th class="table-credit">CRÉDIT<br><em>Credit</em></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each semesters}}
+					{{#each this.ues}}
+						{{#each this.courses}}
+						<tr>
+							<td class="table-ue-code">{{../code}}</td>
+							<td colspan="3" class="table-ue-title">{{../name}}</td>
+							<td colspan="2" class="table-ec">{{this.name}}</td>
+							<td>{{formatNumber this.average}}</td>
+							<td class="table-ue-avearage {{#if (gte ../average 10)}}passing{{else if ../../../theme.table.highlightFailures}}failing{{/if}}">{{formatNumber ../average}}</td>
+							<td>{{../credits}}</td>
+						</tr>
+						{{/each}}
+					{{/each}}
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="grade-sign">
+		<div class="grade-scale">
+			<table>
+				<tr>
+					<th>A+</th><th>A</th><th>B+</th><th>B</th><th>B-</th><th>C+</th><th>C</th><th>C-</th><th>D</th><th>E</th><th>F</th>
+				</tr>
+				<tr>
+					<td>≥18</td><td>16-17.9</td><td>15-15.9</td><td>14-14.9</td><td>13-13.9</td><td>12-12.9</td><td>11-11.9</td><td>10-10.9</td><td>8-9.9</td><td>6-7.9</td><td>&lt;6</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="signature">
+			<p><strong>Crédits acquis :</strong> {{summary.creditsEarned}} / {{summary.creditsTotal}}</p>
+			<p><strong>Moyenne générale :</strong> {{formatNumber summary.generalAverage}} / 20</p>
+			<p><strong>Mention :</strong> {{summary.mention}}</p>
+			<p><strong>Décision :</strong> <strong>{{summary.decision}}</strong></p>
+			<p style="margin-top: 16px;"><strong>{{institution.city}}, le {{document.issueDate}}</strong><br>
+			<em>{{institution.city}}, the {{document.issueDate}}</em></p>
+			<p style="margin-top: 12px;"><strong>LE CHEF D'ÉTABLISSEMENT</strong><br>
+			<em>The Dean of the Faculty</em></p>
+			{{#if qrCodeImage}}<div class="qr-code-block"><img src="{{qrCodeImage}}" alt="QR Code"></div>{{/if}}
+		</div>
+	</div>
+
+	<div class="footer-note">
+		Il n'est délivré qu'un seul exemplaire de relevé de notes — le titulaire peut en faire des copies certifiées conformes.<br>
+		<em>This transcript is delivered only once, the owner can do many certified copies as necessary.</em>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2026-04-13T00:00:00Z
+  dataset: inses
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ce fichier est intentionnellement vide pour le moment.
+#
+# Prérequis pour ajouter des examens et délibérations :
+#   1. Affecter les enseignants aux cours dans 10-academics.yaml (classCourses)
+#   2. Lancer bun seed pour créer les classCourses en DB
+#   3. Ajouter les examens (exams) dans 10-academics.yaml ou ici (additionalExams)
+#   4. Saisir les notes (grades) et créer les délibérations (deliberations) ici
+#
+# Format attendu :
+#
+# additionalExams:
+#   - id: EXAM-IGL111-CC
+#     classCourseCode: CC-IGL111-IGL25-BTS1A
+#     name: Contrôle Continu Outils Mathématiques I
+#     type: CC
+#     date: 2025-10-15T09:00:00Z
+#     percentage: 40
+#     status: approved
+#     isLocked: true
+#
+# grades:
+#   - examId: EXAM-IGL111-CC
+#     studentCode: STUDENT-NDONG
+#     score: 14.5
+#
+# deliberations:
+#   - code: DELIB-IGL25-AY2025
+#     classCode: IGL25-BTS1A
+#     classAcademicYearCode: AY-2025
+#     academicYearCode: AY-2025
+#     type: annual
+#     presidentCode: TEACH-DR-MBALLA
+#     juryMembers:
+#       - userCode: TEACH-DR-NGUEMA
+#         name: Dr. Nguema Marie
+#         role: Membre
+#     juryNumber: J2025-001
+#     deliberationDate: "2026-02-05T09:00:00Z"
+#     actorCode: ADMIN-ROOT
+#     targetStatus: signed
+# ─────────────────────────────────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import {
 	router,
 	tenantAdminProcedure,
 	tenantGradingProcedure,
 } from "../../lib/trpc";
 import * as deliberationsService from "../deliberations/deliberations.service";
+import * as eligibility from "../export-eligibility/export-eligibility.service";
 import { ExportsService } from "./exports.service";
 import {
 	generateCourseCatalogSchema,
@@ -28,6 +28,12 @@ export const exportsRouter = router({
 	generatePV: tenantGradingProcedure
 		.input(generatePVSchema)
 		.mutation(async ({ ctx, input }) => {
+			const pv = await eligibility.checkPvEligibility({
+				classId: input.classId,
+				semesterId: input.semesterId,
+				institutionId: ctx.institution.id,
+			});
+			eligibility.assertPvEligible(pv);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generatePV(input);
 
@@ -69,6 +75,15 @@ export const exportsRouter = router({
 		.input(generateEvaluationSchema)
 		.mutation(async ({ ctx, input }) => {
 			const service = new ExportsService(ctx.institution.id);
+			// Resolve EC eligibility via the parent class_course of the exam
+			const examMeta = await service.getExamClassCourse(input.examId);
+			if (examMeta?.classCourseId) {
+				const ec = await eligibility.checkEcEligibility(
+					examMeta.classCourseId,
+					ctx.institution.id,
+				);
+				eligibility.assertEcEligible(ec);
+			}
 			const result = await service.generateEvaluation(input);
 
 			return {
@@ -100,6 +115,13 @@ export const exportsRouter = router({
 	generateUE: tenantGradingProcedure
 		.input(generateUESchema)
 		.mutation(async ({ ctx, input }) => {
+			const ue = await eligibility.checkUeEligibility({
+				teachingUnitId: input.teachingUnitId,
+				classId: input.classId,
+				semesterId: input.semesterId,
+				institutionId: ctx.institution.id,
+			});
+			eligibility.assertUeEligible(ue);
 			const service = new ExportsService(ctx.institution.id);
 			const result = await service.generateUE(input);
 
@@ -159,7 +181,10 @@ export const exportsRouter = router({
 				ctx.profile.id,
 			);
 			const service = new ExportsService(ctx.institution.id);
-			return service.getDeliberationDataStructured(diplomationData);
+			return service.getDeliberationDataStructured(
+				diplomationData,
+				input.deliberationId,
+			);
 		}),
 
 	/** Preview deliberation in HTML format */

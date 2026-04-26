@@ -140,20 +140,17 @@ export default function ExamScheduler() {
 	});
 	const classes = classesQuery.data ?? [];
 
-	// Normal session preview
+	// Normal session preview — semester is optional; without it we list all classes for the year
 	const previewEnabled =
-		isScheduleOpen &&
-		sessionMode === "normal" &&
-		Boolean(academicYearId) &&
-		Boolean(semesterId);
+		isScheduleOpen && sessionMode === "normal" && Boolean(academicYearId);
 	const previewQuery = useQuery({
 		queryKey: ["examSchedulerPreview", academicYearId, semesterId],
 		enabled: previewEnabled,
 		queryFn: async () => {
-			if (!academicYearId || !semesterId) return null;
+			if (!academicYearId) return null;
 			return trpcClient.examScheduler.preview.query({
 				academicYearId,
-				semesterId,
+				semesterId: semesterId || undefined,
 			});
 		},
 	});
@@ -251,7 +248,6 @@ export default function ExamScheduler() {
 			if (
 				!academicYearId ||
 				!examTypeId ||
-				!semesterId ||
 				!dateStart ||
 				!dateEnd ||
 				!selectedClasses.size
@@ -261,7 +257,7 @@ export default function ExamScheduler() {
 			await trpcClient.examScheduler.schedule.mutate({
 				academicYearId,
 				examTypeId,
-				semesterId,
+				semesterId: semesterId || undefined,
 				percentage,
 				dateStart: new Date(dateStart),
 				dateEnd: new Date(dateEnd),
@@ -336,7 +332,6 @@ export default function ExamScheduler() {
 		Boolean(
 			academicYearId &&
 				examTypeId &&
-				semesterId &&
 				dateStart &&
 				dateEnd &&
 				selectedClasses.size,

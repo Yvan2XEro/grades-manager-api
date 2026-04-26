@@ -11,7 +11,10 @@ import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
+import CenterDetail from "./pages/admin/CenterDetail";
+import CenterManagement from "./pages/admin/CenterManagement";
 import ClassCourseManagement from "./pages/admin/ClassCourseManagement";
+import ClassDocumentTemplates from "./pages/admin/ClassDocumentTemplates";
 import ClassManagement from "./pages/admin/ClassManagement";
 import CourseManagement from "./pages/admin/CourseManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -59,6 +62,7 @@ import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
 import CourseList from "./pages/teacher/CourseList";
 import TeacherDashboard from "./pages/teacher/Dashboard";
 import GradeEntry from "./pages/teacher/GradeEntry";
+import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
 import ProgramManagement from "./pages/teacher/ProgramManagement";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import type { BusinessRole } from "./store";
@@ -205,6 +209,10 @@ function App() {
 							path="export-templates/:templateId"
 							element={<ExportTemplateEditor />}
 						/>
+						<Route
+							path="class-document-templates"
+							element={<ClassDocumentTemplates />}
+						/>
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="graduation" element={<GraduatedStudents />} />
 						<Route path="rules" element={<RuleManagement />} />
@@ -220,6 +228,9 @@ function App() {
 						<Route path="faculties" element={<FacultyManagement />} />
 						<Route path="programs" element={<ProgramManagement />} />
 						<Route path="study-cycles" element={<StudyCycleManagement />} />
+						<Route path="centers" element={<CenterManagement />} />
+						<Route path="centers/new" element={<CenterDetail />} />
+						<Route path="centers/:centerId" element={<CenterDetail />} />
 						<Route path="grade-export" element={<GradeExport />} />
 						<Route path="grade-access" element={<GradeAccessGrants />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
@@ -272,6 +283,10 @@ function App() {
 						<Route path="courses" element={<CourseList />} />
 						<Route path="grades" element={<GradeEntry />} />
 						<Route path="grades/:courseId" element={<GradeEntry />} />
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/teacher" />}
+						/>
 						<Route path="attendance" element={<AttendanceAlerts />} />
 						<Route path="workflows" element={<WorkflowManager />} />
 					</Route>
@@ -285,6 +300,10 @@ function App() {
 						/>
 						<Route path="grades" element={<GradeEntry />} />
 						<Route path="grades/:courseId" element={<GradeEntry />} />
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/grade-editor" />}
+						/>
 					</Route>
 
 					{/* Student Routes */}

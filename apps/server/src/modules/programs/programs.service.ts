@@ -6,20 +6,41 @@ import { normalizeCode, slugify } from "@/lib/strings";
 import * as programOptionsRepo from "../program-options/program-options.repo";
 import * as repo from "./programs.repo";
 
+type ExportTemplateAssignment = {
+	templateType: schema.ExportTemplateType;
+	templateId: string;
+};
+
 type CreateInput = Omit<
 	Parameters<typeof repo.create>[0],
 	"institutionId" | "slug"
->;
+> & {
+	exportTemplates?: ExportTemplateAssignment[];
+};
 type UpdateInput = Partial<CreateInput>;
 type ListInput = Parameters<typeof repo.list>[1];
 type SearchInput = Parameters<typeof repo.search>[0];
 
+function normalizeCenterFields<
+	T extends { centerId?: string | null; isCenterProgram?: boolean },
+>(data: T): T {
+	const next = { ...data };
+	if (next.centerId) {
+		// If a center is explicitly set, mark the program as a center program.
+		next.isCenterProgram = true;
+	} else if (next.centerId === null) {
+		next.isCenterProgram = false;
+	}
+	return next;
+}
+
 export async function createProgram(data: CreateInput, institutionId: string) {
 	const slug = slugify(data.name);
+	const { exportTemplates, ...programData } = normalizeCenterFields(data);
 	const program = await repo.create({
-		...data,
+		...programData,
 		institutionId,
-		code: normalizeCode(data.code),
+		code: normalizeCode(programData.code),
 		slug,
 	});
 	await programOptionsRepo.create({
@@ -29,6 +50,9 @@ export async function createProgram(data: CreateInput, institutionId: string) {
 		description: "Auto-generated option",
 		institutionId: program.institutionId,
 	});
+	if (exportTemplates?.length) {
+		await repo.setExportTemplates(program.id, institutionId, exportTemplates);
+	}
 	return program;
 }
 
@@ -39,12 +63,36 @@ export async function updateProgram(
 ) {
 	const existing = await repo.findById(id, institutionId);
 	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	const { exportTemplates, ...rest } = normalizeCenterFields(data);
 	const payload = {
-		...data,
-		slug: data.name ? slugify(data.name) : undefined,
-		code: data.code ? normalizeCode(data.code) : undefined,
+		...rest,
+		slug: rest.name ? slugify(rest.name) : undefined,
+		code: rest.code ? normalizeCode(rest.code) : undefined,
 	};
-	return repo.update(id, institutionId, payload);
+	const updated = await repo.update(id, institutionId, payload);
+	if (exportTemplates) {
+		await repo.setExportTemplates(id, institutionId, exportTemplates);
+	}
+	return updated;
+}
+
+export async function setProgramExportTemplates(
+	programId: string,
+	institutionId: string,
+	templates: ExportTemplateAssignment[],
+) {
+	const existing = await repo.findById(programId, institutionId);
+	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	return repo.setExportTemplates(programId, institutionId, templates);
+}
+
+export async function listProgramExportTemplates(
+	programId: string,
+	institutionId: string,
+) {
+	const existing = await repo.findById(programId, institutionId);
+	if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+	return repo.listExportTemplates(programId);
 }
 
 export async function deleteProgram(id: string, institutionId: string) {

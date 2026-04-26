@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -150,6 +150,18 @@ export async function list(opts: {
 					primaryEmail: true,
 				},
 			},
+			classRef: {
+				columns: {
+					name: true,
+				},
+				with: {
+					program: {
+						columns: {
+							name: true,
+						},
+					},
+				},
+			},
 		},
 	});
 
@@ -157,6 +169,58 @@ export async function list(opts: {
 	if (rows.length > limit) {
 		const next = rows.pop();
 		nextCursor = next?.id;
+	}
+
+	// Batch-count students per class and exams per class_course in 2 queries
+	// (instead of N+1 from the frontend).
+	const classCourseIds = rows.map((row) => row.id);
+	const classIds = Array.from(new Set(rows.map((row) => row.class)));
+
+	const examCountMap = new Map<string, number>();
+	if (classCourseIds.length > 0) {
+		const examCounts = await db
+			.select({
+				classCourseId: schema.exams.classCourse,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(schema.exams)
+			.where(inArray(schema.exams.classCourse, classCourseIds))
+			.groupBy(schema.exams.classCourse);
+		for (const row of examCounts) {
+			examCountMap.set(row.classCourseId, Number(row.count));
+		}
+	}
+
+	const studentCountMap = new Map<string, number>();
+	if (classIds.length > 0) {
+		const studentCounts = await db
+			.select({
+				classId: schema.students.class,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(schema.students)
+			.where(inArray(schema.students.class, classIds))
+			.groupBy(schema.students.class);
+		for (const row of studentCounts) {
+			studentCountMap.set(row.classId, Number(row.count));
+		}
+	}
+
+	// Count posted grades per class_course (via exam.class_course join)
+	const gradesPostedMap = new Map<string, number>();
+	if (classCourseIds.length > 0) {
+		const gradeCounts = await db
+			.select({
+				classCourseId: schema.exams.classCourse,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(schema.grades)
+			.innerJoin(schema.exams, eq(schema.exams.id, schema.grades.exam))
+			.where(inArray(schema.exams.classCourse, classCourseIds))
+			.groupBy(schema.exams.classCourse);
+		for (const row of gradeCounts) {
+			gradesPostedMap.set(row.classCourseId, Number(row.count));
+		}
 	}
 
 	const items = rows.map((row) => ({
@@ -173,6 +237,13 @@ export async function list(opts: {
 		ueSemester: row.courseRef?.teachingUnit?.semester ?? null,
 		teacherFirstName: row.teacherRef?.firstName,
 		teacherLastName: row.teacherRef?.lastName,
+		className: row.classRef?.name ?? null,
+		programName: row.classRef?.program?.name ?? null,
+		studentCount: studentCountMap.get(row.class) ?? 0,
+		examCount: examCountMap.get(row.id) ?? 0,
+		gradesPosted: gradesPostedMap.get(row.id) ?? 0,
+		gradesExpected:
+			(studentCountMap.get(row.class) ?? 0) * (examCountMap.get(row.id) ?? 0),
 	}));
 
 	return { items, nextCursor };
