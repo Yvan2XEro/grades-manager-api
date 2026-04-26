@@ -117,7 +117,6 @@ type ProgramSeed = {
 	/** Links the program to a study cycle (e.g. BTS, LP, MP). */
 	studyCycleCode?: string;
 	facultyCode: string;
-	studyCycleCode?: string;
 };
 
 type ClassSeed = {
@@ -1198,7 +1197,6 @@ async function seedAcademics(
 				hours: entry.hours,
 				defaultTeacher: null,
 				defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
-				institutionId: program.institutionId,
 			})
 			.onConflictDoUpdate({
 				target: [schema.courses.program, schema.courses.code],

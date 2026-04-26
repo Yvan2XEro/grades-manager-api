@@ -248,9 +248,7 @@ diplomationApi.get("/config", async (c) => {
 		contactEmail: true,
 	} as const;
 
-	let parentInstitution: typeof parentCols extends infer T
-		? { [K in keyof T]: any }
-		: never | null = null;
+	let parentInstitution: { [K in keyof typeof parentCols]: any } | null = null;
 	let grandParentInstitution: {
 		logoUrl: string | null;
 		nameFr: string;

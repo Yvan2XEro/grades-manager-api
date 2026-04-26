@@ -865,13 +865,13 @@ export const institutions = pgTable(
 			onDelete: "set null",
 		}),
 		defaultAcademicYearId: text("default_academic_year_id").references(
-			() => academicYears.id,
+			(): any => academicYears.id,
 			{
 				onDelete: "set null",
 			},
 		),
 		registrationFormatId: text("registration_format_id").references(
-			() => registrationNumberFormats.id,
+			(): any => registrationNumberFormats.id,
 			{
 				onDelete: "set null",
 			},
