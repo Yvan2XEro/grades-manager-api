@@ -49,6 +49,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -57,6 +58,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -66,6 +68,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -92,9 +95,26 @@ const buildProgramSchema = (t: TFunction) =>
 		attestationValidityFr: z.string().optional().nullable(),
 		attestationValidityEn: z.string().optional().nullable(),
 		cycleId: z.string().nullable().optional(),
+		centerId: z.string().nullable().optional(),
+		isCenterProgram: z.boolean().optional(),
+		exportTemplates: z
+			.array(
+				z.object({
+					templateType: z.enum(["pv", "evaluation", "ue", "deliberation"]),
+					templateId: z.string().min(1),
+				}),
+			)
+			.optional(),
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
+type ExportTemplateType = "pv" | "evaluation" | "ue" | "deliberation";
+const EXPORT_TEMPLATE_TYPES: ExportTemplateType[] = [
+	"pv",
+	"evaluation",
+	"ue",
+	"deliberation",
+];
 const programOptionSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	code: z.string().min(1, "Code is required"),
@@ -118,6 +138,8 @@ type Program = {
 	attestationValidityFr: string | null;
 	attestationValidityEn: string | null;
 	cycleId: string | null;
+	centerId: string | null;
+	isCenterProgram: boolean;
 	optionsCount: number;
 };
 
@@ -175,10 +197,34 @@ export default function ProgramManagement() {
 				attestationValidityFr: (p as any).attestationValidityFr ?? null,
 				attestationValidityEn: (p as any).attestationValidityEn ?? null,
 				cycleId: (p as any).cycleId ?? null,
+				centerId: (p as any).centerId ?? null,
+				isCenterProgram: Boolean((p as any).isCenterProgram),
 				optionsCount: (p as any).optionsCount ?? 0,
 			})) as Program[];
 		},
 	});
+
+	const { data: centersData } = useQuery({
+		queryKey: ["centers", "select"],
+		queryFn: async () => {
+			const res = await trpcClient.centers.list.query({ limit: 200 });
+			return res.items as Array<{ id: string; name: string; code: string }>;
+		},
+	});
+	const centers = centersData ?? [];
+
+	const { data: exportTemplatesData } = useQuery({
+		queryKey: ["exportTemplates", "select"],
+		queryFn: async () => {
+			const res = await trpcClient.exportTemplates.list.query({ limit: 200 });
+			return res.items as Array<{
+				id: string;
+				name: string;
+				type: ExportTemplateType;
+			}>;
+		},
+	});
+	const exportTemplates = exportTemplatesData ?? [];
 
 	const form = useForm<ProgramFormData>({
 		resolver: zodResolver(programSchema),
@@ -189,6 +235,9 @@ export default function ProgramManagement() {
 			abbreviation: "",
 			description: "",
 			cycleId: null,
+			centerId: null,
+			isCenterProgram: false,
+			exportTemplates: [],
 			domainFr: "",
 			domainEn: "",
 			specialiteFr: "",
@@ -398,6 +447,8 @@ export default function ProgramManagement() {
 
 	const selection = useRowSelection(programs ?? []);
 
+	const { confirm, ConfirmDialog } = useConfirm();
+
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
 			await Promise.all(
@@ -449,6 +500,12 @@ export default function ProgramManagement() {
 		abbreviation: "",
 		description: "",
 		cycleId: null as string | null,
+		centerId: null as string | null,
+		isCenterProgram: false,
+		exportTemplates: [] as Array<{
+			templateType: ExportTemplateType;
+			templateId: string;
+		}>,
 		domainFr: "",
 		domainEn: "",
 		specialiteFr: "",
@@ -466,7 +523,7 @@ export default function ProgramManagement() {
 		setIsFormOpen(true);
 	};
 
-	const startEdit = (program: Program) => {
+	const startEdit = async (program: Program) => {
 		setEditingProgram(program);
 		form.reset({
 			name: program.name,
@@ -475,6 +532,9 @@ export default function ProgramManagement() {
 			abbreviation: program.abbreviation ?? "",
 			description: program.description ?? "",
 			cycleId: program.cycleId ?? null,
+			centerId: program.centerId ?? null,
+			isCenterProgram: program.isCenterProgram ?? false,
+			exportTemplates: [],
 			domainFr: program.domainFr ?? "",
 			domainEn: program.domainEn ?? "",
 			specialiteFr: program.specialiteFr ?? "",
@@ -485,6 +545,20 @@ export default function ProgramManagement() {
 			attestationValidityEn: program.attestationValidityEn ?? "",
 		});
 		setIsFormOpen(true);
+		try {
+			const assignments = await trpcClient.programs.listExportTemplates.query({
+				programId: program.id,
+			});
+			form.setValue(
+				"exportTemplates",
+				assignments.map((a) => ({
+					templateType: a.templateType as ExportTemplateType,
+					templateId: a.templateId,
+				})),
+			);
+		} catch {
+			// non-blocking
+		}
 	};
 
 	const handleCloseForm = () => {
@@ -552,18 +626,20 @@ export default function ProgramManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -1040,6 +1116,171 @@ export default function ProgramManagement() {
 									<FormMessage />
 								</FormItem>
 							)}
+						/>
+						<div className="grid gap-4 md:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="centerId"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.programs.form.centerLabel", {
+												defaultValue: "Centre",
+											})}
+										</FormLabel>
+										<Select
+											value={field.value ?? "__NONE__"}
+											onValueChange={(v) => {
+												const next = v === "__NONE__" ? null : v;
+												field.onChange(next);
+												form.setValue("isCenterProgram", Boolean(next));
+											}}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue
+														placeholder={t(
+															"admin.programs.form.centerPlaceholder",
+															{ defaultValue: "Aucun centre" },
+														)}
+													/>
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="__NONE__">
+													{t("admin.programs.form.centerNone", {
+														defaultValue: "Aucun (programme général)",
+													})}
+												</SelectItem>
+												{centers.map((c) => (
+													<SelectItem key={c.id} value={c.id}>
+														{c.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="isCenterProgram"
+								render={({ field }) => (
+									<FormItem className="flex items-center justify-between rounded-md border p-3">
+										<div className="space-y-0.5">
+											<FormLabel className="text-sm">
+												{t("admin.programs.form.isCenterProgramLabel", {
+													defaultValue: "Programme de centre",
+												})}
+											</FormLabel>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.programs.form.isCenterProgramHint", {
+													defaultValue:
+														"Marquez ce programme comme rattaché à un centre.",
+												})}
+											</p>
+										</div>
+										<FormControl>
+											<Switch
+												checked={Boolean(field.value)}
+												onCheckedChange={field.onChange}
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+						</div>
+						<FormField
+							control={form.control}
+							name="exportTemplates"
+							render={({ field }) => {
+								const currentByType = new Map(
+									(field.value ?? []).map((a) => [
+										a.templateType,
+										a.templateId,
+									]),
+								);
+								const updateAssignment = (
+									type: ExportTemplateType,
+									templateId: string | null,
+								) => {
+									const next = (field.value ?? []).filter(
+										(a) => a.templateType !== type,
+									);
+									if (templateId) {
+										next.push({ templateType: type, templateId });
+									}
+									field.onChange(next);
+								};
+								return (
+									<FormItem className="space-y-3 rounded-md border p-3">
+										<div>
+											<FormLabel className="text-sm">
+												{t("admin.programs.form.exportTemplatesLabel", {
+													defaultValue: "Modèles d'exportation",
+												})}
+											</FormLabel>
+											<p className="text-muted-foreground text-xs">
+												{t("admin.programs.form.exportTemplatesHint", {
+													defaultValue:
+														"Choisissez le modèle par défaut par type de document.",
+												})}
+											</p>
+										</div>
+										<div className="grid gap-3 md:grid-cols-2">
+											{EXPORT_TEMPLATE_TYPES.map((type) => {
+												const options = exportTemplates.filter(
+													(tpl) => tpl.type === type,
+												);
+												const value = currentByType.get(type) ?? "__NONE__";
+												return (
+													<div key={type} className="space-y-1.5">
+														<Label className="text-xs">
+															{t(
+																`admin.programs.form.exportTemplateType.${type}`,
+																{ defaultValue: type.toUpperCase() },
+															)}
+														</Label>
+														<Select
+															value={value}
+															onValueChange={(v) =>
+																updateAssignment(
+																	type,
+																	v === "__NONE__" ? null : v,
+																)
+															}
+														>
+															<SelectTrigger>
+																<SelectValue
+																	placeholder={t(
+																		"admin.programs.form.exportTemplatePlaceholder",
+																		{ defaultValue: "Aucun modèle" },
+																	)}
+																/>
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="__NONE__">
+																	{t("admin.programs.form.exportTemplateNone", {
+																		defaultValue: "Aucun",
+																	})}
+																</SelectItem>
+																{options.map((tpl) => (
+																	<SelectItem key={tpl.id} value={tpl.id}>
+																		{tpl.name}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<ConfirmDialog />
+													</div>
+												);
+											})}
+										</div>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
 						/>
 						<FormField
 							control={form.control}

@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -96,6 +97,8 @@ export default function StudyCycleManagement() {
 		enabled: cyclesQuery.hasNextPage && !cyclesQuery.isFetchingNextPage,
 	});
 	const selection = useRowSelection(cycles);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const activeCycle = useMemo(
 		() => cycles.find((cycle) => cycle.id === activeCycleId) ?? null,
@@ -317,18 +320,20 @@ export default function StudyCycleManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -557,6 +562,7 @@ export default function StudyCycleManagement() {
 											variant="ghost"
 											className="text-destructive"
 											onClick={() => deleteLevelMutation.mutate(level.id)}
+											disabled={deleteLevelMutation.isPending}
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											{t("common.actions.delete")}
@@ -840,6 +846,7 @@ export default function StudyCycleManagement() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			<ConfirmDialog />
 		</div>
 	);
 }

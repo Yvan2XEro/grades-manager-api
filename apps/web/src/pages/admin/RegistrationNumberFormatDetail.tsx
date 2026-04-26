@@ -26,6 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
 import { trpc, trpcClient } from "@/utils/trpc";
@@ -86,6 +87,7 @@ const RegistrationNumberFormatDetail = () => {
 	const queryClient = useQueryClient();
 	const { formatId } = useParams<{ formatId: string }>();
 	const isCreateMode = !formatId || formatId === "+";
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const [draft, setDraft] = useState<DraftFormat>(createEmptyDraft());
 	const [previewClassId, setPreviewClassId] = useState("");
@@ -372,17 +374,21 @@ const RegistrationNumberFormatDetail = () => {
 					{draft.id && !draft.isActive && (
 						<Button
 							variant="destructive"
-							onClick={() => {
-								if (
-									window.confirm(
-										t("admin.registrationNumbers.list.confirmDelete", {
-											defaultValue: "Delete this format permanently?",
-										}),
-									)
-								) {
-									deleteMutation.mutate();
-								}
-							}}
+							onClick={() =>
+								confirm({
+									title: t(
+										"admin.registrationNumbers.list.confirmDeleteTitle",
+										{ defaultValue: "Delete format?" },
+									),
+									message: t("admin.registrationNumbers.list.confirmDelete", {
+										defaultValue: "Delete this format permanently?",
+									}),
+									confirmText: t("admin.registrationNumbers.list.delete", {
+										defaultValue: "Delete",
+									}),
+									onConfirm: () => deleteMutation.mutate(),
+								})
+							}
 							disabled={deleteMutation.isPending}
 						>
 							{t("admin.registrationNumbers.list.delete", {
@@ -955,6 +961,7 @@ const RegistrationNumberFormatDetail = () => {
 					</Card>
 				</div>
 			</div>
+			<ConfirmDialog />
 		</div>
 	);
 };

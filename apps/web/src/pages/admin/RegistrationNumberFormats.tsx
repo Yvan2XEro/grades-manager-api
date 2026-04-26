@@ -20,6 +20,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "@/utils/trpc";
@@ -88,6 +89,7 @@ const RegistrationNumberFormats = () => {
 	});
 
 	const selection = useRowSelection(formatsQuery.data ?? []);
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -143,18 +145,20 @@ const RegistrationNumberFormats = () => {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -330,21 +334,27 @@ const RegistrationNumberFormats = () => {
 													<Button
 														size="sm"
 														variant="destructive"
-														onClick={() => {
-															if (
-																window.confirm(
-																	t(
-																		"admin.registrationNumbers.list.confirmDelete",
-																		{
-																			defaultValue:
-																				"Delete this format permanently?",
-																		},
-																	),
-																)
-															) {
-																deleteMutation.mutate(format.id);
-															}
-														}}
+														onClick={() =>
+															confirm({
+																title: t(
+																	"admin.registrationNumbers.list.confirmDeleteTitle",
+																	{ defaultValue: "Delete format?" },
+																),
+																message: t(
+																	"admin.registrationNumbers.list.confirmDelete",
+																	{
+																		defaultValue:
+																			"Delete this format permanently?",
+																	},
+																),
+																confirmText: t(
+																	"admin.registrationNumbers.list.delete",
+																	{ defaultValue: "Delete" },
+																),
+																onConfirm: () =>
+																	deleteMutation.mutate(format.id),
+															})
+														}
 														disabled={
 															format.isActive || deleteMutation.isPending
 														}
@@ -363,6 +373,7 @@ const RegistrationNumberFormats = () => {
 					</div>
 				</CardContent>
 			</Card>
+			<ConfirmDialog />
 		</div>
 	);
 };

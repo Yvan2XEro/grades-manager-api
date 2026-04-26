@@ -10,6 +10,7 @@ import {
 	Users,
 } from "lucide-react";
 import type React from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -53,7 +55,7 @@ const TeacherDashboard: React.FC = () => {
 	const { user } = useStore();
 	const { t } = useTranslation();
 
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["teacherDashboard", user?.id],
 		queryFn: async () => {
 			if (!user)
@@ -195,6 +197,12 @@ const TeacherDashboard: React.FC = () => {
 			iconColor: "text-amber-600",
 		},
 	];
+
+	useEffect(() => {
+		if (isError && error instanceof Error) {
+			toast.error(error.message);
+		}
+	}, [isError, error]);
 
 	if (isLoading) {
 		return (

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertTriangle, BellRing } from "lucide-react";
+import { AlertTriangle, BellRing, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,18 @@ const AttendanceAlerts = () => {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3">
-						{alerts.length ? (
+						{notificationsQuery.isLoading ? (
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
+								<Loader2 className="h-4 w-4 animate-spin" />
+								{t("common.loading", { defaultValue: "Loading..." })}
+							</div>
+						) : notificationsQuery.isError ? (
+							<p className="text-destructive text-xs">
+								{t("teacher.attendance.error", {
+									defaultValue: "Could not load alerts",
+								})}
+							</p>
+						) : alerts.length ? (
 							alerts.map((alert) => (
 								<div
 									key={alert.id}

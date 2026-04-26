@@ -61,6 +61,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -72,12 +73,23 @@ const EXPORT_TYPES = [
 	{ value: "evaluation", label: "Evaluation" },
 	{ value: "ue", label: "UE (Teaching Unit)" },
 	{ value: "deliberation", label: "Délibération" },
+	{ value: "diploma", label: "Diplôme" },
+	{ value: "transcript", label: "Relevé de notes" },
+	{ value: "attestation", label: "Attestation" },
 ] as const;
 
 const buildSchema = (t: any) =>
 	z.object({
 		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
-		type: z.enum(["pv", "evaluation", "ue", "deliberation"]),
+		type: z.enum([
+			"pv",
+			"evaluation",
+			"ue",
+			"deliberation",
+			"diploma",
+			"transcript",
+			"attestation",
+		]),
 		isDefault: z.boolean().default(false),
 	});
 
@@ -131,6 +143,8 @@ export default function ExportTemplatesManagement() {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
 	const selection = useRowSelection(templates ?? []);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	// Rename mutation
 	const renameMutation = useMutation({
@@ -187,6 +201,24 @@ export default function ExportTemplatesManagement() {
 			toast.error(
 				error.message || t("admin.exportTemplates.toast.setDefaultError"),
 			);
+		},
+	});
+
+	// Seed system defaults mutation (idempotent)
+	const seedSystemMutation = useMutation({
+		mutationFn: async () => {
+			return await trpcClient.academicDocuments.seedSystemDefaults.mutate();
+		},
+		onSuccess: (result: { created: string[]; skipped: string[] }) => {
+			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
+			if (result.created.length > 0) {
+				toast.success(`Modèles officiels créés : ${result.created.join(", ")}`);
+			} else {
+				toast.info("Tous les modèles officiels sont déjà présents.");
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || "Erreur lors de l'initialisation");
 		},
 	});
 
@@ -255,10 +287,21 @@ export default function ExportTemplatesManagement() {
 						{t("admin.exportTemplates.subtitle")}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/export-templates/new")}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.exportTemplates.actions.add")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						onClick={() => seedSystemMutation.mutate()}
+						disabled={seedSystemMutation.isPending}
+						title="Crée les 3 modèles officiels (diplôme, relevé, attestation) si absents"
+					>
+						{seedSystemMutation.isPending && <Spinner className="mr-2" />}
+						Initialiser modèles officiels
+					</Button>
+					<Button onClick={() => navigate("/admin/export-templates/new")}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.exportTemplates.actions.add")}
+					</Button>
+				</div>
 			</div>
 
 			<Card>
@@ -300,18 +343,20 @@ export default function ExportTemplatesManagement() {
 						<Button
 							variant="destructive"
 							size="sm"
-							onClick={() => {
-								if (
-									window.confirm(
-										t("common.bulkActions.confirmDelete", {
-											defaultValue:
-												"Are you sure you want to delete the selected items?",
-										}),
-									)
-								) {
-									bulkDeleteMutation.mutate([...selection.selectedIds]);
-								}
-							}}
+							onClick={() =>
+								confirm({
+									title: t("common.bulkActions.confirmDeleteTitle", {
+										defaultValue: "Delete selected items?",
+									}),
+									message: t("common.bulkActions.confirmDelete", {
+										defaultValue:
+											"Are you sure you want to delete the selected items?",
+									}),
+									confirmText: t("common.actions.delete"),
+									onConfirm: () =>
+										bulkDeleteMutation.mutate([...selection.selectedIds]),
+								})
+							}
 							disabled={bulkDeleteMutation.isPending}
 						>
 							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -560,6 +605,7 @@ export default function ExportTemplatesManagement() {
 				})}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

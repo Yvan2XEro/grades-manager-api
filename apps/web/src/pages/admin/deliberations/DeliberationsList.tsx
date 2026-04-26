@@ -8,6 +8,7 @@ import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../../components/ui/badge";
@@ -69,6 +70,7 @@ export default function DeliberationsList() {
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const deliberationsQuery = useInfiniteQuery({
 		queryKey: ["deliberations", statusFilter, typeFilter, academicYearId],
@@ -217,14 +219,19 @@ export default function DeliberationsList() {
 													<ContextMenuSeparator />
 													<ContextMenuItem
 														className="text-destructive"
-														onSelect={() => {
-															if (
-																window.confirm(
-																	t("admin.deliberations.confirm.delete"),
-																)
-															) {
-															}
-														}}
+														onSelect={() =>
+															confirm({
+																title: t(
+																	"admin.deliberations.confirm.deleteTitle",
+																	{ defaultValue: "Delete deliberation?" },
+																),
+																message: t(
+																	"admin.deliberations.confirm.delete",
+																),
+																confirmText: t("common.actions.delete"),
+																onConfirm: () => deleteMutation.mutate(d.id),
+															})
+														}
 													>
 														{t("common.actions.delete")}
 													</ContextMenuItem>
@@ -273,15 +280,21 @@ export default function DeliberationsList() {
 													<DropdownMenuContent align="end">
 														<DropdownMenuItem
 															className="text-destructive"
-															onClick={() => {
-																if (
-																	window.confirm(
-																		t("admin.deliberations.confirm.delete"),
-																	)
-																) {
-																	deleteMutation.mutate(d.id);
-																}
-															}}
+															onClick={() =>
+																confirm({
+																	title: t(
+																		"admin.deliberations.confirm.deleteTitle",
+																		{ defaultValue: "Delete deliberation?" },
+																	),
+																	message: t(
+																		"admin.deliberations.confirm.delete",
+																	),
+																	confirmText: t(
+																		"admin.deliberations.actions.delete",
+																	),
+																	onConfirm: () => deleteMutation.mutate(d.id),
+																})
+															}
 														>
 															<Trash2 className="mr-2 h-4 w-4" />
 															{t("admin.deliberations.actions.delete")}
@@ -317,6 +330,7 @@ export default function DeliberationsList() {
 				open={isCreateOpen}
 				onOpenChange={setIsCreateOpen}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

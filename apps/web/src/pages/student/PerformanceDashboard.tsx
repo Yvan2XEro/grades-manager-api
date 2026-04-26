@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BarChart3, LineChart, ShieldCheck } from "lucide-react";
-import { useMemo } from "react";
+import { BarChart3, LineChart, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpc } from "../../utils/trpc";
 
@@ -37,6 +38,19 @@ const PerformanceDashboard = () => {
 	const cycle = classInfo?.cycle;
 	const cycleLevel = classInfo?.cycleLevel;
 
+	const isLoading =
+		summaryQuery.isLoading ||
+		studentProfileQuery.isLoading ||
+		classQuery.isLoading;
+
+	useEffect(() => {
+		const err =
+			(summaryQuery.error as Error | null) ??
+			(studentProfileQuery.error as Error | null) ??
+			(classQuery.error as Error | null);
+		if (err) toast.error(err.message);
+	}, [summaryQuery.error, studentProfileQuery.error, classQuery.error]);
+
 	return (
 		<div className="space-y-8">
 			{/* Header */}
@@ -45,6 +59,12 @@ const PerformanceDashboard = () => {
 				<p className="mt-1 text-muted-foreground text-sm">
 					{t("student.performance.subtitle")}
 				</p>
+				{isLoading && (
+					<div className="mt-3 flex items-center gap-2 text-muted-foreground text-sm">
+						<Loader2 className="h-4 w-4 animate-spin" />
+						{t("common.loading", { defaultValue: "Loading..." })}
+					</div>
+				)}
 				{(cycle || cycleLevel) && (
 					<motion.div
 						initial={{ opacity: 0, y: 8 }}

@@ -45,6 +45,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/lib/toast";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
 
@@ -262,6 +263,11 @@ export default function GradeExport() {
 				return (result?.items || []) as { id: string; name: string }[];
 			} catch (error) {
 				console.error("Error fetching semesters:", error);
+				toast.error(
+					t("admin.gradeExport.toast.semestersFetchError", {
+						defaultValue: "Could not load semesters",
+					}),
+				);
 				return [];
 			}
 		},
@@ -765,6 +771,13 @@ export default function GradeExport() {
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Export error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.exportError", {
+							defaultValue: "Export failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
@@ -1136,6 +1149,13 @@ export default function GradeExport() {
 			XLSX.writeFile(wb, filename);
 		} catch (error) {
 			console.error("Verbal report export error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.verbalReportError", {
+							defaultValue: "Verbal report export failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
@@ -1309,6 +1329,13 @@ export default function GradeExport() {
 				XLSX.writeFile(wb, filename);
 			} catch (error) {
 				console.error("Exam export error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.examExportError", {
+								defaultValue: "Exam export failed",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
@@ -1346,10 +1373,17 @@ export default function GradeExport() {
 			setShowPreview(true);
 		} catch (error) {
 			console.error("PV preview error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.pvPreviewError", {
+							defaultValue: "Could not generate PV preview",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes, t]);
 
 	const handleGeneratePV = useCallback(async () => {
 		if (!selectedClass || !selectedSemester || !selectedYear) return;
@@ -1381,57 +1415,84 @@ export default function GradeExport() {
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error("PV generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.pvGenerateError", {
+							defaultValue: "PV generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedClass, selectedSemester, selectedYear, includeRetakes]);
+	}, [selectedClass, selectedSemester, selectedYear, includeRetakes, t]);
 
-	const handlePreviewEvaluation = useCallback(async (examId: string) => {
-		setExporting(`preview-eval-${examId}`);
-		try {
-			const html = await trpcClient.exports.previewEvaluation.query({
-				examId,
-			});
-			setPreviewHtml(html);
-			setPreviewTitle("Prévisualisation - Publication Évaluation");
-			setShowPreview(true);
-		} catch (error) {
-			console.error("Evaluation preview error:", error);
-		} finally {
-			setExporting(null);
-		}
-	}, []);
-
-	const handleGenerateEvaluation = useCallback(async (examId: string) => {
-		setExporting(`generate-eval-${examId}`);
-		try {
-			const result = await trpcClient.exports.generateEvaluation.mutate({
-				examId,
-				format: "pdf",
-			});
-
-			// Convert base64 to blob and download
-			const byteCharacters = atob(result.data);
-			const byteNumbers = new Array(byteCharacters.length);
-			for (let i = 0; i < byteCharacters.length; i++) {
-				byteNumbers[i] = byteCharacters.charCodeAt(i);
+	const handlePreviewEvaluation = useCallback(
+		async (examId: string) => {
+			setExporting(`preview-eval-${examId}`);
+			try {
+				const html = await trpcClient.exports.previewEvaluation.query({
+					examId,
+				});
+				setPreviewHtml(html);
+				setPreviewTitle("Prévisualisation - Publication Évaluation");
+				setShowPreview(true);
+			} catch (error) {
+				console.error("Evaluation preview error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.evaluationPreviewError", {
+								defaultValue: "Could not generate evaluation preview",
+							}),
+				);
+			} finally {
+				setExporting(null);
 			}
-			const byteArray = new Uint8Array(byteNumbers);
-			const blob = new Blob([byteArray], { type: "application/pdf" });
-			const url = window.URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = result.filename;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			window.URL.revokeObjectURL(url);
-		} catch (error) {
-			console.error("Evaluation generation error:", error);
-		} finally {
-			setExporting(null);
-		}
-	}, []);
+		},
+		[t],
+	);
+
+	const handleGenerateEvaluation = useCallback(
+		async (examId: string) => {
+			setExporting(`generate-eval-${examId}`);
+			try {
+				const result = await trpcClient.exports.generateEvaluation.mutate({
+					examId,
+					format: "pdf",
+				});
+
+				// Convert base64 to blob and download
+				const byteCharacters = atob(result.data);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "application/pdf" });
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = result.filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			} catch (error) {
+				console.error("Evaluation generation error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.evaluationGenerateError", {
+								defaultValue: "Evaluation generation failed",
+							}),
+				);
+			} finally {
+				setExporting(null);
+			}
+		},
+		[t],
+	);
 
 	const handlePreviewUE = useCallback(
 		async (ueId: string) => {
@@ -1449,11 +1510,18 @@ export default function GradeExport() {
 				setShowPreview(true);
 			} catch (error) {
 				console.error("UE preview error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.uePreviewError", {
+								defaultValue: "Could not generate UE preview",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
 		},
-		[selectedClass, selectedSemester, selectedYear],
+		[selectedClass, selectedSemester, selectedYear, t],
 	);
 
 	const handleGenerateUE = useCallback(
@@ -1487,11 +1555,18 @@ export default function GradeExport() {
 				window.URL.revokeObjectURL(url);
 			} catch (error) {
 				console.error("UE generation error:", error);
+				toast.error(
+					error instanceof Error
+						? error.message
+						: t("admin.gradeExport.toast.ueGenerateError", {
+								defaultValue: "UE generation failed",
+							}),
+				);
 			} finally {
 				setExporting(null);
 			}
 		},
-		[selectedClass, selectedSemester, selectedYear],
+		[selectedClass, selectedSemester, selectedYear, t],
 	);
 
 	const handleBulkGenerateEvaluations = useCallback(async () => {
@@ -1525,10 +1600,17 @@ export default function GradeExport() {
 			}
 		} catch (error) {
 			console.error("Bulk evaluations generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.bulkEvaluationsError", {
+							defaultValue: "Bulk evaluations generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [selectedExamDetails]);
+	}, [selectedExamDetails, t]);
 
 	const handleBulkGenerateUEs = useCallback(async () => {
 		if (
@@ -1571,10 +1653,17 @@ export default function GradeExport() {
 			}
 		} catch (error) {
 			console.error("Bulk UEs generation error:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: t("admin.gradeExport.toast.bulkUesError", {
+							defaultValue: "Bulk UE generation failed",
+						}),
+			);
 		} finally {
 			setExporting(null);
 		}
-	}, [teachingUnits, selectedClass, selectedSemester, selectedYear]);
+	}, [teachingUnits, selectedClass, selectedSemester, selectedYear, t]);
 
 	const pvReady = !!selectedClass && !!selectedSemester && !!selectedYear;
 

@@ -78,6 +78,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
@@ -522,6 +523,7 @@ export default function ClassCourseManagement() {
 	);
 
 	const selection = useRowSelection(displayedClassCourses);
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const exportCatalogMutation = useMutation({
 		mutationFn: async () => {
@@ -977,18 +979,20 @@ export default function ClassCourseManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1758,6 +1762,7 @@ export default function ClassCourseManagement() {
 					</div>
 				</div>
 			</FormModal>
+			<ConfirmDialog />
 		</div>
 	);
 }

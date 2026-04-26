@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, ClipboardCheck, Clock3, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import ConfirmModal from "@/components/modals/ConfirmModal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +11,10 @@ import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
+type PendingConfirm =
+	| { kind: "single"; examId: string; examName: string }
+	| { kind: "bulk"; examIds: string[] };
+
 const WorkflowApprovals = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
@@ -17,6 +22,9 @@ const WorkflowApprovals = () => {
 	const notifPagination = useCursorPagination({ pageSize: 20 });
 	const [selectedExamIds, setSelectedExamIds] = useState<Set<string>>(
 		new Set(),
+	);
+	const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(
+		null,
 	);
 
 	const examsQuery = useQuery(
@@ -112,8 +120,15 @@ const WorkflowApprovals = () => {
 					>
 						<Button
 							size="sm"
-							onClick={() => bulkValidateMutation.mutate([...selectedExamIds])}
-							disabled={bulkValidateMutation.isPending}
+							onClick={() =>
+								setPendingConfirm({
+									kind: "bulk",
+									examIds: [...selectedExamIds],
+								})
+							}
+							disabled={
+								bulkValidateMutation.isPending || selectedExamIds.size === 0
+							}
 						>
 							<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
 							{t("dean.workflows.actions.bulkValidate", {
@@ -166,7 +181,14 @@ const WorkflowApprovals = () => {
 										</div>
 										<Button
 											size="sm"
-											onClick={() => validateExam.mutate(exam.id)}
+											onClick={() =>
+												setPendingConfirm({
+													kind: "single",
+													examId: exam.id,
+													examName: exam.name,
+												})
+											}
+											disabled={validateExam.isPending}
 										>
 											<ShieldCheck className="mr-1 h-4 w-4" />
 											{t("dean.workflows.actions.validate", {
@@ -246,6 +268,43 @@ const WorkflowApprovals = () => {
 					/>
 				</div>
 			</div>
+
+			<ConfirmModal
+				isOpen={pendingConfirm !== null}
+				onClose={() => setPendingConfirm(null)}
+				onConfirm={() => {
+					if (!pendingConfirm) return;
+					if (pendingConfirm.kind === "single") {
+						validateExam.mutate(pendingConfirm.examId);
+					} else {
+						bulkValidateMutation.mutate(pendingConfirm.examIds);
+					}
+					setPendingConfirm(null);
+				}}
+				title={t("dean.workflows.confirm.title", {
+					defaultValue: "Approve and lock?",
+				})}
+				message={
+					pendingConfirm?.kind === "bulk"
+						? t("dean.workflows.confirm.bulkMessage", {
+								count: pendingConfirm.examIds.length,
+								defaultValue:
+									"You are about to approve and lock {{count}} exam(s). This action is irreversible — grades will no longer be editable.",
+							})
+						: t("dean.workflows.confirm.singleMessage", {
+								name:
+									pendingConfirm?.kind === "single"
+										? pendingConfirm.examName
+										: "",
+								defaultValue:
+									'Approve and lock "{{name}}"? This action is irreversible — grades will no longer be editable.',
+							})
+				}
+				confirmText={t("dean.workflows.actions.validate", {
+					defaultValue: "Approve & lock",
+				})}
+				isLoading={validateExam.isPending || bulkValidateMutation.isPending}
+			/>
 
 			<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
 				<h2 className="mb-3 font-heading font-semibold text-foreground text-lg">

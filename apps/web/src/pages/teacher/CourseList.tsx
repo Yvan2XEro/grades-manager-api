@@ -6,7 +6,7 @@ import {
 	ClipboardList,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/lib/toast";
 import { useStore } from "../../store";
 import { trpcClient } from "../../utils/trpc";
 
@@ -44,7 +45,12 @@ export default function CourseList({
 	const { t } = useTranslation();
 	const [page, setPage] = useState(0);
 
-	const { data: courses, isLoading } = useQuery({
+	const {
+		data: courses,
+		isLoading,
+		isError,
+		error,
+	} = useQuery({
 		queryKey: ["teacherCourses", user?.id],
 		queryFn: async (): Promise<Course[]> => {
 			if (!user) return [];
@@ -90,6 +96,12 @@ export default function CourseList({
 		},
 		enabled: !!user,
 	});
+
+	useEffect(() => {
+		if (isError && error instanceof Error) {
+			toast.error(error.message);
+		}
+	}, [isError, error]);
 
 	if (isLoading) {
 		return (

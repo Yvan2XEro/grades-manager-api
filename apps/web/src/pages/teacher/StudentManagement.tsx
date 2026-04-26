@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import ConfirmModal from "@/components/modals/ConfirmModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -166,6 +167,7 @@ function EmptyStudents({
 export default function StudentManagement() {
 	const [sourceClassId, setSourceClassId] = useState<string>("");
 	const [targetClassId, setTargetClassId] = useState<string>("");
+	const [confirmTransferOpen, setConfirmTransferOpen] = useState(false);
 	const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
 		new Set(),
 	);
@@ -440,7 +442,7 @@ export default function StudentManagement() {
 							</Button>
 							<Button
 								size="sm"
-								onClick={() => bulkTransferMutation.mutate()}
+								onClick={() => setConfirmTransferOpen(true)}
 								disabled={!canPromote}
 							>
 								{bulkTransferMutation.isPending ? (
@@ -621,6 +623,27 @@ export default function StudentManagement() {
 					</div>
 				</div>
 			)}
+
+			<ConfirmModal
+				isOpen={confirmTransferOpen}
+				onClose={() => setConfirmTransferOpen(false)}
+				onConfirm={() => {
+					bulkTransferMutation.mutate();
+					setConfirmTransferOpen(false);
+				}}
+				title={t("teacher.promotion.confirm.title", {
+					defaultValue: "Promote selected students?",
+				})}
+				message={t("teacher.promotion.confirm.message", {
+					count: selectedStudentIds.size,
+					defaultValue:
+						"You are about to transfer {{count}} student(s) to the target class. This action cannot be easily reversed.",
+				})}
+				confirmText={t("teacher.promotion.actions.promoteSelected", {
+					defaultValue: "Promote selected",
+				})}
+				isLoading={bulkTransferMutation.isPending}
+			/>
 		</div>
 	);
 }

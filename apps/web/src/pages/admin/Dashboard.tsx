@@ -16,6 +16,7 @@ import {
 	Users,
 } from "lucide-react";
 import type React from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import {
@@ -34,6 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpcClient } from "../../utils/trpc";
 
@@ -217,7 +219,7 @@ const examStatusConfig: Record<string, { label: string; className: string }> = {
 const AdminDashboard: React.FC = () => {
 	const { t } = useTranslation();
 
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["adminDashboard"],
 		queryFn: async () => {
 			const [
@@ -366,6 +368,12 @@ const AdminDashboard: React.FC = () => {
 			};
 		},
 	});
+
+	useEffect(() => {
+		if (isError && error instanceof Error) {
+			toast.error(error.message);
+		}
+	}, [isError, error]);
 
 	if (isLoading) return <DashboardSkeleton />;
 

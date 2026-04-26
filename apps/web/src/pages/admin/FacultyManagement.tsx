@@ -57,6 +57,7 @@ import {
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { Textarea } from "../../components/ui/textarea";
+import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -169,6 +170,8 @@ export default function FacultyManagement() {
 	);
 
 	const selection = useRowSelection(institutions);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const resetForm = () => form.reset(defaultValues);
 
@@ -403,18 +406,20 @@ export default function FacultyManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1267,7 +1272,6 @@ export default function FacultyManagement() {
 							</CardContent>
 						</Card>
 
-
 						<DialogFooter className="gap-2 sm:gap-0">
 							<Button variant="ghost" type="button" onClick={handleCloseModal}>
 								{t("common.actions.cancel")}
@@ -1299,6 +1303,7 @@ export default function FacultyManagement() {
 				})}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

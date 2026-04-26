@@ -66,6 +66,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -137,6 +138,8 @@ export default function CourseManagement() {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
 	const selection = useRowSelection(courses);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const { data: defaultPrograms = [] } = useQuery({
 		queryKey: ["programs"],
@@ -326,6 +329,7 @@ export default function CourseManagement() {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-8 w-8" />
+				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -360,18 +364,20 @@ export default function CourseManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
