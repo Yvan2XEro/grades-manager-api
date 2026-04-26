@@ -38,7 +38,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
-type DocumentKind = "diploma" | "transcript" | "attestation";
+type DocumentKind = "diploma" | "transcript" | "attestation" | "student_list";
 
 const KINDS: Array<{
 	value: DocumentKind;
@@ -54,6 +54,11 @@ const KINDS: Array<{
 		value: "transcript",
 		label: "Relevé de notes",
 		description: "Relevé officiel des notes de l'étudiant",
+	},
+	{
+		value: "student_list",
+		label: "Liste d'étudiants",
+		description: "Liste/roster pour cette classe (colonnes configurables)",
 	},
 	{
 		value: "attestation",
@@ -108,6 +113,7 @@ export default function ClassDocumentTemplates() {
 				diploma: [],
 				transcript: [],
 				attestation: [],
+				student_list: [],
 			};
 			for (const k of KINDS) {
 				const res = await trpcClient.exportTemplates.list.query({
@@ -145,6 +151,7 @@ export default function ClassDocumentTemplates() {
 			diploma: undefined,
 			transcript: undefined,
 			attestation: undefined,
+			student_list: undefined,
 		};
 		KINDS.forEach((k, i) => {
 			out[k.value] = presetQueries[i].data;
@@ -157,6 +164,7 @@ export default function ClassDocumentTemplates() {
 			diploma: null,
 			transcript: null,
 			attestation: null,
+			student_list: null,
 		};
 		for (const a of assignments ?? []) {
 			if (a.templateType in m) m[a.templateType as DocumentKind] = a;
