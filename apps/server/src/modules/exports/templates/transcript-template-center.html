@@ -1,12 +1,20 @@
 <!--
-  Transcript template — CENTER variant.
-  Header carries only institution + center info (no faculty/university tutelle).
+  Relevé de notes — Modèle CENTRE.
+  Squelette CSS / HTML strictement repris de releve_template_ipes.html
+  (tailles en px, bordure 3px double, watermark, table, signature, etc.)
+  Seul le contenu change :
+    - L'en-tête tire EXCLUSIVEMENT des tables `centers` /
+      `center_administrative_instances` / `center_legal_texts` (pas de
+      tutelle institutionnelle).
+    - Le watermark utilise `center.watermarkLogo*`.
+    - Le signataire est "LE DIRECTEUR DU CENTRE" (pas de Doyen / Recteur).
 -->
 <!DOCTYPE html>
-<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Relevé de notes — {{student.fullName}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relevé de notes — {{student.lastName}} {{student.firstName}}</title>
 <style>
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
@@ -16,159 +24,257 @@ body {
 	min-height: 287mm;
 	background-color: white;
 	margin: 5mm;
-	border: {{add theme.table.borderWidth 2}}px double {{theme.colors.primary}};
+	border: 3px double {{theme.colors.primary}};
 	color: {{theme.colors.primary}};
 	position: relative;
 	overflow: hidden;
 }
-.demo-banner { position: absolute; top: 0; left: 0; right: 0; background: rgba(148,5,5,0.8); color: white; text-align: center; padding: 3px; font-size: 10px; font-weight: bold; z-index: 1001; display: {{#if demoMode}}block{{else}}none{{/if}}; }
-.demo-watermark { position: absolute; inset: 0; z-index: 1000; pointer-events: none; display: {{#if demoMode}}block{{else}}none{{/if}}; background: repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,0,0,0.08) 80px, rgba(255,0,0,0.08) 100px); }
-.demo-watermark::before { content: "DÉMO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; font-weight: bold; color: rgba(255,0,0,0.12); font-family: Arial, sans-serif; letter-spacing: 15px; }
 
-.watermark { position: absolute; top: 120px; left: 0; width: 100%; height: 100%; z-index: -1; display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}}; justify-content: center; align-items: center; opacity: {{theme.watermark.logoOpacity}}; pointer-events: none; }
+.header { line-height: normal; font-size: 9px; font-family: {{theme.fonts.header}}; }
+
+.watermark {
+	position: absolute; top: 120px; left: 0;
+	width: 100%; height: 100%;
+	z-index: -1;
+	display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}};
+	justify-content: center; align-items: center;
+	opacity: {{theme.watermark.logoOpacity}};
+	pointer-events: none;
+}
 .watermark img { width: 600px; height: auto; }
 
-.container { width: 100%; height: 100%; position: relative; padding: 8mm; }
+.qr-code { width: 100px; height: 100px; display: block; position: relative; }
 
-/* Header — institution (FR + EN) and center (NO tutelle) */
-.header { font-family: {{theme.fonts.header}}; font-size: {{theme.sizes.header}}pt; }
-.header-row1 { display: flex; justify-content: space-between; gap: 8mm; margin-bottom: 3mm; }
-.header-block { width: 35%; line-height: 1.3; }
-.header-block .institution-name { font-weight: bold; text-transform: uppercase; color: {{theme.colors.primary}}; font-size: {{add theme.sizes.header 1}}pt; }
-.header-block .meta { color: {{theme.colors.secondary}}; font-size: {{subtract theme.sizes.header 0.5}}pt; }
-.header-center { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.header-center img { object-fit: contain; max-height: 70px; max-width: 100%; }
-.center-meta { color: {{theme.colors.secondary}}; font-size: {{subtract theme.sizes.header 0.5}}pt; line-height: 1.3; }
-.admin-instance { font-size: {{subtract theme.sizes.header 0.5}}pt; font-style: italic; color: {{theme.colors.secondary}}; }
+.header-row1 { text-align: center; margin-bottom: 20px; margin-top: 8px; padding: 0 12px; display: flex; justify-content: space-between; }
+.header h1 { font-size: 17px; }
+.center-authorization { display: block; font-size: 8px; font-style: italic; padding: 4px 6px; margin-top: 4px; border-top: 1px dotted {{theme.colors.secondary}}; }
+.center-legal-text { display: block; font-size: 8px; line-height: 1.35; margin-top: 1px; }
 
-/* Title */
-.title-row { text-align: center; margin: 5mm 0; }
-.title-row .title { font-weight: 600; color: {{theme.colors.accent}}; font-size: {{theme.sizes.title}}pt; margin: 4px 0; }
-.title-row .ref { font-size: {{add theme.sizes.studentInfo 1}}pt; }
+.student_block1 { display: flex; flex-direction: row; justify-content: space-between; }
+.student_block1, .student-info { width: 90%; margin-left: auto; margin-right: auto; font-size: 10px; gap: 10px; }
+.student-info { display: grid; grid-template-columns: 1fr 1fr 1.2fr; margin-bottom: 20px; }
+.student-info p { font-size: 10px; margin: 0; padding: 0; }
+.student-info > div { margin: 0; padding: 0; font-size: 10px; }
 
-em { font-style: italic; }
-{{#unless theme.display.bilingual}}em { display: none !important; }{{/unless}}
+table { margin-left: auto; margin-right: auto; width: 96%; border-collapse: collapse; margin-bottom: 20px; font-size: 8.5px; }
+th, td { border: 0.5px solid {{theme.colors.primary}}; padding: 2px; text-align: left; }
+th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tableHeaderText}}; }
 
-.student_block1, .student-info { width: 92%; margin: 0 auto; font-size: {{theme.sizes.studentInfo}}pt; gap: 10px; }
-.student_block1 { display: flex; justify-content: space-between; }
-.student_block1 p, .student-info p { font-size: {{theme.sizes.studentInfo}}pt; margin: 0; }
-.student-info { display: grid; grid-template-columns: 1fr 1fr 1.2fr; margin-bottom: 16px; }
+.grade-scale { display: flex; font-size: 7px !important; float: left; margin-left: 20px; width: 50%; }
+.grade-scale table { width: auto; margin-right: 10px; }
+.grade-scale div { display: inline-block; }
 
-table { margin: 0 auto; width: 96%; border-collapse: collapse; margin-bottom: 14px; font-size: {{theme.sizes.tableBody}}pt; font-family: {{theme.fonts.table}}; }
-th, td { border: {{divide theme.table.borderWidth 2}}px solid {{theme.colors.tableBorder}}; padding: {{add theme.table.borderWidth 2}}px; text-align: center; }
-th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tableHeaderText}}; font-size: {{theme.sizes.tableHeader}}pt; font-weight: bold; }
+.signature-ipes { width: 50%; margin-left: 40px; font-size: 12px; }
+.signature { margin-top: 30px; float: right; text-align: left; font-size: 12px; margin-right: 20px; }
+
+.header-content { width: 35%; }
+/* Logos centered horizontally with a uniform gap so missing logos never spread the
+   group apart. Order: admin instance logos → center logo. */
+.header-logo-content { margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: nowrap; }
+.header-logo-content > div { display: flex; align-items: center; justify-content: center; }
+
+.header-row2 h1 { font-weight: 100; text-align: center; font-size: 17px; color: {{theme.colors.primary}}; }
+.header-row2 p { font-size: 12px; }
+.header-row2 { text-align: center; }
+
+td { text-align: center; }
+.table { padding-left: 20px; }
+.table-head th { text-align: center; }
+.table-ue-code, .table-ue-label, .table-ue-avearage { font-weight: bold; }
 .table-ec, .table-ue-title { text-align: left; }
-.ue-row td { background: {{theme.colors.alternateRow}}; font-weight: bold; }
 
-.grade-sign { display: flex; justify-content: space-between; align-items: center; width: 96%; margin: 0 auto; gap: 20px; }
-.grade-scale { display: {{#if theme.display.showSemesterBreakdown}}block{{else}}none{{/if}}; font-size: {{theme.sizes.footer}}pt; width: 50%; }
+.grade-sign { display: flex; justify-content: start; width: 96%; margin: 0 auto; }
+.grade-sign th, .grade-sign td { padding: 1px; border: 0.5px solid {{theme.colors.primary}}; }
 
-.signature { margin-top: 24px; text-align: left; font-size: {{add theme.sizes.studentInfo 2}}pt; }
-.signature p { margin: 4px 0; }
+body > .container { width: 100%; height: 100%; position: relative; }
+.footer-note { position: absolute; width: 100%; bottom: 10px; font-size: 7px; text-align: center; margin-top: 20px; padding-top: 10px; font-style: italic; }
 
-.qr-code-block { display: {{#if theme.display.showQRCode}}block{{else}}none{{/if}}; width: {{theme.display.qrCodeSize}}px; height: {{theme.display.qrCodeSize}}px; margin-top: 8px; }
-.qr-code-block img { width: 100%; height: 100%; object-fit: contain; }
-
-.legal-line { text-align: center; font-size: {{subtract theme.sizes.footer 0.5}}pt; font-style: italic; color: {{theme.colors.secondary}}; margin-top: 6mm; }
-
-.footer-note { position: absolute; width: 100%; bottom: 10px; font-size: {{theme.sizes.footer}}pt; text-align: center; padding-top: 10px; font-style: italic; }
-@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.header-title { color: {{theme.colors.primary}}; }
+.validated { color: {{theme.colors.passingGrade}}; font-weight: bold; }
+.not-validated { color: {{theme.colors.failingGrade}}; }
 </style>
 </head>
 <body>
 <div class="container">
-	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - RELEVÉ NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
-	<div class="watermark">{{{logo svg=center.logoSvg url=center.logoUrl alt=""}}}</div>
+	<div class="watermark">
+		{{!-- Background watermark = the center's main logo (with watermark variant fallback). --}}
+		{{{logo svg=center.logoSvg url=center.logoUrl alt="Watermark"}}}
+	</div>
 
 	<div class="header">
 		<div class="header-row1">
-			<div class="header-block">
-				<div class="institution-name">{{upper center.name}}</div>
-				{{#if center.contactEmail}}<div class="meta">Email: <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a></div>{{/if}}
-				{{#if center.postalBox}}<div class="meta">B.P. {{center.postalBox}}</div>{{/if}}
+			<div class="header-content">
+				<p>
+					{{#each center.administrativeInstances}}{{#if showOnTranscripts}}<strong>{{upper nameFr}}{{#if acronymFr}} ({{acronymFr}}){{/if}}</strong><br>********************<br>{{/if}}{{/each}}
+					<strong>{{upper center.name}}</strong><br>
+					{{#if center.postalBox}}********************<br>{{center.postalBox}}<br>{{/if}}
+					{{#if center.contactEmail}}Email : <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+				</p>
+				{{#if center.authorizationOrderFr}}<span class="center-authorization">{{center.authorizationOrderFr}}</span>{{/if}}
+				{{#each center.legalTexts}}<span class="center-legal-text">{{textFr}}</span>{{/each}}
 			</div>
-			<div class="header-center">
-				{{{logo svg=center.logoSvg url=center.logoUrl alt="Centre"}}}
+			<div class="header-logo-content">
+				{{#each center.administrativeInstances}}{{#if showOnTranscripts}}{{#if (or this.logoSvg this.logoUrl)}}<div>{{{logo svg=this.logoSvg url=this.logoUrl alt=this.nameFr style="height:60px;margin:4px;"}}}</div>{{/if}}{{/if}}{{/each}}
+				{{#if (or center.logoSvg center.logoUrl)}}<div>{{{logo svg=center.logoSvg url=center.logoUrl alt=center.name style="height:70px;"}}}</div>{{/if}}
 			</div>
-			<div class="header-block">
-				{{#if center.nameEn}}<div class="institution-name">{{upper center.nameEn}}</div>{{/if}}
-				{{#if center.shortName}}<div class="meta">{{center.shortName}}</div>{{/if}}
-				{{#if center.code}}<div class="meta">Code: {{center.code}}</div>{{/if}}
-				{{#if center.city}}<div class="meta">{{center.city}}{{#if center.country}}, {{center.country}}{{/if}}</div>{{/if}}
-				{{#if center.contactPhone}}<div class="meta">Tél: {{center.contactPhone}}</div>{{/if}}
+			<div class="header-content">
+				<p>
+					{{#each center.administrativeInstances}}{{#if showOnTranscripts}}<strong>{{upper nameEn}}{{#if acronymEn}} ({{acronymEn}}){{/if}}</strong><br>********************<br>{{/if}}{{/each}}
+					<strong>{{upper center.nameEn}}</strong><br>
+					{{#if center.postalBox}}********************<br>{{center.postalBox}}<br>{{/if}}
+					{{#if center.contactEmail}}Email : <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+				</p>
+				{{#if center.authorizationOrderEn}}<span class="center-authorization">{{center.authorizationOrderEn}}</span>{{/if}}
+				{{#each center.legalTexts}}<span class="center-legal-text">{{textEn}}</span>{{/each}}
 			</div>
 		</div>
-		{{#if center.administrativeInstances}}{{#each center.administrativeInstances}}<div class="admin-instance">{{upper this.nameFr}}{{#if this.acronymFr}} ({{this.acronymFr}}){{/if}}</div>{{/each}}{{/if}}
+		<div class="header-row2">
+			<h1 class="header-title"><strong>RELEVE DE NOTES</strong> / TRANSCRIPT</h1>
+			<p><strong>Ref N°</strong>&nbsp;&nbsp;_____________&nbsp;/{{document.year}}{{#each center.administrativeInstances}}{{#if acronymFr}}/{{acronymFr}}{{/if}}{{/each}}/{{#if center.shortName}}{{center.shortName}}{{else}}{{center.code}}{{/if}}</p>
+		</div>
 	</div>
-
-	<div class="title-row">
-		<div class="title">RELEVÉ DE NOTES OFFICIEL <em class="bilingual"> / OFFICIAL ACADEMIC TRANSCRIPT</em></div>
-		<div class="ref">N° {{document.referenceNumber}} — Année {{document.academicYear}}</div>
-	</div>
-
-	{{#if center.authorizationOrderFr}}<div class="legal-line">{{center.authorizationOrderFr}}</div>{{/if}}
 
 	<div class="student_block1">
-		<p><strong>NOM :</strong> {{student.lastName}} {{student.firstName}}</p>
-		<p><strong>MATRICULE :</strong> {{student.matricule}}</p>
+		<div>
+			<p><strong>NOM(S) ET PRENOM(S) : {{student.lastName}} {{student.firstName}}</strong><br>
+			<em>surname and name:</em></p>
+		</div>
+		<div>
+			<p><strong>MATRICULE: {{student.matricule}}</strong><br>
+			<em>Registration N°:</em></p>
+		</div>
 	</div>
 	<div class="student-info">
-		<div><p>Né(e) le : <strong>{{student.birthDate}}</strong></p></div>
-		<div><p>À : <strong>{{student.birthPlace}}</strong></p></div>
-		<div><p>Programme : <strong>{{program.name}}</strong></p></div>
+		<div>
+			<p><strong>NÉ(E) LE : {{student.birthDate}}</strong><br>
+			<em>Born on:</em></p>
+		</div>
+		<div>
+			<p><strong>À: {{student.birthPlace}}</strong><br>
+			<em>At:</em></p>
+		</div>
+		<div>
+			<p><strong>FILIÈRE: {{program.name}}</strong><br>
+			<em>Field of Study:</em></p>
+		</div>
+		<div>
+			<p><strong>CYCLE: {{program.level}}</strong><br>
+			<em>Training cycle:</em></p>
+		</div>
+		<div>
+			<p><strong>ANNÉE ACADÉMIQUE: {{document.academicYear}}</strong><br>
+			<em>Academic Year:</em></p>
+		</div>
+		<div>
+			<p><strong>OPTION : {{#if student.option}}{{student.option}}{{else}}—{{/if}}</strong><br>
+			<em>Option:</em></p>
+		</div>
+		<div>
+			<p><strong>NIVEAU: {{class.name}}</strong><br>
+			<em>Level:</em></p>
+		</div>
+		<div>
+			<p><strong>SEMESTRE: —</strong><br>
+			<em>Semester:</em></p>
+		</div>
+		<div></div>
 	</div>
 
-	{{#each semesters}}
+	<div class="table">
 		<table>
 			<thead>
-				<tr><th colspan="6">{{this.name}}</th></tr>
-				<tr>
-					<th>Code</th><th class="table-ec">Intitulé</th>
-					<th>CC</th><th>Examen</th><th>Moyenne</th><th>Crédits</th>
+				<tr class="table-head">
+					<th class="table-code">CODE UE</th>
+					<th colspan="3" class="table-ue">UNITE D'ENSEIGNEMENT</th>
+					<th colspan="2" class="table-ec">INTITULE ELEMENTS CONSTITUTIFS</th>
+					<th class="table-note">NOTE/20<br><span style="font-weight:normal;font-style:italic;font-size:7px;">Mark/20</span></th>
+					<th class="table-average">MOYENNE<br><span style="font-weight:normal;font-style:italic;font-size:7px;">Average</span></th>
+					<th class="table-credit">CREDIT<br><span style="font-weight:normal;font-style:italic;font-size:7px;">Credit</span></th>
 				</tr>
 			</thead>
 			<tbody>
-				{{#each this.ues}}
-					{{#each this.courses}}
-					<tr>
-						<td>{{this.code}}</td>
-						<td class="table-ec">{{this.name}}</td>
-						<td>{{formatNumber this.cc}}</td>
-						<td>{{formatNumber this.exam}}</td>
-						<td>{{formatNumber this.average}}</td>
-						<td>{{this.credits}}</td>
-					</tr>
+				{{#each semesters}}
+					{{#each this.ues}}
+						{{#each this.courses}}
+						<tr>
+							{{#if @first}}
+							<td class="table-code" rowspan="{{../courses.length}}"><strong>{{../code}}</strong></td>
+							<td colspan="3" class="table-ue table-ue-title" rowspan="{{../courses.length}}"><strong>{{../name}}</strong></td>
+							{{/if}}
+							<td colspan="2" class="table-ec">{{this.name}}</td>
+							<td class="table-note">{{formatNumber this.exam}}</td>
+							{{#if @first}}
+							<td class="table-average" rowspan="{{../courses.length}}"><strong>{{formatNumber ../average}}</strong></td>
+							<td class="table-credit" rowspan="{{../courses.length}}">{{../credits}}</td>
+							{{/if}}
+						</tr>
+						{{/each}}
 					{{/each}}
-					<tr class="ue-row">
-						<td colspan="2">UE — {{this.code}} {{this.name}}</td>
-						<td colspan="2">Moy. UE</td>
-						<td>{{formatNumber this.average}}</td>
-						<td>{{this.credits}}</td>
-					</tr>
 				{{/each}}
+
+				<tr class="table-summary"><td colspan="9">&nbsp;</td></tr>
+				<tr class="table-footer">
+					<td class="summary-label">RELEVE NIVEAU</td>
+					<td class="summary-label">SEMESTRE</td>
+					<td class="summary-label">TOTAL CREDITS /30</td>
+					<td colspan="3" class="summary-label">MOYENNE SEMESTRIELLE/20</td>
+					<td class="summary-label">MGP</td>
+					<td class="summary-label">GRADE</td>
+					<td class="summary-label">DECISION DU JURY</td>
+				</tr>
+				<tr class="table-footer-values">
+					<td class="summary-value"><strong>{{class.name}}</strong></td>
+					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
+					<td colspan="3" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td class="summary-value validated"><strong>{{summary.decision}}</strong></td>
+				</tr>
 			</tbody>
 		</table>
-	{{/each}}
+	</div>
 
 	<div class="grade-sign">
 		<div class="grade-scale">
-			<p><strong>Mention :</strong> {{summary.mention}}</p>
-			<p><strong>Crédits acquis :</strong> {{summary.creditsEarned}} / {{summary.creditsTotal}}</p>
-			<p><strong>Moyenne générale :</strong> {{formatNumber summary.generalAverage}} / 20</p>
-			<p><strong>Décision :</strong> {{summary.decision}}</p>
+			<div>
+				<table style="table-layout: auto;">
+					<tbody style="font-size: 6px;">
+						<tr><td><strong>Grade</strong></td><td><strong>Note/4</strong></td><td><strong>Appréciation</strong></td><td><strong>Moy /20</strong></td></tr>
+						<tr><td><strong>A+</strong></td><td><strong>4,0</strong></td><td><strong>Excellent</strong></td><td><strong>[18-20]</strong></td></tr>
+						<tr><td><strong>A</strong></td><td><strong>3,7</strong></td><td><strong>Très Bien</strong></td><td><strong>[16-18[</strong></td></tr>
+						<tr><td><strong>B+</strong></td><td><strong>3,3</strong></td><td><strong>Bien</strong></td><td><strong>[14-16[</strong></td></tr>
+						<tr><td><strong>B</strong></td><td><strong>3,0</strong></td><td><strong>Assez Bien</strong></td><td><strong>[13-14[</strong></td></tr>
+						<tr><td><strong>B-</strong></td><td><strong>2,7</strong></td><td><strong>Assez Bien</strong></td><td><strong>[12-13[</strong></td></tr>
+						<tr><td><strong>C+</strong></td><td><strong>2,3</strong></td><td><strong>Passable</strong></td><td><strong>[11-12[</strong></td></tr>
+						<tr><td><strong>C</strong></td><td><strong>2,0</strong></td><td><strong>Passable</strong></td><td><strong>[10-11[</strong></td></tr>
+						<tr><td><strong>C-</strong></td><td><strong>1,7</strong></td><td><strong>Insuffisant</strong></td><td><strong>[09-10[</strong></td></tr>
+						<tr><td><strong>D</strong></td><td><strong>1,3</strong></td><td><strong>Faible</strong></td><td><strong>[08-09[</strong></td></tr>
+						<tr><td><strong>E</strong></td><td><strong>1,0</strong></td><td><strong>Très Faible</strong></td><td><strong>[06-08[</strong></td></tr>
+						<tr><td><strong>F</strong></td><td><strong>0,0</strong></td><td><strong>Nul</strong></td><td><strong>[00-06[</strong></td></tr>
+					</tbody>
+				</table>
+			</div>
+			<div style="position: relative;">
+				{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR Code" class="qr-code">{{/if}}
+			</div>
 		</div>
+
 		<div class="signature">
-			<p><strong>Le Directeur du Centre</strong></p>
-			<div style="height: 30mm;"></div>
-			<div class="qr-code-block">{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR">{{/if}}</div>
+			<div><strong>{{center.city}}, le</strong>
+			<br/><i>{{center.city}}, the</i></div>
 		</div>
 	</div>
 
-	<div class="footer-note">
-		Document délivré le {{document.issueDate}}
-		{{#if center.name}} par {{upper center.name}}{{/if}}
-		{{#if center.legalTexts}}{{#each center.legalTexts}}<br>{{this.textFr}}{{/each}}{{/if}}
+	<div class="signature-ipes">
+		<strong>LE DIRECTEUR DU {{#if center.shortName}}{{upper center.shortName}}{{else}}{{upper center.name}}{{/if}}</strong>
+		<br/><i>The Director of {{#if center.shortName}}{{upper center.shortName}}{{else}}{{upper center.name}}{{/if}}</i>
 	</div>
+</div>
+
+<div class="footer-note">
+	Il n'est délivré qu'un seul exemplaire de relevé de notes, le titulaire peut en faire des copies certifiées conformes.<br>
+	<em>This transcript is delivered only once, the owner can do many certified copies as necessary.</em>
 </div>
 </body>
 </html>

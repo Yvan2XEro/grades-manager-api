@@ -1,8 +1,8 @@
 <!--
   Attestation de réussite — modèle officiel par défaut (institution standard).
   Structure portée 1:1 depuis DIPLOMATION (attestation_template.html) avec :
-    - les références `\{{settings.*}}` remplacées par les vraies variables du
-      contexte de rendu (`institution.*`, `theme.*`, `logos.*`)
+    - les references settings.* remplacees par les vraies variables du
+      contexte de rendu (institution.*, theme.*, logos.*)
     - le mode démo retiré (banner / watermark / qr-badge supprimés)
     - le toggle IPES vs Faculté piloté par `institution.isIPES`
       (basé sur `institutions.type`).
@@ -23,7 +23,7 @@ body {
 	width: calc(210mm - 40px);
 	height: calc(297mm - 40px);
 	font-family: {{theme.fonts.main}};
-	font-size: 10px !important;
+	font-size: 10px;
 	color: {{theme.colors.primary}};
 	background-color: white;
 	line-height: 1.2;
@@ -59,9 +59,12 @@ body {
 .header-row2 h2 { font-weight: bold; font-size: 22px; color: {{theme.colors.secondary}}; margin: 2px 0; font-style: italic; }
 .header-row2 p { font-size: 14px; margin: 2px 0; }
 
-.content { margin: 16px 0; }
-.student-info, .list-nomination-header { margin: 5px 0; }
-.student-info p, .list-nomination-header p { margin: 5px 0; }
+/* Body content (after ref number): bumped to 12px for legibility on the
+ * official document. The header keeps its 9px to fit the tutelle chain. */
+.content { margin: 16px 0; font-size: 12px; line-height: 1.5; }
+.content p { font-size: 12px; line-height: 1.5; }
+.student-info, .list-nomination-header { margin: 8px 0; font-size: 12px; }
+.student-info p, .list-nomination-header p { margin: 8px 0; font-size: 12px; line-height: 1.5; }
 
 .table-container { width: 100%; margin: 2px 0; }
 table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }

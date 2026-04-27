@@ -363,6 +363,122 @@ export const academicDocumentsRouter = router({
 				failed.push({ type: label, reason });
 			}
 		}
-		return { created, skipped, failed };
+
+		// ─── Auto-link templates to programs ──────────────────────────────────
+		// After seeding, every program gets bound to the right system template
+		// per type:
+		//   • Programs marked `isCenterProgram` (or with a `centerId`) → center
+		//     variant.
+		//   • Other programs → standard variant.
+		// Uses `program_export_templates.upsert` so re-running the action
+		// remains idempotent and overrides previous (stale) assignments.
+		const linkedAssignments: Array<{
+			programCode: string;
+			templateType: string;
+			variant: "standard" | "center";
+		}> = [];
+		const assignmentFailures: Array<{
+			programCode?: string;
+			templateType: string;
+			reason: string;
+		}> = [];
+		try {
+			const programRows = await db
+				.select({
+					id: schema.programs.id,
+					code: schema.programs.code,
+					centerId: schema.programs.centerId,
+					isCenterProgram: schema.programs.isCenterProgram,
+				})
+				.from(schema.programs)
+				.where(eq(schema.programs.institutionId, ctx.institution.id));
+
+			// Pre-resolve standard + center system templates per type so we do not
+			// re-query for every program.
+			const TYPES_WITH_VARIANTS: ExportTemplateType[] = [
+				"diploma",
+				"transcript",
+				"attestation",
+				"student_list",
+				"pv",
+				"evaluation",
+				"ue",
+				"deliberation",
+			];
+			const templateLookup = new Map<
+				string,
+				{ standard?: string; center?: string }
+			>();
+			for (const type of TYPES_WITH_VARIANTS) {
+				const standard = await expoTplRepo.findSystemDefaultTemplate(
+					ctx.institution.id,
+					type,
+					"standard",
+				);
+				const center = await expoTplRepo.findSystemDefaultTemplate(
+					ctx.institution.id,
+					type,
+					"center",
+				);
+				templateLookup.set(type, {
+					standard: standard?.id,
+					center: center?.id,
+				});
+			}
+
+			for (const program of programRows) {
+				const useCenter =
+					program.isCenterProgram === true || program.centerId != null;
+				const variant: "standard" | "center" = useCenter
+					? "center"
+					: "standard";
+				for (const type of TYPES_WITH_VARIANTS) {
+					const ids = templateLookup.get(type);
+					const templateId = ids?.[variant] ?? ids?.standard;
+					if (!templateId) {
+						assignmentFailures.push({
+							programCode: program.code,
+							templateType: type,
+							reason: `no system template found for ${type}/${variant}`,
+						});
+						continue;
+					}
+					try {
+						await expoTplRepo.upsertProgramAssignment({
+							institutionId: ctx.institution.id,
+							programId: program.id,
+							templateType: type,
+							templateId,
+							themeOverrides: null,
+						});
+						linkedAssignments.push({
+							programCode: program.code,
+							templateType: type,
+							variant,
+						});
+					} catch (err) {
+						assignmentFailures.push({
+							programCode: program.code,
+							templateType: type,
+							reason: err instanceof Error ? err.message : String(err),
+						});
+					}
+				}
+			}
+		} catch (err) {
+			const reason = err instanceof Error ? err.message : String(err);
+			console.error(
+				`[seedSystemDefaults] failed to auto-link program templates: ${reason}`,
+			);
+			assignmentFailures.push({ templateType: "*", reason });
+		}
+
+		return {
+			created,
+			skipped,
+			failed,
+			linkedAssignments: linkedAssignments.length,
+			assignmentFailures,
+		};
 	}),
 });

@@ -610,12 +610,17 @@ export default function CourseList({
 							: 0;
 						return (
 							<Card key={course.id} className="flex h-full flex-col">
-								<CardHeader className="flex flex-col gap-2 overflow-hidden">
+								<CardHeader className="flex flex-col gap-2">
 									<div className="flex w-full items-start justify-between gap-3">
 										<div className="min-w-0 flex-1">
-											<CardTitle className="truncate">{course.name}</CardTitle>
+											<CardTitle
+												className="line-clamp-2 break-words"
+												title={course.name}
+											>
+												{course.name}
+											</CardTitle>
 											<CardDescription
-												className="truncate"
+												className="line-clamp-2 break-words"
 												title={`${course.class_name} • ${course.program_name}`}
 											>
 												{course.class_name} • {course.program_name}

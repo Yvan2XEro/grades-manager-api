@@ -14,6 +14,7 @@
 		"seed:deliberation-test": "bun run src/scripts/seed-deliberation-test.ts",
 		"seed:deliberation-test:pglite": "USE_PGLITE=true bun run src/scripts/seed-deliberation-test.ts",
 		"backfill:classcourse-semester": "bun run src/scripts/backfill-classcourse-semester.ts",
+		"export:templates": "bun run src/scripts/export-all-templates.ts",
 		"start": "bun run dist/index.js",
 		"db:push": "drizzle-kit push",
 		"db:push:pglite": "USE_PGLITE=true drizzle-kit push",

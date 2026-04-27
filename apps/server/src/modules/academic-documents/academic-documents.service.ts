@@ -349,7 +349,7 @@ function decisionLabel(decision: string | null | undefined): string {
 
 export type DocumentRenderData = Record<string, unknown>;
 
-async function buildRenderData(args: {
+export async function buildRenderData(args: {
 	kind: DocumentKind;
 	studentCtx: repo.StudentDocumentContext;
 	deliberation: Awaited<ReturnType<typeof repo.loadDeliberationResult>>;
@@ -543,10 +543,14 @@ async function buildRenderData(args: {
 		university: {
 			fr: universityName,
 			en: universityNameEn,
+			// No postalBox / contactEmail on the topmost parent (per spec —
+			// the highest tutelle is shown without contact info).
 		},
 		faculty: {
 			fr: supervisingFaculty?.nameFr ?? "",
 			en: supervisingFaculty?.nameEn ?? "",
+			postalBox: supervisingFaculty?.postalBox ?? "",
+			contactEmail: supervisingFaculty?.contactEmail ?? "",
 		},
 		institution: {
 			id: institution?.id,
@@ -684,7 +688,7 @@ async function buildRenderData(args: {
 
 // ---------------- PDF rendering ----------------
 
-async function renderPdf(html: string, theme: Record<string, unknown>) {
+export async function renderPdf(html: string, theme: Record<string, unknown>) {
 	const page = (theme.page ?? {}) as {
 		size?: string;
 		orientation?: string;
@@ -752,7 +756,10 @@ async function renderPdf(html: string, theme: Record<string, unknown>) {
 	}
 }
 
-function compileAndRender(templateBody: string, data: DocumentRenderData) {
+export function compileAndRender(
+	templateBody: string,
+	data: DocumentRenderData,
+) {
 	ensureHelpers();
 	const template = Handlebars.compile(templateBody, { noEscape: false });
 	return template(data);

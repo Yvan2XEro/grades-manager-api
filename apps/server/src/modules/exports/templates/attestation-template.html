@@ -110,10 +110,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					********************<br>
 					{{ministry.fr}}<br>
 					{{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
-					{{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+					{{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong>{{#if faculty.postalBox}}<br>B.P. {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email : {{faculty.contactEmail}}{{/if}}<br>{{/if}}
 					********************<br>
 					<strong>{{upper institution.nameFr}}</strong><br>
-					{{#if institution.postalBox}}********************<br>B.P. {{institution.postalBox}}<br>{{/if}}
+					{{#if institution.postalBox}}B.P. {{institution.postalBox}}<br>{{/if}}
 					{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>
 			</div>
@@ -131,10 +131,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					********************<br>
 					{{ministry.en}}<br>
 					{{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
-					{{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+					{{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong>{{#if faculty.postalBox}}<br>P.O. Box {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email: {{faculty.contactEmail}}{{/if}}<br>{{/if}}
 					********************<br>
 					<strong>{{upper institution.nameEn}}</strong><br>
-					{{#if institution.postalBox}}********************<br>P.O. Box {{institution.postalBox}}<br>{{/if}}
+					{{#if institution.postalBox}}P.O. Box {{institution.postalBox}}<br>{{/if}}
 					{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>
 			</div>

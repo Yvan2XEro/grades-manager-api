@@ -235,6 +235,17 @@ export const exportsRouter = router({
 		}),
 
 	/**
+	 * Render a sample PDF for every bundled template (8 kinds × 2 variants = 16
+	 * files), bundle them into a single ZIP, return as base64. Uses the active
+	 * tenant's REAL institution + center metadata and a fictitious student.
+	 * Useful for design review and QA without leaving the admin UI.
+	 */
+	exportAllSampleTemplates: tenantAdminProcedure.mutation(async ({ ctx }) => {
+		const service = new ExportsService(ctx.institution.id);
+		return await service.exportAllSampleTemplates();
+	}),
+
+	/**
 	 * Get export configuration (for UI customization)
 	 */
 	getConfig: tenantAdminProcedure.query(() => {

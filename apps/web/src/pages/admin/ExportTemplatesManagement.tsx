@@ -215,6 +215,12 @@ export default function ExportTemplatesManagement() {
 			created: string[];
 			skipped: string[];
 			failed?: Array<{ type: string; reason: string }>;
+			linkedAssignments?: number;
+			assignmentFailures?: Array<{
+				programCode?: string;
+				templateType: string;
+				reason: string;
+			}>;
 		}) => {
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
 			const failed = result.failed ?? [];
@@ -230,9 +236,66 @@ export default function ExportTemplatesManagement() {
 			} else if (failed.length === 0) {
 				toast.info("Tous les modèles officiels sont déjà présents.");
 			}
+			// Auto-link feedback: show how many program×type assignments were
+			// (re)written so the admin sees the linking step ran.
+			const linked = result.linkedAssignments ?? 0;
+			const linkFails = result.assignmentFailures ?? [];
+			if (linked > 0) {
+				toast.success(
+					`${linked} affectations programme → modèle (re)créées (variant centre pour les programmes de centre, standard sinon).`,
+				);
+			}
+			if (linkFails.length > 0) {
+				toast.warning(
+					`${linkFails.length} affectations en échec : ${linkFails
+						.slice(0, 3)
+						.map((f) => `${f.programCode ?? "?"}/${f.templateType}`)
+						.join(", ")}${linkFails.length > 3 ? "…" : ""}`,
+				);
+			}
 		},
 		onError: (error: any) => {
 			toast.error(error.message || "Erreur lors de l'initialisation");
+		},
+	});
+
+	// Render every bundled template (8 kinds × 2 variants) as PDF, return ZIP.
+	// Uses the active institution + center metadata + sample student data so the
+	// admin can review the look of each model without seeding fake students.
+	const exportAllMutation = useMutation({
+		mutationFn: async () => {
+			return await trpcClient.exports.exportAllSampleTemplates.mutate();
+		},
+		onSuccess: (result: {
+			zipBase64: string;
+			count: number;
+			failures: Array<{ kind: string; variant: string; error: string }>;
+		}) => {
+			// Decode base64 → Blob → trigger browser download.
+			const binary = atob(result.zipBase64);
+			const bytes = new Uint8Array(binary.length);
+			for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+			const blob = new Blob([bytes], { type: "application/zip" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `templates-preview-${new Date().toISOString().slice(0, 10)}.zip`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			if (result.failures.length > 0) {
+				toast.warning(
+					`${result.count} modèles exportés, ${result.failures.length} échecs : ${result.failures
+						.map((f) => `${f.kind}/${f.variant}`)
+						.join(", ")}`,
+				);
+			} else {
+				toast.success(`${result.count} modèles exportés en PDF (ZIP)`);
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || "Erreur lors de l'export des modèles");
 		},
 	});
 
@@ -302,6 +365,21 @@ export default function ExportTemplatesManagement() {
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						onClick={() => exportAllMutation.mutate()}
+						disabled={exportAllMutation.isPending}
+						title="Génère un PDF par modèle (16 fichiers — 8 types × standard + centre) avec les vraies infos d'institution et centre, étudiant fictif. Téléchargement ZIP."
+					>
+						{exportAllMutation.isPending ? (
+							<Spinner className="mr-2" />
+						) : (
+							<FileText className="mr-2 h-4 w-4" />
+						)}
+						{exportAllMutation.isPending
+							? "Génération en cours…"
+							: "Télécharger tous les modèles (PDF)"}
+					</Button>
 					<Button
 						variant="outline"
 						onClick={() => seedSystemMutation.mutate()}

@@ -328,7 +328,7 @@
                         ********************<br>
                         {{ministry.fr}}<br>
                         {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
-                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong>{{#if faculty.postalBox}}<br>B.P. {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email : {{faculty.contactEmail}}{{/if}}<br>{{/if}}
                         ********************<br>
                         <strong>{{upper institutionHeader.nameFr}}</strong>
                         {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
@@ -345,7 +345,7 @@
                         ********************<br>
                         {{ministry.en}}<br>
                         {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
-                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong>{{#if faculty.postalBox}}<br>P.O. Box {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email: {{faculty.contactEmail}}{{/if}}<br>{{/if}}
                         ********************<br>
                         <strong>{{upper institutionHeader.nameEn}}</strong>
                         {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}

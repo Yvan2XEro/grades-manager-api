@@ -162,7 +162,7 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 			<div class="name">&nbsp;</div>
 		</div>
 		<div class="box">
-			<div class="label">Le Directeur du Centre</div>
+			<div class="label">Le Directeur du {{#if center.shortName}}{{upper center.shortName}}{{else}}{{upper center.name}}{{/if}}</div>
 			<div class="name">&nbsp;</div>
 		</div>
 	</div>

@@ -346,7 +346,7 @@ function mergeCenterBrandingIntoStyle(
 		...style,
 		watermark: {
 			...watermark,
-			logoUrl: center.watermarkLogoUrl ?? center.logoUrl ?? watermark.logoUrl,
+			logoUrl: center.logoUrl ?? center.watermarkLogoUrl ?? watermark.logoUrl,
 			institutionName:
 				center.shortName ?? center.code ?? watermark.institutionName,
 		},

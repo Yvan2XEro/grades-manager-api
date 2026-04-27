@@ -359,14 +359,14 @@
                     </div>
                 </div>
                 {{#if center.authorizationOrderFr}}
-                <div style="font-size:9px;color:#444;font-style:italic;margin:4px 0;text-align:center;">
+                <div style="font-size:9px;color:#444;font-style:italic;padding:4px 6px;margin:4px auto 0;text-align:center;border-top:1px dotted #999;display:inline-block;">
                     {{center.authorizationOrderFr}}{{#if center.authorizationOrderEn}} / {{center.authorizationOrderEn}}{{/if}}
                 </div>
                 {{/if}}
                 {{#if center.legalTexts.length}}
-                <div style="font-size:8px;color:#555;margin-bottom:6px;text-align:center;line-height:1.4;">
+                <div style="font-size:8px;color:#555;margin:6px 0;padding-top:4px;border-top:1px dotted #aaa;text-align:center;line-height:1.4;">
                     {{#each center.legalTexts}}
-                    <div>• {{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
+                    <div>{{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
                     {{/each}}
                 </div>
                 {{/if}}

@@ -102,7 +102,7 @@ type HeaderContext = {
 	country: { fr: string; en: string; mottoFr: string; mottoEn: string };
 	ministry: { fr: string; en: string };
 	university: { fr: string; en: string };
-	faculty: { fr: string; en: string };
+	faculty: { fr: string; en: string; postalBox: string; contactEmail: string };
 	institutionHeader: {
 		id: string | undefined;
 		nameFr: string;
@@ -644,6 +644,84 @@ export class ExportsService {
 	}
 
 	/**
+	 * Render a sample PDF for every (kind × variant) bundled template, using
+	 * REAL institution + center data and a fictitious student. Bundled into a
+	 * single ZIP and returned as a base64 string for tRPC transport.
+	 *
+	 * Used by the admin "Télécharger tous les modèles" button — same logic as
+	 * the `export:templates` CLI script but accessible through the UI.
+	 */
+	async exportAllSampleTemplates(): Promise<{
+		zipBase64: string;
+		count: number;
+		failures: Array<{ kind: string; variant: string; error: string }>;
+	}> {
+		const { default: JSZip } = await import("jszip");
+		const academic = await import(
+			"../academic-documents/academic-documents.service"
+		);
+		const { loadTemplate } = await import("./template-helper");
+
+		const KINDS = [
+			"pv",
+			"evaluation",
+			"ue",
+			"deliberation",
+			"diploma",
+			"transcript",
+			"attestation",
+			"student_list",
+		] as const;
+		const VARIANTS = ["standard", "center"] as const;
+		const PAGE_ORIENTATION: Record<string, "portrait" | "landscape"> = {
+			pv: "landscape",
+			deliberation: "landscape",
+			diploma: "landscape",
+			student_list: "landscape",
+			evaluation: "portrait",
+			ue: "portrait",
+			transcript: "portrait",
+			attestation: "portrait",
+		};
+
+		const zip = new JSZip();
+		const failures: Array<{ kind: string; variant: string; error: string }> =
+			[];
+		let count = 0;
+
+		for (const kind of KINDS) {
+			for (const variant of VARIANTS) {
+				try {
+					const templateBody = loadTemplate(kind, variant);
+					const html = await this.previewTemplate({ type: kind, templateBody });
+					const theme = {
+						page: { size: "A4", orientation: PAGE_ORIENTATION[kind] },
+					};
+					const pdf = await academic.renderPdf(
+						html,
+						theme as Record<string, unknown>,
+					);
+					zip.file(`${kind}-${variant}.pdf`, pdf);
+					count++;
+				} catch (err) {
+					failures.push({
+						kind,
+						variant,
+						error: err instanceof Error ? err.message : String(err),
+					});
+				}
+			}
+		}
+
+		const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+		return {
+			zipBase64: zipBuffer.toString("base64"),
+			count,
+			failures,
+		};
+	}
+
+	/**
 	 * Process raw data for PV template
 	 * Handles retake exams by applying scoring policy (replace/best_of)
 	 * @param includeRetakes - Whether to include retake grades in the calculation (default: true)
@@ -1126,10 +1204,13 @@ export class ExportsService {
 			university: {
 				fr: supervisingUniversity?.nameFr ?? "",
 				en: supervisingUniversity?.nameEn ?? "",
+				// No postal/email on the topmost parent (per spec).
 			},
 			faculty: {
 				fr: supervisingFaculty?.nameFr ?? "",
 				en: supervisingFaculty?.nameEn ?? "",
+				postalBox: supervisingFaculty?.postalBox ?? "",
+				contactEmail: supervisingFaculty?.contactEmail ?? "",
 			},
 			institutionHeader: {
 				id: institution?.id,

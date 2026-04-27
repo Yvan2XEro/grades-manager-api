@@ -80,15 +80,25 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 			<div class="motto">{{country.mottoFr}}</div>
 			<div class="stars">********</div>
 			<div class="institution">{{ministry.fr}}</div>
+			{{#if university.fr}}
+				<div class="stars">********</div>
+				<div class="institution">{{upper university.fr}}</div>
+			{{/if}}
+			{{#if faculty.fr}}
+				<div class="stars">********</div>
+				<div class="faculty">{{upper faculty.fr}}</div>
+				{{#if faculty.postalBox}}<div class="meta" style="font-size:8pt;">B.P. {{faculty.postalBox}}</div>{{/if}}
+				{{#if faculty.contactEmail}}<div class="meta" style="font-size:8pt;">Email : {{faculty.contactEmail}}</div>{{/if}}
+			{{/if}}
 			<div class="stars">********</div>
-			<div class="institution">{{upper university.fr}}</div>
-			<div class="stars">********</div>
-			<div class="faculty">{{upper faculty.fr}}</div>
+			<div class="faculty">{{upper institution.nameFr}}</div>
+			{{#if institution.postalBox}}<div class="meta" style="font-size:8pt;">B.P. {{institution.postalBox}}</div>{{/if}}
+			{{#if institution.contactEmail}}<div class="meta" style="font-size:8pt;">Email : {{institution.contactEmail}}</div>{{/if}}
 		</div>
 		<div class="header-logos">
+			{{{logo svg=logos.universitySvg url=logos.university class="institution-logo" alt=""}}}
 			{{{logo svg=logos.facultySvg url=logos.faculty class="institution-logo" alt=""}}}
-			{{{logo svg=logos.coatOfArmsSvg url=logos.coatOfArms class="coat-of-arms" alt=""}}}
-			{{{logo svg=logos.ministrySvg url=logos.ministry class="ministry-logo" alt=""}}}
+			{{{logo svg=logos.institutionSvg url=logos.institution class="institution-logo" alt=""}}}
 		</div>
 		{{#if theme.display.bilingual}}
 		<div class="header-text">
@@ -96,10 +106,20 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 			<div class="motto">{{country.mottoEn}}</div>
 			<div class="stars">********</div>
 			<div class="institution">{{ministry.en}}</div>
+			{{#if university.en}}
+				<div class="stars">********</div>
+				<div class="institution">{{upper university.en}}</div>
+			{{/if}}
+			{{#if faculty.en}}
+				<div class="stars">********</div>
+				<div class="faculty">{{upper faculty.en}}</div>
+				{{#if faculty.postalBox}}<div class="meta" style="font-size:8pt;">P.O. Box {{faculty.postalBox}}</div>{{/if}}
+				{{#if faculty.contactEmail}}<div class="meta" style="font-size:8pt;">Email: {{faculty.contactEmail}}</div>{{/if}}
+			{{/if}}
 			<div class="stars">********</div>
-			<div class="institution">{{upper university.en}}</div>
-			<div class="stars">********</div>
-			<div class="faculty">{{upper faculty.en}}</div>
+			<div class="faculty">{{upper institution.nameEn}}</div>
+			{{#if institution.postalBox}}<div class="meta" style="font-size:8pt;">P.O. Box {{institution.postalBox}}</div>{{/if}}
+			{{#if institution.contactEmail}}<div class="meta" style="font-size:8pt;">Email: {{institution.contactEmail}}</div>{{/if}}
 		</div>
 		{{/if}}
 	</div>
