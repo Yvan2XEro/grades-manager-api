@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import * as XLSX from "xlsx";
+import { StatusStepper } from "@/components/ui/status-stepper";
 import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
@@ -54,12 +55,12 @@ type LogEntry = RouterOutputs["deliberations"]["getLogs"]["items"][number];
 // ---------------------------------------------------------------------------
 const statusVariants: Record<
 	string,
-	"default" | "secondary" | "destructive" | "outline"
+	"default" | "secondary" | "destructive" | "outline" | "success" | "warning"
 > = {
-	draft: "outline",
+	draft: "secondary",
 	open: "default",
-	closed: "secondary",
-	signed: "default",
+	closed: "outline",
+	signed: "success",
 };
 
 const decisionVariants: Record<
@@ -503,6 +504,43 @@ export default function DeliberationDetail() {
 					)}
 				</div>
 			</div>
+
+			{/* Status workflow stepper */}
+			<StatusStepper
+				steps={[
+					{ key: "draft", label: t("admin.deliberations.status.draft") },
+					{ key: "open", label: t("admin.deliberations.status.open") },
+					{ key: "closed", label: t("admin.deliberations.status.closed") },
+					{ key: "signed", label: t("admin.deliberations.status.signed") },
+				]}
+				currentStatus={status}
+			/>
+
+			{/* Promote CTA — prominently shown when closed or signed */}
+			{(isClosed || isSigned) && (
+				<div className="flex items-center justify-between rounded-xl border bg-emerald-50 px-5 py-4 dark:bg-emerald-900/20">
+					<div className="flex items-center gap-3">
+						<CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+						<div>
+							<p className="font-semibold text-emerald-900 text-sm dark:text-emerald-200">
+								{t("admin.deliberations.promote.ctaTitle", {
+									defaultValue: "Promote admitted students",
+								})}
+							</p>
+							<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-300">
+								{t("admin.deliberations.promote.ctaDesc", {
+									defaultValue:
+										"Students with an 'Admitted' decision can be promoted to the next academic level.",
+								})}
+							</p>
+						</div>
+					</div>
+					<Button onClick={() => setPromoteOpen(true)}>
+						<UserCheck className="mr-2 h-4 w-4" />
+						{t("admin.deliberations.promote.button")}
+					</Button>
+				</div>
+			)}
 
 			{/* Stats cards */}
 			{stats && (

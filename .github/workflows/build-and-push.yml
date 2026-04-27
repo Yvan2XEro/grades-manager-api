@@ -2,7 +2,8 @@ name: Build and Push Images
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
+    tags: ["v*.*.*"]
   workflow_dispatch:
 
 permissions:
@@ -15,11 +16,43 @@ env:
   WEB_IMAGE: ghcr.io/yvan2xero/tkams-web
 
 jobs:
-  docker:
+  test:
+    name: Tests (gate)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/server
+    env:
+      NODE_ENV: test
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: cd ../.. && bun install --frozen-lockfile
+
+      - name: Run tests
+        run: bun test
+
+  docker:
+    name: Build & Push (${{ matrix.app }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - app: server
+            image: ghcr.io/yvan2xero/tkams-server
+            dockerfile: apps/server/Dockerfile
+          - app: web
+            image: ghcr.io/yvan2xero/tkams-web
+            dockerfile: apps/web/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -31,22 +64,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push server image
-        uses: docker/build-push-action@v5
+      # Tags generated per event:
+      #   push to dev    → dev, dev-<sha>
+      #   push to main   → main, <sha>, latest
+      #   push tag v1.2.3 → 1.2.3, 1.2, 1, latest
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          context: .
-          file: apps/server/Dockerfile
-          push: true
+          images: ${{ matrix.image }}
           tags: |
-            ${{ env.SERVER_IMAGE }}:latest
-            ${{ env.SERVER_IMAGE }}:${{ github.sha }}
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-,format=short,enable=${{ github.ref_type == 'branch' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}
 
-      - name: Build & push web image
-        uses: docker/build-push-action@v5
+      - name: Build & push
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/web/Dockerfile
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: |
-            ${{ env.WEB_IMAGE }}:latest
-            ${{ env.WEB_IMAGE }}:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}

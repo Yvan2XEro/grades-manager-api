@@ -8,6 +8,8 @@ import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatusStepper } from "@/components/ui/status-stepper";
 import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
@@ -51,12 +53,12 @@ import CreateDeliberationDialog from "./CreateDeliberationDialog";
 
 const statusVariants: Record<
 	string,
-	"default" | "secondary" | "destructive" | "outline"
+	"default" | "secondary" | "destructive" | "outline" | "success" | "warning"
 > = {
-	draft: "outline",
+	draft: "secondary",
 	open: "default",
-	closed: "secondary",
-	signed: "default",
+	closed: "outline",
+	signed: "success",
 };
 
 const STATUSES = ["draft", "open", "closed", "signed"] as const;
@@ -67,7 +69,7 @@ export default function DeliberationsList() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const [statusFilter, setStatusFilter] = useState<string>("all");
+	const [statusFilter, setStatusFilter] = useState<string>("open");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const { confirm, ConfirmDialog } = useConfirm();
@@ -105,24 +107,26 @@ export default function DeliberationsList() {
 
 	return (
 		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center space-x-3">
-					<Gavel className="h-6 w-6 text-primary" />
-					<div>
-						<h1 className="text-foreground">
-							{t("admin.deliberations.title")}
-						</h1>
-						<p className="text-muted-foreground text-xs">
-							{t("admin.deliberations.subtitle")}
-						</p>
-					</div>
-				</div>
-				<Button onClick={() => setIsCreateOpen(true)}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.deliberations.actions.create")}
-				</Button>
-			</div>
+			<PageHeader
+				title={t("admin.deliberations.title")}
+				description={t("admin.deliberations.subtitle")}
+				actions={
+					<Button onClick={() => setIsCreateOpen(true)}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.deliberations.actions.create")}
+					</Button>
+				}
+			/>
+
+			<StatusStepper
+				steps={[
+					{ key: "draft", label: t("admin.deliberations.status.draft") },
+					{ key: "open", label: t("admin.deliberations.status.open") },
+					{ key: "closed", label: t("admin.deliberations.status.closed") },
+					{ key: "signed", label: t("admin.deliberations.status.signed") },
+				]}
+				currentStatus={statusFilter !== "all" ? statusFilter : "draft"}
+			/>
 
 			{/* Filters */}
 			<div className="flex flex-wrap items-center gap-3">

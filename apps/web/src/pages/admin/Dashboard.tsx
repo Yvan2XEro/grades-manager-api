@@ -232,6 +232,8 @@ const AdminDashboard: React.FC = () => {
 				activeEnrollsRes,
 				pendingEnrollsRes,
 				completedEnrollsRes,
+				submittedExamsRes,
+				deliberationsRes,
 			] = await Promise.all([
 				trpcClient.institutions.list.query({}),
 				trpcClient.programs.list.query({}),
@@ -247,6 +249,12 @@ const AdminDashboard: React.FC = () => {
 					.catch(() => ({ items: [] })),
 				trpcClient.enrollments.list
 					.query({ status: "completed", limit: 500 })
+					.catch(() => ({ items: [] })),
+				trpcClient.exams.list
+					.query({ limit: 100 })
+					.catch(() => ({ items: [] })),
+				trpcClient.deliberations.list
+					.query({ limit: 100 })
 					.catch(() => ({ items: [] })),
 			]);
 
@@ -359,12 +367,21 @@ const AdminDashboard: React.FC = () => {
 				},
 			];
 
+			const pendingApprovalCount = (submittedExamsRes?.items ?? []).filter(
+				(e) => (e as any).status === "submitted",
+			).length;
+			const openDeliberationsCount = (deliberationsRes?.items ?? []).filter(
+				(d) => (d as any).status === "open",
+			).length;
+
 			return {
 				statCards,
 				programStats,
 				enrollmentStatus,
 				recentExams,
 				activeYear: activeYear?.name,
+				pendingApprovalCount,
+				openDeliberationsCount,
 			};
 		},
 	});
@@ -382,6 +399,8 @@ const AdminDashboard: React.FC = () => {
 	const enrollmentStatus = data?.enrollmentStatus ?? [];
 	const recentExams = data?.recentExams ?? [];
 	const activeYear = data?.activeYear ?? t("admin.dashboard.noActiveYear");
+	const pendingApprovalCount = data?.pendingApprovalCount ?? 0;
+	const openDeliberationsCount = data?.openDeliberationsCount ?? 0;
 
 	return (
 		<div className="space-y-8">
@@ -413,6 +432,53 @@ const AdminDashboard: React.FC = () => {
 					</span>
 				</motion.div>
 			</motion.div>
+
+			{/* ── Action needed ────────────────────────── */}
+			{(pendingApprovalCount > 0 || openDeliberationsCount > 0) && (
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="grid gap-3 sm:grid-cols-2"
+				>
+					{pendingApprovalCount > 0 && (
+						<Link to="/admin/exams?tab=exams&status=submitted">
+							<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
+									<CheckCircle2 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+								</div>
+								<div className="min-w-0 flex-1">
+									<p className="font-semibold text-amber-900 text-sm dark:text-amber-200">
+										{pendingApprovalCount} examen
+										{pendingApprovalCount > 1 ? "s" : ""} en attente
+										d'approbation
+									</p>
+									<p className="mt-0.5 text-amber-700 text-xs dark:text-amber-400">
+										Voir les examens soumis →
+									</p>
+								</div>
+							</div>
+						</Link>
+					)}
+					{openDeliberationsCount > 0 && (
+						<Link to="/admin/deliberations">
+							<div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:bg-blue-900/30">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+									<ClipboardList className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+								</div>
+								<div className="min-w-0 flex-1">
+									<p className="font-semibold text-blue-900 text-sm dark:text-blue-200">
+										{openDeliberationsCount} délibération
+										{openDeliberationsCount > 1 ? "s" : ""} en cours
+									</p>
+									<p className="mt-0.5 text-blue-700 text-xs dark:text-blue-400">
+										Voir les délibérations →
+									</p>
+								</div>
+							</div>
+						</Link>
+					)}
+				</motion.div>
+			)}
 
 			{/* ── KPI cards ────────────────────────────── */}
 			<motion.div

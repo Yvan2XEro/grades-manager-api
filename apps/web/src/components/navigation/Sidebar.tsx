@@ -2,29 +2,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
 	Bell,
 	BookOpen,
-	BookOpenCheck,
 	Building,
 	Building2,
 	Calendar,
-	CalendarPlus,
-	ChevronDown,
-	ChevronRight,
 	ClipboardList,
 	FileCog,
 	FileSpreadsheet,
 	FileText,
 	Gavel,
 	GraduationCap,
-	Hash,
-	Key,
-	Landmark,
-	Layers3,
 	LayoutDashboard,
 	PlayCircle,
-	RefreshCw,
 	School,
 	Search,
-	ShieldCheck,
+	Settings2,
 	TrendingUp,
 	UserCog,
 	Users,
@@ -32,7 +23,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
@@ -51,9 +42,6 @@ const Sidebar: React.FC = () => {
 	const { user, sidebarOpen, sidebarCollapsed } = useStore();
 	const { t } = useTranslation();
 	const location = useLocation();
-	const [openGroups, setOpenGroups] = useState<Set<string>>(
-		new Set(["overview"]),
-	);
 	const [search, setSearch] = useState("");
 
 	const IC = "size-[15px] shrink-0";
@@ -70,11 +58,6 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.dashboard",
 					},
 					{
-						to: "/admin/institution",
-						icon: <Landmark className={IC} />,
-						labelKey: "navigation.sidebar.admin.institution",
-					},
-					{
 						to: "/admin/academic-years",
 						icon: <Calendar className={IC} />,
 						labelKey: "navigation.sidebar.admin.academicYears",
@@ -86,14 +69,9 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.structure",
 				items: [
 					{
-						to: "/admin/faculties",
+						to: "/admin/institution",
 						icon: <Building2 className={IC} />,
-						labelKey: "navigation.sidebar.admin.faculties",
-					},
-					{
-						to: "/admin/study-cycles",
-						icon: <Layers3 className={IC} />,
-						labelKey: "navigation.sidebar.admin.studyCycles",
+						labelKey: "navigation.sidebar.admin.institution",
 					},
 					{
 						to: "/admin/centers",
@@ -106,11 +84,6 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.programs",
 					},
 					{
-						to: "/admin/teaching-units",
-						icon: <BookOpenCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.teachingUnits",
-					},
-					{
 						to: "/admin/classes",
 						icon: <Users className={IC} />,
 						labelKey: "navigation.sidebar.admin.classes",
@@ -118,45 +91,24 @@ const Sidebar: React.FC = () => {
 				],
 			},
 			{
-				key: "users",
-				titleKey: "navigation.sidebar.groups.users",
+				key: "people",
+				titleKey: "navigation.sidebar.groups.people",
 				items: [
-					{
-						to: "/admin/users",
-						icon: <UserCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.users",
-					},
 					{
 						to: "/admin/students",
 						icon: <GraduationCap className={IC} />,
 						labelKey: "navigation.sidebar.admin.students",
 					},
-				],
-			},
-			{
-				key: "teaching",
-				titleKey: "navigation.sidebar.groups.teaching",
-				items: [
 					{
-						to: "/admin/courses",
-						icon: <BookOpen className={IC} />,
-						labelKey: "navigation.sidebar.admin.courses",
-					},
-					{
-						to: "/admin/class-courses",
-						icon: <BookOpenCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.courseAssignments",
-					},
-					{
-						to: "/admin/enrollments",
-						icon: <Calendar className={IC} />,
-						labelKey: "navigation.sidebar.admin.enrollments",
+						to: "/admin/users",
+						icon: <UserCog className={IC} />,
+						labelKey: "navigation.sidebar.admin.users",
 					},
 				],
 			},
 			{
-				key: "evaluation",
-				titleKey: "navigation.sidebar.groups.evaluation",
+				key: "assessment",
+				titleKey: "navigation.sidebar.groups.assessment",
 				items: [
 					{
 						to: "/admin/exams",
@@ -164,34 +116,9 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.exams",
 					},
 					{
-						to: "/admin/exam-types",
-						icon: <ClipboardList className={IC} />,
-						labelKey: "navigation.sidebar.admin.examTypes",
-					},
-					{
-						to: "/admin/exam-scheduler",
-						icon: <CalendarPlus className={IC} />,
-						labelKey: "navigation.sidebar.admin.examScheduler",
-					},
-					{
-						to: "/admin/retake-eligibility",
-						icon: <RefreshCw className={IC} />,
-						labelKey: "navigation.sidebar.admin.retakeEligibility",
-					},
-					{
-						to: "/admin/grade-export",
+						to: "/admin/grades",
 						icon: <FileSpreadsheet className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeExport",
-					},
-					{
-						to: "/admin/grade-access",
-						icon: <ShieldCheck className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeAccess",
-					},
-					{
-						to: "/grade-editor/courses",
-						icon: <BookOpen className={IC} />,
-						labelKey: "navigation.sidebar.admin.gradeEntry",
+						labelKey: "navigation.sidebar.admin.gradeManagement",
 					},
 					{
 						to: "/admin/export-templates",
@@ -208,12 +135,6 @@ const Sidebar: React.FC = () => {
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.documentBatch",
 					},
-				],
-			},
-			{
-				key: "promotion",
-				titleKey: "navigation.sidebar.groups.promotion",
-				items: [
 					{
 						to: "/admin/deliberations",
 						icon: <Gavel className={IC} />,
@@ -221,19 +142,9 @@ const Sidebar: React.FC = () => {
 						excludePrefix: "/admin/deliberations/rules",
 					},
 					{
-						to: "/admin/deliberations/rules",
+						to: "/admin/promotion",
 						icon: <TrendingUp className={IC} />,
-						labelKey: "navigation.sidebar.admin.deliberationRules",
-					},
-					{
-						to: "/admin/graduation",
-						icon: <GraduationCap className={IC} />,
-						labelKey: "navigation.sidebar.admin.graduation",
-					},
-					{
-						to: "/admin/rules",
-						icon: <FileCog className={IC} />,
-						labelKey: "navigation.sidebar.admin.rules",
+						labelKey: "navigation.sidebar.admin.promotion",
 					},
 				],
 			},
@@ -242,9 +153,9 @@ const Sidebar: React.FC = () => {
 				titleKey: "navigation.sidebar.groups.system",
 				items: [
 					{
-						to: "/admin/registration-numbers",
-						icon: <Hash className={IC} />,
-						labelKey: "navigation.sidebar.admin.registrationNumbers",
+						to: "/admin/configuration",
+						icon: <Settings2 className={IC} />,
+						labelKey: "navigation.sidebar.admin.configuration",
 					},
 					{
 						to: "/admin/monitoring",
@@ -252,19 +163,14 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.monitoring",
 					},
 					{
-						to: "/admin/notifications",
-						icon: <Bell className={IC} />,
-						labelKey: "navigation.sidebar.admin.notifications",
-					},
-					{
 						to: "/admin/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
 					},
 					{
-						to: "/admin/api-keys",
-						icon: <Key className={IC} />,
-						labelKey: "navigation.sidebar.admin.apiKeys",
+						to: "/admin/notifications",
+						icon: <Bell className={IC} />,
+						labelKey: "navigation.sidebar.admin.notifications",
 					},
 				],
 			},
@@ -276,13 +182,8 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/teacher",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.teacher.dashboard",
-			},
-			{
-				to: "/teacher/courses",
 				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.courses",
+				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
 				to: "/teacher/attendance",
@@ -290,9 +191,9 @@ const Sidebar: React.FC = () => {
 				labelKey: "navigation.sidebar.teacher.attendance",
 			},
 			{
-				to: "/teacher/workflows",
-				icon: <Bell className={IC} />,
-				labelKey: "navigation.sidebar.teacher.workflows",
+				to: "/teacher/exports",
+				icon: <FileSpreadsheet className={IC} />,
+				labelKey: "navigation.sidebar.teacher.exports",
 			},
 		],
 		[],
@@ -302,13 +203,18 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/dean",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.dean.dashboard",
+				icon: <ClipboardList className={IC} />,
+				labelKey: "navigation.sidebar.dean.pendingApprovals",
 			},
 			{
-				to: "/dean/workflows",
-				icon: <ClipboardList className={IC} />,
-				labelKey: "navigation.sidebar.dean.workflows",
+				to: "/dean/history",
+				icon: <FileCog className={IC} />,
+				labelKey: "navigation.sidebar.dean.history",
+			},
+			{
+				to: "/dean/monitoring",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.dean.monitoring",
 			},
 		],
 		[],
@@ -318,13 +224,13 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/grade-editor",
-				icon: <LayoutDashboard className={IC} />,
-				labelKey: "navigation.sidebar.teacher.dashboard",
+				icon: <BookOpen className={IC} />,
+				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
-				to: "/grade-editor/courses",
-				icon: <BookOpen className={IC} />,
-				labelKey: "navigation.sidebar.teacher.courses",
+				to: "/grade-editor/exports",
+				icon: <FileSpreadsheet className={IC} />,
+				labelKey: "navigation.sidebar.teacher.exports",
 			},
 		],
 		[],
@@ -375,34 +281,6 @@ const Sidebar: React.FC = () => {
 				: menuContent.items,
 		[menuContent],
 	);
-
-	const toggleGroup = (key: string) =>
-		setOpenGroups((prev) => {
-			const next = new Set(prev);
-			next.has(key) ? next.delete(key) : next.add(key);
-			return next;
-		});
-
-	const isOpen = useCallback(
-		(key: string) => openGroups.has(key),
-		[openGroups],
-	);
-
-	// Auto-expand active group
-	useEffect(() => {
-		if (menuContent.type !== "grouped") return;
-		const path = location.pathname;
-		for (const g of menuContent.groups) {
-			if (
-				g.items.some((l) =>
-					ROOT_PATHS.has(l.to) ? path === l.to : path.startsWith(l.to),
-				)
-			) {
-				setOpenGroups(new Set([g.key]));
-				break;
-			}
-		}
-	}, [location.pathname, menuContent]);
 
 	// Expanded link style
 	const expandedLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -550,6 +428,7 @@ const Sidebar: React.FC = () => {
 											to={link.to}
 											end={ROOT_PATHS.has(link.to)}
 											className={iconBtnClass}
+											data-testid={`nav-${link.to}`}
 										>
 											{link.icon}
 										</NavLink>
@@ -589,50 +468,28 @@ const Sidebar: React.FC = () => {
 						return (
 							<div className="space-y-0.5 px-2">
 								{visible.map((group, gi) => {
-									const expanded = !!q || isOpen(group.key);
 									return (
 										<div key={group.key}>
 											{gi > 0 && (
 												<div className="my-2 border-border border-t" />
 											)}
-											<button
-												type="button"
-												onClick={() => !q && toggleGroup(group.key)}
-												className="flex w-full items-center justify-between rounded px-1.5 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest transition-colors hover:text-foreground"
-											>
-												<span>
-													{t(group.titleKey, { defaultValue: group.key })}
-												</span>
-												{!q &&
-													(expanded ? (
-														<ChevronDown className="size-3" />
-													) : (
-														<ChevronRight className="size-3" />
-													))}
-											</button>
-											<AnimatePresence initial={false}>
-												{expanded && (
-													<motion.div
-														initial={{ height: 0, opacity: 0 }}
-														animate={{ height: "auto", opacity: 1 }}
-														exit={{ height: 0, opacity: 0 }}
-														transition={{ duration: 0.18 }}
-														className="mt-0.5 space-y-0.5 overflow-hidden"
+											<p className="px-1.5 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest">
+												{t(group.titleKey, { defaultValue: group.key })}
+											</p>
+											<div className="mt-0.5 space-y-0.5">
+												{group.items.map((link) => (
+													<NavLink
+														key={link.to}
+														to={link.to}
+														end={ROOT_PATHS.has(link.to)}
+														className={makeLinkClass(link)}
+														data-testid={`nav-${link.to}`}
 													>
-														{group.items.map((link) => (
-															<NavLink
-																key={link.to}
-																to={link.to}
-																end={ROOT_PATHS.has(link.to)}
-																className={makeLinkClass(link)}
-															>
-																{link.icon}
-																<span>{t(link.labelKey)}</span>
-															</NavLink>
-														))}
-													</motion.div>
-												)}
-											</AnimatePresence>
+														{link.icon}
+														<span>{t(link.labelKey)}</span>
+													</NavLink>
+												))}
+											</div>
 										</div>
 									);
 								})}
@@ -648,6 +505,7 @@ const Sidebar: React.FC = () => {
 								to={link.to}
 								end={ROOT_PATHS.has(link.to)}
 								className={makeLinkClass(link)}
+								data-testid={`nav-${link.to}`}
 							>
 								{link.icon}
 								<span>{t(link.labelKey)}</span>

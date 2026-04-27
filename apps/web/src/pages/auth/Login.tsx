@@ -10,6 +10,7 @@ import { Link } from "react-router";
 import { z } from "zod";
 import { toast } from "@/lib/toast";
 import { Button } from "../../components/ui/button";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { PasswordInput } from "../../components/ui/password-input";
@@ -29,6 +30,7 @@ const buildLoginSchema = (t: TFunction) =>
 	z.object({
 		email: z.string().email(t("auth.validation.email")),
 		password: z.string().min(6, t("auth.validation.passwordMin", { count: 6 })),
+		rememberMe: z.boolean().optional(),
 	});
 
 type LoginFormData = z.infer<ReturnType<typeof buildLoginSchema>>;
@@ -37,6 +39,7 @@ const Login: React.FC = () => {
 	const { t } = useTranslation();
 	const loginSchema = React.useMemo(() => buildLoginSchema(t), [t]);
 
+	const [rememberMe, setRememberMe] = React.useState(false);
 	const {
 		register,
 		handleSubmit,
@@ -56,6 +59,7 @@ const Login: React.FC = () => {
 		const result = await authClient.signIn.email({
 			email: data.email,
 			password: data.password,
+			rememberMe,
 			callbackURL: callbackURL || undefined,
 			fetchOptions: slug
 				? { headers: { "X-Organization-Slug": slug } }
@@ -75,13 +79,9 @@ const Login: React.FC = () => {
 			<motion.div variants={item} className="mb-8">
 				<h2 className="text-foreground">{t("auth.login.title")}</h2>
 				<p className="mt-2 text-muted-foreground text-sm">
-					{t("auth.login.noAccount")}{" "}
-					<Link
-						to={`/auth/register?return=${callbackURL}`}
-						className="font-medium text-primary hover:text-primary/80"
-					>
-						{t("auth.login.registerLink")}
-					</Link>
+					{t("auth.login.subtitle", {
+						defaultValue: "Connectez-vous à votre espace.",
+					})}
 				</p>
 			</motion.div>
 
@@ -131,6 +131,22 @@ const Login: React.FC = () => {
 							{errors.password.message}
 						</motion.p>
 					)}
+				</motion.div>
+
+				<motion.div variants={item} className="flex items-center gap-2">
+					<Checkbox
+						id="remember"
+						checked={rememberMe}
+						onCheckedChange={(v) => setRememberMe(Boolean(v))}
+					/>
+					<Label
+						htmlFor="remember"
+						className="cursor-pointer font-normal text-sm"
+					>
+						{t("auth.login.rememberMe", {
+							defaultValue: "Se souvenir de moi pendant 30 jours",
+						})}
+					</Label>
 				</motion.div>
 
 				<motion.div variants={item}>

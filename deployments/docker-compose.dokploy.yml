@@ -1,16 +1,16 @@
-# Dokploy Docker Compose
-# Usage: docker compose --env-file .env -f docker-compose.dokploy.yml up -d
+# Production Docker Compose — Traefik / Dokploy
+# Usage: docker compose --env-file .env up -d
 #
-# This variant is intended for Dokploy + Traefik deployments.
-# It pulls pre-built images from the registry, like the standard production compose.
+# Set IMAGE_TAG to deploy a specific CI build (e.g. dev-abc1234, 1.3.0).
+# Defaults to latest.
 
 services:
   server:
-    image: ghcr.io/yvan2xero/tkams-server:latest
+    image: ghcr.io/yvan2xero/tkams-server:${IMAGE_TAG:-latest}
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: ${DATABASE_URL:-postgres://grades:grades@postgres:5432/grades}
+      DATABASE_URL: postgres://${POSTGRES_USER:-grades}:${POSTGRES_PASSWORD:-grades}@postgres:5432/${POSTGRES_DB:-grades}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://${API_DOMAIN}}
       BETTER_AUTH_COOKIE_SAMESITE: ${BETTER_AUTH_COOKIE_SAMESITE:-none}
@@ -20,10 +20,12 @@ services:
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
       STORAGE_LOCAL_PUBLIC_PATH: /uploads
+      RUN_SEED: "true"
     expose:
       - "3000"
     volumes:
       - server_uploads:/usr/src/app/apps/server/storage/uploads
+      - ./seeds:/usr/src/app/seed/local:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,7 +43,7 @@ services:
       - "traefik.http.services.tkams-server.loadbalancer.server.port=3000"
 
   web:
-    image: ghcr.io/yvan2xero/tkams-web:latest
+    image: ghcr.io/yvan2xero/tkams-web:${IMAGE_TAG:-latest}
     environment:
       NODE_ENV: production
       PORT: 4173
@@ -70,6 +72,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-grades}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-grades}
       POSTGRES_DB: ${POSTGRES_DB:-grades}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

@@ -344,6 +344,13 @@ vi.mock("../../utils/trpc", () => {
 				trpcClient.notifications.list.query(input),
 			),
 		},
+		academicYears: {
+			list: createQueryOptions("academicYears", () =>
+				Promise.resolve({
+					items: [{ id: "year-1", name: "2024-2025", isActive: true }],
+				}),
+			),
+		},
 		workflows: {
 			enrollmentWindows: {
 				queryOptions: () => ({
@@ -362,7 +369,29 @@ vi.mock("../../utils/trpc", () => {
 		},
 	};
 
-	return { trpcClient, trpc, queryClient: {} };
+	// Proxy: auto-stub any trpc namespace not explicitly defined above
+	const stubNamespace = (ns: string) => {
+		const stub = new Proxy({} as Record<string, unknown>, {
+			get(_t, method: string) {
+				return {
+					queryOptions: (input?: unknown) => ({
+						queryKey: [ns, method, input ?? {}],
+						queryFn: () => Promise.resolve({ items: [] }),
+					}),
+					queryKey: (input?: unknown) => [ns, method, input ?? {}],
+				};
+			},
+		});
+		return stub;
+	};
+	const trpcProxy = new Proxy(trpc as Record<string, unknown>, {
+		get(target, key: string) {
+			if (key in target) return (target as Record<string, unknown>)[key];
+			return stubNamespace(key);
+		},
+	});
+
+	return { trpcClient, trpc: trpcProxy, queryClient: {} };
 });
 
 import { useStore } from "../../store";
