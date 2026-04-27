@@ -161,7 +161,10 @@
         "retakeEligibility": "Éligibilité rattrapage",
         "rules": "Centre des règles",
         "registrationNumbers": "Formats de matricule",
-        "apiKeys": "Clés API"
+        "apiKeys": "Clés API",
+        "gradeManagement": "Gestion des notes",
+        "promotion": "Promotion",
+        "configuration": "Configuration"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -170,7 +173,9 @@
         "teaching": "Enseignement",
         "evaluation": "Évaluations",
         "promotion": "Règles & Promotion",
-        "system": "Système"
+        "system": "Système",
+        "assessment": "Évaluations",
+        "people": "Personnes"
       },
       "teacher": {
         "dashboard": "Tableau de bord",
@@ -178,11 +183,16 @@
         "grades": "Notes",
         "courses": "Cours",
         "attendance": "Alertes de présence",
-        "workflows": "Workflows"
+        "workflows": "Workflows",
+        "exports": "Exports",
+        "myCourses": "Mes cours"
       },
       "dean": {
         "dashboard": "Tableau de bord",
-        "workflows": "Workflows"
+        "workflows": "Workflows",
+        "history": "Historique",
+        "monitoring": "Monitoring",
+        "pendingApprovals": "Approbations en attente"
       },
       "student": {
         "dashboard": "Ma performance"
