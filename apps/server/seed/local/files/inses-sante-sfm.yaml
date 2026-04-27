@@ -1,0 +1,1081 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-sfm
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Sage-femme (SFM)
+  ecStats:
+    totalCount: 96
+    totalCredits: 175
+    totalHours: 2610
+program:
+  code: SFM
+  nameFr: Sage-femme
+  nameEn: Midwifery
+  abbreviation: BTS-SFM
+  slug: sage-femme
+  description: Former des professionnelles de santé ayant pour mission d'accompagner les femmes enceintes tout au long de
+    leur grossesse, de l'établissement du diagnostic jusqu'au jour de l'accouchement, d'animer les séances de préparation
+    à l'accouchement et d'assurer seule l'accouchement. La Sage-femme assure également le suivi gynécologique de la femme.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Sage-femme
+  specialiteEn: Midwifery
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Sage-femme
+  diplomaTitleEn: Higher Technician Diploma — Midwifery
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Sage-femme
+  objective: Former des professionnelles de santé ayant pour mission d'accompagner les femmes enceintes tout au long de leur
+    grossesse, de l'établissement du diagnostic jusqu'au jour de l'accouchement, d'animer les séances de préparation à l'accouchement
+    et d'assurer seule l'accouchement. La Sage-femme assure également le suivi gynécologique de la femme.
+  careerOpportunities:
+  - Fonction publique
+  - Hôpitaux et cliniques privées
+  - ONG
+  - Auto-emploi
+  - Médecine du travail
+  - Recherche et formation
+  - PMI
+  note: L'UE SFM232 a une cellule 'crédits' vide dans le document MINESUP original ; valeur fixée à 7 crédits pour atteindre
+    les 30 crédits réglementaires du semestre 3.
+teachingUnits:
+- code: SFM111
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie physiologie 1 – Embryologie - Biologie de la reproduction
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+  ecCount: 4
+- code: SFM112
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Puériculture – Nutrition - Diététique
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM113
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Histoire de la profession des Sages-femmes - Éthique et déontologie professionnelle santé - Soins infirmiers de base
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: SFM114
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Législation professionnelle – Système national de santé / Politique de santé – Microbiologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM115
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Pharmacologie générale – Hématologie – Pathologie générale
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: SFM116
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Psychologie-sociologie – Éducation pour la santé – Prévention des infections
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM117
+  programCode: SFM
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Méthodes de travail - Langue officielle 1 - Techniques de l’information et de la communication 1
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM121
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie 2 – Sémiologie - Pharmacologie spéciale
+  hoursCM: 55
+  hoursTD: 17
+  hoursTP: 4
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: SFM122
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Techniques de laboratoire – Biochimie – Parasitologie/Mycologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM123
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Grossesse /Suivi prénatal-Accouchement en présentation du sommet - Suivi post natal
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+  ecCount: 4
+- code: SFM124
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Communication pour le développement-Éducation à la vie familiale -Soins de base à la Naissance/Néonatologie
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM125
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins de santé primaire – Soins infirmiers/obstétricaux/Néonataux de base – Hygiène et assainissement/Secourisme
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+  ecCount: 4
+- code: SFM126
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SFM127
+  programCode: SFM
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Démarche de soins - Genre - Droits humains
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM231
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Autres variétés d’accouchement
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: SFM232
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Dystocies – Pathologies obstétricales - Complications obstétricales
+  hoursCM: 66
+  hoursTD: 21
+  hoursTP: 3
+  hoursTPE: 15
+  hoursTotal: 105
+  credits: 7
+  ecCount: 3
+- code: SFM233
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Méthodes de la recherche –Statistique - Soins infirmiers avancés
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: SFM234
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Épidémiologie– Démographie–Santé communautaire
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM235
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pédiatrie - Vaccination - Techniques avancées en obstétrique
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: SFM236
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage communautaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SFM237
+  programCode: SFM
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Anglais médical/Français médical  1- Techniques de l’information et de la communication 2
+  hoursCM: 24
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+- code: SFM241
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Gynécologie – Soins obstétricaux
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SFM242
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pédiatrie/néonatologie/pathologies nouveau-né – Pathologies gynécologiques
+  hoursCM: 46
+  hoursTD: 16
+  hoursTP: 3
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: SFM243
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Analgésique en obstétrique - Communication
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SFM244
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: PTME – IST/SIDA
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 10
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: SFM245
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologies obstétricales
+  hoursCM: 35
+  hoursTD: 13
+  hoursTP: 4
+  hoursTPE: 8
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SFM246
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 90
+  hoursTPE: 0
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: SFM247
+  programCode: SFM
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Planification familiale,  Initiation à la recherche et Education civique
+  hoursCM: 26
+  hoursTD: 11
+  hoursTP: 3
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: SFM351
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Anthropologie - Santé génésique et droit sexuel - Toxicologie
+  hoursCM: 40
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 11
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: SFM352
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Anesthésiologie - Réanimation - Infécondité/Infertilité
+  hoursCM: 50
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 13
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: SFM353
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Association grossesse et pathologie PEG
+  hoursCM: 50
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: SFM354
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Gynécologie et pathologies gynécologiques
+  hoursCM: 10
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 15
+  credits: 1
+  ecCount: 1
+- code: SFM355
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Urgences obstétricales et néonatales
+  hoursCM: 10
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 15
+  credits: 1
+  ecCount: 1
+- code: SFM356
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Mise en situation maternité - Stage communautaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 180
+  hoursTPE: 0
+  hoursTotal: 180
+  credits: 12
+  isInternship: true
+  ecCount: 2
+- code: SFM357
+  programCode: SFM
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Éducation civique et éthique – Langue officielle
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: SFM361
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Gérontologie/Gériatrie + IEC 3 – Rédaction administrative – Psychiatrie/Psychopathologie
+  hoursCM: 50
+  hoursTD: 18
+  hoursTP: 3
+  hoursTPE: 13
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: SFM362
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Imagerie médicale – Assurance qualité - Entreprenariat
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: SFM363
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Économie de la santé – Rédaction de mémoire
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: SFM364
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: PCIME
+  hoursCM: 30
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: SFM365
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Suivi du travail et manœuvre obstétricales
+  hoursCM: 20
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: SFM366
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage (MSP maternité) – Stage (MSP Pédiatrie)
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 150
+  hoursTPE: 0
+  hoursTotal: 150
+  credits: 10
+  isInternship: true
+  ecCount: 2
+- code: SFM367
+  programCode: SFM
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Anglais médical/Français médical - NTIC
+  hoursCM: 30
+  hoursTD: 7
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+courses:
+- code: SFM111-EC1
+  teachingUnitCode: SFM111
+  title: Biologie cellulaire et histologie
+  credits: 1
+  hours: 15
+- code: SFM111-EC2
+  teachingUnitCode: SFM111
+  title: Anatomie -Physiologie 1
+  credits: 3
+  hours: 45
+- code: SFM111-EC3
+  teachingUnitCode: SFM111
+  title: Embryologie
+  credits: 1
+  hours: 15
+- code: SFM111-EC4
+  teachingUnitCode: SFM111
+  title: Biologie de la reproduction
+  credits: 1
+  hours: 15
+- code: SFM112-EC1
+  teachingUnitCode: SFM112
+  title: Puériculture
+  credits: 1
+  hours: 15
+- code: SFM112-EC2
+  teachingUnitCode: SFM112
+  title: Nutrition
+  credits: 1
+  hours: 15
+- code: SFM112-EC3
+  teachingUnitCode: SFM112
+  title: Diététique
+  credits: 1
+  hours: 15
+- code: SFM113-EC1
+  teachingUnitCode: SFM113
+  title: Histoire de la profession de la sage-femme
+  credits: 1
+  hours: 15
+- code: SFM113-EC2
+  teachingUnitCode: SFM113
+  title: Éthique et déontologie professionnelle
+  credits: 1
+  hours: 15
+- code: SFM113-EC3
+  teachingUnitCode: SFM113
+  title: Soins infirmiers de base
+  credits: 4
+  hours: 45
+- code: SFM114-EC1
+  teachingUnitCode: SFM114
+  title: La législation professionnelle
+  credits: 1
+  hours: 15
+- code: SFM114-EC2
+  teachingUnitCode: SFM114
+  title: Système national de santé / Politique de santé
+  credits: 1
+  hours: 15
+- code: SFM114-EC3
+  teachingUnitCode: SFM114
+  title: Microbiologie
+  credits: 1
+  hours: 15
+- code: SFM115-EC1
+  teachingUnitCode: SFM115
+  title: Pharmacologie générale
+  credits: 1
+  hours: 15
+- code: SFM115-EC2
+  teachingUnitCode: SFM115
+  title: Hématologie
+  credits: 1
+  hours: 15
+- code: SFM115-EC3
+  teachingUnitCode: SFM115
+  title: Pathologie générale
+  credits: 4
+  hours: 60
+- code: SFM116-EC1
+  teachingUnitCode: SFM116
+  title: Psychologie-sociologie
+  credits: 1
+  hours: 15
+- code: SFM116-EC2
+  teachingUnitCode: SFM116
+  title: Éducation pour la santé
+  credits: 1
+  hours: 15
+- code: SFM116-EC3
+  teachingUnitCode: SFM116
+  title: Prévention des infections
+  credits: 1
+  hours: 15
+- code: SFM117-EC1
+  teachingUnitCode: SFM117
+  title: Méthode de travail
+  credits: 1
+  hours: 15
+- code: SFM117-EC2
+  teachingUnitCode: SFM117
+  title: Langue officielle 1
+  credits: 1
+  hours: 15
+- code: SFM117-EC3
+  teachingUnitCode: SFM117
+  title: Techniques de l’information et de la communication 1
+  credits: 1
+  hours: 15
+- code: SFM121-EC1
+  teachingUnitCode: SFM121
+  title: Anatomie physiologie 2
+  credits: 4
+  hours: 60
+- code: SFM121-EC2
+  teachingUnitCode: SFM121
+  title: Sémiologie
+  credits: 1
+  hours: 15
+- code: SFM121-EC3
+  teachingUnitCode: SFM121
+  title: Pharmacologie spéciale
+  credits: 1
+  hours: 15
+- code: SFM122-EC1
+  teachingUnitCode: SFM122
+  title: Techniques de laboratoire
+  credits: 1
+  hours: 15
+- code: SFM122-EC2
+  teachingUnitCode: SFM122
+  title: Biochimie clinique
+  credits: 1
+  hours: 15
+- code: SFM122-EC3
+  teachingUnitCode: SFM122
+  title: Parasitologie/Mycologie
+  credits: 1
+  hours: 15
+- code: SFM123-EC1
+  teachingUnitCode: SFM123
+  title: Grossesse
+  credits: 1
+  hours: 15
+- code: SFM123-EC2
+  teachingUnitCode: SFM123
+  title: Le suivi-prénatal
+  credits: 1
+  hours: 15
+- code: SFM123-EC3
+  teachingUnitCode: SFM123
+  title: Accouchement en présentation du sommet
+  credits: 1
+  hours: 15
+- code: SFM123-EC4
+  teachingUnitCode: SFM123
+  title: Suivi post natal
+  credits: 1
+  hours: 15
+- code: SFM124-EC1
+  teachingUnitCode: SFM124
+  title: Communication pour le développement
+  credits: 1
+  hours: 15
+- code: SFM124-EC2
+  teachingUnitCode: SFM124
+  title: Éducation à la vie familiale
+  credits: 1
+  hours: 15
+- code: SFM124-EC3
+  teachingUnitCode: SFM124
+  title: Soins de base à la naissance/Néonatologie
+  credits: 1
+  hours: 15
+- code: SFM125-EC1
+  teachingUnitCode: SFM125
+  title: Soins de santé primaire
+  credits: 1
+  hours: 15
+- code: SFM125-EC2
+  teachingUnitCode: SFM125
+  title: Soins infirmiers/Obstétricaux/Néonatauxde base
+  credits: 1
+  hours: 15
+- code: SFM125-EC3
+  teachingUnitCode: SFM125
+  title: Hygiène et assainissement
+  credits: 1
+  hours: 15
+- code: SFM125-EC4
+  teachingUnitCode: SFM125
+  title: Secourisme
+  credits: 1
+  hours: 15
+- code: SFM126-EC1
+  teachingUnitCode: SFM126
+  title: Activités
+  credits: 6
+  hours: 90
+- code: SFM127-EC1
+  teachingUnitCode: SFM127
+  title: Démarche des soins
+  credits: 1
+  hours: 15
+- code: SFM127-EC2
+  teachingUnitCode: SFM127
+  title: Genre
+  credits: 1
+  hours: 15
+- code: SFM127-EC3
+  teachingUnitCode: SFM127
+  title: Droits humains
+  credits: 1
+  hours: 15
+- code: SFM231-EC1
+  teachingUnitCode: SFM231
+  title: Autres variétés d’accouchement
+  credits: 2
+  hours: 30
+- code: SFM232-EC1
+  teachingUnitCode: SFM232
+  title: Dystocies
+  credits: 2
+  hours: 30
+- code: SFM232-EC2
+  teachingUnitCode: SFM232
+  title: Pathologies obstétricales
+  credits: 3
+  hours: 45
+- code: SFM232-EC3
+  teachingUnitCode: SFM232
+  title: Complications obstétricales
+  credits: 2
+  hours: 30
+- code: SFM233-EC1
+  teachingUnitCode: SFM233
+  title: Méthodes de la recherche
+  credits: 1
+  hours: 15
+- code: SFM233-EC2
+  teachingUnitCode: SFM233
+  title: Statistique
+  credits: 2
+  hours: 30
+- code: SFM233-EC3
+  teachingUnitCode: SFM233
+  title: Soins infirmiers avancés
+  credits: 1
+  hours: 15
+- code: SFM234-EC1
+  teachingUnitCode: SFM234
+  title: Épidémiologie
+  credits: 1
+  hours: 15
+- code: SFM234-EC2
+  teachingUnitCode: SFM234
+  title: Démographie
+  credits: 1
+  hours: 15
+- code: SFM234-EC3
+  teachingUnitCode: SFM234
+  title: Santé communautaire
+  credits: 1
+  hours: 15
+- code: SFM235-EC1
+  teachingUnitCode: SFM235
+  title: Pédiatrie
+  credits: 2
+  hours: 30
+- code: SFM235-EC2
+  teachingUnitCode: SFM235
+  title: Vaccination
+  credits: 1
+  hours: 15
+- code: SFM235-EC3
+  teachingUnitCode: SFM235
+  title: Techniques avancées en obstétrique
+  credits: 2
+  hours: 30
+- code: SFM236-EC1
+  teachingUnitCode: SFM236
+  title: Stage communautaire
+  credits: 6
+  hours: 90
+- code: SFM241-EC1
+  teachingUnitCode: SFM241
+  title: Gynécologie
+  credits: 2
+  hours: 30
+- code: SFM241-EC2
+  teachingUnitCode: SFM241
+  title: Soins obstétricaux
+  credits: 2
+  hours: 30
+- code: SFM242-EC1
+  teachingUnitCode: SFM242
+  title: Pédiatrie/Néonatologie/pathologies nouveau-né
+  credits: 3
+  hours: 45
+- code: SFM242-EC2
+  teachingUnitCode: SFM242
+  title: Pathologies gynécologiques
+  credits: 2
+  hours: 30
+- code: SFM243-EC1
+  teachingUnitCode: SFM243
+  title: Analgésique en obstétrique
+  credits: 2
+  hours: 30
+- code: SFM243-EC2
+  teachingUnitCode: SFM243
+  title: Communication
+  credits: 2
+  hours: 30
+- code: SFM244-EC1
+  teachingUnitCode: SFM244
+  title: PTME
+  credits: 2
+  hours: 30
+- code: SFM244-EC2
+  teachingUnitCode: SFM244
+  title: IST/SIDA
+  credits: 2
+  hours: 30
+- code: SFM245-EC1
+  teachingUnitCode: SFM245
+  title: Pathologies obstétricales
+  credits: 4
+  hours: 60
+- code: SFM246-EC1
+  teachingUnitCode: SFM246
+  title: Activités
+  credits: 6
+  hours: 90
+- code: SFM247-EC1
+  teachingUnitCode: SFM247
+  title: Planification familiale
+  credits: 2
+  hours: 30
+- code: SFM247-EC2
+  teachingUnitCode: SFM247
+  title: Initiation à la recherche
+  credits: 1
+  hours: 15
+- code: SFM351-EC1
+  teachingUnitCode: SFM351
+  title: Anthropologie
+  credits: 1
+  hours: 15
+- code: SFM351-EC2
+  teachingUnitCode: SFM351
+  title: Santé génésique et droit sexuel
+  credits: 2
+  hours: 30
+- code: SFM351-EC3
+  teachingUnitCode: SFM351
+  title: Toxicologie
+  credits: 1
+  hours: 15
+- code: SFM352-EC1
+  teachingUnitCode: SFM352
+  title: Anesthésiologie
+  credits: 2
+  hours: 30
+- code: SFM352-EC2
+  teachingUnitCode: SFM352
+  title: Réanimation
+  credits: 2
+  hours: 30
+- code: SFM352-EC3
+  teachingUnitCode: SFM352
+  title: Infertilité/Infécondité
+  credits: 1
+  hours: 15
+- code: SFM353-EC1
+  teachingUnitCode: SFM353
+  title: Association grossesse et pathologie PEG
+  credits: 2
+  hours: 30
+- code: SFM354-EC1
+  teachingUnitCode: SFM354
+  title: Gynécologie et pathologies gynécologiques
+  credits: 1
+  hours: 15
+- code: SFM355-EC1
+  teachingUnitCode: SFM355
+  title: Urgences obstétricales et néonatales
+  credits: 1
+  hours: 15
+- code: SFM356-EC1
+  teachingUnitCode: SFM356
+  title: Mise en situation maternité
+  credits: 6
+  hours: 90
+- code: SFM356-EC2
+  teachingUnitCode: SFM356
+  title: Stage communautaire
+  credits: 6
+  hours: 90
+- code: SFM357-EC1
+  teachingUnitCode: SFM357
+  title: Éducation civique et éthique
+  credits: 2
+  hours: 30
+- code: SFM357-EC2
+  teachingUnitCode: SFM357
+  title: Formation bilingue
+  credits: 1
+  hours: 15
+- code: SFM361-EC1
+  teachingUnitCode: SFM361
+  title: Gérontologie/Psychiatrie
+  credits: 3
+  hours: 45
+- code: SFM361-EC2
+  teachingUnitCode: SFM361
+  title: Rédaction administrative
+  credits: 1
+  hours: 15
+- code: SFM361-EC3
+  teachingUnitCode: SFM361
+  title: Psychiatrie/Psychopathologie
+  credits: 2
+  hours: 30
+- code: SFM362-EC1
+  teachingUnitCode: SFM362
+  title: Imagerie médicale
+  credits: 1
+  hours: 15
+- code: SFM362-EC2
+  teachingUnitCode: SFM362
+  title: Assurance qualité
+  credits: 1
+  hours: 15
+- code: SFM362-EC3
+  teachingUnitCode: SFM362
+  title: Entreprenariat
+  credits: 1
+  hours: 15
+- code: SFM363-EC1
+  teachingUnitCode: SFM363
+  title: Économie de la santé
+  credits: 2
+  hours: 30
+- code: SFM363-EC2
+  teachingUnitCode: SFM363
+  title: Rédaction de mémoire
+  credits: 1
+  hours: 15
+- code: SFM364-EC1
+  teachingUnitCode: SFM364
+  title: PCIME
+  credits: 3
+  hours: 45
+- code: SFM365-EC1
+  teachingUnitCode: SFM365
+  title: Suivi du travail et manœuvre obstétricales
+  credits: 2
+  hours: 30
+- code: SFM366-EC1
+  teachingUnitCode: SFM366
+  title: MSP Maternité
+  credits: 5
+  hours: 75
+- code: SFM366-EC2
+  teachingUnitCode: SFM366
+  title: MSP pédiatrie
+  credits: 5
+  hours: 75
+- code: SFM367-EC1
+  teachingUnitCode: SFM367
+  title: Anglais médical/Français médical
+  credits: 2
+  hours: 30
+- code: SFM367-EC2
+  teachingUnitCode: SFM367
+  title: Techniques de l’information et de la communication
+  credits: 2
+  hours: 30

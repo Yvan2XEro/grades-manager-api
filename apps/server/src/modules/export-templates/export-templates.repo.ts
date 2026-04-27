@@ -59,26 +59,36 @@ export async function findTemplatesByInstitution(
 export async function findDefaultTemplate(
 	institutionId: string,
 	type: ExportTemplateType,
+	variant?: "standard" | "center",
 ): Promise<ExportTemplate | undefined> {
+	const conditions = [
+		eq(schema.exportTemplates.institutionId, institutionId),
+		eq(schema.exportTemplates.type, type),
+		eq(schema.exportTemplates.isDefault, true),
+	];
+	if (variant) {
+		conditions.push(eq(schema.exportTemplates.variant, variant));
+	}
 	return await db.query.exportTemplates.findFirst({
-		where: and(
-			eq(schema.exportTemplates.institutionId, institutionId),
-			eq(schema.exportTemplates.type, type),
-			eq(schema.exportTemplates.isDefault, true),
-		),
+		where: and(...conditions),
 	});
 }
 
 export async function findSystemDefaultTemplate(
 	institutionId: string,
 	type: ExportTemplateType,
+	variant?: "standard" | "center",
 ): Promise<ExportTemplate | undefined> {
+	const conditions = [
+		eq(schema.exportTemplates.institutionId, institutionId),
+		eq(schema.exportTemplates.type, type),
+		eq(schema.exportTemplates.isSystemDefault, true),
+	];
+	if (variant) {
+		conditions.push(eq(schema.exportTemplates.variant, variant));
+	}
 	return await db.query.exportTemplates.findFirst({
-		where: and(
-			eq(schema.exportTemplates.institutionId, institutionId),
-			eq(schema.exportTemplates.type, type),
-			eq(schema.exportTemplates.isSystemDefault, true),
-		),
+		where: and(...conditions),
 	});
 }
 

@@ -320,22 +320,38 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                
-                    <h1>CENTRE DE FORMATION PROFESSIONNELLE DE L’ESPOIR</h1>
-               
-                {{#if headerConfig.showLogo}}
-                <div class="logos">  
-                    <div class="logo-box">
-                        <img src="https://dgiamxjvly0ckpjx.public.blob.vercel-storage.com/cepres.png" alt="Logo Institut" style="max-width: 100px; max-height: 60px;">
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use teaching-unit-publication-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                 
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    Email du Centre: contact@cefpres.cm
-                    | Fax du Centre: +237 674936604 |
-                    BP du Centre: 9293 Douala
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                    </div>
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
+                    </div>
                 </div>
             </div>
 
@@ -398,7 +414,7 @@
                         <td class="moyenne-ue">{{formatNumber ueAverage}}</td>
                         <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                         <td>{{credits}}</td>
-                        <td>{{successRate}}%</td>
+                        <td>{{formatNumber successRate 2}}%</td>
                         <td class="moyenne-finale">{{formatNumber ueAverage}}</td>
                         <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                         <td>{{credits}}</td>
@@ -407,7 +423,7 @@
 
                     <tr class="stats-row">
                         <td colspan="100">
-                            <strong>Taux de Réussite (TR): {{globalSuccessRate}}%</strong>
+                            <strong>Taux de Réussite (TR): {{formatNumber globalSuccessRate 2}}%</strong>
                         </td>
                     </tr>
                 </tbody>

@@ -227,45 +227,38 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if headerConfig.showInstitutionName}}
-                    {{#if university_name_fr}}
-                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showFacultyName}}
-                    {{#if faculty_name_fr}}
-                    <h2>{{faculty_name_fr}}</h2>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showInstitutionName}}
-                <h2>{{name_fr}} / {{name_en}}</h2>
-                {{/if}}
-
-                {{#if headerConfig.showLogo}}
-                <div class="logos">
-                    {{#if university_logo_url}}
-                    <div class="logo-box">
-                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use deliberation-template-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                    {{#if logo_url}}
-                    <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
                     </div>
-                    {{else}}
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>INSTITUTION</div>
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}{{contact_email}}{{/if}}
-                    {{#if university_postal_box}}<br>BP: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}{{postal_box}}{{/if}}
                 </div>
             </div>
 
@@ -314,7 +307,7 @@
                 <tbody>
                     {{#each students}}
                     <tr>
-                        <td>{{rank}}</td>
+                        <td>{{formatNumber rank 2}}</td>
                         <td>{{registrationNumber}}</td>
                         <td class="student-name">{{lastName}} {{firstName}}</td>
 

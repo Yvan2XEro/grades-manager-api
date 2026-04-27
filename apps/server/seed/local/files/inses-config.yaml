@@ -1,0 +1,230 @@
+meta:
+  version: "2024.12"
+  generatedAt: 2024-12-22T00:00:00Z
+  dataset: inses
+organizations:
+  - slug: inses-institution
+    name: INSES - Institut Supérieur de l'Espoir
+examTypes:
+  - name: CC
+    description: Contrôle continu
+  - name: TP
+    description: Travaux pratiques
+  - name: TPE
+    description: Travaux pratiques encadrés
+  - name: FINAL
+    description: Examen final
+studyCycles:
+  - code: BTS
+    name: Brevet de Technicien Supérieur
+    facultyCode: INSES
+    description: Cycle de formation professionnelle de niveau bac+2 (secteur tertiaire,
+      industriel, commercial)
+    totalCreditsRequired: 120
+    durationYears: 2
+  - code: BTS-SANTE
+    name: Brevet de Technicien Supérieur en Santé
+    facultyCode: INSES
+    description: Cycle de formation professionnelle de niveau bac+3 dédié aux filières
+      Études médico-sanitaires (EMS) et Sciences et techniques biomédicales (STBM)
+      conformément au programme national MINESUP (Volume 6)
+    totalCreditsRequired: 180
+    durationYears: 3
+  - code: HND
+    name: Higher National Diploma
+    facultyCode: INSES
+    description: Cycle de formation professionnelle de niveau bac+3 (système anglophone)
+    totalCreditsRequired: 180
+    durationYears: 3
+  - code: LP
+    name: Licence Professionnelle
+    facultyCode: INSES
+    description: Cycle de licence professionnelle
+    totalCreditsRequired: 180
+    durationYears: 3
+  - code: MP
+    name: Master Professionnel
+    facultyCode: INSES
+    description: Cycle de master professionnel
+    totalCreditsRequired: 120
+    durationYears: 2
+  - code: CQP
+    name: Certificat de Qualification Professionnelle
+    facultyCode: INSES
+    description: Certificat de qualification professionnelle
+    totalCreditsRequired: 60
+    durationYears: 1
+  - code: DQP
+    name: Diplôme de Qualification Professionnelle
+    facultyCode: INSES
+    description: Diplôme de qualification professionnelle
+    totalCreditsRequired: 60
+    durationYears: 1
+cycleLevels:
+  - code: BTS1
+    name: BTS 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: BTS
+    facultyCode: INSES
+  - code: BTS2
+    name: BTS 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: BTS
+    facultyCode: INSES
+  - code: BTS-SANTE1
+    name: BTS Santé 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: BTS-SANTE2
+    name: BTS Santé 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: BTS-SANTE3
+    name: BTS Santé 3ème année
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: BTS-SANTE
+    facultyCode: INSES
+  - code: HND1
+    name: HND 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: HND
+    facultyCode: INSES
+  - code: HND2
+    name: HND 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: HND
+    facultyCode: INSES
+  - code: HND3
+    name: HND 3ème année
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: HND
+    facultyCode: INSES
+  - code: LP1
+    name: Licence Pro 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: LP
+    facultyCode: INSES
+  - code: LP2
+    name: Licence Pro 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: LP
+    facultyCode: INSES
+  - code: LP3
+    name: Licence Pro 3ème année
+    orderIndex: 3
+    minCredits: 180
+    studyCycleCode: LP
+    facultyCode: INSES
+  - code: MP1
+    name: Master Pro 1ère année
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: MP
+    facultyCode: INSES
+  - code: MP2
+    name: Master Pro 2ème année
+    orderIndex: 2
+    minCredits: 120
+    studyCycleCode: MP
+    facultyCode: INSES
+  - code: CQP1
+    name: CQP/AQP
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: CQP
+    facultyCode: INSES
+  - code: DQP1
+    name: DQP/AQP
+    orderIndex: 1
+    minCredits: 60
+    studyCycleCode: DQP
+    facultyCode: INSES
+semesters:
+  - code: S1
+    name: Semestre 1
+    orderIndex: 1
+  - code: S2
+    name: Semestre 2
+    orderIndex: 2
+  - code: S3
+    name: Semestre 3
+    orderIndex: 3
+  - code: S4
+    name: Semestre 4
+    orderIndex: 4
+  - code: S5
+    name: Semestre 5
+    orderIndex: 5
+  - code: S6
+    name: Semestre 6
+    orderIndex: 6
+academicYears:
+  - code: AY-2025
+    name: 2025-2026
+    startDate: 2025-09-01
+    endDate: 2026-06-30
+    isActive: true
+  - code: AY-2024
+    name: 2024-2025
+    startDate: 2024-09-02
+    endDate: 2025-06-30
+    isActive: false
+registrationNumberFormats:
+  - name: INSES default format
+    description: INSES-{year}-XXXX (per program/year)
+    isActive: true
+    definition:
+      segments:
+        - kind: literal
+          value: INSES
+        - kind: literal
+          value: "-"
+        - kind: field
+          field: academicYearStartShort
+        - kind: literal
+          value: "-"
+        - kind: counter
+          width: 4
+          scope:
+            - program
+            - academicYear
+          start: 1
+institutions:
+  - code: INSES
+    type: main
+    shortName: INSES
+    nameFr: Institut Supérieur de l'Espoir
+    nameEn: Hope Higher Institute
+    legalNameFr: Institut Supérieur de l'Espoir
+    legalNameEn: Hope Higher Institute
+    sloganFr: Excellence, Innovation et Engagement
+    sloganEn: Excellence, Innovation and Commitment
+    descriptionFr: Établissement privé d'enseignement supérieur spécialisé dans la
+      formation des professionnels de santé et de commerce.
+    descriptionEn: Private higher education institution specialized in training
+      health and business professionals.
+    addressFr: Douala-Bonabéri, BP 12345 Douala, Cameroun
+    addressEn: Douala-Bonaberi, PO Box 12345 Douala, Cameroon
+    contactEmail: contact@inses.cm
+    contactPhone: +237 674 93 66 04
+    fax: +237 9293 2000
+    postalBox: BP 12345
+    website: https://univ-inses.com
+    logoUrl: https://univ-inses.com/images/logo/logo-inses.png
+    coverImageUrl: https://placehold.co/1200x400.png
+    defaultAcademicYearCode: AY-2025
+    registrationFormatName: INSES default format
+    timezone: Africa/Douala
+    organizationSlug: inses-institution

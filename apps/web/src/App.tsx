@@ -9,6 +9,7 @@ import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import ApiKeysManagement from "./pages/admin/ApiKeysManagement";
+import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
 import CenterDetail from "./pages/admin/CenterDetail";
@@ -213,6 +214,7 @@ function App() {
 							path="class-document-templates"
 							element={<ClassDocumentTemplates />}
 						/>
+						<Route path="document-batch" element={<BulkDocumentGeneration />} />
 						<Route path="student-promotion" element={<StudentManagement />} />
 						<Route path="graduation" element={<GraduatedStudents />} />
 						<Route path="rules" element={<RuleManagement />} />

@@ -1,0 +1,556 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-tph
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Techniques Pharmaceutiques (TPH)
+program:
+  code: TPH
+  nameFr: Techniques Pharmaceutiques
+  nameEn: Pharmaceutical Techniques
+  abbreviation: BTS-TPH
+  slug: techniques-pharmaceutiques
+  description: Former des techniciens en pharmacie hautement qualifiés, capables de participer à la conception, la fabrication,
+    l'administration et la conservation des médicaments sous la direction d'un pharmacien.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Techniques Pharmaceutiques
+  specialiteEn: Pharmaceutical Techniques
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Techniques Pharmaceutiques
+  diplomaTitleEn: Higher Technician Diploma — Pharmaceutical Techniques
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Techniques Pharmaceutiques
+  objective: Former des techniciens en pharmacie hautement qualifiés, capables de participer à la conception, la fabrication,
+    l'administration et la conservation des médicaments sous la direction d'un pharmacien.
+  careerOpportunities:
+  - Officines (pharmacies)
+  - Hôpitaux et pharmacies hospitalières
+  - Industrie pharmaceutique
+  - Grossistes répartiteurs
+  - ONG sanitaires
+  - Recherche
+  - Auto-emploi
+  note: Le document MINESUP original ne fournit pas de décomposition en Éléments Constitutifs (EC) pour cette spécialité.
+    Seules les UE sont listées.
+  noElementsConstitutifs: true
+teachingUnits:
+- code: TPH111
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie-Physiologie I, Biologie Cellulaire, Histologie, Embryologie
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH112
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: 'Microbiologie I : Bactériologie-Parasitologie'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH113
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Chimie générale et Biochimie
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+- code: TPH114
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sciences Sociale I : Sociologies Médicale, Anthropologie'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH115
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Introduction Aux Soins Infirmiers I : Généralités- Concepts-Histoire-Théories- Développement Humain'
+  hoursCM: 50
+  hoursTD: 25
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+- code: TPH116
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Hospitalier I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH117
+  programCode: TPH
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue, Techniques de l’information et de la communication I
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH121
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et Physiologie II
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH122
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie-Mycologie-Immunologie)
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH123
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Généralités sur les Soins Infirmiers II : Sciences Des Soins Infirmiers Et Premiers Soins'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH124
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sante Publique I : Epidémiologie-Démographie-Sante Environnement et Promotion de la Santé'
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH125
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins Infirmiers Médicaux I, Ethique Professionnelle et Déontologie
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH126
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage hospitalier II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH127
+  programCode: TPH
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Anglais et Français spécialisés,  Techniques de l’information et de la communication II
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH231
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Chimie physique I, Chimie organique I
+  hoursCM: 60
+  hoursTD: 13
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 75
+  credits: 5
+- code: TPH232
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: 'Chimie physique I : Pratique, Chimie organique I : Pratique'
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 35
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+- code: TPH233
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmaceutique I et Pharmacognosie I, Pharmaceutique I et Pharmacognosie I : Pratique'
+  hoursCM: 30
+  hoursTD: 10
+  hoursTP: 30
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+- code: TPH234
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmacologie clinique I, Pharmacologie clinique I : Pratique I'
+  hoursCM: 35
+  hoursTD: 15
+  hoursTP: 6
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+- code: TPH235
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Chimie pharmaceutique I, Chimie pharmaceutique I : Pratique'
+  hoursCM: 0
+  hoursTD: 9
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH236
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage hospitalier III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH237
+  programCode: TPH
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Formation bilingue, Techniques de l’information et de la communication III, Introduction à la Recherche Opérationnelle
+  hoursCM: 0
+  hoursTD: 4
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH241
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: 'Analyse Pharmaceutique I, Analyse Pharmaceutique I : Pratique, Chimie Organique II'
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH242
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Epidémiologie, Prophylaxie et Vaccinations
+  hoursCM: 0
+  hoursTD: 2
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH243
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pharmaceutique II et Pharmacognosie II
+  hoursCM: 0
+  hoursTD: 30
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH244
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmaceutique II et Pharmacognosie II : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH245
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: 'Pharmacologie Clinique II et Médecine Alternative, Pharmacologie Clinique II : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH246
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Hospitalier IV
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH247
+  programCode: TPH
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Recherche opérationnelle II, Biostatique I, Système d’information sanitaire
+  hoursCM: 20
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+- code: TPH351
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: 'Pratique de la Pharmacie communautaire et hospitalière Pratique de la Pharmacie communautaire et hospitalière :
+    Pratique, management de Pharmacie'
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH352
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: La Gestion des soins de sante
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH353
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmaceutique III et Pharmacognosie III, Pharmaceutique III et Pharmacognosie III : Pratique'
+  hoursCM: 40
+  hoursTD: 18
+  hoursTP: 30
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH354
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmacologie clinique III, Pharmacologie clinique III : Pratique'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH355
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie pharmaceutique III
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH356
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Hospitalier V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH357
+  programCode: TPH
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit de la Santé,  Médecine du Travail, Biostatistique II
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH361
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Biotechnologie pharmaceutique, Législation pharmaceutique
+  hoursCM: 40
+  hoursTD: 19
+  hoursTP: 43
+  hoursTPE: 3
+  hoursTotal: 105
+  credits: 7
+- code: TPH362
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie de la Santé
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+- code: TPH363
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmaceutique IV et Pharmacognosie IV, Pharmaceutique IV et Pharmacognosie IV : Pratique'
+  hoursCM: 40
+  hoursTD: 20
+  hoursTP: 28
+  hoursTPE: 2
+  hoursTotal: 90
+  credits: 6
+- code: TPH364
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: 'Pharmacologie clinique IV, Pharmacologie clinique IV :'
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH365
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie pharmaceutique IV
+  hoursCM: 0
+  hoursTD: 5
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+- code: TPH366
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Hospitalier VI
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: TPH367
+  programCode: TPH
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Education civique et éthique, Droit de la Sante, Projet de Recherche
+  hoursCM: 29
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3

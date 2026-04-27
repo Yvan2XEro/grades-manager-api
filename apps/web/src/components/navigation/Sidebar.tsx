@@ -203,6 +203,11 @@ const Sidebar: React.FC = () => {
 						icon: <FileText className={IC} />,
 						labelKey: "navigation.sidebar.admin.classDocumentTemplates",
 					},
+					{
+						to: "/admin/document-batch",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.documentBatch",
+					},
 				],
 			},
 			{

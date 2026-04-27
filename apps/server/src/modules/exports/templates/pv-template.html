@@ -321,76 +321,38 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if center}}
-                    {{#if center.administrativeInstances.length}}
-                    <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:30px;margin-bottom:6px;">
-                        {{#each center.administrativeInstances}}
-                            {{#if showOnTranscripts}}
-                            <div style="text-align:center;font-size:8px;line-height:1.2;">
-                                {{#if logoUrl}}<img src="{{logoUrl}}" alt="{{nameFr}}" style="max-height:50px;display:block;margin:0 auto 3px;">{{/if}}
-                                <div style="font-weight:bold">{{nameFr}}{{#if acronymFr}} ({{acronymFr}}){{/if}}</div>
-                                <div style="font-style:italic;color:#666">{{nameEn}}{{#if acronymEn}} ({{acronymEn}}){{/if}}</div>
-                            </div>
-                            {{/if}}
-                        {{/each}}
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use pv-template-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                    {{#if center.legalTexts.length}}
-                    <div style="font-size:8px;color:#555;margin-bottom:6px;text-align:left;line-height:1.4;">
-                        {{#each center.legalTexts}}
-                        <div>• {{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
-                        {{/each}}
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
                     </div>
-                    {{/if}}
-                    {{#if center.authorizationOrderFr}}
-                    <div style="font-size:9px;color:#444;font-style:italic;margin-bottom:4px;">
-                        {{center.authorizationOrderFr}}{{#if center.authorizationOrderEn}} / {{center.authorizationOrderEn}}{{/if}}
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                    <h2 style="margin-top:6px;">{{center.name}}{{#if center.nameEn}} / {{center.nameEn}}{{/if}}</h2>
-                {{else}}
-                    {{#if headerConfig.showInstitutionName}}
-                        {{#if university_name_fr}}
-                        <h1>{{university_name_fr}} / {{university_name_en}}</h1>
-                        {{/if}}
-                    {{/if}}
-                    {{#if headerConfig.showFacultyName}}
-                        {{#if faculty_name_fr}}
-                        <h2>{{faculty_name_fr}}</h2>
-                        {{/if}}
-                    {{/if}}
-                    {{#if headerConfig.showInstitutionName}}
-                    <h2>{{name_fr}} / {{name_en}}</h2>
-                    {{/if}}
-                {{/if}}
-
-                {{#if headerConfig.showLogo}}
-                <div class="logos">
-                    {{#if university_logo_url}}
-                    <div class="logo-box">
-                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
-                    </div>
-                    {{/if}}
-                    {{#if logo_url}}
-                    <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
-                    </div>
-                    {{else}}
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>INSTITUTION</div>
-                    </div>
-                    {{/if}}
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email Université / University: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institution: {{contact_email}}{{/if}}
-                    {{#if university_fax}}<br>Fax Université / University: {{university_fax}}{{/if}}
-                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institution: {{fax}}{{/if}}
-                    {{#if university_postal_box}}<br>BP Université / University PO Box: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP / PO Box Institution: {{postal_box}}{{/if}}
                 </div>
             </div>
 
@@ -459,7 +421,7 @@
                             <td class="moyenne-ue">{{formatNumber average}}</td>
                             <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                             <td>{{credits}}</td>
-                            <td>{{successRate}}%</td>
+                            <td>{{formatNumber successRate 2}}%</td>
                             <td class="moyenne-ue">{{formatNumber average}}</td>
                             <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                             <td>{{credits}}</td>
@@ -475,7 +437,7 @@
 
                     <tr class="taux-reussite-row">
                         <td colspan="1000" style="border-top: 2px solid #666;">
-                            <strong>Taux de Réussite / Success Rate (TR / SR): {{globalSuccessRate}}%</strong>
+                            <strong>Taux de Réussite / Success Rate (TR / SR): {{formatNumber globalSuccessRate 2}}%</strong>
                         </td>
                     </tr>
                 </tbody>

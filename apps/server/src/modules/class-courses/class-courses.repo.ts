@@ -157,6 +157,7 @@ export async function list(opts: {
 				with: {
 					program: {
 						columns: {
+							id: true,
 							name: true,
 						},
 					},
@@ -177,17 +178,26 @@ export async function list(opts: {
 	const classIds = Array.from(new Set(rows.map((row) => row.class)));
 
 	const examCountMap = new Map<string, number>();
+	const examTypesMap = new Map<string, string[]>();
 	if (classCourseIds.length > 0) {
-		const examCounts = await db
+		const examRows = await db
 			.select({
 				classCourseId: schema.exams.classCourse,
-				count: sql<number>`count(*)::int`,
+				type: schema.exams.type,
 			})
 			.from(schema.exams)
-			.where(inArray(schema.exams.classCourse, classCourseIds))
-			.groupBy(schema.exams.classCourse);
-		for (const row of examCounts) {
-			examCountMap.set(row.classCourseId, Number(row.count));
+			.where(inArray(schema.exams.classCourse, classCourseIds));
+		for (const row of examRows) {
+			examCountMap.set(
+				row.classCourseId,
+				(examCountMap.get(row.classCourseId) ?? 0) + 1,
+			);
+			const existing = examTypesMap.get(row.classCourseId);
+			if (existing) {
+				if (!existing.includes(row.type)) existing.push(row.type);
+			} else {
+				examTypesMap.set(row.classCourseId, [row.type]);
+			}
 		}
 	}
 
@@ -238,9 +248,11 @@ export async function list(opts: {
 		teacherFirstName: row.teacherRef?.firstName,
 		teacherLastName: row.teacherRef?.lastName,
 		className: row.classRef?.name ?? null,
+		programId: row.classRef?.program?.id ?? null,
 		programName: row.classRef?.program?.name ?? null,
 		studentCount: studentCountMap.get(row.class) ?? 0,
 		examCount: examCountMap.get(row.id) ?? 0,
+		examTypes: examTypesMap.get(row.id) ?? [],
 		gradesPosted: gradesPostedMap.get(row.id) ?? 0,
 		gradesExpected:
 			(studentCountMap.get(row.class) ?? 0) * (examCountMap.get(row.id) ?? 0),

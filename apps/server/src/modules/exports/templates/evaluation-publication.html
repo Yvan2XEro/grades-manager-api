@@ -319,38 +319,38 @@
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-            
-                    <h1>UNIVERSITE DE DOUALA / UNIVERSITY OF DOUALA</h1>
-                  
-                    <h2>FACULTE DE MEDECINE ET DES SCIENCES PHARMACEUTIQUES</h2>
-                  
-                <h2>{{name_fr}} / {{name_en}}</h2>
-               
-                {{#if headerConfig.showLogo}}
-                <div class="logos">
-                   
-                    <div class="logo-box">
-                        <img src="https://dgiamxjvly0ckpjx.public.blob.vercel-storage.com/logo-ud.png" alt="Logo Université" style="max-width: 100px; max-height: 60px;">
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use evaluation-publication-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    <div class="logo-box">
-                        <img src="https://dgiamxjvly0ckpjx.public.blob.vercel-storage.com/logo-fmsp.png" alt="Logo faculté" style="max-width: 100px; max-height: 40px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
                     </div>
-                
-                    {{#if logo_url}}
-                    <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 60px;">
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email Université: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institut: {{contact_email}}{{/if}}
-                    {{#if university_fax}}<br>Fax Université: {{university_fax}}{{/if}}
-                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institut: {{fax}}{{/if}}
-                    {{#if university_postal_box}}<br>BP Université: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP Institut: {{postal_box}}{{/if}}
                 </div>
             </div>
 

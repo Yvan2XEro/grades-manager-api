@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { exportTemplateTypes } from "../../db/schema/app-schema";
 
 export const exportTemplateAssignmentSchema = z.object({
-	templateType: z.enum(["pv", "evaluation", "ue", "deliberation"]),
+	templateType: z.enum(exportTemplateTypes),
 	templateId: z.string().min(1),
 });
 
@@ -56,4 +57,10 @@ export const searchSchema = z.object({
 export const cloneCurriculumSchema = z.object({
 	targetProgramId: z.string(),
 	sourceProgramId: z.string(),
+});
+
+export const duplicateForCyclesSchema = z.object({
+	sourceProgramIds: z.array(z.string().min(1)).min(1),
+	targetCycleIds: z.array(z.string().min(1)).min(1),
+	cloneCurriculum: z.boolean().optional().default(true),
 });

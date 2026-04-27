@@ -8,7 +8,7 @@ import {
 	tenantProcedure,
 } from "../../lib/trpc";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
-import { loadTemplate } from "../exports/template-helper";
+import { loadTemplate, type TemplateVariant } from "../exports/template-helper";
 import {
 	getDefaultTheme,
 	isDocumentThemeKind,
@@ -18,62 +18,145 @@ import { getDefaultThemePayload } from "../exports/themes/presets-payload";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
 
-// All 7 export-template types — academic documents (diploma/transcript/
-// attestation) carry a full theme schema, the four other types (pv,
-// evaluation, ue, deliberation) ship a static HTML body without a custom
-// theme payload.
+// System-default templates created by `seedSystemDefaults`.
+//
+// Each entry can declare a `variant` to choose between:
+//   - `"standard"` — header with institution + tutelle (faculty + university +
+//     ministry). Used for programs without a `centerId`.
+//   - `"center"`   — header with institution + center data only (no tutelle).
+//     Used for programs attached to a center (`programs.centerId`).
+//
+// At seed time we create both variants for the 4 student-facing kinds
+// (student_list, diploma, transcript, attestation) so admins can pick
+// the right one per program/class without editing HTML.
 const SYSTEM_TEMPLATES: ReadonlyArray<{
 	type: ExportTemplateType;
+	variant?: TemplateVariant;
 	name: string;
 	description: string;
 }> = [
+	// Standard variants
 	{
 		type: "student_list",
+		variant: "standard",
 		name: "Liste d'étudiants — Modèle officiel",
 		description:
 			"Liste/roster d'étudiants par classe, programme ou année. Colonnes configurables (matricule, genre, date de naissance, classe, etc.).",
 	},
 	{
 		type: "diploma",
+		variant: "standard",
 		name: "Diplôme — Modèle officiel",
 		description:
 			"Modèle officiel de diplôme inspiré du modèle DIPLOMATION (FMSP/UDo). Format A4 paysage, bilingue FR/EN.",
 	},
 	{
 		type: "transcript",
+		variant: "standard",
 		name: "Relevé de notes — Modèle officiel",
 		description:
 			"Relevé de notes officiel avec notes par UE/EC et mention. Format A4 portrait, bilingue.",
 	},
 	{
 		type: "attestation",
+		variant: "standard",
 		name: "Attestation — Modèle officiel",
 		description:
 			"Attestation de réussite avec résultats résumés. Format A4 portrait, bilingue.",
 	},
+	// Center variants — same kinds, but the header carries only institution +
+	// center data (admin instances + legal text + center logo). Pick these
+	// when a program is attached to a center.
+	{
+		type: "student_list",
+		variant: "center",
+		name: "Liste d'étudiants — Modèle Centre",
+		description:
+			"Variante CENTRE : utilise les informations du centre (table centers) au lieu des tutelles (faculté/université).",
+	},
+	{
+		type: "diploma",
+		variant: "center",
+		name: "Diplôme — Modèle Centre",
+		description:
+			"Variante CENTRE pour les programmes rattachés à un centre. En-tête simplifié sans tutelle, données du centre intégrées.",
+	},
+	{
+		type: "transcript",
+		variant: "center",
+		name: "Relevé de notes — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + centre, sans faculté ni université de tutelle.",
+	},
+	{
+		type: "attestation",
+		variant: "center",
+		name: "Attestation — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + centre, signataire = directeur du centre.",
+	},
+	// PV / Évaluation / UE / Délibération — standard variants.
 	{
 		type: "pv",
+		variant: "standard",
 		name: "Procès-verbal — Modèle officiel",
 		description:
 			"Procès-verbal de délibération de jury. Liste des étudiants avec décisions, mentions et signatures.",
 	},
 	{
 		type: "evaluation",
+		variant: "standard",
 		name: "Publication d'évaluation — Modèle officiel",
 		description:
 			"Publication des résultats d'une évaluation (CC, TP, examen) — par classe et par cours.",
 	},
 	{
 		type: "ue",
+		variant: "standard",
 		name: "Publication d'UE — Modèle officiel",
 		description:
 			"Publication des résultats par unité d'enseignement (moyennes UE, décisions par UE).",
 	},
 	{
 		type: "deliberation",
+		variant: "standard",
 		name: "Délibération — Modèle officiel",
 		description:
 			"Document de délibération détaillé : résultats par étudiant, décisions, mentions, statistiques.",
+	},
+	// PV / Évaluation / UE / Délibération — center variants.
+	// They reuse the same HTML body as the standard variants — those templates
+	// already carry an `{{#if center}}…{{else}}…{{/if}}` branch in the header,
+	// and `exports.service.renderTemplate` injects the center payload into the
+	// Handlebars context. Marking these records `variant: "center"` only
+	// changes how the program form filters them.
+	{
+		type: "pv",
+		variant: "center",
+		name: "Procès-verbal — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
+	},
+	{
+		type: "evaluation",
+		variant: "center",
+		name: "Publication d'évaluation — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
+	},
+	{
+		type: "ue",
+		variant: "center",
+		name: "Publication d'UE — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
+	},
+	{
+		type: "deliberation",
+		variant: "center",
+		name: "Délibération — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
 	},
 ];
 
@@ -114,6 +197,7 @@ export const academicDocumentsRouter = router({
 					.toISOString()
 					.slice(0, 10)}.${ext}`,
 				mimeType: result.mimeType,
+				usedTemplate: result.usedTemplate,
 			};
 		}),
 
@@ -187,62 +271,98 @@ export const academicDocumentsRouter = router({
 			});
 		}
 
+		// Look up the institution.type once — used to pick the right standard
+		// transcript/attestation template (IPES vs Faculté) at seed time.
+		const { db } = await import("../../db");
+		const schema = await import("../../db/schema/app-schema");
+		const { eq } = await import("drizzle-orm");
+		const [institutionRow] = await db
+			.select({ type: schema.institutions.type })
+			.from(schema.institutions)
+			.where(eq(schema.institutions.id, ctx.institution.id))
+			.limit(1);
+		const establishmentType = (institutionRow?.type ?? "institution") as
+			| "institution"
+			| "faculty"
+			| "university";
+
 		const created: string[] = [];
 		const skipped: string[] = [];
+		const failed: Array<{ type: string; reason: string }> = [];
 		for (const def of SYSTEM_TEMPLATES) {
-			// Skip if a template with the same name already exists for this
-			// institution+type.
-			const list = await expoTplRepo.findTemplatesByInstitution(
-				ctx.institution.id,
-				def.type,
-				undefined,
-				undefined,
-				100,
-			);
-			const exists = list.items.some((t) => t.name === def.name);
-			if (exists) {
-				skipped.push(def.type);
-				continue;
-			}
-
-			// Only academic-document types (diploma/transcript/attestation) carry
-			// a structured theme payload. Other types ship without one.
-			const themeDefaults: Record<string, unknown> = isDocumentThemeKind(
-				def.type,
-			)
-				? getDefaultThemePayload(def.type as ThemeKind)
-				: {};
-
-			await expoTplRepo.createTemplate({
-				institutionId: ctx.institution.id,
-				name: def.name,
-				type: def.type,
-				isDefault: true,
-				isSystemDefault: true,
-				description: def.description,
-				templateBody: loadTemplate(def.type),
-				themeDefaults,
-				createdBy: userId,
-				updatedBy: userId,
-			});
-
-			// Make it the institution default for that type.
-			const justCreated = await expoTplRepo.findTemplatesByInstitution(
-				ctx.institution.id,
-				def.type,
-				true,
-				undefined,
-				1,
-			);
-			if (justCreated.items[0]) {
-				await expoTplRepo.setDefaultTemplate(
+			const label = `${def.type}${def.variant === "center" ? " (centre)" : ""}`;
+			try {
+				// Skip if a template with the same name already exists for this
+				// institution+type.
+				const list = await expoTplRepo.findTemplatesByInstitution(
 					ctx.institution.id,
-					justCreated.items[0].id,
 					def.type,
+					undefined,
+					undefined,
+					100,
 				);
+				const exists = list.items.some((t) => t.name === def.name);
+				if (exists) {
+					skipped.push(label);
+					continue;
+				}
+
+				// Only academic-document types carry a structured theme payload.
+				const themeDefaults: Record<string, unknown> = isDocumentThemeKind(
+					def.type,
+				)
+					? getDefaultThemePayload(def.type as ThemeKind)
+					: {};
+
+				// Only the "standard" variant is marked as institution default —
+				// center variants are alternatives admins assign per program/class.
+				const isStandard = (def.variant ?? "standard") === "standard";
+
+				await expoTplRepo.createTemplate({
+					institutionId: ctx.institution.id,
+					name: def.name,
+					type: def.type,
+					isDefault: isStandard,
+					isSystemDefault: true,
+					variant: def.variant ?? "standard",
+					description: def.description,
+					templateBody: loadTemplate(
+						def.type,
+						def.variant ?? "standard",
+						// Only relevant for the standard transcript/attestation —
+						// loadTemplate ignores it for other types/variants.
+						establishmentType,
+					),
+					themeDefaults,
+					createdBy: userId,
+					updatedBy: userId,
+				});
+
+				if (isStandard) {
+					const justCreated = await expoTplRepo.findTemplatesByInstitution(
+						ctx.institution.id,
+						def.type,
+						true,
+						undefined,
+						1,
+					);
+					if (justCreated.items[0]) {
+						await expoTplRepo.setDefaultTemplate(
+							ctx.institution.id,
+							justCreated.items[0].id,
+							def.type,
+						);
+					}
+				}
+				created.push(label);
+			} catch (err) {
+				const reason = err instanceof Error ? err.message : String(err);
+				console.error(
+					`[seedSystemDefaults] failed to seed ${label}: ${reason}`,
+				);
+				failed.push({ type: label, reason });
 			}
-			created.push(def.type);
 		}
-		return { created, skipped };
+		return { created, skipped, failed };
 	}),
 });

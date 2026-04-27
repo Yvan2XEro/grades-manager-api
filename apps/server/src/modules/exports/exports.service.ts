@@ -3,6 +3,7 @@ import Handlebars from "handlebars";
 import puppeteer from "puppeteer";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
+import { loadTutelleChain } from "../academic-documents/academic-documents.repo";
 import type { DiplomationExportData } from "../deliberations/deliberations.types";
 import { ExportsRepo } from "./exports.repo";
 import type {
@@ -21,10 +22,12 @@ import {
 	getObservation,
 	loadExportConfig,
 	loadTemplate,
+	logoHelper,
 	resolveStudentGradesWithRetakes,
 } from "./template-helper";
 import {
 	loadExportTemplate,
+	loadFirstCenterForInstitution,
 	type TemplateConfiguration,
 } from "./template-loader";
 
@@ -91,6 +94,104 @@ const COURSE_CATALOG_TEMPLATE = `<!DOCTYPE html>
 </body>
 </html>`;
 
+/** Bilingual tutelle header context shared by every PV/EC/UE/deliberation
+ * template. Mirrors the shape consumed by the modern transcript / attestation
+ * templates so the same Handlebars `{{country.fr}}…{{logos.faculty}}` partials
+ * work everywhere. */
+type HeaderContext = {
+	country: { fr: string; en: string; mottoFr: string; mottoEn: string };
+	ministry: { fr: string; en: string };
+	university: { fr: string; en: string };
+	faculty: { fr: string; en: string };
+	institutionHeader: {
+		id: string | undefined;
+		nameFr: string;
+		nameEn: string;
+		abbreviation: string;
+		contactEmail: string;
+		postalBox: string;
+		addressFr: string;
+		addressEn: string;
+		watermarkLogoUrl: string | null;
+		watermarkLogoSvg: string | null;
+	};
+	logos: {
+		institution: string | null;
+		institutionSvg: string | null;
+		faculty: string | null;
+		facultySvg: string | null;
+		university: string | null;
+		universitySvg: string | null;
+		ministry: string | null;
+		ministrySvg: string | null;
+	};
+};
+
+/**
+ * Sample center used when previewing `*-center.html` templates without a
+ * real student/program. Mirrors the shape returned by `loadCenterByClass` so
+ * the preview can exercise admin instances, legal texts and the authorization
+ * order block.
+ */
+function buildSampleCenter() {
+	return {
+		id: "demo-center",
+		code: "DEMO",
+		name: "CENTRE DE FORMATION DE DÉMONSTRATION",
+		nameEn: "DEMONSTRATION TRAINING CENTER",
+		shortName: "DEMO-CTR",
+		city: "Douala",
+		country: "Cameroun",
+		postalBox: "9293 Douala",
+		contactEmail: "demo@center.cm",
+		contactPhone: "+237 6XX XX XX XX",
+		logoUrl: null as string | null,
+		logoSvg: null as string | null,
+		adminInstanceLogoUrl: null as string | null,
+		adminInstanceLogoSvg: null as string | null,
+		watermarkLogoUrl: null as string | null,
+		watermarkLogoSvg: null as string | null,
+		authorizationOrderFr:
+			"Arrêté N° 160 /MINEFOP/SG/DFOP/SDGSF/SACD du 09 avril 2014",
+		authorizationOrderEn:
+			"Order No. 160 /MINEFOP/SG/DFOP/SDGSF/SACD of April 9, 2014",
+		administrativeInstances: [
+			{
+				nameFr: "MINISTÈRE DE L'EMPLOI ET DE LA FORMATION PROFESSIONNELLE",
+				nameEn: "MINISTRY OF EMPLOYMENT AND VOCATIONAL TRAINING",
+				acronymFr: "MINEFOP",
+				acronymEn: "MINEFOP",
+				logoUrl: null as string | null,
+				logoSvg: null as string | null,
+				showOnTranscripts: true,
+				showOnCertificates: true,
+			},
+			{
+				nameFr: "Délégation Régionale du Littoral",
+				nameEn: "Regional Delegation of the Coast",
+				acronymFr: "DRL",
+				acronymEn: "RDC",
+				logoUrl: null as string | null,
+				logoSvg: null as string | null,
+				showOnTranscripts: true,
+				showOnCertificates: true,
+			},
+		],
+		legalTexts: [
+			{
+				textFr: "Vu la loi N°92/007 du 14 août 1992 portant code du travail",
+				textEn: "Mindful of law N°92/007 of 14 august 1992 on the labour code",
+			},
+			{
+				textFr:
+					"Vu le décret n°79/201 du 28 mai 1979 portant organisation et fonctionnement des Centres de Formation Professionnelle Rapide",
+				textEn:
+					"Mindful of law N°79/201 of 28 may 1979 on the organization and functioning of intensive and vocational training",
+			},
+		],
+	};
+}
+
 /**
  * Service for generating grade exports (PDFs and HTML previews)
  */
@@ -149,6 +250,13 @@ export class ExportsService {
 			Number(b) === 0 ? 0 : Number(a) / Number(b),
 		);
 		Handlebars.registerHelper("abs", (a) => Math.abs(Number(a)));
+		Handlebars.registerHelper("mod", (a, b) => Number(a) % Number(b));
+		Handlebars.registerHelper("upper", (a) => String(a ?? "").toUpperCase());
+		Handlebars.registerHelper("lower", (a) => String(a ?? "").toLowerCase());
+		Handlebars.registerHelper("or", (...args: unknown[]) =>
+			args.slice(0, -1).some((v) => Boolean(v)),
+		);
+		Handlebars.registerHelper("logo", logoHelper);
 	}
 
 	/** Return the parent class_course of an exam (for eligibility checks) */
@@ -210,7 +318,7 @@ export class ExportsService {
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate("pv", templateData, templateConfig);
+		const html = await this.renderTemplate("pv", templateData, templateConfig);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
@@ -253,7 +361,7 @@ export class ExportsService {
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate(
+		const html = await this.renderTemplate(
 			"evaluation",
 			templateData,
 			templateConfig,
@@ -305,7 +413,7 @@ export class ExportsService {
 		);
 
 		// Generate HTML
-		const html = this.renderTemplate("ue", templateData, templateConfig);
+		const html = await this.renderTemplate("ue", templateData, templateConfig);
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
@@ -343,7 +451,7 @@ export class ExportsService {
 			templateConfig,
 		);
 
-		const html = this.renderTemplate(
+		const html = await this.renderTemplate(
 			"deliberation",
 			templateData,
 			templateConfig,
@@ -521,13 +629,18 @@ export class ExportsService {
 
 		const config = await this.getConfig();
 		const baseConfig = await loadExportTemplate(this.institutionId, input.type);
-		const templateConfig: TemplateConfiguration = {
+		// Use the institution's real first active center so the editor preview
+		// reflects the actual data the user will see in production. Falls back
+		// to a stub center when the institution has none configured yet.
+		const realCenter = await loadFirstCenterForInstitution(this.institutionId);
+		const templateConfig: TemplateConfiguration & { center?: unknown } = {
 			templateBody: input.templateBody,
 			headerConfig: baseConfig.headerConfig,
 			styleConfig: baseConfig.styleConfig,
+			center: realCenter ?? buildSampleCenter(),
 		};
 		const sampleData = this.getSampleData(input.type, config);
-		return this.renderTemplate(input.type, sampleData, templateConfig);
+		return await this.renderTemplate(input.type, sampleData, templateConfig);
 	}
 
 	/**
@@ -987,19 +1100,80 @@ export class ExportsService {
 	}
 
 	/**
+	 * Build the bilingual tutelle header context (Pays → Ministère → Université
+	 * → Faculté → Institut) consumed by every export template. Cached per
+	 * service instance so we hit the DB only once per request.
+	 */
+	private headerContextCache: HeaderContext | null = null;
+	private async buildHeaderContext(): Promise<HeaderContext> {
+		if (this.headerContextCache) return this.headerContextCache;
+		const institution = await this.repo.getInstitution();
+		const chain = await loadTutelleChain(this.institutionId);
+		const supervisingUniversity =
+			chain.find((i) => i.type === "university") ?? null;
+		const supervisingFaculty = chain.find((i) => i.type === "faculty") ?? null;
+		this.headerContextCache = {
+			country: {
+				fr: "REPUBLIQUE DU CAMEROUN",
+				en: "REPUBLIC OF CAMEROON",
+				mottoFr: "Paix-Travail-Patrie",
+				mottoEn: "Peace-Work-Fatherland",
+			},
+			ministry: {
+				fr: "MINISTERE DE L'ENSEIGNEMENT SUPERIEUR",
+				en: "MINISTRY OF HIGHER EDUCATION",
+			},
+			university: {
+				fr: supervisingUniversity?.nameFr ?? "",
+				en: supervisingUniversity?.nameEn ?? "",
+			},
+			faculty: {
+				fr: supervisingFaculty?.nameFr ?? "",
+				en: supervisingFaculty?.nameEn ?? "",
+			},
+			institutionHeader: {
+				id: institution?.id,
+				nameFr: institution?.nameFr ?? "",
+				nameEn: institution?.nameEn ?? "",
+				abbreviation: institution?.abbreviation ?? "",
+				contactEmail: institution?.contactEmail ?? "",
+				postalBox: institution?.postalBox ?? "",
+				addressFr: institution?.addressFr ?? "",
+				addressEn: institution?.addressEn ?? "",
+				watermarkLogoUrl: institution?.logoUrl ?? null,
+				watermarkLogoSvg: institution?.logoSvg ?? null,
+			},
+			logos: {
+				institution: institution?.logoUrl ?? null,
+				institutionSvg: institution?.logoSvg ?? null,
+				faculty: supervisingFaculty?.logoUrl ?? null,
+				facultySvg: supervisingFaculty?.logoSvg ?? null,
+				university: supervisingUniversity?.logoUrl ?? null,
+				universitySvg: supervisingUniversity?.logoSvg ?? null,
+				ministry: null as string | null,
+				ministrySvg: null as string | null,
+			},
+		};
+		return this.headerContextCache;
+	}
+
+	/**
 	 * Render template with data using Handlebars
 	 */
-	private renderTemplate(
+	private async renderTemplate(
 		templateName: "pv" | "evaluation" | "ue" | "deliberation",
 		data: any,
 		templateConfig: TemplateConfiguration & { center?: unknown },
-	): string {
+	): Promise<string> {
 		// Use custom template if provided, otherwise use default
 		const templateSource =
 			templateConfig.templateBody || loadTemplate(templateName);
 
+		const headerContext = await this.buildHeaderContext();
+
 		// Add template configuration to data
 		const enrichedData = {
+			...headerContext,
 			...data,
 			headerConfig: templateConfig.headerConfig,
 			styleConfig: templateConfig.styleConfig,

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { normalizeCode, slugify } from "@/lib/strings";
@@ -142,6 +142,13 @@ export async function cloneCurriculum(
 			message: "Source program not found",
 		});
 
+	return cloneCurriculumInternal(sourceProgramId, targetProgramId);
+}
+
+async function cloneCurriculumInternal(
+	sourceProgramId: string,
+	targetProgramId: string,
+) {
 	const sourceUnits = await db.query.teachingUnits.findMany({
 		where: eq(schema.teachingUnits.programId, sourceProgramId),
 	});
@@ -188,4 +195,156 @@ export async function cloneCurriculum(
 	}
 
 	return { unitsCreated, coursesCreated };
+}
+
+async function buildUniqueCode(
+	baseCode: string,
+	institutionId: string,
+): Promise<string> {
+	let candidate = normalizeCode(baseCode);
+	let counter = 2;
+	while (await repo.findByCode(candidate, institutionId)) {
+		candidate = normalizeCode(`${baseCode}-${counter}`);
+		counter++;
+	}
+	return candidate;
+}
+
+async function buildUniqueName(
+	baseName: string,
+	institutionId: string,
+): Promise<string> {
+	let candidate = baseName;
+	let counter = 2;
+	const findByName = async (name: string) => {
+		const [row] = await db
+			.select({ id: schema.programs.id })
+			.from(schema.programs)
+			.where(
+				and(
+					eq(schema.programs.institutionId, institutionId),
+					eq(schema.programs.name, name),
+				),
+			)
+			.limit(1);
+		return row ?? null;
+	};
+	while (await findByName(candidate)) {
+		candidate = `${baseName} (${counter})`;
+		counter++;
+	}
+	return candidate;
+}
+
+export async function duplicateForCycles(
+	sourceProgramIds: string[],
+	targetCycleIds: string[],
+	institutionId: string,
+	options: { cloneCurriculum?: boolean } = {},
+) {
+	const cloneCurr = options.cloneCurriculum ?? true;
+
+	const cycles = await db.query.studyCycles.findMany({
+		where: and(
+			eq(schema.studyCycles.institutionId, institutionId),
+			inArray(schema.studyCycles.id, targetCycleIds),
+		),
+	});
+	if (cycles.length !== targetCycleIds.length) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "One or more target cycles not found",
+		});
+	}
+
+	const sources = await db.query.programs.findMany({
+		where: and(
+			eq(schema.programs.institutionId, institutionId),
+			inArray(schema.programs.id, sourceProgramIds),
+		),
+	});
+	if (sources.length !== sourceProgramIds.length) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "One or more source programs not found",
+		});
+	}
+
+	const created: Array<{
+		id: string;
+		name: string;
+		code: string;
+		cycleId: string;
+		sourceProgramId: string;
+		unitsCreated: number;
+		coursesCreated: number;
+	}> = [];
+	const skipped: Array<{
+		sourceProgramId: string;
+		cycleId: string;
+		reason: string;
+	}> = [];
+
+	for (const cycle of cycles) {
+		for (const source of sources) {
+			if (source.cycleId && source.cycleId === cycle.id) {
+				skipped.push({
+					sourceProgramId: source.id,
+					cycleId: cycle.id,
+					reason: "Source program already on target cycle",
+				});
+				continue;
+			}
+			const baseCode = `${source.code}-${cycle.code}`;
+			const baseName = `${source.name} (${cycle.name})`;
+			const newCode = await buildUniqueCode(baseCode, institutionId);
+			const newName = await buildUniqueName(baseName, institutionId);
+			const newProgram = await createProgram(
+				{
+					code: newCode,
+					name: newName,
+					nameEn: source.nameEn ?? undefined,
+					abbreviation: source.abbreviation ?? undefined,
+					description: source.description ?? undefined,
+					domainFr: source.domainFr ?? undefined,
+					domainEn: source.domainEn ?? undefined,
+					specialiteFr: source.specialiteFr ?? undefined,
+					specialiteEn: source.specialiteEn ?? undefined,
+					diplomaTitleFr: source.diplomaTitleFr ?? undefined,
+					diplomaTitleEn: source.diplomaTitleEn ?? undefined,
+					attestationValidityFr: source.attestationValidityFr ?? undefined,
+					attestationValidityEn: source.attestationValidityEn ?? undefined,
+					cycleId: cycle.id,
+					centerId: source.centerId ?? undefined,
+					isCenterProgram: source.isCenterProgram ?? false,
+				},
+				institutionId,
+			);
+
+			let unitsCreated = 0;
+			let coursesCreated = 0;
+			if (cloneCurr) {
+				const result = await cloneCurriculumInternal(source.id, newProgram.id);
+				unitsCreated = result.unitsCreated;
+				coursesCreated = result.coursesCreated;
+			}
+
+			created.push({
+				id: newProgram.id,
+				name: newProgram.name,
+				code: newProgram.code,
+				cycleId: cycle.id,
+				sourceProgramId: source.id,
+				unitsCreated,
+				coursesCreated,
+			});
+		}
+	}
+
+	return {
+		createdCount: created.length,
+		skippedCount: skipped.length,
+		created,
+		skipped,
+	};
 }

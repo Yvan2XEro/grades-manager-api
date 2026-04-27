@@ -84,7 +84,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 .failing { color: {{theme.colors.failingGrade}}; font-weight: bold; }
 
 /* Grade scale + signatures */
-.grade-sign { display: flex; justify-content: space-between; align-items: flex-start; width: 96%; margin: 0 auto; gap: 20px; }
+.grade-sign { display: flex; justify-content: space-between; align-items: center; width: 96%; margin: 0 auto; gap: 20px; }
 .grade-scale { display: {{#if theme.display.showSemesterBreakdown}}block{{else}}none{{/if}}; font-size: {{theme.sizes.footer}}pt; width: 50%; }
 .grade-scale table { width: 100%; margin-bottom: 4px; }
 .grade-scale th, .grade-scale td { width: 30px; padding: 1px; border: 0.5px solid {{theme.colors.tableBorder}}; }
@@ -106,7 +106,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - RELEVÉ NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
 
 	<div class="watermark">
-		{{#if institution.watermarkLogoUrl}}<img src="{{institution.watermarkLogoUrl}}" alt="Watermark">{{/if}}
+		{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt="Watermark"}}}
 	</div>
 
 	<div class="header">
@@ -117,19 +117,19 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 					<em>{{country.mottoFr}}</em><br>
 					********************<br>
 					{{ministry.fr}}<br>
-					{{#if university.fr}}********************<br><strong>{{university.fr}}</strong><br>{{/if}}
-					{{#if faculty.fr}}********************<br><strong>{{faculty.fr}}</strong><br>{{/if}}
+					{{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+					{{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
 					********************<br>
-					<strong>{{institution.nameFr}}</strong>
+					<strong>{{upper institution.nameFr}}</strong>
 					{{#if institution.postalBox}}<br>********************<br>B.P. {{institution.postalBox}}{{/if}}
 					{{#if institution.contactEmail}}<br>Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>
 			</div>
 
 			<div class="header-logo-content">
-				<div>{{#if logos.university}}<img src="{{logos.university}}" alt="University Logo">{{/if}}</div>
-				<div>{{#if logos.faculty}}<img src="{{logos.faculty}}" alt="Faculty Logo">{{/if}}</div>
-				<div>{{#if logos.institution}}<img src="{{logos.institution}}" alt="Institution Logo">{{/if}}</div>
+				<div>{{{logo svg=logos.universitySvg url=logos.university alt="University Logo"}}}</div>
+				<div>{{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty Logo"}}}</div>
+				<div>{{{logo svg=logos.institutionSvg url=logos.institution alt="Institution Logo"}}}</div>
 			</div>
 
 			<div class="header-content">
@@ -138,10 +138,10 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 					<em>{{country.mottoEn}}</em><br>
 					********************<br>
 					{{ministry.en}}<br>
-					{{#if university.en}}********************<br><strong>{{university.en}}</strong><br>{{/if}}
-					{{#if faculty.en}}********************<br><strong>{{faculty.en}}</strong><br>{{/if}}
+					{{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+					{{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
 					********************<br>
-					<strong>{{institution.nameEn}}</strong>
+					<strong>{{upper institution.nameEn}}</strong>
 					{{#if institution.postalBox}}<br>********************<br>P.O. Box {{institution.postalBox}}{{/if}}
 					{{#if institution.contactEmail}}<br>Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>

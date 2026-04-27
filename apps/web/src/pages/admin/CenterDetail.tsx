@@ -31,6 +31,7 @@ const adminInstanceSchema = z.object({
 	acronymFr: z.string().optional(),
 	acronymEn: z.string().optional(),
 	logoUrl: z.string().optional(),
+	logoSvg: z.string().optional(),
 	showOnTranscripts: z.boolean(),
 	showOnCertificates: z.boolean(),
 });
@@ -55,8 +56,11 @@ const centerSchema = z.object({
 	contactEmail: z.string().email().optional().or(z.literal("")),
 	contactPhone: z.string().optional(),
 	logoUrl: z.string().optional(),
+	logoSvg: z.string().optional(),
 	adminInstanceLogoUrl: z.string().optional(),
+	adminInstanceLogoSvg: z.string().optional(),
 	watermarkLogoUrl: z.string().optional(),
+	watermarkLogoSvg: z.string().optional(),
 	authorizationOrderFr: z.string().optional(),
 	authorizationOrderEn: z.string().optional(),
 	isActive: z.boolean(),
@@ -80,8 +84,11 @@ const emptyValues: CenterForm = {
 	contactEmail: "",
 	contactPhone: "",
 	logoUrl: "",
+	logoSvg: "",
 	adminInstanceLogoUrl: "",
+	adminInstanceLogoSvg: "",
 	watermarkLogoUrl: "",
+	watermarkLogoSvg: "",
 	authorizationOrderFr: "",
 	authorizationOrderEn: "",
 	isActive: true,
@@ -137,8 +144,11 @@ export default function CenterDetail() {
 			contactEmail: data.contactEmail ?? "",
 			contactPhone: data.contactPhone ?? "",
 			logoUrl: data.logoUrl ?? "",
+			logoSvg: data.logoSvg ?? "",
 			adminInstanceLogoUrl: data.adminInstanceLogoUrl ?? "",
+			adminInstanceLogoSvg: data.adminInstanceLogoSvg ?? "",
 			watermarkLogoUrl: data.watermarkLogoUrl ?? "",
+			watermarkLogoSvg: data.watermarkLogoSvg ?? "",
 			authorizationOrderFr: data.authorizationOrderFr ?? "",
 			authorizationOrderEn: data.authorizationOrderEn ?? "",
 			isActive: data.isActive,
@@ -150,6 +160,7 @@ export default function CenterDetail() {
 					acronymFr: inst.acronymFr ?? "",
 					acronymEn: inst.acronymEn ?? "",
 					logoUrl: inst.logoUrl ?? "",
+					logoSvg: (inst as { logoSvg?: string | null }).logoSvg ?? "",
 					showOnTranscripts: inst.showOnTranscripts,
 					showOnCertificates: inst.showOnCertificates,
 				}),
@@ -172,6 +183,7 @@ export default function CenterDetail() {
 					acronymFr: i.acronymFr || null,
 					acronymEn: i.acronymEn || null,
 					logoUrl: i.logoUrl || null,
+					logoSvg: i.logoSvg || null,
 				})),
 				legalTexts: values.legalTexts,
 			};
@@ -374,75 +386,153 @@ export default function CenterDetail() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="grid gap-4 md:grid-cols-3">
-						<FormField
-							control={form.control}
-							name="logoUrl"
-							render={({ field }) => (
-								<FormItem>
-									<ImageUploadField
-										label={t("admin.centers.form.logoUrl", {
-											defaultValue: "Logo du centre",
-										})}
-										description={t("admin.centers.form.logoUrlHint", {
-											defaultValue: "Affiché dans les en-têtes.",
-										})}
-										value={field.value}
-										onChange={field.onChange}
-										onClear={() => field.onChange("")}
-										placeholder="https://..."
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="adminInstanceLogoUrl"
-							render={({ field }) => (
-								<FormItem>
-									<ImageUploadField
-										label={t("admin.centers.form.adminInstanceLogoUrl", {
-											defaultValue:
-												"Logo de l'instance administrative (ex: MINEFOP)",
-										})}
-										description={t(
-											"admin.centers.form.adminInstanceLogoUrlHint",
-											{
+						<div className="space-y-3">
+							<FormField
+								control={form.control}
+								name="logoUrl"
+								render={({ field }) => (
+									<FormItem>
+										<ImageUploadField
+											label={t("admin.centers.form.logoUrl", {
+												defaultValue: "Logo du centre",
+											})}
+											description={t("admin.centers.form.logoUrlHint", {
+												defaultValue: "Affiché dans les en-têtes.",
+											})}
+											value={field.value}
+											onChange={field.onChange}
+											onClear={() => field.onChange("")}
+											placeholder="https://..."
+										/>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="logoSvg"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-xs">
+											{t("admin.centers.form.logoSvg", {
+												defaultValue: "…ou code SVG (prioritaire)",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												{...field}
+												value={field.value ?? ""}
+												rows={4}
+												placeholder="<svg ...>...</svg>"
+												className="font-mono text-xs"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<div className="space-y-3">
+							<FormField
+								control={form.control}
+								name="adminInstanceLogoUrl"
+								render={({ field }) => (
+									<FormItem>
+										<ImageUploadField
+											label={t("admin.centers.form.adminInstanceLogoUrl", {
 												defaultValue:
-													"Logo principal de l'autorité de tutelle.",
-											},
-										)}
-										value={field.value}
-										onChange={field.onChange}
-										onClear={() => field.onChange("")}
-										placeholder="https://..."
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="watermarkLogoUrl"
-							render={({ field }) => (
-								<FormItem>
-									<ImageUploadField
-										label={t("admin.centers.form.watermarkLogoUrl", {
-											defaultValue: "Logo de fond (watermark)",
-										})}
-										description={t("admin.centers.form.watermarkLogoUrlHint", {
-											defaultValue:
-												"Logo affiché en filigrane sur les documents.",
-										})}
-										value={field.value}
-										onChange={field.onChange}
-										onClear={() => field.onChange("")}
-										placeholder="https://..."
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+													"Logo de l'instance administrative (ex: MINEFOP)",
+											})}
+											description={t(
+												"admin.centers.form.adminInstanceLogoUrlHint",
+												{
+													defaultValue:
+														"Logo principal de l'autorité de tutelle.",
+												},
+											)}
+											value={field.value}
+											onChange={field.onChange}
+											onClear={() => field.onChange("")}
+											placeholder="https://..."
+										/>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="adminInstanceLogoSvg"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-xs">
+											{t("admin.centers.form.adminInstanceLogoSvg", {
+												defaultValue: "…ou code SVG (prioritaire)",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												{...field}
+												value={field.value ?? ""}
+												rows={4}
+												placeholder="<svg ...>...</svg>"
+												className="font-mono text-xs"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<div className="space-y-3">
+							<FormField
+								control={form.control}
+								name="watermarkLogoUrl"
+								render={({ field }) => (
+									<FormItem>
+										<ImageUploadField
+											label={t("admin.centers.form.watermarkLogoUrl", {
+												defaultValue: "Logo de fond (watermark)",
+											})}
+											description={t(
+												"admin.centers.form.watermarkLogoUrlHint",
+												{
+													defaultValue:
+														"Logo affiché en filigrane sur les documents.",
+												},
+											)}
+											value={field.value}
+											onChange={field.onChange}
+											onClear={() => field.onChange("")}
+											placeholder="https://..."
+										/>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="watermarkLogoSvg"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-xs">
+											{t("admin.centers.form.watermarkLogoSvg", {
+												defaultValue: "…ou code SVG (prioritaire)",
+											})}
+										</FormLabel>
+										<FormControl>
+											<Textarea
+												{...field}
+												value={field.value ?? ""}
+												rows={4}
+												placeholder="<svg ...>...</svg>"
+												className="font-mono text-xs"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 					</CardContent>
 				</Card>
 
@@ -464,6 +554,7 @@ export default function CenterDetail() {
 									acronymFr: "",
 									acronymEn: "",
 									logoUrl: "",
+									logoSvg: "",
 									showOnTranscripts: true,
 									showOnCertificates: true,
 								})
@@ -576,6 +667,29 @@ export default function CenterDetail() {
 													onClear={() => field.onChange("")}
 													placeholder="https://..."
 												/>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name={`administrativeInstances.${index}.logoSvg`}
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-xs">
+													{t("admin.centers.form.adminInstanceLogoSvg", {
+														defaultValue: "…ou code SVG (prioritaire)",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Textarea
+														{...field}
+														value={field.value ?? ""}
+														rows={4}
+														placeholder="<svg ...>...</svg>"
+														className="font-mono text-xs"
+													/>
+												</FormControl>
 												<FormMessage />
 											</FormItem>
 										)}

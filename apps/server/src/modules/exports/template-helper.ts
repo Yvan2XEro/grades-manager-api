@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import Handlebars from "handlebars";
 import { defaultExportConfig } from "../../config/export-config";
 import type {
 	Institution,
@@ -197,6 +198,22 @@ export function institutionToExportConfig(
 /**
  * Load HTML template from file
  */
+/**
+ * Variant of a template:
+ *   - `"standard"` — institution + tutelle chain (faculty + university).
+ *   - `"center"` — institution + center data (no parent institution chain),
+ *     used for programs whose `centerId` is set.
+ */
+export type TemplateVariant = "standard" | "center";
+
+/**
+ * Establishment type — used at seed time to pick the right standard template
+ * for transcripts and attestations. The `_ipes` and `_faculty` files have a
+ * different DOM structure (an IPES sits under a faculty + university; a
+ * faculty IS itself the unit chapeauting the program).
+ */
+export type EstablishmentType = "institution" | "faculty" | "university";
+
 export function loadTemplate(
 	templateName:
 		| "pv"
@@ -207,26 +224,60 @@ export function loadTemplate(
 		| "transcript"
 		| "attestation"
 		| "student_list",
+	variant: TemplateVariant = "standard",
+	establishmentType?: EstablishmentType,
 ): string {
-	const templateMap = {
+	const standardMap = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
 		ue: "teaching-unit-publication.html",
 		deliberation: "deliberation-template.html",
 		diploma: "diploma-template.html",
-		// `releve_template.html` and `attestation_template.html` (with
-		// underscores) are the canonical FMSP/UDo references — they include
-		// the IPES vs faculty branching driven by `settings.establishmentType`.
+		// Generic fallback (kept for backward-compat). The real defaults for
+		// transcript/attestation are split per establishment type below.
 		transcript: "releve_template.html",
 		attestation: "attestation_template.html",
 		student_list: "student-list-template.html",
 	};
 
-	const templatePath = join(
-		import.meta.dir,
-		"templates",
-		templateMap[templateName],
-	);
+	// IPES- and Faculty-specific variants of transcript & attestation. Picked
+	// at seed time depending on the institution.type so each tenant only sees
+	// the model that fits their setup.
+	const ipesMap: Partial<Record<keyof typeof standardMap, string>> = {
+		transcript: "releve_template_ipes.html",
+		attestation: "attestation_template_ipes.html",
+	};
+	const facultyMap: Partial<Record<keyof typeof standardMap, string>> = {
+		transcript: "releve_template_faculty.html",
+		attestation: "attestation_template_faculty.html",
+	};
+
+	// Center variants exist for every template kind. Each renders a
+	// center-only header (admin instances + legal texts + authorization order +
+	// center identity) and excludes the institutional tutelle chain.
+	const centerMap: Partial<Record<keyof typeof standardMap, string>> = {
+		diploma: "diploma-template-center.html",
+		transcript: "transcript-template-center.html",
+		attestation: "attestation-template-center.html",
+		student_list: "student-list-template-center.html",
+		pv: "pv-template-center.html",
+		evaluation: "evaluation-publication-center.html",
+		ue: "teaching-unit-publication-center.html",
+		deliberation: "deliberation-template-center.html",
+	};
+
+	let filename: string;
+	if (variant === "center" && centerMap[templateName]) {
+		filename = centerMap[templateName]!;
+	} else if (establishmentType === "institution" && ipesMap[templateName]) {
+		filename = ipesMap[templateName]!;
+	} else if (establishmentType === "faculty" && facultyMap[templateName]) {
+		filename = facultyMap[templateName]!;
+	} else {
+		filename = standardMap[templateName];
+	}
+
+	const templatePath = join(import.meta.dir, "templates", filename);
 
 	return readFileSync(templatePath, "utf-8");
 }
@@ -271,9 +322,20 @@ export function calculateSuccessRate(
 /**
  * Format number to French locale (XX,XX)
  */
-export function formatNumber(num: number | null, decimals = 2): string {
-	if (!num) return "ABS";
-	return num.toFixed(decimals).replace(".", ",");
+export function formatNumber(
+	num: number | null | undefined,
+	decimals: unknown = 2,
+): string {
+	// Handlebars passes its options hash as the trailing argument, so when a
+	// template calls `{{formatNumber cc}}` (no explicit decimals), `decimals`
+	// arrives as that object. Reject anything that isn't a finite number and
+	// fall back to 2, otherwise `toFixed(NaN)` silently truncates to integers.
+	const d =
+		typeof decimals === "number" && Number.isFinite(decimals) ? decimals : 2;
+	if (num === null || num === undefined) return "ABS";
+	const n = typeof num === "number" ? num : Number(num);
+	if (!Number.isFinite(n)) return "ABS";
+	return n.toFixed(d).replace(".", ",");
 }
 
 /**
@@ -442,4 +504,36 @@ export function resolveStudentGradesWithRetakes(
 	}
 
 	return resolvedGrades;
+}
+
+/**
+ * Handlebars helper that renders a logo, preferring inline SVG over a URL.
+ *
+ * Usage in templates:
+ *   {{{logo svg=center.logoSvg url=center.logoUrl alt="Centre" class="logo"}}}
+ *
+ * If `svg` is a non-empty string, it is emitted as raw SVG markup. Otherwise
+ * it falls back to `<img src="{url}" ...>`. If neither is provided, returns
+ * an empty SafeString so callers don't have to wrap calls in `{{#if}}`.
+ */
+export function logoHelper(this: unknown, options: Handlebars.HelperOptions) {
+	const hash = (options?.hash ?? {}) as {
+		svg?: string | null;
+		url?: string | null;
+		alt?: string;
+		class?: string;
+		style?: string;
+	};
+	const svg = typeof hash.svg === "string" ? hash.svg.trim() : "";
+	if (svg) {
+		return new Handlebars.SafeString(svg);
+	}
+	const url = typeof hash.url === "string" ? hash.url.trim() : "";
+	if (!url) return new Handlebars.SafeString("");
+	const escapeAttr = Handlebars.escapeExpression;
+	const attrs = [`src="${escapeAttr(url)}"`];
+	if (hash.alt) attrs.push(`alt="${escapeAttr(hash.alt)}"`);
+	if (hash.class) attrs.push(`class="${escapeAttr(hash.class)}"`);
+	if (hash.style) attrs.push(`style="${escapeAttr(hash.style)}"`);
+	return new Handlebars.SafeString(`<img ${attrs.join(" ")}>`);
 }

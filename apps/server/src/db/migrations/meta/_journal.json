@@ -36,6 +36,20 @@
       "when": 1777291006858,
       "tag": "0004_extend_export_templates_for_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777291906858,
+      "tag": "0005_add_export_template_variant",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777291983711,
+      "tag": "0006_fantastic_masque",
+      "breakpoints": true
     }
   ]
 }

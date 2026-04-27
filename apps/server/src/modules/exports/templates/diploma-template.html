@@ -38,7 +38,7 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 .header { display: flex; justify-content: space-between; align-items: flex-end; text-align: center; margin-bottom: {{theme.spacing.sectionSpacing}}mm; gap: 3mm; }
 .header-block { display: flex; flex-direction: column; }
 .header-text-block { flex: 1; display: flex; }
-.header-text-block-right { align-items: flex-start; }
+.header-text-block-right { align-items: center; }
 .header-text-block-left { align-items: flex-end; }
 .header-text { width: max-content; text-align: center; font-family: {{theme.fonts.header}}; font-size: {{theme.sizes.header}}pt; line-height: {{theme.spacing.headerLineHeight}}; }
 .header-text .country { font-weight: bold; font-size: {{add theme.sizes.header 0.5}}pt; letter-spacing: 0.3px; text-transform: uppercase; }
@@ -78,14 +78,14 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 .recipient-section { display: flex; justify-content: space-between; gap: 0mm; margin-bottom: {{theme.spacing.recipientBlockMarginBottom}}mm; }
 .recipient-left { flex: 2.5; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.content}}pt; }
 .recipient-right { flex: 1; padding-left: 4mm; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.studentInfo}}pt; }
-.field { display: flex; align-items: flex-start; margin: 2mm 0; }
+.field { display: flex; align-items: center; margin: 2mm 0; }
 .field-label { font-weight: bold; white-space: nowrap; flex-shrink: 0; }
 .field-value { font-weight: bold; margin-left: 6px; }
 .field-value-fullname { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.fullName}}; }
 .field-value-birthinfo { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.fullName}}; font-weight: bold; }
 .matricule-value { font-family: {{theme.fonts.reference}}; font-size: {{theme.sizes.matricule}}pt; color: {{theme.colors.matricule}}; font-weight: bold; }
 .mention-value { font-family: {{theme.fonts.mention}}; font-size: {{theme.sizes.mention}}pt; color: {{theme.colors.mention}}; font-weight: bold; }
-.mention-box { display: flex; align-items: flex-start; }
+.mention-box { display: flex; align-items: center; }
 .mention-label { font-weight: bold; white-space: nowrap; flex-shrink: 0; margin-right: 4px; }
 .mention-en { font-style: italic; font-weight: normal; font-size: 8.5pt; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
 .field-value-diploma-title { font-family: {{theme.fonts.studentName}}; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.diplomaTitle}}; text-align: center; margin-left: 0; }
@@ -118,7 +118,7 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 	<div class="outer-border"><div class="inner-border"></div></div>
 
 	<div class="watermark">
-		{{#if institution.watermarkLogoUrl}}<img class="watermark-center-logo" src="{{institution.watermarkLogoUrl}}" alt="">{{/if}}
+		{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl class="watermark-center-logo" alt=""}}}
 		<div class="watermark-grid">
 			{{#each watermarkRepeat}}
 			<div class="watermark-item"><div class="watermark-text{{#if (eq (mod @index 4) 0)}}{{else}} style-{{add (mod @index 4) 1}}{{/if}}">{{../theme.watermark.text}}</div></div>
@@ -135,13 +135,13 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 					<div class="stars">********************</div>
 					<div class="institution">{{ministry.fr}}</div>
 					<div class="stars">********************</div>
-					<div class="institution">{{university.fr}}</div>
+					<div class="institution">{{upper university.fr}}</div>
 					<div class="stars">********************</div>
-					<div class="faculty">{{faculty.fr}}</div>
+					<div class="faculty">{{upper faculty.fr}}</div>
 				</div>
 			</div>
 			<div class="header-block">
-				{{#if logos.coatOfArms}}<div class="coat-of-arms"><img src="{{logos.coatOfArms}}" alt="Coat of arms"></div>{{/if}}
+				{{#if (or logos.coatOfArmsSvg logos.coatOfArms)}}<div class="coat-of-arms">{{{logo svg=logos.coatOfArmsSvg url=logos.coatOfArms alt="Coat of arms"}}}</div>{{/if}}
 			</div>
 			<div class="header-block header-text-block header-text-block-left">
 				<div class="header-text">
@@ -150,28 +150,28 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 					<div class="stars">********************</div>
 					<div class="institution">{{ministry.en}}</div>
 					<div class="stars">********************</div>
-					<div class="institution">{{university.en}}</div>
+					<div class="institution">{{upper university.en}}</div>
 					<div class="stars">********************</div>
-					<div class="faculty">{{faculty.en}}</div>
+					<div class="faculty">{{upper faculty.en}}</div>
 				</div>
 			</div>
 		</div>
 
 		<div class="title-row">
 			<div class="header-block">
-				{{#if logos.faculty}}<div class="logo-box"><img src="{{logos.faculty}}" alt="Faculty logo"></div>{{/if}}
+				{{#if (or logos.facultySvg logos.faculty)}}<div class="logo-box">{{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty logo"}}}</div>{{/if}}
 			</div>
 			<div class="title">
 				<h1>{{document.titleFr}}</h1>
 				<div class="subtitle en-text">{{document.titleEn}}</div>
 			</div>
 			<div class="header-block">
-				{{#if logos.ministry}}<div class="ministry-logo"><img src="{{logos.ministry}}" alt="Ministry logo"></div>{{/if}}
+				{{#if (or logos.ministrySvg logos.ministry)}}<div class="ministry-logo">{{{logo svg=logos.ministrySvg url=logos.ministry alt="Ministry logo"}}}</div>{{/if}}
 			</div>
 		</div>
 
 		<div class="minister-section">
-			<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2mm;">
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2mm;">
 				<div style="flex: 1;">
 					<div class="legal-text">{{minister.titleFr}}</div>
 					<div class="legal-text legal-text-en"><em>{{minister.titleEn}}</em></div>
@@ -216,7 +216,7 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 			</div>
 		</div>
 
-		<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: {{theme.spacing.recipientBlockMarginBottom}}mm;">
+		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: {{theme.spacing.recipientBlockMarginBottom}}mm;">
 			<div style="flex: 2.5; font-family: {{theme.fonts.studentInfo}}; font-size: {{theme.sizes.content}}pt;">
 				<div class="field" style="justify-content: center; text-align: center;">
 					<div class="field-value field-value-diploma-title">Le {{document.titleFr}} <br><span class="en-text"><em>The {{document.titleEn}}</em></span></div>

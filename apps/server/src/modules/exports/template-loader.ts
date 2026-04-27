@@ -124,10 +124,12 @@ export async function loadExportTemplate(
 			id: resolvedTemplateId,
 		});
 	} else {
-		// 3. Institution-wide default for this type.
+		// 3. Institution-wide default for this type — variant-aware so a center
+		//    class falls back to a "center" default before the standard one.
 		template = await exportTemplatesService.getDefaultTemplate(
 			institutionId,
 			type,
+			center ? "center" : "standard",
 		);
 	}
 
@@ -139,10 +141,12 @@ export async function loadExportTemplate(
 		styleConfig = mergeCenterBrandingIntoStyle(styleConfig, center);
 	}
 
-	// 4. Fallback to bundled HTML template.
+	// 4. Fallback to bundled HTML template. Center-affiliated programs get the
+	// `*-template-center.html` variant which renders only the center branding
+	// (admin instances + legal texts) and skips the institutional tutelle.
 	if (!template) {
 		return {
-			templateBody: loadTemplate(type),
+			templateBody: loadTemplate(type, center ? "center" : "standard"),
 			headerConfig: getDefaultHeaderConfig(type),
 			styleConfig,
 			center,
@@ -164,8 +168,11 @@ export type CenterBranding = {
 	nameEn: string | null;
 	shortName: string | null;
 	logoUrl: string | null;
+	logoSvg: string | null;
 	adminInstanceLogoUrl: string | null;
+	adminInstanceLogoSvg: string | null;
 	watermarkLogoUrl: string | null;
+	watermarkLogoSvg: string | null;
 	authorizationOrderFr: string | null;
 	authorizationOrderEn: string | null;
 	postalBox: string | null;
@@ -179,6 +186,7 @@ export type CenterBranding = {
 		acronymFr: string | null;
 		acronymEn: string | null;
 		logoUrl: string | null;
+		logoSvg: string | null;
 		showOnTranscripts: boolean;
 		showOnCertificates: boolean;
 	}>;
@@ -230,8 +238,11 @@ async function resolveCenterFromProgram(
 			nameEn: center.nameEn,
 			shortName: center.shortName,
 			logoUrl: center.logoUrl,
+			logoSvg: center.logoSvg,
 			adminInstanceLogoUrl: center.adminInstanceLogoUrl,
+			adminInstanceLogoSvg: center.adminInstanceLogoSvg,
 			watermarkLogoUrl: center.watermarkLogoUrl,
+			watermarkLogoSvg: center.watermarkLogoSvg,
 			authorizationOrderFr: center.authorizationOrderFr,
 			authorizationOrderEn: center.authorizationOrderEn,
 			postalBox: center.postalBox,
@@ -245,6 +256,74 @@ async function resolveCenterFromProgram(
 				acronymFr: i.acronymFr,
 				acronymEn: i.acronymEn,
 				logoUrl: i.logoUrl,
+				logoSvg: i.logoSvg,
+				showOnTranscripts: i.showOnTranscripts,
+				showOnCertificates: i.showOnCertificates,
+			})),
+			legalTexts: legalTexts.map((l) => ({
+				textFr: l.textFr,
+				textEn: l.textEn,
+			})),
+		};
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Load the first center attached to an institution — used by template
+ * previews that don't have a class/program scope. Returns null if the
+ * institution has no centers; preview should then fall back to a stub.
+ */
+export async function loadFirstCenterForInstitution(
+	institutionId: string,
+): Promise<CenterBranding | null> {
+	try {
+		const center = await db.query.centers.findFirst({
+			where: and(
+				eq(schema.centers.institutionId, institutionId),
+				eq(schema.centers.isActive, true),
+			),
+		});
+		if (!center) return null;
+		const [adminInstances, legalTexts] = await Promise.all([
+			db
+				.select()
+				.from(schema.centerAdministrativeInstances)
+				.where(eq(schema.centerAdministrativeInstances.centerId, center.id))
+				.orderBy(schema.centerAdministrativeInstances.orderIndex),
+			db
+				.select()
+				.from(schema.centerLegalTexts)
+				.where(eq(schema.centerLegalTexts.centerId, center.id))
+				.orderBy(schema.centerLegalTexts.orderIndex),
+		]);
+		return {
+			id: center.id,
+			code: center.code,
+			name: center.name,
+			nameEn: center.nameEn,
+			shortName: center.shortName,
+			logoUrl: center.logoUrl,
+			logoSvg: center.logoSvg,
+			adminInstanceLogoUrl: center.adminInstanceLogoUrl,
+			adminInstanceLogoSvg: center.adminInstanceLogoSvg,
+			watermarkLogoUrl: center.watermarkLogoUrl,
+			watermarkLogoSvg: center.watermarkLogoSvg,
+			authorizationOrderFr: center.authorizationOrderFr,
+			authorizationOrderEn: center.authorizationOrderEn,
+			postalBox: center.postalBox,
+			contactEmail: center.contactEmail,
+			contactPhone: center.contactPhone,
+			city: center.city,
+			country: center.country,
+			administrativeInstances: adminInstances.map((i) => ({
+				nameFr: i.nameFr,
+				nameEn: i.nameEn,
+				acronymFr: i.acronymFr,
+				acronymEn: i.acronymEn,
+				logoUrl: i.logoUrl,
+				logoSvg: i.logoSvg,
 				showOnTranscripts: i.showOnTranscripts,
 				showOnCertificates: i.showOnCertificates,
 			})),

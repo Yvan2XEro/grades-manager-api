@@ -890,6 +890,7 @@
         "gradeEntry": "Grade entry",
         "exportTemplates": "Export templates",
         "classDocumentTemplates": "Per-class documents",
+        "documentBatch": "Bulk generation",
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Batch Jobs",

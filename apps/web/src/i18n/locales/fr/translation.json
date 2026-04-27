@@ -136,6 +136,7 @@
         "gradeEntry": "Saisie des notes",
         "exportTemplates": "Modèles d'exportation",
         "classDocumentTemplates": "Documents par classe",
+        "documentBatch": "Génération en lot",
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",

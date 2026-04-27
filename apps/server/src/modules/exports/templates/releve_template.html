@@ -1,705 +1,302 @@
+<!--
+  Relevé de notes — modèle officiel par défaut (institution standard).
+  Structure portée 1:1 depuis DIPLOMATION (releve_template.html) avec :
+    - les références `{{settings.*}}` remplacées par les vraies variables du
+      contexte de rendu (`institution.*`, `theme.*`, `logos.*`)
+    - le mode démo retiré (banner / watermark / qr-badge supprimés)
+    - le toggle IPES vs Faculté piloté par `institution.isIPES` (basé sur
+      `institutions.type`) — pas de variable `establishmentType` dans le JSON.
 
-    <!DOCTYPE html>
-    <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Relevé de Notes - {{student.NOM}} {{student.PRENOM}}</title>
-        <style>
-            
-    @page {
-      size: A4;
-      margin: 0;
-    }
-    body {
-      font-family: {{settings.themeFont}};
-      width: 200mm;
-      min-height: 287mm;
-      box-sizing: border-box;
-      background-color: white;
-      margin: 5mm;
-      border: 3px double {{settings.themeColor}};
-      color: {{settings.themeColor}};
-      position: relative;
-      overflow: hidden;
-    }
-    
-    /* Filigrane DÉMO - NOUVEAU */
-    .demo-watermark {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1000;
-      pointer-events: none;
-      display: none;
-      background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 80px,
-        rgba(255, 0, 0, 0.08) 80px,
-        rgba(255, 0, 0, 0.08) 100px
-      );
-    }
-    
-    .demo-watermark::before {
-      content: "DÉMO";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-45deg);
-      font-size: 100px;
-      font-weight: bold;
-      color: rgba(255, 0, 0, 0.12);
-      font-family: Arial, sans-serif;
-      letter-spacing: 15px;
-    }
-    
-    .demo-watermark::after {
-      content: "MODE DÉMO - DOCUMENT NON OFFICIEL";
-      position: absolute;
-      bottom: 25%;
-      left: 50%;
-      transform: translate(-50%, 0) rotate(-45deg);
-      font-size: 18px;
-      font-weight: bold;
-      color: rgba(255, 0, 0, 0.15);
-      font-family: Arial, sans-serif;
-      white-space: nowrap;
-    }
+  IPES (institution.type === 'institution') → affiche les infos institut
+    (nom, BP, email, logo) à côté de l'en-tête tutelle.
+  Faculté (institution.type === 'faculty') → l'institution EST la faculté
+    chapeautant le programme ; l'en-tête institut est masqué.
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relevé de notes — {{student.lastName}} {{student.firstName}}</title>
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+body {
+	font-family: {{theme.fonts.main}};
+	width: 200mm;
+	min-height: 287mm;
+	background-color: white;
+	margin: 5mm;
+	border: 3px double {{theme.colors.primary}};
+	color: {{theme.colors.primary}};
+	position: relative;
+	overflow: hidden;
+}
 
-    /* Bannière démo en haut */
-    .demo-banner {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(148, 5, 5, 0.8);
-      color: white;
-      text-align: center;
-      padding: 3px;
-      font-size: 10px;
-      font-weight: bold;
-      z-index: 1001;
-      display: none;
-    }
+.header { line-height: normal; font-size: 9px; font-family: {{theme.fonts.header}}; }
 
-    /* Badge démo sur le QR code */
-    .qr-demo-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: red;
-      color: white;
-      font-size: 8px;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-weight: bold;
-      display: none;
-    }
-    
-    
-    .header {    
-      line-height: normal;
-      font-size: 9px;
-      font-family: {{settings.themeFont}};
-    }
-    
-    .watermark {
-      position: absolute;
-      top: 120px;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0.1;
-      pointer-events: none;
-    }
-    
-    .watermark img {
-      width: 600px;
-      height: auto;
-    }
-    
-    .qr-code {
-      width: 100px;
-      height: 100px;
-      display: block;
-      position: relative;
-    }
-    
-    /* Style spécial pour le texte en mode démo */
-    
-    
-    /* Impression avec filigrane démo */
-    @media print {
-      .demo-watermark,
-      .demo-banner,
-      .qr-demo-badge {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-    
-    /* ... reste des styles CSS existants ... */
-    .header-row1{
-      text-align: center;
-      margin-bottom: 20px;
-      margin-top: 8px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .header h1 {
-      font-size: 17px;
-    }
-    .student_block1 {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-    }
-    .student_block1,
-    .student-info {
-      width: 90%;
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 10px;
-      gap: 10px;
-    }
-    .student-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1.2fr;
-      margin-bottom: 20px;
-    }
-    .student-info p {
-      font-size: 10px;
-      margin:0px;
-      padding:0px;
-    }
-      .student-info  > div {
-      margin:0px;
-      padding:0px;
-      font-size: 10px;
-    }
-    table {
-      margin-left: auto;
-      margin-right: auto;
-      width: 96%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      font-size: 10px;
-    }
-    th, td {
-      border: 0.5px solid {{settings.themeColor}};
-      padding: 2px;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    
-    /* Styles spécifiques pour les UE validées si l'option est activée */
-    
-    
-    .grade-scale {
-      display: flex;
-      font-size: 7px !important;
-      float: left;
-      margin-left: 20px;
-      width: 50%;
-    }
-    .grade-scale table {
-      witdth: {{student.TOTAL_CREDITS}}%;
-      margin-right : 10px;
-    }
-    .grade-scale div {
-      display: inline-block;
-    }
-    
-    /* Styles des signatures basés sur le thème */
-    .signature-{{settings.establishmentType}}{
-      width: 50%;
-      margin-left: 40px;
-      font-size: 12px;
-      
-      
-    }
-    .signature {
-      margin-top: {{student.TOTAL_CREDITS}}px;
-      float: right;
-      text-align: left;
-      font-size: 12px;
-      margin-right: 20px;
-      
-      
-    }
+.watermark {
+	position: absolute;
+	top: 120px; left: 0;
+	width: 100%; height: 100%;
+	z-index: -1;
+	display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}};
+	justify-content: center; align-items: center;
+	opacity: {{theme.watermark.logoOpacity}};
+	pointer-events: none;
+}
+.watermark img { width: 600px; height: auto; }
 
-    #to-hidden{
-     ;
-    }
-     #to-nothidden{
-    display : none;
-    }
-    
-    /* Adaptation de la mise en page de l'en-tête basée sur le thème */
-    .header-content{
-      width: 35%;
-    }
-    .header-logo-content{
-      margin-top: 4px;
-      align-content: center;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header-logo-content > div{
-      width: 100%;
-      height: 100%;
-      align-items: center;
-      align-content: center;
-    }
-    .header-row2 h1{
-      font-weight: 100;
-      text-align: center;
-      font-size: 17px;
-      color: #000080;
-    }
-    .header-row2 p{
-      font-size: 12px;
-    }
-    .header-row2{
-      text-align: center;
-    }
-    td{
-      text-align: center;
-    }
-    .table{
-      padding-left: 20px;
-    }
-    .table-head th{
-      text-align: center;
-    }
-    .table-ue-code, .table-ue-label, .table-ue-avearage{
-      font-weight: bold;
-    }
-    .table-ec, .table-ue-title{
-      text-align: left;
-    }
-    .grade-sign{
-      display: flex;
-      justify-content: start;
-      width: 96%;
-      margin: 0 auto;
-    }
-    .grade-sign th, .grade-sign td{
-      width:{{student.TOTAL_CREDITS}}px;
-      padding: 1px;
-      border: 0.5px solid {{settings.themeColor}};
-    }
-    body > .container{
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-    .footer-note {
-      position: absolute;
-      width: 100%;
-      bottom: 10px;
-      font-size: 7px;
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 10px;
-      font-style: italic;
-    }
-    
-    /* Styles supplémentaires pour les en-têtes */
-    .header-title {
-      color: #000080;
-    }
-    
-    /* Styles pour les mentions validées/non validées */
-    .validated {
-      color: #000080;
-      font-weight: bold;
-    }
-    .not-validated {
-      color: #cc0000;
-    }
+.qr-code { width: 100px; height: 100px; display: block; position: relative; }
 
-    /* NOUVEAU: Styles pour la personnalisation du tableau */
+.header-row1 { text-align: center; margin-bottom: 20px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+.header-row1 .header-content strong { text-transform: uppercase; }
+.header h1 { font-size: 17px; }
 
-    table {
-      font-size: 8.5px !important;
-    }
+.student_block1 { display: flex; flex-direction: row; justify-content: space-between; }
+.student_block1, .student-info { width: 90%; margin-left: auto; margin-right: auto; font-size: 10px; gap: 10px; }
+.student-info { display: grid; grid-template-columns: 1fr 1fr 1.2fr; margin-bottom: 20px; }
+.student-info p { font-size: 10px; margin: 0; padding: 0; }
+.student-info > div { margin: 0; padding: 0; font-size: 10px; }
 
-    /* Toggle IPES (Institut) vs Faculté en fonction de settings.establishmentType */
-    {{#if (eq settings.establishmentType 'ipes')}}
-    #to-nothidden { display: none !important; }
-    {{else}}
-    #to-hidden { display: none !important; }
-    {{/if}}
-    
+table { margin-left: auto; margin-right: auto; width: 96%; border-collapse: collapse; margin-bottom: 20px; font-size: 8.5px; }
+th, td { border: 0.5px solid {{theme.colors.primary}}; padding: 2px; text-align: left; }
+th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tableHeaderText}}; }
 
-    
+.grade-scale { display: flex; font-size: 7px !important; float: left; margin-left: 20px; width: 50%; }
+.grade-scale table { width: auto; margin-right: 10px; }
+.grade-scale div { display: inline-block; }
 
-    
+/* Signature spécifique au type d'établissement */
+.signature-{{institution.type}} { width: 50%; margin-left: 40px; font-size: 12px; }
+.signature { margin-top: 30px; float: right; text-align: left; font-size: 12px; margin-right: 20px; }
 
-    
+.header-content { width: 35%; }
+.header-logo-content { margin-top: 4px; align-content: center; display: flex; align-items: center; justify-content: space-between; }
+.header-logo-content > div { width: 100%; height: 100%; align-items: center; align-content: center; }
 
-    
+.header-row2 h1 { font-weight: 100; text-align: center; font-size: 17px; color: {{theme.colors.primary}}; }
+.header-row2 p { font-size: 12px; }
+.header-row2 { text-align: center; }
 
-    
+td { text-align: center; }
+.table { padding-left: 20px; }
+.table-head th { text-align: center; }
+.table-ue-code, .table-ue-label, .table-ue-avearage { font-weight: bold; }
+.table-ec, .table-ue-title { text-align: left; }
 
-    
+.grade-sign { display: flex; justify-content: start; width: 96%; margin: 0 auto; }
+.grade-sign th, .grade-sign td { padding: 1px; border: 0.5px solid {{theme.colors.primary}}; }
 
-    
-  
-            
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            
-            
-            <!-- Logo de fond (slot: watermark) -->
-            
-            <div class="watermark">
-                <img src="{{settings.logo}}" alt="Watermark">
-            </div>
+body > .container { width: 100%; height: 100%; position: relative; }
+.footer-note { position: absolute; width: 100%; bottom: 10px; font-size: 7px; text-align: center; margin-top: 20px; padding-top: 10px; font-style: italic; }
 
-            <!-- En-tête (slot: header) -->
-            
-            <div class="header">
-                <div class="header-row1">
-                    <div class="header-content">
-                        <p>REPUBLIQUE DU CAMEROUN <br>
-                        <em>Paix – Travail – Patrie</em><br>
-                        ********************<br>MINISTERE DE L'ENSEIGNEMENT SUPERIEUR<br>
-                        
-                        <span id="to-hidden">********************<br>
-                        <strong>INSTITUT UNIVERSITAIRE  DES <br>BATISSEURS-SIGMEN</strong><br>
-                        
-                        ********************<br>
-                        B.P {{settings.postalBox}}<br>
-                        
-                        Email: <a href="mailto:{{settings.email}}">{{settings.email}}</a></p></span>
-                    </div>
-                    <div class="header-logo-content">
-                        <div><img src="{{settings.universityLogo}}" alt="University Logo" height="70"></div>
-                                 <div><img src="{{settings.facultyLogo}}" alt="Faculty Logo" height="50" style="margin: 5px;"></div>
-                        <div id="to-hidden">
-                          <img src="{{settings.logo}}" alt="IPES Logo" height="70">
-                        </div>
-                    </div>
-                    <div class="header-content">
-                        <p>REPUBLIC OF CAMEROON<br>
-                        <em>Peace – Work - Fatherland</em><br>
-                        ********************<br>MINISTRY OF HIGHER EDUCATION<br>
-                        
-                        <span id="to-hidden">********************<br>
-                        <strong>UNIVERSITY INSTITUT  OF <br>BUILDERS-SIGMEN</strong><br>
-                        
-                        ********************<br>
-                        PO box {{settings.postalBoxEn}}<br>
-                        
-                        Email: <a href="mailto:{{settings.email}}">{{settings.email}}</a></p></span>
-                    </div>
-                </div>
-                <div class="header-row2">
-                
-                    <h1 class="header-title"><strong>RELEVE DE NOTES</strong> / TRANSCRIPT</h1>
-                    <p><strong>Ref No</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  /26///{{settings.nameAbreviation}}</p>
-                </div>
-            </div>
-            
-            <!-- Infos étudiant (slot: studentInfo) -->
-            
-            <div class="student_block1">
-                <div>
-                    <p><strong><strong>NOM(S) ET PRENOM(S): </strong>{{student.NOM}} JEAN PIERRE</strong><br>
-                    <em>surname and name:</em></p>
-                </div>
-                <div>
-                    <p><strong>MATRICULE:</strong> <strong>{{student.MATRICULE}}</strong><br>
-                    <em>Registration N°:</em></p>
-                </div>
-            </div>
-            <div class="student-info">
-                <div>
-                    <p><strong>NÉ(E) LE: {{student.[DATE DE NAISSANCE]}}</strong><br>
-                    <em>Born on:</em></p>
-                </div>
-                <div>
-                    <p><strong>A:</strong> <strong>{{student.[LIEU DE NAISSANCE]}}</strong><br>
-                    <em>At:</em></p>
-                </div>
-                <div></div>
-                <div>
-                    <p><strong>CYCLE:</strong> <strong>LICENCE</strong><br>
-                    <em>Training cycle:</em></p>
-                </div>
-                <div>
-                    <p><strong>ANNÉE ACADÉMIQUE:</strong> <strong>{{student.[ANNEE ACADÉMIQUE]}}</strong><br>
-                    <em>Academic Year:</em></p>
-                </div>
-                <div>
-                    <p><strong>FILIÈRE:</strong> <strong>INFORMATIQUE DE GESTION</strong><br>
-                    <em>Field of Study:</em></p>
-                </div>
-                <div>
-                    <p><strong>NIVEAU:</strong> <strong>{{student.NIVEAU}}</strong><br>
-                    <em>Level:</em></p>
-                </div>
-                <div style="">
-                    <p><strong>SEMESTRE:</strong> <strong>3</strong><br>
-                    <em>Semester:</em></p>
-                </div>
-                <div style="display:none">
-                    <p><strong>OPTION:</strong> <strong>N/D</strong><br>
-                    <em>Option:</em></p>
-                </div>
-            </div>
-            
+.header-title { color: {{theme.colors.primary}}; }
+.validated { color: {{theme.colors.passingGrade}}; font-weight: bold; }
+.not-validated { color: {{theme.colors.failingGrade}}; }
+</style>
+</head>
+<body>
+<div class="container">
+	<div class="watermark">
+		{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt="Watermark"}}}
+	</div>
 
-            <div class="table">
-                <table>
-                    <thead>
-                        <!-- En-tête de tableau (slot: tableHeader) -->
-                        
-                        <tr class="table-head">
-                            <th class="table-code">CODE</th>
-                            <th colspan="3" class="table-ue">UNITE D'ENSEIGNEMENT</th>
-                            <th colspan="2" class="table-ec">ELEMENT CONSTITUTIF</th>
-                            <th class="table-session">SESSION</th>
-                            <th class="table-note">NOTE</th>
-                            <th class="table-average">MOYENNE</th>
-                            <th class="table-credit">CREDIT</th>
-                        </tr>
-                        
-                    </thead>
-                    <tbody>
-                        
-        <tr class="">
-          <td rowspan="2" class="table-code"><strong>INF{{student.TOTAL_CREDITS}}1</strong></td>
-          <td colspan="3" rowspan="2" class="table-ue table-ue-title"><strong>Algorithmique avancée</strong></td>
-          <td colspan="2" class="table-ec">Structures de données</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">14,00</td>
-          <td rowspan="2" class="table-average"><strong>14,50</strong></td>
-          <td rowspan="2" class="table-credit">6</td>
-        </tr>
-      
-          <tr class="">
-            <td colspan="2" class="table-ec">Complexité</td>
-            <td class="table-session">N/2024</td>
-            <td class="table-note">15,00</td>
-          </tr>
-        
-        <tr class="">
-          <td class="table-code"><strong>INF{{student.TOTAL_CREDITS}}2</strong></td>
-          <td colspan="3" class="table-ue table-ue-title"><strong>Bases de données</strong></td>
-          <td colspan="2" class="table-ec">SQL avancé</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">12,00</td>
-          <td class="table-average"><strong>12,00</strong></td>
-          <td class="table-credit">4</td>
-        </tr>
-      
-        <tr class="">
-          <td class="table-code"><strong>MAT{{student.TOTAL_CREDITS}}1</strong></td>
-          <td colspan="3" class="table-ue table-ue-title"><strong>Mathématiques discrètes</strong></td>
-          <td colspan="2" class="table-ec">Logique formelle</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">11,00</td>
-          <td class="table-average"><strong>11,50</strong></td>
-          <td class="table-credit">5</td>
-        </tr>
-      
-        <tr class="">
-          <td class="table-code"><strong>ENG{{student.TOTAL_CREDITS}}1</strong></td>
-          <td colspan="3" class="table-ue table-ue-title"><strong>Anglais technique</strong></td>
-          <td colspan="2" class="table-ec">Communication écrite</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">16,00</td>
-          <td class="table-average"><strong>16,00</strong></td>
-          <td class="table-credit">3</td>
-        </tr>
-      
-        <tr class="">
-          <td class="table-code"><strong>PRO{{student.TOTAL_CREDITS}}1</strong></td>
-          <td colspan="3" class="table-ue table-ue-title"><strong>Projet tuteuré</strong></td>
-          <td colspan="2" class="table-ec">Projet de groupe</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">17,00</td>
-          <td class="table-average"><strong>17,00</strong></td>
-          <td class="table-credit">6</td>
-        </tr>
-      
-        <tr class="">
-          <td class="table-code"><strong>STG{{student.TOTAL_CREDITS}}1</strong></td>
-          <td colspan="3" class="table-ue table-ue-title"><strong>Stage</strong></td>
-          <td colspan="2" class="table-ec">Stage en entreprise</td>
-          <td class="table-session">N/2024</td>
-          <td class="table-note">15,00</td>
-          <td class="table-average"><strong>15,00</strong></td>
-          <td class="table-credit">6</td>
-        </tr>
-      
-                        <!-- Résumé / décision (slot: summary) -->
-                        
-                        <tr class="table-summary">
-                            <td colspan="10">&nbsp;</td>
-                        </tr>
-                        <tr class="table-footer">
-                            <td class="summary-label">RELEVE NIVEAU</td>
-                            <td class="summary-label"> SEMESTRE </td>
-                            <td class="summary-label">TOTAL CREDIT</td>
-                            <td colspan="2" class="summary-label">MOYENNE SEMESTRIELLE / 20</td>
-                            <td class="summary-label">MGP</td>
-                            <td class="summary-label">GRADE</td>
-                            <td colspan="4" class="summary-label">DECISION DU JURY</td>
-                        </tr>
-                        
-                              <tr class="table-footer-values">
-                                <td class="summary-value"><strong>{{student.NIVEAU}}</strong></td>
-                                <td class="summary-value"><strong>3</strong></td>
-                                <td class="summary-value"><strong>{{student.TOTAL_CREDITS}}</strong></td>
-                                <td colspan="2" class="summary-value"><strong>14,42</strong></td>
-                                <td class="summary-value"><strong>3,3</strong></td>
-                                <td class="summary-value"><strong>B+</strong></td>
-                                <td colspan="4" class="summary-value validated"><strong>SEMESTRE VALIDE</strong></td>
-                              </tr>
-                            
-                        
-                    </tbody>
-                </table>
-            </div>
+	<div class="header">
+		<div class="header-row1">
+			<div class="header-content">
+				<p>REPUBLIQUE DU CAMEROUN<br>
+				<em>Paix – Travail – Patrie</em><br>
+				********************<br>
+				MINISTERE DE L'ENSEIGNEMENT SUPERIEUR<br>
+				{{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+				{{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
+				{{#if institution.isIPES}}
+				********************<br>
+				<strong>{{upper institution.nameFr}}</strong><br>
+				{{#if institution.postalBox}}********************<br>B.P {{institution.postalBox}}<br>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{/if}}
+				</p>
+			</div>
+			<div class="header-logo-content">
+				{{#if (or logos.universitySvg logos.university)}}<div>{{{logo svg=logos.universitySvg url=logos.university alt="University Logo" style="height:70px;"}}}</div>{{/if}}
+				{{#if (or logos.facultySvg logos.faculty)}}<div>{{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty Logo" style="height:50px;margin:5px;"}}}</div>{{/if}}
+				{{#if institution.isIPES}}{{#if (or institution.logoSvg institution.logoUrl)}}<div>{{{logo svg=institution.logoSvg url=institution.logoUrl alt="IPES Logo" style="height:70px;"}}}</div>{{/if}}{{/if}}
+			</div>
+			<div class="header-content">
+				<p>REPUBLIC OF CAMEROON<br>
+				<em>Peace – Work - Fatherland</em><br>
+				********************<br>
+				MINISTRY OF HIGHER EDUCATION<br>
+				{{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+				{{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
+				{{#if institution.isIPES}}
+				********************<br>
+				<strong>{{upper institution.nameEn}}</strong><br>
+				{{#if institution.postalBox}}********************<br>PO box {{institution.postalBox}}<br>{{/if}}
+				{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				{{/if}}
+				</p>
+			</div>
+		</div>
+		<div class="header-row2">
+			<h1 class="header-title"><strong>RELEVE DE NOTES</strong> / TRANSCRIPT</h1>
+			<p><strong>Ref N°</strong> {{document.referenceNumber}}</p>
+		</div>
+	</div>
 
-            <div class="grade-sign">
-                <div class="grade-scale">
-                    <!-- ... tableau des grades existant ... -->
-                    <div>
-                    <table style="table-layout: auto;">
-                            <tbody style="font-size: 6px;">
-                            <tr>
-                                <td><strong>Grade</strong></td>
-                                <td><strong>Note/4</strong></td>
-                                <td><strong>Appréciation</strong></td>
-                                <td><strong>Moy /20</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>A+</strong></td>
-                                <td><strong>4,0</strong></td>
-                                <td><strong>Excellent</strong></td>
-                                <td><strong>[18-20]</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>A</strong></td>
-                                <td><strong>3,7</strong></td>
-                                <td><strong>Très Bien</strong></td>
-                                <td><strong>[16-18[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>B+</strong></td>
-                                <td><strong>3,3</strong></td>
-                                <td><strong>Bien</strong></td>
-                                <td><strong>[14-16[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>B</strong></td>
-                                <td><strong>3</strong></td>
-                                <td><strong>Assez Bien</strong></td>
-                                <td><strong>[13-14[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>B-</strong></td>
-                                <td><strong>2,7</strong></td>
-                                <td><strong>Assez Bien</strong></td>
-                                <td><strong>[12-13[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>C+</strong></td>
-                                <td><strong>2,3</strong></td>
-                                <td><strong>Passable</strong></td>
-                                <td><strong>[11-12[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>C</strong></td>
-                                <td><strong>2,0</strong></td>
-                                <td><strong>Passable</strong></td>
-                                <td><strong>[10-11[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>C-</strong></td>
-                                <td><strong>1,7</strong></td>
-                                <td><strong>Insuffisant</strong></td>
-                                <td><strong>[09-10[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>D</strong></td>
-                                <td><strong>1,3</strong></td>
-                                <td><strong>Faible</strong></td>
-                                <td><strong>[08-09[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>E</strong></td>
-                                <td><strong>1,0</strong></td>
-                                <td><strong>Très Faible</strong></td>
-                                <td><strong>[06-08[</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>F</strong></td>
-                                <td><strong>0,0</strong></td>
-                                <td><strong>Nul</strong></td>
-                                <td><strong>[00-06[</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>        
-                </div>
-                    
-                    <!-- QR Code avec badge démo si nécessaire -->
-                    <div style="position: relative;">
-                        
-                          <img src="data:image/png;base64,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{{student.TOTAL_CREDITS}}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{{student.TOTAL_CREDITS}}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" alt="QR Code (Chiffrement Compact)" class="qr-code">
-                          
-                        
-                    </div>
-                </div>
+	<div class="student_block1">
+		<div>
+			<p><strong><strong>NOM(S) ET PRENOM(S) :</strong> {{student.lastName}} {{student.firstName}}</strong><br>
+			<em>Surname and name</em></p>
+		</div>
+		<div>
+			<p><strong>MATRICULE :</strong> <strong>{{student.matricule}}</strong><br>
+			<em>Registration N°</em></p>
+		</div>
+	</div>
+	<div class="student-info">
+		<div>
+			<p><strong>NÉ(E) LE : {{student.birthDate}}</strong><br>
+			<em>Born on</em></p>
+		</div>
+		<div>
+			<p><strong>À :</strong> <strong>{{student.birthPlace}}</strong><br>
+			<em>At</em></p>
+		</div>
+		<div></div>
+		<div>
+			<p><strong>CYCLE :</strong> <strong>{{program.level}}</strong><br>
+			<em>Training cycle</em></p>
+		</div>
+		<div>
+			<p><strong>ANNÉE ACADÉMIQUE :</strong> <strong>{{document.academicYear}}</strong><br>
+			<em>Academic year</em></p>
+		</div>
+		<div>
+			<p><strong>FILIÈRE :</strong> <strong>{{program.name}}</strong><br>
+			<em>Field of study</em></p>
+		</div>
+		<div>
+			<p><strong>NIVEAU :</strong> <strong>{{class.name}}</strong><br>
+			<em>Level</em></p>
+		</div>
+		<div>
+			<p><strong>CLASSE :</strong> <strong>{{class.code}}</strong><br>
+			<em>Class</em></p>
+		</div>
+		{{#if student.option}}
+		<div>
+			<p><strong>OPTION :</strong> <strong>{{student.option}}</strong><br>
+			<em>Option</em></p>
+		</div>
+		{{/if}}
+	</div>
 
-                <!-- Signature (slot: signatures) -->
-                
-                <div class="signature">
-                    <div><strong>Douala, le</strong>
-                    <br/><i>Douala, the</i></div><br/>
+	<div class="table">
+		<table>
+			<thead>
+				<tr class="table-head">
+					<th class="table-code">CODE</th>
+					<th colspan="3" class="table-ue">UNITE D'ENSEIGNEMENT</th>
+					<th colspan="2" class="table-ec">ELEMENT CONSTITUTIF</th>
+					<th class="table-session">SESSION</th>
+					<th class="table-note">NOTE</th>
+					<th class="table-average">MOYENNE</th>
+					<th class="table-credit">CREDIT</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each semesters}}
+					{{#each this.ues}}
+						{{#each this.courses}}
+						<tr>
+							<td class="table-code"><strong>{{this.code}}</strong></td>
+							<td colspan="3" class="table-ue table-ue-title"><strong>{{../name}}</strong></td>
+							<td colspan="2" class="table-ec">{{this.name}}</td>
+							<td class="table-session">{{../../name}}</td>
+							<td class="table-note">{{formatNumber this.exam}}</td>
+							<td class="table-average"><strong>{{formatNumber this.average}}</strong></td>
+							<td class="table-credit">{{this.credits}}</td>
+						</tr>
+						{{/each}}
+					{{/each}}
+				{{/each}}
 
-                    
-                    <div id="to-nothidden"><strong>LE CHEF D'ÉTABLISSEMENT</strong>
-                    <br/><i>The Dean of the Faculty</i></div>
-                    <div id="to-hidden"><strong>Le DOYEN Faculté</strong>
-                    <br/><i>The DEAN Faculty</i></div>
-                    
-                </div>
-                
-            </div>
+				<tr class="table-summary">
+					<td colspan="10">&nbsp;</td>
+				</tr>
+				<tr class="table-footer">
+					<td class="summary-label">RELEVE NIVEAU</td>
+					<td class="summary-label">SEMESTRE</td>
+					<td class="summary-label">TOTAL CREDIT</td>
+					<td colspan="2" class="summary-label">MOYENNE / 20</td>
+					<td class="summary-label">MGP</td>
+					<td class="summary-label">GRADE</td>
+					<td colspan="4" class="summary-label">DECISION DU JURY</td>
+				</tr>
+				<tr class="table-footer-values">
+					<td class="summary-value"><strong>{{class.name}}</strong></td>
+					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{summary.creditsEarned}}</strong></td>
+					<td colspan="2" class="summary-value"><strong>{{formatNumber summary.generalAverage}}</strong></td>
+					<td class="summary-value"><strong>—</strong></td>
+					<td class="summary-value"><strong>{{getAppreciation summary.generalAverage}}</strong></td>
+					<td colspan="4" class="summary-value validated"><strong>{{summary.decision}}</strong></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-            
-            <div id="to-hidden" class="signature-{{settings.establishmentType}}"><strong>Le Directeur de L'{{settings.nameAbreviation}}</strong>
-            <br/><i>The Director of {{settings.nameAbreviation}}</i></div>
-            
-            </div>
+	<div class="grade-sign">
+		<div class="grade-scale">
+			<div>
+				<table style="table-layout: auto;">
+					<tbody style="font-size: 6px;">
+						<tr><td><strong>Grade</strong></td><td><strong>Note/4</strong></td><td><strong>Appréciation</strong></td><td><strong>Moy /20</strong></td></tr>
+						<tr><td><strong>A+</strong></td><td><strong>4,0</strong></td><td><strong>Excellent</strong></td><td><strong>[18-20]</strong></td></tr>
+						<tr><td><strong>A</strong></td><td><strong>3,7</strong></td><td><strong>Très Bien</strong></td><td><strong>[16-18[</strong></td></tr>
+						<tr><td><strong>B+</strong></td><td><strong>3,3</strong></td><td><strong>Bien</strong></td><td><strong>[14-16[</strong></td></tr>
+						<tr><td><strong>B</strong></td><td><strong>3,0</strong></td><td><strong>Assez Bien</strong></td><td><strong>[13-14[</strong></td></tr>
+						<tr><td><strong>B-</strong></td><td><strong>2,7</strong></td><td><strong>Assez Bien</strong></td><td><strong>[12-13[</strong></td></tr>
+						<tr><td><strong>C+</strong></td><td><strong>2,3</strong></td><td><strong>Passable</strong></td><td><strong>[11-12[</strong></td></tr>
+						<tr><td><strong>C</strong></td><td><strong>2,0</strong></td><td><strong>Passable</strong></td><td><strong>[10-11[</strong></td></tr>
+						<tr><td><strong>C-</strong></td><td><strong>1,7</strong></td><td><strong>Insuffisant</strong></td><td><strong>[09-10[</strong></td></tr>
+						<tr><td><strong>D</strong></td><td><strong>1,3</strong></td><td><strong>Faible</strong></td><td><strong>[08-09[</strong></td></tr>
+						<tr><td><strong>E</strong></td><td><strong>1,0</strong></td><td><strong>Très Faible</strong></td><td><strong>[06-08[</strong></td></tr>
+						<tr><td><strong>F</strong></td><td><strong>0,0</strong></td><td><strong>Nul</strong></td><td><strong>[00-06[</strong></td></tr>
+					</tbody>
+				</table>
+			</div>
+			<div style="position: relative;">
+				{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR Code" class="qr-code">{{/if}}
+			</div>
+		</div>
 
-            <!-- Pied de page (slot: footer) -->
-            
-            <div class="footer-note">
-                
-                Il n'est délivré qu'un seul exemplaire de relevé de note, le titulaire peut en faire des copies certifiées conformes.<br>
-                This transcript is delivered only once, the owner can do many certified copies as necessary
-            </div>
-            
-        </div>
-    </body>
-    </html>
-  
+		<div class="signature">
+			<div><strong>{{institution.city}}, le {{document.issueDate}}</strong>
+			<br/><i>{{institution.city}}, the {{document.issueDate}}</i></div><br/>
+
+			{{#if institution.isIPES}}
+				<div><strong>Le Directeur de l'{{institution.abbreviation}}</strong>
+				<br/><i>The Director of {{institution.abbreviation}}</i></div>
+			{{else}}
+				<div><strong>Le Doyen de la Faculté</strong>
+				<br/><i>The Dean of the Faculty</i></div>
+			{{/if}}
+		</div>
+	</div>
+
+	{{#if institution.isIPES}}
+	<div class="signature-{{institution.type}}"><strong>Le Directeur de l'{{institution.abbreviation}}</strong>
+	<br/><i>The Director of {{institution.abbreviation}}</i></div>
+	{{/if}}
+</div>
+
+<div class="footer-note">
+	Il n'est délivré qu'un seul exemplaire de relevé de notes, le titulaire peut en faire des copies certifiées conformes.<br>
+	<em>This transcript is delivered only once, the owner can do many certified copies as necessary.</em>
+</div>
+</body>
+</html>

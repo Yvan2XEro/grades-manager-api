@@ -98,7 +98,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - DOCUMENT NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
 
 	<div class="watermark">
-		{{#if institution.watermarkLogoUrl}}<img src="{{institution.watermarkLogoUrl}}" alt="Watermark">{{/if}}
+		{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt="Watermark"}}}
 	</div>
 
 	<div class="header">
@@ -109,19 +109,19 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					{{#if theme.display.bilingual}}<em>{{country.mottoFr}}</em>{{else}}<strong>{{country.mottoFr}}</strong>{{/if}}<br>
 					********************<br>
 					{{ministry.fr}}<br>
-					{{#if university.fr}}********************<br><strong>{{university.fr}}</strong><br>{{/if}}
-					{{#if faculty.fr}}********************<br><strong>{{faculty.fr}}</strong><br>{{/if}}
+					{{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+					{{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong><br>{{/if}}
 					********************<br>
-					<strong>{{institution.nameFr}}</strong><br>
+					<strong>{{upper institution.nameFr}}</strong><br>
 					{{#if institution.postalBox}}********************<br>B.P. {{institution.postalBox}}<br>{{/if}}
 					{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>
 			</div>
 
 			<div class="header-logo-content">
-				<div>{{#if logos.university}}<img src="{{logos.university}}" alt="University Logo">{{/if}}</div>
-				<div>{{#if logos.faculty}}<img src="{{logos.faculty}}" alt="Faculty Logo">{{/if}}</div>
-				<div>{{#if logos.institution}}<img src="{{logos.institution}}" alt="Institution Logo">{{/if}}</div>
+				<div>{{{logo svg=logos.universitySvg url=logos.university alt="University Logo"}}}</div>
+				<div>{{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty Logo"}}}</div>
+				<div>{{{logo svg=logos.institutionSvg url=logos.institution alt="Institution Logo"}}}</div>
 			</div>
 
 			<div class="header-content">
@@ -130,10 +130,10 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 					{{#if theme.display.bilingual}}<em>{{country.mottoEn}}</em>{{else}}<strong>{{country.mottoEn}}</strong>{{/if}}<br>
 					********************<br>
 					{{ministry.en}}<br>
-					{{#if university.en}}********************<br><strong>{{university.en}}</strong><br>{{/if}}
-					{{#if faculty.en}}********************<br><strong>{{faculty.en}}</strong><br>{{/if}}
+					{{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+					{{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong><br>{{/if}}
 					********************<br>
-					<strong>{{institution.nameEn}}</strong><br>
+					<strong>{{upper institution.nameEn}}</strong><br>
 					{{#if institution.postalBox}}********************<br>P.O. Box {{institution.postalBox}}<br>{{/if}}
 					{{#if institution.contactEmail}}Email: <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
 				</p>
@@ -150,8 +150,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 	<div class="content">
 		<div class="list-nomination-header">
 			<p>
-				<strong>Je soussigné(e), {{authority.name}}, {{authority.role}}{{#if institution.nameFr}} de {{institution.nameFr}}{{/if}},</strong><br>
-				{{#if theme.display.bilingual}}<em>I, the undersigned, {{authority.name}}, {{authority.role}}{{#if institution.nameEn}} of the {{institution.nameEn}}{{/if}},</em>{{/if}}
+				<strong>Je soussigné(e), {{authority.name}}, {{authority.role}}{{#if institution.nameFr}} de {{upper institution.nameFr}}{{/if}},</strong><br>
+				{{#if theme.display.bilingual}}<em>I, the undersigned, {{authority.name}}, {{authority.role}}{{#if institution.nameEn}} of the {{upper institution.nameEn}}{{/if}},</em>{{/if}}
 			</p>
 
 			<p>
@@ -172,8 +172,8 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 			</p>
 
 			<p>
-				Inscrit(e) à <strong>{{institution.nameFr}}</strong> sous le matricule : <strong>{{student.matricule}}</strong><br>
-				{{#if theme.display.bilingual}}<em>Registered at the <strong>{{institution.nameEn}}</strong> under the matricule number :</em>{{/if}}
+				Inscrit(e) à <strong>{{upper institution.nameFr}}</strong> sous le matricule : <strong>{{student.matricule}}</strong><br>
+				{{#if theme.display.bilingual}}<em>Registered at the <strong>{{upper institution.nameEn}}</strong> under the matricule number :</em>{{/if}}
 			</p>
 
 			<p>

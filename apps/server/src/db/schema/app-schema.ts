@@ -318,10 +318,16 @@ export const centers = pgTable(
 		contactPhone: text("contact_phone"),
 		/** Logo of the center itself (used in PDF headers). */
 		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the center logo (preferred over `logoUrl` in templates when set). */
+		logoSvg: text("logo_svg"),
 		/** Logo of the principal administrative authority (e.g. ministry). */
 		adminInstanceLogoUrl: text("admin_instance_logo_url"),
+		/** Inline SVG markup for the admin instance logo (preferred over `adminInstanceLogoUrl`). */
+		adminInstanceLogoSvg: text("admin_instance_logo_svg"),
 		/** Background watermark logo for documents. */
 		watermarkLogoUrl: text("watermark_logo_url"),
+		/** Inline SVG markup for the watermark (preferred over `watermarkLogoUrl`). */
+		watermarkLogoSvg: text("watermark_logo_svg"),
 		/** French legal authorization order text (e.g. "Arrêté N° 160 ..."). */
 		authorizationOrderFr: text("authorization_order_fr"),
 		/** English authorization order text. */
@@ -356,6 +362,8 @@ export const centerAdministrativeInstances = pgTable(
 		acronymFr: text("acronym_fr"),
 		acronymEn: text("acronym_en"),
 		logoUrl: text("logo_url"),
+		/** Inline SVG markup for this admin instance's logo (preferred over `logoUrl`). */
+		logoSvg: text("logo_svg"),
 		showOnTranscripts: boolean("show_on_transcripts").notNull().default(true),
 		showOnCertificates: boolean("show_on_certificates").notNull().default(true),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -965,6 +973,8 @@ export const institutions = pgTable(
 		postalBox: text("postal_box"),
 		website: text("website"),
 		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the institution logo (preferred over `logoUrl` when set). */
+		logoSvg: text("logo_svg"),
 		coverImageUrl: text("cover_image_url"),
 		parentInstitutionId: text("parent_institution_id").references(
 			(): any => institutions.id,
@@ -2300,6 +2310,19 @@ export const exportTemplates = pgTable(
 		 */
 		isSystemDefault: boolean("is_system_default").notNull().default(false),
 		description: text("description"),
+		/**
+		 * Distinguishes seeded variants:
+		 *   - `"standard"` — header with institution + tutelle (faculty/university).
+		 *   - `"center"`   — header with institution + center data (no tutelle).
+		 *
+		 * Used by the program form to filter the right options based on the
+		 * program's `centerId`. Custom user-created templates default to
+		 * "standard"; admins can change it via the editor.
+		 */
+		variant: text("variant")
+			.$type<"standard" | "center">()
+			.notNull()
+			.default("standard"),
 
 		// Raw Handlebars template source
 		templateBody: text("template_body").notNull(),

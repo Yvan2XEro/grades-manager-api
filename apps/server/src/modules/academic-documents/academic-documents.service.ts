@@ -6,7 +6,7 @@ import type {
 	ExportTemplateType,
 } from "../../db/schema/app-schema";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
-import { loadTemplate } from "../exports/template-helper";
+import { loadTemplate, logoHelper } from "../exports/template-helper";
 import {
 	getDefaultTheme,
 	mergeTheme,
@@ -40,12 +40,21 @@ function ensureHelpers() {
 	Handlebars.registerHelper("mod", (a, b) => Number(a) % Number(b));
 	Handlebars.registerHelper("upper", (a) => String(a ?? "").toUpperCase());
 	Handlebars.registerHelper("lower", (a) => String(a ?? "").toLowerCase());
-	Handlebars.registerHelper("formatNumber", (value: unknown, decimals = 2) => {
-		if (value === null || value === undefined || value === "") return "—";
-		const n = typeof value === "number" ? value : Number(value);
-		if (!Number.isFinite(n)) return "—";
-		return n.toFixed(decimals).replace(".", ",");
-	});
+	Handlebars.registerHelper(
+		"formatNumber",
+		(value: unknown, decimals: unknown = 2) => {
+			if (value === null || value === undefined || value === "") return "—";
+			const n = typeof value === "number" ? value : Number(value);
+			if (!Number.isFinite(n)) return "—";
+			// Handlebars trails an options hash; coerce non-number `decimals` to 2
+			// so `{{formatNumber x}}` produces 2 decimals like `{{formatNumber x 2}}`.
+			const d =
+				typeof decimals === "number" && Number.isFinite(decimals)
+					? decimals
+					: 2;
+			return n.toFixed(d).replace(".", ",");
+		},
+	);
 	Handlebars.registerHelper("getAppreciation", (score: unknown) => {
 		const n = Number(score);
 		if (!Number.isFinite(n)) return "Absent";
@@ -56,6 +65,10 @@ function ensureHelpers() {
 		if (n >= 10) return "Passable";
 		return "Insuffisant";
 	});
+	Handlebars.registerHelper("logo", logoHelper);
+	Handlebars.registerHelper("or", (...args: unknown[]) =>
+		args.slice(0, -1).some((v) => Boolean(v)),
+	);
 	helpersRegistered = true;
 }
 
@@ -237,7 +250,43 @@ function formatDate(date: Date | string | null | undefined): string {
 	return d.toLocaleDateString("fr-FR");
 }
 
-function diplomaTitleFor(kind: DocumentKind, programName: string) {
+/**
+ * Reference number builder.
+ *
+ * IPES (institution.type === "institution"):
+ *   {YEAR}/{tutelleSigles top-down…}/VDPSAA/VDSSE/VDRC/CDAASSR/{institutionSigle}
+ *   → e.g. 2026/UDO/FMSP/VDPSAA/VDSSE/VDRC/CDAASSR/IUD
+ *
+ * Faculty (institution.type === "faculty"):
+ *   {YEAR}/{tutelleSigles…}/{institutionSigle}/VDPSAA/VDSSE/VDRC/CDAASSR/SSE
+ *   → e.g. 2026/UDO/FMSP/VDPSAA/VDSSE/VDRC/CDAASSR/SSE
+ *
+ * The four constants (VDPSAA / VDSSE / VDRC / CDAASSR) are FMSP/UDo
+ * service-codes inherited from the historical reference format. They stay
+ * hardcoded for now — wire them through institution metadata if a tenant
+ * needs different ones.
+ */
+function buildReferenceNumber(args: {
+	institutionType: "institution" | "faculty" | "university";
+	institutionSigle: string;
+	tutelleSigles: string[];
+	year: number;
+}): string {
+	const { institutionType, institutionSigle, tutelleSigles, year } = args;
+	const constants = ["VDPSAA", "VDSSE", "VDRC", "CDAASSR"];
+	const parents = tutelleSigles.filter(Boolean);
+	const parts: Array<string | number> =
+		institutionType === "faculty"
+			? [year, ...parents, institutionSigle, ...constants, "SSE"]
+			: [year, ...parents, ...constants, institutionSigle];
+	return parts.filter(Boolean).join("/");
+}
+
+function diplomaTitleFor(
+	kind: DocumentKind,
+	programName: string,
+	period: "semester" | "annual" = "annual",
+) {
 	if (kind === "diploma") {
 		return {
 			fr: `DIPLÔME D'ÉTAT — ${programName.toUpperCase()}`,
@@ -245,10 +294,18 @@ function diplomaTitleFor(kind: DocumentKind, programName: string) {
 		};
 	}
 	if (kind === "transcript") {
-		return {
-			fr: "RELEVÉ DE NOTES OFFICIEL",
-			en: "OFFICIAL ACADEMIC TRANSCRIPT",
-		};
+		// Semester vs year is a meaningful distinction for transcripts in
+		// the FMSP/UDo workflow — admins commonly issue a "relevé semestriel"
+		// per semester and an "annual transcript" at year-end.
+		return period === "semester"
+			? {
+					fr: "RELEVÉ DE NOTES SEMESTRIEL",
+					en: "OFFICIAL SEMESTER TRANSCRIPT",
+				}
+			: {
+					fr: "RELEVÉ DE NOTES ANNUEL",
+					en: "OFFICIAL ANNUAL TRANSCRIPT",
+				};
 	}
 	return {
 		fr: "ATTESTATION DE RÉUSSITE",
@@ -298,34 +355,35 @@ async function buildRenderData(args: {
 	deliberation: Awaited<ReturnType<typeof repo.loadDeliberationResult>>;
 	theme: Record<string, unknown>;
 	demoMode: boolean;
+	/** "semester" | "annual" — defaults to "annual". Drives the document title. */
+	period?: "semester" | "annual";
+	/** Optional semester filter when period === "semester". */
+	semesterId?: string;
 }): Promise<DocumentRenderData> {
 	const { kind, studentCtx, deliberation, theme, demoMode } = args;
-	const { student, institution } = studentCtx;
+	const period = args.period ?? "annual";
+	const { student, institution, tutelleChain } = studentCtx;
 	const cls = student.classRef;
 	const program = cls?.program;
-	const center = program?.center ?? null;
-	const parent = institution?.parentInstitution ?? null;
-	// Grandparent is loaded by loadStudentContext (institution → parent → parent).
-	const grandparent =
-		(parent as typeof parent & { parentInstitution?: typeof parent })
-			?.parentInstitution ?? null;
+	// Prefer the full center payload (admin instances + legal texts) for the
+	// center-variant templates; fall back to the lightweight relation row.
+	const fullCenter = cls?.id ? await repo.loadCenterByClass(cls.id) : null;
+	const center = fullCenter ?? program?.center ?? null;
+	// `tutelleChain` is loaded by the repo top-down (highest tutelle first), e.g.
+	// `[UDo, FMSP]` for ISSAM. Resolve the supervising university (type:
+	// university) and faculty (type: faculty) from that chain so the export
+	// header can render Ministère → Université → Faculté → Institut.
+	const supervisingUniversity =
+		tutelleChain.find((i) => i.type === "university") ?? null;
+	const supervisingFaculty =
+		tutelleChain.find((i) => i.type === "faculty") ?? null;
 
 	const fullName = `${student.profile.lastName ?? ""} ${
 		student.profile.firstName ?? ""
 	}`.trim();
 
-	const titles = diplomaTitleFor(kind, program?.name ?? "");
+	const titles = diplomaTitleFor(kind, program?.name ?? "", period);
 
-	// Tutelle chain resolution. Two supported shapes:
-	//   1) institut → faculté → université  (parent is a faculty, grandparent the university)
-	//   2) institut → université             (parent is the university, no faculty)
-	// When neither parent is a faculty we fall back to "no supervising faculty".
-	const supervisingFaculty = parent?.type === "faculty" ? parent : null;
-	const supervisingUniversity = supervisingFaculty
-		? grandparent
-		: parent?.type !== "faculty"
-			? parent
-			: null;
 	const universityName =
 		supervisingUniversity?.nameFr ?? institution?.nameFr ?? "";
 	const universityNameEn =
@@ -386,7 +444,18 @@ async function buildRenderData(args: {
 	const document = {
 		titleFr: titles.fr,
 		titleEn: titles.en,
-		referenceNumber: `${new Date().getFullYear()}/${institution?.abbreviation ?? "INS"}/${kind.toUpperCase()}/${student.registrationNumber}`,
+		referenceNumber: buildReferenceNumber({
+			institutionType: institution?.type ?? "institution",
+			institutionSigle:
+				institution?.abbreviation ||
+				institution?.shortName ||
+				institution?.nameFr ||
+				"INS",
+			tutelleSigles: (tutelleChain ?? []).map(
+				(p) => p.abbreviation || p.shortName || p.nameFr || "",
+			),
+			year: new Date().getFullYear(),
+		}),
 		issueDate: formatDate(new Date()),
 		academicYear: cls?.academicYear?.name ?? "",
 		yearObtention: cls?.academicYear?.name?.split("/")?.pop() ?? "",
@@ -403,8 +472,13 @@ async function buildRenderData(args: {
 	const themeRecord = theme as Record<string, unknown>;
 	const themeFonts = (themeRecord?.fonts ?? {}) as Record<string, unknown>;
 	const themeColors = (themeRecord?.colors ?? {}) as Record<string, unknown>;
-	const watermarkLogo =
-		center?.watermarkLogoUrl ?? institution?.logoUrl ?? null;
+	// Watermark = the active subject's own logo. For the institution-level
+	// templates this is the institution itself (INSES → INSES logo, faculty
+	// → faculty logo). The center variant templates ignore these values and
+	// use `center.logoSvg/Url` directly so center exports stay self-contained
+	// and don't leak parent-institution branding.
+	const watermarkLogo = institution?.logoUrl ?? null;
+	const watermarkLogoSvg = institution?.logoSvg ?? null;
 
 	const settings = {
 		establishmentType,
@@ -417,8 +491,11 @@ async function buildRenderData(args: {
 		postalBoxEn: institution?.postalBox ?? "",
 		email: institution?.contactEmail ?? "",
 		logo: watermarkLogo,
-		universityLogo: parent?.logoUrl ?? null,
+		logoSvg: watermarkLogoSvg,
+		universityLogo: supervisingUniversity?.logoUrl ?? null,
+		universityLogoSvg: supervisingUniversity?.logoSvg ?? null,
 		facultyLogo: supervisingFaculty?.logoUrl ?? institution?.logoUrl ?? null,
+		facultyLogoSvg: supervisingFaculty?.logoSvg ?? institution?.logoSvg ?? null,
 	};
 
 	// DIPLOMATION-shape uppercase keys on `student` (Excel column names).
@@ -473,6 +550,14 @@ async function buildRenderData(args: {
 		},
 		institution: {
 			id: institution?.id,
+			type: institution?.type ?? "institution",
+			// Convenience booleans so templates can write `{{#if institution.isIPES}}`
+			// instead of `{{#if (eq institution.type 'institution')}}`.
+			// "IPES" = Institut Privé d'Enseignement Supérieur, modeled as the
+			// `"institution"` row type (not a faculty/university).
+			isIPES: institution?.type === "institution",
+			isFaculty: institution?.type === "faculty",
+			isUniversity: institution?.type === "university",
 			nameFr: institution?.nameFr ?? "",
 			nameEn: institution?.nameEn ?? "",
 			abbreviation: institution?.abbreviation ?? "",
@@ -481,14 +566,65 @@ async function buildRenderData(args: {
 			city: institution?.addressFr ?? "",
 			addressFr: institution?.addressFr ?? "",
 			addressEn: institution?.addressEn ?? "",
+			logoUrl: institution?.logoUrl ?? null,
+			logoSvg: institution?.logoSvg ?? null,
 			watermarkLogoUrl: watermarkLogo,
+			watermarkLogoSvg: watermarkLogoSvg,
 		},
+		// Full tutelle chain (top-down — highest authority first). Templates
+		// iterate with `{{#each tutelleChain}}` so the header adapts to any
+		// hierarchy depth (institut → faculté → université → ministère, etc.)
+		// without hardcoding `university` / `faculty` placeholders.
+		tutelleChain: (tutelleChain ?? []).map((p) => ({
+			id: p.id,
+			type: p.type,
+			nameFr: p.nameFr ?? "",
+			nameEn: p.nameEn ?? "",
+			shortName: p.shortName ?? "",
+			abbreviation: p.abbreviation ?? "",
+			postalBox: p.postalBox ?? "",
+			contactEmail: p.contactEmail ?? "",
+			logoUrl: p.logoUrl ?? null,
+			logoSvg: p.logoSvg ?? null,
+		})),
+		// Direct parent (= last entry in tutelleChain since chain is top-down).
+		// Used for the "Doyen de [parent]" signature on IPES documents.
+		parentInstitution: (() => {
+			const list = tutelleChain ?? [];
+			const p = list.length > 0 ? list[list.length - 1] : null;
+			if (!p) return null;
+			// Display label fallback: abbreviation > shortName > nameFr.
+			// Templates use this to render "LE DOYEN <displaySigle>" without
+			// having to repeat the fallback chain in Handlebars.
+			const displaySigle = p.abbreviation || p.shortName || p.nameFr || "";
+			return {
+				id: p.id,
+				type: p.type,
+				nameFr: p.nameFr ?? "",
+				nameEn: p.nameEn ?? "",
+				shortName: p.shortName ?? "",
+				abbreviation: p.abbreviation ?? "",
+				displaySigle,
+			};
+		})(),
+		// Full center payload (or null when the program isn't centre-attached).
+		// Center-variant templates read this; standard templates ignore it.
+		center,
 		logos: {
 			institution: institution?.logoUrl ?? null,
+			institutionSvg: institution?.logoSvg ?? null,
 			faculty: supervisingFaculty?.logoUrl ?? null,
+			facultySvg: supervisingFaculty?.logoSvg ?? null,
 			university: supervisingUniversity?.logoUrl ?? null,
+			universitySvg: supervisingUniversity?.logoSvg ?? null,
 			ministry: null as string | null,
+			ministrySvg: null as string | null,
 			coatOfArms: null as string | null,
+			coatOfArmsSvg: null as string | null,
+			// Logos for every parent in the tutelle chain — paired with the
+			// `tutelleChain` entries above (same order). Templates can use
+			// `{{this.logoUrl}}` (or `{{{this.logoSvg}}}`) inside
+			// `{{#each tutelleChain}}` instead.
 		},
 		jury: {
 			admissionDate: formatDate(deliberation?.deliberation.openedAt) || "—",
@@ -561,7 +697,44 @@ async function renderPdf(html: string, theme: Record<string, unknown>) {
 	});
 	try {
 		const p = await browser.newPage();
-		await p.setContent(html, { waitUntil: "networkidle0" });
+		// Use `domcontentloaded` instead of `networkidle0` — the latter waits
+		// for ALL network activity to settle, which times out (default 30 s)
+		// when the document references external images (institution logos,
+		// QR codes hosted elsewhere) that don't load. We then explicitly
+		// wait a short tick for inline assets and call it done.
+		await p.setContent(html, {
+			waitUntil: "domcontentloaded",
+			timeout: 60_000,
+		});
+		// Give in-page images a chance to decode without blocking forever on
+		// remote ones. `evaluate` returns once all <img> have either loaded or
+		// errored, capped to 5 s.
+		await p
+			.evaluate(
+				() =>
+					new Promise<void>((resolve) => {
+						const imgs = Array.from(document.images);
+						if (imgs.length === 0) return resolve();
+						let remaining = imgs.length;
+						const done = () => {
+							remaining--;
+							if (remaining <= 0) resolve();
+						};
+						const cap = setTimeout(resolve, 5_000);
+						for (const img of imgs) {
+							if (img.complete) {
+								done();
+							} else {
+								img.addEventListener("load", () => done(), { once: true });
+								img.addEventListener("error", () => done(), { once: true });
+							}
+						}
+						return cap;
+					}),
+			)
+			.catch(() => {
+				/* ignore — we proceed even if some images failed */
+			});
 		const pdf = await p.pdf({
 			format: (page.size as "A4" | "A3" | "Letter") ?? "A4",
 			landscape: page.orientation === "landscape",
@@ -624,6 +797,8 @@ export async function generateDocument(
 		deliberation,
 		theme: resolved.theme,
 		demoMode: input.demoMode,
+		period: input.period,
+		semesterId: input.semesterId,
 	});
 
 	const html = compileAndRender(resolved.templateBody, data);
@@ -671,15 +846,15 @@ export async function generateStudentList(
 	const { eq } = await import("drizzle-orm");
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schemaMod.institutions.id, institutionId),
-		with: { parentInstitution: true },
 	});
+	const tutelleChain = await repo.loadTutelleChain(institutionId);
 
-	// Derive shared header strings (faculty / university / center).
-	const parent = institution?.parentInstitution ?? null;
-	const supervisingFaculty = parent?.type === "faculty" ? parent : null;
-	const universityName = supervisingFaculty
-		? null
-		: (parent?.nameFr ?? institution?.nameFr);
+	// Derive shared header strings from the tutelle chain.
+	const supervisingUniversity =
+		tutelleChain.find((i) => i.type === "university") ?? null;
+	const supervisingFaculty =
+		tutelleChain.find((i) => i.type === "faculty") ?? null;
+	const universityName = supervisingUniversity?.nameFr ?? institution?.nameFr;
 
 	// Try to enrich context by loading the first matching class/program/year.
 	let contextClass: { name: string; code: string } | null = null;
@@ -704,35 +879,67 @@ export async function generateStudentList(
 		contextYear = cls.academicYear ? { name: cls.academicYear.name } : null;
 	}
 
+	// Resolve the full center payload (admin instances + legal texts) when
+	// applicable so center-variant templates can render the centre block.
+	const center = await (async () => {
+		if (input.classId) return await repo.loadCenterByClass(input.classId);
+		if (input.programId) return await repo.loadCenterByProgram(input.programId);
+		const firstClassId = students[0]?.classRef?.id;
+		return firstClassId ? await repo.loadCenterByClass(firstClassId) : null;
+	})();
+
 	const sortedStudents = [...students].sort(
 		(a, b) =>
 			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
 			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 	);
 
-	const rows = sortedStudents.map((s, i) => ({
-		number: i + 1,
-		registrationNumber: s.registrationNumber,
-		lastName: s.profile.lastName ?? "",
-		firstName: s.profile.firstName ?? "",
-		gender:
-			s.profile.gender === "male"
-				? "M"
-				: s.profile.gender === "female"
-					? "F"
-					: "—",
-		birthDate: s.profile.dateOfBirth ?? "—",
-		birthPlace: s.profile.placeOfBirth ?? "—",
-		email: s.profile.primaryEmail ?? "",
-		phone: s.profile.phone ?? "",
-		className: s.classRef?.name ?? "",
-		programName: s.classRef?.program?.name ?? "",
-	}));
+	// Case-insensitive gender lookup — the schema enum is `male|female|other`
+	// but historical data and seed files (e.g. `20-users.yaml`) ship the
+	// uppercase forms `MALE` / `FEMALE`. Normalize to lowercase before mapping.
+	const normalizeGender = (raw: string | null | undefined) => {
+		if (!raw) return null;
+		const v = String(raw).trim().toLowerCase();
+		if (v === "male" || v === "m" || v === "homme" || v === "h") return "male";
+		if (v === "female" || v === "f" || v === "femme") return "female";
+		if (v === "other" || v === "autre") return "other";
+		return v;
+	};
+
+	const rows = sortedStudents.map((s, i) => {
+		const g = normalizeGender(s.profile.gender);
+		return {
+			number: i + 1,
+			registrationNumber: s.registrationNumber,
+			lastName: s.profile.lastName ?? "",
+			firstName: s.profile.firstName ?? "",
+			gender:
+				g === "male"
+					? "M"
+					: g === "female"
+						? "F"
+						: g === "other"
+							? "Autre"
+							: g
+								? String(g).toUpperCase()
+								: "Non précisé",
+			birthDate: s.profile.dateOfBirth ?? "—",
+			birthPlace: s.profile.placeOfBirth ?? "—",
+			email: s.profile.primaryEmail ?? "",
+			phone: s.profile.phone ?? "",
+			className: s.classRef?.name ?? "",
+			programName: s.classRef?.program?.name ?? "",
+		};
+	});
 
 	const summary = {
 		total: rows.length,
-		male: sortedStudents.filter((s) => s.profile.gender === "male").length,
-		female: sortedStudents.filter((s) => s.profile.gender === "female").length,
+		male: sortedStudents.filter(
+			(s) => normalizeGender(s.profile.gender) === "male",
+		).length,
+		female: sortedStudents.filter(
+			(s) => normalizeGender(s.profile.gender) === "female",
+		).length,
 	};
 
 	const titleParts = [
@@ -749,7 +956,7 @@ export async function generateStudentList(
 		ministry: MINISTRY_DEFAULTS,
 		university: {
 			fr: universityName ?? "",
-			en: parent?.nameEn ?? institution?.nameEn ?? "",
+			en: supervisingUniversity?.nameEn ?? institution?.nameEn ?? "",
 		},
 		faculty: {
 			fr: supervisingFaculty?.nameFr ?? institution?.nameFr ?? "",
@@ -757,16 +964,57 @@ export async function generateStudentList(
 		},
 		institution: {
 			id: institution?.id,
+			type: institution?.type ?? "institution",
+			isIPES: institution?.type === "institution",
+			isFaculty: institution?.type === "faculty",
+			isUniversity: institution?.type === "university",
 			nameFr: institution?.nameFr ?? "",
 			nameEn: institution?.nameEn ?? "",
 			abbreviation: institution?.abbreviation ?? "",
 			contactEmail: institution?.contactEmail ?? "",
+			postalBox: institution?.postalBox ?? "",
+			city: institution?.addressFr ?? "",
+			logoUrl: institution?.logoUrl ?? null,
+			logoSvg: institution?.logoSvg ?? null,
 			watermarkLogoUrl: institution?.logoUrl ?? null,
+			watermarkLogoSvg: institution?.logoSvg ?? null,
 		},
+		tutelleChain: tutelleChain.map((p) => ({
+			id: p.id,
+			type: p.type,
+			nameFr: p.nameFr ?? "",
+			nameEn: p.nameEn ?? "",
+			shortName: p.shortName ?? "",
+			abbreviation: p.abbreviation ?? "",
+			postalBox: p.postalBox ?? "",
+			contactEmail: p.contactEmail ?? "",
+			logoUrl: p.logoUrl ?? null,
+			logoSvg: p.logoSvg ?? null,
+		})),
+		parentInstitution: (() => {
+			const p =
+				tutelleChain.length > 0 ? tutelleChain[tutelleChain.length - 1] : null;
+			if (!p) return null;
+			const displaySigle = p.abbreviation || p.shortName || p.nameFr || "";
+			return {
+				id: p.id,
+				type: p.type,
+				nameFr: p.nameFr ?? "",
+				nameEn: p.nameEn ?? "",
+				shortName: p.shortName ?? "",
+				abbreviation: p.abbreviation ?? "",
+				displaySigle,
+			};
+		})(),
+		// Full center payload — read by center-variant templates.
+		center,
 		logos: {
 			faculty: institution?.logoUrl ?? null,
+			facultySvg: institution?.logoSvg ?? null,
 			ministry: null as string | null,
+			ministrySvg: null as string | null,
 			coatOfArms: null as string | null,
+			coatOfArmsSvg: null as string | null,
 		},
 		document: {
 			title:
@@ -785,14 +1033,68 @@ export async function generateStudentList(
 		summary,
 	};
 
-	const html = compileAndRender(resolved.templateBody, data);
-	if (input.format === "html") {
-		return { content: html, mimeType: "text/html" as const };
+	let html: string;
+	try {
+		html = compileAndRender(resolved.templateBody, data);
+	} catch (err) {
+		console.error(
+			"[generateStudentList] Handlebars compile/render failed",
+			"\n  template:",
+			resolved.template?.name ?? "(bundled)",
+			"\n  templateId:",
+			resolved.template?.id ?? "(none)",
+			"\n  variant:",
+			resolved.template?.variant ?? "standard",
+			"\n  error:",
+			err,
+		);
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Échec du rendu Handlebars (template "${resolved.template?.name ?? "bundled"}") : ${err instanceof Error ? err.message : String(err)}`,
+		});
 	}
-	const pdf = await renderPdf(html, resolved.theme);
+	const usedTemplate = resolved.template
+		? {
+				id: resolved.template.id,
+				name: resolved.template.name,
+				variant: resolved.template.variant,
+				isSystemDefault: resolved.template.isSystemDefault,
+			}
+		: {
+				id: null,
+				name: "Modèle bundled (aucun template DB)",
+				variant: "standard" as const,
+				isSystemDefault: false,
+			};
+	if (input.format === "html") {
+		return {
+			content: html,
+			mimeType: "text/html" as const,
+			usedTemplate,
+		};
+	}
+	let pdf: Buffer;
+	try {
+		pdf = await renderPdf(html, resolved.theme);
+	} catch (err) {
+		console.error(
+			"[generateStudentList] Puppeteer renderPdf failed",
+			"\n  template:",
+			resolved.template?.name ?? "(bundled)",
+			"\n  themeKeys:",
+			Object.keys(resolved.theme ?? {}).join(","),
+			"\n  error:",
+			err,
+		);
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Échec du rendu PDF (Puppeteer) : ${err instanceof Error ? err.message : String(err)}`,
+		});
+	}
 	return {
 		content: pdf.toString("base64"),
 		mimeType: "application/pdf" as const,
+		usedTemplate,
 	};
 }
 
@@ -823,7 +1125,89 @@ export async function previewTemplateBody(
 					demoMode: input.demoMode,
 				});
 			})()
-		: buildSampleRenderData(input.kind, input.demoMode);
+		: await (async () => {
+				// No studentId → load the real institution and its tutelle chain
+				// so the preview shows accurate header info, while keeping
+				// fictitious student/grades data from the sample.
+				const sample = buildSampleRenderData(input.kind, input.demoMode);
+				const { db } = await import("../../db");
+				const schemaMod = await import("../../db/schema/app-schema");
+				const { eq } = await import("drizzle-orm");
+				const inst = await db.query.institutions.findFirst({
+					where: eq(schemaMod.institutions.id, institutionId),
+				});
+				if (!inst) return sample;
+				const chain = await repo.loadTutelleChain(institutionId);
+				sample.institution = {
+					...(sample.institution as Record<string, unknown>),
+					id: inst.id,
+					type: inst.type ?? "institution",
+					isIPES: inst.type === "institution",
+					isFaculty: inst.type === "faculty",
+					isUniversity: inst.type === "university",
+					nameFr: inst.nameFr ?? "",
+					nameEn: inst.nameEn ?? "",
+					abbreviation: inst.abbreviation ?? "",
+					contactEmail: inst.contactEmail ?? "",
+					postalBox: inst.postalBox ?? "",
+					city: inst.addressFr ?? "",
+					logoUrl: inst.logoUrl ?? null,
+					logoSvg: inst.logoSvg ?? null,
+					watermarkLogoUrl: inst.logoUrl ?? null,
+					watermarkLogoSvg: inst.logoSvg ?? null,
+				};
+				sample.tutelleChain = chain.map((p) => ({
+					id: p.id,
+					type: p.type,
+					nameFr: p.nameFr ?? "",
+					nameEn: p.nameEn ?? "",
+					shortName: p.shortName ?? "",
+					abbreviation: p.abbreviation ?? "",
+					postalBox: p.postalBox ?? "",
+					contactEmail: p.contactEmail ?? "",
+					logoUrl: p.logoUrl ?? null,
+					logoSvg: p.logoSvg ?? null,
+				}));
+				const direct = chain.length > 0 ? chain[chain.length - 1] : null;
+				sample.parentInstitution = direct
+					? {
+							id: direct.id,
+							type: direct.type,
+							nameFr: direct.nameFr ?? "",
+							nameEn: direct.nameEn ?? "",
+							shortName: direct.shortName ?? "",
+							abbreviation: direct.abbreviation ?? "",
+							displaySigle:
+								direct.abbreviation || direct.shortName || direct.nameFr || "",
+						}
+					: null;
+				// Recompute the document reference with the REAL institution +
+				// tutelle so the preview shows the correct sigles instead of
+				// the sample's hardcoded ones.
+				const docRecord = sample.document as Record<string, unknown>;
+				docRecord.referenceNumber = buildReferenceNumber({
+					institutionType: (inst.type ?? "institution") as
+						| "institution"
+						| "faculty"
+						| "university",
+					institutionSigle:
+						inst.abbreviation || inst.shortName || inst.nameFr || "INS",
+					tutelleSigles: chain.map(
+						(p) => p.abbreviation || p.shortName || p.nameFr || "",
+					),
+					year: new Date().getFullYear(),
+				});
+				// Replace the stub center from buildSampleRenderData with the
+				// institution's actual first active center (with admin instances
+				// and legal texts) so center-variant previews mirror production.
+				const tplLoader = await import("../exports/template-loader");
+				const realCenter =
+					await tplLoader.loadFirstCenterForInstitution(institutionId);
+				if (realCenter) {
+					sample.center = realCenter;
+				}
+				return sample;
+			})();
 
 	if (!data) {
 		throw new TRPCError({
@@ -882,12 +1266,116 @@ function buildSampleRenderData(
 			en: "FACULTY OF DEMONSTRATION",
 		},
 		institution: {
-			nameFr: "Établissement de démo",
-			nameEn: "Demo institution",
-			abbreviation: "DEMO",
-			contactEmail: "demo@example.com",
+			nameFr: "INSTITUT UNIVERSITAIRE DE DEMO",
+			nameEn: "DEMO UNIVERSITY INSTITUTE",
+			abbreviation: "IUD",
+			contactEmail: "contact@iud-demo.cm",
+			postalBox: "15712",
 			city: "Douala",
+			logoUrl: null,
 			watermarkLogoUrl: null,
+			type: "institution" as const,
+			isIPES: true,
+			isFaculty: false,
+			isUniversity: false,
+		},
+		// Sample tutelle chain (top-down) so the preview shows the dynamic
+		// header iteration. Real generations populate this from the
+		// `parent_institution_id` chain.
+		tutelleChain: [
+			{
+				id: "demo-univ",
+				type: "university" as const,
+				nameFr: "UNIVERSITE DE DOUALA",
+				nameEn: "UNIVERSITY OF DOUALA",
+				shortName: "UDo",
+				abbreviation: "UDO",
+				postalBox: "2701",
+				contactEmail: "contact@udo.cm",
+				logoUrl: null,
+			},
+			{
+				id: "demo-faculty",
+				type: "faculty" as const,
+				nameFr: "FACULTE DE MEDECINE ET DES SCIENCES PHARMACEUTIQUES",
+				nameEn: "FACULTY OF MEDICINE AND PHARMACEUTICAL SCIENCES",
+				shortName: "FMSP",
+				abbreviation: "FMSP",
+				postalBox: "2701",
+				contactEmail: "contact@fmsp-udo.cm",
+				logoUrl: null,
+			},
+		],
+		// Direct parent (= last entry of tutelleChain) used by IPES signatures.
+		parentInstitution: {
+			id: "demo-faculty",
+			type: "faculty" as const,
+			nameFr: "FACULTE DE MEDECINE ET DES SCIENCES PHARMACEUTIQUES",
+			nameEn: "FACULTY OF MEDICINE AND PHARMACEUTICAL SCIENCES",
+			shortName: "FMSP",
+			abbreviation: "FMSP",
+			displaySigle: "FMSP",
+		},
+		// Sample center for previewing the `*-center.html` template variants.
+		// Real generations populate this from the program's `centerId` chain;
+		// the preview uses this stub so the editor shows admin instances, legal
+		// texts and the center-only header even without a studentId/program.
+		center: {
+			id: "demo-center",
+			code: "DEMO",
+			name: "CENTRE DE FORMATION DE DÉMONSTRATION",
+			nameEn: "DEMONSTRATION TRAINING CENTER",
+			shortName: "DEMO-CTR",
+			city: "Douala",
+			country: "Cameroun",
+			postalBox: "9293 Douala",
+			contactEmail: "demo@center.cm",
+			contactPhone: "+237 6XX XX XX XX",
+			logoUrl: null,
+			logoSvg: null,
+			adminInstanceLogoUrl: null,
+			adminInstanceLogoSvg: null,
+			watermarkLogoUrl: null,
+			watermarkLogoSvg: null,
+			authorizationOrderFr:
+				"Arrêté N° 160 /MINEFOP/SG/DFOP/SDGSF/SACD du 09 avril 2014",
+			authorizationOrderEn:
+				"Order No. 160 /MINEFOP/SG/DFOP/SDGSF/SACD of April 9, 2014",
+			administrativeInstances: [
+				{
+					nameFr: "MINISTÈRE DE L'EMPLOI ET DE LA FORMATION PROFESSIONNELLE",
+					nameEn: "MINISTRY OF EMPLOYMENT AND VOCATIONAL TRAINING",
+					acronymFr: "MINEFOP",
+					acronymEn: "MINEFOP",
+					logoUrl: null,
+					logoSvg: null,
+					showOnTranscripts: true,
+					showOnCertificates: true,
+				},
+				{
+					nameFr: "Délégation Régionale du Littoral",
+					nameEn: "Regional Delegation of the Coast",
+					acronymFr: "DRL",
+					acronymEn: "RDC",
+					logoUrl: null,
+					logoSvg: null,
+					showOnTranscripts: true,
+					showOnCertificates: true,
+				},
+			],
+			legalTexts: [
+				{
+					textFr: "Vu la loi N°92/007 du 14 août 1992 portant code du travail",
+					textEn:
+						"Mindful of law N°92/007 of 14 august 1992 on the labour code",
+				},
+				{
+					textFr:
+						"Vu le décret n°79/201 du 28 mai 1979 portant organisation et fonctionnement des Centres de Formation Professionnelle Rapide",
+					textEn:
+						"Mindful of law N°79/201 of 28 may 1979 on the organization and functioning of intensive and vocational training",
+				},
+			],
 		},
 		logos: { faculty: null, ministry: null, coatOfArms: null },
 		jury: {
@@ -958,7 +1446,12 @@ function buildSampleRenderData(
 		document: {
 			titleFr: diplomaTitleFor(kind, "MÉDECINE").fr,
 			titleEn: diplomaTitleFor(kind, "MÉDECINE").en,
-			referenceNumber: `2024/DEMO/${kind.toUpperCase()}/0001`,
+			referenceNumber: buildReferenceNumber({
+				institutionType: "institution",
+				institutionSigle: "IUD",
+				tutelleSigles: ["UDO", "FMSP"],
+				year: new Date().getFullYear(),
+			}),
 			issueDate: formatDate(new Date()),
 			academicYear: "2023/2024",
 			yearObtention: "2024",
@@ -1008,20 +1501,110 @@ function buildSampleRenderData(
 				name: "Semestre 1",
 				ues: [
 					{
-						code: "UE101",
-						name: "Anatomie",
-						credits: 6,
-						average: 15.5,
+						code: "LSF 50",
+						name: "PREPARATION PSYCHOPROPHYLACTIQUE A L'ACCOUCHEMENT",
+						credits: 7,
+						average: 13.47,
 						decision: "Ac",
 						courses: [
 							{
-								code: "ANA101",
-								name: "Anatomie générale",
+								code: "PPA-1",
+								name: "Préparation Psychoprophylactique à l'Accouchement 1",
+								credits: 7,
+								coefficient: 1,
+								cc: 13,
+								exam: 12.8,
+								average: 12.8,
+							},
+							{
+								code: "PPA-2",
+								name: "Préparation Psychoprophylactique à l'Accouchement 2",
+								credits: 7,
+								coefficient: 1,
+								cc: 13,
+								exam: 12.8,
+								average: 12.8,
+							},
+						],
+					},
+					{
+						code: "LSF 51",
+						name: "OBSTETRIQUE ET MEDECINE FŒTALE",
+						credits: 7,
+						average: 14.05,
+						decision: "Ac",
+						courses: [
+							{
+								code: "OBS",
+								name: "Obstétrique Médecine",
+								credits: 7,
+								coefficient: 1,
+								cc: 15,
+								exam: 15.4,
+								average: 15.4,
+							},
+							{
+								code: "MFE",
+								name: "Médecine Fœtale",
+								credits: 7,
+								coefficient: 1,
+								cc: 12,
+								exam: 12.2,
+								average: 12.2,
+							},
+						],
+					},
+					{
+						code: "LSF 52",
+						name: "SANTE GENESIQUE DES FEMMES ET PHARMACOLOGIE OBSTETRICALE",
+						credits: 6,
+						average: 11.3,
+						decision: "Ac",
+						courses: [
+							{
+								code: "SGF",
+								name: "Santé Génésique des Femmes",
 								credits: 6,
 								coefficient: 1,
-								cc: 16,
-								exam: 15,
-								average: 15.5,
+								cc: 10,
+								exam: 10.4,
+								average: 10.4,
+							},
+							{
+								code: "PHO",
+								name: "Pharmacologie Obstétricale",
+								credits: 6,
+								coefficient: 1,
+								cc: 12,
+								exam: 12.4,
+								average: 12.4,
+							},
+						],
+					},
+					{
+						code: "LSF 53",
+						name: "SOINS DE LA MATERNITE ET NEONATALE",
+						credits: 5,
+						average: 10.4,
+						decision: "Ac",
+						courses: [
+							{
+								code: "SDM",
+								name: "Soins de la Maternité",
+								credits: 5,
+								coefficient: 1,
+								cc: 10,
+								exam: 10.4,
+								average: 10.4,
+							},
+							{
+								code: "SNN",
+								name: "Soins Néonataux",
+								credits: 5,
+								coefficient: 1,
+								cc: 11,
+								exam: 11.0,
+								average: 11.0,
 							},
 						],
 					},

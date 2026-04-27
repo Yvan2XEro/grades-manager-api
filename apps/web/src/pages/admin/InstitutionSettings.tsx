@@ -17,6 +17,7 @@ import {
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -56,6 +57,7 @@ const institutionSchema = z.object({
 	postalBox: z.string().optional(),
 	website: z.string().url().optional().or(z.literal("")),
 	logoUrl: z.string().url().optional().or(z.literal("")),
+	logoSvg: z.string().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
@@ -87,6 +89,7 @@ const defaultValues: InstitutionFormValues = {
 	postalBox: "",
 	website: "",
 	logoUrl: "",
+	logoSvg: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
@@ -125,6 +128,7 @@ export default function InstitutionSettings() {
 				postalBox: rest.postalBox ?? "",
 				website: rest.website ?? "",
 				logoUrl: rest.logoUrl ?? "",
+				logoSvg: (rest as { logoSvg?: string | null }).logoSvg ?? "",
 				coverImageUrl: rest.coverImageUrl ?? "",
 				shortName: rest.shortName ?? "",
 				abbreviation: (rest as any).abbreviation ?? "",
@@ -149,6 +153,7 @@ export default function InstitutionSettings() {
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
+				logoSvg: values.logoSvg || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
@@ -751,6 +756,35 @@ export default function InstitutionSettings() {
 													{ defaultValue: "https://..." },
 												)}
 											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="logoSvg"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.institution.form.logoSvg", {
+													defaultValue: "Logo SVG (code source)",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Textarea
+													{...field}
+													value={field.value ?? ""}
+													rows={5}
+													placeholder='<svg xmlns="http://www.w3.org/2000/svg" ...>...</svg>'
+													className="font-mono text-xs"
+												/>
+											</FormControl>
+											<FormDescription>
+												{t("admin.institution.form.logoSvgHint", {
+													defaultValue:
+														"Si renseigné, le SVG est utilisé en priorité sur les exports (en place du logo PNG/URL).",
+												})}
+											</FormDescription>
 											<FormMessage />
 										</FormItem>
 									)}

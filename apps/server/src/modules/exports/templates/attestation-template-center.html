@@ -1,0 +1,144 @@
+<!--
+  Attestation template — CENTER variant.
+  Header uses ONLY institution + center data, no faculty/university tutelle.
+-->
+<!DOCTYPE html>
+<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<head>
+<meta charset="UTF-8">
+<title>Attestation — {{student.fullName}}</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { box-sizing: border-box; }
+body {
+	margin: {{theme.page.margins.top}}mm {{theme.page.margins.right}}mm {{theme.page.margins.bottom}}mm {{theme.page.margins.left}}mm;
+	font-family: {{theme.fonts.main}};
+	font-size: {{theme.sizes.body}}pt;
+	color: {{theme.colors.primary}};
+	background: white;
+	line-height: 1.4;
+	position: relative;
+}
+.container {
+	width: 100%;
+	{{#if (gt theme.borders.outerWidth 0)}}border: {{theme.borders.outerWidth}}px {{#if theme.borders.decorative}}double{{else}}solid{{/if}} {{theme.colors.border}};{{/if}}
+	padding: 8mm;
+	position: relative;
+}
+.demo-watermark { position: absolute; inset: 0; z-index: 1000; pointer-events: none; display: {{#if demoMode}}block{{else}}none{{/if}}; background: repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(255,0,0,0.1) 100px, rgba(255,0,0,0.1) 120px); }
+.demo-watermark::before { content: "DÉMO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 120px; font-weight: bold; color: rgba(255,0,0,0.15); font-family: Arial, sans-serif; letter-spacing: 20px; }
+.demo-banner { position: absolute; top: 0; left: 0; right: 0; background: rgba(255,0,0,0.4); color: white; text-align: center; padding: 5px; font-size: 12px; font-weight: bold; z-index: 1001; display: {{#if demoMode}}block{{else}}none{{/if}}; }
+.watermark { position: absolute; top: 25%; left: 0; width: 100%; height: 50%; z-index: -1; display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}}; justify-content: center; align-items: center; opacity: {{theme.watermark.logoOpacity}}; pointer-events: none; }
+.watermark img { max-width: 600px; max-height: 400px; object-fit: contain; }
+
+/* Header */
+.header { font-family: {{theme.fonts.header}}; font-size: {{theme.sizes.header}}pt; }
+.header-row1 { display: flex; justify-content: space-between; gap: 8mm; margin-bottom: 6px; }
+.header-block { width: 33%; line-height: 1.3; }
+.header-block .institution-name { font-weight: bold; text-transform: uppercase; color: {{theme.colors.primary}}; font-size: {{add theme.sizes.header 1}}pt; }
+.header-block .meta { color: {{theme.colors.secondary}}; font-size: {{subtract theme.sizes.header 0.5}}pt; }
+.header-center { display: flex; align-items: center; justify-content: center; }
+.header-center img { object-fit: contain; max-width: {{theme.logos.institutionLogoSize}}px; max-height: {{theme.logos.institutionLogoSize}}px; }
+.admin-instance { font-size: {{subtract theme.sizes.header 0.5}}pt; font-style: italic; color: {{theme.colors.secondary}}; text-align: center; margin-top: 2px; }
+
+.header-row2 { text-align: center; margin: 12px 0; }
+.header-row2 .main-title { font-weight: bold; font-size: {{theme.sizes.title}}pt; color: {{theme.colors.accent}}; margin: 4px 0; text-transform: uppercase; font-family: {{theme.fonts.title}}; }
+.header-row2 .subtitle { font-weight: bold; font-size: {{theme.sizes.subtitle}}pt; color: {{theme.colors.secondary}}; margin: 4px 0; font-style: italic; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; font-family: {{theme.fonts.title}}; }
+.header-row2 .ref-line { font-size: {{add theme.sizes.body 4}}pt; margin: 6px 0 0 0; font-weight: bold; display: {{#if theme.display.showRefNumber}}block{{else}}none{{/if}}; }
+.header-row2 .legal-line { font-size: {{subtract theme.sizes.body 1}}pt; font-style: italic; color: {{theme.colors.secondary}}; margin-top: 4px; }
+
+.content { margin: 25px 0; }
+.student-info { margin: 8px 0; }
+.student-info p { margin: 8px 0; }
+
+.table-container { width: 100%; margin: 5px 0; }
+.academic-table { width: 100%; border-collapse: collapse; }
+.academic-table th, .academic-table td { padding: 4px; text-align: center; border: {{theme.borders.innerWidth}}px solid {{theme.colors.border}}; font-size: {{theme.sizes.body}}pt; }
+.academic-table th { background: rgba(0,0,0,0.05); font-weight: bold; }
+
+.footer { margin-top: 15px; display: flex; justify-content: space-between; }
+.signature { width: 48%; font-size: {{theme.sizes.signature}}pt; }
+.signature-area { display: flex; flex-direction: column; align-items: center; }
+.qr-code { display: {{#if theme.qrCode.enabled}}flex{{else}}none{{/if}}; align-items: center; justify-content: center; }
+.qr-image { width: {{theme.qrCode.size}}px; height: {{theme.qrCode.size}}px; }
+.qr-image img { width: 100%; height: 100%; object-fit: contain; }
+.recteur-sign { margin-top: 65px; padding-bottom: 100px; }
+
+@media print { body { margin: 0; padding: 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+	{{#if demoMode}}<div class="demo-banner">⚠️ MODE DÉMO - DOCUMENT NON OFFICIEL ⚠️</div><div class="demo-watermark"></div>{{/if}}
+	<div class="watermark">{{{logo svg=center.logoSvg url=center.logoUrl alt=""}}}</div>
+
+	<div class="header">
+		<div class="header-row1">
+			<div class="header-block">
+				<div class="institution-name">{{upper center.name}}</div>
+				{{#if center.contactEmail}}<div class="meta">Email: {{center.contactEmail}}</div>{{/if}}
+				{{#if center.postalBox}}<div class="meta">B.P. {{center.postalBox}}</div>{{/if}}
+			</div>
+			<div class="header-center">
+				{{{logo svg=center.logoSvg url=center.logoUrl alt="Centre"}}}
+			</div>
+			<div class="header-block">
+				{{#if center.nameEn}}<div class="institution-name">{{upper center.nameEn}}</div>{{/if}}
+				{{#if center.shortName}}<div class="meta">{{center.shortName}}</div>{{/if}}
+				{{#if center.code}}<div class="meta">Code: {{center.code}}</div>{{/if}}
+				{{#if center.city}}<div class="meta">{{center.city}}{{#if center.country}}, {{center.country}}{{/if}}</div>{{/if}}
+				{{#if center.contactPhone}}<div class="meta">Tél: {{center.contactPhone}}</div>{{/if}}
+			</div>
+		</div>
+		{{#if center.administrativeInstances}}{{#each center.administrativeInstances}}<div class="admin-instance">{{upper this.nameFr}}{{#if this.acronymFr}} ({{this.acronymFr}}){{/if}}</div>{{/each}}{{/if}}
+
+		<div class="header-row2">
+			<div class="main-title">{{document.titleFr}}</div>
+			<div class="subtitle">{{document.titleEn}}</div>
+			<div class="ref-line">N° {{document.referenceNumber}} / {{document.year}}</div>
+			{{#if center.authorizationOrderFr}}<div class="legal-line">{{center.authorizationOrderFr}}</div>{{/if}}
+		</div>
+	</div>
+
+	<div class="content">
+		<div class="student-info">
+			<p>Je soussigné(e), <strong>{{authority.name}}</strong>, {{authority.role}}{{#if center.name}} de {{upper center.name}}{{/if}}, atteste que :</p>
+			<p style="margin-left: 6mm; font-size: {{theme.sizes.studentName}}pt; color: {{theme.colors.studentName}}; font-weight: bold; text-decoration: underline;">{{student.fullName}}</p>
+			<p>Matricule : <strong>{{student.matricule}}</strong>, né(e) le <strong>{{student.birthDate}}</strong> à <strong>{{student.birthPlace}}</strong>,</p>
+			<p>a été régulièrement inscrit(e) en <strong>{{class.name}}</strong> ({{program.name}}) au titre de l'année académique <strong>{{document.academicYear}}</strong>.</p>
+		</div>
+
+		{{#if showResults}}
+		<div class="table-container">
+			<table class="academic-table">
+				<thead>
+					<tr><th>Indicateur</th><th>Valeur</th></tr>
+				</thead>
+				<tbody>
+					<tr><td><strong>Moyenne générale</strong></td><td>{{formatNumber summary.generalAverage}} / 20</td></tr>
+					<tr><td><strong>Crédits acquis</strong></td><td>{{summary.creditsEarned}} / {{summary.creditsTotal}}</td></tr>
+					<tr><td><strong>Mention</strong></td><td>{{summary.mention}}</td></tr>
+					<tr><td><strong>Décision du jury</strong></td><td><strong>{{summary.decision}}</strong></td></tr>
+				</tbody>
+			</table>
+		</div>
+		{{/if}}
+
+		<p style="margin-top: 12px;">En foi de quoi la présente attestation lui est délivrée pour servir et valoir ce que de droit.</p>
+	</div>
+
+	<div class="footer">
+		<div class="signature">
+			<div class="qr-code"><div class="qr-image">{{#if qrCodeImage}}<img src="{{qrCodeImage}}" alt="QR">{{/if}}</div></div>
+		</div>
+		<div class="signature signature-area">
+			<p style="font-style: italic;">Fait à {{center.city}}, le {{document.issueDate}}</p>
+			<p style="font-weight: bold; margin-top: 6mm;">{{authority.role}}</p>
+			<div class="recteur-sign"></div>
+			<p style="font-style: italic;">{{authority.name}}</p>
+		</div>
+	</div>
+	{{#if center.legalTexts}}<div style="margin-top: 6px; text-align: center; font-style: italic; font-size: {{subtract theme.sizes.footer 0.5}}pt; color: {{theme.colors.secondary}};">{{#each center.legalTexts}}{{this.textFr}} · {{/each}}</div>{{/if}}
+</div>
+</body>
+</html>

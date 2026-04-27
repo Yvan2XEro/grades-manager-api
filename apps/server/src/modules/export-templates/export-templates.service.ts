@@ -50,8 +50,14 @@ export async function getTemplate(
 export async function getDefaultTemplate(
 	institutionId: string,
 	type: ExportTemplateType,
+	variant?: "standard" | "center",
 ): Promise<ExportTemplate | undefined> {
-	return await repo.findDefaultTemplate(institutionId, type);
+	// When `variant` is set, ONLY return a default matching that exact variant.
+	// Returning a mismatched default (e.g. a "standard" template for a center
+	// class) would silently pick the wrong layout. If nothing matches, return
+	// undefined so the caller falls through to the bundled HTML, which is
+	// variant-aware (`templates/*-center.html` vs the standard one).
+	return await repo.findDefaultTemplate(institutionId, type, variant);
 }
 
 export async function createTemplate(
@@ -78,6 +84,7 @@ export async function createTemplate(
 		institutionId,
 		name: input.name,
 		type: input.type,
+		variant: input.variant ?? "standard",
 		isDefault: input.isDefault,
 		description: input.description ?? null,
 		templateBody,
@@ -98,6 +105,7 @@ export async function updateTemplate(
 
 	const updated = await repo.updateTemplate(input.id, {
 		...(input.name && { name: input.name }),
+		...(input.variant && { variant: input.variant }),
 		...(input.isDefault !== undefined && { isDefault: input.isDefault }),
 		...(input.description !== undefined && {
 			description: input.description ?? null,

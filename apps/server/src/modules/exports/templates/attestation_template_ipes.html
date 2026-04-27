@@ -1,0 +1,244 @@
+<!--
+  Attestation de réussite — Modèle IPES (institution.type === 'institution').
+  Pour les IPES chapeautés par une faculté + université.
+  En-tête : République + Ministère + Université + Faculté + bloc IPES.
+  Logos : université / faculté / IPES. Signataires : Directeur IPES + Recteur.
+  Texte officiel "Nous soussignés / attestons" (pluriel).
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attestation de réussite — {{student.lastName}} {{student.firstName}}</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { box-sizing: border-box; }
+html { width: 210mm; height: 297mm; }
+body {
+	margin: 20px; padding: 0;
+	width: calc(210mm - 40px);
+	height: calc(297mm - 40px);
+	font-family: {{theme.fonts.main}};
+	font-size: 10px !important;
+	color: {{theme.colors.primary}};
+	background-color: white;
+	line-height: 1.2;
+	position: relative;
+}
+.container { width: 100%; height: 100%; padding: 20px; box-sizing: border-box; position: relative; border: 1px solid {{theme.colors.primary}}; }
+
+.watermark {
+	position: absolute; top: 25%; left: 0;
+	width: 100%; height: 50%;
+	z-index: -1;
+	display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}};
+	justify-content: center; align-items: center;
+	opacity: {{theme.watermark.logoOpacity}};
+	pointer-events: none;
+}
+.watermark img { max-width: 600px; max-height: 400px; object-fit: contain; }
+
+.header { line-height: normal; font-size: 9px; font-family: {{theme.fonts.header}}; }
+.header-row1 { text-align: center; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.header-content { width: 33%; font-size: 9px; line-height: 1.1; }
+/* Logos in hierarchy order — centered with uniform gap. */
+.header-logo-content { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: nowrap; }
+.header-logo-content > div { display: flex; align-items: center; justify-content: center; }
+.header-logo-content > div > img { max-width: 80px; max-height: 80px; object-fit: contain; }
+
+.header-row2 { text-align: center; margin-bottom: 10px; }
+.header-row2 h1 { font-weight: bold; text-align: center; font-size: 17px; color: {{theme.colors.primary}}; margin: 2px 0; text-transform: uppercase; font-family: {{theme.fonts.title}}; }
+.header-row2 h2 { font-weight: bold; font-size: 22px; color: {{theme.colors.secondary}}; margin: 2px 0; font-style: italic; }
+.header-row2 p { font-size: 14px; margin: 2px 0; }
+
+.content { margin: 16px 0; }
+.student-info, .list-nomination-header { margin: 5px 0; }
+.student-info p, .list-nomination-header p { margin: 5px 0; }
+
+.table-container { width: 100%; margin: 2px 0; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+th, td { padding: 2px; text-align: center; border: none; font-size: 10px; vertical-align: middle; }
+th { background: none; border-bottom: 2px solid {{theme.colors.primary}}; font-weight: bold; }
+td { border-bottom: 1px solid #00000040; }
+
+.nomination-list { display: flex; width: 100%; gap: 30%; margin: 8px 0; }
+.nomination-list-item { border-top: 1px solid {{theme.colors.primary}}; width: 30%; padding-top: 4px; margin-top: 15px; }
+
+.footer { margin-top: 8px; display: flex; justify-content: space-between; }
+.signature { width: 48%; font-size: 10px; }
+
+.sign-ipes { width: 100%; text-align: center; padding-bottom: 100px; }
+.recteur-sign { margin-top: 65px; padding-bottom: 100px; }
+
+.qr-code { float: left; position: relative; }
+.qr-image { width: 100px; height: 100px; background-color: #eee; display: block; }
+.qr-image img { width: 100%; height: 100%; object-fit: contain; }
+
+.disclaimer { font-size: 7px; font-style: italic; text-align: left; margin-top: 10px; display: flex; flex-direction: row; position: absolute; bottom: 20px; left: 20px; right: 20px; color: {{theme.colors.secondary}}; line-height: 1.4; }
+.disclaimer div { padding-right: 10px; }
+
+em { font-style: italic; color: {{theme.colors.secondary}}; }
+</style>
+</head>
+<body>
+<div class="container">
+	<div class="watermark">
+		{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt="Watermark"}}}
+	</div>
+
+	<div class="header">
+		<div class="header-row1">
+			<div class="header-content">
+				<p>REPUBLIQUE DU CAMEROUN<br>
+				<em>Paix – Travail – Patrie</em><br>
+				********************<br>
+				MINISTERE DE L'ENSEIGNEMENT SUPERIEUR<br>
+				{{#each tutelleChain}}
+				********************<br>
+				<strong>{{upper this.nameFr}}</strong><br>
+				{{#unless @first}}
+					{{#if this.postalBox}}<span style="font-size:8px;">{{this.postalBox}}</span><br>{{/if}}
+					{{#if this.contactEmail}}<span style="font-size:8px;">Email : {{this.contactEmail}}</span><br>{{/if}}
+				{{/unless}}
+				{{/each}}
+				********************<br>
+				<strong>{{upper institution.nameFr}}</strong><br>
+				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+			<div class="header-logo-content">
+				{{#each tutelleChain}}{{#if (or this.logoSvg this.logoUrl)}}<div>{{{logo svg=this.logoSvg url=this.logoUrl alt=this.nameFr}}}</div>{{/if}}{{/each}}
+				{{#if (or institution.logoSvg institution.logoUrl)}}<div>{{{logo svg=institution.logoSvg url=institution.logoUrl alt=institution.nameFr}}}</div>{{/if}}
+			</div>
+			<div class="header-content">
+				<p>REPUBLIC OF CAMEROON<br>
+				<em>Peace – Work – Fatherland</em><br>
+				********************<br>
+				MINISTRY OF HIGHER EDUCATION<br>
+				{{#each tutelleChain}}
+				********************<br>
+				<strong>{{upper this.nameEn}}</strong><br>
+				{{#unless @first}}
+					{{#if this.postalBox}}<span style="font-size:8px;">{{this.postalBox}}</span><br>{{/if}}
+					{{#if this.contactEmail}}<span style="font-size:8px;">Email : {{this.contactEmail}}</span><br>{{/if}}
+				{{/unless}}
+				{{/each}}
+				********************<br>
+				<strong>{{upper institution.nameEn}}</strong><br>
+				{{#if institution.postalBox}}********************<br>{{institution.postalBox}}<br>{{/if}}
+				{{#if institution.contactEmail}}Email : <a href="mailto:{{institution.contactEmail}}">{{institution.contactEmail}}</a>{{/if}}
+				</p>
+			</div>
+		</div>
+		<div class="header-row2">
+			<h1 class="main-title">ATTESTATION DE REUSSITE — {{program.level}}</h1>
+			<h2 class="subtitle">CERTIFICATE OF COMPLETION — {{program.level}}</h2>
+			<p style="margin-top: 6px;"><strong>Ref N°&nbsp;&nbsp;_____________&nbsp;/{{document.referenceNumber}}</strong></p>
+		</div>
+	</div>
+
+	<div class="content">
+		<div class="list-nomination-header">
+			<p><strong>Nous soussignés,</strong><br>
+			<em>We, the undersigned,</em></p>
+			<div class="nomination-list">
+				<div class="nomination-list-item">
+					<strong>Directeur de l'{{institution.abbreviation}}</strong><br>
+					<em>Director of the {{institution.abbreviation}}</em>
+				</div>
+				{{#if university.fr}}
+				<div class="nomination-list-item">
+					<strong>Recteur de {{upper university.fr}}</strong><br>
+					<em>Rector of {{upper university.fr}}</em>
+				</div>
+				{{/if}}
+			</div>
+
+			<p><strong>Vu le procès-verbal du jury N° {{jury.number}} en date du {{jury.deliberationDate}} attestons que,</strong><br>
+			<em>Considering the jury's decision N° {{jury.number}} dated {{jury.deliberationDate}}, certify that,</em></p>
+		</div>
+
+		<div class="student-info">
+			<p>M./Mme/Mlle <strong>{{student.lastName}} {{student.firstName}}</strong><br>
+			<em>Mr/Mrs/Miss</em></p>
+
+			<p>Né(e) le : <strong>{{student.birthDate}}</strong> &nbsp;&nbsp;à&nbsp; <strong>{{student.birthPlace}}</strong><br>
+			<em>Born on: <strong style="opacity:0">{{student.birthDate}}</strong></em>&nbsp;&nbsp;<em>at</em></p>
+
+			<p>Inscrit(e) à <strong>{{upper institution.nameFr}}</strong> sous le matricule : <strong>{{student.matricule}}</strong><br>
+			<em>Registered at the <strong>{{upper institution.nameEn}}</strong> under the matricule number</em></p>
+
+			<p>A subi avec succès toutes les épreuves de : <strong>{{program.level}}</strong> en <strong>{{program.name}}</strong><br>
+			<em>Having successfully passed all examinations for</em></p>
+		</div>
+
+		<div class="table-container">
+			<table class="academic-table">
+				<tr>
+					<th>Domaine<br><em style="font-weight: normal">Domain of study</em></th>
+					<th>Parcours<br><em style="font-weight: normal">Course</em></th>
+					<th>Spécialité<br><em style="font-weight: normal">Specialization</em></th>
+				</tr>
+				<tr style="border-top: 1px solid {{theme.colors.primary}}; background-color: rgba(0,0,0,0.04);">
+					<td><strong>—</strong></td>
+					<td><strong>{{program.name}}</strong></td>
+					<td><strong>{{student.option}}</strong></td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="table-container">
+			<table class="academic-table">
+				<tr>
+					<th>Total de crédits<br><em style="font-weight: normal">Credits earned</em></th>
+					<th>Moyenne<br><em style="font-weight: normal">Average</em></th>
+					<th>Mention<br><em style="font-weight: normal">Honor</em></th>
+					<th>Année académique<br><em style="font-weight: normal">Academic year</em></th>
+					<th>Décision<br><em style="font-weight: normal">Decision</em></th>
+				</tr>
+				<tr style="border-top: 1px solid {{theme.colors.primary}}; background-color: rgba(0,0,0,0.04);">
+					<td><strong>{{summary.creditsEarned}} / {{summary.creditsTotal}}</strong></td>
+					<td><strong>{{formatNumber summary.generalAverage}} / 20</strong></td>
+					<td><strong>{{summary.mention}}</strong></td>
+					<td><strong>{{document.academicYear}}</strong></td>
+					<td><strong>{{summary.decision}}</strong></td>
+				</tr>
+			</table>
+		</div>
+
+		<p>En foi de quoi la présente attestation est délivrée pour servir et valoir ce que de droit.<br>
+		<em>In witness whereof the present testimonial is given with all the privileges thereto pertaining.</em></p>
+	</div>
+
+	<div class="footer">
+		<div class="signature signature-area" style="display: flex; flex-direction: column; align-items: center;">
+			<div class="qr-code">
+				{{#if qrCodeImage}}<div class="qr-image"><img src="{{qrCodeImage}}" alt="QR Code"></div>{{/if}}
+			</div>
+			<div class="sign-ipes">
+				<p><strong>Le Directeur de l'{{institution.abbreviation}}</strong><br>
+				<em>The Director of the {{institution.abbreviation}}</em></p>
+			</div>
+		</div>
+
+		<div class="signature signature-area">
+			<p><strong>Douala, le {{document.issueDate}}</strong><br>
+			<em>Douala, the {{document.issueDate}}</em></p>
+
+			{{#if parentInstitution}}
+			<p class="recteur-sign">
+			<strong>LE DOYEN {{parentInstitution.displaySigle}}</strong><br>
+			<em>The Dean of {{parentInstitution.displaySigle}}</em></p>
+			{{/if}}
+		</div>
+	</div>
+
+	<div class="disclaimer">
+		<div>Il n'est délivré qu'un seul exemplaire d'attestation, le titulaire peut en faire des copies certifiées conformes.</div>
+		<div><em>This certificate is delivered only once, the owner can make certified copies as necessary.</em></div>
+	</div>
+</div>
+</body>
+</html>

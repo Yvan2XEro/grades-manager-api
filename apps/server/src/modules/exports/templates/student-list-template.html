@@ -22,7 +22,7 @@ body { font-family: {{theme.fonts.main}}; color: {{theme.colors.secondary}}; bac
 .content { position: relative; z-index: 2; }
 
 /* Header — 3 columns: institution text | logos | optional EN text */
-.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 4mm; margin-bottom: 5mm; }
+.header { display: flex; justify-content: space-between; align-items: center; gap: 4mm; margin-bottom: 5mm; }
 .header-text { flex: 1; font-family: {{theme.fonts.header}}; font-size: {{theme.sizes.header}}pt; text-align: center; line-height: 1.3; }
 .header-text .country { font-weight: bold; text-transform: uppercase; }
 .header-text .motto { font-style: italic; font-size: {{subtract theme.sizes.header 1}}pt; }
@@ -71,7 +71,7 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 </style>
 </head>
 <body>
-{{#if theme.watermark.enabled}}<div class="watermark">{{#if institution.watermarkLogoUrl}}<img src="{{institution.watermarkLogoUrl}}" alt="">{{/if}}</div>{{/if}}
+{{#if theme.watermark.enabled}}<div class="watermark">{{{logo svg=institution.watermarkLogoSvg url=institution.watermarkLogoUrl alt=""}}}</div>{{/if}}
 
 <div class="content">
 	<div class="header">
@@ -81,14 +81,14 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 			<div class="stars">********</div>
 			<div class="institution">{{ministry.fr}}</div>
 			<div class="stars">********</div>
-			<div class="institution">{{university.fr}}</div>
+			<div class="institution">{{upper university.fr}}</div>
 			<div class="stars">********</div>
-			<div class="faculty">{{faculty.fr}}</div>
+			<div class="faculty">{{upper faculty.fr}}</div>
 		</div>
 		<div class="header-logos">
-			{{#if logos.faculty}}<img class="institution-logo" src="{{logos.faculty}}" alt="">{{/if}}
-			{{#if logos.coatOfArms}}<img class="coat-of-arms" src="{{logos.coatOfArms}}" alt="">{{/if}}
-			{{#if logos.ministry}}<img class="ministry-logo" src="{{logos.ministry}}" alt="">{{/if}}
+			{{{logo svg=logos.facultySvg url=logos.faculty class="institution-logo" alt=""}}}
+			{{{logo svg=logos.coatOfArmsSvg url=logos.coatOfArms class="coat-of-arms" alt=""}}}
+			{{{logo svg=logos.ministrySvg url=logos.ministry class="ministry-logo" alt=""}}}
 		</div>
 		{{#if theme.display.bilingual}}
 		<div class="header-text">
@@ -97,9 +97,9 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 			<div class="stars">********</div>
 			<div class="institution">{{ministry.en}}</div>
 			<div class="stars">********</div>
-			<div class="institution">{{university.en}}</div>
+			<div class="institution">{{upper university.en}}</div>
 			<div class="stars">********</div>
-			<div class="faculty">{{faculty.en}}</div>
+			<div class="faculty">{{upper faculty.en}}</div>
 		</div>
 		{{/if}}
 	</div>
@@ -169,7 +169,7 @@ td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes
 		</div>
 	</div>
 
-	<div class="footer">Document généré le {{document.generatedAt}} — {{institution.nameFr}}</div>
+	<div class="footer">Document généré le {{document.generatedAt}} — {{upper institution.nameFr}}</div>
 </div>
 </body>
 </html>

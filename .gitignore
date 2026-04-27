@@ -30,3 +30,8 @@ _bmad*
 
 # Playwright presentation assets (generated)
 apps/web/presentation-assets/
+
+# Local-only artifacts (Remotion app, ad-hoc scripts, raw data dumps)
+apps/remotion/
+scripts/
+datas/

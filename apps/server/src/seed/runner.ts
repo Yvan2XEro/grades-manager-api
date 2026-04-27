@@ -45,6 +45,7 @@ export type FoundationSeed = {
 	studyCycles?: Array<{
 		code: string;
 		name: string;
+		nameEn?: string;
 		facultyCode: string;
 		description?: string;
 		totalCreditsRequired?: number;
@@ -74,7 +75,7 @@ export type FoundationSeed = {
 	}>;
 	institutions?: Array<{
 		code: string;
-		type?: "main" | "faculty" | "department" | "other";
+		type?: "main" | "university" | "faculty" | "department" | "other";
 		shortName?: string;
 		nameFr: string;
 		nameEn: string;
@@ -92,11 +93,62 @@ export type FoundationSeed = {
 		postalBox?: string;
 		website?: string;
 		logoUrl?: string;
+		/** Inline SVG markup; preferred over logoUrl when set. */
+		logoSvg?: string;
 		coverImageUrl?: string;
 		timezone?: string;
 		organizationSlug?: string;
 		parentInstitutionCode?: string;
+		/** Marks this entry as the default tenant institution. Mutually exclusive
+		 * with `idx === 0` fallback — explicit flag wins. Lets us define parents
+		 * before the default entry so child→parent links resolve in one pass. */
+		isDefault?: boolean;
 	}>;
+	centers?: Array<{
+		code: string;
+		institutionCode: string;
+		shortName?: string;
+		name: string;
+		nameEn?: string;
+		description?: string;
+		addressFr?: string;
+		addressEn?: string;
+		city?: string;
+		country?: string;
+		postalBox?: string;
+		contactEmail?: string;
+		contactPhone?: string;
+		logoUrl?: string;
+		/** Inline SVG markup for the center logo; preferred over logoUrl. */
+		logoSvg?: string;
+		adminInstanceLogoUrl?: string;
+		/** Inline SVG markup for the admin instance logo; preferred over adminInstanceLogoUrl. */
+		adminInstanceLogoSvg?: string;
+		watermarkLogoUrl?: string;
+		/** Inline SVG markup for the watermark; preferred over watermarkLogoUrl. */
+		watermarkLogoSvg?: string;
+		authorizationOrderFr?: string;
+		authorizationOrderEn?: string;
+		isActive?: boolean;
+		administrativeInstances?: Array<{
+			nameFr: string;
+			nameEn: string;
+			acronymFr?: string;
+			acronymEn?: string;
+			logoUrl?: string;
+			/** Inline SVG markup; preferred over logoUrl. */
+			logoSvg?: string;
+			showOnTranscripts?: boolean;
+			showOnCertificates?: boolean;
+		}>;
+		legalTexts?: Array<{
+			textFr: string;
+			textEn: string;
+		}>;
+	}>;
+	/** Default center code applied to programs that omit `centerCode`. Lives on
+	 * the foundation seed so it can be inherited by every academic dataset. */
+	defaultProgramCenterCode?: string;
 };
 
 type ProgramSeed = {
@@ -118,6 +170,9 @@ type ProgramSeed = {
 	/** Links the program to a study cycle (e.g. BTS, LP, MP). */
 	studyCycleCode?: string;
 	facultyCode: string;
+	/** Optional center (campus) the program is affiliated with. Falls back to
+	 * the seed-level `defaultProgramCenterCode` if omitted. */
+	centerCode?: string;
 };
 
 type ClassSeed = {
@@ -169,6 +224,8 @@ type EnrollmentWindowSeed = {
 
 export type AcademicsSeed = {
 	meta?: SeedMeta;
+	/** Default center code applied to programs that omit `centerCode`. */
+	defaultProgramCenterCode?: string;
 	programs?: ProgramSeed[];
 	programOptions?: Array<{
 		programCode: string;
@@ -363,6 +420,8 @@ type SeedState = {
 	>;
 	semesters: Map<string, string>;
 	academicYears: Map<string, string>;
+	centers: Map<string, { id: string; institutionId: string }>;
+	defaultProgramCenterCode?: string;
 	programs: Map<string, ProgramRecord>;
 	programOptions: Map<
 		string,
@@ -398,9 +457,10 @@ export type RunSeedOptions = {
 const defaultSeedRelativeDir = path.join("seed", "local");
 
 const normalizeInstitutionType = (
-	type?: "main" | "faculty" | "department" | "other",
+	type?: "main" | "university" | "faculty" | "department" | "other",
 ): schema.InstitutionType => {
 	if (type === "faculty") return "faculty";
+	if (type === "university") return "university";
 	return "institution";
 };
 
@@ -491,6 +551,7 @@ function createSeedState(): SeedState {
 		cycleLevels: new Map(),
 		semesters: new Map(),
 		academicYears: new Map(),
+		centers: new Map(),
 		programs: new Map(),
 		programOptions: new Map(),
 		teachingUnits: new Map(),
@@ -621,6 +682,14 @@ async function seedFoundation(
 	// Process institutions early so that institutions with type="faculty" can populate state.faculties
 	// before they are needed by studyCycles
 	const institutions = data.institutions ?? [];
+	// `defaultIdx` flags which entry should claim the existing defaultInstitutionId
+	// row (so the active tenant is preserved across re-seeds even if its parents
+	// must be defined first in the YAML). Falls back to idx 0 when no entry sets
+	// `isDefault: true`, preserving the legacy convention.
+	const explicitDefaultIdx = institutions.findIndex(
+		(entry) => entry.isDefault === true,
+	);
+	const defaultIdx = explicitDefaultIdx >= 0 ? explicitDefaultIdx : 0;
 	for (let idx = 0; idx < institutions.length; idx++) {
 		const entry = institutions[idx];
 		const code = normalizeCode(entry.code);
@@ -671,6 +740,7 @@ async function seedFoundation(
 			postalBox: entry.postalBox ?? null,
 			website: entry.website ?? null,
 			logoUrl: entry.logoUrl ?? null,
+			logoSvg: entry.logoSvg ?? null,
 			coverImageUrl: entry.coverImageUrl ?? null,
 			timezone: entry.timezone ?? "UTC",
 			organizationId,
@@ -679,7 +749,7 @@ async function seedFoundation(
 		};
 
 		let institutionRecordId: string;
-		if (idx === 0 && state.defaultInstitutionId) {
+		if (idx === defaultIdx && state.defaultInstitutionId) {
 			await db
 				.update(schema.institutions)
 				.set(payload)
@@ -708,13 +778,113 @@ async function seedFoundation(
 		// Supports both faculty-based structures and single-institution setups
 		state.faculties.set(code, { id: institutionRecordId, code });
 
-		// Set as default institution if it's the first one
-		if (idx === 0 && !state.defaultInstitutionId) {
+		// Set as default institution on a fresh DB (no existing default).
+		if (idx === defaultIdx && !state.defaultInstitutionId) {
 			state.defaultInstitutionId = institutionRecordId;
 		}
 	}
 	if (data.institutions?.length) {
 		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
+	}
+
+	// Centers (campuses, vocational training centers) under an institution.
+	// Each center can carry administrative instances and bilingual legal texts
+	// that feed the export header (relevés / attestations).
+	for (const entry of data.centers ?? []) {
+		const targetInst = state.institutions.get(
+			normalizeCode(entry.institutionCode),
+		);
+		if (!targetInst) {
+			throw new Error(
+				`Center "${entry.code}" references unknown institution "${entry.institutionCode}". Define the institution first.`,
+			);
+		}
+		const centerPayload = {
+			institutionId: targetInst.id,
+			code: entry.code,
+			shortName: entry.shortName ?? null,
+			name: entry.name,
+			nameEn: entry.nameEn ?? null,
+			description: entry.description ?? null,
+			addressFr: entry.addressFr ?? null,
+			addressEn: entry.addressEn ?? null,
+			city: entry.city ?? null,
+			country: entry.country ?? null,
+			postalBox: entry.postalBox ?? null,
+			contactEmail: entry.contactEmail ?? null,
+			contactPhone: entry.contactPhone ?? null,
+			logoUrl: entry.logoUrl ?? null,
+			logoSvg: entry.logoSvg ?? null,
+			adminInstanceLogoUrl: entry.adminInstanceLogoUrl ?? null,
+			adminInstanceLogoSvg: entry.adminInstanceLogoSvg ?? null,
+			watermarkLogoUrl: entry.watermarkLogoUrl ?? null,
+			watermarkLogoSvg: entry.watermarkLogoSvg ?? null,
+			authorizationOrderFr: entry.authorizationOrderFr ?? null,
+			authorizationOrderEn: entry.authorizationOrderEn ?? null,
+			isActive: entry.isActive ?? true,
+			updatedAt: new Date(),
+		};
+		const [center] = await db
+			.insert(schema.centers)
+			.values(centerPayload)
+			.onConflictDoUpdate({
+				target: [schema.centers.code, schema.centers.institutionId],
+				set: centerPayload,
+			})
+			.returning();
+		state.centers.set(normalizeCode(entry.code), {
+			id: center.id,
+			institutionId: targetInst.id,
+		});
+
+		// Replace administrative instances (idempotent: clear + re-insert).
+		await db
+			.delete(schema.centerAdministrativeInstances)
+			.where(eq(schema.centerAdministrativeInstances.centerId, center.id));
+		const adminRows = entry.administrativeInstances ?? [];
+		if (adminRows.length) {
+			await db.insert(schema.centerAdministrativeInstances).values(
+				adminRows.map((row, i) => ({
+					centerId: center.id,
+					orderIndex: i,
+					nameFr: row.nameFr,
+					nameEn: row.nameEn,
+					acronymFr: row.acronymFr ?? null,
+					acronymEn: row.acronymEn ?? null,
+					logoUrl: row.logoUrl ?? null,
+					logoSvg: row.logoSvg ?? null,
+					showOnTranscripts: row.showOnTranscripts ?? true,
+					showOnCertificates: row.showOnCertificates ?? true,
+				})),
+			);
+		}
+
+		// Replace legal texts (idempotent: clear + re-insert).
+		await db
+			.delete(schema.centerLegalTexts)
+			.where(eq(schema.centerLegalTexts.centerId, center.id));
+		const legalRows = entry.legalTexts ?? [];
+		if (legalRows.length) {
+			await db.insert(schema.centerLegalTexts).values(
+				legalRows.map((row, i) => ({
+					centerId: center.id,
+					orderIndex: i,
+					textFr: row.textFr,
+					textEn: row.textEn,
+				})),
+			);
+		}
+	}
+	if (data.centers?.length) {
+		logger.log(`[seed] • Centers: ${data.centers.length}`);
+	}
+
+	// Pick up the foundation-level default center for programs (academics seed
+	// can still override via its own `defaultProgramCenterCode`).
+	if (data.defaultProgramCenterCode) {
+		state.defaultProgramCenterCode = normalizeCode(
+			data.defaultProgramCenterCode,
+		);
 	}
 
 	for (const entry of data.examTypes ?? []) {
@@ -848,6 +1018,7 @@ async function seedFoundation(
 				institutionId: faculty.id,
 				code,
 				name: entry.name,
+				nameEn: entry.nameEn ?? null,
 				description: entry.description ?? null,
 				totalCreditsRequired: entry.totalCreditsRequired ?? 180,
 				durationYears: entry.durationYears ?? 3,
@@ -856,6 +1027,7 @@ async function seedFoundation(
 				target: [schema.studyCycles.institutionId, schema.studyCycles.code],
 				set: {
 					name: entry.name,
+					nameEn: entry.nameEn ?? null,
 					description: entry.description ?? null,
 					totalCreditsRequired: entry.totalCreditsRequired ?? 180,
 					durationYears: entry.durationYears ?? 3,
@@ -1029,6 +1201,12 @@ async function seedAcademics(
 	logger: SeedLogger,
 ) {
 	const institutionId = await ensureSeedInstitutionId(db, state);
+	// Academics-level default center overrides foundation-level default.
+	if (data.defaultProgramCenterCode) {
+		state.defaultProgramCenterCode = normalizeCode(
+			data.defaultProgramCenterCode,
+		);
+	}
 	for (const entry of data.programs ?? []) {
 		const facultyCode = normalizeCode(entry.facultyCode);
 		const faculty = state.faculties.get(facultyCode);
@@ -1059,6 +1237,21 @@ async function seedAcademics(
 			}
 			cycleId = cycle.id;
 		}
+		// Resolve center: explicit centerCode wins over the seed-level default.
+		const centerCode = entry.centerCode
+			? normalizeCode(entry.centerCode)
+			: (state.defaultProgramCenterCode ?? null);
+		let centerId: string | null = null;
+		if (centerCode) {
+			const center = state.centers.get(centerCode);
+			if (!center) {
+				throw new Error(
+					`Unknown center code "${centerCode}" for program ${entry.code}. Define it under the foundation \`centers:\` block first.`,
+				);
+			}
+			centerId = center.id;
+		}
+
 		const programPayload = {
 			code,
 			name: programName,
@@ -1075,6 +1268,8 @@ async function seedAcademics(
 			attestationValidityFr: entry.attestationValidityFr ?? null,
 			attestationValidityEn: entry.attestationValidityEn ?? null,
 			cycleId,
+			centerId,
+			isCenterProgram: centerId !== null,
 			institutionId: faculty.id,
 		};
 		const [program] = await db
@@ -1097,6 +1292,8 @@ async function seedAcademics(
 					attestationValidityFr: programPayload.attestationValidityFr,
 					attestationValidityEn: programPayload.attestationValidityEn,
 					cycleId: programPayload.cycleId,
+					centerId: programPayload.centerId,
+					isCenterProgram: programPayload.isCenterProgram,
 				},
 			})
 			.returning();

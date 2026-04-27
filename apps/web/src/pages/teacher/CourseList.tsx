@@ -47,9 +47,13 @@ interface Course {
 	class_name: string;
 	class_id: string;
 	program_name: string;
+	program_id: string | null;
 	semester_id: string | null;
+	teacher_id: string | null;
+	teacher_label: string;
 	student_count: number;
 	exam_count: number;
+	exam_types: string[];
 	grades_posted: number;
 	grades_expected: number;
 	status: Status;
@@ -117,18 +121,39 @@ export default function CourseList({
 	const [classFilter, setClassFilter] = useState<string>("__all__");
 	const [semesterFilter, setSemesterFilter] = useState<string>("__all__");
 	const [statusFilter, setStatusFilter] = useState<string>("__all__");
+	const [examTypeFilter, setExamTypeFilter] = useState<string>("__all__");
+	const [programFilter, setProgramFilter] = useState<string>("__all__");
+	const [teacherFilter, setTeacherFilter] = useState<string>("__all__");
+	const [delegationFilter, setDelegationFilter] = useState<string>("__all__"); // __all__ | mine | delegated
 	const [page, setPage] = useState(0);
 
 	// Reset page when any filter changes
 	useEffect(() => {
 		setPage(0);
-	}, [debouncedSearch, classFilter, semesterFilter, statusFilter]);
+	}, [
+		debouncedSearch,
+		classFilter,
+		semesterFilter,
+		statusFilter,
+		examTypeFilter,
+		programFilter,
+		teacherFilter,
+		delegationFilter,
+	]);
 
 	const semestersQuery = useQuery({
 		queryKey: ["semesters", "all"],
 		queryFn: async () => {
 			const { items } = await trpcClient.semesters.list.query({ limit: 50 });
 			return items;
+		},
+	});
+
+	const examTypesCatalogQuery = useQuery({
+		queryKey: ["examTypes", "catalog"],
+		queryFn: async () => {
+			const { items } = await trpcClient.examTypes.list.query({ limit: 100 });
+			return items as Array<{ id: string; name: string }>;
 		},
 	});
 
@@ -155,6 +180,10 @@ export default function CourseList({
 				const examCount = cc.examCount ?? 0;
 				const posted = cc.gradesPosted ?? 0;
 				const expected = cc.gradesExpected ?? 0;
+				const teacherLabel = [cc.teacherFirstName, cc.teacherLastName]
+					.filter(Boolean)
+					.join(" ")
+					.trim();
 				return {
 					id: cc.id,
 					name: cc.courseName ?? "",
@@ -162,9 +191,13 @@ export default function CourseList({
 					class_name: cc.className ?? "",
 					class_id: cc.class,
 					program_name: cc.programName ?? "",
+					program_id: cc.programId ?? null,
 					semester_id: cc.semesterId ?? null,
+					teacher_id: cc.teacher ?? null,
+					teacher_label: teacherLabel,
 					student_count: cc.studentCount ?? 0,
 					exam_count: examCount,
+					exam_types: cc.examTypes ?? [],
 					grades_posted: posted,
 					grades_expected: expected,
 					status: deriveStatus(examCount, posted, expected),
@@ -195,15 +228,50 @@ export default function CourseList({
 			.sort((a, b) => a.name.localeCompare(b.name));
 	}, [courses]);
 
-	// Derive semester options: when a class is selected, only show its semesters.
+	// Distinct exam types: catalog ∪ what's actually present in the data,
+	// so the dropdown is always populated even when the catalog hasn't loaded.
+	const examTypeOptions = useMemo(() => {
+		const set = new Set<string>();
+		for (const t of examTypesCatalogQuery.data ?? []) set.add(t.name);
+		for (const c of courses ?? []) for (const t of c.exam_types) set.add(t);
+		return Array.from(set).sort();
+	}, [examTypesCatalogQuery.data, courses]);
+
+	const programOptions = useMemo(() => {
+		if (!courses) return [];
+		const map = new Map<string, string>();
+		for (const c of courses) {
+			if (c.program_id && !map.has(c.program_id)) {
+				map.set(c.program_id, c.program_name || c.program_id);
+			}
+		}
+		return Array.from(map.entries())
+			.map(([id, name]) => ({ id, name }))
+			.sort((a, b) => a.name.localeCompare(b.name));
+	}, [courses]);
+
+	const teacherOptions = useMemo(() => {
+		if (!courses) return [];
+		const map = new Map<string, string>();
+		for (const c of courses) {
+			if (c.teacher_id && c.teacher_label && !map.has(c.teacher_id)) {
+				map.set(c.teacher_id, c.teacher_label);
+			}
+		}
+		return Array.from(map.entries())
+			.map(([id, name]) => ({ id, name }))
+			.sort((a, b) => a.name.localeCompare(b.name));
+	}, [courses]);
+
+	// Semester options vary with the selected class (when set) and otherwise
+	// only show semesters that actually appear in the loaded data.
 	const semesterOptions = useMemo(() => {
 		const all = semestersQuery.data ?? [];
-		if (!courses || classFilter === "__all__") return all;
+		if (!courses) return all;
 		const allowed = new Set<string>();
 		for (const c of courses) {
-			if (c.class_id === classFilter && c.semester_id) {
-				allowed.add(c.semester_id);
-			}
+			if (classFilter !== "__all__" && c.class_id !== classFilter) continue;
+			if (c.semester_id) allowed.add(c.semester_id);
 		}
 		return all.filter((s) => allowed.has(s.id));
 	}, [semestersQuery.data, courses, classFilter]);
@@ -221,17 +289,38 @@ export default function CourseList({
 		const q = debouncedSearch.trim().toLowerCase();
 		return courses.filter((c) => {
 			if (classFilter !== "__all__" && c.class_id !== classFilter) return false;
+			if (programFilter !== "__all__" && c.program_id !== programFilter)
+				return false;
+			if (teacherFilter !== "__all__" && c.teacher_id !== teacherFilter)
+				return false;
 			if (semesterFilter !== "__all__" && c.semester_id !== semesterFilter)
 				return false;
 			if (statusFilter !== "__all__" && c.status !== statusFilter) return false;
+			if (
+				examTypeFilter !== "__all__" &&
+				!c.exam_types.includes(examTypeFilter)
+			)
+				return false;
+			if (delegationFilter === "mine" && c.isDelegated) return false;
+			if (delegationFilter === "delegated" && !c.isDelegated) return false;
 			if (q) {
 				const hay =
-					`${c.name} ${c.code} ${c.class_name} ${c.program_name}`.toLowerCase();
+					`${c.name} ${c.code} ${c.class_name} ${c.program_name} ${c.teacher_label}`.toLowerCase();
 				if (!hay.includes(q)) return false;
 			}
 			return true;
 		});
-	}, [courses, debouncedSearch, classFilter, semesterFilter, statusFilter]);
+	}, [
+		courses,
+		debouncedSearch,
+		classFilter,
+		semesterFilter,
+		statusFilter,
+		examTypeFilter,
+		programFilter,
+		teacherFilter,
+		delegationFilter,
+	]);
 
 	// Stats summary across the (filtered) set
 	const summary = useMemo(() => {
@@ -256,6 +345,10 @@ export default function CourseList({
 		setClassFilter("__all__");
 		setSemesterFilter("__all__");
 		setStatusFilter("__all__");
+		setExamTypeFilter("__all__");
+		setProgramFilter("__all__");
+		setTeacherFilter("__all__");
+		setDelegationFilter("__all__");
 	};
 
 	if (isLoading) {
@@ -268,10 +361,14 @@ export default function CourseList({
 
 	const visible = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 	const hasActiveFilters =
-		debouncedSearch ||
+		!!debouncedSearch ||
 		classFilter !== "__all__" ||
 		semesterFilter !== "__all__" ||
-		statusFilter !== "__all__";
+		statusFilter !== "__all__" ||
+		examTypeFilter !== "__all__" ||
+		programFilter !== "__all__" ||
+		teacherFilter !== "__all__" ||
+		delegationFilter !== "__all__";
 
 	return (
 		<div className="space-y-6">
@@ -282,8 +379,8 @@ export default function CourseList({
 
 			{/* Filters */}
 			<Card>
-				<CardContent className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center">
-					<div className="relative flex-1">
+				<CardContent className="flex flex-col gap-3 py-4">
+					<div className="relative w-full">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 						<Input
 							placeholder={t("teacher.courses.searchPlaceholder", {
@@ -312,6 +409,48 @@ export default function CourseList({
 								{classOptions.map((c) => (
 									<SelectItem key={c.id} value={c.id}>
 										{c.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<Select value={programFilter} onValueChange={setProgramFilter}>
+							<SelectTrigger className="w-[200px]">
+								<SelectValue
+									placeholder={t("teacher.courses.filters.program", {
+										defaultValue: "Programme",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="__all__">
+									{t("teacher.courses.filters.allPrograms", {
+										defaultValue: "Tous programmes",
+									})}
+								</SelectItem>
+								{programOptions.map((p) => (
+									<SelectItem key={p.id} value={p.id}>
+										{p.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<Select value={teacherFilter} onValueChange={setTeacherFilter}>
+							<SelectTrigger className="w-[200px]">
+								<SelectValue
+									placeholder={t("teacher.courses.filters.teacher", {
+										defaultValue: "Enseignant",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="__all__">
+									{t("teacher.courses.filters.allTeachers", {
+										defaultValue: "Tous enseignants",
+									})}
+								</SelectItem>
+								{teacherOptions.map((tc) => (
+									<SelectItem key={tc.id} value={tc.id}>
+										{tc.name}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -362,6 +501,56 @@ export default function CourseList({
 								</SelectItem>
 								<SelectItem value="no_exam">
 									{STATUS_META.no_exam.defaultLabel}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+						<Select value={examTypeFilter} onValueChange={setExamTypeFilter}>
+							<SelectTrigger className="w-[160px]">
+								<SelectValue
+									placeholder={t("teacher.courses.filters.examType", {
+										defaultValue: "Type d'examen",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="__all__">
+									{t("teacher.courses.filters.allExamTypes", {
+										defaultValue: "Tous types",
+									})}
+								</SelectItem>
+								{examTypeOptions.map((type) => (
+									<SelectItem key={type} value={type}>
+										{type}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<Select
+							value={delegationFilter}
+							onValueChange={setDelegationFilter}
+						>
+							<SelectTrigger className="w-[160px]">
+								<SelectValue
+									placeholder={t("teacher.courses.filters.delegation", {
+										defaultValue: "Affectation",
+									})}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="__all__">
+									{t("teacher.courses.filters.allDelegations", {
+										defaultValue: "Tous",
+									})}
+								</SelectItem>
+								<SelectItem value="mine">
+									{t("teacher.courses.filters.mine", {
+										defaultValue: "Mes cours",
+									})}
+								</SelectItem>
+								<SelectItem value="delegated">
+									{t("teacher.courses.filters.delegated", {
+										defaultValue: "Délégués",
+									})}
 								</SelectItem>
 							</SelectContent>
 						</Select>

@@ -8,6 +8,7 @@ import {
 	baseSchema,
 	cloneCurriculumSchema,
 	codeSchema,
+	duplicateForCyclesSchema,
 	idSchema,
 	listSchema,
 	programIdSchema,
@@ -57,6 +58,16 @@ export const router = createRouter({
 				input.targetProgramId,
 				input.sourceProgramId,
 				ctx.institution.id,
+			),
+		),
+	duplicateForCycles: adminProcedure
+		.input(duplicateForCyclesSchema)
+		.mutation(({ ctx, input }) =>
+			service.duplicateForCycles(
+				input.sourceProgramIds,
+				input.targetCycleIds,
+				ctx.institution.id,
+				{ cloneCurriculum: input.cloneCurriculum },
 			),
 		),
 	listExportTemplates: protectedProcedure

@@ -1,47 +1,1956 @@
 meta:
   version: "2024.12"
-  generatedAt: 2026-04-13T00:00:00Z
+  generatedAt: 2026-04-27T11:21:28Z
   dataset: inses
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Ce fichier est intentionnellement vide pour le moment.
-#
-# Prérequis pour ajouter des examens et délibérations :
-#   1. Affecter les enseignants aux cours dans 10-academics.yaml (classCourses)
-#   2. Lancer bun seed pour créer les classCourses en DB
-#   3. Ajouter les examens (exams) dans 10-academics.yaml ou ici (additionalExams)
-#   4. Saisir les notes (grades) et créer les délibérations (deliberations) ici
-#
-# Format attendu :
-#
-# additionalExams:
-#   - id: EXAM-IGL111-CC
-#     classCourseCode: CC-IGL111-IGL25-BTS1A
-#     name: Contrôle Continu Outils Mathématiques I
-#     type: CC
-#     date: 2025-10-15T09:00:00Z
-#     percentage: 40
-#     status: approved
-#     isLocked: true
-#
-# grades:
-#   - examId: EXAM-IGL111-CC
-#     studentCode: STUDENT-NDONG
-#     score: 14.5
-#
-# deliberations:
-#   - code: DELIB-IGL25-AY2025
-#     classCode: IGL25-BTS1A
-#     classAcademicYearCode: AY-2025
-#     academicYearCode: AY-2025
-#     type: annual
-#     presidentCode: TEACH-DR-MBALLA
-#     juryMembers:
-#       - userCode: TEACH-DR-NGUEMA
-#         name: Dr. Nguema Marie
-#         role: Membre
-#     juryNumber: J2025-001
-#     deliberationDate: "2026-02-05T09:00:00Z"
-#     actorCode: ADMIN-ROOT
-#     targetStatus: signed
-# ─────────────────────────────────────────────────────────────────────────────
+additionalExams:
+  - id: EXAM-CC-SIN114EC1-SIN25BTS1
+    classCourseCode: CC-SIN114EC1-SIN25BTS1
+    name: Contrôle continu — philisophie des soins
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN121EC3-SIN25BTS1
+    classCourseCode: CC-SIN121EC3-SIN25BTS1
+    name: Contrôle continu — Système digestif
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN911EC1-SIN25BTS1
+    classCourseCode: CC-SIN911EC1-SIN25BTS1
+    name: Contrôle continu — Entrepreneuriat
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN121EC4-SIN25BTS1
+    classCourseCode: CC-SIN121EC4-SIN25BTS1
+    name: Contrôle continu — Système urinaire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN232EC1-SIN25BTS1
+    classCourseCode: CC-SIN232EC1-SIN25BTS1
+    name: Contrôle continu — Pharmacologie generale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN121EC2-SIN25BTS1
+    classCourseCode: CC-SIN121EC2-SIN25BTS1
+    name: Contrôle continu — Système respiratoire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN911EC2-SIN25BTS1
+    classCourseCode: CC-SIN911EC2-SIN25BTS1
+    name: Contrôle continu — Hygiene generale et hospitaliere
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN235EC2-SIN25BTS2
+    classCourseCode: CC-SIN235EC2-SIN25BTS2
+    name: Contrôle continu — Affection pediatrique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN231EC1-SIN25BTS2
+    classCourseCode: CC-SIN231EC1-SIN25BTS2
+    name: Contrôle continu — Biostatistique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN931EC1-SIN25BTS2
+    classCourseCode: CC-SIN931EC1-SIN25BTS2
+    name: Contrôle continu — Accueil des usagers
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN232EC1-SIN25BTS2
+    classCourseCode: CC-SIN232EC1-SIN25BTS2
+    name: Contrôle continu — Pharmacologie generale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN951EC1-SIN25BTS3
+    classCourseCode: CC-SIN951EC1-SIN25BTS3
+    name: Contrôle continu — Informatique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN237EC2-SIN25BTS3
+    classCourseCode: CC-SIN237EC2-SIN25BTS3
+    name: Contrôle continu — Expression anglaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN352EC2-SIN25BTS3
+    classCourseCode: CC-SIN352EC2-SIN25BTS3
+    name: Contrôle continu — Gestion hospitaliere
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN351EC1-SIN25BTS3
+    classCourseCode: CC-SIN351EC1-SIN25BTS3
+    name: Contrôle continu — Pathologies medicales
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SIN237EC1-SIN25BTS3
+    classCourseCode: CC-SIN237EC1-SIN25BTS3
+    name: Contrôle continu — Expression francaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB911EC1-TLB25BTS1
+    classCourseCode: CC-TLB911EC1-TLB25BTS1
+    name: Contrôle continu — Système digestif
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB911EC2-TLB25BTS1
+    classCourseCode: CC-TLB911EC2-TLB25BTS1
+    name: Contrôle continu — Terminologie medicale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB115EC2-TLB25BTS1
+    classCourseCode: CC-TLB115EC2-TLB25BTS1
+    name: Contrôle continu — Mathematiques
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB911EC3-TLB25BTS1
+    classCourseCode: CC-TLB911EC3-TLB25BTS1
+    name: Contrôle continu — Système urinaire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB112EC1-TLB25BTS1
+    classCourseCode: CC-TLB112EC1-TLB25BTS1
+    name: Contrôle continu — Bacteriologie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB233EC1-TLB25BTS1
+    classCourseCode: CC-TLB233EC1-TLB25BTS1
+    name: Contrôle continu — Hematologie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB122EC2-TLB25BTS1
+    classCourseCode: CC-TLB122EC2-TLB25BTS1
+    name: Contrôle continu — Parasitologie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB911EC4-TLB25BTS1
+    classCourseCode: CC-TLB911EC4-TLB25BTS1
+    name: Contrôle continu — Système respiratoire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB115EC1-TLB25BTS1
+    classCourseCode: CC-TLB115EC1-TLB25BTS1
+    name: Contrôle continu — Physique appliquee
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB235EC1-TLB25BTS2
+    classCourseCode: CC-TLB235EC1-TLB25BTS2
+    name: Contrôle continu — bacteriologie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB241EC1-TLB25BTS2
+    classCourseCode: CC-TLB241EC1-TLB25BTS2
+    name: Contrôle continu — parasitologie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB115EC3-TLB25BTS2
+    classCourseCode: CC-TLB115EC3-TLB25BTS2
+    name: Contrôle continu — Biostatistique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB357EC2-TLB25BTS3
+    classCourseCode: CC-TLB357EC2-TLB25BTS3
+    name: Contrôle continu — Informatique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB237EC1-TLB25BTS3
+    classCourseCode: CC-TLB237EC1-TLB25BTS3
+    name: Contrôle continu — Expression anglaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-TLB351EC3-TLB25BTS3
+    classCourseCode: CC-TLB351EC3-TLB25BTS3
+    name: Contrôle continu — Gestion hospitaliere
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM113EC1-SFM25BTS1
+    classCourseCode: CC-SFM113EC1-SFM25BTS1
+    name: Contrôle continu — Histoire de la profession de la sage femme
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM911EC1-SFM25BTS1
+    classCourseCode: CC-SFM911EC1-SFM25BTS1
+    name: Contrôle continu — Système digestif
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM116EC3-SFM25BTS1
+    classCourseCode: CC-SFM116EC3-SFM25BTS1
+    name: Contrôle continu — Prevention des infection
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM911EC2-SFM25BTS1
+    classCourseCode: CC-SFM911EC2-SFM25BTS1
+    name: Contrôle continu — Système urinaire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM115EC1-SFM25BTS1
+    classCourseCode: CC-SFM115EC1-SFM25BTS1
+    name: Contrôle continu — Pharmacologie generale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM124EC2-SFM25BTS1
+    classCourseCode: CC-SFM124EC2-SFM25BTS1
+    name: Contrôle continu — Education a la vie familiale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM911EC3-SFM25BTS1
+    classCourseCode: CC-SFM911EC3-SFM25BTS1
+    name: Contrôle continu — Système respiratoire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM351EC2-SFM25BTS1
+    classCourseCode: CC-SFM351EC2-SFM25BTS1
+    name: Contrôle continu — Santé genesique et droit sexuelles
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM232EC1-SFM25BTS2
+    classCourseCode: CC-SFM232EC1-SFM25BTS2
+    name: Contrôle continu — Dystocie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM235EC1-SFM25BTS2
+    classCourseCode: CC-SFM235EC1-SFM25BTS2
+    name: Contrôle continu — Affection pediatrique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM233EC2-SFM25BTS2
+    classCourseCode: CC-SFM233EC2-SFM25BTS2
+    name: Contrôle continu — Biostatistique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM951EC1-SFM25BTS3
+    classCourseCode: CC-SFM951EC1-SFM25BTS3
+    name: Contrôle continu — Informatique
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM357EC2-SFM25BTS3
+    classCourseCode: CC-SFM357EC2-SFM25BTS3
+    name: Contrôle continu — Expression anglaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM363EC1-SFM25BTS3
+    classCourseCode: CC-SFM363EC1-SFM25BTS3
+    name: Contrôle continu — Gestion hospitaliere
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM354EC1-SFM25BTS3
+    classCourseCode: CC-SFM354EC1-SFM25BTS3
+    name: Contrôle continu — Pathologies medicales
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-SFM951EC2-SFM25BTS3
+    classCourseCode: CC-SFM951EC2-SFM25BTS3
+    name: Contrôle continu — Exepression francaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM911EC1-IMM25BTS1
+    classCourseCode: CC-IMM911EC1-IMM25BTS1
+    name: Contrôle continu — Système digestif
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM117EC2-IMM25BTS1
+    classCourseCode: CC-IMM117EC2-IMM25BTS1
+    name: Contrôle continu — Français medicale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM113EC1-IMM25BTS1
+    classCourseCode: CC-IMM113EC1-IMM25BTS1
+    name: Contrôle continu — Mathematiques
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM911EC2-IMM25BTS1
+    classCourseCode: CC-IMM911EC2-IMM25BTS1
+    name: Contrôle continu — Système urinaire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM911EC3-IMM25BTS1
+    classCourseCode: CC-IMM911EC3-IMM25BTS1
+    name: Contrôle continu — Pharmacologie generale
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM911EC4-IMM25BTS1
+    classCourseCode: CC-IMM911EC4-IMM25BTS1
+    name: Contrôle continu — Système respiratoire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IMM111EC3-IMM25BTS1
+    classCourseCode: CC-IMM111EC3-IMM25BTS1
+    name: Contrôle continu — Physique appliquee
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+grades:
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 13.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 15
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 12.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 10
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 10
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 14.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 17
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 10
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 15
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 12
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 15
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 15.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 16.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 12.5
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-018
+    score: 12.25
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 14
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-020
+    score: 10
+  - examId: EXAM-CC-SIN114EC1-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 11
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 11
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 12
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 7
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 17
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 14.5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 11
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-011
+    score: 6
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 17
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 16.5
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 11
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 10
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-018
+    score: 12
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 18
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-020
+    score: 12
+  - examId: EXAM-CC-SIN121EC3-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 9
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 12.5
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-002
+    score: 7
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 13
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 17
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 11.5
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 12
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 14
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 14
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 11.5
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 16
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-011
+    score: 10
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 13
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 15
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 15
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 15.5
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 12
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-018
+    score: 8
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 16
+  - examId: EXAM-CC-SIN911EC1-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 10
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-002
+    score: 11.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 16.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 10.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 10.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 15
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 11.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-011
+    score: 7
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 15
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 12
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-018
+    score: 14
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 16
+  - examId: EXAM-CC-SIN121EC4-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 14.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 11
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-002
+    score: 13
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 14
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 15
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 14.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 9
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-011
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 10.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 12.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 14.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 12
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 11.5
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-018
+    score: 8
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 11
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-020
+    score: 10
+  - examId: EXAM-CC-SIN232EC1-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 10.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-001
+    score: 12
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-002
+    score: 12
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-003
+    score: 11
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-004
+    score: 18.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-005
+    score: 13
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-006
+    score: 14
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-007
+    score: 17
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-008
+    score: 14
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-009
+    score: 17
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-010
+    score: 13.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-011
+    score: 13.25
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-012
+    score: 15.25
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-013
+    score: 14
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-014
+    score: 19.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-016
+    score: 11
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-017
+    score: 15.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-019
+    score: 18.5
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-020
+    score: 12
+  - examId: EXAM-CC-SIN121EC2-SIN25BTS1
+    studentCode: STD-SIN1-021
+    score: 8
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-001
+    score: 12.5
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-002
+    score: 11.25
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-005
+    score: 15
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-007
+    score: 14
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-009
+    score: 11
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-012
+    score: 13.25
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-013
+    score: 13
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-014
+    score: 11
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-017
+    score: 11.25
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-018
+    score: 11
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-019
+    score: 10
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-020
+    score: 10
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-021
+    score: 13
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-022
+    score: 12.25
+  - examId: EXAM-CC-SIN235EC2-SIN25BTS2
+    studentCode: STD-SIN2-023
+    score: 5.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-001
+    score: 17
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-002
+    score: 16.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-003
+    score: 16.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-005
+    score: 15.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-006
+    score: 14
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-007
+    score: 12.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-009
+    score: 15.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-011
+    score: 16
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-012
+    score: 17
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-013
+    score: 16.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-014
+    score: 16
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-016
+    score: 16
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-017
+    score: 15.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-020
+    score: 16
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-021
+    score: 17
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-022
+    score: 13.5
+  - examId: EXAM-CC-SIN231EC1-SIN25BTS2
+    studentCode: STD-SIN2-023
+    score: 16.5
+  - examId: EXAM-CC-SIN931EC1-SIN25BTS2
+    studentCode: STD-SIN2-008
+    score: 14.25
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-001
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-002
+    score: 8
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-003
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-004
+    score: 12
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-005
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-006
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-007
+    score: 13
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-008
+    score: 9
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-009
+    score: 14
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-010
+    score: 14
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-011
+    score: 9
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-012
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-013
+    score: 12
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-014
+    score: 14
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-015
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-016
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-018
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-019
+    score: 8
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-020
+    score: 9
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-021
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-022
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-023
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-024
+    score: 15
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-025
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-026
+    score: 8
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-027
+    score: 16
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-028
+    score: 13
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-030
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-031
+    score: 13
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-035
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-036
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-037
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-038
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-039
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-040
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-042
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-044
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-045
+    score: 12
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-046
+    score: 9
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-047
+    score: 12
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-048
+    score: 11
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-049
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-051
+    score: 12
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-052
+    score: 10
+  - examId: EXAM-CC-SIN951EC1-SIN25BTS3
+    studentCode: STD-SIN3-053
+    score: 11
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-001
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-002
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-003
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-004
+    score: 8.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-005
+    score: 13.75
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-006
+    score: 13.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-007
+    score: 11
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-008
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-009
+    score: 10.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-010
+    score: 14.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-011
+    score: 8.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-012
+    score: 13
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-013
+    score: 13.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-014
+    score: 11.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-015
+    score: 14
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-016
+    score: 11.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-017
+    score: 13
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-018
+    score: 14
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-019
+    score: 10
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-020
+    score: 13.75
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-021
+    score: 15
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-022
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-023
+    score: 10
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-024
+    score: 11.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-025
+    score: 14.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-026
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-027
+    score: 14.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-028
+    score: 13
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-030
+    score: 10.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-032
+    score: 13
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-035
+    score: 10
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-037
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-038
+    score: 14
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-039
+    score: 14
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-040
+    score: 11
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-042
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-043
+    score: 16.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-044
+    score: 10.5
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-045
+    score: 13.75
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-046
+    score: 13
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-047
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-048
+    score: 14
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-049
+    score: 12
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-050
+    score: 9
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-051
+    score: 10
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-052
+    score: 10
+  - examId: EXAM-CC-SIN237EC2-SIN25BTS3
+    studentCode: STD-SIN3-053
+    score: 13
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-001
+    score: 10
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-002
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-003
+    score: 13.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-004
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-005
+    score: 14.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-006
+    score: 15
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-007
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-008
+    score: 11
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-009
+    score: 13
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-010
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-011
+    score: 10
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-012
+    score: 10
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-013
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-014
+    score: 11.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-015
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-016
+    score: 13
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-017
+    score: 13
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-019
+    score: 13
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-020
+    score: 11.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-021
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-022
+    score: 10.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-023
+    score: 12
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-024
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-025
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-026
+    score: 12
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-027
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-028
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-029
+    score: 10
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-030
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-031
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-034
+    score: 11.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-035
+    score: 12.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-036
+    score: 10.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-037
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-038
+    score: 14.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-039
+    score: 17
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-040
+    score: 10
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-042
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-043
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-044
+    score: 14.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-045
+    score: 12
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-046
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-047
+    score: 11.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-048
+    score: 13.25
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-049
+    score: 13.5
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-051
+    score: 14
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-052
+    score: 16
+  - examId: EXAM-CC-SIN352EC2-SIN25BTS3
+    studentCode: STD-SIN3-053
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-001
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-002
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-003
+    score: 12.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-004
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-005
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-006
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-007
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-008
+    score: 16
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-010
+    score: 12.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-011
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-012
+    score: 13
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-014
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-016
+    score: 16
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-017
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-018
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-020
+    score: 11.25
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-021
+    score: 14
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-024
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-025
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-027
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-028
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-031
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-032
+    score: 13
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-034
+    score: 12
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-035
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-037
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-038
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-039
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-040
+    score: 11
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-041
+    score: 13
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-042
+    score: 14
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-043
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-044
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-045
+    score: 13
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-047
+    score: 12.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-050
+    score: 10
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-051
+    score: 13
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-052
+    score: 13.5
+  - examId: EXAM-CC-SIN351EC1-SIN25BTS3
+    studentCode: STD-SIN3-053
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-001
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-002
+    score: 10
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-004
+    score: 13
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-006
+    score: 13.25
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-007
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-010
+    score: 11.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-012
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-014
+    score: 11.25
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-015
+    score: 8.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-016
+    score: 7
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-017
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-019
+    score: 7
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-020
+    score: 5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-021
+    score: 12.25
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-023
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-024
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-025
+    score: 10.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-027
+    score: 11.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-028
+    score: 12.5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-030
+    score: 10
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-031
+    score: 4
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-032
+    score: 5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-035
+    score: 10
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-036
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-037
+    score: 4
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-038
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-039
+    score: 10
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-040
+    score: 9.25
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-041
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-042
+    score: 7
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-043
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-045
+    score: 8
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-046
+    score: 9
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-047
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-050
+    score: 10
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-051
+    score: 11
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-052
+    score: 5
+  - examId: EXAM-CC-SIN237EC1-SIN25BTS3
+    studentCode: STD-SIN3-053
+    score: 9
+  - examId: EXAM-CC-TLB911EC1-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 15
+  - examId: EXAM-CC-TLB911EC1-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 17
+  - examId: EXAM-CC-TLB911EC2-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 13
+  - examId: EXAM-CC-TLB115EC2-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 16
+  - examId: EXAM-CC-TLB115EC2-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 15
+  - examId: EXAM-CC-TLB115EC2-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 13
+  - examId: EXAM-CC-TLB911EC3-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 12
+  - examId: EXAM-CC-TLB911EC3-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 11.5
+  - examId: EXAM-CC-TLB911EC3-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 11.5
+  - examId: EXAM-CC-TLB112EC1-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 17.5
+  - examId: EXAM-CC-TLB112EC1-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 14.5
+  - examId: EXAM-CC-TLB112EC1-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 18.5
+  - examId: EXAM-CC-TLB233EC1-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 10
+  - examId: EXAM-CC-TLB233EC1-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 11.5
+  - examId: EXAM-CC-TLB233EC1-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 11.25
+  - examId: EXAM-CC-TLB122EC2-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 7
+  - examId: EXAM-CC-TLB122EC2-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 7
+  - examId: EXAM-CC-TLB122EC2-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 11
+  - examId: EXAM-CC-TLB911EC4-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 15
+  - examId: EXAM-CC-TLB911EC4-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 14.5
+  - examId: EXAM-CC-TLB911EC4-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 13
+  - examId: EXAM-CC-TLB115EC1-TLB25BTS1
+    studentCode: STD-TLB1-001
+    score: 16
+  - examId: EXAM-CC-TLB115EC1-TLB25BTS1
+    studentCode: STD-TLB1-002
+    score: 17.5
+  - examId: EXAM-CC-TLB115EC1-TLB25BTS1
+    studentCode: STD-TLB1-003
+    score: 16
+  - examId: EXAM-CC-TLB235EC1-TLB25BTS2
+    studentCode: STD-TLB2-002
+    score: 16
+  - examId: EXAM-CC-TLB235EC1-TLB25BTS2
+    studentCode: STD-TLB2-003
+    score: 15.5
+  - examId: EXAM-CC-TLB241EC1-TLB25BTS2
+    studentCode: STD-TLB2-001
+    score: 0.5
+  - examId: EXAM-CC-TLB241EC1-TLB25BTS2
+    studentCode: STD-TLB2-002
+    score: 0.5
+  - examId: EXAM-CC-TLB241EC1-TLB25BTS2
+    studentCode: STD-TLB2-003
+    score: 0.5
+  - examId: EXAM-CC-TLB115EC3-TLB25BTS2
+    studentCode: STD-TLB2-001
+    score: 15.5
+  - examId: EXAM-CC-TLB115EC3-TLB25BTS2
+    studentCode: STD-TLB2-002
+    score: 16.5
+  - examId: EXAM-CC-TLB115EC3-TLB25BTS2
+    studentCode: STD-TLB2-003
+    score: 14
+  - examId: EXAM-CC-TLB357EC2-TLB25BTS3
+    studentCode: STD-TLB3-001
+    score: 13
+  - examId: EXAM-CC-TLB357EC2-TLB25BTS3
+    studentCode: STD-TLB3-002
+    score: 10
+  - examId: EXAM-CC-TLB357EC2-TLB25BTS3
+    studentCode: STD-TLB3-003
+    score: 14
+  - examId: EXAM-CC-TLB357EC2-TLB25BTS3
+    studentCode: STD-TLB3-004
+    score: 11
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-001
+    score: 14
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-002
+    score: 13
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-003
+    score: 13
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-004
+    score: 12
+  - examId: EXAM-CC-TLB351EC3-TLB25BTS3
+    studentCode: STD-TLB3-001
+    score: 10.5
+  - examId: EXAM-CC-TLB351EC3-TLB25BTS3
+    studentCode: STD-TLB3-002
+    score: 13.25
+  - examId: EXAM-CC-TLB351EC3-TLB25BTS3
+    studentCode: STD-TLB3-003
+    score: 14
+  - examId: EXAM-CC-TLB351EC3-TLB25BTS3
+    studentCode: STD-TLB3-004
+    score: 14.5
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-001
+    score: 12.25
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-002
+    score: 10
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-003
+    score: 6.5
+  - examId: EXAM-CC-TLB237EC1-TLB25BTS3
+    studentCode: STD-TLB3-004
+    score: 13.25
+  - examId: EXAM-CC-SFM113EC1-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 10
+  - examId: EXAM-CC-SFM113EC1-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 13
+  - examId: EXAM-CC-SFM113EC1-SFM25BTS1
+    studentCode: STD-SFM1-003
+    score: 11
+  - examId: EXAM-CC-SFM113EC1-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 9
+  - examId: EXAM-CC-SFM911EC1-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 15
+  - examId: EXAM-CC-SFM911EC1-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 18
+  - examId: EXAM-CC-SFM911EC1-SFM25BTS1
+    studentCode: STD-SFM1-003
+    score: 16
+  - examId: EXAM-CC-SFM911EC1-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 13
+  - examId: EXAM-CC-SFM116EC3-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 13.5
+  - examId: EXAM-CC-SFM116EC3-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 18.5
+  - examId: EXAM-CC-SFM116EC3-SFM25BTS1
+    studentCode: STD-SFM1-003
+    score: 16.25
+  - examId: EXAM-CC-SFM116EC3-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 16
+  - examId: EXAM-CC-SFM911EC2-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 13.5
+  - examId: EXAM-CC-SFM911EC2-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 10
+  - examId: EXAM-CC-SFM115EC1-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 14
+  - examId: EXAM-CC-SFM115EC1-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 13
+  - examId: EXAM-CC-SFM115EC1-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 9
+  - examId: EXAM-CC-SFM124EC2-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 16
+  - examId: EXAM-CC-SFM124EC2-SFM25BTS1
+    studentCode: STD-SFM1-003
+    score: 17
+  - examId: EXAM-CC-SFM911EC3-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 11
+  - examId: EXAM-CC-SFM911EC3-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 17
+  - examId: EXAM-CC-SFM911EC3-SFM25BTS1
+    studentCode: STD-SFM1-003
+    score: 13.25
+  - examId: EXAM-CC-SFM911EC3-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 13
+  - examId: EXAM-CC-SFM351EC2-SFM25BTS1
+    studentCode: STD-SFM1-001
+    score: 13
+  - examId: EXAM-CC-SFM351EC2-SFM25BTS1
+    studentCode: STD-SFM1-002
+    score: 16
+  - examId: EXAM-CC-SFM351EC2-SFM25BTS1
+    studentCode: STD-SFM1-004
+    score: 11
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-001
+    score: 12
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-002
+    score: 14
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-003
+    score: 14
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-004
+    score: 11
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-005
+    score: 10
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-006
+    score: 12
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-009
+    score: 11
+  - examId: EXAM-CC-SFM232EC1-SFM25BTS2
+    studentCode: STD-SFM2-010
+    score: 15
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-001
+    score: 12.25
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-002
+    score: 10
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-003
+    score: 16
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-005
+    score: 4
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-006
+    score: 11.25
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-008
+    score: 5.25
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-009
+    score: 11.25
+  - examId: EXAM-CC-SFM235EC1-SFM25BTS2
+    studentCode: STD-SFM2-010
+    score: 10
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-001
+    score: 16
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-002
+    score: 16
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-003
+    score: 15.5
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-004
+    score: 14
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-005
+    score: 15
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-006
+    score: 14
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-008
+    score: 16.5
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-009
+    score: 16
+  - examId: EXAM-CC-SFM233EC2-SFM25BTS2
+    studentCode: STD-SFM2-010
+    score: 15.5
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-001
+    score: 11
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-002
+    score: 10
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-003
+    score: 15
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-005
+    score: 10
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-006
+    score: 19
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-007
+    score: 12
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-008
+    score: 13
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-009
+    score: 12
+  - examId: EXAM-CC-SFM951EC1-SFM25BTS3
+    studentCode: STD-SFM3-010
+    score: 10
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-001
+    score: 11
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-002
+    score: 14.5
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-003
+    score: 15
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-005
+    score: 14
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-006
+    score: 13
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-007
+    score: 10
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-008
+    score: 10.5
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-009
+    score: 10
+  - examId: EXAM-CC-SFM357EC2-SFM25BTS3
+    studentCode: STD-SFM3-010
+    score: 16
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-001
+    score: 10
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-002
+    score: 16.5
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-003
+    score: 14.5
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-004
+    score: 14
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-005
+    score: 13
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-006
+    score: 13
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-007
+    score: 14
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-008
+    score: 11.5
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-009
+    score: 14.5
+  - examId: EXAM-CC-SFM363EC1-SFM25BTS3
+    studentCode: STD-SFM3-010
+    score: 12.5
+  - examId: EXAM-CC-SFM354EC1-SFM25BTS3
+    studentCode: STD-SFM3-002
+    score: 10
+  - examId: EXAM-CC-SFM354EC1-SFM25BTS3
+    studentCode: STD-SFM3-007
+    score: 10
+  - examId: EXAM-CC-SFM354EC1-SFM25BTS3
+    studentCode: STD-SFM3-008
+    score: 10
+  - examId: EXAM-CC-SFM354EC1-SFM25BTS3
+    studentCode: STD-SFM3-009
+    score: 10
+  - examId: EXAM-CC-SFM951EC2-SFM25BTS3
+    studentCode: STD-SFM3-005
+    score: 9.25
+  - examId: EXAM-CC-SFM951EC2-SFM25BTS3
+    studentCode: STD-SFM3-007
+    score: 9.25
+  - examId: EXAM-CC-SFM951EC2-SFM25BTS3
+    studentCode: STD-SFM3-008
+    score: 10
+  - examId: EXAM-CC-SFM951EC2-SFM25BTS3
+    studentCode: STD-SFM3-009
+    score: 9
+  - examId: EXAM-CC-IMM911EC1-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 16
+  - examId: EXAM-CC-IMM117EC2-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 16
+  - examId: EXAM-CC-IMM113EC1-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 10.5
+  - examId: EXAM-CC-IMM911EC2-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 12
+  - examId: EXAM-CC-IMM911EC3-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 10.5
+  - examId: EXAM-CC-IMM911EC4-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 12.5
+  - examId: EXAM-CC-IMM111EC3-IMM25BTS1
+    studentCode: STD-IMM1-001
+    score: 10

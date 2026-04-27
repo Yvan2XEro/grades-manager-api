@@ -42,6 +42,19 @@ export const generateDocumentSchema = z.object({
 	themeOverrides: z.record(z.string(), z.unknown()).optional(),
 	format: formatSchema,
 	demoMode: z.boolean().default(false),
+	/**
+	 * Period selector for transcripts:
+	 *   - "semester" → semestriel (notes du semestre courant uniquement).
+	 *   - "annual"   → annuel (cumul des deux semestres de l'année).
+	 * Affects the document title and (future) the data filtering. Optional —
+	 * defaults to "annual" when omitted.
+	 */
+	period: z.enum(["semester", "annual"]).default("annual"),
+	/**
+	 * Restricts the data to one specific semester when `period === "semester"`.
+	 * Optional — when omitted with semestriel, the most-recent semester is used.
+	 */
+	semesterId: z.string().optional(),
 });
 export type GenerateDocumentInput = z.infer<typeof generateDocumentSchema>;
 

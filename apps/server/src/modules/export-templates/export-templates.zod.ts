@@ -8,10 +8,13 @@ const templateTypeEnum = z.enum(exportTemplateTypes);
 // strict Zod validation when resolving the final theme.
 const themeOverridesSchema = z.record(z.string(), z.unknown()).optional();
 
+const templateVariantEnum = z.enum(["standard", "center"]);
+
 // Create template schema
 export const createExportTemplateSchema = z.object({
 	name: z.string().min(1, "Template name is required"),
 	type: templateTypeEnum,
+	variant: templateVariantEnum.default("standard"),
 	isDefault: z.boolean().default(false),
 	description: z.string().max(500).optional(),
 	templateBody: z.string().min(1).optional(),
@@ -22,6 +25,7 @@ export const createExportTemplateSchema = z.object({
 export const updateExportTemplateSchema = z.object({
 	id: z.string(),
 	name: z.string().min(1).optional(),
+	variant: templateVariantEnum.optional(),
 	isDefault: z.boolean().optional(),
 	description: z.string().max(500).nullable().optional(),
 	templateBody: z.string().optional(),
@@ -33,7 +37,9 @@ export const listExportTemplatesSchema = z.object({
 	type: templateTypeEnum.optional(),
 	isDefault: z.boolean().optional(),
 	cursor: z.string().optional(),
-	limit: z.number().min(1).max(100).optional(),
+	// Allow up to 500 — institutions can accumulate many variants and the
+	// program form fetches them all in one go for the dropdowns.
+	limit: z.number().min(1).max(500).optional(),
 });
 
 // Get template schema

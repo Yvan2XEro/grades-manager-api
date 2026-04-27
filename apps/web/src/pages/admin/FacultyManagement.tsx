@@ -84,6 +84,7 @@ const institutionSchema = z.object({
 	postalBox: z.string().optional(),
 	website: z.string().url().optional().or(z.literal("")),
 	logoUrl: z.string().url().optional().or(z.literal("")),
+	logoSvg: z.string().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
@@ -113,6 +114,7 @@ const defaultValues: FormValues = {
 	postalBox: "",
 	website: "",
 	logoUrl: "",
+	logoSvg: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
@@ -141,6 +143,7 @@ type Institution = {
 	postalBox: string | null;
 	website: string | null;
 	logoUrl: string | null;
+	logoSvg: string | null;
 	coverImageUrl: string | null;
 	parentInstitutionId: string | null;
 	institutionId: string | null;
@@ -163,10 +166,29 @@ export default function FacultyManagement() {
 	const { data: allInstitutions, isLoading } = useQuery(
 		trpc.institutions.list.queryOptions(),
 	);
+	const yearsQuery = useQuery(
+		trpc.academicYears.list.queryOptions({ limit: 100 }),
+	);
+	const formatsQuery = useQuery(
+		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
+	);
 
 	const institutions = useMemo(
 		() => (allInstitutions ?? []) as Institution[],
 		[allInstitutions],
+	);
+	const years = useMemo(
+		() => (yearsQuery.data?.items ?? []) as Array<{ id: string; name: string }>,
+		[yearsQuery.data],
+	);
+	const formats = useMemo(
+		() =>
+			(formatsQuery.data ?? []) as Array<{
+				id: string;
+				name: string;
+				isActive: boolean;
+			}>,
+		[formatsQuery.data],
 	);
 
 	const selection = useRowSelection(institutions);
@@ -230,6 +252,7 @@ export default function FacultyManagement() {
 			postalBox: inst.postalBox ?? "",
 			website: inst.website ?? "",
 			logoUrl: inst.logoUrl ?? "",
+			logoSvg: inst.logoSvg ?? "",
 			coverImageUrl: inst.coverImageUrl ?? "",
 			parentInstitutionId: inst.parentInstitutionId ?? undefined,
 			institutionId: inst.institutionId ?? undefined,
@@ -256,6 +279,7 @@ export default function FacultyManagement() {
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
+				logoSvg: values.logoSvg || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
@@ -281,6 +305,7 @@ export default function FacultyManagement() {
 					contactEmail: values.contactEmail || undefined,
 					website: values.website || undefined,
 					logoUrl: values.logoUrl || undefined,
+					logoSvg: values.logoSvg || undefined,
 					coverImageUrl: values.coverImageUrl || undefined,
 					parentInstitutionId: values.parentInstitutionId || undefined,
 					institutionId: values.institutionId || undefined,
@@ -1137,6 +1162,30 @@ export default function FacultyManagement() {
 													},
 												)}
 											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="logoSvg"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="text-xs">
+												{t("admin.institution.form.logoSvg", {
+													defaultValue:
+														"…ou code SVG (utilisé en priorité sur les exports)",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Textarea
+													{...field}
+													value={field.value ?? ""}
+													rows={4}
+													placeholder="<svg ...>...</svg>"
+													className="font-mono text-xs"
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}

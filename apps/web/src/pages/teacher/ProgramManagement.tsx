@@ -33,6 +33,15 @@ import {
 	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
 	Empty,
 	EmptyContent,
 	EmptyDescription,
@@ -100,7 +109,16 @@ const buildProgramSchema = (t: TFunction) =>
 		exportTemplates: z
 			.array(
 				z.object({
-					templateType: z.enum(["pv", "evaluation", "ue", "deliberation"]),
+					templateType: z.enum([
+						"pv",
+						"evaluation",
+						"ue",
+						"deliberation",
+						"diploma",
+						"transcript",
+						"attestation",
+						"student_list",
+					]),
 					templateId: z.string().min(1),
 				}),
 			)
@@ -108,13 +126,35 @@ const buildProgramSchema = (t: TFunction) =>
 	});
 
 type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
-type ExportTemplateType = "pv" | "evaluation" | "ue" | "deliberation";
+type ExportTemplateType =
+	| "pv"
+	| "evaluation"
+	| "ue"
+	| "deliberation"
+	| "diploma"
+	| "transcript"
+	| "attestation"
+	| "student_list";
 const EXPORT_TEMPLATE_TYPES: ExportTemplateType[] = [
+	"diploma",
+	"transcript",
+	"attestation",
+	"student_list",
 	"pv",
 	"evaluation",
 	"ue",
 	"deliberation",
 ];
+const EXPORT_TEMPLATE_TYPE_LABELS: Record<ExportTemplateType, string> = {
+	diploma: "Diplôme",
+	transcript: "Relevé de notes",
+	attestation: "Attestation",
+	student_list: "Liste d'étudiants",
+	pv: "Procès-verbal",
+	evaluation: "Publication d'évaluation",
+	ue: "Publication d'UE",
+	deliberation: "Délibération",
+};
 const programOptionSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	code: z.string().min(1, "Code is required"),
@@ -156,6 +196,12 @@ export default function ProgramManagement() {
 		null,
 	);
 	const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+	const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
+	const [duplicateTargetCycleIds, setDuplicateTargetCycleIds] = useState<
+		string[]
+	>([]);
+	const [duplicateCloneCurriculum, setDuplicateCloneCurriculum] =
+		useState(true);
 
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
@@ -213,14 +259,19 @@ export default function ProgramManagement() {
 	});
 	const centers = centersData ?? [];
 
-	const { data: exportTemplatesData } = useQuery({
+	const {
+		data: exportTemplatesData,
+		isLoading: exportTemplatesLoading,
+		error: exportTemplatesError,
+	} = useQuery({
 		queryKey: ["exportTemplates", "select"],
 		queryFn: async () => {
-			const res = await trpcClient.exportTemplates.list.query({ limit: 200 });
+			const res = await trpcClient.exportTemplates.list.query({ limit: 100 });
 			return res.items as Array<{
 				id: string;
 				name: string;
 				type: ExportTemplateType;
+				variant?: "standard" | "center";
 			}>;
 		},
 	});
@@ -472,6 +523,35 @@ export default function ProgramManagement() {
 			),
 	});
 
+	const duplicateForCyclesMutation = useMutation({
+		mutationFn: (input: {
+			sourceProgramIds: string[];
+			targetCycleIds: string[];
+			cloneCurriculum: boolean;
+		}) => trpcClient.programs.duplicateForCycles.mutate(input),
+		onSuccess: (result) => {
+			queryClient.invalidateQueries({ queryKey: ["programs"] });
+			selection.clear();
+			setIsDuplicateOpen(false);
+			setDuplicateTargetCycleIds([]);
+			toast.success(
+				t("admin.programs.duplicate.toast.success", {
+					defaultValue:
+						"{{created}} programme(s) créé(s){{skipped, plural, =0 {} other { ({{skipped}} ignoré(s))}}}",
+					created: result.createdCount,
+					skipped: result.skippedCount,
+				}),
+			);
+		},
+		onError: (err: unknown) =>
+			toast.error(
+				(err as Error).message ||
+					t("admin.programs.duplicate.toast.error", {
+						defaultValue: "Erreur lors de la duplication",
+					}),
+			),
+	});
+
 	const onSubmit = (data: ProgramFormData) => {
 		if (editingProgram) {
 			updateMutation.mutate({ ...data, id: editingProgram.id });
@@ -623,6 +703,20 @@ export default function ProgramManagement() {
 				selectedCount={selection.selectedCount}
 				onClear={selection.clear}
 			>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => {
+						setDuplicateTargetCycleIds([]);
+						setDuplicateCloneCurriculum(true);
+						setIsDuplicateOpen(true);
+					}}
+				>
+					<Copy className="mr-1 h-3.5 w-3.5" />
+					{t("admin.programs.duplicate.button", {
+						defaultValue: "Dupliquer vers cycle…",
+					})}
+				</Button>
 				<Button
 					variant="destructive"
 					size="sm"
@@ -1117,12 +1211,12 @@ export default function ProgramManagement() {
 								</FormItem>
 							)}
 						/>
-						<div className="grid gap-4 md:grid-cols-2">
+						<div className="space-y-4">
 							<FormField
 								control={form.control}
 								name="centerId"
 								render={({ field }) => (
-									<FormItem>
+									<FormItem className="min-w-0">
 										<FormLabel>
 											{t("admin.programs.form.centerLabel", {
 												defaultValue: "Centre",
@@ -1137,23 +1231,32 @@ export default function ProgramManagement() {
 											}}
 										>
 											<FormControl>
-												<SelectTrigger>
+												<SelectTrigger className="w-full min-w-0">
 													<SelectValue
 														placeholder={t(
 															"admin.programs.form.centerPlaceholder",
 															{ defaultValue: "Aucun centre" },
 														)}
+														className="block truncate"
 													/>
 												</SelectTrigger>
 											</FormControl>
-											<SelectContent>
+											<SelectContent
+												align="start"
+												position="popper"
+												className="w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)]"
+											>
 												<SelectItem value="__NONE__">
 													{t("admin.programs.form.centerNone", {
 														defaultValue: "Aucun (programme général)",
 													})}
 												</SelectItem>
 												{centers.map((c) => (
-													<SelectItem key={c.id} value={c.id}>
+													<SelectItem
+														key={c.id}
+														value={c.id}
+														className="[&>span:last-child]:truncate"
+													>
 														{c.name}
 													</SelectItem>
 												))}
@@ -1213,6 +1316,14 @@ export default function ProgramManagement() {
 									}
 									field.onChange(next);
 								};
+								// Centre vs standard filtering: when the program is attached
+								// to a center, prefer the "center" variants of system
+								// templates. The 4 non-document types (pv/eval/ue/delib) only
+								// have a "standard" variant — show it unconditionally.
+								const isCenterProgram = Boolean(form.watch("centerId"));
+								const variantNeeded: "standard" | "center" = isCenterProgram
+									? "center"
+									: "standard";
 								return (
 									<FormItem className="space-y-3 rounded-md border p-3">
 										<div>
@@ -1222,24 +1333,89 @@ export default function ProgramManagement() {
 												})}
 											</FormLabel>
 											<p className="text-muted-foreground text-xs">
-												{t("admin.programs.form.exportTemplatesHint", {
-													defaultValue:
-														"Choisissez le modèle par défaut par type de document.",
-												})}
+												{isCenterProgram
+													? `Programme rattaché à un centre — les modèles "Centre" sont prioritaires (en-tête institut + données du centre).`
+													: t("admin.programs.form.exportTemplatesHint", {
+															defaultValue:
+																"Choisissez le modèle par défaut par type de document.",
+														})}
 											</p>
+											{exportTemplatesError && (
+												<p className="rounded bg-red-50 px-2 py-1 text-red-700 text-xs">
+													Erreur lors du chargement des modèles :{" "}
+													{exportTemplatesError instanceof Error
+														? exportTemplatesError.message
+														: String(exportTemplatesError)}
+												</p>
+											)}
+											{!exportTemplatesLoading &&
+												!exportTemplatesError &&
+												exportTemplates.length === 0 && (
+													<p className="rounded bg-amber-50 px-2 py-1 text-amber-800 text-xs">
+														Aucun modèle disponible pour cette institution.{" "}
+														Allez dans <strong>Modèles d'exportation</strong> et
+														cliquez{" "}
+														<strong>"Initialiser modèles officiels"</strong>{" "}
+														pour seeder les modèles par défaut.
+													</p>
+												)}
+											{!exportTemplatesLoading &&
+												!exportTemplatesError &&
+												exportTemplates.length > 0 && (
+													<p className="text-muted-foreground text-xs">
+														{exportTemplates.length} modèle(s) chargé(s) ·{" "}
+														{
+															exportTemplates.filter(
+																(t) => (t.variant ?? "standard") === "center",
+															).length
+														}{" "}
+														variante(s) Centre
+													</p>
+												)}
 										</div>
 										<div className="grid gap-3 md:grid-cols-2">
 											{EXPORT_TEMPLATE_TYPES.map((type) => {
-												const options = exportTemplates.filter(
+												const allOfType = exportTemplates.filter(
 													(tpl) => tpl.type === type,
 												);
+												// Templates created before the variant column was
+												// added have variant=null/undefined — treat them
+												// as "standard" for back-compat.
+												const variantOf = (tpl: {
+													variant?: "standard" | "center";
+												}): "standard" | "center" => tpl.variant ?? "standard";
+												// Try the preferred variant first; if there's nothing
+												// (e.g. pv/eval/ue/delib never have a center variant,
+												// or the admin hasn't re-seeded after the 0005
+												// migration yet), fall back to ALL templates of this
+												// type so the dropdown is never empty when content
+												// exists.
+												const preferred = allOfType.filter(
+													(tpl) => variantOf(tpl) === variantNeeded,
+												);
+												const options =
+													preferred.length > 0 ? preferred : allOfType;
+												const usedFallback =
+													isCenterProgram &&
+													preferred.length === 0 &&
+													allOfType.length > 0;
 												const value = currentByType.get(type) ?? "__NONE__";
 												return (
 													<div key={type} className="space-y-1.5">
 														<Label className="text-xs">
-															{t(
-																`admin.programs.form.exportTemplateType.${type}`,
-																{ defaultValue: type.toUpperCase() },
+															{EXPORT_TEMPLATE_TYPE_LABELS[type]}
+															{isCenterProgram && preferred.length > 0 && (
+																<span className="ml-1 text-muted-foreground">
+																	(centre)
+																</span>
+															)}
+															{usedFallback && (
+																<span
+																	className="ml-1 text-amber-600"
+																	title="Aucun modèle Centre disponible — modèles standard listés"
+																>
+																	(standard)
+																</span>
 															)}
 														</Label>
 														<Select
@@ -1265,11 +1441,21 @@ export default function ProgramManagement() {
 																		defaultValue: "Aucun",
 																	})}
 																</SelectItem>
-																{options.map((tpl) => (
-																	<SelectItem key={tpl.id} value={tpl.id}>
-																		{tpl.name}
-																	</SelectItem>
-																))}
+																{options.map((tpl) => {
+																	const v = variantOf(tpl);
+																	return (
+																		<SelectItem key={tpl.id} value={tpl.id}>
+																			<span className="flex items-center gap-2">
+																				<span>{tpl.name}</span>
+																				{v === "center" && (
+																					<span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">
+																						centre
+																					</span>
+																				)}
+																			</span>
+																		</SelectItem>
+																	);
+																})}
 															</SelectContent>
 														</Select>
 														<ConfirmDialog />
@@ -1589,6 +1775,120 @@ export default function ProgramManagement() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<Dialog
+				open={isDuplicateOpen}
+				onOpenChange={(open) => {
+					setIsDuplicateOpen(open);
+					if (!open) {
+						setDuplicateTargetCycleIds([]);
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>
+							{t("admin.programs.duplicate.title", {
+								defaultValue: "Dupliquer vers un autre cycle",
+							})}
+						</DialogTitle>
+						<DialogDescription>
+							{t("admin.programs.duplicate.description", {
+								defaultValue:
+									"{{count}} programme(s) seront copiés vers chaque cycle sélectionné. Le code et le nom seront préfixés par celui du cycle.",
+								count: selection.selectedCount,
+							})}
+						</DialogDescription>
+					</DialogHeader>
+
+					<DialogBody className="space-y-4">
+						<div className="space-y-2">
+							<Label>
+								{t("admin.programs.duplicate.targetCycles", {
+									defaultValue: "Cycles cibles",
+								})}
+							</Label>
+							{cycles?.items?.length ? (
+								<div className="max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
+									{cycles.items.map((cycle) => {
+										const checked = duplicateTargetCycleIds.includes(cycle.id);
+										return (
+											<label
+												key={cycle.id}
+												className="flex cursor-pointer items-center gap-2 text-sm"
+											>
+												<Checkbox
+													checked={checked}
+													onCheckedChange={(value) => {
+														setDuplicateTargetCycleIds((prev) =>
+															value
+																? [...prev, cycle.id]
+																: prev.filter((id) => id !== cycle.id),
+														);
+													}}
+												/>
+												<span className="font-medium">{cycle.name}</span>
+												<span className="text-muted-foreground text-xs">
+													({cycle.code})
+												</span>
+											</label>
+										);
+									})}
+								</div>
+							) : (
+								<p className="text-muted-foreground text-sm">
+									{t("admin.programs.duplicate.noCycles", {
+										defaultValue: "Aucun cycle disponible",
+									})}
+								</p>
+							)}
+						</div>
+
+						<label className="flex cursor-pointer items-center gap-2 text-sm">
+							<Checkbox
+								checked={duplicateCloneCurriculum}
+								onCheckedChange={(v) => setDuplicateCloneCurriculum(Boolean(v))}
+							/>
+							<span>
+								{t("admin.programs.duplicate.cloneCurriculum", {
+									defaultValue: "Cloner également les UE et EC",
+								})}
+							</span>
+						</label>
+					</DialogBody>
+
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setIsDuplicateOpen(false)}
+							disabled={duplicateForCyclesMutation.isPending}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							onClick={() =>
+								duplicateForCyclesMutation.mutate({
+									sourceProgramIds: [...selection.selectedIds],
+									targetCycleIds: duplicateTargetCycleIds,
+									cloneCurriculum: duplicateCloneCurriculum,
+								})
+							}
+							disabled={
+								duplicateTargetCycleIds.length === 0 ||
+								selection.selectedCount === 0 ||
+								duplicateForCyclesMutation.isPending
+							}
+						>
+							{duplicateForCyclesMutation.isPending && (
+								<Spinner className="mr-2 h-4 w-4" />
+							)}
+							{t("admin.programs.duplicate.submit", {
+								defaultValue: "Dupliquer",
+							})}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

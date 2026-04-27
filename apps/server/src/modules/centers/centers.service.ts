@@ -33,6 +33,7 @@ function toAdminInstanceRow(
 		acronymFr: input.acronymFr ?? null,
 		acronymEn: input.acronymEn ?? null,
 		logoUrl: input.logoUrl ?? null,
+		logoSvg: input.logoSvg ?? null,
 		showOnTranscripts: input.showOnTranscripts ?? true,
 		showOnCertificates: input.showOnCertificates ?? true,
 	};

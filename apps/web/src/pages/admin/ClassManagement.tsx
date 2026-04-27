@@ -9,6 +9,7 @@ import type { TFunction } from "i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
+	Download,
 	Eye,
 	FileSpreadsheet,
 	FileText,
@@ -25,6 +26,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { z } from "zod";
+import { BulkClassExportDialog } from "@/components/admin/document-templates/BulkClassExportDialog";
 import { CodedEntitySelect } from "@/components/forms";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -171,6 +173,7 @@ export default function ClassManagement() {
 	const [previewLoading, setPreviewLoading] = useState(false);
 	const [studentSearch, setStudentSearch] = useState("");
 	const [isBulkGenOpen, setIsBulkGenOpen] = useState(false);
+	const [isBulkExportOpen, setIsBulkExportOpen] = useState(false);
 	const [bulkGenYearId, setBulkGenYearId] = useState<string | null>(null);
 	const [bulkGenSourceYearId, setBulkGenSourceYearId] = useState<string | null>(
 		null,
@@ -489,7 +492,61 @@ export default function ClassManagement() {
 	};
 
 	const handleExportStudentListPDF = async (classData: Class) => {
+		// New pipeline: render via the institution's `student_list` template
+		// (resolves class → program → institution default, picks the centre
+		// variant when the program is attached to a center). Falls back to
+		// the legacy jsPDF generator when the new pipeline fails (e.g. no
+		// template seeded, server unreachable).
 		try {
+			const result =
+				await trpcClient.academicDocuments.generateStudentList.mutate({
+					classId: classData.id,
+					format: "pdf",
+					demoMode: false,
+				});
+			const r = result as {
+				data: string;
+				filename: string;
+				mimeType: string;
+				usedTemplate?: { name: string; variant: "standard" | "center" };
+			};
+			const byteChars = atob(r.data);
+			const byteNumbers = new Array(byteChars.length);
+			for (let i = 0; i < byteChars.length; i++) {
+				byteNumbers[i] = byteChars.charCodeAt(i);
+			}
+			const blob = new Blob([new Uint8Array(byteNumbers)], {
+				type: r.mimeType,
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = r.filename;
+			a.click();
+			URL.revokeObjectURL(url);
+			if (r.usedTemplate) {
+				toast.success(
+					`Modèle utilisé : ${r.usedTemplate.name}${r.usedTemplate.variant === "center" ? " (centre)" : ""}`,
+				);
+			} else {
+				toast.success(
+					t("admin.classes.export.success", {
+						defaultValue: "Student list exported successfully",
+					}),
+				);
+			}
+			return;
+		} catch (err) {
+			console.warn(
+				"[handleExportStudentListPDF] template pipeline failed, falling back to jsPDF",
+				err,
+			);
+			toast.warning(
+				`Le modèle officiel n'a pas pu être rendu (${err instanceof Error ? err.message : "erreur inconnue"}). Génération basique via jsPDF.`,
+			);
+		}
+		try {
+			// Legacy fallback (basic jsPDF, no template).
 			// Fetch institution info
 			const institution = await trpcClient.institutions.get.query();
 
@@ -951,6 +1008,15 @@ export default function ClassManagement() {
 						{t("admin.classes.actions.bulkGenerate", {
 							defaultValue: "Générer les classes",
 						})}
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setIsBulkExportOpen(true)}
+						disabled={classes.length === 0}
+					>
+						<Download className="mr-2 h-4 w-4" />
+						Exporter en lot
 					</Button>
 					<Button
 						type="button"
@@ -1808,6 +1874,12 @@ export default function ClassManagement() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<BulkClassExportDialog
+				open={isBulkExportOpen}
+				onOpenChange={setIsBulkExportOpen}
+				classes={classes}
+			/>
 		</div>
 	);
 }

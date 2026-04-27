@@ -78,9 +78,19 @@ export function ExportStudentListButton({
 				data: string;
 				filename: string;
 				mimeType: string;
+				usedTemplate: {
+					id: string | null;
+					name: string;
+					variant: "standard" | "center";
+					isSystemDefault: boolean;
+				};
 			};
 		},
 		onSuccess: (result) => {
+			const t = result.usedTemplate;
+			toast.success(
+				`Modèle utilisé : ${t.name}${t.variant === "center" ? " (centre)" : ""}`,
+			);
 			if (result.mimeType === "text/html") {
 				setPreviewHtml(result.data);
 				return;
@@ -99,7 +109,6 @@ export function ExportStudentListButton({
 			a.download = result.filename;
 			a.click();
 			URL.revokeObjectURL(url);
-			toast.success("Liste générée et téléchargée");
 			setOpen(false);
 		},
 		onError: (err: any) => toast.error(err.message || "Échec de la génération"),

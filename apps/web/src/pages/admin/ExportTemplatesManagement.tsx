@@ -211,11 +211,23 @@ export default function ExportTemplatesManagement() {
 		mutationFn: async () => {
 			return await trpcClient.academicDocuments.seedSystemDefaults.mutate();
 		},
-		onSuccess: (result: { created: string[]; skipped: string[] }) => {
+		onSuccess: (result: {
+			created: string[];
+			skipped: string[];
+			failed?: Array<{ type: string; reason: string }>;
+		}) => {
 			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
+			const failed = result.failed ?? [];
+			if (failed.length > 0) {
+				toast.error(
+					`Échecs (${failed.length}) : ${failed
+						.map((f) => `${f.type} → ${f.reason}`)
+						.join(" ; ")}`,
+				);
+			}
 			if (result.created.length > 0) {
 				toast.success(`Modèles officiels créés : ${result.created.join(", ")}`);
-			} else {
+			} else if (failed.length === 0) {
 				toast.info("Tous les modèles officiels sont déjà présents.");
 			}
 		},

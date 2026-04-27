@@ -22,6 +22,7 @@ export const upsertInstitutionSchema = z.object({
 	postalBox: z.string().optional(),
 	website: z.string().url().optional(),
 	logoUrl: z.string().url().optional(),
+	logoSvg: z.string().optional(),
 	coverImageUrl: z.string().url().optional(),
 	organizationId: z.string().optional(),
 	parentInstitutionId: z.string().optional(),
