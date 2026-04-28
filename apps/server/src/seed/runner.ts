@@ -18,7 +18,11 @@ import * as authSchema from "../db/schema/auth";
 import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import type { OrganizationRoleName } from "../lib/organization-roles";
 import { normalizeCode, slugify } from "../lib/strings";
+import type { TransactionClient } from "../modules/_shared/db-transaction";
+import * as classesRepo from "../modules/classes/classes.repo";
 import * as deliberationsService from "../modules/deliberations/deliberations.service";
+import { generateRegistrationNumber } from "../modules/registration-numbers/registration-number-generator";
+import * as registrationNumbersRepo from "../modules/registration-numbers/registration-numbers.repo";
 import * as studentCreditLedgerService from "../modules/student-credit-ledger/student-credit-ledger.service";
 
 type SeedLogger = Pick<Console, "log" | "error">;
@@ -303,7 +307,13 @@ type StudentSeed = {
 	domainUserCode: string;
 	classCode: string;
 	classAcademicYearCode?: string;
-	registrationNumber: string;
+	/**
+	 * Optional. When omitted, the runner allocates a registration number
+	 * via the institution's active format AFTER sorting students of the
+	 * same class alphabetically (lastName, firstName). This guarantees
+	 * matricules follow alphabetical order in PDF exports.
+	 */
+	registrationNumber?: string;
 };
 
 type EnrollmentSeed = {
@@ -440,7 +450,7 @@ type SeedState = {
 	pendingClassCourses: ClassCourseSeed[];
 	pendingExams: ExamSeed[];
 	authUsers: Map<string, string>;
-	domainUsers: Map<string, { id: string }>;
+	domainUsers: Map<string, { id: string; firstName: string; lastName: string }>;
 	students: Map<string, { id: string }>;
 };
 
@@ -1644,6 +1654,14 @@ async function seedUsers(
 			});
 		}
 
+		// Persist family names in UPPERCASE for storage consistency. The seed
+		// convention puts the family name (NOM) in `firstName` and given
+		// names (PRÉNOM) in `lastName`. Official documents render the family
+		// name in caps, so we normalize at insertion to avoid relying on
+		// CSS text-transform downstream. Given names keep their original case.
+		const normalizedFirstName = (entry.firstName ?? "").toUpperCase();
+		const normalizedLastName = entry.lastName ?? "";
+
 		let profile: { id: string };
 		if (existingProfile) {
 			// Update existing profile
@@ -1651,8 +1669,8 @@ async function seedUsers(
 				.update(schema.domainUsers)
 				.set({
 					authUserId,
-					firstName: entry.firstName,
-					lastName: entry.lastName,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
@@ -1670,8 +1688,8 @@ async function seedUsers(
 				.insert(schema.domainUsers)
 				.values({
 					authUserId,
-					firstName: entry.firstName,
-					lastName: entry.lastName,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
 					primaryEmail: entry.primaryEmail,
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
@@ -1687,6 +1705,8 @@ async function seedUsers(
 
 		state.domainUsers.set(code, {
 			id: profile.id,
+			firstName: entry.firstName ?? "",
+			lastName: entry.lastName ?? "",
 		});
 
 		const targetMemberRole = determineMemberRole(entry);
@@ -1745,7 +1765,62 @@ async function seedUsers(
 		await seedExams(db, state, logger);
 	}
 
-	for (const entry of data.students ?? []) {
+	// Pre-sort students so the matricule allocation walks them in
+	// alphabetical order WITHIN each class (stable on lastName+firstName).
+	// Effect: when a student entry omits `registrationNumber`, the runner
+	// hands out the next number from the active format in alphabetical
+	// order — exports then list students with monotonic, ordered IDs.
+	// Entries that DO carry an explicit `registrationNumber` keep it.
+	const studentsRaw = data.students ?? [];
+	const sortableStudents = studentsRaw.map((entry) => {
+		const du = state.domainUsers.get(normalizeCode(entry.domainUserCode));
+		return {
+			entry,
+			lastName: du?.lastName ?? "",
+			firstName: du?.firstName ?? "",
+		};
+	});
+	sortableStudents.sort((a, b) => {
+		// Group by class so matricule allocation cycles per class.
+		const classCmp = a.entry.classCode.localeCompare(b.entry.classCode);
+		if (classCmp !== 0) return classCmp;
+		// Seed convention: profile.firstName carries the FAMILY NAME (NOM)
+		// — the order users expect for sorted exports/matricules. Within
+		// the same NOM, fall back to lastName (= given names / prénoms).
+		const familyCmp = (a.firstName ?? "").localeCompare(b.firstName ?? "");
+		if (familyCmp !== 0) return familyCmp;
+		return (a.lastName ?? "").localeCompare(b.lastName ?? "");
+	});
+
+	// Cache the institution's active format + each class's full record so
+	// we don't requery on every student. Only loaded on demand if at least
+	// one student needs an auto-generated matricule. Keyed by institutionId
+	// because seedUsers runs without a single global `institutionId` in
+	// scope — it derives the institution from each class instead.
+	const activeFormatByInstitution = new Map<
+		string,
+		Awaited<ReturnType<typeof registrationNumbersRepo.findActive>> | null
+	>();
+	const klassRecordCache = new Map<
+		string,
+		Awaited<ReturnType<typeof classesRepo.findById>>
+	>();
+	async function getActiveFormat(instId: string) {
+		const cached = activeFormatByInstitution.get(instId);
+		if (cached !== undefined) return cached;
+		const fmt = await registrationNumbersRepo.findActive(instId);
+		activeFormatByInstitution.set(instId, fmt ?? null);
+		return fmt ?? null;
+	}
+	async function getKlassRecord(klassId: string, instId: string) {
+		const cached = klassRecordCache.get(klassId);
+		if (cached !== undefined) return cached;
+		const k = await classesRepo.findById(klassId, instId);
+		klassRecordCache.set(klassId, k);
+		return k;
+	}
+
+	for (const { entry } of sortableStudents) {
 		const domainUser = state.domainUsers.get(
 			normalizeCode(entry.domainUserCode),
 		);
@@ -1764,12 +1839,45 @@ async function seedUsers(
 				`Unknown class ${entry.classCode} for student ${entry.code}`,
 			);
 		}
+
+		// Resolve the matricule. Explicit YAML value wins (back-compat); else
+		// generate via the institution's active format. The generator handles
+		// counter incrementing in DB so concurrent seed runs stay consistent.
+		let registrationNumber = entry.registrationNumber;
+		if (!registrationNumber) {
+			const format = await getActiveFormat(klass.institutionId);
+			if (!format) {
+				throw new Error(
+					`No active registration number format set for institution ${klass.institutionId} — cannot auto-generate matricule for student ${entry.code}. Set one in 00-foundation.yaml \`registrationNumberFormats\` or supply \`registrationNumber\` explicitly.`,
+				);
+			}
+			const klassRecord = await getKlassRecord(klass.id, klass.institutionId);
+			if (!klassRecord) {
+				throw new Error(
+					`Class ${entry.classCode} not found in DB while generating matricule for student ${entry.code}`,
+				);
+			}
+			registrationNumber = await generateRegistrationNumber({
+				format,
+				klass: klassRecord,
+				profile: {
+					firstName: domainUser.firstName,
+					lastName: domainUser.lastName,
+				},
+				// `db` is the top-level Drizzle client which is structurally
+				// compatible with the TransactionClient API surface used by
+				// the generator (just `.insert(...).onConflictDoUpdate(...)`).
+				// Cast keeps types happy without forcing a per-student tx.
+				tx: db as unknown as TransactionClient,
+			});
+		}
+
 		const [student] = await db
 			.insert(schema.students)
 			.values({
 				domainUserId: domainUser.id,
 				class: klass.id,
-				registrationNumber: entry.registrationNumber,
+				registrationNumber,
 				institutionId: klass.institutionId,
 			})
 			.onConflictDoUpdate({

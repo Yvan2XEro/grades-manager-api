@@ -8,12 +8,15 @@ import * as deliberationsService from "../deliberations/deliberations.service";
 import * as eligibility from "../export-eligibility/export-eligibility.service";
 import { ExportsService } from "./exports.service";
 import {
+	bulkExportFiltersSchema,
 	generateCourseCatalogSchema,
 	generateDeliberationSchema,
+	generateEcSchema,
 	generateEvaluationSchema,
 	generatePVSchema,
 	generateUESchema,
 	previewDeliberationSchema,
+	previewEcSchema,
 	previewEvaluationSchema,
 	previewPVSchema,
 	previewTemplateSourceSchema,
@@ -39,7 +42,11 @@ export const exportsRouter = router({
 
 			return {
 				data: result.content,
-				filename: `PV_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
+				// Service computes a meaningful filename from the class metadata;
+				// fall back to a generic stamp only if it didn't.
+				filename:
+					result.filename ??
+					`PV_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
 				mimeType: result.mimeType,
 			};
 		}),
@@ -74,21 +81,18 @@ export const exportsRouter = router({
 	generateEvaluation: tenantGradingProcedure
 		.input(generateEvaluationSchema)
 		.mutation(async ({ ctx, input }) => {
+			// Per-évaluation export is intentionally NOT gated on the EC reaching
+			// 100%. Publishing a single CC / TP / Examen result is valid even if
+			// the EC isn't fully evaluated yet — the 100% rule only applies to EC,
+			// UE and PV exports which aggregate multiple evaluations.
 			const service = new ExportsService(ctx.institution.id);
-			// Resolve EC eligibility via the parent class_course of the exam
-			const examMeta = await service.getExamClassCourse(input.examId);
-			if (examMeta?.classCourseId) {
-				const ec = await eligibility.checkEcEligibility(
-					examMeta.classCourseId,
-					ctx.institution.id,
-				);
-				eligibility.assertEcEligible(ec);
-			}
 			const result = await service.generateEvaluation(input);
 
 			return {
 				data: result.content,
-				filename: `Evaluation_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
+				filename:
+					result.filename ??
+					`Evaluation_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
 				mimeType: result.mimeType,
 			};
 		}),
@@ -106,6 +110,107 @@ export const exportsRouter = router({
 			});
 
 			return result.content;
+		}),
+
+	/**
+	 * Generate EC (Élément Constitutif / class_course) publication.
+	 * Aggregates ALL normal-session evaluations (CC + TP + Examen ...) of one
+	 * EC into a single PDF — one row per student with their final EC average.
+	 * Eligibility (sum of percentages = 100%) is enforced HERE: this is the
+	 * level at which an "EC final result" only makes sense if the EC is fully
+	 * evaluated. The per-évaluation export is unconstrained.
+	 */
+	generateEc: tenantGradingProcedure
+		.input(generateEcSchema)
+		.mutation(async ({ ctx, input }) => {
+			const ec = await eligibility.checkEcEligibility(
+				input.classCourseId,
+				ctx.institution.id,
+			);
+			eligibility.assertEcEligible(ec);
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.generateEc(input);
+
+			return {
+				data: result.content,
+				filename:
+					result.filename ??
+					`EC_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
+				mimeType: result.mimeType,
+			};
+		}),
+
+	/** Preview EC publication in HTML format */
+	previewEc: tenantGradingProcedure
+		.input(previewEcSchema)
+		.query(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.generateEc({
+				...input,
+				format: "html",
+			});
+			return result.content;
+		}),
+
+	/**
+	 * Bulk-export every evaluation matching the scope filters into a ZIP.
+	 * Folders are organized as `Evaluations/<programCode>/<classCode>/`.
+	 * No eligibility check — single évaluations publish unconstrained.
+	 */
+	bulkExportEvaluations: tenantGradingProcedure
+		.input(bulkExportFiltersSchema)
+		.mutation(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.bulkExportEvaluations(input);
+			return {
+				data: result.content,
+				filename: result.filename,
+				mimeType: result.mimeType,
+				total: result.total,
+				succeeded: result.succeeded,
+				skipped: result.skipped,
+			};
+		}),
+
+	/**
+	 * Bulk-export every EC matching the filters. Skips ECs whose exam
+	 * percentages don't sum to 100% by default (`skipIneligible: true`),
+	 * surfacing them in `skipped` so the caller can show a summary.
+	 * Folders: `ECs/<programCode>/<classCode>/`.
+	 */
+	bulkExportEcs: tenantGradingProcedure
+		.input(bulkExportFiltersSchema)
+		.mutation(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.bulkExportEcs(input);
+			return {
+				data: result.content,
+				filename: result.filename,
+				mimeType: result.mimeType,
+				total: result.total,
+				succeeded: result.succeeded,
+				skipped: result.skipped,
+			};
+		}),
+
+	/**
+	 * Bulk-export every UE (per UE × class × semester). Skips UEs where
+	 * any of the constituent ECs fails eligibility. Folders:
+	 * `UEs/<programCode>/<classCode>/`.
+	 */
+	bulkExportUes: tenantGradingProcedure
+		.input(bulkExportFiltersSchema)
+		.mutation(async ({ ctx, input }) => {
+			const service = new ExportsService(ctx.institution.id);
+			const result = await service.bulkExportUes(input);
+			return {
+				data: result.content,
+				filename: result.filename,
+				mimeType: result.mimeType,
+				total: result.total,
+				succeeded: result.succeeded,
+				skipped: result.skipped,
+			};
 		}),
 
 	/**
@@ -127,7 +232,9 @@ export const exportsRouter = router({
 
 			return {
 				data: result.content,
-				filename: `UE_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
+				filename:
+					result.filename ??
+					`UE_${new Date().toISOString().split("T")[0]}.${input.format === "html" ? "html" : "pdf"}`,
 				mimeType: result.mimeType,
 			};
 		}),

@@ -22,7 +22,6 @@
 
         .container {
             width: 297mm;
-            min-height: 210mm;
             margin: 0 auto;
             background: white;
             padding: 10mm;
@@ -161,7 +160,7 @@
             background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
         }
 
-        .student-name {
+        .student-name { text-transform: uppercase; /* student-name uppercase */
             text-align: left;
             font-weight: bold;
             padding-left: 3px;
@@ -214,13 +213,32 @@
 
         @media print {
             body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 8mm; width: 297mm; min-height: 210mm; }
+            .container { box-shadow: none; padding: 8mm; width: 297mm; }
             .container::before { color: rgba(200, 200, 200, 0.15); }
             table { border: 1px solid #ccc; font-size: 7.5px; }
             th { font-size: 7px; }
             td { font-size: 7.5px; color: #333; }
             .logo-box { border-style: solid; }
         }
+    
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
     </style>
 </head>
 <body>
@@ -309,7 +327,7 @@
                     <tr>
                         <td>{{formatNumber rank 2}}</td>
                         <td>{{registrationNumber}}</td>
-                        <td class="student-name">{{lastName}} {{firstName}}</td>
+                        <td class="student-name">{{upper firstName}} {{upper lastName}}</td>
 
                         {{#each ueResults}}
                         <td class="moyenne-ue">{{formatNumber ueAverage}}</td>

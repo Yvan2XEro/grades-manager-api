@@ -111,7 +111,26 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 .footer-en { font-family: {{theme.fonts.footer}}; font-style: italic; font-size: {{subtract theme.sizes.footer 1}}pt; letter-spacing: 0.2px; display: {{#if theme.display.bilingual}}block{{else}}none{{/if}}; }
 
 @media print { body { margin: 0; padding: 0; } .diploma-container { page-break-after: always; } }
-</style>
+
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
 </head>
 <body>
 <div class="diploma-container">
@@ -197,7 +216,7 @@ body { font-family: {{theme.fonts.main}}; background: white; margin: 0; padding:
 			<div class="recipient-left">
 				<div class="field">
 					<div class="field-label">Délivre à M./Mlle <br><span class="en-text"><em>Confers to Mr/Ms</em></span></div>
-					<div class="field-value field-value-fullname">{{student.fullName}}</div>
+					<div class="field-value field-value-fullname">{{upper student.fullName}}</div>
 				</div>
 				<div class="field">
 					<div class="field-label">Né(e) le : <br><span class="en-text"><em>Born on</em></span></div>

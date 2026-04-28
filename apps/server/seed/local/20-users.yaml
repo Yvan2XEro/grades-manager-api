@@ -2229,667 +2229,534 @@ students:
     domainUserCode: STD-IMM1-001
     classCode: IMM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-IMM-0001
   - code: STD-IMM1-002
     domainUserCode: STD-IMM1-002
     classCode: IMM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-IMM-0002
   - code: STD-SFM1-001
     domainUserCode: STD-SFM1-001
     classCode: SFM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0001
   - code: STD-SFM1-002
     domainUserCode: STD-SFM1-002
     classCode: SFM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0002
   - code: STD-SFM1-003
     domainUserCode: STD-SFM1-003
     classCode: SFM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0003
   - code: STD-SFM1-004
     domainUserCode: STD-SFM1-004
     classCode: SFM-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0004
   - code: STD-SFM2-001
     domainUserCode: STD-SFM2-001
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0005
   - code: STD-SFM2-002
     domainUserCode: STD-SFM2-002
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0006
   - code: STD-SFM2-003
     domainUserCode: STD-SFM2-003
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0007
   - code: STD-SFM2-004
     domainUserCode: STD-SFM2-004
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0008
   - code: STD-SFM2-005
     domainUserCode: STD-SFM2-005
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0009
   - code: STD-SFM2-006
     domainUserCode: STD-SFM2-006
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0010
   - code: STD-SFM2-007
     domainUserCode: STD-SFM2-007
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0011
   - code: STD-SFM2-008
     domainUserCode: STD-SFM2-008
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0012
   - code: STD-SFM2-009
     domainUserCode: STD-SFM2-009
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0013
   - code: STD-SFM2-010
     domainUserCode: STD-SFM2-010
     classCode: SFM-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0014
   - code: STD-SFM3-001
     domainUserCode: STD-SFM3-001
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0015
   - code: STD-SFM3-002
     domainUserCode: STD-SFM3-002
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0016
   - code: STD-SFM3-003
     domainUserCode: STD-SFM3-003
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0017
   - code: STD-SFM3-004
     domainUserCode: STD-SFM3-004
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0018
   - code: STD-SFM3-005
     domainUserCode: STD-SFM3-005
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0019
   - code: STD-SFM3-006
     domainUserCode: STD-SFM3-006
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0020
   - code: STD-SFM3-007
     domainUserCode: STD-SFM3-007
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0021
   - code: STD-SFM3-008
     domainUserCode: STD-SFM3-008
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0022
   - code: STD-SFM3-009
     domainUserCode: STD-SFM3-009
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0023
   - code: STD-SFM3-010
     domainUserCode: STD-SFM3-010
     classCode: SFM-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SFM-0024
   - code: STD-SIN1-001
     domainUserCode: STD-SIN1-001
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0001
   - code: STD-SIN1-002
     domainUserCode: STD-SIN1-002
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0002
   - code: STD-SIN1-003
     domainUserCode: STD-SIN1-003
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0003
   - code: STD-SIN1-004
     domainUserCode: STD-SIN1-004
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0004
   - code: STD-SIN1-005
     domainUserCode: STD-SIN1-005
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0005
   - code: STD-SIN1-006
     domainUserCode: STD-SIN1-006
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0006
   - code: STD-SIN1-007
     domainUserCode: STD-SIN1-007
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0007
   - code: STD-SIN1-008
     domainUserCode: STD-SIN1-008
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0008
   - code: STD-SIN1-009
     domainUserCode: STD-SIN1-009
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0009
   - code: STD-SIN1-010
     domainUserCode: STD-SIN1-010
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0010
   - code: STD-SIN1-011
     domainUserCode: STD-SIN1-011
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0011
   - code: STD-SIN1-012
     domainUserCode: STD-SIN1-012
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0012
   - code: STD-SIN1-013
     domainUserCode: STD-SIN1-013
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0013
   - code: STD-SIN1-014
     domainUserCode: STD-SIN1-014
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0014
   - code: STD-SIN1-015
     domainUserCode: STD-SIN1-015
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0015
   - code: STD-SIN1-016
     domainUserCode: STD-SIN1-016
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0016
   - code: STD-SIN1-017
     domainUserCode: STD-SIN1-017
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0017
   - code: STD-SIN1-018
     domainUserCode: STD-SIN1-018
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0018
   - code: STD-SIN1-019
     domainUserCode: STD-SIN1-019
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0019
   - code: STD-SIN1-020
     domainUserCode: STD-SIN1-020
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0020
   - code: STD-SIN1-021
     domainUserCode: STD-SIN1-021
     classCode: SIN-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0021
   - code: STD-SIN2-001
     domainUserCode: STD-SIN2-001
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0022
   - code: STD-SIN2-002
     domainUserCode: STD-SIN2-002
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0023
   - code: STD-SIN2-003
     domainUserCode: STD-SIN2-003
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0024
   - code: STD-SIN2-004
     domainUserCode: STD-SIN2-004
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0025
   - code: STD-SIN2-005
     domainUserCode: STD-SIN2-005
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0026
   - code: STD-SIN2-006
     domainUserCode: STD-SIN2-006
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0027
   - code: STD-SIN2-007
     domainUserCode: STD-SIN2-007
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0028
   - code: STD-SIN2-008
     domainUserCode: STD-SIN2-008
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0029
   - code: STD-SIN2-009
     domainUserCode: STD-SIN2-009
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0030
   - code: STD-SIN2-010
     domainUserCode: STD-SIN2-010
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0031
   - code: STD-SIN2-011
     domainUserCode: STD-SIN2-011
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0032
   - code: STD-SIN2-012
     domainUserCode: STD-SIN2-012
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0033
   - code: STD-SIN2-013
     domainUserCode: STD-SIN2-013
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0034
   - code: STD-SIN2-014
     domainUserCode: STD-SIN2-014
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0035
   - code: STD-SIN2-015
     domainUserCode: STD-SIN2-015
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0036
   - code: STD-SIN2-016
     domainUserCode: STD-SIN2-016
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0037
   - code: STD-SIN2-017
     domainUserCode: STD-SIN2-017
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0038
   - code: STD-SIN2-018
     domainUserCode: STD-SIN2-018
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0039
   - code: STD-SIN2-019
     domainUserCode: STD-SIN2-019
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0040
   - code: STD-SIN2-020
     domainUserCode: STD-SIN2-020
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0041
   - code: STD-SIN2-021
     domainUserCode: STD-SIN2-021
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0042
   - code: STD-SIN2-022
     domainUserCode: STD-SIN2-022
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0043
   - code: STD-SIN2-023
     domainUserCode: STD-SIN2-023
     classCode: SIN-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0044
   - code: STD-SIN3-001
     domainUserCode: STD-SIN3-001
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0045
   - code: STD-SIN3-002
     domainUserCode: STD-SIN3-002
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0046
   - code: STD-SIN3-003
     domainUserCode: STD-SIN3-003
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0047
   - code: STD-SIN3-004
     domainUserCode: STD-SIN3-004
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0048
   - code: STD-SIN3-005
     domainUserCode: STD-SIN3-005
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0049
   - code: STD-SIN3-006
     domainUserCode: STD-SIN3-006
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0050
   - code: STD-SIN3-007
     domainUserCode: STD-SIN3-007
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0051
   - code: STD-SIN3-008
     domainUserCode: STD-SIN3-008
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0052
   - code: STD-SIN3-009
     domainUserCode: STD-SIN3-009
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0053
   - code: STD-SIN3-010
     domainUserCode: STD-SIN3-010
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0054
   - code: STD-SIN3-011
     domainUserCode: STD-SIN3-011
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0055
   - code: STD-SIN3-012
     domainUserCode: STD-SIN3-012
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0056
   - code: STD-SIN3-013
     domainUserCode: STD-SIN3-013
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0057
   - code: STD-SIN3-014
     domainUserCode: STD-SIN3-014
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0058
   - code: STD-SIN3-015
     domainUserCode: STD-SIN3-015
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0059
   - code: STD-SIN3-016
     domainUserCode: STD-SIN3-016
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0060
   - code: STD-SIN3-017
     domainUserCode: STD-SIN3-017
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0061
   - code: STD-SIN3-018
     domainUserCode: STD-SIN3-018
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0062
   - code: STD-SIN3-019
     domainUserCode: STD-SIN3-019
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0063
   - code: STD-SIN3-020
     domainUserCode: STD-SIN3-020
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0064
   - code: STD-SIN3-021
     domainUserCode: STD-SIN3-021
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0065
   - code: STD-SIN3-022
     domainUserCode: STD-SIN3-022
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0066
   - code: STD-SIN3-023
     domainUserCode: STD-SIN3-023
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0067
   - code: STD-SIN3-024
     domainUserCode: STD-SIN3-024
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0068
   - code: STD-SIN3-025
     domainUserCode: STD-SIN3-025
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0069
   - code: STD-SIN3-026
     domainUserCode: STD-SIN3-026
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0070
   - code: STD-SIN3-027
     domainUserCode: STD-SIN3-027
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0071
   - code: STD-SIN3-028
     domainUserCode: STD-SIN3-028
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0072
   - code: STD-SIN3-029
     domainUserCode: STD-SIN3-029
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0073
   - code: STD-SIN3-030
     domainUserCode: STD-SIN3-030
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0074
   - code: STD-SIN3-031
     domainUserCode: STD-SIN3-031
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0075
   - code: STD-SIN3-032
     domainUserCode: STD-SIN3-032
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0076
   - code: STD-SIN3-033
     domainUserCode: STD-SIN3-033
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0077
   - code: STD-SIN3-034
     domainUserCode: STD-SIN3-034
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0078
   - code: STD-SIN3-035
     domainUserCode: STD-SIN3-035
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0079
   - code: STD-SIN3-036
     domainUserCode: STD-SIN3-036
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0080
   - code: STD-SIN3-037
     domainUserCode: STD-SIN3-037
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0081
   - code: STD-SIN3-038
     domainUserCode: STD-SIN3-038
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0082
   - code: STD-SIN3-039
     domainUserCode: STD-SIN3-039
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0083
   - code: STD-SIN3-040
     domainUserCode: STD-SIN3-040
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0084
   - code: STD-SIN3-041
     domainUserCode: STD-SIN3-041
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0085
   - code: STD-SIN3-042
     domainUserCode: STD-SIN3-042
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0086
   - code: STD-SIN3-043
     domainUserCode: STD-SIN3-043
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0087
   - code: STD-SIN3-044
     domainUserCode: STD-SIN3-044
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0088
   - code: STD-SIN3-045
     domainUserCode: STD-SIN3-045
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0089
   - code: STD-SIN3-046
     domainUserCode: STD-SIN3-046
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0090
   - code: STD-SIN3-047
     domainUserCode: STD-SIN3-047
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0091
   - code: STD-SIN3-048
     domainUserCode: STD-SIN3-048
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0092
   - code: STD-SIN3-049
     domainUserCode: STD-SIN3-049
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0093
   - code: STD-SIN3-050
     domainUserCode: STD-SIN3-050
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0094
   - code: STD-SIN3-051
     domainUserCode: STD-SIN3-051
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0095
   - code: STD-SIN3-052
     domainUserCode: STD-SIN3-052
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0096
   - code: STD-SIN3-053
     domainUserCode: STD-SIN3-053
     classCode: SIN-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-SIN-0097
   - code: STD-TLB1-001
     domainUserCode: STD-TLB1-001
     classCode: TLB-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0001
   - code: STD-TLB1-002
     domainUserCode: STD-TLB1-002
     classCode: TLB-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0002
   - code: STD-TLB1-003
     domainUserCode: STD-TLB1-003
     classCode: TLB-BTS1
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0003
   - code: STD-TLB2-001
     domainUserCode: STD-TLB2-001
     classCode: TLB-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0004
   - code: STD-TLB2-002
     domainUserCode: STD-TLB2-002
     classCode: TLB-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0005
   - code: STD-TLB2-003
     domainUserCode: STD-TLB2-003
     classCode: TLB-BTS2
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0006
   - code: STD-TLB3-001
     domainUserCode: STD-TLB3-001
     classCode: TLB-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0007
   - code: STD-TLB3-002
     domainUserCode: STD-TLB3-002
     classCode: TLB-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0008
   - code: STD-TLB3-003
     domainUserCode: STD-TLB3-003
     classCode: TLB-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0009
   - code: STD-TLB3-004
     domainUserCode: STD-TLB3-004
     classCode: TLB-BTS3
     classAcademicYearCode: AY-2025
-    registrationNumber: INSES25-TLB-0010
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ENROLLMENTS  (étudiant ↔ classe ↔ année académique)

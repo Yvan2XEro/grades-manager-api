@@ -112,6 +112,7 @@ const buildProgramSchema = (t: TFunction) =>
 					templateType: z.enum([
 						"pv",
 						"evaluation",
+						"ec",
 						"ue",
 						"deliberation",
 						"diploma",
@@ -129,6 +130,7 @@ type ProgramFormData = z.infer<ReturnType<typeof buildProgramSchema>>;
 type ExportTemplateType =
 	| "pv"
 	| "evaluation"
+	| "ec"
 	| "ue"
 	| "deliberation"
 	| "diploma"
@@ -142,6 +144,7 @@ const EXPORT_TEMPLATE_TYPES: ExportTemplateType[] = [
 	"student_list",
 	"pv",
 	"evaluation",
+	"ec",
 	"ue",
 	"deliberation",
 ];
@@ -152,6 +155,7 @@ const EXPORT_TEMPLATE_TYPE_LABELS: Record<ExportTemplateType, string> = {
 	student_list: "Liste d'étudiants",
 	pv: "Procès-verbal",
 	evaluation: "Publication d'évaluation",
+	ec: "Publication d'EC",
 	ue: "Publication d'UE",
 	deliberation: "Délibération",
 };

@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Attestation — {{student.fullName}}</title>
+<title>Attestation — {{upper student.fullName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
 * { box-sizing: border-box; }
@@ -91,7 +91,26 @@ body {
 em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.display.bilingual}}display: none;{{/unless}} }
 
 @media print { body { margin: 0; padding: 0; } .container { page-break-after: always; } }
-</style>
+
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -162,7 +181,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; {{#unless theme.disp
 
 		<div class="student-info">
 			<p>
-				M./Mme/Mlle <strong>{{student.fullName}}</strong><br>
+				M./Mme/Mlle <strong>{{upper student.fullName}}</strong><br>
 				{{#if theme.display.bilingual}}<em>Mr/Mrs/Miss</em>{{/if}}
 			</p>
 

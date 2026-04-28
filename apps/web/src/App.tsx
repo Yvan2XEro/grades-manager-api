@@ -32,6 +32,7 @@ import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
+import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import StudentManagement from "./pages/admin/StudentManagement";
 import UsersHub from "./pages/admin/UsersHub";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -288,9 +289,7 @@ function App() {
 						/>
 						<Route
 							path="registration-numbers/:formatId"
-							element={
-								<Navigate to="/admin/configuration?tab=reg-numbers" replace />
-							}
+							element={<RegistrationNumberFormatDetail />}
 						/>
 						<Route
 							path="promotion-rules"

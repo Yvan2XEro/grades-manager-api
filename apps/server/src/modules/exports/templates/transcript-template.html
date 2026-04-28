@@ -11,7 +11,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relevé de notes — {{student.fullName}}</title>
+<title>Relevé de notes — {{upper student.fullName}}</title>
 <style>
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
@@ -99,7 +99,26 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 .footer-note { position: absolute; width: 100%; bottom: 10px; font-size: {{theme.sizes.footer}}pt; text-align: center; margin-top: 20px; padding-top: 10px; font-style: italic; }
 
 @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-</style>
+
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -158,7 +177,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 		<div>
 			<p>
 				<strong>NOM(S) ET PRÉNOM(S) :</strong>
-				<strong>{{student.lastName}}{{#if student.firstName}} {{student.firstName}}{{/if}}</strong><br>
+				<strong>{{upper student.firstName}}{{#if student.lastName}} {{upper student.lastName}}{{/if}}</strong><br>
 				<em>Surname and name</em>
 			</p>
 		</div>

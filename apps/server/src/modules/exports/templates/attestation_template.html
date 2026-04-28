@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Attestation de réussite — {{student.lastName}} {{student.firstName}}</title>
+<title>Attestation de réussite — {{upper student.firstName}} {{upper student.lastName}}</title>
 <style>
 @page { size: A4 portrait; margin: 0; }
 * { box-sizing: border-box; }
@@ -95,7 +95,26 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 	body { width: 210mm; height: 297mm; margin: 0; padding: 20px; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 	.no-print { display: none; }
 }
-</style>
+
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -186,7 +205,7 @@ em { font-style: italic; color: {{theme.colors.secondary}}; }
 		</div>
 
 		<div class="student-info">
-			<p>M./Mme/Mlle <strong>{{student.lastName}} {{student.firstName}}</strong><br>
+			<p>M./Mme/Mlle <strong>{{upper student.firstName}} {{upper student.lastName}}</strong><br>
 			<em>Mr/Mrs/Miss</em></p>
 
 			<p>Né(e) le : <strong>{{student.birthDate}}</strong> &nbsp;&nbsp;à&nbsp; <strong>{{student.birthPlace}}</strong><br>

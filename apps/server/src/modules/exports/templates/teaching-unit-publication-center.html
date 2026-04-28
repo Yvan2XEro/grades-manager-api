@@ -26,7 +26,6 @@
 
         .container {
             width: 210mm;
-            min-height: 297mm;
             margin: 0 auto;
             background: white;
             padding: 10mm;
@@ -189,7 +188,7 @@
             background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
         }
 
-        .student-name {
+        .student-name { text-transform: uppercase; /* student-name uppercase */
             text-align: left;
             font-weight: bold;
             padding-left: 5px;
@@ -314,6 +313,25 @@
                 border-style: solid;
             }
         }
+    
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
     </style>
 </head>
 <body>
@@ -419,7 +437,7 @@
                     <tr>
                         <td>{{number}}</td>
                         <td>{{registrationNumber}}</td>
-                        <td class="student-name">{{lastName}} {{firstName}}</td>
+                        <td class="student-name">{{upper firstName}} {{upper lastName}}</td>
 
                         {{#each courseGrades}}
                         <td>{{formatNumber cc}}</td>

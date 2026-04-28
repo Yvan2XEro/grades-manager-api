@@ -111,6 +111,13 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 			"Publication des résultats d'une évaluation (CC, TP, examen) — par classe et par cours.",
 	},
 	{
+		type: "ec",
+		variant: "standard",
+		name: "Publication d'EC — Modèle officiel",
+		description:
+			"Publication des résultats d'un Élément Constitutif : toutes les évaluations (CC + TP + Examen) agrégées avec moyenne EC, décision et crédits.",
+	},
+	{
 		type: "ue",
 		variant: "standard",
 		name: "Publication d'UE — Modèle officiel",
@@ -143,6 +150,13 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 		name: "Publication d'évaluation — Modèle Centre",
 		description:
 			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
+	},
+	{
+		type: "ec",
+		variant: "center",
+		name: "Publication d'EC — Modèle Centre",
+		description:
+			"Variante CENTRE : en-tête centre + données du centre (sans tutelle). Toutes les évaluations de l'EC agrégées.",
 	},
 	{
 		type: "ue",
@@ -402,6 +416,7 @@ export const academicDocumentsRouter = router({
 				"student_list",
 				"pv",
 				"evaluation",
+				"ec",
 				"ue",
 				"deliberation",
 			];

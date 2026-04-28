@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication EC</title>
+    <style>
+        @page {
+            size: {{#if styleConfig.pageSize}}{{styleConfig.pageSize}}{{else}}A4{{/if}} {{#if styleConfig.pageOrientation}}{{styleConfig.pageOrientation}}{{else}}portrait{{/if}};
+            margin: {{#if styleConfig.margins.top}}{{styleConfig.margins.top}}{{else}}10{{/if}}mm {{#if styleConfig.margins.right}}{{styleConfig.margins.right}}{{else}}10{{/if}}mm {{#if styleConfig.margins.bottom}}{{styleConfig.margins.bottom}}{{else}}10{{/if}}mm {{#if styleConfig.margins.left}}{{styleConfig.margins.left}}{{else}}10{{/if}}mm;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: {{#if styleConfig.fontFamily}}{{styleConfig.fontFamily}}{{else}}'Times New Roman', Times, serif{{/if}};
+            font-size: {{#if styleConfig.fontSize}}{{styleConfig.fontSize}}{{else}}10{{/if}}px;
+            background: #fafafa;
+            padding: 10px;
+            position: relative;
+        }
+        .container {
+            width: 210mm; margin: 0 auto; background: white;
+            padding: 10mm; box-shadow: 0 0 15px rgba(0,0,0,0.08); position: relative;
+        }
+        {{#if styleConfig.watermark.enabled}}
+        .container::before {
+            content: '{{styleConfig.watermark.text}}{{#if styleConfig.watermark.institutionName}} — {{styleConfig.watermark.institutionName}}{{/if}}';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
+            font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}100{{/if}}px;
+            font-weight: bold;
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.10{{/if}};
+            color: rgba(200, 200, 200, 1);
+            z-index: 0; pointer-events: none;
+        }
+        {{/if}}
+        .content-wrapper { position: relative; z-index: 1; }
+        .header { text-align: center; border-bottom: 2px solid #666; padding-bottom: 12px; margin-bottom: 15px; }
+        .ec-info { background: white; border: 1px solid #ccc; padding: 12px; margin-bottom: 15px; font-size: 10px; }
+        .ec-info div { margin-bottom: 5px; }
+        .ec-info strong { color: #2c2c2c; display: inline-block; width: 150px; }
+        .title { color: #2c2c2c; padding: 10px 0; text-align: center; margin-bottom: 15px; font-size: 12px; font-weight: bold; }
+        table {
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ccc{{/if}};
+            width: 100%; border-collapse: collapse;
+            font-size: {{#if styleConfig.fontSize}}{{multiply styleConfig.fontSize 0.9}}{{else}}9{{/if}}px;
+            margin-bottom: 15px;
+        }
+        th {
+            background: {{#if styleConfig.headerBackgroundColor}}{{styleConfig.headerBackgroundColor}}{{else}}white{{/if}};
+            color: {{#if styleConfig.headerTextColor}}{{styleConfig.headerTextColor}}{{else}}#2c2c2c{{/if}};
+            padding: 6px 4px; text-align: center;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#bbb{{/if}};
+            font-weight: bold; line-height: 1.3;
+        }
+        td {
+            padding: 5px 3px;
+            border: {{#if styleConfig.tableBorderWidth}}{{styleConfig.tableBorderWidth}}{{else}}1{{/if}}px solid {{#if styleConfig.tableBorderColor}}{{styleConfig.tableBorderColor}}{{else}}#ddd{{/if}};
+            text-align: center; color: #333; background: white;
+        }
+        tbody tr:nth-child(even) td { background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}}; }
+        .student-name { text-transform: uppercase; /* student-name uppercase */ text-align: left; font-weight: bold; padding-left: 5px; color: #2c2c2c; }
+        .acquis { color: #16a34a; font-weight: bold; }
+        .non-acquis { color: #dc2626; font-weight: bold; }
+        .moyenne-finale { font-weight: bold; }
+        .stats-row { background: white; font-weight: bold; }
+        .legend-table { font-size: 8px; color: #666; margin-top: 8px; }
+        .legend-table td { border: none; padding: 1px 6px; text-align: left; }
+        .signatures { margin-top: 30px; display: flex; justify-content: space-between; gap: 20px; }
+        .signature-box { flex: 1; text-align: center; font-size: 10px; }
+        .signature-box .label { font-weight: bold; padding-bottom: 30mm; border-bottom: 1px solid #999; display: block; }
+        .signature-box .name { padding-top: 2mm; font-style: italic; color: #666; }
+    
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="header">
+                {{!-- Center-only header — same 3-col layout as the standard variant.
+                     Sources strictly from the centers tables (centers, center_administrative_instances, center_legal_texts).
+                     No tutelle / faculty / university. --}}
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{#each center.administrativeInstances}}
+                        <strong>{{upper this.nameFr}}{{#if this.acronymFr}} ({{this.acronymFr}}){{/if}}</strong><br>
+                        ********************<br>
+                        {{/each}}
+                        <strong>{{upper center.name}}</strong>
+                        {{#if center.postalBox}}<br>********************<br>B.P. {{center.postalBox}}{{/if}}
+                        {{#if center.contactEmail}}<br>Email : <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                        {{{logo svg=center.logoSvg url=center.logoUrl alt=center.name style="max-height:80px;max-width:120px;object-fit:contain;"}}}
+                        {{#each center.administrativeInstances}}
+                            {{#if (or this.logoSvg this.logoUrl)}}
+                            {{{logo svg=this.logoSvg url=this.logoUrl alt=this.nameFr style="max-height:50px;max-width:80px;object-fit:contain;"}}}
+                            {{/if}}
+                        {{/each}}
+                    </div>
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{#each center.administrativeInstances}}
+                        <strong>{{upper this.nameEn}}{{#if this.acronymEn}} ({{this.acronymEn}}){{/if}}</strong><br>
+                        ********************<br>
+                        {{/each}}
+                        {{#if center.nameEn}}<strong>{{upper center.nameEn}}</strong>{{else}}<strong>{{upper center.name}}</strong>{{/if}}
+                        {{#if center.postalBox}}<br>********************<br>P.O. Box {{center.postalBox}}{{/if}}
+                        {{#if center.contactEmail}}<br>Email: <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+                    </div>
+                </div>
+                {{#if center.authorizationOrderFr}}
+                <div style="font-size:9px;color:#444;font-style:italic;margin:4px 0;text-align:center;">
+                    {{center.authorizationOrderFr}}{{#if center.authorizationOrderEn}} / {{center.authorizationOrderEn}}{{/if}}
+                </div>
+                {{/if}}
+                {{#if center.legalTexts.length}}
+                <div style="font-size:8px;color:#555;margin-bottom:6px;text-align:left;line-height:1.4;">
+                    {{#each center.legalTexts}}
+                    <div>• {{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
+                    {{/each}}
+                </div>
+                {{/if}}
+            </div>
+
+            <div class="title">
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PUBLICATION DES RÉSULTATS — ÉLÉMENT CONSTITUTIF{{/if}}
+                {{#if headerConfig.titleEn}} / {{headerConfig.titleEn}}{{else}} / COURSE GRADE PUBLICATION{{/if}}<br>
+                {{#if headerConfig.showSemester}}{{semester}} - {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE {{academicYear}}{{/if}}
+            </div>
+
+            <div class="ec-info">
+                <div><strong>Code EC :</strong> {{classCourse.code}}</div>
+                <div><strong>Intitulé EC :</strong> {{classCourse.name}}</div>
+                <div><strong>Crédits :</strong> {{classCourse.credits}}</div>
+                <div><strong>Coefficient :</strong> {{classCourse.coefficient}}</div>
+                {{#if teachingUnit.code}}<div><strong>UE de rattachement :</strong> {{teachingUnit.code}} — {{teachingUnit.name}}</div>{{/if}}
+                <div><strong>Programme / Program :</strong> {{program.name}}{{#if program.level}} - {{program.level}}{{/if}}</div>
+                <div><strong>Classe / Class :</strong> {{className}}</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 5%;">N°</th>
+                        <th rowspan="2" style="width: 12%;">MAT<br><span style="font-weight:normal;font-size:7.5px">ID</span></th>
+                        <th rowspan="2" style="width: 22%;">NOM ET PRÉNOM<br><span style="font-weight:normal;font-size:7.5px">FULL NAME</span></th>
+                        {{#each exams}}
+                        <th>{{this.label}}<br><span style="font-weight:normal;font-size:7.5px">{{formatNumber this.percentage 0}}%</span></th>
+                        {{/each}}
+                        <th rowspan="2">MOY EC<br><span style="font-weight:normal;font-size:7.5px">AVG</span></th>
+                        <th rowspan="2">DEC<br><span style="font-weight:normal;font-size:7.5px">RES</span></th>
+                        <th rowspan="2">CRE<br><span style="font-weight:normal;font-size:7.5px">CR</span></th>
+                    </tr>
+                    <tr>
+                        {{#each exams}}
+                        <th><span style="font-size:7.5px">/{{formatNumber this.maxScore 0}}</span></th>
+                        {{/each}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each students}}
+                    <tr>
+                        <td>{{number}}</td>
+                        <td>{{registrationNumber}}</td>
+                        <td class="student-name">{{upper firstName}} {{upper lastName}}</td>
+                        {{#each examGrades}}
+                        <td>{{formatNumber this.score}}</td>
+                        {{/each}}
+                        <td class="moyenne-finale">{{formatNumber average}}</td>
+                        <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
+                        <td>{{credits}}</td>
+                    </tr>
+                    {{/each}}
+                    <tr class="stats-row">
+                        <td colspan="100">
+                            <strong>Taux de Réussite / Success Rate (TR / SR) : {{formatNumber globalSuccessRate 2}}%</strong>
+                            &nbsp;&nbsp;|&nbsp;&nbsp;
+                            <strong>Moyenne EC / EC Average : {{formatNumber globalAverage}}/20</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="legend-table">
+                <tr>
+                    <td><strong>CC :</strong> Contrôle Continu</td>
+                    <td><strong>TP :</strong> Travaux Pratiques</td>
+                    <td><strong>EX :</strong> Examen</td>
+                    <td><strong>Ac :</strong> Acquis</td>
+                    <td><strong>Nac :</strong> Non Acquis</td>
+                </tr>
+            </table>
+
+            <div class="signatures">
+                {{#each signatures}}
+                <div class="signature-box">
+                    <span class="label">{{position}}</span>
+                    {{#if name}}<span class="name">{{name}}</span>{{/if}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

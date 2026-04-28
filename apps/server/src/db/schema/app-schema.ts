@@ -2284,6 +2284,7 @@ export type NewStudentPromotionSummary = InferInsertModel<
 export const exportTemplateTypes = [
 	"pv",
 	"evaluation",
+	"ec",
 	"ue",
 	"deliberation",
 	"diploma",

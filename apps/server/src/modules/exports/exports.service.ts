@@ -1,14 +1,18 @@
 import { and, eq, inArray } from "drizzle-orm";
 import Handlebars from "handlebars";
+import JSZip from "jszip";
 import puppeteer from "puppeteer";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { loadTutelleChain } from "../academic-documents/academic-documents.repo";
 import type { DiplomationExportData } from "../deliberations/deliberations.types";
+import * as eligibility from "../export-eligibility/export-eligibility.service";
 import { ExportsRepo } from "./exports.repo";
 import type {
+	BulkExportFilters,
 	GenerateCourseCatalogInput,
 	GenerateDeliberationInput,
+	GenerateEcInput,
 	GenerateEvaluationInput,
 	GeneratePVInput,
 	GenerateUEInput,
@@ -126,6 +130,20 @@ type HeaderContext = {
 		ministrySvg: string | null;
 	};
 };
+
+/**
+ * Strip filesystem-unsafe characters from a filename and collapse runs of
+ * underscores. Keeps letters/digits/hyphens/underscores/dots, replaces the
+ * rest with `_`, and trims trailing underscores.
+ */
+function sanitizeFilename(name: string): string {
+	return name
+		.normalize("NFD")
+		.replace(/[̀-ͯ]/g, "") // strip combining diacritics
+		.replace(/[^A-Za-z0-9._-]+/g, "_")
+		.replace(/_+/g, "_")
+		.replace(/^_+|_+$/g, "");
+}
 
 /**
  * Sample center used when previewing `*-center.html` templates without a
@@ -320,9 +338,32 @@ export class ExportsService {
 		// Generate HTML
 		const html = await this.renderTemplate("pv", templateData, templateConfig);
 
+		// Filename: PV_<classCode>_<semester>_<YYYYMMDD>.<ext>
+		const today = new Date().toISOString().split("T")[0];
+		const dataAny = data as {
+			code?: string;
+			academicYear?: { name?: string };
+			semester?: { name?: string };
+		};
+		const suggestedFilename = sanitizeFilename(
+			[
+				"PV",
+				dataAny.code,
+				dataAny.semester?.name,
+				dataAny.academicYear?.name,
+				today,
+			]
+				.filter(Boolean)
+				.join("_") + (input.format === "html" ? ".html" : ".pdf"),
+		);
+
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
-			return { content: html, mimeType: "text/html" };
+			return {
+				content: html,
+				mimeType: "text/html",
+				filename: suggestedFilename,
+			};
 		}
 
 		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
@@ -331,6 +372,7 @@ export class ExportsService {
 		return {
 			content: pdfBuffer.toString("base64"),
 			mimeType: "application/pdf",
+			filename: suggestedFilename,
 		};
 	}
 
@@ -360,6 +402,25 @@ export class ExportsService {
 			input.observations,
 		);
 
+		// Build a meaningful filename from the metadata we already loaded:
+		//   Eval_<classCode>_<ECcode>_<TYPE>_<YYYYMMDD>.<ext>
+		// e.g. Eval_TLB-S2_TLB235-EC1_CC_2025-12-15.pdf
+		const examDateRaw = data.date as string | Date | null;
+		const examDate = examDateRaw
+			? new Date(examDateRaw).toISOString().split("T")[0]
+			: new Date().toISOString().split("T")[0];
+		const suggestedFilename = sanitizeFilename(
+			[
+				"Eval",
+				data.classCourseRef.classRef?.code,
+				data.classCourseRef.courseRef?.code,
+				(data.type ?? "").toUpperCase(),
+				examDate,
+			]
+				.filter(Boolean)
+				.join("_") + (input.format === "html" ? ".html" : ".pdf"),
+		);
+
 		// Generate HTML
 		const html = await this.renderTemplate(
 			"evaluation",
@@ -369,7 +430,11 @@ export class ExportsService {
 
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
-			return { content: html, mimeType: "text/html" };
+			return {
+				content: html,
+				mimeType: "text/html",
+				filename: suggestedFilename,
+			};
 		}
 
 		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
@@ -378,6 +443,7 @@ export class ExportsService {
 		return {
 			content: pdfBuffer.toString("base64"),
 			mimeType: "application/pdf",
+			filename: suggestedFilename,
 		};
 	}
 
@@ -415,9 +481,27 @@ export class ExportsService {
 		// Generate HTML
 		const html = await this.renderTemplate("ue", templateData, templateConfig);
 
+		// Filename: UE_<classCode>_<UEcode>_<YYYYMMDD>.<ext>
+		const today = new Date().toISOString().split("T")[0];
+		const ueDataAny = data as {
+			teachingUnit?: { code?: string; name?: string };
+			classCourses?: Array<{ classRef?: { code?: string } }>;
+		};
+		const classCode =
+			ueDataAny.classCourses?.[0]?.classRef?.code ?? input.classId.slice(0, 8);
+		const suggestedFilename = sanitizeFilename(
+			["UE", classCode, ueDataAny.teachingUnit?.code, today]
+				.filter(Boolean)
+				.join("_") + (input.format === "html" ? ".html" : ".pdf"),
+		);
+
 		// Return HTML or PDF based on format
 		if (input.format === "html") {
-			return { content: html, mimeType: "text/html" };
+			return {
+				content: html,
+				mimeType: "text/html",
+				filename: suggestedFilename,
+			};
 		}
 
 		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
@@ -426,6 +510,543 @@ export class ExportsService {
 		return {
 			content: pdfBuffer.toString("base64"),
 			mimeType: "application/pdf",
+			filename: suggestedFilename,
+		};
+	}
+
+	/**
+	 * Generate EC (class_course) publication export — one PDF per Élément
+	 * Constitutif. Aggregates ALL evaluations of the EC (CC + TP + Examen ...)
+	 * into a single table with one row per student + their final EC average,
+	 * decision and credits. Eligibility (sum of percentages = 100%) is checked
+	 * upstream in the router.
+	 */
+	async generateEc(input: GenerateEcInput) {
+		const config = await this.getConfig();
+
+		const templateConfig = await loadExportTemplate(
+			this.institutionId,
+			"ec",
+			input.templateId,
+			{ classId: input.classId },
+		);
+
+		const data = await this.repo.getEcData(input.classCourseId, input.classId);
+		const includeRetakes = input.includeRetakes ?? true;
+		const templateData = this.processEcData(data, config, includeRetakes);
+
+		const html = await this.renderTemplate("ec", templateData, templateConfig);
+
+		// Filename: EC_<classCode>_<ECcode>_<YYYYMMDD>.<ext>
+		const today = new Date().toISOString().split("T")[0];
+		const cls = data.classCourse.classRef;
+		const course = data.classCourse.courseRef;
+		const suggestedFilename = sanitizeFilename(
+			["EC", cls?.code, course?.code, today].filter(Boolean).join("_") +
+				(input.format === "html" ? ".html" : ".pdf"),
+		);
+
+		if (input.format === "html") {
+			return {
+				content: html,
+				mimeType: "text/html",
+				filename: suggestedFilename,
+			};
+		}
+
+		const pdf = await this.generatePDF(html, templateConfig.styleConfig);
+		const pdfBuffer = Buffer.from(pdf);
+		return {
+			content: pdfBuffer.toString("base64"),
+			mimeType: "application/pdf",
+			filename: suggestedFilename,
+		};
+	}
+
+	/**
+	 * Run a function with a shared Puppeteer browser, exposing a `renderPdf`
+	 * helper that produces a PDF buffer per HTML+styleConfig pair. Reusing
+	 * one browser across hundreds of PDFs is ~50× faster than relaunching
+	 * Chromium for each one. The browser is always closed in the finally.
+	 */
+	private async withSharedBrowser<T>(
+		fn: (
+			renderPdf: (
+				html: string,
+				styleConfig: TemplateConfiguration["styleConfig"],
+			) => Promise<Buffer>,
+		) => Promise<T>,
+	): Promise<T> {
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+			// Bump Puppeteer's CDP protocolTimeout — large data-URI logos can
+			// take >30s to decode in headless Chrome under load (the default
+			// 30s timeout fires "Runtime.callFunctionOn timed out" mid-batch).
+			protocolTimeout: 180_000,
+		});
+		try {
+			const renderPdf = async (
+				html: string,
+				styleConfig: TemplateConfiguration["styleConfig"],
+			): Promise<Buffer> => {
+				const page = await browser.newPage();
+				page.setDefaultTimeout(60_000);
+				try {
+					// Force print media so the layout/raster work is done once,
+					// for the print pipeline directly (avoids "screen-then-print"
+					// re-decode that can drop a logo).
+					await page.emulateMediaType("print");
+					await page.setContent(html, { waitUntil: ["load", "networkidle0"] });
+					// Robust image readiness — see generatePDF for details.
+					await Promise.race([
+						page.evaluate(async () => {
+							const tryDecode = async (img: HTMLImageElement) => {
+								try {
+									await img.decode();
+								} catch {
+									try {
+										await img.decode();
+									} catch {
+										/* keep printing */
+									}
+								}
+							};
+							const imgs = Array.from(document.images);
+							await Promise.all(imgs.map((img) => tryDecode(img)));
+							const start = Date.now();
+							while (
+								Date.now() - start < 8000 &&
+								imgs.some(
+									(img) =>
+										!img.complete ||
+										(img.naturalHeight === 0 && img.naturalWidth === 0),
+								)
+							) {
+								await new Promise((r) => setTimeout(r, 100));
+							}
+						}),
+						new Promise<void>((resolve) => setTimeout(resolve, 25000)),
+					]);
+					const baseBottomMm = styleConfig.margins?.bottom ?? 10;
+					const bottomWithFooter = Math.max(baseBottomMm, 18);
+					const footerTemplate = `
+						<div style="font-size:8px; width:100%; text-align:center; color:#888; padding: 0 8mm; font-family: Arial, sans-serif;">
+							Page <span class="pageNumber"></span> / <span class="totalPages"></span>
+						</div>
+					`;
+					const pdf = await page.pdf({
+						format: styleConfig.pageSize || "A4",
+						landscape: styleConfig.pageOrientation === "landscape",
+						printBackground: true,
+						displayHeaderFooter: true,
+						headerTemplate: "<div></div>",
+						footerTemplate,
+						margin: {
+							top: `${styleConfig.margins?.top || 10}mm`,
+							right: `${styleConfig.margins?.right || 10}mm`,
+							bottom: `${bottomWithFooter}mm`,
+							left: `${styleConfig.margins?.left || 10}mm`,
+						},
+					});
+					return Buffer.from(pdf);
+				} finally {
+					await page.close();
+				}
+			};
+			return await fn(renderPdf);
+		} finally {
+			await browser.close();
+		}
+	}
+
+	/**
+	 * Bulk-export every EVALUATION matching the scope filters. Per-évaluation
+	 * exports are NOT gated on EC eligibility (single CC/TP/Examen results
+	 * publish independently of the EC being complete). Each PDF lands in
+	 * `Évaluations/<programCode>/<classCode>/<filename>.pdf` inside the ZIP.
+	 * Returns a base64 ZIP + per-item success/failure counters.
+	 */
+	async bulkExportEvaluations(filters: BulkExportFilters) {
+		const config = await this.getConfig();
+		const examIds = await this.repo.listExamIdsForBulk(filters);
+		const zip = new JSZip();
+		const skipped: Array<{ id: string; reason: string }> = [];
+		let succeeded = 0;
+
+		await this.withSharedBrowser(async (renderPdf) => {
+			for (const examId of examIds) {
+				try {
+					const data = await this.repo.getEvaluationData(examId);
+					if (!data) {
+						skipped.push({ id: examId, reason: "evaluation data not found" });
+						continue;
+					}
+					const classId = data.classCourseRef.classRef.id;
+					const templateConfig = await loadExportTemplate(
+						this.institutionId,
+						"evaluation",
+						undefined,
+						{ classId },
+					);
+					const templateData = this.processEvaluationData(
+						data,
+						config,
+						templateConfig,
+					);
+					const html = await this.renderTemplate(
+						"evaluation",
+						templateData,
+						templateConfig,
+					);
+					const pdf = await renderPdf(html, templateConfig.styleConfig);
+
+					const examDate = data.date
+						? new Date(data.date as unknown as string)
+								.toISOString()
+								.split("T")[0]
+						: "no-date";
+					const programCode =
+						data.classCourseRef.classRef.program?.code ?? "no-program";
+					const classCode = data.classCourseRef.classRef?.code ?? "no-class";
+					const courseCode = data.classCourseRef.courseRef?.code ?? "no-course";
+					const filename = sanitizeFilename(
+						`Eval_${classCode}_${courseCode}_${(data.type ?? "").toUpperCase()}_${examDate}.pdf`,
+					);
+					const folder = sanitizeFilename(
+						`Evaluations/${programCode}/${classCode}`,
+					).replace(/_+/g, "_");
+					zip.file(`${folder}/${filename}`, pdf);
+					succeeded++;
+				} catch (err) {
+					skipped.push({
+						id: examId,
+						reason: err instanceof Error ? err.message : String(err),
+					});
+				}
+			}
+		});
+
+		const buf = await zip.generateAsync({ type: "uint8array" });
+		const today = new Date().toISOString().split("T")[0];
+		return {
+			content: Buffer.from(buf).toString("base64"),
+			mimeType: "application/zip",
+			filename: `Evaluations_bulk_${today}.zip`,
+			total: examIds.length,
+			succeeded,
+			skipped,
+		};
+	}
+
+	/**
+	 * Bulk-export every EC (class_course). Eligibility (sum of percentages
+	 * = 100%) IS enforced — non-eligible ECs are skipped (or fail-fast based
+	 * on `skipIneligible`). Each PDF lands in
+	 * `ECs/<programCode>/<classCode>/<filename>.pdf`.
+	 */
+	async bulkExportEcs(filters: BulkExportFilters) {
+		const config = await this.getConfig();
+		const candidates = await this.repo.listClassCoursesForBulk(filters);
+		const zip = new JSZip();
+		const skipped: Array<{ id: string; reason: string }> = [];
+		let succeeded = 0;
+
+		await this.withSharedBrowser(async (renderPdf) => {
+			for (const cc of candidates) {
+				try {
+					// Eligibility gate.
+					const ec = await eligibility.checkEcEligibility(
+						cc.id,
+						this.institutionId,
+					);
+					if (!ec.eligible) {
+						if (filters.skipIneligible) {
+							skipped.push({
+								id: cc.id,
+								reason: ec.reason ?? "EC not eligible",
+							});
+							continue;
+						}
+						throw new Error(ec.reason ?? "EC not eligible");
+					}
+
+					const data = await this.repo.getEcData(cc.id, cc.classId);
+					const templateConfig = await loadExportTemplate(
+						this.institutionId,
+						"ec",
+						undefined,
+						{ classId: cc.classId },
+					);
+					const templateData = this.processEcData(data, config);
+					const html = await this.renderTemplate(
+						"ec",
+						templateData,
+						templateConfig,
+					);
+					const pdf = await renderPdf(html, templateConfig.styleConfig);
+
+					const today = new Date().toISOString().split("T")[0];
+					const cls = data.classCourse.classRef;
+					const course = data.classCourse.courseRef;
+					const programCode = cls?.program?.code ?? "no-program";
+					const classCode = cls?.code ?? "no-class";
+					const courseCode = course?.code ?? "no-course";
+					const filename = sanitizeFilename(
+						`EC_${classCode}_${courseCode}_${today}.pdf`,
+					);
+					const folder = sanitizeFilename(
+						`ECs/${programCode}/${classCode}`,
+					).replace(/_+/g, "_");
+					zip.file(`${folder}/${filename}`, pdf);
+					succeeded++;
+				} catch (err) {
+					skipped.push({
+						id: cc.id,
+						reason: err instanceof Error ? err.message : String(err),
+					});
+				}
+			}
+		});
+
+		const buf = await zip.generateAsync({ type: "uint8array" });
+		const today = new Date().toISOString().split("T")[0];
+		return {
+			content: Buffer.from(buf).toString("base64"),
+			mimeType: "application/zip",
+			filename: `ECs_bulk_${today}.zip`,
+			total: candidates.length,
+			succeeded,
+			skipped,
+		};
+	}
+
+	/**
+	 * Bulk-export every UE (per (UE × class × semester)). Eligibility on
+	 * the WHOLE UE (every EC inside at 100%) is enforced — non-eligible UEs
+	 * are skipped. Each PDF lands in
+	 * `UEs/<programCode>/<classCode>/<filename>.pdf`.
+	 */
+	async bulkExportUes(filters: BulkExportFilters) {
+		const config = await this.getConfig();
+		const tuples = await this.repo.listUeTuplesForBulk(filters);
+		const zip = new JSZip();
+		const skipped: Array<{ id: string; reason: string }> = [];
+		let succeeded = 0;
+
+		await this.withSharedBrowser(async (renderPdf) => {
+			for (const t of tuples) {
+				const key = `${t.teachingUnitId}/${t.classId}/${t.semesterId}`;
+				try {
+					const ue = await eligibility.checkUeEligibility({
+						teachingUnitId: t.teachingUnitId,
+						classId: t.classId,
+						semesterId: t.semesterId,
+						institutionId: this.institutionId,
+					});
+					if (!ue.eligible) {
+						if (filters.skipIneligible) {
+							skipped.push({
+								id: key,
+								reason: ue.reason ?? "UE not eligible",
+							});
+							continue;
+						}
+						throw new Error(ue.reason ?? "UE not eligible");
+					}
+
+					const data = await this.repo.getUEData(
+						t.teachingUnitId,
+						t.classId,
+						t.semesterId,
+						t.academicYearId,
+					);
+					const templateConfig = await loadExportTemplate(
+						this.institutionId,
+						"ue",
+						undefined,
+						{ classId: t.classId },
+					);
+					const templateData = this.processUEData(data, config, templateConfig);
+					const html = await this.renderTemplate(
+						"ue",
+						templateData,
+						templateConfig,
+					);
+					const pdf = await renderPdf(html, templateConfig.styleConfig);
+
+					const today = new Date().toISOString().split("T")[0];
+					const programCode =
+						(data.teachingUnit as { program?: { code?: string } } | undefined)
+							?.program?.code ?? "no-program";
+					const classCode =
+						(data.classCourses as Array<{ classRef?: { code?: string } }>)?.[0]
+							?.classRef?.code ?? "no-class";
+					const ueCode = data.teachingUnit?.code ?? "no-ue";
+					const filename = sanitizeFilename(
+						`UE_${classCode}_${ueCode}_${today}.pdf`,
+					);
+					const folder = sanitizeFilename(
+						`UEs/${programCode}/${classCode}`,
+					).replace(/_+/g, "_");
+					zip.file(`${folder}/${filename}`, pdf);
+					succeeded++;
+				} catch (err) {
+					skipped.push({
+						id: key,
+						reason: err instanceof Error ? err.message : String(err),
+					});
+				}
+			}
+		});
+
+		const buf = await zip.generateAsync({ type: "uint8array" });
+		const today = new Date().toISOString().split("T")[0];
+		return {
+			content: Buffer.from(buf).toString("base64"),
+			mimeType: "application/zip",
+			filename: `UEs_bulk_${today}.zip`,
+			total: tuples.length,
+			succeeded,
+			skipped,
+		};
+	}
+
+	/**
+	 * Build the template-ready payload for an EC publication.
+	 *  - For each student: one column per normal-session exam (chronological)
+	 *    carrying the raw score, then the weighted EC average, decision and
+	 *    credits (granted on pass, 0 otherwise).
+	 *  - Bottom row aggregates the global EC success rate + class average.
+	 *  - Retake exams are excluded from the per-cell view; if you need a
+	 *    retake-aware projection use `processUEData`.
+	 */
+	private processEcData(
+		data: Awaited<ReturnType<ExportsRepo["getEcData"]>>,
+		config: ReturnType<typeof loadExportConfig>,
+		_includeRetakes = true,
+	) {
+		const { classCourse, students } = data;
+		const cls = classCourse.classRef;
+		const course = classCourse.courseRef;
+		const teachingUnit = course?.teachingUnit ?? null;
+		const passingGrade = config.grading.passing_grade;
+
+		// Normal-session exams of this class_course, ordered by date asc so the
+		// CC/TP/Examen sequence on the PDF matches chronological scheduling.
+		const normalExams = (classCourse.exams ?? [])
+			.filter((e) => (e.sessionType ?? "normal") === "normal")
+			.sort((a, b) => {
+				const da = new Date(a.date as unknown as string).getTime();
+				const db = new Date(b.date as unknown as string).getTime();
+				return da - db;
+			});
+
+		// Header descriptors (one per exam column on the PDF).
+		const examDescriptors = normalExams.map((e) => ({
+			id: e.id,
+			label: e.name || e.type,
+			type: e.type,
+			percentage: Number(e.percentage),
+			maxScore: 20,
+		}));
+
+		// Index grades by (examId → studentId → score) for O(1) lookup.
+		const gradeIndex = new Map<string, Map<string, number>>();
+		for (const exam of normalExams) {
+			const inner = new Map<string, number>();
+			for (const g of exam.grades ?? []) {
+				const sid = g.studentRef?.id ?? g.student;
+				if (sid && g.score !== null && g.score !== undefined) {
+					inner.set(sid, Number(g.score));
+				}
+			}
+			gradeIndex.set(exam.id, inner);
+		}
+
+		const sortedStudents = [...students].sort(
+			(a, b) =>
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+		);
+
+		const studentRows = sortedStudents.map((student, index) => {
+			const examGrades = examDescriptors.map((ed) => {
+				const score = gradeIndex.get(ed.id)?.get(student.id) ?? null;
+				return { examId: ed.id, score };
+			});
+
+			const allHaveScores = examGrades.every((g) => g.score !== null);
+			let average: number | null = null;
+			if (allHaveScores && examGrades.length > 0) {
+				// Weighted average: Σ(score × percentage) / 100. Assumes the EC
+				// percentages already sum to 100 — enforced by the eligibility
+				// check at the router level.
+				const sum = examGrades.reduce((acc, g, i) => {
+					return acc + (g.score as number) * examDescriptors[i].percentage;
+				}, 0);
+				average = sum / 100;
+			}
+
+			const isPassed = average !== null && average >= passingGrade;
+			let decision: string;
+			if (!allHaveScores) decision = "Inc";
+			else if (isPassed) decision = "Ac";
+			else decision = "Nac";
+
+			// Credits for this EC are inherited from the parent UE — courses
+			// don't carry their own credit count in the schema.
+			const ecCredits = Number(teachingUnit?.credits ?? 0);
+
+			return {
+				number: index + 1,
+				lastName: student.profile.lastName,
+				firstName: student.profile.firstName,
+				registrationNumber: student.registrationNumber,
+				examGrades,
+				average,
+				decision,
+				credits: isPassed ? ecCredits : 0,
+				isComplete: allHaveScores,
+			};
+		});
+
+		const finalScores = studentRows
+			.map((r) => r.average)
+			.filter((s): s is number => s !== null);
+		const stats = calculateStats(finalScores);
+		const globalSuccessRate = calculateSuccessRate(finalScores, passingGrade);
+
+		return {
+			program: {
+				name: cls?.program?.name ?? "",
+				level: cls?.cycleLevel?.name ?? "",
+			},
+			semester: cls?.semester?.name ?? "",
+			academicYear: cls?.academicYear?.name ?? "",
+			classCode: cls?.code ?? "",
+			className: cls?.name ?? "",
+			classCourse: {
+				code: course?.code ?? "",
+				name: course?.name ?? "",
+				courseCode: course?.code ?? "",
+				courseName: course?.name ?? "",
+				credits: Number(teachingUnit?.credits ?? 0),
+				coefficient: Number(classCourse.coefficient ?? 1),
+			},
+			teachingUnit: teachingUnit
+				? {
+						code: teachingUnit.code,
+						name: teachingUnit.name,
+						credits: Number(teachingUnit.credits ?? 0),
+					}
+				: null,
+			exams: examDescriptors,
+			students: studentRows,
+			globalAverage: stats.average,
+			globalSuccessRate,
+			signatures: config.signatures.evaluation,
 		};
 	}
 
@@ -600,6 +1221,7 @@ export class ExportsService {
 		type:
 			| "pv"
 			| "evaluation"
+			| "ec"
 			| "ue"
 			| "deliberation"
 			| "diploma"
@@ -942,27 +1564,39 @@ export class ExportsService {
 		_templateConfig: TemplateConfiguration,
 		observations?: string,
 	) {
-		// Sort grades alphabetically by student last name, then first name
-		const sortedGrades = [...data.grades].sort(
+		// Iterate over EVERY student of the class (not just those with a grade)
+		// so the publication shows the full roster — students without a grade
+		// appear with score = null → rendered as "ABS" by the formatNumber
+		// helper. This was historically broken: only graded students showed up.
+		const gradeByStudentId = new Map<string, number | null>();
+		for (const g of (data.grades ?? []) as Array<{
+			student: string;
+			score: string | number | null;
+		}>) {
+			gradeByStudentId.set(
+				g.student,
+				g.score !== null && g.score !== undefined ? Number(g.score) : null,
+			);
+		}
+
+		const sortedStudents = [...(data.classStudents ?? [])].sort(
 			(a: any, b: any) =>
-				(a.studentRef.profile.lastName ?? "").localeCompare(
-					b.studentRef.profile.lastName ?? "",
-				) ||
-				(a.studentRef.profile.firstName ?? "").localeCompare(
-					b.studentRef.profile.firstName ?? "",
-				),
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
 		);
 
-		const grades = sortedGrades.map((grade: any, index: number) => {
-			const score = grade.score ? Number(grade.score) : null;
+		const grades = sortedStudents.map((student: any, index: number) => {
+			const score = gradeByStudentId.has(student.id)
+				? (gradeByStudentId.get(student.id) ?? null)
+				: null;
 
 			return {
 				number: index + 1,
-				lastName: grade.studentRef.profile.lastName,
-				firstName: grade.studentRef.profile.firstName,
-				registrationNumber: grade.studentRef.registrationNumber,
+				lastName: student.profile.lastName,
+				firstName: student.profile.firstName,
+				registrationNumber: student.registrationNumber,
 				score,
-				appreciation: score !== null ? getAppreciation(score, config) : "",
+				appreciation: score !== null ? getAppreciation(score, config) : "—",
 				observation: getObservation(score, config),
 			};
 		});
@@ -996,10 +1630,22 @@ export class ExportsService {
 				? new Date(data.date).toLocaleDateString("fr-FR")
 				: "",
 			duration: config.exam_settings.default_duration_hours,
+			// Real EC coefficient = weight of this EC inside its parent UE.
+			// Falls back to the config default only if the class_course has no
+			// coefficient set (shouldn't happen — the column has default 1.00).
 			coefficient:
-				examTypeConfig.coefficient || config.exam_settings.default_coefficient,
+				Number(data.classCourseRef.coefficient) ||
+				config.exam_settings.default_coefficient,
+			// Percentage of THIS specific exam within the EC (e.g. 30% for a CC).
+			// Useful on the publication header alongside the EC coefficient.
+			examPercentage: Number(data.percentage),
 			scale: config.grading.scale,
-			semester: data.classCourseRef.classRef.semester?.name || "",
+			// Prefer the class_course's own semester (set per EC) over the
+			// class default which is frequently null on multi-semester programs.
+			semester:
+				data.classCourseRef.semester?.name ||
+				data.classCourseRef.classRef.semester?.name ||
+				"",
 			academicYear: data.classCourseRef.classRef.academicYear.name,
 			students: grades,
 			stats: {
@@ -1242,7 +1888,7 @@ export class ExportsService {
 	 * Render template with data using Handlebars
 	 */
 	private async renderTemplate(
-		templateName: "pv" | "evaluation" | "ue" | "deliberation",
+		templateName: "pv" | "evaluation" | "ec" | "ue" | "deliberation",
 		data: any,
 		templateConfig: TemplateConfiguration & { center?: unknown },
 	): Promise<string> {
@@ -1276,21 +1922,87 @@ export class ExportsService {
 			headless: true,
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
 			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+			protocolTimeout: 180_000,
 		});
 
 		try {
 			const page = await browser.newPage();
-			await page.setContent(html, { waitUntil: "networkidle0" });
+			page.setDefaultTimeout(60_000);
+			// Force the print stylesheet so any `@media print` rules (page
+			// breaks, hidden classes, etc.) apply during the wait — otherwise
+			// Chromium computes screen layout, decodes screen-sized rasters,
+			// then has to redo the work for print → can hide a logo at PDF
+			// time even though the screen render had it.
+			await page.emulateMediaType("print");
+			await page.setContent(html, { waitUntil: ["load", "networkidle0"] });
 
-			// Use style config for PDF options
+			// Robust image readiness: for each <img>, wait until it's complete
+			// AND fully decoded AND has a non-zero naturalHeight. Some headless
+			// Chromium versions resolve `decode()` while the image is still
+			// being decoded on the compositor thread — adding the `complete &&
+			// naturalHeight` guard prevents that race. We also try `decode()`
+			// up to twice on transient failures (huge base64 URIs occasionally
+			// throw EncodingError on first attempt under memory pressure).
+			await Promise.race([
+				page.evaluate(async () => {
+					const tryDecode = async (img: HTMLImageElement) => {
+						try {
+							await img.decode();
+						} catch {
+							// Retry once
+							try {
+								await img.decode();
+							} catch {
+								/* give up — keep printing without this image */
+							}
+						}
+					};
+					const imgs = Array.from(document.images);
+					await Promise.all(imgs.map((img) => tryDecode(img)));
+					// Final assert: poll for naturalHeight to settle. Resolves
+					// when every image either has a non-zero size OR has been
+					// in error state for >2s (broken URL, etc.).
+					const start = Date.now();
+					while (
+						Date.now() - start < 8000 &&
+						imgs.some(
+							(img) =>
+								!img.complete ||
+								(img.naturalHeight === 0 && img.naturalWidth === 0),
+						)
+					) {
+						await new Promise((r) => setTimeout(r, 100));
+					}
+				}),
+				new Promise<void>((resolve) => setTimeout(resolve, 25000)),
+			]);
+
+			// Footer with page numbering: "Page N / Total" centered, in small
+			// print. Header is left empty so the document's own header drives
+			// the layout. `displayHeaderFooter` requires the bottom margin to
+			// reserve enough space — we widen the default 10mm to 18mm so the
+			// footer doesn't overlap the table content.
+			const footerTemplate = `
+				<div style="font-size:8px; width:100%; text-align:center; color:#888; padding: 0 8mm; font-family: Arial, sans-serif;">
+					Page <span class="pageNumber"></span> / <span class="totalPages"></span>
+				</div>
+			`;
+			const headerTemplate = "<div></div>";
+
+			const baseBottomMm = styleConfig.margins?.bottom ?? 10;
+			const bottomWithFooter = Math.max(baseBottomMm, 18);
+
 			const pdf = await page.pdf({
 				format: styleConfig.pageSize || "A4",
 				landscape: styleConfig.pageOrientation === "landscape",
 				printBackground: true,
+				displayHeaderFooter: true,
+				headerTemplate,
+				footerTemplate,
 				margin: {
 					top: `${styleConfig.margins?.top || 10}mm`,
 					right: `${styleConfig.margins?.right || 10}mm`,
-					bottom: `${styleConfig.margins?.bottom || 10}mm`,
+					bottom: `${bottomWithFooter}mm`,
 					left: `${styleConfig.margins?.left || 10}mm`,
 				},
 			});
@@ -1302,7 +2014,7 @@ export class ExportsService {
 	}
 
 	private getSampleData(
-		type: "pv" | "evaluation" | "ue" | "deliberation",
+		type: "pv" | "evaluation" | "ec" | "ue" | "deliberation",
 		config: ReturnType<typeof loadExportConfig>,
 	) {
 		switch (type) {
@@ -1423,6 +2135,98 @@ export class ExportsService {
 					publicationDate: new Date().toLocaleDateString("fr-FR"),
 					signatures: config.signatures.evaluation,
 					watermark: config.watermark,
+				};
+			}
+			case "ec": {
+				// Sample shape mirrors what processEcData returns for a real
+				// class_course preview — same field names so the editor preview
+				// matches production layout.
+				const exams = [
+					{
+						id: "exam-cc",
+						label: "Contrôle Continu",
+						type: "CC",
+						percentage: 30,
+						maxScore: 20,
+					},
+					{
+						id: "exam-tp",
+						label: "Travaux Pratiques",
+						type: "TP",
+						percentage: 20,
+						maxScore: 20,
+					},
+					{
+						id: "exam-final",
+						label: "Examen",
+						type: "EXAMEN",
+						percentage: 50,
+						maxScore: 20,
+					},
+				];
+				const buildRow = (
+					n: number,
+					last: string,
+					first: string,
+					mat: string,
+					scores: number[],
+				) => {
+					const examGrades = scores.map((s, i) => ({
+						examId: exams[i].id,
+						score: s,
+					}));
+					const average =
+						scores.reduce((acc, s, i) => acc + s * exams[i].percentage, 0) /
+						100;
+					const passed = average >= config.grading.passing_grade;
+					return {
+						number: n,
+						lastName: last,
+						firstName: first,
+						registrationNumber: mat,
+						examGrades,
+						average,
+						decision: passed ? "Ac" : "Nac",
+						credits: passed ? 6 : 0,
+						isComplete: true,
+					};
+				};
+				const students = [
+					buildRow(1, "Doe", "Jane", "INF23001", [14, 15, 13]),
+					buildRow(2, "Smith", "John", "INF23002", [12, 13, 11]),
+					buildRow(3, "Martin", "Marie", "INF23003", [16, 14, 15]),
+				];
+				const finalScores = students
+					.map((s) => s.average)
+					.filter((a): a is number => a !== null);
+				const stats = calculateStats(finalScores);
+				return {
+					program: { name: "Licence Informatique", level: "L3" },
+					semester: "Semestre 1",
+					academicYear: "2024/2025",
+					classCode: "L3-INFO-A",
+					className: "L3 Informatique A",
+					classCourse: {
+						code: "INF201",
+						name: "Structures de données",
+						courseCode: "INF201",
+						courseName: "Structures de données",
+						credits: 6,
+						coefficient: 1,
+					},
+					teachingUnit: {
+						code: "UE202",
+						name: "Informatique avancée",
+						credits: 6,
+					},
+					exams,
+					students,
+					globalAverage: stats.average,
+					globalSuccessRate: calculateSuccessRate(
+						finalScores,
+						config.grading.passing_grade,
+					),
+					signatures: config.signatures.evaluation,
 				};
 			}
 			case "ue": {

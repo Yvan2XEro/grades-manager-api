@@ -218,6 +218,7 @@ export function loadTemplate(
 	templateName:
 		| "pv"
 		| "evaluation"
+		| "ec"
 		| "ue"
 		| "deliberation"
 		| "diploma"
@@ -230,6 +231,7 @@ export function loadTemplate(
 	const standardMap = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
+		ec: "ec-publication.html",
 		ue: "teaching-unit-publication.html",
 		deliberation: "deliberation-template.html",
 		diploma: "diploma-template.html",
@@ -262,6 +264,7 @@ export function loadTemplate(
 		student_list: "student-list-template-center.html",
 		pv: "pv-template-center.html",
 		evaluation: "evaluation-publication-center.html",
+		ec: "ec-publication-center.html",
 		ue: "teaching-unit-publication-center.html",
 		deliberation: "deliberation-template-center.html",
 	};
@@ -299,10 +302,14 @@ export function getAppreciation(score: number, config: ExportConfig): string {
  */
 export function getObservation(
 	score: number | null,
-	config: ExportConfig,
+	_config: ExportConfig,
 ): string {
-	if (score === null) return "Absent";
-	return score >= config.grading.passing_grade ? "Reçu" : "Ajourné";
+	// Per-évaluation observation is intentionally limited to attendance.
+	// Reçu/Ajourné verdicts only make sense at the EC / UE / PV level —
+	// where ALL evaluations are aggregated. Showing them on a single CC
+	// is misleading (a student with 8/20 CC can still pass the EC after a
+	// strong final exam).
+	return score === null ? "Absent" : "Présent";
 }
 
 /**
