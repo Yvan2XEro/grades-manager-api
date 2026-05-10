@@ -37,6 +37,11 @@ authUsers:
     name: Kombo Francis
     password: Password123!
     role: admin
+  - code: TEACH-IGL-DEFAULT
+    email: igl.coordinateur@inses.cm
+    name: Coordinateur Génie Logiciel
+    password: Password123!
+    role: user
 
   # ─── Étudiants BTS Santé 2025-2026 (importés depuis docs/student-inses) ───
   - code: STD-IMM1-001
@@ -705,6 +710,28 @@ authUsers:
     password: Password123!
     role: user
 
+  # ─── Étudiants BTS Génie Logiciel — Niveau 1 (2025-2026) ───
+  - code: STD-IGL1-001
+    email: loicfomban@gmail.com
+    name: 'Lapa Foban Loic Herman'
+    password: Password123!
+    role: user
+  - code: STD-IGL1-002
+    email: mafobrielle@gmail.com
+    name: 'Mefoche Ange Brielle'
+    password: Password123!
+    role: user
+  - code: STD-IGL1-003
+    email: mungangalaure@gmail.com
+    name: 'Munganga Tshilemba Laure Christine'
+    password: Password123!
+    role: user
+  - code: STD-IGL1-004
+    email: igl1.004@students.inses.cm
+    name: 'Thaddee Wanga Ketsia'
+    password: Password123!
+    role: user
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DOMAIN USERS  (institutional profiles linked to auth accounts)
 # memberRole: "owner" | "teacher" | "administrator" | "dean" | "staff"
@@ -752,6 +779,15 @@ domainUsers:
     firstName: Francis
     lastName: Kombo
     primaryEmail: kombo@inses.cm
+    status: active
+    organizationSlug: inses-institution
+    memberRole: teacher
+
+  - code: TEACH-IGL-DEFAULT
+    authUserCode: TEACH-IGL-DEFAULT
+    firstName: Coordinateur
+    lastName: Génie Logiciel
+    primaryEmail: igl.coordinateur@inses.cm
     status: active
     organizationSlug: inses-institution
     memberRole: teacher
@@ -2218,6 +2254,51 @@ domainUsers:
     nationality: 'Camerounaise'
     status: active
 
+  # ─── Profils étudiants BTS Génie Logiciel — Niveau 1 (2025-2026) ───
+  - code: STD-IGL1-001
+    authUserCode: STD-IGL1-001
+    firstName: 'Lapa Foban'
+    lastName: 'Loic Herman'
+    primaryEmail: loicfomban@gmail.com
+    phone: '650412087/674126242'
+    dateOfBirth: 2004-04-12
+    placeOfBirth: 'NKONGSAMBA'
+    gender: MALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-IGL1-002
+    authUserCode: STD-IGL1-002
+    firstName: 'Mefoche'
+    lastName: 'Ange Brielle'
+    primaryEmail: mafobrielle@gmail.com
+    dateOfBirth: 2006-06-09
+    placeOfBirth: 'BONABERI'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-IGL1-003
+    authUserCode: STD-IGL1-003
+    firstName: 'Munganga Tshilemba'
+    lastName: 'Laure Christine'
+    primaryEmail: mungangalaure@gmail.com
+    phone: '695058632'
+    dateOfBirth: 2005-11-23
+    placeOfBirth: 'DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+  - code: STD-IGL1-004
+    authUserCode: STD-IGL1-004
+    firstName: 'Thaddee Wanga'
+    lastName: 'Ketsia'
+    primaryEmail: igl1.004@students.inses.cm
+    phone: '698032168'
+    dateOfBirth: 2007-11-08
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+
 # ─────────────────────────────────────────────────────────────────────────────
 # STUDENTS  (institutional student records — one par classe)
 # classCode + classAcademicYearCode doivent référencer une classe de 10-academics.yaml.
@@ -2757,6 +2838,30 @@ students:
     domainUserCode: STD-TLB3-004
     classCode: TLB-BTS3
     classAcademicYearCode: AY-2025
+
+  # ─── BTS Génie Logiciel niveau 1 (IGL-BTS1) ───
+  # Matricules explicites issus du PV officiel GL_notes_sem1.xlsx —
+  # garantit que les re-runs du seed ne dérivent pas la numérotation.
+  - code: STD-IGL1-001
+    domainUserCode: STD-IGL1-001
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-GL-0001
+  - code: STD-IGL1-002
+    domainUserCode: STD-IGL1-002
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-GL-0002
+  - code: STD-IGL1-003
+    domainUserCode: STD-IGL1-003
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-GL-0003
+  - code: STD-IGL1-004
+    domainUserCode: STD-IGL1-004
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-GL-0004
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ENROLLMENTS  (étudiant ↔ classe ↔ année académique)
@@ -3557,6 +3662,32 @@ enrollments:
     admissionType: normal
   - studentCode: STD-TLB3-004
     classCode: TLB-BTS3
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+
+  # ─── Inscriptions BTS Génie Logiciel niveau 1 ───
+  - studentCode: STD-IGL1-001
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-IGL1-002
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-IGL1-003
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+  - studentCode: STD-IGL1-004
+    classCode: IGL-BTS1
     classAcademicYearCode: AY-2025
     academicYearCode: AY-2025
     status: active

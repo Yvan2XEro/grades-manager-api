@@ -967,8 +967,10 @@ export class ExportsService {
 
 		const sortedStudents = [...students].sort(
 			(a, b) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+				// Seed/UI convention: profile.firstName carries the family name
+				// (NOM) shown first; profile.lastName carries the given names.
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 		);
 
 		const studentRows = sortedStudents.map((student, index) => {
@@ -1154,11 +1156,12 @@ export class ExportsService {
 		}
 		const ues = Array.from(ueMap.values());
 
-		// Sort students alphabetically by last name, then first name
+		// Sort students alphabetically by family name (NOM), then given names.
+		// Seed/UI convention: firstName carries the family name (NOM).
 		const sortedStudents = [...data.students].sort(
 			(a, b) =>
-				(a.lastName ?? "").localeCompare(b.lastName ?? "") ||
-				(a.firstName ?? "").localeCompare(b.firstName ?? ""),
+				(a.firstName ?? "").localeCompare(b.firstName ?? "") ||
+				(a.lastName ?? "").localeCompare(b.lastName ?? ""),
 		);
 
 		// Enrich students with labels and ensure UE order matches
@@ -1392,8 +1395,10 @@ export class ExportsService {
 		// Sort students alphabetically by last name, then first name
 		const sortedStudents = [...data.students].sort(
 			(a: any, b: any) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+				// Seed/UI convention: profile.firstName carries the family name
+				// (NOM) shown first; profile.lastName carries the given names.
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 		);
 
 		// Process students
@@ -1488,8 +1493,12 @@ export class ExportsService {
 				});
 			}
 
-			// Calculate total credits and credit-weighted general average
+			// Calculate total credits earned and the maximum credits available
+			// for the semester. Validation rule: a student is "VALIDÉ" only when
+			// every UE has been validated (i.e. all credits earned). The general
+			// average is still computed for display.
 			const totalCredits = ueGrades.reduce((sum, ug) => sum + ug.credits, 0);
+			const maxCredits = ueGrades.reduce((sum, ug) => sum + ug.ueCredits, 0);
 			const uesWithAverages = ueGrades.filter(
 				(ug) => ug.average !== null,
 			) as Array<(typeof ueGrades)[number] & { average: number }>;
@@ -1514,9 +1523,7 @@ export class ExportsService {
 				}
 			}
 
-			const overallPassed =
-				generalAverage !== null &&
-				generalAverage >= config.grading.passing_grade;
+			const overallPassed = maxCredits > 0 && totalCredits >= maxCredits;
 
 			return {
 				number: index + 1,
@@ -1525,14 +1532,15 @@ export class ExportsService {
 				registrationNumber: student.registrationNumber,
 				ueGrades,
 				totalCredits,
+				maxCredits,
 				generalAverage,
-				overallDecision: overallPassed ? "ACQUIS" : "NON ACQUIS",
+				overallDecision: overallPassed ? "VALIDÉ" : "NON VALIDÉ",
 			};
 		});
 
 		// Calculate global success rate
 		const passedCount = students.filter(
-			(s: any) => s.overallDecision === "ACQUIS",
+			(s: any) => s.overallDecision === "VALIDÉ",
 		).length;
 		const globalSuccessRate =
 			students.length > 0
@@ -1545,7 +1553,7 @@ export class ExportsService {
 				name: data.program.name,
 				level: data.cycleLevel.name,
 			},
-			semester: data.semester.name,
+			semester: data.semester?.name ?? "",
 			academicYear: data.academicYear.name,
 			ues: Array.from(ueMap.values()),
 			students,
@@ -1581,8 +1589,10 @@ export class ExportsService {
 
 		const sortedStudents = [...(data.classStudents ?? [])].sort(
 			(a: any, b: any) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+				// Seed/UI convention: profile.firstName carries the family name
+				// (NOM) shown first; profile.lastName carries the given names.
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 		);
 
 		const grades = sortedStudents.map((student: any, index: number) => {
@@ -1675,8 +1685,10 @@ export class ExportsService {
 		// Sort students alphabetically by last name, then first name
 		const sortedStudents = [...students].sort(
 			(a: any, b: any) =>
-				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+				// Seed/UI convention: profile.firstName carries the family name
+				// (NOM) shown first; profile.lastName carries the given names.
+				(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+				(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 		);
 
 		// Process students
@@ -2062,7 +2074,7 @@ export class ExportsService {
 							ueGrades,
 							totalCredits: 12,
 							generalAverage: 13.5,
-							overallDecision: "ACQUIS",
+							overallDecision: "VALIDÉ",
 						},
 						{
 							number: 2,
@@ -2072,7 +2084,7 @@ export class ExportsService {
 							ueGrades,
 							totalCredits: 12,
 							generalAverage: 12.2,
-							overallDecision: "ACQUIS",
+							overallDecision: "VALIDÉ",
 						},
 					],
 					globalSuccessRate: 90,

@@ -938,7 +938,7 @@ export default function GradeExport() {
 			// Stats
 			const totalStudents = pvData.students.length;
 			const validated = pvData.students.filter(
-				(s: any) => s.overallDecision === "ACQUIS",
+				(s: any) => s.overallDecision === "VALIDÉ",
 			).length;
 			const nonValidated = totalStudents - validated;
 			const successRate = pvData.globalSuccessRate ?? 0;

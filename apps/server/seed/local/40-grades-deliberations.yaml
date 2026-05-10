@@ -435,6 +435,184 @@ additionalExams:
     percentage: 30
     status: approved
     isLocked: true
+
+  # ─── Examens BTS Génie Logiciel — Niveau 1, Semestre 1 (CC + FINAL) ───
+  - id: EXAM-CC-IGL111EC1-IGL25BTS1
+    classCourseCode: CC-IGL111EC1-IGL25BTS1
+    name: Contrôle continu — Analyse Mathématiques I
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL111EC1-IGL25BTS1
+    classCourseCode: CC-IGL111EC1-IGL25BTS1
+    name: Examen final — Analyse Mathématiques I
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL111EC2-IGL25BTS1
+    classCourseCode: CC-IGL111EC2-IGL25BTS1
+    name: Contrôle continu — Algèbre Linéaire
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL111EC2-IGL25BTS1
+    classCourseCode: CC-IGL111EC2-IGL25BTS1
+    name: Examen final — Algèbre Linéaire
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL112EC1-IGL25BTS1
+    classCourseCode: CC-IGL112EC1-IGL25BTS1
+    name: Contrôle continu — Environnement Micro-ordinateur
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL112EC1-IGL25BTS1
+    classCourseCode: CC-IGL112EC1-IGL25BTS1
+    name: Examen final — Environnement Micro-ordinateur
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL112EC2-IGL25BTS1
+    classCourseCode: CC-IGL112EC2-IGL25BTS1
+    name: Contrôle continu — Outils bureautiques
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL112EC2-IGL25BTS1
+    classCourseCode: CC-IGL112EC2-IGL25BTS1
+    name: Examen final — Outils bureautiques
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL113EC1-IGL25BTS1
+    classCourseCode: CC-IGL113EC1-IGL25BTS1
+    name: Contrôle continu — Architecture des ordinateurs
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL113EC1-IGL25BTS1
+    classCourseCode: CC-IGL113EC1-IGL25BTS1
+    name: Examen final — Architecture des ordinateurs
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL114EC1-IGL25BTS1
+    classCourseCode: CC-IGL114EC1-IGL25BTS1
+    name: Contrôle continu — Algorithmique de Base
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL114EC1-IGL25BTS1
+    classCourseCode: CC-IGL114EC1-IGL25BTS1
+    name: Examen final — Algorithmique de Base
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL115EC1-IGL25BTS1
+    classCourseCode: CC-IGL115EC1-IGL25BTS1
+    name: Contrôle continu — Introduction au Système d'information
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL115EC1-IGL25BTS1
+    classCourseCode: CC-IGL115EC1-IGL25BTS1
+    name: Examen final — Introduction au Système d'information
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL115EC2-IGL25BTS1
+    classCourseCode: CC-IGL115EC2-IGL25BTS1
+    name: Contrôle continu — Introduction au Génie Logiciel
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL115EC2-IGL25BTS1
+    classCourseCode: CC-IGL115EC2-IGL25BTS1
+    name: Examen final — Introduction au Génie Logiciel
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL116EC1-IGL25BTS1
+    classCourseCode: CC-IGL116EC1-IGL25BTS1
+    name: Contrôle continu — Infographie
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL116EC1-IGL25BTS1
+    classCourseCode: CC-IGL116EC1-IGL25BTS1
+    name: Examen final — Infographie
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL117EC1-IGL25BTS1
+    classCourseCode: CC-IGL117EC1-IGL25BTS1
+    name: Contrôle continu — Techniques d'expression française
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL117EC1-IGL25BTS1
+    classCourseCode: CC-IGL117EC1-IGL25BTS1
+    name: Examen final — Techniques d'expression française
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
+  - id: EXAM-CC-IGL117EC2-IGL25BTS1
+    classCourseCode: CC-IGL117EC2-IGL25BTS1
+    name: Contrôle continu — Techniques d'expression anglaise
+    type: CC
+    date: 2025-12-15T09:00:00Z
+    percentage: 30
+    status: approved
+    isLocked: true
+  - id: EXAM-FINAL-IGL117EC2-IGL25BTS1
+    classCourseCode: CC-IGL117EC2-IGL25BTS1
+    name: Examen final — Techniques d'expression anglaise
+    type: FINAL
+    date: 2026-01-20T09:00:00Z
+    percentage: 70
+    status: approved
+    isLocked: true
 grades:
   - examId: EXAM-CC-SIN114EC1-SIN25BTS1
     studentCode: STD-SIN1-001
@@ -1954,3 +2132,308 @@ grades:
   - examId: EXAM-CC-IMM111EC3-IMM25BTS1
     studentCode: STD-IMM1-001
     score: 10
+
+  # ─── Notes BTS Génie Logiciel — Niveau 1, Semestre 1 ───
+  # Source : GL_notes_sem1.xlsx (PV GL1 SEM 1, INSES 2025-2026)
+  # Notes au niveau de l'UE répliquées sur chacun de ses ECs constitutifs.
+  # UE IGL117 (Formation bilingue) : grades français et anglais distincts.
+
+  # ─── STD-IGL1-001 — LAPA FOBAN LOIC HERMAN (INSES25-GL-0001) ───
+  # IGL111 : CC=10, EXAM=10
+  - examId: EXAM-CC-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  - examId: EXAM-CC-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  # IGL112 : CC=18.5, EXAM=18.5
+  - examId: EXAM-CC-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 18.5
+  - examId: EXAM-FINAL-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 18.5
+  - examId: EXAM-CC-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 18.5
+  - examId: EXAM-FINAL-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 18.5
+  # IGL113 : CC=14.75, EXAM=7
+  - examId: EXAM-CC-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 14.75
+  - examId: EXAM-FINAL-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 7
+  # IGL114 : CC=11.25, EXAM=11.25
+  - examId: EXAM-CC-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 11.25
+  - examId: EXAM-FINAL-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 11.25
+  # IGL115 : CC=8, EXAM=12
+  - examId: EXAM-CC-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 8
+  - examId: EXAM-FINAL-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 12
+  - examId: EXAM-CC-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 8
+  - examId: EXAM-FINAL-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 12
+  # IGL116 : CC=13, EXAM=16
+  - examId: EXAM-CC-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 13
+  - examId: EXAM-FINAL-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 16
+  # IGL117 français : CC=10, EXAM=10 — anglais : CC=15, EXAM=15
+  - examId: EXAM-CC-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  - examId: EXAM-FINAL-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 10
+  - examId: EXAM-CC-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 15
+  - examId: EXAM-FINAL-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-001
+    score: 15
+
+  # ─── STD-IGL1-002 — MEFOCHE ANGE BRIELLE (INSES25-GL-0002) ───
+  # IGL111 : CC=10, EXAM=10
+  - examId: EXAM-CC-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-CC-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  # IGL112 : CC=14.5, EXAM=14.5
+  - examId: EXAM-CC-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 14.5
+  - examId: EXAM-FINAL-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 14.5
+  - examId: EXAM-CC-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 14.5
+  - examId: EXAM-FINAL-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 14.5
+  # IGL113 : CC=10, EXAM=3
+  - examId: EXAM-CC-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-FINAL-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 3
+  # IGL114 : CC=3.5, EXAM=3.5
+  - examId: EXAM-CC-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 3.5
+  - examId: EXAM-FINAL-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 3.5
+  # IGL115 : CC=5, EXAM=10
+  - examId: EXAM-CC-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 5
+  - examId: EXAM-FINAL-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-CC-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 5
+  - examId: EXAM-FINAL-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  # IGL116 : CC=10, EXAM=6
+  - examId: EXAM-CC-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 10
+  - examId: EXAM-FINAL-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 6
+  # IGL117 français : CC=15, EXAM=13 — anglais : CC=6, EXAM=6
+  - examId: EXAM-CC-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 15
+  - examId: EXAM-FINAL-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 13
+  - examId: EXAM-CC-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 6
+  - examId: EXAM-FINAL-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-002
+    score: 6
+
+  # ─── STD-IGL1-003 — MUNGANGA TSHILEMBA LAURE CHRISTINE (INSES25-GL-0003) ───
+  # IGL111 : CC=10, EXAM=10
+  - examId: EXAM-CC-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  - examId: EXAM-CC-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  - examId: EXAM-FINAL-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  # IGL112 : CC=15, EXAM=15
+  - examId: EXAM-CC-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 15
+  - examId: EXAM-FINAL-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 15
+  - examId: EXAM-CC-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 15
+  - examId: EXAM-FINAL-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 15
+  # IGL113 : CC=12.75, EXAM=4.25
+  - examId: EXAM-CC-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 12.75
+  - examId: EXAM-FINAL-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 4.25
+  # IGL114 : CC=12.5, EXAM=12.5
+  - examId: EXAM-CC-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 12.5
+  - examId: EXAM-FINAL-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 12.5
+  # IGL115 : CC=7.5, EXAM=7.5
+  - examId: EXAM-CC-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 7.5
+  - examId: EXAM-FINAL-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 7.5
+  - examId: EXAM-CC-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 7.5
+  - examId: EXAM-FINAL-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 7.5
+  # IGL116 : CC=11, EXAM=10
+  - examId: EXAM-CC-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 11
+  - examId: EXAM-FINAL-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  # IGL117 français : CC=10, EXAM=10 — anglais : CC=10.5, EXAM=10.5
+  - examId: EXAM-CC-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  - examId: EXAM-FINAL-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10
+  - examId: EXAM-CC-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10.5
+  - examId: EXAM-FINAL-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-003
+    score: 10.5
+
+  # ─── STD-IGL1-004 — THADDEE WANGA KETSIA (INSES25-GL-0004) ───
+  # IGL111 : CC=15, EXAM=15
+  - examId: EXAM-CC-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 15
+  - examId: EXAM-FINAL-IGL111EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 15
+  - examId: EXAM-CC-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 15
+  - examId: EXAM-FINAL-IGL111EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 15
+  # IGL112 : CC=19, EXAM=19
+  - examId: EXAM-CC-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 19
+  - examId: EXAM-FINAL-IGL112EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 19
+  - examId: EXAM-CC-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 19
+  - examId: EXAM-FINAL-IGL112EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 19
+  # IGL113 : CC=10, EXAM=7
+  - examId: EXAM-CC-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 10
+  - examId: EXAM-FINAL-IGL113EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 7
+  # IGL114 : CC=17, EXAM=17
+  - examId: EXAM-CC-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 17
+  - examId: EXAM-FINAL-IGL114EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 17
+  # IGL115 : CC=14, EXAM=18
+  - examId: EXAM-CC-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 14
+  - examId: EXAM-FINAL-IGL115EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 18
+  - examId: EXAM-CC-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 14
+  - examId: EXAM-FINAL-IGL115EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 18
+  # IGL116 : CC=10, EXAM=20
+  - examId: EXAM-CC-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 10
+  - examId: EXAM-FINAL-IGL116EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 20
+  # IGL117 français : CC=10, EXAM=10 — anglais : CC=17, EXAM=17
+  - examId: EXAM-CC-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 10
+  - examId: EXAM-FINAL-IGL117EC1-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 10
+  - examId: EXAM-CC-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 17
+  - examId: EXAM-FINAL-IGL117EC2-IGL25BTS1
+    studentCode: STD-IGL1-004
+    score: 17

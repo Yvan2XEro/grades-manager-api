@@ -28,6 +28,12 @@ departments:
     facultyCode: INSES
     studyCycleCode: BTS-SANTE
     description: Filière regroupant les spécialités techniques de support au diagnostic et au traitement (Techniques de laboratoire et d'analyse médicale, Techniques pharmaceutiques, Radiologie et imagerie médicale).
+  - code: GINF
+    nameFr: Génie Informatique
+    nameEn: Computer Engineering
+    facultyCode: INSES
+    studyCycleCode: BTS
+    description: Filière du domaine Technologies de l'Information et de la Communication regroupant les spécialités logicielles et systèmes (Génie Logiciel, Informatique Industrielle et Automatisme, Maintenance des Systèmes Informatiques, E-commerce et Marketing Numérique) — Programme National BTS Volume 7 (Octobre 2023, MINESUP).
 programs:
   - code: SFM
     nameFr: Sage-femme
@@ -272,6 +278,35 @@ programs:
       - ONG
       - Auto-emploi
       - Recherche
+  - code: IGL
+    nameFr: Génie Logiciel
+    nameEn: Software Engineering
+    abbreviation: BTS-IGL
+    slug: genie-logiciel
+    description: Former des spécialistes capables de développer des applications informatiques dans divers domaines, en faisant appel à leurs capacités d'étude du besoin, d'analyse (Merise, UML...) et de codage.
+    domainFr: Technologies de l'Information et de la Communication
+    domainEn: Information and Communication Technologies
+    specialiteFr: Génie Logiciel
+    specialiteEn: Software Engineering
+    diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Génie Logiciel
+    diplomaTitleEn: Higher Technician Diploma — Software Engineering
+    attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 7, Octobre 2023 (MINESUP). Validité permanente sur le territoire national.
+    attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 7, October 2023 (MINESUP). Permanent validity within the national territory.
+    departmentCode: GINF
+    studyCycleCode: BTS
+    facultyCode: INSES
+    centerCode: INSES
+    durationYears: 2
+    totalCredits: 120
+    totalHours: 1800
+    diplomaTitle: Brevet de Technicien Supérieur - Génie Logiciel
+    objective: Former des spécialistes capables de développer des applications informatiques dans divers domaines, en faisant appel à leurs capacités d'étude du besoin, d'analyse (Merise, UML...) et de codage.
+    careerOpportunities:
+      - Chef de projet informatique
+      - Consultant logiciel
+      - Développeur d'applications
+      - Administrateur de système
+    note: UE IGL114 — la cellule "crédits" du descriptif officiel indique 3 crédits (45 h) alors que le tableau d'organisation des enseignements indique 5 crédits (75 h). Valeur conservée du tableau (5 crédits / 75 h). Idem pour IGL231 dont l'en-tête descriptif indique 3 cr/45 h alors que la somme des EC (Analyse Mathématiques II + Analyse Numérique) totalise 5 cr/75 h conformément au tableau.
 programOptions:
   - programCode: IMM
     code: GEN
@@ -289,6 +324,10 @@ programOptions:
     code: GEN
     name: Générale
     description: Option générale du programme Techniques de Laboratoire (cycle BTS Santé).
+  - programCode: IGL
+    code: GEN
+    name: Générale
+    description: Option générale du programme Génie Logiciel (cycle BTS).
 classes:
   - code: IMM-BTS1
     name: Imagerie Médicale – BTS 1ère année
@@ -369,6 +408,22 @@ classes:
     academicYearCode: AY-2025
     studyCycleCode: BTS-SANTE
     cycleLevelCode: BTS-SANTE3
+    totalCredits: 60
+  - code: IGL-BTS1
+    name: Génie Logiciel – BTS 1ère année
+    programCode: IGL
+    programOptionCode: GEN
+    academicYearCode: AY-2025
+    studyCycleCode: BTS
+    cycleLevelCode: BTS1
+    totalCredits: 60
+  - code: IGL-BTS2
+    name: Génie Logiciel – BTS 2ème année
+    programCode: IGL
+    programOptionCode: GEN
+    academicYearCode: AY-2025
+    studyCycleCode: BTS
+    cycleLevelCode: BTS2
     totalCredits: 60
 courseUnitCategories:
   - code: FOND
@@ -4829,6 +4884,371 @@ teachingUnits:
     hoursTPE: 0
     hoursTotal: 0
     credits: 1
+  - code: IGL111
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: FOND
+    title: Outils Mathématiques I
+    hoursCM: 35
+    hoursTD: 35
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL112
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: FOND
+    title: Environnement de base I
+    hoursCM: 20
+    hoursTD: 10
+    hoursTP: 25
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL113
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Architecture
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 45
+    credits: 3
+    ecCount: 1
+  - code: IGL114
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Initiation à l'algorithmique
+    hoursCM: 40
+    hoursTD: 30
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 1
+  - code: IGL115
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Initiation au Génie logiciel
+    hoursCM: 70
+    hoursTD: 30
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 105
+    credits: 7
+    ecCount: 2
+  - code: IGL116
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Traitement des données multimédia
+    hoursCM: 20
+    hoursTD: 5
+    hoursTP: 20
+    hoursTPE: 0
+    hoursTotal: 45
+    credits: 3
+    ecCount: 1
+  - code: IGL117
+    programCode: IGL
+    semesterCode: S1
+    cycleLevelCode: BTS1
+    categoryCode: TRAN
+    title: Formation bilingue
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 45
+    credits: 3
+    ecCount: 2
+  - code: IGL121
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: FOND
+    title: Outils mathématiques II
+    hoursCM: 35
+    hoursTD: 20
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL122
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: FOND
+    title: Environnement de base II
+    hoursCM: 35
+    hoursTD: 20
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL123
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Programmation I
+    hoursCM: 20
+    hoursTD: 10
+    hoursTP: 25
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 1
+  - code: IGL124
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Base de données et MERISE I
+    hoursCM: 40
+    hoursTD: 15
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL125
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Programmation II
+    hoursCM: 20
+    hoursTD: 15
+    hoursTP: 35
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL126
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: PROF
+    title: Maintenance et Négociation informatique
+    hoursCM: 25
+    hoursTD: 15
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL127
+    programCode: IGL
+    semesterCode: S2
+    cycleLevelCode: BTS1
+    categoryCode: TRAN
+    title: Economie et Gestion des entreprises
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 45
+    credits: 3
+    ecCount: 1
+  - code: IGL231
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: FOND
+    title: Outils mathématiques III
+    hoursCM: 35
+    hoursTD: 35
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL232
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: FOND
+    title: Outils mathématiques IV et TIC
+    hoursCM: 30
+    hoursTD: 30
+    hoursTP: 0
+    hoursTPE: 0
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL233
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: MOO UML
+    hoursCM: 40
+    hoursTD: 10
+    hoursTP: 5
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 1
+  - code: IGL234
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Structure de données et langage SQL
+    hoursCM: 40
+    hoursTD: 25
+    hoursTP: 5
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL235
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Programmation III
+    hoursCM: 15
+    hoursTD: 15
+    hoursTP: 40
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 2
+  - code: IGL236
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Système et Réseaux
+    hoursCM: 40
+    hoursTD: 10
+    hoursTP: 5
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL237
+    programCode: IGL
+    semesterCode: S3
+    cycleLevelCode: BTS2
+    categoryCode: TRAN
+    title: Education citoyenne et déontologie professionnelle
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 45
+    credits: 3
+    ecCount: 1
+  - code: IGL241
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: FOND
+    title: Terminaux mobiles
+    hoursCM: 25
+    hoursTD: 10
+    hoursTP: 35
+    hoursTPE: 5
+    hoursTotal: 75
+    credits: 5
+    ecCount: 1
+  - code: IGL242
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: FOND
+    title: Gestion des projets
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 1
+  - code: IGL243
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Réseaux et Administration Système
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL244
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: POO et Bases de données Avancées
+    hoursCM: 25
+    hoursTD: 5
+    hoursTP: 25
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL245
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Structure de données et IHM
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 15
+    hoursTPE: 5
+    hoursTotal: 60
+    credits: 4
+    ecCount: 2
+  - code: IGL246
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: PROF
+    title: Stage professionnel
+    hoursCM: 0
+    hoursTD: 0
+    hoursTP: 60
+    hoursTPE: 30
+    hoursTotal: 90
+    credits: 6
+    isInternship: true
+    ecCount: 1
+  - code: IGL247
+    programCode: IGL
+    semesterCode: S4
+    cycleLevelCode: BTS2
+    categoryCode: TRAN
+    title: Entrepreneuriat et marketing
+    hoursCM: 30
+    hoursTD: 10
+    hoursTP: 0
+    hoursTPE: 5
+    hoursTotal: 45
+    credits: 3
+    ecCount: 1
 courses:
   - code: IMM111-EC1
     teachingUnitCode: IMM111
@@ -7470,6 +7890,231 @@ courses:
     title: Système respiratoire
     credits: 1
     hours: 15
+  - code: IGL111-EC1
+    teachingUnitCode: IGL111
+    title: Analyse Mathématiques I
+    credits: 3
+    hours: 45
+  - code: IGL111-EC2
+    teachingUnitCode: IGL111
+    title: Algèbre Linéaire
+    credits: 2
+    hours: 30
+  - code: IGL112-EC1
+    teachingUnitCode: IGL112
+    title: Environnement Micro-ordinateur
+    credits: 2
+    hours: 30
+  - code: IGL112-EC2
+    teachingUnitCode: IGL112
+    title: Outils bureautiques
+    credits: 2
+    hours: 30
+  - code: IGL113-EC1
+    teachingUnitCode: IGL113
+    title: Architecture des ordinateurs
+    credits: 3
+    hours: 45
+  - code: IGL114-EC1
+    teachingUnitCode: IGL114
+    title: Algorithmique de Base
+    credits: 5
+    hours: 75
+  - code: IGL115-EC1
+    teachingUnitCode: IGL115
+    title: Introduction au Système d'information
+    credits: 3
+    hours: 45
+  - code: IGL115-EC2
+    teachingUnitCode: IGL115
+    title: Introduction au Génie Logiciel
+    credits: 4
+    hours: 60
+  - code: IGL116-EC1
+    teachingUnitCode: IGL116
+    title: Infographie
+    credits: 3
+    hours: 45
+  - code: IGL117-EC1
+    teachingUnitCode: IGL117
+    title: Techniques d'expression française
+    credits: 1
+    hours: 15
+  - code: IGL117-EC2
+    teachingUnitCode: IGL117
+    title: Techniques d'expression anglaise
+    credits: 2
+    hours: 30
+  - code: IGL121-EC1
+    teachingUnitCode: IGL121
+    title: Statistique descriptive
+    credits: 2
+    hours: 30
+  - code: IGL121-EC2
+    teachingUnitCode: IGL121
+    title: Algèbre de BOOLE et des circuits
+    credits: 2
+    hours: 30
+  - code: IGL122-EC1
+    teachingUnitCode: IGL122
+    title: Système d'Exploitation I
+    credits: 2
+    hours: 30
+  - code: IGL122-EC2
+    teachingUnitCode: IGL122
+    title: Programmation web 1
+    credits: 3
+    hours: 45
+  - code: IGL123-EC1
+    teachingUnitCode: IGL123
+    title: Programmation Structurée
+    credits: 4
+    hours: 60
+  - code: IGL124-EC1
+    teachingUnitCode: IGL124
+    title: Introduction aux Bases de Données
+    credits: 3
+    hours: 45
+  - code: IGL124-EC2
+    teachingUnitCode: IGL124
+    title: Système d'Information II (MERISE)
+    credits: 2
+    hours: 30
+  - code: IGL125-EC1
+    teachingUnitCode: IGL125
+    title: Programmation Évènementielle I
+    credits: 3
+    hours: 45
+  - code: IGL125-EC2
+    teachingUnitCode: IGL125
+    title: Mini Projet Informatique
+    credits: 2
+    hours: 30
+  - code: IGL126-EC1
+    teachingUnitCode: IGL126
+    title: Installation et Maintenance Matériels et Logiciel
+    credits: 2
+    hours: 30
+  - code: IGL126-EC2
+    teachingUnitCode: IGL126
+    title: Négociations Informatiques
+    credits: 2
+    hours: 30
+  - code: IGL127-EC1
+    teachingUnitCode: IGL127
+    title: Economie et Gestion des entreprises
+    credits: 3
+    hours: 45
+  - code: IGL231-EC1
+    teachingUnitCode: IGL231
+    title: Analyse Mathématiques II
+    credits: 3
+    hours: 45
+  - code: IGL231-EC2
+    teachingUnitCode: IGL231
+    title: Analyse Numérique
+    credits: 2
+    hours: 30
+  - code: IGL232-EC1
+    teachingUnitCode: IGL232
+    title: Probabilité statistique inférencielle
+    credits: 2
+    hours: 30
+  - code: IGL232-EC2
+    teachingUnitCode: IGL232
+    title: Recherche opérationnelle
+    credits: 2
+    hours: 30
+  - code: IGL233-EC1
+    teachingUnitCode: IGL233
+    title: Introduction à la modélisation objet
+    credits: 4
+    hours: 60
+  - code: IGL234-EC1
+    teachingUnitCode: IGL234
+    title: Base de données et SQL
+    credits: 2
+    hours: 30
+  - code: IGL234-EC2
+    teachingUnitCode: IGL234
+    title: Structure de données avancées
+    credits: 3
+    hours: 45
+  - code: IGL235-EC1
+    teachingUnitCode: IGL235
+    title: Programmation web II
+    credits: 2
+    hours: 30
+  - code: IGL235-EC2
+    teachingUnitCode: IGL235
+    title: Programmation événementielle et IHM II
+    credits: 3
+    hours: 45
+  - code: IGL236-EC1
+    teachingUnitCode: IGL236
+    title: Réseaux informatique et Téléinformatique I
+    credits: 2
+    hours: 30
+  - code: IGL236-EC2
+    teachingUnitCode: IGL236
+    title: Système d'Exploitation II
+    credits: 2
+    hours: 30
+  - code: IGL237-EC1
+    teachingUnitCode: IGL237
+    title: Education citoyenne et déontologie professionnelle
+    credits: 3
+    hours: 45
+  - code: IGL241-EC1
+    teachingUnitCode: IGL241
+    title: Programmation pour terminaux mobiles
+    credits: 5
+    hours: 75
+  - code: IGL242-EC1
+    teachingUnitCode: IGL242
+    title: Gestion des projets informatique
+    credits: 4
+    hours: 60
+  - code: IGL243-EC1
+    teachingUnitCode: IGL243
+    title: Réseaux Informatiques et Téléinformatique II
+    credits: 2
+    hours: 30
+  - code: IGL243-EC2
+    teachingUnitCode: IGL243
+    title: Administration des systèmes et réseaux Linux
+    credits: 2
+    hours: 30
+  - code: IGL244-EC1
+    teachingUnitCode: IGL244
+    title: Programmation orientée objet
+    credits: 2
+    hours: 30
+  - code: IGL244-EC2
+    teachingUnitCode: IGL244
+    title: Administration des bases de données
+    credits: 2
+    hours: 30
+  - code: IGL245-EC1
+    teachingUnitCode: IGL245
+    title: Structure de données avancées II
+    credits: 2
+    hours: 30
+  - code: IGL245-EC2
+    teachingUnitCode: IGL245
+    title: Base de données et IHM
+    credits: 2
+    hours: 30
+  - code: IGL246-EC1
+    teachingUnitCode: IGL246
+    title: Stage professionnel
+    credits: 6
+    hours: 90
+  - code: IGL247-EC1
+    teachingUnitCode: IGL247
+    title: Entrepreneuriat et marketing
+    credits: 3
+    hours: 45
 classCourses:
   - code: CC-IMM111EC1-IMM25BTS1
     classCode: IMM-BTS1
@@ -9582,6 +10227,85 @@ classCourses:
     classCode: IMM-BTS1
     courseCode: IMM911-EC4
     teacherCode: TEACH-KOMBO
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+
+  # ─── Class courses BTS Génie Logiciel — Niveau 1, Semestre 1 ───
+  - code: CC-IGL111EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL111-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL111EC2-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL111-EC2
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL112EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL112-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL112EC2-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL112-EC2
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL113EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL113-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL114EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL114-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL115EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL115-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL115EC2-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL115-EC2
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL116EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL116-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL117EC1-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL117-EC1
+    teacherCode: TEACH-IGL-DEFAULT
+    semesterCode: S1
+    coefficient: 1
+    classAcademicYearCode: AY-2025
+  - code: CC-IGL117EC2-IGL25BTS1
+    classCode: IGL-BTS1
+    courseCode: IGL117-EC2
+    teacherCode: TEACH-IGL-DEFAULT
     semesterCode: S1
     coefficient: 1
     classAcademicYearCode: AY-2025

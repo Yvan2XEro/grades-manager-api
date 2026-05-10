@@ -140,7 +140,10 @@
       "Bash(docker --version)",
       "Bash(awk '/^teachingUnits:/{flag=1; next} /^[a-z]/{flag=0} flag && /^- code:/' seed/local/10-academics.yaml)",
       "Bash(awk '/^courses:/{flag=1; next} /^[a-z]/{flag=0} flag && /^- code:/' seed/local/10-academics.yaml)",
-      "Bash(awk '/^- code: SFM$/,/^- code:/' seed/local/10-academics.yaml)"
+      "Bash(awk '/^- code: SFM$/,/^- code:/' seed/local/10-academics.yaml)",
+      "Bash(awk 'NR>=277 && NR<=320' 'C:\\\\Users\\\\tefba\\\\Desktop\\\\OverBrand\\\\grades-manager-api\\\\apps\\\\server\\\\seed\\\\local\\\\00-foundation.yaml')",
+      "Bash(git check-ignore *)",
+      "Bash(git restore *)"
     ]
   },
   "enabledMcpjsonServers": [

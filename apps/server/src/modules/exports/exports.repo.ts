@@ -6,6 +6,7 @@ import {
 	deliberations,
 	exams,
 	institutions,
+	semesters,
 	students,
 	teachingUnits,
 } from "../../db/schema/app-schema";
@@ -137,7 +138,6 @@ export class ExportsRepo {
 			throw new Error("Class not found");
 		}
 
-		console.log({ academicYearId, classYear: classData.academicYear });
 		const classAcademicYearId =
 			typeof classData.academicYear === "string"
 				? (typeof classData.academicYear as string)
@@ -146,7 +146,18 @@ export class ExportsRepo {
 			throw new Error("Class does not belong to the requested academic year");
 		}
 
-		return classData;
+		// `classes.semesterId` is often null (semester is carried by class_courses,
+		// not by the class itself). Resolve the *requested* semester explicitly so
+		// PV templates can render its name. Falls back to the class's own semester
+		// (if any) when the requested one isn't found.
+		const requestedSemester = await this.db.query.semesters.findFirst({
+			where: eq(semesters.id, semesterId),
+		});
+
+		return {
+			...classData,
+			semester: requestedSemester ?? classData.semester,
+		};
 	}
 
 	/**

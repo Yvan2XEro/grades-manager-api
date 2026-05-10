@@ -448,10 +448,12 @@ function buildClassWorksheet(
 	}>,
 	institutionName: string,
 ): XLSX.WorkSheet {
+	// Seed/UI convention: profile.firstName carries the family name (NOM,
+	// shown first); profile.lastName carries the given names (Prénoms).
 	const sortedStudents = [...students].sort(
 		(a, b) =>
-			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 	);
 	const headerRows: (string | number)[][] = [
 		[institutionName],
@@ -468,8 +470,8 @@ function buildClassWorksheet(
 	const rows = sortedStudents.map((s, i) => [
 		i + 1,
 		s.registrationNumber || "-",
-		s.profile.lastName ?? "",
 		s.profile.firstName ?? "",
+		s.profile.lastName ?? "",
 		s.profile.dateOfBirth
 			? new Date(s.profile.dateOfBirth).toLocaleDateString()
 			: "-",

@@ -25,10 +25,10 @@
         }
 
         .container {
-            width: 297mm;
+            width: 100%;
             margin: 0 auto;
             background: white;
-            padding: 10mm;
+            padding: 0;
             box-shadow: 0 0 15px rgba(0,0,0,0.08);
             position: relative;
         }
@@ -287,8 +287,8 @@
 
             .container {
                 box-shadow: none;
-                padding: 8mm;
-                width: 297mm;
+                padding: 0;
+                width: 100%;
             }
 
             .container::before {
@@ -404,7 +404,7 @@
                         <th rowspan="3">NOM ET PRÉNOM<br><span style="font-weight:normal">FULL NAME</span></th>
 
                         {{#each ues}}
-                        <th colspan="{{add (multiply courses.length 3) 7}}" class="ue-header">UE {{code}} : {{name}}</th>
+                        <th colspan="{{add (multiply courses.length 3) 3}}" class="ue-header">UE {{code}} : {{name}}</th>
                         {{/each}}
 
                         <th rowspan="3">TOTAL CRE<br><span style="font-weight:normal">CREDITS</span></th>
@@ -416,7 +416,7 @@
                             {{#each courses}}
                             <th colspan="3" class="ec-header">EC {{code}}<br>{{name}}</th>
                             {{/each}}
-                            <th colspan="7" class="ec-header">BILAN UE / UE RESULT</th>
+                            <th colspan="3" class="ec-header">BILAN UE / UE RESULT</th>
                         {{/each}}
                     </tr>
                     <tr>
@@ -426,10 +426,6 @@
                             <th>EX<br><span style="font-weight:normal">EX</span></th>
                             <th>MOY<br><span style="font-weight:normal">AVG</span></th>
                             {{/each}}
-                            <th>MOY<br>AVG</th>
-                            <th>DEC<br>RES</th>
-                            <th>CRE<br>CR</th>
-                            <th>TR<br>SR</th>
                             <th>MOY<br>AVG</th>
                             <th>DEC<br>RES</th>
                             <th>CRE<br>CR</th>
@@ -454,15 +450,11 @@
                             <td class="moyenne-ue">{{formatNumber average}}</td>
                             <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                             <td>{{credits}}</td>
-                            <td>{{formatNumber successRate 2}}%</td>
-                            <td class="moyenne-ue">{{formatNumber average}}</td>
-                            <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
-                            <td>{{credits}}</td>
                         {{/each}}
 
                         <td>{{totalCredits}}</td>
                         <td class="moyenne-finale">{{formatNumber generalAverage}}</td>
-                        <td class="{{#if (eq overallDecision 'ACQUIS')}}acquis{{else}}non-acquis{{/if}}">
+                        <td class="{{#if (eq overallDecision 'VALIDÉ')}}acquis{{else}}non-acquis{{/if}}">
                             {{overallDecision}}
                         </td>
                     </tr>

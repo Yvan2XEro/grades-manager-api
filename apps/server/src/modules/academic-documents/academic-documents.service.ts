@@ -895,10 +895,12 @@ export async function generateStudentList(
 		return firstClassId ? await repo.loadCenterByClass(firstClassId) : null;
 	})();
 
+	// Seed/UI convention: profile.firstName carries the family name (NOM)
+	// shown first; profile.lastName carries the given names (Prénoms).
 	const sortedStudents = [...students].sort(
 		(a, b) =>
-			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? "") ||
-			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? ""),
+			(a.profile.firstName ?? "").localeCompare(b.profile.firstName ?? "") ||
+			(a.profile.lastName ?? "").localeCompare(b.profile.lastName ?? ""),
 	);
 
 	// Case-insensitive gender lookup — the schema enum is `male|female|other`
