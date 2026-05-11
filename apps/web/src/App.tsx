@@ -34,6 +34,7 @@ import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import StudentManagement from "./pages/admin/StudentManagement";
+import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import UsersHub from "./pages/admin/UsersHub";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -237,9 +238,7 @@ function App() {
 						/>
 						<Route
 							path="teaching-units/:teachingUnitId"
-							element={
-								<Navigate to="/admin/programs?tab=teaching-units" replace />
-							}
+							element={<TeachingUnitDetail />}
 						/>
 						<Route
 							path="courses"

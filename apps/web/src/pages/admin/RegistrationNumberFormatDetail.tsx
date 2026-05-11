@@ -86,7 +86,7 @@ const RegistrationNumberFormatDetail = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { formatId } = useParams<{ formatId: string }>();
-	const isCreateMode = !formatId || formatId === "+";
+	const isCreateMode = !formatId || formatId === "+" || formatId === "new";
 	const { confirm, ConfirmDialog } = useConfirm();
 
 	const [draft, setDraft] = useState<DraftFormat>(createEmptyDraft());

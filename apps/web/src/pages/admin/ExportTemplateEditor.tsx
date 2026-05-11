@@ -268,10 +268,7 @@ export default function ExportTemplateEditor() {
 				<h2 className="font-semibold text-foreground text-xl">
 					{t("admin.exportTemplates.editor.notFound")}
 				</h2>
-				<Button
-					onClick={() => navigate("/admin/export-templates")}
-					className="mt-4"
-				>
+				<Button onClick={() => navigate(-1)} className="mt-4">
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					{t("common.actions.back")}
 				</Button>
@@ -284,11 +281,7 @@ export default function ExportTemplateEditor() {
 			{/* Header */}
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => navigate("/admin/export-templates")}
-					>
+					<Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
 						<ArrowLeft className="mr-2 h-4 w-4" />
 						{t("common.actions.back")}
 					</Button>

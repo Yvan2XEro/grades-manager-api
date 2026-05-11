@@ -130,7 +130,7 @@ const RegistrationNumberFormats = () => {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/registration-numbers/+")}>
+				<Button onClick={() => navigate("/admin/registration-numbers/new")}>
 					<PlusCircle className="mr-2 h-4 w-4" />
 					{t("admin.registrationNumbers.actions.new", {
 						defaultValue: "New format",

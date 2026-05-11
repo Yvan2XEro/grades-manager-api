@@ -181,7 +181,7 @@ const TeachingUnitManagement = () => {
 						})}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/teaching-units/+")}>
+				<Button onClick={() => navigate("/admin/teaching-units/new")}>
 					<Plus className="mr-2 h-4 w-4" />
 					{t("admin.teachingUnits.actions.create", {
 						defaultValue: "Create UE",
@@ -420,7 +420,7 @@ const TeachingUnitManagement = () => {
 								</EmptyDescription>
 							</EmptyHeader>
 							<EmptyContent>
-								<Button onClick={() => navigate("/admin/teaching-units/+")}>
+								<Button onClick={() => navigate("/admin/teaching-units/new")}>
 									<Plus className="mr-2 h-4 w-4" />
 									{t("admin.teachingUnits.actions.create", {
 										defaultValue: "Create UE",

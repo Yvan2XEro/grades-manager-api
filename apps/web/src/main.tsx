@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/react";
+import { NuqsAdapter } from "nuqs/adapters/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
@@ -24,15 +24,15 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-			<NuqsAdapter>
-				<QueryClientProvider client={queryClient}>
-					<BrowserRouter>
+			<QueryClientProvider client={queryClient}>
+				<BrowserRouter>
+					<NuqsAdapter>
 						<App />
 						<Toaster position="top-right" richColors closeButton />
-					</BrowserRouter>
-					<ReactQueryDevtools initialIsOpen={false} />
-				</QueryClientProvider>
-			</NuqsAdapter>
+					</NuqsAdapter>
+				</BrowserRouter>
+				<ReactQueryDevtools initialIsOpen={false} />
+			</QueryClientProvider>
 		</ThemeProvider>
 	</StrictMode>,
 );

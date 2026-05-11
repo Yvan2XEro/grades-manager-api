@@ -77,8 +77,8 @@ const TeachingUnitDetail = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const params = useParams<{ teachingUnitId: string }>();
-	const teachingUnitId = params.teachingUnitId ?? "+";
-	const isCreateMode = teachingUnitId === "+";
+	const teachingUnitId = params.teachingUnitId ?? "new";
+	const isCreateMode = teachingUnitId === "+" || teachingUnitId === "new";
 
 	const unitSchema = useMemo(() => buildUnitSchema(t), [t]);
 
