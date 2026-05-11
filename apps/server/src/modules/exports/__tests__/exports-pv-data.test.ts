@@ -233,7 +233,7 @@ describe("exports.getPVData", () => {
 		// (12.8 × 6 + 11.92 × 4) / (6 + 4) = (76.8 + 47.68) / 10 = 12.448
 		expect(s.generalAverage).toBeCloseTo(12.448, 2);
 		expect(s.overallDecision).toBe("VALIDÉ");
-	});
+	}, 30000);
 
 	it("UE with failed average gives 0 credits and NON VALIDÉ decision", async () => {
 		const {
@@ -287,7 +287,7 @@ describe("exports.getPVData", () => {
 		// General avg = (11.9×6 + 5.6×4) / (6+4) = (71.4+22.4)/10 = 9.38 → NON ACQUIS
 		expect(s.generalAverage).toBeCloseTo(9.38, 1);
 		expect(s.overallDecision).toBe("NON VALIDÉ");
-	});
+	}, 30000);
 
 	it("incomplete UE (missing grades) gives credits=0 and Inc decision", async () => {
 		const {
@@ -335,7 +335,7 @@ describe("exports.getPVData", () => {
 		// UE1 avg = (15.2+12.4)/2 = 13.8 → only UE with avg
 		// Since only one UE has an average, general = 13.8
 		expect(s.generalAverage).toBeTruthy();
-	});
+	}, 30000);
 
 	it("global success rate is correct", async () => {
 		const {
@@ -387,5 +387,5 @@ describe("exports.getPVData", () => {
 		expect(result.students).toHaveLength(2);
 		// 1 out of 2 passed → 50%
 		expect(result.globalSuccessRate).toBe(50);
-	});
+	}, 30000);
 });

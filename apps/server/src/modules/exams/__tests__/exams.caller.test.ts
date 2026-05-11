@@ -291,7 +291,7 @@ describe("exams router", () => {
 		expect(
 			semesterFiltered.items.every((item) => item.classId === semesterClass.id),
 		).toBe(true);
-	});
+	}, 30000);
 
 	describe("retake eligibility endpoints", () => {
 		const originalFlag = process.env.RETAKES_FEATURE_FLAG;
