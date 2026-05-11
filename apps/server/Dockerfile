@@ -35,7 +35,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 COPY package.json bun.lock bunfig.toml ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
-RUN PUPPETEER_SKIP_DOWNLOAD=true bun install --production --filter server --backend=hardlink --verbose
+RUN CI= PUPPETEER_SKIP_DOWNLOAD=true bun install --production --filter server --backend=hardlink --verbose
 
 # Copy built application
 COPY --from=build /usr/src/app/apps/server/dist ./apps/server/dist
