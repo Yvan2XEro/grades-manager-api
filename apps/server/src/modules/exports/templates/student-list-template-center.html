@@ -1,0 +1,219 @@
+<!--
+  Student-list template — CENTER variant.
+  Shows ONLY institution + center data (no parent tutelle / faculty / university).
+  The center block (name, code, postal box, contact, admin instances, legal text)
+  comes from the `centers` table via `resolveCenterFromProgram`.
+-->
+<!DOCTYPE html>
+<html lang="{{#if (eq theme.display.primaryLanguage 'english')}}en{{else}}fr{{/if}}">
+<head>
+<meta charset="UTF-8">
+<title>{{document.title}}</title>
+<style>
+@page { size: {{theme.page.size}} {{theme.page.orientation}}; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: {{theme.fonts.main}}; color: {{theme.colors.secondary}}; background: white; padding: {{theme.page.margins.top}}mm {{theme.page.margins.right}}mm {{theme.page.margins.bottom}}mm {{theme.page.margins.left}}mm; position: relative; }
+
+.watermark { position: absolute; inset: 0; z-index: 0; pointer-events: none; display: {{#if theme.watermark.enabled}}flex{{else}}none{{/if}}; align-items: center; justify-content: center; }
+.watermark img { width: {{theme.watermark.logoSize}}px; opacity: {{theme.watermark.logoOpacity}}; }
+.watermark::before { content: "{{theme.watermark.text}}"; position: absolute; font-size: {{theme.watermark.textSize}}pt; color: {{theme.watermark.color}}; opacity: {{theme.watermark.textOpacity}}; font-weight: bold; letter-spacing: 8px; transform: rotate(-45deg); white-space: nowrap; }
+
+.content { position: relative; z-index: 2; }
+
+/* Header — center-only bilingual layout (mirrors evaluation-publication-center) */
+.header { text-align: center; border-bottom: 2px solid {{theme.colors.tableBorder}}; padding-bottom: 12px; margin-bottom: 15px; }
+.header-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 9px; line-height: 1.4; text-align: center; }
+.header-col { flex: 1; }
+.header-col em { font-style: italic; }
+.header-col strong { font-weight: bold; }
+.header-logos { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+.center-auth { font-size: 9px; color: #444; font-style: italic; padding: 4px 6px; margin: 4px auto 0; text-align: center; border-top: 1px dotted #999; display: inline-block; }
+.center-legal { font-size: 8px; color: #555; margin: 6px 0; padding-top: 4px; border-top: 1px dotted #aaa; text-align: center; line-height: 1.4; }
+.admin-instance { font-size: {{subtract theme.sizes.header 0.5}}pt; margin-top: 1px; font-style: italic; color: {{theme.colors.secondary}}; text-align: center; }
+
+/* Title */
+.title-block { text-align: center; margin: 4mm 0 5mm; padding: 2mm 0; border-top: 2px solid {{theme.colors.primary}}; border-bottom: 2px solid {{theme.colors.primary}}; }
+.title { font-family: {{theme.fonts.title}}; font-size: {{theme.sizes.title}}pt; font-weight: bold; color: {{theme.colors.primary}}; text-transform: uppercase; letter-spacing: 1px; }
+.subtitle { font-family: {{theme.fonts.title}}; font-size: {{theme.sizes.subtitle}}pt; color: {{theme.colors.secondary}}; margin-top: 1mm; }
+
+/* Filters / context recap */
+.context { display: flex; flex-wrap: wrap; gap: 8mm 16mm; margin-bottom: 4mm; font-family: {{theme.fonts.main}}; font-size: {{theme.sizes.subtitle}}pt; }
+.context .field { display: flex; flex-direction: column; }
+.context .label { font-size: {{subtract theme.sizes.subtitle 2}}pt; color: {{theme.colors.secondary}}; text-transform: uppercase; letter-spacing: 0.5px; }
+.context .value { font-weight: bold; color: {{theme.colors.primary}}; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-family: {{theme.fonts.table}}; }
+thead tr { background: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tableHeaderText}}; }
+th { padding: 1.6mm 2mm; font-size: {{theme.sizes.tableHeader}}pt; font-weight: bold; text-align: left; border: {{theme.table.borderWidth}}px solid {{theme.colors.tableBorder}}; }
+td { padding: {{divide theme.table.rowHeight 2}}mm 2mm; font-size: {{theme.sizes.tableBody}}pt; border: {{theme.table.borderWidth}}px solid {{theme.colors.tableBorder}}; vertical-align: middle; }
+{{#if theme.table.alternateRows}}tbody tr:nth-child(even) td { background: {{theme.colors.alternateRow}}; }{{/if}}
+.center { text-align: center; }
+.col-num { text-align: center; width: 10mm; }
+
+/* Summary */
+.summary { margin-top: 4mm; font-family: {{theme.fonts.main}}; font-size: {{theme.sizes.subtitle}}pt; display: {{#if theme.display.showSummary}}flex{{else}}none{{/if}}; gap: 8mm; flex-wrap: wrap; }
+.summary .item { padding: 2mm 4mm; background: {{theme.colors.alternateRow}}; border-left: 3px solid {{theme.colors.primary}}; }
+.summary .item .label { font-size: {{subtract theme.sizes.subtitle 2}}pt; color: {{theme.colors.secondary}}; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary .item .value { font-weight: bold; color: {{theme.colors.primary}}; font-size: {{add theme.sizes.subtitle 2}}pt; }
+
+/* Signatures */
+.signatures { display: {{#if theme.display.showSignatures}}flex{{else}}none{{/if}}; justify-content: space-around; margin-top: 12mm; font-family: {{theme.fonts.main}}; font-size: {{theme.sizes.subtitle}}pt; }
+.signatures .box { text-align: center; min-width: 50mm; }
+.signatures .label { font-weight: bold; padding-bottom: 16mm; border-bottom: 1px solid {{theme.colors.secondary}}; }
+.signatures .name { padding-top: 1mm; font-style: italic; font-size: {{subtract theme.sizes.subtitle 1}}pt; color: {{theme.colors.secondary}}; }
+
+/* Footer */
+.footer { margin-top: 4mm; text-align: center; font-family: {{theme.fonts.footer}}; font-size: {{theme.sizes.footer}}pt; color: {{theme.colors.secondary}}; border-top: 1px solid {{theme.colors.tableBorder}}; padding-top: 2mm; }
+
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
+    </style>
+</head>
+<body>
+{{#if theme.watermark.enabled}}<div class="watermark">{{{logo svg=center.logoSvg url=center.logoUrl alt=""}}}</div>{{/if}}
+
+<div class="content">
+	<div class="header">
+		{{!-- Center-only header — mirrors evaluation-publication-center.
+			 Sources strictly from the centers tables; no tutelle / faculty / university. --}}
+		<div class="header-row">
+			<div class="header-col">
+				{{country.fr}}<br>
+				<em>{{country.mottoFr}}</em><br>
+				********************<br>
+				{{#each center.administrativeInstances}}
+				<strong>{{upper this.nameFr}}{{#if this.acronymFr}} ({{this.acronymFr}}){{/if}}</strong><br>
+				********************<br>
+				{{/each}}
+				<strong>{{upper center.name}}</strong>
+				{{#if center.postalBox}}<br>********************<br>B.P. {{center.postalBox}}{{/if}}
+				{{#if center.contactEmail}}<br>Email : <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+			</div>
+			<div class="header-logos">
+				{{{logo svg=center.logoSvg url=center.logoUrl alt=center.name style="max-height:80px;max-width:120px;object-fit:contain;"}}}
+				{{#each center.administrativeInstances}}
+					{{#if (or this.logoSvg this.logoUrl)}}
+					{{{logo svg=this.logoSvg url=this.logoUrl alt=this.nameFr style="max-height:50px;max-width:80px;object-fit:contain;"}}}
+					{{/if}}
+				{{/each}}
+			</div>
+			<div class="header-col">
+				{{country.en}}<br>
+				<em>{{country.mottoEn}}</em><br>
+				********************<br>
+				{{#each center.administrativeInstances}}
+				<strong>{{upper this.nameEn}}{{#if this.acronymEn}} ({{this.acronymEn}}){{/if}}</strong><br>
+				********************<br>
+				{{/each}}
+				{{#if center.nameEn}}<strong>{{upper center.nameEn}}</strong>{{else}}<strong>{{upper center.name}}</strong>{{/if}}
+				{{#if center.postalBox}}<br>********************<br>P.O. Box {{center.postalBox}}{{/if}}
+				{{#if center.contactEmail}}<br>Email: <a href="mailto:{{center.contactEmail}}">{{center.contactEmail}}</a>{{/if}}
+			</div>
+		</div>
+		{{#if center.authorizationOrderFr}}
+		<div class="center-auth">
+			{{center.authorizationOrderFr}}{{#if center.authorizationOrderEn}} / {{center.authorizationOrderEn}}{{/if}}
+		</div>
+		{{/if}}
+		{{#if center.legalTexts.length}}
+		<div class="center-legal">
+			{{#each center.legalTexts}}
+			<div>{{textFr}} / <span style="font-style:italic">{{textEn}}</span></div>
+			{{/each}}
+		</div>
+		{{/if}}
+	</div>
+
+	<div class="title-block">
+		<div class="title">{{document.title}}</div>
+		{{#if document.subtitle}}<div class="subtitle">{{document.subtitle}}</div>{{/if}}
+	</div>
+
+	<div class="context">
+		{{#if context.academicYear}}<div class="field"><span class="label">Année</span><span class="value">{{context.academicYear}}</span></div>{{/if}}
+		{{#if context.program}}<div class="field"><span class="label">Programme</span><span class="value">{{context.program}}</span></div>{{/if}}
+		{{#if context.class}}<div class="field"><span class="label">Classe</span><span class="value">{{context.class}}</span></div>{{/if}}
+		{{#if context.cycleLevel}}<div class="field"><span class="label">Niveau</span><span class="value">{{context.cycleLevel}}</span></div>{{/if}}
+		<div class="field"><span class="label">Effectif</span><span class="value">{{summary.total}}</span></div>
+	</div>
+
+	<table>
+		<thead>
+			<tr>
+				{{#if theme.table.showRowNumber}}<th class="col-num">N°</th>{{/if}}
+				{{#if theme.table.showRegistration}}<th>Matricule</th>{{/if}}
+				<th>Nom</th>
+				<th>Prénom(s)</th>
+				{{#if theme.table.showGender}}<th class="center">Genre</th>{{/if}}
+				{{#if theme.table.showBirthDate}}<th class="center">Date de naissance</th>{{/if}}
+				{{#if theme.table.showBirthPlace}}<th>Lieu de naissance</th>{{/if}}
+				{{#if theme.table.showEmail}}<th>Email</th>{{/if}}
+				{{#if theme.table.showPhone}}<th>Téléphone</th>{{/if}}
+				{{#if theme.table.showClass}}<th>Classe</th>{{/if}}
+				{{#if theme.table.showProgram}}<th>Programme</th>{{/if}}
+			</tr>
+		</thead>
+		<tbody>
+			{{#each students}}
+			<tr>
+				{{#if ../theme.table.showRowNumber}}<td class="col-num">{{this.number}}</td>{{/if}}
+				{{#if ../theme.table.showRegistration}}<td>{{this.registrationNumber}}</td>{{/if}}
+				{{!-- Seed convention: profile.firstName carries the family name
+				     (NOM, displayed first), profile.lastName carries the given
+				     names (Prénom(s), displayed second). --}}
+				<td>{{upper this.firstName}}</td>
+				<td>{{this.lastName}}</td>
+				{{#if ../theme.table.showGender}}<td class="center">{{this.gender}}</td>{{/if}}
+				{{#if ../theme.table.showBirthDate}}<td class="center">{{this.birthDate}}</td>{{/if}}
+				{{#if ../theme.table.showBirthPlace}}<td>{{this.birthPlace}}</td>{{/if}}
+				{{#if ../theme.table.showEmail}}<td>{{this.email}}</td>{{/if}}
+				{{#if ../theme.table.showPhone}}<td>{{this.phone}}</td>{{/if}}
+				{{#if ../theme.table.showClass}}<td>{{this.className}}</td>{{/if}}
+				{{#if ../theme.table.showProgram}}<td>{{this.programName}}</td>{{/if}}
+			</tr>
+			{{/each}}
+		</tbody>
+	</table>
+
+	<div class="summary">
+		<div class="item"><span class="label">Total</span><span class="value">{{summary.total}}</span></div>
+		{{#if summary.male}}<div class="item"><span class="label">Hommes</span><span class="value">{{summary.male}}</span></div>{{/if}}
+		{{#if summary.female}}<div class="item"><span class="label">Femmes</span><span class="value">{{summary.female}}</span></div>{{/if}}
+	</div>
+
+	<div class="signatures">
+		<div class="box">
+			<div class="label">Le Chef de Scolarité</div>
+			<div class="name">&nbsp;</div>
+		</div>
+		<div class="box">
+			<div class="label">Le Directeur du {{#if center.shortName}}{{upper center.shortName}}{{else}}{{upper center.name}}{{/if}}</div>
+			<div class="name">&nbsp;</div>
+		</div>
+	</div>
+
+	<div class="footer">
+		Document généré le {{document.generatedAt}}
+		{{#if center.name}} — {{upper center.name}}{{/if}}
+		{{#if center.legalTexts}}{{#each center.legalTexts}}<br>{{this.textFr}}{{/each}}{{/if}}
+	</div>
+</div>
+</body>
+</html>

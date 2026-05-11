@@ -1,5 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BookOpen, CheckCircle, History, Play } from "lucide-react";
+import {
+	ArrowRight,
+	BookOpen,
+	CheckCircle,
+	History,
+	Loader2,
+	Play,
+} from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -10,21 +18,35 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "@/utils/trpc";
 
 export function PromotionRulesDashboard() {
 	const { t } = useTranslation();
 
-	const { data: rulesData } = useQuery({
+	const {
+		data: rulesData,
+		isLoading: rulesLoading,
+		isError: rulesError,
+		error: rulesErrorObj,
+	} = useQuery({
 		queryKey: ["promotionRules"],
 		queryFn: async () => trpcClient.promotionRules.list.query({}),
 	});
 
-	const { data: executionsData } = useQuery({
+	const { data: executionsData, isLoading: executionsLoading } = useQuery({
 		queryKey: ["promotionExecutions", { limit: 5 }],
 		queryFn: async () =>
 			trpcClient.promotionRules.listExecutions.query({ limit: 5 }),
 	});
+
+	useEffect(() => {
+		if (rulesError && rulesErrorObj instanceof Error) {
+			toast.error(rulesErrorObj.message);
+		}
+	}, [rulesError, rulesErrorObj]);
+
+	const isLoading = rulesLoading || executionsLoading;
 
 	const activeRules = rulesData?.items.filter((r) => r.isActive).length || 0;
 	const totalExecutions = executionsData?.items.length || 0;
@@ -40,6 +62,13 @@ export function PromotionRulesDashboard() {
 					{t("admin.promotionRules.dashboard.subtitle")}
 				</p>
 			</div>
+
+			{isLoading && (
+				<div className="flex items-center gap-2 text-muted-foreground text-sm">
+					<Loader2 className="h-4 w-4 animate-spin" />
+					{t("common.loading", { defaultValue: "Loading..." })}
+				</div>
+			)}
 
 			{/* Quick Stats */}
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-3">

@@ -7,13 +7,15 @@ import {
 } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { Download, PlusIcon, Sparkles } from "lucide-react";
+import { Download, FileText, PlusIcon, Sparkles } from "lucide-react";
 import Papa from "papaparse";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { z } from "zod";
+import { ExportStudentListButton } from "@/components/admin/document-templates/ExportStudentListButton";
+import { GenerateDocumentButton } from "@/components/admin/document-templates/GenerateDocumentButton";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { DebouncedSearchField } from "@/components/inputs/DebouncedSearchField";
 import { Button } from "@/components/ui/button";
@@ -825,10 +827,16 @@ export default function StudentManagement() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between gap-4">
 				<h1 className="text-foreground">{t("admin.students.title")}</h1>
-				<Button onClick={() => setIsModalOpen(true)}>
-					<PlusIcon className="mr-2 h-5 w-5" />
-					{t("admin.students.actions.openModal")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<ExportStudentListButton
+						classId={classFilter !== "all" ? classFilter : undefined}
+						academicYearId={academicYearFilter ?? undefined}
+					/>
+					<Button onClick={() => setIsModalOpen(true)}>
+						<PlusIcon className="mr-2 h-5 w-5" />
+						{t("admin.students.actions.openModal")}
+					</Button>
+				</div>
 			</div>
 
 			<FilterBar
@@ -973,14 +981,26 @@ export default function StudentManagement() {
 										<TableRow
 											key={student.id}
 											actions={
-												<ContextMenuItem
-													onSelect={() => setLedgerStudent(student)}
-												>
-													<Sparkles className="h-4 w-4" />
-													{t("admin.students.table.viewLedger", {
-														defaultValue: "Credits",
-													})}
-												</ContextMenuItem>
+												<>
+													<ContextMenuItem
+														onSelect={() => setLedgerStudent(student)}
+													>
+														<Sparkles className="h-4 w-4" />
+														{t("admin.students.table.viewLedger", {
+															defaultValue: "Credits",
+														})}
+													</ContextMenuItem>
+													<GenerateDocumentButton
+														studentId={student.id}
+														studentName={getStudentName(student)}
+														renderTrigger={(open) => (
+															<ContextMenuItem onSelect={() => open()}>
+																<FileText className="h-4 w-4" />
+																Générer un document…
+															</ContextMenuItem>
+														)}
+													/>
+												</>
 											}
 										>
 											<TableCell>
@@ -1001,17 +1021,23 @@ export default function StudentManagement() {
 												{student.profile.placeOfBirth || "—"}
 											</TableCell>
 											<TableCell className="text-right">
-												<Button
-													type="button"
-													variant="ghost"
-													className="text-primary-700"
-													onClick={() => setLedgerStudent(student)}
-												>
-													<Sparkles className="mr-2 h-4 w-4" />
-													{t("admin.students.table.viewLedger", {
-														defaultValue: "Credits",
-													})}
-												</Button>
+												<div className="flex items-center justify-end gap-1">
+													<GenerateDocumentButton
+														studentId={student.id}
+														studentName={getStudentName(student)}
+													/>
+													<Button
+														type="button"
+														variant="ghost"
+														className="text-primary-700"
+														onClick={() => setLedgerStudent(student)}
+													>
+														<Sparkles className="mr-2 h-4 w-4" />
+														{t("admin.students.table.viewLedger", {
+															defaultValue: "Credits",
+														})}
+													</Button>
+												</div>
 											</TableCell>
 										</TableRow>
 									))

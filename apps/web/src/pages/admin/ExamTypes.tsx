@@ -46,6 +46,7 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
+import { useConfirm } from "../../hooks/useConfirm";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpcClient } from "../../utils/trpc";
@@ -94,6 +95,8 @@ export default function ExamTypes() {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
 	const selection = useRowSelection(examTypes);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const handleOpenCreate = () => {
 		setEditingType(null);
@@ -244,18 +247,20 @@ export default function ExamTypes() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -437,6 +442,7 @@ export default function ExamTypes() {
 				message={t("admin.examTypes.delete.message")}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

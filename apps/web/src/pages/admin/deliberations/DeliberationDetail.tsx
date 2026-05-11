@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import * as XLSX from "xlsx";
 import { StatusStepper } from "@/components/ui/status-stepper";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
@@ -164,6 +165,7 @@ export default function DeliberationDetail() {
 		currentDecision: string;
 	} | null>(null);
 	const [promoteOpen, setPromoteOpen] = useState(false);
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const deliberationQuery = useQuery({
 		queryKey: ["deliberation", deliberationId],
@@ -403,11 +405,16 @@ export default function DeliberationDetail() {
 									: t("admin.deliberations.actions.compute")}
 							</Button>
 							<Button
-								onClick={() => {
-									if (window.confirm(t("admin.deliberations.confirm.close"))) {
-										transitionMutation.mutate("close");
-									}
-								}}
+								onClick={() =>
+									confirm({
+										title: t("admin.deliberations.confirm.closeTitle", {
+											defaultValue: "Close deliberation?",
+										}),
+										message: t("admin.deliberations.confirm.close"),
+										confirmText: t("admin.deliberations.actions.close"),
+										onConfirm: () => transitionMutation.mutate("close"),
+									})
+								}
 								disabled={transitionMutation.isPending}
 							>
 								<Lock className="mr-2 h-4 w-4" />
@@ -446,11 +453,16 @@ export default function DeliberationDetail() {
 								Excel
 							</Button>
 							<Button
-								onClick={() => {
-									if (window.confirm(t("admin.deliberations.confirm.sign"))) {
-										transitionMutation.mutate("sign");
-									}
-								}}
+								onClick={() =>
+									confirm({
+										title: t("admin.deliberations.confirm.signTitle", {
+											defaultValue: "Sign deliberation?",
+										}),
+										message: t("admin.deliberations.confirm.sign"),
+										confirmText: t("admin.deliberations.actions.sign"),
+										onConfirm: () => transitionMutation.mutate("sign"),
+									})
+								}
 								disabled={transitionMutation.isPending}
 							>
 								<FileSignature className="mr-2 h-4 w-4" />
@@ -639,6 +651,16 @@ export default function DeliberationDetail() {
 						{t("admin.deliberations.detail.jury")}
 					</h3>
 					<dl className="space-y-2 text-sm">
+						{delib.juryNumber && (
+							<div className="flex justify-between">
+								<dt className="text-muted-foreground">
+									{t("admin.deliberations.detail.juryNumber", {
+										defaultValue: "N° jury",
+									})}
+								</dt>
+								<dd className="font-medium">{delib.juryNumber}</dd>
+							</div>
+						)}
 						<div className="flex justify-between">
 							<dt className="text-muted-foreground">
 								{t("admin.deliberations.detail.president")}
@@ -760,6 +782,7 @@ export default function DeliberationDetail() {
 					}
 				/>
 			)}
+			<ConfirmDialog />
 		</div>
 	);
 }

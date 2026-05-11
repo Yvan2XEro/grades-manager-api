@@ -23,7 +23,7 @@ export const listSchema = z.object({
 	academicYearId: z.string().optional(),
 	query: z.string().trim().min(1).optional(),
 	classId: z.string().optional(),
-	semesterId: z.string().optional(),
+	ueSemester: z.enum(["fall", "spring", "annual"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),
 });

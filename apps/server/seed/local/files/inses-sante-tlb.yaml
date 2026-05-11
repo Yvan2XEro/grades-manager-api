@@ -1,0 +1,991 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-tlb
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Techniques de Laboratoire et d'Analyse Médicale (TLB)
+  ecStats:
+    totalCount: 78
+    totalCredits: 178
+    totalHours: 2730
+program:
+  code: TLB
+  nameFr: Techniques de Laboratoire et d'Analyse Médicale
+  nameEn: Medical Laboratory and Analysis Techniques
+  abbreviation: BTS-TLB
+  slug: techniques-de-laboratoire
+  description: Former des techniciens de laboratoire capables de réaliser des analyses biomédicales (hématologie, biochimie,
+    microbiologie, parasitologie, immunologie) au service du diagnostic médical.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Techniques de Laboratoire et d'Analyse Médicale
+  specialiteEn: Medical Laboratory and Analysis Techniques
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Techniques de Laboratoire et d'Analyse Médicale
+  diplomaTitleEn: Higher Technician Diploma — Medical Laboratory and Analysis Techniques
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: STBM
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Techniques de Laboratoire et d'Analyse Médicale
+  objective: Former des techniciens de laboratoire capables de réaliser des analyses biomédicales (hématologie, biochimie,
+    microbiologie, parasitologie, immunologie) au service du diagnostic médical.
+  careerOpportunities:
+  - Laboratoires d'analyses médicales
+  - Hôpitaux et cliniques
+  - Centres de recherche
+  - Industrie pharmaceutique
+  - Industrie agroalimentaire
+  - Auto-emploi
+  - ONG
+teachingUnits:
+- code: TLB111
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Biologie cellulaire et histologie – Anatomie physiologie 1 –Chimie générale
+  hoursCM: 70
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: TLB112
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie générale 1 – Biochimie générale
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB113
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Sociologie et anthropologie médicale – Psychologie médicale – Éthique et déontologie médicale
+  hoursCM: 44
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: TLB114
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Cycle de vie – Soins infirmiers - Secourisme
+  hoursCM: 0
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: TLB115
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Physique – Mathématique - Biostatistique
+  hoursCM: 40
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+  ecCount: 3
+- code: TLB116
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB117
+  programCode: TLB
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Langue officielle  - Techniques de l’information et de la communication 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB121
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et physiologie 2 – Chimie organique
+  hoursCM: 60
+  hoursTD: 22
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+  ecCount: 2
+- code: TLB122
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie générale 2 – Parasitologie générale
+  hoursCM: 0
+  hoursTD: 6
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB123
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Techniques de laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: TLB124
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: IEC 1-  Hygiène générale et hospitalière -  Maladies infectieuses et parasitaires
+  hoursCM: 62
+  hoursTD: 14
+  hoursTP: 0
+  hoursTPE: 14
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: TLB125
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Pharmacologie générale – Nutrition - Épidémiologie
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: TLB126
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage clinique 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB127
+  programCode: TLB
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Économie générale – Démographie
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB231
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: IEC 2 - Santé et développement -  Santé communautaire
+  hoursCM: 65
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 20
+  hoursTotal: 105
+  credits: 7
+  ecCount: 3
+- code: TLB232
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Initiation à la recherche
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: TLB233
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hématologie Clinique 1 - Entomologie médicale - Transfusion sanguine
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 15
+  hoursTPE: 10
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: TLB234
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Biochimie Clinique 1 - Laboratoire
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: TLB235
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Bactériologie Clinique 1 - Laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: TLB236
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage de santé communautaire 1
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB237
+  programCode: TLB
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Anglais médical/Français médical - Techniques de l’information et de la communication 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB241
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Parasitologie Clinique 1 –  Mycologie médicale – Immunologie/Sérologie
+  hoursCM: 60
+  hoursTD: 14
+  hoursTP: 8
+  hoursTPE: 8
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: TLB242
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Économie de la santé – Programme prioritaire de santé au Cameroun
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB243
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Bactériologie Clinique 2 - Biochimie Clinique 2 - Laboratoire
+  hoursCM: 0
+  hoursTD: 20
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: TLB244
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Hématologie Clinique 2 -Laboratoire
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: TLB245
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 3
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB246
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage clinique 4
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB247
+  programCode: TLB
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Droitmédical
+  hoursCM: 10
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: TLB351
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: IEC3 - Système d’information sanitaire - Gestion sanitaire
+  hoursCM: 60
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 18
+  hoursTotal: 90
+  credits: 6
+  ecCount: 3
+- code: TLB352
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Rédactiondemémoire
+  hoursCM: 15
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 30
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: TLB353
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Parasitologie Clinique 2  - Hématologie Clinique 3 - Laboratoire
+  hoursCM: 40
+  hoursTD: 8
+  hoursTP: 45
+  hoursTPE: 12
+  hoursTotal: 105
+  credits: 7
+  ecCount: 2
+- code: TLB354
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Bactériologie Clinique 3  - Laboratoire-Virologie
+  hoursCM: 0
+  hoursTD: 10
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB355
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chimie analytique - Laboratoire
+  hoursCM: 15
+  hoursTD: 4
+  hoursTP: 5
+  hoursTPE: 6
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: TLB356
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage de santé communautaire 2
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB357
+  programCode: TLB
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Initiation à la recherche - TIC -
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: TLB361
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Microbiologie de l’environnement – Microbiologie des aliments
+  hoursCM: 50
+  hoursTD: 16
+  hoursTP: 0
+  hoursTPE: 9
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: TLB362
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Histopathologie – Cytologiehumaine
+  hoursCM: 40
+  hoursTD: 12
+  hoursTP: 0
+  hoursTPE: 8
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: TLB363
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Biochimie Clinique 3  - Parasitologie Clinique 3 - Laboratoire
+  hoursCM: 0
+  hoursTD: 30
+  hoursTP: 0
+  hoursTPE: 6
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: TLB364
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Biologiemoléculaire
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 0
+  hoursTPE: 4
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: TLB365
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 5
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB366
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage clinique 6
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 70
+  hoursTPE: 20
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: TLB367
+  programCode: TLB
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Projettutoré
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 15
+  hoursTPE: 20
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+courses:
+- code: TLB111-EC1
+  teachingUnitCode: TLB111
+  title: Biologie cellulaire et histologie
+  credits: 1
+  hours: 15
+- code: TLB111-EC2
+  teachingUnitCode: TLB111
+  title: Anatomie - Physiologie I
+  credits: 4
+  hours: 60
+- code: TLB111-EC3
+  teachingUnitCode: TLB111
+  title: Chimie générale
+  credits: 1
+  hours: 15
+- code: TLB112-EC1
+  teachingUnitCode: TLB112
+  title: Microbiologie générale I
+  credits: 1
+  hours: 15
+- code: TLB112-EC2
+  teachingUnitCode: TLB112
+  title: Biochimie générale
+  credits: 2
+  hours: 30
+- code: TLB113-EC1
+  teachingUnitCode: TLB113
+  title: Sociologie et anthropologie médicale
+  credits: 1
+  hours: 15
+- code: TLB113-EC2
+  teachingUnitCode: TLB113
+  title: Psychologie médicale
+  credits: 1
+  hours: 15
+- code: TLB113-EC3
+  teachingUnitCode: TLB113
+  title: Éthique et déontologie médicale
+  credits: 2
+  hours: 60
+- code: TLB114-EC1
+  teachingUnitCode: TLB114
+  title: Cycle de vie
+  credits: 1
+  hours: 15
+- code: TLB114-EC2
+  teachingUnitCode: TLB114
+  title: Soins infirmiers
+  credits: 2
+  hours: 30
+- code: TLB114-EC3
+  teachingUnitCode: TLB114
+  title: Secourisme
+  credits: 1
+  hours: 15
+- code: TLB115-EC1
+  teachingUnitCode: TLB115
+  title: Physique
+  credits: 1
+  hours: 15
+- code: TLB115-EC2
+  teachingUnitCode: TLB115
+  title: Mathématique
+  credits: 1
+  hours: 15
+- code: TLB115-EC3
+  teachingUnitCode: TLB115
+  title: Biostatistique
+  credits: 2
+  hours: 30
+- code: TLB116-EC1
+  teachingUnitCode: TLB116
+  title: Stage clinique 1
+  credits: 6
+  hours: 90
+- code: TLB117-EC1
+  teachingUnitCode: TLB117
+  title: Langueofficielle 1
+  credits: 2
+  hours: 30
+- code: TLB117-EC2
+  teachingUnitCode: TLB117
+  title: Techniques de l’information et de la communication 1
+  credits: 1
+  hours: 15
+- code: TLB121-EC1
+  teachingUnitCode: TLB121
+  title: Anatomie et physiologie 2
+  credits: 5
+  hours: 75
+- code: TLB121-EC2
+  teachingUnitCode: TLB121
+  title: Chimie organique
+  credits: 1
+  hours: 15
+- code: TLB122-EC1
+  teachingUnitCode: TLB122
+  title: Microbiologie générale 2
+  credits: 1
+  hours: 15
+- code: TLB122-EC2
+  teachingUnitCode: TLB122
+  title: Parasitologie générale
+  credits: 2
+  hours: 30
+- code: TLB123-EC1
+  teachingUnitCode: TLB123
+  title: Techniques de laboratoire
+  credits: 3
+  hours: 45
+- code: TLB124-EC1
+  teachingUnitCode: TLB124
+  title: IEC 1
+  credits: 1
+  hours: 15
+- code: TLB124-EC2
+  teachingUnitCode: TLB124
+  title: Hygiène générale et hospitalière
+  credits: 2
+  hours: 30
+- code: TLB124-EC3
+  teachingUnitCode: TLB124
+  title: Maladies infectieuses et parasitaires
+  credits: 3
+  hours: 45
+- code: TLB125-EC1
+  teachingUnitCode: TLB125
+  title: Pharmacologie générale
+  credits: 1
+  hours: 15
+- code: TLB125-EC2
+  teachingUnitCode: TLB125
+  title: Nutrition
+  credits: 1
+  hours: 15
+- code: TLB125-EC3
+  teachingUnitCode: TLB125
+  title: Épidémiologie
+  credits: 1
+  hours: 15
+- code: TLB126-EC1
+  teachingUnitCode: TLB126
+  title: Stage clinique 2
+  credits: 6
+  hours: 90
+- code: TLB127-EC1
+  teachingUnitCode: TLB127
+  title: Économie générale
+  credits: 2
+  hours: 30
+- code: TLB127-EC2
+  teachingUnitCode: TLB127
+  title: Démographie
+  credits: 1
+  hours: 15
+- code: TLB231-EC1
+  teachingUnitCode: TLB231
+  title: IEC 2
+  credits: 2
+  hours: 30
+- code: TLB231-EC2
+  teachingUnitCode: TLB231
+  title: Santé et développement
+  credits: 3
+  hours: 45
+- code: TLB231-EC3
+  teachingUnitCode: TLB231
+  title: Santé communautaire
+  credits: 2
+  hours: 30
+- code: TLB232-EC1
+  teachingUnitCode: TLB232
+  title: Initiation à la recherche
+  credits: 2
+  hours: 30
+- code: TLB233-EC1
+  teachingUnitCode: TLB233
+  title: Hématologie clinique 1
+  credits: 3
+  hours: 45
+- code: TLB233-EC2
+  teachingUnitCode: TLB233
+  title: Entomologie médicale
+  credits: 1
+  hours: 15
+- code: TLB233-EC3
+  teachingUnitCode: TLB233
+  title: Transfusion sanguine
+  credits: 1
+  hours: 15
+- code: TLB234-EC1
+  teachingUnitCode: TLB234
+  title: Biochimie Clinique 1 – Laboratoire
+  credits: 4
+  hours: 60
+- code: TLB235-EC1
+  teachingUnitCode: TLB235
+  title: Bactériologie Clinique 1 - Laboratoire
+  credits: 3
+  hours: 45
+- code: TLB236-EC1
+  teachingUnitCode: TLB236
+  title: Stage de santé communautaire 1
+  credits: 6
+  hours: 90
+- code: TLB237-EC1
+  teachingUnitCode: TLB237
+  title: Langue officielle 2
+  credits: 2
+  hours: 30
+- code: TLB237-EC2
+  teachingUnitCode: TLB237
+  title: Techniques de l’information et de la communication
+  credits: 1
+  hours: 15
+- code: TLB241-EC1
+  teachingUnitCode: TLB241
+  title: Parasitologie Clinique 1
+  credits: 2
+  hours: 30
+- code: TLB241-EC2
+  teachingUnitCode: TLB241
+  title: Mycologie médicale
+  credits: 2
+  hours: 30
+- code: TLB241-EC3
+  teachingUnitCode: TLB241
+  title: Immunologie / Sérologie
+  credits: 2
+  hours: 30
+- code: TLB242-EC1
+  teachingUnitCode: TLB242
+  title: Économie de la santé
+  credits: 1
+  hours: 15
+- code: TLB242-EC2
+  teachingUnitCode: TLB242
+  title: Programme prioritaire de santé au Cameroun
+  credits: 2
+  hours: 30
+- code: TLB243-EC1
+  teachingUnitCode: TLB243
+  title: Bactériologie clinique 2
+  credits: 2
+  hours: 30
+- code: TLB243-EC2
+  teachingUnitCode: TLB243
+  title: Biochimie clinique 2
+  credits: 2
+  hours: 30
+- code: TLB244-EC1
+  teachingUnitCode: TLB244
+  title: Hématologie Clinique 2 – Laboratoire
+  credits: 2
+  hours: 30
+- code: TLB245-EC1
+  teachingUnitCode: TLB245
+  title: Stage clinique 3
+  credits: 6
+  hours: 90
+- code: TLB246-EC1
+  teachingUnitCode: TLB246
+  title: Stage clinique 4
+  credits: 4
+  hours: 90
+- code: TLB247-EC1
+  teachingUnitCode: TLB247
+  title: Droit du travail
+  credits: 1
+  hours: 15
+- code: TLB247-EC2
+  teachingUnitCode: TLB247
+  title: Droit administratif
+  credits: 1
+  hours: 15
+- code: TLB247-EC3
+  teachingUnitCode: TLB247
+  title: Droit civil
+  credits: 1
+  hours: 15
+- code: TLB351-EC1
+  teachingUnitCode: TLB351
+  title: IEC 3
+  credits: 2
+  hours: 30
+- code: TLB351-EC2
+  teachingUnitCode: TLB351
+  title: Système d’information sanitaire
+  credits: 2
+  hours: 30
+- code: TLB351-EC3
+  teachingUnitCode: TLB351
+  title: Gestion sanitaire
+  credits: 2
+  hours: 30
+- code: TLB352-EC1
+  teachingUnitCode: TLB352
+  title: Rédaction de mémoire
+  credits: 3
+  hours: 45
+- code: TLB353-EC1
+  teachingUnitCode: TLB353
+  title: Parasitologie clinique 2
+  credits: 4
+  hours: 60
+- code: TLB353-EC2
+  teachingUnitCode: TLB353
+  title: Hématologie clinique 2
+  credits: 3
+  hours: 45
+- code: TLB354-EC1
+  teachingUnitCode: TLB354
+  title: Bactériologie clinique 3
+  credits: 2
+  hours: 30
+- code: TLB354-EC2
+  teachingUnitCode: TLB354
+  title: Virologie
+  credits: 1
+  hours: 15
+- code: TLB355-EC1
+  teachingUnitCode: TLB355
+  title: Chimie analytique – Laboratoire
+  credits: 2
+  hours: 30
+- code: TLB356-EC1
+  teachingUnitCode: TLB356
+  title: Stage de santé communautaire 2
+  credits: 6
+  hours: 90
+- code: TLB357-EC1
+  teachingUnitCode: TLB357
+  title: Initiation à la recherche
+  credits: 2
+  hours: 30
+- code: TLB357-EC2
+  teachingUnitCode: TLB357
+  title: Techniques de l’information et de la communication
+  credits: 1
+  hours: 15
+- code: TLB361-EC1
+  teachingUnitCode: TLB361
+  title: Microbiologie de l’environnement
+  credits: 3
+  hours: 45
+- code: TLB361-EC2
+  teachingUnitCode: TLB361
+  title: Microbiologie des aliments
+  credits: 2
+  hours: 30
+- code: TLB362-EC1
+  teachingUnitCode: TLB362
+  title: Histopathologie
+  credits: 2
+  hours: 30
+- code: TLB362-EC2
+  teachingUnitCode: TLB362
+  title: Cytologie humaine
+  credits: 2
+  hours: 30
+- code: TLB363-EC1
+  teachingUnitCode: TLB363
+  title: Biochimie clinique 3
+  credits: 2
+  hours: 30
+- code: TLB363-EC2
+  teachingUnitCode: TLB363
+  title: Parasitologie clinique 3
+  credits: 2
+  hours: 30
+- code: TLB364-EC1
+  teachingUnitCode: TLB364
+  title: Biologie moléculaire
+  credits: 2
+  hours: 30
+- code: TLB365-EC1
+  teachingUnitCode: TLB365
+  title: Stage clinique 5
+  credits: 6
+  hours: 90
+- code: TLB366-EC1
+  teachingUnitCode: TLB366
+  title: Stage clinique 6
+  credits: 6
+  hours: 90
+- code: TLB367-EC1
+  teachingUnitCode: TLB367
+  title: Rédaction et présentation des mémoires d’initiations à la recherche
+  credits: 3
+  hours: 45

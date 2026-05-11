@@ -75,6 +75,7 @@ type Exam = {
 	date: string;
 	percentage: number;
 	isLocked: boolean;
+	status?: "draft" | "scheduled" | "submitted" | "approved" | "rejected";
 	canEdit?: boolean;
 	sessionType?: "normal" | "retake";
 	parentExamId?: string | null;
@@ -260,6 +261,7 @@ const GradeEntry: React.FC = () => {
 					date: e.date,
 					percentage: Number(e.percentage),
 					isLocked: e.isLocked,
+					status: (e as any).status,
 					canEdit: e.canEdit ?? false,
 					sessionType: (e as any).sessionType ?? "normal",
 					parentExamId: (e as any).parentExamId ?? null,
@@ -912,7 +914,19 @@ const GradeEntry: React.FC = () => {
 										type="button"
 										variant="outline"
 										onClick={() => lockExamMutation.mutate()}
-										disabled={!selectedExam || lockExamMutation.isPending}
+										disabled={
+											!selectedExam ||
+											lockExamMutation.isPending ||
+											selectedExamInfo?.status !== "approved"
+										}
+										title={
+											selectedExamInfo?.status !== "approved"
+												? t("teacher.gradeEntry.actions.lockRequiresApproval", {
+														defaultValue:
+															"L'examen doit être approuvé avant verrouillage",
+													})
+												: undefined
+										}
 									>
 										<Lock className="mr-2 h-4 w-4" />
 										{t("teacher.gradeEntry.actions.lock")}

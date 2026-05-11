@@ -231,13 +231,18 @@ const sampleFoundation: FoundationSeed = {
 	registrationNumberFormats: [
 		{
 			name: "INSES default format",
-			description: "INSES-{year}-XXXX (per program/year)",
+			description: "INSES{YY}-{PROG}-XXXX (per program/year)",
 			isActive: true,
 			definition: {
 				segments: [
 					{ kind: "literal", value: "INSES" },
-					{ kind: "literal", value: "-" },
 					{ kind: "field", field: "academicYearStartShort" },
+					{ kind: "literal", value: "-" },
+					{
+						kind: "field",
+						field: "programCode",
+						transform: "upper",
+					},
 					{ kind: "literal", value: "-" },
 					{
 						kind: "counter",

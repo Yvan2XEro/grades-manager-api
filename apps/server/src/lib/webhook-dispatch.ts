@@ -16,6 +16,8 @@ export type WebhookEvent =
 	| {
 			event: "semester.grades_locked";
 			semesterId: string;
+			/** "fall" | "spring" — teachingUnit enum key for this semester */
+			semesterKey: string;
 			institutionId: string;
 			classId: string;
 			academicYearId: string;

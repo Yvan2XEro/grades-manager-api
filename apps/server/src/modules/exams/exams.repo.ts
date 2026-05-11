@@ -51,6 +51,7 @@ export async function list(opts: {
 	limit?: number;
 	query?: string;
 	academicYearId?: string;
+	ueSemester?: string;
 }) {
 	const limit = opts.limit ?? 50;
 	const conditions = [
@@ -65,8 +66,11 @@ export async function list(opts: {
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,
 		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
-		opts.semesterId
-			? eq(schema.classes.semesterId, opts.semesterId)
+		opts.ueSemester
+			? eq(
+					schema.teachingUnits.semester,
+					opts.ueSemester as schema.TeachingUnitSemester,
+				)
 			: undefined,
 		opts.query
 			? or(
@@ -92,6 +96,7 @@ export async function list(opts: {
 			className: schema.classes.name,
 			courseId: schema.courses.id,
 			courseName: schema.courses.name,
+			courseCode: schema.courses.code,
 		})
 		.from(schema.exams)
 		.innerJoin(
@@ -102,6 +107,10 @@ export async function list(opts: {
 		.innerJoin(
 			schema.courses,
 			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
 		)
 		.where(condition)
 		.orderBy(asc(schema.exams.id))
@@ -115,6 +124,7 @@ export async function list(opts: {
 		className: row.className,
 		courseId: row.courseId,
 		courseName: row.courseName,
+		courseCode: row.courseCode,
 	}));
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
@@ -125,10 +135,15 @@ export async function setLock(
 	examId: string,
 	lock: boolean,
 	institutionId: string,
+	options?: { promoteToApproved?: boolean },
 ) {
+	const updates: Partial<schema.NewExam> = { isLocked: lock };
+	if (lock && options?.promoteToApproved) {
+		updates.status = "approved";
+	}
 	const [item] = await db
 		.update(schema.exams)
-		.set({ isLocked: lock })
+		.set(updates)
 		.where(
 			and(
 				eq(schema.exams.id, examId),

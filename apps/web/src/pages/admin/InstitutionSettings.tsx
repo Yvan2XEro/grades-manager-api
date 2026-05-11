@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSignature, Landmark, UploadIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { FileSignature, Landmark } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { ImageUploadField } from "@/components/inputs/ImageUploadField";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -16,6 +17,7 @@ import {
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -32,13 +34,13 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 const institutionSchema = z.object({
 	code: z.string().min(1),
 	type: z.enum(["university", "institution", "faculty"]),
 	shortName: z.string().optional(),
+	abbreviation: z.string().optional(),
 	nameFr: z.string().min(1),
 	nameEn: z.string().min(1),
 	legalNameFr: z.string().optional(),
@@ -55,6 +57,7 @@ const institutionSchema = z.object({
 	postalBox: z.string().optional(),
 	website: z.string().url().optional().or(z.literal("")),
 	logoUrl: z.string().url().optional().or(z.literal("")),
+	logoSvg: z.string().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
@@ -69,6 +72,7 @@ const defaultValues: InstitutionFormValues = {
 	code: "",
 	type: "institution",
 	shortName: "",
+	abbreviation: "",
 	nameFr: "",
 	nameEn: "",
 	legalNameFr: "",
@@ -85,193 +89,12 @@ const defaultValues: InstitutionFormValues = {
 	postalBox: "",
 	website: "",
 	logoUrl: "",
+	logoSvg: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
 	timezone: "UTC",
 };
-
-const fileToBase64 = (file: File) =>
-	new Promise<string>((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = () => {
-			const result = reader.result as string;
-			const base64 = result.includes(",")
-				? (result.split(",").pop() ?? "")
-				: result;
-			resolve(base64);
-		};
-		reader.onerror = () =>
-			reject(reader.error ?? new Error("Failed to read file"));
-		reader.readAsDataURL(file);
-	});
-
-type ImageUploadProps = {
-	label: string;
-	description: string;
-	value?: string;
-	onChange: (url: string) => void;
-	onClear: () => void;
-	placeholder: string;
-};
-
-function ImageUploadField({
-	label,
-	description,
-	value,
-	onChange,
-	onClear,
-	placeholder,
-}: ImageUploadProps) {
-	const { t } = useTranslation();
-	const [preview, setPreview] = useState(value ?? "");
-	const [isUploading, setIsUploading] = useState(false);
-	const [isDragging, setIsDragging] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
-
-	useEffect(() => {
-		setPreview(value ?? "");
-	}, [value]);
-
-	const handleUpload = async (file?: File) => {
-		if (!file) return;
-		setIsUploading(true);
-		try {
-			const base64 = await fileToBase64(file);
-			const upload = await trpcClient.files.upload.mutate({
-				filename: file.name,
-				mimeType: file.type || "application/octet-stream",
-				base64,
-			});
-			onChange(upload.url);
-			setPreview(upload.url);
-			toast.success(
-				t("admin.institution.form.uploadSuccess", {
-					defaultValue: "Image uploaded",
-				}),
-			);
-		} catch (error) {
-			const message =
-				error instanceof Error
-					? error.message
-					: t("admin.institution.form.uploadError", {
-							defaultValue: "Upload failed",
-						});
-			toast.error(message);
-		} finally {
-			setIsUploading(false);
-		}
-	};
-
-	const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-		event.preventDefault();
-		setIsDragging(false);
-		const file = event.dataTransfer.files?.[0];
-		void handleUpload(file);
-	};
-
-	return (
-		<div className="space-y-3 rounded-lg border bg-card p-4">
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<div>
-					<p className="font-medium text-foreground">{label}</p>
-					<p className="text-muted-foreground text-xs">{description}</p>
-				</div>
-				{preview && (
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => {
-							onClear();
-							setPreview("");
-						}}
-					>
-						{t("admin.institution.form.clearImage", {
-							defaultValue: "Remove image",
-						})}
-					</Button>
-				)}
-			</div>
-			<div className="grid gap-4 md:grid-cols-2">
-				<div className="flex h-48 items-center justify-center rounded-md border bg-muted/30">
-					{preview ? (
-						<img
-							src={preview}
-							alt={label}
-							className="h-full w-full rounded-md object-contain"
-						/>
-					) : (
-						<p className="text-muted-foreground text-xs">
-							{t("admin.institution.form.previewPlaceholder", {
-								defaultValue: "No image yet",
-							})}
-						</p>
-					)}
-				</div>
-				<div className="flex flex-col gap-2">
-					<div
-						onClick={() => inputRef.current?.click()}
-						onDragOver={(event) => {
-							event.preventDefault();
-							setIsDragging(true);
-						}}
-						onDragLeave={(event) => {
-							event.preventDefault();
-							setIsDragging(false);
-						}}
-						onDrop={handleDrop}
-						className={cn(
-							"flex flex-col items-center justify-center rounded-md border border-dashed bg-muted/20 px-4 py-6 text-center font-medium text-foreground text-sm transition hover:border-primary focus:outline-none",
-							isDragging && "border-primary bg-primary/5",
-						)}
-					>
-						<UploadIcon className="h-6 w-6 text-primary" />
-						<p>
-							{t("admin.institution.form.uploadCta", {
-								defaultValue: "Select or drop an image",
-							})}
-						</p>
-						<p className="text-muted-foreground text-xs">
-							{t("admin.institution.form.uploadHint", {
-								defaultValue: "PNG/JPG up to 5 MB",
-							})}
-						</p>
-						{isUploading && (
-							<p className="text-primary text-xs">
-								{t("admin.institution.form.uploading", {
-									defaultValue: "Uploading…",
-								})}
-							</p>
-						)}
-					</div>
-					<p className="text-muted-foreground text-xs">
-						{t("admin.institution.form.uploadDescription", {
-							defaultValue:
-								"You can still paste a public URL below if you host assets elsewhere.",
-						})}
-					</p>
-					<input
-						ref={inputRef}
-						type="file"
-						accept="image/*"
-						className="hidden"
-						onChange={(event) => {
-							const file = event.target.files?.[0];
-							void handleUpload(file);
-							event.target.value = "";
-						}}
-					/>
-				</div>
-			</div>
-			<Input
-				value={value ?? ""}
-				onChange={(event) => onChange(event.target.value)}
-				placeholder={placeholder}
-			/>
-		</div>
-	);
-}
 
 export default function InstitutionSettings() {
 	const { t } = useTranslation();
@@ -305,8 +128,10 @@ export default function InstitutionSettings() {
 				postalBox: rest.postalBox ?? "",
 				website: rest.website ?? "",
 				logoUrl: rest.logoUrl ?? "",
+				logoSvg: (rest as { logoSvg?: string | null }).logoSvg ?? "",
 				coverImageUrl: rest.coverImageUrl ?? "",
 				shortName: rest.shortName ?? "",
+				abbreviation: (rest as any).abbreviation ?? "",
 				legalNameFr: rest.legalNameFr ?? "",
 				legalNameEn: rest.legalNameEn ?? "",
 				sloganFr: rest.sloganFr ?? "",
@@ -328,6 +153,7 @@ export default function InstitutionSettings() {
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
+				logoSvg: values.logoSvg || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
@@ -404,7 +230,7 @@ export default function InstitutionSettings() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid gap-4 sm:grid-cols-3">
+								<div className="grid gap-4 sm:grid-cols-4">
 									<FormField
 										control={form.control}
 										name="code"
@@ -430,6 +256,23 @@ export default function InstitutionSettings() {
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="abbreviation"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.abbreviation", {
+														defaultValue: "Abbreviation",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} placeholder="ex: UYI" />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -913,6 +756,35 @@ export default function InstitutionSettings() {
 													{ defaultValue: "https://..." },
 												)}
 											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="logoSvg"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{t("admin.institution.form.logoSvg", {
+													defaultValue: "Logo SVG (code source)",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Textarea
+													{...field}
+													value={field.value ?? ""}
+													rows={5}
+													placeholder='<svg xmlns="http://www.w3.org/2000/svg" ...>...</svg>'
+													className="font-mono text-xs"
+												/>
+											</FormControl>
+											<FormDescription>
+												{t("admin.institution.form.logoSvgHint", {
+													defaultValue:
+														"Si renseigné, le SVG est utilisé en priorité sur les exports (en place du logo PNG/URL).",
+												})}
+											</FormDescription>
 											<FormMessage />
 										</FormItem>
 									)}

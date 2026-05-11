@@ -33,7 +33,9 @@
       "reset": "Réinitialiser",
       "open": "Ouvrir",
       "back": "Retour",
-      "rename": "Renommer"
+      "rename": "Renommer",
+      "deselectAll": "Tout désélectionner",
+      "selectAll": "Tout sélectionner"
     },
     "fields": {
       "email": "E-mail",
@@ -75,14 +77,16 @@
     "bulkActions": {
       "clear": "Effacer la sélection",
       "confirmDelete": "Confirmer la suppression",
-      "deleteError": "Suppression échouée",
-      "deleteSuccess": "Supprimé avec succès",
+      "deleteError": "Impossible de supprimer les éléments sélectionnés",
+      "deleteSuccess": "Éléments supprimés avec succès",
       "selectAll": "Tout sélectionner",
-      "selected": "sélectionné(s)"
+      "selected": "{{count}} sélectionné(s)",
+      "confirmDeleteTitle": "Supprimer les éléments sélectionnés ?"
     },
     "noResults": "Aucun résultat",
     "search": "Rechercher",
-    "select": "Sélectionner"
+    "select": "Sélectionner",
+    "loadMore": "Charger plus"
   },
   "navigation": {
     "breadcrumbs": {
@@ -131,6 +135,8 @@
         "gradeAccess": "Délégation de notes",
         "gradeEntry": "Saisie des notes",
         "exportTemplates": "Modèles d'exportation",
+        "classDocumentTemplates": "Documents par classe",
+        "documentBatch": "Génération en lot",
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
@@ -141,6 +147,7 @@
         "faculties": "Institutions",
         "institution": "Institution",
         "studyCycles": "Cycles d'étude",
+        "centers": "Nos centres",
         "programs": "Programmes",
         "teachers": "Enseignants",
         "courseAssignments": "Affectations de cours",
@@ -167,8 +174,8 @@
         "evaluation": "Évaluations",
         "promotion": "Règles & Promotion",
         "system": "Système",
-        "people": "Personnes",
-        "assessment": "Évaluation"
+        "assessment": "Évaluations",
+        "people": "Personnes"
       },
       "teacher": {
         "dashboard": "Tableau de bord",
@@ -177,15 +184,15 @@
         "courses": "Cours",
         "attendance": "Alertes de présence",
         "workflows": "Workflows",
-        "myCourses": "Mes cours & notes",
-        "exports": "Exports"
+        "exports": "Exports",
+        "myCourses": "Mes cours"
       },
       "dean": {
         "dashboard": "Tableau de bord",
         "workflows": "Workflows",
-        "pendingApprovals": "Approbations en attente",
-        "history": "Historique d'approbation",
-        "monitoring": "Monitoring"
+        "history": "Historique",
+        "monitoring": "Monitoring",
+        "pendingApprovals": "Approbations en attente"
       },
       "student": {
         "dashboard": "Ma performance"
@@ -245,7 +252,7 @@
       "success": "E-mail de réinitialisation envoyé",
       "error": "Impossible d'envoyer l'e-mail de réinitialisation",
       "backToLogin": "Retour à la connexion",
-      "subtitle": "Saisissez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe."
+      "subtitle": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation de mot de passe."
     },
     "reset": {
       "title": "Définir un nouveau mot de passe",
@@ -257,7 +264,7 @@
       "success": "Mot de passe mis à jour avec succès",
       "error": "Impossible de mettre à jour le mot de passe",
       "backToLogin": "Retour à la connexion",
-      "subtitle": "Choisissez un nouveau mot de passe pour votre compte."
+      "subtitle": "Choisissez un nouveau mot de passe sécurisé pour votre compte."
     },
     "logout": {
       "success": "Déconnexion réussie",
@@ -340,7 +347,8 @@
         "edit": "Modifier",
         "activate": "Activer",
         "delete": "Supprimer",
-        "confirmDelete": "Supprimer définitivement ce format ?"
+        "confirmDelete": "Supprimer définitivement ce format ?",
+        "confirmDeleteTitle": "Supprimer le format ?"
       },
       "form": {
         "title": "Concepteur de format",
@@ -412,7 +420,7 @@
       "programStats": {
         "title": "Étudiants par programme",
         "empty": "Aucune donnée disponible pour l'année sélectionnée",
-        "subtitle": "Répartition des étudiants par programme"
+        "subtitle": "Répartition des étudiants par programme."
       },
       "stats": {
         "faculties": "Facultés",
@@ -423,7 +431,7 @@
         "teachers": "Enseignants",
         "institutions": "Institutions"
       },
-      "subtitle": "Vue d'ensemble de l'activité académique de votre établissement"
+      "subtitle": "Vue d'ensemble de votre établissement académique."
     },
     "apiKeys": {
       "title": "Clés API",
@@ -475,6 +483,15 @@
         "webhookUpdated": "Webhook mis à jour",
         "webhookError": "Échec de la mise à jour du webhook",
         "copied": "Copié dans le presse-papiers"
+      },
+      "activity": {
+        "title": "Activité — 30 derniers jours",
+        "empty": "Aucune activité enregistrée.",
+        "unknownKey": "Sans clé"
+      },
+      "callActivity": {
+        "title": "Appels API — 30 derniers jours",
+        "empty": "Aucun appel enregistré."
       }
     },
     "batchJobs": {
@@ -611,7 +628,8 @@
       "actions": {
         "assign": "Affecter un cours",
         "assignUe": "Assigner un UE",
-        "autoEnroll": "Inscrire les étudiants"
+        "autoEnroll": "Inscrire les étudiants",
+        "exportPdf": "Exporter PDF"
       },
       "ueAssign": {
         "title": "Assigner une unité d'enseignement",
@@ -686,6 +704,18 @@
         "classPlaceholder": "Sélectionner une classe",
         "yearLabel": "Année académique",
         "submit": "Inscrire les étudiants"
+      },
+      "export": {
+        "success": "Catalogue exporté avec succès",
+        "error": "Erreur lors de l'export",
+        "title": "Exporter le catalogue UE / EC",
+        "scopeLabel": "Périmètre",
+        "scopeYear": "Toutes les classes de l'année filtrée",
+        "noYearWarning": "aucune année sélectionnée",
+        "scopeSelection": "Classes spécifiques",
+        "classesLabel": "Classes à inclure",
+        "selectedCount": "classe(s) sélectionnée(s)",
+        "generate": "Générer le PDF"
       }
     },
     "classes": {
@@ -709,7 +739,7 @@
         "optionSemester": "Option / Semestre",
         "credits": "Crédits",
         "students": "Étudiants",
-        "classProgram": "Programme"
+        "classProgram": "Classe / Programme"
       },
       "export": {
         "button": "Exporter la liste des étudiants (PDF)",
@@ -792,10 +822,12 @@
       "searchStudents": "Rechercher des étudiants...",
       "noStudents": "Aucun étudiant inscrit dans cette classe",
       "bulkGenerate": {
-        "description": "Génère automatiquement des classes pour tous les niveaux du cycle de l'année académique sélectionnée.",
+        "description": "Générez plusieurs classes en une seule opération pour l'année académique sélectionnée.",
         "submit": "Générer les classes",
         "title": "Génération en masse de classes",
-        "yearLabel": "Année académique"
+        "yearLabel": "Année académique",
+        "sourceYearLabel": "Cloner les affectations depuis (optionnel)",
+        "sourceYearHint": "Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes."
       }
     },
     "institution": {
@@ -846,10 +878,8 @@
         "uploadError": "Échec du téléversement",
         "defaultAcademicYear": "Année académique par défaut",
         "defaultAcademicYearPlaceholder": "Sélectionner une année",
-        "defaultAcademicYearManagedHint": "Gérez l’année académique active depuis le module Années académiques.",
         "registrationFormat": "Format de matricule",
         "registrationFormatPlaceholder": "Utiliser le format actif",
-        "registrationFormatManagedHint": "Gérez le format de matricule actif depuis le module Formats de matricule.",
         "type": "Type",
         "typeUniversity": "Université",
         "typeFaculty": "Faculté/École",
@@ -859,17 +889,28 @@
         "supervisingFaculty": "Faculté de tutelle",
         "noSupervisingFaculty": "Aucune",
         "noDefaultYear": "Aucune année par défaut",
-        "noRegistrationFormat": "Aucun format sélectionné"
+        "noRegistrationFormat": "Aucun format de matricule (utiliser le format actif)",
+        "abbreviation": "Abbreviation",
+        "typePlaceholder": "Select type",
+        "parentInstitutionPlaceholder": "Select parent institution",
+        "supervisingFacultyPlaceholder": "Select supervising faculty",
+        "defaultAcademicYearManagedHint": "Manage the active academic year from Academic Years.",
+        "registrationFormatManagedHint": "Manage the active registration format from Registration Formats.",
+        "signatoryName": "Signatory name",
+        "signatoryTitle": "Signatory title",
+        "city": "City (for document date line)"
       },
       "sections": {
-        "contact": "Coordonnées",
-        "contactHint": "Informations de contact officielles utilisées dans les documents générés.",
-        "media": "Médias & charte graphique",
-        "mediaHint": "Logo et image de couverture utilisés sur les rapports et certificats.",
-        "names": "Noms & identité",
-        "namesHint": "Noms bilingues utilisés dans les en-têtes des documents et attestations.",
-        "system": "Configuration système",
-        "systemHint": "L’année académique active et le format de matricule actif sont gérés dans leurs modules dédiés."
+        "contact": "Contact",
+        "contactHint": "Téléphone, e-mail, fax et adresse postale affichés sur les documents officiels.",
+        "media": "Médias",
+        "mediaHint": "Logo et image de couverture utilisés dans les rapports générés et les tableaux de bord.",
+        "names": "Noms et identité",
+        "namesHint": "Noms officiels en français et en anglais, abréviation et slogan.",
+        "system": "Système",
+        "systemHint": "Année académique par défaut et format de matricule.",
+        "documentParams": "Document Generation",
+        "documentParamsHint": "Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation."
       }
     },
     "studyCycles": {
@@ -907,7 +948,8 @@
         "credits": "Crédits requis",
         "duration": "Durée (années)",
         "minCredits": "Crédits minimum",
-        "autoLevelsPreview": "Aperçu des niveaux générés automatiquement"
+        "autoLevelsPreview": "Aperçu des niveaux auto-générés",
+        "nameEn": "Name (English)"
       },
       "toast": {
         "createSuccess": "Cycle créé",
@@ -1110,7 +1152,26 @@
         "cloneFromPlaceholder": "Sélectionner un programme source",
         "cloneFromNone": "Aucun",
         "cloneFromHint": "Les UE et EC du programme source seront copiés après la création.",
-        "submitWithClone": "Créer et cloner"
+        "submitWithClone": "Créer et cloner",
+        "nameEnLabel": "Name (English)",
+        "abbreviationLabel": "Abréviation",
+        "domainFrLabel": "Domaine (FR)",
+        "domainEnLabel": "Domain (EN)",
+        "specialiteFrLabel": "Spécialité (FR)",
+        "specialiteEnLabel": "Specialization (EN)",
+        "diplomaTitleFrLabel": "Titre diplôme (FR)",
+        "diplomaTitleEnLabel": "Diploma title (EN)",
+        "attestationValidityFrLabel": "Validité attestation (FR)",
+        "attestationValidityEnLabel": "Attestation validity (EN)",
+        "centerLabel": "Centre",
+        "centerPlaceholder": "Aucun centre",
+        "centerNone": "Aucun (programme général)",
+        "isCenterProgramLabel": "Programme de centre",
+        "isCenterProgramHint": "Marquez ce programme comme rattaché à un centre.",
+        "exportTemplatesLabel": "Modèles d'exportation",
+        "exportTemplatesHint": "Choisissez le modèle par défaut par type de document.",
+        "exportTemplatePlaceholder": "Aucun modèle",
+        "exportTemplateNone": "Aucun"
       },
       "validation": {
         "name": "Le nom doit comporter au moins 2 caractères",
@@ -1167,7 +1228,7 @@
         "submit": "Soumettre",
         "approve": "Approuver",
         "reject": "Rejeter",
-        "retake": "Créer un rattrapage"
+        "retake": "Rattrapage"
       },
       "filters": {
         "academicYear": "Année académique",
@@ -1265,38 +1326,38 @@
     },
     "retake": {
       "title": "Éligibilité au rattrapage",
-      "subtitle": "Consulter et gérer les étudiants éligibles aux examens de rattrapage",
-      "selectExam": "Sélectionner un examen approuvé",
+      "subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
+      "selectExam": "Sélectionnez un examen approuvé",
       "selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
       "featureDisabled": "La fonctionnalité de rattrapage est actuellement désactivée",
-      "eligible": "Éligible",
-      "ineligible": "Non éligible",
+      "eligible": "Éligibles",
+      "ineligible": "Non éligibles",
       "eligibleCount": "{{count}} éligible(s)",
       "ineligibleCount": "{{count}} non éligible(s)",
       "table": {
         "student": "Étudiant",
-        "registrationNumber": "N° matricule",
+        "registrationNumber": "Matricule",
         "attempt": "Tentative",
         "grade": "Note actuelle",
         "status": "Statut",
         "reasons": "Raisons",
-        "override": "Modification"
+        "override": "Dérogation"
       },
       "reasons": {
         "NO_GRADE": "Aucune note enregistrée",
         "FAILED_EXAM": "Examen échoué",
         "PASSED_EXAM": "Examen réussi",
         "ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
-        "OVERRIDE_FORCE_ELIGIBLE": "Éligibilité forcée (modification)",
-        "OVERRIDE_FORCE_INELIGIBLE": "Non éligible forcé (modification)"
+        "OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
+        "OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)"
       },
       "override": {
-        "forceEligible": "Forcer l'éligibilité",
+        "forceEligible": "Forcer éligible",
         "forceIneligible": "Bloquer",
-        "remove": "Supprimer la modification",
-        "reason": "Motif de la modification",
-        "reasonPlaceholder": "Saisissez le motif de la modification...",
-        "confirmTitle": "Confirmer la modification",
+        "remove": "Supprimer la dérogation",
+        "reason": "Motif de la dérogation",
+        "reasonPlaceholder": "Saisissez le motif de la dérogation...",
+        "confirmTitle": "Confirmer la dérogation",
         "confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?"
       },
       "empty": {
@@ -1304,22 +1365,22 @@
         "description": "Sélectionnez un examen approuvé pour voir l'éligibilité des étudiants."
       },
       "toast": {
-        "overrideSuccess": "Modification appliquée avec succès",
-        "overrideError": "Impossible d'appliquer la modification",
-        "removeSuccess": "Modification supprimée",
-        "removeError": "Impossible de supprimer la modification"
+        "overrideSuccess": "Dérogation appliquée avec succès",
+        "overrideError": "Impossible d'appliquer la dérogation",
+        "removeSuccess": "Dérogation supprimée",
+        "removeError": "Impossible de supprimer la dérogation"
       },
       "actions": {
-        "createRetake": "Créer un examen de rattrapage",
+        "createRetake": "Créer examen de rattrapage",
         "viewEligibility": "Voir l'éligibilité"
       },
       "createRetake": {
         "title": "Créer un examen de rattrapage",
-        "subtitle": "Créer une session de rattrapage liée à l'examen original",
+        "subtitle": "Créez une session de rattrapage liée à l'examen original",
         "parentExam": "Examen original",
         "date": "Date du rattrapage",
         "scoringPolicy": "Politique de notation",
-        "scoringPolicyHelp": "Comment calculer la note finale une fois le rattrapage complété"
+        "scoringPolicyHelp": "Comment calculer la note finale après le rattrapage"
       }
     },
     "examTypes": {
@@ -1548,9 +1609,9 @@
         "classFilterPlaceholder": "Toutes les classes",
         "examTypeFilterLabel": "Filtrer par type d'examen",
         "examTypeFilterPlaceholder": "Tous les types",
-        "configSection": "Configuration de l'examen",
+        "configSection": "Configuration",
         "dateRangeSection": "Plage de dates",
-        "periodSection": "Période de planification"
+        "periodSection": "Période de programmation"
       },
       "classes": {
         "title": "Classes concernées",
@@ -1608,9 +1669,9 @@
       }
     },
     "gradeAccessGrants": {
-      "title": "Délégation de notation",
-      "subtitle": "Accordez l'accès à la saisie des notes pour tout l'établissement à des utilisateurs spécifiques",
-      "info": "Les utilisateurs listés ici peuvent saisir des notes pour n'importe quel examen de cet établissement, quelle que soit l'affectation au cours.",
+      "title": "Délégation de saisie des notes",
+      "subtitle": "Accorder l'accès à la saisie des notes à des utilisateurs spécifiques",
+      "info": "Les utilisateurs listés ici peuvent saisir des notes pour n'importe quel examen de cet établissement, indépendamment de l'affectation aux cours.",
       "actions": {
         "add": "Ajouter un délégué",
         "grant": "Accorder l'accès",
@@ -1618,27 +1679,27 @@
       },
       "columns": {
         "user": "Utilisateur",
-        "email": "E-mail",
+        "email": "Email",
         "grantedBy": "Accordé par",
         "since": "Depuis"
       },
       "empty": {
         "title": "Aucun délégué",
-        "description": "Aucun utilisateur n'a encore reçu l'accès de notation pour tout l'établissement."
+        "description": "Aucun utilisateur n'a encore reçu un accès global à la saisie des notes."
       },
       "dialog": {
-        "title": "Ajouter un délégué de notation",
-        "description": "Sélectionnez un utilisateur pour lui accorder l'accès à la saisie des notes pour tout l'établissement.",
+        "title": "Ajouter un délégué",
+        "description": "Sélectionnez un utilisateur pour lui accorder l'accès global à la saisie des notes.",
         "selectLabel": "Utilisateur",
         "selectPlaceholder": "Sélectionner un utilisateur..."
       },
       "revoke": {
         "title": "Révoquer l'accès",
-        "message": "Cet utilisateur ne pourra plus saisir de notes, sauf s'il est l'enseignant affecté ou dispose d'une délégation par examen."
+        "message": "Cet utilisateur ne pourra plus saisir des notes sauf s'il est l'enseignant assigné ou s'il a une délégation par examen."
       },
       "toast": {
-        "granted": "Accès de notation accordé avec succès.",
-        "revoked": "Accès de notation révoqué."
+        "granted": "Accès à la saisie des notes accordé avec succès.",
+        "revoked": "Accès à la saisie des notes révoqué."
       }
     },
     "gradeExport": {
@@ -1709,7 +1770,21 @@
       },
       "sheetName": "Notes",
       "filePrefix": "notes",
-      "unknownClass": "classe-inconnue"
+      "unknownClass": "classe-inconnue",
+      "toast": {
+        "semestersFetchError": "Impossible de charger les semestres",
+        "exportError": "Échec de l'export",
+        "verbalReportError": "Échec de l'export du procès-verbal",
+        "examExportError": "Échec de l'export d'examen",
+        "pvPreviewError": "Impossible de générer l'aperçu PV",
+        "pvGenerateError": "Échec de la génération PV",
+        "evaluationPreviewError": "Impossible de générer l'aperçu Évaluation",
+        "evaluationGenerateError": "Échec de la génération Évaluation",
+        "uePreviewError": "Impossible de générer l'aperçu UE",
+        "ueGenerateError": "Échec de la génération UE",
+        "bulkEvaluationsError": "Échec de la génération en masse des évaluations",
+        "bulkUesError": "Échec de la génération en masse des UE"
+      }
     },
     "students": {
       "title": "Gestion des étudiants",
@@ -1818,7 +1893,7 @@
           "errorsTitle": "Problèmes détectés",
           "noValidRows": "Aucune ligne valide détectée. Corrigez les erreurs listées ci-dessus."
         },
-        "autoEnrollError": "Impossible d'inscrire automatiquement les étudiants",
+        "autoEnrollError": "Échec de l'inscription automatique",
         "autoEnrollSuccess": "Étudiants inscrits automatiquement avec succès"
       },
       "templates": {
@@ -1956,7 +2031,13 @@
         "newPasswordLabel": "Nouveau mot de passe",
         "passwordPlaceholder": "Laisser vide pour conserver le mot de passe actuel",
         "generatePassword": "Générer",
-        "createSubmit": "Créer un utilisateur"
+        "createSubmit": "Créer un utilisateur",
+        "profileSection": "Profile",
+        "systemAccessSection": "System Access",
+        "canConnectLabel": "Can log in",
+        "canConnectDescription": "Creates a system account with login access",
+        "memberRoleLabel": "Role",
+        "memberRolePlaceholder": "Select a role"
       },
       "gender": {
         "male": "Homme",
@@ -1998,7 +2079,9 @@
         "lastName": "Le nom est obligatoire",
         "email": "Saisissez une adresse e-mail valide",
         "role": "Veuillez sélectionner un rôle",
-        "passwordRequired": "Le mot de passe est obligatoire"
+        "passwordRequired": "Le mot de passe est obligatoire",
+        "passwordMin": "Password must be at least 8 characters",
+        "memberRoleRequired": "Role is required when system access is enabled"
       }
     },
     "enrollments": {
@@ -2149,8 +2232,8 @@
       },
       "semesters": {
         "annual": "Annuel",
-        "fall": "Semestre d'automne",
-        "spring": "Semestre de printemps"
+        "fall": "Semestre 1",
+        "spring": "Semestre 2"
       },
       "actions": {
         "create": "Créer l'UE",
@@ -2536,7 +2619,17 @@
         "juryMembers": "Membres du jury",
         "quickStart": "Démarrage rapide",
         "quickStartHint": "Crée la délibération, l'ouvre et calcule les résultats en une seule étape",
-        "quickStartSubmit": "Créer et calculer"
+        "quickStartSubmit": "Créer et calculer",
+        "createDescription": "Configurez et lancez une nouvelle session de délibération",
+        "tabSingle": "Classe unique",
+        "tabMulti": "Multi-classes",
+        "juryNumber": "Numéro de jury",
+        "juryNumberPlaceholder": "ex: J2024-001",
+        "classes": "Classes",
+        "selectYearFirst": "Sélectionnez d'abord une année académique",
+        "noClasses": "Aucune classe pour cette année",
+        "batchCreating": "Création en cours…",
+        "batchSubmit": "batchSubmit"
       },
       "detail": {
         "back": "Retour aux délibérations",
@@ -2563,7 +2656,8 @@
         "closedAt": "Clôturé le",
         "signedAt": "Signé le",
         "signedBy": "Signé par",
-        "notYet": "Pas encore"
+        "notYet": "Pas encore",
+        "juryNumber": "N° jury"
       },
       "override": {
         "title": "Modifier la décision",
@@ -2595,18 +2689,18 @@
         "confirm": "Promouvoir",
         "success": "{{count}} étudiants promus avec succès",
         "noAdmitted": "Aucun étudiant admis à promouvoir",
-        "lastLevelTitle": "Dernier niveau du cycle",
-        "lastLevelHint": "Les étudiants admis seront marqués comme diplômés plutôt qu'inscrits dans une nouvelle classe.",
-        "targetClassHint": "{{count}} étudiants seront inscrits dans cette classe.",
+        "lastLevelTitle": "lastLevelTitle",
+        "lastLevelHint": "lastLevelHint",
         "noTargetFound": {
-          "title": "Aucune classe cible trouvée",
-          "searched": "Le système a cherché une classe correspondant à tous ces critères :",
-          "criteriaProgram": "Programme : {{program}}",
-          "criteriaLevel": "Niveau : suivant après {{level}} (index {{nextIndex}})",
-          "criteriaYear": "Année académique : l'année que vous avez sélectionnée",
-          "fix": "Créez une classe dans {{program}} au niveau suivant après {{level}} pour l'année académique active.",
-          "goToClasses": "Gérer les classes"
-        }
+          "title": "title",
+          "searched": "searched",
+          "criteriaProgram": "criteriaProgram",
+          "criteriaLevel": "criteriaLevel",
+          "criteriaYear": "criteriaYear",
+          "fix": "fix",
+          "goToClasses": "goToClasses"
+        },
+        "targetClassHint": "targetClassHint"
       },
       "ueDecision": {
         "ADM": "Acquise",
@@ -2623,12 +2717,17 @@
         "overrideSuccess": "Décision modifiée",
         "exportSuccess": "Export prêt",
         "error": "Une erreur est survenue",
-        "initAndComputeSuccess": "Délibération créée et résultats calculés"
+        "initAndComputeSuccess": "Délibération créée et résultats calculés",
+        "batchCreateSuccess": "batchCreateSuccess",
+        "batchCreatePartial": "batchCreatePartial"
       },
       "confirm": {
         "delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
         "close": "Clôturer cette délibération ? Les résultats ne seront plus modifiables.",
-        "sign": "Signer cette délibération ? Cela la valide officiellement."
+        "sign": "Signer cette délibération ? Cela la valide officiellement.",
+        "closeTitle": "Clôturer la délibération ?",
+        "signTitle": "Signer la délibération ?",
+        "deleteTitle": "Supprimer la délibération ?"
       },
       "rules": {
         "title": "Règles de délibération",
@@ -2670,6 +2769,10 @@
           "updateSuccess": "Règle mise à jour",
           "deleteSuccess": "Règle supprimée",
           "error": "Une erreur est survenue"
+        },
+        "confirmDelete": {
+          "title": "Supprimer cette règle ?",
+          "message": "message"
         }
       },
       "filters": {
@@ -2677,6 +2780,99 @@
         "allTypes": "Tous les types",
         "allYears": "Toutes les années"
       }
+    },
+    "centers": {
+      "detail": {
+        "title": "Gestion des Centres",
+        "subtitle": "Configurez les centres de formation professionnelle",
+        "backToList": "Retour à la liste"
+      },
+      "sections": {
+        "identity": "Informations Générales",
+        "logos": "Logos",
+        "adminInstances": "Instances Administratives",
+        "authorization": "Textes d'Autorisation",
+        "contact": "Coordonnées"
+      },
+      "form": {
+        "shortName": "Nom du centre (court)",
+        "city": "Localisation",
+        "name": "Nom complet (Français)",
+        "nameEn": "Nom complet (Anglais)",
+        "isActive": "Centre actif",
+        "logoUrl": "Logo du centre",
+        "logoUrlHint": "Affiché dans les en-têtes.",
+        "adminInstanceLogoUrl": "Logo de l'instance administrative (ex: MINEFOP)",
+        "adminInstanceLogoUrlHint": "Logo principal de l'autorité de tutelle.",
+        "watermarkLogoUrl": "Logo de fond (watermark)",
+        "watermarkLogoUrlHint": "Logo affiché en filigrane sur les documents.",
+        "adminInstanceLogo": "Logo de l'instance",
+        "showOnTranscripts": "Afficher le logo sur les relevés",
+        "showOnTranscriptsHint": "Le logo apparaîtra dans l'en-tête des relevés de notes",
+        "showOnCertificates": "Afficher le logo sur les attestations",
+        "showOnCertificatesHint": "Le logo apparaîtra dans l'en-tête des attestations",
+        "authorizationOrderFr": "Arrêté d'autorisation (Français)",
+        "authorizationOrderEn": "Arrêté d'autorisation (Anglais)",
+        "postalBox": "Boîte postale",
+        "contactPhone": "Téléphone",
+        "contactEmail": "Email",
+        "country": "Pays",
+        "addressFr": "Adresse (FR)",
+        "addressEn": "Adresse (EN)"
+      },
+      "actions": {
+        "addInstance": "Ajouter une instance",
+        "addLegalText": "Ajouter",
+        "add": "Ajouter un centre"
+      },
+      "adminInstances": {
+        "empty": "Aucune instance administrative — cliquez sur Ajouter pour en créer.",
+        "itemTitle": "itemTitle"
+      },
+      "legalTexts": {
+        "title": "Textes Légaux (Vu les lois...)",
+        "empty": "Aucun texte légal",
+        "itemTitle": "itemTitle"
+      },
+      "toast": {
+        "deleteSuccess": "Centre supprimé"
+      },
+      "title": "Nos centres",
+      "subtitle": "Configurez les centres de formation professionnelle de l'institution.",
+      "table": {
+        "logo": "Logo",
+        "code": "Code",
+        "name": "Nom",
+        "city": "Ville",
+        "country": "Pays",
+        "status": "Statut"
+      },
+      "empty": {
+        "title": "Aucun centre",
+        "description": "Créez votre premier centre pour organiser les programmes par campus."
+      },
+      "delete": {
+        "title": "Supprimer le centre",
+        "message": "Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible."
+      }
+    },
+    "graduation": {
+      "title": "title",
+      "subtitle": "subtitle",
+      "totalGraduates": "totalGraduates",
+      "searchPlaceholder": "searchPlaceholder",
+      "table": {
+        "student": "student",
+        "registration": "registration",
+        "program": "program",
+        "level": "level",
+        "credits": "credits",
+        "graduatedAt": "graduatedAt"
+      },
+      "noResults": "noResults",
+      "empty": "empty",
+      "noResultsHint": "noResultsHint",
+      "emptyHint": "emptyHint"
     }
   },
   "teacher": {
@@ -3243,7 +3439,10 @@
         "registration": "N° de matricule",
         "name": "Nom",
         "courseAverages": "Moyennes par cours",
-        "overallAverage": "Moyenne générale"
+        "overallAverage": "Moyenne générale",
+        "credits": "credits",
+        "decision": "decision",
+        "mention": "mention"
       },
       "actions": {
         "promote": "Promouvoir",
@@ -3257,6 +3456,21 @@
       "emptyStudents": {
         "title": "Aucun étudiant",
         "description": "Aucun étudiant dans cette classe."
+      },
+      "decision": {
+        "noData": "noData"
+      },
+      "lastLevel": "lastLevel",
+      "selectSourceFirst": "selectSourceFirst",
+      "noTargetAvailable": "noTargetAvailable",
+      "lastLevelHint": "lastLevelHint",
+      "emptyState": {
+        "title": "title",
+        "description": "description"
+      },
+      "confirm": {
+        "title": "Promouvoir les étudiants sélectionnés ?",
+        "message": "message"
       }
     },
     "attendance": {
@@ -3276,7 +3490,8 @@
       "lowEngagementDesc": "La participation aux quiz est tombée en dessous de 50%.",
       "openAlerts": "Alertes ouvertes",
       "subtitle": "Signalez les cohortes à risque et diffusez des mises à jour",
-      "title": "Alertes de présence"
+      "title": "Alertes de présence",
+      "error": "Impossible de charger les alertes"
     },
     "workflow": {
       "title": "Workflow d'examens",
@@ -3300,31 +3515,31 @@
         "revoke": "Révoquer l'accès"
       },
       "columns": {
-        "email": "E-mail",
+        "email": "Email",
         "grantedBy": "Accordé par",
         "since": "Depuis",
         "user": "Utilisateur"
       },
       "dialog": {
-        "description": "Sélectionnez un utilisateur pour lui accorder l'accès à la saisie des notes pour tout l'établissement.",
+        "description": "Sélectionnez un utilisateur pour lui accorder l'accès global à la saisie des notes.",
         "selectLabel": "Utilisateur",
         "selectPlaceholder": "Sélectionner un utilisateur...",
-        "title": "Ajouter un délégué de notation"
+        "title": "Ajouter un délégué"
       },
       "empty": {
-        "description": "Aucun utilisateur n'a encore reçu l'accès de notation pour tout l'établissement.",
+        "description": "Aucun utilisateur n'a encore reçu un accès global à la saisie des notes.",
         "title": "Aucun délégué"
       },
-      "info": "Les utilisateurs listés ici peuvent saisir des notes pour n'importe quel examen de cet établissement, quelle que soit l'affectation au cours.",
+      "info": "Les utilisateurs listés ici peuvent saisir des notes pour n'importe quel examen de cet établissement, indépendamment de l'affectation aux cours.",
       "revoke": {
-        "message": "Cet utilisateur ne pourra plus saisir de notes, sauf s'il est l'enseignant affecté ou dispose d'une délégation par examen.",
+        "message": "Cet utilisateur ne pourra plus saisir des notes sauf s'il est l'enseignant assigné ou s'il a une délégation par examen.",
         "title": "Révoquer l'accès"
       },
-      "subtitle": "Accordez l'accès à la saisie des notes pour tout l'établissement à des utilisateurs spécifiques",
-      "title": "Délégation de notation",
+      "subtitle": "Accorder l'accès à la saisie des notes à des utilisateurs spécifiques",
+      "title": "Délégation de saisie des notes",
       "toast": {
-        "granted": "Accès de notation accordé avec succès.",
-        "revoked": "Accès de notation révoqué."
+        "granted": "Accès à la saisie des notes accordé avec succès.",
+        "revoked": "Accès à la saisie des notes révoqué."
       }
     },
     "institutions": {
@@ -3364,15 +3579,15 @@
     },
     "retake": {
       "actions": {
-        "createRetake": "Créer un examen de rattrapage",
+        "createRetake": "Créer examen de rattrapage",
         "viewEligibility": "Voir l'éligibilité"
       },
       "createRetake": {
         "date": "Date du rattrapage",
         "parentExam": "Examen original",
         "scoringPolicy": "Politique de notation",
-        "scoringPolicyHelp": "Comment calculer la note finale une fois le rattrapage complété",
-        "subtitle": "Créer une session de rattrapage liée à l'examen original",
+        "scoringPolicyHelp": "Comment calculer la note finale après le rattrapage",
+        "subtitle": "Créez une session de rattrapage liée à l'examen original",
         "title": "Créer un examen de rattrapage"
       },
       "eligible": "Éligible",
@@ -3386,39 +3601,39 @@
       "ineligibleCount": "{{count}} non éligible(s)",
       "override": {
         "confirmMessage": "Êtes-vous sûr de vouloir {{action}} cet étudiant pour le rattrapage ?",
-        "confirmTitle": "Confirmer la modification",
-        "forceEligible": "Forcer l'éligibilité",
+        "confirmTitle": "Confirmer la dérogation",
+        "forceEligible": "Forcer éligible",
         "forceIneligible": "Bloquer",
-        "reason": "Motif de la modification",
-        "reasonPlaceholder": "Saisissez le motif de la modification...",
-        "remove": "Supprimer la modification"
+        "reason": "Motif de la dérogation",
+        "reasonPlaceholder": "Saisissez le motif de la dérogation...",
+        "remove": "Supprimer la dérogation"
       },
       "reasons": {
         "ATTEMPT_LIMIT_REACHED": "Limite de tentatives atteinte",
         "FAILED_EXAM": "Examen échoué",
         "NO_GRADE": "Aucune note enregistrée",
-        "OVERRIDE_FORCE_ELIGIBLE": "Éligibilité forcée (modification)",
-        "OVERRIDE_FORCE_INELIGIBLE": "Non éligible forcé (modification)",
+        "OVERRIDE_FORCE_ELIGIBLE": "Forcé éligible (dérogation)",
+        "OVERRIDE_FORCE_INELIGIBLE": "Forcé non éligible (dérogation)",
         "PASSED_EXAM": "Examen réussi"
       },
-      "selectExam": "Sélectionner un examen approuvé",
+      "selectExam": "Sélectionnez un examen approuvé",
       "selectExamPlaceholder": "Choisir un examen pour voir l'éligibilité",
-      "subtitle": "Consulter et gérer les étudiants éligibles aux examens de rattrapage",
+      "subtitle": "Consultez et gérez les étudiants éligibles aux examens de rattrapage",
       "table": {
         "attempt": "Tentative",
         "grade": "Note actuelle",
-        "override": "Modification",
+        "override": "Dérogation",
         "reasons": "Raisons",
-        "registrationNumber": "N° matricule",
+        "registrationNumber": "Matricule",
         "status": "Statut",
         "student": "Étudiant"
       },
       "title": "Éligibilité au rattrapage",
       "toast": {
-        "overrideError": "Impossible d'appliquer la modification",
-        "overrideSuccess": "Modification appliquée avec succès",
-        "removeError": "Impossible de supprimer la modification",
-        "removeSuccess": "Modification supprimée"
+        "overrideError": "Impossible d'appliquer la dérogation",
+        "overrideSuccess": "Dérogation appliquée avec succès",
+        "removeError": "Impossible de supprimer la dérogation",
+        "removeSuccess": "Dérogation supprimée"
       }
     }
   },
@@ -3434,7 +3649,7 @@
       },
       "toast": {
         "validated": "Examen approuvé",
-        "bulkValidated": "Examens approuvés avec succès"
+        "bulkValidated": "Examens validés avec succès"
       },
       "notifications": "Notifications du workflow",
       "notificationsEmpty": "Aucune notification",
@@ -3452,7 +3667,12 @@
       "queueDesc": "Suivez les soumissions nécessitant la supervision du doyen.",
       "realTime": "Temps réel",
       "submitted": "Soumis",
-      "submittedDesc": "Les enseignants ont soumis des examens pour validation."
+      "submittedDesc": "Les enseignants ont soumis des examens pour validation.",
+      "confirm": {
+        "title": "Valider et verrouiller ?",
+        "bulkMessage": "bulkMessage",
+        "singleMessage": "singleMessage"
+      }
     }
   },
   "student": {

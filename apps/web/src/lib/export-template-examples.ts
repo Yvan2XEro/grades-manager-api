@@ -146,7 +146,7 @@ export const TEMPLATE_EXAMPLES = {
                 <!-- Totaux étudiant -->
                 <td>{{totalCredits}}</td>
                 <td class="moyenne">{{formatNumber generalAverage}}</td>
-                <td class="{{#if (eq overallDecision 'ACQUIS')}}acquis{{else}}non-acquis{{/if}}">
+                <td class="{{#if (eq overallDecision 'VALIDÉ')}}acquis{{else}}non-acquis{{/if}}">
                     {{overallDecision}}
                 </td>
             </tr>

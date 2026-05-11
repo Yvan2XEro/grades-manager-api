@@ -1,11 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Gavel, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { Gavel, Loader2, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusStepper } from "@/components/ui/status-stepper";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/lib/toast";
 import { AcademicYearSelect } from "../../../components/inputs/AcademicYearSelect";
 import { Badge } from "../../../components/ui/badge";
@@ -67,10 +72,11 @@ export default function DeliberationsList() {
 	const [statusFilter, setStatusFilter] = useState<string>("open");
 	const [typeFilter, setTypeFilter] = useState<string>("all");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const { confirm, ConfirmDialog } = useConfirm();
 
-	const deliberationsQuery = useQuery({
+	const deliberationsQuery = useInfiniteQuery({
 		queryKey: ["deliberations", statusFilter, typeFilter, academicYearId],
-		queryFn: () =>
+		queryFn: ({ pageParam }) =>
 			trpcClient.deliberations.list.query({
 				status:
 					statusFilter !== "all"
@@ -81,9 +87,11 @@ export default function DeliberationsList() {
 						? (typeFilter as (typeof TYPES)[number])
 						: undefined,
 				academicYearId: academicYearId || undefined,
-				limit: 100,
-				offset: 0,
+				limit: 50,
+				cursor: pageParam as string | undefined,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor,
 	});
 
 	const deleteMutation = useMutation({
@@ -95,7 +103,7 @@ export default function DeliberationsList() {
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	const items = deliberationsQuery.data?.items ?? [];
+	const items = deliberationsQuery.data?.pages.flatMap((p) => p.items) ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -163,7 +171,8 @@ export default function DeliberationsList() {
 
 			{/* Table */}
 			<div className="rounded-xl border bg-card shadow-sm">
-				{deliberationsQuery.isLoading ? (
+				{deliberationsQuery.isLoading &&
+				!deliberationsQuery.isFetchingNextPage ? (
 					<TableSkeleton columns={7} rows={8} />
 				) : items.length === 0 ? (
 					<Empty className="border border-dashed">
@@ -214,14 +223,19 @@ export default function DeliberationsList() {
 													<ContextMenuSeparator />
 													<ContextMenuItem
 														className="text-destructive"
-														onSelect={() => {
-															if (
-																window.confirm(
-																	t("admin.deliberations.confirm.delete"),
-																)
-															) {
-															}
-														}}
+														onSelect={() =>
+															confirm({
+																title: t(
+																	"admin.deliberations.confirm.deleteTitle",
+																	{ defaultValue: "Delete deliberation?" },
+																),
+																message: t(
+																	"admin.deliberations.confirm.delete",
+																),
+																confirmText: t("common.actions.delete"),
+																onConfirm: () => deleteMutation.mutate(d.id),
+															})
+														}
 													>
 														{t("common.actions.delete")}
 													</ContextMenuItem>
@@ -270,15 +284,21 @@ export default function DeliberationsList() {
 													<DropdownMenuContent align="end">
 														<DropdownMenuItem
 															className="text-destructive"
-															onClick={() => {
-																if (
-																	window.confirm(
-																		t("admin.deliberations.confirm.delete"),
-																	)
-																) {
-																	deleteMutation.mutate(d.id);
-																}
-															}}
+															onClick={() =>
+																confirm({
+																	title: t(
+																		"admin.deliberations.confirm.deleteTitle",
+																		{ defaultValue: "Delete deliberation?" },
+																	),
+																	message: t(
+																		"admin.deliberations.confirm.delete",
+																	),
+																	confirmText: t(
+																		"admin.deliberations.actions.delete",
+																	),
+																	onConfirm: () => deleteMutation.mutate(d.id),
+																})
+															}
 														>
 															<Trash2 className="mr-2 h-4 w-4" />
 															{t("admin.deliberations.actions.delete")}
@@ -295,10 +315,26 @@ export default function DeliberationsList() {
 				)}
 			</div>
 
+			{deliberationsQuery.hasNextPage && (
+				<div className="flex justify-center">
+					<Button
+						variant="outline"
+						onClick={() => deliberationsQuery.fetchNextPage()}
+						disabled={deliberationsQuery.isFetchingNextPage}
+					>
+						{deliberationsQuery.isFetchingNextPage && (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						)}
+						{t("common.loadMore", { defaultValue: "Charger plus" })}
+					</Button>
+				</div>
+			)}
+
 			<CreateDeliberationDialog
 				open={isCreateOpen}
 				onOpenChange={setIsCreateOpen}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

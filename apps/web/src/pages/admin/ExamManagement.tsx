@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/context-menu";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FilterBar } from "@/components/ui/filter-bar";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { toast } from "@/lib/toast";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -343,6 +344,8 @@ export default function ExamManagement() {
 
 	const selection = useRowSelection(exams);
 
+	const { confirm, ConfirmDialog } = useConfirm();
+
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
 			await Promise.all(
@@ -625,18 +628,20 @@ export default function ExamManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -1223,6 +1228,7 @@ export default function ExamManagement() {
 					</form>
 				</Form>
 			</FormModal>
+			<ConfirmDialog />
 		</div>
 	);
 }

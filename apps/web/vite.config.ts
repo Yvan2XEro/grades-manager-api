@@ -14,8 +14,17 @@ export default defineConfig({
 		tailwindcss(),
 	],
 	resolve: {
+		dedupe: ["react", "react-dom"],
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
 		},
+	},
+	server: {
+		port: 5174,
+		strictPort: true,
+	},
+	preview: {
+		port: 5174,
+		strictPort: true,
 	},
 });

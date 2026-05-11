@@ -2,11 +2,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
 	Bell,
 	BookOpen,
+	Building,
 	Building2,
 	Calendar,
 	ClipboardList,
 	FileCog,
 	FileSpreadsheet,
+	FileText,
 	Gavel,
 	GraduationCap,
 	LayoutDashboard,
@@ -72,6 +74,11 @@ const Sidebar: React.FC = () => {
 						labelKey: "navigation.sidebar.admin.institution",
 					},
 					{
+						to: "/admin/centers",
+						icon: <Building className={IC} />,
+						labelKey: "navigation.sidebar.admin.centers",
+					},
+					{
 						to: "/admin/programs",
 						icon: <School className={IC} />,
 						labelKey: "navigation.sidebar.admin.programs",
@@ -112,6 +119,21 @@ const Sidebar: React.FC = () => {
 						to: "/admin/grades",
 						icon: <FileSpreadsheet className={IC} />,
 						labelKey: "navigation.sidebar.admin.gradeManagement",
+					},
+					{
+						to: "/admin/export-templates",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.exportTemplates",
+					},
+					{
+						to: "/admin/class-document-templates",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.classDocumentTemplates",
+					},
+					{
+						to: "/admin/document-batch",
+						icon: <FileText className={IC} />,
+						labelKey: "navigation.sidebar.admin.documentBatch",
 					},
 					{
 						to: "/admin/deliberations",

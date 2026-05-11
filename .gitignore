@@ -1,4 +1,5 @@
 node_modules
+package-lock.json
 .turbo
 .alchemy
 .claude
@@ -26,3 +27,10 @@ docker-compose.override.yml
 docs/guide/
 _bmad*
 *bmad*
+
+# Playwright presentation assets (generated)
+apps/web/presentation-assets/
+
+# Local-only artifacts (Remotion app, ad-hoc scripts, raw data dumps)
+scripts/
+datas/

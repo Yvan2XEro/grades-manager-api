@@ -218,6 +218,7 @@ export const studyCycles = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
 		description: text("description"),
 		totalCreditsRequired: integer("total_credits_required")
 			.notNull()
@@ -291,6 +292,119 @@ export const academicYears = pgTable(
 	],
 );
 
+/** Centers (campuses, vocational training centers) under an institution. */
+export const centers = pgTable(
+	"centers",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		/** Unique short code for the center (e.g. CEPRES). */
+		code: text("code").notNull(),
+		/** Short display name (often the same as code). */
+		shortName: text("short_name"),
+		/** Full French name (e.g. "CENTRE DE FORMATION PROFESSIONNELLE DE L'ESPOIR"). */
+		name: text("name").notNull(),
+		/** Full English name. */
+		nameEn: text("name_en"),
+		description: text("description"),
+		addressFr: text("address_fr"),
+		addressEn: text("address_en"),
+		city: text("city"),
+		country: text("country"),
+		postalBox: text("postal_box"),
+		contactEmail: text("contact_email"),
+		contactPhone: text("contact_phone"),
+		/** Logo of the center itself (used in PDF headers). */
+		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the center logo (preferred over `logoUrl` in templates when set). */
+		logoSvg: text("logo_svg"),
+		/** Logo of the principal administrative authority (e.g. ministry). */
+		adminInstanceLogoUrl: text("admin_instance_logo_url"),
+		/** Inline SVG markup for the admin instance logo (preferred over `adminInstanceLogoUrl`). */
+		adminInstanceLogoSvg: text("admin_instance_logo_svg"),
+		/** Background watermark logo for documents. */
+		watermarkLogoUrl: text("watermark_logo_url"),
+		/** Inline SVG markup for the watermark (preferred over `watermarkLogoUrl`). */
+		watermarkLogoSvg: text("watermark_logo_svg"),
+		/** French legal authorization order text (e.g. "Arrêté N° 160 ..."). */
+		authorizationOrderFr: text("authorization_order_fr"),
+		/** English authorization order text. */
+		authorizationOrderEn: text("authorization_order_en"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_centers_code_institution").on(t.code, t.institutionId),
+		index("idx_centers_institution_id").on(t.institutionId),
+	],
+);
+export type Center = InferSelectModel<typeof centers>;
+export type NewCenter = InferInsertModel<typeof centers>;
+
+/** Administrative instances tied to a center (ministries, regional delegations, etc.). */
+export const centerAdministrativeInstances = pgTable(
+	"center_administrative_instances",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		centerId: text("center_id")
+			.notNull()
+			.references(() => centers.id, { onDelete: "cascade" }),
+		orderIndex: integer("order_index").notNull().default(0),
+		nameFr: text("name_fr").notNull(),
+		nameEn: text("name_en").notNull(),
+		acronymFr: text("acronym_fr"),
+		acronymEn: text("acronym_en"),
+		logoUrl: text("logo_url"),
+		/** Inline SVG markup for this admin instance's logo (preferred over `logoUrl`). */
+		logoSvg: text("logo_svg"),
+		showOnTranscripts: boolean("show_on_transcripts").notNull().default(true),
+		showOnCertificates: boolean("show_on_certificates").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_center_admin_instances_center").on(t.centerId),
+		index("idx_center_admin_instances_order").on(t.centerId, t.orderIndex),
+	],
+);
+export type CenterAdministrativeInstance = InferSelectModel<
+	typeof centerAdministrativeInstances
+>;
+export type NewCenterAdministrativeInstance = InferInsertModel<
+	typeof centerAdministrativeInstances
+>;
+
+/** Bilingual legal text references for a center (laws, decrees the authorization is based on). */
+export const centerLegalTexts = pgTable(
+	"center_legal_texts",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		centerId: text("center_id")
+			.notNull()
+			.references(() => centers.id, { onDelete: "cascade" }),
+		orderIndex: integer("order_index").notNull().default(0),
+		textFr: text("text_fr").notNull(),
+		textEn: text("text_en").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_center_legal_texts_center").on(t.centerId),
+		index("idx_center_legal_texts_order").on(t.centerId, t.orderIndex),
+	],
+);
+export type CenterLegalText = InferSelectModel<typeof centerLegalTexts>;
+export type NewCenterLegalText = InferInsertModel<typeof centerLegalTexts>;
+
 /** Programs offered under an institution. */
 export const programs = pgTable(
 	"programs",
@@ -301,8 +415,14 @@ export const programs = pgTable(
 			.references(() => institutions.id, { onDelete: "cascade" }),
 		code: text("code").notNull(),
 		name: text("name").notNull(),
+		nameEn: text("name_en"),
+		abbreviation: text("abbreviation"),
 		slug: text("slug").notNull(),
 		description: text("description"),
+		domainFr: text("domain_fr"),
+		domainEn: text("domain_en"),
+		specialiteFr: text("specialite_fr"),
+		specialiteEn: text("specialite_en"),
 		diplomaTitleFr: text("diploma_title_fr"),
 		diplomaTitleEn: text("diploma_title_en"),
 		attestationValidityFr: text("attestation_validity_fr"),
@@ -310,6 +430,12 @@ export const programs = pgTable(
 		cycleId: text("cycle_id").references(() => studyCycles.id, {
 			onDelete: "set null",
 		}),
+		/** Optional center this program belongs to (campus / branch). */
+		centerId: text("center_id").references(() => centers.id, {
+			onDelete: "set null",
+		}),
+		/** Marks the program as a center-affiliated program. Mirrors centerId for filtering. */
+		isCenterProgram: boolean("is_center_program").notNull().default(false),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -319,6 +445,7 @@ export const programs = pgTable(
 		unique("uq_programs_code_institution").on(t.code, t.institutionId),
 		unique("uq_programs_slug_institution").on(t.slug, t.institutionId),
 		index("idx_programs_institution_id").on(t.institutionId),
+		index("idx_programs_center_id").on(t.centerId),
 	],
 );
 
@@ -371,6 +498,34 @@ export const diplomationApiKeys = pgTable(
 );
 export type DiplomationApiKey = InferSelectModel<typeof diplomationApiKeys>;
 export type NewDiplomationApiKey = InferInsertModel<typeof diplomationApiKeys>;
+
+/** Per-request call log for diplomation API keys. */
+export const diplomationApiCallLogs = pgTable(
+	"diplomation_api_call_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		apiKeyId: text("api_key_id").references(() => diplomationApiKeys.id, {
+			onDelete: "cascade",
+		}),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		endpoint: text("endpoint").notNull(),
+		method: text("method").notNull(),
+		statusCode: integer("status_code"),
+		calledAt: timestamp("called_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_diplomation_call_logs_key").on(t.apiKeyId),
+		index("idx_diplomation_call_logs_institution").on(t.institutionId),
+		index("idx_diplomation_call_logs_called_at").on(t.calledAt),
+	],
+);
+export type DiplomationApiCallLog = InferSelectModel<
+	typeof diplomationApiCallLogs
+>;
 
 /** UE/Module layer grouping courses inside a program. */
 export const teachingUnits = pgTable(
@@ -479,7 +634,6 @@ export const courses = pgTable(
 	},
 	(t) => [
 		check("chk_courses_hours", sql`${t.hours} > 0`),
-		unique("uq_courses_name_program").on(t.name, t.program),
 		unique("uq_courses_code_program").on(t.code, t.program),
 		index("idx_courses_program_id").on(t.program),
 		index("idx_courses_teaching_unit_id").on(t.teachingUnitId),
@@ -819,6 +973,8 @@ export const institutions = pgTable(
 		postalBox: text("postal_box"),
 		website: text("website"),
 		logoUrl: text("logo_url"),
+		/** Inline SVG markup for the institution logo (preferred over `logoUrl` when set). */
+		logoSvg: text("logo_svg"),
 		coverImageUrl: text("cover_image_url"),
 		parentInstitutionId: text("parent_institution_id").references(
 			(): any => institutions.id,
@@ -829,6 +985,19 @@ export const institutions = pgTable(
 		organizationId: text("organization_id").references(() => organization.id, {
 			onDelete: "set null",
 		}),
+		defaultAcademicYearId: text("default_academic_year_id").references(
+			(): any => academicYears.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		registrationFormatId: text("registration_format_id").references(
+			(): any => registrationNumberFormats.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		abbreviation: text("abbreviation"),
 		isMain: boolean("is_main").notNull().default(false),
 		timezone: text("timezone").default("UTC"),
 		metadata: jsonb("metadata").$type<InstitutionMetadata>().default({}),
@@ -1458,6 +1627,7 @@ export const deliberations = pgTable(
 		stats: jsonb("stats").$type<DeliberationStats>(),
 		openedAt: timestamp("opened_at", { withTimezone: true }),
 		closedAt: timestamp("closed_at", { withTimezone: true }),
+		juryNumber: text("jury_number"),
 		signedAt: timestamp("signed_at", { withTimezone: true }),
 		signedBy: text("signed_by").references(() => domainUsers.id, {
 			onDelete: "set null",
@@ -1611,7 +1781,41 @@ export const programsRelations = relations(programs, ({ one, many }) => ({
 		fields: [programs.cycleId],
 		references: [studyCycles.id],
 	}),
+	center: one(centers, {
+		fields: [programs.centerId],
+		references: [centers.id],
+	}),
 }));
+
+export const centersRelations = relations(centers, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [centers.institutionId],
+		references: [institutions.id],
+	}),
+	programs: many(programs),
+	administrativeInstances: many(centerAdministrativeInstances),
+	legalTexts: many(centerLegalTexts),
+}));
+
+export const centerAdministrativeInstancesRelations = relations(
+	centerAdministrativeInstances,
+	({ one }) => ({
+		center: one(centers, {
+			fields: [centerAdministrativeInstances.centerId],
+			references: [centers.id],
+		}),
+	}),
+);
+
+export const centerLegalTextsRelations = relations(
+	centerLegalTexts,
+	({ one }) => ({
+		center: one(centers, {
+			fields: [centerLegalTexts.centerId],
+			references: [centers.id],
+		}),
+	}),
+);
 
 export const programOptionsRelations = relations(
 	programOptions,
@@ -2080,8 +2284,13 @@ export type NewStudentPromotionSummary = InferInsertModel<
 export const exportTemplateTypes = [
 	"pv",
 	"evaluation",
+	"ec",
 	"ue",
 	"deliberation",
+	"diploma",
+	"transcript",
+	"attestation",
+	"student_list",
 ] as const;
 export type ExportTemplateType = (typeof exportTemplateTypes)[number];
 
@@ -2096,9 +2305,38 @@ export const exportTemplates = pgTable(
 		name: text("name").notNull(),
 		type: text("type").$type<ExportTemplateType>().notNull(),
 		isDefault: boolean("is_default").notNull().default(false),
+		/**
+		 * System default templates seeded from DIPLOMATION. These cannot be
+		 * deleted and are the fallback when no institution template exists.
+		 */
+		isSystemDefault: boolean("is_system_default").notNull().default(false),
+		description: text("description"),
+		/**
+		 * Distinguishes seeded variants:
+		 *   - `"standard"` — header with institution + tutelle (faculty/university).
+		 *   - `"center"`   — header with institution + center data (no tutelle).
+		 *
+		 * Used by the program form to filter the right options based on the
+		 * program's `centerId`. Custom user-created templates default to
+		 * "standard"; admins can change it via the editor.
+		 */
+		variant: text("variant")
+			.$type<"standard" | "center">()
+			.notNull()
+			.default("standard"),
 
 		// Raw Handlebars template source
 		templateBody: text("template_body").notNull(),
+
+		/**
+		 * Default theme values for this template (typed by ExportTemplateType).
+		 * Stored as JSONB so we can evolve the theme schema without migrations.
+		 * For diploma/transcript/attestation kinds these match the Zod schemas in
+		 * `apps/server/src/modules/exports/themes/`.
+		 */
+		themeDefaults: jsonb("theme_defaults")
+			.$type<Record<string, unknown>>()
+			.default({}),
 
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
@@ -2117,6 +2355,115 @@ export const exportTemplates = pgTable(
 );
 export type ExportTemplate = InferSelectModel<typeof exportTemplates>;
 export type NewExportTemplate = InferInsertModel<typeof exportTemplates>;
+
+/** Default export template per program, one per template type. */
+export const programExportTemplates = pgTable(
+	"program_export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "cascade" }),
+		templateType: text("template_type").$type<ExportTemplateType>().notNull(),
+		templateId: text("template_id")
+			.notNull()
+			.references(() => exportTemplates.id, { onDelete: "cascade" }),
+		/** Partial theme overrides stacked on top of template.themeDefaults. */
+		themeOverrides: jsonb("theme_overrides").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_program_export_templates_program_type").on(
+			t.programId,
+			t.templateType,
+		),
+		index("idx_program_export_templates_program").on(t.programId),
+		index("idx_program_export_templates_template").on(t.templateId),
+	],
+);
+export type ProgramExportTemplate = InferSelectModel<
+	typeof programExportTemplates
+>;
+export type NewProgramExportTemplate = InferInsertModel<
+	typeof programExportTemplates
+>;
+
+export const programExportTemplatesRelations = relations(
+	programExportTemplates,
+	({ one }) => ({
+		program: one(programs, {
+			fields: [programExportTemplates.programId],
+			references: [programs.id],
+		}),
+		template: one(exportTemplates, {
+			fields: [programExportTemplates.templateId],
+			references: [exportTemplates.id],
+		}),
+	}),
+);
+
+/**
+ * Per-class assignment of an export template, with optional per-class theme
+ * overrides. Resolution order is:
+ *   class_export_templates → program_export_templates → institution default.
+ * Theme is merged: template.themeDefaults ⊕ program.themeOverrides ⊕ class.themeOverrides.
+ */
+export const classExportTemplates = pgTable(
+	"class_export_templates",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classId: text("class_id")
+			.notNull()
+			.references(() => classes.id, { onDelete: "cascade" }),
+		templateType: text("template_type").$type<ExportTemplateType>().notNull(),
+		templateId: text("template_id")
+			.notNull()
+			.references(() => exportTemplates.id, { onDelete: "cascade" }),
+		themeOverrides: jsonb("theme_overrides").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_class_export_templates_class_type").on(
+			t.classId,
+			t.templateType,
+		),
+		index("idx_class_export_templates_class").on(t.classId),
+		index("idx_class_export_templates_template").on(t.templateId),
+	],
+);
+export type ClassExportTemplate = InferSelectModel<typeof classExportTemplates>;
+export type NewClassExportTemplate = InferInsertModel<
+	typeof classExportTemplates
+>;
+
+export const classExportTemplatesRelations = relations(
+	classExportTemplates,
+	({ one }) => ({
+		class: one(classes, {
+			fields: [classExportTemplates.classId],
+			references: [classes.id],
+		}),
+		template: one(exportTemplates, {
+			fields: [classExportTemplates.templateId],
+			references: [exportTemplates.id],
+		}),
+	}),
+);
 
 // ---------------------------------------------------------------------------
 // Batch Jobs Framework

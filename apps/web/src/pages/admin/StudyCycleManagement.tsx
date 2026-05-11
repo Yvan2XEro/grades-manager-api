@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -56,6 +57,7 @@ import { trpcClient } from "../../utils/trpc";
 const cycleSchema = z.object({
 	code: z.string().min(1),
 	name: z.string().min(1),
+	nameEn: z.string().optional(),
 	description: z.string().optional(),
 	totalCreditsRequired: z.coerce.number().int().min(30),
 	durationYears: z.coerce.number().int().min(1),
@@ -96,6 +98,8 @@ export default function StudyCycleManagement() {
 	});
 	const selection = useRowSelection(cycles);
 
+	const { confirm, ConfirmDialog } = useConfirm();
+
 	const activeCycle = useMemo(
 		() => cycles.find((cycle) => cycle.id === activeCycleId) ?? null,
 		[cycles, activeCycleId],
@@ -115,6 +119,7 @@ export default function StudyCycleManagement() {
 		defaultValues: {
 			code: "",
 			name: "",
+			nameEn: "",
 			description: "",
 			totalCreditsRequired: 180,
 			durationYears: 3,
@@ -289,6 +294,7 @@ export default function StudyCycleManagement() {
 						form.reset({
 							code: "",
 							name: "",
+							nameEn: "",
 							description: "",
 							totalCreditsRequired: 180,
 							durationYears: 3,
@@ -314,18 +320,20 @@ export default function StudyCycleManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -379,6 +387,7 @@ export default function StudyCycleManagement() {
 															form.reset({
 																code: cycle.code,
 																name: cycle.name,
+																nameEn: cycle.nameEn ?? "",
 																description: cycle.description ?? "",
 																totalCreditsRequired:
 																	cycle.totalCreditsRequired,
@@ -427,6 +436,7 @@ export default function StudyCycleManagement() {
 														form.reset({
 															code: cycle.code,
 															name: cycle.name,
+															nameEn: cycle.nameEn ?? "",
 															description: cycle.description ?? "",
 															totalCreditsRequired: cycle.totalCreditsRequired,
 															durationYears: cycle.durationYears,
@@ -552,6 +562,7 @@ export default function StudyCycleManagement() {
 											variant="ghost"
 											className="text-destructive"
 											onClick={() => deleteLevelMutation.mutate(level.id)}
+											disabled={deleteLevelMutation.isPending}
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											{t("common.actions.delete")}
@@ -597,12 +608,31 @@ export default function StudyCycleManagement() {
 											})}
 										</FormLabel>
 										<FormControl>
+											<Input {...field} placeholder="Licence" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="nameEn"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.studyCycles.form.nameEn", {
+												defaultValue: "Name (English)",
+											})}
+										</FormLabel>
+										<FormControl>
 											<Input {...field} placeholder="Bachelor of Science" />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2">
 							<FormField
 								control={form.control}
 								name="code"
@@ -816,6 +846,7 @@ export default function StudyCycleManagement() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			<ConfirmDialog />
 		</div>
 	);
 }

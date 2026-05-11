@@ -286,7 +286,7 @@ describe("exams router", () => {
 
 		const semesterFiltered = await admin.exams.list({
 			academicYearId: primary.klass.academicYear,
-			semesterId: customSemester.id,
+			classId: semesterClass.id,
 		});
 		expect(
 			semesterFiltered.items.every((item) => item.classId === semesterClass.id),

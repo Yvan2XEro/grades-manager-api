@@ -12,7 +12,7 @@ import {
 	Users,
 	XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -102,6 +102,18 @@ export default function RetakeEligibility() {
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
+
+	const { data: semestersData } = useQuery(
+		trpc.semesters.list.queryOptions({}),
+	);
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
 	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 	const [overrideModal, setOverrideModal] = useState<OverrideModalState>({
 		isOpen: false,
@@ -115,7 +127,7 @@ export default function RetakeEligibility() {
 	const examsQuery = useQuery({
 		...trpc.exams.list.queryOptions({
 			academicYearId: academicYearId ?? undefined,
-			...(filterSemester ? { semesterId: filterSemester } : {}),
+			...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			limit: 100,
 		}),
 		enabled: Boolean(academicYearId),

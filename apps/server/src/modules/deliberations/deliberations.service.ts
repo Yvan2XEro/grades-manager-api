@@ -115,6 +115,7 @@ export async function create(
 		type: input.type as schema.DeliberationType,
 		presidentId: input.presidentId ?? null,
 		juryMembers: input.juryMembers,
+		juryNumber: input.juryNumber ?? null,
 		deliberationDate: input.deliberationDate
 			? new Date(input.deliberationDate)
 			: null,
@@ -151,6 +152,7 @@ export async function update(
 	return repo.updateDeliberation(input.id, institutionId, {
 		presidentId: input.presidentId,
 		juryMembers: input.juryMembers,
+		juryNumber: input.juryNumber,
 		deliberationDate: input.deliberationDate
 			? new Date(input.deliberationDate)
 			: undefined,
@@ -910,14 +912,19 @@ export async function exportDiplomation(
 
 	const docParams = (institution.metadata as schema.InstitutionMetadata)
 		?.document_params;
+	const prog = (delib as any).classRef?.program;
+	const cycle = prog?.cycle;
 	return {
 		institution: {
 			name: institution.nameFr,
 			nameEn: institution.nameEn,
 			code: institution.code,
+			abbreviation: institution.abbreviation ?? null,
 			logoUrl: institution.logoUrl,
 			sloganFr: institution.sloganFr ?? null,
 			address: institution.addressFr ?? null,
+			postalBox: institution.postalBox ?? null,
+			phone: institution.contactPhone ?? null,
 			signatoryName: docParams?.signatoryName ?? null,
 			signatoryTitle: docParams?.signatoryTitle ?? null,
 			city: docParams?.city ?? null,
@@ -926,21 +933,30 @@ export async function exportDiplomation(
 			id: delib.id,
 			type: delib.type,
 			date: delib.deliberationDate?.toISOString() ?? null,
+			juryNumber: delib.juryNumber ?? null,
 			status: delib.status,
 			className: (delib as any).classRef?.name ?? "",
-			programName: (delib as any).classRef?.program?.name ?? "",
+			programName: prog?.name ?? "",
 			academicYearName: (delib as any).academicYear?.name ?? "",
 			semesterName: (delib as any).semester?.name ?? null,
 			admissionDate: (delib as any).signedAt?.toISOString() ?? null,
 		},
 		program: {
-			diplomaTitleFr: (delib as any).classRef?.program?.diplomaTitleFr ?? null,
-			diplomaTitleEn: (delib as any).classRef?.program?.diplomaTitleEn ?? null,
-			specialite: (delib as any).classRef?.programOption?.name ?? null,
-			attestationValidityFr:
-				(delib as any).classRef?.program?.attestationValidityFr ?? null,
-			attestationValidityEn:
-				(delib as any).classRef?.program?.attestationValidityEn ?? null,
+			nameEn: prog?.nameEn ?? null,
+			abbreviation: prog?.abbreviation ?? null,
+			domainFr: prog?.domainFr ?? null,
+			domainEn: prog?.domainEn ?? null,
+			specialiteFr:
+				prog?.specialiteFr ??
+				(delib as any).classRef?.programOption?.name ??
+				null,
+			specialiteEn: prog?.specialiteEn ?? null,
+			cycleNameFr: cycle?.name ?? null,
+			cycleNameEn: cycle?.nameEn ?? null,
+			diplomaTitleFr: prog?.diplomaTitleFr ?? null,
+			diplomaTitleEn: prog?.diplomaTitleEn ?? null,
+			attestationValidityFr: prog?.attestationValidityFr ?? null,
+			attestationValidityEn: prog?.attestationValidityEn ?? null,
 		},
 		jury: {
 			president: delib.presidentId

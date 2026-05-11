@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { GraduationCap, Search, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
+import { toast } from "@/lib/toast";
 import { trpcClient } from "../../utils/trpc";
 
 // ---------------------------------------------------------------------------
@@ -60,7 +61,7 @@ export default function GraduatedStudents() {
 	const [search, setSearch] = useState("");
 	const pagination = useCursorPagination({ pageSize: 50 });
 
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, isError, error } = useQuery({
 		queryKey: ["graduated-students", pagination.cursor],
 		queryFn: () =>
 			trpcClient.classes.graduatedStudents.query({
@@ -68,6 +69,12 @@ export default function GraduatedStudents() {
 				limit: 50,
 			}),
 	});
+
+	useEffect(() => {
+		if (isError && error instanceof Error) {
+			toast.error(error.message);
+		}
+	}, [isError, error]);
 
 	const items = data?.items ?? [];
 

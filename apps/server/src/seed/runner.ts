@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { hashPassword } from "better-auth/crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
@@ -18,6 +18,11 @@ import * as authSchema from "../db/schema/auth";
 import type { RegistrationNumberFormatDefinition } from "../db/schema/registration-number-types";
 import type { OrganizationRoleName } from "../lib/organization-roles";
 import { normalizeCode, slugify } from "../lib/strings";
+import type { TransactionClient } from "../modules/_shared/db-transaction";
+import * as classesRepo from "../modules/classes/classes.repo";
+import * as deliberationsService from "../modules/deliberations/deliberations.service";
+import { generateRegistrationNumber } from "../modules/registration-numbers/registration-number-generator";
+import * as registrationNumbersRepo from "../modules/registration-numbers/registration-numbers.repo";
 import * as studentCreditLedgerService from "../modules/student-credit-ledger/student-credit-ledger.service";
 
 type SeedLogger = Pick<Console, "log" | "error">;
@@ -44,6 +49,7 @@ export type FoundationSeed = {
 	studyCycles?: Array<{
 		code: string;
 		name: string;
+		nameEn?: string;
 		facultyCode: string;
 		description?: string;
 		totalCreditsRequired?: number;
@@ -73,7 +79,7 @@ export type FoundationSeed = {
 	}>;
 	institutions?: Array<{
 		code: string;
-		type?: "main" | "faculty" | "department" | "other";
+		type?: "main" | "university" | "faculty" | "department" | "other";
 		shortName?: string;
 		nameFr: string;
 		nameEn: string;
@@ -91,20 +97,86 @@ export type FoundationSeed = {
 		postalBox?: string;
 		website?: string;
 		logoUrl?: string;
+		/** Inline SVG markup; preferred over logoUrl when set. */
+		logoSvg?: string;
 		coverImageUrl?: string;
 		timezone?: string;
 		organizationSlug?: string;
 		parentInstitutionCode?: string;
+		/** Marks this entry as the default tenant institution. Mutually exclusive
+		 * with `idx === 0` fallback — explicit flag wins. Lets us define parents
+		 * before the default entry so child→parent links resolve in one pass. */
+		isDefault?: boolean;
 	}>;
+	centers?: Array<{
+		code: string;
+		institutionCode: string;
+		shortName?: string;
+		name: string;
+		nameEn?: string;
+		description?: string;
+		addressFr?: string;
+		addressEn?: string;
+		city?: string;
+		country?: string;
+		postalBox?: string;
+		contactEmail?: string;
+		contactPhone?: string;
+		logoUrl?: string;
+		/** Inline SVG markup for the center logo; preferred over logoUrl. */
+		logoSvg?: string;
+		adminInstanceLogoUrl?: string;
+		/** Inline SVG markup for the admin instance logo; preferred over adminInstanceLogoUrl. */
+		adminInstanceLogoSvg?: string;
+		watermarkLogoUrl?: string;
+		/** Inline SVG markup for the watermark; preferred over watermarkLogoUrl. */
+		watermarkLogoSvg?: string;
+		authorizationOrderFr?: string;
+		authorizationOrderEn?: string;
+		isActive?: boolean;
+		administrativeInstances?: Array<{
+			nameFr: string;
+			nameEn: string;
+			acronymFr?: string;
+			acronymEn?: string;
+			logoUrl?: string;
+			/** Inline SVG markup; preferred over logoUrl. */
+			logoSvg?: string;
+			showOnTranscripts?: boolean;
+			showOnCertificates?: boolean;
+		}>;
+		legalTexts?: Array<{
+			textFr: string;
+			textEn: string;
+		}>;
+	}>;
+	/** Default center code applied to programs that omit `centerCode`. Lives on
+	 * the foundation seed so it can be inherited by every academic dataset. */
+	defaultProgramCenterCode?: string;
 };
 
 type ProgramSeed = {
 	code: string;
-	name: string;
+	name?: string;
+	nameFr?: string;
+	nameEn?: string;
+	abbreviation?: string;
 	slug?: string;
 	description?: string;
-	facultyCode: string;
+	domainFr?: string;
+	domainEn?: string;
+	specialiteFr?: string;
+	specialiteEn?: string;
+	diplomaTitleFr?: string;
+	diplomaTitleEn?: string;
+	attestationValidityFr?: string;
+	attestationValidityEn?: string;
+	/** Links the program to a study cycle (e.g. BTS, LP, MP). */
 	studyCycleCode?: string;
+	facultyCode: string;
+	/** Optional center (campus) the program is affiliated with. Falls back to
+	 * the seed-level `defaultProgramCenterCode` if omitted. */
+	centerCode?: string;
 };
 
 type ClassSeed = {
@@ -116,6 +188,8 @@ type ClassSeed = {
 	studyCycleCode: string;
 	cycleLevelCode: string;
 	semesterCode?: string;
+	/** Total credits for this class (defaults to 0). */
+	totalCredits?: number;
 };
 
 type ClassCourseSeed = {
@@ -125,6 +199,8 @@ type ClassCourseSeed = {
 	courseCode: string;
 	teacherCode: string;
 	semesterCode?: string;
+	/** Coefficient for weighted-average within the UE (defaults to 1.00). */
+	coefficient?: number;
 };
 
 type ExamSeed = {
@@ -152,6 +228,8 @@ type EnrollmentWindowSeed = {
 
 export type AcademicsSeed = {
 	meta?: SeedMeta;
+	/** Default center code applied to programs that omit `centerCode`. */
+	defaultProgramCenterCode?: string;
 	programs?: ProgramSeed[];
 	programOptions?: Array<{
 		programCode: string;
@@ -162,18 +240,36 @@ export type AcademicsSeed = {
 	teachingUnits?: Array<{
 		programCode: string;
 		code: string;
-		name: string;
+		/** Libellé de l'UE — accepte `name` ou `title` (alias). */
+		name?: string;
+		title?: string;
 		description?: string;
 		credits?: number;
 		semester?: TeachingUnitSemester;
+		/** Champs métier conservés pour documentation (non stockés en DB). */
+		semesterCode?: string;
+		cycleLevelCode?: string;
+		categoryCode?: string;
+		hoursCM?: number;
+		hoursTD?: number;
+		hoursTP?: number;
+		hoursTPE?: number;
+		hoursTotal?: number;
+		ecCount?: number;
+		isInternship?: boolean;
 	}>;
 	courses?: Array<{
-		programCode: string;
+		programCode?: string;
 		teachingUnitCode: string;
 		code: string;
-		name: string;
-		hours: number;
+		/** Libellé de l'EC — accepte `name` ou `title` (alias). */
+		name?: string;
+		title?: string;
+		hours?: number;
+		credits?: number;
 		defaultTeacherCode?: string;
+		/** Coefficient for weighted-average within the UE (defaults to 1.00). */
+		defaultCoefficient?: number;
 	}>;
 	classes?: ClassSeed[];
 	classCourses?: ClassCourseSeed[];
@@ -211,7 +307,13 @@ type StudentSeed = {
 	domainUserCode: string;
 	classCode: string;
 	classAcademicYearCode?: string;
-	registrationNumber: string;
+	/**
+	 * Optional. When omitted, the runner allocates a registration number
+	 * via the institution's active format AFTER sorting students of the
+	 * same class alphabetically (lastName, firstName). This guarantees
+	 * matricules follow alphabetical order in PDF exports.
+	 */
+	registrationNumber?: string;
 };
 
 type EnrollmentSeed = {
@@ -240,6 +342,46 @@ type StudentCourseEnrollmentSeed = {
 	attempt?: number;
 	creditsAttempted: number;
 	creditsEarned?: number;
+};
+
+type ExamUpdateSeed = {
+	id: string;
+	status?: "draft" | "scheduled" | "submitted" | "approved" | "rejected";
+	isLocked?: boolean;
+};
+
+type GradeSeed = {
+	examId: string;
+	studentCode: string;
+	score: number;
+};
+
+type JuryMemberSeed = {
+	userCode: string;
+	name: string;
+	role: string;
+};
+
+type DeliberationSeedEntry = {
+	code: string;
+	classCode: string;
+	classAcademicYearCode?: string;
+	academicYearCode: string;
+	type: string;
+	presidentCode?: string;
+	juryMembers?: JuryMemberSeed[];
+	juryNumber?: string;
+	deliberationDate?: string;
+	actorCode: string;
+	targetStatus: "draft" | "open" | "closed" | "signed";
+};
+
+export type GradesDeliberationsSeed = {
+	meta?: SeedMeta;
+	additionalExams?: ExamSeed[];
+	examUpdates?: ExamUpdateSeed[];
+	grades?: GradeSeed[];
+	deliberations?: DeliberationSeedEntry[];
 };
 
 export type UsersSeed = {
@@ -288,6 +430,8 @@ type SeedState = {
 	>;
 	semesters: Map<string, string>;
 	academicYears: Map<string, string>;
+	centers: Map<string, { id: string; institutionId: string }>;
+	defaultProgramCenterCode?: string;
 	programs: Map<string, ProgramRecord>;
 	programOptions: Map<
 		string,
@@ -306,7 +450,7 @@ type SeedState = {
 	pendingClassCourses: ClassCourseSeed[];
 	pendingExams: ExamSeed[];
 	authUsers: Map<string, string>;
-	domainUsers: Map<string, { id: string }>;
+	domainUsers: Map<string, { id: string; firstName: string; lastName: string }>;
 	students: Map<string, { id: string }>;
 };
 
@@ -317,14 +461,16 @@ export type RunSeedOptions = {
 	foundationPath?: string;
 	academicsPath?: string;
 	usersPath?: string;
+	gradesPath?: string;
 };
 
 const defaultSeedRelativeDir = path.join("seed", "local");
 
 const normalizeInstitutionType = (
-	type?: "main" | "faculty" | "department" | "other",
+	type?: "main" | "university" | "faculty" | "department" | "other",
 ): schema.InstitutionType => {
 	if (type === "faculty") return "faculty";
+	if (type === "university") return "university";
 	return "institution";
 };
 
@@ -351,10 +497,12 @@ export async function runSeed(options: RunSeedOptions = {}) {
 		foundationPath: path.join(seedBaseDir, "00-foundation.yaml"),
 		academicsPath: path.join(seedBaseDir, "10-academics.yaml"),
 		usersPath: path.join(seedBaseDir, "20-users.yaml"),
+		gradesPath: path.join(seedBaseDir, "40-grades-deliberations.yaml"),
 	};
 	const foundationPath = options.foundationPath ?? defaults.foundationPath;
 	const academicsPath = options.academicsPath ?? defaults.academicsPath;
 	const usersPath = options.usersPath ?? defaults.usersPath;
+	const gradesPath = options.gradesPath ?? defaults.gradesPath;
 
 	const state = createSeedState();
 	const foundation = await loadSeedFile<FoundationSeed>(foundationPath, logger);
@@ -384,7 +532,19 @@ export async function runSeed(options: RunSeedOptions = {}) {
 		);
 		await seedUsers(db, state, users, logger);
 	}
-	if (!foundation && !academics && !users) {
+	const gradesData = await loadSeedFile<GradesDeliberationsSeed>(
+		gradesPath,
+		logger,
+	);
+	if (gradesData) {
+		logger.log(
+			`[seed] Applying grades & deliberations layer${
+				gradesData.meta?.version ? ` (${gradesData.meta.version})` : ""
+			}`,
+		);
+		await seedGradesAndDeliberations(db, state, gradesData, logger);
+	}
+	if (!foundation && !academics && !users && !gradesData) {
 		logger.log(
 			"[seed] No seed layers were applied. Provide at least one file or override the paths.",
 		);
@@ -401,6 +561,7 @@ function createSeedState(): SeedState {
 		cycleLevels: new Map(),
 		semesters: new Map(),
 		academicYears: new Map(),
+		centers: new Map(),
 		programs: new Map(),
 		programOptions: new Map(),
 		teachingUnits: new Map(),
@@ -531,6 +692,14 @@ async function seedFoundation(
 	// Process institutions early so that institutions with type="faculty" can populate state.faculties
 	// before they are needed by studyCycles
 	const institutions = data.institutions ?? [];
+	// `defaultIdx` flags which entry should claim the existing defaultInstitutionId
+	// row (so the active tenant is preserved across re-seeds even if its parents
+	// must be defined first in the YAML). Falls back to idx 0 when no entry sets
+	// `isDefault: true`, preserving the legacy convention.
+	const explicitDefaultIdx = institutions.findIndex(
+		(entry) => entry.isDefault === true,
+	);
+	const defaultIdx = explicitDefaultIdx >= 0 ? explicitDefaultIdx : 0;
 	for (let idx = 0; idx < institutions.length; idx++) {
 		const entry = institutions[idx];
 		const code = normalizeCode(entry.code);
@@ -581,6 +750,7 @@ async function seedFoundation(
 			postalBox: entry.postalBox ?? null,
 			website: entry.website ?? null,
 			logoUrl: entry.logoUrl ?? null,
+			logoSvg: entry.logoSvg ?? null,
 			coverImageUrl: entry.coverImageUrl ?? null,
 			timezone: entry.timezone ?? "UTC",
 			organizationId,
@@ -589,7 +759,7 @@ async function seedFoundation(
 		};
 
 		let institutionRecordId: string;
-		if (idx === 0 && state.defaultInstitutionId) {
+		if (idx === defaultIdx && state.defaultInstitutionId) {
 			await db
 				.update(schema.institutions)
 				.set(payload)
@@ -618,13 +788,113 @@ async function seedFoundation(
 		// Supports both faculty-based structures and single-institution setups
 		state.faculties.set(code, { id: institutionRecordId, code });
 
-		// Set as default institution if it's the first one
-		if (idx === 0 && !state.defaultInstitutionId) {
+		// Set as default institution on a fresh DB (no existing default).
+		if (idx === defaultIdx && !state.defaultInstitutionId) {
 			state.defaultInstitutionId = institutionRecordId;
 		}
 	}
 	if (data.institutions?.length) {
 		logger.log(`[seed] • Institutions: ${data.institutions.length}`);
+	}
+
+	// Centers (campuses, vocational training centers) under an institution.
+	// Each center can carry administrative instances and bilingual legal texts
+	// that feed the export header (relevés / attestations).
+	for (const entry of data.centers ?? []) {
+		const targetInst = state.institutions.get(
+			normalizeCode(entry.institutionCode),
+		);
+		if (!targetInst) {
+			throw new Error(
+				`Center "${entry.code}" references unknown institution "${entry.institutionCode}". Define the institution first.`,
+			);
+		}
+		const centerPayload = {
+			institutionId: targetInst.id,
+			code: entry.code,
+			shortName: entry.shortName ?? null,
+			name: entry.name,
+			nameEn: entry.nameEn ?? null,
+			description: entry.description ?? null,
+			addressFr: entry.addressFr ?? null,
+			addressEn: entry.addressEn ?? null,
+			city: entry.city ?? null,
+			country: entry.country ?? null,
+			postalBox: entry.postalBox ?? null,
+			contactEmail: entry.contactEmail ?? null,
+			contactPhone: entry.contactPhone ?? null,
+			logoUrl: entry.logoUrl ?? null,
+			logoSvg: entry.logoSvg ?? null,
+			adminInstanceLogoUrl: entry.adminInstanceLogoUrl ?? null,
+			adminInstanceLogoSvg: entry.adminInstanceLogoSvg ?? null,
+			watermarkLogoUrl: entry.watermarkLogoUrl ?? null,
+			watermarkLogoSvg: entry.watermarkLogoSvg ?? null,
+			authorizationOrderFr: entry.authorizationOrderFr ?? null,
+			authorizationOrderEn: entry.authorizationOrderEn ?? null,
+			isActive: entry.isActive ?? true,
+			updatedAt: new Date(),
+		};
+		const [center] = await db
+			.insert(schema.centers)
+			.values(centerPayload)
+			.onConflictDoUpdate({
+				target: [schema.centers.code, schema.centers.institutionId],
+				set: centerPayload,
+			})
+			.returning();
+		state.centers.set(normalizeCode(entry.code), {
+			id: center.id,
+			institutionId: targetInst.id,
+		});
+
+		// Replace administrative instances (idempotent: clear + re-insert).
+		await db
+			.delete(schema.centerAdministrativeInstances)
+			.where(eq(schema.centerAdministrativeInstances.centerId, center.id));
+		const adminRows = entry.administrativeInstances ?? [];
+		if (adminRows.length) {
+			await db.insert(schema.centerAdministrativeInstances).values(
+				adminRows.map((row, i) => ({
+					centerId: center.id,
+					orderIndex: i,
+					nameFr: row.nameFr,
+					nameEn: row.nameEn,
+					acronymFr: row.acronymFr ?? null,
+					acronymEn: row.acronymEn ?? null,
+					logoUrl: row.logoUrl ?? null,
+					logoSvg: row.logoSvg ?? null,
+					showOnTranscripts: row.showOnTranscripts ?? true,
+					showOnCertificates: row.showOnCertificates ?? true,
+				})),
+			);
+		}
+
+		// Replace legal texts (idempotent: clear + re-insert).
+		await db
+			.delete(schema.centerLegalTexts)
+			.where(eq(schema.centerLegalTexts.centerId, center.id));
+		const legalRows = entry.legalTexts ?? [];
+		if (legalRows.length) {
+			await db.insert(schema.centerLegalTexts).values(
+				legalRows.map((row, i) => ({
+					centerId: center.id,
+					orderIndex: i,
+					textFr: row.textFr,
+					textEn: row.textEn,
+				})),
+			);
+		}
+	}
+	if (data.centers?.length) {
+		logger.log(`[seed] • Centers: ${data.centers.length}`);
+	}
+
+	// Pick up the foundation-level default center for programs (academics seed
+	// can still override via its own `defaultProgramCenterCode`).
+	if (data.defaultProgramCenterCode) {
+		state.defaultProgramCenterCode = normalizeCode(
+			data.defaultProgramCenterCode,
+		);
 	}
 
 	for (const entry of data.examTypes ?? []) {
@@ -758,6 +1028,7 @@ async function seedFoundation(
 				institutionId: faculty.id,
 				code,
 				name: entry.name,
+				nameEn: entry.nameEn ?? null,
 				description: entry.description ?? null,
 				totalCreditsRequired: entry.totalCreditsRequired ?? 180,
 				durationYears: entry.durationYears ?? 3,
@@ -766,6 +1037,7 @@ async function seedFoundation(
 				target: [schema.studyCycles.institutionId, schema.studyCycles.code],
 				set: {
 					name: entry.name,
+					nameEn: entry.nameEn ?? null,
 					description: entry.description ?? null,
 					totalCreditsRequired: entry.totalCreditsRequired ?? 180,
 					durationYears: entry.durationYears ?? 3,
@@ -939,6 +1211,12 @@ async function seedAcademics(
 	logger: SeedLogger,
 ) {
 	const institutionId = await ensureSeedInstitutionId(db, state);
+	// Academics-level default center overrides foundation-level default.
+	if (data.defaultProgramCenterCode) {
+		state.defaultProgramCenterCode = normalizeCode(
+			data.defaultProgramCenterCode,
+		);
+	}
 	for (const entry of data.programs ?? []) {
 		const facultyCode = normalizeCode(entry.facultyCode);
 		const faculty = state.faculties.get(facultyCode);
@@ -948,7 +1226,14 @@ async function seedAcademics(
 			);
 		}
 		const code = normalizeCode(entry.code);
-		const slug = entry.slug ?? slugify(entry.name);
+		const programName = entry.name ?? entry.nameFr;
+		if (!programName) {
+			throw new Error(
+				`Program ${entry.code} is missing a "name" (or "nameFr") field.`,
+			);
+		}
+		const slug = entry.slug ?? slugify(programName);
+		// Resolve optional study cycle link
 		let cycleId: string | null = null;
 		if (entry.studyCycleCode) {
 			const cycleCode = normalizeCode(entry.studyCycleCode);
@@ -957,28 +1242,68 @@ async function seedAcademics(
 				state.studyCycles.get(`inses::${cycleCode}`);
 			if (!cycle) {
 				throw new Error(
-					`Unknown studyCycleCode "${entry.studyCycleCode}" for program ${entry.code}`,
+					`Unknown study cycle "${entry.studyCycleCode}" for program ${entry.code}`,
 				);
 			}
 			cycleId = cycle.id;
 		}
+		// Resolve center: explicit centerCode wins over the seed-level default.
+		const centerCode = entry.centerCode
+			? normalizeCode(entry.centerCode)
+			: (state.defaultProgramCenterCode ?? null);
+		let centerId: string | null = null;
+		if (centerCode) {
+			const center = state.centers.get(centerCode);
+			if (!center) {
+				throw new Error(
+					`Unknown center code "${centerCode}" for program ${entry.code}. Define it under the foundation \`centers:\` block first.`,
+				);
+			}
+			centerId = center.id;
+		}
+
+		const programPayload = {
+			code,
+			name: programName,
+			nameEn: entry.nameEn ?? null,
+			abbreviation: entry.abbreviation ?? null,
+			slug,
+			description: entry.description ?? null,
+			domainFr: entry.domainFr ?? null,
+			domainEn: entry.domainEn ?? null,
+			specialiteFr: entry.specialiteFr ?? null,
+			specialiteEn: entry.specialiteEn ?? null,
+			diplomaTitleFr: entry.diplomaTitleFr ?? null,
+			diplomaTitleEn: entry.diplomaTitleEn ?? null,
+			attestationValidityFr: entry.attestationValidityFr ?? null,
+			attestationValidityEn: entry.attestationValidityEn ?? null,
+			cycleId,
+			centerId,
+			isCenterProgram: centerId !== null,
+			institutionId: faculty.id,
+		};
 		const [program] = await db
 			.insert(schema.programs)
-			.values({
-				code,
-				name: entry.name,
-				slug,
-				description: entry.description ?? null,
-				institutionId: faculty.id,
-				cycleId,
-			})
+			.values(programPayload)
 			.onConflictDoUpdate({
 				target: [schema.programs.code, schema.programs.institutionId],
 				set: {
-					name: entry.name,
-					slug,
-					description: entry.description ?? null,
-					cycleId,
+					name: programPayload.name,
+					nameEn: programPayload.nameEn,
+					abbreviation: programPayload.abbreviation,
+					slug: programPayload.slug,
+					description: programPayload.description,
+					domainFr: programPayload.domainFr,
+					domainEn: programPayload.domainEn,
+					specialiteFr: programPayload.specialiteFr,
+					specialiteEn: programPayload.specialiteEn,
+					diplomaTitleFr: programPayload.diplomaTitleFr,
+					diplomaTitleEn: programPayload.diplomaTitleEn,
+					attestationValidityFr: programPayload.attestationValidityFr,
+					attestationValidityEn: programPayload.attestationValidityEn,
+					cycleId: programPayload.cycleId,
+					centerId: programPayload.centerId,
+					isCenterProgram: programPayload.isCenterProgram,
 				},
 			})
 			.returning();
@@ -1038,23 +1363,40 @@ async function seedAcademics(
 			);
 		}
 		const code = normalizeCode(entry.code);
+		const ueName = entry.name ?? entry.title;
+		if (!ueName) {
+			throw new Error(
+				`Teaching unit ${entry.code} is missing a "name" (or "title") field.`,
+			);
+		}
+		// Normalize semester: YAML may use "S1"/"S2"/"S3"… aliases or `semesterCode`;
+		// DB only knows "fall"/"spring"/"annual".
+		const rawSemester = (entry.semester ?? entry.semesterCode) as
+			| string
+			| undefined;
+		const semester: schema.TeachingUnitSemester =
+			rawSemester === "S1" || rawSemester === "S3" || rawSemester === "S5"
+				? "fall"
+				: rawSemester === "S2" || rawSemester === "S4" || rawSemester === "S6"
+					? "spring"
+					: ((rawSemester as schema.TeachingUnitSemester) ?? "annual");
 		const [unit] = await db
 			.insert(schema.teachingUnits)
 			.values({
 				programId: program.id,
 				code,
-				name: entry.name,
+				name: ueName,
 				description: entry.description ?? null,
 				credits: entry.credits ?? 0,
-				semester: entry.semester ?? "annual",
+				semester,
 			})
 			.onConflictDoUpdate({
 				target: [schema.teachingUnits.programId, schema.teachingUnits.code],
 				set: {
-					name: entry.name,
+					name: ueName,
 					description: entry.description ?? null,
 					credits: entry.credits ?? 0,
-					semester: entry.semester ?? "annual",
+					semester,
 				},
 			})
 			.returning();
@@ -1069,37 +1411,61 @@ async function seedAcademics(
 	}
 
 	for (const entry of data.courses ?? []) {
-		const programCode = normalizeCode(entry.programCode);
-		const program = state.programs.get(programCode);
-		if (!program) {
+		const ecName = entry.name ?? entry.title;
+		if (!ecName) {
 			throw new Error(
-				`Unknown program code "${entry.programCode}" for course ${entry.code}`,
+				`Course ${entry.code} is missing a "name" (or "title") field.`,
 			);
 		}
+		// Find the parent UE: explicit programCode wins, else search across all programs.
 		const unitCode = normalizeCode(entry.teachingUnitCode);
-		const teachingUnit = state.teachingUnits.get(`${programCode}::${unitCode}`);
+		let teachingUnit = entry.programCode
+			? state.teachingUnits.get(
+					`${normalizeCode(entry.programCode)}::${unitCode}`,
+				)
+			: undefined;
+		let programCode = entry.programCode
+			? normalizeCode(entry.programCode)
+			: undefined;
 		if (!teachingUnit) {
+			for (const [key, ue] of state.teachingUnits) {
+				if (key.endsWith(`::${unitCode}`)) {
+					teachingUnit = ue;
+					programCode = ue.programCode;
+					break;
+				}
+			}
+		}
+		if (!teachingUnit || !programCode) {
 			throw new Error(
 				`Unknown teaching unit ${entry.teachingUnitCode} for course ${entry.code}`,
 			);
 		}
+		const program = state.programs.get(programCode);
+		if (!program) {
+			throw new Error(
+				`Unknown program code "${programCode}" for course ${entry.code}`,
+			);
+		}
 		const code = normalizeCode(entry.code);
+		const courseHours = entry.hours ?? 0;
 		const [course] = await db
 			.insert(schema.courses)
 			.values({
 				program: program.id,
 				teachingUnitId: teachingUnit.id,
 				code,
-				name: entry.name,
-				hours: entry.hours,
+				name: ecName,
+				hours: courseHours,
 				defaultTeacher: null,
-				defaultCoefficient: "1.00",
+				defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 			})
 			.onConflictDoUpdate({
 				target: [schema.courses.program, schema.courses.code],
 				set: {
-					name: entry.name,
-					hours: entry.hours,
+					name: ecName,
+					hours: courseHours,
+					defaultCoefficient: entry.defaultCoefficient?.toString() ?? "1.00",
 				},
 			})
 			.returning();
@@ -1170,6 +1536,7 @@ async function seedAcademics(
 				cycleLevelId: cycleLevel.id,
 				programOptionId: option.id,
 				semesterId,
+				totalCredits: entry.totalCredits ?? 0,
 				institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1179,6 +1546,7 @@ async function seedAcademics(
 					programOptionId: option.id,
 					cycleLevelId: cycleLevel.id,
 					semesterId,
+					totalCredits: entry.totalCredits ?? 0,
 					institutionId: program.institutionId,
 				},
 			})
@@ -1286,6 +1654,14 @@ async function seedUsers(
 			});
 		}
 
+		// Persist family names in UPPERCASE for storage consistency. The seed
+		// convention puts the family name (NOM) in `firstName` and given
+		// names (PRÉNOM) in `lastName`. Official documents render the family
+		// name in caps, so we normalize at insertion to avoid relying on
+		// CSS text-transform downstream. Given names keep their original case.
+		const normalizedFirstName = (entry.firstName ?? "").toUpperCase();
+		const normalizedLastName = entry.lastName ?? "";
+
 		let profile: { id: string };
 		if (existingProfile) {
 			// Update existing profile
@@ -1293,8 +1669,8 @@ async function seedUsers(
 				.update(schema.domainUsers)
 				.set({
 					authUserId,
-					firstName: entry.firstName,
-					lastName: entry.lastName,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
 					placeOfBirth: entry.placeOfBirth ?? null,
@@ -1312,8 +1688,8 @@ async function seedUsers(
 				.insert(schema.domainUsers)
 				.values({
 					authUserId,
-					firstName: entry.firstName,
-					lastName: entry.lastName,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
 					primaryEmail: entry.primaryEmail,
 					phone: entry.phone ?? null,
 					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
@@ -1329,6 +1705,8 @@ async function seedUsers(
 
 		state.domainUsers.set(code, {
 			id: profile.id,
+			firstName: entry.firstName ?? "",
+			lastName: entry.lastName ?? "",
 		});
 
 		const targetMemberRole = determineMemberRole(entry);
@@ -1387,7 +1765,62 @@ async function seedUsers(
 		await seedExams(db, state, logger);
 	}
 
-	for (const entry of data.students ?? []) {
+	// Pre-sort students so the matricule allocation walks them in
+	// alphabetical order WITHIN each class (stable on lastName+firstName).
+	// Effect: when a student entry omits `registrationNumber`, the runner
+	// hands out the next number from the active format in alphabetical
+	// order — exports then list students with monotonic, ordered IDs.
+	// Entries that DO carry an explicit `registrationNumber` keep it.
+	const studentsRaw = data.students ?? [];
+	const sortableStudents = studentsRaw.map((entry) => {
+		const du = state.domainUsers.get(normalizeCode(entry.domainUserCode));
+		return {
+			entry,
+			lastName: du?.lastName ?? "",
+			firstName: du?.firstName ?? "",
+		};
+	});
+	sortableStudents.sort((a, b) => {
+		// Group by class so matricule allocation cycles per class.
+		const classCmp = a.entry.classCode.localeCompare(b.entry.classCode);
+		if (classCmp !== 0) return classCmp;
+		// Seed convention: profile.firstName carries the FAMILY NAME (NOM)
+		// — the order users expect for sorted exports/matricules. Within
+		// the same NOM, fall back to lastName (= given names / prénoms).
+		const familyCmp = (a.firstName ?? "").localeCompare(b.firstName ?? "");
+		if (familyCmp !== 0) return familyCmp;
+		return (a.lastName ?? "").localeCompare(b.lastName ?? "");
+	});
+
+	// Cache the institution's active format + each class's full record so
+	// we don't requery on every student. Only loaded on demand if at least
+	// one student needs an auto-generated matricule. Keyed by institutionId
+	// because seedUsers runs without a single global `institutionId` in
+	// scope — it derives the institution from each class instead.
+	const activeFormatByInstitution = new Map<
+		string,
+		Awaited<ReturnType<typeof registrationNumbersRepo.findActive>> | null
+	>();
+	const klassRecordCache = new Map<
+		string,
+		Awaited<ReturnType<typeof classesRepo.findById>>
+	>();
+	async function getActiveFormat(instId: string) {
+		const cached = activeFormatByInstitution.get(instId);
+		if (cached !== undefined) return cached;
+		const fmt = await registrationNumbersRepo.findActive(instId);
+		activeFormatByInstitution.set(instId, fmt ?? null);
+		return fmt ?? null;
+	}
+	async function getKlassRecord(klassId: string, instId: string) {
+		const cached = klassRecordCache.get(klassId);
+		if (cached !== undefined) return cached;
+		const k = await classesRepo.findById(klassId, instId);
+		klassRecordCache.set(klassId, k);
+		return k;
+	}
+
+	for (const { entry } of sortableStudents) {
 		const domainUser = state.domainUsers.get(
 			normalizeCode(entry.domainUserCode),
 		);
@@ -1406,12 +1839,45 @@ async function seedUsers(
 				`Unknown class ${entry.classCode} for student ${entry.code}`,
 			);
 		}
+
+		// Resolve the matricule. Explicit YAML value wins (back-compat); else
+		// generate via the institution's active format. The generator handles
+		// counter incrementing in DB so concurrent seed runs stay consistent.
+		let registrationNumber = entry.registrationNumber;
+		if (!registrationNumber) {
+			const format = await getActiveFormat(klass.institutionId);
+			if (!format) {
+				throw new Error(
+					`No active registration number format set for institution ${klass.institutionId} — cannot auto-generate matricule for student ${entry.code}. Set one in 00-foundation.yaml \`registrationNumberFormats\` or supply \`registrationNumber\` explicitly.`,
+				);
+			}
+			const klassRecord = await getKlassRecord(klass.id, klass.institutionId);
+			if (!klassRecord) {
+				throw new Error(
+					`Class ${entry.classCode} not found in DB while generating matricule for student ${entry.code}`,
+				);
+			}
+			registrationNumber = await generateRegistrationNumber({
+				format,
+				klass: klassRecord,
+				profile: {
+					firstName: domainUser.firstName,
+					lastName: domainUser.lastName,
+				},
+				// `db` is the top-level Drizzle client which is structurally
+				// compatible with the TransactionClient API surface used by
+				// the generator (just `.insert(...).onConflictDoUpdate(...)`).
+				// Cast keeps types happy without forcing a per-student tx.
+				tx: db as unknown as TransactionClient,
+			});
+		}
+
 		const [student] = await db
 			.insert(schema.students)
 			.values({
 				domainUserId: domainUser.id,
 				class: klass.id,
-				registrationNumber: entry.registrationNumber,
+				registrationNumber,
 				institutionId: klass.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1623,6 +2089,39 @@ async function seedUsers(
 		);
 	}
 
+	// Auto-enroll: ensure every (student × class_course-of-its-class) pair has a
+	// student_course_enrollment row. Without this, examsService.createExam refuses
+	// to schedule because ensureRosterForClassCourse throws BAD_REQUEST.
+	// Idempotent — ON CONFLICT skips already-enrolled pairs.
+	const autoEnrollResult = await db.execute(sql`
+		INSERT INTO student_course_enrollments (
+			student_id, class_course_id, course_id, source_class_id,
+			academic_year_id, status, credits_attempted, attempt
+		)
+		SELECT
+			s.id,
+			cc.id,
+			cc.course_id,
+			s.class_id,
+			c.academic_year_id,
+			'active',
+			COALESCE(tu.credits, 1) AS credits_attempted,
+			1
+		FROM students s
+		JOIN class_courses cc ON cc.class_id = s.class_id
+		JOIN classes c ON c.id = s.class_id
+		JOIN courses co ON co.id = cc.course_id
+		JOIN teaching_units tu ON tu.id = co.teaching_unit_id
+		ON CONFLICT (student_id, course_id, academic_year_id, attempt) DO NOTHING
+	`);
+	const autoEnrollCount =
+		(autoEnrollResult as unknown as { rowCount?: number })?.rowCount ?? 0;
+	if (autoEnrollCount > 0) {
+		logger.log(
+			`[seed] • Auto-enrolled student × class_course pairs: ${autoEnrollCount}`,
+		);
+	}
+
 	logger.log("[seed] Users layer applied.");
 }
 
@@ -1743,6 +2242,7 @@ async function seedClassCourses(
 				course: courseRecord.id,
 				teacher: teacher.id,
 				semesterId,
+				coefficient: entry.coefficient?.toString() ?? "1.00",
 				institutionId: classRecord.institutionId,
 			})
 			.onConflictDoUpdate({
@@ -1751,6 +2251,7 @@ async function seedClassCourses(
 					course: courseRecord.id,
 					teacher: teacher.id,
 					semesterId,
+					coefficient: entry.coefficient?.toString() ?? "1.00",
 					institutionId: classRecord.institutionId,
 				},
 			})
@@ -1863,6 +2364,152 @@ async function seedEnrollmentWindows(
 	if (windows.length) {
 		logger.log(`[seed] • Enrollment windows: ${windows.length}`);
 	}
+}
+
+async function seedGradesAndDeliberations(
+	db: typeof appDb,
+	state: SeedState,
+	data: GradesDeliberationsSeed,
+	logger: SeedLogger,
+) {
+	// 1. Seed additional exams (e.g. Final exams missing from the academics layer)
+	if (data.additionalExams?.length) {
+		state.pendingExams.push(...data.additionalExams);
+		await seedExams(db, state, logger);
+	}
+
+	// 2. Update existing exam statuses (e.g. promote draft → approved+locked)
+	for (const entry of data.examUpdates ?? []) {
+		await db
+			.update(schema.exams)
+			.set({
+				...(entry.status !== undefined ? { status: entry.status } : {}),
+				...(entry.isLocked !== undefined ? { isLocked: entry.isLocked } : {}),
+			})
+			.where(eq(schema.exams.id, entry.id));
+	}
+	if (data.examUpdates?.length) {
+		logger.log(`[seed] • Exam status updates: ${data.examUpdates.length}`);
+	}
+
+	// 3. Seed grades
+	for (const entry of data.grades ?? []) {
+		const student = state.students.get(normalizeCode(entry.studentCode));
+		if (!student) {
+			throw new Error(
+				`Unknown student code "${entry.studentCode}" for grade on exam ${entry.examId}`,
+			);
+		}
+		await db
+			.insert(schema.grades)
+			.values({
+				student: student.id,
+				exam: entry.examId,
+				score: String(entry.score),
+			})
+			.onConflictDoUpdate({
+				target: [schema.grades.student, schema.grades.exam],
+				set: {
+					score: String(entry.score),
+					updatedAt: new Date(),
+				},
+			});
+	}
+	if (data.grades?.length) {
+		logger.log(`[seed] • Grades: ${data.grades.length}`);
+	}
+
+	// 4. Seed deliberations (draft → open → compute → close → sign)
+	for (const entry of data.deliberations ?? []) {
+		const klass = findClassRecord(
+			state,
+			entry.classCode,
+			entry.classAcademicYearCode,
+		);
+		if (!klass) {
+			throw new Error(
+				`Unknown class "${entry.classCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const academicYearId = state.academicYears.get(
+			normalizeCode(entry.academicYearCode),
+		);
+		if (!academicYearId) {
+			throw new Error(
+				`Unknown academic year "${entry.academicYearCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const actor = state.domainUsers.get(normalizeCode(entry.actorCode));
+		if (!actor) {
+			throw new Error(
+				`Unknown actor code "${entry.actorCode}" for deliberation ${entry.code}`,
+			);
+		}
+		const presidentId = entry.presidentCode
+			? state.domainUsers.get(normalizeCode(entry.presidentCode))?.id
+			: undefined;
+
+		const juryMembers = (entry.juryMembers ?? []).map((m) => {
+			const member = state.domainUsers.get(normalizeCode(m.userCode));
+			if (!member) {
+				throw new Error(
+					`Unknown jury member code "${m.userCode}" for deliberation ${entry.code}`,
+				);
+			}
+			return { domainUserId: member.id, name: m.name, role: m.role };
+		});
+
+		const delib = await deliberationsService.create(
+			{
+				classId: klass.id,
+				academicYearId,
+				type: entry.type,
+				presidentId,
+				juryMembers,
+				juryNumber: entry.juryNumber,
+				deliberationDate: entry.deliberationDate
+					? new Date(entry.deliberationDate).toISOString()
+					: undefined,
+			},
+			klass.institutionId,
+			actor.id,
+		);
+
+		if (
+			entry.targetStatus === "open" ||
+			entry.targetStatus === "closed" ||
+			entry.targetStatus === "signed"
+		) {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "open" },
+				klass.institutionId,
+				actor.id,
+			);
+			await deliberationsService.compute(
+				delib.id,
+				klass.institutionId,
+				actor.id,
+			);
+		}
+		if (entry.targetStatus === "closed" || entry.targetStatus === "signed") {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "close" },
+				klass.institutionId,
+				actor.id,
+			);
+		}
+		if (entry.targetStatus === "signed") {
+			await deliberationsService.transition(
+				{ id: delib.id, action: "sign" },
+				klass.institutionId,
+				actor.id,
+			);
+		}
+
+		logger.log(`[seed] • Deliberation ${entry.code} → ${entry.targetStatus}`);
+	}
+
+	logger.log("[seed] Grades & deliberations layer applied.");
 }
 
 function findClassRecord(

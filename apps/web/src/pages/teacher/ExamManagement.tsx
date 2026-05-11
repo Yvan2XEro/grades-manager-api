@@ -70,23 +70,36 @@ export default function ExamManagement() {
 	const { t } = useTranslation();
 	const examSchema = useMemo(() => buildExamSchema(t), [t]);
 
+	const { data: semestersData } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query({}),
+	});
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: exams, isLoading } = useQuery({
-		queryKey: ["teacherExams", filterYear, filterSemester],
+		queryKey: ["teacherExams", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.exams.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as Exam[];
 		},
 	});
 
 	const { data: classCourses } = useQuery({
-		queryKey: ["teacherClassCourses", filterYear, filterSemester],
+		queryKey: ["teacherClassCourses", filterYear, filterUeSemester],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return items as ClassCourse[];
 		},

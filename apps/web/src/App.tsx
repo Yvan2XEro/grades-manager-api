@@ -8,8 +8,12 @@ import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
+import CenterDetail from "./pages/admin/CenterDetail";
+import CenterManagement from "./pages/admin/CenterManagement";
+import ClassDocumentTemplates from "./pages/admin/ClassDocumentTemplates";
 import ClassesHub from "./pages/admin/ClassesHub";
 import ConfigurationHub from "./pages/admin/ConfigurationHub";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -19,6 +23,8 @@ import {
 	DeliberationsList,
 } from "./pages/admin/deliberations";
 import ExamsHub from "./pages/admin/ExamsHub";
+import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
+import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
 import GradesHub from "./pages/admin/GradesHub";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import InstitutionHub from "./pages/admin/InstitutionHub";
@@ -26,6 +32,7 @@ import MonitoringDashboard from "./pages/admin/MonitoringDashboard";
 import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
+import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import StudentManagement from "./pages/admin/StudentManagement";
 import UsersHub from "./pages/admin/UsersHub";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -37,6 +44,7 @@ import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
+import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
 import TeacherHub from "./pages/teacher/TeacherHub";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import type { BusinessRole } from "./store";
@@ -191,6 +199,25 @@ function App() {
 						<Route path="promotion" element={<PromotionHub />} />
 						<Route path="configuration" element={<ConfigurationHub />} />
 
+						{/* Feat-only direct routes (new features not yet absorbed in hubs).
+						    Declared before the redirect block so they take precedence. */}
+						<Route path="centers" element={<CenterManagement />} />
+						<Route path="centers/new" element={<CenterDetail />} />
+						<Route path="centers/:centerId" element={<CenterDetail />} />
+						<Route
+							path="class-document-templates"
+							element={<ClassDocumentTemplates />}
+						/>
+						<Route path="document-batch" element={<BulkDocumentGeneration />} />
+						<Route
+							path="export-templates"
+							element={<ExportTemplatesManagement />}
+						/>
+						<Route
+							path="export-templates/:templateId"
+							element={<ExportTemplateEditor />}
+						/>
+
 						{/* Redirects: old routes → hub pages */}
 						<Route
 							path="faculties"
@@ -262,21 +289,7 @@ function App() {
 						/>
 						<Route
 							path="registration-numbers/:formatId"
-							element={
-								<Navigate to="/admin/configuration?tab=reg-numbers" replace />
-							}
-						/>
-						<Route
-							path="export-templates"
-							element={
-								<Navigate to="/admin/configuration?tab=templates" replace />
-							}
-						/>
-						<Route
-							path="export-templates/:templateId"
-							element={
-								<Navigate to="/admin/configuration?tab=templates" replace />
-							}
+							element={<RegistrationNumberFormatDetail />}
 						/>
 						<Route
 							path="promotion-rules"
@@ -321,6 +334,10 @@ function App() {
 							path="grades/:courseId"
 							element={<Navigate to="/teacher" replace />}
 						/>
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/teacher" />}
+						/>
 						<Route path="attendance" element={<AttendanceAlerts />} />
 						<Route path="workflows" element={<WorkflowManager />} />
 						<Route
@@ -343,6 +360,10 @@ function App() {
 						<Route
 							path="grades/:courseId"
 							element={<Navigate to="/grade-editor" replace />}
+						/>
+						<Route
+							path="grades/:courseId/fast"
+							element={<GradeSpreadsheet basePath="/grade-editor" />}
 						/>
 						<Route
 							path="exports"

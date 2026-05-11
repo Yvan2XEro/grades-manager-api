@@ -40,6 +40,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../components/ui/table";
+import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import type { RouterOutputs } from "../../utils/trpc";
 import { trpcClient } from "../../utils/trpc";
@@ -224,6 +225,8 @@ export default function ClassCourseManagement() {
 
 	const selection = useRowSelection(displayedClassCourses);
 
+	const { confirm, ConfirmDialog } = useConfirm();
+
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
 			await Promise.all(
@@ -270,6 +273,7 @@ export default function ClassCourseManagement() {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Spinner className="h-6 w-6 text-primary" />
+				<ConfirmDialog />
 			</div>
 		);
 	}
@@ -302,18 +306,20 @@ export default function ClassCourseManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1 h-3.5 w-3.5" />

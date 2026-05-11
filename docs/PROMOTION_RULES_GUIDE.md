@@ -50,7 +50,7 @@ Server runs at http://localhost:3000
 bun dev:web
 ```
 
-Frontend runs at http://localhost:5173 (or similar)
+Frontend runs at http://localhost:5174 (or similar)
 
 ### 4. Access the UI
 

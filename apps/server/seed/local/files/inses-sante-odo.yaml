@@ -1,0 +1,933 @@
+meta:
+  version: '2024.12'
+  generatedAt: '2024-12-22T00:00:00Z'
+  dataset: inses-sante-odo
+  source: Programme National du Cycle de BTS au Cameroun - Volume 6 (Avril 2017) - MINESUP
+  scope: BTS Santé - Spécialité Odontostomatologie (ODO)
+  ecStats:
+    totalCount: 67
+    totalCredits: 168
+    totalHours: 2520
+program:
+  code: ODO
+  nameFr: Odontostomatologie
+  nameEn: Odontostomatology
+  abbreviation: BTS-ODO
+  slug: odontostomatologie
+  description: Former des thérapeutes dentaires hautement qualifiés capables de fournir des soins dentaires holistiques de
+    haute qualité dans les cliniques au niveau local, national ou international.
+  domainFr: Santé
+  domainEn: Health
+  specialiteFr: Odontostomatologie
+  specialiteEn: Odontostomatology
+  diplomaTitleFr: Brevet de Technicien Supérieur — Spécialité Odontostomatologie
+  diplomaTitleEn: Higher Technician Diploma — Odontostomatology
+  attestationValidityFr: Diplôme d'État du Cameroun, conforme au Programme National BTS - Volume 6, Avril 2017 (MINESUP).
+    Validité permanente sur le territoire national.
+  attestationValidityEn: State diploma of Cameroon, compliant with the National BTS Program - Volume 6, April 2017 (MINESUP).
+    Permanent validity within the national territory.
+  departmentCode: EMS
+  studyCycleCode: BTS-SANTE
+  facultyCode: INSES
+  durationYears: 3
+  totalCredits: 180
+  totalHours: 2700
+  diplomaTitle: Brevet de Technicien Supérieur - Odontostomatologie
+  objective: Former des thérapeutes dentaires hautement qualifiés capables de fournir des soins dentaires holistiques de haute
+    qualité dans les cliniques au niveau local, national ou international.
+  careerOpportunities:
+  - Cliniques dentaires publiques et privées
+  - Cabinets dentaires
+  - Hôpitaux
+  - ONG
+  - Auto-emploi
+  - Recherche
+teachingUnits:
+- code: ODO111
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie-Physiologie I, Biologie cellulaire – Histologie- Embryologie
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: ODO112
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Chimie générale et Biochimie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: ODO113
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sciences sociales I : Sociologie médicale, Anthropologie et Psychologie'
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: ODO114
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Microbiologie I : Bactériologie-Parasitologie'
+  hoursCM: 17
+  hoursTD: 8
+  hoursTP: 2
+  hoursTPE: 3
+  hoursTotal: 30
+  credits: 2
+  ecCount: 2
+- code: ODO115
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Introduction aux Soins infirmiers I : Généralités- Concepts-Histoire-Théories - Développement humain à l''espace
+    de la vie'
+  hoursCM: 50
+  hoursTD: 25
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 90
+  credits: 6
+  ecCount: 2
+- code: ODO116
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Clinique I
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: ODO117
+  programCode: ODO
+  semesterCode: S1
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Formation bilingue I,  Méthode de travail et Techniques de l’information et de la communication I
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: ODO121
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Anatomie et Physiologie II
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 1
+- code: ODO122
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: FOND
+  title: Microbiologie II (Virologie-Mycologie)-Immunologie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO123
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Généralités sur les soins Infirmiers II : Soins infirmiers et Premiers soins'
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO124
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: 'Sante publique I : Epidémiologie-Démographie-Sante Environnement et Promotion de la Santé'
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: ODO125
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Soins infirmiers I, Ethique professionnelle et Déontologie
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: ODO126
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: PROF
+  title: Stage Clinique II
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: ODO127
+  programCode: ODO
+  semesterCode: S2
+  cycleLevelCode: BTS-SANTE1
+  categoryCode: TRAN
+  title: Anglais et Français spécialisés, Techniques de l’information et de la communication II
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+  ecCount: 2
+- code: ODO231
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Pharmacologie clinique
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO232
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Santé communautaire (Dentaire)  / Microbiologie orale, Asepsies, Contrôle d'infections dentaires
+  hoursCM: 45
+  hoursTD: 20
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO233
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Anatomie dentaire et Physiologie I, Embryologie et Histologie
+  hoursCM: 50
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO234
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Ergonomie dentaire
+  hoursCM: 15
+  hoursTD: 10
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 30
+  credits: 2
+  ecCount: 1
+- code: ODO235
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologie orale I, Science des matériaux dentaires
+  hoursCM: 50
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO236
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Clinique III
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: ODO237
+  programCode: ODO
+  semesterCode: S3
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Formation bilingue II, Techniques de l’information et de la communication II, Méthode de recherche
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: ODO241
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Thérapeutique dentaire
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO242
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: FOND
+  title: Parodontologie/ Epidémiologie, Prophylaxie et Vaccinations
+  hoursCM: 50
+  hoursTD: 15
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO243
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Pathologie orale II, Diagnostic oral et Planification de traitement, Anesthésiologie dentaire
+  hoursCM: 50
+  hoursTD: 10
+  hoursTP: 10
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 3
+- code: ODO244
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Restauration dentaire
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: ODO245
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Endodontique / Odontologie communautaire
+  hoursCM: 40
+  hoursTD: 13
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 2
+- code: ODO246
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: PROF
+  title: Stage Clinique  IV
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: ODO247
+  programCode: ODO
+  semesterCode: S4
+  cycleLevelCode: BTS-SANTE2
+  categoryCode: TRAN
+  title: Recherche opérationnelle II, Biostatique I, Système d’information sanitaire
+  hoursCM: 25
+  hoursTD: 10
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+- code: ODO351
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Management de la Santé / Structure, Fonction, Maintenance I
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 15
+  hoursTPE: 5
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO352
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Radiologie dentaire
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO353
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chirurgie orale mineure
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO354
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Prosthodontique
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO355
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Dentisterie pédiatrique I
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO356
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Clinique V
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+- code: ODO357
+  programCode: ODO
+  semesterCode: S5
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Droit de la Santé,  Médecine du Travail, Biostatistique II, Administration
+  hoursCM: 30
+  hoursTD: 5
+  hoursTP: 5
+  hoursTPE: 5
+  hoursTotal: 45
+  credits: 3
+  ecCount: 1
+- code: ODO361
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Economie de la Santé / Orthodontique élémentaire
+  hoursCM: 50
+  hoursTD: 20
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 75
+  credits: 5
+  ecCount: 2
+- code: ODO362
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: FOND
+  title: Dentisterie pédiatrique II
+  hoursCM: 40
+  hoursTD: 10
+  hoursTP: 8
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO363
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Chirurgie orale mineure II
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO364
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Urgences dentaire médicale
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO365
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Structure, Fonction et Maintenance II
+  hoursCM: 40
+  hoursTD: 15
+  hoursTP: 3
+  hoursTPE: 2
+  hoursTotal: 60
+  credits: 4
+  ecCount: 1
+- code: ODO366
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: PROF
+  title: Stage Clinique VI
+  hoursCM: 0
+  hoursTD: 0
+  hoursTP: 20
+  hoursTPE: 70
+  hoursTotal: 90
+  credits: 6
+  isInternship: true
+  ecCount: 1
+- code: ODO367
+  programCode: ODO
+  semesterCode: S6
+  cycleLevelCode: BTS-SANTE3
+  categoryCode: TRAN
+  title: Education civique et éthique, Droit de la Sante, Projet de Recherche
+  hoursCM: 30
+  hoursTD: 8
+  hoursTP: 5
+  hoursTPE: 2
+  hoursTotal: 45
+  credits: 3
+  ecCount: 3
+courses:
+- code: ODO111-EC1
+  teachingUnitCode: ODO111
+  title: Anatomie-Physiologie I
+  credits: 3
+  hours: 45
+- code: ODO111-EC2
+  teachingUnitCode: ODO111
+  title: Biologie cellulaire - Histologie
+  credits: 1
+  hours: 15
+- code: ODO111-EC3
+  teachingUnitCode: ODO111
+  title: Embryologie
+  credits: 1
+  hours: 15
+- code: ODO112-EC1
+  teachingUnitCode: ODO112
+  title: Chimie générale
+  credits: 2
+  hours: 30
+- code: ODO112-EC2
+  teachingUnitCode: ODO112
+  title: Biochimie
+  credits: 2
+  hours: 30
+- code: ODO113-EC1
+  teachingUnitCode: ODO113
+  title: Sociologie - Anthropologie
+  credits: 2
+  hours: 30
+- code: ODO113-EC2
+  teachingUnitCode: ODO113
+  title: Psychologie
+  credits: 2
+  hours: 30
+- code: ODO114-EC1
+  teachingUnitCode: ODO114
+  title: Microbiologie - Bactériologie
+  credits: 1
+  hours: 15
+- code: ODO114-EC2
+  teachingUnitCode: ODO114
+  title: Parasitologie
+  credits: 1
+  hours: 15
+- code: ODO115-EC1
+  teachingUnitCode: ODO115
+  title: Concepts et théories en sciences infirmières
+  credits: 4
+  hours: 60
+- code: ODO115-EC2
+  teachingUnitCode: ODO115
+  title: Développement humain à l'espace de la vie
+  credits: 2
+  hours: 30
+- code: ODO116-EC1
+  teachingUnitCode: ODO116
+  title: Stage Clinique I
+  credits: 6
+  hours: 90
+- code: ODO117-EC1
+  teachingUnitCode: ODO117
+  title: Expression anglaise
+  credits: 1
+  hours: 15
+- code: ODO117-EC2
+  teachingUnitCode: ODO117
+  title: Méthode de travail
+  credits: 1
+  hours: 15
+- code: ODO117-EC3
+  teachingUnitCode: ODO117
+  title: Techniques de l’information et de la communication I
+  credits: 1
+  hours: 15
+- code: ODO121-EC1
+  teachingUnitCode: ODO121
+  title: Anatomie physiologie II
+  credits: 5
+  hours: 75
+- code: ODO122-EC1
+  teachingUnitCode: ODO122
+  title: Microbiologie II (Virologie - Mycologie - Immunologie)
+  credits: 4
+  hours: 60
+- code: ODO123-EC1
+  teachingUnitCode: ODO123
+  title: Soins Infirmiers II
+  credits: 3
+  hours: 45
+- code: ODO123-EC2
+  teachingUnitCode: ODO123
+  title: Premiers soins
+  credits: 2
+  hours: 30
+- code: ODO124-EC1
+  teachingUnitCode: ODO124
+  title: Épidémiologie
+  credits: 1
+  hours: 15
+- code: ODO125-EC1
+  teachingUnitCode: ODO125
+  title: Soins infirmiers I
+  credits: 2
+  hours: 30
+- code: ODO125-EC2
+  teachingUnitCode: ODO125
+  title: Ethique et déontologie professionnelles
+  credits: 2
+  hours: 30
+- code: ODO126-EC1
+  teachingUnitCode: ODO126
+  title: Stage Clinique II
+  credits: 6
+  hours: 90
+- code: ODO127-EC1
+  teachingUnitCode: ODO127
+  title: Anglais et Français spécialisés
+  credits: 2
+  hours: 30
+- code: ODO127-EC2
+  teachingUnitCode: ODO127
+  title: TIC II
+  credits: 1
+  hours: 15
+- code: ODO231-EC1
+  teachingUnitCode: ODO231
+  title: Pharmacologie clinique
+  credits: 4
+  hours: 60
+- code: ODO232-EC1
+  teachingUnitCode: ODO232
+  title: Santé communautaire (Dentaire)
+  credits: 2
+  hours: 30
+- code: ODO232-EC2
+  teachingUnitCode: ODO232
+  title: Microbiologie orale, Asepsis, Contrôle d'infections dentaires
+  credits: 3
+  hours: 45
+- code: ODO233-EC1
+  teachingUnitCode: ODO233
+  title: Anatomie dentaire et Physiologie I
+  credits: 3
+  hours: 45
+- code: ODO233-EC2
+  teachingUnitCode: ODO233
+  title: Embryologie et Histologie
+  credits: 2
+  hours: 30
+- code: ODO234-EC1
+  teachingUnitCode: ODO234
+  title: Ergonomie dentaire
+  credits: 2
+  hours: 30
+- code: ODO235-EC1
+  teachingUnitCode: ODO235
+  title: Pathologie buccale et dentaire
+  credits: 2
+  hours: 30
+- code: ODO235-EC2
+  teachingUnitCode: ODO235
+  title: Science des matériaux dentaires
+  credits: 3
+  hours: 45
+- code: ODO236-EC1
+  teachingUnitCode: ODO236
+  title: Stage Clinique III
+  credits: 6
+  hours: 90
+- code: ODO237-EC1
+  teachingUnitCode: ODO237
+  title: Expression française
+  credits: 1
+  hours: 15
+- code: ODO237-EC2
+  teachingUnitCode: ODO237
+  title: Techniques de l’information et de la communication II
+  credits: 1
+  hours: 15
+- code: ODO237-EC3
+  teachingUnitCode: ODO237
+  title: Méthode de recherche
+  credits: 1
+  hours: 15
+- code: ODO241-EC1
+  teachingUnitCode: ODO241
+  title: Thérapeutique dentaire
+  credits: 4
+  hours: 60
+- code: ODO242-EC1
+  teachingUnitCode: ODO242
+  title: Parodontologie
+  credits: 2
+  hours: 30
+- code: ODO242-EC2
+  teachingUnitCode: ODO242
+  title: Epidémiologie, Prophylaxie et Vaccinations
+  credits: 3
+  hours: 45
+- code: ODO243-EC1
+  teachingUnitCode: ODO243
+  title: Pathologie orale II
+  credits: 1
+  hours: 15
+- code: ODO243-EC2
+  teachingUnitCode: ODO243
+  title: Anesthésiologie dentaire
+  credits: 2
+  hours: 30
+- code: ODO243-EC3
+  teachingUnitCode: ODO243
+  title: Diagnostique orale et planning de traitement
+  credits: 2
+  hours: 30
+- code: ODO244-EC1
+  teachingUnitCode: ODO244
+  title: Restauration dentaire
+  credits: 3
+  hours: 45
+- code: ODO245-EC1
+  teachingUnitCode: ODO245
+  title: Endodontique
+  credits: 2
+  hours: 30
+- code: ODO245-EC2
+  teachingUnitCode: ODO245
+  title: Dentisterie préventive en communauté
+  credits: 2
+  hours: 30
+- code: ODO246-EC1
+  teachingUnitCode: ODO246
+  title: Stage clinique IV
+  credits: 6
+  hours: 90
+- code: ODO247-EC1
+  teachingUnitCode: ODO247
+  title: Initiation à la recherche
+  credits: 1
+  hours: 15
+- code: ODO247-EC2
+  teachingUnitCode: ODO247
+  title: Biostatique I
+  credits: 1
+  hours: 15
+- code: ODO247-EC3
+  teachingUnitCode: ODO247
+  title: Système d’information sanitaire
+  credits: 1
+  hours: 15
+- code: ODO351-EC1
+  teachingUnitCode: ODO351
+  title: Management de la Santé
+  credits: 2
+  hours: 30
+- code: ODO351-EC2
+  teachingUnitCode: ODO351
+  title: Structure, fonction, maintenance I
+  credits: 3
+  hours: 45
+- code: ODO352-EC1
+  teachingUnitCode: ODO352
+  title: Radiologie dentaire
+  credits: 4
+  hours: 60
+- code: ODO353-EC1
+  teachingUnitCode: ODO353
+  title: Chirurgie orale mineure
+  credits: 4
+  hours: 60
+- code: ODO354-EC1
+  teachingUnitCode: ODO354
+  title: Chirurgie orale mineure
+  credits: 4
+  hours: 60
+- code: ODO355-EC1
+  teachingUnitCode: ODO355
+  title: Dentisterie pédiatrique I
+  credits: 4
+  hours: 60
+- code: ODO357-EC1
+  teachingUnitCode: ODO357
+  title: Éléments de droit du travail
+  credits: 1
+  hours: 15
+- code: ODO361-EC1
+  teachingUnitCode: ODO361
+  title: Économie de la santé
+  credits: 2
+  hours: 30
+- code: ODO361-EC2
+  teachingUnitCode: ODO361
+  title: Orthodontique élémentaire
+  credits: 3
+  hours: 45
+- code: ODO362-EC1
+  teachingUnitCode: ODO362
+  title: Dentisterie pédiatrique II
+  credits: 2
+  hours: 30
+- code: ODO363-EC1
+  teachingUnitCode: ODO363
+  title: Chirurgie orale mineure II
+  credits: 4
+  hours: 60
+- code: ODO364-EC1
+  teachingUnitCode: ODO364
+  title: Urgences dentaire médicale
+  credits: 4
+  hours: 60
+- code: ODO365-EC1
+  teachingUnitCode: ODO365
+  title: Urgences dentaire médicale
+  credits: 4
+  hours: 60
+- code: ODO366-EC1
+  teachingUnitCode: ODO366
+  title: Stage clinique VI
+  credits: 6
+  hours: 90
+- code: ODO367-EC1
+  teachingUnitCode: ODO367
+  title: Education civique et éthique
+  credits: 1
+  hours: 15
+- code: ODO367-EC2
+  teachingUnitCode: ODO367
+  title: Droit de la santé
+  credits: 1
+  hours: 15
+- code: ODO367-EC3
+  teachingUnitCode: ODO367
+  title: Projet de Recherche
+  credits: 1
+  hours: 15

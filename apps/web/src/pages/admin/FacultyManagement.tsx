@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { toast } from "@/lib/toast";
+import { ImageUploadField } from "../../components/inputs/ImageUploadField";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import FormModal from "../../components/modals/FormModal";
 import { BulkActionBar } from "../../components/ui/bulk-action-bar";
@@ -56,6 +57,7 @@ import {
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
 import { Textarea } from "../../components/ui/textarea";
+import { useConfirm } from "../../hooks/useConfirm";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -65,6 +67,7 @@ const institutionSchema = z.object({
 	code: z.string().min(1),
 	type: z.enum(["university", "institution", "faculty"]),
 	shortName: z.string().optional(),
+	abbreviation: z.string().optional(),
 	nameFr: z.string().min(1),
 	nameEn: z.string().min(1),
 	legalNameFr: z.string().optional(),
@@ -81,6 +84,7 @@ const institutionSchema = z.object({
 	postalBox: z.string().optional(),
 	website: z.string().url().optional().or(z.literal("")),
 	logoUrl: z.string().url().optional().or(z.literal("")),
+	logoSvg: z.string().optional().or(z.literal("")),
 	coverImageUrl: z.string().url().optional().or(z.literal("")),
 	parentInstitutionId: z.string().optional(),
 	institutionId: z.string().optional(),
@@ -93,6 +97,7 @@ const defaultValues: FormValues = {
 	code: "",
 	type: "faculty",
 	shortName: "",
+	abbreviation: "",
 	nameFr: "",
 	nameEn: "",
 	legalNameFr: "",
@@ -109,6 +114,7 @@ const defaultValues: FormValues = {
 	postalBox: "",
 	website: "",
 	logoUrl: "",
+	logoSvg: "",
 	coverImageUrl: "",
 	parentInstitutionId: undefined,
 	institutionId: undefined,
@@ -121,6 +127,7 @@ type Institution = {
 	nameFr: string;
 	nameEn: string;
 	shortName: string | null;
+	abbreviation: string | null;
 	type: string;
 	legalNameFr: string | null;
 	legalNameEn: string | null;
@@ -136,6 +143,7 @@ type Institution = {
 	postalBox: string | null;
 	website: string | null;
 	logoUrl: string | null;
+	logoSvg: string | null;
 	coverImageUrl: string | null;
 	parentInstitutionId: string | null;
 	institutionId: string | null;
@@ -158,13 +166,34 @@ export default function FacultyManagement() {
 	const { data: allInstitutions, isLoading } = useQuery(
 		trpc.institutions.list.queryOptions(),
 	);
+	const yearsQuery = useQuery(
+		trpc.academicYears.list.queryOptions({ limit: 100 }),
+	);
+	const formatsQuery = useQuery(
+		trpc.registrationNumbers.list.queryOptions({ includeInactive: true }),
+	);
 
 	const institutions = useMemo(
 		() => (allInstitutions ?? []) as Institution[],
 		[allInstitutions],
 	);
+	const years = useMemo(
+		() => (yearsQuery.data?.items ?? []) as Array<{ id: string; name: string }>,
+		[yearsQuery.data],
+	);
+	const formats = useMemo(
+		() =>
+			(formatsQuery.data ?? []) as Array<{
+				id: string;
+				name: string;
+				isActive: boolean;
+			}>,
+		[formatsQuery.data],
+	);
 
 	const selection = useRowSelection(institutions);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const resetForm = () => form.reset(defaultValues);
 
@@ -206,6 +235,7 @@ export default function FacultyManagement() {
 			code: inst.code,
 			type: inst.type as "university" | "institution" | "faculty",
 			shortName: inst.shortName ?? "",
+			abbreviation: inst.abbreviation ?? "",
 			nameFr: inst.nameFr,
 			nameEn: inst.nameEn,
 			legalNameFr: inst.legalNameFr ?? "",
@@ -222,6 +252,7 @@ export default function FacultyManagement() {
 			postalBox: inst.postalBox ?? "",
 			website: inst.website ?? "",
 			logoUrl: inst.logoUrl ?? "",
+			logoSvg: inst.logoSvg ?? "",
 			coverImageUrl: inst.coverImageUrl ?? "",
 			parentInstitutionId: inst.parentInstitutionId ?? undefined,
 			institutionId: inst.institutionId ?? undefined,
@@ -248,6 +279,7 @@ export default function FacultyManagement() {
 				contactEmail: values.contactEmail || undefined,
 				website: values.website || undefined,
 				logoUrl: values.logoUrl || undefined,
+				logoSvg: values.logoSvg || undefined,
 				coverImageUrl: values.coverImageUrl || undefined,
 				parentInstitutionId: values.parentInstitutionId || undefined,
 				institutionId: values.institutionId || undefined,
@@ -273,9 +305,12 @@ export default function FacultyManagement() {
 					contactEmail: values.contactEmail || undefined,
 					website: values.website || undefined,
 					logoUrl: values.logoUrl || undefined,
+					logoSvg: values.logoSvg || undefined,
 					coverImageUrl: values.coverImageUrl || undefined,
 					parentInstitutionId: values.parentInstitutionId || undefined,
 					institutionId: values.institutionId || undefined,
+					defaultAcademicYearId: values.defaultAcademicYearId || undefined,
+					registrationFormatId: values.registrationFormatId || undefined,
 				},
 			}),
 		onSuccess: () => {
@@ -396,18 +431,20 @@ export default function FacultyManagement() {
 								<Button
 									variant="destructive"
 									size="sm"
-									onClick={() => {
-										if (
-											window.confirm(
-												t("common.bulkActions.confirmDelete", {
-													defaultValue:
-														"Are you sure you want to delete the selected items?",
-												}),
-											)
-										) {
-											bulkDeleteMutation.mutate([...selection.selectedIds]);
-										}
-									}}
+									onClick={() =>
+										confirm({
+											title: t("common.bulkActions.confirmDeleteTitle", {
+												defaultValue: "Delete selected items?",
+											}),
+											message: t("common.bulkActions.confirmDelete", {
+												defaultValue:
+													"Are you sure you want to delete the selected items?",
+											}),
+											confirmText: t("common.actions.delete"),
+											onConfirm: () =>
+												bulkDeleteMutation.mutate([...selection.selectedIds]),
+										})
+									}
 									disabled={bulkDeleteMutation.isPending}
 								>
 									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -587,7 +624,7 @@ export default function FacultyManagement() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="grid gap-4 sm:grid-cols-3">
+								<div className="grid gap-4 sm:grid-cols-4">
 									<FormField
 										control={form.control}
 										name="code"
@@ -617,6 +654,23 @@ export default function FacultyManagement() {
 												</FormLabel>
 												<FormControl>
 													<Input {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="abbreviation"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("admin.institution.form.abbreviation", {
+														defaultValue: "Abbreviation",
+													})}
+												</FormLabel>
+												<FormControl>
+													<Input {...field} placeholder="ex: UYI" />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1082,37 +1136,183 @@ export default function FacultyManagement() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
+								<FormField
+									control={form.control}
+									name="logoUrl"
+									render={({ field }) => (
+										<FormItem>
+											<ImageUploadField
+												label={t("admin.institution.form.logoUploadLabel", {
+													defaultValue: "Logo",
+												})}
+												description={t(
+													"admin.institution.form.logoUploadDescription",
+													{
+														defaultValue:
+															"Used on document headers and diplomas.",
+													},
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.logoUrlPlaceholder",
+													{
+														defaultValue: "https://...",
+													},
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="logoSvg"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="text-xs">
+												{t("admin.institution.form.logoSvg", {
+													defaultValue:
+														"…ou code SVG (utilisé en priorité sur les exports)",
+												})}
+											</FormLabel>
+											<FormControl>
+												<Textarea
+													{...field}
+													value={field.value ?? ""}
+													rows={4}
+													placeholder="<svg ...>...</svg>"
+													className="font-mono text-xs"
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="coverImageUrl"
+									render={({ field }) => (
+										<FormItem>
+											<ImageUploadField
+												label={t("admin.institution.form.coverUploadLabel", {
+													defaultValue: "Cover image",
+												})}
+												description={t(
+													"admin.institution.form.coverUploadDescription",
+													{
+														defaultValue:
+															"Background image used on the platform.",
+													},
+												)}
+												value={field.value}
+												onChange={field.onChange}
+												onClear={() => field.onChange("")}
+												placeholder={t(
+													"admin.institution.form.coverImageUrlPlaceholder",
+													{
+														defaultValue: "https://...",
+													},
+												)}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</CardContent>
+						</Card>
+
+						{/* System Configuration */}
+						<Card>
+							<CardHeader className="pb-3">
+								<CardTitle className="text-sm">
+									{t("admin.institution.sections.system", {
+										defaultValue: "System Configuration",
+									})}
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-4">
 								<div className="grid gap-4 md:grid-cols-2">
 									<FormField
 										control={form.control}
-										name="logoUrl"
+										name="defaultAcademicYearId"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t("admin.institution.form.logoUrl", {
-														defaultValue: "Logo URL",
+													{t("admin.institution.form.defaultAcademicYear", {
+														defaultValue: "Default academic year",
 													})}
 												</FormLabel>
-												<FormControl>
-													<Input {...field} placeholder="https://..." />
-												</FormControl>
+												<Select
+													value={field.value ?? NO_SELECTION}
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_SELECTION}>
+															{t("admin.institution.form.noDefaultYear", {
+																defaultValue: "None",
+															})}
+														</SelectItem>
+														{years.map((year) => (
+															<SelectItem key={year.id} value={year.id}>
+																{year.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
 									<FormField
 										control={form.control}
-										name="coverImageUrl"
+										name="registrationFormatId"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>
-													{t("admin.institution.form.coverImageUrl", {
-														defaultValue: "Cover image URL",
+													{t("admin.institution.form.registrationFormat", {
+														defaultValue: "Registration format",
 													})}
 												</FormLabel>
-												<FormControl>
-													<Input {...field} placeholder="https://..." />
-												</FormControl>
+												<Select
+													value={field.value ?? NO_SELECTION}
+													onValueChange={(value) =>
+														field.onChange(
+															value === NO_SELECTION ? undefined : value,
+														)
+													}
+												>
+													<FormControl>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														<SelectItem value={NO_SELECTION}>
+															{t(
+																"admin.institution.form.noRegistrationFormat",
+																{
+																	defaultValue: "None",
+																},
+															)}
+														</SelectItem>
+														{formats.map((fmt) => (
+															<SelectItem key={fmt.id} value={fmt.id}>
+																{fmt.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -1152,6 +1352,7 @@ export default function FacultyManagement() {
 				})}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

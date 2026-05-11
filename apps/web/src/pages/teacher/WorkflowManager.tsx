@@ -31,11 +31,23 @@ const WorkflowManager = () => {
 	const [filterYear, setFilterYear] = useState<string | null>(null);
 	const [filterSemester, setFilterSemester] = useState<string | null>(null);
 
+	const { data: semestersData } = useQuery(
+		trpc.semesters.list.queryOptions({}),
+	);
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semestersData) return undefined;
+		const code =
+			semestersData.items.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semestersData]);
+
 	const { data: classCourses } = useQuery(
 		trpc.classCourses.list.queryOptions({
 			limit: 200,
 			...(filterYear ? { academicYearId: filterYear } : {}),
-			...(filterSemester ? { semesterId: filterSemester } : {}),
+			...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 		}),
 	);
 

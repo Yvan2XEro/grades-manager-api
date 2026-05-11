@@ -61,6 +61,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -72,12 +73,25 @@ const EXPORT_TYPES = [
 	{ value: "evaluation", label: "Evaluation" },
 	{ value: "ue", label: "UE (Teaching Unit)" },
 	{ value: "deliberation", label: "Délibération" },
+	{ value: "diploma", label: "Diplôme" },
+	{ value: "transcript", label: "Relevé de notes" },
+	{ value: "attestation", label: "Attestation" },
+	{ value: "student_list", label: "Liste d'étudiants" },
 ] as const;
 
 const buildSchema = (t: any) =>
 	z.object({
 		name: z.string().min(2, t("admin.exportTemplates.validation.name")),
-		type: z.enum(["pv", "evaluation", "ue", "deliberation"]),
+		type: z.enum([
+			"pv",
+			"evaluation",
+			"ue",
+			"deliberation",
+			"diploma",
+			"transcript",
+			"attestation",
+			"student_list",
+		]),
 		isDefault: z.boolean().default(false),
 	});
 
@@ -131,6 +145,8 @@ export default function ExportTemplatesManagement() {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
 	const selection = useRowSelection(templates ?? []);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	// Rename mutation
 	const renameMutation = useMutation({
@@ -187,6 +203,99 @@ export default function ExportTemplatesManagement() {
 			toast.error(
 				error.message || t("admin.exportTemplates.toast.setDefaultError"),
 			);
+		},
+	});
+
+	// Seed system defaults mutation (idempotent)
+	const seedSystemMutation = useMutation({
+		mutationFn: async () => {
+			return await trpcClient.academicDocuments.seedSystemDefaults.mutate();
+		},
+		onSuccess: (result: {
+			created: string[];
+			skipped: string[];
+			failed?: Array<{ type: string; reason: string }>;
+			linkedAssignments?: number;
+			assignmentFailures?: Array<{
+				programCode?: string;
+				templateType: string;
+				reason: string;
+			}>;
+		}) => {
+			queryClient.invalidateQueries({ queryKey: ["exportTemplates"] });
+			const failed = result.failed ?? [];
+			if (failed.length > 0) {
+				toast.error(
+					`Échecs (${failed.length}) : ${failed
+						.map((f) => `${f.type} → ${f.reason}`)
+						.join(" ; ")}`,
+				);
+			}
+			if (result.created.length > 0) {
+				toast.success(`Modèles officiels créés : ${result.created.join(", ")}`);
+			} else if (failed.length === 0) {
+				toast.info("Tous les modèles officiels sont déjà présents.");
+			}
+			// Auto-link feedback: show how many program×type assignments were
+			// (re)written so the admin sees the linking step ran.
+			const linked = result.linkedAssignments ?? 0;
+			const linkFails = result.assignmentFailures ?? [];
+			if (linked > 0) {
+				toast.success(
+					`${linked} affectations programme → modèle (re)créées (variant centre pour les programmes de centre, standard sinon).`,
+				);
+			}
+			if (linkFails.length > 0) {
+				toast.warning(
+					`${linkFails.length} affectations en échec : ${linkFails
+						.slice(0, 3)
+						.map((f) => `${f.programCode ?? "?"}/${f.templateType}`)
+						.join(", ")}${linkFails.length > 3 ? "…" : ""}`,
+				);
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || "Erreur lors de l'initialisation");
+		},
+	});
+
+	// Render every bundled template (8 kinds × 2 variants) as PDF, return ZIP.
+	// Uses the active institution + center metadata + sample student data so the
+	// admin can review the look of each model without seeding fake students.
+	const exportAllMutation = useMutation({
+		mutationFn: async () => {
+			return await trpcClient.exports.exportAllSampleTemplates.mutate();
+		},
+		onSuccess: (result: {
+			zipBase64: string;
+			count: number;
+			failures: Array<{ kind: string; variant: string; error: string }>;
+		}) => {
+			// Decode base64 → Blob → trigger browser download.
+			const binary = atob(result.zipBase64);
+			const bytes = new Uint8Array(binary.length);
+			for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+			const blob = new Blob([bytes], { type: "application/zip" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `templates-preview-${new Date().toISOString().slice(0, 10)}.zip`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			if (result.failures.length > 0) {
+				toast.warning(
+					`${result.count} modèles exportés, ${result.failures.length} échecs : ${result.failures
+						.map((f) => `${f.kind}/${f.variant}`)
+						.join(", ")}`,
+				);
+			} else {
+				toast.success(`${result.count} modèles exportés en PDF (ZIP)`);
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error.message || "Erreur lors de l'export des modèles");
 		},
 	});
 
@@ -255,10 +364,36 @@ export default function ExportTemplatesManagement() {
 						{t("admin.exportTemplates.subtitle")}
 					</p>
 				</div>
-				<Button onClick={() => navigate("/admin/export-templates/new")}>
-					<Plus className="mr-2 h-4 w-4" />
-					{t("admin.exportTemplates.actions.add")}
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						onClick={() => exportAllMutation.mutate()}
+						disabled={exportAllMutation.isPending}
+						title="Génère un PDF par modèle (16 fichiers — 8 types × standard + centre) avec les vraies infos d'institution et centre, étudiant fictif. Téléchargement ZIP."
+					>
+						{exportAllMutation.isPending ? (
+							<Spinner className="mr-2" />
+						) : (
+							<FileText className="mr-2 h-4 w-4" />
+						)}
+						{exportAllMutation.isPending
+							? "Génération en cours…"
+							: "Télécharger tous les modèles (PDF)"}
+					</Button>
+					<Button
+						variant="outline"
+						onClick={() => seedSystemMutation.mutate()}
+						disabled={seedSystemMutation.isPending}
+						title="Crée les 3 modèles officiels (diplôme, relevé, attestation) si absents"
+					>
+						{seedSystemMutation.isPending && <Spinner className="mr-2" />}
+						Initialiser modèles officiels
+					</Button>
+					<Button onClick={() => navigate("/admin/export-templates/new")}>
+						<Plus className="mr-2 h-4 w-4" />
+						{t("admin.exportTemplates.actions.add")}
+					</Button>
+				</div>
 			</div>
 
 			<Card>
@@ -300,18 +435,20 @@ export default function ExportTemplatesManagement() {
 						<Button
 							variant="destructive"
 							size="sm"
-							onClick={() => {
-								if (
-									window.confirm(
-										t("common.bulkActions.confirmDelete", {
-											defaultValue:
-												"Are you sure you want to delete the selected items?",
-										}),
-									)
-								) {
-									bulkDeleteMutation.mutate([...selection.selectedIds]);
-								}
-							}}
+							onClick={() =>
+								confirm({
+									title: t("common.bulkActions.confirmDeleteTitle", {
+										defaultValue: "Delete selected items?",
+									}),
+									message: t("common.bulkActions.confirmDelete", {
+										defaultValue:
+											"Are you sure you want to delete the selected items?",
+									}),
+									confirmText: t("common.actions.delete"),
+									onConfirm: () =>
+										bulkDeleteMutation.mutate([...selection.selectedIds]),
+								})
+							}
 							disabled={bulkDeleteMutation.isPending}
 						>
 							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -560,6 +697,7 @@ export default function ExportTemplatesManagement() {
 				})}
 				isLoading={deleteMutation.isPending}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

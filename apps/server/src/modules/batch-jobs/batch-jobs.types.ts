@@ -6,6 +6,7 @@ export const BATCH_JOB_TYPES = [
 	"studentFacts.refreshClass",
 	"promotion.applyBatch",
 	"academicYear.setup",
+	"documents.generateBulk",
 ] as const;
 
 export type BatchJobType = (typeof BATCH_JOB_TYPES)[number];

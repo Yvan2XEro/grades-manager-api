@@ -25,29 +25,46 @@
         }
 
         .container {
-            width: 297mm;
-            min-height: 210mm;
+            width: 100%;
             margin: 0 auto;
             background: white;
-            padding: 10mm;
+            padding: 0;
             box-shadow: 0 0 15px rgba(0,0,0,0.08);
             position: relative;
         }
 
         {{#if styleConfig.watermark.enabled}}
         .container::before {
-            content: '{{styleConfig.watermark.text}}';
+            content: '{{styleConfig.watermark.text}}{{#if styleConfig.watermark.institutionName}} — {{styleConfig.watermark.institutionName}}{{/if}}';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
             font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}120{{/if}}px;
             font-weight: bold;
-            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.10{{/if}};
             color: rgba(200, 200, 200, 1);
             z-index: 0;
             pointer-events: none;
         }
+        {{#if styleConfig.watermark.logoUrl}}
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 60%;
+            transform: translate(-50%, -50%);
+            background-image: url('{{styleConfig.watermark.logoUrl}}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+        }
+        {{/if}}
         {{/if}}
 
         .content-wrapper {
@@ -151,7 +168,7 @@
             background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
         }
 
-        .student-name {
+        .student-name { text-transform: uppercase; /* student-name uppercase */
             text-align: left;
             font-weight: bold;
             padding-left: 3px;
@@ -270,9 +287,8 @@
 
             .container {
                 box-shadow: none;
-                padding: 8mm;
-                width: 297mm;
-                min-height: 210mm;
+                padding: 0;
+                width: 100%;
             }
 
             .container::before {
@@ -297,59 +313,70 @@
                 border-style: solid;
             }
         }
+    
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if headerConfig.showInstitutionName}}
-                    {{#if university_name_fr}}
-                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showFacultyName}}
-                    {{#if faculty_name_fr}}
-                    <h2>{{faculty_name_fr}}</h2>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showInstitutionName}}
-                <h2>{{name_fr}} / {{name_en}}</h2>
-                {{/if}}
-
-                {{#if headerConfig.showLogo}}
-                <div class="logos">
-                    {{#if university_logo_url}}
-                    <div class="logo-box">
-                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use pv-template-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong>{{#if faculty.postalBox}}<br>B.P. {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email : {{faculty.contactEmail}}{{/if}}<br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                    {{#if logo_url}}
-                    <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
                     </div>
-                    {{else}}
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>INSTITUTION</div>
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong>{{#if faculty.postalBox}}<br>P.O. Box {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email: {{faculty.contactEmail}}{{/if}}<br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email Université: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}Email Institut: {{contact_email}}{{/if}}
-                    {{#if university_fax}}<br>Fax Université: {{university_fax}}{{/if}}
-                    {{#if fax}}{{#if university_fax}} | {{/if}}Fax Institut: {{fax}}{{/if}}
-                    {{#if university_postal_box}}<br>BP Université: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}BP Institut: {{postal_box}}{{/if}}
                 </div>
             </div>
 
             <div class="title">
-                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DES RÉSULTATS{{/if}}<br>
-                {{#if headerConfig.showSemester}}{{semester}} - {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE {{academicYear}}{{/if}}<br>
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DES RÉSULTATS{{/if}}
+                {{#if headerConfig.titleEn}} / {{headerConfig.titleEn}}{{else}} / GRADE RESULTS MINUTES{{/if}}<br>
+                {{#if headerConfig.showSemester}}{{semester}} — {{/if}}{{#if headerConfig.showAcademicYear}}ANNÉE ACADÉMIQUE / ACADEMIC YEAR {{academicYear}}{{/if}}<br>
                 {{#if headerConfig.showClassName}}({{program.name}} {{program.level}}){{/if}}
             </div>
 
@@ -357,39 +384,35 @@
                 <thead>
                     <tr>
                         <th rowspan="3">N°</th>
-                        <th rowspan="3">MAT</th>
-                        <th rowspan="3">NOM ET PRÉNOM</th>
+                        <th rowspan="3">MAT<br><span style="font-weight:normal">ID</span></th>
+                        <th rowspan="3">NOM ET PRÉNOM<br><span style="font-weight:normal">FULL NAME</span></th>
 
                         {{#each ues}}
-                        <th colspan="{{add (multiply courses.length 3) 7}}" class="ue-header">UE {{code}} : {{name}}</th>
+                        <th colspan="{{add (multiply courses.length 3) 3}}" class="ue-header">UE {{code}} : {{name}}</th>
                         {{/each}}
 
-                        <th rowspan="3">TOTAL<br>CRE</th>
-                        <th rowspan="3">MOY<br>GEN</th>
-                        <th rowspan="3">BILAN</th>
+                        <th rowspan="3">TOTAL CRE<br><span style="font-weight:normal">CREDITS</span></th>
+                        <th rowspan="3">MOY GEN<br><span style="font-weight:normal">GPA</span></th>
+                        <th rowspan="3">BILAN<br><span style="font-weight:normal">RESULT</span></th>
                     </tr>
                     <tr>
                         {{#each ues}}
                             {{#each courses}}
                             <th colspan="3" class="ec-header">EC {{code}}<br>{{name}}</th>
                             {{/each}}
-                            <th colspan="7" class="ec-header">BILAN UE</th>
+                            <th colspan="3" class="ec-header">BILAN UE / UE RESULT</th>
                         {{/each}}
                     </tr>
                     <tr>
                         {{#each ues}}
                             {{#each courses}}
-                            <th>CC</th>
-                            <th>EX</th>
-                            <th>MOY</th>
+                            <th>CC<br><span style="font-weight:normal">CW</span></th>
+                            <th>EX<br><span style="font-weight:normal">EX</span></th>
+                            <th>MOY<br><span style="font-weight:normal">AVG</span></th>
                             {{/each}}
-                            <th>MOY</th>
-                            <th>DEC</th>
-                            <th>CRE</th>
-                            <th>TR</th>
-                            <th>MOY</th>
-                            <th>DEC</th>
-                            <th>CRE</th>
+                            <th>MOY<br>AVG</th>
+                            <th>DEC<br>RES</th>
+                            <th>CRE<br>CR</th>
                         {{/each}}
                     </tr>
                 </thead>
@@ -398,7 +421,7 @@
                     <tr>
                         <td>{{number}}</td>
                         <td>{{registrationNumber}}</td>
-                        <td class="student-name">{{lastName}} {{firstName}}</td>
+                        <td class="student-name">{{upper firstName}} {{upper lastName}}</td>
 
                         {{#each ueGrades}}
                             {{#each courseGrades}}
@@ -411,15 +434,11 @@
                             <td class="moyenne-ue">{{formatNumber average}}</td>
                             <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
                             <td>{{credits}}</td>
-                            <td>{{successRate}}%</td>
-                            <td class="moyenne-ue">{{formatNumber average}}</td>
-                            <td class="{{#if (eq decision 'Ac')}}acquis{{else}}non-acquis{{/if}}">{{decision}}</td>
-                            <td>{{credits}}</td>
                         {{/each}}
 
                         <td>{{totalCredits}}</td>
                         <td class="moyenne-finale">{{formatNumber generalAverage}}</td>
-                        <td class="{{#if (eq overallDecision 'ACQUIS')}}acquis{{else}}non-acquis{{/if}}">
+                        <td class="{{#if (eq overallDecision 'VALIDÉ')}}acquis{{else}}non-acquis{{/if}}">
                             {{overallDecision}}
                         </td>
                     </tr>
@@ -427,7 +446,7 @@
 
                     <tr class="taux-reussite-row">
                         <td colspan="1000" style="border-top: 2px solid #666;">
-                            <strong>Taux de Réussite (TR): {{globalSuccessRate}}%</strong>
+                            <strong>Taux de Réussite / Success Rate (TR / SR): {{formatNumber globalSuccessRate 2}}%</strong>
                         </td>
                     </tr>
                 </tbody>
@@ -437,43 +456,43 @@
                 <div class="legend-info-wrapper">
                     <table class="legend-table">
                         <tr>
-                            <td>CC:</td>
-                            <td>Contrôle Continu</td>
-                            <td>CRE:</td>
-                            <td>Crédits</td>
+                            <td>CC / CW:</td>
+                            <td>Contrôle Continu / Coursework</td>
+                            <td>CRE / CR:</td>
+                            <td>Crédits / Credits</td>
                             <td>Ac:</td>
-                            <td>Acquis</td>
+                            <td>Acquis / Acquired</td>
                         </tr>
                         <tr>
                             <td>EX:</td>
-                            <td>Examen</td>
+                            <td>Examen / Exam</td>
                             <td>EC:</td>
-                            <td>Élément Constitutif</td>
+                            <td>Élément Constitutif / Course unit</td>
                             <td>Nac:</td>
-                            <td>Non Acquis</td>
+                            <td>Non Acquis / Not Acquired</td>
                         </tr>
                         <tr>
-                            <td>MOY:</td>
-                            <td>Moyenne</td>
+                            <td>MOY / AVG:</td>
+                            <td>Moyenne / Average</td>
                             <td>UE:</td>
-                            <td>Unité d'Enseignement</td>
-                            <td>TR:</td>
-                            <td>Taux de Réussite</td>
+                            <td>Unité d'Enseignement / Teaching Unit</td>
+                            <td>TR / SR:</td>
+                            <td>Taux de Réussite / Success Rate</td>
                         </tr>
                         <tr>
-                            <td>DEC:</td>
-                            <td>Décision</td>
-                            <td>MAT:</td>
-                            <td>Matricule</td>
+                            <td>DEC / RES:</td>
+                            <td>Décision / Decision</td>
+                            <td>MAT / ID:</td>
+                            <td>Matricule / Student ID</td>
                             <td></td>
                             <td></td>
                         </tr>
                     </table>
 
                     <div class="info-box">
-                        <div><strong>Programme:</strong> {{program.name}}</div>
-                        <div><strong>Semestre:</strong> {{semester}}</div>
-                        <div><strong>Année académique:</strong> {{academicYear}}</div>
+                        <div><strong>Programme / Program:</strong> {{program.name}}</div>
+                        <div><strong>Semestre / Semester:</strong> {{semester}}</div>
+                        <div><strong>Année académique / Academic Year:</strong> {{academicYear}}</div>
                     </div>
                 </div>
             </div>

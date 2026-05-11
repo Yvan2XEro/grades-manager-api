@@ -22,7 +22,6 @@
 
         .container {
             width: 297mm;
-            min-height: 210mm;
             margin: 0 auto;
             background: white;
             padding: 10mm;
@@ -32,18 +31,36 @@
 
         {{#if styleConfig.watermark.enabled}}
         .container::before {
-            content: '{{styleConfig.watermark.text}}';
+            content: '{{styleConfig.watermark.text}}{{#if styleConfig.watermark.institutionName}} — {{styleConfig.watermark.institutionName}}{{/if}}';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate({{#if styleConfig.watermark.rotation}}{{styleConfig.watermark.rotation}}{{else}}-45{{/if}}deg);
             font-size: {{#if styleConfig.watermark.fontSize}}{{styleConfig.watermark.fontSize}}{{else}}120{{/if}}px;
             font-weight: bold;
-            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.15{{/if}};
+            opacity: {{#if styleConfig.watermark.opacity}}{{styleConfig.watermark.opacity}}{{else}}0.10{{/if}};
             color: rgba(200, 200, 200, 1);
             z-index: 0;
             pointer-events: none;
         }
+        {{#if styleConfig.watermark.logoUrl}}
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 60%;
+            transform: translate(-50%, -50%);
+            background-image: url('{{styleConfig.watermark.logoUrl}}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+        }
+        {{/if}}
         {{/if}}
 
         .content-wrapper { position: relative; z-index: 1; }
@@ -143,7 +160,7 @@
             background: {{#if styleConfig.alternateRowColor}}{{styleConfig.alternateRowColor}}{{else}}white{{/if}};
         }
 
-        .student-name {
+        .student-name { text-transform: uppercase; /* student-name uppercase */
             text-align: left;
             font-weight: bold;
             padding-left: 3px;
@@ -196,63 +213,76 @@
 
         @media print {
             body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 8mm; width: 297mm; min-height: 210mm; }
+            .container { box-shadow: none; padding: 8mm; width: 297mm; }
             .container::before { color: rgba(200, 200, 200, 0.15); }
             table { border: 1px solid #ccc; font-size: 7.5px; }
             th { font-size: 7px; }
             td { font-size: 7.5px; color: #333; }
             .logo-box { border-style: solid; }
         }
+    
+        /* Page-break controls — keep cohesive blocks together and repeat
+           table headers on each page. Added globally so long roster/grade
+           tables don't slice across pages. */
+        @media print {
+            tr, .signatures, .signature, .signature-box, .legend-table,
+            .stats-section, .stats-row, .eval-info, .ec-info, .ue-info,
+            .bottom-section, .footer, .footer-info, .footer-note {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+        @page { orphans: 3; widows: 3; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="content-wrapper">
             <div class="header">
-                {{#if headerConfig.showInstitutionName}}
-                    {{#if university_name_fr}}
-                    <h1>{{university_name_fr}} / {{university_name_en}}</h1>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showFacultyName}}
-                    {{#if faculty_name_fr}}
-                    <h2>{{faculty_name_fr}}</h2>
-                    {{/if}}
-                {{/if}}
-                {{#if headerConfig.showInstitutionName}}
-                <h2>{{name_fr}} / {{name_en}}</h2>
-                {{/if}}
-
-                {{#if headerConfig.showLogo}}
-                <div class="logos">
-                    {{#if university_logo_url}}
-                    <div class="logo-box">
-                        <img src="{{university_logo_url}}" alt="Logo Université" style="max-width: 100px; max-height: 100px;">
+                {{!-- Tutelle header: Pays / Devise / Ministère / Université / Faculté / Institut.
+                     Center-affiliated programs use deliberation-template-center.html (picked by template-loader). --}}
+                <div style="display:flex;justify-content:space-between;align-items: center;gap:12px;margin-bottom:8px;font-size:9px;line-height:1.4;text-align:center;">
+                    <div style="flex:1">
+                        {{country.fr}}<br>
+                        <em>{{country.mottoFr}}</em><br>
+                        ********************<br>
+                        {{ministry.fr}}<br>
+                        {{#if university.fr}}********************<br><strong>{{upper university.fr}}</strong><br>{{/if}}
+                        {{#if faculty.fr}}********************<br><strong>{{upper faculty.fr}}</strong>{{#if faculty.postalBox}}<br>B.P. {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email : {{faculty.contactEmail}}{{/if}}<br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameFr}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>B.P. {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email : <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                    {{#if logo_url}}
-                    <div class="logo-box">
-                        <img src="{{logo_url}}" alt="Logo Institut" style="max-width: 100px; max-height: 100px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        {{{logo svg=logos.universitySvg url=logos.university alt="University" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.facultySvg url=logos.faculty alt="Faculty" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
+                        {{{logo svg=logos.institutionSvg url=logos.institution alt="Institution" style="max-height:60px;max-width:80px;object-fit:contain;"}}}
                     </div>
-                    {{else}}
-                    <div class="logo-box">
-                        <div>LOGO</div>
-                        <div>INSTITUTION</div>
+                    <div style="flex:1">
+                        {{country.en}}<br>
+                        <em>{{country.mottoEn}}</em><br>
+                        ********************<br>
+                        {{ministry.en}}<br>
+                        {{#if university.en}}********************<br><strong>{{upper university.en}}</strong><br>{{/if}}
+                        {{#if faculty.en}}********************<br><strong>{{upper faculty.en}}</strong>{{#if faculty.postalBox}}<br>P.O. Box {{faculty.postalBox}}{{/if}}{{#if faculty.contactEmail}}<br>Email: {{faculty.contactEmail}}{{/if}}<br>{{/if}}
+                        ********************<br>
+                        <strong>{{upper institutionHeader.nameEn}}</strong>
+                        {{#if institutionHeader.postalBox}}<br>********************<br>P.O. Box {{institutionHeader.postalBox}}{{/if}}
+                        {{#if institutionHeader.contactEmail}}<br>Email: <a href="mailto:{{institutionHeader.contactEmail}}">{{institutionHeader.contactEmail}}</a>{{/if}}
                     </div>
-                    {{/if}}
-                </div>
-                {{/if}}
-
-                <div style="font-size: 9px; color: #666; text-align: center; margin-top: 8px;">
-                    {{#if university_contact_email}}Email: {{university_contact_email}}{{/if}}
-                    {{#if contact_email}}{{#if university_contact_email}} | {{/if}}{{contact_email}}{{/if}}
-                    {{#if university_postal_box}}<br>BP: {{university_postal_box}}{{/if}}
-                    {{#if postal_box}}{{#if university_postal_box}} | {{/if}}{{postal_box}}{{/if}}
                 </div>
             </div>
 
             <div class="title">
-                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DE DÉLIBÉRATION{{/if}}<br>
+                {{#if headerConfig.titleFr}}{{headerConfig.titleFr}}{{else}}PROCÈS-VERBAL DE DÉLIBÉRATION{{/if}}
+                {{#if headerConfig.titleEn}} / {{headerConfig.titleEn}}{{else}} / DELIBERATION REPORT{{/if}}<br>
                 {{#if deliberation.semesterName}}{{deliberation.semesterName}} - {{/if}}ANNÉE ACADÉMIQUE {{deliberation.academicYearName}}<br>
                 ({{deliberation.programName}} — {{deliberation.className}})
                 {{#if deliberation.date}}<br><span style="font-weight:normal; font-size:9px;">Date: {{deliberation.date}}</span>{{/if}}
@@ -295,9 +325,9 @@
                 <tbody>
                     {{#each students}}
                     <tr>
-                        <td>{{rank}}</td>
+                        <td>{{formatNumber rank 2}}</td>
                         <td>{{registrationNumber}}</td>
-                        <td class="student-name">{{lastName}} {{firstName}}</td>
+                        <td class="student-name">{{upper firstName}} {{upper lastName}}</td>
 
                         {{#each ueResults}}
                         <td class="moyenne-ue">{{formatNumber ueAverage}}</td>
@@ -350,12 +380,12 @@
                     </table>
 
                     <div class="info-box">
-                        <div><strong>Programme:</strong> {{deliberation.programName}}</div>
+                        <div><strong>Programme / Program:</strong> {{deliberation.programName}}</div>
                         <div><strong>Classe:</strong> {{deliberation.className}}</div>
                         {{#if deliberation.semesterName}}
                         <div><strong>Semestre:</strong> {{deliberation.semesterName}}</div>
                         {{/if}}
-                        <div><strong>Année académique:</strong> {{deliberation.academicYearName}}</div>
+                        <div><strong>Année académique / Academic Year:</strong> {{deliberation.academicYearName}}</div>
                         <div><strong>Moyenne générale de la classe:</strong> {{formatNumber stats.classAverage}}</div>
                         <div><strong>Étudiants inscrits:</strong> {{stats.totalStudents}}</div>
                     </div>

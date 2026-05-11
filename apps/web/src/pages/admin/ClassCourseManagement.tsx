@@ -9,6 +9,7 @@ import type { TFunction } from "i18next";
 import {
 	AlertTriangle,
 	BookOpen,
+	FileDown,
 	Layers,
 	Pencil,
 	Plus,
@@ -77,6 +78,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { generateClassCourseCode } from "@/lib/code-generator";
@@ -119,6 +121,7 @@ interface ClassCourse {
 	semesterId: string | null;
 	courseName?: string | null;
 	courseCode?: string | null;
+	ueSemester?: string | null;
 	coefficient: number;
 }
 
@@ -165,6 +168,11 @@ export default function ClassCourseManagement() {
 	const [autoEnrollYearId, setAutoEnrollYearId] = useState<string | null>(null);
 	const [autoEnrollClassSearch, setAutoEnrollClassSearch] = useState("");
 	const [autoEnrollOnCreate, setAutoEnrollOnCreate] = useState(false);
+
+	// PDF export state
+	const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
+	const [pdfScope, setPdfScope] = useState<"year" | "selection">("year");
+	const [pdfSelectedClassIds, setPdfSelectedClassIds] = useState<string[]>([]);
 
 	// UE bulk assignment state
 	const [isUeAssignOpen, setIsUeAssignOpen] = useState(false);
@@ -289,6 +297,21 @@ export default function ClassCourseManagement() {
 		},
 	});
 
+	const { data: semestersData } = useQuery({
+		queryKey: ["semesters"],
+		queryFn: () => trpcClient.semesters.list.query(),
+	});
+	const semesters = semestersData?.items;
+
+	// Map catalog semester code (S1/S2) → UE semester value (fall/spring/annual)
+	const filterUeSemester = useMemo(() => {
+		if (!filterSemester || !semesters) return undefined;
+		const code = semesters.find((s) => s.id === filterSemester)?.code ?? "";
+		if (code === "S1") return "fall" as const;
+		if (code === "S2") return "spring" as const;
+		return "annual" as const;
+	}, [filterSemester, semesters]);
+
 	const {
 		data: classCoursesData,
 		isLoading,
@@ -302,7 +325,7 @@ export default function ClassCourseManagement() {
 				cursor: pageParam,
 				limit: 20,
 				...(filterYear ? { academicYearId: filterYear } : {}),
-				...(filterSemester ? { semesterId: filterSemester } : {}),
+				...(filterUeSemester ? { ueSemester: filterUeSemester } : {}),
 			});
 			return {
 				items: items.map(
@@ -316,6 +339,7 @@ export default function ClassCourseManagement() {
 							semesterId: cc.semesterId ?? null,
 							courseName: cc.courseName,
 							courseCode: cc.courseCode,
+							ueSemester: (cc as any).ueSemester ?? null,
 							coefficient: cc.coefficient ?? 1,
 						}) as ClassCourse,
 				),
@@ -329,12 +353,6 @@ export default function ClassCourseManagement() {
 	const sentinelRef = useInfiniteScroll(fetchNextPage, {
 		enabled: hasNextPage && !isFetchingNextPage,
 	});
-
-	const { data: semestersData } = useQuery({
-		queryKey: ["semesters"],
-		queryFn: () => trpcClient.semesters.list.query(),
-	});
-	const semesters = semestersData?.items;
 
 	// Query for UE assignment: search classes
 	const { data: ueAssignSearchClasses = [] } = useQuery({
@@ -505,6 +523,42 @@ export default function ClassCourseManagement() {
 	);
 
 	const selection = useRowSelection(displayedClassCourses);
+	const { confirm, ConfirmDialog } = useConfirm();
+
+	const exportCatalogMutation = useMutation({
+		mutationFn: async () => {
+			return trpcClient.exports.generateCourseCatalog.mutate({
+				classIds: pdfScope === "selection" ? pdfSelectedClassIds : [],
+				academicYearId:
+					pdfScope === "year" && filterYear ? filterYear : undefined,
+				format: "pdf",
+			});
+		},
+		onSuccess: (result) => {
+			const bytes = atob(result.data as string);
+			const arr = new Uint8Array(bytes.length);
+			for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+			const blob = new Blob([arr], { type: "application/pdf" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = result.filename;
+			a.click();
+			URL.revokeObjectURL(url);
+			setIsPdfExportOpen(false);
+			toast.success(
+				t("admin.classCourses.export.success", {
+					defaultValue: "Catalogue exporté avec succès",
+				}),
+			);
+		},
+		onError: () =>
+			toast.error(
+				t("admin.classCourses.export.error", {
+					defaultValue: "Erreur lors de l'export PDF",
+				}),
+			),
+	});
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -859,6 +913,12 @@ export default function ClassCourseManagement() {
 					</p>
 				</div>
 				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setIsPdfExportOpen(true)}>
+						<FileDown className="mr-2 h-4 w-4" />
+						{t("admin.classCourses.actions.exportPdf", {
+							defaultValue: "Exporter PDF",
+						})}
+					</Button>
 					<Button variant="outline" onClick={() => setIsAutoEnrollOpen(true)}>
 						<Users className="mr-2 h-4 w-4" />
 						{t("admin.classCourses.actions.autoEnroll", {
@@ -919,18 +979,20 @@ export default function ClassCourseManagement() {
 				<Button
 					variant="destructive"
 					size="sm"
-					onClick={() => {
-						if (
-							window.confirm(
-								t("common.bulkActions.confirmDelete", {
-									defaultValue:
-										"Are you sure you want to delete the selected items?",
-								}),
-							)
-						) {
-							bulkDeleteMutation.mutate([...selection.selectedIds]);
-						}
-					}}
+					onClick={() =>
+						confirm({
+							title: t("common.bulkActions.confirmDeleteTitle", {
+								defaultValue: "Delete selected items?",
+							}),
+							message: t("common.bulkActions.confirmDelete", {
+								defaultValue:
+									"Are you sure you want to delete the selected items?",
+							}),
+							confirmText: t("common.actions.delete"),
+							onConfirm: () =>
+								bulkDeleteMutation.mutate([...selection.selectedIds]),
+						})
+					}
 					disabled={bulkDeleteMutation.isPending}
 				>
 					<Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1022,37 +1084,32 @@ export default function ClassCourseManagement() {
 												})}
 										</TableCell>
 										<TableCell>
-											{(() => {
-												const info = courseMap.get(classCourse.course);
-												if (!info) {
-													return t("common.labels.notAvailable", {
-														defaultValue: "N/A",
-													});
-												}
-												return (
-													<div className="space-y-0.5">
-														<p className="font-medium text-sm">{info.name}</p>
-														{info.code && (
-															<p className="text-muted-foreground text-xs">
-																{info.code}
-															</p>
-														)}
-													</div>
-												);
-											})()}
+											{classCourse.courseName ? (
+												<div className="space-y-0.5">
+													<p className="font-medium text-sm">
+														{classCourse.courseName}
+													</p>
+													{classCourse.courseCode && (
+														<p className="text-muted-foreground text-xs">
+															{classCourse.courseCode}
+														</p>
+													)}
+												</div>
+											) : (
+												t("common.labels.notAvailable", { defaultValue: "N/A" })
+											)}
 										</TableCell>
 										<TableCell>
-											{(() => {
-												const semester = semesters?.find(
-													(item) => item.id === classCourse.semesterId,
-												);
-												if (!semester) {
-													return t("common.labels.notAvailable", {
+											{classCourse.ueSemester
+												? t(
+														`admin.teachingUnits.semesters.${classCourse.ueSemester}`,
+														{
+															defaultValue: classCourse.ueSemester,
+														},
+													)
+												: t("common.labels.notAvailable", {
 														defaultValue: "N/A",
-													});
-												}
-												return `${semester.name} (${semester.code})`;
-											})()}
+													})}
 										</TableCell>
 										<TableCell>{teacherMap.get(classCourse.teacher)}</TableCell>
 										<TableCell>
@@ -1591,6 +1648,121 @@ export default function ClassCourseManagement() {
 					</div>
 				</div>
 			</FormModal>
+
+			{/* PDF Catalogue Export Dialog */}
+			<FormModal
+				isOpen={isPdfExportOpen}
+				onClose={() => {
+					setIsPdfExportOpen(false);
+					setPdfScope("year");
+					setPdfSelectedClassIds([]);
+				}}
+				title={t("admin.classCourses.export.title", {
+					defaultValue: "Exporter le catalogue UE / EC",
+				})}
+			>
+				<div className="space-y-4">
+					<div className="space-y-1.5">
+						<Label>
+							{t("admin.classCourses.export.scopeLabel", {
+								defaultValue: "Périmètre",
+							})}
+						</Label>
+						<Select
+							value={pdfScope}
+							onValueChange={(v) => setPdfScope(v as "year" | "selection")}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="year">
+									{t("admin.classCourses.export.scopeYear", {
+										defaultValue: "Toutes les classes de l'année filtrée",
+									})}
+									{!filterYear &&
+										` (${t("admin.classCourses.export.noYearWarning", { defaultValue: "aucune année sélectionnée" })})`}
+								</SelectItem>
+								<SelectItem value="selection">
+									{t("admin.classCourses.export.scopeSelection", {
+										defaultValue: "Classes spécifiques",
+									})}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{pdfScope === "selection" && (
+						<div className="space-y-1.5">
+							<Label>
+								{t("admin.classCourses.export.classesLabel", {
+									defaultValue: "Classes à inclure",
+								})}
+							</Label>
+							<div className="max-h-48 space-y-0.5 overflow-y-auto rounded border p-2">
+								{defaultClasses.map((cls) => (
+									<label
+										key={cls.id}
+										className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted"
+									>
+										<Checkbox
+											checked={pdfSelectedClassIds.includes(cls.id)}
+											onCheckedChange={(checked) =>
+												setPdfSelectedClassIds((prev) =>
+													checked
+														? [...prev, cls.id]
+														: prev.filter((id) => id !== cls.id),
+												)
+											}
+										/>
+										<span className="flex-1">{cls.name}</span>
+										<span className="text-muted-foreground text-xs">
+											{cls.code}
+										</span>
+									</label>
+								))}
+							</div>
+							{pdfSelectedClassIds.length > 0 && (
+								<p className="text-muted-foreground text-xs">
+									{pdfSelectedClassIds.length}{" "}
+									{t("admin.classCourses.export.selectedCount", {
+										defaultValue: "classe(s) sélectionnée(s)",
+									})}
+								</p>
+							)}
+						</div>
+					)}
+
+					<div className="flex justify-end gap-2">
+						<Button
+							variant="ghost"
+							type="button"
+							onClick={() => setIsPdfExportOpen(false)}
+						>
+							{t("common.actions.cancel")}
+						</Button>
+						<Button
+							type="button"
+							disabled={
+								exportCatalogMutation.isPending ||
+								(pdfScope === "year" && !filterYear) ||
+								(pdfScope === "selection" && pdfSelectedClassIds.length === 0)
+							}
+							onClick={() => exportCatalogMutation.mutate()}
+						>
+							{exportCatalogMutation.isPending ? (
+								<Spinner className="mr-2 h-4 w-4" />
+							) : (
+								<FileDown className="mr-2 h-4 w-4" />
+							)}
+							{t("admin.classCourses.export.generate", {
+								defaultValue: "Générer le PDF",
+							})}
+						</Button>
+					</div>
+				</div>
+			</FormModal>
+			<ConfirmDialog />
 		</div>
 	);
 }

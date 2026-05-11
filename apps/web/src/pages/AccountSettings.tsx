@@ -918,6 +918,7 @@ export default function AccountSettings() {
 													onClick={() =>
 														revokeSessionMutation.mutate(entry.token ?? "")
 													}
+													disabled={revokeSessionMutation.isPending}
 													className="w-full md:w-auto"
 												>
 													{t("settings.sessions.revoke")}

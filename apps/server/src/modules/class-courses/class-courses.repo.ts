@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -54,6 +54,7 @@ export async function list(opts: {
 	teacherId?: string;
 	academicYearId?: string;
 	semesterId?: string;
+	ueSemester?: string;
 	classCourseIds?: string[];
 	cursor?: string;
 	limit?: number;
@@ -78,6 +79,28 @@ export async function list(opts: {
 		}
 	}
 
+	// If filtering by UE semester, resolve matching course IDs via teaching-unit join
+	let courseIdsFromSemester: string[] | undefined;
+	if (opts.ueSemester) {
+		const matchingCourses = await db
+			.select({ id: schema.courses.id })
+			.from(schema.courses)
+			.innerJoin(
+				schema.teachingUnits,
+				eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+			)
+			.where(
+				eq(
+					schema.teachingUnits.semester,
+					opts.ueSemester as schema.TeachingUnitSemester,
+				),
+			);
+		courseIdsFromSemester = matchingCourses.map((c) => c.id);
+		if (courseIdsFromSemester.length === 0) {
+			return { items: [], nextCursor: undefined };
+		}
+	}
+
 	const conditions = [
 		eq(schema.classCourses.institutionId, opts.institutionId),
 		opts.classId ? eq(schema.classCourses.class, opts.classId) : undefined,
@@ -85,11 +108,11 @@ export async function list(opts: {
 		opts.teacherId
 			? eq(schema.classCourses.teacher, opts.teacherId)
 			: undefined,
-		opts.semesterId
-			? eq(schema.classCourses.semesterId, opts.semesterId)
-			: undefined,
 		classIdsFromYear
 			? inArray(schema.classCourses.class, classIdsFromYear)
+			: undefined,
+		courseIdsFromSemester
+			? inArray(schema.classCourses.course, courseIdsFromSemester)
 			: undefined,
 		opts.classCourseIds && opts.classCourseIds.length > 0
 			? inArray(schema.classCourses.id, opts.classCourseIds)
@@ -112,12 +135,32 @@ export async function list(opts: {
 					name: true,
 					code: true,
 				},
+				with: {
+					teachingUnit: {
+						columns: {
+							semester: true,
+						},
+					},
+				},
 			},
 			teacherRef: {
 				columns: {
 					firstName: true,
 					lastName: true,
 					primaryEmail: true,
+				},
+			},
+			classRef: {
+				columns: {
+					name: true,
+				},
+				with: {
+					program: {
+						columns: {
+							id: true,
+							name: true,
+						},
+					},
 				},
 			},
 		},
@@ -127,6 +170,67 @@ export async function list(opts: {
 	if (rows.length > limit) {
 		const next = rows.pop();
 		nextCursor = next?.id;
+	}
+
+	// Batch-count students per class and exams per class_course in 2 queries
+	// (instead of N+1 from the frontend).
+	const classCourseIds = rows.map((row) => row.id);
+	const classIds = Array.from(new Set(rows.map((row) => row.class)));
+
+	const examCountMap = new Map<string, number>();
+	const examTypesMap = new Map<string, string[]>();
+	if (classCourseIds.length > 0) {
+		const examRows = await db
+			.select({
+				classCourseId: schema.exams.classCourse,
+				type: schema.exams.type,
+			})
+			.from(schema.exams)
+			.where(inArray(schema.exams.classCourse, classCourseIds));
+		for (const row of examRows) {
+			examCountMap.set(
+				row.classCourseId,
+				(examCountMap.get(row.classCourseId) ?? 0) + 1,
+			);
+			const existing = examTypesMap.get(row.classCourseId);
+			if (existing) {
+				if (!existing.includes(row.type)) existing.push(row.type);
+			} else {
+				examTypesMap.set(row.classCourseId, [row.type]);
+			}
+		}
+	}
+
+	const studentCountMap = new Map<string, number>();
+	if (classIds.length > 0) {
+		const studentCounts = await db
+			.select({
+				classId: schema.students.class,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(schema.students)
+			.where(inArray(schema.students.class, classIds))
+			.groupBy(schema.students.class);
+		for (const row of studentCounts) {
+			studentCountMap.set(row.classId, Number(row.count));
+		}
+	}
+
+	// Count posted grades per class_course (via exam.class_course join)
+	const gradesPostedMap = new Map<string, number>();
+	if (classCourseIds.length > 0) {
+		const gradeCounts = await db
+			.select({
+				classCourseId: schema.exams.classCourse,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(schema.grades)
+			.innerJoin(schema.exams, eq(schema.exams.id, schema.grades.exam))
+			.where(inArray(schema.exams.classCourse, classCourseIds))
+			.groupBy(schema.exams.classCourse);
+		for (const row of gradeCounts) {
+			gradesPostedMap.set(row.classCourseId, Number(row.count));
+		}
 	}
 
 	const items = rows.map((row) => ({
@@ -140,8 +244,18 @@ export async function list(opts: {
 		semesterId: row.semesterId,
 		courseName: row.courseRef?.name,
 		courseCode: row.courseRef?.code,
+		ueSemester: row.courseRef?.teachingUnit?.semester ?? null,
 		teacherFirstName: row.teacherRef?.firstName,
 		teacherLastName: row.teacherRef?.lastName,
+		className: row.classRef?.name ?? null,
+		programId: row.classRef?.program?.id ?? null,
+		programName: row.classRef?.program?.name ?? null,
+		studentCount: studentCountMap.get(row.class) ?? 0,
+		examCount: examCountMap.get(row.id) ?? 0,
+		examTypes: examTypesMap.get(row.id) ?? [],
+		gradesPosted: gradesPostedMap.get(row.id) ?? 0,
+		gradesExpected:
+			(studentCountMap.get(row.class) ?? 0) * (examCountMap.get(row.id) ?? 0),
 	}));
 
 	return { items, nextCursor };

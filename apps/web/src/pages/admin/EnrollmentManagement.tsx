@@ -37,6 +37,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRowSelection } from "@/hooks/useRowSelection";
 import { toast } from "@/lib/toast";
@@ -183,6 +184,7 @@ const PrerequisiteWarningsList = ({
 									course: targetLabel,
 								})}
 							</p>
+							<ConfirmDialog />
 						</div>
 					);
 				})}
@@ -257,6 +259,18 @@ const EnrollmentManagement = () => {
 	const [selectedStudent, setSelectedStudent] = useState<string>("");
 	const [rosterModalOpen, setRosterModalOpen] = useState(false);
 	const [autoEnrollDialogOpen, setAutoEnrollDialogOpen] = useState(false);
+	const [bulkEnrollOpen, setBulkEnrollOpen] = useState(false);
+	const [bulkSelectedClassIds, setBulkSelectedClassIds] = useState<Set<string>>(
+		new Set(),
+	);
+	const [bulkResults, setBulkResults] = useState<
+		Array<{
+			className: string;
+			created: number;
+			skipped: number;
+			error?: string;
+		}>
+	>([]);
 	const [courseWarnings, setCourseWarnings] = useState<
 		Record<string, PrerequisiteWarning[]>
 	>({});
@@ -378,6 +392,71 @@ const EnrollmentManagement = () => {
 		onError: (error: Error) => toast.error(error.message),
 	});
 
+	const bulkEnrollMutation = useMutation({
+		mutationFn: async () => {
+			if (!selectedAcademicYear || bulkSelectedClassIds.size === 0) {
+				throw new Error(
+					t("admin.enrollments.bulkEnroll.noSelection", {
+						defaultValue: "Sélectionnez au moins une classe.",
+					}),
+				);
+			}
+			const ids = Array.from(bulkSelectedClassIds);
+			const allClasses = classes?.items ?? [];
+			const results: typeof bulkResults = [];
+			for (const id of ids) {
+				const klass = allClasses.find((c) => c.id === id);
+				const className = klass?.name ?? id.slice(0, 8);
+				try {
+					const res =
+						await trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
+							classId: id,
+							academicYearId: selectedAcademicYear,
+						});
+					results.push({
+						className,
+						created: res.createdCount,
+						skipped: res.skippedCount,
+					});
+				} catch (err: any) {
+					results.push({
+						className,
+						created: 0,
+						skipped: 0,
+						error: err?.message ?? String(err),
+					});
+				}
+			}
+			return results;
+		},
+		onSuccess: (results) => {
+			setBulkResults(results);
+			const totalCreated = results.reduce((s, r) => s + r.created, 0);
+			const errCount = results.filter((r) => r.error).length;
+			if (errCount === 0) {
+				toast.success(
+					t("admin.enrollments.bulkEnroll.success", {
+						defaultValue: "{{count}} inscriptions créées sur {{n}} classe(s).",
+						count: totalCreated,
+						n: results.length,
+					}),
+				);
+			} else {
+				toast.error(
+					t("admin.enrollments.bulkEnroll.partial", {
+						defaultValue: "{{count}} inscriptions créées, {{err}} erreur(s).",
+						count: totalCreated,
+						err: errCount,
+					}),
+				);
+			}
+			queryClient.invalidateQueries(
+				trpc.studentCourseEnrollments.list.queryKey(),
+			);
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
 	const autoEnrollMutation = useMutation({
 		mutationFn: () =>
 			trpcClient.studentCourseEnrollments.autoEnrollClass.mutate({
@@ -409,6 +488,8 @@ const EnrollmentManagement = () => {
 	const enrollments =
 		enrollmentsQuery.data?.pages.flatMap((p) => p.items) ?? [];
 	const selection = useRowSelection(enrollments);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const bulkDeleteMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -675,6 +756,178 @@ const EnrollmentManagement = () => {
 						</div>
 					</div>
 					<div className="flex flex-wrap gap-2">
+						<Dialog
+							open={bulkEnrollOpen}
+							onOpenChange={(open) => {
+								setBulkEnrollOpen(open);
+								if (!open) {
+									setBulkResults([]);
+									setBulkSelectedClassIds(new Set());
+								}
+							}}
+						>
+							<Button
+								type="button"
+								variant="default"
+								disabled={!selectedAcademicYear}
+								onClick={() => setBulkEnrollOpen(true)}
+								title={
+									!selectedAcademicYear
+										? t("admin.enrollments.bulkEnroll.requireYear", {
+												defaultValue: "Choisissez d'abord une année",
+											})
+										: undefined
+								}
+							>
+								{t("admin.enrollments.bulkEnroll.openButton", {
+									defaultValue: "Inscription de masse",
+								})}
+							</Button>
+							<DialogContent className="max-w-2xl p-6">
+								<div className="space-y-5">
+									<div>
+										<h3 className="font-semibold text-lg">
+											{t("admin.enrollments.bulkEnroll.title", {
+												defaultValue: "Inscription de masse",
+											})}
+										</h3>
+										<p className="mt-1 text-muted-foreground text-sm">
+											{t("admin.enrollments.bulkEnroll.description", {
+												defaultValue:
+													"Sélectionnez une ou plusieurs classes. Tous les étudiants de chaque classe seront inscrits à tous ses cours (tous semestres confondus). Pour cibler un semestre précis, utilise le bouton « Enroll entire class » classe par classe.",
+											})}
+										</p>
+									</div>
+
+									{bulkResults.length === 0 ? (
+										<>
+											<div>
+												<div className="mb-2 flex items-center justify-between">
+													<label className="font-medium text-sm">
+														{t("admin.enrollments.bulkEnroll.classesLabel", {
+															defaultValue: "Classes ({{n}} sélectionnées)",
+															n: bulkSelectedClassIds.size,
+														})}
+													</label>
+													<div className="flex gap-2">
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() =>
+																setBulkSelectedClassIds(
+																	new Set(
+																		(classes?.items ?? []).map((c) => c.id),
+																	),
+																)
+															}
+														>
+															{t("common.actions.selectAll", {
+																defaultValue: "Tout cocher",
+															})}
+														</Button>
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() => setBulkSelectedClassIds(new Set())}
+														>
+															{t("common.actions.clear", {
+																defaultValue: "Tout décocher",
+															})}
+														</Button>
+													</div>
+												</div>
+												<ScrollArea className="h-64 rounded-md border">
+													<div className="space-y-1 p-2">
+														{(classes?.items ?? []).map((klass) => (
+															<label
+																key={klass.id}
+																className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-muted"
+															>
+																<Checkbox
+																	checked={bulkSelectedClassIds.has(klass.id)}
+																	onCheckedChange={(checked) => {
+																		setBulkSelectedClassIds((prev) => {
+																			const next = new Set(prev);
+																			if (checked) next.add(klass.id);
+																			else next.delete(klass.id);
+																			return next;
+																		});
+																	}}
+																/>
+																<span className="text-sm">{klass.name}</span>
+															</label>
+														))}
+														{!(classes?.items ?? []).length && (
+															<p className="p-4 text-center text-muted-foreground text-sm">
+																{t("admin.enrollments.bulkEnroll.noClasses", {
+																	defaultValue:
+																		"Aucune classe pour cette année.",
+																})}
+															</p>
+														)}
+													</div>
+												</ScrollArea>
+											</div>
+
+											<div className="flex justify-end gap-2">
+												<Button
+													variant="outline"
+													onClick={() => setBulkEnrollOpen(false)}
+													disabled={bulkEnrollMutation.isPending}
+												>
+													{t("common.actions.cancel", {
+														defaultValue: "Annuler",
+													})}
+												</Button>
+												<Button
+													onClick={() => bulkEnrollMutation.mutate()}
+													disabled={
+														bulkSelectedClassIds.size === 0 ||
+														bulkEnrollMutation.isPending
+													}
+												>
+													{bulkEnrollMutation.isPending && (
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+													)}
+													{t("admin.enrollments.bulkEnroll.run", {
+														defaultValue: "Lancer l'inscription",
+													})}
+												</Button>
+											</div>
+										</>
+									) : (
+										<>
+											<div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-3">
+												{bulkResults.map((r) => (
+													<div
+														key={r.className}
+														className={`flex items-center justify-between border-b py-1.5 last:border-0 ${
+															r.error ? "text-destructive" : ""
+														}`}
+													>
+														<span className="font-medium text-sm">
+															{r.className}
+														</span>
+														<span className="text-xs">
+															{r.error
+																? r.error
+																: `${r.created} créées${r.skipped ? `, ${r.skipped} déjà existantes` : ""}`}
+														</span>
+													</div>
+												))}
+											</div>
+											<div className="flex justify-end">
+												<Button onClick={() => setBulkEnrollOpen(false)}>
+													{t("common.actions.close", {
+														defaultValue: "Fermer",
+													})}
+												</Button>
+											</div>
+										</>
+									)}
+								</div>
+							</DialogContent>
+						</Dialog>
 						<AlertDialog
 							open={autoEnrollDialogOpen}
 							onOpenChange={(open) => {
@@ -782,18 +1035,20 @@ const EnrollmentManagement = () => {
 							<Button
 								variant="destructive"
 								size="sm"
-								onClick={() => {
-									if (
-										window.confirm(
-											t("common.bulkActions.confirmDelete", {
-												defaultValue:
-													"Are you sure you want to delete the selected items?",
-											}),
-										)
-									) {
-										bulkDeleteMutation.mutate([...selection.selectedIds]);
-									}
-								}}
+								onClick={() =>
+									confirm({
+										title: t("common.bulkActions.confirmDeleteTitle", {
+											defaultValue: "Delete selected items?",
+										}),
+										message: t("common.bulkActions.confirmDelete", {
+											defaultValue:
+												"Are you sure you want to delete the selected items?",
+										}),
+										confirmText: t("common.actions.delete"),
+										onConfirm: () =>
+											bulkDeleteMutation.mutate([...selection.selectedIds]),
+									})
+								}
 								disabled={bulkDeleteMutation.isPending}
 							>
 								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
