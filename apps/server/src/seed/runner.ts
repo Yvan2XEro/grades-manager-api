@@ -1881,9 +1881,9 @@ async function seedUsers(
 				institutionId: klass.institutionId,
 			})
 			.onConflictDoUpdate({
-				target: schema.students.registrationNumber,
+				target: schema.students.domainUserId,
 				set: {
-					domainUserId: domainUser.id,
+					registrationNumber,
 					class: klass.id,
 					institutionId: klass.institutionId,
 				},

@@ -147,7 +147,8 @@
       "Bash(sed -n '234,237p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
       "Bash(sed -n '288,292p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
       "Bash(sed -n '336,340p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
-      "Bash(sed -n '388,392p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)"
+      "Bash(sed -n '388,392p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
+      "Bash(USE_PGLITE=true bun run src/scripts/seed.ts)"
     ]
   },
   "enabledMcpjsonServers": [
