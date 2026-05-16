@@ -1,3 +1,6 @@
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import { ADMIN_ROLES, roleSatisfies } from "@/modules/authz";
 import {
 	router as createRouter,
@@ -191,4 +194,91 @@ export const router = createRouter({
 			}
 			return mergeById(markItems(baseRaw, false), delegatedItems);
 		}),
+	teacherOverview: tenantProtectedProcedure.query(async ({ ctx }) => {
+		const activeYear = await db.query.academicYears.findFirst({
+			where: and(
+				eq(schema.academicYears.institutionId, ctx.institution.id),
+				eq(schema.academicYears.isActive, true),
+			),
+		});
+		if (!activeYear) {
+			return [];
+		}
+
+		const isAdmin = roleSatisfies(ctx.memberRole, ADMIN_ROLES);
+		const isGradeEditor = ctx.memberRole === "grade_editor";
+		const profileId = ctx.profile?.id ?? null;
+
+		const hasInstitutionGrant =
+			!isAdmin && !isGradeEditor && profileId
+				? !!(await gradeAccessRepo.findByProfileAndInstitution(
+						profileId,
+						ctx.institution.id,
+					))
+				: false;
+
+		const hasFullAccess = isAdmin || isGradeEditor || hasInstitutionGrant;
+
+		const baseRaw = hasFullAccess
+			? await service.listClassCourses(
+					{ academicYearId: activeYear.id, limit: 200 },
+					ctx.institution.id,
+				)
+			: profileId && ctx.memberRole === "teacher"
+				? await service.listClassCourses(
+						{
+							academicYearId: activeYear.id,
+							teacherId: profileId,
+							limit: 200,
+						},
+						ctx.institution.id,
+					)
+				: { items: [], nextCursor: undefined };
+
+		if (hasFullAccess || !profileId) {
+			return service.buildTeacherOverview(baseRaw.items, ctx.institution.id, {
+				profileId,
+				memberRole: ctx.memberRole ?? null,
+			});
+		}
+
+		const delegateCourseIds = await classCourseIdsForEditor(
+			profileId,
+			ctx.institution.id,
+		);
+		if (!delegateCourseIds.length) {
+			return service.buildTeacherOverview(baseRaw.items, ctx.institution.id, {
+				profileId,
+				memberRole: ctx.memberRole ?? null,
+			});
+		}
+
+		const delegatedRaw = await service.listClassCourses(
+			{
+				academicYearId: activeYear.id,
+				classCourseIds: delegateCourseIds,
+				limit: 200,
+			},
+			ctx.institution.id,
+		);
+		const baseItems = markItems(baseRaw.items, false);
+		const delegatedItems = markItems(delegatedRaw.items, true);
+		if (delegatedItems.length > 0) {
+			await logDelegateCourseAccess({
+				classCourseIds: delegatedItems.map((item) => item.id),
+				profileId,
+				institutionId: ctx.institution.id,
+				source: "list",
+			});
+		}
+
+		return service.buildTeacherOverview(
+			mergeById(baseItems, delegatedItems),
+			ctx.institution.id,
+			{
+				profileId,
+				memberRole: ctx.memberRole ?? null,
+			},
+		);
+	}),
 });

@@ -41,6 +41,20 @@ async function requireClassCourseForInstitution(
 	return classCourse;
 }
 
+async function requireClassForInstitution(
+	classId: string,
+	institutionId: string,
+) {
+	const klass = await db.query.classes.findFirst({
+		where: and(
+			eq(schema.classes.id, classId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+	});
+	if (!klass) throw notFound("Class not found");
+	return klass;
+}
+
 async function requireCourseForInstitution(
 	courseId: string,
 	institutionId: string,
@@ -221,6 +235,14 @@ export async function listByClassCourse(
 ) {
 	await requireClassCourseForInstitution(opts.classCourseId, institutionId);
 	return repo.listByClassCourse(opts);
+}
+
+export async function listByClass(
+	opts: Parameters<typeof repo.listByClass>[0],
+	institutionId: string,
+) {
+	await requireClassForInstitution(opts.classId, institutionId);
+	return repo.listByClass(opts);
 }
 
 export async function avgForExam(examId: string, institutionId: string) {

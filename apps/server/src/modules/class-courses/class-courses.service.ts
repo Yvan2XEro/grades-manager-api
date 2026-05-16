@@ -4,8 +4,10 @@ import { normalizeCode } from "@/lib/strings";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
+import type { MemberRole } from "../authz";
 import * as classesRepo from "../classes/classes.repo";
 import * as coursesRepo from "../courses/courses.repo";
+import * as examsService from "../exams/exams.service";
 import * as repo from "./class-courses.repo";
 
 type ClassCourseInput = Omit<
@@ -14,6 +16,34 @@ type ClassCourseInput = Omit<
 > & {
 	coefficient?: number;
 	allowTeacherOverride?: boolean;
+};
+
+type TeacherOverviewSourceItem = Awaited<
+	ReturnType<typeof repo.list>
+>["items"][number] & {
+	isDelegated?: boolean;
+};
+
+export type TeacherOverviewExam = {
+	id: string;
+	name: string;
+	type: string;
+	date: string;
+	percentage: number;
+	isLocked: boolean;
+	status: string;
+	canEdit: boolean;
+	classCourseId: string;
+};
+
+export type TeacherOverviewCourse = {
+	classCourseId: string;
+	courseName: string;
+	className: string;
+	programName: string;
+	studentCount: number;
+	exams: TeacherOverviewExam[];
+	isDelegated: boolean;
 };
 
 async function validateConfig(
@@ -253,4 +283,58 @@ export async function searchClassCourses(
 	institutionId: string,
 ) {
 	return repo.search({ ...opts, institutionId });
+}
+
+export async function buildTeacherOverview(
+	classCourses: TeacherOverviewSourceItem[],
+	institutionId: string,
+	actor: {
+		profileId: string | null;
+		memberRole: MemberRole | null;
+	},
+) {
+	if (classCourses.length === 0) {
+		return [] as TeacherOverviewCourse[];
+	}
+
+	const classCourseIds = classCourses.map((item) => item.id);
+	const examResult = await examsService.listExams(
+		{
+			classCourseIds,
+			limit: 5000,
+		},
+		{
+			institutionId,
+			profileId: actor.profileId,
+			memberRole: actor.memberRole,
+		},
+	);
+
+	const examsByClassCourse = new Map<string, TeacherOverviewExam[]>();
+	for (const exam of examResult.items) {
+		const bucket = examsByClassCourse.get(exam.classCourse) ?? [];
+		bucket.push({
+			id: exam.id,
+			name: exam.name,
+			type: exam.type,
+			date: exam.date.toISOString(),
+			percentage: Number(exam.percentage),
+			isLocked: exam.isLocked,
+			status: exam.status ?? (exam.isLocked ? "locked" : "open"),
+			canEdit: exam.canEdit ?? false,
+			classCourseId: exam.classCourse,
+		});
+		examsByClassCourse.set(exam.classCourse, bucket);
+	}
+
+	return classCourses.map((classCourse) => ({
+		classCourseId: classCourse.id,
+		courseName:
+			classCourse.courseName ?? classCourse.courseCode ?? classCourse.course,
+		className: classCourse.className ?? classCourse.class,
+		programName: classCourse.programName ?? "",
+		studentCount: classCourse.studentCount ?? 0,
+		exams: examsByClassCourse.get(classCourse.id) ?? [],
+		isDelegated: classCourse.isDelegated ?? false,
+	}));
 }

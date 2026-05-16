@@ -43,6 +43,7 @@ export async function findById(id: string) {
 export async function list(opts: {
 	institutionId: string;
 	classCourseId?: string;
+	classCourseIds?: string[];
 	classId?: string;
 	semesterId?: string;
 	dateFrom?: Date;
@@ -58,6 +59,9 @@ export async function list(opts: {
 		eq(schema.exams.institutionId, opts.institutionId),
 		opts.classCourseId
 			? eq(schema.exams.classCourse, opts.classCourseId)
+			: undefined,
+		opts.classCourseIds?.length
+			? inArray(schema.exams.classCourse, opts.classCourseIds)
 			: undefined,
 		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
 		opts.dateTo ? lte(schema.exams.date, opts.dateTo) : undefined,

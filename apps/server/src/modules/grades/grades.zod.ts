@@ -31,6 +31,12 @@ export const listClassCourseSchema = z.object({
 	limit: z.number().optional(),
 });
 
+export const listClassSchema = z.object({
+	classId: z.string(),
+	cursor: z.string().optional(),
+	limit: z.number().optional(),
+});
+
 export const avgExamSchema = z.object({ examId: z.string() });
 
 export const avgCourseSchema = z.object({ courseId: z.string() });
