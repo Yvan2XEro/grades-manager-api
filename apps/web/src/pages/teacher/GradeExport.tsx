@@ -68,11 +68,6 @@ interface StudentItem {
 	};
 }
 
-interface GradeItem {
-	exam: string;
-	score: string | number;
-}
-
 export default function GradeExport() {
 	const [selectedYear, setSelectedYear] = useState("");
 	const [selectedClass, setSelectedClass] = useState("");
@@ -80,64 +75,50 @@ export default function GradeExport() {
 	const classId = useId();
 	const { t } = useTranslation();
 
-	const { data: classes } = useQuery({
-		queryKey: ["classes", selectedYear],
+	const { data: classCourses } = useQuery({
+		queryKey: ["teacher-export-class-courses", selectedYear],
 		queryFn: async () => {
 			if (!selectedYear) return [];
-			const [classRes, programRes] = await Promise.all([
-				trpcClient.classes.list.query({ academicYearId: selectedYear }),
-				trpcClient.programs.list.query({}),
-			]);
-			const programMap = new Map(
-				programRes.items.map((p: { id: string; name: string }) => [
-					p.id,
-					p.name,
-				]),
-			);
-			return classRes.items.map(
-				(cls: { id: string; name: string; program: string }) => ({
-					id: cls.id,
-					name: cls.name,
-					program: { name: programMap.get(cls.program) ?? "" },
-				}),
-			) as Class[];
+			const result = await trpcClient.classCourses.list.query({
+				academicYearId: selectedYear,
+				limit: 500,
+			});
+			return result.items;
 		},
 		enabled: !!selectedYear,
 	});
 
+	const classes = (classCourses ?? []).reduce<Class[]>((acc, classCourse) => {
+		if (acc.some((item) => item.id === classCourse.class)) {
+			return acc;
+		}
+		acc.push({
+			id: classCourse.class,
+			name: classCourse.className ?? classCourse.class,
+			program: {
+				name: classCourse.programName ?? "",
+			},
+		});
+		return acc;
+	}, []);
+
 	const { data: exams } = useQuery({
-		queryKey: ["exams", selectedClass],
+		queryKey: ["teacher-export-exams", selectedClass],
 		queryFn: async () => {
 			if (!selectedClass) return [];
-			const { items: classCourses } = await trpcClient.classCourses.list.query({
+			const { items } = await trpcClient.exams.list.query({
 				classId: selectedClass,
+				limit: 500,
 			});
-			const result: ExamItem[] = [];
-			for (const cc of classCourses) {
-				const course = await trpcClient.courses.getById.query({
-					id: cc.course,
-				});
-				const { items: examItems } = await trpcClient.exams.list.query({
-					classCourseId: cc.id,
-				});
-				examItems.forEach(
-					(exam: {
-						id: string;
-						name: string;
-						date: string;
-						percentage: string;
-					}) => {
-						result.push({
-							id: exam.id,
-							name: exam.name,
-							date: exam.date,
-							percentage: Number(exam.percentage),
-							courseName: course.name,
-						});
-					},
-				);
-			}
-			return result.sort((a, b) => a.courseName.localeCompare(b.courseName));
+			return items
+				.map((exam) => ({
+					id: exam.id,
+					name: exam.name,
+					date: exam.date,
+					percentage: Number(exam.percentage),
+					courseName: exam.courseName,
+				}))
+				.sort((a, b) => a.courseName.localeCompare(b.courseName));
 		},
 		enabled: !!selectedClass,
 	});
@@ -145,39 +126,46 @@ export default function GradeExport() {
 	const handleExport = async () => {
 		if (!selectedClass || selectedExams.length === 0) return;
 		try {
-			const { items: studentItems } = await trpcClient.students.list.query({
-				classId: selectedClass,
-			});
-			const students: StudentExport[] = await Promise.all(
-				studentItems.map(async (s: StudentItem) => {
-					const { items: gradeItems } =
-						await trpcClient.grades.listByStudent.query({
-							studentId: s.id,
-						});
-					const grades = await Promise.all(
-						gradeItems.map(async (g: GradeItem) => {
-							const exam = await trpcClient.exams.getById.query({
-								id: g.exam,
-							});
-							const classCourse = await trpcClient.classCourses.getById.query({
-								id: exam.classCourse,
-							});
-							const course = await trpcClient.courses.getById.query({
-								id: classCourse.course,
-							});
-							return {
-								score: Number(g.score),
-								exam: {
-									id: exam.id,
-									percentage: Number(exam.percentage),
-									class_course: {
-										course: { name: course.name },
-									},
-								},
-							};
-						}),
-					);
-					return {
+			const [studentsResult, gradesResult] = await Promise.all([
+				trpcClient.students.list.query({
+					classId: selectedClass,
+					limit: 5000,
+				}),
+				trpcClient.grades.listByClass.query({
+					classId: selectedClass,
+					limit: 10000,
+				}),
+			]);
+
+			const examMetaById = new Map(
+				(exams ?? []).map((exam) => [
+					exam.id,
+					{
+						id: exam.id,
+						percentage: exam.percentage,
+						class_course: {
+							course: { name: exam.courseName },
+						},
+					},
+				]),
+			);
+
+			const gradesByStudent = new Map<string, StudentExport["grades"]>();
+			for (const grade of gradesResult.items) {
+				if (!selectedExams.includes(grade.exam)) continue;
+				const examMeta = examMetaById.get(grade.exam);
+				if (!examMeta) continue;
+				const bucket = gradesByStudent.get(grade.student) ?? [];
+				bucket.push({
+					score: Number(grade.score),
+					exam: examMeta,
+				});
+				gradesByStudent.set(grade.student, bucket);
+			}
+
+			const students: StudentExport[] = studentsResult.items.map(
+				(s: StudentItem) =>
+					({
 						id: s.id,
 						first_name: s.profile.firstName,
 						last_name: s.profile.lastName,
@@ -185,9 +173,8 @@ export default function GradeExport() {
 						birth_date: s.profile.dateOfBirth ?? null,
 						birth_place: s.profile.placeOfBirth ?? null,
 						gender: s.profile.gender ?? null,
-						grades,
-					} as StudentExport;
-				}),
+						grades: gradesByStudent.get(s.id) ?? [],
+					}) as StudentExport,
 			);
 
 			// Sort students alphabetically

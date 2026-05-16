@@ -14,6 +14,7 @@ import {
 	idSchema,
 	importCsvSchema,
 	listClassCourseSchema,
+	listClassSchema,
 	listExamSchema,
 	listStudentSchema,
 	updateSchema,
@@ -82,6 +83,9 @@ export const router = createRouter({
 		.query(({ ctx, input }) =>
 			service.listByClassCourse(input, ctx.institution.id),
 		),
+	listByClass: tenantProtectedProcedure
+		.input(listClassSchema)
+		.query(({ ctx, input }) => service.listByClass(input, ctx.institution.id)),
 	avgForExam: tenantProtectedProcedure
 		.input(avgExamSchema)
 		.query(({ ctx, input }) =>

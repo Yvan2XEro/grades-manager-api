@@ -10,6 +10,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
@@ -17,15 +25,16 @@ import { trpc, trpcClient } from "../../utils/trpc";
 const AttendanceAlerts = () => {
 	const { t } = useTranslation();
 	const [message, setMessage] = useState("");
+	const [selectedClassCourseId, setSelectedClassCourseId] = useState("");
 
-	const notificationsQuery = useQuery(
-		trpc.notifications.list.queryOptions({ status: "pending" }),
+	const classCoursesQuery = useQuery(
+		trpc.classCourses.list.queryOptions({ limit: 200 }),
 	);
 
 	const sendAlert = useMutation({
 		mutationFn: () =>
 			trpcClient.workflows.attendanceAlert.mutate({
-				classCourseId: "",
+				classCourseId: selectedClassCourseId,
 				severity: "warning",
 				message,
 			}),
@@ -36,14 +45,11 @@ const AttendanceAlerts = () => {
 				}),
 			);
 			setMessage("");
+			setSelectedClassCourseId("");
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
-
-	const alerts =
-		notificationsQuery.data?.filter(
-			(notification) => notification.type === "attendance_alert",
-		) ?? [];
+	const classCourses = classCoursesQuery.data?.items ?? [];
 
 	return (
 		<div className="space-y-6">
@@ -59,34 +65,36 @@ const AttendanceAlerts = () => {
 					<CardHeader>
 						<CardTitle>{t("teacher.attendance.openAlerts")}</CardTitle>
 						<CardDescription>
-							{t("teacher.attendance.subtitle")}
+							{t("teacher.attendance.broadcastDesc")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3">
-						{notificationsQuery.isLoading ? (
+						{classCoursesQuery.isLoading ? (
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<Loader2 className="h-4 w-4 animate-spin" />
 								{t("common.loading", { defaultValue: "Loading..." })}
 							</div>
-						) : notificationsQuery.isError ? (
+						) : classCoursesQuery.isError ? (
 							<p className="text-destructive text-xs">
 								{t("teacher.attendance.error", {
-									defaultValue: "Could not load alerts",
+									defaultValue: "Could not load class courses",
 								})}
 							</p>
-						) : alerts.length ? (
-							alerts.map((alert) => (
+						) : classCourses.length ? (
+							classCourses.map((classCourse) => (
 								<div
-									key={alert.id}
+									key={classCourse.id}
 									className="flex items-start gap-3 rounded-lg border bg-muted/40 p-4"
 								>
 									<div className="rounded-full bg-amber-100 p-2 text-amber-700">
 										<AlertTriangle className="h-5 w-5" />
 									</div>
 									<div>
-										<p className="font-medium text-foreground">{alert.type}</p>
+										<p className="font-medium text-foreground">
+											{classCourse.className}
+										</p>
 										<p className="text-muted-foreground text-xs">
-											{JSON.stringify(alert.payload)}
+											{classCourse.courseName}
 										</p>
 									</div>
 								</div>
@@ -94,7 +102,7 @@ const AttendanceAlerts = () => {
 						) : (
 							<p className="text-muted-foreground text-xs">
 								{t("teacher.attendance.none", {
-									defaultValue: "No alerts yet.",
+									defaultValue: "No class course assigned yet.",
 								})}
 							</p>
 						)}
@@ -109,6 +117,32 @@ const AttendanceAlerts = () => {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3">
+						<div className="space-y-2">
+							<Label htmlFor="teacher-attendance-class-course">
+								{t("teacher.workflow.selectCourse", {
+									defaultValue: "Select class course",
+								})}
+							</Label>
+							<Select
+								value={selectedClassCourseId || undefined}
+								onValueChange={setSelectedClassCourseId}
+							>
+								<SelectTrigger id="teacher-attendance-class-course">
+									<SelectValue
+										placeholder={t("teacher.workflow.selectCourse", {
+											defaultValue: "Select class course",
+										})}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{classCourses.map((classCourse) => (
+										<SelectItem key={classCourse.id} value={classCourse.id}>
+											{classCourse.className} • {classCourse.courseName}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 						<Textarea
 							placeholder={t("teacher.attendance.placeholder", {
 								defaultValue: "Message",
@@ -119,7 +153,7 @@ const AttendanceAlerts = () => {
 						<Button
 							type="button"
 							className="flex items-center"
-							disabled={!message}
+							disabled={!message || !selectedClassCourseId}
 							onClick={() => sendAlert.mutate()}
 						>
 							<BellRing className="mr-2 h-4 w-4" />

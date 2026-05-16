@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
@@ -65,22 +65,6 @@ const WorkflowManager = () => {
 				t("teacher.workflow.toast.submitted", {
 					defaultValue: "Exam submitted",
 				}),
-			);
-			queryClient.invalidateQueries(
-				trpc.exams.list.queryKey({
-					classCourseId: selectedClassCourse || undefined,
-				}),
-			);
-		},
-		onError: (error: Error) => toast.error(error.message),
-	});
-
-	const lockExam = useMutation({
-		mutationFn: (examId: string) =>
-			trpcClient.exams.lock.mutate({ examId, lock: true }),
-		onSuccess: () => {
-			toast.success(
-				t("teacher.workflow.toast.locked", { defaultValue: "Exam locked" }),
 			);
 			queryClient.invalidateQueries(
 				trpc.exams.list.queryKey({
@@ -212,18 +196,6 @@ const WorkflowManager = () => {
 											<Send className="mr-1 h-4 w-4" />
 											{t("teacher.workflow.actions.submit", {
 												defaultValue: "Submit",
-											})}
-										</Button>
-										<Button
-											type="button"
-											size="sm"
-											variant="secondary"
-											onClick={() => lockExam.mutate(exam.id)}
-											disabled={exam.isLocked || exam.status !== "approved"}
-										>
-											<ShieldCheck className="mr-1 h-4 w-4" />
-											{t("teacher.workflow.actions.lock", {
-												defaultValue: "Lock",
 											})}
 										</Button>
 										<Badge variant="outline" className="uppercase">

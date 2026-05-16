@@ -45,6 +45,8 @@ import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
+import GradeEntry from "./pages/teacher/GradeEntry";
+import GradeExport from "./pages/teacher/GradeExport";
 import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
 import TeacherHub from "./pages/teacher/TeacherHub";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
@@ -331,7 +333,7 @@ function App() {
 						<Route path="grades" element={<Navigate to="/teacher" replace />} />
 						<Route
 							path="grades/:courseId"
-							element={<Navigate to="/teacher" replace />}
+							element={<GradeEntry basePath="/teacher" />}
 						/>
 						<Route
 							path="grades/:courseId/fast"
@@ -339,10 +341,7 @@ function App() {
 						/>
 						<Route path="attendance" element={<AttendanceAlerts />} />
 						<Route path="workflows" element={<WorkflowManager />} />
-						<Route
-							path="exports"
-							element={<Navigate to="/teacher" replace />}
-						/>
+						<Route path="exports" element={<GradeExport />} />
 					</Route>
 
 					{/* Grade Editor Routes */}
@@ -358,16 +357,13 @@ function App() {
 						/>
 						<Route
 							path="grades/:courseId"
-							element={<Navigate to="/grade-editor" replace />}
+							element={<GradeEntry basePath="/grade-editor" />}
 						/>
 						<Route
 							path="grades/:courseId/fast"
 							element={<GradeSpreadsheet basePath="/grade-editor" />}
 						/>
-						<Route
-							path="exports"
-							element={<Navigate to="/grade-editor" replace />}
-						/>
+						<Route path="exports" element={<GradeExport />} />
 					</Route>
 
 					{/* Student Routes */}
