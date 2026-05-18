@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Download, Eye, FileCode, Save } from "lucide-react";
+import { ArrowLeft, Eye, FileCode, Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -452,16 +452,6 @@ export default function ExportTemplateEditor() {
 											)}
 										</CardDescription>
 									</div>
-									{previewHtml && (
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={handleDownloadPreview}
-										>
-											<Download className="mr-2 h-4 w-4" />
-											{t("admin.exportTemplates.editor.template.download")}
-										</Button>
-									)}
 								</div>
 							</CardHeader>
 							<CardContent className="flex flex-1 overflow-hidden">
