@@ -103,7 +103,6 @@ export async function seed() {
 
 	// Create domain user profile linked to member
 	await db.insert(schema.domainUsers).values({
-		authUserId: teacher.user.id,
 		memberId: member.id,
 		firstName,
 		lastName,

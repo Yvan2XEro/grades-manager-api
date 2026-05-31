@@ -1640,75 +1640,13 @@ async function seedUsers(
 				: undefined) ??
 			null;
 
-		// Since primaryEmail is no longer unique, we need to find by authUserId or email
-		// Priority: authUserId match > email match (first found)
-		let existingProfile = authUserId
-			? await db.query.domainUsers.findFirst({
-					where: eq(schema.domainUsers.authUserId, authUserId),
-				})
-			: null;
-
-		if (!existingProfile) {
-			existingProfile = await db.query.domainUsers.findFirst({
-				where: eq(schema.domainUsers.primaryEmail, entry.primaryEmail),
-			});
-		}
-
-		// Persist family names in UPPERCASE for storage consistency. The seed
-		// convention puts the family name (NOM) in `firstName` and given
-		// names (PRÉNOM) in `lastName`. Official documents render the family
-		// name in caps, so we normalize at insertion to avoid relying on
-		// CSS text-transform downstream. Given names keep their original case.
+		// Persist family names in UPPERCASE for storage consistency.
 		const normalizedFirstName = (entry.firstName ?? "").toUpperCase();
 		const normalizedLastName = entry.lastName ?? "";
 
-		let profile: { id: string };
-		if (existingProfile) {
-			// Update existing profile
-			const [updated] = await db
-				.update(schema.domainUsers)
-				.set({
-					authUserId,
-					firstName: normalizedFirstName,
-					lastName: normalizedLastName,
-					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
-					placeOfBirth: entry.placeOfBirth ?? null,
-					gender: entry.gender ?? null,
-					nationality: entry.nationality ?? null,
-					status: entry.status ?? "active",
-					updatedAt: now,
-				})
-				.where(eq(schema.domainUsers.id, existingProfile.id))
-				.returning();
-			profile = updated;
-		} else {
-			// Insert new profile
-			const [created] = await db
-				.insert(schema.domainUsers)
-				.values({
-					authUserId,
-					firstName: normalizedFirstName,
-					lastName: normalizedLastName,
-					primaryEmail: entry.primaryEmail,
-					phone: entry.phone ?? null,
-					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
-					placeOfBirth: entry.placeOfBirth ?? null,
-					gender: entry.gender ?? null,
-					nationality: entry.nationality ?? null,
-					status: entry.status ?? "active",
-					updatedAt: now,
-				})
-				.returning();
-			profile = created;
-		}
-
-		state.domainUsers.set(code, {
-			id: profile.id,
-			firstName: entry.firstName ?? "",
-			lastName: entry.lastName ?? "",
-		});
-
+		// Resolve (or create) the org membership first so we can use memberId as
+		// the canonical identity link — authUserId is no longer stored on domainUsers.
+		let memberId: string | null = null;
 		const targetMemberRole = determineMemberRole(entry);
 		if (authUserId && targetMemberRole) {
 			const organization = resolveSeedOrganization(
@@ -1722,7 +1660,6 @@ async function seedUsers(
 				),
 			});
 
-			let memberId: string;
 			if (existingMember) {
 				memberId = existingMember.id;
 				if (
@@ -1747,12 +1684,65 @@ async function seedUsers(
 					.returning();
 				memberId = member.id;
 			}
-
-			await db
-				.update(schema.domainUsers)
-				.set({ memberId })
-				.where(eq(schema.domainUsers.id, profile.id));
 		}
+
+		// Look up existing profile by memberId, then fall back to email.
+		let existingProfile = memberId
+			? await db.query.domainUsers.findFirst({
+					where: eq(schema.domainUsers.memberId, memberId),
+				})
+			: null;
+
+		if (!existingProfile) {
+			existingProfile = await db.query.domainUsers.findFirst({
+				where: eq(schema.domainUsers.primaryEmail, entry.primaryEmail),
+			});
+		}
+
+		let profile: { id: string };
+		if (existingProfile) {
+			const [updated] = await db
+				.update(schema.domainUsers)
+				.set({
+					memberId,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
+					phone: entry.phone ?? null,
+					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
+					placeOfBirth: entry.placeOfBirth ?? null,
+					gender: entry.gender ?? null,
+					nationality: entry.nationality ?? null,
+					status: entry.status ?? "active",
+					updatedAt: now,
+				})
+				.where(eq(schema.domainUsers.id, existingProfile.id))
+				.returning();
+			profile = updated;
+		} else {
+			const [created] = await db
+				.insert(schema.domainUsers)
+				.values({
+					memberId,
+					firstName: normalizedFirstName,
+					lastName: normalizedLastName,
+					primaryEmail: entry.primaryEmail,
+					phone: entry.phone ?? null,
+					dateOfBirth: entry.dateOfBirth ? toDateOnly(entry.dateOfBirth) : null,
+					placeOfBirth: entry.placeOfBirth ?? null,
+					gender: entry.gender ?? null,
+					nationality: entry.nationality ?? null,
+					status: entry.status ?? "active",
+					updatedAt: now,
+				})
+				.returning();
+			profile = created;
+		}
+
+		state.domainUsers.set(code, {
+			id: profile.id,
+			firstName: entry.firstName ?? "",
+			lastName: entry.lastName ?? "",
+		});
 	}
 	if (data.domainUsers?.length) {
 		logger.log(`[seed] • Domain users: ${data.domainUsers.length}`);

@@ -11,7 +11,6 @@ const studentProjection = {
 	createdAt: schema.students.createdAt,
 	profile: {
 		id: schema.domainUsers.id,
-		authUserId: schema.domainUsers.authUserId,
 		firstName: schema.domainUsers.firstName,
 		lastName: schema.domainUsers.lastName,
 		primaryEmail: schema.domainUsers.primaryEmail,
@@ -74,6 +73,21 @@ export async function findById(id: string, institutionId: string) {
 		.where(
 			and(
 				eq(schema.students.id, id),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return item ?? null;
+}
+
+export async function findByDomainUserId(
+	domainUserId: string,
+	institutionId: string,
+) {
+	const [item] = await baseQuery()
+		.where(
+			and(
+				eq(schema.students.domainUserId, domainUserId),
 				eq(schema.students.institutionId, institutionId),
 			),
 		)

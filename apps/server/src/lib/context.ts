@@ -21,21 +21,21 @@ export async function createContext({ context }: CreateContextOptions) {
 	const session = await auth.api.getSession({
 		headers: context.req.raw.headers,
 	});
+	const orgSlugHint =
+		context.req.raw.headers.get("X-Organization-Slug") ?? undefined;
+	const tenant = await resolveTenantContext(session, orgSlugHint);
 	let profile = null;
-	if (session?.user?.id) {
-		profile = await domainUsersRepo.findByAuthUserId(session.user.id);
-		if (!profile) {
+	if (tenant.member) {
+		profile = await domainUsersRepo.findByMemberId(tenant.member.id);
+		if (!profile && session?.user) {
 			profile = await domainUsersRepo.create({
-				authUserId: session.user.id,
+				memberId: tenant.member.id,
 				primaryEmail: session.user.email,
 				firstName: session.user.name,
 				lastName: "",
 			});
 		}
 	}
-	const orgSlugHint =
-		context.req.raw.headers.get("X-Organization-Slug") ?? undefined;
-	const tenant = await resolveTenantContext(session, profile, orgSlugHint);
 	const memberRole = deriveMemberRole(tenant.member?.role);
 	return {
 		session,
@@ -57,7 +57,6 @@ export type Context = Awaited<ReturnType<typeof createContext>>;
  */
 async function resolveTenantContext(
 	session: Awaited<ReturnType<typeof auth.api.getSession>>,
-	profile: appSchema.DomainUser | null,
 	orgSlugHint?: string,
 ) {
 	const authSession = session?.session as
@@ -79,17 +78,7 @@ async function resolveTenantContext(
 		});
 	}
 
-	// Fall back to the linked member on the domain profile
-	if (!memberRecord && profile?.memberId) {
-		memberRecord = await db.query.member.findFirst({
-			where: eq(authSchema.member.id, profile.memberId),
-		});
-		if (!organizationId) {
-			organizationId = memberRecord?.organizationId ?? null;
-		}
-	}
-
-	// Final fallback: resolve via the X-Organization-Slug header sent by the client
+	// Fallback: resolve via the X-Organization-Slug header sent by the client
 	if (!organizationId && orgSlugHint && session?.user?.id) {
 		const org = await db
 			.select({ id: authSchema.organization.id })

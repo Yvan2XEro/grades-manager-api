@@ -435,7 +435,6 @@ describe("exam workflow UI e2e", () => {
 			...state,
 			user: {
 				profileId: "teacher-1",
-				authUserId: "teacher-1",
 				email: "teacher@example.com",
 				firstName: "Tessa",
 				lastName: "Ngoma",

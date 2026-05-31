@@ -732,6 +732,19 @@ authUsers:
     password: Password123!
     role: user
 
+  # ─── Comptes de test UI (dev uniquement) ───
+  - code: TEST-DEAN
+    email: dean@test.inses.cm
+    name: Doyen Test
+    password: Password123!
+    role: admin
+
+  - code: TEST-STUDENT
+    email: student@test.inses.cm
+    name: Etudiant Test
+    password: Password123!
+    role: user
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DOMAIN USERS  (institutional profiles linked to auth accounts)
 # memberRole: "owner" | "teacher" | "administrator" | "dean" | "staff"
@@ -2299,6 +2312,29 @@ domainUsers:
     nationality: 'Camerounaise'
     status: active
 
+  # ─── Comptes de test UI (dev uniquement) ───
+  - code: TEST-DEAN
+    authUserCode: TEST-DEAN
+    firstName: Doyen
+    lastName: Test
+    primaryEmail: dean@test.inses.cm
+    status: active
+    organizationSlug: inses-institution
+    memberRole: dean
+
+  - code: TEST-STUDENT
+    authUserCode: TEST-STUDENT
+    firstName: 'Mefoche'
+    lastName: 'Ange Brielle'
+    primaryEmail: student@test.inses.cm
+    dateOfBirth: 2006-06-09
+    placeOfBirth: 'BONABERI-DOUALA'
+    gender: FEMALE
+    nationality: 'Camerounaise'
+    status: active
+    organizationSlug: inses-institution
+    memberRole: student
+
 # ─────────────────────────────────────────────────────────────────────────────
 # STUDENTS  (institutional student records — one par classe)
 # classCode + classAcademicYearCode doivent référencer une classe de 10-academics.yaml.
@@ -2862,6 +2898,13 @@ students:
     classCode: IGL-BTS1
     classAcademicYearCode: AY-2025
     registrationNumber: INSES25-GL-0004
+
+  # ─── Compte de test UI (dev uniquement) ───
+  - code: TEST-STUDENT
+    domainUserCode: TEST-STUDENT
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    registrationNumber: INSES25-GL-9999
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ENROLLMENTS  (étudiant ↔ classe ↔ année académique)
@@ -3687,6 +3730,14 @@ enrollments:
     status: active
     admissionType: normal
   - studentCode: STD-IGL1-004
+    classCode: IGL-BTS1
+    classAcademicYearCode: AY-2025
+    academicYearCode: AY-2025
+    status: active
+    admissionType: normal
+
+  # ─── Compte de test UI (dev uniquement) ───
+  - studentCode: TEST-STUDENT
     classCode: IGL-BTS1
     classAcademicYearCode: AY-2025
     academicYearCode: AY-2025

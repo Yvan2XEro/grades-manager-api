@@ -40,7 +40,6 @@ import Sidebar from "../Sidebar";
 
 const makeAdmin = () => ({
 	profileId: "user-1",
-	authUserId: "user-1",
 	email: "admin@example.com",
 	image: null,
 	firstName: "Jane",

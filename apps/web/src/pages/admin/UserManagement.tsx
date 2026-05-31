@@ -239,8 +239,8 @@ export default function UserManagement() {
 			const usersToDelete = displayedUsers.filter((u) => ids.includes(u.id));
 			await Promise.all(
 				usersToDelete.map(async (user) => {
-					if (user.authUserId) {
-						await authClient.admin.removeUser({ userId: user.authUserId });
+					if (user.authUser?.id) {
+						await authClient.admin.removeUser({ userId: user.authUser.id });
 					}
 					return trpcClient.users.deleteProfile.mutate({ id: user.id });
 				}),
@@ -347,10 +347,9 @@ export default function UserManagement() {
 			...data
 		}: { authUserId?: string | null; id: string } & UserForm) => {
 			if (authUserId) {
-				const fullName = buildFullName(data);
 				await authClient.admin.adminUpdateUser({
 					userId: authUserId,
-					data: { name: fullName, email: data.email },
+					data: { name: buildFullName(data), email: data.email },
 				});
 			}
 			await trpcClient.users.updateProfile.mutate({
@@ -369,8 +368,8 @@ export default function UserManagement() {
 
 	const deleteMutation = useMutation({
 		mutationFn: async (user: DomainUser) => {
-			if (user.authUserId) {
-				await authClient.admin.removeUser({ userId: user.authUserId });
+			if (user.authUser?.id) {
+				await authClient.admin.removeUser({ userId: user.authUser.id });
 			}
 			await trpcClient.users.deleteProfile.mutate({ id: user.id });
 		},
@@ -387,7 +386,7 @@ export default function UserManagement() {
 		if (editingUser) {
 			updateMutation.mutate({
 				id: editingUser.id,
-				authUserId: editingUser.authUserId,
+				authUserId: editingUser.authUser?.id ?? null,
 				...data,
 			});
 		} else {

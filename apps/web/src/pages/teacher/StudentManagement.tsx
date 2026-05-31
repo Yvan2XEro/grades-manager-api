@@ -602,6 +602,7 @@ export default function StudentManagement() {
 							onPrev={pagination.handlePrev}
 							onNext={() => pagination.handleNext(preview?.nextCursor)}
 							isLoading={studentsLoading}
+							page={pagination.page}
 						/>
 					)}
 				</div>

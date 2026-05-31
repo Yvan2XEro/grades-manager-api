@@ -95,7 +95,6 @@ describe("users router", () => {
 				canConnect: false,
 			});
 			expect(result).toBeDefined();
-			expect(result?.authUserId).toBeNull();
 			expect(result?.memberId).toBeNull();
 		});
 
@@ -111,7 +110,6 @@ describe("users router", () => {
 				memberRole: "teacher",
 			});
 			expect(result).toBeDefined();
-			expect(result?.authUserId).toBeTruthy();
 			expect(result?.memberId).toBeTruthy();
 			expect(result?.primaryEmail).toBe(email);
 		});

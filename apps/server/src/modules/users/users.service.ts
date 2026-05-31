@@ -18,7 +18,6 @@ type CreateProfileInput = {
 	gender?: Gender;
 	nationality?: string;
 	status?: DomainUserStatus;
-	authUserId?: string;
 	memberId?: string;
 };
 
@@ -32,7 +31,6 @@ type UpdateProfileInput = {
 	gender?: Gender;
 	nationality?: string | null;
 	status?: DomainUserStatus;
-	authUserId?: string | null;
 	memberId?: string | null;
 };
 
@@ -63,7 +61,6 @@ export async function createUserProfile(data: CreateProfileInput) {
 		gender: data.gender ?? "other",
 		nationality: data.nationality ?? null,
 		status: data.status ?? "active",
-		authUserId: data.authUserId ?? null,
 		memberId: data.memberId ?? null,
 	});
 }
@@ -82,8 +79,6 @@ export async function updateUserProfile(id: string, data: UpdateProfileInput) {
 	if (data.nationality !== undefined)
 		payload.nationality = data.nationality ?? null;
 	if (data.status !== undefined) payload.status = data.status;
-	if (data.authUserId !== undefined)
-		payload.authUserId = data.authUserId ?? null;
 	if (data.memberId !== undefined) payload.memberId = data.memberId ?? null;
 	if (!Object.keys(payload).length) {
 		return domainUsersRepo.findById(id);
@@ -162,7 +157,7 @@ export async function createUserWithAuth(
 	}
 
 	try {
-		return await createUserProfile({ ...data, authUserId, memberId });
+		return await createUserProfile({ ...data, memberId });
 	} catch (err) {
 		await db
 			.delete(authSchema.member)

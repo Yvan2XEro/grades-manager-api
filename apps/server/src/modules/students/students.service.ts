@@ -19,7 +19,6 @@ type StudentProfileInput = Pick<
 	| "gender"
 	| "phone"
 	| "nationality"
-	| "authUserId"
 >;
 
 type CreateStudentInput = {
@@ -53,7 +52,6 @@ const conflictMarkers = [
 ];
 
 const buildProfilePayload = (p: StudentProfileInput) => ({
-	authUserId: p.authUserId ?? null,
 	firstName: p.firstName,
 	lastName: p.lastName,
 	primaryEmail: p.primaryEmail,
@@ -362,6 +360,13 @@ export async function getStudentById(id: string, institutionId: string) {
 	const item = await repo.findById(id, institutionId);
 	if (!item) throw new TRPCError({ code: "NOT_FOUND" });
 	return item;
+}
+
+export async function getStudentByDomainUserId(
+	domainUserId: string,
+	institutionId: string,
+) {
+	return repo.findByDomainUserId(domainUserId, institutionId);
 }
 
 export async function admitExternalStudent(

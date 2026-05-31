@@ -1,7 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, ChevronUp, ClipboardCheck, X } from "lucide-react";
+import {
+	BookOpen,
+	Calendar,
+	Check,
+	ChevronDown,
+	ChevronUp,
+	ClipboardCheck,
+	Hash,
+	Search,
+	Tag,
+	Users,
+	X,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,8 +26,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { GradingProgress } from "@/components/ui/grading-progress";
 import { PageHeader } from "@/components/ui/page-header";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -23,16 +37,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "../../utils/trpc";
 
-interface ExamItem {
+type ExamItem = {
 	id: string;
 	name: string;
-	percentage: number;
-	classCourse: string;
+	percentage: string | number;
 	status: string;
-}
+	type: string;
+	date: Date | string | null;
+	courseName: string | null;
+	courseCode: string | null;
+	className: string | null;
+	classId: string | null;
+};
 
 // ─── Reject Dialog ────────────────────────────────────────────────────────────
 
@@ -47,18 +67,16 @@ function RejectExamDialog({
 	open: boolean;
 	onClose: () => void;
 }) {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [reason, setReason] = useState("");
 
 	const rejectMutation = useMutation({
 		mutationFn: () =>
-			trpcClient.workflows.rejectGrades
-				? trpcClient.workflows.rejectGrades.mutate({ examId, reason })
-				: // Fallback: use validateGrades with a reject flag if rejectGrades doesn't exist
-					Promise.reject(new Error("Procédure rejectGrades non disponible")),
+			trpcClient.workflows.rejectGrades.mutate({ examId, reason }),
 		onSuccess: () => {
-			toast.success("Examen rejeté");
-			queryClient.invalidateQueries(trpc.exams.list.queryKey());
+			toast.success(t("dean.approvals.rejected"));
+			queryClient.invalidateQueries({ queryKey: ["dean-exams"] });
 			onClose();
 			setReason("");
 		},
@@ -71,28 +89,28 @@ function RejectExamDialog({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2 text-destructive">
 						<X className="h-5 w-5" />
-						Rejeter l'examen
+						{t("dean.approvals.rejectTitle")}
 					</DialogTitle>
 				</DialogHeader>
 				<p className="text-muted-foreground text-sm">
-					<strong>{examName}</strong> — veuillez indiquer la raison du rejet.
+					<strong>{examName}</strong> — {t("dean.approvals.rejectHint")}
 				</p>
 				<textarea
 					value={reason}
 					onChange={(e) => setReason(e.target.value)}
-					placeholder="Raison du rejet (obligatoire)..."
+					placeholder={t("dean.approvals.rejectPlaceholder")}
 					className="min-h-[80px] w-full resize-none rounded-md border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				/>
 				<DialogFooter>
 					<Button variant="outline" onClick={onClose}>
-						Annuler
+						{t("common.cancel")}
 					</Button>
 					<Button
 						variant="destructive"
 						disabled={!reason.trim() || rejectMutation.isPending}
 						onClick={() => rejectMutation.mutate()}
 					>
-						Rejeter
+						{t("dean.approvals.rejectConfirm")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -106,12 +124,14 @@ function ExamApprovalCard({
 	exam,
 	selected,
 	onToggle,
+	onApproved,
 }: {
 	exam: ExamItem;
 	selected: boolean;
 	onToggle: () => void;
+	onApproved: () => void;
 }) {
-	const queryClient = useQueryClient();
+	const { t } = useTranslation();
 	const [expanded, setExpanded] = useState(false);
 	const [rejectOpen, setRejectOpen] = useState(false);
 
@@ -120,7 +140,7 @@ function ExamApprovalCard({
 		enabled: expanded,
 		queryFn: () =>
 			trpcClient.grades.listByExam
-				.query({ examId: exam.id })
+				.query({ examId: exam.id, limit: 200 })
 				.then((r) => r.items),
 	});
 
@@ -131,65 +151,104 @@ function ExamApprovalCard({
 				approverId: undefined,
 			}),
 		onSuccess: () => {
-			toast.success("Examen approuvé");
-			queryClient.invalidateQueries(trpc.exams.list.queryKey());
+			toast.success(t("dean.approvals.approved"));
+			onApproved();
 		},
 		onError: (e: Error) => toast.error(e.message),
 	});
 
 	const grades = gradesQuery.data ?? [];
 	const graded = grades.length;
+	const scores = grades.map((g) => Number(g.score));
 	const avg =
-		graded > 0
-			? (grades.reduce((s, g) => s + Number(g.score), 0) / graded).toFixed(1)
-			: null;
-	const min =
-		graded > 0
-			? Math.min(...grades.map((g) => Number(g.score))).toFixed(1)
-			: null;
-	const max =
-		graded > 0
-			? Math.max(...grades.map((g) => Number(g.score))).toFixed(1)
-			: null;
+		graded > 0 ? (scores.reduce((s, v) => s + v, 0) / graded).toFixed(2) : null;
+	const min = graded > 0 ? Math.min(...scores).toFixed(2) : null;
+	const max = graded > 0 ? Math.max(...scores).toFixed(2) : null;
+	const below10 = graded > 0 ? scores.filter((s) => s < 10).length : 0;
+
+	const examDate = exam.date
+		? new Date(exam.date).toLocaleDateString("fr-FR", {
+				day: "2-digit",
+				month: "short",
+				year: "numeric",
+			})
+		: null;
 
 	return (
 		<div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-			<div className="flex items-center gap-3 px-4 py-3">
-				<Checkbox checked={selected} onCheckedChange={onToggle} />
+			<div className="flex items-start gap-3 px-4 py-3">
+				<Checkbox
+					checked={selected}
+					onCheckedChange={onToggle}
+					className="mt-0.5"
+				/>
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-2">
 						<span className="font-semibold text-foreground text-sm">
 							{exam.name}
 						</span>
 						<Badge variant="warning" className="text-xs">
-							Soumis
+							{t("exam.status.submitted")}
 						</Badge>
+						{exam.type && (
+							<span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 font-mono text-muted-foreground text-xs">
+								<Tag className="h-3 w-3" />
+								{exam.type}
+							</span>
+						)}
 						<span className="text-muted-foreground text-xs">
 							{exam.percentage}%
 						</span>
 					</div>
-					<p className="mt-0.5 text-muted-foreground text-xs">
-						Cours : {exam.classCourse}
-					</p>
+					<div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-muted-foreground text-xs">
+						{exam.courseName && (
+							<span className="flex items-center gap-1">
+								<BookOpen className="h-3 w-3 shrink-0" />
+								{exam.courseName}
+								{exam.courseCode && (
+									<span className="font-mono">({exam.courseCode})</span>
+								)}
+							</span>
+						)}
+						{exam.className && (
+							<span className="flex items-center gap-1">
+								<Users className="h-3 w-3 shrink-0" />
+								{exam.className}
+							</span>
+						)}
+						{examDate && (
+							<span className="flex items-center gap-1">
+								<Calendar className="h-3 w-3 shrink-0" />
+								{examDate}
+							</span>
+						)}
+					</div>
 				</div>
+
 				{avg && (
-					<div className="hidden shrink-0 items-center gap-3 text-muted-foreground text-xs md:flex">
-						<span>
-							Moy <strong className="text-foreground">{avg}</strong>
+					<div className="hidden shrink-0 flex-col items-end gap-0.5 text-xs md:flex">
+						<span className="text-muted-foreground">
+							{t("dean.approvals.avg")}{" "}
+							<strong className="text-foreground">{avg}</strong>
 						</span>
-						<span>Min {min}</span>
-						<span>Max {max}</span>
+						<span className="text-muted-foreground">
+							min {min} · max {max}
+						</span>
+						{below10 > 0 && (
+							<span className="text-destructive">{below10} &lt; 10</span>
+						)}
 					</div>
 				)}
-				<div className="flex shrink-0 items-center gap-2">
+
+				<div className="flex shrink-0 items-center gap-1.5">
 					<Button
 						size="sm"
 						variant="outline"
 						className="border-destructive/30 text-destructive hover:bg-destructive/5"
 						onClick={() => setRejectOpen(true)}
 					>
-						<X className="h-3.5 w-3.5" />
-						Rejeter
+						<X className="mr-1 h-3.5 w-3.5" />
+						{t("dean.approvals.reject")}
 					</Button>
 					<Button
 						size="sm"
@@ -197,13 +256,14 @@ function ExamApprovalCard({
 						disabled={approveMutation.isPending}
 					>
 						<Check className="mr-1 h-3.5 w-3.5" />
-						Approuver
+						{t("dean.approvals.approve")}
 					</Button>
 					<Button
 						size="icon"
 						variant="ghost"
 						className="h-8 w-8"
 						onClick={() => setExpanded((p) => !p)}
+						title={t("dean.approvals.viewGrades")}
 					>
 						{expanded ? (
 							<ChevronUp className="h-4 w-4" />
@@ -222,26 +282,53 @@ function ExamApprovalCard({
 						</div>
 					) : grades.length === 0 ? (
 						<p className="py-2 text-center text-muted-foreground text-sm">
-							Aucune note enregistrée
+							{t("dean.approvals.noGrades")}
 						</p>
 					) : (
 						<>
-							<div className="mb-2">
-								<GradingProgress graded={graded} total={graded} />
-							</div>
-							<div className="max-h-64 overflow-y-auto rounded-md border">
+							{avg && (
+								<div className="mb-3 flex flex-wrap gap-3 md:hidden">
+									<span className="text-muted-foreground text-xs">
+										{t("dean.approvals.avg")}{" "}
+										<strong className="text-foreground">{avg}</strong>
+									</span>
+									<span className="text-muted-foreground text-xs">
+										min {min} · max {max}
+									</span>
+								</div>
+							)}
+							<div className="max-h-72 overflow-y-auto rounded-md border">
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>Étudiant</TableHead>
-											<TableHead className="w-24 text-right">Note</TableHead>
+											<TableHead className="w-28">
+												<span className="flex items-center gap-1">
+													<Hash className="h-3 w-3" />
+													{t("dean.approvals.regNumber")}
+												</span>
+											</TableHead>
+											<TableHead>{t("dean.approvals.student")}</TableHead>
+											<TableHead className="w-20 text-right">
+												{t("dean.approvals.score")}
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{grades.map((g) => (
 											<TableRow key={g.id}>
-												<TableCell className="text-sm">{g.student}</TableCell>
-												<TableCell className="text-right font-medium tabular-nums">
+												<TableCell className="font-mono text-muted-foreground text-xs">
+													{(g as any).registrationNumber ?? "—"}
+												</TableCell>
+												<TableCell className="text-sm">
+													{(g as any).studentName ?? "—"}
+												</TableCell>
+												<TableCell
+													className={`text-right font-semibold text-sm tabular-nums ${
+														Number(g.score) < 10
+															? "text-destructive"
+															: "text-foreground"
+													}`}
+												>
 													{Number(g.score).toFixed(2)}
 												</TableCell>
 											</TableRow>
@@ -266,12 +353,34 @@ function ExamApprovalCard({
 
 // ─── DeanDashboard ────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 20;
+
 export default function DeanDashboard() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-	const examsQuery = useQuery(trpc.exams.list.queryOptions({ limit: 100 }));
+	// ── Filters ────────────────────────────────────────────────────────────────
+	const [search, setSearch] = useState("");
+	const [classFilter, setClassFilter] = useState<string>("all");
+	const [yearFilter, setYearFilter] = useState<string>("all");
+	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
+
+	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
+		setter(v);
+		pagination.reset();
+	};
+
+	const examsQuery = useQuery(
+		trpc.exams.list.queryOptions({
+			limit: PAGE_SIZE,
+			cursor: pagination.cursor,
+			status: "submitted",
+			query: search.trim() || undefined,
+			classId: classFilter !== "all" ? classFilter : undefined,
+			academicYearId: yearFilter !== "all" ? yearFilter : undefined,
+		}),
+	);
 
 	const bulkApproveMutation = useMutation({
 		mutationFn: async (ids: string[]) => {
@@ -285,17 +394,15 @@ export default function DeanDashboard() {
 			);
 		},
 		onSuccess: () => {
-			toast.success("Examens approuvés");
+			toast.success(t("dean.approvals.bulkApproved"));
 			queryClient.invalidateQueries(trpc.exams.list.queryKey());
 			setSelectedIds(new Set());
 		},
 		onError: (e: Error) => toast.error(e.message),
 	});
 
-	const submittedExams =
-		(examsQuery.data?.items?.filter(
-			(e) => e.status === "submitted",
-		) as ExamItem[]) ?? [];
+	// Server already filters status: "submitted" — no client-side re-filter needed
+	const submittedExams = (examsQuery.data?.items ?? []) as ExamItem[];
 
 	const toggle = (id: string) =>
 		setSelectedIds((prev) => {
@@ -307,16 +414,48 @@ export default function DeanDashboard() {
 	const allSelected =
 		submittedExams.length > 0 && selectedIds.size === submittedExams.length;
 
+	const invalidateAndReset = () => {
+		queryClient.invalidateQueries(trpc.exams.list.queryKey());
+		setSelectedIds(new Set());
+	};
+
 	return (
 		<div className="space-y-6">
 			<PageHeader
-				title="Approbations en attente"
+				title={t("dean.approvals.title")}
 				description={
 					submittedExams.length > 0
-						? `${submittedExams.length} examen${submittedExams.length > 1 ? "s" : ""} en attente de votre validation`
-						: "Aucun examen en attente"
+						? t("dean.approvals.pendingCount", {
+								count: submittedExams.length,
+							})
+						: t("dean.approvals.noPending")
 				}
 			/>
+
+			{/* ── Filters ─────────────────────────────────────────────────────── */}
+			<div className="flex flex-wrap items-center gap-3">
+				<div className="relative min-w-[200px] flex-1">
+					<Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 text-muted-foreground" />
+					<input
+						type="text"
+						value={search}
+						onChange={(e) => resetAndApply(setSearch)(e.target.value)}
+						placeholder={t("dean.approvals.searchPlaceholder")}
+						className="w-full rounded-md border bg-background py-2 pr-3 pl-8 text-sm outline-none focus:ring-2 focus:ring-ring"
+					/>
+				</div>
+				<AcademicYearSelect
+					value={yearFilter === "all" ? null : yearFilter}
+					onChange={(v) => resetAndApply(setYearFilter)(v ?? "all")}
+					autoSelectActive
+					className="w-[170px]"
+				/>
+				<ClassSelect
+					academicYearId={yearFilter !== "all" ? yearFilter : null}
+					value={classFilter === "all" ? null : classFilter}
+					onChange={(v) => resetAndApply(setClassFilter)(v ?? "all")}
+				/>
+			</div>
 
 			{examsQuery.isLoading ? (
 				<div className="flex h-48 items-center justify-center">
@@ -328,15 +467,17 @@ export default function DeanDashboard() {
 						<ClipboardCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
 					</div>
 					<div>
-						<p className="font-medium text-foreground">Tout est à jour</p>
+						<p className="font-medium text-foreground">
+							{t("dean.approvals.allDone")}
+						</p>
 						<p className="text-muted-foreground text-sm">
-							Aucun examen n'attend votre validation.
+							{t("dean.approvals.noPending")}
 						</p>
 					</div>
 				</div>
 			) : (
 				<>
-					{/* Bulk actions bar */}
+					{/* Bulk action bar */}
 					<div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5">
 						<div className="flex items-center gap-2">
 							<Checkbox
@@ -351,8 +492,8 @@ export default function DeanDashboard() {
 							/>
 							<span className="text-muted-foreground text-sm">
 								{selectedIds.size > 0
-									? `${selectedIds.size} sélectionné${selectedIds.size > 1 ? "s" : ""}`
-									: "Tout sélectionner"}
+									? t("common.selectedCount", { count: selectedIds.size })
+									: t("common.selectAll")}
 							</span>
 						</div>
 						{selectedIds.size > 0 && (
@@ -362,7 +503,9 @@ export default function DeanDashboard() {
 								disabled={bulkApproveMutation.isPending}
 							>
 								<Check className="mr-1 h-3.5 w-3.5" />
-								Approuver la sélection ({selectedIds.size})
+								{t("dean.approvals.approveSelection", {
+									count: selectedIds.size,
+								})}
 							</Button>
 						)}
 					</div>
@@ -374,9 +517,24 @@ export default function DeanDashboard() {
 								exam={exam}
 								selected={selectedIds.has(exam.id)}
 								onToggle={() => toggle(exam.id)}
+								onApproved={invalidateAndReset}
 							/>
 						))}
 					</div>
+
+					<PaginationBar
+						hasPrev={pagination.hasPrev}
+						hasNext={!!examsQuery.data?.nextCursor}
+						onPrev={pagination.handlePrev}
+						onNext={() => pagination.handleNext(examsQuery.data?.nextCursor)}
+						isLoading={examsQuery.isLoading}
+						page={pagination.page}
+						totalPages={
+							examsQuery.data?.total !== undefined
+								? Math.ceil(examsQuery.data.total / PAGE_SIZE)
+								: undefined
+						}
+					/>
 				</>
 			)}
 		</div>

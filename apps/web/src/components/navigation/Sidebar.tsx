@@ -12,6 +12,7 @@ import {
 	Gavel,
 	GraduationCap,
 	LayoutDashboard,
+	ListChecks,
 	PlayCircle,
 	School,
 	Search,
@@ -203,6 +204,11 @@ const Sidebar: React.FC = () => {
 		() => [
 			{
 				to: "/dean",
+				icon: <LayoutDashboard className={IC} />,
+				labelKey: "navigation.sidebar.dean.dashboard",
+			},
+			{
+				to: "/dean/approvals",
 				icon: <ClipboardList className={IC} />,
 				labelKey: "navigation.sidebar.dean.pendingApprovals",
 			},
@@ -213,7 +219,7 @@ const Sidebar: React.FC = () => {
 			},
 			{
 				to: "/dean/monitoring",
-				icon: <LayoutDashboard className={IC} />,
+				icon: <TrendingUp className={IC} />,
 				labelKey: "navigation.sidebar.dean.monitoring",
 			},
 		],
@@ -242,6 +248,16 @@ const Sidebar: React.FC = () => {
 				to: "/student",
 				icon: <LayoutDashboard className={IC} />,
 				labelKey: "navigation.sidebar.student.dashboard",
+			},
+			{
+				to: "/student/exams",
+				icon: <Calendar className={IC} />,
+				labelKey: "navigation.sidebar.student.exams",
+			},
+			{
+				to: "/student/enrollments",
+				icon: <ListChecks className={IC} />,
+				labelKey: "navigation.sidebar.student.enrollments",
 			},
 		],
 		[],

@@ -214,6 +214,7 @@ const WorkflowApprovals = () => {
 							examPagination.handleNext(examsQuery.data?.nextCursor)
 						}
 						isLoading={examsQuery.isLoading}
+						page={examPagination.page}
 					/>
 				</div>
 				<div className="rounded-xl border-0 bg-card p-6 shadow-sm">
@@ -265,6 +266,7 @@ const WorkflowApprovals = () => {
 							notifPagination.handleNext(notificationsQuery.data?.nextCursor)
 						}
 						isLoading={notificationsQuery.isLoading}
+						page={notifPagination.page}
 					/>
 				</div>
 			</div>

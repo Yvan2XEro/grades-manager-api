@@ -93,7 +93,6 @@ export function makeTestContext(opts: TestContextOptions = {}): Context {
 			: randomUUID();
 	const profile = {
 		id: opts.profileOverrides?.id ?? randomUUID(),
-		authUserId: opts.profileOverrides?.authUserId ?? userId,
 		memberId: resolvedMemberId,
 		firstName: opts.profileOverrides?.firstName ?? "Test",
 		lastName: opts.profileOverrides?.lastName ?? "User",
@@ -144,7 +143,6 @@ const defaultProfilePayload = (
 		gender?: Gender | null;
 	} = {},
 ) => ({
-	authUserId: data.authUserId ?? null,
 	memberId: data.memberId ?? null,
 	firstName: data.firstName ?? "John",
 	lastName: data.lastName ?? "Doe",
@@ -629,7 +627,6 @@ export async function createUser(data: CreateUserOptions = {}) {
 		memberId = member.id;
 	}
 	const profile = await createDomainUser({
-		authUserId: authUser.user.id,
 		memberId,
 		firstName: firstName || "John",
 		lastName: rest.join(" ") || "Doe",

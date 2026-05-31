@@ -86,7 +86,11 @@
     "noResults": "No results",
     "search": "Search",
     "select": "Select",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "cancel": "Cancel",
+    "all": "All",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected"
   },
   "teacher": {
     "courses": {
@@ -942,14 +946,16 @@
         "myCourses": "My courses"
       },
       "dean": {
-        "dashboard": "Overview",
+        "dashboard": "Dashboard",
         "workflows": "Approvals",
         "history": "History",
         "monitoring": "Monitoring",
         "pendingApprovals": "Pending approvals"
       },
       "student": {
-        "dashboard": "My performance"
+        "dashboard": "My performance",
+        "exams": "Exam calendar",
+        "enrollments": "My courses"
       }
     },
     "roles": {
@@ -3665,6 +3671,61 @@
         "bulkMessage": "bulkMessage",
         "singleMessage": "singleMessage"
       }
+    },
+    "cohort": {
+      "title": "Academic dashboard",
+      "subtitle": "Cohort overview — grading, results, success rates",
+      "students": "Students",
+      "pending": "Pending",
+      "avgProgress": "Avg. progress",
+      "avgSuccess": "Avg. success rate",
+      "gradingProgress": "Grading progress",
+      "approved": "approved",
+      "submitted": "pending",
+      "noData": "No cohorts",
+      "noDataHint": "Data will appear here once classes are created.",
+      "actionRequired": "Action required",
+      "noDeliberation": "No deliberation yet",
+      "avgGeneral": "Gen. avg.",
+      "successRate": "Success rate"
+    },
+    "approvals": {
+      "title": "Pending approvals",
+      "pendingCount": "{{count}} exam(s) awaiting validation",
+      "noPending": "No exams pending",
+      "allDone": "All up to date",
+      "reject": "Reject",
+      "approve": "Approve",
+      "rejectTitle": "Reject exam",
+      "rejectHint": "Please provide a reason for rejection.",
+      "rejectPlaceholder": "Rejection reason (required)...",
+      "rejectConfirm": "Confirm rejection",
+      "rejected": "Exam rejected",
+      "approved": "Exam approved",
+      "bulkApproved": "Exams approved",
+      "approveSelection": "Approve selection ({{count}})",
+      "viewGrades": "View grades",
+      "noGrades": "No grades recorded",
+      "avg": "Avg.",
+      "regNumber": "Reg. number",
+      "student": "Student",
+      "score": "Score",
+      "searchPlaceholder": "Search exams...",
+      "allClasses": "All classes",
+      "allYears": "All years"
+    },
+    "history": {
+      "title": "Approval history",
+      "subtitle": "Approved or rejected exams",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "empty": "No history",
+      "emptyHint": "No exams approved or rejected yet.",
+      "approvedOn": "Approved on {{date}}",
+      "rejectedOn": "Rejected on {{date}}",
+      "searchPlaceholder": "Search exams...",
+      "allClasses": "All classes",
+      "allYears": "All years"
     }
   },
   "student": {
@@ -3676,13 +3737,51 @@
       "trendTitle": "Progression",
       "trendSubtitle": "Weighted averages across enrolled courses",
       "creditsProgress": "Credits earned",
-      "inProgress": "In progress: {{value}} credits",
+      "inProgress": "in progress",
       "eligible": "Eligible for next level 🎉",
       "notEligible": "Keep going! You're almost ready for promotion.",
       "ruleNotice": "Evaluated with the promotion rules configured by your faculty.",
       "courseAverages": "Course averages",
       "courseSubtitle": "Latest scores for the active academic year",
-      "coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session."
+      "coursePlaceholder": "Detailed course averages will appear once instructors publish grades for the current session.",
+      "deliberationDecision": "Deliberation decision",
+      "average": "Average",
+      "projection": "Year-end projection",
+      "projectionNote": "Of graded UEs so far, {{rate}}% are above the passing threshold. Partial data.",
+      "noGrades": "No grades available",
+      "noGradesHint": "Your grades will appear here once your teachers publish results.",
+      "transcript": "Transcript",
+      "creditProgress": "Progress toward promotion",
+      "creditsEligible": "You meet the credit requirements to advance to the next level.",
+      "generalAverage": "General average",
+      "aboveThreshold": "Above passing threshold",
+      "belowThreshold": "Below passing threshold",
+      "creditsEarned": "Credits earned",
+      "validatedUEs": "Validated UEs",
+      "teachingUnits": "Teaching units"
+    },
+    "exams": {
+      "title": "Exam calendar",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "noExams": "No exams scheduled",
+      "noExamsHint": "Your exams will appear here once created by your teachers.",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "enrollments": {
+      "title": "Course enrollment",
+      "subtitle": "Manage your course registrations during the open enrollment window",
+      "windowOpen": "Enrollment window open",
+      "windowClosed": "Enrollment closed",
+      "windowOpenHint": "You can enroll in and withdraw from courses.",
+      "windowClosedHint": "Enrollment is currently closed. Contact your administration.",
+      "noCourses": "No courses available",
+      "noCoursesHint": "Your class has no courses assigned yet.",
+      "enrolled": "Enrolled",
+      "unenroll": "Withdraw",
+      "enroll": "Enroll",
+      "selected": "{{count}} course(s) selected of {{total}}"
     }
   },
   "retakes": {
@@ -3874,6 +3973,27 @@
       "step": "Step",
       "next": "Next step",
       "done": "Setup complete"
+    }
+  },
+  "deliberation": {
+    "decision": {
+      "admitted": "Admitted — you advance to the next year.",
+      "compensated": "Admitted by compensation — you advance to the next year.",
+      "deferred": "Deferred — you must retake failing subjects.",
+      "repeat": "Repeating — you repeat the academic year.",
+      "excluded": "Excluded — please contact administration.",
+      "pending": "Decision pending.",
+      "unknown": "Unknown decision.",
+      "overridden": "Overridden"
+    }
+  },
+  "exam": {
+    "status": {
+      "approved": "Approved",
+      "submitted": "Submitted",
+      "locked": "Locked",
+      "draft": "Planned",
+      "rejected": "Rejected"
     }
   }
 }

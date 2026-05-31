@@ -27,7 +27,6 @@ function mapProfile(payload: Partial<StudentProfilePayload>) {
 		gender: payload.gender,
 		phone: payload.phone,
 		nationality: payload.nationality,
-		authUserId: payload.authUserId,
 	} as Partial<ServiceProfileInput>;
 }
 
@@ -114,4 +113,9 @@ export const studentsRouter = router({
 		.query(({ ctx, input }) =>
 			service.getStudentById(input.id, ctx.institution.id),
 		),
+	// Returns the student record for the currently logged-in user (matched via domain_user_id)
+	me: tenantProtectedProcedure.query(({ ctx }) => {
+		if (!ctx.profile) return null;
+		return service.getStudentByDomainUserId(ctx.profile.id, ctx.institution.id);
+	}),
 });

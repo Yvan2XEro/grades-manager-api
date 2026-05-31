@@ -24,7 +24,7 @@ import type {
 	JuryMember,
 	RuleEvaluationTrace,
 } from "../../modules/deliberations/deliberations.types";
-import { member, organization, user } from "./auth";
+import { member, organization } from "./auth";
 import type { RegistrationNumberFormatDefinition } from "./registration-number-types";
 
 /** Business roles available for domain-level RBAC. */
@@ -152,9 +152,6 @@ export const domainUsers = pgTable(
 	"domain_users",
 	{
 		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-		authUserId: text("auth_user_id").references(() => user.id, {
-			onDelete: "cascade",
-		}),
 		memberId: text("member_id").references(() => member.id, {
 			onDelete: "set null",
 		}),
@@ -177,10 +174,7 @@ export const domainUsers = pgTable(
 			.notNull()
 			.defaultNow(),
 	},
-	(t) => [
-		unique("uq_domain_users_auth").on(t.authUserId),
-		unique("uq_domain_users_member").on(t.memberId),
-	],
+	(t) => [unique("uq_domain_users_member").on(t.memberId)],
 );
 
 /** Root institution profile storing bilingual metadata and branding. */
@@ -1974,10 +1968,6 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
 }));
 
 export const domainUsersRelations = relations(domainUsers, ({ one }) => ({
-	authUser: one(user, {
-		fields: [domainUsers.authUserId],
-		references: [user.id],
-	}),
 	member: one(member, {
 		fields: [domainUsers.memberId],
 		references: [member.id],

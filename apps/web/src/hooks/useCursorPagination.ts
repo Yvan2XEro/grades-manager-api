@@ -34,6 +34,7 @@ export function useCursorPagination({
 	return {
 		cursor,
 		pageSize,
+		page: prevCursors.length + 1,
 		hasPrev: prevCursors.length > 0,
 		handleNext,
 		handlePrev,

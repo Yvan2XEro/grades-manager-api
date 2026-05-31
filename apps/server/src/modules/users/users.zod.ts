@@ -62,7 +62,6 @@ export const createUserWithAuthSchema = z
 export type CreateUserWithAuthInput = z.infer<typeof createUserWithAuthSchema>;
 
 export const createUserProfileSchema = profileSchema.extend({
-	authUserId: z.string().optional(),
 	memberId: z.string().optional(),
 });
 
@@ -70,7 +69,6 @@ export const updateUserProfileSchema = profileSchema
 	.partial()
 	.extend({
 		id: z.string(),
-		authUserId: z.string().optional(),
 		memberId: z.string().optional(),
 	})
 	.refine(
@@ -84,7 +82,6 @@ export const updateUserProfileSchema = profileSchema
 			value.gender ||
 			value.nationality ||
 			value.status ||
-			value.authUserId ||
 			value.memberId,
 		{ message: "Missing fields to update" },
 	);

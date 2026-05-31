@@ -16,6 +16,13 @@ export const baseSchema = z.object({
 
 export const updateSchema = baseSchema.partial().extend({ id: z.string() });
 
+export const examStatuses = [
+	"draft",
+	"submitted",
+	"approved",
+	"rejected",
+] as const;
+
 export const listSchema = z.object({
 	classCourseId: z.string().optional(),
 	dateFrom: z.coerce.date().optional(),
@@ -23,6 +30,8 @@ export const listSchema = z.object({
 	academicYearId: z.string().optional(),
 	query: z.string().trim().min(1).optional(),
 	classId: z.string().optional(),
+	status: z.enum(examStatuses).optional(),
+	statuses: z.array(z.enum(examStatuses)).optional(),
 	ueSemester: z.enum(["fall", "spring", "annual"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().optional(),

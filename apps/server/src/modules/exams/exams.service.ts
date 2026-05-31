@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -329,6 +329,64 @@ export async function listExams(
 
 export async function getExamById(id: string, institutionId: string) {
 	return requireExam(id, institutionId);
+}
+
+export async function listUpcomingExamsForStudent(
+	profileId: string,
+	institutionId: string,
+) {
+	// Find the student profile linked to this domain user
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.domainUserId, profileId),
+			eq(schema.students.institutionId, institutionId),
+		),
+	});
+	if (!student) return [];
+
+	// Get all active course enrollments for this student
+	const enrollments = await db.query.studentCourseEnrollments.findMany({
+		where: and(
+			eq(schema.studentCourseEnrollments.studentId, student.id),
+			inArray(schema.studentCourseEnrollments.status, ["active", "planned"]),
+		),
+		columns: { classCourseId: true },
+	});
+	if (!enrollments.length) return [];
+
+	const classCourseIds = enrollments.map((e) => e.classCourseId);
+
+	// Get upcoming exams for those courses
+	const exams = await db.query.exams.findMany({
+		where: and(
+			eq(schema.exams.institutionId, institutionId),
+			inArray(schema.exams.classCourse, classCourseIds),
+			gte(schema.exams.date, new Date()),
+		),
+		with: {
+			classCourseRef: {
+				with: {
+					courseRef: true,
+					classRef: { with: { academicYear: true } },
+				},
+			},
+		},
+		orderBy: [asc(schema.exams.date)],
+		limit: 50,
+	});
+
+	return exams.map((exam) => ({
+		id: exam.id,
+		name: exam.name,
+		date: exam.date,
+		percentage: exam.percentage,
+		status: exam.status,
+		type: exam.type,
+		courseName: exam.classCourseRef?.courseRef?.name ?? null,
+		courseCode: exam.classCourseRef?.code ?? null,
+		className: exam.classCourseRef?.classRef?.name ?? null,
+		academicYear: exam.classCourseRef?.classRef?.academicYear?.name ?? null,
+	}));
 }
 
 export async function setLock(

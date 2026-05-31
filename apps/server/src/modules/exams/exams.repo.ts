@@ -1,4 +1,15 @@
-import { and, asc, eq, gt, gte, ilike, inArray, lte, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	eq,
+	gt,
+	gte,
+	ilike,
+	inArray,
+	lte,
+	or,
+} from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 
@@ -53,9 +64,13 @@ export async function list(opts: {
 	query?: string;
 	academicYearId?: string;
 	ueSemester?: string;
+	status?: string;
+	statuses?: string[];
 }) {
 	const limit = opts.limit ?? 50;
-	const conditions = [
+
+	// Base filters (used for both items query and count query)
+	const baseConditions = [
 		eq(schema.exams.institutionId, opts.institutionId),
 		opts.classCourseId
 			? eq(schema.exams.classCourse, opts.classCourseId)
@@ -65,11 +80,14 @@ export async function list(opts: {
 			: undefined,
 		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
 		opts.dateTo ? lte(schema.exams.date, opts.dateTo) : undefined,
-		opts.cursor ? gt(schema.exams.id, opts.cursor) : undefined,
 		opts.academicYearId
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,
 		opts.classId ? eq(schema.classes.id, opts.classId) : undefined,
+		opts.status ? eq(schema.exams.status, opts.status) : undefined,
+		opts.statuses?.length
+			? inArray(schema.exams.status, opts.statuses)
+			: undefined,
 		opts.ueSemester
 			? eq(
 					schema.teachingUnits.semester,
@@ -85,12 +103,22 @@ export async function list(opts: {
 				)
 			: undefined,
 	].filter(Boolean) as Array<ReturnType<typeof and> | ReturnType<typeof or>>;
-	const condition =
-		conditions.length === 0
+
+	const toCondition = (conds: typeof baseConditions) =>
+		conds.length === 0
 			? undefined
-			: conditions.length === 1
-				? conditions[0]
-				: and(...conditions);
+			: conds.length === 1
+				? conds[0]
+				: and(...conds);
+
+	// Items query includes cursor for pagination
+	const itemConditions = [
+		...baseConditions,
+		opts.cursor ? gt(schema.exams.id, opts.cursor) : undefined,
+	].filter(Boolean) as typeof baseConditions;
+
+	const condition = toCondition(itemConditions);
+	const countCondition = toCondition(baseConditions);
 	const rows = await db
 		.select({
 			exam: schema.exams,
@@ -132,7 +160,27 @@ export async function list(opts: {
 	}));
 	const nextCursor =
 		items.length === limit ? items[items.length - 1].id : undefined;
-	return { items, nextCursor };
+
+	// Total count uses baseConditions (no cursor) so the number stays stable across pages
+	const [{ total }] = await db
+		.select({ total: count() })
+		.from(schema.exams)
+		.innerJoin(
+			schema.classCourses,
+			eq(schema.classCourses.id, schema.exams.classCourse),
+		)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.classCourses.class))
+		.innerJoin(
+			schema.courses,
+			eq(schema.courses.id, schema.classCourses.course),
+		)
+		.innerJoin(
+			schema.teachingUnits,
+			eq(schema.teachingUnits.id, schema.courses.teachingUnitId),
+		)
+		.where(countCondition);
+
+	return { items, nextCursor, total: Number(total) };
 }
 
 export async function setLock(

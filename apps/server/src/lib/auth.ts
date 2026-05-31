@@ -83,14 +83,8 @@ export const auth = betterAuth({
 		customSession(async ({ session, user }) => {
 			const sessionWithOrg = session as typeof session &
 				SessionWithActiveOrganization;
-			const domainProfiles = await domainUsersRepo.getDomainsByAuthUserId(
+			const domainProfiles = await domainUsersRepo.getDomainsByMemberships(
 				user.id,
-				{
-					authUserId: user.id,
-					primaryEmail: user.email,
-					firstName: user.name,
-					lastName: "",
-				},
 			);
 			const activeMembership =
 				sessionWithOrg.activeOrganizationId && user.id

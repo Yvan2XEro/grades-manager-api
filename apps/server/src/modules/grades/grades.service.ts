@@ -218,7 +218,29 @@ export async function listByExam(
 	institutionId: string,
 ) {
 	await requireExamForInstitution(opts.examId, institutionId);
-	return repo.listByExam(opts);
+	const result = await repo.listByExam(opts);
+	// Enrich with student profile data
+	const studentIds = result.items.map((g) => g.student);
+	const profiles =
+		studentIds.length > 0
+			? await db.query.students.findMany({
+					where: (t, { inArray }) => inArray(t.id, studentIds),
+					with: { profile: true },
+					columns: { id: true, registrationNumber: true },
+				})
+			: [];
+	const profileMap = new Map(profiles.map((p) => [p.id, p]));
+	const enriched = result.items.map((g) => {
+		const s = profileMap.get(g.student);
+		return {
+			...g,
+			studentName: s
+				? `${s.profile.firstName} ${s.profile.lastName}`.trim()
+				: null,
+			registrationNumber: s?.registrationNumber ?? null,
+		};
+	});
+	return { ...result, items: enriched };
 }
 
 export async function listByStudent(

@@ -41,8 +41,11 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ApprovalHistory from "./pages/dean/ApprovalHistory";
+import CohortDashboard from "./pages/dean/CohortDashboard";
 import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
+import CourseEnrollment from "./pages/student/CourseEnrollment";
+import ExamCalendar from "./pages/student/ExamCalendar";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
 import GradeEntry from "./pages/teacher/GradeEntry";
@@ -74,7 +77,6 @@ function App() {
 		const role = normalizeRole(membershipRole);
 		return {
 			profileId: session.user.id,
-			authUserId: session.user.id,
 			email: session.user.email,
 			image: session.user.image ?? null,
 			role,
@@ -316,7 +318,8 @@ function App() {
 
 					{/* Dean Routes */}
 					<Route path="/dean" element={<DashboardLayout />}>
-						<Route index element={<DeanDashboard />} />
+						<Route index element={<CohortDashboard />} />
+						<Route path="approvals" element={<DeanDashboard />} />
 						<Route path="workflows" element={<WorkflowApprovals />} />
 						<Route path="history" element={<ApprovalHistory />} />
 						<Route path="monitoring" element={<MonitoringDashboard />} />
@@ -369,6 +372,8 @@ function App() {
 					{/* Student Routes */}
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
+						<Route path="exams" element={<ExamCalendar />} />
+						<Route path="enrollments" element={<CourseEnrollment />} />
 					</Route>
 
 					{/* Shared Settings */}

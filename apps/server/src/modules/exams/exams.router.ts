@@ -166,4 +166,18 @@ export const router = createRouter({
 				ctx.institution.id,
 			);
 		}),
+
+	// ── Student calendar: upcoming exams for enrolled courses ─────────────────
+	upcomingForStudent: tenantProtectedProcedure.query(({ ctx }) => {
+		if (!ctx.profile) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "Profile required",
+			});
+		}
+		return service.listUpcomingExamsForStudent(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+	}),
 });

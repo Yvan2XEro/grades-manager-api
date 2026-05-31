@@ -86,7 +86,11 @@
     "noResults": "Aucun résultat",
     "search": "Rechercher",
     "select": "Sélectionner",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "cancel": "Annuler",
+    "all": "Tous",
+    "selectAll": "Tout sélectionner",
+    "selectedCount": "{{count}} sélectionné(s)"
   },
   "navigation": {
     "breadcrumbs": {
@@ -195,7 +199,9 @@
         "pendingApprovals": "Approbations en attente"
       },
       "student": {
-        "dashboard": "Ma performance"
+        "dashboard": "Ma performance",
+        "exams": "Calendrier examens",
+        "enrollments": "Mes inscriptions"
       }
     },
     "roles": {
@@ -3673,6 +3679,61 @@
         "bulkMessage": "bulkMessage",
         "singleMessage": "singleMessage"
       }
+    },
+    "cohort": {
+      "title": "Tableau de bord académique",
+      "subtitle": "Vue d'ensemble par cohorte — saisie, résultats, taux de réussite",
+      "students": "Étudiants",
+      "pending": "En attente",
+      "avgProgress": "Avancement moyen",
+      "avgSuccess": "Taux réussite moyen",
+      "gradingProgress": "Avancement saisie",
+      "approved": "approuvés",
+      "submitted": "en attente",
+      "noData": "Aucune cohorte",
+      "noDataHint": "Les données apparaîtront ici quand des classes seront créées.",
+      "actionRequired": "Action requise",
+      "noDeliberation": "Délibération non encore effectuée",
+      "avgGeneral": "Moy. générale",
+      "successRate": "Taux réussite"
+    },
+    "approvals": {
+      "title": "Approbations en attente",
+      "pendingCount": "{{count}} examen(s) en attente de validation",
+      "noPending": "Aucun examen en attente",
+      "allDone": "Tout est à jour",
+      "reject": "Rejeter",
+      "approve": "Approuver",
+      "rejectTitle": "Rejeter l'examen",
+      "rejectHint": "Veuillez indiquer la raison du rejet.",
+      "rejectPlaceholder": "Raison du rejet (obligatoire)...",
+      "rejectConfirm": "Confirmer le rejet",
+      "rejected": "Examen rejeté",
+      "approved": "Examen approuvé",
+      "bulkApproved": "Examens approuvés",
+      "approveSelection": "Approuver la sélection ({{count}})",
+      "viewGrades": "Voir les notes",
+      "noGrades": "Aucune note enregistrée",
+      "avg": "Moy.",
+      "regNumber": "Matricule",
+      "student": "Étudiant",
+      "score": "Note",
+      "searchPlaceholder": "Rechercher un examen...",
+      "allClasses": "Toutes les classes",
+      "allYears": "Toutes les années"
+    },
+    "history": {
+      "title": "Historique des approbations",
+      "subtitle": "Examens approuvés ou rejetés",
+      "approved": "Approuvés",
+      "rejected": "Rejetés",
+      "empty": "Aucun historique",
+      "emptyHint": "Aucun examen approuvé ou rejeté pour l'instant.",
+      "approvedOn": "Approuvé le {{date}}",
+      "rejectedOn": "Rejeté le {{date}}",
+      "searchPlaceholder": "Rechercher un examen...",
+      "allClasses": "Toutes les classes",
+      "allYears": "Toutes les années"
     }
   },
   "student": {
@@ -3684,13 +3745,51 @@
       "trendTitle": "Progression",
       "trendSubtitle": "Moyennes pondérées des cours inscrits",
       "creditsProgress": "Crédits obtenus",
-      "inProgress": "En cours : {{value}} crédits",
+      "inProgress": "en cours",
       "eligible": "Admissible au niveau suivant 🎉",
       "notEligible": "Encore un effort avant la promotion.",
       "ruleNotice": "Évalué avec les règles de promotion configurées par votre faculté.",
       "courseAverages": "Moyennes par cours",
       "courseSubtitle": "Dernières notes pour l'année active",
-      "coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées."
+      "coursePlaceholder": "Les moyennes détaillées apparaîtront une fois les notes publiées.",
+      "deliberationDecision": "Décision de délibération",
+      "average": "Moyenne",
+      "projection": "Projection fin d'année",
+      "projectionNote": "Sur les UEs déjà notées, {{rate}}% sont au-dessus du seuil de validation. Données partielles.",
+      "noGrades": "Aucune note disponible",
+      "noGradesHint": "Vos notes apparaîtront ici dès que vos enseignants auront publié les résultats.",
+      "transcript": "Relevé de notes",
+      "creditProgress": "Progression vers la promotion",
+      "creditsEligible": "Vous remplissez les conditions de crédits pour passer au niveau suivant.",
+      "generalAverage": "Moyenne générale",
+      "aboveThreshold": "Au-dessus du seuil de validation",
+      "belowThreshold": "En dessous du seuil de validation",
+      "creditsEarned": "Crédits validés",
+      "validatedUEs": "UEs validées",
+      "teachingUnits": "Unités d'enseignement"
+    },
+    "exams": {
+      "title": "Calendrier des examens",
+      "upcoming": "À venir",
+      "past": "Passés",
+      "noExams": "Aucun examen planifié",
+      "noExamsHint": "Vos examens apparaîtront ici dès qu'ils seront créés par vos enseignants.",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain"
+    },
+    "enrollments": {
+      "title": "Inscriptions aux cours",
+      "subtitle": "Gérez vos inscriptions pendant la fenêtre d'inscription ouverte",
+      "windowOpen": "Fenêtre d'inscription ouverte",
+      "windowClosed": "Inscriptions fermées",
+      "windowOpenHint": "Vous pouvez vous inscrire et vous désinscrire des cours.",
+      "windowClosedHint": "Les inscriptions sont actuellement fermées. Contactez votre administration.",
+      "noCourses": "Aucun cours disponible",
+      "noCoursesHint": "Votre classe n'a pas encore de cours associés.",
+      "enrolled": "Inscrit",
+      "unenroll": "Se désinscrire",
+      "enroll": "S'inscrire",
+      "selected": "{{count}} cours sélectionné(s) sur {{total}}"
     }
   },
   "retakes": {
@@ -3882,6 +3981,27 @@
       "step": "Étape",
       "next": "Prochaine étape",
       "done": "Configuration complète"
+    }
+  },
+  "deliberation": {
+    "decision": {
+      "admitted": "Admis — vous passez en année supérieure.",
+      "compensated": "Admis par compensation — vous passez en année supérieure.",
+      "deferred": "Ajourné — vous devrez repasser les matières insuffisantes.",
+      "repeat": "Redoublant — vous redoublez l'année.",
+      "excluded": "Exclu — contactez l'administration.",
+      "pending": "Décision en attente.",
+      "unknown": "Décision inconnue.",
+      "overridden": "Surclassé"
+    }
+  },
+  "exam": {
+    "status": {
+      "approved": "Approuvé",
+      "submitted": "Soumis",
+      "locked": "Verrouillé",
+      "draft": "Planifié",
+      "rejected": "Rejeté"
     }
   }
 }

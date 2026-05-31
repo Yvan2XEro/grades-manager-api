@@ -235,6 +235,7 @@ export default function GraduatedStudents() {
 					onPrev={pagination.handlePrev}
 					onNext={() => pagination.handleNext(data?.nextCursor)}
 					isLoading={isLoading}
+					page={pagination.page}
 				/>
 			)}
 		</div>
