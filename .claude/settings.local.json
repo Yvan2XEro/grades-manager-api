@@ -149,7 +149,16 @@
       "Bash(sed -n '336,340p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
       "Bash(sed -n '388,392p' /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/server/src/modules/exports/__tests__/exports-pv-data.test.ts)",
       "Bash(USE_PGLITE=true bun run src/scripts/seed.ts)",
-      "WebFetch(domain:overbrand.net)"
+      "WebFetch(domain:overbrand.net)",
+      "Bash(identify /home/yvan/Workspaces/Projects/sgn/grades-manager-api/apps/website/public/logo-tkams.png)",
+      "Bash(xargs sed -i 's/contact@tkams\\\\.app/contact@tkams.com/g; s/tefoye-kana\\\\.app/tkams.com/g')",
+      "Bash(mongosh \"mongodb://mongo:wVitT538m15rH2QjRcKy@192.168.0.99:27018\" --eval \"show dbs\")",
+      "Bash(mongo \"mongodb://mongo:wVitT538m15rH2QjRcKy@192.168.0.99:27018\" --eval \"show dbs\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:dokploy.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/Dokploy/dokploy/canary/openapi.json)",
+      "Bash(npx biome *)",
+      "Bash(bunx biome *)"
     ]
   },
   "enabledMcpjsonServers": [

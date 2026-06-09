@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS — Brochure produit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/tokens.css">
+<style>
+body { background: var(--tk-bg); margin: 0; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 56px 32px 64px; }
+
+.brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; padding-bottom: 18px; border-bottom: 1px solid var(--tk-border); }
+.brand-row img { height: 36px; }
+.brand-row .meta { font-family: 'Sora'; font-size: 11px; color: var(--tk-muted); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+
+.hero { display: grid; grid-template-columns: 2fr 1fr; gap: 36px; align-items: end; margin-bottom: 40px; }
+.kicker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--tk-primary); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+h1 { font-family: 'Sora'; font-weight: 600; font-size: 52px; line-height: 1.0; letter-spacing: -0.034em; margin: 0 0 16px; color: var(--tk-ink); }
+h1 em { font-style: normal; color: var(--tk-primary); }
+.lede { font-size: 16px; line-height: 1.55; color: var(--tk-ink-soft); max-width: 620px; }
+.hero-side { background: var(--tk-ink); color: white; border-radius: 16px; padding: 24px; }
+.hero-side h3 { font-family: 'Sora'; font-weight: 600; font-size: 14px; margin: 0 0 4px; color: white; }
+.hero-side p { margin: 0 0 6px; font-size: 12px; color: oklch(0.85 0.015 264); line-height: 1.5; }
+.hero-side .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid oklch(1 0 0 / 14%); }
+.hero-side .stat-row div { font-family: 'Sora'; }
+.hero-side .v { font-weight: 700; font-size: 28px; color: white; letter-spacing: -0.03em; line-height: 1; }
+.hero-side .v sup { color: oklch(0.75 0.18 277); font-size: 12px; margin-left: 2px; }
+.hero-side .l { font-size: 10px; color: oklch(0.7 0.02 264); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.opts { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 16px; margin-bottom: 24px; align-items: stretch; }
+.opt-main {
+  background: var(--tk-ink); color: white; border-radius: 18px;
+  padding: 28px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden;
+}
+.opt-main::after {
+  content: ""; position: absolute; right: -90px; top: -90px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.48 0.2 277 / 60%), oklch(0.48 0.2 277 / 0%));
+  pointer-events: none;
+}
+.opt-main > * { position: relative; z-index: 1; }
+.opt-main .topr { display: flex; justify-content: space-between; align-items: baseline; }
+.opt-main .label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: oklch(0.75 0.18 277); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
+.opt-main .ratio { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: oklch(0.7 0.02 264); }
+.opt-main h2 { font-family: 'Sora'; font-weight: 600; font-size: 32px; line-height: 1.04; letter-spacing: -0.028em; color: white; margin: 0; max-width: 380px; }
+.opt-main h2 em { font-style: normal; color: oklch(0.75 0.18 277); }
+.opt-main p { font-size: 13px; line-height: 1.55; color: oklch(0.85 0.015 264); margin: 0; max-width: 480px; }
+.opt-main .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.opt-main .chip { display: inline-flex; align-items: center; padding: 4px 10px; background: oklch(0.24 0.04 264); color: oklch(0.85 0.06 277); font-family: 'JetBrains Mono', monospace; font-size: 9.5px; border-radius: 999px; letter-spacing: 0.04em; }
+.opt-main .ctas { display: flex; gap: 10px; margin-top: 6px; }
+.opt-main .ctas a { font-family: 'Sora'; font-weight: 600; font-size: 12.5px; padding: 9px 16px; border-radius: 999px; text-decoration: none; }
+.opt-main .ctas .primary { background: var(--tk-primary-bright); color: var(--tk-ink); }
+.opt-main .ctas .secondary { background: transparent; color: white; border: 1px solid oklch(1 0 0 / 25%); }
+
+.opt-side {
+  background: white; border: 1px solid var(--tk-border); border-radius: 16px;
+  padding: 22px; display: flex; flex-direction: column; gap: 10px;
+}
+.opt-side .label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--tk-muted); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+.opt-side h3 { font-family: 'Sora'; font-weight: 600; font-size: 18px; line-height: 1.15; letter-spacing: -0.018em; color: var(--tk-ink); margin: 0; }
+.opt-side p { font-size: 12px; line-height: 1.5; color: var(--tk-ink-soft); margin: 0; }
+.opt-side .links { margin-top: auto; padding-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+.opt-side .links a { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--tk-muted); text-decoration: none; padding: 4px 10px; border: 1px solid var(--tk-border); border-radius: 999px; }
+.opt-side .links a:hover { color: var(--tk-primary); border-color: var(--tk-primary); }
+
+.note { margin-top: 12px; padding: 18px 22px; background: white; border: 1px solid var(--tk-border); border-radius: 14px;
+  display: grid; grid-template-columns: 32px 1fr; gap: 14px; align-items: start; }
+.note .icon { width: 32px; height: 32px; background: var(--tk-primary-soft); color: var(--tk-primary); display: grid; place-items: center; border-radius: 8px; font-family: 'Sora'; font-weight: 700; }
+.note h3 { font-family: 'Sora'; font-weight: 600; margin: 0 0 4px; font-size: 14px; color: var(--tk-ink); }
+.note p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--tk-ink-soft); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand-row">
+      <img src="assets/logo-tkams.png" alt="TKAMS" />
+      <span class="meta">Brochure produit · Édition 2026</span>
+    </div>
+
+    <div class="hero">
+      <div>
+        <div class="kicker">★ Brochure officielle</div>
+        <h1>La brochure complète<br/>de <em>TKAMS</em> en 30 pages.</h1>
+        <p class="lede">Tefoye and Kana Academic Management System — la plateforme intégrée de gestion académique pour les institutions LMD. Cette brochure documente tout : modules, architecture, sécurité, déploiement, tarification.</p>
+      </div>
+      <div class="hero-side">
+        <h3>Au sommaire</h3>
+        <p>Six parties, trente pages, deux pages dédiées au moteur de règles, six tables d'audit, vingt-quatre templates d'exports.</p>
+        <div class="stat-row">
+          <div><div class="v">35<sup>+</sup></div><div class="l">Modules</div></div>
+          <div><div class="v">24</div><div class="l">Exports prêts</div></div>
+          <div><div class="v">7</div><div class="l">Rôles RBAC</div></div>
+          <div><div class="v">2</div><div class="l">Langues UI</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="opts">
+      <div class="opt-main">
+        <div class="topr">
+          <span class="label">Version finale · contenu réel</span>
+          <span class="ratio">A4 · 30 pages</span>
+        </div>
+        <h2>Brochure TKAMS<br/><em>v2 — production.</em></h2>
+        <p>Refonte complète avec le vrai catalogue produit : 35+ modules backend, moteur de règles json-rules-engine, intégration DIPLOMATION, 24 templates d'exports, RBAC hiérarchique, multi-tenant strict, bilinguisme natif. Aperçus produit, cas d'usage chiffrés, équipe fondatrice, grille tarifaire.</p>
+        <div class="chips">
+          <span class="chip">SOMBRE · INDIGO</span>
+          <span class="chip">DIVIDERS DE SECTION</span>
+          <span class="chip">MODULES MATRIX</span>
+          <span class="chip">APERÇUS UI</span>
+          <span class="chip">CAS D'USAGE CHIFFRÉS</span>
+          <span class="chip">ÉQUIPE TEFOYE &amp; KANA</span>
+        </div>
+        <div class="ctas">
+          <a class="primary" href="brochure/brochure.html">Ouvrir la brochure →</a>
+          <a class="secondary" href="brochure/brochure-print.html">Version impression</a>
+        </div>
+      </div>
+
+      <div class="opt-side">
+        <span class="label">Itération précédente</span>
+        <h3>Direction A — éditoriale institutionnelle</h3>
+        <p>Sobre, espaces généreux, hiérarchie typographique classique. <em>Conserve pour archive — contenu générique d'avant refonte.</em></p>
+        <div class="links">
+          <a href="brochure-editoriale/brochure.html">Consulter</a>
+          <a href="brochure-editoriale/brochure-print.html">Impression</a>
+        </div>
+      </div>
+
+      <div class="opt-side">
+        <span class="label">Itération précédente</span>
+        <h3>Direction B — moderne confiante</h3>
+        <p>Cartes modulaires, contrastes appuyés, pourpre en aplat. <em>Conserve pour archive — contenu générique d'avant refonte.</em></p>
+        <div class="links">
+          <a href="brochure-moderne/brochure.html">Consulter</a>
+          <a href="brochure-moderne/brochure-print.html">Impression</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="icon">i</div>
+      <div>
+        <h3>Notes sur cette version</h3>
+        <p>Cette brochure est conçue pour être imprimée en A4 portrait ou exportée en PDF via la version impression. Les noms d'établissements clients sont anonymisés en attendant validation des accords de communication. Captures produit sous forme de maquettes fidèles ; captures réelles disponibles sous NDA.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
