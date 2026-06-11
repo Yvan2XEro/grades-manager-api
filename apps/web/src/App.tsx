@@ -8,6 +8,7 @@ import { authClient } from "./lib/auth-client";
 import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
+import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
 import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
@@ -201,7 +202,8 @@ function App() {
 						<Route path="users" element={<UsersHub />} />
 						<Route path="exams" element={<ExamsHub />} />
 						<Route path="grades" element={<GradesHub />} />
-						<Route path="promotion" element={<PromotionHub />} />
+						<Route path="promotion" element={<AcademicYearTransitions />} />
+						<Route path="promotion-legacy" element={<PromotionHub />} />
 						<Route path="configuration" element={<ConfigurationHub />} />
 
 						{/* Feat-only direct routes (new features not yet absorbed in hubs).
@@ -296,23 +298,33 @@ function App() {
 						/>
 						<Route
 							path="promotion-rules"
-							element={<Navigate to="/admin/promotion?tab=overview" replace />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=overview" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/rules"
-							element={<Navigate to="/admin/promotion?tab=rules" replace />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=rules" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/evaluate"
-							element={<Navigate to="/admin/promotion?tab=evaluate" replace />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=evaluate" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/execute"
-							element={<Navigate to="/admin/promotion?tab=execute" replace />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=execute" replace />
+							}
 						/>
 						<Route
 							path="promotion-rules/history"
-							element={<Navigate to="/admin/promotion?tab=history" replace />}
+							element={
+								<Navigate to="/admin/promotion-legacy?tab=history" replace />
+							}
 						/>
 					</Route>
 
