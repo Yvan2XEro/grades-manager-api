@@ -1,13 +1,14 @@
-import React from "react";
+import Link from "next/link";
 import { formatDateTime } from "src/utilities/formatDateTime";
 import { Media } from "@/components/Media";
+import { getDict, getLocale } from "@/i18n";
 import type { Post } from "@/payload-types";
 import { formatAuthors } from "@/utilities/formatAuthors";
 
-export const PostHero: React.FC<{
-	post: Post;
-}> = ({ post }) => {
+export const PostHero = async ({ post }: { post: Post }) => {
 	const { categories, heroImage, populatedAuthors, publishedAt, title } = post;
+	const locale = await getLocale();
+	const d = getDict(locale).blog;
 
 	const hasAuthors =
 		populatedAuthors &&
@@ -15,66 +16,76 @@ export const PostHero: React.FC<{
 		formatAuthors(populatedAuthors) !== "";
 
 	return (
-		<div className="-mt-[10.4rem] relative flex items-end">
-			<div className="container relative z-10 pb-8 text-white lg:grid lg:grid-cols-[1fr_48rem_1fr]">
-				<div className="col-span-1 col-start-1 md:col-span-2 md:col-start-2">
-					<div className="mb-6 text-sm uppercase">
-						{categories?.map((category, index) => {
-							if (typeof category === "object" && category !== null) {
-								const { title: categoryTitle } = category;
+		<header className="bg-tk-bg pt-[68px]">
+			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
+				<div className="pt-10 pb-8">
+					<Link
+						href="/posts"
+						className="font-code text-[0.75rem] text-tk-muted tracking-[0.04em] no-underline transition-colors duration-150 hover:text-tk-ink-soft"
+					>
+						{d.back}
+					</Link>
 
-								const titleToUse = categoryTitle || "Untitled category";
+					{categories && categories.length > 0 && (
+						<div className="mt-6 font-code text-[0.7rem] text-tk-primary uppercase tracking-[0.12em]">
+							{categories.map((category, index) => {
+								if (typeof category === "object" && category !== null) {
+									const titleToUse = category.title || "—";
+									const isLast = index === categories.length - 1;
+									return (
+										<span key={index}>
+											{titleToUse}
+											{!isLast && <span>, &nbsp;</span>}
+										</span>
+									);
+								}
+								return null;
+							})}
+						</div>
+					)}
 
-								const isLast = index === categories.length - 1;
+					<h1 className="mt-4 max-w-4xl font-display font-extrabold text-[clamp(1.875rem,4vw,3.25rem)] text-tk-ink leading-[1.08] tracking-[-0.04em]">
+						{title}
+					</h1>
 
-								return (
-									<React.Fragment key={index}>
-										{titleToUse}
-										{!isLast && <React.Fragment>, &nbsp;</React.Fragment>}
-									</React.Fragment>
-								);
-							}
-							return null;
-						})}
-					</div>
-
-					<div className="">
-						<h1 className="mb-6 text-3xl md:text-5xl lg:text-6xl">{title}</h1>
-					</div>
-
-					<div className="flex flex-col gap-4 md:flex-row md:gap-16">
+					<div className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
 						{hasAuthors && (
-							<div className="flex flex-col gap-4">
-								<div className="flex flex-col gap-1">
-									<p className="text-sm">Author</p>
-
-									<p>{formatAuthors(populatedAuthors)}</p>
-								</div>
+							<div>
+								<p className="font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.12em]">
+									{d.author}
+								</p>
+								<p className="mt-1 font-body font-medium text-[0.9rem] text-tk-ink">
+									{formatAuthors(populatedAuthors)}
+								</p>
 							</div>
 						)}
 						{publishedAt && (
-							<div className="flex flex-col gap-1">
-								<p className="text-sm">Date Published</p>
-
-								<time dateTime={publishedAt}>
+							<div>
+								<p className="font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.12em]">
+									{d.date_published}
+								</p>
+								<time
+									dateTime={publishedAt}
+									className="mt-1 block font-body font-medium text-[0.9rem] text-tk-ink"
+								>
 									{formatDateTime(publishedAt)}
 								</time>
 							</div>
 						)}
 					</div>
 				</div>
-			</div>
-			<div className="min-h-[80vh] select-none">
+
 				{heroImage && typeof heroImage !== "string" && (
-					<Media
-						fill
-						priority
-						imgClassName="-z-10 object-cover"
-						resource={heroImage}
-					/>
+					<div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-tk-border-strong">
+						<Media
+							fill
+							priority
+							imgClassName="object-cover"
+							resource={heroImage}
+						/>
+					</div>
 				)}
-				<div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-linear-to-t from-black to-transparent" />
 			</div>
-		</div>
+		</header>
 	);
 };

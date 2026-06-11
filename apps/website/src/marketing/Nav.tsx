@@ -23,21 +23,23 @@ export function Nav({ locale, dict }: NavProps) {
 
 	const navLinks = dict
 		? [
-				{ href: "#features", label: dict.nav.features },
-				{ href: "#modules", label: dict.nav.modules },
-				{ href: "#pricing", label: dict.nav.pricing },
+				{ href: "/#features", label: dict.nav.features },
+				{ href: "/#modules", label: dict.nav.modules },
+				{ href: "/#pricing", label: dict.nav.pricing },
+				{ href: "/posts", label: dict.nav.blog },
 				{ href: "/contact", label: dict.nav.contact },
 			]
 		: [
 				{
-					href: "#features",
+					href: "/#features",
 					label: locale === "en" ? "Features" : "Fonctionnalités",
 				},
-				{ href: "#modules", label: "Modules" },
+				{ href: "/#modules", label: "Modules" },
 				{
-					href: "#pricing",
+					href: "/#pricing",
 					label: locale === "en" ? "Pricing" : "Tarification",
 				},
+				{ href: "/posts", label: "Blog" },
 				{ href: "/contact", label: "Contact" },
 			];
 

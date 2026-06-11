@@ -53,9 +53,10 @@ export function Footer({ locale }: FooterProps) {
 						<ul className="m-0 flex list-none flex-col gap-2.5 p-0">
 							{[
 								{ href: "/about", label: d.footer.links.about },
-								{ href: "#features", label: d.footer.links.features },
-								{ href: "#modules", label: d.footer.links.modules },
-								{ href: "#pricing", label: d.footer.links.pricing },
+								{ href: "/#features", label: d.footer.links.features },
+								{ href: "/#modules", label: d.footer.links.modules },
+								{ href: "/#pricing", label: d.footer.links.pricing },
+								{ href: "/posts", label: d.footer.links.blog },
 								{ href: "/contact", label: d.footer.links.contact },
 							].map((l) => (
 								<li key={l.href}>

@@ -5,6 +5,13 @@ import { getPayload } from "payload";
 import { CollectionArchive } from "@/components/CollectionArchive";
 import { PageRange } from "@/components/PageRange";
 import { Pagination } from "@/components/Pagination";
+import { getDict, getLocale } from "@/i18n";
+import {
+	Lede,
+	Rule,
+	SectionHeading,
+	SectionLabel,
+} from "@/marketing/Editorial";
 import PageClient from "./page.client";
 
 export const revalidate = 600;
@@ -18,6 +25,8 @@ type Args = {
 export default async function Page({ params: paramsPromise }: Args) {
 	const { pageNumber } = await paramsPromise;
 	const payload = await getPayload({ config: configPromise });
+	const locale = await getLocale();
+	const d = getDict(locale).blog;
 
 	const sanitizedPageNumber = Number(pageNumber);
 
@@ -32,31 +41,35 @@ export default async function Page({ params: paramsPromise }: Args) {
 	});
 
 	return (
-		<div className="pt-24 pb-24">
+		<main className="min-h-screen bg-tk-bg pt-[68px]">
 			<PageClient />
-			<div className="container mb-16">
-				<div className="prose dark:prose-invert max-w-none">
-					<h1>Posts</h1>
+			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
+				<div className="pt-12 pb-10 lg:pt-16">
+					<SectionLabel number="✶">{d.label}</SectionLabel>
+					<SectionHeading as="h1" className="mt-6 max-w-3xl">
+						{d.title}
+					</SectionHeading>
+					<Lede className="mt-5">{d.sub}</Lede>
 				</div>
-			</div>
-
-			<div className="container mb-8">
-				<PageRange
-					collection="posts"
-					currentPage={posts.page}
-					limit={12}
-					totalDocs={posts.totalDocs}
-				/>
+				<Rule />
+				<div className="py-6">
+					<PageRange
+						currentPage={posts.page}
+						limit={12}
+						totalDocs={posts.totalDocs}
+						labels={d.range}
+					/>
+				</div>
 			</div>
 
 			<CollectionArchive posts={posts.docs} />
 
-			<div className="container">
+			<div className="mx-auto max-w-[86rem] px-6 pb-24 lg:px-10">
 				{posts?.page && posts?.totalPages > 1 && (
 					<Pagination page={posts.page} totalPages={posts.totalPages} />
 				)}
 			</div>
-		</div>
+		</main>
 	);
 }
 
@@ -64,8 +77,10 @@ export async function generateMetadata({
 	params: paramsPromise,
 }: Args): Promise<Metadata> {
 	const { pageNumber } = await paramsPromise;
+	const locale = await getLocale();
+	const d = getDict(locale).blog;
 	return {
-		title: `Payload Website Template Posts Page ${pageNumber || ""}`,
+		title: `${d.title} — ${pageNumber || ""} — TKAMS`,
 	};
 }
 

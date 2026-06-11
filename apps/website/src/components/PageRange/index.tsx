@@ -1,36 +1,28 @@
 import type React from "react";
 
-const defaultLabels = {
-	plural: "Docs",
-	singular: "Doc",
+type RangeLabels = {
+	showing: string;
+	of: string;
+	posts: string;
+	none: string;
 };
 
-const defaultCollectionLabels = {
-	posts: {
-		plural: "Posts",
-		singular: "Post",
-	},
+const defaultRange: RangeLabels = {
+	showing: "Showing",
+	of: "of",
+	posts: "results",
+	none: "No results.",
 };
 
 export const PageRange: React.FC<{
 	className?: string;
-	collection?: keyof typeof defaultCollectionLabels;
-	collectionLabels?: {
-		plural?: string;
-		singular?: string;
-	};
 	currentPage?: number;
 	limit?: number;
 	totalDocs?: number;
+	labels?: RangeLabels;
 }> = (props) => {
-	const {
-		className,
-		collection,
-		collectionLabels: collectionLabelsFromProps,
-		currentPage,
-		limit,
-		totalDocs,
-	} = props;
+	const { className, currentPage, limit, totalDocs, labels } = props;
+	const t = labels ?? defaultRange;
 
 	let indexStart = (currentPage ? currentPage - 1 : 1) * (limit || 1) + 1;
 	if (totalDocs && indexStart > totalDocs) indexStart = 0;
@@ -38,21 +30,19 @@ export const PageRange: React.FC<{
 	let indexEnd = (currentPage || 1) * (limit || 1);
 	if (totalDocs && indexEnd > totalDocs) indexEnd = totalDocs;
 
-	const { plural, singular } =
-		collectionLabelsFromProps ||
-		(collection ? defaultCollectionLabels[collection] : undefined) ||
-		defaultLabels ||
-		{};
-
 	return (
-		<div className={[className, "font-semibold"].filter(Boolean).join(" ")}>
-			{(typeof totalDocs === "undefined" || totalDocs === 0) &&
-				"Search produced no results."}
+		<div
+			className={[
+				className,
+				"font-code text-[0.8rem] text-tk-muted tracking-[0.02em]",
+			]
+				.filter(Boolean)
+				.join(" ")}
+		>
+			{(typeof totalDocs === "undefined" || totalDocs === 0) && t.none}
 			{typeof totalDocs !== "undefined" &&
 				totalDocs > 0 &&
-				`Showing ${indexStart}${indexStart > 0 ? ` - ${indexEnd}` : ""} of ${totalDocs} ${
-					totalDocs > 1 ? plural : singular
-				}`}
+				`${t.showing} ${indexStart}${indexStart > 0 ? `–${indexEnd}` : ""} ${t.of} ${totalDocs} ${t.posts}`}
 		</div>
 	);
 };
