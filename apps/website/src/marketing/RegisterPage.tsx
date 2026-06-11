@@ -625,28 +625,21 @@ export function RegisterPage({ dict: d }: { dict: Dict }) {
 
 	return (
 		<main className="min-h-screen bg-tk-bg pt-[68px]">
-			{/* Dark header */}
-			<section className="relative overflow-hidden bg-tk-dark px-6 py-16 pb-14">
-				<div className="tk-grid-pattern absolute inset-0 z-0" />
-				<div
-					className="-translate-x-1/2 pointer-events-none absolute top-0 left-1/2 z-[1] h-[260px] w-[600px]"
-					style={{
-						background:
-							"radial-gradient(ellipse at center, oklch(0.48 0.2 277 / 0.15) 0%, transparent 70%)",
-					}}
-				/>
-				<div className="relative z-[2] mx-auto max-w-lg text-center">
-					<p className="mb-4 inline-block rounded-full bg-tk-primary/15 px-3 py-1 font-bold font-code text-[0.75rem] text-tk-primary-bright tracking-[0.06em]">
+			{/* Editorial masthead */}
+			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
+				<div className="pt-12 pb-10 text-center lg:pt-16">
+					<span className="inline-block font-code font-semibold text-[0.7rem] text-tk-primary uppercase tracking-[0.14em]">
 						{d.register.badge}
-					</p>
-					<h1 className="mb-3 font-display font-extrabold text-[clamp(1.75rem,4vw,2.5rem)] text-tk-on-dark tracking-[-0.04em]">
+					</span>
+					<h1 className="mt-4 font-display font-extrabold text-[clamp(1.875rem,4vw,2.75rem)] text-tk-ink tracking-[-0.04em]">
 						{d.register.title}
 					</h1>
-					<p className="font-body text-[1rem] text-tk-on-dark-soft leading-[1.7]">
+					<p className="mx-auto mt-4 max-w-xl font-body text-[1rem] text-tk-ink-2 leading-[1.7]">
 						{d.register.sub}
 					</p>
 				</div>
-			</section>
+				<div className="h-px w-full bg-tk-border-strong" />
+			</div>
 
 			{/* Form card */}
 			<section className="px-6 py-16">

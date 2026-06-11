@@ -1,6 +1,8 @@
 "use client";
 import type { Dict } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
+import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
+import { Showcase } from "../Showcase";
 
 interface WorkflowProps {
 	dict: Dict;
@@ -8,48 +10,61 @@ interface WorkflowProps {
 
 export function Workflow({ dict: d }: WorkflowProps) {
 	return (
-		<section className="relative overflow-hidden bg-tk-dark px-6 py-24">
-			<div className="tk-grid-pattern absolute inset-0 z-0" />
-
-			<div className="relative z-[1] mx-auto max-w-7xl">
-				<AnimateIn>
-					<div className="mb-14 text-center">
-						<h2 className="mb-3 font-display font-extrabold text-[clamp(1.875rem,4vw,2.75rem)] text-tk-on-dark tracking-[-0.04em]">
-							{d.workflow.title}
-						</h2>
-						<p className="font-body text-[1.0625rem] text-tk-on-dark-soft">
-							{d.workflow.sub}
-						</p>
+		<section className="bg-tk-surface">
+			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
+				<Rule />
+				<div className="grid grid-cols-1 gap-x-12 gap-y-12 py-16 lg:grid-cols-12 lg:py-24">
+					<div className="lg:col-span-4">
+						<div className="lg:sticky lg:top-28">
+							<SectionLabel number="05">Le flux</SectionLabel>
+							<SectionHeading className="mt-6">
+								{d.workflow.title}
+							</SectionHeading>
+							<Lede className="mt-5">{d.workflow.sub}</Lede>
+						</div>
 					</div>
-				</AnimateIn>
 
-				<div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-px overflow-hidden rounded-[1.25rem] bg-white/6">
-					{d.workflow.steps.map((step, i) => (
-						<AnimateIn key={step.num} delay={i * 80}>
-							<div className="relative h-full overflow-hidden bg-tk-dark-2 p-8 transition-colors duration-200 hover:bg-[oklch(0.2_0.05_264)]">
-								<div
-									className="absolute top-0 right-0 left-0 h-[2px]"
-									style={{
-										background:
-											i === 0
-												? "var(--tk-primary)"
-												: i === d.workflow.steps.length - 1
-													? "var(--tk-accent-emerald)"
-													: `oklch(${0.48 + i * 0.025} ${0.2 - i * 0.01} 277)`,
-									}}
+					<div className="lg:col-span-8">
+						<div className="grid grid-cols-1 sm:grid-cols-2">
+							{d.workflow.steps.map((step, i) => (
+								<AnimateIn key={step.num} delay={i * 70}>
+									<div
+										className={`h-full border-tk-border border-t py-7 ${
+											i % 2 === 1 ? "sm:border-l sm:pl-8" : "sm:pr-8"
+										}`}
+									>
+										<div className="flex items-baseline gap-3">
+											<span className="font-display font-extrabold text-[2rem] text-tk-primary/25 tabular-nums leading-none">
+												{step.num}
+											</span>
+											<span className="h-px flex-1 bg-tk-border" />
+										</div>
+										<h3 className="mt-4 font-bold font-display text-[1.0625rem] text-tk-ink tracking-[-0.02em]">
+											{step.title}
+										</h3>
+										<p className="mt-2 font-body text-sm text-tk-ink-2 leading-[1.65]">
+											{step.desc}
+										</p>
+									</div>
+								</AnimateIn>
+							))}
+						</div>
+
+						<AnimateIn mode="scale" delay={120}>
+							<div className="mt-10">
+								<Showcase
+									variant="browser"
+									url="app.tkams.com/pv"
+									width={1800}
+									height={1100}
+									alt="Génération du PV de délibération dans TKAMS"
+									label="Capture du flux — génération du PV / relevés officiels en un clic"
+									caption="public/screenshots/workflow-pv.png · 1800 × 1100 px"
+									sizes="(min-width: 1024px) 56rem, 100vw"
 								/>
-								<span className="mb-3.5 block font-bold font-code text-[0.75rem] text-tk-primary-bright tracking-[0.05em]">
-									{step.num}
-								</span>
-								<h3 className="mb-2.5 font-bold font-display text-[1.0625rem] text-tk-on-dark tracking-[-0.02em]">
-									{step.title}
-								</h3>
-								<p className="font-body text-sm text-tk-on-dark-soft leading-[1.65]">
-									{step.desc}
-								</p>
 							</div>
 						</AnimateIn>
-					))}
+					</div>
 				</div>
 			</div>
 		</section>

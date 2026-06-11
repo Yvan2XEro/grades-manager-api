@@ -8,6 +8,7 @@ import { Modules } from "@/marketing/sections/Modules";
 import { Pain } from "@/marketing/sections/Pain";
 import { Pricing } from "@/marketing/sections/Pricing";
 import { Stats } from "@/marketing/sections/Stats";
+import { Trust } from "@/marketing/sections/Trust";
 import { Workflow } from "@/marketing/sections/Workflow";
 
 export default async function HomePage() {
@@ -24,6 +25,7 @@ export default async function HomePage() {
 			<Workflow dict={dict} />
 			<Pricing dict={dict} />
 			<Deployment dict={dict} />
+			<Trust dict={dict} />
 			<Cta dict={dict} />
 		</main>
 	);

@@ -263,6 +263,22 @@ export const en = {
 		primary: "Schedule a demo",
 		secondary: "contact@tkams.com",
 	},
+	trust: {
+		label: "Trust",
+		title: "Built with LMD institutions across francophone Africa",
+		sub: "TKAMS is developed in direct contact with institutions, through its pioneer program.",
+		badges_title: "Labels & certifications",
+		badges_hint: "To be filled",
+		pioneer_tag: "Pioneer program",
+	},
+	brochure: {
+		label: "Resources",
+		title: "The TKAMS presentation",
+		sub: "Everything about the platform, its modules and deployment — in a single document.",
+		download: "Download the presentation",
+		soon: "Coming soon",
+		meta: "PDF · French",
+	},
 	footer: {
 		tagline: "The SIS that transforms your deliberations.",
 		developed_by: "Developed by OverBrand",

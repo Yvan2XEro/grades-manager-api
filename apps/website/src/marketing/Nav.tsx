@@ -50,7 +50,7 @@ export function Nav({ locale, dict }: NavProps) {
 			data-scrolled={scrolled}
 			className="fixed top-0 right-0 left-0 z-50 border-transparent border-b bg-[oklch(0.955_0.006_80/0.7)] backdrop-blur-[16px] transition-all duration-300 data-[scrolled=true]:border-tk-border data-[scrolled=true]:bg-[oklch(0.955_0.006_80/0.92)]"
 		>
-			<div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-6">
+			<div className="mx-auto flex h-[68px] max-w-[86rem] items-center justify-between gap-4 px-6 lg:px-10">
 				<Link href="/" className="flex items-center gap-2.5 no-underline">
 					<Image
 						src="/logo-tkams.png"

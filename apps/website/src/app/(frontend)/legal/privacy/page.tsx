@@ -16,33 +16,28 @@ export default async function PrivacyPage() {
 				background: "var(--tk-bg)",
 			}}
 		>
-			<section
-				style={{
-					background: "var(--tk-dark)",
-					padding: "4rem 1.5rem",
-					position: "relative",
-					overflow: "hidden",
-				}}
-			>
-				<div
-					className="tk-grid-pattern"
-					style={{ position: "absolute", inset: 0 }}
-				/>
-				<div
-					style={{
-						maxWidth: "48rem",
-						margin: "0 auto",
-						position: "relative",
-						zIndex: 1,
-					}}
-				>
+			<section style={{ padding: "3.5rem 1.5rem 0" }}>
+				<div style={{ maxWidth: "48rem", margin: "0 auto" }}>
+					<p
+						style={{
+							fontFamily: "var(--font-jetbrains-mono), monospace",
+							fontSize: "0.7rem",
+							textTransform: "uppercase",
+							letterSpacing: "0.14em",
+							color: "var(--tk-primary)",
+							fontWeight: 600,
+							marginBottom: "1rem",
+						}}
+					>
+						Mentions légales
+					</p>
 					<h1
 						style={{
 							fontFamily: "var(--font-sora), system-ui, sans-serif",
 							fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
 							fontWeight: 800,
 							letterSpacing: "-0.04em",
-							color: "var(--tk-on-dark)",
+							color: "var(--tk-ink)",
 							marginBottom: "0.75rem",
 						}}
 					>
@@ -50,13 +45,17 @@ export default async function PrivacyPage() {
 					</h1>
 					<p
 						style={{
-							color: "var(--tk-on-dark-soft)",
+							color: "var(--tk-muted)",
 							fontSize: "0.9rem",
 							fontFamily: "var(--font-jetbrains-mono), monospace",
+							marginBottom: "2rem",
 						}}
 					>
 						{d.legal.privacy.last_updated}
 					</p>
+					<div
+						style={{ height: "1px", background: "var(--tk-border-strong)" }}
+					/>
 				</div>
 			</section>
 

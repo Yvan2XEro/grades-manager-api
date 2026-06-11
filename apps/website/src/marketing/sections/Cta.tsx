@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Dict } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
+import { Rule, SectionLabel } from "../Editorial";
 
 interface CtaProps {
 	dict: Dict;
@@ -8,61 +9,60 @@ interface CtaProps {
 
 export function Cta({ dict: d }: CtaProps) {
 	return (
-		<section className="relative overflow-hidden bg-tk-dark px-6 py-28">
-			<div
-				className="pointer-events-none absolute inset-0"
-				style={{
-					background:
-						"radial-gradient(ellipse at center, oklch(0.48 0.2 277 / 0.15) 0%, transparent 70%)",
-				}}
-			/>
-			<div className="tk-grid-pattern absolute inset-0" />
+		<section className="relative overflow-hidden bg-tk-dark text-tk-on-dark">
+			<div className="tk-grid-pattern pointer-events-none absolute inset-0 opacity-60" />
+			<div className="relative z-[1] mx-auto max-w-[86rem] px-6 lg:px-10">
+				<div className="h-px w-full bg-white/12" />
+				<div className="py-20 lg:py-28">
+					<SectionLabel number="09" theme="dark">
+						Démarrer
+					</SectionLabel>
 
-			<div className="relative z-[1] mx-auto max-w-3xl text-center">
-				<AnimateIn>
-					<h2 className="mb-5 font-display font-extrabold text-[clamp(1.875rem,4vw,3rem)] text-tk-on-dark leading-[1.15] tracking-[-0.04em]">
-						{d.cta.title}
-					</h2>
-				</AnimateIn>
-
-				<AnimateIn delay={100}>
-					<p className="mb-10 font-body text-[1.0625rem] text-tk-on-dark-soft leading-[1.7]">
-						{d.cta.sub}
-					</p>
-				</AnimateIn>
-
-				<AnimateIn delay={200}>
-					<div className="flex flex-wrap justify-center gap-4">
-						<Link
-							href="/contact"
-							className="tk-btn-primary"
-							style={{ fontSize: "1rem", padding: "0.875rem 2rem" }}
-						>
-							{d.cta.primary}
-						</Link>
-						<a
-							href={`mailto:${d.cta.secondary}`}
-							className="tk-btn-ghost"
-							style={{ fontSize: "1rem", padding: "0.875rem 2rem" }}
-						>
-							{d.cta.secondary}
-						</a>
+					<div className="mt-8 grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
+						<div className="lg:col-span-8">
+							<AnimateIn>
+								<h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.75rem)] text-tk-on-dark leading-[1.05] tracking-[-0.04em]">
+									{d.cta.title}
+								</h2>
+							</AnimateIn>
+						</div>
+						<div className="flex flex-col justify-end gap-7 lg:col-span-4">
+							<AnimateIn delay={100}>
+								<p className="max-w-[44ch] font-body text-[1.0625rem] text-tk-on-dark-soft leading-[1.7]">
+									{d.cta.sub}
+								</p>
+							</AnimateIn>
+							<AnimateIn delay={200}>
+								<div className="flex flex-wrap gap-3.5">
+									<Link href="/contact" className="tk-btn-primary">
+										{d.cta.primary}
+									</Link>
+									<a
+										href={`mailto:${d.cta.secondary}`}
+										className="tk-btn-ghost"
+									>
+										{d.cta.secondary}
+									</a>
+								</div>
+							</AnimateIn>
+						</div>
 					</div>
-				</AnimateIn>
 
-				<AnimateIn delay={350} mode="fade">
-					<p className="mt-12 font-code text-[0.8125rem] text-[oklch(0.35_0.02_264)]">
-						<a
-							href="https://www.overbrand.net/"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="no-underline transition-colors duration-150 hover:text-tk-on-dark-muted"
-						>
-							OverBrand
-						</a>
-						{" · Douala · Yaoundé · contact@tkams.com"}
-					</p>
-				</AnimateIn>
+					<div className="mt-16">
+						<Rule theme="dark" />
+						<p className="mt-5 font-code text-[0.8125rem] text-tk-on-dark-muted">
+							<a
+								href="https://www.overbrand.net/"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="no-underline transition-colors duration-150 hover:text-tk-on-dark"
+							>
+								OverBrand
+							</a>
+							{" · Douala · Yaoundé · contact@tkams.com"}
+						</p>
+					</div>
+				</div>
 			</div>
 		</section>
 	);
