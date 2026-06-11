@@ -14,7 +14,7 @@ export function Cta({ dict: d }: CtaProps) {
 			<div className="relative z-[1] mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="h-px w-full bg-white/12" />
 				<div className="py-20 lg:py-28">
-					<SectionLabel number="09" theme="dark">
+					<SectionLabel number="10" theme="dark">
 						Démarrer
 					</SectionLabel>
 

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Dict } from "@/i18n";
+import { DemoFrame } from "../demos/DemoFrame";
+import { GradeEntryDemo } from "../demos/GradeEntryDemo";
 import { Rule, SectionLabel } from "../Editorial";
-import { Showcase } from "../Showcase";
 
 interface HeroProps {
 	dict: Dict;
@@ -48,19 +49,14 @@ export function Hero({ dict: d }: HeroProps) {
 				</div>
 			</div>
 
-			{/* Full-bleed product capture */}
-			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
-				<Showcase
-					variant="browser"
-					url="app.tkams.com/deliberations"
-					width={2400}
-					height={1300}
-					priority
-					alt="Tableau de bord TKAMS — délibérations en cours"
-					label="Capture principale du produit — vue délibérations / tableau de bord (la plus large, plein cadre)"
-					caption="public/screenshots/hero-dashboard.png · 2400 × 1300 px"
-					sizes="(min-width: 1024px) 86rem, 100vw"
-				/>
+			{/* Live interactive product demo */}
+			<div className="mx-auto max-w-[64rem] px-6 lg:px-10">
+				<DemoFrame
+					url="app.tkams.com/saisie"
+					caption="Démo en direct · modifie une note, la moyenne et la décision se recalculent"
+				>
+					<GradeEntryDemo />
+				</DemoFrame>
 			</div>
 
 			{/* Trust row */}

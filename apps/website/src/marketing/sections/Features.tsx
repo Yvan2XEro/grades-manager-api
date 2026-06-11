@@ -1,8 +1,9 @@
 "use client";
 import type { Dict } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
+import { DemoFrame } from "../demos/DemoFrame";
+import { RulesEngineDemo } from "../demos/RulesEngineDemo";
 import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
-import { Showcase } from "../Showcase";
 
 interface FeaturesProps {
 	dict: Dict;
@@ -128,16 +129,12 @@ export function Features({ dict: d }: FeaturesProps) {
 
 						<AnimateIn mode="scale" delay={120}>
 							<div className="mt-10">
-								<Showcase
-									variant="browser"
+								<DemoFrame
 									url="app.tkams.com/regles"
-									width={1800}
-									height={1080}
-									alt="Moteur de règles de délibération TKAMS"
-									label="Capture d'un différenciateur clé — moteur de règles / délibération automatique"
-									caption="public/screenshots/feature-rules.png · 1800 × 1080 px"
-									sizes="(min-width: 1024px) 56rem, 100vw"
-								/>
+									caption="Démo en direct · règle les paramètres, la cohorte est réévaluée instantanément"
+								>
+									<RulesEngineDemo />
+								</DemoFrame>
 							</div>
 						</AnimateIn>
 					</div>

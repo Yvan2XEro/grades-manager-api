@@ -279,6 +279,71 @@ export const en = {
 		soon: "Coming soon",
 		meta: "PDF · French",
 	},
+	faq: {
+		label: "Frequently asked",
+		title: "Everything people ask us",
+		sub: "And if your question isn't here, just write to us.",
+		items: [
+			{
+				q: "Is TKAMS really built for the LMD system?",
+				a: "Yes. Teaching units, course units, ECTS, coefficients, retake sessions and deliberations are native — designed for LMD, not bolted on.",
+			},
+			{
+				q: "Can we host it on our own servers?",
+				a: "Yes. TKAMS deploys as managed cloud or on-premise depending on your institutional and regulatory constraints.",
+			},
+			{
+				q: "Can we import our existing data?",
+				a: "Yes — file import (Excel / YAML) right when the instance is created, or assisted migration for larger volumes.",
+			},
+			{
+				q: "Is the platform bilingual?",
+				a: "Yes, the interface is available in French and English natively, with no extra module.",
+			},
+			{
+				q: "How is the data secured?",
+				a: "In-transit encryption (TLS), granular role-based access control (RBAC), an audit trail of sensitive actions, and API keys stored hashed.",
+			},
+			{
+				q: "How does pricing work?",
+				a: "Based on the number of students, with a minimum tier. Contact us for a quote tailored to your institution.",
+			},
+		],
+	},
+	notFound: {
+		code: "404",
+		title: "Page not found",
+		sub: "The page you're looking for doesn't exist or has moved.",
+		home: "Back to home",
+		contact: "Contact us",
+	},
+	about: {
+		label: "About",
+		title: "A platform born in the field of African academia",
+		intro:
+			"TKAMS — Tefoye and Kana Academic Management System — is published by OverBrand, in direct contact with LMD institutions across francophone Africa.",
+		mission_title: "What we believe",
+		mission:
+			"LMD academic management deserves better than scattered spreadsheets and handwritten deliberations. TKAMS brings the whole cycle — from the academic catalog to graduation — into a single, auditable and bilingual platform.",
+		values: [
+			{
+				title: "LMD first",
+				desc: "Architecture designed for teaching units, course units, ECTS and deliberations — not retrofitted.",
+			},
+			{
+				title: "Close to institutions",
+				desc: "Built with pioneer institutions, around their real deliberation rules.",
+			},
+			{
+				title: "Sovereignty & security",
+				desc: "Managed cloud or on-premise, granular RBAC, audit trail — your data stays under control.",
+			},
+		],
+		location_label: "Based in",
+		location: "Douala & Yaoundé, Cameroon",
+		cta_title: "Let's talk about your institution",
+		cta: "Contact us →",
+	},
 	footer: {
 		tagline: "The SIS that transforms your deliberations.",
 		developed_by: "Developed by OverBrand",
@@ -290,6 +355,7 @@ export const en = {
 		privacy: "Privacy Policy",
 		terms: "Terms of Service",
 		links: {
+			about: "About",
 			features: "Features",
 			modules: "Modules",
 			pricing: "Pricing",

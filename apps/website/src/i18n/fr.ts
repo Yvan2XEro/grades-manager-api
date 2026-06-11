@@ -279,6 +279,71 @@ export const fr = {
 		soon: "Bientôt disponible",
 		meta: "PDF · Français",
 	},
+	faq: {
+		label: "Questions fréquentes",
+		title: "Tout ce qu'on nous demande",
+		sub: "Et si votre question n'y est pas, écrivez-nous.",
+		items: [
+			{
+				q: "TKAMS est-il vraiment adapté au système LMD ?",
+				a: "Oui. UE, EC, ECTS, coefficients, sessions de rattrapage et délibérations sont natifs — pensés pour le LMD, pas ajoutés en surcouche.",
+			},
+			{
+				q: "Peut-on l'héberger sur nos propres serveurs ?",
+				a: "Oui. TKAMS se déploie en cloud managé ou on-premise selon vos contraintes institutionnelles et réglementaires.",
+			},
+			{
+				q: "Peut-on importer nos données existantes ?",
+				a: "Oui — import par fichiers (Excel / YAML) dès la création de l'instance, ou accompagnement à la migration pour les volumes importants.",
+			},
+			{
+				q: "La plateforme est-elle bilingue ?",
+				a: "Oui, l'interface est disponible en français et en anglais nativement, sans module additionnel.",
+			},
+			{
+				q: "Comment les données sont-elles sécurisées ?",
+				a: "Chiffrement en transit (TLS), contrôle d'accès granulaire par rôles (RBAC), piste d'audit des actions sensibles et clés API stockées hachées.",
+			},
+			{
+				q: "Comment fonctionne la tarification ?",
+				a: "Selon le nombre d'étudiants, avec un palier minimum. Contactez-nous pour un devis adapté à votre établissement.",
+			},
+		],
+	},
+	notFound: {
+		code: "404",
+		title: "Page introuvable",
+		sub: "La page que vous cherchez n'existe pas ou a été déplacée.",
+		home: "Retour à l'accueil",
+		contact: "Nous contacter",
+	},
+	about: {
+		label: "À propos",
+		title: "Une plateforme née sur le terrain académique africain",
+		intro:
+			"TKAMS — Tefoye and Kana Academic Management System — est éditée par OverBrand, au contact direct des établissements LMD d'Afrique francophone.",
+		mission_title: "Notre conviction",
+		mission:
+			"La gestion académique LMD mérite mieux que des tableurs dispersés et des délibérations manuscrites. TKAMS réunit tout le cycle — du catalogue académique à la diplomation — dans une plateforme unique, traçable et bilingue.",
+		values: [
+			{
+				title: "LMD d'abord",
+				desc: "Architecture pensée pour les UE, EC, ECTS et délibérations — pas adaptée après coup.",
+			},
+			{
+				title: "Au plus près des institutions",
+				desc: "Développée avec des établissements pionniers, selon leurs règles de délibération réelles.",
+			},
+			{
+				title: "Souveraineté & sécurité",
+				desc: "Cloud managé ou on-premise, RBAC granulaire, piste d'audit — vos données restent maîtrisées.",
+			},
+		],
+		location_label: "Basés à",
+		location: "Douala & Yaoundé, Cameroun",
+		cta_title: "Parlons de votre établissement",
+		cta: "Nous contacter →",
+	},
 	footer: {
 		tagline: "Le SIS qui transforme vos délibérations.",
 		developed_by: "Développé par OverBrand",
@@ -290,6 +355,7 @@ export const fr = {
 		privacy: "Politique de confidentialité",
 		terms: "Conditions d'utilisation",
 		links: {
+			about: "À propos",
 			features: "Fonctionnalités",
 			modules: "Modules",
 			pricing: "Tarification",

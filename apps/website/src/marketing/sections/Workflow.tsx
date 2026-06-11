@@ -1,8 +1,9 @@
 "use client";
 import type { Dict } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
+import { DeliberationDemo } from "../demos/DeliberationDemo";
+import { DemoFrame } from "../demos/DemoFrame";
 import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
-import { Showcase } from "../Showcase";
 
 interface WorkflowProps {
 	dict: Dict;
@@ -52,16 +53,12 @@ export function Workflow({ dict: d }: WorkflowProps) {
 
 						<AnimateIn mode="scale" delay={120}>
 							<div className="mt-10">
-								<Showcase
-									variant="browser"
-									url="app.tkams.com/pv"
-									width={1800}
-									height={1100}
-									alt="Génération du PV de délibération dans TKAMS"
-									label="Capture du flux — génération du PV / relevés officiels en un clic"
-									caption="public/screenshots/workflow-pv.png · 1800 × 1100 px"
-									sizes="(min-width: 1024px) 56rem, 100vw"
-								/>
+								<DemoFrame
+									url="app.tkams.com/deliberations"
+									caption="Démo en direct · lance la délibération et génère le PV"
+								>
+									<DeliberationDemo />
+								</DemoFrame>
 							</div>
 						</AnimateIn>
 					</div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getDict, getLocale } from "@/i18n";
 import { Cta } from "@/marketing/sections/Cta";
 import { Deployment } from "@/marketing/sections/Deployment";
+import { Faq } from "@/marketing/sections/Faq";
 import { Features } from "@/marketing/sections/Features";
 import { Hero } from "@/marketing/sections/Hero";
 import { Modules } from "@/marketing/sections/Modules";
@@ -26,6 +27,7 @@ export default async function HomePage() {
 			<Pricing dict={dict} />
 			<Deployment dict={dict} />
 			<Trust dict={dict} />
+			<Faq dict={dict} />
 			<Cta dict={dict} />
 		</main>
 	);
