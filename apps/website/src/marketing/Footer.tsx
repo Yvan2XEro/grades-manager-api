@@ -52,10 +52,10 @@ export function Footer({ locale }: FooterProps) {
 						<h4 className={colTitle}>{d.footer.nav_title}</h4>
 						<ul className="m-0 flex list-none flex-col gap-2.5 p-0">
 							{[
+								{ href: "/produit", label: d.footer.links.produit },
+								{ href: "/solutions", label: d.footer.links.solutions },
+								{ href: "/tarifs", label: d.footer.links.tarifs },
 								{ href: "/about", label: d.footer.links.about },
-								{ href: "/#features", label: d.footer.links.features },
-								{ href: "/#modules", label: d.footer.links.modules },
-								{ href: "/#pricing", label: d.footer.links.pricing },
 								{ href: "/posts", label: d.footer.links.blog },
 								{ href: "/contact", label: d.footer.links.contact },
 							].map((l) => (

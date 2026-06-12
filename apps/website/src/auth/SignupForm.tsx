@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Dict } from "@/i18n";
+import { GradeEntryDemo } from "@/marketing/demos/GradeEntryDemo";
 import { AuthShell } from "./AuthShell";
 
 type FormData = {
@@ -76,7 +77,7 @@ export function SignupForm({ dict: d }: { dict: Dict }) {
 	};
 
 	return (
-		<AuthShell dict={d}>
+		<AuthShell dict={d} demo={<GradeEntryDemo t={d.demos.grade} />}>
 			<div>
 				<h1 className="mb-1 font-bold font-display text-[1.625rem] text-tk-ink tracking-[-0.03em]">
 					{d.auth.signup.title}

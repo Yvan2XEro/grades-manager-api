@@ -22,12 +22,34 @@ export function AnimateIn({
 		const el = ref.current;
 		if (!el) return;
 
+		const reveal = () => {
+			el.dataset.visible = "true";
+		};
+
+		// Respect reduced-motion: show everything immediately, no animation wait.
+		const prefersReduced =
+			typeof window.matchMedia === "function" &&
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+		// On mount (incl. client-side back navigation), if the element is already
+		// in or above the viewport, reveal it now. Otherwise it would stay hidden
+		// forever because the observer only fires when an element *enters* view.
+		const rect = el.getBoundingClientRect();
+		const alreadyOnScreen = rect.top < window.innerHeight;
+
+		if (prefersReduced || rect.top < 0) {
+			reveal();
+			return;
+		}
+		if (alreadyOnScreen) {
+			const id = setTimeout(reveal, delay);
+			return () => clearTimeout(id);
+		}
+
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				if (entry.isIntersecting) {
-					setTimeout(() => {
-						el.dataset.visible = "true";
-					}, delay);
+					setTimeout(reveal, delay);
 					observer.disconnect();
 				}
 			},

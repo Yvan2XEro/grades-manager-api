@@ -7,15 +7,16 @@ import { EditorialSection } from "../Editorial";
 
 interface FaqProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Faq({ dict: d }: FaqProps) {
+export function Faq({ dict: d, number = "09" }: FaqProps) {
 	const [open, setOpen] = useState<number | null>(0);
 
 	return (
 		<EditorialSection
 			id="faq"
-			number="09"
+			number={number}
 			label={d.faq.label}
 			heading={d.faq.title}
 			lede={

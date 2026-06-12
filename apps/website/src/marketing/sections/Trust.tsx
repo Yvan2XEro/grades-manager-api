@@ -34,7 +34,7 @@ export function Trust({ dict: d }: TrustProps) {
 						<p className="mb-4 font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.14em]">
 							{d.trust.badges_title}
 						</p>
-						<TrustBadges count={4} hint={d.trust.badges_hint} />
+						<TrustBadges items={d.trust.labels.map((name) => ({ name }))} />
 					</div>
 				</AnimateIn>
 

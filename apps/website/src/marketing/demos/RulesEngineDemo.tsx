@@ -1,7 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { Dict } from "@/i18n";
+import { type GhostApi, GhostCursor, useGhostCursor } from "./ghost";
 
+type T = Dict["demos"]["rules"];
 type Student = { moy: number; ueMin: number };
 
 const COHORT: Student[] = [
@@ -33,24 +36,14 @@ function evaluate(
 	return "ajourne";
 }
 
-const META: Record<Outcome, { label: string; dot: string; text: string }> = {
-	admis: {
-		label: "Admis",
-		dot: "bg-tk-accent-emerald",
-		text: "text-tk-accent-emerald",
-	},
-	compense: {
-		label: "Compensés",
-		dot: "bg-tk-accent-blue",
-		text: "text-tk-accent-blue",
-	},
+const STYLE: Record<Outcome, { dot: string; text: string }> = {
+	admis: { dot: "bg-tk-accent-emerald", text: "text-tk-accent-emerald" },
+	compense: { dot: "bg-tk-accent-blue", text: "text-tk-accent-blue" },
 	rattrapage: {
-		label: "Rattrapage",
 		dot: "bg-[oklch(0.72_0.16_86)]",
 		text: "text-[oklch(0.55_0.13_86)]",
 	},
 	ajourne: {
-		label: "Ajournés",
 		dot: "bg-[oklch(0.65_0.2_25)]",
 		text: "text-[oklch(0.55_0.2_25)]",
 	},
@@ -59,10 +52,17 @@ const META: Record<Outcome, { label: string; dot: string; text: string }> = {
 const rangeCls =
 	"h-1.5 w-full cursor-pointer appearance-none rounded-full bg-tk-bg-deep accent-tk-primary";
 
-export function RulesEngineDemo() {
+export function RulesEngineDemo({ t }: { t: T }) {
 	const [seuil, setSeuil] = useState(10);
 	const [elim, setElim] = useState(6);
 	const [compensation, setCompensation] = useState(true);
+
+	const labelFor: Record<Outcome, string> = {
+		admis: t.admis,
+		compense: t.compenses,
+		rattrapage: t.rattrapage,
+		ajourne: t.ajournes,
+	};
 
 	const counts = useMemo(() => {
 		const c: Record<Outcome, number> = {
@@ -79,18 +79,33 @@ export function RulesEngineDemo() {
 		((counts.admis + counts.compense) / COHORT.length) * 100,
 	);
 
+	const containerRef = useRef<HTMLDivElement>(null);
+	const { pos, clicking } = useGhostCursor(
+		containerRef,
+		async (api: GhostApi) => {
+			await api.moveTo('[data-cursor="comp"]');
+			await api.click();
+			if (api.cancelled()) return;
+			setCompensation((v) => !v);
+		},
+	);
+
 	return (
-		<div className="grid grid-cols-1 gap-5 p-4 sm:p-5 md:grid-cols-2">
+		<div
+			ref={containerRef}
+			className="relative grid grid-cols-1 gap-5 p-4 sm:p-5 md:grid-cols-2"
+		>
+			<GhostCursor pos={pos} clicking={clicking} />
 			{/* Controls */}
 			<div className="flex flex-col gap-5">
 				<p className="font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.1em]">
-					Règles de délibération · cohorte de {COHORT.length}
+					{t.cohort} {COHORT.length}
 				</p>
 
 				<div>
 					<div className="mb-2 flex items-baseline justify-between">
 						<label className="font-body font-medium text-[0.8125rem] text-tk-ink">
-							Seuil de validation
+							{t.seuil}
 						</label>
 						<span className="font-code font-semibold text-[0.8125rem] text-tk-primary tabular-nums">
 							{seuil.toFixed(1)}/20
@@ -104,17 +119,17 @@ export function RulesEngineDemo() {
 						value={seuil}
 						onChange={(e) => setSeuil(Number(e.target.value))}
 						className={rangeCls}
-						aria-label="Seuil de validation"
+						aria-label={t.seuil}
 					/>
 				</div>
 
 				<div>
 					<div className="mb-2 flex items-baseline justify-between">
 						<label className="font-body font-medium text-[0.8125rem] text-tk-ink">
-							Note éliminatoire (UE)
+							{t.elim}
 						</label>
 						<span className="font-code font-semibold text-[0.8125rem] text-tk-primary tabular-nums">
-							{elim === 0 ? "Off" : `${elim.toFixed(1)}/20`}
+							{elim === 0 ? t.off : `${elim.toFixed(1)}/20`}
 						</span>
 					</div>
 					<input
@@ -125,22 +140,23 @@ export function RulesEngineDemo() {
 						value={elim}
 						onChange={(e) => setElim(Number(e.target.value))}
 						className={rangeCls}
-						aria-label="Note éliminatoire"
+						aria-label={t.elim}
 					/>
 				</div>
 
 				<button
 					type="button"
+					data-cursor="comp"
 					onClick={() => setCompensation((v) => !v)}
 					className="flex items-center justify-between rounded-lg border border-tk-border bg-tk-surface px-3.5 py-2.5 text-left transition-colors duration-150 hover:border-tk-primary"
 					aria-pressed={compensation}
 				>
 					<span>
 						<span className="block font-body font-medium text-[0.8125rem] text-tk-ink">
-							Compensation entre UE
+							{t.compensation}
 						</span>
 						<span className="block font-code text-[0.7rem] text-tk-muted">
-							valide malgré une UE faible
+							{t.compensation_sub}
 						</span>
 					</span>
 					<span
@@ -162,7 +178,7 @@ export function RulesEngineDemo() {
 				<div>
 					<div className="flex items-end justify-between">
 						<span className="font-code text-[0.7rem] text-tk-muted uppercase tracking-[0.1em]">
-							Taux de réussite
+							{t.success_rate}
 						</span>
 						<span className="font-display font-extrabold text-[1.75rem] text-tk-ink tabular-nums leading-none">
 							{success}%
@@ -177,17 +193,17 @@ export function RulesEngineDemo() {
 				</div>
 
 				<div className="grid grid-cols-2 gap-2.5">
-					{(Object.keys(META) as Outcome[]).map((k) => (
+					{(Object.keys(STYLE) as Outcome[]).map((k) => (
 						<div
 							key={k}
 							className="flex items-center justify-between rounded-lg border border-tk-border bg-tk-bg px-3 py-2.5"
 						>
 							<span className="flex items-center gap-2 font-body text-[0.8rem] text-tk-ink-2">
-								<span className={`h-2 w-2 rounded-full ${META[k].dot}`} />
-								{META[k].label}
+								<span className={`h-2 w-2 rounded-full ${STYLE[k].dot}`} />
+								{labelFor[k]}
 							</span>
 							<span
-								className={`font-display font-extrabold text-[1.125rem] tabular-nums ${META[k].text}`}
+								className={`font-display font-extrabold text-[1.125rem] tabular-nums ${STYLE[k].text}`}
 							>
 								{counts[k]}
 							</span>
@@ -195,9 +211,7 @@ export function RulesEngineDemo() {
 					))}
 				</div>
 
-				<p className="font-code text-[0.7rem] text-tk-muted">
-					Aucun code modifié — les règles sont des paramètres.
-				</p>
+				<p className="font-code text-[0.7rem] text-tk-muted">{t.note}</p>
 			</div>
 		</div>
 	);

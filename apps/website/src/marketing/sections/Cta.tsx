@@ -5,16 +5,17 @@ import { Rule, SectionLabel } from "../Editorial";
 
 interface CtaProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Cta({ dict: d }: CtaProps) {
+export function Cta({ dict: d, number = "10" }: CtaProps) {
 	return (
 		<section className="relative overflow-hidden bg-tk-dark text-tk-on-dark">
 			<div className="tk-grid-pattern pointer-events-none absolute inset-0 opacity-60" />
 			<div className="relative z-[1] mx-auto max-w-[86rem] px-6 lg:px-10">
 				<div className="h-px w-full bg-white/12" />
 				<div className="py-20 lg:py-28">
-					<SectionLabel number="10" theme="dark">
+					<SectionLabel number={number} theme="dark">
 						Démarrer
 					</SectionLabel>
 

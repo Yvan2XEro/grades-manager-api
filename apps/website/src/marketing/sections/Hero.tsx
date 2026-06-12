@@ -55,7 +55,7 @@ export function Hero({ dict: d }: HeroProps) {
 					url="app.tkams.com/saisie"
 					caption="Démo en direct · modifie une note, la moyenne et la décision se recalculent"
 				>
-					<GradeEntryDemo />
+					<GradeEntryDemo t={d.demos.grade} />
 				</DemoFrame>
 			</div>
 

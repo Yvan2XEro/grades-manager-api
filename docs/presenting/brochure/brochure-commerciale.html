@@ -6,1117 +6,631 @@
 <title>TKAMS — Brochure commerciale</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/tokens.css">
 <style>
-.page { padding: 0; }
-.page.dark { background: var(--tk-dark); color: var(--tk-on-dark); }
-.inner {
-  min-height: 1123px;
-  padding: 52px 56px 56px;
-  display: flex;
-  flex-direction: column;
-}
-
-.h,
-.f {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.h {
-  margin-bottom: 22px;
-}
-
-.f {
-  margin-top: auto;
-  padding-top: 22px;
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: var(--tk-muted);
-}
-
-.dark .f {
-  color: var(--tk-on-dark-muted);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--tk-font-display);
-  font-weight: 700;
-}
-
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 11px 4px 4px;
-  border-radius: 999px;
-  background: var(--tk-ink);
-  color: white;
-  font-size: 11px;
-}
-
-.brand-badge::before {
-  content: "";
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--tk-primary);
-}
-
-.dark .brand-badge {
-  background: white;
-  color: var(--tk-dark);
-}
-
-.dark .brand-badge::before {
-  background: var(--tk-primary-bright);
-}
-
-.crumb,
-.marker {
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--tk-muted);
-}
-
-.dark .crumb,
-.dark .marker {
-  color: var(--tk-on-dark-muted);
-}
-
-.kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--tk-font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--tk-primary);
-}
-
-.kicker::before {
-  content: "";
-  width: 18px;
-  height: 2px;
-  background: currentColor;
-}
-
-.dark .kicker {
-  color: var(--tk-primary-bright);
-}
-
-h1,
-h2,
-h3,
-h4,
-.display {
-  font-family: var(--tk-font-display);
-  color: var(--tk-ink);
-  letter-spacing: -0.02em;
-}
-
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark .display {
-  color: white;
-}
-
-.hero {
-  font-size: 68px;
-  line-height: 0.95;
-  font-weight: 700;
-  margin: 18px 0 18px;
-  max-width: 620px;
-  color: white;
-}
-
-.hero em,
-.hed em {
-  font-style: normal;
-  color: var(--tk-primary);
-}
-
-.dark .hero em,
-.dark .hed em {
-  color: var(--tk-primary-bright);
-}
-
-.hed {
-  font-size: 46px;
-  line-height: 0.98;
-  font-weight: 600;
-  margin: 10px 0 14px;
-  max-width: 640px;
-}
-
-.lede {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--tk-ink-soft);
-  max-width: 640px;
-}
-
-.dark .lede,
-.dark p,
-.dark li {
-  color: var(--tk-on-dark-soft);
-}
-
-p,
-li {
-  font-size: 11.5px;
-  line-height: 1.6;
-  color: var(--tk-ink-soft);
-}
-
-ul {
-  margin: 8px 0 0;
-  padding-left: 18px;
-}
-
-li::marker {
-  color: var(--tk-primary);
-}
-
-.dark li::marker {
-  color: var(--tk-primary-bright);
-}
-
-.grid {
-  display: grid;
-  gap: 12px;
-}
-
-.g2 { grid-template-columns: 1fr 1fr; }
-.g3 { grid-template-columns: repeat(3, 1fr); }
-.g4 { grid-template-columns: repeat(4, 1fr); }
-.g23 { grid-template-columns: 2fr 1fr; }
-
-.card {
-  background: white;
-  border: 1px solid var(--tk-border);
-  border-radius: 16px;
-  padding: 16px;
-}
-
-.card.soft {
-  background: var(--tk-bg);
-}
-
-.card.deep {
-  background: var(--tk-bg-deep);
-}
-
-.card.brand {
-  background: var(--tk-primary);
-  color: white;
-  border: none;
-}
-
-.card.brand p,
-.card.brand li,
-.card.brand h2,
-.card.brand h3,
-.card.brand h4 {
-  color: white;
-}
-
-.card.dark {
-  background: var(--tk-dark-2);
-  border-color: var(--tk-dark-3);
-}
-
-.card.dark p,
-.card.dark li {
-  color: var(--tk-on-dark-soft);
-}
-
-.metric {
-  padding: 16px;
-  border-radius: 16px;
-  background: white;
-  border: 1px solid var(--tk-border);
-}
-
-.metric .value {
-  font-family: var(--tk-font-display);
-  font-size: 44px;
-  line-height: 0.95;
-  font-weight: 700;
-  color: var(--tk-ink);
-}
-
-.metric .label {
-  margin-top: 8px;
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tk-muted);
-}
-
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  background: var(--tk-primary-soft);
-  color: var(--tk-primary);
-}
-
-.chip.ghost {
-  background: transparent;
-  border: 1px solid var(--tk-border);
-  color: var(--tk-muted);
-}
-
-.badge-num {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: var(--tk-primary);
-  color: white;
-  font-family: var(--tk-font-display);
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.timeline {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.timeline .step {
-  grid-column: span 2;
-}
-
-.timeline .step:nth-child(4),
-.timeline .step:nth-child(5) {
-  grid-column: span 3;
-}
-
-.step {
-  border: 1px solid var(--tk-border);
-  border-radius: 16px;
-  background: white;
-  padding: 14px;
-}
-
-.step h3,
-.pain h3,
-.role h3,
-.proof h3,
-.offer h3 {
-  font-size: 16px;
-  margin: 10px 0 6px;
-}
-
-.step p,
-.pain p,
-.role p,
-.proof p,
-.offer p {
-  margin: 0;
-}
-
-.pain,
-.role,
-.proof,
-.offer {
-  border: 1px solid var(--tk-border);
-  border-radius: 16px;
-  padding: 16px;
-  background: white;
-}
-
-.split-stat {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.quote {
-  font-size: 18px;
-  line-height: 1.5;
-  font-family: var(--tk-font-display);
-}
-
-.quote-meta {
-  margin-top: 14px;
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: var(--tk-on-dark-muted);
-}
-
-.offer-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.offer.featured {
-  background: var(--tk-primary);
-  border: none;
-}
-
-.offer.featured h3,
-.offer.featured p,
-.offer.featured li {
-  color: white;
-}
-
-.price {
-  margin: 10px 0 8px;
-  font-family: var(--tk-font-display);
-  font-size: 34px;
-  line-height: 1;
-  font-weight: 700;
-}
-
-.price small {
-  display: block;
-  margin-top: 6px;
-  font-family: var(--tk-font-sans);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.cta {
-  margin-top: 18px;
-  border-radius: 20px;
-  padding: 22px 24px;
-  background: linear-gradient(135deg, var(--tk-primary-deep), var(--tk-primary));
-  color: white;
-}
-
-.cta h2,
-.cta p {
-  color: white;
-}
-
-.mini-note {
-  font-size: 10px;
-  color: var(--tk-muted);
-}
-
-.dark .mini-note {
-  color: var(--tk-on-dark-muted);
-}
-
-.cover {
-  background: var(--tk-dark);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.cover::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(oklch(1 0 0 / 5%) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(1 0 0 / 5%) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.cover::after {
-  content: "";
-  position: absolute;
-  right: -180px;
-  top: -120px;
-  width: 640px;
-  height: 640px;
-  border-radius: 50%;
-  background: radial-gradient(circle, oklch(0.65 0.22 277 / 40%) 0%, transparent 65%);
-}
-
-.cover .inner {
-  position: relative;
-  z-index: 1;
-}
-
-.cover .top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.logo-box {
-  display: inline-block;
-  background: white;
-  border-radius: 14px;
-  padding: 12px 16px;
-}
-
-.logo-box img {
-  display: block;
-  height: 30px;
-}
-
-.cover-meta {
-  font-family: var(--tk-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-align: right;
-  line-height: 1.8;
-  color: var(--tk-on-dark-muted);
-}
-
-.cover-meta strong {
-  color: white;
-}
-
-.cover-grid {
-  margin-top: auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding-top: 24px;
-  border-top: 1px solid oklch(1 0 0 / 12%);
-}
-
-.cover-grid h4 {
-  margin: 0 0 6px;
-  font-family: var(--tk-font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--tk-on-dark-muted);
-}
-
-.cover-grid p {
-  margin: 0;
-  color: white;
-  font-family: var(--tk-font-display);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.page-no {
-  font-family: var(--tk-font-display);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--tk-ink);
-}
-
-.dark .page-no {
-  color: white;
-}
-
-.page-no span {
-  color: var(--tk-muted);
-  font-weight: 500;
-}
-
-.dark .page-no span {
-  color: var(--tk-on-dark-muted);
-}
+/* ───────────────────────────────────────────────────────────
+   TKAMS — Brochure commerciale
+   Light, editorial, motion/UI-UX crafted. No dark backgrounds.
+   ─────────────────────────────────────────────────────────── */
+.page { background: var(--tk-bg); }
+.inner { min-height: 1123px; padding: 46px 52px 40px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+/* Icons */
+.svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.icbox { display: inline-grid; place-items: center; border-radius: 12px; }
+
+/* Masthead / footer */
+.brow { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid var(--tk-border); position: relative; z-index: 2; margin-bottom: auto; }
+/* The masthead pushes free space below it and the footer pushes free space above it,
+   so the page content sits balanced (vertically centered) — no large empty gaps.
+   When a page is full, the auto margins collapse to 0 and nothing shifts. */
+.brow img { height: 28px; width: auto; }
+.brow .meta { font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tk-muted); font-weight: 600; }
+.foot { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--tk-border); display: flex; justify-content: space-between; align-items: center; font-family: var(--tk-font-mono); font-size: 9px; letter-spacing: 0.08em; color: var(--tk-muted); position: relative; z-index: 2; }
+.foot .pn b { color: var(--tk-ink); }
+
+/* Editorial primitives */
+.eyebrow { display: inline-flex; align-items: center; gap: 11px; font-family: var(--tk-font-mono); }
+.eyebrow .n { display: inline-flex; align-items: center; gap: 6px; color: var(--tk-primary); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; }
+.eyebrow .ln { width: 28px; height: 1px; background: var(--tk-border-strong); }
+.eyebrow .t { color: var(--tk-ink-2); text-transform: uppercase; letter-spacing: 0.2em; font-weight: 500; font-size: 10px; }
+
+.display { font-family: var(--tk-font-display); font-weight: 800; letter-spacing: -0.045em; line-height: 1.03; color: var(--tk-ink); margin: 16px 0 0; }
+h2.display { font-size: 33px; }
+.display em { font-style: normal; color: var(--tk-primary); position: relative; }
+.uline { background-image: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright)); background-repeat: no-repeat; background-position: 0 92%; background-size: 100% 6px; padding-bottom: 2px; }
+.lede { font-family: var(--tk-font-sans); font-size: 14.5px; line-height: 1.6; color: var(--tk-ink-2); max-width: 60ch; margin-top: 14px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--tk-font-sans); font-weight: 600; font-size: 13px; padding: 11px 20px; border-radius: 11px; text-decoration: none; }
+.btn.primary { background: var(--tk-primary); color: #fff; box-shadow: 0 10px 22px -10px oklch(0.48 0.2 277 / 60%); }
+.btn.ghost { border: 1.5px solid var(--tk-primary); color: var(--tk-primary); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--tk-font-sans); font-weight: 500; font-size: 11.5px; color: var(--tk-ink-soft); border: 1px solid var(--tk-border); background: var(--tk-surface); padding: 5px 11px; border-radius: 999px; }
+.tag .dt { width: 6px; height: 6px; border-radius: 999px; background: var(--tk-accent-emerald); }
+
+/* Decorative accents */
+.glow { position: absolute; pointer-events: none; border-radius: 50%; z-index: 0; }
+.dotgrid { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(oklch(0.13 0.03 264 / 0.05) 1px, transparent 1px); background-size: 22px 22px; }
+.topbar { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright), var(--tk-accent-emerald)); z-index: 3; }
+
+/* Cover */
+.cover-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 26px; border-top: 1px solid var(--tk-border); position: relative; z-index: 2; }
+.cover-stats .c { padding: 16px 16px 0 0; border-right: 1px solid var(--tk-border); }
+.cover-stats .c:last-child { border-right: 0; }
+.cover-stats .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 28px; letter-spacing: -0.04em; color: var(--tk-ink); line-height: 1; }
+.cover-stats .l { font-family: var(--tk-font-sans); font-size: 10.5px; color: var(--tk-muted); margin-top: 6px; }
+
+/* App capture frame */
+.win { border: 1px solid var(--tk-border-strong); border-radius: 14px; overflow: hidden; background: var(--tk-surface); box-shadow: 0 26px 60px -28px oklch(0.13 0.03 264 / 32%), 0 2px 0 oklch(0.13 0.03 264 / 3%); position: relative; z-index: 2; }
+.win-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--tk-border); background: var(--tk-surface); }
+.win-bar .d { width: 9px; height: 9px; border-radius: 50%; }
+.win-bar .u { margin: 0 auto; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); background: var(--tk-bg-deep); padding: 3px 14px; border-radius: 6px; }
+.win-body { padding: 14px; background: var(--tk-bg); }
+.cap { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); margin-top: 9px; display: flex; align-items: center; gap: 7px; position: relative; z-index: 2; }
+.cap .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--tk-accent-emerald); box-shadow: 0 0 0 3px oklch(0.58 0.17 149 / 18%); }
+
+.floatchip { position: absolute; z-index: 3; background: var(--tk-surface); border: 1px solid var(--tk-border-strong); border-radius: 12px; padding: 10px 13px; box-shadow: 0 14px 30px -16px oklch(0.13 0.03 264 / 30%); }
+.floatchip .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.03em; color: var(--tk-primary); line-height: 1; }
+.floatchip .l { font-family: var(--tk-font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tk-muted); margin-top: 4px; }
+
+.tbl { width: 100%; border-collapse: collapse; font-family: var(--tk-font-mono); font-size: 9px; }
+.tbl th { text-align: center; color: var(--tk-muted); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--tk-border); background: var(--tk-bg-deep); }
+.tbl th:first-child { text-align: left; }
+.tbl td { padding: 6px 4px; border-bottom: 1px solid var(--tk-border); text-align: center; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl td:first-child { text-align: left; font-family: var(--tk-font-sans); font-weight: 500; }
+.pill { padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+.pill.ok { background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); }
+.pill.bad { background: oklch(0.95 0.1 27); color: oklch(0.5 0.18 27); }
+
+/* Before / After */
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; position: relative; z-index: 2; }
+.ba .col { border-radius: 18px; padding: 24px; }
+.ba .before { border: 1px solid var(--tk-border); background: var(--tk-surface); }
+.ba .after { border: 1.5px solid oklch(0.48 0.2 277 / 32%); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); box-shadow: 0 24px 50px -30px oklch(0.48 0.2 277 / 45%); }
+.ba h3 { font-family: var(--tk-font-display); font-weight: 700; font-size: 15px; margin: 0 0 16px; display: flex; align-items: center; gap: 11px; color: var(--tk-ink); }
+.ba .ic { width: 32px; height: 32px; border-radius: 10px; }
+.ba .before .ic { background: oklch(0.65 0.2 27 / 12%); color: oklch(0.55 0.2 27); }
+.ba .after .ic { background: oklch(0.58 0.17 149 / 16%); color: var(--tk-accent-emerald); }
+.ba ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.ba li { font-size: 12.5px; line-height: 1.4; display: flex; gap: 10px; align-items: flex-start; }
+.ba li .li-ic { flex: 0 0 auto; margin-top: 1px; }
+.ba .before li { color: var(--tk-muted); } .ba .before li .li-ic { color: oklch(0.6 0.18 27); }
+.ba .after li { color: var(--tk-ink); font-weight: 500; } .ba .after li .li-ic { color: var(--tk-accent-emerald); }
+.quote { margin-top: 20px; padding-left: 20px; border-left: 3px solid var(--tk-primary); position: relative; z-index: 2; }
+.quote p { font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--tk-ink); margin: 0; line-height: 1.2; }
+
+/* Product flow (page 3) */
+.flow { display: flex; flex-direction: column; gap: 18px; margin-top: 22px; position: relative; z-index: 2; }
+
+/* Steps timeline */
+.steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; z-index: 2; }
+.steps::before { content: ""; position: absolute; top: 17px; left: 17px; right: 17px; height: 2px; background: linear-gradient(90deg, var(--tk-primary), var(--tk-primary-bright)); border-radius: 2px; opacity: 0.5; }
+.step { position: relative; }
+.step .num { width: 34px; height: 34px; border-radius: 999px; background: var(--tk-primary); color: #fff; font-family: var(--tk-font-display); font-weight: 800; display: grid; place-items: center; font-size: 15px; box-shadow: 0 0 0 5px var(--tk-bg); }
+.step h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 14.5px; color: var(--tk-ink); margin: 15px 0 4px; }
+.step p { font-size: 11.5px; line-height: 1.5; color: var(--tk-ink-2); margin: 0; }
+
+/* Benefit cards */
+.bens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; position: relative; z-index: 2; }
+.ben { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px; position: relative; overflow: hidden; }
+.ben::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--tk-primary), var(--tk-primary-bright)); }
+.ben .v { font-family: var(--tk-font-display); font-weight: 800; font-size: 33px; letter-spacing: -0.04em; color: var(--tk-primary); line-height: 1; }
+.ben .l { font-family: var(--tk-font-sans); font-weight: 600; font-size: 12.5px; color: var(--tk-ink); margin-top: 8px; }
+.ben .d { font-size: 10.5px; color: var(--tk-ink-2); margin-top: 3px; line-height: 1.4; }
+
+/* Roles */
+.roles { display: flex; flex-direction: column; gap: 13px; margin-top: 22px; position: relative; z-index: 2; }
+.role { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 20px 24px; display: grid; grid-template-columns: 210px 1fr; gap: 24px; align-items: center; }
+.role .side { border-right: 1px solid var(--tk-border); padding-right: 24px; }
+.role .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--tk-primary-soft); color: var(--tk-primary); }
+.role .rn { font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--tk-muted); margin-top: 13px; }
+.role h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.02em; color: var(--tk-ink); margin: 4px 0 0; line-height: 1.2; }
+.role .pts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 18px; }
+.role .pts div { font-size: 12px; color: var(--tk-ink-2); display: flex; gap: 9px; align-items: flex-start; }
+.role .pts .ck { color: var(--tk-accent-emerald); flex: 0 0 auto; margin-top: 1px; }
+
+/* Pricing */
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 22px; align-items: stretch; position: relative; z-index: 2; }
+.plan { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; }
+.plan.feat { border: 2px solid var(--tk-primary); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); box-shadow: 0 24px 50px -30px oklch(0.48 0.2 277 / 45%); }
+.plan .pname { font-family: var(--tk-font-display); font-weight: 700; font-size: 17px; color: var(--tk-ink); display: flex; justify-content: space-between; align-items: center; }
+.plan .badge { font-family: var(--tk-font-mono); font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: var(--tk-primary); color: #fff; padding: 3px 9px; border-radius: 999px; }
+.plan .price { font-family: var(--tk-font-display); font-weight: 800; font-size: 25px; letter-spacing: -0.03em; color: var(--tk-ink); margin: 12px 0 2px; }
+.plan .unit { font-size: 10.5px; color: var(--tk-ink-2); }
+.plan .min { font-size: 10.5px; font-weight: 600; color: var(--tk-primary); margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--tk-border); }
+.plan.feat .min { border-color: oklch(0.48 0.2 277 / 25%); }
+.plan ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.plan li { font-size: 11.5px; color: var(--tk-ink-2); display: flex; gap: 8px; align-items: flex-start; }
+.plan li .ck { color: var(--tk-accent-emerald); flex: 0 0 auto; margin-top: 1px; }
+
+.incl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 22px; margin-top: 16px; position: relative; z-index: 2; }
+.incl div { font-size: 12px; color: var(--tk-ink); display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--tk-border); }
+.incl .ck { width: 18px; height: 18px; border-radius: 999px; background: oklch(0.58 0.17 149 / 14%); color: var(--tk-accent-emerald); display: grid; place-items: center; flex: 0 0 auto; }
+
+/* Reassurance */
+.reas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; position: relative; z-index: 2; }
+.reas .r { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px; }
+.reas .r .ic { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--tk-border); background: var(--tk-bg); color: var(--tk-primary); }
+.reas .r h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 13.5px; color: var(--tk-ink); margin: 12px 0 4px; }
+.reas .r p { font-size: 11px; color: var(--tk-ink-2); margin: 0; line-height: 1.45; }
+
+/* Final CTA */
+.cta-card { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 22px; padding: 38px; position: relative; overflow: hidden; z-index: 2; box-shadow: 0 28px 60px -34px oklch(0.13 0.03 264 / 28%); }
+.contact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.contact-row .ci { border-top: 1px solid var(--tk-border); padding-top: 13px; }
+.contact-row .k { font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--tk-muted); }
+.contact-row .v { font-family: var(--tk-font-display); font-weight: 700; font-size: 15px; color: var(--tk-ink); margin-top: 6px; }
+
+/* Panorama */
+.pano { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 22px; position: relative; z-index: 2; }
+.pano-card { border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px 20px; }
+.pano-card .hd { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+.pano-card .ic { width: 38px; height: 38px; border-radius: 10px; background: var(--tk-primary-soft); color: var(--tk-primary); flex: 0 0 auto; }
+.pano-card h4 { font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0; flex: 1; letter-spacing: -0.01em; }
+.pano-card .cnt { font-family: var(--tk-font-mono); font-size: 10px; font-weight: 600; color: var(--tk-muted); }
+.pano-card .items { display: flex; flex-wrap: wrap; gap: 6px; }
+.pano-card .it { display: inline-flex; align-items: center; gap: 6px; font-family: var(--tk-font-sans); font-size: 11px; color: var(--tk-ink-2); background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 999px; padding: 4px 11px; }
+.pano-card .it .dt { width: 4px; height: 4px; border-radius: 999px; background: var(--tk-primary); flex: 0 0 auto; }
+
+@media print { .page { background: var(--tk-bg); } .win, .ba .after, .plan.feat, .cta-card { box-shadow: none; } }
 </style>
 </head>
 <body>
 
-<section class="page cover">
+<!-- ░░ Icon sprite ░░ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.7 5.1a2 2 0 0 0 1.2 1.2L20 11l-5.1 1.7a2 2 0 0 0-1.2 1.2L12 19l-1.7-5.1a2 2 0 0 0-1.2-1.2L4 11l5.1-1.7a2 2 0 0 0 1.2-1.2Z"/></symbol>
+  <symbol id="i-grad" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 21h10"/><path d="M6 7h12l-2-2"/><path d="M6 7 3 13a3 3 0 0 0 6 0Z"/><path d="M18 7l3 6a3 3 0 0 1-6 0Z"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><polygon points="12 3 21 8 3 8"/><line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="11" x2="6" y2="18"/><line x1="10" y1="11" x2="10" y2="18"/><line x1="14" y1="11" x2="14" y2="18"/><line x1="18" y1="11" x2="18" y2="18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><polyline points="9 12 11.5 14.5 15.5 10"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.1a5.4 5.4 0 0 0-7.7 0L12 6.2l-1.1-1.1a5.4 5.4 0 1 0-7.7 7.7L12 21l8.8-8.2a5.4 5.4 0 0 0 0-7.7Z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9Z"/><circle cx="7.5" cy="7.5" r="1.3"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><polyline points="9.5 13 11 14.5 14.5 11"/></symbol>
+</svg>
+
+<!-- ============ PAGE 1 — COUVERTURE ============ -->
+<section class="page" data-screen-label="01 Couverture">
+  <div class="topbar"></div>
   <div class="inner">
-    <div class="top">
-      <div class="logo-box"><img src="../assets/logo-tkams.png" alt="TKAMS" /></div>
-      <div class="cover-meta">
-        <strong>Brochure commerciale</strong><br />
-        Édition 2026<br />
-        Version courte décisionnelle
+    <div class="glow" style="width: 560px; height: 560px; top: -180px; right: -180px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 14%), transparent 70%);"></div>
+    <div class="glow" style="width: 380px; height: 380px; bottom: 60px; left: -160px; background: radial-gradient(circle, oklch(0.58 0.17 149 / 9%), transparent 70%);"></div>
+
+    <div class="brow">
+      <img src="../assets/logo-tkams.png" alt="TKAMS" />
+      <span class="meta">Brochure commerciale · Édition 2026</span>
+    </div>
+
+    <div style="position: relative; z-index: 2; margin-top: 38px;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg> TKAMS</span><span class="ln"></span><span class="t">SIS LMD · Afrique francophone</span></div>
+      <h1 class="display" style="font-size: 58px; max-width: 15ch;">De trois semaines<br/>à <em class="uline">trois heures</em>.</h1>
+      <p class="lede" style="font-size: 16px;">La délibération de fin de semestre n'a plus à mobiliser vos équipes des week-ends entiers. TKAMS réunit saisie des notes, délibérations automatiques et documents officiels vérifiables dans une seule plateforme — pensée pour les universités, IPES et écoles.</p>
+      <div style="display: flex; gap: 12px; margin-top: 22px;">
+        <a class="btn primary" href="https://tkams.com">Demander une démo <svg class="svg" width="16" height="16"><use href="#i-arrow"/></svg></a>
+        <a class="btn ghost" href="mailto:contact@tkams.com">contact@tkams.com</a>
+      </div>
+      <div class="tags">
+        <span class="tag"><span class="dt"></span>LMD natif</span>
+        <span class="tag"><span class="dt"></span>Bilingue FR/EN</span>
+        <span class="tag"><span class="dt"></span>Cloud ou on-premise</span>
       </div>
     </div>
 
-    <div style="margin-top: 90px; max-width: 660px;">
-      <div class="kicker">SIS académique · LMD · multi-tutelles</div>
-      <h1 class="hero">La plateforme qui <em>accélère</em> et <em>sécurise</em> la gestion académique.</h1>
-      <p class="lede" style="color: var(--tk-on-dark-soft); max-width: 560px;">
-        TKAMS centralise les inscriptions, les examens, la saisie des notes, les délibérations,
-        les promotions et les documents officiels dans un seul système, pensé pour les établissements
-        d'enseignement supérieur fonctionnant en environnement LMD.
-      </p>
-    </div>
-
-    <div class="cover-grid">
-      <div><h4>Pour</h4><p>Universités, IPES, facultés, centres de formation</p></div>
-      <div><h4>Promesse</h4><p>Réduire de plusieurs semaines à quelques heures les opérations critiques</p></div>
-      <div><h4>Atout clé</h4><p>LMD natif, multi-tutelles, règles configurables</p></div>
-      <div><h4>Suite</h4><p>Connexion native avec DIPLOMATION pour les actes officiels</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">01 · Synthèse décisionnelle</div>
-    </div>
-
-    <div class="kicker">En une minute</div>
-    <h1 class="hed">Ce que TKAMS apporte <em>immédiatement</em> à un établissement.</h1>
-    <p class="lede">
-      TKAMS ne vend pas seulement un logiciel de notes. La plateforme fournit un socle unique
-      pour piloter les opérations académiques critiques, réduire les erreurs, sécuriser les décisions
-      et restaurer la maîtrise du calendrier académique.
-    </p>
-
-    <div class="grid g2" style="margin-top: 22px;">
-      <div class="card soft">
-        <h3>Le problème aujourd'hui</h3>
-        <p>Notes dispersées, délibérations tardives, calculs manuels, documents officiels fabriqués
-        hors système, absence de piste d'audit et forte dépendance à quelques personnes clés.</p>
-      </div>
-      <div class="card soft">
-        <h3>La réponse TKAMS</h3>
-        <p>Une plateforme unique qui structure le cycle LMD, impose des workflows traçables et permet
-        à l'établissement d'opérer plus vite, plus proprement et avec moins de risques.</p>
-      </div>
-      <div class="card soft">
-        <h3>Ce qui change pour la direction</h3>
-        <p>Moins de crise en fin de semestre, plus de visibilité, plus de fiabilité et une meilleure
-        capacité à standardiser les pratiques entre établissements, filières ou campus.</p>
-      </div>
-      <div class="card soft">
-        <h3>La prochaine étape</h3>
-        <p>Une démonstration sur vos données réelles ou un scénario proche de votre organisation,
-        afin d'évaluer en quelques jours le gain opérationnel sur votre contexte.</p>
-      </div>
-    </div>
-
-    <div class="grid g4" style="margin-top: 18px;">
-      <div class="metric"><div class="value">35+</div><div class="label">Fonctionnalités métier livrées</div></div>
-      <div class="metric"><div class="value">24</div><div class="label">Modèles de documents officiels</div></div>
-      <div class="metric"><div class="value">7</div><div class="label">Profils métier couverts</div></div>
-      <div class="metric"><div class="value">1</div><div class="label">Source de vérité académique</div></div>
-    </div>
-
-    <div class="f">
-      <span>TKAMS · brochure commerciale</span>
-      <span class="page-no">01<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">02 · Douleurs métier</div>
-    </div>
-
-    <div class="kicker">Le constat</div>
-    <h1 class="hed">Pourquoi les établissements perdent encore des <em>semaines entières</em>.</h1>
-    <p class="lede">
-      Dans beaucoup d'établissements, la chaîne académique reste éclatée entre fichiers Excel,
-      outils partiels et procédures manuelles. Le coût réel n'est pas seulement technique:
-      il est organisationnel, financier et réputationnel.
-    </p>
-
-    <div class="grid g3" style="margin-top: 22px;">
-      <div class="pain"><span class="badge-num">01</span><h3>Saisie et contrôle laborieux</h3><p>Les notes circulent entre plusieurs fichiers, plusieurs personnes et plusieurs versions, avec peu de garde-fous.</p></div>
-      <div class="pain"><span class="badge-num">02</span><h3>Délibérations fragiles</h3><p>Les calculs, compensations et décisions sont souvent validés tard, sous pression et sans traçabilité suffisante.</p></div>
-      <div class="pain"><span class="badge-num">03</span><h3>Documents hors système</h3><p>PV, relevés, attestations et diplômes sont fréquemment produits dans des outils séparés, avec un risque élevé d'erreur ou de fraude.</p></div>
-      <div class="pain"><span class="badge-num">04</span><h3>Peu de visibilité managériale</h3><p>La direction manque d'indicateurs consolidés pour piloter l'avancement des examens, des jurys et des promotions.</p></div>
-      <div class="pain"><span class="badge-num">05</span><h3>Forte dépendance humaine</h3><p>Une partie critique du fonctionnement repose sur quelques agents ou secrétaires qui détiennent les fichiers et les usages.</p></div>
-      <div class="pain"><span class="badge-num">06</span><h3>Multi-sites mal géré</h3><p>Dès qu'il existe plusieurs tutelles, campus ou partenaires, la cohérence des données devient difficile à maintenir.</p></div>
-    </div>
-
-    <div class="split-stat">
-      <div class="card brand">
-        <h3>L'enjeu réel</h3>
-        <p>Le problème n'est pas seulement de “saisir des notes”. Il s'agit de gouverner un cycle académique
-        complet avec des décisions opposables, des documents crédibles et une organisation soutenable semestre après semestre.</p>
-      </div>
-      <div class="card deep">
-        <h3>Effets visibles</h3>
-        <ul>
-          <li>retards de publication</li>
-          <li>rattrapages mal préparés</li>
-          <li>ressaisies multiples</li>
-          <li>conflits de version</li>
-          <li>temps excessif en jury</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="f">
-      <span>Le problème avant la solution</span>
-      <span class="page-no">02<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">03 · Solution</div>
-    </div>
-
-    <div class="kicker">La plateforme</div>
-    <h1 class="hed">Une seule plateforme pour tout le <em>cycle académique</em>.</h1>
-    <p class="lede">
-      TKAMS remplace la juxtaposition d'outils par une chaîne continue de traitement. Chaque étape s'appuie
-      sur les mêmes données, les mêmes droits et les mêmes traces d'audit.
-    </p>
-
-    <div class="timeline">
-      <div class="step"><span class="badge-num">1</span><h3>Paramétrer</h3><p>Établissements, cycles, niveaux, programmes, UE, EC, semestres, sessions et structures de tutelle.</p></div>
-      <div class="step"><span class="badge-num">2</span><h3>Organiser</h3><p>Classes, cours, affectations, enseignants, inscriptions et cohortes étudiantes.</p></div>
-      <div class="step"><span class="badge-num">3</span><h3>Évaluer</h3><p>Programmation des examens, saisie sécurisée des notes et délégation encadrée.</p></div>
-      <div class="step"><span class="badge-num">4</span><h3>Décider</h3><p>Délibérations, compensations, validations, rattrapages et promotions automatiques.</p></div>
-      <div class="step"><span class="badge-num">5</span><h3>Publier</h3><p>PV, relevés, attestations, diplômes et synchronisation avec l'écosystème documentaire.</p></div>
-    </div>
-
-    <div class="grid g2" style="margin-top: 22px;">
-      <div class="card soft">
-        <h3>Une source de vérité</h3>
-        <p>La donnée n'est plus reconstituée à chaque étape. Une note validée, une décision de jury ou un statut
-        de promotion est réutilisé partout où il doit produire ses effets.</p>
-      </div>
-      <div class="card soft">
-        <h3>Une logique de workflow</h3>
-        <p>Chaque acteur intervient au bon moment, selon son rôle. Le système protège l'établissement contre
-        les modifications tardives, les contournements informels et les doubles traitements.</p>
-      </div>
-    </div>
-
-    <div class="card brand" style="margin-top: 18px;">
-      <h3>Promesse client</h3>
-      <p>Réduire de plusieurs semaines à quelques heures les opérations critiques de fin de semestre:
-      collecte des notes, contrôle, délibération, publication et émission des actes officiels.</p>
-    </div>
-
-    <div class="f">
-      <span>Le flux avant les détails</span>
-      <span class="page-no">03<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">04 · Différenciation</div>
-    </div>
-
-    <div class="kicker">Pourquoi TKAMS</div>
-    <h1 class="hed">Pourquoi ce n'est pas un simple <em>logiciel de notes</em>.</h1>
-    <p class="lede">
-      TKAMS se distingue moins par l'addition de fonctionnalités que par sa capacité à modéliser
-      correctement la réalité académique des établissements LMD africains.
-    </p>
-
-    <div class="grid g2" style="margin-top: 22px;">
-      <div class="card soft">
-        <h3>LMD natif</h3>
-        <p>UE, EC, crédits, coefficients, sessions normales et de rattrapage ne sont pas des détours.
-        Ce sont des objets métier de premier rang dans la plateforme.</p>
-      </div>
-      <div class="card soft">
-        <h3>Règles de délibération configurables</h3>
-        <p>L'établissement ne subit pas une logique imposée. Il formalise ses propres règles
-        de compensation, admission, redoublement ou promotion.</p>
-      </div>
-      <div class="card soft">
-        <h3>Multi-tutelles réel</h3>
-        <p>TKAMS gère la réalité institutionnelle: université, faculté, IPES, centre rattaché,
-        réseau multi-sites ou partenariats à plusieurs niveaux.</p>
-      </div>
-      <div class="card soft">
-        <h3>Chaîne documentaire connectée</h3>
-        <p>Les actes officiels ne sont plus fabriqués à côté du système. Les données académiques
-        alimentent directement les exports et la génération documentaire.</p>
-      </div>
-    </div>
-
-    <div class="grid g4" style="margin-top: 18px;">
-      <div class="metric"><div class="value">+ vite</div><div class="label">Sur les fins de semestre</div></div>
-      <div class="metric"><div class="value">+ propre</div><div class="label">Sur la donnée académique</div></div>
-      <div class="metric"><div class="value">+ sûr</div><div class="label">Sur les décisions et documents</div></div>
-      <div class="metric"><div class="value">+ pilotable</div><div class="label">Pour la direction</div></div>
-    </div>
-
-    <div class="f">
-      <span>Les vrais écarts concurrentiels</span>
-      <span class="page-no">04<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">05 · Usages métier</div>
-    </div>
-
-    <div class="kicker">Rôles et usages</div>
-    <h1 class="hed">Une expérience utile pour chaque <em>acteur clé</em>.</h1>
-    <p class="lede">
-      La valeur d'un SIS ne se mesure pas seulement à ses fonctions, mais à sa capacité à servir des profils
-      très différents sans créer de friction inutile.
-    </p>
-
-    <div class="grid g3" style="margin-top: 22px;">
-      <div class="role">
-        <h3>Administration</h3>
-        <p>Structure l'année, affecte les cours, supervise les opérations et produit les actes officiels depuis un cadre unique.</p>
-      </div>
-      <div class="role">
-        <h3>Enseignants</h3>
-        <p>Programment les examens, saisissent les notes, suivent l'avancement de leurs cours et soumettent les données au bon niveau de validation.</p>
-      </div>
-      <div class="role">
-        <h3>Doyens et responsables académiques</h3>
-        <p>Arbitrent, contrôlent, valident et pilotent les délibérations sans dépendre d'une reconstruction manuelle des informations.</p>
-      </div>
-      <div class="role">
-        <h3>Direction</h3>
-        <p>Dispose d'une lecture consolidée: état des examens, performance académique, risques de blocage et progression des cohortes.</p>
-      </div>
-      <div class="role">
-        <h3>Étudiants</h3>
-        <p>Accèdent à leurs résultats, décisions, historiques et documents selon les ouvertures prévues par l'établissement.</p>
-      </div>
-      <div class="role">
-        <h3>Écosystème documentaire</h3>
-        <p>Les données utiles à la production des relevés, attestations et diplômes sont préparées depuis le même socle académique.</p>
-      </div>
-    </div>
-
-    <div class="card brand" style="margin-top: 18px;">
-      <h3>Point clé</h3>
-      <p>TKAMS ne demande pas à l'établissement de s'adapter à l'outil. Il distribue la bonne vue, la bonne action
-      et le bon niveau de responsabilité à chaque profil.</p>
-    </div>
-
-    <div class="f">
-      <span>Une plateforme utilisable au quotidien</span>
-      <span class="page-no">05<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">06 · Documents et DIPLOMATION</div>
-    </div>
-
-    <div class="kicker">Des notes aux actes</div>
-    <h1 class="hed">Les documents officiels ne vivent plus <em>hors système</em>.</h1>
-    <p class="lede">
-      Les relevés de notes, attestations, procès-verbaux et diplômes ne devraient pas être produits
-      à partir de fichiers parallèles. TKAMS prépare et fiabilise les données nécessaires à leur génération.
-    </p>
-
-    <div class="grid g2" style="margin-top: 22px;">
-      <div class="card soft">
-        <h3>Ce que TKAMS fournit</h3>
-        <ul>
-          <li>24 modèles de documents académiques</li>
-          <li>prévisualisation et génération en masse</li>
-          <li>personnalisation institutionnelle</li>
-          <li>réutilisation des données de jury et de scolarité</li>
-        </ul>
-      </div>
-      <div class="card soft">
-        <h3>Ce que DIPLOMATION renforce</h3>
-        <ul>
-          <li>génération avancée d'actes officiels</li>
-          <li>QR codes vérifiables</li>
-          <li>sécurisation documentaire</li>
-          <li>zéro ressaisie depuis TKAMS</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="grid g3" style="margin-top: 18px;">
-      <div class="proof">
-        <h3>Moins de ressaisie</h3>
-        <p>Les données validées dans le processus académique alimentent directement la chaîne documentaire.</p>
-      </div>
-      <div class="proof">
-        <h3>Moins de fraude</h3>
-        <p>Un document officiel tiré d'une base fiable et vérifiable est plus difficile à falsifier qu'un document produit manuellement.</p>
-      </div>
-      <div class="proof">
-        <h3>Plus de crédibilité</h3>
-        <p>L'établissement professionnalise ses actes et renforce la confiance des étudiants, parents et partenaires.</p>
-      </div>
-    </div>
-
-    <div class="f">
-      <span>La chaîne documentaire comme levier commercial</span>
-      <span class="page-no">06<span> / 10</span></span>
-    </div>
-  </div>
-</section>
-
-<section class="page dark">
-  <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">07 · Preuves</div>
-    </div>
-
-    <div class="kicker">Premiers résultats</div>
-    <h1 class="hed">Des bénéfices déjà <em>observables</em> sur des cas réels.</h1>
-    <p class="lede">
-      TKAMS est conçu pour des contextes proches de ceux des établissements supérieurs camerounais:
-      diversité des filières, pression de fin de semestre, besoins de conformité et exigences multi-sites.
-    </p>
-
-    <div class="grid g3" style="margin-top: 22px;">
-      <div class="proof card dark">
-        <h3>IPES technologique</h3>
-        <p>Objectif principal: réduire le temps de clôture académique et fiabiliser les relevés de notes.</p>
-        <div class="chip-row" style="margin-top: 12px;">
-          <span class="chip ghost">pilote encadré</span>
-          <span class="chip ghost">gains opérationnels rapides</span>
+    <div style="position: relative; z-index: 2; margin-top: 30px;">
+      <div class="floatchip" style="top: -14px; right: 6px;"><div class="v">~3 h</div><div class="l">objectif · vs 3 semaines</div></div>
+      <div class="win">
+        <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">app.tkams.com/saisie</span></div>
+        <div class="win-body">
+          <table class="tbl">
+            <thead><tr><th>Étudiant</th><th>CC</th><th>Examen</th><th>Moyenne</th><th style="text-align:right;">Décision</th></tr></thead>
+            <tbody>
+              <tr><td>MBARGA Jean</td><td>14</td><td>15</td><td style="font-weight:700;">14,6</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
+              <tr><td>ATANGANA Rose</td><td>11</td><td>11</td><td style="font-weight:700;">11,0</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
+              <tr><td>BELLO Fatima</td><td>9</td><td>6,5</td><td style="font-weight:700;">7,5</td><td style="text-align:right;"><span class="pill bad">Ajourné</span></td></tr>
+              <tr><td>FOTSO Marie</td><td>16</td><td>13</td><td style="font-weight:700;">14,2</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="proof card dark">
-        <h3>Faculté universitaire</h3>
-        <p>Objectif principal: clarifier les règles de compensation et standardiser les délibérations sur plusieurs départements.</p>
-        <div class="chip-row" style="margin-top: 12px;">
-          <span class="chip ghost">gouvernance pédagogique</span>
-          <span class="chip ghost">contrôle renforcé</span>
-        </div>
+      <div class="cap"><span class="dot"></span>Moyenne pondérée et décision recalculées à chaque saisie.</div>
+    </div>
+
+    <div class="cover-stats">
+      <div class="c"><div class="v">35+</div><div class="l">Modules métier</div></div>
+      <div class="c"><div class="v">24</div><div class="l">Exports officiels</div></div>
+      <div class="c"><div class="v">7</div><div class="l">Rôles RBAC</div></div>
+      <div class="c"><div class="v">2</div><div class="l">Langues (FR/EN)</div></div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Douala · Yaoundé</span><span class="pn">tkams.com · <b>01 / 08</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 — AVANT / APRÈS ============ -->
+<section class="page" data-screen-label="02 Avant / Après">
+  <div class="inner">
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Le constat</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">01</span><span class="ln"></span><span class="t">Avant / Après</span></div>
+      <h2 class="display">Le changement se voit<br/>dès la <em>première session</em>.</h2>
+      <p class="lede">Chaque année, les mêmes semaines de chaos. TKAMS remplace ce scénario par un seul flux, traçable et serein.</p>
+    </div>
+
+    <div class="ba">
+      <div class="col before">
+        <h3><span class="icbox ic"><svg class="svg" width="17" height="17"><use href="#i-x"/></svg></span>Aujourd'hui, sans TKAMS</h3>
+        <ul>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Notes éparpillées sur papier, Excel et WhatsApp</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Moyennes recalculées à la main, erreurs en cascade</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Délibérations qui s'étirent sur des semaines</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Documents officiels tapés un par un</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Aucune trace de qui a saisi quoi</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-x"/></svg>Outils déconnectés, ressaisies permanentes</li>
+        </ul>
       </div>
-      <div class="proof card dark">
-        <h3>Réseau multi-sites</h3>
-        <p>Objectif principal: harmoniser les pratiques, consolider les données et réduire les écarts entre campus.</p>
-        <div class="chip-row" style="margin-top: 12px;">
-          <span class="chip ghost">multi-tutelles</span>
-          <span class="chip ghost">vision consolidée</span>
+      <div class="col after">
+        <h3><span class="icbox ic"><svg class="svg" width="17" height="17"><use href="#i-check"/></svg></span>Demain, avec TKAMS</h3>
+        <ul>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Une seule plateforme, du paramétrage à la diplomation</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Moyennes et décisions calculées automatiquement</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Délibérations bouclées en quelques heures</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>PV, relevés et attestations en un clic</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Piste d'audit complète sur chaque action</li>
+          <li><svg class="svg li-ic" width="15" height="15"><use href="#i-check"/></svg>Tout est connecté, plus aucune ressaisie</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="quote"><p>« TKAMS supprime ce scénario. Une seule plateforme, du paramétrage à la promotion. »</p></div>
+
+    <div style="margin-top: 24px; position: relative; z-index: 2;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Pourquoi TKAMS, et pas autre chose</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;">
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">LMD par conception</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">UE, EC, ECTS, rattrapages — natifs. Pas un ERP générique reconverti, ni un tableur outillé.</p>
+        </div>
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">Vos règles, sans code</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">Chaque institution paramètre sa délibération — aucune dépendance à un développeur.</p>
+        </div>
+        <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 14px; padding: 16px;">
+          <h4 style="font-family: var(--tk-font-display); font-weight: 700; font-size: 14px; color: var(--tk-ink); margin: 0 0 5px;">Bout en bout</h4>
+          <p style="font-size: 11.5px; color: var(--tk-ink-2); margin: 0; line-height: 1.5;">Du catalogue à la diplomation, d'un seul tenant — fini la mosaïque d'outils.</p>
         </div>
       </div>
     </div>
 
-    <div class="grid g2" style="margin-top: 18px;">
-      <div class="card dark">
-        <div class="quote">“Nous avons divisé par 12 le temps de production des PV de fin de semestre. Ce qui demandait plusieurs week-ends devient une opération cadrée.”</div>
-        <div class="quote-meta">RETEX PILOTE · DIRECTION ACADÉMIQUE</div>
-      </div>
-      <div class="card dark">
-        <div class="quote">“Le vrai changement n'est pas seulement la vitesse. C'est le fait de pouvoir expliciter et appliquer les mêmes règles à tous.”</div>
-        <div class="quote-meta">RETEX PILOTE · RESPONSABLE PÉDAGOGIQUE</div>
-      </div>
-    </div>
-
-    <p class="mini-note" style="margin-top: 16px;">
-      Les noms complets d'établissements peuvent être communiqués dans un cadre commercial ou contractuel adapté.
-      Pour la version publique de la brochure, certains éléments de preuve restent volontairement contextualisés.
-    </p>
-
-    <div class="f">
-      <span>Preuve sociale en consolidation</span>
-      <span class="page-no">07<span> / 10</span></span>
-    </div>
+    <div class="foot"><span>OverBrand · Le constat</span><span class="pn">tkams.com · <b>02 / 08</b></span></div>
   </div>
 </section>
 
-<section class="page">
+<!-- ============ PAGE 3 — LE PRODUIT EN ACTION ============ -->
+<section class="page" data-screen-label="03 Produit en action">
   <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">08 · Déploiement</div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Le produit</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">02</span><span class="ln"></span><span class="t">Le produit en action</span></div>
+      <h2 class="display">Trois écrans, <em>tout le cycle</em>.</h2>
+      <p class="lede">De la saisie d'une note à la signature du PV — voici comment TKAMS travaille pour vos équipes.</p>
     </div>
 
-    <div class="kicker">Mise en oeuvre</div>
-    <h1 class="hed">Un déploiement adapté à votre <em>niveau d'exigence</em>.</h1>
-    <p class="lede">
-      L'offre TKAMS couvre plusieurs modes de déploiement afin de répondre aux exigences de budget,
-      de souveraineté, de gouvernance et d'accompagnement de l'établissement.
-    </p>
+    <div class="flow">
+      <!-- Rules engine -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">app.tkams.com/regles</span></div>
+          <div class="win-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="font-family: var(--tk-font-mono); font-size: 9px;">
+              <div style="color: var(--tk-muted); margin-bottom: 3px;">Seuil de validation <b style="float: right; color: var(--tk-primary);">10,0/20</b></div>
+              <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 10px;"><div style="width: 50%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+              <div style="color: var(--tk-muted); margin-bottom: 3px;">Note éliminatoire <b style="float: right; color: var(--tk-primary);">6,0/20</b></div>
+              <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 10px;"><div style="width: 30%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 5px 8px; background: var(--tk-surface);"><span style="color: var(--tk-ink-soft);">Compensation</span><span style="width: 22px; height: 12px; background: var(--tk-primary); border-radius: 999px; position: relative; display: inline-block;"><span style="position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; background: #fff; border-radius: 999px;"></span></span></div>
+            </div>
+            <div style="border: 1px solid var(--tk-border); border-radius: 8px; padding: 10px; background: var(--tk-surface);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;"><span style="font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.1em;">Réussite</span><span style="font-family: var(--tk-font-display); font-weight: 800; font-size: 20px;">80 %</span></div>
+              <div style="height: 6px; background: var(--tk-bg-deep); border-radius: 999px; margin: 6px 0 10px;"><div style="width: 80%; height: 100%; background: linear-gradient(90deg, var(--tk-accent-emerald), var(--tk-primary-bright)); border-radius: 999px;"></div></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-ink-2);">
+                <span style="display: flex; justify-content: space-between;">Admis<b>6</b></span><span style="display: flex; justify-content: space-between;">Compensés<b>2</b></span>
+                <span style="display: flex; justify-content: space-between;">Rattrap.<b>1</b></span><span style="display: flex; justify-content: space-between;">Ajournés<b>1</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cap"><span class="dot"></span>Moteur de règles — vos critères, réévalués en direct.</div>
+      </div>
 
-    <div class="grid g2" style="margin-top: 22px;">
-      <div class="offer">
-        <h3>SaaS mutualisé</h3>
-        <p>Le moyen le plus simple de démarrer vite, avec un coût d'entrée réduit et une exploitation assurée par l'éditeur.</p>
-      </div>
-      <div class="offer">
-        <h3>SaaS dédié</h3>
-        <p>Une instance dédiée pour les établissements qui veulent plus d'isolation et une gouvernance renforcée.</p>
-      </div>
-      <div class="offer">
-        <h3>On-premise</h3>
-        <p>Pour les établissements qui exigent un hébergement interne, avec accompagnement au déploiement et à l'exploitation.</p>
-      </div>
-      <div class="offer">
-        <h3>Hybride</h3>
-        <p>Pour concilier souveraineté, contraintes institutionnelles et besoins d'ouverture vers l'écosystème documentaire.</p>
+      <!-- Deliberation -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">app.tkams.com/deliberations</span></div>
+          <div class="win-body">
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Brouillon</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Ouverte</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center;"><svg class="svg" width="8" height="8" style="stroke-width:3;"><use href="#i-check"/></svg></span>Clôturée</span>
+              <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-ink);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 7px; font-weight: 700;">4</span>Signée</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; font-family: var(--tk-font-mono);">
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px;">90 %</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Réussite</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.4 0.16 149);">7</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Admis</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: var(--tk-accent-blue);">2</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Compensés</div></div>
+              <div style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 7px; text-align: center; background: var(--tk-surface);"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.5 0.18 27);">1</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Ajournés</div></div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 10px; font-family: var(--tk-font-mono); font-size: 9px;">
+              <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 4px 9px; color: var(--tk-ink-soft); display: inline-flex; align-items: center; gap: 5px;"><svg class="svg" width="11" height="11"><use href="#i-download"/></svg>PV (PDF)</span>
+              <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 4px 9px; color: var(--tk-ink-soft); display: inline-flex; align-items: center; gap: 5px;"><svg class="svg" width="11" height="11"><use href="#i-download"/></svg>Relevés (Excel)</span>
+            </div>
+          </div>
+        </div>
+        <div class="cap"><span class="dot"></span>Délibération — du brouillon au PV signé, exports inclus.</div>
       </div>
     </div>
 
-    <div class="grid g3" style="margin-top: 18px;">
-      <div class="proof">
-        <h3>Accompagnement initial</h3>
-        <p>Paramétrage, reprise de données prioritaires, formation des équipes et cadrage du premier cycle d'exploitation.</p>
-      </div>
-      <div class="proof">
-        <h3>Montée en charge</h3>
-        <p>Le déploiement peut commencer par un périmètre pilote avant extension à plusieurs filières ou établissements.</p>
-      </div>
-      <div class="proof">
-        <h3>Support continu</h3>
-        <p>TKAMS s'accompagne d'un support local, francophone et joignable, avec une compréhension du contexte métier.</p>
-      </div>
+    <div style="margin-top: 18px; border: 1px solid var(--tk-border); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); border-radius: 14px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; position: relative; z-index: 2;">
+      <span class="icbox" style="width: 38px; height: 38px; background: var(--tk-primary); color: #fff; flex: 0 0 auto;"><svg class="svg" width="18" height="18"><use href="#i-spark"/></svg></span>
+      <p style="margin: 0; font-size: 13px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">Démos interactives en ligne.</b> Aperçus fidèles de l'interface — chaque écran est jouable en direct sur <b style="color: var(--tk-primary);">tkams.com/produit</b>, sans inscription.</p>
     </div>
 
-    <div class="f">
-      <span>Le déploiement comme facteur de confiance</span>
-      <span class="page-no">08<span> / 10</span></span>
-    </div>
+    <div class="foot"><span>OverBrand · Le produit</span><span class="pn">tkams.com · <b>03 / 08</b></span></div>
   </div>
 </section>
 
-<section class="page">
+<!-- ============ PAGE 4 — PANORAMA DES CAPACITÉS ============ -->
+<section class="page" data-screen-label="04 Panorama">
   <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">09 · Tarification</div>
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Panorama</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">03</span><span class="ln"></span><span class="t">Panorama des capacités</span></div>
+      <h2 class="display">35+ modules,<br/>six <em>domaines</em>.</h2>
+      <p class="lede">Une plateforme intégrée — pas une collection d'outils. Tout le cycle académique couvert, d'un seul tenant.</p>
     </div>
 
-    <div class="kicker">Offre commerciale</div>
-    <h1 class="hed">Une offre simple, adaptée à la <em>taille réelle</em> de l'établissement.</h1>
-    <p class="lede">
-      La logique commerciale repose sur des frais d'installation puis une licence annuelle lisible,
-      calculée à partir du nombre d'étudiants actifs et des comptes administratifs.
-    </p>
-
-    <div class="offer-grid">
-      <div class="offer">
-        <h3>TKAMS Essentiel</h3>
-        <div class="price">2 000<small>FCFA / étudiant / an<br />+ 5 000 FCFA / compte admin / an</small></div>
-        <p>Pour les petites structures qui veulent digitaliser le coeur académique sans complexité inutile.</p>
-        <ul>
-          <li>modules coeur</li>
-          <li>SaaS mutualisé</li>
-          <li>minimum annuel 750 000 FCFA</li>
-        </ul>
+    <div class="pano">
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-building"/></svg></span><h4>Catalogue & structure</h4><span class="cnt">08</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Facultés</span><span class="it"><span class="dt"></span>Programmes</span><span class="it"><span class="dt"></span>Cycles & niveaux</span><span class="it"><span class="dt"></span>UE / EC</span><span class="it"><span class="dt"></span>Classes</span><span class="it"><span class="dt"></span>Options de programme</span><span class="it"><span class="dt"></span>Centres régionaux</span><span class="it"><span class="dt"></span>Années & semestres</span>
+        </div>
       </div>
-      <div class="offer featured">
-        <h3>TKAMS Pro</h3>
-        <div class="price">2 000<small>FCFA / étudiant / an<br />+ 5 000 FCFA / compte admin / an</small></div>
-        <p>Pour les établissements qui veulent le périmètre complet, l'intégration documentaire et une exploitation structurée.</p>
-        <ul>
-          <li>35+ fonctionnalités métier</li>
-          <li>DIPLOMATION intégrable</li>
-          <li>SaaS dédié ou on-premise</li>
-        </ul>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-grad"/></svg></span><h4>Inscriptions & étudiants</h4><span class="cnt">05</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Inscriptions</span><span class="it"><span class="dt"></span>Profils étudiants</span><span class="it"><span class="dt"></span>Inscriptions aux cours</span><span class="it"><span class="dt"></span>Matricules auto</span><span class="it"><span class="dt"></span>Crédits ECTS</span>
+        </div>
       </div>
-      <div class="offer">
-        <h3>TKAMS Enterprise</h3>
-        <div class="price">Sur devis<small>Pour réseaux, multi-sites ou contraintes réglementaires spécifiques</small></div>
-        <p>Pour les groupes et structures complexes qui ont besoin d'une gouvernance, d'un SLA ou d'intégrations renforcées.</p>
-        <ul>
-          <li>multi-tutelles avancé</li>
-          <li>topologies hybrides</li>
-          <li>accompagnement renforcé</li>
-        </ul>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-clip"/></svg></span><h4>Évaluations</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Types d'examens</span><span class="it"><span class="dt"></span>Planification</span><span class="it"><span class="dt"></span>Saisie de notes</span><span class="it"><span class="dt"></span>Délégation tracée</span><span class="it"><span class="dt"></span>Sessions & rattrapage</span><span class="it"><span class="dt"></span>Accès contrôlé</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-scale"/></svg></span><h4>Délibération & promotion</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Moteur de règles</span><span class="it"><span class="dt"></span>Délibérations</span><span class="it"><span class="dt"></span>Grand livre des crédits</span><span class="it"><span class="dt"></span>Règles de promotion</span><span class="it"><span class="dt"></span>Promotion automatique</span><span class="it"><span class="dt"></span>Transitions d'année</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-download"/></svg></span><h4>Documents & exports</h4><span class="cnt">06</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>Documents académiques</span><span class="it"><span class="dt"></span>Relevés & attestations</span><span class="it"><span class="dt"></span>24 templates d'exports</span><span class="it"><span class="dt"></span>Éligibilité aux exports</span><span class="it"><span class="dt"></span>Excel / PDF</span><span class="it"><span class="dt"></span>DIPLOMATION (QR)</span>
+        </div>
+      </div>
+
+      <div class="pano-card">
+        <div class="hd"><span class="icbox ic"><svg class="svg" width="19" height="19"><use href="#i-shield"/></svg></span><h4>Gouvernance & intégrations</h4><span class="cnt">08</span></div>
+        <div class="items">
+          <span class="it"><span class="dt"></span>7 rôles RBAC</span><span class="it"><span class="dt"></span>Piste d'audit</span><span class="it"><span class="dt"></span>Workflows d'approbation</span><span class="it"><span class="dt"></span>Notifications</span><span class="it"><span class="dt"></span>Traitements par lots</span><span class="it"><span class="dt"></span>API & webhooks signés</span><span class="it"><span class="dt"></span>Multi-établissements</span><span class="it"><span class="dt"></span>Bilingue FR/EN</span>
+        </div>
       </div>
     </div>
 
-    <div class="card soft" style="margin-top: 16px;">
-      <h3>Repères financiers</h3>
-      <p style="margin-bottom: 6px;">Frais d'installation inclus en SaaS. En on-premise, prévoir à partir de <strong>1 500 000 FCFA HT</strong> pour TKAMS seul.</p>
-      <p style="margin: 0;">L'offre combinée TKAMS + chaîne documentaire peut être structurée en bundle selon votre périmètre et votre niveau d'intégration attendu.</p>
-    </div>
-
-    <div class="f">
-      <span>Tarification lisible, discussion sur le périmètre</span>
-      <span class="page-no">09<span> / 10</span></span>
-    </div>
+    <div class="foot"><span>OverBrand · Panorama</span><span class="pn">tkams.com · <b>04 / 08</b></span></div>
   </div>
 </section>
 
-<section class="page dark">
+<!-- ============ PAGE 5 — COMMENT ÇA MARCHE + BÉNÉFICES ============ -->
+<section class="page" data-screen-label="05 Comment ça marche">
   <div class="inner">
-    <div class="h">
-      <div class="brand"><span class="brand-badge">&nbsp;TKAMS</span></div>
-      <div class="crumb">10 · Appel à l'action</div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Comment ça marche</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">04</span><span class="ln"></span><span class="t">Comment ça marche</span></div>
+      <h2 class="display">Quatre étapes,<br/>de la rentrée au <em>diplôme</em>.</h2>
     </div>
 
-    <div class="kicker">Prochaine étape</div>
-    <h1 class="hed">Passer d'une brochure à une <em>démonstration utile</em>.</h1>
-    <p class="lede">
-      Le bon niveau de preuve n'est pas une présentation générique. C'est une démonstration sur un périmètre
-      proche de votre établissement, avec vos règles, vos contraintes et vos priorités.
-    </p>
-
-    <div class="cta">
-      <h2 style="margin: 0 0 10px;">Ce que nous proposons</h2>
-      <ul>
-        <li>un cadrage rapide de votre contexte académique</li>
-        <li>une démo orientée sur vos processus critiques</li>
-        <li>une simulation de déploiement</li>
-        <li>une proposition commerciale chiffrée après démonstration</li>
-      </ul>
+    <div class="steps">
+      <div class="step"><span class="num">1</span><h4>Paramétrez</h4><p>Facultés, programmes, UE/EC et règles de délibération — votre structure, vos règles.</p></div>
+      <div class="step"><span class="num">2</span><h4>Saisissez</h4><p>Les enseignants entrent les notes ; moyennes et décisions se calculent en direct.</p></div>
+      <div class="step"><span class="num">3</span><h4>Délibérez</h4><p>Lancez la délibération : statistiques, validations tracées, PV signés.</p></div>
+      <div class="step"><span class="num">4</span><h4>Diplomez</h4><p>Relevés, attestations et diplômes vérifiables par QR code via DIPLOMATION, le service de vérification documentaire intégré.</p></div>
     </div>
 
-    <div class="grid g3" style="margin-top: 18px;">
-      <div class="card dark">
-        <h3>Contact commercial</h3>
-        <p>contact@tkams.app</p>
+    <div style="margin-top: 40px;">
+      <div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Bénéfices concrets</span></div>
+      <h2 class="display" style="font-size: 28px;">Des gains, dès la première année.</h2>
+    </div>
+    <div class="bens">
+      <div class="ben"><div class="v">3 h</div><div class="l">au lieu de 3 semaines</div><div class="d">pour boucler une délibération complète</div></div>
+      <div class="ben"><div class="v">0</div><div class="l">erreur de calcul</div><div class="d">moyennes pondérées automatiques</div></div>
+      <div class="ben"><div class="v">24</div><div class="l">exports officiels</div><div class="d">PV, relevés et attestations en un clic</div></div>
+      <div class="ben"><div class="v">100%</div><div class="l">traçable</div><div class="d">chaque action horodatée et auditable</div></div>
+    </div>
+    <p style="margin-top: 12px; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); font-style: italic;">Ordres de grandeur indicatifs — les gains réels varient selon la taille et l'organisation de l'établissement.</p>
+
+    <div class="foot"><span>OverBrand · Comment ça marche</span><span class="pn">tkams.com · <b>05 / 08</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 5 — POUR CHAQUE RÔLE ============ -->
+<section class="page" data-screen-label="06 Solutions par rôle">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Solutions</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">05</span><span class="ln"></span><span class="t">Pour chaque acteur</span></div>
+      <h2 class="display">Une réponse pour<br/>chaque <em>rôle</em>.</h2>
+    </div>
+
+    <div class="roles">
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-grad"/></svg></span><div class="rn">Enseignants</div><h4>Vos notes en minutes, pas en semaines.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Saisie CC + examen pondérée</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Moyennes & décisions en direct</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Import Excel, export des relevés</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Verrouillage après validation</div>
+        </div>
       </div>
-      <div class="card dark">
-        <h3>Téléphone / WhatsApp</h3>
-        <p>+237 6 — — —</p>
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-scale"/></svg></span><div class="rn">Doyens & Direction</div><h4>Pilotez les délibérations d'un seul flux.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Règles de délibération configurables</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Workflows d'approbation + audit</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Tableau de bord par cohorte</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>PV officiels en un clic</div>
+        </div>
       </div>
-      <div class="card dark">
-        <h3>Présence</h3>
-        <p>Douala · Yaoundé</p>
+      <div class="role">
+        <div class="side"><span class="icbox ic"><svg class="svg" width="22" height="22"><use href="#i-building"/></svg></span><div class="rn">Administration</div><h4>Du catalogue à la diplomation, tout est tracé.</h4></div>
+        <div class="pts">
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Hiérarchie multi-tutelles</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Matricules générés automatiquement</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Rôles RBAC et journalisation</div>
+          <div><svg class="svg ck" width="15" height="15"><use href="#i-check"/></svg>Intégration DIPLOMATION native</div>
+        </div>
       </div>
     </div>
 
-    <div class="card dark" style="margin-top: 18px;">
-      <h3>Recommandation marketing</h3>
-      <p style="margin: 0;">
-        Utiliser cette version comme brochure de premier contact. Réserver le document long existant
-        aux échanges de qualification avancée, aux DSI, aux partenaires et aux phases d'évaluation détaillée.
-      </p>
+    <div class="foot"><span>OverBrand · Solutions</span><span class="pn">tkams.com · <b>06 / 08</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 6 — TARIFS ============ -->
+<section class="page" data-screen-label="07 Tarifs">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Tarification</span></div>
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">06</span><span class="ln"></span><span class="t">Tarification</span></div>
+      <h2 class="display">Un tarif simple,<br/>au nombre d'<em>étudiants</em>.</h2>
+      <p class="lede">Sans frais cachés. Migration des données et accompagnement inclus dès le démarrage.</p>
     </div>
 
-    <div class="f">
-      <span>TKAMS · version courte commerciale</span>
-      <span class="page-no">10<span> / 10</span></span>
+    <div class="plans">
+      <div class="plan">
+        <div class="pname">Standard</div>
+        <div class="price">2 000 <span style="font-size: 13px; font-weight: 600; color: var(--tk-ink-2);">FCFA</span></div>
+        <div class="unit">/ étudiant / an · + 5 000 / admin</div>
+        <div class="min">Minimum : 750 000 FCFA HT</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tous les modules inclus</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Mises à jour automatiques</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Support standard</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Exports officiels inclus</li>
+        </ul>
+      </div>
+      <div class="plan feat">
+        <div class="pname">Pro <span class="badge">Recommandé</span></div>
+        <div class="price">2 000 <span style="font-size: 13px; font-weight: 600; color: var(--tk-ink-2);">FCFA</span></div>
+        <div class="unit">/ étudiant / an · infrastructure dédiée</div>
+        <div class="min">Même tarif — instance isolée</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tout de Standard</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Infrastructure dédiée · SLA renforcé</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Onboarding prioritaire</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Intégration DIPLOMATION</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <div class="pname">Enterprise</div>
+        <div class="price">Sur devis</div>
+        <div class="unit">multi-entités · on-premise possible</div>
+        <div class="min">On-premise : 1 500 000 FCFA HT</div>
+        <ul>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tout de Pro</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Multi-universités / tutelles</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Reporting consolidé</li>
+          <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Formation équipe incluse</li>
+        </ul>
+      </div>
     </div>
+
+    <div style="margin-top: 24px;"><div class="eyebrow"><span class="n"><svg class="svg" width="13" height="13"><use href="#i-spark"/></svg></span><span class="ln"></span><span class="t">Tout est compris</span></div></div>
+    <div class="incl">
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Tous les modules métier</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Mises à jour continues</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Support & accompagnement</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Migration des données</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Hébergement sécurisé</div>
+      <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Interface bilingue FR/EN</div>
+    </div>
+
+    <div class="foot"><span>OverBrand · Tarification</span><span class="pn">tkams.com · <b>07 / 08</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 7 — RÉASSURANCE + CONTACT ============ -->
+<section class="page" data-screen-label="08 Contact">
+  <div class="inner">
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Démarrer</span></div>
+
+    <div style="margin-top: 28px;">
+      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Réassurance</span></div>
+      <h2 class="display" style="font-size: 30px;">Tout pour démarrer<br/>l'esprit <em>tranquille</em>.</h2>
+    </div>
+    <div class="reas">
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-spark"/></svg></span><h4>Mise en œuvre rapide</h4><p>Instance provisionnée en quelques minutes ; mise en données accompagnée.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-download"/></svg></span><h4>Migration incluse</h4><p>Import de vos données existantes (Excel/YAML) dès la création.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-heart"/></svg></span><h4>Accompagnement humain</h4><p>Une équipe basée à Douala et Yaoundé, à vos côtés.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-lock"/></svg></span><h4>Sécurité & souveraineté</h4><p>Chiffrement TLS, RBAC, piste d'audit, cloud ou on-premise.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-shield"/></svg></span><h4>Sauvegardes quotidiennes</h4><p>Données sauvegardées chaque jour, restauration assurée.</p></div>
+      <div class="r"><span class="icbox ic"><svg class="svg" width="18" height="18"><use href="#i-globe"/></svg></span><h4>Bilingue FR/EN</h4><p>Interface française et anglaise, nativement.</p></div>
+    </div>
+
+    <div class="cta-card" style="margin-top: 28px;">
+      <div class="glow" style="width: 400px; height: 400px; top: -160px; right: -130px; background: radial-gradient(circle, oklch(0.48 0.2 277 / 13%), transparent 70%);"></div>
+      <div style="position: relative; z-index: 1;">
+        <div style="display: flex; gap: 32px; align-items: center;">
+          <div style="flex: 1;">
+            <h2 class="display" style="font-size: 32px; margin: 0;">Réservez votre démo<br/>de <em>TKAMS</em>.</h2>
+            <p class="lede" style="margin-top: 12px;">Découvrez comment TKAMS transforme votre gestion académique. Une démo vaut mille mots.</p>
+            <div style="margin-top: 20px;">
+              <a class="btn primary" href="https://tkams.com" style="font-size: 14px; padding: 13px 24px;">Planifier une démo <svg class="svg" width="16" height="16"><use href="#i-arrow"/></svg></a>
+            </div>
+          </div>
+          <div style="flex: 0 0 auto; text-align: center;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&amp;margin=0&amp;data=https%3A%2F%2Ftkams.com" alt="QR code vers tkams.com" width="118" height="118" style="display: block; border: 1px solid var(--tk-border); border-radius: 12px; background: #fff; padding: 9px;" />
+            <div style="font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); margin-top: 7px; letter-spacing: 0.04em;">Scannez pour la démo</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="ci"><div class="k">Email</div><div class="v">contact@tkams.com</div></div>
+          <div class="ci"><div class="k">Localisation</div><div class="v">Douala &amp; Yaoundé</div></div>
+          <div class="ci"><div class="k">Web</div><div class="v">tkams.com</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot"><span>Développé par OverBrand · © 2026</span><span class="pn">tkams.com · <b>08 / 08</b></span></div>
   </div>
 </section>
 

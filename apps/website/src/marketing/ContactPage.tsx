@@ -2,6 +2,7 @@ import type { Form as FormType } from "@payloadcms/plugin-form-builder/types";
 import type { Dict } from "@/i18n";
 import { ContactFormDynamic } from "./ContactFormDynamic";
 import { Lede, Rule, SectionHeading, SectionLabel } from "./Editorial";
+import { StaticContactForm } from "./StaticContactForm";
 
 interface ContactPageProps {
 	dict: Dict;
@@ -69,17 +70,7 @@ export function ContactPage({ dict: d, form }: ContactPageProps) {
 						{form ? (
 							<ContactFormDynamic form={form} dict={d} />
 						) : (
-							<div className="border border-tk-border bg-tk-surface p-10 text-center">
-								<p className="font-body text-tk-ink-soft">
-									{"Contactez-nous directement à "}
-									<a
-										href="mailto:contact@tkams.com"
-										className="font-semibold text-tk-primary no-underline"
-									>
-										contact@tkams.com
-									</a>
-								</p>
-							</div>
+							<StaticContactForm dict={d} />
 						)}
 					</div>
 				</div>

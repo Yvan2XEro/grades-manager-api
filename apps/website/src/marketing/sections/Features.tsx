@@ -7,6 +7,7 @@ import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
 
 interface FeaturesProps {
 	dict: Dict;
+	number?: string;
 }
 
 const accent: Record<string, string> = {
@@ -78,7 +79,7 @@ const featureIcons = [
 	</svg>,
 ];
 
-export function Features({ dict: d }: FeaturesProps) {
+export function Features({ dict: d, number = "03" }: FeaturesProps) {
 	return (
 		<section id="features" className="bg-tk-surface">
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
@@ -86,7 +87,7 @@ export function Features({ dict: d }: FeaturesProps) {
 				<div className="grid grid-cols-1 gap-x-12 gap-y-12 py-16 lg:grid-cols-12 lg:py-24">
 					<div className="lg:col-span-4">
 						<div className="lg:sticky lg:top-28">
-							<SectionLabel number="03">Différenciateurs</SectionLabel>
+							<SectionLabel number={number}>Différenciateurs</SectionLabel>
 							<SectionHeading className="mt-6">
 								{d.features.title}
 							</SectionHeading>
@@ -133,7 +134,7 @@ export function Features({ dict: d }: FeaturesProps) {
 									url="app.tkams.com/regles"
 									caption="Démo en direct · règle les paramètres, la cohorte est réévaluée instantanément"
 								>
-									<RulesEngineDemo />
+									<RulesEngineDemo t={d.demos.rules} />
 								</DemoFrame>
 							</div>
 						</AnimateIn>

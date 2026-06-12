@@ -5,12 +5,13 @@ import { EditorialSection } from "../Editorial";
 
 interface DeploymentProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Deployment({ dict: d }: DeploymentProps) {
+export function Deployment({ dict: d, number = "07" }: DeploymentProps) {
 	return (
 		<EditorialSection
-			number="07"
+			number={number}
 			label="Déploiement"
 			heading={d.deployment.title}
 			lede={

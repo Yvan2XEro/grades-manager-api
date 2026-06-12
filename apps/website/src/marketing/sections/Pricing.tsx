@@ -6,16 +6,17 @@ import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
 
 interface PricingProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Pricing({ dict: d }: PricingProps) {
+export function Pricing({ dict: d, number = "06" }: PricingProps) {
 	return (
 		<section id="pricing" className="bg-tk-bg">
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
 				<Rule />
 				<div className="py-16 lg:py-24">
 					<div className="max-w-2xl">
-						<SectionLabel number="06">Tarification</SectionLabel>
+						<SectionLabel number={number}>Tarification</SectionLabel>
 						<SectionHeading className="mt-6">{d.pricing.title}</SectionHeading>
 						<Lede className="mt-5">{d.pricing.sub}</Lede>
 					</div>

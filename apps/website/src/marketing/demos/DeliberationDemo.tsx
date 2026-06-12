@@ -2,24 +2,27 @@
 
 import { Check, FileDown, Play, RotateCcw, Table2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import type { Dict } from "@/i18n";
+import { type GhostApi, GhostCursor, useGhostCursor } from "./ghost";
 
-const STEPS = ["Brouillon", "Ouverte", "Clôturée", "Signée"];
-
-const STATS = [
-	{ label: "Admis", value: 7, cls: "text-tk-accent-emerald" },
-	{ label: "Compensés", value: 2, cls: "text-tk-accent-blue" },
-	{ label: "Ajournés", value: 1, cls: "text-[oklch(0.55_0.2_25)]" },
-];
+type T = Dict["demos"]["delib"];
 const TOTAL = 10;
-const RATE = Math.round(((STATS[0].value + STATS[1].value) / TOTAL) * 100);
 
-export function DeliberationDemo() {
+export function DeliberationDemo({ t }: { t: T }) {
+	const STEPS = t.steps;
+	const STATS = [
+		{ label: t.admis, value: 7, cls: "text-tk-accent-emerald" },
+		{ label: t.compenses, value: 2, cls: "text-tk-accent-blue" },
+		{ label: t.ajournes, value: 1, cls: "text-[oklch(0.55_0.2_25)]" },
+	];
+	const RATE = Math.round(((STATS[0].value + STATS[1].value) / TOTAL) * 100);
+
 	const [step, setStep] = useState(0);
 	const [running, setRunning] = useState(false);
 	const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
 	const clear = () => {
-		for (const t of timers.current) clearTimeout(t);
+		for (const ti of timers.current) clearTimeout(ti);
 		timers.current = [];
 	};
 	useEffect(() => clear, []);
@@ -46,32 +49,44 @@ export function DeliberationDemo() {
 
 	const signed = step === STEPS.length - 1 && !running;
 
+	const containerRef = useRef<HTMLDivElement>(null);
+	const { pos, clicking } = useGhostCursor(
+		containerRef,
+		async (api: GhostApi) => {
+			await api.moveTo('[data-cursor="run"]');
+			await api.click();
+			if (api.cancelled()) return;
+			run();
+		},
+	);
+
 	return (
-		<div className="p-4 sm:p-5">
+		<div ref={containerRef} className="relative p-4 sm:p-5">
+			<GhostCursor pos={pos} clicking={clicking} />
 			<div className="mb-5 flex flex-wrap items-center justify-between gap-2">
 				<div>
 					<p className="font-body font-semibold text-[0.875rem] text-tk-ink">
-						Délibération · Licence 3 Informatique
+						{t.title}
 					</p>
 					<p className="font-code text-[0.75rem] text-tk-muted">
-						Session normale · {TOTAL} étudiants
+						{t.session} · {TOTAL} {t.students}
 					</p>
 				</div>
 				{signed && (
 					<span className="inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.58_0.17_149/0.3)] bg-[oklch(0.58_0.17_149/0.1)] px-2.5 py-1 font-code font-semibold text-[0.7rem] text-tk-accent-emerald">
-						<Check size={12} /> PV signé
+						<Check size={12} /> {t.signed}
 					</span>
 				)}
 			</div>
 
 			{/* Stepper */}
 			<div className="flex items-center">
-				{STEPS.map((label, i) => {
+				{STEPS.map((labelStep, i) => {
 					const reached = i <= step;
 					const current = i === step && running;
 					return (
 						<div
-							key={label}
+							key={labelStep}
 							className="flex flex-1 items-center last:flex-none"
 						>
 							<div className="flex flex-col items-center gap-1.5">
@@ -89,7 +104,7 @@ export function DeliberationDemo() {
 										reached ? "font-semibold text-tk-ink" : "text-tk-muted"
 									}`}
 								>
-									{label}
+									{labelStep}
 								</span>
 							</div>
 							{i < STEPS.length - 1 && (
@@ -115,7 +130,7 @@ export function DeliberationDemo() {
 									{RATE}%
 								</p>
 								<p className="mt-1 font-code text-[0.65rem] text-tk-muted uppercase tracking-[0.06em]">
-									Réussite
+									{t.rate}
 								</p>
 							</div>
 							{STATS.map((s) => (
@@ -139,26 +154,22 @@ export function DeliberationDemo() {
 								type="button"
 								className="inline-flex items-center gap-2 rounded-lg border border-tk-border bg-tk-bg px-3 py-2 font-body font-medium text-[0.8rem] text-tk-ink-soft transition-colors duration-150 hover:border-tk-primary hover:text-tk-primary"
 							>
-								<FileDown size={14} /> PV (PDF)
+								<FileDown size={14} /> {t.pv_pdf}
 							</button>
 							<button
 								type="button"
 								className="inline-flex items-center gap-2 rounded-lg border border-tk-border bg-tk-bg px-3 py-2 font-body font-medium text-[0.8rem] text-tk-ink-soft transition-colors duration-150 hover:border-tk-primary hover:text-tk-primary"
 							>
-								<Table2 size={14} /> Relevés (Excel)
+								<Table2 size={14} /> {t.releves}
 							</button>
 						</div>
 					</div>
 				) : (
 					<div className="flex h-full flex-col items-center justify-center gap-1 py-4 text-center">
 						<p className="font-body text-[0.875rem] text-tk-ink-soft">
-							{running
-								? `${STEPS[step]}… calcul des moyennes & décisions`
-								: "Lance la délibération pour calculer les décisions et générer le PV."}
+							{running ? `${STEPS[step]}${t.running_suffix}` : t.idle}
 						</p>
-						<p className="font-code text-[0.72rem] text-tk-muted">
-							Moteur de règles · piste d'audit · exports officiels
-						</p>
+						<p className="font-code text-[0.72rem] text-tk-muted">{t.sub}</p>
 					</div>
 				)}
 			</div>
@@ -167,6 +178,7 @@ export function DeliberationDemo() {
 			<div className="mt-4 flex flex-wrap items-center gap-2.5">
 				<button
 					type="button"
+					data-cursor="run"
 					onClick={run}
 					disabled={running}
 					className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 font-body font-semibold text-[0.8125rem] transition-all duration-150 ${
@@ -175,8 +187,7 @@ export function DeliberationDemo() {
 							: "bg-tk-primary text-white hover:bg-tk-primary-deep"
 					}`}
 				>
-					<Play size={14} />{" "}
-					{running ? "Délibération en cours…" : "Lancer la délibération"}
+					<Play size={14} /> {running ? t.running : t.run}
 				</button>
 				{signed && (
 					<button
@@ -184,7 +195,7 @@ export function DeliberationDemo() {
 						onClick={reset}
 						className="inline-flex items-center gap-2 rounded-lg border border-tk-border px-4 py-2 font-body font-medium text-[0.8125rem] text-tk-ink-soft transition-colors duration-150 hover:border-tk-primary hover:text-tk-primary"
 					>
-						<RotateCcw size={14} /> Rejouer
+						<RotateCcw size={14} /> {t.replay}
 					</button>
 				)}
 			</div>

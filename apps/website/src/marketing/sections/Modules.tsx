@@ -5,13 +5,14 @@ import { EditorialSection } from "../Editorial";
 
 interface ModulesProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Modules({ dict: d }: ModulesProps) {
+export function Modules({ dict: d, number = "04" }: ModulesProps) {
 	return (
 		<EditorialSection
 			id="modules"
-			number="04"
+			number={number}
 			label="Couverture fonctionnelle"
 			heading={d.modules.title}
 			lede={

@@ -2,67 +2,68 @@ import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import type { Dict } from "@/i18n";
-import { TrustBadges } from "@/marketing/TrustBadges";
+import { DemoFrame } from "@/marketing/demos/DemoFrame";
 
 /**
  * Editorial split-screen shell for the auth pages (login / signup):
- * left = institutional brand panel with trust elements; right = the form.
+ * left = light brand panel showcasing a live product demo; right = form.
  * The brand panel is hidden on small screens (form stays centered).
  */
 export function AuthShell({
 	dict: d,
+	demo,
 	children,
 }: {
 	dict: Dict;
+	demo: React.ReactNode;
 	children: React.ReactNode;
 }) {
 	return (
 		<main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-			{/* Brand panel */}
-			<aside className="relative hidden overflow-hidden bg-tk-dark px-10 py-12 text-tk-on-dark lg:flex lg:flex-col lg:justify-between xl:px-16">
-				<div className="tk-grid-pattern pointer-events-none absolute inset-0 opacity-60" />
+			{/* Brand panel with live demo */}
+			<aside className="relative hidden overflow-hidden border-tk-border border-r bg-tk-bg-deep px-10 py-12 lg:flex lg:flex-col lg:justify-between xl:px-14">
 				<div
-					className="pointer-events-none absolute top-[8%] left-[10%] h-[420px] w-[420px]"
+					className="pointer-events-none absolute inset-0 opacity-[0.6]"
+					style={{
+						backgroundImage:
+							"linear-gradient(oklch(0.13 0.03 264 / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(0.13 0.03 264 / 0.03) 1px, transparent 1px)",
+						backgroundSize: "32px 32px",
+					}}
+				/>
+				<div
+					className="pointer-events-none absolute top-[6%] left-[8%] h-[420px] w-[420px]"
 					style={{
 						background:
-							"radial-gradient(ellipse at center, oklch(0.48 0.2 277 / 0.16) 0%, transparent 70%)",
+							"radial-gradient(ellipse at center, oklch(0.48 0.2 277 / 0.1) 0%, transparent 70%)",
 					}}
 				/>
 
-				<div className="relative z-[1]">
+				<div className="relative z-[1] flex items-center justify-between">
 					<Link href="/" className="inline-flex">
 						<Image
 							src="/logo-tkams.png"
 							alt="TKAMS"
 							width={120}
 							height={36}
-							className="h-9 w-auto brightness-200"
+							className="h-9 w-auto object-contain"
 							priority
 						/>
 					</Link>
-				</div>
-
-				<div className="relative z-[1] max-w-md">
-					<span className="font-code font-semibold text-[0.7rem] text-tk-primary-bright uppercase tracking-[0.14em]">
-						{d.trust.label}
+					<span className="font-code font-semibold text-[0.7rem] text-tk-primary uppercase tracking-[0.14em]">
+						{d.trust.pioneer_tag}
 					</span>
-					<p className="mt-5 font-display font-extrabold text-[clamp(1.75rem,2.6vw,2.5rem)] text-tk-on-dark leading-[1.12] tracking-[-0.03em]">
-						{d.footer.tagline}
-					</p>
-					<p className="mt-4 font-body text-[0.95rem] text-tk-on-dark-soft leading-[1.7]">
-						{d.trust.sub}
-					</p>
 				</div>
 
 				<div className="relative z-[1]">
-					<div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 font-code font-semibold text-[0.7rem] text-tk-primary-bright tracking-[0.04em]">
-						<span className="h-1.5 w-1.5 rounded-full bg-tk-accent-emerald" />
-						{d.trust.pioneer_tag}
-					</div>
-					<p className="mb-3 font-code text-[0.65rem] text-tk-on-dark-muted uppercase tracking-[0.14em]">
-						{d.trust.badges_title}
+					<p className="mb-6 max-w-md font-bold font-display text-[clamp(1.25rem,1.8vw,1.75rem)] text-tk-ink leading-[1.2] tracking-[-0.02em]">
+						{d.footer.tagline}
 					</p>
-					<TrustBadges count={3} hint={d.trust.badges_hint} theme="dark" />
+					<DemoFrame url="app.tkams.com">{demo}</DemoFrame>
+				</div>
+
+				<div className="relative z-[1] flex items-center gap-2 font-code text-[0.72rem] text-tk-muted">
+					<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-tk-accent-emerald" />
+					{d.trust.sub}
 				</div>
 			</aside>
 

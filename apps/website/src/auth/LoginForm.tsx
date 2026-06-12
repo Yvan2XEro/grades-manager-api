@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Dict } from "@/i18n";
+import { DeliberationDemo } from "@/marketing/demos/DeliberationDemo";
 import { AuthShell } from "./AuthShell";
 
 type FormData = { email: string; password: string };
@@ -48,7 +49,7 @@ export function LoginForm({ dict: d }: { dict: Dict }) {
 	};
 
 	return (
-		<AuthShell dict={d}>
+		<AuthShell dict={d} demo={<DeliberationDemo t={d.demos.delib} />}>
 			<div>
 				<h1 className="mb-1 font-bold font-display text-[1.625rem] text-tk-ink tracking-[-0.03em]">
 					{d.auth.login.title}

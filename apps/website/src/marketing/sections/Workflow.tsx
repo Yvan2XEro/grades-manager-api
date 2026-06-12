@@ -7,9 +7,10 @@ import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
 
 interface WorkflowProps {
 	dict: Dict;
+	number?: string;
 }
 
-export function Workflow({ dict: d }: WorkflowProps) {
+export function Workflow({ dict: d, number = "05" }: WorkflowProps) {
 	return (
 		<section className="bg-tk-surface">
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
@@ -17,7 +18,7 @@ export function Workflow({ dict: d }: WorkflowProps) {
 				<div className="grid grid-cols-1 gap-x-12 gap-y-12 py-16 lg:grid-cols-12 lg:py-24">
 					<div className="lg:col-span-4">
 						<div className="lg:sticky lg:top-28">
-							<SectionLabel number="05">Le flux</SectionLabel>
+							<SectionLabel number={number}>Le flux</SectionLabel>
 							<SectionHeading className="mt-6">
 								{d.workflow.title}
 							</SectionHeading>
@@ -57,7 +58,7 @@ export function Workflow({ dict: d }: WorkflowProps) {
 									url="app.tkams.com/deliberations"
 									caption="Démo en direct · lance la délibération et génère le PV"
 								>
-									<DeliberationDemo />
+									<DeliberationDemo t={d.demos.delib} />
 								</DemoFrame>
 							</div>
 						</AnimateIn>

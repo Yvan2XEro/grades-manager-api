@@ -1,8 +1,11 @@
 "use client";
 
 import { Check, FileText, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { Dict } from "@/i18n";
+import { type GhostApi, GhostCursor, useGhostCursor } from "./ghost";
 
+type T = Dict["demos"]["grade"];
 type Row = { id: string; name: string; reg: string; cc: string; exam: string };
 
 const INITIAL: Row[] = [
@@ -28,20 +31,23 @@ function average(r: Row): number | null {
 	return Number(r.cc) * CC_WEIGHT + Number(r.exam) * EXAM_WEIGHT;
 }
 
-function decision(avg: number | null) {
-	if (avg === null) return { label: "—", cls: "text-tk-muted bg-tk-bg-deep" };
+function decision(avg: number | null): {
+	key: "none" | "ok" | "retake" | "fail";
+	cls: string;
+} {
+	if (avg === null) return { key: "none", cls: "text-tk-muted bg-tk-bg-deep" };
 	if (avg >= 10)
 		return {
-			label: "Validé",
+			key: "ok",
 			cls: "text-tk-accent-emerald bg-[oklch(0.58_0.17_149/0.12)]",
 		};
 	if (avg >= 8)
 		return {
-			label: "Rattrapage",
+			key: "retake",
 			cls: "text-[oklch(0.55_0.13_86)] bg-[oklch(0.72_0.16_86/0.14)]",
 		};
 	return {
-		label: "Ajourné",
+		key: "fail",
 		cls: "text-[oklch(0.55_0.2_25)] bg-[oklch(0.65_0.2_25/0.1)]",
 	};
 }
@@ -49,9 +55,18 @@ function decision(avg: number | null) {
 const scoreInput =
 	"w-14 rounded-md border border-tk-border bg-tk-surface px-2 py-1.5 text-center font-code text-[0.8125rem] text-tk-ink tabular-nums outline-none transition-colors duration-150 focus:border-tk-primary focus:ring-2 focus:ring-tk-primary/15";
 
-export function GradeEntryDemo() {
+export function GradeEntryDemo({ t }: { t: T }) {
 	const [rows, setRows] = useState<Row[]>(INITIAL);
 	const [generated, setGenerated] = useState(false);
+
+	const label = (key: "none" | "ok" | "retake" | "fail") =>
+		key === "ok"
+			? t.validated
+			: key === "retake"
+				? t.retake
+				: key === "fail"
+					? t.failed
+					: "—";
 
 	const update = (id: string, field: "cc" | "exam", value: string) => {
 		setGenerated(false);
@@ -74,21 +89,43 @@ export function GradeEntryDemo() {
 
 	const pct = Math.round((done / rows.length) * 100);
 
+	const containerRef = useRef<HTMLDivElement>(null);
+	const { pos, clicking } = useGhostCursor(
+		containerRef,
+		async (api: GhostApi) => {
+			await api.moveTo('[data-cursor="cc-4"]');
+			if (api.cancelled()) return;
+			update("4", "cc", "12");
+			await api.sleep(450);
+			await api.moveTo('[data-cursor="exam-4"]');
+			if (api.cancelled()) return;
+			update("4", "exam", "9.5");
+			await api.sleep(450);
+			await api.moveTo('[data-cursor="exam-5"]');
+			if (api.cancelled()) return;
+			update("5", "exam", "13");
+			await api.sleep(500);
+			await api.moveTo('[data-cursor="gen"]');
+			await api.click();
+			if (api.cancelled()) return;
+			setGenerated(true);
+		},
+	);
+
 	return (
-		<div className="p-4 sm:p-5">
+		<div ref={containerRef} className="relative p-4 sm:p-5">
+			<GhostCursor pos={pos} clicking={clicking} />
 			{/* head */}
 			<div className="mb-4 flex flex-wrap items-center justify-between gap-2">
 				<div>
 					<p className="font-body font-semibold text-[0.875rem] text-tk-ink">
-						Licence 3 · Informatique
+						{t.course}
 					</p>
-					<p className="font-code text-[0.75rem] text-tk-muted">
-						UE Algorithmique · CC 40% + Examen 60%
-					</p>
+					<p className="font-code text-[0.75rem] text-tk-muted">{t.unit}</p>
 				</div>
 				<span className="inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.58_0.17_149/0.3)] bg-[oklch(0.58_0.17_149/0.1)] px-2.5 py-1 font-code font-semibold text-[0.7rem] text-tk-accent-emerald">
 					<span className="h-1.5 w-1.5 rounded-full bg-tk-accent-emerald" />
-					Saisie en cours
+					{t.status}
 				</span>
 			</div>
 
@@ -98,19 +135,19 @@ export function GradeEntryDemo() {
 					<thead>
 						<tr className="border-tk-border border-b text-left">
 							<th className="pb-2 font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.08em]">
-								Étudiant
+								{t.col_student}
 							</th>
 							<th className="pb-2 text-center font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.08em]">
-								CC
+								{t.col_cc}
 							</th>
 							<th className="pb-2 text-center font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.08em]">
-								Examen
+								{t.col_exam}
 							</th>
 							<th className="pb-2 text-center font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.08em]">
-								Moyenne
+								{t.col_avg}
 							</th>
 							<th className="pb-2 text-right font-code text-[0.68rem] text-tk-muted uppercase tracking-[0.08em]">
-								Décision
+								{t.col_decision}
 							</th>
 						</tr>
 					</thead>
@@ -135,7 +172,8 @@ export function GradeEntryDemo() {
 										<input
 											type="text"
 											inputMode="decimal"
-											aria-label={`Note CC ${r.name}`}
+											aria-label={`${t.col_cc} ${r.name}`}
+											data-cursor={`cc-${r.id}`}
 											value={r.cc}
 											onChange={(e) => update(r.id, "cc", e.target.value)}
 											placeholder="—"
@@ -146,7 +184,8 @@ export function GradeEntryDemo() {
 										<input
 											type="text"
 											inputMode="decimal"
-											aria-label={`Note Examen ${r.name}`}
+											aria-label={`${t.col_exam} ${r.name}`}
+											data-cursor={`exam-${r.id}`}
 											value={r.exam}
 											onChange={(e) => update(r.id, "exam", e.target.value)}
 											placeholder="—"
@@ -164,7 +203,7 @@ export function GradeEntryDemo() {
 										<span
 											className={`inline-block rounded-full px-2.5 py-1 font-code font-semibold text-[0.7rem] ${d.cls}`}
 										>
-											{d.label}
+											{label(d.key)}
 										</span>
 									</td>
 								</tr>
@@ -178,9 +217,11 @@ export function GradeEntryDemo() {
 			<div className="mt-4 border-tk-border border-t pt-4">
 				<div className="mb-3 flex items-center justify-between font-code text-[0.72rem] text-tk-muted">
 					<span>
-						{done}/{rows.length} étudiants traités · {validated} validés
+						{done}/{rows.length} {t.treated} · {validated} {t.validated_count}
 					</span>
-					<span>Moyenne classe : {classAvg.toFixed(2)}/20</span>
+					<span>
+						{t.class_avg} : {classAvg.toFixed(2)}/20
+					</span>
 				</div>
 				<div className="h-1.5 overflow-hidden rounded-full bg-tk-bg-deep">
 					<div
@@ -190,11 +231,10 @@ export function GradeEntryDemo() {
 				</div>
 
 				<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-					<p className="font-code text-[0.72rem] text-tk-muted">
-						💡 Modifie une note — moyenne et décision se recalculent en direct.
-					</p>
+					<p className="font-code text-[0.72rem] text-tk-muted">{t.hint}</p>
 					<button
 						type="button"
+						data-cursor="gen"
 						onClick={() => setGenerated(true)}
 						disabled={done < rows.length}
 						className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 font-body font-semibold text-[0.8125rem] transition-all duration-150 ${
@@ -205,11 +245,11 @@ export function GradeEntryDemo() {
 					>
 						{generated ? (
 							<>
-								<Check size={15} /> PV généré
+								<Check size={15} /> {t.generated}
 							</>
 						) : (
 							<>
-								<FileText size={15} /> Générer le PV
+								<FileText size={15} /> {t.generate}
 							</>
 						)}
 					</button>
@@ -218,8 +258,7 @@ export function GradeEntryDemo() {
 				{generated && (
 					<div className="mt-3 flex items-center gap-2 rounded-lg border border-[oklch(0.58_0.17_149/0.3)] bg-[oklch(0.58_0.17_149/0.08)] px-3 py-2.5 font-body text-[0.8125rem] text-tk-ink">
 						<Sparkles size={15} className="text-tk-accent-emerald" />
-						PV de délibération généré · {validated} admis sur {rows.length} ·
-						prêt à signer.
+						{t.success}
 					</div>
 				)}
 			</div>
