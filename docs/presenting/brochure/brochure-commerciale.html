@@ -176,7 +176,25 @@ h2.display { font-size: 33px; }
 .pano-card .it { display: inline-flex; align-items: center; gap: 6px; font-family: var(--tk-font-sans); font-size: 11px; color: var(--tk-ink-2); background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 999px; padding: 4px 11px; }
 .pano-card .it .dt { width: 4px; height: 4px; border-radius: 999px; background: var(--tk-primary); flex: 0 0 auto; }
 
-@media print { .page { background: var(--tk-bg); } .win, .ba .after, .plan.feat, .cta-card { box-shadow: none; } }
+/* Document showcases */
+.docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; position: relative; z-index: 2; }
+.doc { display: flex; flex-direction: column; gap: 11px; }
+.doc .sheet { border: 1px solid var(--tk-border-strong); border-radius: 8px; background: #fff; aspect-ratio: 1 / 1.32; padding: 13px; display: flex; flex-direction: column; box-shadow: 0 16px 34px -20px oklch(0.13 0.03 264 / 30%); overflow: hidden; }
+.doc .dh { text-align: center; border-bottom: 1.5px solid var(--tk-ink); padding-bottom: 7px; margin-bottom: 8px; }
+.doc .dh .est { font-family: var(--tk-font-display); font-weight: 700; font-size: 7px; letter-spacing: 0.05em; color: var(--tk-ink); text-transform: uppercase; }
+.doc .dh .ttl { font-family: var(--tk-font-display); font-weight: 800; font-size: 9.5px; color: var(--tk-primary); margin-top: 2px; }
+.doc .ln { height: 4px; border-radius: 2px; background: var(--tk-bg-deep); }
+.doc .meta { font-family: var(--tk-font-mono); font-size: 6.5px; color: var(--tk-ink-2); line-height: 1.8; }
+.doc .drow { display: flex; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 6.5px; color: var(--tk-ink-2); padding: 2.5px 0; border-bottom: 1px solid var(--tk-bg-deep); }
+.doc .badge2 { display: inline-block; font-family: var(--tk-font-mono); font-size: 6.5px; font-weight: 700; color: oklch(0.4 0.16 149); background: oklch(0.95 0.1 149); padding: 1px 6px; border-radius: 999px; }
+.doc .df { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 8px; }
+.doc .qr { width: 26px; height: 26px; border-radius: 3px; background: repeating-conic-gradient(var(--tk-ink) 0% 25%, #fff 0% 50%) 0 0 / 6.5px 6.5px; }
+.doc .stamp { width: 30px; height: 30px; border: 1.5px solid var(--tk-primary); border-radius: 50%; display: grid; place-items: center; color: var(--tk-primary); font-family: var(--tk-font-mono); font-size: 5px; line-height: 1.1; text-align: center; transform: rotate(-11deg); opacity: 0.85; }
+.doc .cap2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.doc .cap2 .nm { font-family: var(--tk-font-display); font-weight: 700; font-size: 13px; color: var(--tk-ink); letter-spacing: -0.01em; }
+.doc .cap2 .vq { font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+@media print { .page { background: var(--tk-bg); } .win, .ba .after, .plan.feat, .cta-card, .doc .sheet { box-shadow: none; } }
 </style>
 </head>
 <body>
@@ -252,7 +270,7 @@ h2.display { font-size: 33px; }
       <div class="c"><div class="v">2</div><div class="l">Langues (FR/EN)</div></div>
     </div>
 
-    <div class="foot"><span>OverBrand · Douala · Yaoundé</span><span class="pn">tkams.com · <b>01 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Douala · Yaoundé</span><span class="pn">tkams.com · <b>01 / 09</b></span></div>
   </div>
 </section>
 
@@ -312,7 +330,7 @@ h2.display { font-size: 33px; }
       </div>
     </div>
 
-    <div class="foot"><span>OverBrand · Le constat</span><span class="pn">tkams.com · <b>02 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Le constat</span><span class="pn">tkams.com · <b>02 / 09</b></span></div>
   </div>
 </section>
 
@@ -387,7 +405,7 @@ h2.display { font-size: 33px; }
       <p style="margin: 0; font-size: 13px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">Démos interactives en ligne.</b> Aperçus fidèles de l'interface — chaque écran est jouable en direct sur <b style="color: var(--tk-primary);">tkams.com/produit</b>, sans inscription.</p>
     </div>
 
-    <div class="foot"><span>OverBrand · Le produit</span><span class="pn">tkams.com · <b>03 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Le produit</span><span class="pn">tkams.com · <b>03 / 09</b></span></div>
   </div>
 </section>
 
@@ -446,7 +464,7 @@ h2.display { font-size: 33px; }
       </div>
     </div>
 
-    <div class="foot"><span>OverBrand · Panorama</span><span class="pn">tkams.com · <b>04 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Panorama</span><span class="pn">tkams.com · <b>04 / 09</b></span></div>
   </div>
 </section>
 
@@ -478,7 +496,7 @@ h2.display { font-size: 33px; }
     </div>
     <p style="margin-top: 12px; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); font-style: italic;">Ordres de grandeur indicatifs — les gains réels varient selon la taille et l'organisation de l'établissement.</p>
 
-    <div class="foot"><span>OverBrand · Comment ça marche</span><span class="pn">tkams.com · <b>05 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Comment ça marche</span><span class="pn">tkams.com · <b>05 / 09</b></span></div>
   </div>
 </section>
 
@@ -521,7 +539,7 @@ h2.display { font-size: 33px; }
       </div>
     </div>
 
-    <div class="foot"><span>OverBrand · Solutions</span><span class="pn">tkams.com · <b>06 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Solutions</span><span class="pn">tkams.com · <b>06 / 09</b></span></div>
   </div>
 </section>
 
@@ -538,9 +556,9 @@ h2.display { font-size: 33px; }
     <div class="plans">
       <div class="plan">
         <div class="pname">Standard</div>
-        <div class="price">2 000 <span style="font-size: 13px; font-weight: 600; color: var(--tk-ink-2);">FCFA</span></div>
-        <div class="unit">/ étudiant / an · + 5 000 / admin</div>
-        <div class="min">Minimum : 750 000 FCFA HT</div>
+        <div class="price">Sur devis</div>
+        <div class="unit">au nombre d'étudiants · SaaS mutualisé</div>
+        <div class="min">Tarif communiqué sous 48 h</div>
         <ul>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tous les modules inclus</li>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Mises à jour automatiques</li>
@@ -550,9 +568,9 @@ h2.display { font-size: 33px; }
       </div>
       <div class="plan feat">
         <div class="pname">Pro <span class="badge">Recommandé</span></div>
-        <div class="price">2 000 <span style="font-size: 13px; font-weight: 600; color: var(--tk-ink-2);">FCFA</span></div>
-        <div class="unit">/ étudiant / an · infrastructure dédiée</div>
-        <div class="min">Même tarif — instance isolée</div>
+        <div class="price">Sur devis</div>
+        <div class="unit">au nombre d'étudiants · infrastructure dédiée</div>
+        <div class="min">Devis personnalisé</div>
         <ul>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tout de Standard</li>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Infrastructure dédiée · SLA renforcé</li>
@@ -564,7 +582,7 @@ h2.display { font-size: 33px; }
         <div class="pname">Enterprise</div>
         <div class="price">Sur devis</div>
         <div class="unit">multi-entités · on-premise possible</div>
-        <div class="min">On-premise : 1 500 000 FCFA HT</div>
+        <div class="min">Étude sur mesure</div>
         <ul>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Tout de Pro</li>
           <li><svg class="svg ck" width="14" height="14"><use href="#i-check"/></svg>Multi-universités / tutelles</li>
@@ -584,17 +602,87 @@ h2.display { font-size: 33px; }
       <div><span class="icbox ck"><svg class="svg" width="11" height="11" style="stroke-width:2.5;"><use href="#i-check"/></svg></span>Interface bilingue FR/EN</div>
     </div>
 
-    <div class="foot"><span>OverBrand · Tarification</span><span class="pn">tkams.com · <b>07 / 08</b></span></div>
+    <div class="foot"><span>OverBrand · Tarification</span><span class="pn">tkams.com · <b>07 / 09</b></span></div>
   </div>
 </section>
 
-<!-- ============ PAGE 7 — RÉASSURANCE + CONTACT ============ -->
-<section class="page" data-screen-label="08 Contact">
+<!-- ============ PAGE 8 — DOCUMENTS OFFICIELS ============ -->
+<section class="page" data-screen-label="08 Documents officiels">
+  <div class="inner">
+    <div class="dotgrid" style="opacity: 0.5;"></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Documents</span></div>
+    <div style="position: relative; z-index: 2; margin-top: 28px;">
+      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Documents officiels</span></div>
+      <h2 class="display">Le livrable,<br/>entre les <em>mains</em> de l'étudiant.</h2>
+      <p class="lede">Relevés, attestations et PV générés en un clic depuis les données — en-tête de l'établissement, signataires résolus, et QR de vérification en ligne via DIPLOMATION.</p>
+    </div>
+
+    <div class="docs">
+      <!-- Relevé -->
+      <div class="doc">
+        <div class="sheet">
+          <div class="dh"><div class="est">Université · Faculté d'Économie</div><div class="ttl">RELEVÉ DE NOTES</div></div>
+          <div class="meta">Licence 2 · Économie · 2024-2025<br/>MBARGA Jean · #UY24L00342</div>
+          <div style="margin-top: 7px;">
+            <div class="drow"><span>UE Microéconomie</span><span>14,6 · 6 cr</span></div>
+            <div class="drow"><span>UE Statistiques</span><span>12,0 · 5 cr</span></div>
+            <div class="drow"><span>UE Comptabilité</span><span>11,5 · 4 cr</span></div>
+            <div class="drow" style="border:0;"><span>UE Anglais</span><span>13,2 · 3 cr</span></div>
+          </div>
+          <div style="margin-top: 7px; display: flex; align-items: center; justify-content: space-between;"><span class="meta">Moyenne 13,1 · 60 ECTS</span><span class="badge2">ADMIS · BIEN</span></div>
+          <div class="df"><div class="stamp">CACHET<br/>OFFICIEL</div><div class="qr"></div></div>
+        </div>
+        <div class="cap2"><span class="nm">Relevé de notes</span><span class="vq">QR vérifiable</span></div>
+      </div>
+
+      <!-- Attestation -->
+      <div class="doc">
+        <div class="sheet">
+          <div class="dh"><div class="est">République · Établissement</div><div class="ttl">ATTESTATION DE RÉUSSITE</div></div>
+          <div class="meta">Le Doyen atteste que :</div>
+          <div style="margin: 6px 0;"><div class="ln" style="width: 85%;"></div><div class="ln" style="width: 70%; margin-top: 5px;"></div></div>
+          <div class="meta">a satisfait aux exigences du diplôme de Licence en Économie, session 2024-2025, avec la mention :</div>
+          <div style="margin-top: 7px;"><span class="badge2">ADMIS · MENTION BIEN</span></div>
+          <div style="margin: 8px 0;"><div class="ln" style="width: 60%;"></div></div>
+          <div class="df"><div class="stamp">SIGNÉ<br/>&amp; SCELLÉ</div><div class="qr"></div></div>
+        </div>
+        <div class="cap2"><span class="nm">Attestation</span><span class="vq">QR vérifiable</span></div>
+      </div>
+
+      <!-- PV -->
+      <div class="doc">
+        <div class="sheet">
+          <div class="dh"><div class="est">Jury de délibération</div><div class="ttl">PROCÈS-VERBAL</div></div>
+          <div class="meta">L3 Informatique · Semestre 6<br/>Session normale · 10 étudiants</div>
+          <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; text-align: center;">
+            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: oklch(0.4 0.16 149);">7</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">ADMIS</div></div>
+            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: var(--tk-accent-blue);">2</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">COMP.</div></div>
+            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: oklch(0.5 0.18 27);">1</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">AJOURNÉ</div></div>
+          </div>
+          <div style="margin: 9px 0 0;"><div class="ln" style="width: 90%;"></div><div class="ln" style="width: 75%; margin-top: 5px;"></div></div>
+          <div class="meta" style="margin-top: 7px;">Le Président du jury · Les membres</div>
+          <div class="df"><div class="stamp">JURY<br/>VALIDÉ</div><div class="qr"></div></div>
+        </div>
+        <div class="cap2"><span class="nm">PV de délibération</span><span class="vq">QR vérifiable</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; border: 1px solid var(--tk-border); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 14px; position: relative; z-index: 2;">
+      <span class="icbox" style="width: 36px; height: 36px; background: var(--tk-primary); color: #fff; flex: 0 0 auto;"><svg class="svg" width="17" height="17"><use href="#i-download"/></svg></span>
+      <p style="margin: 0; font-size: 12.5px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">24 modèles d'exports</b> couvrant relevés, attestations, PV et certificats — chacun généré en masse et vérifiable par QR. <span style="font-style: italic; color: var(--tk-muted);">Aperçus illustratifs.</span></p>
+    </div>
+
+    <div class="foot"><span>OverBrand · Documents officiels</span><span class="pn">tkams.com · <b>08 / 09</b></span></div>
+  </div>
+</section>
+
+<!-- ============ PAGE 9 — RÉASSURANCE + CONTACT ============ -->
+<section class="page" data-screen-label="09 Contact">
   <div class="inner">
     <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Démarrer</span></div>
 
     <div style="margin-top: 28px;">
-      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Réassurance</span></div>
+      <div class="eyebrow"><span class="n">08</span><span class="ln"></span><span class="t">Réassurance</span></div>
       <h2 class="display" style="font-size: 30px;">Tout pour démarrer<br/>l'esprit <em>tranquille</em>.</h2>
     </div>
     <div class="reas">
@@ -630,7 +718,7 @@ h2.display { font-size: 33px; }
       </div>
     </div>
 
-    <div class="foot"><span>Développé par OverBrand · © 2026</span><span class="pn">tkams.com · <b>08 / 08</b></span></div>
+    <div class="foot"><span>Développé par OverBrand · © 2026</span><span class="pn">tkams.com · <b>09 / 09</b></span></div>
   </div>
 </section>
 
