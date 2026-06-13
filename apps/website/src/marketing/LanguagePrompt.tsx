@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import type { Locale } from "@/i18n";
 import { setLocale } from "@/i18n";
+
+/** Seconds before French is auto-selected if the visitor does nothing. */
+const AUTO_SECONDS = 10;
 
 /**
  * LanguagePrompt — first-visit language chooser.
@@ -21,14 +24,26 @@ const OPTIONS: { code: Locale; label: string; native: string; flag: string }[] =
 export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 	const [isPending, startTransition] = useTransition();
 	const [picked, setPicked] = useState<Locale | null>(null);
+	const [secondsLeft, setSecondsLeft] = useState(AUTO_SECONDS);
 
-	const choose = (code: Locale) => {
-		setPicked(code);
+	const choose = useCallback((code: Locale) => {
+		setPicked((prev) => prev ?? code);
 		startTransition(async () => {
 			await setLocale(code);
 			window.location.reload();
 		});
-	};
+	}, []);
+
+	// Auto-select French if the visitor hasn't picked before the countdown ends.
+	useEffect(() => {
+		if (picked) return;
+		if (secondsLeft <= 0) {
+			choose("fr");
+			return;
+		}
+		const id = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+		return () => clearTimeout(id);
+	}, [secondsLeft, picked, choose]);
 
 	return (
 		<div
@@ -85,6 +100,34 @@ export function LanguagePrompt({ suggested = "fr" }: { suggested?: Locale }) {
 							</button>
 						);
 					})}
+				</div>
+
+				<div className="border-tk-border border-t px-5 py-4">
+					<div className="flex items-center justify-between gap-3">
+						<p className="font-body text-[0.78rem] text-tk-muted">
+							Français par défaut dans{" "}
+							<span className="font-code font-semibold text-tk-ink">
+								{secondsLeft}s
+							</span>{" "}
+							· French in {secondsLeft}s
+						</p>
+						<button
+							type="button"
+							disabled={isPending}
+							onClick={() => choose("fr")}
+							className="font-code font-semibold text-[0.72rem] text-tk-primary uppercase tracking-[0.08em] transition-opacity duration-150 hover:opacity-70 disabled:cursor-wait"
+						>
+							Continuer
+						</button>
+					</div>
+					<div className="mt-3 h-1 overflow-hidden rounded-full bg-tk-bg-deep">
+						<div
+							className="h-full rounded-full bg-tk-primary transition-[width] duration-1000 ease-linear"
+							style={{
+								width: `${(secondsLeft / AUTO_SECONDS) * 100}%`,
+							}}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>
