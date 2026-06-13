@@ -646,7 +646,7 @@ export function InstanceWizard({ dict: d }: { dict: Dict }) {
 	const TOTAL_STEPS = 4;
 
 	return (
-		<div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[280px_1fr]">
+		<div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[280px_1fr] lg:gap-8">
 			{/* Vertical step list */}
 			<div className="lg:sticky lg:top-8">
 				<h1 className="mb-1 font-bold font-display text-[1.25rem] text-tk-ink tracking-[-0.03em]">
@@ -695,7 +695,7 @@ export function InstanceWizard({ dict: d }: { dict: Dict }) {
 			</div>
 
 			{/* Form card */}
-			<div className="rounded-[1.5rem] border border-tk-border bg-tk-surface p-8 shadow-[0_4px_24px_oklch(0_0_0/0.04)]">
+			<div className="rounded-[1.5rem] border border-tk-border bg-tk-surface p-5 shadow-[0_4px_24px_oklch(0_0_0/0.04)] sm:p-8">
 				{currentStep === 0 && (
 					<Step1
 						dict={d}

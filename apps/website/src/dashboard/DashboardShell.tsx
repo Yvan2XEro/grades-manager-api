@@ -13,10 +13,12 @@ export function DashboardShell({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="flex min-h-screen bg-tk-bg">
+		<div className="min-h-screen bg-tk-bg">
 			<Sidebar user={user} dict={dict} />
-			<main className="ml-[240px] min-h-screen flex-1 overflow-y-auto">
-				<div className="mx-auto max-w-5xl px-8 py-10">{children}</div>
+			<main className="min-h-screen md:ml-[240px]">
+				<div className="mx-auto max-w-5xl px-4 pt-[4.5rem] pb-10 sm:px-6 md:px-8 md:pt-10">
+					{children}
+				</div>
 			</main>
 		</div>
 	);
