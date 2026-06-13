@@ -209,7 +209,7 @@ export function Sidebar({ user, dict: d }: { user: User; dict: Dict }) {
 						alt="TKAMS"
 						width={88}
 						height={26}
-						className="h-6 w-auto object-contain brightness-0 invert"
+						className="h-6 w-auto object-contain"
 						priority
 					/>
 				</Link>
@@ -258,7 +258,7 @@ export function Sidebar({ user, dict: d }: { user: User; dict: Dict }) {
 							alt="TKAMS"
 							width={96}
 							height={28}
-							className="h-7 w-auto object-contain brightness-0 invert"
+							className="h-7 w-auto object-contain"
 							priority
 						/>
 					</Link>

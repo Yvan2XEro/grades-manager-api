@@ -24,7 +24,7 @@ export function Footer({ locale }: FooterProps) {
 				<div className="grid grid-cols-1 gap-12 py-12 lg:grid-cols-12">
 					<div className="lg:col-span-5">
 						<Image
-							src="/logo-tkams.png"
+							src="/logo-tkams-bg.png"
 							alt="TKAMS"
 							width={120}
 							height={36}
