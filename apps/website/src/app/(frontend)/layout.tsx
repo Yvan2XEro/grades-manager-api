@@ -12,8 +12,9 @@ import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import { cn } from "@/utilities/ui";
 
 import "./globals.css";
-import { getLocale } from "@/i18n";
+import { getLocale, hasChosenLocale } from "@/i18n";
 import { Footer } from "@/marketing/Footer";
+import { LanguagePrompt } from "@/marketing/LanguagePrompt";
 import { Nav } from "@/marketing/Nav";
 import { getServerSideURL } from "@/utilities/getURL";
 
@@ -45,6 +46,7 @@ export default async function RootLayout({
 }) {
 	const { isEnabled } = await draftMode();
 	const locale = await getLocale();
+	const localeChosen = await hasChosenLocale();
 
 	return (
 		<html
@@ -73,6 +75,7 @@ export default async function RootLayout({
 					<Nav locale={locale} />
 					{children}
 					<Footer locale={locale} />
+					{localeChosen ? null : <LanguagePrompt suggested={locale} />}
 				</Providers>
 			</body>
 		</html>

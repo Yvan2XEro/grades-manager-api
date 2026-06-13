@@ -3,17 +3,27 @@ import type { Dict } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
 import { Lede, Rule, SectionHeading, SectionLabel } from "../Editorial";
 
+function initials(name: string): string {
+	return name
+		.replace(/(Dr\.|Pr\.|Prof\.|Mme|M\.)\s*/g, "")
+		.trim()
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((w) => w[0]?.toUpperCase() ?? "")
+		.join("");
+}
+
 export function Testimonials({
 	data,
 	number = "01",
 	bg = "bg-tk-bg",
-	count = 3,
 }: {
 	data: Dict["blocks"]["testimonials"];
 	number?: string;
 	bg?: string;
-	count?: number;
 }) {
+	const items = data.items ?? [];
+
 	return (
 		<section className={bg}>
 			<div className="mx-auto max-w-[86rem] px-6 lg:px-10">
@@ -25,26 +35,32 @@ export function Testimonials({
 						<Lede className="mt-5">{data.sub}</Lede>
 					</div>
 
-					<div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-						{Array.from({ length: count }, (_, i) => (
-							<AnimateIn key={i} delay={i * 80}>
-								<div className="flex h-full flex-col rounded-2xl border border-tk-border-strong border-dashed bg-tk-surface/60 p-7">
+					<div className="mt-12 grid grid-cols-1 gap-5 lg:grid-cols-2">
+						{items.map((item, i) => (
+							<AnimateIn key={item.name} delay={i * 80}>
+								<figure className="flex h-full flex-col rounded-2xl border border-tk-border bg-tk-surface p-7 lg:p-8">
 									<Quote
-										size={26}
-										className="text-tk-border-strong"
+										size={28}
+										className="text-tk-primary/35"
 										strokeWidth={1.5}
 									/>
-									<p className="mt-4 flex-1 font-body text-[0.95rem] text-tk-muted italic leading-[1.7]">
-										“{data.placeholder}…”
-									</p>
-									<div className="mt-6 flex items-center gap-3">
-										<span className="h-9 w-9 rounded-full border border-tk-border-strong border-dashed bg-tk-bg-deep" />
-										<span className="flex flex-col gap-1">
-											<span className="h-2 w-24 rounded-full bg-tk-border-strong" />
-											<span className="h-2 w-16 rounded-full bg-tk-border" />
+									<blockquote className="mt-4 flex-1 font-body text-[1.0625rem] text-tk-ink-2 leading-[1.7]">
+										“{item.quote}”
+									</blockquote>
+									<figcaption className="mt-7 flex items-center gap-3.5 border-tk-border border-t pt-6">
+										<span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tk-primary-soft font-code font-semibold text-[0.8rem] text-tk-primary">
+											{initials(item.name)}
 										</span>
-									</div>
-								</div>
+										<span className="flex flex-col">
+											<span className="font-body font-semibold text-[0.9375rem] text-tk-ink">
+												{item.name}
+											</span>
+											<span className="font-body text-[0.8125rem] text-tk-muted">
+												{item.role} · {item.org}
+											</span>
+										</span>
+									</figcaption>
+								</figure>
 							</AnimateIn>
 						))}
 					</div>

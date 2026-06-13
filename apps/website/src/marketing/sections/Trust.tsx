@@ -1,4 +1,4 @@
-import type { Dict } from "@/i18n";
+import type { Dict, Locale } from "@/i18n";
 import { AnimateIn } from "../AnimateIn";
 import { BrochureDownload } from "../BrochureDownload";
 import { EditorialSection } from "../Editorial";
@@ -6,9 +6,10 @@ import { TrustBadges } from "../TrustBadges";
 
 interface TrustProps {
 	dict: Dict;
+	locale: Locale;
 }
 
-export function Trust({ dict: d }: TrustProps) {
+export function Trust({ dict: d, locale }: TrustProps) {
 	return (
 		<EditorialSection
 			id="ressources"
@@ -39,7 +40,7 @@ export function Trust({ dict: d }: TrustProps) {
 				</AnimateIn>
 
 				<AnimateIn delay={120}>
-					<BrochureDownload brochure={d.brochure} />
+					<BrochureDownload brochure={d.brochure} locale={locale} />
 				</AnimateIn>
 			</div>
 		</EditorialSection>

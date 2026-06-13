@@ -26,7 +26,7 @@ export default async function HomePage() {
 			<Workflow dict={dict} />
 			<Pricing dict={dict} />
 			<Deployment dict={dict} />
-			<Trust dict={dict} />
+			<Trust dict={dict} locale={locale} />
 			<Faq dict={dict} />
 			<Cta dict={dict} />
 		</main>

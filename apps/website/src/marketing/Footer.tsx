@@ -60,9 +60,9 @@ export function Footer({ locale }: FooterProps) {
 								{ href: "/contact", label: d.footer.links.contact },
 							].map((l) => (
 								<li key={l.href}>
-									<a href={l.href} className={link}>
+									<Link href={l.href} className={link}>
 										{l.label}
-									</a>
+									</Link>
 								</li>
 							))}
 						</ul>

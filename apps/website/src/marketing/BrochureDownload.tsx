@@ -1,22 +1,22 @@
-import type { Dict } from "@/i18n";
+import type { Dict, Locale } from "@/i18n";
 
 /**
  * BrochureDownload — download zone for the TKAMS presentation document.
  *
- * Until the file exists, leave `available={false}` (default): the button shows a
- * "coming soon" state and a small note pointing to where the PDF should be
- * dropped. Once you add `public/documents/tkams-presentation.pdf`, set
- * `available` to true (or just remove the prop and flip the default) and the
- * download button activates.
+ * The served PDF is chosen from the visitor's locale: French visitors get
+ * `brochure-commerciale_tkams_fr.pdf`, English visitors get the `_en` variant
+ * (both live in `public/documents/`). Pass an explicit `href` to override.
  */
 
 type Theme = "light" | "dark";
 
 interface BrochureDownloadProps {
 	brochure: Dict["brochure"];
-	/** Path under /public to the document. */
+	/** Visitor locale — selects the FR/EN PDF when `href` is not provided. */
+	locale?: Locale;
+	/** Path under /public to the document. Overrides locale-based selection. */
 	href?: string;
-	/** Set true once the file is uploaded. */
+	/** Set false to show the "coming soon" placeholder instead. */
 	available?: boolean;
 	theme?: Theme;
 	className?: string;
@@ -56,12 +56,14 @@ function DocIcon({ className }: { className?: string }) {
 
 export function BrochureDownload({
 	brochure: b,
-	href = "/documents/tkams-presentation.pdf",
-	available = false,
+	locale = "fr",
+	href,
+	available = true,
 	theme = "light",
 	className = "",
 }: BrochureDownloadProps) {
 	const isDark = theme === "dark";
+	const docHref = href ?? `/documents/brochure-commerciale_tkams_${locale}.pdf`;
 
 	return (
 		<div
@@ -108,7 +110,7 @@ export function BrochureDownload({
 
 			<div className="flex flex-wrap items-center gap-3">
 				{available ? (
-					<a href={href} download className="tk-btn-primary">
+					<a href={docHref} download className="tk-btn-primary">
 						{b.download}
 						<svg
 							width="15"
@@ -142,7 +144,7 @@ export function BrochureDownload({
 						isDark ? "text-tk-on-dark-muted" : "text-tk-muted"
 					}`}
 				>
-					{available ? b.meta : `public${href}`}
+					{available ? b.meta : `public${docHref}`}
 				</span>
 			</div>
 		</div>

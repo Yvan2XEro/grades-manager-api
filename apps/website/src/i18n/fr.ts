@@ -292,8 +292,8 @@ export const fr = {
 			col_exam: "Examen",
 			col_avg: "Moyenne",
 			col_decision: "Décision",
-			validated: "Validé",
-			retake: "Rattrapage",
+			validated: "Admis",
+			retake: "Compensable",
 			failed: "Ajourné",
 			treated: "étudiants traités",
 			validated_count: "validés",
@@ -313,8 +313,8 @@ export const fr = {
 			success_rate: "Taux de réussite",
 			admis: "Admis",
 			compenses: "Compensés",
-			rattrapage: "Rattrapage",
-			ajournes: "Ajournés",
+			rattrapage: "Ajournés",
+			ajournes: "Redoublants",
 			note: "Aucun code modifié — les règles sont des paramètres.",
 		},
 		delib: {
@@ -337,15 +337,14 @@ export const fr = {
 			replay: "Rejouer",
 		},
 		attendance: {
-			title: "Présences · Algorithmique",
+			title: "Alertes d'absence · Algorithmique",
 			subtitle: "L3 Informatique · séance du jour",
-			present: "Présent",
-			absent: "Absent",
-			rate: "Taux de présence",
-			absent_count: "absent(s)",
-			alert: "Envoyer une alerte",
+			flag: "Signaler",
+			flagged: "Signalé",
+			alert: "Envoyer l'alerte",
 			alert_sent: "Alerte envoyée",
-			hint: "Marque les présences — le taux et les alertes se mettent à jour.",
+			selected: "absence(s) signalée(s)",
+			hint: "Sélectionne les étudiants absents — l'alerte part vers eux.",
 		},
 		approvals: {
 			title: "Validations en attente",
@@ -667,9 +666,25 @@ export const fr = {
 		},
 		testimonials: {
 			label: "Paroles d'établissements",
-			title: "Bientôt, leurs témoignages",
-			sub: "Emplacements réservés — les premiers retours d'établissements apparaîtront ici.",
+			title: "Ce qu'en disent les équipes",
+			sub: "Des responsables académiques racontent comment TKAMS a changé leur fin de semestre.",
 			placeholder: "Témoignage à venir",
+			items: [
+				{
+					quote:
+						"Avant TKAMS, une délibération nous coûtait près de trois semaines de saisie et de vérifications croisées. Aujourd'hui le jury statue en une après-midi et les relevés partent le soir même.",
+					name: "Dr. Aïcha Ngono",
+					role: "Directrice des études",
+					org: "Institut Supérieur de Management, Yaoundé",
+				},
+				{
+					quote:
+						"Le moteur de règles a supprimé nos erreurs de compensation : chaque décision est tracée et justifiée. Et nos enseignants saisissent enfin leurs notes sans passer par le secrétariat.",
+					name: "Pr. Emmanuel Fotso",
+					role: "Doyen, Faculté des Sciences",
+					org: "Institut Universitaire des Hautes Études, Douala",
+				},
+			],
 		},
 	},
 	footer: {

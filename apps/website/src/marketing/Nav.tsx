@@ -60,13 +60,13 @@ export function Nav({ locale, dict }: NavProps) {
 
 				<div className="hidden flex-1 items-center justify-center gap-1 md:flex">
 					{navLinks.map((link) => (
-						<a
+						<Link
 							key={link.href}
 							href={link.href}
 							className="rounded-lg px-3.5 py-2 font-body font-medium text-[0.9rem] text-tk-ink-soft no-underline transition-colors duration-150 hover:bg-tk-bg-deep hover:text-tk-ink"
 						>
 							{link.label}
-						</a>
+						</Link>
 					))}
 				</div>
 
@@ -114,14 +114,14 @@ export function Nav({ locale, dict }: NavProps) {
 			{menuOpen && (
 				<div className="flex flex-col gap-1 border-tk-border border-t bg-tk-surface px-6 py-4">
 					{navLinks.map((link) => (
-						<a
+						<Link
 							key={link.href}
 							href={link.href}
 							onClick={() => setMenuOpen(false)}
 							className="rounded-lg px-4 py-3 font-medium text-base text-tk-ink no-underline transition-colors duration-150 hover:bg-tk-bg-deep"
 						>
 							{link.label}
-						</a>
+						</Link>
 					))}
 				</div>
 			)}

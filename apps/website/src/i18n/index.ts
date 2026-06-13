@@ -22,3 +22,14 @@ export async function getLocale(): Promise<Locale> {
 	if (acceptLang.toLowerCase().startsWith("en")) return "en";
 	return "fr";
 }
+
+/**
+ * True when the visitor has not yet explicitly picked a language (no
+ * `tkams_locale` cookie). Used to show the first-visit language prompt.
+ */
+export async function hasChosenLocale(): Promise<boolean> {
+	const { cookies } = await import("next/headers");
+	const cookieStore = await cookies();
+	const value = cookieStore.get("tkams_locale")?.value;
+	return value === "en" || value === "fr";
+}

@@ -252,10 +252,10 @@ h2.display { font-size: 33px; }
           <table class="tbl">
             <thead><tr><th>Étudiant</th><th>CC</th><th>Examen</th><th>Moyenne</th><th style="text-align:right;">Décision</th></tr></thead>
             <tbody>
-              <tr><td>MBARGA Jean</td><td>14</td><td>15</td><td style="font-weight:700;">14,6</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
-              <tr><td>ATANGANA Rose</td><td>11</td><td>11</td><td style="font-weight:700;">11,0</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
+              <tr><td>MBARGA Jean</td><td>14</td><td>15</td><td style="font-weight:700;">14,6</td><td style="text-align:right;"><span class="pill ok">Admis</span></td></tr>
+              <tr><td>ATANGANA Rose</td><td>11</td><td>11</td><td style="font-weight:700;">11,0</td><td style="text-align:right;"><span class="pill ok">Admis</span></td></tr>
               <tr><td>BELLO Fatima</td><td>9</td><td>6,5</td><td style="font-weight:700;">7,5</td><td style="text-align:right;"><span class="pill bad">Ajourné</span></td></tr>
-              <tr><td>FOTSO Marie</td><td>16</td><td>13</td><td style="font-weight:700;">14,2</td><td style="text-align:right;"><span class="pill ok">Validé</span></td></tr>
+              <tr><td>FOTSO Marie</td><td>16</td><td>13</td><td style="font-weight:700;">14,2</td><td style="text-align:right;"><span class="pill ok">Admis</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -362,7 +362,7 @@ h2.display { font-size: 33px; }
               <div style="height: 6px; background: var(--tk-bg-deep); border-radius: 999px; margin: 6px 0 10px;"><div style="width: 80%; height: 100%; background: linear-gradient(90deg, var(--tk-accent-emerald), var(--tk-primary-bright)); border-radius: 999px;"></div></div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-ink-2);">
                 <span style="display: flex; justify-content: space-between;">Admis<b>6</b></span><span style="display: flex; justify-content: space-between;">Compensés<b>2</b></span>
-                <span style="display: flex; justify-content: space-between;">Rattrap.<b>1</b></span><span style="display: flex; justify-content: space-between;">Ajournés<b>1</b></span>
+                <span style="display: flex; justify-content: space-between;">Ajournés<b>1</b></span><span style="display: flex; justify-content: space-between;">Redoublants<b>1</b></span>
               </div>
             </div>
           </div>
@@ -402,7 +402,7 @@ h2.display { font-size: 33px; }
 
     <div style="margin-top: 18px; border: 1px solid var(--tk-border); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); border-radius: 14px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; position: relative; z-index: 2;">
       <span class="icbox" style="width: 38px; height: 38px; background: var(--tk-primary); color: #fff; flex: 0 0 auto;"><svg class="svg" width="18" height="18"><use href="#i-spark"/></svg></span>
-      <p style="margin: 0; font-size: 13px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">Démos interactives en ligne.</b> Aperçus fidèles de l'interface — chaque écran est jouable en direct sur <b style="color: var(--tk-primary);">tkams.com/produit</b>, sans inscription.</p>
+      <p style="margin: 0; font-size: 13px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">Démos interactives en ligne.</b> Aperçus fidèles de l'interface — chaque écran est jouable en direct sur <b style="color: var(--tk-primary);">tkams.com/produit</b>, inscription réquise.</p>
     </div>
 
     <div class="foot"><span>OverBrand · Le produit</span><span class="pn">tkams.com · <b>03 / 09</b></span></div>
@@ -607,72 +607,64 @@ h2.display { font-size: 33px; }
 </section>
 
 <!-- ============ PAGE 8 — DOCUMENTS OFFICIELS ============ -->
-<section class="page" data-screen-label="08 Documents officiels">
+<section class="page" data-screen-label="08 Exports & documents">
   <div class="inner">
     <div class="dotgrid" style="opacity: 0.5;"></div>
-    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Documents</span></div>
+    <div class="brow"><img src="../assets/logo-tkams.png" alt="TKAMS" /><span class="meta">Exports</span></div>
     <div style="position: relative; z-index: 2; margin-top: 28px;">
-      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Documents officiels</span></div>
-      <h2 class="display">Le livrable,<br/>entre les <em>mains</em> de l'étudiant.</h2>
-      <p class="lede">Relevés, attestations et PV générés en un clic depuis les données — en-tête de l'établissement, signataires résolus, et QR de vérification en ligne via DIPLOMATION.</p>
+      <div class="eyebrow"><span class="n">07</span><span class="ln"></span><span class="t">Exports & documents</span></div>
+      <h2 class="display">Tout est exportable,<br/>en un <em>clic</em>.</h2>
+      <p class="lede">Relevés, attestations, PV, diplômes, listes — générés depuis les données, en PDF ou Excel, et vérifiables par QR via DIPLOMATION.</p>
     </div>
 
-    <div class="docs">
-      <!-- Relevé -->
-      <div class="doc">
-        <div class="sheet">
-          <div class="dh"><div class="est">Université · Faculté d'Économie</div><div class="ttl">RELEVÉ DE NOTES</div></div>
-          <div class="meta">Licence 2 · Économie · 2024-2025<br/>MBARGA Jean · #UY24L00342</div>
-          <div style="margin-top: 7px;">
-            <div class="drow"><span>UE Microéconomie</span><span>14,6 · 6 cr</span></div>
-            <div class="drow"><span>UE Statistiques</span><span>12,0 · 5 cr</span></div>
-            <div class="drow"><span>UE Comptabilité</span><span>11,5 · 4 cr</span></div>
-            <div class="drow" style="border:0;"><span>UE Anglais</span><span>13,2 · 3 cr</span></div>
+    <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-top: 22px; position: relative; z-index: 2;">
+      <!-- Export screen (the real UI, not a fabricated document) -->
+      <div>
+        <div class="win">
+          <div class="win-bar"><span class="d" style="background: oklch(0.7 0.18 25);"></span><span class="d" style="background: oklch(0.75 0.16 86);"></span><span class="d" style="background: oklch(0.6 0.17 149);"></span><span class="u">app.tkams.com/exports</span></div>
+          <div class="win-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 0.65fr auto; gap: 8px; align-items: end;">
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Document</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">Relevé <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Périmètre</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">Classe L2 Éco <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <div>
+                <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Format</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px 8px; background: var(--tk-surface); font-family: var(--tk-font-sans); font-size: 10px; color: var(--tk-ink);">PDF <span style="color: var(--tk-muted);">▾</span></div>
+              </div>
+              <span style="background: var(--tk-primary); color: #fff; border-radius: 8px; padding: 7px 14px; font-family: var(--tk-font-sans); font-weight: 600; font-size: 10px; white-space: nowrap;">Générer</span>
+            </div>
+            <div style="margin-top: 12px; border-top: 1px solid var(--tk-border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">releves_L2-eco_220.pdf</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Prêt</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">pv_deliberation_S3.pdf</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Prêt</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-family: var(--tk-font-mono); font-size: 9px;"><span style="color: var(--tk-ink);">attestations_lot.zip</span><span style="display: flex; align-items: center; gap: 8px;"><span style="color: var(--tk-accent-emerald);">Prêt</span><svg class="svg" width="12" height="12"><use href="#i-download"/></svg></span></div>
+            </div>
           </div>
-          <div style="margin-top: 7px; display: flex; align-items: center; justify-content: space-between;"><span class="meta">Moyenne 13,1 · 60 ECTS</span><span class="badge2">ADMIS · BIEN</span></div>
-          <div class="df"><div class="stamp">CACHET<br/>OFFICIEL</div><div class="qr"></div></div>
         </div>
-        <div class="cap2"><span class="nm">Relevé de notes</span><span class="vq">QR vérifiable</span></div>
+        <div class="cap"><span class="dot"></span>Génération en masse · PDF / Excel · QR de vérification inclus.</div>
       </div>
 
-      <!-- Attestation -->
-      <div class="doc">
-        <div class="sheet">
-          <div class="dh"><div class="est">République · Établissement</div><div class="ttl">ATTESTATION DE RÉUSSITE</div></div>
-          <div class="meta">Le Doyen atteste que :</div>
-          <div style="margin: 6px 0;"><div class="ln" style="width: 85%;"></div><div class="ln" style="width: 70%; margin-top: 5px;"></div></div>
-          <div class="meta">a satisfait aux exigences du diplôme de Licence en Économie, session 2024-2025, avec la mention :</div>
-          <div style="margin-top: 7px;"><span class="badge2">ADMIS · MENTION BIEN</span></div>
-          <div style="margin: 8px 0;"><div class="ln" style="width: 60%;"></div></div>
-          <div class="df"><div class="stamp">SIGNÉ<br/>&amp; SCELLÉ</div><div class="qr"></div></div>
+      <!-- Catalogue of real templates -->
+      <div style="border: 1px solid var(--tk-border); background: var(--tk-surface); border-radius: 16px; padding: 18px 20px;">
+        <div style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.12em;">Catalogue des modèles</div>
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); margin-top: 10px; font-size: 11px;"><span style="color: var(--tk-ink);">Relevé de notes</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Attestation de réussite</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Diplôme</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">PV de délibération</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Liste d'étudiants</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">Excel · PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Publication EC / UE</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">PDF</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--tk-border); font-size: 11px;"><span style="color: var(--tk-ink);">Évaluation</span><span style="font-family: var(--tk-font-mono); font-size: 8px; color: var(--tk-muted);">Excel</span></div>
         </div>
-        <div class="cap2"><span class="nm">Attestation</span><span class="vq">QR vérifiable</span></div>
-      </div>
-
-      <!-- PV -->
-      <div class="doc">
-        <div class="sheet">
-          <div class="dh"><div class="est">Jury de délibération</div><div class="ttl">PROCÈS-VERBAL</div></div>
-          <div class="meta">L3 Informatique · Semestre 6<br/>Session normale · 10 étudiants</div>
-          <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; text-align: center;">
-            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: oklch(0.4 0.16 149);">7</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">ADMIS</div></div>
-            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: var(--tk-accent-blue);">2</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">COMP.</div></div>
-            <div><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 13px; color: oklch(0.5 0.18 27);">1</div><div style="font-family: var(--tk-font-mono); font-size: 5.5px; color: var(--tk-muted);">AJOURNÉ</div></div>
-          </div>
-          <div style="margin: 9px 0 0;"><div class="ln" style="width: 90%;"></div><div class="ln" style="width: 75%; margin-top: 5px;"></div></div>
-          <div class="meta" style="margin-top: 7px;">Le Président du jury · Les membres</div>
-          <div class="df"><div class="stamp">JURY<br/>VALIDÉ</div><div class="qr"></div></div>
-        </div>
-        <div class="cap2"><span class="nm">PV de délibération</span><span class="vq">QR vérifiable</span></div>
+        <p style="margin: 12px 0 0; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); font-style: italic;">+ variantes Faculté / IPES / Centre · multi-tutelles</p>
       </div>
     </div>
 
-    <div style="margin-top: 18px; border: 1px solid var(--tk-border); background: linear-gradient(180deg, var(--tk-primary-soft), var(--tk-surface)); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 14px; position: relative; z-index: 2;">
-      <span class="icbox" style="width: 36px; height: 36px; background: var(--tk-primary); color: #fff; flex: 0 0 auto;"><svg class="svg" width="17" height="17"><use href="#i-download"/></svg></span>
-      <p style="margin: 0; font-size: 12.5px; color: var(--tk-ink-2); line-height: 1.5;"><b style="color: var(--tk-ink);">24 modèles d'exports</b> couvrant relevés, attestations, PV et certificats — chacun généré en masse et vérifiable par QR. <span style="font-style: italic; color: var(--tk-muted);">Aperçus illustratifs.</span></p>
-    </div>
-
-    <div class="foot"><span>OverBrand · Documents officiels</span><span class="pn">tkams.com · <b>08 / 09</b></span></div>
+    <div class="foot"><span>OverBrand · Exports</span><span class="pn">tkams.com · <b>08 / 09</b></span></div>
   </div>
 </section>
 
