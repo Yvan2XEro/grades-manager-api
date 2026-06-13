@@ -16,6 +16,7 @@ import { getLocale, hasChosenLocale } from "@/i18n";
 import { Footer } from "@/marketing/Footer";
 import { LanguagePrompt } from "@/marketing/LanguagePrompt";
 import { Nav } from "@/marketing/Nav";
+import { NavigationProgress } from "@/marketing/NavigationProgress";
 import { getServerSideURL } from "@/utilities/getURL";
 
 const sora = Sora({
@@ -72,6 +73,7 @@ export default async function RootLayout({
 							preview: isEnabled,
 						}}
 					/>
+					<NavigationProgress />
 					<Nav locale={locale} />
 					{children}
 					<Footer locale={locale} />

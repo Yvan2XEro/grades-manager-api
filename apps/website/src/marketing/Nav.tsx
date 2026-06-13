@@ -41,6 +41,9 @@ export function Nav({ locale, dict }: NavProps) {
 		dict?.nav.demo ??
 		(locale === "en" ? "Get started" : "Démarrer gratuitement");
 
+	const loginLabel =
+		dict?.nav.login ?? (locale === "en" ? "Sign in" : "Connexion");
+
 	return (
 		<nav
 			data-scrolled={scrolled}
@@ -70,21 +73,23 @@ export function Nav({ locale, dict }: NavProps) {
 					))}
 				</div>
 
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-2 md:gap-3">
 					<LanguageSwitcher locale={locale} />
 					<Link
 						href="/login"
 						className="hidden items-center rounded-lg px-3.5 py-2 font-body font-medium text-[0.875rem] text-tk-ink-soft no-underline transition-colors duration-150 hover:bg-tk-bg-deep hover:text-tk-ink md:inline-flex"
 					>
-						{dict?.nav.login ?? (locale === "en" ? "Sign in" : "Connexion")}
+						{loginLabel}
 					</Link>
-					<Link
-						href="/signup"
-						className="tk-btn-primary"
-						style={{ padding: "0.5625rem 1.25rem", fontSize: "0.875rem" }}
-					>
-						{demoLabel}
-					</Link>
+					<span className="hidden md:inline-flex">
+						<Link
+							href="/signup"
+							className="tk-btn-primary"
+							style={{ padding: "0.5625rem 1.25rem", fontSize: "0.875rem" }}
+						>
+							{demoLabel}
+						</Link>
+					</span>
 					<button
 						onClick={() => setMenuOpen(!menuOpen)}
 						aria-label="Toggle menu"
@@ -112,7 +117,7 @@ export function Nav({ locale, dict }: NavProps) {
 			</div>
 
 			{menuOpen && (
-				<div className="flex flex-col gap-1 border-tk-border border-t bg-tk-surface px-6 py-4">
+				<div className="flex flex-col gap-1 border-tk-border border-t bg-tk-surface px-6 py-4 md:hidden">
 					{navLinks.map((link) => (
 						<Link
 							key={link.href}
@@ -123,6 +128,22 @@ export function Nav({ locale, dict }: NavProps) {
 							{link.label}
 						</Link>
 					))}
+					<div className="mt-3 flex flex-col gap-2.5 border-tk-border border-t pt-4">
+						<Link
+							href="/login"
+							onClick={() => setMenuOpen(false)}
+							className="rounded-lg border border-tk-border px-4 py-3 text-center font-body font-medium text-[0.9375rem] text-tk-ink no-underline transition-colors duration-150 hover:bg-tk-bg-deep"
+						>
+							{loginLabel}
+						</Link>
+						<Link
+							href="/signup"
+							onClick={() => setMenuOpen(false)}
+							className="tk-btn-primary justify-center"
+						>
+							{demoLabel}
+						</Link>
+					</div>
 				</div>
 			)}
 		</nav>
