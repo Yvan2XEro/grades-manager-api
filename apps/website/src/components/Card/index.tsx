@@ -42,7 +42,7 @@ export const Card: React.FC<{
 				"group hover:-translate-y-1 flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-tk-border bg-tk-surface transition-all duration-200 hover:border-tk-border-strong hover:shadow-[0_18px_50px_oklch(0.13_0.03_264/0.1)]",
 				className,
 			)}
-			ref={card.ref as React.RefObject<HTMLElement>}
+			ref={card.ref}
 		>
 			<div className="relative aspect-[16/10] w-full overflow-hidden bg-tk-bg-deep">
 				{metaImage && typeof metaImage !== "string" ? (

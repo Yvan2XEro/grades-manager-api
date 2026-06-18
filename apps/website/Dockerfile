@@ -34,12 +34,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
 
-COPY --from=builder /app/apps/website/public ./public
-
-RUN mkdir .next && chown nextjs:nodejs .next
-
+# outputFileTracingRoot = monorepo root, so standalone mirrors apps/website/ path
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/static     ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/website/public            ./apps/website/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/static      ./apps/website/.next/static
 
 USER nextjs
 
@@ -47,4 +45,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/website/server.js"]
