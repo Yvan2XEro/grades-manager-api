@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { RefObject } from "react";
+import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 
 type UseClickableCardType<T extends HTMLElement> = {
 	card: {
-		ref: RefObject<T | null>;
+		ref: MutableRefObject<T | null>;
 	};
 	link: {
-		ref: RefObject<HTMLAnchorElement | null>;
+		ref: MutableRefObject<HTMLAnchorElement | null>;
 	};
 };
 
