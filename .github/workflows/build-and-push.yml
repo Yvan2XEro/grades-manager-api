@@ -14,6 +14,7 @@ env:
   REGISTRY: ghcr.io
   SERVER_IMAGE: ghcr.io/yvan2xero/tkams-server
   WEB_IMAGE: ghcr.io/yvan2xero/tkams-web
+  FULL_IMAGE: ghcr.io/yvan2xero/tkams
 
 jobs:
   test:
@@ -50,6 +51,9 @@ jobs:
           - app: web
             image: ghcr.io/yvan2xero/tkams-web
             dockerfile: apps/web/Dockerfile
+          - app: full
+            image: ghcr.io/yvan2xero/tkams
+            dockerfile: Dockerfile.full
 
     steps:
       - uses: actions/checkout@v4

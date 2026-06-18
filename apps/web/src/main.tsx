@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter, HashRouter } from "react-router";
 import { Toaster } from "sonner";
 import App from "./App";
 import "./i18n";
@@ -21,16 +21,19 @@ const queryClient = new QueryClient({
 	},
 });
 
+const Router =
+	import.meta.env.VITE_USE_HASH_ROUTER === "true" ? HashRouter : BrowserRouter;
+
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<QueryClientProvider client={queryClient}>
-				<BrowserRouter>
+				<Router>
 					<NuqsAdapter>
 						<App />
 						<Toaster position="top-right" richColors closeButton />
 					</NuqsAdapter>
-				</BrowserRouter>
+				</Router>
 				<ReactQueryDevtools initialIsOpen={false} />
 			</QueryClientProvider>
 		</ThemeProvider>

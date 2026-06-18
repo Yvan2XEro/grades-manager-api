@@ -100,9 +100,9 @@ app.use(
 		},
 	}),
 );
-app.get("/", (c) => {
-	return c.text("OK");
-});
+if (process.env.SERVE_FRONTEND !== "true") {
+	app.get("/", (c) => c.text("OK"));
+}
 
 // ---------------------------------------------------------------------------
 // Diplomation REST API
@@ -522,6 +522,18 @@ diplomationApi.post("/documents", async (c) => {
 });
 
 app.route("/api/diplomation", diplomationApi);
+
+// SPA static files — active only in the combined image (SERVE_FRONTEND=true).
+// Registered last so API routes always take precedence.
+if (process.env.SERVE_FRONTEND === "true") {
+	app.use("/*", serveStatic({ root: "./public" }));
+	app.get("/*", async () => {
+		const file = Bun.file("./public/index.html");
+		return new Response(file.stream(), {
+			headers: { "content-type": "text/html;charset=utf-8" },
+		});
+	});
+}
 
 const cleanupJobs = await startBackgroundJobs();
 
