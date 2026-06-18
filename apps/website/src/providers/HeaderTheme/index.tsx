@@ -34,9 +34,9 @@ export const HeaderThemeProvider = ({
 	}, []);
 
 	return (
-		<HeaderThemeContext value={{ headerTheme, setHeaderTheme }}>
+		<HeaderThemeContext.Provider value={{ headerTheme, setHeaderTheme }}>
 			{children}
-		</HeaderThemeContext>
+		</HeaderThemeContext.Provider>
 	);
 };
 

@@ -40,13 +40,13 @@ export interface ButtonProps
 	asChild?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({
+function Button({
 	asChild = false,
 	className,
 	size,
 	variant,
 	...props
-}) => {
+}: ButtonProps) {
 	const Comp = asChild ? Slot : "button";
 
 	return (
@@ -56,6 +56,6 @@ const Button: React.FC<ButtonProps> = ({
 			{...props}
 		/>
 	);
-};
+}
 
 export { Button, buttonVariants };
