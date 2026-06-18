@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import configPromise from "@payload-config";
 import type { Form as FormType } from "@payloadcms/plugin-form-builder/types";
 import type { Metadata } from "next";

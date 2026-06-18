@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import configPromise from "@payload-config";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";
