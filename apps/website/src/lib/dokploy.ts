@@ -9,7 +9,6 @@ import {
 	applicationStop,
 	client,
 	domainCreate,
-	environmentByProjectId,
 	postgresCreate,
 	postgresRemove,
 	projectCreate,
@@ -25,25 +24,44 @@ function configure() {
 }
 
 function unwrap<T>(result: { data?: T; error?: unknown }): T {
-	if (result.error) throw result.error;
+	if (result.error) {
+		const err = result.error as { message?: string };
+		throw new Error(err?.message ?? JSON.stringify(result.error));
+	}
 	return result.data as T;
 }
 
-export const dokploy = {
-	async createProject(name: string, description?: string) {
-		configure();
-		return unwrap(await projectCreate({ body: { name, description } }));
-	},
+export type CreatedProject = {
+	projectId: string;
+	environmentId: string;
+};
 
-	async getEnvironmentId(projectId: string): Promise<string> {
+export type CreatedPostgres = {
+	postgresId: string;
+	appName: string;
+};
+
+export type CreatedApplication = {
+	applicationId: string;
+	appName: string;
+};
+
+export const dokploy = {
+	async createProject(
+		name: string,
+		description?: string,
+	): Promise<CreatedProject> {
 		configure();
-		const envs = unwrap(await environmentByProjectId({ query: { projectId } }));
-		const env = Array.isArray(envs)
-			? (envs.find((e: { isDefault?: boolean }) => e.isDefault) ?? envs[0])
-			: null;
-		if (!env?.environmentId)
-			throw new Error("No environment found on created project");
-		return env.environmentId as string;
+		const res = unwrap(
+			await projectCreate({ body: { name, description } }),
+		) as unknown as {
+			project: { projectId: string };
+			environment: { environmentId: string };
+		};
+		return {
+			projectId: res.project.projectId,
+			environmentId: res.environment.environmentId,
+		};
 	},
 
 	async createPostgres(body: {
@@ -53,18 +71,26 @@ export const dokploy = {
 		databaseUser: string;
 		databasePassword: string;
 		environmentId: string;
-	}) {
+	}): Promise<CreatedPostgres> {
 		configure();
-		return unwrap(await postgresCreate({ body }));
+		const res = unwrap(await postgresCreate({ body })) as unknown as {
+			postgresId: string;
+			appName: string;
+		};
+		return { postgresId: res.postgresId, appName: res.appName };
 	},
 
 	async createApplication(body: {
 		name: string;
 		appName: string;
 		environmentId: string;
-	}) {
+	}): Promise<CreatedApplication> {
 		configure();
-		return unwrap(await applicationCreate({ body }));
+		const res = unwrap(await applicationCreate({ body })) as unknown as {
+			applicationId: string;
+			appName: string;
+		};
+		return { applicationId: res.applicationId, appName: res.appName };
 	},
 
 	async saveDockerProvider(body: {
@@ -75,7 +101,7 @@ export const dokploy = {
 		registryUrl?: string | null;
 	}) {
 		configure();
-		return unwrap(
+		unwrap(
 			await applicationSaveDockerProvider({
 				body: {
 					username: null,
@@ -90,7 +116,7 @@ export const dokploy = {
 
 	async saveEnvironment(body: { applicationId: string; env: string }) {
 		configure();
-		return unwrap(
+		unwrap(
 			await applicationSaveEnvironment({
 				body: {
 					buildArgs: null,
@@ -110,41 +136,45 @@ export const dokploy = {
 		certificateType?: "letsencrypt" | "none" | "custom";
 	}) {
 		configure();
-		return unwrap(await domainCreate({ body }));
+		unwrap(await domainCreate({ body }));
 	},
 
 	async deploy(applicationId: string) {
 		configure();
-		return unwrap(await applicationRedeploy({ body: { applicationId } }));
+		unwrap(await applicationRedeploy({ body: { applicationId } }));
 	},
 
 	async getApplicationStatus(appName: string) {
 		configure();
-		return unwrap(await applicationReadAppMonitoring({ query: { appName } }));
+		return unwrap(
+			await applicationReadAppMonitoring({ query: { appName } }),
+		) as {
+			appStatus?: string;
+		};
 	},
 
 	async stopApplication(applicationId: string) {
 		configure();
-		return unwrap(await applicationStop({ body: { applicationId } }));
+		unwrap(await applicationStop({ body: { applicationId } }));
 	},
 
 	async startApplication(applicationId: string) {
 		configure();
-		return unwrap(await applicationStart({ body: { applicationId } }));
+		unwrap(await applicationStart({ body: { applicationId } }));
 	},
 
 	async deleteApplication(applicationId: string) {
 		configure();
-		return unwrap(await applicationDelete({ body: { applicationId } }));
+		unwrap(await applicationDelete({ body: { applicationId } }));
 	},
 
 	async deletePostgres(postgresId: string) {
 		configure();
-		return unwrap(await postgresRemove({ body: { postgresId } }));
+		unwrap(await postgresRemove({ body: { postgresId } }));
 	},
 
 	async deleteProject(projectId: string) {
 		configure();
-		return unwrap(await projectRemove({ body: { projectId } }));
+		unwrap(await projectRemove({ body: { projectId } }));
 	},
 };

@@ -138,27 +138,29 @@ export async function provisionInstance(input: ProvisionInput) {
 			});
 		}
 
-		// Step 1 — Create Dokploy project
-		const project = await dokploy.createProject(orgName, `TKAMS — ${orgName}`);
-		const environmentId = await dokploy.getEnvironmentId(project.projectId);
+		// Step 1 — Create Dokploy project (returns project + default environment in one call)
+		const { projectId, environmentId } = await dokploy.createProject(
+			orgName,
+			`TKAMS — ${orgName}`,
+		);
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
-			data: { progressStep: 1, dokployProjectId: project.projectId },
+			data: { progressStep: 1, dokployProjectId: projectId },
 		});
 
 		// Step 2 — Create PostgreSQL database
+		// Dokploy appends a random suffix to appName — use the returned appName in the connection URL
 		const dbPassword = secret(24);
-		const pgAppName = `${subdomain}-db`;
 		const postgres = await dokploy.createPostgres({
 			name: `${orgName} DB`,
-			appName: pgAppName,
+			appName: `${subdomain}-db`,
 			databaseName: "tkams",
 			databaseUser: "tkams",
 			databasePassword: dbPassword,
 			environmentId,
 		});
-		const databaseUrl = `postgresql://tkams:${dbPassword}@${postgres.appName ?? pgAppName}:5432/tkams`;
+		const databaseUrl = `postgresql://tkams:${dbPassword}@${postgres.appName}:5432/tkams`;
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
@@ -194,7 +196,7 @@ export async function provisionInstance(input: ProvisionInput) {
 			: [];
 		const env = [
 			`DATABASE_URL=${databaseUrl}`,
-			`DATABASE_HOST=${pgAppName}`,
+			`DATABASE_HOST=${postgres.appName}`,
 			"POSTGRES_USER=tkams",
 			`BETTER_AUTH_SECRET=${authSecret}`,
 			`BETTER_AUTH_URL=${instanceUrl}`,
