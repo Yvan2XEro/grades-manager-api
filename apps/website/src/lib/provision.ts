@@ -144,7 +144,11 @@ export async function provisionInstance(input: ProvisionInput) {
 		const environmentId = projectFull.environments?.[0]?.environmentId;
 		if (!environmentId)
 			throw new Error("No environment found on created project");
-		await step(payload, requestId, 1);
+		await payload.update({
+			collection: "instance-requests",
+			id: requestId,
+			data: { progressStep: 1, dokployProjectId: project.projectId },
+		});
 
 		// Step 2 — Create PostgreSQL database
 		const dbPassword = secret(24);
@@ -158,7 +162,11 @@ export async function provisionInstance(input: ProvisionInput) {
 			environmentId,
 		});
 		const databaseUrl = `postgresql://tkams:${dbPassword}@${postgres.appName ?? pgAppName}:5432/tkams`;
-		await step(payload, requestId, 2);
+		await payload.update({
+			collection: "instance-requests",
+			id: requestId,
+			data: { progressStep: 2, dokployPostgresId: postgres.postgresId },
+		});
 
 		// Step 3 — Create application and set Docker image
 		const app = await dokploy.createApplication({
@@ -170,7 +178,11 @@ export async function provisionInstance(input: ProvisionInput) {
 			applicationId: app.applicationId,
 			dockerImage: APP_IMAGE,
 		});
-		await step(payload, requestId, 3);
+		await payload.update({
+			collection: "instance-requests",
+			id: requestId,
+			data: { progressStep: 3, dokployAppId: app.applicationId },
+		});
 
 		// Step 4 — Configure environment variables
 		const instanceUrl = `https://${subdomain}.${BASE_DOMAIN}`;
@@ -220,19 +232,11 @@ export async function provisionInstance(input: ProvisionInput) {
 
 		// Step 5 — Deploy
 		await dokploy.deploy(app.applicationId);
-		await step(payload, requestId, 5);
 
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
-			data: {
-				status: "ready",
-				progressStep: 5,
-				instanceUrl,
-				dokployProjectId: project.projectId,
-				dokployAppId: app.applicationId,
-				dokployPostgresId: postgres.postgresId,
-			},
+			data: { status: "ready", progressStep: 5, instanceUrl },
 		});
 	} catch (err) {
 		await fail(

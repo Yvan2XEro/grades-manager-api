@@ -6,15 +6,25 @@ This guide covers deploying the TKAMS portal (`apps/website`) to production usin
 
 ## Prerequisites
 
-### 1. DNS Records
+### 1. DNS Records (Namecheap)
 
-All records point to the **same IP address** — your Dokploy server.
+Go to **Namecheap → Domain List → Manage → Advanced DNS**.
 
-| Name | Type | Value | Purpose |
-|------|------|-------|---------|
-| `@` | A | `<server-ip>` | Apex domain (`tkams.com`) |
-| `www` | A | `<server-ip>` | www redirect (handled by Next.js) |
-| `*` | A | `<server-ip>` | Wildcard for client subdomains (`client.tkams.com`) |
+**First, delete the default records:**
+- Delete the `www` CNAME pointing to `parkingpage.namecheap.com`
+- Delete the `@` URL Redirect pointing to `http://www.tkams.com/` — Namecheap's URL Redirect is an HTTP-only proxy through their servers; it does not work with HTTPS or custom TLS
+
+**Then add these 3 A records:**
+
+| Type | Host | Value | TTL |
+|------|------|-------|-----|
+| A Record | `@` | `<server-ip>` | Automatic |
+| A Record | `www` | `<server-ip>` | Automatic |
+| A Record | `*` | `<server-ip>` | Automatic |
+
+The wildcard `*` covers all client subdomains (`client1.tkams.com`, etc.) without any per-client DNS change.
+
+> **Namecheap constraint**: the apex domain (`@`) cannot use a CNAME record (DNS spec restriction). Only A or AAAA records are valid on `@`.
 
 > DNS propagation can take up to 48 hours. Verify with `dig tkams.com A` and `dig *.tkams.com A` before deploying.
 

@@ -12,7 +12,7 @@ async function call<T>(
 	const res = await fetch(url, {
 		method: body !== undefined ? "POST" : "GET",
 		headers: {
-			Authorization: `Bearer ${DOKPLOY_API_KEY}`,
+			"x-api-key": DOKPLOY_API_KEY,
 			"Content-Type": "application/json",
 		},
 		body: body !== undefined ? JSON.stringify(body) : undefined,
