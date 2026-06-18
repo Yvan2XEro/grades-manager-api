@@ -9,7 +9,10 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY bun.lock bunfig.toml package.json ./
-COPY apps/website/package.json apps/website/package.json
+COPY apps/website/package.json  apps/website/package.json
+COPY apps/server/package.json   apps/server/package.json
+COPY apps/web/package.json      apps/web/package.json
+COPY apps/remotion/package.json apps/remotion/package.json
 RUN bun install --frozen-lockfile
 
 # ── Builder ───────────────────────────────────────────────────────────────────
