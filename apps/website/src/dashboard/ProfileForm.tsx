@@ -1,83 +1,106 @@
 "use client";
 
-import type React from "react";
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Label } from "@/components/ui/label";
 import type { Dict } from "@/i18n";
 import type { User } from "@/payload-types";
+import { cn } from "@/utilities/ui";
+
+type FormData = { name: string };
 
 const inputCls =
-	"w-full py-3 px-4 bg-tk-bg border border-tk-border rounded-[0.625rem] text-tk-ink text-[0.9375rem] font-body outline-none transition-colors duration-150 focus:border-tk-primary box-border";
-const labelCls = "block text-tk-ink-soft text-sm font-medium mb-1.5 font-body";
+	"w-full rounded-[0.625rem] border border-tk-border bg-tk-bg px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none transition-colors focus:border-tk-primary disabled:cursor-not-allowed disabled:opacity-50";
 
 export function ProfileForm({ user, dict: d }: { user: User; dict: Dict }) {
 	const s = d.dashboard.settings;
-	const [name, setName] = useState(user.name ?? "");
-	const [saving, setSaving] = useState(false);
-	const [saved, setSaved] = useState(false);
-	const [error, setError] = useState("");
+	const [savedOk, setSavedOk] = useState(false);
+	const [serverError, setServerError] = useState("");
 
-	const handleSave = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setSaving(true);
-		setSaved(false);
-		setError("");
-		try {
-			const res = await fetch(`/api/users/${user.id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({ name }),
-			});
-			if (res.ok) {
-				setSaved(true);
-				setTimeout(() => setSaved(false), 3000);
-			} else {
-				setError("Error saving profile.");
-			}
-		} finally {
-			setSaving(false);
+	const {
+		register,
+		handleSubmit,
+		formState: { isSubmitting, errors },
+	} = useForm<FormData>({
+		defaultValues: { name: user.name ?? "" },
+	});
+
+	const onSubmit = async (data: FormData) => {
+		setSavedOk(false);
+		setServerError("");
+		const res = await fetch(`/api/users/${user.id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+			body: JSON.stringify({ name: data.name }),
+		});
+		if (res.ok) {
+			setSavedOk(true);
+			setTimeout(() => setSavedOk(false), 4000);
+		} else {
+			setServerError("Error saving profile.");
 		}
 	};
 
 	return (
 		<form
-			onSubmit={handleSave}
+			onSubmit={handleSubmit(onSubmit)}
 			className="flex flex-col gap-5 rounded-[1rem] border border-tk-border bg-tk-surface p-6"
 		>
 			<div>
-				<label className={labelCls}>{s.name_label}</label>
+				<Label className="mb-1.5 block font-body font-medium text-[0.875rem] text-tk-ink-soft">
+					{s.name_label}
+				</Label>
 				<input
 					type="text"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					className={inputCls}
+					{...register("name", { required: d.register.errors.required })}
+					className={cn(
+						inputCls,
+						errors.name && "border-[oklch(0.65_0.2_25/0.5)]",
+					)}
 				/>
+				{errors.name && (
+					<p className="mt-1 font-body text-[0.8125rem] text-[oklch(0.55_0.2_25)]">
+						{errors.name.message}
+					</p>
+				)}
 			</div>
+
 			<div>
-				<label className={labelCls}>{s.email_label}</label>
+				<Label className="mb-1.5 block font-body font-medium text-[0.875rem] text-tk-ink-soft">
+					{s.email_label}
+				</Label>
 				<input
 					type="email"
 					value={user.email ?? ""}
 					disabled
-					className={`${inputCls} cursor-not-allowed opacity-50`}
+					className={cn(inputCls, "cursor-not-allowed opacity-50")}
 				/>
+				<p className="mt-1 font-body text-[0.75rem] text-tk-muted">
+					{s.email_hint}
+				</p>
 			</div>
-			{error && (
+
+			{serverError && (
 				<p className="font-body text-[0.875rem] text-[oklch(0.55_0.2_25)]">
-					{error}
+					{serverError}
 				</p>
 			)}
-			{saved && (
-				<p className="font-body text-[0.875rem] text-tk-accent-emerald">
-					✓ {s.saved}
-				</p>
+
+			{savedOk && (
+				<div className="flex items-center gap-2 font-body text-[0.875rem] text-tk-accent-emerald">
+					<CheckCircle2 size={15} strokeWidth={2} />
+					{s.saved}
+				</div>
 			)}
+
 			<button
 				type="submit"
-				disabled={saving}
-				className={`tk-btn-primary justify-center ${saving ? "cursor-wait opacity-70" : ""}`}
+				disabled={isSubmitting}
+				className={`tk-btn-primary justify-center ${isSubmitting ? "cursor-wait opacity-70" : ""}`}
 			>
-				{saving ? s.saving : s.save}
+				{isSubmitting ? s.saving : s.save}
 			</button>
 		</form>
 	);

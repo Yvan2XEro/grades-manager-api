@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Dict } from "@/i18n";
+import { type InstanceStatus, StatusBadge } from "./ui";
 
-type InstanceStatus = "pending" | "provisioning" | "ready" | "failed";
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_TKAMS_BASE_DOMAIN ?? "tkams.com";
 
 type Instance = {
 	id: string;
@@ -13,18 +14,6 @@ type Instance = {
 	createdAt?: string | null;
 };
 
-const STATUS_STYLES: Record<InstanceStatus, string> = {
-	pending:
-		"bg-[oklch(0.72_0.16_86/0.12)] text-[oklch(0.52_0.14_86)] border-[oklch(0.72_0.16_86/0.3)]",
-	provisioning: "bg-tk-primary/8 text-tk-primary border-tk-primary/25",
-	ready:
-		"bg-[oklch(0.58_0.17_149/0.1)] text-[oklch(0.42_0.14_149)] border-[oklch(0.58_0.17_149/0.3)]",
-	failed:
-		"bg-[oklch(0.65_0.2_25/0.06)] text-[oklch(0.5_0.18_25)] border-[oklch(0.65_0.2_25/0.25)]",
-};
-
-const BASE_DOMAIN = process.env.NEXT_PUBLIC_TKAMS_BASE_DOMAIN ?? "tkams.com";
-
 export function InstanceCard({
 	instance,
 	dict: d,
@@ -33,9 +22,9 @@ export function InstanceCard({
 	dict: Dict;
 }) {
 	const dd = d.dashboard.instances;
+	const statusMap = d.dashboard.status;
 	const status = (instance.status ?? "pending") as InstanceStatus;
-	const statusLabel = d.dashboard.status[status] ?? status;
-	const statusStyle = STATUS_STYLES[status] ?? STATUS_STYLES.pending;
+	const statusLabel = statusMap[status as keyof typeof statusMap] ?? status;
 
 	const isProvisioning = status === "provisioning" || status === "pending";
 	const isReady = status === "ready";
@@ -55,14 +44,7 @@ export function InstanceCard({
 						{instance.orgName ?? "—"}
 					</p>
 				</div>
-				<span
-					className={`inline-flex flex-shrink-0 items-center rounded-full border px-2.5 py-1 font-code font-semibold text-[0.75rem] ${statusStyle}`}
-				>
-					{isProvisioning && (
-						<span className="mr-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-					)}
-					{statusLabel}
-				</span>
+				<StatusBadge status={status} label={statusLabel} />
 			</div>
 
 			{isProvisioning && typeof instance.progressStep === "number" && (
@@ -76,7 +58,7 @@ export function InstanceCard({
 						/>
 					</div>
 					<p className="mt-1 font-body text-[0.75rem] text-tk-muted">
-						{instance.progressStep}/5 étapes
+						{instance.progressStep}/5 steps
 					</p>
 				</div>
 			)}

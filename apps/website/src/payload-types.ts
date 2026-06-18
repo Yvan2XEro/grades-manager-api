@@ -73,7 +73,11 @@ export interface Config {
 		categories: Category;
 		users: User;
 		"instance-requests": InstanceRequest;
+		"instance-events": InstanceEvent;
 		invoices: Invoice;
+		payments: Payment;
+		subscriptions: Subscription;
+		"support-tickets": SupportTicket;
 		redirects: Redirect;
 		forms: Form;
 		"form-submissions": FormSubmission;
@@ -99,7 +103,11 @@ export interface Config {
 		"instance-requests":
 			| InstanceRequestsSelect<false>
 			| InstanceRequestsSelect<true>;
+		"instance-events": InstanceEventsSelect<false> | InstanceEventsSelect<true>;
 		invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+		payments: PaymentsSelect<false> | PaymentsSelect<true>;
+		subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+		"support-tickets": SupportTicketsSelect<false> | SupportTicketsSelect<true>;
 		redirects: RedirectsSelect<false> | RedirectsSelect<true>;
 		forms: FormsSelect<false> | FormsSelect<true>;
 		"form-submissions":
@@ -838,9 +846,9 @@ export interface InstanceRequest {
 	country?: string | null;
 	adminName?: string | null;
 	adminEmail: string;
-	status: "pending" | "provisioning" | "ready" | "failed";
+	status: "pending" | "provisioning" | "ready" | "stopped" | "failed";
 	/**
-	 * 0-5 (0=pending, 5=deployed)
+	 * 0–5 (0 = pending, 5 = deployed)
 	 */
 	progressStep?: number | null;
 	instanceUrl?: string | null;
@@ -861,35 +869,122 @@ export interface InstanceRequest {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instance-events".
+ */
+export interface InstanceEvent {
+	id: string;
+	instance: string | InstanceRequest;
+	eventType:
+		| "provisioned"
+		| "restarted"
+		| "stopped"
+		| "started"
+		| "delete_attempted"
+		| "failed";
+	actorEmail?: string | null;
+	meta?:
+		| {
+				[k: string]: unknown;
+		  }
+		| unknown[]
+		| string
+		| number
+		| boolean
+		| null;
+	updatedAt: string;
+	createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invoices".
  */
 export interface Invoice {
 	id: string;
 	/**
-	 * Ex : INV-2026-001
+	 * e.g. INV-2026-001
 	 */
 	invoiceNumber: string;
 	client: string | User;
 	/**
-	 * Instance concernée (optionnel)
+	 * Leave blank for non-instance invoices
 	 */
 	instance?: (string | null) | InstanceRequest;
 	/**
-	 * Montant en unités de la devise
+	 * Amount in the invoice currency
 	 */
 	amount: number;
 	currency: string;
 	status: "paid" | "unpaid" | "cancelled";
 	/**
-	 * Ex : Janvier 2026 – Décembre 2026
+	 * e.g. January 2026 – December 2026
 	 */
 	period?: string | null;
 	description?: string | null;
 	/**
-	 * Lien de téléchargement de la facture PDF
+	 * Download link for the invoice PDF
 	 */
 	pdfUrl?: string | null;
 	dueDate?: string | null;
+	updatedAt: string;
+	createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+	id: string;
+	/**
+	 * e.g. TKAMS-{id}
+	 */
+	reference: string;
+	invoice: string | Invoice;
+	client: string | User;
+	amount: number;
+	currency: string;
+	status: "pending" | "completed" | "failed" | "cancelled";
+	/**
+	 * Reference assigned by NotchPay
+	 */
+	providerReference?: string | null;
+	checkoutUrl?: string | null;
+	updatedAt: string;
+	createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+	id: string;
+	plan: "standard" | "pro" | "enterprise";
+	client: string | User;
+	instance?: (string | null) | InstanceRequest;
+	studentCount?: number | null;
+	renewalDate?: string | null;
+	status?: ("active" | "suspended" | "cancelled") | null;
+	annualAmount?: number | null;
+	currency?: string | null;
+	contractUrl?: string | null;
+	notes?: string | null;
+	updatedAt: string;
+	createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-tickets".
+ */
+export interface SupportTicket {
+	id: string;
+	subject: string;
+	message: string;
+	from?: (string | null) | User;
+	instance?: (string | null) | InstanceRequest;
+	status?: ("open" | "in_progress" | "resolved") | null;
+	/**
+	 * Internal notes — not visible to the client.
+	 */
+	adminNotes?: string | null;
 	updatedAt: string;
 	createdAt: string;
 }
@@ -1108,8 +1203,24 @@ export interface PayloadLockedDocument {
 				value: string | InstanceRequest;
 		  } | null)
 		| ({
+				relationTo: "instance-events";
+				value: string | InstanceEvent;
+		  } | null)
+		| ({
 				relationTo: "invoices";
 				value: string | Invoice;
+		  } | null)
+		| ({
+				relationTo: "payments";
+				value: string | Payment;
+		  } | null)
+		| ({
+				relationTo: "subscriptions";
+				value: string | Subscription;
+		  } | null)
+		| ({
+				relationTo: "support-tickets";
+				value: string | SupportTicket;
 		  } | null)
 		| ({
 				relationTo: "redirects";
@@ -1506,6 +1617,18 @@ export interface InstanceRequestsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "instance-events_select".
+ */
+export interface InstanceEventsSelect<T extends boolean = true> {
+	instance?: T;
+	eventType?: T;
+	actorEmail?: T;
+	meta?: T;
+	updatedAt?: T;
+	createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invoices_select".
  */
 export interface InvoicesSelect<T extends boolean = true> {
@@ -1519,6 +1642,54 @@ export interface InvoicesSelect<T extends boolean = true> {
 	description?: T;
 	pdfUrl?: T;
 	dueDate?: T;
+	updatedAt?: T;
+	createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+	reference?: T;
+	invoice?: T;
+	client?: T;
+	amount?: T;
+	currency?: T;
+	status?: T;
+	providerReference?: T;
+	checkoutUrl?: T;
+	updatedAt?: T;
+	createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+	plan?: T;
+	client?: T;
+	instance?: T;
+	studentCount?: T;
+	renewalDate?: T;
+	status?: T;
+	annualAmount?: T;
+	currency?: T;
+	contractUrl?: T;
+	notes?: T;
+	updatedAt?: T;
+	createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "support-tickets_select".
+ */
+export interface SupportTicketsSelect<T extends boolean = true> {
+	subject?: T;
+	message?: T;
+	from?: T;
+	instance?: T;
+	status?: T;
+	adminNotes?: T;
 	updatedAt?: T;
 	createdAt?: T;
 }

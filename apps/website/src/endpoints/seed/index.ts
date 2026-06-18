@@ -122,11 +122,12 @@ export const seed = async ({
 		await Promise.all([
 			payload.create({
 				collection: "users",
+				// biome-ignore lint/suspicious/noExplicitAny: Payload draft type inference issue
 				data: {
 					name: "Demo Author",
 					email: "demo-author@example.com",
 					password: "password",
-				},
+				} as any,
 			}),
 			payload.create({
 				collection: "media",

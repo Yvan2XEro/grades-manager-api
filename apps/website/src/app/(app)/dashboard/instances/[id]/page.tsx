@@ -37,6 +37,20 @@ export default async function InstanceDetailPage({
 		typeof clientField === "object" ? clientField?.id : clientField;
 	if (clientId && clientId !== String(user.id)) notFound();
 
+	const { docs: rawEvents } = await payload.find({
+		collection: "instance-events",
+		where: { instance: { equals: id } },
+		sort: "-createdAt",
+		limit: 50,
+	});
+
+	const events = rawEvents.map((e) => ({
+		id: String(e.id),
+		eventType: e.eventType as string,
+		actorEmail: e.actorEmail as string | undefined,
+		createdAt: e.createdAt as string,
+	}));
+
 	return (
 		<InstanceDetailClient
 			instance={{
@@ -60,6 +74,7 @@ export default async function InstanceDetailPage({
 				dokployPostgresId: (record.dokployPostgresId as string) ?? null,
 				dokployProjectId: (record.dokployProjectId as string) ?? null,
 			}}
+			events={events}
 			dict={dict}
 		/>
 	);

@@ -1,10 +1,29 @@
 "use client";
 
+import {
+	AlertTriangle,
+	ChevronLeft,
+	ExternalLink,
+	HelpCircle,
+	Play,
+	RotateCcw,
+	Square,
+	Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import type { Dict } from "@/i18n";
+import { cn } from "@/utilities/ui";
+import {
+	CopyButton,
+	EmptyState,
+	EventRow,
+	type InstanceStatus,
+	SectionCard,
+	StatusBadge,
+} from "./ui";
 
 const BASE_DOMAIN = process.env.NEXT_PUBLIC_TKAMS_BASE_DOMAIN ?? "tkams.com";
 
@@ -30,143 +49,28 @@ export type InstanceData = {
 	dokployProjectId: string | null;
 };
 
-const STATUS_STYLES: Record<string, string> = {
-	pending:
-		"bg-[oklch(0.72_0.16_86/0.12)] text-[oklch(0.52_0.14_86)] border-[oklch(0.72_0.16_86/0.3)]",
-	provisioning: "bg-tk-primary/8 text-tk-primary border-tk-primary/25",
-	ready:
-		"bg-[oklch(0.58_0.17_149/0.1)] text-[oklch(0.42_0.14_149)] border-[oklch(0.58_0.17_149/0.3)]",
-	failed:
-		"bg-[oklch(0.65_0.2_25/0.06)] text-[oklch(0.5_0.18_25)] border-[oklch(0.65_0.2_25/0.25)]",
+type EventData = {
+	id: string;
+	eventType: string;
+	actorEmail?: string;
+	createdAt: string;
 };
 
-function CopyButton({ value }: { value: string }) {
-	const [copied, setCopied] = useState(false);
-	return (
-		<button
-			type="button"
-			title="Copier"
-			onClick={async () => {
-				await navigator.clipboard.writeText(value);
-				setCopied(true);
-				setTimeout(() => setCopied(false), 2000);
-			}}
-			className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-tk-muted transition-all duration-150 hover:bg-tk-bg-deep hover:text-tk-primary"
-		>
-			{copied ? (
-				<svg
-					width="12"
-					height="12"
-					viewBox="0 0 12 12"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				>
-					<path d="M1.5 6l3 3 6-6" />
-				</svg>
-			) : (
-				<svg
-					width="12"
-					height="12"
-					viewBox="0 0 12 12"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				>
-					<rect x="4" y="4" width="7" height="7" rx="1" />
-					<path d="M8 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h1" />
-				</svg>
-			)}
-		</button>
-	);
-}
-
-function InfoRow({
-	label,
-	value,
-	copyable = false,
-	mono = false,
-	link,
-}: {
-	label: string;
-	value: string;
-	copyable?: boolean;
-	mono?: boolean;
-	link?: string;
-}) {
-	return (
-		<div className="flex items-center justify-between gap-4 border-tk-border border-b py-3 last:border-0">
-			<span className="w-32 flex-shrink-0 font-code text-[0.75rem] text-tk-muted uppercase tracking-[0.07em]">
-				{label}
-			</span>
-			<div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-				{link ? (
-					<a
-						href={link}
-						target="_blank"
-						rel="noopener noreferrer"
-						className={`truncate text-[0.875rem] text-tk-primary no-underline hover:underline ${mono ? "font-code" : "font-body"}`}
-					>
-						{value}
-					</a>
-				) : (
-					<span
-						className={`truncate text-[0.875rem] text-tk-ink ${mono ? "font-code" : "font-body"}`}
-					>
-						{value}
-					</span>
-				)}
-				{copyable && <CopyButton value={value} />}
-			</div>
-		</div>
-	);
-}
-
-function SectionCard({
-	title,
-	sub,
-	children,
-}: {
-	title: string;
-	sub?: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="rounded-[1rem] border border-tk-border bg-tk-surface p-6">
-			<div className="mb-4">
-				<h2 className="font-display font-semibold text-[0.9375rem] text-tk-ink">
-					{title}
-				</h2>
-				{sub && (
-					<p className="mt-0.5 font-body text-[0.8125rem] text-tk-muted">
-						{sub}
-					</p>
-				)}
-			</div>
-			{children}
-		</div>
-	);
-}
+// ─── Action button ────────────────────────────────────────────────────────────
 
 function ActionButton({
 	label,
 	icon,
-	variant = "outline",
 	loading = false,
 	disabled = false,
-	danger = false,
+	variant = "default",
 	onClick,
 }: {
 	label: string;
 	icon: React.ReactNode;
-	variant?: "outline" | "ghost";
 	loading?: boolean;
 	disabled?: boolean;
-	danger?: boolean;
+	variant?: "default" | "primary";
 	onClick: () => void;
 }) {
 	return (
@@ -174,29 +78,17 @@ function ActionButton({
 			type="button"
 			onClick={onClick}
 			disabled={disabled || loading}
-			className={`flex items-center gap-2 rounded-[0.625rem] border px-3.5 py-2 font-body font-medium text-[0.8125rem] transition-all duration-150 ${
+			className={cn(
+				"inline-flex items-center gap-2 rounded-[0.625rem] border px-3.5 py-2 font-body font-medium text-[0.875rem] transition-all duration-150",
 				disabled || loading
 					? "cursor-not-allowed border-tk-border text-tk-muted opacity-50"
-					: danger
-						? "border-[oklch(0.65_0.2_25/0.3)] text-[oklch(0.5_0.18_25)] hover:border-[oklch(0.65_0.2_25/0.5)] hover:bg-[oklch(0.65_0.2_25/0.06)]"
-						: "border-tk-border text-tk-ink-soft hover:border-tk-ink/20 hover:bg-tk-bg-deep hover:text-tk-ink"
-			}`}
+					: variant === "primary"
+						? "border-transparent bg-tk-primary text-white shadow-sm hover:bg-tk-primary/90"
+						: "border-tk-border bg-tk-surface text-tk-ink hover:border-tk-ink/20 hover:bg-tk-bg-deep",
+			)}
 		>
 			{loading ? (
-				<svg
-					width="13"
-					height="13"
-					viewBox="0 0 13 13"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.75"
-					className="animate-spin"
-				>
-					<path
-						d="M6.5 1v2M6.5 10v2M1 6.5h2M10 6.5h2M2.6 2.6l1.4 1.4M9 9l1.4 1.4M2.6 10.4l1.4-1.4M9 4l1.4-1.4"
-						strokeLinecap="round"
-					/>
-				</svg>
+				<RotateCcw size={14} strokeWidth={1.75} className="animate-spin" />
 			) : (
 				icon
 			)}
@@ -205,7 +97,96 @@ function ActionButton({
 	);
 }
 
-// ─── Delete zone with confirmation input ─────────────────────────────────────
+// ─── Provisioning progress ────────────────────────────────────────────────────
+
+function ProvisioningCard({
+	step,
+	steps,
+	title,
+	sub,
+}: {
+	step: number;
+	steps: readonly string[];
+	title: string;
+	sub: string;
+}) {
+	const pct = Math.round((step / steps.length) * 100);
+	return (
+		<div className="mb-6 rounded-[1rem] border border-tk-primary/20 bg-tk-primary/3 p-5">
+			<div className="mb-4 flex items-center justify-between gap-4">
+				<div>
+					<p className="font-display font-semibold text-[0.9375rem] text-tk-ink">
+						{title}
+					</p>
+					<p className="mt-0.5 font-body text-[0.8125rem] text-tk-muted">
+						{sub}
+					</p>
+				</div>
+				<span className="flex-shrink-0 font-code text-[0.75rem] text-tk-primary">
+					{step}/{steps.length}
+				</span>
+			</div>
+			{/* Progress bar */}
+			<div className="mb-4 h-1.5 overflow-hidden rounded-full bg-tk-primary/12">
+				<div
+					className="h-full rounded-full bg-tk-primary transition-all duration-700"
+					style={{ width: `${pct}%` }}
+				/>
+			</div>
+			{/* Steps */}
+			<div className="flex flex-col gap-1.5">
+				{steps.map((label, i) => {
+					const done = i < step;
+					const active = i === step;
+					return (
+						<div key={label} className="flex items-center gap-2.5">
+							<div
+								className={cn(
+									"flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full",
+									done
+										? "bg-[oklch(0.58_0.17_149)]"
+										: active
+											? "border-2 border-tk-primary"
+											: "border border-tk-border bg-tk-bg",
+								)}
+							>
+								{done && (
+									<svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+										<path
+											d="M1 4l2 2 4-4"
+											stroke="white"
+											strokeWidth="1.75"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+										/>
+									</svg>
+								)}
+								{active && (
+									<div className="h-1.5 w-1.5 animate-pulse rounded-full bg-tk-primary" />
+								)}
+							</div>
+							<span
+								className={cn(
+									"font-body text-[0.8125rem]",
+									done
+										? "text-[oklch(0.42_0.14_149)]"
+										: active
+											? "font-medium text-tk-ink"
+											: "text-tk-muted",
+								)}
+							>
+								{label}
+							</span>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
+}
+
+// ─── Danger zone ──────────────────────────────────────────────────────────────
+
 function DangerZone({
 	instance,
 	dict: d,
@@ -244,37 +225,28 @@ function DangerZone({
 	};
 
 	return (
-		<div className="rounded-[1rem] border-2 border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.02)] p-6">
-			<div className="mb-5 flex items-start gap-3">
-				<div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[0.5rem] bg-[oklch(0.65_0.2_25/0.1)]">
-					<svg
-						width="14"
-						height="14"
-						viewBox="0 0 14 14"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.75"
-						strokeLinecap="round"
-						strokeLinejoin="round"
+		<div className="rounded-[1rem] border border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.02)] p-5">
+			<div className="mb-4 flex items-start gap-3">
+				<div className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[0.5rem] bg-[oklch(0.65_0.2_25/0.1)]">
+					<AlertTriangle
+						size={13}
+						strokeWidth={1.75}
 						className="text-[oklch(0.5_0.18_25)]"
-					>
-						<path d="M7 1L1 12h12L7 1z" />
-						<path d="M7 5v3M7 10v.5" />
-					</svg>
+					/>
 				</div>
 				<div>
-					<h3 className="font-display font-semibold text-[0.9375rem] text-[oklch(0.45_0.18_25)]">
+					<p className="font-display font-semibold text-[0.875rem] text-[oklch(0.45_0.18_25)]">
 						{dd.danger_delete_title}
-					</h3>
-					<p className="mt-1 font-body text-[0.8125rem] text-tk-muted leading-relaxed">
+					</p>
+					<p className="mt-0.5 font-body text-[0.8125rem] text-tk-muted leading-relaxed">
 						{dd.danger_delete_desc}
 					</p>
 				</div>
 			</div>
 
-			<div className="flex flex-col items-start gap-3 sm:flex-row">
+			<div className="flex flex-col items-start gap-2.5 sm:flex-row">
 				<div className="min-w-0 flex-1">
-					<label className="mb-1.5 block font-code text-[0.75rem] text-tk-muted uppercase tracking-[0.07em]">
+					<label className="mb-1 block font-code text-[0.6875rem] text-tk-muted uppercase tracking-[0.07em]">
 						{dd.danger_delete_confirm}:{" "}
 						<span className="font-semibold text-tk-ink">
 							{instance.subdomain}
@@ -285,7 +257,7 @@ function DangerZone({
 						value={confirm}
 						onChange={(e) => setConfirm(e.target.value)}
 						placeholder={instance.subdomain ?? ""}
-						className="w-full rounded-[0.5rem] border border-tk-border bg-tk-bg px-3.5 py-2.5 font-code text-[0.875rem] text-tk-ink outline-none transition-colors focus:border-[oklch(0.65_0.2_25/0.5)]"
+						className="w-full rounded-[0.5rem] border border-tk-border bg-tk-bg px-3 py-2 font-code text-[0.875rem] text-tk-ink outline-none transition-colors focus:border-[oklch(0.65_0.2_25/0.5)]"
 						disabled={deleting}
 					/>
 				</div>
@@ -293,29 +265,19 @@ function DangerZone({
 					type="button"
 					onClick={handleDelete}
 					disabled={!match || deleting}
-					className={`flex flex-shrink-0 items-center gap-2 rounded-[0.625rem] border px-4 py-2.5 font-body font-semibold text-[0.8125rem] transition-all duration-150 ${
+					className={cn(
+						"inline-flex flex-shrink-0 items-center gap-2 rounded-[0.625rem] border px-4 py-2 font-body font-semibold text-[0.8125rem] transition-all duration-150",
 						match && !deleting
 							? "border-transparent bg-[oklch(0.65_0.2_25)] text-white hover:bg-[oklch(0.55_0.2_25)]"
-							: "cursor-not-allowed border-[oklch(0.65_0.2_25/0.3)] bg-transparent text-[oklch(0.5_0.18_25)] opacity-40"
-					}`}
+							: "cursor-not-allowed border-[oklch(0.65_0.2_25/0.3)] bg-transparent text-[oklch(0.5_0.18_25)] opacity-40",
+					)}
 				>
-					<svg
-						width="13"
-						height="13"
-						viewBox="0 0 13 13"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.75"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					>
-						<path d="M2 3h9M5 3V2h3v1M3 3l.7 8h5.6L10 3" />
-					</svg>
+					<Trash2 size={13} strokeWidth={1.75} />
 					{deleting ? dd.danger_deleting : dd.danger_delete_btn}
 				</button>
 			</div>
 			{error && (
-				<p className="mt-3 font-body text-[0.8125rem] text-[oklch(0.5_0.18_25)]">
+				<p className="mt-2.5 font-body text-[0.8125rem] text-[oklch(0.5_0.18_25)]">
 					{error}
 				</p>
 			)}
@@ -323,29 +285,59 @@ function DangerZone({
 	);
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Sidebar detail row ───────────────────────────────────────────────────────
+
+function DetailRow({
+	label,
+	value,
+	copyable = false,
+}: {
+	label: string;
+	value?: string | null;
+	copyable?: boolean;
+}) {
+	if (!value) return null;
+	return (
+		<div className="py-2.5 [&:not(:last-child)]:border-tk-border [&:not(:last-child)]:border-b">
+			<p className="mb-0.5 font-code text-[0.6875rem] text-tk-muted uppercase tracking-[0.08em]">
+				{label}
+			</p>
+			<div className="flex items-center justify-between gap-2">
+				<p className="break-all font-body text-[0.875rem] text-tk-ink">
+					{value}
+				</p>
+				{copyable && <CopyButton value={value} />}
+			</div>
+		</div>
+	);
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 export function InstanceDetailClient({
 	instance: initial,
 	dict: d,
+	events: initialEvents,
 }: {
 	instance: InstanceData;
 	dict: Dict;
+	events: EventData[];
 }) {
 	const dd = d.dashboard.detail;
+	const ev = d.dashboard.events;
 	const router = useRouter();
 	const [instance, setInstance] = useState(initial);
 	const [actionLoading, setActionLoading] = useState<
 		"restart" | "stop" | "start" | null
 	>(null);
 	const [actionError, setActionError] = useState("");
+	const [events] = useState(initialEvents);
 
-	// Poll provisioning status
 	useEffect(() => {
 		if (instance.status !== "provisioning" && instance.status !== "pending")
 			return;
 		let cancelled = false;
 		let delay = 2500;
-
 		async function poll() {
 			if (cancelled) return;
 			try {
@@ -368,7 +360,6 @@ export function InstanceDetailClient({
 				if (!cancelled) setTimeout(poll, delay);
 			}
 		}
-
 		void poll();
 		return () => {
 			cancelled = true;
@@ -385,7 +376,11 @@ export function InstanceDetailClient({
 				credentials: "include",
 				body: JSON.stringify({ action }),
 			});
-			if (!res.ok) {
+			if (res.ok) {
+				const data = await res.json();
+				if (data.status)
+					setInstance((prev) => ({ ...prev, status: data.status }));
+			} else {
 				const data = await res.json();
 				setActionError(data.error ?? dd.action_error);
 			}
@@ -396,18 +391,21 @@ export function InstanceDetailClient({
 		}
 	};
 
-	const isProvisioning =
-		instance.status === "provisioning" || instance.status === "pending";
-	const isReady = instance.status === "ready";
-	const isFailed = instance.status === "failed";
-	const statusStyle = STATUS_STYLES[instance.status] ?? STATUS_STYLES.pending;
-	const statusBadge = isReady
+	const status = instance.status as InstanceStatus;
+	const isProvisioning = status === "provisioning" || status === "pending";
+	const isReady = status === "ready";
+	const isFailed = status === "failed";
+	const isStopped = status === "stopped";
+
+	const statusBadgeLabel = isReady
 		? dd.ready_badge
 		: isProvisioning
 			? dd.provisioning_badge
 			: isFailed
 				? dd.failed_badge
-				: instance.status;
+				: isStopped
+					? dd.stopped_badge
+					: status;
 
 	const institutionTypes: Record<string, string> = {
 		university: "Université",
@@ -417,354 +415,237 @@ export function InstanceDetailClient({
 		other: "Autre",
 	};
 
-	return (
-		<div className="max-w-3xl">
-			<Link
-				href="/dashboard/instances"
-				className="mb-6 inline-flex items-center gap-1.5 font-body text-[0.8125rem] text-tk-muted no-underline transition-colors hover:text-tk-ink"
-			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 14 14"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				>
-					<path d="M9 3L5 7l4 4" />
-				</svg>
-				{dd.back}
-			</Link>
+	const instanceUrl =
+		instance.instanceUrl ?? `https://${instance.subdomain}.${BASE_DOMAIN}`;
 
-			{/* ── Header ── */}
-			<div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-				<div>
-					<h1 className="font-bold font-display text-[1.5rem] text-tk-ink tracking-[-0.03em]">
-						{instance.subdomain}
-						<span className="font-normal text-tk-muted">.{BASE_DOMAIN}</span>
-					</h1>
-					<p className="mt-0.5 font-body text-[0.9375rem] text-tk-muted">
-						{instance.orgName}
-					</p>
-				</div>
-				<span
-					className={`inline-flex items-center rounded-full border px-3 py-1.5 font-code font-semibold text-[0.8125rem] ${statusStyle}`}
+	return (
+		<div>
+			{/* ── Page header ─────────────────────────────────────────────── */}
+			<div className="mb-6">
+				<Link
+					href="/dashboard/instances"
+					className="mb-4 inline-flex items-center gap-1.5 font-body text-[0.8125rem] text-tk-muted no-underline transition-colors hover:text-tk-ink"
 				>
-					{isProvisioning && (
-						<span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-current" />
-					)}
-					{statusBadge}
-				</span>
+					<ChevronLeft size={14} strokeWidth={1.5} />
+					{dd.back}
+				</Link>
+
+				<div className="flex flex-wrap items-start justify-between gap-4">
+					{/* Identity */}
+					<div>
+						<p className="font-body text-[0.8125rem] text-tk-muted">
+							{instance.orgName}
+						</p>
+						<div className="mt-1 flex flex-wrap items-center gap-3">
+							<h1 className="font-bold font-display text-[1.5rem] text-tk-ink leading-none tracking-[-0.025em]">
+								{instance.subdomain}
+								<span className="font-normal text-tk-muted">
+									.{BASE_DOMAIN}
+								</span>
+							</h1>
+							<StatusBadge status={status} label={statusBadgeLabel} size="md" />
+						</div>
+						{/* URL line */}
+						<div className="mt-2 flex min-w-0 items-center gap-2">
+							{isReady && (
+								<span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[oklch(0.58_0.17_149)]" />
+							)}
+							<span className="min-w-0 truncate font-code text-[0.8125rem] text-tk-muted">
+								{instanceUrl}
+							</span>
+							<CopyButton value={instanceUrl} />
+							{instance.instanceUrl && (
+								<a
+									href={instance.instanceUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex h-5 w-5 items-center justify-center rounded text-tk-muted transition-colors hover:text-tk-primary"
+								>
+									<ExternalLink size={12} strokeWidth={1.75} />
+								</a>
+							)}
+						</div>
+					</div>
+
+					{/* Actions */}
+					<div className="flex flex-wrap items-center gap-2">
+						{isReady && instance.instanceUrl && (
+							<a
+								href={instance.instanceUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="tk-btn-primary inline-flex items-center gap-2"
+							>
+								<ExternalLink size={14} strokeWidth={1.75} />
+								{dd.open_instance}
+							</a>
+						)}
+						{isReady && (
+							<>
+								<ActionButton
+									label={dd.action_restart}
+									icon={<RotateCcw size={14} strokeWidth={1.75} />}
+									loading={actionLoading === "restart"}
+									disabled={actionLoading !== null}
+									onClick={() => handleAction("restart")}
+								/>
+								<ActionButton
+									label={dd.action_stop}
+									icon={<Square size={14} strokeWidth={1.75} />}
+									loading={actionLoading === "stop"}
+									disabled={actionLoading !== null}
+									onClick={() => handleAction("stop")}
+								/>
+							</>
+						)}
+						{(isStopped || isFailed) && (
+							<ActionButton
+								label={dd.action_start}
+								icon={<Play size={14} strokeWidth={1.75} />}
+								loading={actionLoading === "start"}
+								disabled={actionLoading !== null}
+								variant="primary"
+								onClick={() => handleAction("start")}
+							/>
+						)}
+					</div>
+				</div>
+
+				{/* Action error */}
+				{actionError && (
+					<p className="mt-3 font-body text-[0.875rem] text-[oklch(0.5_0.18_25)]">
+						{actionError}
+					</p>
+				)}
 			</div>
 
-			{/* ── Action bar (ready only) ── */}
-			{isReady && (
-				<div className="mb-7 flex flex-wrap items-center gap-2">
-					{instance.instanceUrl && (
-						<a
-							href={instance.instanceUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="tk-btn-primary flex items-center gap-2"
-						>
-							<svg
-								width="14"
-								height="14"
-								viewBox="0 0 14 14"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.75"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="M7 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V8" />
-								<path d="M10 1h3v3M7 7l6-6" />
-							</svg>
-							{dd.open_instance}
-						</a>
-					)}
-					<ActionButton
-						label={dd.action_restart}
-						icon={
-							<svg
-								width="13"
-								height="13"
-								viewBox="0 0 13 13"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.75"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="M11 6.5A4.5 4.5 0 1 1 8.5 2.3" />
-								<path d="M11 1v3H8" />
-							</svg>
-						}
-						loading={actionLoading === "restart"}
-						disabled={actionLoading !== null}
-						onClick={() => handleAction("restart")}
+			{/* ── Error message (inline, no card overhead) ────────────────── */}
+			{isFailed && instance.errorMessage && (
+				<div className="mb-5 flex gap-3 rounded-[0.75rem] border border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.04)] px-4 py-3">
+					<AlertTriangle
+						size={14}
+						strokeWidth={1.75}
+						className="mt-0.5 flex-shrink-0 text-[oklch(0.55_0.2_25)]"
 					/>
-					<ActionButton
-						label={dd.action_stop}
-						icon={
-							<svg
-								width="13"
-								height="13"
-								viewBox="0 0 13 13"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.75"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<rect x="3" y="3" width="7" height="7" rx="1" />
-							</svg>
-						}
-						loading={actionLoading === "stop"}
-						disabled={actionLoading !== null}
-						onClick={() => handleAction("stop")}
-					/>
+					<pre className="min-w-0 flex-1 whitespace-pre-wrap break-all font-code text-[0.8125rem] text-[oklch(0.45_0.18_25)] leading-relaxed">
+						{instance.errorMessage}
+					</pre>
 				</div>
 			)}
 
-			{/* Start button when stopped */}
-			{isFailed && (
-				<div className="mb-7 flex flex-wrap items-center gap-2">
-					<ActionButton
-						label={dd.action_start}
-						icon={
-							<svg
-								width="13"
-								height="13"
-								viewBox="0 0 13 13"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.75"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="M3 2l8 4.5L3 11V2z" />
-							</svg>
-						}
-						loading={actionLoading === "start"}
-						disabled={actionLoading !== null}
-						onClick={() => handleAction("start")}
-					/>
-				</div>
-			)}
-
-			{actionError && (
-				<div className="mb-5 rounded-[0.625rem] border border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.05)] px-4 py-3 font-body text-[0.875rem] text-[oklch(0.5_0.18_25)]">
-					{actionError}
-				</div>
-			)}
-
-			{/* ── Provisioning progress ── */}
+			{/* ── Provisioning progress ────────────────────────────────────── */}
 			{isProvisioning && (
-				<SectionCard title={dd.provisioning_title} sub={dd.provisioning_sub}>
-					<div className="flex flex-col gap-2">
-						{dd.progress_steps.map((label, i) => {
-							const step = instance.progressStep ?? 0;
-							const done = i < step;
-							const active = i === step;
-							return (
-								<div
-									key={i}
-									className={`flex items-center gap-3 rounded-[0.625rem] border px-4 py-2.5 transition-all duration-300 ${done ? "border-[oklch(0.58_0.17_149/0.2)] bg-[oklch(0.58_0.17_149/0.03)]" : active ? "border-tk-primary/30 bg-tk-primary/4" : "border-tk-border bg-tk-bg"}`}
-								>
-									<div
-										className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${done ? "bg-tk-accent-emerald" : active ? "border-2 border-tk-primary" : "border border-tk-border bg-tk-bg-deep"}`}
-									>
-										{done ? (
-											<svg
-												width="10"
-												height="10"
-												viewBox="0 0 10 10"
-												fill="none"
-											>
-												<path
-													d="M1.5 5l2.5 2.5 4.5-4.5"
-													stroke="white"
-													strokeWidth="2"
-													strokeLinecap="round"
-													strokeLinejoin="round"
-												/>
-											</svg>
-										) : active ? (
-											<div className="h-2 w-2 animate-pulse rounded-full bg-tk-primary" />
-										) : null}
-									</div>
-									<span
-										className={`font-body text-[0.875rem] ${done ? "text-tk-ink" : active ? "font-medium text-tk-ink" : "text-tk-muted"}`}
-									>
-										{label}
-									</span>
-								</div>
-							);
-						})}
-					</div>
-				</SectionCard>
+				<ProvisioningCard
+					step={instance.progressStep ?? 0}
+					steps={dd.progress_steps}
+					title={dd.provisioning_title}
+					sub={dd.provisioning_sub}
+				/>
 			)}
 
-			<div className="mt-1 flex flex-col gap-5">
-				{/* ── General info ── */}
-				<SectionCard title={dd.overview_title}>
-					<InfoRow
-						label={dd.url_label}
-						value={
-							instance.instanceUrl ??
-							`https://${instance.subdomain}.${BASE_DOMAIN}`
-						}
-						copyable
-						link={instance.instanceUrl ?? undefined}
-						mono
-					/>
-					<InfoRow
-						label={dd.subdomain_label}
-						value={`${instance.subdomain}.${BASE_DOMAIN}`}
-						copyable
-						mono
-					/>
-					<InfoRow label={dd.status_label} value={statusBadge} />
-					<InfoRow
-						label={dd.institution_type_label}
-						value={
-							institutionTypes[instance.institutionType ?? ""] ??
-							instance.institutionType ??
-							"—"
-						}
-					/>
-					<InfoRow label={dd.country_label} value={instance.country ?? "—"} />
-					<InfoRow
-						label={dd.admin_name_label}
-						value={instance.adminName ?? "—"}
-					/>
-					<InfoRow
-						label={dd.admin_email_label}
-						value={instance.adminEmail ?? "—"}
-						copyable
-					/>
-					<InfoRow
-						label={dd.created_label}
-						value={
-							instance.createdAt
-								? new Date(instance.createdAt).toLocaleDateString("fr-FR", {
-										day: "numeric",
-										month: "long",
-										year: "numeric",
-									})
-								: "—"
-						}
-					/>
-				</SectionCard>
-
-				{/* ── Infrastructure ── */}
-				{(instance.dokployAppId ||
-					instance.dokployPostgresId ||
-					instance.dokployProjectId) && (
-					<SectionCard title={dd.infra_title} sub={dd.infra_sub}>
-						{instance.dokployAppId && (
-							<InfoRow
-								label={dd.app_id_label}
-								value={instance.dokployAppId}
-								copyable
-								mono
-							/>
-						)}
-						{instance.dokployPostgresId && (
-							<InfoRow
-								label={dd.db_id_label}
-								value={instance.dokployPostgresId}
-								copyable
-								mono
-							/>
-						)}
-						{instance.dokployProjectId && (
-							<InfoRow
-								label={dd.project_id_label}
-								value={instance.dokployProjectId}
-								copyable
-								mono
-							/>
-						)}
-					</SectionCard>
-				)}
-
-				{/* ── Seed data ── */}
-				<SectionCard title={dd.seed_title} sub={dd.seed_sub}>
-					<div className="flex items-center justify-between border-tk-border border-b py-2.5">
-						<span className="font-code text-[0.75rem] text-tk-muted uppercase tracking-[0.07em]">
-							{dd.seed_mode_label}
-						</span>
-						<span className="font-body font-medium text-[0.875rem] text-tk-ink">
-							{initial.seedMode === "demo"
-								? dd.seed_mode_demo
-								: initial.seedMode === "custom"
-									? dd.seed_mode_custom
-									: dd.seed_mode_empty}
-						</span>
-					</div>
-					{initial.seedMode !== "empty" && (
-						<div className="flex flex-col gap-0">
-							{(
-								[
-									[
-										d.register.seed.templates.structure.title,
-										initial.seedFoundationYaml,
-									],
-									[
-										d.register.seed.templates.programmes.title,
-										initial.seedAcademicsYaml,
-									],
-									[
-										d.register.seed.templates.equipe.title,
-										initial.seedUsersYaml,
-									],
-								] as [string, string | null][]
-							).map(([title, yaml]) => (
-								<div
-									key={title}
-									className="flex items-center justify-between border-tk-border border-b py-2.5 last:border-0"
-								>
-									<span className="font-body text-[0.875rem] text-tk-ink">
-										{title}
-									</span>
-									<span
-										className={`font-code font-semibold text-[0.75rem] ${yaml ? "text-tk-accent-emerald" : "text-tk-muted"}`}
-									>
-										{yaml ? `✓ ${dd.seed_loaded}` : dd.seed_empty}
-									</span>
-								</div>
-							))}
+			{/* ── Body: activity + sidebar ─────────────────────────────────── */}
+			<div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1fr_240px]">
+				{/* Activity log */}
+				<SectionCard title={dd.events_title}>
+					{events.length === 0 ? (
+						<EmptyState title={dd.events_empty} dashed={false} />
+					) : (
+						<div className="pt-1">
+							{events.map((event, i) => {
+								const eventLabel =
+									ev.types[event.eventType as keyof typeof ev.types] ??
+									event.eventType;
+								return (
+									<EventRow
+										key={event.id}
+										label={eventLabel}
+										actor={event.actorEmail}
+										date={new Date(event.createdAt).toLocaleDateString(
+											"fr-FR",
+											{
+												day: "numeric",
+												month: "short",
+												year: "numeric",
+												hour: "2-digit",
+												minute: "2-digit",
+											},
+										)}
+										isLast={i === events.length - 1}
+									/>
+								);
+							})}
 						</div>
 					)}
 				</SectionCard>
 
-				{/* ── Error detail ── */}
-				{isFailed && instance.errorMessage && (
-					<div className="rounded-[1rem] border border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.04)] p-5">
-						<h2 className="mb-2 font-display font-semibold text-[0.9375rem] text-[oklch(0.45_0.18_25)]">
-							{dd.failed_title}
-						</h2>
-						<pre className="whitespace-pre-wrap break-all font-code text-[0.8125rem] text-tk-muted leading-relaxed">
-							{instance.errorMessage}
-						</pre>
+				{/* Sidebar */}
+				<div className="flex flex-col gap-4">
+					<div className="rounded-[1rem] border border-tk-border bg-tk-surface px-5 py-1">
+						<DetailRow label={dd.admin_name_label} value={instance.adminName} />
+						<DetailRow
+							label={dd.admin_email_label}
+							value={instance.adminEmail}
+							copyable
+						/>
+						<DetailRow
+							label={dd.institution_type_label}
+							value={
+								institutionTypes[instance.institutionType ?? ""] ??
+								instance.institutionType
+							}
+						/>
+						<DetailRow label={dd.country_label} value={instance.country} />
+						<DetailRow
+							label={dd.created_label}
+							value={
+								instance.createdAt
+									? new Date(instance.createdAt).toLocaleDateString("fr-FR", {
+											day: "numeric",
+											month: "long",
+											year: "numeric",
+										})
+									: null
+							}
+						/>
 					</div>
-				)}
 
-				{/* ── Danger zone ── */}
-				<div>
-					<h2 className="mb-3 font-code font-semibold text-[0.875rem] text-[oklch(0.5_0.18_25)] uppercase tracking-[0.08em]">
-						{dd.danger_title}
-					</h2>
-					<DangerZone
-						instance={instance}
-						dict={d}
-						onDeleted={() => router.push("/dashboard/instances")}
-					/>
+					<Link
+						href="/dashboard/support"
+						className="flex items-center gap-3 rounded-[1rem] border border-tk-border bg-tk-surface px-4 py-3 no-underline transition-colors hover:border-tk-primary/30"
+					>
+						<div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[0.5rem] bg-tk-primary/8">
+							<HelpCircle
+								size={14}
+								strokeWidth={1.75}
+								className="text-tk-primary"
+							/>
+						</div>
+						<div>
+							<p className="font-body font-medium text-[0.875rem] text-tk-ink">
+								{dd.support_cta}
+							</p>
+							<p className="font-body text-[0.75rem] text-tk-muted">
+								{dd.support_sub}
+							</p>
+						</div>
+					</Link>
 				</div>
+			</div>
+
+			{/* ── Danger zone ──────────────────────────────────────────────── */}
+			<div className="mt-8">
+				<div className="mb-3 flex items-center gap-3">
+					<div className="h-px flex-1 bg-[oklch(0.65_0.2_25/0.15)]" />
+					<span className="flex-shrink-0 font-code text-[0.6875rem] text-[oklch(0.6_0.15_25)] uppercase tracking-[0.12em]">
+						{dd.danger_title}
+					</span>
+					<div className="h-px flex-1 bg-[oklch(0.65_0.2_25/0.15)]" />
+				</div>
+				<DangerZone
+					instance={instance}
+					dict={d}
+					onDeleted={() => router.push("/dashboard/instances")}
+				/>
 			</div>
 		</div>
 	);

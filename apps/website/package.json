@@ -20,6 +20,7 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
+    "@dokploy/sdk": "^0.29.4",
     "@payloadcms/admin-bar": "3.85.0",
     "@payloadcms/db-mongodb": "3.85.0",
     "@payloadcms/live-preview-react": "3.85.0",

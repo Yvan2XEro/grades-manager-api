@@ -5,11 +5,15 @@ import { buildConfig, type PayloadRequest } from "payload";
 import sharp from "sharp";
 import { defaultLexical } from "@/fields/defaultLexical";
 import { Categories } from "./collections/Categories";
+import { InstanceEvents } from "./collections/InstanceEvents";
 import { InstanceRequests } from "./collections/InstanceRequests";
 import { Invoices } from "./collections/Invoices";
 import { Media } from "./collections/Media";
 import { Pages } from "./collections/Pages";
+import { Payments } from "./collections/Payments";
 import { Posts } from "./collections/Posts";
+import { Subscriptions } from "./collections/Subscriptions";
+import { SupportTickets } from "./collections/SupportTickets";
 import { Users } from "./collections/Users";
 import { Footer } from "./Footer/config";
 import { Header } from "./Header/config";
@@ -68,7 +72,11 @@ export default buildConfig({
 		Categories,
 		Users,
 		InstanceRequests,
+		InstanceEvents,
 		Invoices,
+		Payments,
+		Subscriptions,
+		SupportTickets,
 	],
 	cors: [getServerSideURL()].filter(Boolean),
 	globals: [Header, Footer],

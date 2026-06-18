@@ -16,7 +16,7 @@ export function DashboardShell({
 		<div className="min-h-screen bg-tk-bg">
 			<Sidebar user={user} dict={dict} />
 			<main className="min-h-screen md:ml-[240px]">
-				<div className="mx-auto max-w-5xl px-4 pt-[4.5rem] pb-10 sm:px-6 md:px-8 md:pt-10">
+				<div className="px-5 pt-[4.5rem] pb-12 md:px-8 md:pt-8 xl:px-12">
 					{children}
 				</div>
 			</main>

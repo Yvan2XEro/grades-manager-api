@@ -1,109 +1,152 @@
 "use client";
 
-import type React from "react";
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Label } from "@/components/ui/label";
 import type { Dict } from "@/i18n";
+import { cn } from "@/utilities/ui";
+
+type FormData = {
+	currentPassword: string;
+	newPassword: string;
+	confirmPassword: string;
+};
 
 const inputCls =
-	"w-full py-3 px-4 bg-tk-bg border border-tk-border rounded-[0.625rem] text-tk-ink text-[0.9375rem] font-body outline-none transition-colors duration-150 focus:border-tk-primary box-border";
-const labelCls = "block text-tk-ink-soft text-sm font-medium mb-1.5 font-body";
+	"w-full rounded-[0.625rem] border border-tk-border bg-tk-bg px-4 py-3 font-body text-[0.9375rem] text-tk-ink outline-none transition-colors focus:border-tk-primary";
 
 export function PasswordForm({ dict: d }: { dict: Dict }) {
 	const s = d.dashboard.settings;
-	const [currentPassword, setCurrentPassword] = useState("");
-	const [newPassword, setNewPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [saving, setSaving] = useState(false);
-	const [saved, setSaved] = useState(false);
-	const [error, setError] = useState("");
+	const [savedOk, setSavedOk] = useState(false);
+	const [serverError, setServerError] = useState("");
 
-	const handleSave = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setError("");
-		if (newPassword !== confirmPassword) {
-			setError(d.register.errors.password_mismatch);
-			return;
-		}
-		if (newPassword.length < 8) {
-			setError(d.register.errors.password_min);
-			return;
-		}
-		setSaving(true);
-		setSaved(false);
-		try {
-			const res = await fetch("/api/users/change-password", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({ currentPassword, newPassword }),
-			});
-			if (res.ok) {
-				setSaved(true);
-				setCurrentPassword("");
-				setNewPassword("");
-				setConfirmPassword("");
-				setTimeout(() => setSaved(false), 3000);
+	const {
+		register,
+		handleSubmit,
+		watch,
+		reset,
+		formState: { isSubmitting, errors },
+	} = useForm<FormData>();
+
+	const newPassword = watch("newPassword");
+
+	const onSubmit = async (data: FormData) => {
+		setSavedOk(false);
+		setServerError("");
+		const res = await fetch("/api/users/change-password", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+			body: JSON.stringify({
+				currentPassword: data.currentPassword,
+				newPassword: data.newPassword,
+			}),
+		});
+		if (res.ok) {
+			setSavedOk(true);
+			reset();
+			setTimeout(() => setSavedOk(false), 4000);
+		} else {
+			const body = await res.json().catch(() => ({}));
+			if (body.error === "wrong_password") {
+				setServerError(s.password_error_wrong);
 			} else {
-				const data = await res.json();
-				setError(data.error ?? "Error updating password.");
+				setServerError("An error occurred. Please try again.");
 			}
-		} finally {
-			setSaving(false);
 		}
 	};
 
 	return (
 		<form
-			onSubmit={handleSave}
+			onSubmit={handleSubmit(onSubmit)}
 			className="flex flex-col gap-5 rounded-[1rem] border border-tk-border bg-tk-surface p-6"
 		>
 			<div>
-				<label className={labelCls}>{s.current_password}</label>
+				<Label className="mb-1.5 block font-body font-medium text-[0.875rem] text-tk-ink-soft">
+					{s.current_password}
+				</Label>
 				<input
 					type="password"
-					value={currentPassword}
-					onChange={(e) => setCurrentPassword(e.target.value)}
-					className={inputCls}
-					required
+					{...register("currentPassword", {
+						required: d.register.errors.required,
+					})}
+					className={cn(
+						inputCls,
+						errors.currentPassword && "border-[oklch(0.65_0.2_25/0.5)]",
+					)}
 				/>
+				{errors.currentPassword && (
+					<p className="mt-1 font-body text-[0.8125rem] text-[oklch(0.55_0.2_25)]">
+						{errors.currentPassword.message}
+					</p>
+				)}
 			</div>
+
 			<div>
-				<label className={labelCls}>{s.new_password}</label>
+				<Label className="mb-1.5 block font-body font-medium text-[0.875rem] text-tk-ink-soft">
+					{s.new_password}
+				</Label>
 				<input
 					type="password"
-					value={newPassword}
-					onChange={(e) => setNewPassword(e.target.value)}
-					className={inputCls}
-					required
-					minLength={8}
+					{...register("newPassword", {
+						required: d.register.errors.required,
+						minLength: { value: 8, message: d.register.errors.password_min },
+					})}
+					className={cn(
+						inputCls,
+						errors.newPassword && "border-[oklch(0.65_0.2_25/0.5)]",
+					)}
 				/>
+				{errors.newPassword && (
+					<p className="mt-1 font-body text-[0.8125rem] text-[oklch(0.55_0.2_25)]">
+						{errors.newPassword.message}
+					</p>
+				)}
 			</div>
+
 			<div>
-				<label className={labelCls}>{s.confirm_password}</label>
+				<Label className="mb-1.5 block font-body font-medium text-[0.875rem] text-tk-ink-soft">
+					{s.confirm_password}
+				</Label>
 				<input
 					type="password"
-					value={confirmPassword}
-					onChange={(e) => setConfirmPassword(e.target.value)}
-					className={inputCls}
-					required
+					{...register("confirmPassword", {
+						required: d.register.errors.required,
+						validate: (v) =>
+							v === newPassword || d.register.errors.password_mismatch,
+					})}
+					className={cn(
+						inputCls,
+						errors.confirmPassword && "border-[oklch(0.65_0.2_25/0.5)]",
+					)}
 				/>
+				{errors.confirmPassword && (
+					<p className="mt-1 font-body text-[0.8125rem] text-[oklch(0.55_0.2_25)]">
+						{errors.confirmPassword.message}
+					</p>
+				)}
 			</div>
-			{error && (
+
+			{serverError && (
 				<p className="font-body text-[0.875rem] text-[oklch(0.55_0.2_25)]">
-					{error}
+					{serverError}
 				</p>
 			)}
-			{saved && (
-				<p className="font-body text-[0.875rem] text-tk-accent-emerald">
-					✓ {s.saved}
-				</p>
+
+			{savedOk && (
+				<div className="flex items-center gap-2 font-body text-[0.875rem] text-tk-accent-emerald">
+					<CheckCircle2 size={15} strokeWidth={2} />
+					{s.password_success}
+				</div>
 			)}
+
 			<button
 				type="submit"
-				disabled={saving}
-				className={`tk-btn-primary justify-center ${saving ? "cursor-wait opacity-70" : ""}`}
+				disabled={isSubmitting}
+				className={`tk-btn-primary justify-center ${isSubmitting ? "cursor-wait opacity-70" : ""}`}
 			>
-				{saving ? s.saving : s.update_password}
+				{isSubmitting ? s.saving : s.update_password}
 			</button>
 		</form>
 	);

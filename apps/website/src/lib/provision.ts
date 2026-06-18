@@ -19,7 +19,7 @@ import {
 const BASE_DOMAIN = process.env.TKAMS_BASE_DOMAIN ?? "tkams.com";
 const WEBSITE_URL = process.env.WEBSITE_URL ?? "https://tkams.com";
 const APP_IMAGE =
-	process.env.DOKPLOY_APP_IMAGE ?? "ghcr.io/overbrand/tkams:latest";
+	process.env.DOKPLOY_APP_IMAGE ?? "ghcr.io/yvan2xero/tkams:latest";
 
 const secret = (bytes = 32) => randomBytes(bytes).toString("hex");
 
@@ -185,12 +185,17 @@ export async function provisionInstance(input: ProvisionInput) {
 			: [];
 		const env = [
 			`DATABASE_URL=${databaseUrl}`,
+			`DATABASE_HOST=${pgAppName}`,
+			"POSTGRES_USER=tkams",
 			`BETTER_AUTH_SECRET=${authSecret}`,
 			`BETTER_AUTH_URL=${instanceUrl}`,
 			`CORS_ORIGINS=${instanceUrl}`,
 			"PORT=3000",
 			"NODE_ENV=production",
 			`SERVER_PUBLIC_URL=${instanceUrl}`,
+			"SERVE_FRONTEND=true",
+			"RUN_SEED=true",
+			`DEFAULT_ORGANIZATION_SLUG=${subdomain}`,
 			`SEED_ORG_NAME=${orgName}`,
 			`SEED_ORG_SLUG=${subdomain}`,
 			`SEED_ORG_TYPE=${institutionType}`,

@@ -24,9 +24,10 @@ export async function seedTestUser(): Promise<void> {
 	});
 
 	// Create fresh test user
+	// biome-ignore lint/suspicious/noExplicitAny: Payload draft type inference issue
 	await payload.create({
 		collection: "users",
-		data: testUser,
+		data: testUser as any,
 	});
 }
 

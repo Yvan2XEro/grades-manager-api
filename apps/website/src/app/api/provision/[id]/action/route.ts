@@ -9,6 +9,18 @@ const schema = z.object({
 	action: z.enum(["restart", "stop", "start"]),
 });
 
+const ACTION_TO_STATUS: Record<string, string> = {
+	stop: "stopped",
+	start: "ready",
+	restart: "ready",
+};
+
+const ACTION_TO_EVENT: Record<string, "restarted" | "stopped" | "started"> = {
+	restart: "restarted",
+	stop: "stopped",
+	start: "started",
+};
+
 export async function POST(
 	req: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
@@ -48,9 +60,8 @@ export async function POST(
 		| undefined;
 	const clientId =
 		typeof clientField === "object" ? clientField?.id : clientField;
-	if (clientId && clientId !== String(user.id)) {
+	if (clientId && clientId !== String(user.id))
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-	}
 
 	const appId = record.dokployAppId as string | null;
 	if (!appId)
@@ -69,7 +80,30 @@ export async function POST(
 		} else if (action === "start") {
 			await dokploy.startApplication(appId);
 		}
-		return NextResponse.json({ ok: true });
+
+		// Update instance status in Payload
+		const newStatus = ACTION_TO_STATUS[action];
+		if (newStatus) {
+			await payload.update({
+				collection: "instance-requests",
+				id,
+				data: { status: newStatus as "ready" | "stopped" },
+			});
+		}
+
+		// Log the event (fire-and-forget)
+		payload
+			.create({
+				collection: "instance-events",
+				data: {
+					instance: id,
+					eventType: ACTION_TO_EVENT[action],
+					actorEmail: user.email ?? undefined,
+				},
+			})
+			.catch(console.error);
+
+		return NextResponse.json({ ok: true, status: newStatus });
 	} catch (err) {
 		return NextResponse.json(
 			{ error: err instanceof Error ? err.message : "Dokploy error" },
