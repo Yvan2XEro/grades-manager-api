@@ -520,16 +520,16 @@ export function InstanceDetailClient({
 			</div>
 
 			{/* ── Error message (inline, no card overhead) ────────────────── */}
-			{isFailed && instance.errorMessage && (
+			{isFailed && (
 				<div className="mb-5 flex gap-3 rounded-[0.75rem] border border-[oklch(0.65_0.2_25/0.2)] bg-[oklch(0.65_0.2_25/0.04)] px-4 py-3">
 					<AlertTriangle
 						size={14}
 						strokeWidth={1.75}
 						className="mt-0.5 flex-shrink-0 text-[oklch(0.55_0.2_25)]"
 					/>
-					<pre className="min-w-0 flex-1 whitespace-pre-wrap break-all font-code text-[0.8125rem] text-[oklch(0.45_0.18_25)] leading-relaxed">
-						{instance.errorMessage}
-					</pre>
+					<p className="min-w-0 flex-1 font-body text-[0.8125rem] text-[oklch(0.45_0.18_25)] leading-relaxed">
+						{dd.failed_sub}
+					</p>
 				</div>
 			)}
 

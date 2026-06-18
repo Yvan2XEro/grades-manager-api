@@ -58,7 +58,9 @@ export function InstanceCard({
 						/>
 					</div>
 					<p className="mt-1 font-body text-[0.75rem] text-tk-muted">
-						{instance.progressStep}/5 steps
+						{dd.setup_step
+							.replace("{n}", String(instance.progressStep))
+							.replace("{total}", "5")}
 					</p>
 				</div>
 			)}
