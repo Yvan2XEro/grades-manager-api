@@ -10,6 +10,7 @@ import {
 	client,
 	domainCreate,
 	postgresCreate,
+	postgresDeploy,
 	postgresRemove,
 	projectCreate,
 	projectRemove,
@@ -166,6 +167,11 @@ export const dokploy = {
 	async deleteApplication(applicationId: string) {
 		configure();
 		unwrap(await applicationDelete({ body: { applicationId } }));
+	},
+
+	async deployPostgres(postgresId: string) {
+		configure();
+		unwrap(await postgresDeploy({ body: { postgresId } }));
 	},
 
 	async deletePostgres(postgresId: string) {

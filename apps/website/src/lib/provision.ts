@@ -161,6 +161,7 @@ export async function provisionInstance(input: ProvisionInput) {
 			environmentId,
 		});
 		const databaseUrl = `postgresql://tkams:${dbPassword}@${postgres.appName}:5432/tkams`;
+		await dokploy.deployPostgres(postgres.postgresId);
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,

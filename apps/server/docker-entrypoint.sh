@@ -25,22 +25,37 @@ if [ "${RUN_SEED:-false}" = "true" ]; then
 
   SEED_TMP=""
 
-  # Production flow: download YAML seeds from portal URLs
+  # Step 1 — Try downloading YAML seeds from portal URLs (requires curl)
   if [ -n "${SEED_FOUNDATION_URL:-}" ] || [ -n "${SEED_ACADEMICS_URL:-}" ] || [ -n "${SEED_USERS_URL:-}" ]; then
     SEED_TMP=$(mktemp -d)
     echo "  Downloading seed files from portal..."
     if [ -n "${SEED_FOUNDATION_URL:-}" ]; then
-      curl -fsSL "${SEED_FOUNDATION_URL}" -o "${SEED_TMP}/foundation.yaml" && SEED_FOUNDATION="${SEED_TMP}/foundation.yaml"
+      if curl -fsSL "${SEED_FOUNDATION_URL}" -o "${SEED_TMP}/foundation.yaml"; then
+        SEED_FOUNDATION="${SEED_TMP}/foundation.yaml"
+      else
+        echo "  ⚠ Could not download foundation seed (curl unavailable or URL unreachable)"
+      fi
     fi
     if [ -n "${SEED_ACADEMICS_URL:-}" ]; then
-      curl -fsSL "${SEED_ACADEMICS_URL}" -o "${SEED_TMP}/academics.yaml" && SEED_ACADEMICS="${SEED_TMP}/academics.yaml"
+      if curl -fsSL "${SEED_ACADEMICS_URL}" -o "${SEED_TMP}/academics.yaml"; then
+        SEED_ACADEMICS="${SEED_TMP}/academics.yaml"
+      else
+        echo "  ⚠ Could not download academics seed"
+      fi
     fi
     if [ -n "${SEED_USERS_URL:-}" ]; then
-      curl -fsSL "${SEED_USERS_URL}" -o "${SEED_TMP}/users.yaml" && SEED_USERS="${SEED_TMP}/users.yaml"
+      if curl -fsSL "${SEED_USERS_URL}" -o "${SEED_TMP}/users.yaml"; then
+        SEED_USERS="${SEED_TMP}/users.yaml"
+      else
+        echo "  ⚠ Could not download users seed"
+      fi
     fi
+  fi
 
-  # Local fallback: generate minimal YAML from SEED_ORG_* env vars
-  elif [ -n "${SEED_ORG_SLUG:-}" ] && [ -z "${SEED_FOUNDATION:-}" ]; then
+  # Step 2 — Local fallback: generate minimal YAML from SEED_ORG_* env vars.
+  # Runs whenever SEED_FOUNDATION is still unset and SEED_ORG_SLUG is provided
+  # (covers both the no-URL case and the curl-failed case).
+  if [ -n "${SEED_ORG_SLUG:-}" ] && [ -z "${SEED_FOUNDATION:-}" ]; then
     SEED_TMP=$(mktemp -d)
     echo "  Generating seed files from SEED_ORG_* env vars..."
 

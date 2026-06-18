@@ -10,10 +10,11 @@ COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
 RUN PUPPETEER_SKIP_DOWNLOAD=true CYPRESS_INSTALL_BINARY=0 bun install --backend=hardlink --verbose
 
-# Compile the API (tsdown emits ESM into apps/server/dist)
+# Compile the API and build the web SPA
 FROM deps AS build
 COPY . .
 RUN bun run --filter server build
+RUN bun run --filter web build
 
 # Runtime image with only the server workspace and production deps
 FROM base AS runtime
@@ -28,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     libappindicator3-1 \
     libasound2 \
     postgresql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
@@ -39,6 +41,8 @@ RUN PUPPETEER_SKIP_DOWNLOAD=true bun install --filter server --backend=hardlink 
 
 # Copy built application
 COPY --from=build /usr/src/app/apps/server/dist ./apps/server/dist
+# Web SPA — served by the server when SERVE_FRONTEND=true
+COPY --from=build /usr/src/app/apps/web/dist ./public
 COPY --from=build /usr/src/app/apps/server/storage ./apps/server/storage
 COPY --from=build /usr/src/app/apps/server/src/db/migrations ./apps/server/dist/db/migrations
 COPY --from=build /usr/src/app/apps/server/src/modules/exports/templates ./apps/server/dist/templates
