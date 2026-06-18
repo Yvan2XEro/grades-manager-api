@@ -54,6 +54,7 @@ const nextConfig: NextConfig = {
 		return webpackConfig;
 	},
 	output: "standalone",
+	outputFileTracingRoot: path.resolve(dirname, "../.."),
 	reactStrictMode: true,
 	redirects,
 	turbopack: {
