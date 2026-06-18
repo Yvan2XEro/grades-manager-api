@@ -1,62 +1,66 @@
+# Production deployment — TKAMS portal (tkams.com)
+# Deployed as a Compose stack in Dokploy (uses Traefik for routing + SSL).
+#
+# First deploy:
+#   cp .env.website .env
+#   fill in secrets, then:
+#   docker compose pull && docker compose up -d
+#
+# Update to latest image:
+#   docker compose pull && docker compose up -d --no-deps website
+
 services:
-  server:
-    image: ghcr.io/yvan2xero/tkams-server:latest
-    build:
-      context: .
-      dockerfile: apps/server/Dockerfile
+  website:
+    image: ghcr.io/yvan2xero/tkams-website:${IMAGE_TAG:-latest}
     environment:
       NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: ${DATABASE_URL:-postgres://grades:grades@postgres:5432/grades}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-      BETTER_AUTH_COOKIE_SAMESITE: ${BETTER_AUTH_COOKIE_SAMESITE:-none}
-      BETTER_AUTH_COOKIE_SECURE: ${BETTER_AUTH_COOKIE_SECURE:-true}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173}
-      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-http://localhost:3000}
-      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
-      STORAGE_LOCAL_ROOT: /usr/src/app/apps/server/storage/uploads
-      STORAGE_LOCAL_PUBLIC_PATH: /uploads
-    ports:
-      - "3000:3000"
-    volumes:
-      - server_uploads:/usr/src/app/apps/server/storage/uploads
+      DATABASE_URL: mongodb://mongo:27017/tkams-website
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NEXT_PUBLIC_SERVER_URL: https://tkams.com
+      WEBSITE_URL: https://tkams.com
+      DOKPLOY_URL: ${DOKPLOY_URL}
+      DOKPLOY_API_KEY: ${DOKPLOY_API_KEY}
+      DOKPLOY_APP_IMAGE: ${DOKPLOY_APP_IMAGE:-ghcr.io/yvan2xero/tkams:latest}
+      TKAMS_BASE_DOMAIN: tkams.com
+      NEXT_PUBLIC_TKAMS_BASE_DOMAIN: tkams.com
+      NOTCHPAY_PUBLIC_KEY: ${NOTCHPAY_PUBLIC_KEY}
+      NOTCHPAY_HASH_KEY: ${NOTCHPAY_HASH_KEY}
+    networks:
+      - dokploy-network
+      - internal
     depends_on:
-      postgres:
-        condition: service_healthy
+      - mongo
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      # HTTPS — serves both apex and www (Next.js handles www→apex redirect internally)
+      - "traefik.http.routers.tkams-website.rule=Host(`tkams.com`) || Host(`www.tkams.com`)"
+      - "traefik.http.routers.tkams-website.entrypoints=websecure"
+      - "traefik.http.routers.tkams-website.tls=true"
+      - "traefik.http.routers.tkams-website.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tkams-website.loadbalancer.server.port=3000"
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.tkams-website-http.rule=Host(`tkams.com`) || Host(`www.tkams.com`)"
+      - "traefik.http.routers.tkams-website-http.entrypoints=web"
+      - "traefik.http.routers.tkams-website-http.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    restart: unless-stopped
 
-  web:
-    image: ghcr.io/yvan2xero/tkams-web:latest
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    environment:
-      NODE_ENV: production
-      PORT: 4173
-      SERVER_PUBLIC_URL: ${SERVER_PUBLIC_URL:-http://localhost:3000}
-      DEFAULT_ORGANIZATION_SLUG: ${DEFAULT_ORGANIZATION_SLUG:-sgn-institution}
-    ports:
-      - "4173:4173"
-    depends_on:
-      - server
-
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: grades
-      POSTGRES_PASSWORD: grades
-      POSTGRES_DB: grades
+  mongo:
+    image: mongo:7
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "54321:5432"
+      - mongo_data:/data/db
+    networks:
+      - internal
+    restart: unless-stopped
 
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+networks:
+  # Traefik's shared network — must already exist on the Dokploy host
+  dokploy-network:
+    external: true
+  # Internal network — website <-> mongo, not exposed to Traefik
+  internal:
 
 volumes:
-  server_uploads:
-  postgres_data:
+  mongo_data:
