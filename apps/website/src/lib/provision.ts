@@ -140,10 +140,7 @@ export async function provisionInstance(input: ProvisionInput) {
 
 		// Step 1 — Create Dokploy project
 		const project = await dokploy.createProject(orgName, `TKAMS — ${orgName}`);
-		const projectFull = await dokploy.getProject(project.projectId);
-		const environmentId = projectFull.environments?.[0]?.environmentId;
-		if (!environmentId)
-			throw new Error("No environment found on created project");
+		const environmentId = await dokploy.getEnvironmentId(project.projectId);
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
