@@ -1,327 +1,158 @@
 # Deployment Guide
 
-This guide covers different deployment scenarios using Docker Compose.
+This guide covers deploying the TKAMS portal (`apps/website`) to production using Docker Compose on a Dokploy-managed server.
 
-## Docker Compose Files Overview
+---
 
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docker-compose.yml` | Development - builds images locally | Local development and testing |
-| `docker-compose.seed.yml` | Development seeding override | First-time local setup with seed data |
-| `deployments/docker/docker-compose.prod.yml` | Production - pulls from GHCR | Production deployment with pre-built images |
-| `deployments/docker/docker-compose.prod.seed.yml` | Production seeding override | First-time production setup with seed data |
-| `deployments/docker/docker-compose.dokploy.yml` | Dokploy + Traefik deployment | Dokploy deployments driven by `.env` domains |
-| `deployments/docker/.env.example` | Template for prod env vars | Copy to `.env` inside `deployments/docker/` |
+## Prerequisites
 
-> 💡 **Sharing deployment bundle**  
-> Everything needed for ops lives in `deployments/docker/`. Zip that folder (plus your `.env`) and ship it to the infrastructure team without exposing the entire repo.
+### 1. DNS Records
 
-## Development Deployment
+All records point to the **same IP address** — your Dokploy server.
 
-### Build and Run Locally
+| Name | Type | Value | Purpose |
+|------|------|-------|---------|
+| `@` | A | `<server-ip>` | Apex domain (`tkams.com`) |
+| `www` | A | `<server-ip>` | www redirect (handled by Next.js) |
+| `*` | A | `<server-ip>` | Wildcard for client subdomains (`client.tkams.com`) |
+
+> DNS propagation can take up to 48 hours. Verify with `dig tkams.com A` and `dig *.tkams.com A` before deploying.
+
+### 2. Dokploy Server
+
+- Dokploy installed and accessible at `https://deploy.tkams.com` (or your chosen host)
+- Traefik running and managing SSL — Dokploy sets this up automatically on install
+- The `dokploy-network` Docker network exists (Dokploy creates it on first run)
+
+Verify:
+```bash
+docker network ls | grep dokploy-network
+```
+
+### 3. SSL / Let's Encrypt
+
+Traefik (via Dokploy) handles certificate issuance automatically. Requirements:
+- Ports **80** and **443** must be open on the server firewall
+- DNS must resolve to the server **before** the first deploy (Let's Encrypt performs an HTTP-01 challenge)
+
+### 4. GitHub Container Registry (GHCR)
+
+The client instance image (`ghcr.io/yvan2xero/tkams`) is pulled by Dokploy when provisioning instances. If the GitHub repository is private, add registry credentials in Dokploy:
+
+**Dokploy UI → Settings → Registries → Add Registry**
+- Registry URL: `ghcr.io`
+- Username: `yvan2xero`
+- Password: GitHub Personal Access Token with `read:packages` scope
+
+The portal itself (`apps/website`) is built directly from source on the server — no registry needed.
+
+### 5. MongoDB
+
+The portal uses MongoDB managed by the `mongo` service in `docker-compose.yml`. No external setup required — it runs as a sidecar container with a persistent volume.
+
+For production resilience, you may replace it with MongoDB Atlas:
+1. Create a free cluster at mongodb.com/atlas
+2. Whitelist the server IP (or `0.0.0.0/0` with strong auth)
+3. Set `DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/tkams-website` in `.env`
+4. Remove the `mongo` service and `internal` network from `docker-compose.yml`
+
+---
+
+## First Deploy
+
+### Step 1 — Clone the repository
 
 ```bash
-# Build and run all services
-docker compose up --build
+git clone https://github.com/yvan2xero/sgn-grades-manager-api.git /opt/tkams
+cd /opt/tkams
+```
 
-# Run in detached mode
+### Step 2 — Configure environment
+
+```bash
+cp .env.website .env
+```
+
+Edit `.env` and fill in all required values (see [Environment Variables](#environment-variables) below).
+
+### Step 3 — Build and start
+
+```bash
 docker compose up -d --build
-
-# View logs
-docker compose logs -f
-
-# Stop services
-docker compose down
 ```
 
-### First-Time Setup with Seeding
+The first build takes 3–5 minutes (Next.js compilation). Subsequent updates are faster due to Docker layer caching.
+
+### Step 4 — Verify
 
 ```bash
-# 1. Prepare seed files locally
-bun run --filter server seed:scaffold
-# Edit files in apps/server/seed/local/
+# Check containers are running
+docker compose ps
 
-# 2. Build and run with seeding enabled
-docker compose -f docker-compose.yml -f docker-compose.seed.yml up --build
+# Check website logs
+docker compose logs -f website
 
-# 3. Subsequent runs (without seeding)
-docker compose up
+# Test HTTP response
+curl -I https://tkams.com
 ```
 
-## Production Deployment
+---
 
-### Prerequisites
+## Environment Variables
 
-1. **Push images to GitHub Container Registry**:
+Copy `.env.website` to `.env` and fill in:
+
+| Variable | Description | How to get |
+|----------|-------------|------------|
+| `PAYLOAD_SECRET` | Payload CMS encryption key — min 32 chars | `openssl rand -base64 32` |
+| `DOKPLOY_URL` | Your Dokploy instance URL | e.g. `https://deploy.tkams.com` |
+| `DOKPLOY_API_KEY` | Dokploy API key | Dokploy UI → Settings → API Keys |
+| `DOKPLOY_APP_IMAGE` | Image used when provisioning client instances | `ghcr.io/yvan2xero/tkams:latest` |
+| `NOTCHPAY_PUBLIC_KEY` | NotchPay public key | NotchPay dashboard |
+| `NOTCHPAY_HASH_KEY` | NotchPay webhook hash key | NotchPay dashboard |
+
+`DATABASE_URL`, `NEXT_PUBLIC_SERVER_URL`, `WEBSITE_URL`, `TKAMS_BASE_DOMAIN`, and `NEXT_PUBLIC_TKAMS_BASE_DOMAIN` are hardcoded in `docker-compose.yml` — they are the same in every production environment.
+
+---
+
+## Updates
 
 ```bash
-# Build images
-docker compose build
-
-# Tag images (if needed)
-docker tag tkams-server:latest ghcr.io/yvan2xero/tkams-server:latest
-docker tag tkams-web:latest ghcr.io/yvan2xero/tkams-web:latest
-
-# Login to GHCR
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
-
-# Push images
-docker push ghcr.io/yvan2xero/tkams-server:latest
-docker push ghcr.io/yvan2xero/tkams-web:latest
+cd /opt/tkams
+git pull
+docker compose up -d --build
 ```
 
-2. **Set up environment variables**:
+Docker caches unchanged layers, so only modified files trigger a full rebuild. A typical update with no dependency changes takes ~2 minutes.
 
-   ```bash
-   cp -r deployments/docker ~/grades-deployment
-   cd ~/grades-deployment
-   cp .env.example .env
-   # Edit .env with production secrets/URLs
-   ```
+---
 
-### Standard Production Deployment
+## Client Instance Provisioning
 
-```bash
-cd deployments/docker
+When a customer subscribes, the portal provisions a new instance automatically via the Dokploy API. Each instance:
 
-# Pull and run pre-built images
-docker compose --env-file .env -f docker-compose.prod.yml up -d
+- Gets its own subdomain: `<slug>.tkams.com`
+- Runs the `ghcr.io/yvan2xero/tkams` image (server + frontend combined)
+- Has its own PostgreSQL database managed by Dokploy
+- Gets a Let's Encrypt certificate automatically via Traefik
 
-# Check logs
-docker compose --env-file .env -f docker-compose.prod.yml logs -f
+The wildcard DNS record (`* A <server-ip>`) is what makes per-instance subdomains work without any additional DNS configuration per customer.
 
-# Stop services
-docker compose --env-file .env -f docker-compose.prod.yml down
-```
-
-### Dokploy Deployment
-
-Use [`deployments/docker/docker-compose.dokploy.yml`](deployments/docker/docker-compose.dokploy.yml) when Dokploy manages ingress through Traefik labels and you want to pull images from the registry.
-
-Required `.env` values:
-
-```bash
-WEB_DOMAIN=app.example.com
-API_DOMAIN=api.example.com
-SERVER_PUBLIC_URL=https://api.example.com
-BETTER_AUTH_URL=https://api.example.com
-DEFAULT_ORGANIZATION_SLUG=your-organization
-CORS_ORIGINS=https://app.example.com
-TRAEFIK_NETWORK=dokploy-network
-TRAEFIK_ENTRYPOINTS=websecure
-TRAEFIK_CERTRESOLVER=letsencrypt
-```
-
-Notes:
-
-- This variant pulls the same pre-built images from GHCR as the standard production compose.
-- The web container writes a `runtime-config.js` file at startup, so changing `SERVER_PUBLIC_URL` or `DEFAULT_ORGANIZATION_SLUG` only requires a redeploy, not an image rebuild.
-- `server` and `web` are exposed only through Traefik labels; there are no host `ports` bindings.
-- The external Traefik network must already exist in Dokploy and match `TRAEFIK_NETWORK`.
-
-### First-Time Production Deployment with Seeding
-
-```bash
-# 1. Prepare production seed files
-mkdir -p deployments/docker/production-seeds
-# Add your YAML files inside this folder (00-foundation.yaml, 10-academics.yaml, 20-users.yaml)
-# They will be mounted into /usr/src/app/seed/local inside the container.
-
-# 2. Deploy with seeding enabled (FIRST TIME ONLY)
-docker compose --env-file .env \
-  -f docker-compose.prod.yml \
-  -f docker-compose.prod.seed.yml up -d
-
-# 3. Verify seeding completed
-docker compose --env-file .env \
-  -f docker-compose.prod.yml logs server | grep "Seeding completed"
-
-# 4. For subsequent deployments, use standard deployment (no seeding)
-docker compose --env-file .env -f docker-compose.prod.yml up -d
-```
-
-## Database Migrations
-
-Migrations run automatically on container startup. To generate new migrations:
-
-```bash
-# On your development machine
-bun run --filter server db:generate
-
-# Commit migrations to git
-git add apps/server/src/db/migrations/
-git commit -m "chore: add database migrations"
-
-# Rebuild and push new images
-docker compose build server
-docker push ghcr.io/yvan2xero/tkams-server:latest
-
-# Deploy - migrations will run automatically
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml pull
-docker compose --env-file .env -f docker-compose.prod.yml up -d
-```
-
-## Environment-Specific Configurations
-
-### Using Custom Environment Files
-
-```bash
-# Development
-docker compose --env-file .env.dev up
-
-# Staging / Production (run from deployments/docker)
-cd deployments/docker
-docker compose -f docker-compose.prod.yml --env-file .env.staging up -d
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-```
-
-### Override Configurations
-
-Create `docker-compose.override.yml` for local customization (not tracked in git):
-
-```yaml
-services:
-  server:
-    environment:
-      DEBUG: "true"
-    ports:
-      - "3001:3000"  # Different port
-```
-
-## Common Operations
-
-### Update to Latest Images
-
-```bash
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml pull
-docker compose --env-file .env -f docker-compose.prod.yml up -d
-```
-
-### Backup Database
-
-```bash
-# Backup
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml exec postgres \
-  pg_dump -U ${POSTGRES_USER:-grades} ${POSTGRES_DB:-grades} > backup.sql
-
-# Restore
-cat backup.sql | docker compose --env-file .env -f docker-compose.prod.yml exec -T postgres \
-  psql -U ${POSTGRES_USER:-grades} ${POSTGRES_DB:-grades}
-```
-
-### View Container Status
-
-```bash
-# List running containers
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml ps
-
-# View resource usage
-docker compose --env-file .env -f docker-compose.prod.yml stats
-```
-
-### Access Container Shell
-
-```bash
-# Server container
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml exec server sh
-
-# Database container
-docker compose --env-file .env -f docker-compose.prod.yml exec postgres psql -U ${POSTGRES_USER:-grades}
-```
+---
 
 ## Troubleshooting
 
-### Container fails to start
+**SSL certificate not issued**
+- Confirm DNS resolves to the server: `dig tkams.com`
+- Confirm ports 80 and 443 are open: `curl http://tkams.com`
+- Check Traefik logs: `docker logs traefik`
 
-```bash
-# Check logs
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml logs server
+**Website unreachable after deploy**
+- Confirm `dokploy-network` exists: `docker network ls`
+- Check container status: `docker compose ps`
+- Check logs: `docker compose logs website`
 
-# Inspect container
-docker compose --env-file .env -f docker-compose.prod.yml ps
-docker inspect <container-id>
-```
-
-### Database connection issues
-
-```bash
-# Verify database is healthy
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml exec postgres \
-  pg_isready -U ${POSTGRES_USER:-grades}
-
-# Check connection from server
-docker compose --env-file .env -f docker-compose.prod.yml exec server \
-  sh -c 'echo "SELECT 1" | psql $DATABASE_URL'
-```
-
-### Reset everything (CAUTION: Deletes data)
-
-```bash
-# Stop and remove containers, networks, volumes
-cd deployments/docker
-docker compose --env-file .env -f docker-compose.prod.yml down -v
-
-# Remove images
-docker rmi ghcr.io/yvan2xero/tkams-server:latest
-docker rmi ghcr.io/yvan2xero/tkams-web:latest
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build images
-        run: docker compose build
-
-      - name: Login to GHCR
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push images
-        run: |
-          docker push ghcr.io/yvan2xero/tkams-server:latest
-          docker push ghcr.io/yvan2xero/tkams-web:latest
-
-      - name: Deploy to server
-        run: |
-          # SSH to your server and run:
-          # cd deployments/docker
-          # docker compose --env-file .env -f docker-compose.prod.yml pull
-          # docker compose --env-file .env -f docker-compose.prod.yml up -d
-```
-
-## Security Best Practices
-
-1. **Never commit `.env` files** - Use `.env.example` as template
-2. **Use strong secrets** - Generate with `openssl rand -base64 32`
-3. **Restrict CORS origins** - Set specific domains, not wildcards
-4. **Enable HTTPS** - Use reverse proxy (nginx, Traefik, Caddy)
-5. **Regular backups** - Automate database backups
-6. **Update images** - Regularly pull and deploy latest images
-7. **Monitor logs** - Set up log aggregation and monitoring
-
-## See Also
-
-- [apps/server/DOCKER.md](apps/server/DOCKER.md) - Detailed Docker configuration for server
-- [CLAUDE.md](CLAUDE.md) - Development commands and workflow
-- [docker-compose.yml](docker-compose.yml) - Development compose file
-- [deployments/docker/docker-compose.prod.yml](deployments/docker/docker-compose.prod.yml) - Production compose file
+**MongoDB connection error on startup**
+- Check the mongo container is healthy: `docker compose ps mongo`
+- Restart it: `docker compose restart mongo`
+- Inspect data volume: `docker volume ls | grep mongo`
