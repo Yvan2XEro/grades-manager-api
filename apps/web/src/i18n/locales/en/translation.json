@@ -921,7 +921,7 @@
         "deliberationRules": "Deliberation rules",
         "apiKeys": "API Keys",
         "gradeManagement": "Grade management",
-        "promotion": "Promotion",
+        "promotion": "Year transition",
         "configuration": "Configuration"
       },
       "groups": {
@@ -3633,6 +3633,140 @@
       "empty": "empty",
       "noResultsHint": "noResultsHint",
       "emptyHint": "emptyHint"
+    },
+    "academicYearTransitions": {
+      "title": "Academic Year Transition",
+      "subtitle": "Prepare, review, approve, and execute the yearly destination of every student.",
+      "generatedAt": "Generated {{date}}",
+      "actions": {
+        "refresh": "Refresh",
+        "prepare": "Prepare plan",
+        "preparing": "Preparing...",
+        "submit": "Submit",
+        "approve": "Approve",
+        "execute": "Execute",
+        "cancel": "Cancel",
+        "resolve": "Resolve item"
+      },
+      "create": {
+        "title": "New transition",
+        "description": "Select the source year, target year, and scope. TKAMS will prepare every student outcome."
+      },
+      "plans": {
+        "title": "Plans"
+      },
+      "fields": {
+        "sourceYear": "Source academic year",
+        "targetYear": "Target academic year",
+        "scope": "Scope",
+        "deferredPolicy": "Deferred decision policy"
+      },
+      "placeholders": {
+        "sourceYear": "Select source year",
+        "targetYear": "Select target year",
+        "scope": "Select scope",
+        "search": "Search student or registration...",
+        "targetClass": "Select target class",
+        "reason": "Explain why this override is correct"
+      },
+      "scope": {
+        "allClasses": "All classes in source year"
+      },
+      "deferred": {
+        "review": "Send deferred students to review",
+        "repeat": "Treat deferred students as repeaters"
+      },
+      "metrics": {
+        "students": "students"
+      },
+      "summary": {
+        "total": "Total",
+        "promote": "Promoted",
+        "repeat": "Repeating",
+        "graduate": "Graduating",
+        "blocked": "Needs attention",
+        "overridden": "Overrides"
+      },
+      "review": {
+        "title": "Review workspace",
+        "description": "Focus on blocked cases first. Open a row to inspect and resolve it."
+      },
+      "table": {
+        "student": "Student",
+        "decision": "Decision",
+        "source": "Source class",
+        "outcome": "Outcome",
+        "destination": "Destination",
+        "status": "Status"
+      },
+      "item": {
+        "title": "Transition item"
+      },
+      "resolve": {
+        "title": "Resolve exception",
+        "outcome": "Final outcome",
+        "targetClass": "Target class",
+        "reason": "Reason"
+      },
+      "status": {
+        "draft": "Draft",
+        "ready": "Ready",
+        "pending_approval": "Pending approval",
+        "approved": "Approved",
+        "running": "Running",
+        "completed": "Completed",
+        "completed_with_errors": "Completed with errors",
+        "stale": "Stale",
+        "cancelled": "Cancelled"
+      },
+      "itemStatus": {
+        "all": "All statuses",
+        "ready": "Ready",
+        "blocked": "Blocked",
+        "processing": "Processing",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "excluded": "Excluded"
+      },
+      "outcome": {
+        "all": "All outcomes",
+        "promote": "Promote",
+        "repeat": "Repeat",
+        "graduate": "Graduate",
+        "exclude": "Exclude",
+        "transfer": "Transfer",
+        "suspend": "Suspend",
+        "review": "Needs attention"
+      },
+      "decision": {
+        "admitted": "Admitted",
+        "compensated": "Admitted with compensation",
+        "deferred": "Deferred",
+        "repeat": "Repeat",
+        "excluded": "Excluded",
+        "pending": "Pending"
+      },
+      "blocker": {
+        "missing_signed_deliberation": "Missing signed annual deliberation",
+        "missing_student_decision": "Missing student decision",
+        "existing_target_enrollment": "Existing target-year enrollment",
+        "missing_promotion_target": "Missing promotion target class",
+        "ambiguous_promotion_target": "Ambiguous promotion target",
+        "missing_repeat_target": "Missing repeat target class",
+        "ambiguous_repeat_target": "Ambiguous repeat target",
+        "deferred_requires_review": "Deferred decision requires review",
+        "pending_decision": "Pending decision"
+      },
+      "empty": {
+        "noPlans": "No transition plan yet.",
+        "selectPlan": "Create or select a transition plan to start reviewing students.",
+        "noItems": "No students match the current filters."
+      },
+      "toast": {
+        "created": "Transition plan created",
+        "updated": "Transition updated",
+        "resolved": "Transition item resolved"
+      }
     }
   },
   "dean": {

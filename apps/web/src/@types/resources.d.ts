@@ -35,6 +35,8 @@ interface Resources {
 				open: "Open";
 				back: "Back";
 				rename: "Rename";
+				deselectAll: "Tout désélectionner";
+				selectAll: "Tout sélectionner";
 			};
 			fields: {
 				email: "Email";
@@ -80,10 +82,16 @@ interface Resources {
 				deleteSuccess: "Selected items deleted successfully";
 				selectAll: "Select all";
 				selected: "{{count}} selected";
+				confirmDeleteTitle: "Delete selected items?";
 			};
 			noResults: "No results";
 			search: "Search";
 			select: "Select";
+			loadMore: "Charger plus";
+			cancel: "Cancel";
+			all: "All";
+			selectAll: "Select all";
+			selectedCount: "{{count}} selected";
 		};
 		teacher: {
 			courses: {
@@ -374,6 +382,7 @@ interface Resources {
 				toast: {
 					sent: "Alert queued";
 				};
+				error: "Could not load alerts";
 			};
 			gradeAccessGrants: {
 				title: "Grade Delegation";
@@ -730,6 +739,9 @@ interface Resources {
 					name: "Name";
 					courseAverages: "Course averages";
 					overallAverage: "Overall average";
+					credits: "credits";
+					decision: "decision";
+					mention: "mention";
 				};
 				actions: {
 					promote: "Promote";
@@ -743,6 +755,21 @@ interface Resources {
 				emptyStudents: {
 					title: "No students found";
 					description: "There are no students in this class.";
+				};
+				decision: {
+					noData: "noData";
+				};
+				lastLevel: "lastLevel";
+				selectSourceFirst: "selectSourceFirst";
+				noTargetAvailable: "noTargetAvailable";
+				lastLevelHint: "lastLevelHint";
+				emptyState: {
+					title: "title";
+					description: "description";
+				};
+				confirm: {
+					title: "Promote selected students?";
+					message: "message";
 				};
 			};
 			retake: {
@@ -867,6 +894,8 @@ interface Resources {
 					gradeAccess: "Grade delegation";
 					gradeEntry: "Grade entry";
 					exportTemplates: "Export templates";
+					classDocumentTemplates: "Per-class documents";
+					documentBatch: "Bulk generation";
 					monitoring: "Monitoring";
 					notifications: "Notifications";
 					batchJobs: "Batch Jobs";
@@ -877,6 +906,7 @@ interface Resources {
 					faculties: "Institutions";
 					institution: "Institution";
 					studyCycles: "Study cycles";
+					centers: "Our centers";
 					programs: "Programs";
 					teachers: "Teachers";
 					courseAssignments: "Course assignments";
@@ -891,6 +921,9 @@ interface Resources {
 					deliberations: "Deliberations";
 					deliberationRules: "Deliberation rules";
 					apiKeys: "API Keys";
+					gradeManagement: "Grade management";
+					promotion: "Year transition";
+					configuration: "Configuration";
 				};
 				groups: {
 					overview: "Overview";
@@ -900,6 +933,8 @@ interface Resources {
 					evaluation: "Evaluation";
 					promotion: "Rules & Promotion";
 					system: "System";
+					assessment: "Assessment";
+					people: "People";
 				};
 				teacher: {
 					dashboard: "Overview";
@@ -908,13 +943,20 @@ interface Resources {
 					courses: "Courses";
 					attendance: "Attendance alerts";
 					workflows: "Workflows";
+					exports: "Exports";
+					myCourses: "My courses";
 				};
 				dean: {
-					dashboard: "Overview";
+					dashboard: "Dashboard";
 					workflows: "Approvals";
+					history: "History";
+					monitoring: "Monitoring";
+					pendingApprovals: "Pending approvals";
 				};
 				student: {
 					dashboard: "My performance";
+					exams: "Exam calendar";
+					enrollments: "My courses";
 				};
 			};
 			roles: {
@@ -1087,6 +1129,7 @@ interface Resources {
 					activate: "Activate";
 					delete: "Delete";
 					confirmDelete: "Delete this format permanently?";
+					confirmDeleteTitle: "Delete format?";
 				};
 				form: {
 					title: "Format designer";
@@ -1243,6 +1286,15 @@ interface Resources {
 					webhookError: "Failed to update webhook";
 					copied: "Copied to clipboard";
 				};
+				activity: {
+					title: "Activité — 30 derniers jours";
+					empty: "Aucune activité enregistrée.";
+					unknownKey: "Sans clé";
+				};
+				callActivity: {
+					title: "Appels API — 30 derniers jours";
+					empty: "Aucun appel enregistré.";
+				};
 			};
 			batchJobs: {
 				title: "Batch Jobs";
@@ -1379,6 +1431,7 @@ interface Resources {
 					assign: "Assign course";
 					assignUe: "Assign UE";
 					autoEnroll: "Enroll students";
+					exportPdf: "Exporter PDF";
 				};
 				ueAssign: {
 					title: "Assign a teaching unit";
@@ -1453,6 +1506,18 @@ interface Resources {
 					classPlaceholder: "Select a class";
 					yearLabel: "Academic Year";
 					submit: "Enroll students";
+				};
+				export: {
+					success: "Catalogue exporté avec succès";
+					error: "Error during export";
+					title: "Exporter le catalogue UE / EC";
+					scopeLabel: "Périmètre";
+					scopeYear: "All classes for the filtered year";
+					noYearWarning: "aucune année sélectionnée";
+					scopeSelection: "Classes spécifiques";
+					classesLabel: "Classes à inclure";
+					selectedCount: "classe(s) sélectionnée(s)";
+					generate: "Générer le PDF";
 				};
 			};
 			classes: {
@@ -1563,6 +1628,8 @@ interface Resources {
 					submit: "Generate classes";
 					title: "Bulk class generation";
 					yearLabel: "Academic year";
+					sourceYearLabel: "Cloner les affectations depuis (optionnel)";
+					sourceYearHint: "Si renseignée, les affectations enseignants de cette année seront copiées vers les nouvelles classes.";
 				};
 			};
 			institution: {
@@ -1625,6 +1692,15 @@ interface Resources {
 					noSupervisingFaculty: "None";
 					noDefaultYear: "No default year";
 					noRegistrationFormat: "No registration format (use active)";
+					abbreviation: "Abbreviation";
+					typePlaceholder: "Select type";
+					parentInstitutionPlaceholder: "Select parent institution";
+					supervisingFacultyPlaceholder: "Select supervising faculty";
+					defaultAcademicYearManagedHint: "Manage the active academic year from Academic Years.";
+					registrationFormatManagedHint: "Manage the active registration format from Registration Formats.";
+					signatoryName: "Signatory name";
+					signatoryTitle: "Signatory title";
+					city: "City (for document date line)";
 				};
 				sections: {
 					contact: "Contact";
@@ -1635,6 +1711,8 @@ interface Resources {
 					namesHint: "Official names in French and English, abbreviation and slogan.";
 					system: "System";
 					systemHint: "Default academic year and registration format.";
+					documentParams: "Document Generation";
+					documentParamsHint: "Signatory and city used on generated diplomas, attestations and transcripts. Automatically synced to Diplomation.";
 				};
 			};
 			studyCycles: {
@@ -1673,6 +1751,7 @@ interface Resources {
 					duration: "Duration (years)";
 					minCredits: "Minimum credits";
 					autoLevelsPreview: "Auto-generated levels preview";
+					nameEn: "Name (English)";
 				};
 				toast: {
 					createSuccess: "Study cycle created";
@@ -1785,6 +1864,25 @@ interface Resources {
 					cloneFromNone: "None";
 					cloneFromHint: "Teaching units and courses from the source program will be copied after creation.";
 					submitWithClone: "Create and clone";
+					nameEnLabel: "Name (English)";
+					abbreviationLabel: "Abréviation";
+					domainFrLabel: "Domaine (FR)";
+					domainEnLabel: "Domain (EN)";
+					specialiteFrLabel: "Spécialité (FR)";
+					specialiteEnLabel: "Specialization (EN)";
+					diplomaTitleFrLabel: "Titre diplôme (FR)";
+					diplomaTitleEnLabel: "Diploma title (EN)";
+					attestationValidityFrLabel: "Validité attestation (FR)";
+					attestationValidityEnLabel: "Attestation validity (EN)";
+					centerLabel: "Centre";
+					centerPlaceholder: "Aucun centre";
+					centerNone: "Aucun (programme général)";
+					isCenterProgramLabel: "Programme de centre";
+					isCenterProgramHint: "Marquez ce programme comme rattaché à un centre.";
+					exportTemplatesLabel: "Export templates";
+					exportTemplatesHint: "Choisissez le modèle par défaut par type de document.";
+					exportTemplatePlaceholder: "Aucun modèle";
+					exportTemplateNone: "Aucun";
 				};
 				validation: {
 					name: "Name must be at least 2 characters";
@@ -2347,6 +2445,20 @@ interface Resources {
 						title: "Results table";
 					};
 				};
+				toast: {
+					semestersFetchError: "Could not load semesters";
+					exportError: "Export failed";
+					verbalReportError: "Verbal report export failed";
+					examExportError: "Exam export failed";
+					pvPreviewError: "Could not generate PV preview";
+					pvGenerateError: "PV generation failed";
+					evaluationPreviewError: "Could not generate evaluation preview";
+					evaluationGenerateError: "Evaluation generation failed";
+					uePreviewError: "Could not generate UE preview";
+					ueGenerateError: "UE generation failed";
+					bulkEvaluationsError: "Bulk evaluations generation failed";
+					bulkUesError: "Bulk UE generation failed";
+				};
 			};
 			students: {
 				title: "Student management";
@@ -2594,6 +2706,12 @@ interface Resources {
 					passwordPlaceholder: "Leave blank to keep current password";
 					generatePassword: "Generate";
 					createSubmit: "Create user";
+					profileSection: "Profile";
+					systemAccessSection: "System Access";
+					canConnectLabel: "Can log in";
+					canConnectDescription: "Creates a system account with login access";
+					memberRoleLabel: "Role";
+					memberRolePlaceholder: "Select a role";
 				};
 				gender: {
 					male: "Male";
@@ -2636,6 +2754,8 @@ interface Resources {
 					email: "Enter a valid email address";
 					role: "Please select a role";
 					passwordRequired: "Password is required";
+					passwordMin: "Password must be at least 8 characters";
+					memberRoleRequired: "Role is required when system access is enabled";
 				};
 			};
 			enrollments: {
@@ -2745,8 +2865,8 @@ interface Resources {
 				};
 				semesters: {
 					annual: "Annual";
-					fall: "Fall";
-					spring: "Spring";
+					fall: "Semester 1";
+					spring: "Semester 2";
 				};
 				actions: {
 					create: "Create UE";
@@ -3192,6 +3312,16 @@ interface Resources {
 					quickStart: "Quick start";
 					quickStartHint: "Creates the deliberation, opens it and computes results in one step";
 					quickStartSubmit: "Create & compute";
+					createDescription: "Configurez et lancez une nouvelle session de délibération";
+					tabSingle: "Classe unique";
+					tabMulti: "Multi-classes";
+					juryNumber: "Numéro de jury";
+					juryNumberPlaceholder: "ex: J2024-001";
+					classes: "Classes";
+					selectYearFirst: "Select an academic year first";
+					noClasses: "Aucune classe pour cette année";
+					batchCreating: "Création en cours…";
+					batchSubmit: "batchSubmit";
 				};
 				detail: {
 					back: "Back to deliberations";
@@ -3219,6 +3349,7 @@ interface Resources {
 					signedAt: "Signed at";
 					signedBy: "Signed by";
 					notYet: "Not yet";
+					juryNumber: "N° jury";
 				};
 				override: {
 					title: "Override decision";
@@ -3250,6 +3381,18 @@ interface Resources {
 					confirm: "Promote";
 					success: "{{count}} students promoted successfully";
 					noAdmitted: "No admitted students to promote";
+					lastLevelTitle: "lastLevelTitle";
+					lastLevelHint: "lastLevelHint";
+					noTargetFound: {
+						title: "title";
+						searched: "searched";
+						criteriaProgram: "criteriaProgram";
+						criteriaLevel: "criteriaLevel";
+						criteriaYear: "criteriaYear";
+						fix: "fix";
+						goToClasses: "goToClasses";
+					};
+					targetClassHint: "targetClassHint";
 				};
 				ueDecision: {
 					ADM: "Acquired";
@@ -3267,11 +3410,16 @@ interface Resources {
 					exportSuccess: "Export ready";
 					error: "An error occurred";
 					initAndComputeSuccess: "Deliberation created and results computed";
+					batchCreateSuccess: "batchCreateSuccess";
+					batchCreatePartial: "batchCreatePartial";
 				};
 				confirm: {
 					delete: "Are you sure you want to delete this deliberation?";
 					close: "Close this deliberation? Students will no longer be modifiable.";
 					sign: "Sign this deliberation? This marks it as officially validated.";
+					closeTitle: "Close deliberation?";
+					signTitle: "Sign deliberation?";
+					deleteTitle: "Delete deliberation?";
 				};
 				rules: {
 					title: "Deliberation rules";
@@ -3313,6 +3461,10 @@ interface Resources {
 						updateSuccess: "Rule updated";
 						deleteSuccess: "Rule deleted";
 						error: "An error occurred";
+					};
+					confirmDelete: {
+						title: "Delete this rule?";
+						message: "message";
 					};
 				};
 				filters: {
@@ -3390,6 +3542,233 @@ interface Resources {
 					updateError: "Could not update the institution";
 				};
 			};
+			centers: {
+				detail: {
+					title: "Gestion des Centres";
+					subtitle: "Configurez les centres de formation professionnelle";
+					backToList: "Retour à la liste";
+				};
+				sections: {
+					identity: "Informations Générales";
+					logos: "Logos";
+					adminInstances: "Instances Administratives";
+					authorization: "Authorization Texts";
+					contact: "Coordonnées";
+				};
+				form: {
+					shortName: "Nom du centre (court)";
+					city: "Localisation";
+					name: "Nom complet (Français)";
+					nameEn: "Nom complet (Anglais)";
+					isActive: "Centre actif";
+					logoUrl: "Logo du centre";
+					logoUrlHint: "Affiché dans les en-têtes.";
+					adminInstanceLogoUrl: "Administrative instance logo (e.g. MINEFOP)";
+					adminInstanceLogoUrlHint: "Main logo of the supervising authority.";
+					watermarkLogoUrl: "Logo de fond (watermark)";
+					watermarkLogoUrlHint: "Logo affiché en filigrane sur les documents.";
+					adminInstanceLogo: "Instance logo";
+					showOnTranscripts: "Afficher le logo sur les relevés";
+					showOnTranscriptsHint: "The logo will appear in the header of transcripts";
+					showOnCertificates: "Afficher le logo sur les attestations";
+					showOnCertificatesHint: "The logo will appear in the header of certificates";
+					authorizationOrderFr: "Authorization order (French)";
+					authorizationOrderEn: "Authorization order (English)";
+					postalBox: "Boîte postale";
+					contactPhone: "Téléphone";
+					contactEmail: "Email";
+					country: "Pays";
+					addressFr: "Adresse (FR)";
+					addressEn: "Adresse (EN)";
+				};
+				actions: {
+					addInstance: "Ajouter une instance";
+					addLegalText: "Ajouter";
+					add: "Ajouter un centre";
+				};
+				adminInstances: {
+					empty: "Aucune instance administrative — cliquez sur Ajouter pour en créer.";
+					itemTitle: "itemTitle";
+				};
+				legalTexts: {
+					title: "Textes Légaux (Vu les lois...)";
+					empty: "Aucun texte légal";
+					itemTitle: "itemTitle";
+				};
+				toast: {
+					deleteSuccess: "Centre supprimé";
+				};
+				title: "Nos centres";
+				subtitle: "Configure your institution's professional training centers.";
+				table: {
+					logo: "Logo";
+					code: "Code";
+					name: "Nom";
+					city: "Ville";
+					country: "Pays";
+					status: "Statut";
+				};
+				empty: {
+					title: "Aucun centre";
+					description: "Créez votre premier centre pour organiser les programmes par campus.";
+				};
+				delete: {
+					title: "Supprimer le centre";
+					message: "Êtes-vous sûr de vouloir supprimer ce centre ? Cette action est irréversible.";
+				};
+			};
+			graduation: {
+				title: "title";
+				subtitle: "subtitle";
+				totalGraduates: "totalGraduates";
+				searchPlaceholder: "searchPlaceholder";
+				table: {
+					student: "student";
+					registration: "registration";
+					program: "program";
+					level: "level";
+					credits: "credits";
+					graduatedAt: "graduatedAt";
+				};
+				noResults: "noResults";
+				empty: "empty";
+				noResultsHint: "noResultsHint";
+				emptyHint: "emptyHint";
+			};
+			academicYearTransitions: {
+				title: "Academic Year Transition";
+				subtitle: "Prepare, review, approve, and execute the yearly destination of every student.";
+				generatedAt: "Generated {{date}}";
+				actions: {
+					refresh: "Refresh";
+					prepare: "Prepare plan";
+					preparing: "Preparing...";
+					submit: "Submit";
+					approve: "Approve";
+					execute: "Execute";
+					cancel: "Cancel";
+					resolve: "Resolve item";
+				};
+				create: {
+					title: "New transition";
+					description: "Select the source year, target year, and scope. TKAMS will prepare every student outcome.";
+				};
+				plans: {
+					title: "Plans";
+				};
+				fields: {
+					sourceYear: "Source academic year";
+					targetYear: "Target academic year";
+					scope: "Scope";
+					deferredPolicy: "Deferred decision policy";
+				};
+				placeholders: {
+					sourceYear: "Select source year";
+					targetYear: "Select target year";
+					scope: "Select scope";
+					search: "Search student or registration...";
+					targetClass: "Select target class";
+					reason: "Explain why this override is correct";
+				};
+				scope: {
+					allClasses: "All classes in source year";
+				};
+				deferred: {
+					review: "Send deferred students to review";
+					repeat: "Treat deferred students as repeaters";
+				};
+				metrics: {
+					students: "students";
+				};
+				summary: {
+					total: "Total";
+					promote: "Promoted";
+					repeat: "Repeating";
+					graduate: "Graduating";
+					blocked: "Needs attention";
+					overridden: "Overrides";
+				};
+				review: {
+					title: "Review workspace";
+					description: "Focus on blocked cases first. Open a row to inspect and resolve it.";
+				};
+				table: {
+					student: "Student";
+					decision: "Decision";
+					source: "Source class";
+					outcome: "Outcome";
+					destination: "Destination";
+					status: "Status";
+				};
+				item: {
+					title: "Transition item";
+				};
+				resolve: {
+					title: "Resolve exception";
+					outcome: "Final outcome";
+					targetClass: "Target class";
+					reason: "Reason";
+				};
+				status: {
+					draft: "Draft";
+					ready: "Ready";
+					pending_approval: "Pending approval";
+					approved: "Approved";
+					running: "Running";
+					completed: "Completed";
+					completed_with_errors: "Completed with errors";
+					stale: "Stale";
+					cancelled: "Cancelled";
+				};
+				itemStatus: {
+					all: "All statuses";
+					ready: "Ready";
+					blocked: "Blocked";
+					processing: "Processing";
+					succeeded: "Succeeded";
+					failed: "Failed";
+					excluded: "Excluded";
+				};
+				outcome: {
+					all: "All outcomes";
+					promote: "Promote";
+					repeat: "Repeat";
+					graduate: "Graduate";
+					exclude: "Exclude";
+					transfer: "Transfer";
+					suspend: "Suspend";
+					review: "Needs attention";
+				};
+				decision: {
+					admitted: "Admitted";
+					compensated: "Admitted with compensation";
+					deferred: "Deferred";
+					repeat: "Repeat";
+					excluded: "Excluded";
+					pending: "Pending";
+				};
+				blocker: {
+					missing_signed_deliberation: "Missing signed annual deliberation";
+					missing_student_decision: "Missing student decision";
+					existing_target_enrollment: "Existing target-year enrollment";
+					missing_promotion_target: "Missing promotion target class";
+					ambiguous_promotion_target: "Ambiguous promotion target";
+					missing_repeat_target: "Missing repeat target class";
+					ambiguous_repeat_target: "Ambiguous repeat target";
+					deferred_requires_review: "Deferred decision requires review";
+					pending_decision: "Pending decision";
+				};
+				empty: {
+					noPlans: "No transition plan yet.";
+					selectPlan: "Create or select a transition plan to start reviewing students.";
+					noItems: "No students match the current filters.";
+				};
+				toast: {
+					created: "Transition plan created";
+					updated: "Transition updated";
+					resolved: "Transition item resolved";
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -3422,6 +3801,66 @@ interface Resources {
 				};
 				notificationsEmpty: "No notifications";
 				windows: "Enrollment windows";
+				confirm: {
+					title: "Approve and lock?";
+					bulkMessage: "bulkMessage";
+					singleMessage: "singleMessage";
+				};
+			};
+			cohort: {
+				title: "Academic dashboard";
+				subtitle: "Cohort overview — grading, results, success rates";
+				students: "Students";
+				pending: "Pending";
+				avgProgress: "Avg. progress";
+				avgSuccess: "Avg. success rate";
+				gradingProgress: "Grading progress";
+				approved: "approved";
+				submitted: "pending";
+				noData: "No cohorts";
+				noDataHint: "Data will appear here once classes are created.";
+				actionRequired: "Action required";
+				noDeliberation: "No deliberation yet";
+				avgGeneral: "Gen. avg.";
+				successRate: "Success rate";
+			};
+			approvals: {
+				title: "Pending approvals";
+				pendingCount: "{{count}} exam(s) awaiting validation";
+				noPending: "No exams pending";
+				allDone: "All up to date";
+				reject: "Reject";
+				approve: "Approve";
+				rejectTitle: "Reject exam";
+				rejectHint: "Please provide a reason for rejection.";
+				rejectPlaceholder: "Rejection reason (required)...";
+				rejectConfirm: "Confirm rejection";
+				rejected: "Exam rejected";
+				approved: "Exam approved";
+				bulkApproved: "Exams approved";
+				approveSelection: "Approve selection ({{count}})";
+				viewGrades: "View grades";
+				noGrades: "No grades recorded";
+				avg: "Avg.";
+				regNumber: "Reg. number";
+				student: "Student";
+				score: "Score";
+				searchPlaceholder: "Search exams...";
+				allClasses: "All classes";
+				allYears: "All years";
+			};
+			history: {
+				title: "Approval history";
+				subtitle: "Approved or rejected exams";
+				approved: "Approved";
+				rejected: "Rejected";
+				empty: "No history";
+				emptyHint: "No exams approved or rejected yet.";
+				approvedOn: "Approved on {{date}}";
+				rejectedOn: "Rejected on {{date}}";
+				searchPlaceholder: "Search exams...";
+				allClasses: "All classes";
+				allYears: "All years";
 			};
 		};
 		student: {
@@ -3433,13 +3872,51 @@ interface Resources {
 				trendTitle: "Progression";
 				trendSubtitle: "Weighted averages across enrolled courses";
 				creditsProgress: "Credits earned";
-				inProgress: "In progress: {{value}} credits";
+				inProgress: "in progress";
 				eligible: "Eligible for next level 🎉";
 				notEligible: "Keep going! You're almost ready for promotion.";
 				ruleNotice: "Evaluated with the promotion rules configured by your faculty.";
 				courseAverages: "Course averages";
 				courseSubtitle: "Latest scores for the active academic year";
 				coursePlaceholder: "Detailed course averages will appear once instructors publish grades for the current session.";
+				deliberationDecision: "Deliberation decision";
+				average: "Average";
+				projection: "Year-end projection";
+				projectionNote: "Of graded UEs so far, {{rate}}% are above the passing threshold. Partial data.";
+				noGrades: "No grades available";
+				noGradesHint: "Your grades will appear here once your teachers publish results.";
+				transcript: "Transcript";
+				creditProgress: "Progress toward promotion";
+				creditsEligible: "You meet the credit requirements to advance to the next level.";
+				generalAverage: "General average";
+				aboveThreshold: "Above passing threshold";
+				belowThreshold: "Below passing threshold";
+				creditsEarned: "Credits earned";
+				validatedUEs: "Validated UEs";
+				teachingUnits: "Teaching units";
+			};
+			exams: {
+				title: "Exam calendar";
+				upcoming: "Upcoming";
+				past: "Past";
+				noExams: "No exams scheduled";
+				noExamsHint: "Your exams will appear here once created by your teachers.";
+				today: "Today";
+				tomorrow: "Tomorrow";
+			};
+			enrollments: {
+				title: "Course enrollment";
+				subtitle: "Manage your course registrations during the open enrollment window";
+				windowOpen: "Enrollment window open";
+				windowClosed: "Enrollment closed";
+				windowOpenHint: "You can enroll in and withdraw from courses.";
+				windowClosedHint: "Enrollment is currently closed. Contact your administration.";
+				noCourses: "No courses available";
+				noCoursesHint: "Your class has no courses assigned yet.";
+				enrolled: "Enrolled";
+				unenroll: "Withdraw";
+				enroll: "Enroll";
+				selected: "{{count}} course(s) selected of {{total}}";
 			};
 		};
 		retakes: {
@@ -3631,6 +4108,27 @@ interface Resources {
 				step: "Step";
 				next: "Next step";
 				done: "Setup complete";
+			};
+		};
+		deliberation: {
+			decision: {
+				admitted: "Admitted — you advance to the next year.";
+				compensated: "Admitted by compensation — you advance to the next year.";
+				deferred: "Deferred — you must retake failing subjects.";
+				repeat: "Repeating — you repeat the academic year.";
+				excluded: "Excluded — please contact administration.";
+				pending: "Decision pending.";
+				unknown: "Unknown decision.";
+				overridden: "Overridden";
+			};
+		};
+		exam: {
+			status: {
+				approved: "Approved";
+				submitted: "Submitted";
+				locked: "Locked";
+				draft: "Planned";
+				rejected: "Rejected";
 			};
 		};
 	};

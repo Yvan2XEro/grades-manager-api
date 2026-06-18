@@ -167,7 +167,7 @@
         "registrationNumbers": "Formats de matricule",
         "apiKeys": "Clés API",
         "gradeManagement": "Gestion des notes",
-        "promotion": "Promotion",
+        "promotion": "Passage d'annee",
         "configuration": "Configuration"
       },
       "groups": {
@@ -2879,6 +2879,140 @@
       "empty": "empty",
       "noResultsHint": "noResultsHint",
       "emptyHint": "emptyHint"
+    },
+    "academicYearTransitions": {
+      "title": "Passage d'annee",
+      "subtitle": "Preparez, revisez, approuvez et executez la destination annuelle de chaque etudiant.",
+      "generatedAt": "Genere {{date}}",
+      "actions": {
+        "refresh": "Actualiser",
+        "prepare": "Preparer le plan",
+        "preparing": "Preparation...",
+        "submit": "Soumettre",
+        "approve": "Approuver",
+        "execute": "Executer",
+        "cancel": "Annuler",
+        "resolve": "Resoudre le cas"
+      },
+      "create": {
+        "title": "Nouvelle transition",
+        "description": "Selectionnez l'annee source, l'annee cible et le perimetre. TKAMS prepare le devenir de chaque etudiant."
+      },
+      "plans": {
+        "title": "Plans"
+      },
+      "fields": {
+        "sourceYear": "Annee academique source",
+        "targetYear": "Annee academique cible",
+        "scope": "Perimetre",
+        "deferredPolicy": "Politique des ajournes"
+      },
+      "placeholders": {
+        "sourceYear": "Selectionner l'annee source",
+        "targetYear": "Selectionner l'annee cible",
+        "scope": "Selectionner le perimetre",
+        "search": "Rechercher un etudiant ou matricule...",
+        "targetClass": "Selectionner la classe cible",
+        "reason": "Expliquez pourquoi cette correction est valide"
+      },
+      "scope": {
+        "allClasses": "Toutes les classes de l'annee source"
+      },
+      "deferred": {
+        "review": "Envoyer les ajournes en revue",
+        "repeat": "Traiter les ajournes comme redoublants"
+      },
+      "metrics": {
+        "students": "etudiants"
+      },
+      "summary": {
+        "total": "Total",
+        "promote": "Promus",
+        "repeat": "Redoublants",
+        "graduate": "Diplomes",
+        "blocked": "A traiter",
+        "overridden": "Corrections"
+      },
+      "review": {
+        "title": "Espace de revue",
+        "description": "Traitez d'abord les cas bloques. Ouvrez une ligne pour inspecter et corriger."
+      },
+      "table": {
+        "student": "Etudiant",
+        "decision": "Decision",
+        "source": "Classe d'origine",
+        "outcome": "Action",
+        "destination": "Destination",
+        "status": "Etat"
+      },
+      "item": {
+        "title": "Cas de transition"
+      },
+      "resolve": {
+        "title": "Resoudre l'exception",
+        "outcome": "Action finale",
+        "targetClass": "Classe cible",
+        "reason": "Motif"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "ready": "Pret",
+        "pending_approval": "En attente",
+        "approved": "Approuve",
+        "running": "En cours",
+        "completed": "Termine",
+        "completed_with_errors": "Termine avec erreurs",
+        "stale": "Obsolete",
+        "cancelled": "Annule"
+      },
+      "itemStatus": {
+        "all": "Tous les etats",
+        "ready": "Pret",
+        "blocked": "Bloque",
+        "processing": "Traitement",
+        "succeeded": "Reussi",
+        "failed": "Echoue",
+        "excluded": "Exclu"
+      },
+      "outcome": {
+        "all": "Toutes les actions",
+        "promote": "Promouvoir",
+        "repeat": "Redoubler",
+        "graduate": "Diplomer",
+        "exclude": "Exclure",
+        "transfer": "Transferer",
+        "suspend": "Suspendre",
+        "review": "A traiter"
+      },
+      "decision": {
+        "admitted": "Admis",
+        "compensated": "Admis par compensation",
+        "deferred": "Ajourne",
+        "repeat": "Redoublant",
+        "excluded": "Exclu",
+        "pending": "En attente"
+      },
+      "blocker": {
+        "missing_signed_deliberation": "Deliberation annuelle signee manquante",
+        "missing_student_decision": "Decision etudiant manquante",
+        "existing_target_enrollment": "Inscription deja presente dans l'annee cible",
+        "missing_promotion_target": "Classe de promotion manquante",
+        "ambiguous_promotion_target": "Destination de promotion ambigue",
+        "missing_repeat_target": "Classe de redoublement manquante",
+        "ambiguous_repeat_target": "Destination de redoublement ambigue",
+        "deferred_requires_review": "Decision ajournee a examiner",
+        "pending_decision": "Decision en attente"
+      },
+      "empty": {
+        "noPlans": "Aucun plan de transition.",
+        "selectPlan": "Creez ou selectionnez un plan pour commencer la revue.",
+        "noItems": "Aucun etudiant ne correspond aux filtres."
+      },
+      "toast": {
+        "created": "Plan de transition cree",
+        "updated": "Transition mise a jour",
+        "resolved": "Cas de transition resolu"
+      }
     }
   },
   "teacher": {

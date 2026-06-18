@@ -147,6 +147,43 @@ export const deliberationRuleCategories = [
 export type DeliberationRuleCategory =
 	(typeof deliberationRuleCategories)[number];
 
+export const academicYearTransitionStatuses = [
+	"draft",
+	"ready",
+	"pending_approval",
+	"approved",
+	"running",
+	"completed",
+	"completed_with_errors",
+	"stale",
+	"cancelled",
+] as const;
+export type AcademicYearTransitionStatus =
+	(typeof academicYearTransitionStatuses)[number];
+
+export const academicYearTransitionOutcomes = [
+	"promote",
+	"repeat",
+	"graduate",
+	"exclude",
+	"transfer",
+	"suspend",
+	"review",
+] as const;
+export type AcademicYearTransitionOutcome =
+	(typeof academicYearTransitionOutcomes)[number];
+
+export const academicYearTransitionItemStatuses = [
+	"ready",
+	"blocked",
+	"processing",
+	"succeeded",
+	"failed",
+	"excluded",
+] as const;
+export type AcademicYearTransitionItemStatus =
+	(typeof academicYearTransitionItemStatuses)[number];
+
 /** Business profiles decoupled from Better Auth accounts. */
 export const domainUsers = pgTable(
 	"domain_users",
@@ -1695,6 +1732,149 @@ export const deliberationStudentResults = pgTable(
 		index("idx_deliberation_results_student").on(t.studentId),
 	],
 );
+/** Persistent, reviewable plan for moving a cohort into a target academic year. */
+export const academicYearTransitions = pgTable(
+	"academic_year_transitions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		sourceAcademicYearId: text("source_academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		targetAcademicYearId: text("target_academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		scopeClassIds: jsonb("scope_class_ids").$type<string[]>().default([]),
+		status: text("status")
+			.$type<AcademicYearTransitionStatus>()
+			.notNull()
+			.default("draft"),
+		revision: integer("revision").notNull().default(1),
+		deferredOutcome: text("deferred_outcome")
+			.$type<"repeat" | "review">()
+			.notNull()
+			.default("review"),
+		summary: jsonb("summary").$type<Record<string, number>>().default({}),
+		generatedBy: text("generated_by")
+			.notNull()
+			.references(() => domainUsers.id, { onDelete: "restrict" }),
+		submittedBy: text("submitted_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		approvedBy: text("approved_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		executedBy: text("executed_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		generatedAt: timestamp("generated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+		approvedAt: timestamp("approved_at", { withTimezone: true }),
+		startedAt: timestamp("started_at", { withTimezone: true }),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		check(
+			"chk_academic_year_transition_years",
+			sql`${t.sourceAcademicYearId} <> ${t.targetAcademicYearId}`,
+		),
+		index("idx_academic_year_transitions_institution").on(t.institutionId),
+		index("idx_academic_year_transitions_source_year").on(
+			t.sourceAcademicYearId,
+		),
+		index("idx_academic_year_transitions_target_year").on(
+			t.targetAcademicYearId,
+		),
+		index("idx_academic_year_transitions_status").on(t.status),
+	],
+);
+
+/** Per-student action proposed and executed by an academic-year transition. */
+export const academicYearTransitionItems = pgTable(
+	"academic_year_transition_items",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		transitionId: text("transition_id")
+			.notNull()
+			.references(() => academicYearTransitions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "restrict" }),
+		sourceEnrollmentId: text("source_enrollment_id")
+			.notNull()
+			.references(() => enrollments.id, { onDelete: "restrict" }),
+		deliberationId: text("deliberation_id").references(() => deliberations.id, {
+			onDelete: "set null",
+		}),
+		deliberationStudentResultId: text(
+			"deliberation_student_result_id",
+		).references(() => deliberationStudentResults.id, {
+			onDelete: "set null",
+		}),
+		decision: text("decision").$type<DeliberationDecision>(),
+		proposedOutcome: text("proposed_outcome")
+			.$type<AcademicYearTransitionOutcome>()
+			.notNull(),
+		finalOutcome: text("final_outcome")
+			.$type<AcademicYearTransitionOutcome>()
+			.notNull(),
+		proposedTargetClassId: text("proposed_target_class_id").references(
+			() => classes.id,
+			{ onDelete: "set null" },
+		),
+		finalTargetClassId: text("final_target_class_id").references(
+			() => classes.id,
+			{ onDelete: "set null" },
+		),
+		status: text("status").$type<AcademicYearTransitionItemStatus>().notNull(),
+		blockerCode: text("blocker_code"),
+		blockerDetails: jsonb("blocker_details")
+			.$type<Record<string, unknown>>()
+			.default({}),
+		isOverridden: boolean("is_overridden").notNull().default(false),
+		overrideReason: text("override_reason"),
+		overriddenBy: text("overridden_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		overriddenAt: timestamp("overridden_at", { withTimezone: true }),
+		targetEnrollmentId: text("target_enrollment_id").references(
+			() => enrollments.id,
+			{ onDelete: "set null" },
+		),
+		processedAt: timestamp("processed_at", { withTimezone: true }),
+		errorMessage: text("error_message"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_academic_year_transition_source_enrollment").on(
+			t.transitionId,
+			t.sourceEnrollmentId,
+		),
+		index("idx_academic_year_transition_items_transition").on(t.transitionId),
+		index("idx_academic_year_transition_items_student").on(t.studentId),
+		index("idx_academic_year_transition_items_status").on(t.status),
+		index("idx_academic_year_transition_items_outcome").on(t.finalOutcome),
+		index("idx_academic_year_transition_items_source").on(t.sourceEnrollmentId),
+	],
+);
 
 /** Configurable rules for deliberation decision-making. */
 export const deliberationRules = pgTable(
@@ -2742,6 +2922,18 @@ export type DeliberationStudentResult = InferSelectModel<
 >;
 export type NewDeliberationStudentResult = InferInsertModel<
 	typeof deliberationStudentResults
+>;
+export type AcademicYearTransition = InferSelectModel<
+	typeof academicYearTransitions
+>;
+export type NewAcademicYearTransition = InferInsertModel<
+	typeof academicYearTransitions
+>;
+export type AcademicYearTransitionItem = InferSelectModel<
+	typeof academicYearTransitionItems
+>;
+export type NewAcademicYearTransitionItem = InferInsertModel<
+	typeof academicYearTransitionItems
 >;
 export type DeliberationRule = InferSelectModel<typeof deliberationRules>;
 export type NewDeliberationRule = InferInsertModel<typeof deliberationRules>;

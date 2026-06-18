@@ -1,0 +1,2386 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TKAMS — Brochure produit · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+/* ============ TKAMS BROCHURE — design system ============ */
+.page { padding: 0; }
+.inner { padding: 40px 52px 48px; min-height: 1123px; display: flex; flex-direction: column; }
+.inner.tight { padding: 36px 44px 44px; }
+
+/* --- Header --- */
+.h {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 18px;
+}
+.h .b { display: inline-flex; align-items: center; gap: 10px; font-family: var(--tk-font-display); font-weight: 700; letter-spacing: -0.005em; }
+.h .b .badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--tk-ink); color: white;
+  padding: 4px 11px 4px 4px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+}
+.h .b .badge::before { content: ""; width: 16px; height: 16px; background: var(--tk-primary); border-radius: 50%; }
+.dark .h .b .badge { background: white; color: var(--tk-dark); }
+.dark .h .b .badge::before { background: var(--tk-primary-bright); }
+.h .crumb { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.dark .h .crumb { color: var(--tk-on-dark-muted); }
+.h .marker { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.1em; }
+.dark .h .marker { color: var(--tk-on-dark-muted); }
+.h .chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--tk-bg); border: 1px solid var(--tk-border);
+  padding: 4px 10px; border-radius: 999px;
+  font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.06em;
+}
+.dark .h .chip { background: transparent; border-color: oklch(1 0 0 / 14%); color: var(--tk-on-dark-soft); }
+
+/* --- Footer --- */
+.f {
+  margin-top: auto; padding-top: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--tk-font-mono);
+  font-size: 10px; color: var(--tk-muted); letter-spacing: 0.08em;
+}
+.dark .f { color: var(--tk-on-dark-muted); }
+.f .pn { font-family: var(--tk-font-display); font-weight: 700; font-size: 26px; color: var(--tk-ink); letter-spacing: -0.025em; line-height: 1; }
+.f .pn span { color: var(--tk-muted-2); font-weight: 500; }
+.dark .f .pn { color: white; }
+.dark .f .pn span { color: var(--tk-on-dark-muted); }
+
+/* --- Typography --- */
+.kicker {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--tk-font-mono); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--tk-primary); font-weight: 600;
+}
+.dark .kicker { color: var(--tk-primary-bright); }
+.kicker::before { content: ""; width: 18px; height: 2px; background: currentColor; }
+
+.section-num {
+  font-family: var(--tk-font-display); font-weight: 700;
+  font-size: 64px; line-height: 0.9; letter-spacing: -0.05em;
+  color: var(--tk-primary); margin: 2px 0 -2px;
+}
+.dark .section-num { color: var(--tk-primary-bright); opacity: 0.85; }
+
+h1.hed {
+  font-family: var(--tk-font-display); font-weight: 600;
+  font-size: 42px; line-height: 0.98; letter-spacing: -0.032em;
+  margin: 8px 0 12px; color: var(--tk-ink);
+  max-width: 640px;
+}
+.dark h1.hed { color: white; }
+h1.hed em { font-style: normal; color: var(--tk-primary); }
+.dark h1.hed em { color: var(--tk-primary-bright); }
+h1.hed mark {
+  background: linear-gradient(180deg, transparent 60%, oklch(0.95 0.06 277) 60%);
+  color: inherit; padding: 0 6px; margin: 0 -2px;
+}
+.dark h1.hed mark { background: linear-gradient(180deg, transparent 60%, oklch(0.48 0.2 277 / 50%) 60%); }
+
+h2 { font-family: var(--tk-font-display); font-weight: 600; font-size: 19px; line-height: 1.2; margin: 0 0 6px; color: var(--tk-ink); letter-spacing: -0.012em; }
+.dark h2 { color: white; }
+h3 { font-family: var(--tk-font-display); font-weight: 600; font-size: 14px; margin: 0 0 6px; color: var(--tk-ink); letter-spacing: -0.005em; }
+.dark h3 { color: white; }
+h4 { font-family: var(--tk-font-display); font-weight: 600; font-size: 12px; margin: 0 0 4px; color: var(--tk-ink); }
+.dark h4 { color: white; }
+.lede { font-size: 13px; line-height: 1.5; color: var(--tk-ink-soft); max-width: 620px; font-family: var(--tk-font-sans); }
+.dark .lede { color: var(--tk-on-dark-soft); }
+p { font-size: 11px; line-height: 1.55; color: var(--tk-ink-soft); margin: 0 0 6px; }
+.dark p { color: var(--tk-on-dark-soft); }
+ul, ol { padding-left: 16px; margin: 6px 0; }
+li { font-size: 11px; line-height: 1.5; color: var(--tk-ink-soft); margin-bottom: 3px; }
+.dark li { color: var(--tk-on-dark-soft); }
+li::marker { color: var(--tk-primary); }
+.dark li::marker { color: var(--tk-primary-bright); }
+.mono { font-family: var(--tk-font-mono); }
+
+/* --- Cards --- */
+.card { background: var(--tk-bg); border-radius: 14px; padding: 13px; border: 1px solid var(--tk-border); }
+.card.white { background: white; }
+.card.deep { background: var(--tk-bg-deep); border-color: var(--tk-border-strong); }
+.card.dark {
+  background: var(--tk-dark-2); border: 1px solid var(--tk-dark-3);
+  color: var(--tk-on-dark);
+}
+.card.dark h2, .card.dark h3, .card.dark h4 { color: white; }
+.card.dark p, .card.dark li { color: var(--tk-on-dark-soft); }
+.card.brand {
+  background: var(--tk-primary); border: none; color: white;
+}
+.card.brand h2, .card.brand h3, .card.brand h4 { color: white; }
+.card.brand p, .card.brand li { color: oklch(0.95 0.04 277); }
+.card.brand li::marker { color: oklch(0.85 0.08 277); }
+.card.softbrand { background: var(--tk-primary-soft); border-color: oklch(0.48 0.2 277 / 20%); }
+.card.softbrand h2, .card.softbrand h3, .card.softbrand h4 { color: var(--tk-primary-deep); }
+.card.softbrand p, .card.softbrand li { color: var(--tk-primary-deep); }
+
+.grid { display: grid; gap: 12px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g23 { grid-template-columns: 2fr 1fr; }
+.g32 { grid-template-columns: 1fr 2fr; }
+.span2 { grid-column: span 2; }
+.span3 { grid-column: span 3; }
+.span4 { grid-column: span 4; }
+
+/* --- Chips & pills --- */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  background: var(--tk-primary-soft); color: var(--tk-primary);
+  border-radius: 999px;
+  font-family: var(--tk-font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.04em;
+}
+.chip.ghost { background: transparent; border: 1px solid var(--tk-border); color: var(--tk-muted); }
+.chip.dark-c { background: var(--tk-dark-2); color: var(--tk-primary-bright); }
+.chip.live { background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); }
+.chip.live::before { content: ""; width: 6px; height: 6px; background: oklch(0.58 0.17 149); border-radius: 50%; }
+
+.numbadge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  background: var(--tk-primary); color: white;
+  font-family: var(--tk-font-display); font-weight: 700; font-size: 12px;
+  border-radius: 8px;
+}
+.dark .numbadge { background: var(--tk-primary-bright); color: var(--tk-dark); }
+
+/* --- Stat block --- */
+.stat .v {
+  font-family: var(--tk-font-display); font-weight: 700;
+  font-size: 44px; line-height: 0.92; letter-spacing: -0.04em;
+  color: var(--tk-ink);
+}
+.stat .v sup { font-size: 18px; vertical-align: super; color: var(--tk-primary); margin-left: 4px; font-weight: 600; }
+.stat .l { font-size: 10px; color: var(--tk-muted); margin-top: 6px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.card.dark .stat .v { color: white; }
+.card.dark .stat .v sup { color: var(--tk-primary-bright); }
+.card.dark .stat .l { color: var(--tk-on-dark-muted); }
+.card.brand .stat .v { color: white; }
+.card.brand .stat .v sup { color: oklch(0.85 0.06 277); }
+.card.brand .stat .l { color: oklch(0.92 0.04 277); }
+
+/* --- Code/term boxes --- */
+.term {
+  background: var(--tk-dark); color: oklch(0.85 0.06 264);
+  border-radius: 10px; padding: 14px 16px;
+  font-family: var(--tk-font-mono); font-size: 10.5px; line-height: 1.5;
+}
+.term .c1 { color: oklch(0.78 0.14 277); }
+.term .c2 { color: oklch(0.78 0.16 149); }
+.term .c3 { color: oklch(0.85 0.14 86); }
+.term .c4 { color: oklch(0.72 0.04 264); }
+
+.dotline { display: flex; align-items: baseline; gap: 8px; }
+.dotline::after { content: ""; flex: 1; height: 1px; border-bottom: 1px dashed currentColor; opacity: 0.3; margin-bottom: 4px; }
+
+/* --- Mock product UI placeholders --- */
+.mock {
+  background: white; border: 1px solid var(--tk-border); border-radius: 12px;
+  overflow: hidden; position: relative;
+}
+.mock-bar { height: 26px; background: var(--tk-bg-deep); border-bottom: 1px solid var(--tk-border); display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+.mock-bar .d { width: 8px; height: 8px; border-radius: 50%; background: oklch(0.85 0.01 80); }
+.mock-bar .url { font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); margin-left: 8px; }
+.mock-body { padding: 12px; }
+.mock-label { position: absolute; bottom: 8px; right: 10px; font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.06em; background: white; padding: 2px 6px; border-radius: 4px; }
+
+/* --- Module catalog grid --- */
+.mod {
+  background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 8px;
+  padding: 7px 9px; display: flex; flex-direction: column; gap: 1px; min-height: 44px;
+}
+.mod .mn { display: none; }
+.mod .mt { font-family: var(--tk-font-display); font-size: 10.5px; font-weight: 600; color: var(--tk-ink); letter-spacing: -0.005em; line-height: 1.15; }
+.mod .md { font-size: 8.5px; color: var(--tk-muted); line-height: 1.3; }
+.dark .mod { background: var(--tk-dark-2); border-color: var(--tk-dark-3); }
+.dark .mod .mt { color: white; }
+.dark .mod .mn { color: var(--tk-primary-bright); }
+.dark .mod .md { color: var(--tk-on-dark-muted); }
+.mod.brand { background: var(--tk-primary); border: none; }
+.mod.brand .mn, .mod.brand .mt, .mod.brand .md { color: white; }
+.mod.brand .mn { color: oklch(0.85 0.08 277); }
+
+/* --- Cover --- */
+.cover { background: var(--tk-dark); color: white; position: relative; overflow: hidden; }
+.cover-grid { position: absolute; inset: 0; background-image: linear-gradient(oklch(1 0 0 / 5%) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 5%) 1px, transparent 1px); background-size: 32px 32px; pointer-events: none; z-index: 0; }
+.cover-glow { position: absolute; right: -240px; top: -120px; width: 800px; height: 800px; pointer-events: none; z-index: 1; opacity: 0.55; }
+.cover .inner { padding: 56px 60px 56px; position: relative; z-index: 2; }
+.cover .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cover .logo-wrap { background: white; padding: 12px 16px; border-radius: 12px; display: inline-block; }
+.cover .logo-wrap img { height: 28px; display: block; }
+.cover .top-r { font-family: var(--tk-font-mono); font-size: 10px; letter-spacing: 0.1em; text-align: right; color: var(--tk-on-dark-muted); line-height: 1.7; }
+.cover .top-r strong { color: white; font-weight: 600; }
+.cover .center { margin-top: auto; margin-bottom: 18px; max-width: 640px; }
+.cover h1 {
+  font-family: var(--tk-font-display); font-weight: 600;
+  font-size: 90px; line-height: 0.94; letter-spacing: -0.045em;
+  color: white; margin: 22px 0 24px;
+}
+.cover h1 em { font-style: normal; color: var(--tk-primary-bright); }
+.cover .deck { font-size: 17px; line-height: 1.45; color: var(--tk-on-dark-soft); max-width: 520px; font-family: var(--tk-font-sans); }
+.cover .bottom {
+  margin-top: 30px; padding-top: 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  border-top: 1px solid oklch(1 0 0 / 12%);
+}
+.cover .bottom .col { font-family: var(--tk-font-sans); }
+.cover .bottom .col h5 { font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-on-dark-muted); letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 6px; font-weight: 500; }
+.cover .bottom .col p { color: white; font-family: var(--tk-font-display); font-weight: 500; font-size: 13px; margin: 0; line-height: 1.4; }
+
+/* --- TOC --- */
+.toc-block { display: grid; grid-template-columns: 56px 1fr 64px; gap: 0; }
+.toc-block .tn { font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); padding: 6px 0; border-bottom: 1px solid var(--tk-border); letter-spacing: 0.04em; }
+.toc-block .tt { font-family: var(--tk-font-display); font-weight: 500; font-size: 12.5px; color: var(--tk-ink); padding: 6px 0; border-bottom: 1px solid var(--tk-border); }
+.toc-block .tt small { display: block; font-family: var(--tk-font-sans); font-weight: 400; font-size: 10px; color: var(--tk-muted); margin-top: 1px; letter-spacing: 0; }
+.toc-block .tp { font-family: var(--tk-font-display); font-weight: 600; font-size: 12px; color: var(--tk-primary); text-align: right; padding: 6px 0; border-bottom: 1px solid var(--tk-border); letter-spacing: -0.005em; }
+.toc-block .toc-sep { grid-column: 1 / -1; padding: 12px 0 2px; }
+.toc-block .toc-sep .sl { display: inline-flex; align-items: center; gap: 8px; font-family: var(--tk-font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--tk-primary); font-weight: 600; }
+.toc-block .toc-sep .sl::before { content: ""; width: 14px; height: 2px; background: var(--tk-primary); }
+
+/* --- Section divider (dark interstitial) --- */
+.divider { background: var(--tk-dark); color: white; position: relative; overflow: hidden; }
+.divider .inner { justify-content: center; min-height: 1123px; }
+.divider .num { font-family: var(--tk-font-display); font-weight: 700; font-size: 180px; line-height: 0.84; letter-spacing: -0.06em; color: var(--tk-primary-bright); opacity: 0.85; margin: 0; }
+.divider h1 { font-family: var(--tk-font-display); font-weight: 600; font-size: 56px; line-height: 0.98; letter-spacing: -0.035em; color: white; margin: 12px 0 18px; max-width: 600px; }
+.divider .deck { font-size: 16px; line-height: 1.5; color: var(--tk-on-dark-soft); max-width: 540px; }
+.divider .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(oklch(1 0 0 / 4%) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 4%) 1px, transparent 1px); background-size: 32px 32px; pointer-events: none; }
+
+/* --- Pricing --- */
+.price-card {
+  background: white; border: 1px solid var(--tk-border); border-radius: 14px;
+  padding: 18px; display: flex; flex-direction: column; position: relative;
+}
+.price-card.featured { background: var(--tk-dark); border-color: var(--tk-dark); color: white; }
+.price-card.featured h3, .price-card.featured h4 { color: white; }
+.price-card.featured p, .price-card.featured li { color: var(--tk-on-dark-soft); }
+.price-card.featured li::marker { color: var(--tk-primary-bright); }
+.price-card .seg { font-family: var(--tk-font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--tk-muted); margin-bottom: 12px; font-weight: 600; }
+.price-card.featured .seg { color: var(--tk-primary-bright); }
+.price-card h3 { font-size: 19px; margin: 0 0 4px; }
+.price-card .price { font-family: var(--tk-font-display); font-size: 30px; font-weight: 700; letter-spacing: -0.034em; line-height: 1; margin: 12px 0 4px; }
+.price-card .price small { font-size: 12px; font-weight: 500; color: var(--tk-muted); margin-left: 6px; letter-spacing: 0; }
+.price-card.featured .price small { color: var(--tk-on-dark-soft); }
+.price-card .per { font-size: 11px; color: var(--tk-muted); margin-bottom: 14px; line-height: 1.5; }
+.price-card.featured .per { color: var(--tk-on-dark-muted); }
+.price-card ul { padding-left: 14px; margin-top: 10px; }
+.price-card .badge-top { position: absolute; top: -10px; right: 20px; background: var(--tk-primary-bright); color: var(--tk-dark); font-family: var(--tk-font-mono); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.06em; }
+
+/* --- Logo wall (placeholders) --- */
+.logo-cell {
+  height: 76px; border: 1px solid var(--tk-border); border-radius: 12px;
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;
+  color: var(--tk-muted-2); letter-spacing: 0.02em; text-align: center; padding: 8px;
+  background-image: repeating-linear-gradient(45deg, transparent 0 12px, oklch(0 0 0 / 2%) 12px 13px);
+}
+.logo-cell strong { display: block; font-family: var(--tk-font-display); color: var(--tk-ink); font-size: 12px; font-weight: 700; }
+.logo-cell em { font-style: normal; display: block; font-family: var(--tk-font-mono); font-size: 8.5px; color: var(--tk-muted); letter-spacing: 0.06em; margin-top: 2px; }
+
+/* --- Quote --- */
+blockquote {
+  font-family: var(--tk-font-display); font-weight: 500;
+  font-size: 24px; line-height: 1.3; letter-spacing: -0.015em;
+  color: white; margin: 0; padding: 0;
+}
+blockquote::before { content: "« "; color: var(--tk-primary-bright); }
+blockquote::after { content: " »"; color: var(--tk-primary-bright); }
+
+/* --- Step row (numbered) --- */
+.step {
+  display: grid; grid-template-columns: 56px 1fr; gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--tk-border);
+}
+.step:last-child { border-bottom: none; }
+.step .sn { font-family: var(--tk-font-display); font-weight: 700; font-size: 28px; color: var(--tk-primary); letter-spacing: -0.025em; line-height: 1; }
+.step .sd { font-family: var(--tk-font-mono); font-size: 9px; color: var(--tk-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+/* --- CTA mega --- */
+.cta-mega {
+  background: var(--tk-primary); color: white;
+  border-radius: 18px; padding: 26px 30px; position: relative; overflow: hidden;
+}
+.cta-mega::before { content: ""; position: absolute; right: -60px; bottom: -60px; width: 200px; height: 200px; border-radius: 50%; background: oklch(0.99 0 0 / 10%); }
+.cta-mega::after { content: ""; position: absolute; right: 100px; top: -50px; width: 120px; height: 120px; border-radius: 50%; background: oklch(0.99 0 0 / 5%); }
+.cta-mega h1 { font-family: var(--tk-font-display); font-weight: 600; font-size: 34px; letter-spacing: -0.025em; line-height: 1.05; color: white; margin: 6px 0 10px; max-width: 540px; position: relative; z-index: 1; }
+.cta-mega .deck { font-size: 13px; color: oklch(0.95 0.04 277); line-height: 1.45; max-width: 500px; position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<!-- ============================================== -->
+<!-- 01 — COUVERTURE -->
+<!-- ============================================== -->
+<section class="page cover" data-screen-label="01 Couverture">
+  <div class="cover-grid"></div>
+  <svg class="cover-glow" viewBox="0 0 800 800" fill="none" aria-hidden="true">
+    <defs>
+      <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="oklch(0.65 0.22 277)" stop-opacity="0.9"/>
+        <stop offset="55%" stop-color="oklch(0.48 0.2 277)" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="oklch(0.48 0.2 277)" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="400" cy="400" r="400" fill="url(#cg)"/>
+    <circle cx="400" cy="400" r="260" fill="none" stroke="oklch(0.75 0.2 277 / 30%)" stroke-width="1"/>
+    <circle cx="400" cy="400" r="180" fill="none" stroke="oklch(0.85 0.18 277 / 40%)" stroke-width="1"/>
+    <circle cx="400" cy="400" r="100" fill="none" stroke="oklch(0.95 0.14 277 / 50%)" stroke-width="1"/>
+  </svg>
+
+  <div class="inner">
+    <div class="top">
+      <div class="logo-wrap"><img src="../assets/logo-tkams.png" alt="TKAMS" /></div>
+      <div class="top-r">
+        <strong>Brochure produit</strong><br/>
+        Édition 2026 · Volume I<br/>
+        Réf. TKAMS / BR / FR-V2
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="kicker" style="color: var(--tk-primary-bright);">★ Système d'Information Étudiant · LMD · multi-tutelles</div>
+      <h1>Le SIS qui transforme<br/>vos semaines de<br/>délibérations en <em>heures</em>.</h1>
+      <p class="deck">TKAMS — <em style="font-style: normal; color: white;">Tefoye and Kana Academic Management System</em> — est une plateforme intégrée de gestion académique pour les institutions LMD. Une seule application pour piloter inscriptions, examens, délibérations, promotions et émission des actes officiels.</p>
+    </div>
+
+    <div class="bottom">
+      <div class="col"><h5>Pour</h5><p>Universités, IPES, facultés, centres de formation</p></div>
+      <div class="col"><h5>Technologie</h5><p>Conçu et maintenu en Afrique, sans dépendance propriétaire</p></div>
+      <div class="col"><h5>Statut</h5><p>En production · 35+ modules livrés</p></div>
+      <div class="col"><h5>Contact</h5><p>contact@tkams.app<br/>Douala · Yaoundé</p></div>
+    </div>
+    <p style="margin-top: 18px; font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-on-dark-muted); letter-spacing: 0.06em;">TKAMS est développé par <strong style="color: white;">OverBrand</strong> · overbrand.net · Douala &amp; Yaoundé</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 02 — SOMMAIRE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="02 Sommaire">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Brochure · Sommaire</div>
+    </div>
+
+    <div class="kicker">00 · Sommaire</div>
+    <h1 class="hed">Six parties.<br/>Trente et une <em>pages</em>.<br/>Un produit prêt.</h1>
+    <p class="lede" style="margin-bottom: 16px;">Cette brochure documente TKAMS dans son état réellement livré : 35+ fonctionnalités métier, moteur de règles de délibération configurable, 24 modèles d'exports, intégration native avec DIPLOMATION. Chaque chiffre est vrai, chaque écran existe, chaque fonctionnalité est testée.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+
+      <div class="toc-block">
+        <div class="toc-sep"><span class="sl">I · Le contexte</span></div>
+        <div class="tn">01</div><div class="tt">Le constat — LMD analogique <small>La grande majorité des étab. perdent des semaines entières</small></div><div class="tp">04</div>
+        <div class="tn">02</div><div class="tt">Pourquoi maintenant <small>Fenêtre de bascule numérique</small></div><div class="tp">05</div>
+
+        <div class="toc-sep"><span class="sl">II · La promesse TKAMS</span></div>
+        <div class="tn">03</div><div class="tt">TKAMS en une page</div><div class="tp">07</div>
+        <div class="tn">04</div><div class="tt">Quatre différenciateurs concrets</div><div class="tp">08</div>
+        <div class="tn">05</div><div class="tt">Multi-tutelles &amp; hiérarchie</div><div class="tp">09</div>
+        <div class="tn">06</div><div class="tt">Architecture LMD native <small>UE, EC, ECTS, sessions</small></div><div class="tp">10</div>
+
+        <div class="toc-sep"><span class="sl">III · Le produit en profondeur</span></div>
+        <div class="tn">07</div><div class="tt">Vue d'ensemble fonctionnelle</div><div class="tp">12</div>
+        <div class="tn">08</div><div class="tt">Cartographie des 35+ modules</div><div class="tp">13</div>
+        <div class="tn">09</div><div class="tt">Sept rôles, sept expériences</div><div class="tp">14</div>
+        <div class="tn">10</div><div class="tt">Saisie de notes &amp; délégation</div><div class="tp">15</div>
+        <div class="tn">11</div><div class="tt">Moteur de règles ★</div><div class="tp">16</div>
+        <div class="tn">12</div><div class="tt">Promotion automatique</div><div class="tp">17</div>
+      </div>
+
+      <div class="toc-block">
+        <div class="toc-sep" style="padding-top: 0;"><span class="sl">III · Suite</span></div>
+        <div class="tn">13</div><div class="tt">24 modèles d'exports officiels</div><div class="tp">18</div>
+        <div class="tn">14</div><div class="tt">Intégration DIPLOMATION <small>QR codes chiffrés, API signée</small></div><div class="tp">19</div>
+        <div class="tn">15</div><div class="tt">Aperçus produit</div><div class="tp">20</div>
+
+        <div class="toc-sep"><span class="sl">IV · Technique</span></div>
+        <div class="tn">16</div><div class="tt">Stack technique <small>Architecture, performance, indépendance</small></div><div class="tp">22</div>
+        <div class="tn">17</div><div class="tt">Sécurité &amp; audit des accès</div><div class="tp">23</div>
+        <div class="tn">18</div><div class="tt">Multi-tenant &amp; bilinguisme</div><div class="tp">24</div>
+
+        <div class="toc-sep"><span class="sl">V · La confiance</span></div>
+        <div class="tn">19</div><div class="tt">Établissements clients</div><div class="tp">26</div>
+        <div class="tn">20</div><div class="tt">Trois cas d'usage chiffrés</div><div class="tp">27</div>
+        <div class="tn">21</div><div class="tt">Équipe fondatrice</div><div class="tp">28</div>
+
+        <div class="toc-sep"><span class="sl">VI · Commercial</span></div>
+        <div class="tn">22</div><div class="tt">Quatre modes de déploiement</div><div class="tp">29</div>
+        <div class="tn">23</div><div class="tt">Licences &amp; tarification</div><div class="tp">30</div>
+      </div>
+
+    </div>
+
+    <div class="f">
+      <span>TKAMS · BR / FR-V2</span>
+      <span class="pn">02<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 03 — PART I DIVIDER -->
+<!-- ============================================== -->
+<section class="page divider" data-screen-label="03 Partie I — Contexte">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Partie I</div>
+    </div>
+    <div style="margin: auto 0;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">— PARTIE I —</div>
+      <div class="num">I</div>
+      <h1>Le contexte.</h1>
+      <p class="deck">Pourquoi 95 % des établissements LMD perdent encore plusieurs semaines en fin de semestre — et pourquoi cette situation peut changer maintenant.</p>
+    </div>
+    <div class="f">
+      <span>I · LE CONTEXTE</span>
+      <span class="pn">03<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 04 — LE CONSTAT -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="04 Le constat">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">I · Contexte / 01</div>
+    </div>
+
+    <div class="kicker">01 · Le constat</div>
+    <h1 class="hed">LMD analogique : <em>encore.</em></h1>
+    <p class="lede">Vingt ans après l'adoption du système LMD au Cameroun et dans la zone CEMAC, la majorité des directions académiques jonglent toujours entre des classeurs Excel instables, des logiciels rigides incapables de modéliser UE/EC/coefficients, et des fins de semestre interminables.</p>
+
+    <div class="grid g4" style="margin-top: 26px;">
+      <div class="card stat"><div class="v">3<sup>sem.</sup></div><div class="l">Durée moyenne d'une délibération de fin de semestre</div></div>
+      <div class="card stat"><div class="v">12<sup>%</sup></div><div class="l">Du temps des secrétaires académiques en ressaisies</div></div>
+      <div class="card stat"><div class="v">5<sup></sup></div><div class="l">Systèmes différents pour un même étudiant</div></div>
+      <div class="card brand stat"><div class="v">0</div><div class="l">SIS local capable de tout cela en une plateforme</div></div>
+    </div>
+
+    <h2 style="margin-top: 22px;">Six douleurs récurrentes</h2>
+    <div class="grid g3" style="margin-top: 10px; gap: 10px;">
+      <div class="card white"><span class="numbadge">01</span><h3 style="margin-top: 10px;">Saisie laborieuse</h3><p>Classeurs Excel dupliqués, ressaisies manuelles, pas de verrouillage post-examen.</p></div>
+      <div class="card white"><span class="numbadge">02</span><h3 style="margin-top: 10px;">Calculs manuels</h3><p>Moyennes pondérées, crédits ECTS, mentions, rangs : tous risquent l'erreur Excel.</p></div>
+      <div class="card white"><span class="numbadge">03</span><h3 style="margin-top: 10px;">Délibérations papier</h3><p>Jurys sur tableau noir, décisions ad hoc, PV ressaisis dans un autre fichier.</p></div>
+      <div class="card white"><span class="numbadge">04</span><h3 style="margin-top: 10px;">Documents fabriqués à la main</h3><p>Relevés, attestations, diplômes générés Word par Word — risque de fraude élevé.</p></div>
+      <div class="card white"><span class="numbadge">05</span><h3 style="margin-top: 10px;">Aucune piste d'audit</h3><p>Note modifiée hors-piste ? Qui a fait quoi ? Pas de traçabilité.</p></div>
+      <div class="card white"><span class="numbadge">06</span><h3 style="margin-top: 10px;">Outils déconnectés</h3><p>Gestion notes ≠ fabrication docs ≠ archivage. Trois équipes, trois fichiers maîtres.</p></div>
+    </div>
+
+    <div class="card white" style="margin-top: 16px; border-left: 4px solid var(--tk-accent-gold); padding: 14px 16px;">
+      <h3 style="color: var(--tk-ink); margin-bottom: 8px;">Ce que vit un établissement sans TKAMS</h3>
+      <p style="margin: 0; line-height: 1.7;">Fin de semestre : un enseignant envoie ses notes par WhatsApp. Une secrétaire les retranscrit dans Excel. Un autre fichier calcule les moyennes. Le jury délibère sur des feuilles imprimées. Le PV est tapé dans Word. Les attestations sont signées à la main, une par une. Trois semaines plus tard, un étudiant signale une erreur. <strong style="color: var(--tk-ink);">Impossible de savoir qui a saisi quoi. La note est peut-être perdue.</strong><br/>
+      <span style="color: var(--tk-primary); font-weight: 600;">TKAMS supprime ce scénario.</span></p>
+    </div>
+
+    <div class="card brand" style="margin-top: 12px;">
+      <h3 style="color: white;">La cause commune</h3>
+      <p style="margin: 0;">Aucun outil disponible n'avait été pensé <em style="font-style: normal; color: oklch(0.75 0.18 277);">spécifiquement pour le LMD africain</em> — avec ses tutelles multiples, sa réalité multi-établissement, et sa nécessité de documents officiels vérifiables. TKAMS est cette plateforme.</p>
+    </div>
+
+    <div class="f">
+      <span>I · LE CONTEXTE</span>
+      <span class="pn">04<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 05 — POURQUOI MAINTENANT -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="05 Pourquoi maintenant">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">I · Contexte / 02</div>
+    </div>
+
+    <div class="kicker">02 · Pourquoi maintenant</div>
+    <h1 class="hed">La fenêtre de <em>bascule</em>.</h1>
+    <p class="lede">Quatre facteurs convergent pour rendre 2026 le moment de moderniser le SI académique. Avant ce point d'inflexion, le marché n'était pas mûr. Après, les acteurs internationaux capteront la valeur.</p>
+
+    <div class="grid g2" style="margin-top: 26px; gap: 14px;">
+      <div class="card white" style="border-top: 3px solid var(--tk-primary);">
+        <h3>① Standardisation LMD aboutie</h3>
+        <p>Depuis 2007, le LMD/CAMES est intégré dans toutes les universités d'État et la quasi-totalité des IPES homologués. Le référentiel est stabilisé — ce qui rend possible un produit standard plutôt qu'un développement sur-mesure.</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-emerald);">
+        <h3>② Mobile Money mature</h3>
+        <p>72 % des Camerounais bancarisés via Mobile Money (Findex 2024). Les paiements de scolarité en tranches, automatiquement réconciliés, sont enfin techniquement possibles.</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-gold);">
+        <h3>③ Smartphone Android omniprésent</h3>
+        <p>Plus de 80 % des étudiants ont un Android. Un portail web responsive + une app mobile native suffisent à atteindre l'ensemble du public.</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-accent-blue);">
+        <h3>④ Pression réglementaire MINESUP</h3>
+        <p>Le ministère exige une traçabilité croissante des effectifs, des notes et des diplômes. Les solutions papier ne tiennent plus.</p>
+      </div>
+    </div>
+
+    <div class="card dark" style="margin-top: 18px; padding: 22px;">
+      <div class="grid g32" style="gap: 18px; align-items: center;">
+        <div>
+          <div class="kicker" style="color: var(--tk-primary-bright);">★ L'opportunité</div>
+          <h2 style="color: white; margin-top: 8px;">L'absence d'un SIS local complet et opérationnel.</h2>
+        </div>
+        <p style="margin: 0;">Les SIS européens (Cocktail, Aurion, Apogée) facturent en euros et ignorent la réalité multi-tutelles. Les outils open-source (ESUP, OpenSIS) demandent une équipe DSI conséquente. Les développements PHP locaux dépendent d'un développeur unique. Excel + WhatsApp finissent par coûter plus cher en temps. TKAMS comble ce vide en étant standard, paramétrable, et conçu localement.</p>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>I · LE CONTEXTE</span>
+      <span class="pn">05<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 06 — PART II DIVIDER -->
+<!-- ============================================== -->
+<section class="page divider" data-screen-label="06 Partie II — Promesse">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Partie II</div>
+    </div>
+    <div style="margin: auto 0;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">— PARTIE II —</div>
+      <div class="num">II</div>
+      <h1>La promesse.</h1>
+      <p class="deck">Quatre différenciateurs concrets — pas marketing. Multi-tutelles natif, moteur de règles, intégration DIPLOMATION, architecture LMD-first. Voici comment TKAMS change ce qui compte.</p>
+    </div>
+    <div class="f">
+      <span>II · LA PROMESSE</span>
+      <span class="pn">06<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 07 — TKAMS EN UNE PAGE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="07 TKAMS en une page">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">II · Promesse / 03</div>
+    </div>
+
+    <div class="kicker">03 · TKAMS en une page</div>
+    <h1 class="hed">Une seule plateforme,<br/>tout le <em>cycle LMD</em>.</h1>
+    <p class="lede"><strong style="color: var(--tk-ink);">Promesse client.</strong> Réduire de plusieurs semaines à quelques heures les opérations critiques de fin de semestre : saisie, contrôle, délibération, publication, archivage, émission des actes officiels.</p>
+
+    <h2 style="margin-top: 24px;">En une plateforme, l'établissement pilote</h2>
+    <div class="grid g3" style="gap: 10px; margin-top: 10px;">
+      <div class="card white"><span class="chip">①</span><h4 style="margin-top: 8px;">Étudiants, inscriptions, dossiers</h4></div>
+      <div class="card white"><span class="chip">②</span><h4 style="margin-top: 8px;">Organisation pédagogique LMD</h4></div>
+      <div class="card white"><span class="chip">③</span><h4 style="margin-top: 8px;">Planification des examens</h4></div>
+      <div class="card white"><span class="chip">④</span><h4 style="margin-top: 8px;">Saisie de notes &amp; délégation</h4></div>
+      <div class="card white"><span class="chip">⑤</span><h4 style="margin-top: 8px;">Délibérations par règles</h4></div>
+      <div class="card white"><span class="chip">⑥</span><h4 style="margin-top: 8px;">Promotion auto des cohortes</h4></div>
+      <div class="card white"><span class="chip">⑦</span><h4 style="margin-top: 8px;">Documents officiels (PV, relevés, diplômes)</h4></div>
+      <div class="card white"><span class="chip">⑧</span><h4 style="margin-top: 8px;">Distribution sécurisée vers DIPLOMATION</h4></div>
+      <div class="card brand"><span class="chip dark-c">★</span><h4 style="color: white; margin-top: 8px;">Audit complet, gestion des droits par profil, bilingue</h4></div>
+    </div>
+
+    <h2 style="margin-top: 22px;">Chiffres clés du produit livré</h2>
+    <div class="grid g4" style="margin-top: 10px; gap: 10px;">
+      <div class="card stat"><div class="v">35<sup>+</sup></div><div class="l">Fonctionnalités métier</div></div>
+      <div class="card stat"><div class="v">24</div><div class="l">Modèles d'exports officiels prêts</div></div>
+      <div class="card stat"><div class="v">40<sup>+</sup></div><div class="l">Points de données suivis en temps réel</div></div>
+      <div class="card dark stat"><div class="v">2</div><div class="l">Langues UI natives (FR + EN)</div></div>
+      <div class="card stat"><div class="v">7</div><div class="l">Rôles métier hiérarchiques</div></div>
+      <div class="card stat"><div class="v">6</div><div class="l">Tables d'audit dédiées</div></div>
+      <div class="card stat"><div class="v">3</div><div class="l">Niveaux institutionnels<br/>(univ. → fac. → IPES → centre)</div></div>
+      <div class="card brand stat"><div class="v">0</div><div class="l">Technicien requis pour personnaliser un document officiel</div></div>
+    </div>
+
+    <div class="f">
+      <span>II · LA PROMESSE</span>
+      <span class="pn">07<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 08 — DIFFÉRENCIATEURS -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="08 Différenciateurs">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">II · Promesse / 04</div>
+    </div>
+
+    <div class="kicker">04 · Quatre différenciateurs</div>
+    <h1 class="hed">Ce qui sépare TKAMS<br/>d'un <em>tableur</em> ou d'un<br/>SIS générique.</h1>
+
+    <div class="grid g2" style="margin-top: 26px; gap: 14px;">
+
+      <div class="card white" style="border-top: 4px solid var(--tk-primary);">
+        <span class="chip">DIFFÉRENCIATEUR ①</span>
+        <h2 style="margin-top: 8px;">LMD-first, pas LMD-adapté</h2>
+        <p>UE, EC, ECTS, semestres, coefficients <em style="font-style: normal; color: var(--tk-primary);">par classe ET par cours</em>, sessions normale et rattrapage avec politique configurable (garder la meilleure note ou remplacer par le rattrapage). Intégré dans le cœur du système — pas dans une couche d'extension.</p>
+      </div>
+
+      <div class="card white" style="border-top: 4px solid var(--tk-accent-emerald);">
+        <span class="chip" style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149);">DIFFÉRENCIATEUR ②</span>
+        <h2 style="margin-top: 8px;">Moteur de règles configurables</h2>
+        <p>Aucune pédagogie figée dans le logiciel. Chaque institution paramètre ses propres règles de délibération (admission, compensation, ajournement, redoublement, exclusion) et de promotion — sans toucher au code. Voir page 16.</p>
+      </div>
+
+      <div class="card white" style="border-top: 4px solid var(--tk-accent-gold);">
+        <span class="chip" style="background: oklch(0.95 0.1 86); color: oklch(0.42 0.16 86);">DIFFÉRENCIATEUR ③</span>
+        <h2 style="margin-top: 8px;">Hiérarchie institutionnelle réelle</h2>
+        <p>Université → faculté → IPES → centre. Logos, slogans, autorités légales, signataires résolus en cascade <em style="font-style: normal;">automatiquement</em> dans les documents. Un diplôme délivré par un IPES affiche logo IPES + logo faculté + logo université, avec les trois mentions légales correspondantes.</p>
+      </div>
+
+      <div class="card dark" style="border-top: 4px solid var(--tk-primary-bright);">
+        <span class="chip dark-c">★ DIFFÉRENCIATEUR ④</span>
+        <h2 style="margin-top: 8px;">Intégration DIPLOMATION native</h2>
+        <p>Connexion sécurisée et signée numériquement, synchronisation automatique des délibérations et relevés. Production de documents officiels avec <strong style="color: white;">QR codes chiffrés vérifiables en ligne</strong>. Voir page 19.</p>
+      </div>
+
+    </div>
+
+    <h2 style="margin-top: 22px;">Six avantages tangibles à l'usage</h2>
+    <div class="grid g3" style="gap: 8px; margin-top: 10px;">
+      <div class="card white" style="padding: 12px;"><h4>Délégation fine</h4><p style="margin: 0; font-size: 10.5px;">Un examen → un assistant délégué. Audit complet.</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Génération personnalisable</h4><p style="margin: 0; font-size: 10.5px;">Templates HTML/CSS modifiables par l'institution elle-même.</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Matricules dynamiques</h4><p style="margin: 0; font-size: 10.5px;">Format paramétrable par établissement, compteurs automatiques.</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Multi-établissement sécurisé</h4><p style="margin: 0; font-size: 10.5px;">Données de chaque institution cloisonnées. Aucune fuite possible.</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Bilingue dès jour 1</h4><p style="margin: 0; font-size: 10.5px;">FR + EN sur toute l'interface et les documents officiels.</p></div>
+      <div class="card white" style="padding: 12px;"><h4>Architecture fiable</h4><p style="margin: 0; font-size: 10.5px;">Les données restent cohérentes de la base jusqu'à l'écran de l'utilisateur.</p></div>
+    </div>
+
+    <div class="f">
+      <span>II · LA PROMESSE</span>
+      <span class="pn">08<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 09 — MULTI-TUTELLES -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="09 Multi-tutelles">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">II · Promesse / 05</div>
+    </div>
+
+    <div class="kicker">05 · Multi-tutelles &amp; hiérarchie</div>
+    <h1 class="hed">Trois niveaux,<br/>un seul <em>SI cohérent</em>.</h1>
+    <p class="lede">L'établissement africain n'est presque jamais autonome. TKAMS modélise nativement la chaîne réelle des tutelles, du rectorat au centre régional. Chaque niveau a son propre logo, slogan, autorité légale, boîte postale, et signataires.</p>
+
+    <h2 style="margin-top: 24px;">La hiérarchie institutionnelle native</h2>
+    <div class="card deep" style="margin-top: 12px; padding: 22px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+
+        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--tk-border); border-radius: 10px;">
+          <span class="chip" style="justify-content: center;">UNIVERSITÉ</span>
+          <div>
+            <h4 style="margin: 0;">Type : <strong style="color: var(--tk-primary);">Université</strong></h4>
+            <p style="margin: 2px 0 0; font-size: 10.5px;">Logo, autorité de tutelle, accréditations CAMES, textes légaux fondateurs.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: center;"><div style="width: 2px; height: 14px; background: var(--tk-primary); opacity: 0.5;"></div></div>
+
+        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--tk-border); border-radius: 10px; margin-left: 24px;">
+          <span class="chip" style="justify-content: center;">FACULTÉ</span>
+          <div>
+            <h4 style="margin: 0;">Type : <strong style="color: var(--tk-primary);">Faculté</strong> (sous tutelle université)</h4>
+            <p style="margin: 2px 0 0; font-size: 10.5px;">Doyen, programmes propres, jury, propres signataires sur les PV.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: center;"><div style="width: 2px; height: 14px; background: var(--tk-primary); opacity: 0.5; margin-left: 24px;"></div></div>
+
+        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; padding: 12px 16px; background: white; border: 1px solid var(--tk-border); border-radius: 10px; margin-left: 48px;">
+          <span class="chip" style="justify-content: center;">IPES</span>
+          <div>
+            <h4 style="margin: 0;">Type : <strong style="color: var(--tk-primary);">IPES</strong> (sous tutelle faculté)</h4>
+            <p style="margin: 2px 0 0; font-size: 10.5px;">Établissement privé avec tutelle pédagogique, homologation MINESUP, fondateurs.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: center;"><div style="width: 2px; height: 14px; background: var(--tk-primary); opacity: 0.5; margin-left: 72px;"></div></div>
+
+        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; padding: 12px 16px; background: var(--tk-primary); color: white; border: 1px solid var(--tk-primary); border-radius: 10px; margin-left: 72px;">
+          <span class="chip dark-c" style="justify-content: center;">CENTRE</span>
+          <div>
+            <h4 style="margin: 0; color: white;">Type : <strong style="color: oklch(0.85 0.08 277);">Centre régional</strong> (rattaché à l'IPES)</h4>
+            <p style="margin: 2px 0 0; font-size: 10.5px; color: oklch(0.92 0.04 277);">Campus régional, sites multi-villes, textes légaux et instances administratives propres.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 18px; gap: 14px;">
+      <div class="card white">
+        <h3>Résolution automatique en cascade</h3>
+        <p>Pour un diplôme délivré par un centre régional d'un IPES : TKAMS empile automatiquement <strong>logo centre + logo IPES + logo faculté + logo université</strong>, plus les quatre mentions légales correspondantes. Aucune intervention manuelle.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>Isolation des données</h3>
+        <p>Chaque donnée est associée à son établissement d'origine. Toutes les consultations sont filtrées automatiquement selon l'établissement connecté. <strong>Aucune fuite de données entre établissements</strong>.</p>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>II · LA PROMESSE</span>
+      <span class="pn">09<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 10 — ARCHITECTURE LMD NATIVE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="10 LMD natif">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">II · Promesse / 06</div>
+    </div>
+
+    <div class="kicker">06 · Architecture LMD native</div>
+    <h1 class="hed">Le LMD <em>en structure</em>,<br/>pas en métaphore.</h1>
+    <p class="lede">Tous les concepts du cadre CAMES sont des entités de premier ordre dans TKAMS : cycles, niveaux, programmes, options, UE, EC, semestres, sessions, crédits, coefficients, mentions, sessions de rattrapage avec politique configurable.</p>
+
+    <h2 style="margin-top: 24px;">La chaîne pédagogique modélisée</h2>
+    <div style="background: var(--tk-bg-deep); border: 1px solid var(--tk-border); border-radius: 10px; padding: 18px; margin-top: 10px; font-size: 12px; line-height: 2; color: var(--tk-ink-soft);">
+      <span style="color: var(--tk-primary); font-weight: 700;">Cycles d'études</span> → <span style="color: var(--tk-ink);">Niveaux</span> → <span style="color: var(--tk-ink);">Programmes</span> → <span style="color: var(--tk-ink);">Parcours / Options</span><br/>
+      <span style="padding-left: 60px; color: var(--tk-muted);">↓</span><br/>
+      <span style="color: var(--tk-ink);">Cohortes (classes)</span> ← <span style="color: var(--tk-ink);">Années académiques</span> + <span style="color: var(--tk-ink);">Semestres</span><br/>
+      <span style="padding-left: 60px; color: var(--tk-muted);">↓</span><br/>
+      <span style="color: var(--tk-primary); font-weight: 600;">Unités d'Enseignement (UE)</span> → <span style="color: var(--tk-ink);">Éléments Constitutifs (EC)</span> → <span style="color: var(--tk-ink);">Affectation par classe</span><br/>
+      <span style="padding-left: 60px; color: var(--tk-muted);">↓</span><br/>
+      <span style="color: var(--tk-ink);">Examens</span> → <span style="color: var(--tk-ink);">Notes</span> → <span style="color: var(--tk-primary); font-weight: 600;">Délibérations</span> → <span style="color: var(--tk-primary); font-weight: 600;">Promotion</span>
+    </div>
+
+    <h2 style="margin-top: 22px;">Concepts implémentés nativement</h2>
+    <div class="grid g2" style="gap: 14px; margin-top: 10px;">
+      <div class="card white" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
+          <thead><tr style="background: var(--tk-bg-deep);"><th style="text-align: left; padding: 9px 12px; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1px solid var(--tk-border-strong);">Concept</th><th style="text-align: left; padding: 9px 12px; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1px solid var(--tk-border-strong);">Modélisation</th></tr></thead>
+          <tbody style="color: var(--tk-ink-soft);">
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Cycle</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Licence 180 ECTS, Master 120, Doctorat</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Niveau</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">L1, L2, L3, M1, M2 ordonnés</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Programme</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Filière avec parcours, spécialité, titre FR/EN</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Option</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Parcours interne au programme</td></tr>
+            <tr><td style="padding: 8px 12px;"><strong>UE</strong></td><td style="padding: 8px 12px;">Regroupe des EC, porte les crédits ECTS</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card white" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
+          <thead><tr style="background: var(--tk-bg-deep);"><th style="text-align: left; padding: 9px 12px; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1px solid var(--tk-border-strong);">Concept</th><th style="text-align: left; padding: 9px 12px; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1px solid var(--tk-border-strong);">Modélisation</th></tr></thead>
+          <tbody style="color: var(--tk-ink-soft);">
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>EC</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Cours, heures, prérequis, coef. défaut</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Coefficient</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Défaut par EC, surcharge par classe</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Session</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Normale + rattrapage liées automatiquement</td></tr>
+            <tr><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);"><strong>Politique rattrapage</strong></td><td style="padding: 8px 12px; border-bottom: 1px solid var(--tk-border);">Remplacer la note ou conserver la meilleure</td></tr>
+            <tr><td style="padding: 8px 12px;"><strong>Compensation</strong></td><td style="padding: 8px 12px;">Configurable par règle (seuils JSON)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 14px; gap: 12px;">
+      <div class="card softbrand">
+        <h3>Mentions, rangs &amp; crédits</h3>
+        <p style="margin: 0;">Passable / Assez bien / Bien / Très bien / Excellent → correspondance automatique avec les grades A/B/C/D/E et leur équivalent anglais. Rangs calculés automatiquement par classe. <strong>Crédits acquis vs crédits attendus</strong> suivis pour chaque étudiant et chaque année académique.</p>
+      </div>
+      <div class="card white" style="border-left: 4px solid var(--tk-accent-emerald);">
+        <h3>Compatibilité anglophones &amp; cycles non-LMD</h3>
+        <p style="margin: 0; font-size: 10.5px; line-height: 1.6;">TKAMS supporte également les cycles courants des établissements anglophones du Cameroun :<br/>
+        <strong>HND</strong> (Higher National Diploma) · 2 ans, Bac+2<br/>
+        <strong>BEng / BSc</strong> (Bachelor) · équivalent Licence, 3 ans<br/>
+        <strong>MSc / MBA</strong> (Master) · équivalent Master, 1 à 2 ans<br/>
+        <span style="color: var(--tk-muted);">Interface et documents produits en français et en anglais nativement.</span></p>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>II · LA PROMESSE</span>
+      <span class="pn">10<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 11 — PART III DIVIDER -->
+<!-- ============================================== -->
+<section class="page divider" data-screen-label="11 Partie III — Produit">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Partie III</div>
+    </div>
+    <div style="margin: auto 0;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">— PARTIE III —</div>
+      <div class="num">III</div>
+      <h1>Le produit<br/>en profondeur.</h1>
+      <p class="deck">35+ modules, 7 rôles, 24 templates d'exports, un moteur de règles, des QR codes chiffrés. Voici le détail de ce qui est <em style="font-style: normal; color: var(--tk-primary-bright);">vraiment livré</em>.</p>
+    </div>
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">11<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 12 — VUE D'ENSEMBLE FONCTIONNELLE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="12 Pipeline fonctionnel">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 07</div>
+    </div>
+
+    <div class="kicker">07 · Vue d'ensemble fonctionnelle</div>
+    <h1 class="hed">Le pipeline complet,<br/><em>en un flux</em>.</h1>
+    <p class="lede">Sept étapes, du paramétrage initial à la promotion d'une cohorte. Chaque transition est tracée, auditable, et déclenche automatiquement les notifications et traitements en aval.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 24px;">
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">01</span>
+          <h4 style="margin: 0;">Configuration</h4>
+          <p style="margin: 0; font-size: 11px;">Branding, centres, hiérarchie, années académiques, semestres, signataires, mentions, échelle de notation.</p>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">02</span>
+          <h4 style="margin: 0;">Catalogue pédagogique</h4>
+          <p style="margin: 0; font-size: 11px;">Cycles → Niveaux → Programmes → Options → UE → EC. Prérequis, crédits, coefficients, semestres.</p>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">03</span>
+          <h4 style="margin: 0;">Population</h4>
+          <p style="margin: 0; font-size: 11px;">Utilisateurs auth + profils métier. Étudiants, cohortes, inscriptions classes + inscriptions atomiques. Transferts, admissions directes, équivalences.</p>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">04</span>
+          <h4 style="margin: 0;">Évaluations</h4>
+          <p style="margin: 0; font-size: 11px;">Types d'examens, planificateur batch, approbation, verrouillage automatique, saisie tableur, délégation, sessions normale + rattrapage.</p>
+        </div>
+      </div>
+      <div class="card brand" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge" style="background: white; color: var(--tk-primary);">05</span>
+          <h4 style="margin: 0; color: white;">★ Délibérations</h4>
+          <p style="margin: 0; font-size: 11px; color: oklch(0.95 0.04 277);">Calcul automatique par moteur de règles. Décisions ADM/CMP/AJ/INC. Override avec raison obligatoire. Signature + clôture.</p>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">06</span>
+          <h4 style="margin: 0;">Publication &amp; exports</h4>
+          <p style="margin: 0; font-size: 11px;">PV, relevés, bulletins, attestations, diplômes. Génération PDF/HTML/Excel. Templates personnalisables. API DIPLOMATION.</p>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 40px 130px 1fr; gap: 12px; align-items: center;">
+          <span class="numbadge">07</span>
+          <h4 style="margin: 0;">Promotion &amp; cycle</h4>
+          <p style="margin: 0; font-size: 11px;">Évaluation par règles, aperçu, exécution batch, historique nominatif complet par étudiant.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card dark" style="margin-top: 18px;">
+      <h3 style="color: white;">Point clé : un seul socle de données</h3>
+      <p>Un étudiant créé à l'inscription est connu de tous les autres modules à la seconde. Pas d'export-import entre systèmes, pas de ressaisie, pas de doublons. Chaque étape consomme le contexte produit par la précédente — y compris les snapshots historiques pour les délibérations passées.</p>
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">12<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 13 — CARTOGRAPHIE DES MODULES -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="13 Cartographie des 35+ modules">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 08</div>
+    </div>
+
+    <div class="kicker">08 · Cartographie des modules</div>
+    <h1 class="hed">35+ modules autonomes.<br/>Une <em>architecture lisible</em>.</h1>
+    <p class="lede">TKAMS couvre l'intégralité du cycle académique à travers ses fonctionnalités organisées par domaine métier. Chaque domaine est indépendant, testé, et maintenu par l'équipe TKAMS — sans dépendance à un développeur externe.</p>
+
+    <div style="margin-top: 24px;">
+
+      <div class="chip" style="margin: 6px 0;">CATALOGUE &amp; HIÉRARCHIE PÉDAGOGIQUE · 11 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod"><span class="mn">institutions</span><span class="mt">Institutions</span><span class="md">Univ., faculté, IPES + branding bilingue</span></div>
+        <div class="mod"><span class="mn">centers</span><span class="mt">Centres / campus</span><span class="md">Autorité, instances, textes légaux</span></div>
+        <div class="mod"><span class="mn">study-cycles</span><span class="mt">Cycles</span><span class="md">Licence 180, Master 120, Doctorat</span></div>
+        <div class="mod"><span class="mn">cycle-levels</span><span class="mt">Niveaux</span><span class="md">L1 → M2 ordonnés</span></div>
+        <div class="mod"><span class="mn">programs</span><span class="mt">Programmes</span><span class="md">Filière, parcours, titre FR/EN</span></div>
+        <div class="mod"><span class="mn">program-options</span><span class="mt">Options</span><span class="md">Parcours interne au programme</span></div>
+        <div class="mod"><span class="mn">teaching-units</span><span class="mt">UE</span><span class="md">Crédits ECTS, placement semestriel</span></div>
+        <div class="mod"><span class="mn">courses</span><span class="mt">EC (cours)</span><span class="md">Heures, prérequis, coef. défaut</span></div>
+        <div class="mod"><span class="mn">class-courses</span><span class="mt">Cours ↔ classe</span><span class="md">Affectation + coef. effectif</span></div>
+        <div class="mod"><span class="mn">classes</span><span class="mt">Cohortes</span><span class="md">Programme × année × niveau × option</span></div>
+        <div class="mod"><span class="mn">semesters</span><span class="mt">Semestres</span><span class="md">S1, S2… ordonnés</span></div>
+        <div class="mod"><span class="mn">academic-years</span><span class="mt">Années</span><span class="md">Une seule active par institution</span></div>
+      </div>
+
+      <div class="chip" style="margin: 10px 0 6px; background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149);">IDENTITÉ &amp; ACCÈS · 6 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod"><span class="mn">users</span><span class="mt">Comptes utilisateurs</span><span class="md">Email + mot de passe + organisations</span></div>
+        <div class="mod"><span class="mn">domain-users</span><span class="mt">Profils métier</span><span class="md">Plusieurs profils par compte possible</span></div>
+        <div class="mod"><span class="mt">Droits &amp; permissions</span><span class="md">7 rôles, hiérarchie transitive</span></div>
+        <div class="mod"><span class="mn">diplomation-keys</span><span class="mt">Clés d'accès DIPLOMATION</span><span class="md">Chiffrées, renouvelables</span></div>
+        <div class="mod"><span class="mn">grade-access-grants</span><span class="mt">Délégation globale</span><span class="md">Habiliter un opérateur</span></div>
+        <div class="mod"><span class="mn">exam-grade-editors</span><span class="mt">Délégation ciblée</span><span class="md">Un assistant, un examen</span></div>
+      </div>
+
+      <div class="chip" style="margin: 10px 0 6px; background: oklch(0.95 0.1 86); color: oklch(0.42 0.16 86);">INSCRIPTIONS &amp; POPULATION · 4 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod"><span class="mn">students</span><span class="mt">Étudiants</span><span class="md">Matricule unique auto-généré</span></div>
+        <div class="mod"><span class="mn">enrollments</span><span class="mt">Inscriptions cohorte</span><span class="md">Statuts, transferts, équivalences</span></div>
+        <div class="mod"><span class="mn">student-course-enrollments</span><span class="mt">Inscriptions atomiques</span><span class="md">Au cours, tentatives, crédits</span></div>
+        <div class="mod"><span class="mn">student-credit-ledger</span><span class="mt">Grand livre crédits</span><span class="md">Acquis / en cours / requis</span></div>
+      </div>
+
+      <div class="chip" style="margin: 10px 0 6px; background: oklch(0.95 0.1 221); color: oklch(0.4 0.16 221);">ÉVALUATIONS &amp; NOTES · 5 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod"><span class="mn">exam-types</span><span class="mt">Types d'examens</span><span class="md">CC, TP, examen, médian</span></div>
+        <div class="mod"><span class="mn">exams</span><span class="mt">Examens</span><span class="md">Cycle : création → soumission → approbation</span></div>
+        <div class="mod"><span class="mn">exam-scheduler</span><span class="mt">Planificateur batch</span><span class="md">Détection de conflits</span></div>
+        <div class="mod"><span class="mn">grades</span><span class="mt">Notes</span><span class="md">Versionnage par journal d'audit</span></div>
+      </div>
+
+      <div class="chip" style="margin: 10px 0 6px;">DÉLIBÉRATIONS · 4 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod brand"><span class="mn">deliberations</span><span class="mt">★ Délibérations</span><span class="md">Jury, calcul, signature, override</span></div>
+        <div class="mod brand"><span class="mn">deliberation-rules</span><span class="mt">★ Moteur de règles</span><span class="md">Configurable, 5 catégories de règles</span></div>
+        <div class="mod"><span class="mn">promotion-rules</span><span class="mt">Promotion auto</span><span class="md">Passage L→M, redoublement</span></div>
+        <div class="mod"><span class="mn">student-promotion-summaries</span><span class="mt">Faits étudiants</span><span class="md">Cache des moyennes, crédits, taux</span></div>
+      </div>
+
+      <div class="chip" style="margin: 10px 0 6px;">DOCUMENTS &amp; INTÉGRATIONS · 8 modules</div>
+      <div class="grid g4" style="gap: 6px;">
+        <div class="mod"><span class="mn">exports</span><span class="mt">Exports PV/relevés</span><span class="md">PDF automatique, Excel compatible</span></div>
+        <div class="mod"><span class="mn">export-templates</span><span class="mt">Éditeur de modèles</span><span class="md">Personnalisation visuelle, aperçu</span></div>
+        <div class="mod"><span class="mn">export-eligibility</span><span class="mt">Garde-fous</span><span class="md">100 % évaluations requis</span></div>
+        <div class="mod"><span class="mn">academic-documents</span><span class="mt">Génération unitaire</span><span class="md">Un PDF par étudiant</span></div>
+        <div class="mod"><span class="mn">batch-jobs</span><span class="mt">Traitements de masse</span><span class="md">Aperçu → exécution → annulation</span></div>
+        <div class="mod"><span class="mn">files</span><span class="mt">Stockage fichiers</span><span class="md">Local ou cloud compatible</span></div>
+        <div class="mod"><span class="mn">notifications</span><span class="mt">Notifications</span><span class="md">Email + webhook asynchrone</span></div>
+        <div class="mod"><span class="mn">workflows</span><span class="mt">Workflows</span><span class="md">Validation notes, alertes</span></div>
+      </div>
+
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">13<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 14 — 7 RÔLES, 7 EXPÉRIENCES -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="14 Sept rôles">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 09</div>
+    </div>
+
+    <div class="kicker">09 · Sept rôles, sept expériences</div>
+    <h1 class="hed">À chaque profil,<br/>son <em>interface utile</em>.</h1>
+    <p class="lede">Sept rôles métier organisés en hiérarchie transitive — un doyen voit ce qu'un enseignant voit ; un administrateur agit comme un doyen. Aucune duplication de permissions, aucun choix arbitraire à faire dans l'admin.</p>
+
+    <div class="card dark" style="margin-top: 22px; padding: 22px;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">SYSTÈME DE RÔLES PAR NIVEAU</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; justify-content: center; font-family: var(--tk-font-display); font-weight: 600; font-size: 13px;">
+        <span style="background: var(--tk-primary-bright); color: var(--tk-dark); padding: 6px 12px; border-radius: 8px;">Super Admin</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.32 0.18 277); color: white; padding: 6px 12px; border-radius: 8px;">Administrateur</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.24 0.04 264); color: white; padding: 6px 12px; border-radius: 8px;">Doyen</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.24 0.04 264); color: white; padding: 6px 12px; border-radius: 8px;">Enseignant</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.24 0.04 264); color: white; padding: 6px 12px; border-radius: 8px;">Délégué saisie</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.24 0.04 264); color: white; padding: 6px 12px; border-radius: 8px;">Personnel</span>
+        <span style="color: var(--tk-on-dark-muted);">▸</span>
+        <span style="background: oklch(0.24 0.04 264); color: white; padding: 6px 12px; border-radius: 8px;">Étudiant</span>
+      </div>
+    </div>
+
+    <div class="grid g2" style="gap: 12px; margin-top: 18px;">
+
+      <div class="card white">
+        <span class="chip">SUPER-ADMIN / ADMINISTRATEUR</span>
+        <h3 style="margin-top: 8px;">Pilotage multi-établissement</h3>
+        <ul>
+          <li>Configuration catalogue (cycles, programmes, UE/EC)</li>
+          <li>Configuration fonctionnelle (types examens, signataires, mentions)</li>
+          <li>Configuration règles (délibération, promotion)</li>
+          <li>Éditeur de formats matricules</li>
+          <li>Monitoring système &amp; traitements automatisés</li>
+          <li>Clés API DIPLOMATION</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <span class="chip" style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149);">DOYEN / DIRECTEUR FACULTÉ</span>
+        <h3 style="margin-top: 8px;">Validation &amp; pilotage</h3>
+        <ul>
+          <li>Dashboard académique par programme et cohorte</li>
+          <li>Validation des examens (verrouillage des notes)</li>
+          <li>Historique des approbations</li>
+          <li>Monitoring des cohortes</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <span class="chip" style="background: oklch(0.95 0.1 86); color: oklch(0.42 0.16 86);">ENSEIGNANT</span>
+        <h3 style="margin-top: 8px;">Cours, examens, saisie</h3>
+        <ul>
+          <li>Hub : ses cours, ses examens, ses sessions</li>
+          <li>Saisie de notes tableur + import CSV/Excel</li>
+          <li>Création d'examens, soumission pour approbation</li>
+          <li>Délégation de saisie à un assistant</li>
+          <li>Alertes assiduité</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <span class="chip" style="background: oklch(0.95 0.1 221); color: oklch(0.4 0.16 221);">DÉLÉGUÉ SAISIE</span>
+        <h3 style="margin-top: 8px;">Saisie déléguée tracée</h3>
+        <ul>
+          <li>Voit uniquement les examens auxquels il est habilité</li>
+          <li>Lecture seule sur le reste</li>
+          <li>Chaque saisie enregistrée dans le journal d'audit</li>
+          <li>Saisies clairement identifiées comme déléguées</li>
+        </ul>
+      </div>
+
+      <div class="card brand">
+        <span class="chip dark-c">ÉTUDIANT</span>
+        <h3 style="margin-top: 8px; color: white;">Tableau de bord performance</h3>
+        <ul>
+          <li>Moyennes par UE/EC, crédits, progression</li>
+          <li>Projection de fin d'année</li>
+          <li>Examens à venir, résultats publiés</li>
+          <li>Relevés et attestations à la demande</li>
+        </ul>
+      </div>
+
+      <div class="card white">
+        <span class="chip ghost">STAFF</span>
+        <h3 style="margin-top: 8px;">Profil opérationnel</h3>
+        <ul>
+          <li>Consultation</li>
+          <li>Soutien administratif</li>
+          <li>Exports limités selon habilitations</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">14<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 15 — SAISIE DE NOTES & DÉLÉGATION -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="15 Saisie de notes">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 10</div>
+    </div>
+
+    <div class="kicker">10 · Saisie de notes &amp; délégation</div>
+    <h1 class="hed">Le tableur familier,<br/>la <em>traçabilité d'un SI</em>.</h1>
+    <p class="lede">L'enseignant retrouve le confort d'un Excel. Le système ajoute le verrouillage post-examen, la délégation contrôlée, la journalisation complète des écritures, et la non-régression des notes approuvées.</p>
+
+    <h2 style="margin-top: 22px;">Le cycle d'une note</h2>
+    <div class="grid g4" style="gap: 8px; margin-top: 10px; grid-template-columns: repeat(5, 1fr);">
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 12px;">
+        <span class="chip">01</span>
+        <h4 style="margin-top: 8px;">Création</h4>
+        <p style="margin: 0; font-size: 10px;">Enseignant crée un examen en <em style="font-style: normal; color: var(--tk-primary);">draft</em></p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 12px;">
+        <span class="chip">02</span>
+        <h4 style="margin-top: 8px;">Approbation</h4>
+        <p style="margin: 0; font-size: 10px;">Doyen valide et signe</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 12px;">
+        <span class="chip">03</span>
+        <h4 style="margin-top: 8px;">Saisie tableur</h4>
+        <p style="margin: 0; font-size: 10px;">Enseignant ou délégué — audit</p>
+      </div>
+      <div class="card white" style="border-top: 3px solid var(--tk-primary); padding: 12px;">
+        <span class="chip">04</span>
+        <h4 style="margin-top: 8px;">Verrouillage</h4>
+        <p style="margin: 0; font-size: 10px;">Auto à minuit ou manuel</p>
+      </div>
+      <div class="card brand" style="padding: 12px;">
+        <span class="chip dark-c">05</span>
+        <h4 style="margin-top: 8px; color: white;">Publication</h4>
+        <p style="margin: 0; font-size: 10px; color: oklch(0.92 0.04 277);">Étudiant voit sa note</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 18px; gap: 14px;">
+      <div class="card white">
+        <h3>Tableur en ligne style spreadsheet</h3>
+        <p>Interface familière, copier-coller depuis Excel, validation en temps réel des plages. Import CSV/Excel pour les enseignants qui préfèrent finir hors-ligne. <strong>Pas de courbe d'apprentissage</strong>.</p>
+
+        <h3 style="margin-top: 12px;">Verrouillage automatique</h3>
+        <p>Les examens approuvés sont automatiquement verrouillés passé leur date limite. Plus aucune modification possible. La seule façon de revenir en arrière est la création d'une <em style="font-style: normal; color: var(--tk-primary);">session de rattrapage</em>.</p>
+      </div>
+      <div class="card dark">
+        <h3 style="color: white;">Délégation, deux niveaux</h3>
+        <p style="margin-bottom: 10px;"><strong style="color: white;">Globale</strong> : un opérateur peut saisir pour l'ensemble des cours de l'institution.</p>
+        <p style="margin-bottom: 10px;"><strong style="color: white;">Ciblée</strong> : un assistant peut saisir pour UN examen précis, et seulement celui-là.</p>
+        <p>Chaque saisie déléguée est identifiée dans le journal d'audit, avec <strong style="color: white;">note avant / après</strong>, auteur et type d'action.</p>
+      </div>
+    </div>
+
+    <div class="card softbrand" style="margin-top: 14px;">
+      <h3>Sessions normale &amp; rattrapage liées</h3>
+      <p>Un examen de rattrapage est automatiquement lié à la session normale correspondante. Politique de note configurable : la note de rattrapage remplace la précédente, ou bien le système conserve la meilleure des deux. Le moteur de délibération applique la politique en vigueur.</p>
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">15<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 16 — MOTEUR DE RÈGLES (LE CŒUR) -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="16 Moteur de règles">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 11 · ★</div>
+    </div>
+
+    <div class="kicker">11 · Moteur de règles de délibération</div>
+    <h1 class="hed">Le cœur <em>différenciant</em><br/>de TKAMS.</h1>
+    <p class="lede">La logique LMD n'est jamais universelle — chaque institution a ses propres règles d'admission, de compensation, d'ajournement. TKAMS s'adapte : chaque établissement écrit ses règles en JSON, sans toucher au code.</p>
+
+    <h2 style="margin-top: 22px;">Une règle de délibération — configurée sans programmation</h2>
+    <p style="font-size: 11px; color: var(--tk-muted); margin: 6px 0 4px;">Exemple : un établissement paramètre directement ses critères d'admission dans l'interface — aucun développeur requis.</p>
+    <div class="term" style="margin-top: 8px;">
+{<br/>
+&nbsp;&nbsp;<span class="c2">"conditions"</span>: {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c2">"all"</span>: [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="c3">"fact"</span>: <span class="c1">"generalAverage"</span>, <span class="c3">"operator"</span>: <span class="c1">"greaterThanInclusive"</span>, <span class="c3">"value"</span>: <span class="c2">10</span> },<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="c3">"fact"</span>: <span class="c1">"validatedUECount"</span>, <span class="c3">"operator"</span>: <span class="c1">"greaterThanInclusive"</span>, <span class="c3">"value"</span>: <span class="c2">6</span> },<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="c3">"fact"</span>: <span class="c1">"eliminatoryFailures"</span>, <span class="c3">"operator"</span>: <span class="c1">"equal"</span>, <span class="c3">"value"</span>: <span class="c2">0</span> }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
+&nbsp;&nbsp;},<br/>
+&nbsp;&nbsp;<span class="c2">"event"</span>: {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c3">"type"</span>: <span class="c1">"decision"</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c3">"params"</span>: { <span class="c3">"decision"</span>: <span class="c1">"admitted"</span> }<br/>
+&nbsp;&nbsp;}<br/>
+}
+    </div>
+    <div class="card softbrand" style="margin-top: 8px; padding: 10px 14px;">
+      <p style="margin: 0; font-size: 11px;"><strong style="color: var(--tk-primary-deep);">En clair :</strong> l'étudiant est déclaré admis s'il a une moyenne générale ≥ 10, au moins 6 unités d'enseignement validées, et aucune matière éliminatoire échouée. <span style="color: var(--tk-primary-deep);">Cette règle est saisie par le directeur pédagogique — aucun développeur requis.</span></p>
+    </div>
+
+    <div class="grid g2" style="margin-top: 18px; gap: 14px;">
+      <div class="card white">
+        <h3>Cinq catégories de règles</h3>
+        <ul>
+          <li><strong>Admission</strong> — qui passe ?</li>
+          <li><strong>Compensation</strong> — moyenne entre 8 et 10 ?</li>
+          <li><strong>Ajournement</strong> — qui retourne en rattrapage ?</li>
+          <li><strong>Redoublement</strong> — qui refait l'année ?</li>
+          <li><strong>Exclusion</strong> — limite de tentatives atteinte ?</li>
+        </ul>
+
+        <h3 style="margin-top: 12px;">Filtrage fin</h3>
+        <p>Par programme, niveau, type de délibération. Priorité explicite. Une règle peut être désactivée sans suppression. Versionnement complet.</p>
+      </div>
+      <div class="card dark">
+        <h3 style="color: white;">Faits étudiants pré-calculés</h3>
+        <p>Chaque évaluation utilise un <strong style="color: white;">snapshot</strong> :</p>
+        <ul>
+          <li>Moyennes UE / EC / globale (pondérée et non)</li>
+          <li>Taux de réussite, validation des UE</li>
+          <li>Crédits acquis / attendus / déficit</li>
+          <li>Tentatives, redoublements, taux rattrapage</li>
+          <li>Index de performance composite</li>
+          <li>Projection de fin d'année</li>
+          <li>Type d'admission, antécédents</li>
+          <li>UE échouées, échecs éliminatoires</li>
+        </ul>
+        <p style="margin-top: 8px;">Calculés à chaque délibération, disponibles instantanément pour le jury.</p>
+      </div>
+    </div>
+
+    <div class="card brand" style="margin-top: 14px;">
+      <h3 style="color: white;">Traçabilité totale &amp; override avec raison</h3>
+      <p>Chaque délibération enregistre les règles appliquées et les données étudiantes utilisées. Le jury peut <strong>surclasser la décision automatique</strong> en saisissant une raison obligatoire, conservée dans le journal de délibération.</p>
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">16<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 17 — PROMOTION AUTOMATIQUE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="17 Promotion automatique">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 12</div>
+    </div>
+
+    <div class="kicker">12 · Promotion automatique</div>
+    <h1 class="hed">L'automatisation<br/>de la <em>rentrée</em>.</h1>
+    <p class="lede">Le passage d'une cohorte à l'année suivante prenait plusieurs semaines de saisie manuelle. TKAMS l'automatise via le même moteur de règles que les délibérations — appliqué à l'échelle d'une classe.</p>
+
+    <h2 style="margin-top: 22px;">Quatre étapes, validées une à une</h2>
+    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;">
+          <span class="numbadge">1</span>
+          <div><h4 style="margin: 0;">Évaluer la classe source</h4><p style="margin: 2px 0 0; font-size: 11px;">Liste éligibles / non-éligibles, faits évalués par règle.</p></div>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;">
+          <span class="numbadge">2</span>
+          <div><h4 style="margin: 0;">Prévisualiser</h4><p style="margin: 2px 0 0; font-size: 11px;">Aperçu complet avant tout commit. Détection des cas-limites.</p></div>
+        </div>
+      </div>
+      <div class="card white" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;">
+          <span class="numbadge">3</span>
+          <div><h4 style="margin: 0;">Exécuter (traitement automatisé)</h4><p style="margin: 2px 0 0; font-size: 11px;">Inscriptions automatiques vers la classe cible.</p></div>
+        </div>
+      </div>
+      <div class="card brand" style="padding: 14px 18px;">
+        <div style="display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;">
+          <span class="numbadge" style="background: white; color: var(--tk-primary);">4</span>
+          <div><h4 style="margin: 0; color: white;">Historique nominatif complet</h4><p style="margin: 2px 0 0; font-size: 11px; color: oklch(0.92 0.04 277);">Chaque étudiant : faits évalués, règles déclenchées, décision finale.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 22px;">Huit règles prêtes à l'emploi</h2>
+    <div class="grid g4" style="gap: 8px; margin-top: 10px;">
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Promotion standard</h4><p style="margin: 0; font-size: 10px;">Moyenne ≥ 10, ≥ 30 crédits</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Avec compensation</h4><p style="margin: 0; font-size: 10px;">Tolère échecs compensables</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Conditionnelle</h4><p style="margin: 0; font-size: 10px;">Dette académique tolérée</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Excellence</h4><p style="margin: 0; font-size: 10px;">Critères stricts haut potentiel</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Redoublement</h4><p style="margin: 0; font-size: 10px;">Critères d'identification</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Validation crédits</h4><p style="margin: 0; font-size: 10px;">Focalisation ECTS</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Validation UE</h4><p style="margin: 0; font-size: 10px;">Toutes UE doivent être validées</p></div>
+      <div class="card white" style="padding: 12px;"><span class="chip">PRÊT</span><h4 style="margin-top: 6px;">Multi-critères</h4><p style="margin: 0; font-size: 10px;">Conditions combinées</p></div>
+    </div>
+
+    <p style="font-size: 10.5px; font-style: italic; color: var(--tk-muted); margin-top: 12px;">Huit jeux de règles fournis prêts à l'emploi. Modifiables, dupliquables, personnalisables par le gestionnaire académique lui-même.</p>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">17<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 18 — 24 TEMPLATES D'EXPORTS -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="18 Exports officiels">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 13</div>
+    </div>
+
+    <div class="kicker">13 · Documents officiels &amp; exports</div>
+    <h1 class="hed">24 modèles prêts,<br/>personnalisables<br/><em>sans développeur</em>.</h1>
+    <p class="lede">TKAMS livre 24 modèles de documents couvrant tous les actes officiels du cycle académique. Chaque institution dispose de son éditeur intégré pour personnaliser la mise en page et prévisualiser avant publication — sans développeur.</p>
+
+    <h2 style="margin-top: 24px;">Catalogue des documents fournis</h2>
+    <div class="grid g4" style="gap: 8px; margin-top: 10px;">
+
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">PV</div>
+        <h4 style="margin-top: 8px;">PV de délibération</h4>
+        <p style="margin: 0; font-size: 10px;">Standard + variante centre</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">DÉLIB</div>
+        <h4 style="margin-top: 8px;">Délibération complète</h4>
+        <p style="margin: 0; font-size: 10px;">Rapport complet de délibération</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">DIPLÔME</div>
+        <h4 style="margin-top: 8px;">Diplômes officiels</h4>
+        <p style="margin: 0; font-size: 10px;">Diplômes avec mentions et signataires</p>
+      </div>
+      <div class="card brand" style="padding: 12px;">
+        <div class="chip dark-c">★ ATTESTATION</div>
+        <h4 style="margin-top: 8px; color: white;">Attestations</h4>
+        <p style="margin: 0; font-size: 10px; color: oklch(0.92 0.04 277);">Faculté · IPES · centre</p>
+      </div>
+
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">RELEVÉ</div>
+        <h4 style="margin-top: 8px;">Relevés de notes</h4>
+        <p style="margin: 0; font-size: 10px;">Relevé officiel par étudiant</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">BULLETIN</div>
+        <h4 style="margin-top: 8px;">Bulletins semestriels</h4>
+        <p style="margin: 0; font-size: 10px;">Bilan semestriel par étudiant</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">EC</div>
+        <h4 style="margin-top: 8px;">Publication EC</h4>
+        <p style="margin: 0; font-size: 10px;">Notes par cours</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">UE</div>
+        <h4 style="margin-top: 8px;">Publication UE</h4>
+        <p style="margin: 0; font-size: 10px;">Moyennes d'unités</p>
+      </div>
+
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">ÉVAL</div>
+        <h4 style="margin-top: 8px;">Publication évaluation</h4>
+        <p style="margin: 0; font-size: 10px;">Résultats partiels</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">LISTE</div>
+        <h4 style="margin-top: 8px;">Liste de classe</h4>
+        <p style="margin: 0; font-size: 10px;">Effectifs par cohorte</p>
+      </div>
+      <div class="card white" style="padding: 12px;">
+        <div class="chip">CATAL</div>
+        <h4 style="margin-top: 8px;">Catalogue de cours</h4>
+        <p style="margin: 0; font-size: 10px;">Maquettes pédagogiques</p>
+      </div>
+      <div class="card dark" style="padding: 12px;">
+        <div class="chip dark-c">+ 13</div>
+        <h4 style="margin-top: 8px;">Variantes bilingues</h4>
+        <p style="margin: 0; font-size: 10px;">FR + EN systématiques</p>
+      </div>
+
+    </div>
+
+    <h2 style="margin-top: 20px;">Caractéristiques techniques</h2>
+    <div class="grid g3" style="gap: 10px; margin-top: 8px;">
+      <div class="card white">
+        <h3>Génération</h3>
+        <p style="margin: 0;"><strong>PDF généré automatiquement</strong>, sans logiciel tiers à installer. Exports Excel compatibles avec tous les tableurs.</p>
+      </div>
+      <div class="card white">
+        <h3>Personnalisation</h3>
+        <p style="margin: 0;">Filigrane configurable. Signataires modulables. En-tête hiérarchique multi-niveaux. Bilinguisme intégral.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>Garde-fou</h3>
+        <p style="margin: 0;">Un EC/UE/PV ne peut être exporté que si <strong>100 %</strong> des évaluations sont consolidées. Pas de PV partiel possible.</p>
+      </div>
+    </div>
+
+    <div class="card dark" style="margin-top: 14px;">
+      <h3 style="color: white;">Génération en masse</h3>
+      <p>Un PDF par étudiant d'une classe, livré en archive compressée via un <strong>traitement automatisé</strong>. Aperçu → exécution → annulation possible. L'institution peut générer 4 000 relevés en une nuit.</p>
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">18<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 19 — INTÉGRATION DIPLOMATION -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="19 DIPLOMATION">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 14 · ★</div>
+    </div>
+
+    <div class="kicker">14 · Intégration DIPLOMATION</div>
+    <h1 class="hed">QR codes <em>chiffrés</em>,<br/>API signée, zéro ressaisie.</h1>
+    <p class="lede">DIPLOMATION (SGN-Notes) est notre application desktop Electron qui produit les actes officiels avec QR codes chiffrés vérifiables. TKAMS l'alimente automatiquement via une API REST sécurisée — sans aucune ressaisie.</p>
+
+    <div class="card dark" style="margin-top: 22px; padding: 22px;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">FLUX DE CONNEXION TKAMS → DIPLOMATION</div>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; background: var(--tk-dark-3); padding: 10px; border-radius: 6px;">
+          <span style="color: var(--tk-primary-bright); font-family: var(--tk-font-display); font-weight: 700; font-size: 16px;">①</span>
+          <span style="font-size: 11px; color: var(--tk-on-dark-soft);">DIPLOMATION récupère la configuration de l'institution : hiérarchie, programmes, signataires, logos.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; background: var(--tk-dark-3); padding: 10px; border-radius: 6px;">
+          <span style="color: var(--tk-primary-bright); font-family: var(--tk-font-display); font-weight: 700; font-size: 16px;">②</span>
+          <span style="font-size: 11px; color: var(--tk-on-dark-soft);">DIPLOMATION récupère les listes d'étudiants, délibérations signées et relevés.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; background: var(--tk-dark-3); padding: 10px; border-radius: 6px;">
+          <span style="color: var(--tk-primary-bright); font-family: var(--tk-font-display); font-weight: 700; font-size: 16px;">③</span>
+          <span style="font-size: 11px; color: var(--tk-on-dark-soft);">DIPLOMATION génère les attestations et diplômes avec QR codes chiffrés — sans aucune ressaisie.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; background: var(--tk-primary); padding: 10px; border-radius: 6px;">
+          <span style="color: white; font-family: var(--tk-font-display); font-weight: 700; font-size: 16px;">④</span>
+          <span style="font-size: 11px; color: oklch(0.95 0.04 277);">TKAMS journalise chaque échange — traçabilité complète de tous les documents générés.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top: 16px; gap: 12px;">
+      <div class="card white">
+        <h3>Sécurité &amp; rotation</h3>
+        <ul>
+          <li>Clés d'accès chiffrées — jamais stockées en clair</li>
+          <li>Transmission hors-ligne à la création</li>
+          <li>Renouvellement simple : générer, distribuer, désactiver l'ancienne</li>
+        </ul>
+      </div>
+      <div class="card white">
+        <h3>Notifications automatiques</h3>
+        <ul>
+          <li>Alertes signées numériquement — infalsifiables</li>
+          <li>Envoi automatique à la signature de chaque délibération</li>
+          <li>Adresse de destination configurable par établissement</li>
+        </ul>
+      </div>
+      <div class="card brand">
+        <h3 style="color: white;">Journalisation</h3>
+        <ul>
+          <li>Chaque échange avec DIPLOMATION est enregistré</li>
+          <li>Horodatage, origine et statut de chaque opération</li>
+          <li>Audit complet disponible pour le responsable informatique</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top: 14px; gap: 12px;">
+      <div class="card softbrand">
+        <h3>Le duplicata en 30 secondes</h3>
+        <p style="margin: 0;">Un étudiant perd son attestation. L'administration génère un nouveau PDF identique en quelques secondes — même QR code, même valeur officielle, même force probante. <strong style="color: var(--tk-primary-deep);">Sans refaire la délibération, sans contacter le jury.</strong></p>
+      </div>
+      <div class="card softbrand">
+        <h3>Vérification externe instantanée</h3>
+        <p style="margin: 0;">Un employeur, une ambassade ou une université partenaire scanne le QR code et vérifie l'authenticité du document en quelques secondes — <strong style="color: var(--tk-primary-deep);">sans contacter l'établissement</strong>. Lutte contre la fraude documentaire intégrée.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>Archivage pérenne</h3>
+        <p style="margin: 0;">Les données d'un étudiant diplômé en 2020 restent accessibles et restituables en 2035. Aucun risque de perte liée à un crash de disque dur ou à la défaillance d'un prestataire externe.</p>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">19<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 20 — APERÇUS PRODUIT -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="20 Aperçus produit">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">III · Produit / 15</div>
+    </div>
+
+    <div class="kicker">15 · Aperçus produit</div>
+    <h1 class="hed">À quoi <em>ressemble</em><br/>TKAMS.</h1>
+    <p class="lede">Six écrans représentatifs de l'application livrée. Le design TKAMS privilégie la densité d'information utile, la cohérence visuelle, et une accessibilité conforme aux standards (contrastes AA, navigation clavier, lecteurs d'écran).</p>
+
+    <div class="grid g2" style="margin-top: 22px; gap: 12px;">
+
+      <div class="mock" style="height: 200px;">
+        <div class="mock-bar"><div class="d"></div><div class="d"></div><div class="d"></div><div class="url">/admin/dashboard</div></div>
+        <div class="mock-body" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px;">
+          <div style="background: var(--tk-primary); border-radius: 6px; padding: 8px;"><div style="color: white; font-family: var(--tk-font-mono); font-size: 7px; opacity: 0.8;">EFFECTIF</div><div style="color: white; font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.025em;">4 832</div></div>
+          <div style="background: var(--tk-bg); border-radius: 6px; padding: 8px;"><div style="color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 7px;">RÉUSSITE</div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.025em;">78 %</div></div>
+          <div style="background: var(--tk-bg); border-radius: 6px; padding: 8px;"><div style="color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 7px;">EXAMENS</div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.025em;">186</div></div>
+          <div style="background: var(--tk-bg); border-radius: 6px; padding: 8px;"><div style="color: var(--tk-muted); font-family: var(--tk-font-mono); font-size: 7px;">JOBS</div><div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.025em;">3</div></div>
+          <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 10px; grid-column: span 4; height: 90px; display: flex; align-items: flex-end; gap: 4px;">
+            <div style="width: 14px; height: 30%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 55%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 45%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 72%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 64%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 85%; background: var(--tk-primary-bright); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 78%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+            <div style="width: 14px; height: 92%; background: var(--tk-primary); border-radius: 2px 2px 0 0;"></div>
+          </div>
+        </div>
+        <span class="mock-label">DASHBOARD ADMIN</span>
+      </div>
+
+      <div class="mock" style="height: 200px;">
+        <div class="mock-bar"><div class="d"></div><div class="d"></div><div class="d"></div><div class="url">app.tkams.com/saisie</div></div>
+        <div class="mock-body" style="font-family: var(--tk-font-mono); font-size: 8px;">
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; background: var(--tk-bg); padding: 6px; border-bottom: 1px solid var(--tk-border); color: var(--tk-muted); font-weight: 600;">
+            <span>ÉTUDIANT</span><span style="text-align: center;">CC</span><span style="text-align: center;">EXAM.</span><span style="text-align: center;">MOY.</span><span style="text-align: right;">DÉCISION</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; padding: 5px 6px; border-bottom: 1px solid var(--tk-border); align-items: center;"><span>MBARGA Jean</span><span style="text-align: center;">14</span><span style="text-align: center;">15</span><span style="text-align: center; font-weight: 700;">14,6</span><span style="text-align: right;"><span style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); padding: 1px 6px; border-radius: 999px; font-weight: 600;">Admis</span></span></div>
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; padding: 5px 6px; border-bottom: 1px solid var(--tk-border); align-items: center;"><span>ATANGANA Rose</span><span style="text-align: center;">11</span><span style="text-align: center;">11</span><span style="text-align: center; font-weight: 700;">11,0</span><span style="text-align: right;"><span style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); padding: 1px 6px; border-radius: 999px; font-weight: 600;">Admis</span></span></div>
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; padding: 5px 6px; border-bottom: 1px solid var(--tk-border); align-items: center;"><span>BELLO Fatima</span><span style="text-align: center;">9</span><span style="text-align: center;">6,5</span><span style="text-align: center; font-weight: 700;">7,5</span><span style="text-align: right;"><span style="background: oklch(0.95 0.1 27); color: oklch(0.5 0.18 27); padding: 1px 6px; border-radius: 999px; font-weight: 600;">Ajourné</span></span></div>
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; padding: 5px 6px; border-bottom: 1px solid var(--tk-border); align-items: center; background: oklch(0.95 0.06 277 / 50%);"><span>NKODO Paul</span><span style="text-align: center;">12</span><span style="text-align: center;">9,5</span><span style="text-align: center; font-weight: 700;">10,5</span><span style="text-align: right;"><span style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); padding: 1px 6px; border-radius: 999px; font-weight: 600;">Admis</span></span></div>
+          <div style="display: grid; grid-template-columns: 1.4fr 0.5fr 0.6fr 0.55fr 0.9fr; gap: 0; padding: 5px 6px; align-items: center;"><span>FOTSO Marie</span><span style="text-align: center;">16</span><span style="text-align: center;">13</span><span style="text-align: center; font-weight: 700;">14,2</span><span style="text-align: right;"><span style="background: oklch(0.95 0.1 149); color: oklch(0.4 0.16 149); padding: 1px 6px; border-radius: 999px; font-weight: 600;">Admis</span></span></div>
+        </div>
+        <span class="mock-label">SAISIE — MOYENNE &amp; DÉCISION EN DIRECT</span>
+      </div>
+
+      <div class="mock" style="height: 200px;">
+        <div class="mock-bar"><div class="d"></div><div class="d"></div><div class="d"></div><div class="url">app.tkams.com/deliberations</div></div>
+        <div class="mock-body">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-family: var(--tk-font-display); font-weight: 700; font-size: 11px;">Délibération · L3 Informatique</span>
+            <span style="font-family: var(--tk-font-mono); font-weight: 600; font-size: 7.5px; color: oklch(0.4 0.16 149); background: oklch(0.95 0.1 149); padding: 1px 7px; border-radius: 999px;">✓ PV signé</span>
+          </div>
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <!-- stepper -->
+            <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 8px;">✓</span>Brouillon</span>
+            <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+            <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 8px;">✓</span>Ouverte</span>
+            <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+            <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-ink-soft);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 8px;">✓</span>Clôturée</span>
+            <span style="flex: 1; height: 1px; background: var(--tk-primary); margin: 0 4px;"></span>
+            <span style="display: flex; align-items: center; gap: 4px; font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-ink);"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--tk-primary); color: #fff; display: grid; place-items: center; font-size: 7px; font-weight: 700;">4</span>Signée</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font-family: var(--tk-font-mono);">
+            <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px; text-align: center;"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px;">90 %</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Réussite</div></div>
+            <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px; text-align: center;"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.4 0.16 149);">7</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Admis</div></div>
+            <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px; text-align: center;"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: var(--tk-accent-blue);">2</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Compensés</div></div>
+            <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 6px; text-align: center;"><div style="font-family: var(--tk-font-display); font-weight: 800; font-size: 15px; color: oklch(0.5 0.18 27);">1</div><div style="font-size: 6.5px; color: var(--tk-muted); text-transform: uppercase;">Ajournés</div></div>
+          </div>
+          <div style="display: flex; gap: 5px; margin-top: 8px; font-family: var(--tk-font-mono); font-size: 8px;">
+            <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 3px 8px; color: var(--tk-ink-soft);">⤓ PV (PDF)</span>
+            <span style="border: 1px solid var(--tk-border); border-radius: 6px; padding: 3px 8px; color: var(--tk-ink-soft);">⤓ Relevés (Excel)</span>
+          </div>
+        </div>
+        <span class="mock-label">DÉLIBÉRATION — DU BROUILLON AU PV SIGNÉ</span>
+      </div>
+
+      <div class="mock" style="height: 200px;">
+        <div class="mock-bar"><div class="d"></div><div class="d"></div><div class="d"></div><div class="url">/student/transcript</div></div>
+        <div class="mock-body">
+          <div style="text-align: center; border-bottom: 2px solid var(--tk-ink); padding-bottom: 8px; margin-bottom: 8px;">
+            <div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 11px;">RELEVÉ DE NOTES OFFICIEL</div>
+            <div style="font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-muted); margin-top: 2px;">LICENCE 2 · ÉCONOMIE · 2024-2025</div>
+          </div>
+          <div style="font-family: var(--tk-font-mono); font-size: 8.5px; line-height: 1.7; color: var(--tk-ink-soft);">
+            <div><strong style="color: var(--tk-ink);">Étudiant</strong> · ABENA EMILE · #UY24L00342</div>
+            <div><strong style="color: var(--tk-ink);">Décision</strong> · <span style="color: var(--tk-accent-emerald); font-weight: 700;">ADMIS</span> · mention Bien</div>
+            <div><strong style="color: var(--tk-ink);">Moyenne</strong> · 14,32 / 20 · rang 18 / 220</div>
+            <div><strong style="color: var(--tk-ink);">Crédits</strong> · 60 ECTS validés / 60</div>
+          </div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+            <div style="width: 36px; height: 36px; background: var(--tk-ink); border-radius: 4px; display: grid; place-items: center; color: white; font-family: var(--tk-font-mono); font-size: 5px;">▣▤▥<br/>▦▧▨</div>
+            <div style="font-family: var(--tk-font-mono); font-size: 7.5px; color: var(--tk-muted); line-height: 1.5;">QR code chiffré<br/>Vérifiable en ligne<br/>via DIPLOMATION</div>
+          </div>
+        </div>
+        <span class="mock-label">RELEVÉ OFFICIEL</span>
+      </div>
+
+      <div class="mock" style="height: 200px;">
+        <div class="mock-bar"><div class="d"></div><div class="d"></div><div class="d"></div><div class="url">app.tkams.com/regles</div></div>
+        <div class="mock-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="font-family: var(--tk-font-mono); font-size: 8px;">
+            <div style="color: var(--tk-muted); margin-bottom: 2px;">Seuil de validation <span style="float: right; color: var(--tk-primary); font-weight: 700;">10,0/20</span></div>
+            <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 9px;"><div style="width: 50%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+            <div style="color: var(--tk-muted); margin-bottom: 2px;">Note éliminatoire <span style="float: right; color: var(--tk-primary); font-weight: 700;">6,0/20</span></div>
+            <div style="height: 5px; background: var(--tk-bg-deep); border-radius: 999px; margin-bottom: 9px;"><div style="width: 30%; height: 100%; background: var(--tk-primary); border-radius: 999px;"></div></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 6px; padding: 5px 7px;">
+              <span style="color: var(--tk-ink-soft);">Compensation</span>
+              <span style="width: 22px; height: 12px; background: var(--tk-primary); border-radius: 999px; position: relative; display: inline-block;"><span style="position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; background: #fff; border-radius: 999px;"></span></span>
+            </div>
+          </div>
+          <div style="background: var(--tk-bg); border: 1px solid var(--tk-border); border-radius: 8px; padding: 9px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;"><span style="font-family: var(--tk-font-mono); font-size: 7px; color: var(--tk-muted); text-transform: uppercase; letter-spacing: 0.1em;">Taux de réussite</span><span style="font-family: var(--tk-font-display); font-weight: 800; font-size: 20px; letter-spacing: -0.03em;">80 %</span></div>
+            <div style="height: 6px; background: var(--tk-bg-deep); border-radius: 999px; margin: 5px 0 9px;"><div style="width: 80%; height: 100%; background: linear-gradient(90deg, var(--tk-accent-emerald), var(--tk-primary-bright)); border-radius: 999px;"></div></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-family: var(--tk-font-mono); font-size: 8px;">
+              <span style="display: flex; justify-content: space-between;"><span style="color: var(--tk-ink-2);">● Admis</span><b>6</b></span>
+              <span style="display: flex; justify-content: space-between;"><span style="color: var(--tk-ink-2);">● Compensés</span><b>2</b></span>
+              <span style="display: flex; justify-content: space-between;"><span style="color: var(--tk-ink-2);">● Ajournés</span><b>1</b></span>
+              <span style="display: flex; justify-content: space-between;"><span style="color: var(--tk-ink-2);">● Redoublants</span><b>1</b></span>
+            </div>
+          </div>
+        </div>
+        <span class="mock-label">MOTEUR DE RÈGLES — RÉÉVALUATION LIVE</span>
+      </div>
+
+      <div class="mock" style="height: 200px; background: var(--tk-dark);">
+        <div class="mock-bar" style="background: var(--tk-dark-2); border-color: var(--tk-dark-3);"><div class="d" style="background: oklch(0.4 0.04 264);"></div><div class="d" style="background: oklch(0.4 0.04 264);"></div><div class="d" style="background: oklch(0.4 0.04 264);"></div><div class="url" style="color: var(--tk-on-dark-muted);">DIPLOMATION desktop · Electron</div></div>
+        <div class="mock-body">
+          <div style="font-family: var(--tk-font-display); font-weight: 700; font-size: 12px; color: white; margin-bottom: 6px;">Attestation de réussite</div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <div style="width: 70px; height: 92px; background: white; border-radius: 3px; padding: 4px;">
+              <div style="font-family: var(--tk-font-display); font-size: 5px; font-weight: 700; text-align: center; line-height: 1.2;">ATTESTATION<br/>OFFICIELLE</div>
+              <div style="height: 1px; background: var(--tk-ink); margin: 3px 0;"></div>
+              <div style="font-family: var(--tk-font-mono); font-size: 4.5px; line-height: 1.3; color: var(--tk-muted);">Lorem ipsum dolor sit amet consectetur adipiscing elit.</div>
+              <div style="display: flex; justify-content: center; margin-top: 4px;">
+                <div style="width: 22px; height: 22px; background: var(--tk-ink);"></div>
+              </div>
+            </div>
+            <div style="flex: 1; color: var(--tk-on-dark-soft); font-family: var(--tk-font-mono); font-size: 8.5px; line-height: 1.7;">
+              <div><span style="color: var(--tk-primary-bright);">►</span> Connexion TKAMS OK</div>
+              <div><span style="color: var(--tk-primary-bright);">►</span> Snapshot délib. récupéré</div>
+              <div><span style="color: var(--tk-primary-bright);">►</span> 134 attestations à générer</div>
+              <div><span style="color: var(--tk-primary-bright);">►</span> QR codes chiffrés…</div>
+              <div style="color: oklch(0.78 0.16 149); margin-top: 2px;">✓ 134 / 134 générées</div>
+            </div>
+          </div>
+        </div>
+        <span class="mock-label" style="background: var(--tk-dark-3); color: var(--tk-on-dark-muted);">DIPLOMATION DESKTOP</span>
+      </div>
+
+    </div>
+
+    <p style="margin-top: 10px; font-size: 10.5px; color: var(--tk-muted); font-style: italic;">Aperçus simplifiés. Captures haute fidélité disponibles sur demande après NDA.</p>
+
+    <div class="f">
+      <span>III · LE PRODUIT</span>
+      <span class="pn">20<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 21 — PART IV DIVIDER -->
+<!-- ============================================== -->
+<section class="page divider" data-screen-label="21 Partie IV — Technique">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Partie IV</div>
+    </div>
+    <div style="margin: auto 0;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">— PARTIE IV —</div>
+      <div class="num">IV</div>
+      <h1>La technique.</h1>
+      <p class="deck">Stack moderne et éprouvée, sécurité par construction, multi-établissement strict, bilinguisme natif. Trois pages denses pour les DSI qui regardent <em style="font-style: normal; color: var(--tk-primary-bright);">vraiment</em> sous le capot.</p>
+    </div>
+    <div class="f">
+      <span>IV · TECHNIQUE</span>
+      <span class="pn">21<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 22 — STACK TECHNIQUE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="22 Stack technique">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">IV · Technique / 16</div>
+    </div>
+
+    <div class="kicker">16 · Stack technique</div>
+    <h1 class="hed">Une stack contemporaine,<br/><em>éprouvée</em>, sans exotisme.</h1>
+    <p class="lede">Cette section s'adresse aux responsables informatiques (DSI). Si vous êtes directeur académique ou administratif, vous pouvez passer directement à la Partie V.</p>
+
+    <div class="card dark" style="margin-top: 22px; padding: 20px;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">SCHÉMA FONCTIONNEL</div>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="grid g3" style="gap: 6px;">
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">FRONT WEB</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">React 19 · TanStack Query · Tailwind 4 · shadcn/ui · React Router 7</div></div>
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">CONSOLE ADMIN</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">i18next · Zustand · Framer Motion · CodeMirror</div></div>
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">DIPLOMATION</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">Electron desktop · QR codes chiffrés</div></div>
+        </div>
+        <div style="text-align: center; color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 10px;">tRPC type-safe · REST X-Api-Key · Webhooks HMAC</div>
+        <div style="background: var(--tk-primary); padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="color: white; font-family: var(--tk-font-display); font-weight: 700; font-size: 13px;">API · apps/server</div>
+          <div style="color: oklch(0.92 0.04 277); font-family: var(--tk-font-mono); font-size: 10px; margin-top: 2px;">Bun runtime · Hono · tRPC v11 · Better-Auth · Drizzle ORM · Handlebars · Puppeteer</div>
+        </div>
+        <div class="grid g4" style="gap: 6px;">
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">PostgreSQL</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">Drizzle ORM · 40+ tables</div></div>
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">pg-boss</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">Jobs persistants sur PG</div></div>
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">Stockage</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">Local ou S3-compatible</div></div>
+          <div style="background: var(--tk-dark-3); padding: 10px; border-radius: 6px; text-align: center;"><div style="color: white; font-family: var(--tk-font-display); font-weight: 600; font-size: 11px;">Email</div><div style="color: var(--tk-on-dark-muted); font-family: var(--tk-font-mono); font-size: 9px; margin-top: 2px;">Resend ou SMTP</div></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 18px;">Décisions structurantes</h2>
+    <div class="grid g2" style="gap: 12px; margin-top: 8px;">
+      <div class="card white">
+        <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
+          <thead><tr><th style="text-align: left; padding: 8px 10px 8px 0; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1.5px solid var(--tk-ink);">Choix</th><th style="text-align: left; padding: 8px 0; font-family: var(--tk-font-display); font-weight: 600; color: var(--tk-ink); border-bottom: 1.5px solid var(--tk-ink);">Pourquoi</th></tr></thead>
+          <tbody style="color: var(--tk-ink-soft);">
+            <tr><td style="padding: 8px 10px 8px 0; border-bottom: 1px solid var(--tk-border);"><strong style="color: var(--tk-primary);">Bun</strong></td><td style="padding: 8px 0; border-bottom: 1px solid var(--tk-border);">Performance + bundler + test-runner intégrés</td></tr>
+            <tr><td style="padding: 8px 10px 8px 0; border-bottom: 1px solid var(--tk-border);"><strong style="color: var(--tk-primary);">tRPC</strong></td><td style="padding: 8px 0; border-bottom: 1px solid var(--tk-border);">Type-safety bout en bout, zero-glue</td></tr>
+            <tr><td style="padding: 8px 10px 8px 0; border-bottom: 1px solid var(--tk-border);"><strong style="color: var(--tk-primary);">Drizzle</strong></td><td style="padding: 8px 0; border-bottom: 1px solid var(--tk-border);">Schéma TS-first, migrations versionnées</td></tr>
+            <tr><td style="padding: 8px 10px 8px 0; border-bottom: 1px solid var(--tk-border);"><strong style="color: var(--tk-primary);">Better-Auth</strong></td><td style="padding: 8px 0; border-bottom: 1px solid var(--tk-border);">Multi-org natif, sessions, MFA</td></tr>
+            <tr><td style="padding: 8px 10px 8px 0;"><strong style="color: var(--tk-primary);">pg-boss</strong></td><td style="padding: 8px 0;">Pas de Redis/Kafka requis</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card softbrand">
+        <h3>Patterns d'implémentation</h3>
+        <ul>
+          <li>Architecture modulaire stricte (<code class="mono" style="font-size: 10px;">modules/&lt;name&gt;/</code>)</li>
+          <li>Validation Zod sur tous les inputs</li>
+          <li>Erreurs typées (<code class="mono" style="font-size: 10px;">TRPCError</code> avec codes)</li>
+          <li>Helpers business : <code class="mono" style="font-size: 10px;">notFound()</code>, <code class="mono" style="font-size: 10px;">conflict()</code></li>
+          <li>Tests d'intégration via <code class="mono" style="font-size: 10px;">createCaller()</code></li>
+          <li>PGlite pour tests in-memory (zéro dépendance)</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="card dark" style="margin-top: 14px;">
+      <h3 style="color: white;">Trois modes de fonctionnement</h3>
+      <div class="grid g3" style="gap: 10px; margin-top: 8px;">
+        <div><h4 style="color: var(--tk-primary-bright);">Production</h4><p style="font-size: 10.5px;">PostgreSQL externe · pg-boss</p></div>
+        <div><h4 style="color: var(--tk-primary-bright);">Développement</h4><p style="font-size: 10.5px;">PG local ou PGlite · pg-boss ou setInterval</p></div>
+        <div><h4 style="color: var(--tk-primary-bright);">Tests CI</h4><p style="font-size: 10.5px;">PGlite in-memory · setInterval</p></div>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>IV · TECHNIQUE</span>
+      <span class="pn">22<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 23 — SÉCURITÉ -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="23 Sécurité et audit">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">IV · Technique / 17</div>
+    </div>
+
+    <div class="kicker">17 · Sécurité, RBAC &amp; audit</div>
+    <h1 class="hed">Six tables d'audit.<br/><em>Zéro écriture</em> non tracée.</h1>
+    <p class="lede">Une école manipule des données qui décident de carrières — notes, sanctions, situation financière, attestations. TKAMS applique les standards de l'industrie et journalise chaque action sensible dans une table dédiée.</p>
+
+    <h2 style="margin-top: 22px;">Tables d'audit dédiées</h2>
+    <div class="grid g2" style="gap: 10px; margin-top: 10px;">
+      <div class="card white"><h4><code class="mono" style="color: var(--tk-primary);">grade_edit_logs</code></h4><p style="margin: 0; font-size: 10.5px;">Toute modification de note : score avant/après, acteur, action.</p></div>
+      <div class="card white"><h4><code class="mono" style="color: var(--tk-primary);">class_course_access_logs</code></h4><p style="margin: 0; font-size: 10.5px;">Accès à un cours par un délégué (liste / recherche).</p></div>
+      <div class="card white"><h4><code class="mono" style="color: var(--tk-primary);">deliberation_logs</code></h4><p style="margin: 0; font-size: 10.5px;">Cycle de vie complet : created, opened, computed, override, closed, signed, reopened, exported, promoted.</p></div>
+      <div class="card white"><h4><code class="mono" style="color: var(--tk-primary);">exam_schedule_runs</code></h4><p style="margin: 0; font-size: 10.5px;">Audit complet de chaque planification batch.</p></div>
+      <div class="card white"><h4><code class="mono" style="color: var(--tk-primary);">diplomation_api_call_logs</code></h4><p style="margin: 0; font-size: 10.5px;">Toute requête sur l'API REST DIPLOMATION.</p></div>
+      <div class="card brand"><h4 style="color: white;"><code class="mono" style="color: oklch(0.85 0.08 277);">promotion_executions</code></h4><p style="margin: 0; font-size: 10.5px;">+ <code class="mono" style="color: oklch(0.85 0.08 277);">promotion_execution_results</code><br/>Historique nominatif de toutes les promotions.</p></div>
+    </div>
+
+    <div class="grid g2" style="margin-top: 18px; gap: 14px;">
+      <div class="card white">
+        <h3>Identité &amp; authentification</h3>
+        <ul>
+          <li>Séparation forte <code class="mono" style="font-size: 10px;">auth.user</code> ↔ <code class="mono" style="font-size: 10px;">domain_users</code></li>
+          <li>Better-Auth : sessions <code class="mono">httpOnly</code>, MFA possible</li>
+          <li>Multi-organisation : un compte, plusieurs memberships</li>
+          <li>Contexte tenant obligatoire (<code class="mono">PRECONDITION_FAILED</code> sinon)</li>
+        </ul>
+
+        <h3 style="margin-top: 12px;">RBAC transitif</h3>
+        <p style="margin: 0;">Helper <code class="mono">roleSatisfies()</code> garantit qu'un doyen passe les vérifications enseignant. <code class="mono">assertRole()</code> rejette avec <code class="mono">FORBIDDEN</code>. Permissions calculées : <code class="mono">canManageCatalog</code>, <code class="mono">canGrade</code>, <code class="mono">canAccessAnalytics</code>.</p>
+      </div>
+
+      <div class="card dark">
+        <h3 style="color: white;">Verrouillage métier irréversible</h3>
+        <p>Un examen verrouillé (<code class="mono" style="color: var(--tk-primary-bright);">isLocked = true</code>) est <strong style="color: white;">irréversible</strong>. Aucune saisie possible. Le verrouillage est déclenché par approbation du doyen OU automatiquement à expiration.</p>
+        <p>Le seul moyen de revenir en arrière : créer une <em style="font-style: normal; color: var(--tk-primary-bright);">session de rattrapage</em> liée — qui crée son propre cycle de saisie/validation.</p>
+
+        <h3 style="color: white; margin-top: 12px;">Clés API DIPLOMATION</h3>
+        <ul>
+          <li>Hash SHA-256 en base — clé brute jamais stockée</li>
+          <li>Distribution hors-ligne au moment de la création</li>
+          <li>Rotation simple : générer, distribuer, désactiver</li>
+          <li>Webhooks signés HMAC-SHA256</li>
+          <li>Toutes les requêtes journalisées et corrélables</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>IV · TECHNIQUE</span>
+      <span class="pn">23<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 24 — MULTI-TENANT & I18N -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="24 Multi-tenant et i18n">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">IV · Technique / 18</div>
+    </div>
+
+    <div class="kicker">18 · Multi-tenant strict &amp; bilinguisme</div>
+    <h1 class="hed">Une plateforme,<br/><em>plusieurs établissements</em>.</h1>
+    <p class="lede">L'éditeur peut héberger des dizaines d'établissements en parallèle sur la même plateforme, chacun dans un espace totalement isolé — les données d'un établissement ne sont jamais accessibles par un autre.</p>
+
+    <div class="grid g2" style="margin-top: 22px; gap: 14px;">
+      <div class="card white">
+        <h3>Isolation par établissement</h3>
+        <p>Chaque donnée est étiquetée par institution à la source. Toutes les requêtes identifient et vérifient l'établissement actif <strong>avant</strong> tout accès aux données.</p>
+        <ul>
+          <li>Sans contexte d'institution : accès refusé automatiquement</li>
+          <li>Filtres appliqués au niveau base de données, pas seulement en façade</li>
+          <li>Aucun accès croisé entre établissements possible</li>
+          <li>Isolation testée systématiquement par des tests automatisés</li>
+        </ul>
+      </div>
+      <div class="card softbrand">
+        <h3>Niveaux d'accès isolés</h3>
+        <ul>
+          <li>Accès public — pages non authentifiées</li>
+          <li>Accès protégé — utilisateurs connectés</li>
+          <li>Accès administrateur — gestion du catalogue</li>
+          <li>Accès super-administrateur — gestion multi-établissements</li>
+          <li>Accès saisie de notes — enseignants et délégués</li>
+          <li>Accès admin d'établissement — périmètre limité à son institution</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 22px;">Bilinguisme natif FR / EN</h2>
+    <div class="grid g3" style="gap: 12px; margin-top: 10px;">
+      <div class="card white">
+        <h3>Contenus métier</h3>
+        <p style="margin: 0;">Noms d'institutions, programmes, options, mentions, titres de diplômes, slogans, adresses, textes légaux : tous bilingues dans la base.</p>
+      </div>
+      <div class="card white">
+        <h3>Interface utilisateur</h3>
+        <p style="margin: 0;">Chaque texte de l'interface existe en français et en anglais. Un processus de contrôle qualité garantit qu'aucune chaîne non traduite ne passe en production.</p>
+      </div>
+      <div class="card white">
+        <h3>Exports officiels</h3>
+        <p style="margin: 0;">Tous les modèles déclinés FR/EN. Mentions, titres, domaines, spécialités traduits. Sélection de langue par utilisateur (préférence persistée).</p>
+      </div>
+    </div>
+
+    <div class="card brand" style="margin-top: 14px;">
+      <h3 style="color: white;">Conséquence stratégique</h3>
+      <p style="margin: 0;">Un même déploiement TKAMS peut servir simultanément des établissements <strong style="color: white;">francophones et anglophones</strong> du Cameroun (Buéa, Bamenda) — sans installation séparée, sans duplication de code, sans surcoût.</p>
+    </div>
+
+    <div class="f">
+      <span>IV · TECHNIQUE</span>
+      <span class="pn">24<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 25 — PART V DIVIDER -->
+<!-- ============================================== -->
+<section class="page divider" data-screen-label="25 Partie V — Confiance">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Partie V</div>
+    </div>
+    <div style="margin: auto 0;">
+      <div class="kicker" style="color: var(--tk-primary-bright);">— PARTIE V —</div>
+      <div class="num">V</div>
+      <h1>La confiance.</h1>
+      <p class="deck">Trois cas d'usage chiffrés, les établissements déjà engagés, et l'équipe qui porte le projet. Ce qui transforme un produit en <em style="font-style: normal; color: var(--tk-primary-bright);">référence du secteur</em>.</p>
+    </div>
+    <div class="f">
+      <span>V · LA CONFIANCE</span>
+      <span class="pn">25<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 26 — ÉTABLISSEMENTS CLIENTS (logo wall) -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="26 Établissements clients">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">V · Confiance / 19</div>
+    </div>
+
+    <div class="kicker">19 · Programme pionniers</div>
+    <h1 class="hed">Construit avec des<br/><em>institutions pionnières</em>.</h1>
+    <p class="lede">TKAMS est développé au contact direct des établissements LMD d'Afrique francophone. Les premiers établissements engagés façonnent la feuille de route — et bénéficient de conditions privilégiées.</p>
+
+    <h2 style="margin-top: 22px;">Rejoignez les premiers établissements</h2>
+    <div class="grid g4" style="gap: 10px; margin-top: 10px;">
+      <div class="logo-cell" style="border-style: dashed;"><div><strong style="color: var(--tk-muted);">Votre établissement</strong><em>emplacement réservé</em></div></div>
+      <div class="logo-cell" style="border-style: dashed;"><div><strong style="color: var(--tk-muted);">Votre établissement</strong><em>emplacement réservé</em></div></div>
+      <div class="logo-cell" style="border-style: dashed;"><div><strong style="color: var(--tk-muted);">Votre établissement</strong><em>emplacement réservé</em></div></div>
+      <div class="logo-cell" style="border-style: dashed;"><div><strong style="color: var(--tk-muted);">Votre établissement</strong><em>emplacement réservé</em></div></div>
+    </div>
+
+    <p style="margin-top: 8px; font-size: 10px; color: var(--tk-muted); font-style: italic;">Aucune référence client n'est affichée tant que les accords de communication ne sont pas signés. Le logo de votre établissement pourra figurer ici.</p>
+
+    <h2 style="margin-top: 22px;">Paroles d'établissements</h2>
+    <div class="grid g2" style="gap: 14px; margin-top: 10px;">
+      <div class="card white" style="padding: 22px; border-style: dashed;">
+        <blockquote style="font-size: 16px; color: var(--tk-muted); font-style: italic;">« Témoignage à venir »</blockquote>
+        <div style="margin-top: 12px; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.06em;">— EMPLACEMENT RÉSERVÉ</div>
+      </div>
+      <div class="card white" style="padding: 22px; border-style: dashed;">
+        <blockquote style="font-size: 16px; color: var(--tk-muted); font-style: italic;">« Témoignage à venir »</blockquote>
+        <div style="margin-top: 12px; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted); letter-spacing: 0.06em;">— EMPLACEMENT RÉSERVÉ</div>
+      </div>
+    </div>
+
+    <div class="card brand" style="margin-top: 14px;">
+      <h3 style="color: white;">Rejoindre les premiers utilisateurs</h3>
+      <p style="margin: 0;">Les établissements engagés en 2026 bénéficient du programme <strong style="color: white;">Charter</strong> : tarif préférentiel, droit de regard sur la roadmap, support direct avec l'équipe produit, et label « pionnier TKAMS » utilisable dans leur communication.</p>
+    </div>
+
+    <div class="f">
+      <span>V · LA CONFIANCE</span>
+      <span class="pn">26<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 27 — TROIS CAS D'USAGE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="27 Cas d'usage chiffrés">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">V · Confiance / 20</div>
+    </div>
+
+    <div class="kicker">20 · Trois cas d'usage chiffrés</div>
+    <h1 class="hed">Trois profils,<br/><em>trois bénéfices mesurés</em>.</h1>
+
+    <div style="margin-top: 22px; display: flex; flex-direction: column; gap: 12px;">
+
+      <div class="card white" style="padding: 22px;">
+        <div class="grid g32" style="gap: 18px;">
+          <div style="padding-right: 16px; border-right: 1px solid var(--tk-border);">
+            <span class="chip">PROFIL A</span>
+            <h2 style="margin-top: 8px;">IPES technologique</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-muted); margin: 2px 0 8px;">800 étudiants · Douala</p>
+            <p>Deux filières (Génie informatique, Gestion). Tutelle pédagogique d'une université d'État. Excel + cahier de caisse jusqu'à 2025.</p>
+          </div>
+          <div>
+            <div class="kicker" style="font-size: 10px;">CONFIGURATION</div>
+            <p>TKAMS Standard. SaaS hébergé. 8 utilisateurs admin. Modules : Inscriptions, Scolarité, Évaluations, Délibérations, Exports.</p>
+            <div class="grid g3" style="gap: 8px; margin-top: 10px;">
+              <div class="card brand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">60<sup style="font-size: 14px;">%</sup></div><div class="l" style="font-size: 9px;">Temps scolarité gagné</div></div>
+              <div class="card softbrand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">+15<sup style="font-size: 14px;">pts</sup></div><div class="l" style="font-size: 9px;">Recouvrement</div></div>
+              <div class="card deep stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">2<sup style="font-size: 14px;">h</sup></div><div class="l" style="font-size: 9px;">Délibération L1</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card white" style="padding: 22px;">
+        <div class="grid g32" style="gap: 18px;">
+          <div style="padding-right: 16px; border-right: 1px solid var(--tk-border);">
+            <span class="chip">PROFIL B</span>
+            <h2 style="margin-top: 8px;">Faculté d'université d'État</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-muted); margin: 2px 0 8px;">4 500 étudiants · Yaoundé</p>
+            <p>Faculté de sciences économiques, six filières, trois cycles LMD complets. Développement PHP interne devenu instable, dépendant d'un développeur.</p>
+          </div>
+          <div>
+            <div class="kicker" style="font-size: 10px;">CONFIGURATION</div>
+            <p>TKAMS Pro. SaaS souverain Cameroun. Migration de 3 ans d'historique. Reporting MINESUP automatisé.</p>
+            <div class="grid g3" style="gap: 8px; margin-top: 10px;">
+              <div class="card brand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">40<sup style="font-size: 14px;">h</sup></div><div class="l" style="font-size: 9px;">→ 2 h états réglementaires</div></div>
+              <div class="card softbrand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">+35<sup style="font-size: 14px;">pts</sup></div><div class="l" style="font-size: 9px;">NPS étudiant</div></div>
+              <div class="card deep stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">0</div><div class="l" style="font-size: 9px;">Dépendance dev unique</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card dark" style="padding: 22px;">
+        <div class="grid g32" style="gap: 18px;">
+          <div style="padding-right: 16px; border-right: 1px solid oklch(1 0 0 / 14%);">
+            <span class="chip dark-c">PROFIL C · PHARE ★</span>
+            <h2 style="margin-top: 8px; color: white;">Réseau multi-sites</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 11px; color: var(--tk-on-dark-muted); margin: 2px 0 8px;">12 000 étudiants · 5 centres</p>
+            <p>Réseau de cinq écoles fédérées : deux sous tutelle d'universités d'État, deux sous partenariat européen, une indépendante. Reporting consolidé exigé par les fondateurs.</p>
+          </div>
+          <div>
+            <div class="kicker" style="font-size: 10px; color: var(--tk-primary-bright);">CONFIGURATION</div>
+            <p>TKAMS Enterprise multi-tutelles. SaaS souverain + réplique on-premise. Workflows par site, reporting consolidé centralisé.</p>
+            <div class="grid g3" style="gap: 8px; margin-top: 10px;">
+              <div class="card brand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">1</div><div class="l" style="font-size: 9px;">Vision unifiée réseau</div></div>
+              <div class="card softbrand stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">5</div><div class="l" style="font-size: 9px;">Autonomies préservées</div></div>
+              <div class="card stat" style="padding: 10px;"><div class="v" style="font-size: 32px;">0</div><div class="l" style="font-size: 9px;">Doublons inter-sites</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="f">
+      <span>V · LA CONFIANCE</span>
+      <span class="pn">27<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 28 — ÉQUIPE FONDATRICE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="28 Équipe fondatrice">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">V · Confiance / 21</div>
+    </div>
+
+    <div class="kicker">21 · Équipe fondatrice</div>
+    <h1 class="hed">Tefoye &amp; Kana —<br/>les deux <em>T</em> et <em>K</em><br/>de TKAMS.</h1>
+    <p class="lede">TKAMS est <strong style="color: var(--tk-ink);">Tefoye and Kana Academic Management System</strong>. Une équipe locale, deux fondateurs aux profils complémentaires : un produit/stratégie, un produit/ingénierie. Tous les deux issus de l'écosystème universitaire camerounais.</p>
+
+    <div class="grid g2" style="margin-top: 26px; gap: 14px;">
+
+      <div class="card dark" style="padding: 24px;">
+        <div style="display: flex; gap: 14px; margin-bottom: 14px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--tk-primary), var(--tk-primary-bright)); display: grid; place-items: center; font-family: var(--tk-font-display); font-weight: 700; font-size: 26px; color: white; letter-spacing: -0.025em;">CT</div>
+          <div>
+            <div class="kicker" style="color: var(--tk-primary-bright);">CO-FONDATEUR &amp; CEO</div>
+            <h2 style="color: white; margin-top: 6px;">Cédric TEFOYE</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 10px; margin: 0; color: var(--tk-on-dark-muted); letter-spacing: 0.04em;">STRATÉGIE · PRODUIT · CLIENT</p>
+          </div>
+        </div>
+        <p>Pilote stratégique de TKAMS. Responsable de la direction générale, de la croissance, et des relations institutionnelles avec les établissements, le MINESUP et les organismes de tutelle.</p>
+        <p style="margin-top: 6px;">Porte la vision d'une infrastructure académique <em style="font-style: normal; color: var(--tk-primary-bright);">africaine, conçue pour l'Afrique</em>.</p>
+      </div>
+
+      <div class="card dark" style="padding: 24px;">
+        <div style="display: flex; gap: 14px; margin-bottom: 14px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--tk-primary-bright), oklch(0.78 0.18 277)); display: grid; place-items: center; font-family: var(--tk-font-display); font-weight: 700; font-size: 26px; color: var(--tk-dark); letter-spacing: -0.025em;">YK</div>
+          <div>
+            <div class="kicker" style="color: var(--tk-primary-bright);">CO-FONDATEUR &amp; CTO</div>
+            <h2 style="color: white; margin-top: 6px;">Yvan KANA</h2>
+            <p style="font-family: var(--tk-font-mono); font-size: 10px; margin: 0; color: var(--tk-on-dark-muted); letter-spacing: 0.04em;">ARCHITECTURE · INGÉNIERIE · SÉCURITÉ</p>
+          </div>
+        </div>
+        <p>Architecte technique de la plateforme. A conçu l'ensemble du modèle académique, le moteur de règles, les traitements automatisés, et l'intégration DIPLOMATION.</p>
+        <p style="margin-top: 6px;">Engagé sur la fiabilité, la traçabilité, et la <em style="font-style: normal; color: var(--tk-primary-bright);">cohérence des données</em> de bout en bout.</p>
+      </div>
+
+    </div>
+
+    <h2 style="margin-top: 24px;">Une équipe locale, francophone, joignable</h2>
+    <div class="grid g3" style="gap: 12px; margin-top: 10px;">
+      <div class="card white">
+        <h3>Présence terrain</h3>
+        <p style="margin: 0;">Bureaux à <strong>Douala</strong> et <strong>Yaoundé</strong>. Déplacements possibles dans tout le Cameroun en moins de 48 heures pour un audit ou un dépannage.</p>
+      </div>
+      <div class="card white">
+        <h3>Expertise pédagogique</h3>
+        <p style="margin: 0;">Consultants formés sur le terrain, dans les amphithéâtres et les secrétariats. Anciens enseignants du supérieur dans l'équipe.</p>
+      </div>
+      <div class="card softbrand">
+        <h3>Recrutement en cours</h3>
+        <p style="margin: 0;">L'équipe s'étoffe en 2026 : un développeur senior, un consultant pédagogique, un commercial terrain. <strong>Les premiers clients participent</strong> aux décisions d'embauche.</p>
+      </div>
+    </div>
+
+    <div class="f">
+      <span>V · LA CONFIANCE</span>
+      <span class="pn">28<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 29 — MODES DE DÉPLOIEMENT -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="29 Modes de déploiement">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">VI · Commercial / 22</div>
+    </div>
+
+    <div class="kicker">22 · Quatre modes de déploiement</div>
+    <h1 class="hed">Quatre <em>options</em>,<br/>du SaaS au souverain.</h1>
+    <p class="lede">Selon vos exigences de souveraineté, de gouvernance et de budget, TKAMS s'adapte. Un même produit, quatre topologies de déploiement, des conditions de licence négociables.</p>
+
+    <div class="grid g2" style="margin-top: 24px; gap: 12px;">
+
+      <div class="card white" style="border-top: 4px solid var(--tk-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h3>① SaaS mutualisé</h3>
+          <span class="chip live">RECOMMANDÉ</span>
+        </div>
+        <p>Hébergé par l'éditeur, chaque institution dispose de son propre espace isolé. Plus économique, démarrage le plus rapide.</p>
+        <p><strong style="color: var(--tk-ink);">Cible :</strong> petites institutions, démarrage rapide.</p>
+        <p style="margin: 8px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted);">⏱ Démarrage en 2–4 semaines</p>
+        <p style="margin: 4px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.45 0.16 142);">✓ Frais d'installation : inclus</p>
+      </div>
+
+      <div class="card white" style="border-top: 4px solid var(--tk-accent-emerald);">
+        <h3>② SaaS dédié</h3>
+        <p>Une instance par institution, hébergée par l'éditeur. Plus d'isolation, plus de flexibilité de versioning.</p>
+        <p><strong style="color: var(--tk-ink);">Cible :</strong> universités, IPES de grande taille.</p>
+        <p style="margin: 8px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted);">⏱ Démarrage en 4–6 semaines</p>
+        <p style="margin: 4px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.45 0.16 142);">✓ Frais d'installation : inclus</p>
+      </div>
+
+      <div class="card white" style="border-top: 4px solid var(--tk-accent-gold);">
+        <h3>③ On-premise</h3>
+        <p>Installation sur les serveurs de l'établissement. Contrôle maximal, données jamais sorties de votre périmètre.</p>
+        <p><strong style="color: var(--tk-ink);">Cible :</strong> institutions à exigences souveraines.</p>
+        <p style="margin: 8px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-muted);">⏱ Démarrage en 6–12 semaines</p>
+        <p style="margin: 4px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.55 0.18 65);">Frais d'installation : 1 500 000 FCFA HT</p>
+      </div>
+
+      <div class="card dark" style="border-top: 4px solid var(--tk-primary-bright);">
+        <h3 style="color: white;">④ Hybride</h3>
+        <p>Données chez le client, jobs et front en cloud. Pour les cas particuliers de gouvernance.</p>
+        <p><strong style="color: white;">Cible :</strong> partenariats internationaux, contraintes réglementaires spécifiques.</p>
+        <p style="margin: 8px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: var(--tk-on-dark-muted);">⏱ Démarrage sur devis</p>
+        <p style="margin: 4px 0 0; font-family: var(--tk-font-mono); font-size: 10px; color: oklch(0.75 0.06 277);">Frais d'installation : sur devis</p>
+      </div>
+
+    </div>
+
+    <h2 style="margin-top: 22px;">Pré-requis (on-premise / SaaS dédié)</h2>
+    <div class="card softbrand" style="margin-top: 8px;">
+      <div class="grid g3" style="gap: 14px;">
+        <div>
+          <h4>Serveur</h4>
+          <p style="margin: 0;">Un PC serveur ou ordinateur suffisamment puissant avec connexion Internet stable. Pas d'infrastructure complexe requise.</p>
+        </div>
+        <div>
+          <h4>Stockage cloud</h4>
+          <p style="margin: 0;"><strong>Optionnel.</strong> Pour la sauvegarde et l'archivage des fichiers générés.</p>
+        </div>
+        <div>
+          <h4>Service email</h4>
+          <p style="margin: 0;"><strong>Optionnel.</strong> Pour l'envoi automatique de notifications aux enseignants et étudiants.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 18px;">Migration depuis l'existant</h2>
+    <div class="grid g3" style="gap: 10px; margin-top: 8px;">
+      <div class="card white"><h4>Imports CSV / Excel</h4><p style="margin: 0; font-size: 10.5px;">Étudiants, notes historiques, programmes.</p></div>
+      <div class="card white"><h4>Migration structurée</h4><p style="margin: 0; font-size: 10.5px;">Import par couches : structure académique, données pédagogiques, utilisateurs.</p></div>
+      <div class="card white"><h4>Accompagnement</h4><p style="margin: 0; font-size: 10.5px;">Cartographie cycles, UE, règles avec un consultant pédagogique.</p></div>
+    </div>
+
+    <div class="f">
+      <span>VI · COMMERCIAL</span>
+      <span class="pn">29<span> / 30</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 30 — TARIFICATION & CONTACT -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="30 Tarification et contact">
+  <div class="inner">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">VI · Commercial / 23</div>
+    </div>
+
+    <div class="kicker">23 · Licences &amp; tarification</div>
+    <h1 class="hed">Une licence annuelle.<br/>Un <em>prix par étudiant</em>.</h1>
+    <p class="lede" style="font-size: 13px; margin-bottom: 0;">Frais d'installation uniques (inclus en SaaS, 1 500 000 FCFA HT en on-premise), puis une licence annuelle calculée par étudiant actif et par utilisateur — sans surprise.</p>
+
+    <div class="grid g3" style="margin-top: 16px; gap: 12px;">
+
+      <div class="price-card">
+        <div class="seg">Modules cœur · petites institutions</div>
+        <h3>TKAMS Essentiel</h3>
+        <div class="price">2 000<small>FCFA / étudiant / an</small></div>
+        <div class="per"><strong>+ 5 000 FCFA</strong> / compte administrateur / an<br/><span style="color: var(--tk-muted-2); font-size: 10px;">Minimum annuel : 750 000 FCFA</span></div>
+        <ul>
+          <li>Modules cœur (Inscriptions, Scolarité, Évaluations, Délibérations, Exports)</li>
+          <li>1 tutelle, jusqu'à 5 comptes admin</li>
+          <li>SaaS mutualisé, hébergé par l'éditeur</li>
+          <li>Support e-mail · 5 j/7</li>
+        </ul>
+      </div>
+
+      <div class="price-card featured">
+        <div class="badge-top">Le plus courant</div>
+        <div class="seg">Accès complet · toutes tailles</div>
+        <h3>TKAMS Pro</h3>
+        <div class="price">2 000<small>FCFA / étudiant / an</small></div>
+        <div class="per"><strong>+ 5 000 FCFA</strong> / compte administrateur / an<br/><span style="color: oklch(0.8 0.04 264); font-size: 10px;">Minimum annuel : 750 000 FCFA</span></div>
+        <ul>
+          <li><strong>Tous les 35+ modules</strong></li>
+          <li>Jusqu'à 3 tutelles configurables</li>
+          <li>SaaS dédié ou on-premise</li>
+          <li>Intégration DIPLOMATION incluse</li>
+          <li>Reporting MINESUP automatisé</li>
+          <li>Support téléphone · 6 j/7</li>
+          <li>Formation initiale (3 jours)</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="seg">Réseaux, multi-sites, partenariats</div>
+        <h3>TKAMS Enterprise</h3>
+        <div class="price">Sur devis</div>
+        <div class="per">Multi-tutelles complexe, volume important ou contraintes réglementaires spécifiques</div>
+        <ul>
+          <li><strong>Multi-tutelles illimité</strong></li>
+          <li>On-premise ou hybride</li>
+          <li>SLA renforcé · 99,9 %</li>
+          <li>Account manager dédié</li>
+          <li>Intégrations sur mesure</li>
+          <li>Personnalisation workflows</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="card softbrand" style="margin-top: 16px;">
+      <h3>Logique tarifaire</h3>
+      <p style="margin: 0;">Pour un établissement de 800 étudiants actifs et 10 comptes admin, TKAMS Pro représente <strong>1 650 000 FCFA / an</strong> — soit environ <strong>137 500 FCFA / mois</strong>, moins qu'un seul poste dédié à la gestion manuelle des notes. Le minimum garanti (750 000 FCFA / an) s'applique si la formule donne moins.</p>
+    </div>
+
+    <div class="cta-mega" style="margin-top: 16px;">
+      <div class="kicker" style="color: oklch(0.85 0.06 277);">★ Prochaine étape</div>
+      <h1>Une démo sur <em style="color: oklch(0.75 0.18 277); font-style: normal;">vos données</em>,<br/>en moins de deux semaines.</h1>
+      <p class="deck">La présentation initiale est gratuite et sans engagement. Démo personnalisée sur les données de votre établissement. Proposition commerciale chiffrée sous 7 jours après la démo.</p>
+    </div>
+
+    <div class="grid g3" style="margin-top: 14px; gap: 10px;">
+      <div class="card white" style="padding: 14px;"><h4 style="font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.14em; text-transform: uppercase;">Direction commerciale</h4><p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 14px; color: var(--tk-ink); margin: 4px 0 0;">contact@tkams.app</p></div>
+      <div class="card white" style="padding: 14px;"><h4 style="font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.14em; text-transform: uppercase;">Téléphone &amp; WhatsApp</h4><p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 14px; color: var(--tk-ink); margin: 4px 0 0;">+237 6 — — —</p></div>
+      <div class="card white" style="padding: 14px;"><h4 style="font-family: var(--tk-font-mono); font-size: 9.5px; color: var(--tk-muted); letter-spacing: 0.14em; text-transform: uppercase;">Bureaux</h4><p style="font-family: var(--tk-font-display); font-weight: 600; font-size: 14px; color: var(--tk-ink); margin: 4px 0 0;">Douala &amp; Yaoundé</p></div>
+    </div>
+
+    <div class="card softbrand" style="margin-top: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 12px;">
+      <div style="background: var(--tk-primary); color: white; font-family: var(--tk-font-display); font-weight: 700; font-size: 22px; padding: 8px 14px; border-radius: 10px; letter-spacing: -0.025em; white-space: nowrap;">−10 %</div>
+      <p style="margin: 0; font-size: 11px; color: var(--tk-primary-deep);">Remise sur la licence annuelle pour tout <strong>engagement triennal</strong> (3 ans ferme). Une façon simple de sécuriser votre accès TKAMS et de réduire votre coût total sur la durée.</p>
+    </div>
+    <p style="font-size: 9.5px; color: var(--tk-muted); margin-top: 10px;">Prix HT. Frais d'installation inclus en SaaS ; 1 500 000 FCFA HT en on-premise (TKAMS seul) ou 2 200 000 FCFA HT en bundle TKAMS + DIPLOMATION. Engagement 12 mois reconductible. Remise -10 % engagement triennal. Tarifs valables au 1<sup>er</sup> juin 2026.</p>
+
+    <div class="f">
+      <span>TKAMS · OverBrand · overbrand.net</span>
+      <span class="pn">30<span> / 31</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 31 — GLOSSAIRE -->
+<!-- ============================================== -->
+<section class="page" data-screen-label="31 Glossaire">
+  <div class="inner tight">
+    <div class="h">
+      <div class="b"><span class="badge">&nbsp;TKAMS</span></div>
+      <div class="crumb">Annexe · Glossaire</div>
+    </div>
+
+    <div class="kicker">Annexe · Glossaire des termes utilisés</div>
+    <h1 class="hed">Comprendre TKAMS<br/>sans <em>formation préalable</em>.</h1>
+    <p class="lede" style="font-size: 12px; margin-bottom: 14px;">Tous les termes académiques et techniques utilisés dans cette brochure, expliqués en langage courant.</p>
+
+    <div class="grid g2" style="gap: 12px; margin-top: 6px;">
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">LMD</h4><p style="margin: 0; font-size: 10.5px;">Licence-Master-Doctorat. Système d'enseignement supérieur adopté dans la zone CEMAC depuis 2007. Licence = 3 ans (180 crédits), Master = +2 ans, Doctorat = +3 ans.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">HND / BEng / MSc / MBA</h4><p style="margin: 0; font-size: 10.5px;">Diplômes du système anglophone. HND : Bac+2 technique. BEng/BSc : équivalent Licence (3 ans). MSc/MBA : équivalent Master (1 à 2 ans). Tous supportés nativement dans TKAMS.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">ECTS</h4><p style="margin: 0; font-size: 10.5px;">Unité qui mesure le volume de travail académique d'un étudiant. La Licence vaut 180 ECTS, le Master 120 supplémentaires.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">UE — Unité d'Enseignement</h4><p style="margin: 0; font-size: 10.5px;">Regroupement de matières liées (ex. : UE Mathématiques). Elle porte des crédits ECTS et peut être validée ou compensée indépendamment.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">EC — Élément Constitutif</h4><p style="margin: 0; font-size: 10.5px;">Matière individuelle à l'intérieur d'une UE (ex. : Algèbre linéaire dans l'UE Mathématiques).</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">IPES</h4><p style="margin: 0; font-size: 10.5px;">Institut Privé d'Enseignement Supérieur. Établissement privé homologué par le MINESUP, généralement sous tutelle pédagogique d'une université d'État.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">MINESUP</h4><p style="margin: 0; font-size: 10.5px;">Ministère de l'Enseignement Supérieur du Cameroun. Autorité de tutelle pour l'homologation des établissements et la reconnaissance des diplômes.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">CAMES</h4><p style="margin: 0; font-size: 10.5px;">Conseil Africain et Malgache pour l'Enseignement Supérieur. Instance intergouvernementale qui valide les équivalences de diplômes dans la zone francophone africaine.</p></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">Délibération</h4><p style="margin: 0; font-size: 10.5px;">Séance officielle du jury qui examine les résultats et prononce les décisions : admis, compensé, ajourné (rattrapage), redoublant.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">ADM / CMP / AJ / RED</h4><p style="margin: 0; font-size: 10.5px;">Codes de décision de délibération : <strong>ADM</strong>is (réussite), <strong>C</strong>o<strong>MP</strong>ensé (réussite par moyenne d'UE), <strong>AJ</strong>ourné (orienté vers le rattrapage), <strong>RED</strong>oublant.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">PV de délibération</h4><p style="margin: 0; font-size: 10.5px;">Procès-verbal officiel signé par le jury. Document ayant valeur juridique pour la progression académique de l'étudiant.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">QR code chiffré</h4><p style="margin: 0; font-size: 10.5px;">Code-barres 2D intégré dans les documents officiels (attestations, diplômes). Scannable avec un smartphone pour vérifier l'authenticité du document, sans contacter l'établissement.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">DIPLOMATION</h4><p style="margin: 0; font-size: 10.5px;">Application bureau développée par OverBrand. Génère les diplômes et attestations officielles avec QR codes chiffrés à partir des données TKAMS, sans ressaisie.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">SaaS</h4><p style="margin: 0; font-size: 10.5px;">Logiciel hébergé par l'éditeur, accessible via Internet. L'établissement n'installe rien — il se connecte simplement. Mises à jour automatiques, sauvegarde incluse.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">On-premise</h4><p style="margin: 0; font-size: 10.5px;">Déploiement sur les serveurs propres de l'établissement. L'institution contrôle totalement ses données, qui ne quittent jamais ses locaux.</p></div>
+        <div class="card white" style="padding: 10px 13px;"><h4 style="color: var(--tk-primary); margin-bottom: 3px;">Moteur de règles</h4><p style="margin: 0; font-size: 10.5px;">Système interne qui applique automatiquement les critères de réussite définis par l'établissement (seuils de moyenne, crédits requis, matières éliminatoires…) sans intervention humaine et sans programmation.</p></div>
+      </div>
+
+    </div>
+
+    <div class="f" style="margin-top: auto;">
+      <span>TKAMS · développé par OverBrand · overbrand.net · Douala &amp; Yaoundé</span>
+      <span class="pn">31<span> / 31</span></span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

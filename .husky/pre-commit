@@ -12,7 +12,7 @@ if [ -n "$STAGED_FILES" ]; then
 
   echo "$STAGED_FILES" | xargs bunx biome check --write --unsafe 2>/dev/null
 
-  echo "$STAGED_FILES" | xargs git add
+  echo "$STAGED_FILES" | xargs git add -u --
 
   echo "$STAGED_FILES" | xargs bunx biome check
   if [ $? -ne 0 ]; then
