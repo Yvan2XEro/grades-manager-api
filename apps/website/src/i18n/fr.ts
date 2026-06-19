@@ -864,6 +864,8 @@ export const fr = {
 			submit: "Se connecter",
 			submitting: "Connexion…",
 			error_invalid: "Email ou mot de passe incorrect.",
+			error_unverified:
+				"Veuillez vérifier votre adresse email avant de vous connecter. Consultez votre boîte mail.",
 			error_server: "Une erreur est survenue. Réessayez.",
 			no_account: "Pas encore de compte ?",
 			signup_link: "S'inscrire",

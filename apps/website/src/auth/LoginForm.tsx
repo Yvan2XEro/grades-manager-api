@@ -39,7 +39,13 @@ export function LoginForm({ dict: d }: { dict: Dict }) {
 			if (res.ok) {
 				router.push(searchParams.get("next") ?? "/dashboard");
 			} else {
-				setServerError(d.auth.login.error_invalid);
+				const body = await res.json().catch(() => ({}));
+				const msg: string = body?.errors?.[0]?.message ?? body?.message ?? "";
+				if (msg.toLowerCase().includes("verify")) {
+					setServerError(d.auth.login.error_unverified);
+				} else {
+					setServerError(d.auth.login.error_invalid);
+				}
 			}
 		} catch {
 			setServerError(d.auth.login.error_server);

@@ -12,10 +12,33 @@ services:
     command: sh -c "yarn install && yarn dev"
     depends_on:
       - mongo
-    env_file:
-      - .env
     environment:
-      DATABASE_URI: mongodb://mongo:27017/tkams-website
+      DATABASE_URL: ${DATABASE_URL:-mongodb://mongo:27017/tkams-website}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-change-me-in-production}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      WEBSITE_URL: ${WEBSITE_URL:-http://localhost:3000}
+      # Email — set RESEND_API_KEY for Resend, or SMTP_* for nodemailer
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@tkams.com}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      # Dokploy provisioning
+      DOKPLOY_URL: ${DOKPLOY_URL:-}
+      DOKPLOY_API_KEY: ${DOKPLOY_API_KEY:-}
+      DOKPLOY_APP_IMAGE: ${DOKPLOY_APP_IMAGE:-ghcr.io/yvan2xero/tkams:latest}
+      TKAMS_BASE_DOMAIN: ${TKAMS_BASE_DOMAIN:-tkams.com}
+      NEXT_PUBLIC_TKAMS_BASE_DOMAIN: ${NEXT_PUBLIC_TKAMS_BASE_DOMAIN:-tkams.com}
+      # GHCR versions
+      GHCR_IMAGE_OWNER: ${GHCR_IMAGE_OWNER:-yvan2xero}
+      GHCR_IMAGE_NAME: ${GHCR_IMAGE_NAME:-tkams}
+      # NotchPay
+      NOTCHPAY_PUBLIC_KEY: ${NOTCHPAY_PUBLIC_KEY:-}
+      NOTCHPAY_HASH_KEY: ${NOTCHPAY_HASH_KEY:-}
+      NOTCHPAY_BASE_URL: ${NOTCHPAY_BASE_URL:-}
+      # Jobs
+      CRON_SECRET: ${CRON_SECRET:-}
 
   mongo:
     image: mongo:latest

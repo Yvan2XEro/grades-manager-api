@@ -865,6 +865,8 @@ export const en = {
 			submit: "Sign in",
 			submitting: "Signing in…",
 			error_invalid: "Incorrect email or password.",
+			error_unverified:
+				"Please verify your email before signing in. Check your inbox.",
 			error_server: "An error occurred. Please try again.",
 			no_account: "Don't have an account?",
 			signup_link: "Sign up",
