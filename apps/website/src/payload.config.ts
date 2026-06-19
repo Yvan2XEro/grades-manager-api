@@ -73,25 +73,30 @@ export default buildConfig({
 			],
 		},
 	},
-	// Email — Resend when API key present, nodemailer (SMTP) otherwise
+	// Email — Resend when API key present, nodemailer when SMTP creds present, otherwise no adapter
 	email: process.env.RESEND_API_KEY
 		? resendAdapter({
 				defaultFromAddress: process.env.EMAIL_FROM ?? "noreply@tkams.com",
 				defaultFromName: "TKAMS",
 				apiKey: process.env.RESEND_API_KEY,
 			})
-		: nodemailerAdapter({
-				defaultFromAddress: process.env.EMAIL_FROM ?? "noreply@tkams.com",
-				defaultFromName: "TKAMS",
-				transportOptions: {
-					host: process.env.SMTP_HOST ?? "smtp.ethereal.email",
-					port: Number(process.env.SMTP_PORT ?? 587),
-					auth: {
-						user: process.env.SMTP_USER,
-						pass: process.env.SMTP_PASS,
+		: process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
+			? nodemailerAdapter({
+					defaultFromAddress: process.env.EMAIL_FROM ?? "noreply@tkams.com",
+					defaultFromName: "TKAMS",
+					transportOptions: {
+						host: process.env.SMTP_HOST,
+						port: Number(process.env.SMTP_PORT ?? 587),
+						// port 465 = direct SSL, port 587 = STARTTLS
+						secure: Number(process.env.SMTP_PORT ?? 587) === 465,
+						auth: {
+							user: process.env.SMTP_USER,
+							pass: process.env.SMTP_PASS,
+						},
+						tls: { rejectUnauthorized: false },
 					},
-				},
-			}),
+				})
+			: undefined,
 	// This config helps us configure global or default features that the other editors can inherit
 	editor: defaultLexical,
 	db: mongooseAdapter({
