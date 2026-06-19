@@ -888,6 +888,51 @@ export const fr = {
 				password_mismatch: "Les mots de passe ne correspondent pas",
 			},
 		},
+		forgotPassword: {
+			link: "Mot de passe oublié ?",
+			title: "Réinitialiser votre mot de passe",
+			sub: "Entrez votre adresse email et nous vous enverrons un lien de réinitialisation.",
+			email: "Adresse email",
+			submit: "Envoyer le lien",
+			submitting: "Envoi en cours…",
+			sent_title: "Vérifiez votre boîte mail",
+			sent_body:
+				"Si un compte existe pour {email}, vous recevrez un lien de réinitialisation sous peu.",
+			error_server: "Une erreur est survenue. Veuillez réessayer.",
+		},
+		resetPassword: {
+			title: "Choisir un nouveau mot de passe",
+			sub: "Choisissez un mot de passe fort pour votre compte.",
+			password: "Nouveau mot de passe",
+			confirm: "Confirmer le mot de passe",
+			submit: "Réinitialiser le mot de passe",
+			submitting: "Réinitialisation…",
+			success_title: "Mot de passe modifié !",
+			success_body:
+				"Votre mot de passe a été changé. Redirection vers la connexion…",
+			error_invalid:
+				"Ce lien a expiré ou est invalide. Veuillez en demander un nouveau.",
+			error_server: "Une erreur est survenue. Veuillez réessayer.",
+			missing_title: "Jeton manquant",
+			missing_body: "Aucun jeton de réinitialisation trouvé dans le lien.",
+			retry_cta: "Demander un nouveau lien",
+		},
+		verify: {
+			check_title: "Vérifiez votre boîte mail",
+			check_body:
+				"Nous avons envoyé un lien de vérification à {email}. Cliquez dessus pour activer votre compte.",
+			check_hint: "Vous ne le voyez pas ? Vérifiez vos spams.",
+			login_cta: "Retour à la connexion",
+			success_title: "Email vérifié !",
+			success_body:
+				"Votre compte est maintenant actif. Vous pouvez vous connecter pour accéder à votre tableau de bord.",
+			error_title: "Lien invalide ou expiré",
+			error_body:
+				"Ce lien de vérification a expiré ou a déjà été utilisé. Veuillez vous réinscrire.",
+			missing_title: "Jeton manquant",
+			missing_body: "Aucun jeton de vérification trouvé dans le lien.",
+			retry_cta: "S'inscrire à nouveau",
+		},
 	},
 	dashboard: {
 		greeting: "Bonjour,",

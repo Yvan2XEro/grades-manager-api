@@ -889,6 +889,50 @@ export const en = {
 				password_mismatch: "Passwords do not match",
 			},
 		},
+		forgotPassword: {
+			link: "Forgot password?",
+			title: "Reset your password",
+			sub: "Enter your email address and we'll send you a reset link.",
+			email: "Email address",
+			submit: "Send reset link",
+			submitting: "Sending…",
+			sent_title: "Check your inbox",
+			sent_body:
+				"If an account exists for {email}, you'll receive a reset link shortly.",
+			error_server: "An error occurred. Please try again.",
+		},
+		resetPassword: {
+			title: "Set a new password",
+			sub: "Choose a strong password for your account.",
+			password: "New password",
+			confirm: "Confirm new password",
+			submit: "Reset password",
+			submitting: "Resetting…",
+			success_title: "Password updated!",
+			success_body: "Your password has been changed. Redirecting to sign in…",
+			error_invalid:
+				"This link has expired or is invalid. Please request a new one.",
+			error_server: "An error occurred. Please try again.",
+			missing_title: "Missing reset token",
+			missing_body: "No reset token was found in the link.",
+			retry_cta: "Request a new link",
+		},
+		verify: {
+			check_title: "Check your inbox",
+			check_body:
+				"We sent a verification link to {email}. Click it to activate your account.",
+			check_hint: "Don't see it? Check your spam folder.",
+			login_cta: "Back to sign in",
+			success_title: "Email verified!",
+			success_body:
+				"Your account is now active. You can sign in to access your dashboard.",
+			error_title: "Link invalid or expired",
+			error_body:
+				"This verification link has expired or has already been used. Please sign up again.",
+			missing_title: "Missing token",
+			missing_body: "No verification token found in the link.",
+			retry_cta: "Sign up again",
+		},
 	},
 	dashboard: {
 		greeting: "Hello,",

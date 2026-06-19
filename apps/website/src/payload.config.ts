@@ -1,6 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
+import { resendAdapter } from "@payloadcms/email-resend";
 import { buildConfig, type PayloadRequest } from "payload";
 import sharp from "sharp";
 import { defaultLexical } from "@/fields/defaultLexical";
@@ -16,6 +18,7 @@ import { Subscriptions } from "./collections/Subscriptions";
 import { SupportTickets } from "./collections/SupportTickets";
 import { Users } from "./collections/Users";
 import { Footer } from "./Footer/config";
+import { DeploySettings } from "./globals/DeploySettings";
 import { Header } from "./Header/config";
 import { plugins } from "./plugins";
 import { getServerSideURL } from "./utilities/getURL";
@@ -25,12 +28,22 @@ const dirname = path.dirname(filename);
 
 export default buildConfig({
 	admin: {
+		meta: {
+			titleSuffix: "— TKAMS",
+			icons: { icon: "/favicon.ico" },
+			openGraph: {
+				images: [{ url: "/logo-tkams.png" }],
+				title: "TKAMS Admin",
+				description: "Panneau d'administration TKAMS",
+			},
+		},
+		theme: "light",
 		components: {
-			// The `BeforeLogin` component renders a message that you see while logging into your admin panel.
-			// Feel free to delete this at any time. Simply remove the line below.
+			graphics: {
+				Logo: "@/components/admin/Logo",
+				Icon: "@/components/admin/Icon",
+			},
 			beforeLogin: ["@/components/BeforeLogin"],
-			// The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
-			// Feel free to delete this at any time. Simply remove the line below.
 			beforeDashboard: ["@/components/BeforeDashboard"],
 		},
 		importMap: {
@@ -60,6 +73,25 @@ export default buildConfig({
 			],
 		},
 	},
+	// Email — Resend when API key present, nodemailer (SMTP) otherwise
+	email: process.env.RESEND_API_KEY
+		? resendAdapter({
+				defaultFromAddress: process.env.EMAIL_FROM ?? "noreply@tkams.com",
+				defaultFromName: "TKAMS",
+				apiKey: process.env.RESEND_API_KEY,
+			})
+		: nodemailerAdapter({
+				defaultFromAddress: process.env.EMAIL_FROM ?? "noreply@tkams.com",
+				defaultFromName: "TKAMS",
+				transportOptions: {
+					host: process.env.SMTP_HOST ?? "smtp.ethereal.email",
+					port: Number(process.env.SMTP_PORT ?? 587),
+					auth: {
+						user: process.env.SMTP_USER,
+						pass: process.env.SMTP_PASS,
+					},
+				},
+			}),
 	// This config helps us configure global or default features that the other editors can inherit
 	editor: defaultLexical,
 	db: mongooseAdapter({
@@ -79,7 +111,7 @@ export default buildConfig({
 		SupportTickets,
 	],
 	cors: [getServerSideURL()].filter(Boolean),
-	globals: [Header, Footer],
+	globals: [Header, Footer, DeploySettings],
 	plugins,
 	secret: process.env.PAYLOAD_SECRET,
 	sharp,

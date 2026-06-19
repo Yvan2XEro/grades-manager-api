@@ -3,7 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/get-request-user";
-import { provisionInstance } from "@/lib/provision";
+import type { SeedMode } from "@/lib/provision";
+import { prepareSeedData } from "@/lib/provision";
 import type { FileData } from "@/marketing/SeedUploadStep";
 
 const schema = z.object({
@@ -75,19 +76,31 @@ export async function POST(req: NextRequest) {
 			country: data.country,
 			adminName: data.adminName,
 			adminEmail: data.adminEmail,
+			adminPasswordTemp: data.adminPassword,
 			client: user.id as string,
-			status: "pending",
+			status: "pending_approval",
 			progressStep: 0,
 			seedMode: data.seedMode as "empty" | "demo" | "custom",
 		},
 	});
 
-	provisionInstance({
-		requestId: String(record.id),
-		...data,
-		seedMode: data.seedMode as "empty" | "demo" | "custom",
-		seedFiles: data.seedFiles as FileData[] | undefined,
-	}).catch((err) => console.error("[provision] unhandled error:", err));
+	// Build and store seed YAMLs immediately so they're ready when admin approves.
+	// Fire-and-forget — fast (string building + one DB write).
+	prepareSeedData(
+		{
+			requestId: String(record.id),
+			orgName: data.orgName,
+			subdomain: data.subdomain,
+			institutionType: data.institutionType,
+			country: data.country,
+			adminName: data.adminName,
+			adminEmail: data.adminEmail,
+			adminPassword: data.adminPassword,
+			seedMode: data.seedMode as SeedMode,
+			seedFiles: data.seedFiles as FileData[] | undefined,
+		},
+		payload,
+	).catch((err) => console.error("[provision] seed prep error:", err));
 
 	return NextResponse.json({ id: record.id }, { status: 202 });
 }

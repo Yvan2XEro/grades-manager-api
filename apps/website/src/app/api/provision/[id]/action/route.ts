@@ -5,20 +5,32 @@ import { z } from "zod";
 import { dokploy } from "@/lib/dokploy";
 import { getRequestUser } from "@/lib/get-request-user";
 
+const _fullImage =
+	process.env.DOKPLOY_APP_IMAGE ?? "ghcr.io/yvan2xero/tkams:latest";
+const _colonIdx = _fullImage.lastIndexOf(":");
+const APP_IMAGE_BASE =
+	_colonIdx > 0 ? _fullImage.slice(0, _colonIdx) : _fullImage;
+
 const schema = z.object({
-	action: z.enum(["restart", "stop", "start"]),
+	action: z.enum(["restart", "stop", "start", "upgrade"]),
+	imageTag: z.string().optional(),
 });
 
 const ACTION_TO_STATUS: Record<string, string> = {
 	stop: "stopped",
 	start: "ready",
 	restart: "ready",
+	upgrade: "ready",
 };
 
-const ACTION_TO_EVENT: Record<string, "restarted" | "stopped" | "started"> = {
+const ACTION_TO_EVENT: Record<
+	string,
+	"restarted" | "stopped" | "started" | "upgraded"
+> = {
 	restart: "restarted",
 	stop: "stopped",
 	start: "started",
+	upgrade: "upgraded",
 };
 
 export async function POST(
@@ -60,7 +72,11 @@ export async function POST(
 		| undefined;
 	const clientId =
 		typeof clientField === "object" ? clientField?.id : clientField;
-	if (clientId && clientId !== String(user.id))
+	const isAdmin = user.role === "super_admin";
+	if (clientId && clientId !== String(user.id) && !isAdmin)
+		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+	if (parsed.data.action === "upgrade" && !isAdmin)
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
 	const appId = record.dokployAppId as string | null;
@@ -70,7 +86,7 @@ export async function POST(
 			{ status: 400 },
 		);
 
-	const { action } = parsed.data;
+	const { action, imageTag: requestedTag } = parsed.data;
 
 	try {
 		if (action === "restart") {
@@ -79,6 +95,17 @@ export async function POST(
 			await dokploy.stopApplication(appId);
 		} else if (action === "start") {
 			await dokploy.startApplication(appId);
+		} else if (action === "upgrade") {
+			const tag =
+				requestedTag ?? (record.imageTag as string | null) ?? "latest";
+			const dockerImage = `${APP_IMAGE_BASE}:${tag}`;
+			await dokploy.saveDockerProvider({ applicationId: appId, dockerImage });
+			await dokploy.deploy(appId);
+			await payload.update({
+				collection: "instance-requests",
+				id,
+				data: { imageTag: tag },
+			});
 		}
 
 		// Update instance status in Payload

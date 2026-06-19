@@ -31,6 +31,7 @@ export const InstanceEvents: CollectionConfig = {
 				{ label: "Restarted", value: "restarted" },
 				{ label: "Stopped", value: "stopped" },
 				{ label: "Started", value: "started" },
+				{ label: "Upgraded", value: "upgraded" },
 				{ label: "Delete attempted", value: "delete_attempted" },
 				{ label: "Failed", value: "failed" },
 			],

@@ -73,7 +73,17 @@ export function LoginForm({ dict: d }: { dict: Dict }) {
 					</div>
 
 					<div>
-						<label className={labelCls}>{d.auth.login.password}</label>
+						<div className="mb-1.5 flex items-center justify-between">
+							<label className={labelCls.replace("mb-1.5", "")}>
+								{d.auth.login.password}
+							</label>
+							<Link
+								href="/forgot-password"
+								className="font-body text-tk-primary text-xs no-underline hover:underline"
+							>
+								{d.auth.forgotPassword.link}
+							</Link>
+						</div>
 						<input
 							type="password"
 							autoComplete="current-password"

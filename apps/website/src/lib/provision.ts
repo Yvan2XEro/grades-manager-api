@@ -18,8 +18,15 @@ import {
 
 const BASE_DOMAIN = process.env.TKAMS_BASE_DOMAIN ?? "tkams.com";
 const WEBSITE_URL = process.env.WEBSITE_URL ?? "https://tkams.com";
-const APP_IMAGE =
+// DOKPLOY_APP_IMAGE may include tag (e.g. ghcr.io/yvan2xero/tkams:dev).
+// Split so individual instances can override the tag independently.
+const _fullImage =
 	process.env.DOKPLOY_APP_IMAGE ?? "ghcr.io/yvan2xero/tkams:latest";
+const _colonIdx = _fullImage.lastIndexOf(":");
+const APP_IMAGE_BASE =
+	_colonIdx > 0 ? _fullImage.slice(0, _colonIdx) : _fullImage;
+const DEFAULT_IMAGE_TAG =
+	_colonIdx > 0 ? _fullImage.slice(_colonIdx + 1) : "latest";
 
 const secret = (bytes = 32) => randomBytes(bytes).toString("hex");
 
@@ -36,6 +43,7 @@ export type ProvisionInput = {
 	adminPassword: string;
 	seedMode?: SeedMode;
 	seedFiles?: FileData[];
+	imageTag?: string;
 };
 
 function fileToParseResult(file: FileData): ParseResult {
@@ -61,7 +69,15 @@ async function fail(payload: Payload, requestId: string, errorMessage: string) {
 	});
 }
 
-export async function provisionInstance(input: ProvisionInput) {
+/**
+ * Phase 1 — Build and store seed YAML files.
+ * Called immediately when the client submits the form, before admin approval.
+ * For empty mode, this is a no-op.
+ */
+export async function prepareSeedData(
+	input: ProvisionInput,
+	payload: Payload,
+): Promise<void> {
 	const {
 		requestId,
 		orgName,
@@ -69,12 +85,93 @@ export async function provisionInstance(input: ProvisionInput) {
 		adminEmail,
 		adminPassword,
 		adminName,
-		institutionType,
-		country,
 		seedMode = "empty",
 		seedFiles,
 	} = input;
-	const payload = await getPayload({ config: configPromise });
+
+	if (seedMode === "empty") return;
+
+	const seedToken = secret(24);
+	let foundationYaml: string | undefined;
+	let academicsYaml: string | undefined;
+	let usersYaml: string | undefined;
+
+	if (seedMode === "demo") {
+		foundationYaml = buildDemoFoundationYaml(subdomain, orgName);
+		academicsYaml = buildDemoAcademicsYaml(subdomain);
+		usersYaml = buildDemoUsersYaml(
+			subdomain,
+			adminEmail,
+			adminName,
+			adminPassword,
+		);
+	} else {
+		const seedBase = {
+			orgName,
+			orgSlug: subdomain,
+			adminEmail,
+			adminName,
+			adminPassword,
+			structure: seedFiles?.find((f) => f.type === "structure")
+				? fileToParseResult(seedFiles.find((f) => f.type === "structure")!)
+				: undefined,
+			programmes: seedFiles?.find((f) => f.type === "programmes")
+				? fileToParseResult(seedFiles.find((f) => f.type === "programmes")!)
+				: undefined,
+			equipe: seedFiles?.find((f) => f.type === "equipe")
+				? fileToParseResult(seedFiles.find((f) => f.type === "equipe")!)
+				: undefined,
+		};
+		foundationYaml = buildFoundationYaml(seedBase);
+		academicsYaml = buildAcademicsYaml(seedBase);
+		usersYaml = buildUsersYaml(seedBase);
+	}
+
+	await payload.update({
+		collection: "instance-requests",
+		id: requestId,
+		data: {
+			seedToken,
+			seedFoundationYaml: foundationYaml,
+			seedAcademicsYaml: academicsYaml,
+			seedUsersYaml: usersYaml,
+		},
+	});
+}
+
+/**
+ * Phase 2 — Provision the instance on Dokploy.
+ * Called when an admin approves the instance request.
+ * Reads all required data from the Payload record.
+ */
+export async function deployToDokploy(
+	requestId: string,
+	payload: Payload,
+): Promise<void> {
+	const record = await payload.findByID({
+		collection: "instance-requests",
+		id: requestId,
+	});
+
+	const orgName = record.orgName;
+	const subdomain = record.subdomain;
+	const adminEmail = record.adminEmail;
+	const adminPassword = (record.adminPasswordTemp as string | null) ?? "";
+	const adminName = record.adminName ?? "";
+	const institutionType =
+		(record.institutionType as string | null) ?? "university";
+	const country = (record.country as string | null) ?? "";
+	const seedToken = record.seedToken as string | undefined;
+
+	// Resolve image tag: global setting → env var default
+	let imageTag = DEFAULT_IMAGE_TAG;
+	try {
+		const settings = await payload.findGlobal({ slug: "deploy-settings" });
+		if (settings.defaultImageTag) imageTag = settings.defaultImageTag as string;
+	} catch {
+		// global not yet seeded — fall back to env default
+	}
+	const dockerImage = `${APP_IMAGE_BASE}:${imageTag}`;
 
 	try {
 		await payload.update({
@@ -83,62 +180,7 @@ export async function provisionInstance(input: ProvisionInput) {
 			data: { status: "provisioning", progressStep: 0 },
 		});
 
-		// Build and store seed YAMLs before deploy — container downloads them on first boot.
-		// empty mode: no YAMLs, no SEED_*_URL env vars (instance boots blank with just the admin)
-		// demo mode: static fixture YAMLs (3 teachers, 4 programs, 2 faculties)
-		// custom mode: user-uploaded Excel files converted to YAML
-		let seedToken: string | undefined;
-		let foundationYaml: string | undefined;
-		let academicsYaml: string | undefined;
-		let usersYaml: string | undefined;
-
-		if (seedMode !== "empty") {
-			seedToken = secret(24);
-
-			if (seedMode === "demo") {
-				foundationYaml = buildDemoFoundationYaml(subdomain, orgName);
-				academicsYaml = buildDemoAcademicsYaml(subdomain);
-				usersYaml = buildDemoUsersYaml(
-					subdomain,
-					adminEmail,
-					adminName,
-					adminPassword,
-				);
-			} else {
-				const seedBase = {
-					orgName,
-					orgSlug: subdomain,
-					adminEmail,
-					adminName,
-					adminPassword,
-					structure: seedFiles?.find((f) => f.type === "structure")
-						? fileToParseResult(seedFiles.find((f) => f.type === "structure")!)
-						: undefined,
-					programmes: seedFiles?.find((f) => f.type === "programmes")
-						? fileToParseResult(seedFiles.find((f) => f.type === "programmes")!)
-						: undefined,
-					equipe: seedFiles?.find((f) => f.type === "equipe")
-						? fileToParseResult(seedFiles.find((f) => f.type === "equipe")!)
-						: undefined,
-				};
-				foundationYaml = buildFoundationYaml(seedBase);
-				academicsYaml = buildAcademicsYaml(seedBase);
-				usersYaml = buildUsersYaml(seedBase);
-			}
-
-			await payload.update({
-				collection: "instance-requests",
-				id: requestId,
-				data: {
-					seedToken,
-					seedFoundationYaml: foundationYaml,
-					seedAcademicsYaml: academicsYaml,
-					seedUsersYaml: usersYaml,
-				},
-			});
-		}
-
-		// Step 1 — Create Dokploy project (returns project + default environment in one call)
+		// Step 1 — Create Dokploy project
 		const { projectId, environmentId } = await dokploy.createProject(
 			orgName,
 			`TKAMS — ${orgName}`,
@@ -150,7 +192,6 @@ export async function provisionInstance(input: ProvisionInput) {
 		});
 
 		// Step 2 — Create PostgreSQL database
-		// Dokploy appends a random suffix to appName — use the returned appName in the connection URL
 		const dbPassword = secret(24);
 		const postgres = await dokploy.createPostgres({
 			name: `${orgName} DB`,
@@ -176,12 +217,12 @@ export async function provisionInstance(input: ProvisionInput) {
 		});
 		await dokploy.saveDockerProvider({
 			applicationId: app.applicationId,
-			dockerImage: APP_IMAGE,
+			dockerImage,
 		});
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
-			data: { progressStep: 3, dokployAppId: app.applicationId },
+			data: { progressStep: 3, dokployAppId: app.applicationId, imageTag },
 		});
 
 		// Step 4 — Configure environment variables
@@ -233,10 +274,16 @@ export async function provisionInstance(input: ProvisionInput) {
 		// Step 5 — Deploy
 		await dokploy.deploy(app.applicationId);
 
+		// Clear temp password now that it's been passed to Dokploy env vars
 		await payload.update({
 			collection: "instance-requests",
 			id: requestId,
-			data: { status: "ready", progressStep: 5, instanceUrl },
+			data: {
+				status: "ready",
+				progressStep: 5,
+				instanceUrl,
+				adminPasswordTemp: null,
+			},
 		});
 	} catch (err) {
 		await fail(
@@ -245,4 +292,14 @@ export async function provisionInstance(input: ProvisionInput) {
 			err instanceof Error ? err.message : String(err),
 		);
 	}
+}
+
+/**
+ * Convenience wrapper — runs both phases in sequence.
+ * Used for direct provisioning without the approval flow (e.g. admin bypass).
+ */
+export async function provisionInstance(input: ProvisionInput): Promise<void> {
+	const payload = await getPayload({ config: configPromise });
+	await prepareSeedData(input, payload);
+	await deployToDokploy(input.requestId, payload);
 }

@@ -134,10 +134,12 @@ export interface Config {
 	globals: {
 		header: Header;
 		footer: Footer;
+		"deploy-settings": DeploySetting;
 	};
 	globalsSelect: {
 		header: HeaderSelect<false> | HeaderSelect<true>;
 		footer: FooterSelect<false> | FooterSelect<true>;
+		"deploy-settings": DeploySettingsSelect<false> | DeploySettingsSelect<true>;
 	};
 	locale: null;
 	widgets: {
@@ -846,11 +848,26 @@ export interface InstanceRequest {
 	country?: string | null;
 	adminName?: string | null;
 	adminEmail: string;
-	status: "pending" | "provisioning" | "ready" | "stopped" | "failed";
+	/**
+	 * Temporary — cleared automatically after provisioning completes.
+	 */
+	adminPasswordTemp?: string | null;
+	status:
+		| "pending_approval"
+		| "approved"
+		| "rejected"
+		| "provisioning"
+		| "ready"
+		| "stopped"
+		| "failed";
 	/**
 	 * 0–5 (0 = pending, 5 = deployed)
 	 */
 	progressStep?: number | null;
+	/**
+	 * Docker image tag deployed (e.g. latest, 1.2.3). List available tags: GET /api/admin/versions
+	 */
+	imageTag?: string | null;
 	instanceUrl?: string | null;
 	errorMessage?: string | null;
 	seedMode?: ("empty" | "demo" | "custom") | null;
@@ -879,6 +896,7 @@ export interface InstanceEvent {
 		| "restarted"
 		| "stopped"
 		| "started"
+		| "upgraded"
 		| "delete_attempted"
 		| "failed";
 	actorEmail?: string | null;
@@ -1600,8 +1618,10 @@ export interface InstanceRequestsSelect<T extends boolean = true> {
 	country?: T;
 	adminName?: T;
 	adminEmail?: T;
+	adminPasswordTemp?: T;
 	status?: T;
 	progressStep?: T;
+	imageTag?: T;
 	instanceUrl?: T;
 	errorMessage?: T;
 	seedMode?: T;
@@ -2027,6 +2047,18 @@ export interface Footer {
 	createdAt?: string | null;
 }
 /**
+ * Controls which image version is used when provisioning new instances.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deploy-settings".
+ */
+export interface DeploySetting {
+	id: string;
+	defaultImageTag?: string | null;
+	updatedAt?: string | null;
+	createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2068,6 +2100,16 @@ export interface FooterSelect<T extends boolean = true> {
 					  };
 				id?: T;
 		  };
+	updatedAt?: T;
+	createdAt?: T;
+	globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deploy-settings_select".
+ */
+export interface DeploySettingsSelect<T extends boolean = true> {
+	defaultImageTag?: T;
 	updatedAt?: T;
 	createdAt?: T;
 	globalType?: T;

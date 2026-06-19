@@ -19,6 +19,21 @@ export const InstanceRequests: CollectionConfig = {
 		update: ({ req }) => !!req.user,
 		delete: ({ req }) => !!req.user,
 	},
+	hooks: {
+		afterChange: [
+			async ({ doc, previousDoc, operation, req }) => {
+				if (
+					operation === "update" &&
+					doc.status === "approved" &&
+					previousDoc?.status === "pending_approval" &&
+					!doc.dokployProjectId
+				) {
+					const { deployToDokploy } = await import("@/lib/provision");
+					deployToDokploy(String(doc.id), req.payload).catch(console.error);
+				}
+			},
+		],
+	},
 	fields: [
 		{
 			name: "orgName",
@@ -68,13 +83,26 @@ export const InstanceRequests: CollectionConfig = {
 			required: true,
 		},
 		{
+			// Stored only during pending_approval; cleared once Dokploy env vars are set.
+			name: "adminPasswordTemp",
+			type: "text",
+			label: "Admin Password (temp)",
+			admin: {
+				hidden: true,
+				description:
+					"Temporary — cleared automatically after provisioning completes.",
+			},
+		},
+		{
 			name: "status",
 			type: "select",
 			label: "Status",
-			defaultValue: "pending",
+			defaultValue: "pending_approval",
 			required: true,
 			options: [
-				{ label: "Pending", value: "pending" },
+				{ label: "Pending Approval", value: "pending_approval" },
+				{ label: "Approved", value: "approved" },
+				{ label: "Rejected", value: "rejected" },
 				{ label: "Provisioning", value: "provisioning" },
 				{ label: "Ready", value: "ready" },
 				{ label: "Stopped", value: "stopped" },
@@ -87,6 +115,16 @@ export const InstanceRequests: CollectionConfig = {
 			label: "Provisioning Step",
 			defaultValue: 0,
 			admin: { description: "0–5 (0 = pending, 5 = deployed)" },
+		},
+		{
+			name: "imageTag",
+			type: "text",
+			label: "Image Tag",
+			defaultValue: "latest",
+			admin: {
+				description:
+					"Docker image tag deployed (e.g. latest, 1.2.3). List available tags: GET /api/admin/versions",
+			},
 		},
 		{
 			name: "instanceUrl",

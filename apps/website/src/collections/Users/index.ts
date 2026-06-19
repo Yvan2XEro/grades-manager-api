@@ -1,4 +1,8 @@
 import type { CollectionConfig } from "payload";
+import {
+	forgotPasswordEmailHTML,
+	verificationEmailHTML,
+} from "@/lib/email-templates";
 import { authenticated } from "../../access/authenticated";
 
 export const Users: CollectionConfig = {
@@ -14,7 +18,27 @@ export const Users: CollectionConfig = {
 		defaultColumns: ["name", "email", "role"],
 		useAsTitle: "name",
 	},
-	auth: true,
+	auth: {
+		verify: {
+			generateEmailSubject: () => "TKAMS — Vérifiez votre adresse email",
+			generateEmailHTML: ({ token, user }) =>
+				verificationEmailHTML({
+					token: String(token),
+					userName: String((user as { name?: string }).name ?? ""),
+				}),
+		},
+		forgotPassword: {
+			generateEmailSubject: () =>
+				"TKAMS — Réinitialisation de votre mot de passe",
+			generateEmailHTML: (args) =>
+				forgotPasswordEmailHTML({
+					token: String(args?.token ?? ""),
+					userName: String(
+						(args?.user as { name?: string } | undefined)?.name ?? "",
+					),
+				}),
+		},
+	},
 	fields: [
 		{
 			name: "name",

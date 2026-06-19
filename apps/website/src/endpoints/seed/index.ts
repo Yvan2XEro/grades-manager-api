@@ -26,7 +26,7 @@ const collections: CollectionSlug[] = [
 	"search",
 ];
 
-const globals: GlobalSlug[] = ["header", "footer"];
+const globals = ["header", "footer"] as const satisfies GlobalSlug[];
 
 const categories = [
 	"Technology",
