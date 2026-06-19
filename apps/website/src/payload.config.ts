@@ -87,14 +87,10 @@ export default buildConfig({
 					host: process.env.SMTP_HOST ?? "mail.privateemail.com",
 					port: Number(process.env.SMTP_PORT ?? 587),
 					secure: Number(process.env.SMTP_PORT ?? 587) === 465,
-					...(process.env.SMTP_USER && process.env.SMTP_PASS
-						? {
-								auth: {
-									user: process.env.SMTP_USER,
-									pass: process.env.SMTP_PASS,
-								},
-							}
-						: {}),
+					auth: {
+						user: process.env.SMTP_USER,
+						pass: process.env.SMTP_PASS,
+					},
 					tls: { rejectUnauthorized: false },
 				},
 			}),
