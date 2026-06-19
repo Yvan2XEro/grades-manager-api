@@ -85,6 +85,31 @@ export const InstanceRequests: CollectionConfig = {
 							.catch(console.error);
 					}
 
+					// Auto-create a draft invoice for this instance
+					const clientId =
+						typeof doc.client === "object"
+							? (doc.client as { id?: string })?.id
+							: doc.client;
+					if (clientId) {
+						const year = new Date().getFullYear();
+						req.payload
+							.create({
+								collection: "invoices",
+								data: {
+									invoiceNumber: `INV-${year}-${id.slice(0, 6).toUpperCase()}`,
+									client: String(clientId),
+									instance: id,
+									amount: 0,
+									currency: "FCFA",
+									status: "unpaid",
+									description: `TKAMS subscription — ${doc.orgName ?? id}`,
+									period: `${year} – ${year + 1}`,
+								},
+								req,
+							})
+							.catch(console.error);
+					}
+
 					if (!doc.dokployProjectId) {
 						const { deployToDokploy } = await import("@/lib/provision");
 						deployToDokploy(id, req.payload).catch(console.error);
@@ -104,6 +129,30 @@ export const InstanceRequests: CollectionConfig = {
 							req,
 						})
 						.catch(console.error);
+
+					const clientField = doc.client as
+						| { id?: string; name?: string; email?: string }
+						| string
+						| null;
+					const clientEmail =
+						typeof clientField === "object" ? clientField?.email : null;
+					const clientName =
+						typeof clientField === "object" ? clientField?.name : null;
+					if (clientEmail) {
+						const { instanceRejectedEmailHTML } = await import(
+							"@/lib/email-templates"
+						);
+						req.payload
+							.sendEmail({
+								to: clientEmail,
+								subject: "TKAMS — Update on your instance request",
+								html: instanceRejectedEmailHTML({
+									userName: clientName ?? clientEmail,
+									orgName: String(doc.orgName ?? ""),
+								}),
+							})
+							.catch(console.error);
+					}
 				}
 			},
 		],

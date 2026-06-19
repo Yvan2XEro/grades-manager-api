@@ -52,6 +52,12 @@ export async function GET(request: Request) {
 				data: { status: "paid" },
 			});
 
+			// Activate subscription — webhook may not have fired yet
+			const { activateSubscriptionForInvoice } = await import("@/lib/billing");
+			await activateSubscriptionForInvoice(invoiceId, payload).catch(
+				console.error,
+			);
+
 			redirect("/dashboard/billing?payment=success");
 		}
 

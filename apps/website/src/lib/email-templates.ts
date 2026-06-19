@@ -86,6 +86,74 @@ export function instanceApprovedEmailHTML({
   `);
 }
 
+export function instanceRejectedEmailHTML({
+	userName,
+	orgName,
+}: {
+	userName: string;
+	orgName: string;
+}): string {
+	const contactUrl = `${WEBSITE_URL}/contact`;
+	return emailShell(`
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.3px;">Your request could not be processed</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+      Hi ${userName},<br/><br/>
+      After review, your TKAMS instance request for <strong>${orgName}</strong> could not be approved at this time.<br/><br/>
+      Our team will be happy to discuss your needs and find the right solution for your institution.
+    </p>
+    ${ctaButton(contactUrl, "Contact the team →")}
+  `);
+}
+
+export function instanceFailedEmailHTML({
+	userName,
+	orgName,
+	errorMessage,
+}: {
+	userName: string;
+	orgName: string;
+	errorMessage?: string;
+}): string {
+	const dashboardUrl = `${WEBSITE_URL}/dashboard/instances`;
+	return emailShell(`
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.3px;">Instance provisioning failed</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+      Hi ${userName},<br/><br/>
+      We encountered an error while setting up your TKAMS instance for <strong>${orgName}</strong>.
+      Our team has been notified and will investigate.<br/><br/>
+      ${errorMessage ? `<em style="color:#9ca3af;font-size:13px;">${errorMessage}</em><br/><br/>` : ""}
+      If the issue persists, please contact us so we can resolve it quickly.
+    </p>
+    ${ctaButton(dashboardUrl, "View my instance →")}
+  `);
+}
+
+export function paymentConfirmedEmailHTML({
+	userName,
+	orgName,
+	amount,
+	currency,
+	invoiceNumber,
+}: {
+	userName: string;
+	orgName: string;
+	amount: number;
+	currency: string;
+	invoiceNumber: string;
+}): string {
+	const billingUrl = `${WEBSITE_URL}/dashboard/billing`;
+	return emailShell(`
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.3px;">Payment confirmed ✓</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+      Hi ${userName},<br/><br/>
+      We have received your payment of <strong>${amount.toLocaleString()} ${currency}</strong>
+      for invoice <strong>${invoiceNumber}</strong> — <em>${orgName}</em>.<br/><br/>
+      Your subscription is now active. Thank you for trusting TKAMS.
+    </p>
+    ${ctaButton(billingUrl, "View billing →")}
+  `);
+}
+
 export function forgotPasswordEmailHTML({
 	token,
 	userName,

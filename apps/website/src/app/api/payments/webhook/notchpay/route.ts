@@ -131,6 +131,9 @@ async function markCompleted(merchantRef: string): Promise<void> {
 	console.log(
 		`[notchpay webhook] Invoice ${invoiceId} marked paid via payment ${paymentId}`,
 	);
+
+	const { activateSubscriptionForInvoice } = await import("@/lib/billing");
+	await activateSubscriptionForInvoice(invoiceId, payload).catch(console.error);
 }
 
 async function markFailed(merchantRef: string): Promise<void> {

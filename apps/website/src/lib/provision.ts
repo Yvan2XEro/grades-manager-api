@@ -297,11 +297,8 @@ export async function deployToDokploy(
 			})
 			.catch(console.error);
 	} catch (err) {
-		await fail(
-			payload,
-			requestId,
-			err instanceof Error ? err.message : String(err),
-		);
+		const errorMessage = err instanceof Error ? err.message : String(err);
+		await fail(payload, requestId, errorMessage);
 		await payload
 			.create({
 				collection: "instance-events",
@@ -312,6 +309,30 @@ export async function deployToDokploy(
 				},
 			})
 			.catch(console.error);
+
+		// Notify the client
+		const clientField = record.client as
+			| { id?: string; name?: string; email?: string }
+			| string
+			| null;
+		const clientEmail =
+			typeof clientField === "object" ? clientField?.email : null;
+		const clientName =
+			typeof clientField === "object" ? clientField?.name : null;
+		if (clientEmail) {
+			const { instanceFailedEmailHTML } = await import("./email-templates");
+			payload
+				.sendEmail({
+					to: clientEmail,
+					subject: "TKAMS — Provisioning error",
+					html: instanceFailedEmailHTML({
+						userName: clientName ?? clientEmail,
+						orgName: String(orgName ?? ""),
+						errorMessage,
+					}),
+				})
+				.catch(console.error);
+		}
 	}
 }
 
