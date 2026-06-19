@@ -16,6 +16,9 @@ import { cn } from "@/utilities/ui";
 
 export type InstanceStatus =
 	| "pending"
+	| "pending_approval"
+	| "approved"
+	| "rejected"
 	| "provisioning"
 	| "ready"
 	| "stopped"
@@ -29,6 +32,20 @@ const STATUS_CONFIG: Record<
 		classes:
 			"bg-[oklch(0.72_0.16_86/0.12)] text-[oklch(0.52_0.14_86)] border-[oklch(0.72_0.16_86/0.3)]",
 		pulse: true,
+	},
+	pending_approval: {
+		classes:
+			"bg-[oklch(0.72_0.16_86/0.12)] text-[oklch(0.52_0.14_86)] border-[oklch(0.72_0.16_86/0.3)]",
+		pulse: true,
+	},
+	approved: {
+		classes: "bg-tk-primary/8 text-tk-primary border-tk-primary/25",
+		pulse: true,
+	},
+	rejected: {
+		classes:
+			"bg-[oklch(0.65_0.2_25/0.06)] text-[oklch(0.5_0.18_25)] border-[oklch(0.65_0.2_25/0.25)]",
+		pulse: false,
 	},
 	provisioning: {
 		classes: "bg-tk-primary/8 text-tk-primary border-tk-primary/25",
