@@ -11,22 +11,27 @@ async function getToken(): Promise<string> {
 }
 
 export async function listAvailableTags(): Promise<string[]> {
-	const token = await getToken();
-	const res = await fetch(
-		`https://${REGISTRY}/v2/${IMAGE_OWNER}/${IMAGE_NAME}/tags/list`,
-		{ headers: { Authorization: `Bearer ${token}` } },
-	);
-	if (!res.ok) throw new Error(`GHCR tags fetch failed: ${res.status}`);
-	const data = (await res.json()) as { tags?: string[] };
+	try {
+		const token = await getToken();
+		const res = await fetch(
+			`https://${REGISTRY}/v2/${IMAGE_OWNER}/${IMAGE_NAME}/tags/list`,
+			{ headers: { Authorization: `Bearer ${token}` } },
+		);
+		// 404 = image not published yet — not an error worth surfacing
+		if (!res.ok) return ["latest"];
+		const data = (await res.json()) as { tags?: string[] };
 
-	const semverRe = /^\d+\.\d+\.\d+$/;
-	const semverTags = (data.tags ?? [])
-		.filter((t) => semverRe.test(t))
-		.sort((a, b) => {
-			const [ma, mia, pa] = a.split(".").map(Number);
-			const [mb, mib, pb] = b.split(".").map(Number);
-			return mb - ma || mib - mia || pb - pa;
-		});
+		const semverRe = /^\d+\.\d+\.\d+$/;
+		const semverTags = (data.tags ?? [])
+			.filter((t) => semverRe.test(t))
+			.sort((a, b) => {
+				const [ma, mia, pa] = a.split(".").map(Number);
+				const [mb, mib, pb] = b.split(".").map(Number);
+				return mb - ma || mib - mia || pb - pa;
+			});
 
-	return ["latest", ...semverTags];
+		return ["latest", ...semverTags];
+	} catch {
+		return ["latest"];
+	}
 }

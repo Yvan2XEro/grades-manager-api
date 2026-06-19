@@ -63,6 +63,29 @@ export function verificationEmailHTML({
   `);
 }
 
+export function instanceApprovedEmailHTML({
+	userName,
+	orgName,
+	subdomain,
+}: {
+	userName: string;
+	orgName: string;
+	subdomain: string;
+}): string {
+	const baseDomain = process.env.TKAMS_BASE_DOMAIN ?? "tkams.com";
+	const dashboardUrl = `${WEBSITE_URL}/dashboard/instances`;
+	return emailShell(`
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.3px;">Your instance is being set up 🚀</p>
+    <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+      Hi ${userName},<br/><br/>
+      Your TKAMS instance request for <strong>${orgName}</strong> has been approved.<br/>
+      We are now provisioning your platform at <strong>${subdomain}.${baseDomain}</strong>.<br/><br/>
+      This usually takes 2–3 minutes. Track the progress from your dashboard.
+    </p>
+    ${ctaButton(dashboardUrl, "Track my instance →")}
+  `);
+}
+
 export function forgotPasswordEmailHTML({
 	token,
 	userName,

@@ -47,6 +47,7 @@ export type InstanceData = {
 	dokployAppId: string | null;
 	dokployPostgresId: string | null;
 	dokployProjectId: string | null;
+	imageTag: string | null;
 };
 
 type EventData = {
@@ -334,10 +335,15 @@ export function InstanceDetailClient({
 	const [events] = useState(initialEvents);
 
 	useEffect(() => {
-		if (instance.status !== "provisioning" && instance.status !== "pending")
-			return;
+		const activeStatuses = [
+			"pending_approval",
+			"approved",
+			"provisioning",
+			"pending",
+		];
+		if (!activeStatuses.includes(instance.status)) return;
 		let cancelled = false;
-		let delay = 2500;
+		let delay = instance.status === "pending_approval" ? 8000 : 2500;
 		async function poll() {
 			if (cancelled) return;
 			try {
@@ -351,8 +357,11 @@ export function InstanceDetailClient({
 						instanceUrl: data.instanceUrl,
 						errorMessage: data.errorMessage,
 					}));
-					if (data.status === "provisioning" || data.status === "pending") {
-						delay = Math.min(delay * 1.4, 10000);
+					if (activeStatuses.includes(data.status)) {
+						delay =
+							data.status === "pending_approval"
+								? 8000
+								: Math.min(delay * 1.4, 10000);
 						setTimeout(poll, delay);
 					}
 				}
@@ -392,20 +401,24 @@ export function InstanceDetailClient({
 	};
 
 	const status = instance.status as InstanceStatus;
-	const isProvisioning = status === "provisioning" || status === "pending";
+	const isPendingApproval = status === "pending_approval";
+	const isProvisioning =
+		status === "provisioning" || status === "pending" || status === "approved";
 	const isReady = status === "ready";
 	const isFailed = status === "failed";
 	const isStopped = status === "stopped";
 
-	const statusBadgeLabel = isReady
-		? dd.ready_badge
-		: isProvisioning
-			? dd.provisioning_badge
-			: isFailed
-				? dd.failed_badge
-				: isStopped
-					? dd.stopped_badge
-					: status;
+	const badgeMap: Record<string, string> = {
+		pending_approval: dd.pending_approval_badge,
+		approved: dd.approved_badge,
+		rejected: dd.rejected_badge,
+		provisioning: dd.provisioning_badge,
+		pending: dd.provisioning_badge,
+		ready: dd.ready_badge,
+		stopped: dd.stopped_badge,
+		failed: dd.failed_badge,
+	};
+	const statusBadgeLabel = badgeMap[status] ?? status;
 
 	const institutionTypes: Record<string, string> = {
 		university: "Université",
@@ -533,6 +546,25 @@ export function InstanceDetailClient({
 				</div>
 			)}
 
+			{/* ── Pending approval ─────────────────────────────────────────── */}
+			{isPendingApproval && (
+				<div className="mb-6 rounded-[1rem] border border-tk-border bg-tk-surface p-5">
+					<div className="flex items-start gap-4">
+						<div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-tk-primary/10">
+							<div className="h-2 w-2 animate-pulse rounded-full bg-tk-primary" />
+						</div>
+						<div>
+							<p className="font-display font-semibold text-[0.9375rem] text-tk-ink">
+								{dd.pending_approval_title}
+							</p>
+							<p className="mt-1 font-body text-[0.8125rem] text-tk-muted leading-relaxed">
+								{dd.pending_approval_sub}
+							</p>
+						</div>
+					</div>
+				</div>
+			)}
+
 			{/* ── Provisioning progress ────────────────────────────────────── */}
 			{isProvisioning && (
 				<ProvisioningCard
@@ -595,6 +627,10 @@ export function InstanceDetailClient({
 							}
 						/>
 						<DetailRow label={dd.country_label} value={instance.country} />
+						<DetailRow
+							label={dd.image_version_label}
+							value={instance.imageTag}
+						/>
 						<DetailRow
 							label={dd.created_label}
 							value={

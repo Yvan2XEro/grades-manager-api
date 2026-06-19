@@ -73,6 +73,7 @@ export default async function InstanceDetailPage({
 				dokployAppId: (record.dokployAppId as string) ?? null,
 				dokployPostgresId: (record.dokployPostgresId as string) ?? null,
 				dokployProjectId: (record.dokployProjectId as string) ?? null,
+				imageTag: (record.imageTag as string) ?? null,
 			}}
 			events={events}
 			dict={dict}

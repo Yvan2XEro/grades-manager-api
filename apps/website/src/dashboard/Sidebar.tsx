@@ -91,7 +91,7 @@ export function Sidebar({ user, dict: d }: { user: PayloadUser; dict: Dict }) {
 			<header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-white/8 border-b bg-tk-dark px-4 md:hidden">
 				<Link href="/dashboard" className="flex items-center no-underline">
 					<Image
-						src="/logo-tkams-bg.png"
+						src="/logo-tkams.png"
 						alt="TKAMS"
 						width={88}
 						height={26}
@@ -133,7 +133,7 @@ export function Sidebar({ user, dict: d }: { user: PayloadUser; dict: Dict }) {
 						className="flex items-center gap-2 no-underline"
 					>
 						<Image
-							src="/logo-tkams-bg.png"
+							src="/logo-tkams.png"
 							alt="TKAMS"
 							width={96}
 							height={28}

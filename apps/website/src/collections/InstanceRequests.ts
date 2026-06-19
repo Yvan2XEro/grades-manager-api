@@ -22,14 +22,88 @@ export const InstanceRequests: CollectionConfig = {
 	hooks: {
 		afterChange: [
 			async ({ doc, previousDoc, operation, req }) => {
-				if (
-					operation === "update" &&
-					doc.status === "approved" &&
-					previousDoc?.status === "pending_approval" &&
-					!doc.dokployProjectId
-				) {
-					const { deployToDokploy } = await import("@/lib/provision");
-					deployToDokploy(String(doc.id), req.payload).catch(console.error);
+				const id = String(doc.id);
+
+				// Create "submitted" event on first creation
+				if (operation === "create") {
+					await req.payload
+						.create({
+							collection: "instance-events",
+							data: {
+								instance: id,
+								eventType: "submitted",
+								actorEmail: String(doc.adminEmail ?? ""),
+							},
+							req,
+						})
+						.catch(console.error);
+					return;
+				}
+
+				if (operation !== "update") return;
+
+				const prevStatus = previousDoc?.status;
+				const newStatus = doc.status;
+
+				// Admin approved → create event, send email, trigger provisioning
+				if (newStatus === "approved" && prevStatus === "pending_approval") {
+					await req.payload
+						.create({
+							collection: "instance-events",
+							data: {
+								instance: id,
+								eventType: "approved",
+								actorEmail: String(req.user?.email ?? "admin"),
+							},
+							req,
+						})
+						.catch(console.error);
+
+					// Email the portal client
+					const clientField = doc.client as
+						| { id?: string; name?: string; email?: string }
+						| string
+						| null;
+					const clientEmail =
+						typeof clientField === "object" ? clientField?.email : null;
+					const clientName =
+						typeof clientField === "object" ? clientField?.name : null;
+					if (clientEmail) {
+						const { instanceApprovedEmailHTML } = await import(
+							"@/lib/email-templates"
+						);
+						req.payload
+							.sendEmail({
+								to: clientEmail,
+								subject: "TKAMS — Your instance is being set up",
+								html: instanceApprovedEmailHTML({
+									userName: clientName ?? clientEmail,
+									orgName: String(doc.orgName ?? ""),
+									subdomain: String(doc.subdomain ?? ""),
+								}),
+							})
+							.catch(console.error);
+					}
+
+					if (!doc.dokployProjectId) {
+						const { deployToDokploy } = await import("@/lib/provision");
+						deployToDokploy(id, req.payload).catch(console.error);
+					}
+				}
+
+				// Admin rejected
+				if (newStatus === "rejected" && prevStatus === "pending_approval") {
+					await req.payload
+						.create({
+							collection: "instance-events",
+							data: {
+								instance: id,
+								eventType: "rejected",
+								actorEmail: String(req.user?.email ?? "admin"),
+							},
+							req,
+						})
+						.catch(console.error);
 				}
 			},
 		],

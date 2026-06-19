@@ -285,12 +285,33 @@ export async function deployToDokploy(
 				adminPasswordTemp: null,
 			},
 		});
+
+		await payload
+			.create({
+				collection: "instance-events",
+				data: {
+					instance: requestId,
+					eventType: "provisioned",
+					actorEmail: "system",
+				},
+			})
+			.catch(console.error);
 	} catch (err) {
 		await fail(
 			payload,
 			requestId,
 			err instanceof Error ? err.message : String(err),
 		);
+		await payload
+			.create({
+				collection: "instance-events",
+				data: {
+					instance: requestId,
+					eventType: "failed",
+					actorEmail: "system",
+				},
+			})
+			.catch(console.error);
 	}
 }
 
