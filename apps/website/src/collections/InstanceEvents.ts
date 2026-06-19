@@ -27,6 +27,9 @@ export const InstanceEvents: CollectionConfig = {
 			label: "Event type",
 			required: true,
 			options: [
+				{ label: "Submitted", value: "submitted" },
+				{ label: "Approved", value: "approved" },
+				{ label: "Rejected", value: "rejected" },
 				{ label: "Provisioned", value: "provisioned" },
 				{ label: "Restarted", value: "restarted" },
 				{ label: "Stopped", value: "stopped" },
