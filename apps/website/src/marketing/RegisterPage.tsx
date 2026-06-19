@@ -391,7 +391,7 @@ function Step4({
 
 // ─── Step 5 — Progress ────────────────────────────────────────────────────────
 
-type ProvisionStatus = "provisioning" | "ready" | "failed";
+type ProvisionStatus = "pending_approval" | "provisioning" | "ready" | "failed";
 
 function Step5({
 	dict: d,
@@ -403,7 +403,7 @@ function Step5({
 	subdomain: string;
 }) {
 	const pg = d.register.progress;
-	const [status, setStatus] = useState<ProvisionStatus>("provisioning");
+	const [status, setStatus] = useState<ProvisionStatus>("pending_approval");
 	const [step, setStep] = useState(0);
 	const [instanceUrl, setInstanceUrl] = useState<string | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -423,8 +423,17 @@ function Step5({
 						setStatus(data.status);
 						setInstanceUrl(data.instanceUrl ?? null);
 						setErrorMessage(data.errorMessage ?? null);
-						if (data.status === "provisioning" || data.status === "pending") {
-							delay = Math.min(delay * 1.35, 8000);
+						const active = [
+							"pending_approval",
+							"approved",
+							"provisioning",
+							"pending",
+						];
+						if (active.includes(data.status)) {
+							delay =
+								data.status === "pending_approval"
+									? 8000
+									: Math.min(delay * 1.35, 8000);
 							setTimeout(poll, delay);
 						}
 					}
@@ -513,6 +522,24 @@ function Step5({
 						contact@tkams.com
 					</a>
 				</p>
+			</div>
+		);
+	}
+
+	if (status === "pending_approval") {
+		return (
+			<div className="flex flex-col items-center gap-4 py-4 text-center">
+				<div className="flex h-14 w-14 items-center justify-center rounded-full border border-tk-primary/20 bg-tk-primary/8">
+					<div className="h-3 w-3 animate-pulse rounded-full bg-tk-primary" />
+				</div>
+				<div>
+					<h3 className="mb-2 font-bold font-display text-[1.1875rem] text-tk-ink tracking-[-0.02em]">
+						{pg.pending_approval_title}
+					</h3>
+					<p className="max-w-xs font-body text-[0.9375rem] text-tk-muted">
+						{pg.pending_approval_sub}
+					</p>
+				</div>
 			</div>
 		);
 	}

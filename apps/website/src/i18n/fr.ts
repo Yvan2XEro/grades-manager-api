@@ -831,6 +831,9 @@ export const fr = {
 			ready_sub:
 				"Connectez-vous avec l'email et le mot de passe que vous avez renseignés.",
 			open_instance: "Accéder à",
+			pending_approval_title: "Demande reçue — en attente de validation",
+			pending_approval_sub:
+				"Notre équipe va examiner votre demande et configurer votre instance. Vous recevrez un email de confirmation.",
 			failed_title: "Échec du provisionnement",
 			failed_default: "Une erreur inattendue est survenue.",
 			failed_contact: "Contactez-nous à",

@@ -11,6 +11,16 @@ export function buildDemoFoundationYaml(
 			dataset: orgSlug,
 		},
 		organizations: [{ slug: orgSlug, name: orgName }],
+		institutions: [
+			{
+				code: orgSlug.toUpperCase(),
+				organizationSlug: orgSlug,
+				nameFr: orgName,
+				nameEn: orgName,
+				shortName: orgSlug.toUpperCase().slice(0, 10),
+				isDefault: true,
+			},
+		],
 		examTypes: [
 			{ name: "CC", description: "Contrôle Continu", defaultPercentage: 40 },
 			{ name: "FINAL", description: "Examen Final", defaultPercentage: 60 },

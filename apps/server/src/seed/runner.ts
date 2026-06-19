@@ -639,6 +639,10 @@ async function ensureSeedInstitutionId(db: typeof appDb, state: SeedState) {
 		state.defaultInstitutionId = found.id;
 		return found.id;
 	}
+	// Use the first seeded org so the tenant can resolve correctly.
+	const firstOrg = state.organizations.values().next().value as
+		| { id: string; slug: string }
+		| undefined;
 	const [created] = await db
 		.insert(schema.institutions)
 		.values({
@@ -646,7 +650,7 @@ async function ensureSeedInstitutionId(db: typeof appDb, state: SeedState) {
 			shortName: "DEFAULT",
 			nameFr: "Institution par défaut",
 			nameEn: "Default Institution",
-			// NOTE: organizationId is null, which will cause issues with new tenant resolution
+			organizationId: firstOrg?.id ?? null,
 		})
 		.returning();
 	state.defaultInstitutionId = created.id;

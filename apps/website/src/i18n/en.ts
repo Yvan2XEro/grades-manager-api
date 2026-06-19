@@ -832,6 +832,9 @@ export const en = {
 			ready_title: "Your instance is ready!",
 			ready_sub: "Sign in with the email and password you provided.",
 			open_instance: "Open",
+			pending_approval_title: "Request received — awaiting validation",
+			pending_approval_sub:
+				"Our team will review your request and set up your instance. You will receive an email confirmation.",
 			failed_title: "Provisioning failed",
 			failed_default: "An unexpected error occurred.",
 			failed_contact: "Contact us at",
