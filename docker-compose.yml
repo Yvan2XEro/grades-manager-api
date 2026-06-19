@@ -27,6 +27,18 @@ services:
       NEXT_PUBLIC_TKAMS_BASE_DOMAIN: tkams.com
       NOTCHPAY_PUBLIC_KEY: ${NOTCHPAY_PUBLIC_KEY}
       NOTCHPAY_HASH_KEY: ${NOTCHPAY_HASH_KEY}
+      NOTCHPAY_BASE_URL: ${NOTCHPAY_BASE_URL:-}
+      # Email
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@tkams.com}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      # GHCR versions
+      GHCR_IMAGE_OWNER: ${GHCR_IMAGE_OWNER:-yvan2xero}
+      GHCR_IMAGE_NAME: ${GHCR_IMAGE_NAME:-tkams}
+      CRON_SECRET: ${CRON_SECRET:-}
     # No pre-built image — Compose builds directly from source on the server.
     # To update: git pull && docker compose up -d --build
     networks:
