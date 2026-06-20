@@ -330,7 +330,7 @@ export async function GET(
 
 	const buffer = await renderToBuffer(doc);
 
-	return new Response(buffer, {
+	return new Response(new Uint8Array(buffer), {
 		headers: {
 			"Content-Type": "application/pdf",
 			"Content-Disposition": `attachment; filename="receipt-${invoice.invoiceNumber ?? id}.pdf"`,
