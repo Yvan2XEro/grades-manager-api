@@ -2,8 +2,8 @@ import type { Payload } from "payload";
 
 /**
  * Finds or creates the subscription linked to an invoice and marks it active.
- * Called both from the payment callback (redirect) and the webhook to ensure
- * exactly-once activation regardless of which arrives first.
+ * Safe to call multiple times (webhook + callback race): the email is only sent
+ * when the subscription transitions to active, not on subsequent calls.
  */
 export async function activateSubscriptionForInvoice(
 	invoiceId: string,
@@ -31,6 +31,9 @@ export async function activateSubscriptionForInvoice(
 		limit: 1,
 	});
 
+	// Track whether this call actually changed state — only send email if it did
+	let justActivated = false;
+
 	if (existing.docs.length > 0) {
 		if (existing.docs[0].status !== "active") {
 			await payload.update({
@@ -38,6 +41,7 @@ export async function activateSubscriptionForInvoice(
 				id: existing.docs[0].id,
 				data: { status: "active" },
 			});
+			justActivated = true;
 		}
 	} else {
 		const renewalDate = new Date();
@@ -54,9 +58,11 @@ export async function activateSubscriptionForInvoice(
 				renewalDate: renewalDate.toISOString(),
 			},
 		});
+		justActivated = true;
 	}
 
-	// Send confirmation email
+	if (!justActivated) return;
+
 	const clientField = invoice.client as
 		| { id?: string; name?: string; email?: string }
 		| string;

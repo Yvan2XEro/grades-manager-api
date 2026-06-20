@@ -957,8 +957,9 @@ export interface Invoice {
  */
 export interface Payment {
 	id: string;
+	method: "notchpay" | "cash";
 	/**
-	 * e.g. TKAMS-{id}
+	 * e.g. TKAMS-{id} or CASH-{year}-{seq}
 	 */
 	reference: string;
 	invoice: string | Invoice;
@@ -967,9 +968,20 @@ export interface Payment {
 	currency: string;
 	status: "pending" | "completed" | "failed" | "cancelled";
 	/**
+	 * Date the cash payment was collected
+	 */
+	paidAt?: string | null;
+	/**
+	 * Internal notes about this cash payment
+	 */
+	adminNotes?: string | null;
+	/**
 	 * Reference assigned by NotchPay
 	 */
 	providerReference?: string | null;
+	/**
+	 * One-time NotchPay checkout link (expires after use)
+	 */
 	checkoutUrl?: string | null;
 	updatedAt: string;
 	createdAt: string;
@@ -1677,12 +1689,15 @@ export interface InvoicesSelect<T extends boolean = true> {
  * via the `definition` "payments_select".
  */
 export interface PaymentsSelect<T extends boolean = true> {
+	method?: T;
 	reference?: T;
 	invoice?: T;
 	client?: T;
 	amount?: T;
 	currency?: T;
 	status?: T;
+	paidAt?: T;
+	adminNotes?: T;
 	providerReference?: T;
 	checkoutUrl?: T;
 	updatedAt?: T;

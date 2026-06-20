@@ -279,6 +279,13 @@ export async function GET(
 		return Response.json({ error: "Forbidden" }, { status: 403 });
 	}
 
+	if (invoice.status !== "paid") {
+		return Response.json(
+			{ error: "Receipt not available for unpaid invoices" },
+			{ status: 409 },
+		);
+	}
+
 	// Fetch the completed payment for this invoice
 	const { docs: payments } = await payload.find({
 		collection: "payments",
