@@ -6,6 +6,7 @@ export const Payments: CollectionConfig = {
 		useAsTitle: "reference",
 		defaultColumns: [
 			"reference",
+			"method",
 			"invoice",
 			"client",
 			"amount",
@@ -27,13 +28,58 @@ export const Payments: CollectionConfig = {
 			return (req.user as { role?: string }).role === "super_admin";
 		},
 	},
+	hooks: {
+		afterChange: [
+			async ({ doc, previousDoc, req, operation }) => {
+				// Activate subscription when admin marks a cash payment as completed
+				if (
+					doc.method === "cash" &&
+					doc.status === "completed" &&
+					(operation === "create" ||
+						(operation === "update" && previousDoc?.status !== "completed"))
+				) {
+					const invoiceId =
+						typeof doc.invoice === "object"
+							? (doc.invoice as { id: string }).id
+							: String(doc.invoice);
+
+					await req.payload
+						.update({
+							collection: "invoices",
+							id: invoiceId,
+							data: { status: "paid" },
+							req,
+						})
+						.catch(console.error);
+
+					const { activateSubscriptionForInvoice } = await import(
+						"../lib/billing"
+					);
+					await activateSubscriptionForInvoice(invoiceId, req.payload).catch(
+						console.error,
+					);
+				}
+			},
+		],
+	},
 	fields: [
+		{
+			name: "method",
+			type: "select",
+			label: "Payment Method",
+			defaultValue: "notchpay",
+			required: true,
+			options: [
+				{ label: "NotchPay (online)", value: "notchpay" },
+				{ label: "Cash / transfer", value: "cash" },
+			],
+		},
 		{
 			name: "reference",
 			type: "text",
 			label: "Internal Reference",
 			required: true,
-			admin: { readOnly: true, description: "e.g. TKAMS-{id}" },
+			admin: { description: "e.g. TKAMS-{id} or CASH-{year}-{seq}" },
 		},
 		{
 			name: "invoice",
@@ -48,14 +94,12 @@ export const Payments: CollectionConfig = {
 			relationTo: "users",
 			label: "Client",
 			required: true,
-			admin: { readOnly: true },
 		},
 		{
 			name: "amount",
 			type: "number",
 			label: "Amount",
 			required: true,
-			admin: { readOnly: true },
 		},
 		{
 			name: "currency",
@@ -63,7 +107,6 @@ export const Payments: CollectionConfig = {
 			label: "Currency",
 			defaultValue: "XAF",
 			required: true,
-			admin: { readOnly: true },
 		},
 		{
 			name: "status",
@@ -79,11 +122,30 @@ export const Payments: CollectionConfig = {
 			],
 		},
 		{
+			name: "paidAt",
+			type: "date",
+			label: "Payment date",
+			admin: {
+				condition: (data) => data?.method === "cash",
+				description: "Date the cash payment was collected",
+				date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+			},
+		},
+		{
+			name: "adminNotes",
+			type: "textarea",
+			label: "Admin notes",
+			admin: {
+				condition: (data) => data?.method === "cash",
+				description: "Internal notes about this cash payment",
+			},
+		},
+		{
 			name: "providerReference",
 			type: "text",
 			label: "Provider Reference",
 			admin: {
-				readOnly: true,
+				condition: (data) => data?.method === "notchpay",
 				description: "Reference assigned by NotchPay",
 			},
 		},
@@ -91,7 +153,11 @@ export const Payments: CollectionConfig = {
 			name: "checkoutUrl",
 			type: "text",
 			label: "Checkout URL",
-			admin: { readOnly: true },
+			admin: {
+				condition: (data) => data?.method === "notchpay",
+				readOnly: true,
+				description: "One-time NotchPay checkout link (expires after use)",
+			},
 		},
 	],
 	timestamps: true,

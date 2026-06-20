@@ -1103,11 +1103,9 @@ export const fr = {
 		},
 		billing: {
 			title: "Facturation",
-			sub: "Consultez vos factures et abonnements.",
+			sub: "Consultez et gérez vos factures.",
 			invoices_title: "Factures",
 			invoices_empty: "Aucune facture pour le moment.",
-			subscriptions_title: "Abonnements",
-			subscriptions_empty: "Aucun abonnement actif.",
 			status: {
 				paid: "Payée",
 				unpaid: "En attente",
@@ -1117,6 +1115,7 @@ export const fr = {
 			period_label: "Période",
 			due_label: "Échéance",
 			download_pdf: "Télécharger PDF",
+			download_receipt: "Télécharger le reçu",
 			invoice_number: "Facture",
 			pay_now: "Payer maintenant",
 			paying: "Redirection…",

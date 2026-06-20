@@ -1,7 +1,6 @@
 import configPromise from "@payload-config";
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Download, XCircle } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getPayload } from "payload";
 import { PayButton } from "@/dashboard/PayButton";
 import { getDict, getLocale } from "@/i18n";
@@ -39,24 +38,16 @@ export default async function BillingPage({
 
 	return (
 		<div>
-			<div className="mb-8 flex items-start justify-between gap-4">
-				<div>
-					<h1 className="font-bold font-display text-[1.5rem] text-tk-ink tracking-[-0.03em]">
-						{d.title}
-					</h1>
-					<p className="mt-0.5 font-body text-[0.9375rem] text-tk-muted">
-						{d.sub}
-					</p>
-				</div>
-				<Link
-					href="/dashboard/billing/subscriptions"
-					className="tk-btn-outline flex-shrink-0 text-[0.875rem]"
-				>
-					{d.subscriptions_title}
-				</Link>
+			<div className="mb-8">
+				<h1 className="font-bold font-display text-[1.5rem] text-tk-ink tracking-[-0.03em]">
+					{d.title}
+				</h1>
+				<p className="mt-0.5 font-body text-[0.9375rem] text-tk-muted">
+					{d.sub}
+				</p>
 			</div>
 
-			{/* Payment status banner */}
+			{/* Payment status banners */}
 			{paymentState === "success" && (
 				<div className="mb-6 flex items-start gap-3 rounded-[0.875rem] border border-[oklch(0.58_0.17_149/0.3)] bg-[oklch(0.58_0.17_149/0.06)] px-5 py-4">
 					<CheckCircle2
@@ -182,7 +173,16 @@ export default async function BillingPage({
 											)}
 										</div>
 										<div className="flex items-center gap-2">
-											{inv.pdfUrl && (
+											{isPaid && (
+												<a
+													href={`/api/invoices/${inv.id}/receipt`}
+													className="inline-flex flex-shrink-0 items-center gap-1.5 font-body text-[0.8125rem] text-tk-primary no-underline hover:underline"
+												>
+													<Download size={13} strokeWidth={1.75} />
+													{d.download_receipt}
+												</a>
+											)}
+											{!isPaid && inv.pdfUrl && (
 												<a
 													href={inv.pdfUrl}
 													target="_blank"

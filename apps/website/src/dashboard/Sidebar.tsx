@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	CreditCard,
 	FileText,
 	HelpCircle,
 	Home,
@@ -176,13 +175,6 @@ export function Sidebar({ user, dict: d }: { user: PayloadUser; dict: Dict }) {
 						exact
 						onNavigate={close}
 					/>
-					<NavLink
-						href="/dashboard/billing/subscriptions"
-						label={s.subscriptions}
-						icon={<CreditCard size={iconSize} strokeWidth={iconStroke} />}
-						onNavigate={close}
-					/>
-
 					<SectionLabel label={s.account} />
 					<NavLink
 						href="/dashboard/settings"

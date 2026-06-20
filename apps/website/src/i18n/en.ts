@@ -1102,11 +1102,9 @@ export const en = {
 		},
 		billing: {
 			title: "Billing",
-			sub: "View your invoices and subscriptions.",
+			sub: "View and manage your invoices.",
 			invoices_title: "Invoices",
 			invoices_empty: "No invoices yet.",
-			subscriptions_title: "Subscriptions",
-			subscriptions_empty: "No active subscriptions.",
 			status: {
 				paid: "Paid",
 				unpaid: "Pending",
@@ -1116,6 +1114,7 @@ export const en = {
 			period_label: "Period",
 			due_label: "Due date",
 			download_pdf: "Download PDF",
+			download_receipt: "Download receipt",
 			invoice_number: "Invoice",
 			pay_now: "Pay now",
 			paying: "Redirecting…",
