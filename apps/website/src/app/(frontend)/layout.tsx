@@ -14,7 +14,6 @@ import { cn } from "@/utilities/ui";
 import "./globals.css";
 import { getLocale, hasChosenLocale } from "@/i18n";
 import { Footer } from "@/marketing/Footer";
-import { LanguagePrompt } from "@/marketing/LanguagePrompt";
 import { Nav } from "@/marketing/Nav";
 import { NavigationProgress } from "@/marketing/NavigationProgress";
 import { getServerSideURL } from "@/utilities/getURL";
@@ -47,7 +46,7 @@ export default async function RootLayout({
 }) {
 	const { isEnabled } = await draftMode();
 	const locale = await getLocale();
-	const localeChosen = await hasChosenLocale();
+	const _localeChosen = await hasChosenLocale();
 
 	return (
 		<html
@@ -77,7 +76,8 @@ export default async function RootLayout({
 					<Nav locale={locale} />
 					{children}
 					<Footer locale={locale} />
-					{localeChosen ? null : <LanguagePrompt suggested={locale} />}
+					{/* Language prompt disabled — locale defaults to French */}
+					{/* {localeChosen ? null : <LanguagePrompt suggested={locale} />} */}
 				</Providers>
 			</body>
 		</html>
