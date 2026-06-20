@@ -50,7 +50,7 @@ export async function activateSubscriptionForInvoice(
 				instance: instanceId,
 				status: "active",
 				annualAmount: invoice.amount ?? 0,
-				currency: (invoice.currency as string) ?? "FCFA",
+				currency: (invoice.currency as string) ?? "XAF",
 				renewalDate: renewalDate.toISOString(),
 			},
 		});
@@ -81,7 +81,7 @@ export async function activateSubscriptionForInvoice(
 				userName: clientName ?? clientEmail,
 				orgName,
 				amount: invoice.amount ?? 0,
-				currency: (invoice.currency as string) ?? "FCFA",
+				currency: (invoice.currency as string) ?? "XAF",
 				invoiceNumber: String(invoice.invoiceNumber ?? invoiceId),
 			}),
 		})

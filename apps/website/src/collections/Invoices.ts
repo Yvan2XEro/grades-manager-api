@@ -56,7 +56,7 @@ export const Invoices: CollectionConfig = {
 			name: "currency",
 			type: "text",
 			label: "Currency",
-			defaultValue: "FCFA",
+			defaultValue: "XAF",
 			required: true,
 		},
 		{

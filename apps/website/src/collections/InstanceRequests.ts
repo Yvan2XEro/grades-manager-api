@@ -100,7 +100,7 @@ export const InstanceRequests: CollectionConfig = {
 									client: String(clientId),
 									instance: id,
 									amount: 0,
-									currency: "FCFA",
+									currency: "XAF",
 									status: "unpaid",
 									description: `TKAMS subscription — ${doc.orgName ?? id}`,
 									period: `${year} – ${year + 1}`,

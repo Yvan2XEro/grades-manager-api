@@ -75,7 +75,7 @@ export const Subscriptions: CollectionConfig = {
 			name: "currency",
 			type: "text",
 			label: "Currency",
-			defaultValue: "FCFA",
+			defaultValue: "XAF",
 		},
 		{
 			name: "contractUrl",
