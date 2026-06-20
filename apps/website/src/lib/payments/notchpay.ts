@@ -96,6 +96,6 @@ export function getNotchPayProvider(): NotchPayProvider {
 	}
 	return new NotchPayProvider(
 		publicKey,
-		process.env.NOTCHPAY_BASE_URL ?? "https://api.notchpay.co",
+		process.env.NOTCHPAY_BASE_URL || "https://api.notchpay.co",
 	);
 }
