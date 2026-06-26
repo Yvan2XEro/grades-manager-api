@@ -1,5 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import type { FeeAssignmentStatus, FeeGate } from "@/db/schema/app-schema";
+import type {
+	FeeAssignmentBatchMode,
+	FeeAssignmentStatus,
+	FeeGate,
+} from "@/db/schema/app-schema";
 import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./fee-clearance.repo";
 
@@ -409,7 +413,325 @@ export async function bulkAssignClass(
 		assigned++;
 	}
 
+	await repo.createBatchRecord({
+		institutionId,
+		mode: "class",
+		scopeId: input.classId,
+		feeStructureId: structure.id,
+		feeStructureName: structure.name,
+		assignedCount: assigned,
+		skippedCount: skipped,
+		createdBy: createdBy ?? null,
+	});
+
 	return { assigned, skipped };
+}
+
+// ── Shared bulk-assign helper ─────────────────────────────────────────
+
+type StudentRow = {
+	id: string;
+	registrationNumber: string;
+	profile: { firstName: string; lastName: string } | null;
+};
+
+async function buildPreviewForStudents(
+	students: StudentRow[],
+	structure: {
+		id: string;
+		totalAmount: string;
+		currency: string;
+		academicYearId: string;
+		name: string;
+	},
+	institutionId: string,
+	scopeLabel: string,
+) {
+	const toAssign: Array<{
+		studentId: string;
+		firstName: string;
+		lastName: string;
+		registrationNumber: string;
+		amount: string;
+		currency: string;
+	}> = [];
+	const alreadyAssigned: string[] = [];
+
+	for (const student of students) {
+		const existing = await repo.findAssignmentForStudent(
+			student.id,
+			structure.academicYearId,
+			institutionId,
+		);
+		if (existing) {
+			alreadyAssigned.push(student.id);
+		} else {
+			toAssign.push({
+				studentId: student.id,
+				firstName: student.profile?.firstName ?? "",
+				lastName: student.profile?.lastName ?? "",
+				registrationNumber: student.registrationNumber,
+				amount: structure.totalAmount,
+				currency: structure.currency,
+			});
+		}
+	}
+
+	return {
+		toAssign,
+		alreadyAssignedCount: alreadyAssigned.length,
+		totalStudents: students.length,
+		feeStructureName: structure.name,
+		scopeLabel,
+	};
+}
+
+async function executeBulkAssign(
+	students: StudentRow[],
+	structure: {
+		id: string;
+		totalAmount: string;
+		currency: string;
+		academicYearId: string;
+		name: string;
+	},
+	institutionId: string,
+	createdBy: string | null,
+	mode: FeeAssignmentBatchMode,
+	scopeId: string | null,
+	skipExisting: boolean,
+) {
+	let assigned = 0;
+	let skipped = 0;
+
+	for (const student of students) {
+		const existing = await repo.findAssignmentForStudent(
+			student.id,
+			structure.academicYearId,
+			institutionId,
+		);
+		if (existing) {
+			skipped++;
+			continue;
+		}
+		await repo.createAssignment({
+			institutionId,
+			studentId: student.id,
+			academicYearId: structure.academicYearId,
+			feeStructureId: structure.id,
+			effectiveAmount: structure.totalAmount,
+			currency: structure.currency,
+			discountAmount: "0",
+			status: "unpaid",
+			createdBy: createdBy ?? null,
+		});
+		assigned++;
+	}
+
+	await repo.createBatchRecord({
+		institutionId,
+		mode,
+		scopeId,
+		feeStructureId: structure.id,
+		feeStructureName: structure.name,
+		assignedCount: assigned,
+		skippedCount: skipped,
+		createdBy: createdBy ?? null,
+	});
+
+	return { assigned, skipped };
+}
+
+// ── Program mode ──────────────────────────────────────────────────────
+
+export async function previewBulkAssignProgram(
+	institutionId: string,
+	input: { programId: string; academicYearId: string; feeStructureId: string },
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+	if (structure.academicYearId !== input.academicYearId)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Fee structure academic year does not match the selected year.",
+		});
+
+	const students = await repo.findStudentsByProgram(
+		input.programId,
+		input.academicYearId,
+	);
+	return buildPreviewForStudents(
+		students,
+		structure,
+		institutionId,
+		`Program ${input.programId}`,
+	);
+}
+
+export async function bulkAssignProgram(
+	institutionId: string,
+	createdBy: string | null,
+	input: {
+		programId: string;
+		academicYearId: string;
+		feeStructureId: string;
+		skipExisting: boolean;
+	},
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+	if (structure.academicYearId !== input.academicYearId)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Fee structure academic year does not match the selected year.",
+		});
+
+	const students = await repo.findStudentsByProgram(
+		input.programId,
+		input.academicYearId,
+	);
+	if (students.length === 0) return { assigned: 0, skipped: 0 };
+
+	return executeBulkAssign(
+		students,
+		structure,
+		institutionId,
+		createdBy,
+		"program",
+		input.programId,
+		input.skipExisting,
+	);
+}
+
+// ── Academic year mode ────────────────────────────────────────────────
+
+export async function previewBulkAssignYear(
+	institutionId: string,
+	input: { academicYearId: string; feeStructureId: string },
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+	if (structure.academicYearId !== input.academicYearId)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Fee structure academic year does not match the selected year.",
+		});
+
+	const students = await repo.findStudentsByYear(
+		input.academicYearId,
+		institutionId,
+	);
+	return buildPreviewForStudents(
+		students,
+		structure,
+		institutionId,
+		`Year ${input.academicYearId}`,
+	);
+}
+
+export async function bulkAssignYear(
+	institutionId: string,
+	createdBy: string | null,
+	input: {
+		academicYearId: string;
+		feeStructureId: string;
+		skipExisting: boolean;
+	},
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+	if (structure.academicYearId !== input.academicYearId)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Fee structure academic year does not match the selected year.",
+		});
+
+	const students = await repo.findStudentsByYear(
+		input.academicYearId,
+		institutionId,
+	);
+	if (students.length === 0) return { assigned: 0, skipped: 0 };
+
+	return executeBulkAssign(
+		students,
+		structure,
+		institutionId,
+		createdBy,
+		"year",
+		input.academicYearId,
+		input.skipExisting,
+	);
+}
+
+// ── Selected students mode ────────────────────────────────────────────
+
+export async function previewBulkAssignStudents(
+	institutionId: string,
+	input: { studentIds: string[]; feeStructureId: string },
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+
+	const students = await repo.findStudentsByIds(input.studentIds);
+	return buildPreviewForStudents(
+		students,
+		structure,
+		institutionId,
+		`${input.studentIds.length} student(s)`,
+	);
+}
+
+export async function bulkAssignStudents(
+	institutionId: string,
+	createdBy: string | null,
+	input: {
+		studentIds: string[];
+		feeStructureId: string;
+		skipExisting: boolean;
+	},
+) {
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+
+	const students = await repo.findStudentsByIds(input.studentIds);
+	if (students.length === 0) return { assigned: 0, skipped: 0 };
+
+	return executeBulkAssign(
+		students,
+		structure,
+		institutionId,
+		createdBy,
+		"students",
+		null,
+		input.skipExisting,
+	);
+}
+
+// ── Batch runs listing ────────────────────────────────────────────────
+
+export async function listBatchRuns(
+	institutionId: string,
+	opts: { limit?: number; offset?: number },
+) {
+	return repo.listBatchRecords(institutionId, opts);
 }
 
 export async function getAssignment(id: string, institutionId: string) {
@@ -1067,4 +1389,143 @@ export async function getStudentFinancialHistory(
 			orders: a.orders,
 		};
 	});
+}
+
+// ── Bank Import ───────────────────────────────────────────────────────
+
+type BankRow = { reference: string; amount: number; date: string };
+export type BankImportStatus =
+	| "matched"
+	| "duplicate"
+	| "unknown_ref"
+	| "amount_mismatch";
+
+export type BankImportLineResult = {
+	reference: string;
+	amount: number;
+	date: string;
+	status: BankImportStatus;
+	orderId?: string;
+	orderAmount?: number;
+	studentName?: string;
+};
+
+export async function previewBankImport(
+	institutionId: string,
+	rows: BankRow[],
+): Promise<{
+	results: BankImportLineResult[];
+	summary: {
+		matched: number;
+		duplicate: number;
+		unknownRef: number;
+		amountMismatch: number;
+	};
+}> {
+	const refs = [...new Set(rows.map((r) => r.reference))];
+	const orders = await repo.findOrdersByReferences(refs, institutionId);
+	const ordersByRef = new Map(
+		orders.filter((o) => o.reference).map((o) => [o.reference as string, o]),
+	);
+
+	const results: BankImportLineResult[] = [];
+	const consumedRefs = new Set<string>();
+
+	for (const row of rows) {
+		const order = ordersByRef.get(row.reference);
+
+		if (!order) {
+			results.push({ ...row, status: "unknown_ref" });
+			continue;
+		}
+
+		if (order.status === "confirmed" || consumedRefs.has(row.reference)) {
+			results.push({
+				...row,
+				status: "duplicate",
+				orderId: order.id,
+				orderAmount: Number(order.amount),
+			});
+			continue;
+		}
+
+		const amountDiff = Math.abs(Number(order.amount) - row.amount);
+		if (amountDiff > 0.5) {
+			const profile = order.feeAssignment?.student?.profile;
+			results.push({
+				...row,
+				status: "amount_mismatch",
+				orderId: order.id,
+				orderAmount: Number(order.amount),
+				studentName: profile
+					? `${profile.firstName} ${profile.lastName}`
+					: undefined,
+			});
+			continue;
+		}
+
+		consumedRefs.add(row.reference);
+		const profile = order.feeAssignment?.student?.profile;
+		results.push({
+			...row,
+			status: "matched",
+			orderId: order.id,
+			orderAmount: Number(order.amount),
+			studentName: profile
+				? `${profile.firstName} ${profile.lastName}`
+				: undefined,
+		});
+	}
+
+	return {
+		results,
+		summary: {
+			matched: results.filter((r) => r.status === "matched").length,
+			duplicate: results.filter((r) => r.status === "duplicate").length,
+			unknownRef: results.filter((r) => r.status === "unknown_ref").length,
+			amountMismatch: results.filter((r) => r.status === "amount_mismatch")
+				.length,
+		},
+	};
+}
+
+export async function applyBankImport(
+	institutionId: string,
+	rows: BankRow[],
+	confirmedBy: string,
+	opts: { paymentMethod: string; notes?: string },
+): Promise<{
+	applied: number;
+	skipped: number;
+	errors: { reference: string; reason: string }[];
+}> {
+	const { results } = await previewBankImport(institutionId, rows);
+	const matched = results.filter((r) => r.status === "matched");
+
+	let applied = 0;
+	const errors: { reference: string; reason: string }[] = [];
+
+	for (const line of matched) {
+		if (!line.orderId) continue;
+		try {
+			await confirmOrder(line.orderId, institutionId, confirmedBy, {
+				paymentDate: line.date,
+				paymentMethod: opts.paymentMethod,
+				reference: line.reference,
+				notes: opts.notes,
+			});
+			applied++;
+		} catch (e) {
+			errors.push({
+				reference: line.reference,
+				reason: e instanceof Error ? e.message : String(e),
+			});
+		}
+	}
+
+	return {
+		applied,
+		skipped: results.length - matched.length,
+		errors,
+	};
 }

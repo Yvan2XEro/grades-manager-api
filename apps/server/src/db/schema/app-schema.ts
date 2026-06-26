@@ -3300,6 +3300,53 @@ export type NewFeePaymentOrder = InferInsertModel<typeof feePaymentOrders>;
 export type FeeGatingRule = InferSelectModel<typeof feeGatingRules>;
 export type NewFeeGatingRule = InferInsertModel<typeof feeGatingRules>;
 
+export const feeAssignmentBatchModes = [
+	"class",
+	"program",
+	"year",
+	"students",
+] as const;
+export type FeeAssignmentBatchMode = (typeof feeAssignmentBatchModes)[number];
+
+/** Immutable audit record created whenever a bulk fee assignment run completes. */
+export const feeAssignmentBatches = pgTable(
+	"fee_assignment_batches",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		mode: text("mode").$type<FeeAssignmentBatchMode>().notNull(),
+		/** Class/program/year ID depending on mode. Null for student-list mode. */
+		scopeId: text("scope_id"),
+		feeStructureId: text("fee_structure_id").references(
+			() => feeStructures.id,
+			{
+				onDelete: "set null",
+			},
+		),
+		feeStructureName: text("fee_structure_name").notNull(),
+		assignedCount: integer("assigned_count").notNull().default(0),
+		skippedCount: integer("skipped_count").notNull().default(0),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_assignment_batches_institution").on(t.institutionId),
+		index("idx_fee_assignment_batches_created_at").on(
+			t.institutionId,
+			t.createdAt,
+		),
+	],
+);
+
+export type FeeAssignmentBatch = InferSelectModel<typeof feeAssignmentBatches>;
+export type NewFeeAssignmentBatch = InferInsertModel<
+	typeof feeAssignmentBatches
+>;
+
 export const feeStructuresRelations = relations(
 	feeStructures,
 	({ one, many }) => ({
@@ -3425,6 +3472,24 @@ export const feeGatingRulesRelations = relations(feeGatingRules, ({ one }) => ({
 		references: [domainUsers.id],
 	}),
 }));
+
+export const feeAssignmentBatchesRelations = relations(
+	feeAssignmentBatches,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [feeAssignmentBatches.institutionId],
+			references: [institutions.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feeAssignmentBatches.createdBy],
+			references: [domainUsers.id],
+		}),
+		feeStructure: one(feeStructures, {
+			fields: [feeAssignmentBatches.feeStructureId],
+			references: [feeStructures.id],
+		}),
+	}),
+);
 
 // ── Course Timetable ────────────────────────────────────────────────────────
 

@@ -85,6 +85,46 @@ export const previewBulkAssignSchema = z.object({
 	feeStructureId: z.string(),
 });
 
+export const bulkAssignProgramSchema = z.object({
+	programId: z.string(),
+	academicYearId: z.string(),
+	feeStructureId: z.string(),
+	skipExisting: z.boolean().default(true),
+});
+
+export const previewBulkAssignProgramSchema = z.object({
+	programId: z.string(),
+	academicYearId: z.string(),
+	feeStructureId: z.string(),
+});
+
+export const bulkAssignYearSchema = z.object({
+	academicYearId: z.string(),
+	feeStructureId: z.string(),
+	skipExisting: z.boolean().default(true),
+});
+
+export const previewBulkAssignYearSchema = z.object({
+	academicYearId: z.string(),
+	feeStructureId: z.string(),
+});
+
+export const bulkAssignStudentsSchema = z.object({
+	studentIds: z.array(z.string()).min(1).max(200),
+	feeStructureId: z.string(),
+	skipExisting: z.boolean().default(true),
+});
+
+export const previewBulkAssignStudentsSchema = z.object({
+	studentIds: z.array(z.string()).min(1).max(200),
+	feeStructureId: z.string(),
+});
+
+export const listBatchRunsSchema = z.object({
+	limit: z.number().min(1).max(100).default(50),
+	offset: z.number().min(0).default(0),
+});
+
 export const updateDiscountSchema = z.object({
 	assignmentId: z.string(),
 	discountAmount: z.number().nonnegative(),
@@ -173,6 +213,26 @@ export const listOrdersSchema = z.object({
 		.optional(),
 	limit: z.number().min(1).max(200).default(50),
 	offset: z.number().min(0).default(0),
+});
+
+// ── Bank Import ───────────────────────────────────────────────────────
+
+export const bankImportRowSchema = z.object({
+	reference: z.string().min(1),
+	amount: z.number().positive(),
+	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD"),
+});
+
+export const previewBankImportSchema = z.object({
+	rows: z.array(bankImportRowSchema).min(1).max(500),
+});
+
+export const applyBankImportSchema = z.object({
+	rows: z.array(bankImportRowSchema).min(1).max(500),
+	paymentMethod: z
+		.enum(feePaymentMethods as unknown as [string, ...string[]])
+		.default("bank_transfer"),
+	notes: z.string().optional(),
 });
 
 // ── Gating ────────────────────────────────────────────────────────────

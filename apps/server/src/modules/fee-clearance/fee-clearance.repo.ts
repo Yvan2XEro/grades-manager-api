@@ -352,6 +352,28 @@ export async function findOrderById(id: string, institutionId: string) {
 	});
 }
 
+export async function findOrdersByReferences(
+	refs: string[],
+	institutionId: string,
+) {
+	if (refs.length === 0) return [];
+	return db.query.feePaymentOrders.findMany({
+		where: and(
+			eq(schema.feePaymentOrders.institutionId, institutionId),
+			inArray(schema.feePaymentOrders.reference, refs),
+		),
+		with: {
+			feeAssignment: {
+				with: {
+					student: {
+						with: { profile: { columns: { firstName: true, lastName: true } } },
+					},
+				},
+			},
+		},
+	});
+}
+
 export async function listOrders(
 	institutionId: string,
 	opts: {
@@ -453,6 +475,76 @@ export async function findStudentsByClass(classId: string) {
 		where: eq(schema.students.class, classId),
 		with: { profile: { columns: { firstName: true, lastName: true } } },
 	});
+}
+
+export async function findStudentsByProgram(
+	programId: string,
+	academicYearId: string,
+) {
+	// Students enrolled in any class belonging to the program + year
+	const classes = await db.query.classes.findMany({
+		where: and(
+			eq(schema.classes.program, programId),
+			eq(schema.classes.academicYear, academicYearId),
+		),
+		columns: { id: true },
+	});
+	if (classes.length === 0) return [];
+	const classIds = classes.map((c) => c.id);
+	return db.query.students.findMany({
+		where: inArray(schema.students.class, classIds),
+		with: { profile: { columns: { firstName: true, lastName: true } } },
+	});
+}
+
+export async function findStudentsByYear(
+	academicYearId: string,
+	institutionId: string,
+) {
+	const classes = await db.query.classes.findMany({
+		where: and(
+			eq(schema.classes.academicYear, academicYearId),
+			eq(schema.classes.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+	if (classes.length === 0) return [];
+	const classIds = classes.map((c) => c.id);
+	return db.query.students.findMany({
+		where: inArray(schema.students.class, classIds),
+		with: { profile: { columns: { firstName: true, lastName: true } } },
+	});
+}
+
+export async function findStudentsByIds(studentIds: string[]) {
+	if (studentIds.length === 0) return [];
+	return db.query.students.findMany({
+		where: inArray(schema.students.id, studentIds),
+		with: { profile: { columns: { firstName: true, lastName: true } } },
+	});
+}
+
+export async function createBatchRecord(
+	data: import("@/db/schema/app-schema").NewFeeAssignmentBatch,
+) {
+	const [row] = await db
+		.insert(schema.feeAssignmentBatches)
+		.values(data)
+		.returning();
+	return row;
+}
+
+export async function listBatchRecords(
+	institutionId: string,
+	opts: { limit?: number; offset?: number } = {},
+) {
+	const items = await db.query.feeAssignmentBatches.findMany({
+		where: eq(schema.feeAssignmentBatches.institutionId, institutionId),
+		orderBy: (t, { desc }) => desc(t.createdAt),
+		limit: opts.limit ?? 50,
+		offset: opts.offset ?? 0,
+	});
+	return items;
 }
 
 export async function findClassById(classId: string, institutionId: string) {

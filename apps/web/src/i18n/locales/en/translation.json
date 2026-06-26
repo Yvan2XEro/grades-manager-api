@@ -4159,6 +4159,16 @@
   "feeClearance": {
     "title": "Fee Clearance",
     "subtitle": "Manage fee structures, student payments, and clearance status",
+    "bulkAssign": {
+      "mode": "Scope",
+      "modeClass": "By class",
+      "modeProgram": "By program",
+      "modeYear": "Whole academic year",
+      "program": "Program",
+      "computing": "Computing preview…",
+      "preview": "Preview",
+      "confirm": "Confirm ({{count}} student(s))"
+    },
     "structures": {
       "title": "Fee Structures",
       "subtitle": "Define the fees applicable per academic year and program",
@@ -4187,6 +4197,27 @@
         "amount": "Amount",
         "dueDate": "Due date",
         "empty": "No installments defined. Students can pay in one or multiple free-form payments."
+      }
+    },
+    "bankImport": {
+      "button": "Bank import",
+      "title": "Bank statement import",
+      "csvLabel": "CSV data",
+      "csvPlaceholder": "reference,amount,date\nORD-2024-001,150000,2026-01-15\nORD-2024-002,200000,2026-01-15",
+      "csvHint": "Format: reference, amount, date (YYYY-MM-DD) — comma, semicolon or tab separator",
+      "uploadFile": "Load file",
+      "rowsParsed": "{{count}} row(s) parsed",
+      "method": "Payment method",
+      "preview": "Preview",
+      "confirm": "Confirm {{count}} match(es)",
+      "applySuccess": "{{applied}} payment(s) recorded, {{skipped}} skipped",
+      "applyError": "Bank import failed",
+      "col": {
+        "reference": "Reference",
+        "amount": "Amount",
+        "date": "Date",
+        "student": "Student",
+        "status": "Status"
       }
     },
     "assignments": {

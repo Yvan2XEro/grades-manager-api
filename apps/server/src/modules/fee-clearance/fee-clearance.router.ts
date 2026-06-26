@@ -10,8 +10,12 @@ import {
 import * as service from "./fee-clearance.service";
 import {
 	addInstallmentSchema,
+	applyBankImportSchema,
 	assignStudentSchema,
 	bulkAssignClassSchema,
+	bulkAssignProgramSchema,
+	bulkAssignStudentsSchema,
+	bulkAssignYearSchema,
 	cancelOrderSchema,
 	checkGateSchema,
 	confirmOrderSchema,
@@ -26,10 +30,15 @@ import {
 	getMyFeeStatusSchema,
 	getOrderSchema,
 	listAssignmentsSchema,
+	listBatchRunsSchema,
 	listFeeStructuresSchema,
 	listOrdersSchema,
 	listPaymentsSchema,
+	previewBankImportSchema,
+	previewBulkAssignProgramSchema,
 	previewBulkAssignSchema,
+	previewBulkAssignStudentsSchema,
+	previewBulkAssignYearSchema,
 	recordPaymentSchema,
 	toggleGateSchema,
 	updateDiscountSchema,
@@ -111,6 +120,81 @@ export const feeClearanceRouter = router({
 		.query(({ ctx, input }) =>
 			service.previewBulkAssign(ctx.institution.id, input),
 		),
+
+	previewBulkAssignProgram: feeManageProcedure
+		.input(previewBulkAssignProgramSchema)
+		.query(({ ctx, input }) =>
+			service.previewBulkAssignProgram(ctx.institution.id, input),
+		),
+
+	bulkAssignProgram: feeManageProcedure
+		.input(bulkAssignProgramSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkAssignProgram(
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+				input,
+			),
+		),
+
+	previewBulkAssignYear: feeManageProcedure
+		.input(previewBulkAssignYearSchema)
+		.query(({ ctx, input }) =>
+			service.previewBulkAssignYear(ctx.institution.id, input),
+		),
+
+	bulkAssignYear: feeManageProcedure
+		.input(bulkAssignYearSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkAssignYear(
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+				input,
+			),
+		),
+
+	previewBulkAssignStudents: feeManageProcedure
+		.input(previewBulkAssignStudentsSchema)
+		.query(({ ctx, input }) =>
+			service.previewBulkAssignStudents(ctx.institution.id, input),
+		),
+
+	bulkAssignStudents: feeManageProcedure
+		.input(bulkAssignStudentsSchema)
+		.mutation(({ ctx, input }) =>
+			service.bulkAssignStudents(
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+				input,
+			),
+		),
+
+	listBatchRuns: feeManageProcedure
+		.input(listBatchRunsSchema)
+		.query(({ ctx, input }) =>
+			service.listBatchRuns(ctx.institution.id, input),
+		),
+
+	previewBankImport: feeManageProcedure
+		.input(previewBankImportSchema)
+		.query(({ ctx, input }) =>
+			service.previewBankImport(ctx.institution.id, input.rows),
+		),
+
+	applyBankImport: feePaymentProcedure
+		.input(applyBankImportSchema)
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new Error("Profile required");
+			return service.applyBankImport(
+				ctx.institution.id,
+				input.rows,
+				ctx.profile.id,
+				{
+					paymentMethod: input.paymentMethod,
+					notes: input.notes,
+				},
+			);
+		}),
 
 	bulkAssignClass: feeManageProcedure
 		.input(bulkAssignClassSchema)

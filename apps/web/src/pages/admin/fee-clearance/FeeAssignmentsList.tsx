@@ -4,6 +4,7 @@ import {
 	AlertCircle,
 	CheckCircle2,
 	Clock,
+	FileUp,
 	Loader2,
 	Search,
 	Users,
@@ -48,6 +49,7 @@ import {
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { toast } from "@/lib/toast";
 import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
+import BankImportDialog from "./BankImportDialog";
 
 const statusVariants: Record<
 	string,
@@ -78,6 +80,7 @@ export default function FeeAssignmentsList() {
 	const [statusFilter, setStatusFilter] = useState("");
 	const [search, setSearch] = useState("");
 	const [showBulkAssign, setShowBulkAssign] = useState(false);
+	const [showBankImport, setShowBankImport] = useState(false);
 
 	const { data: years } = useQuery(trpc.academicYears.list.queryOptions());
 	const { data: classes } = useQuery(
@@ -129,10 +132,16 @@ export default function FeeAssignmentsList() {
 						{t("feeClearance.assignments.subtitle")}
 					</p>
 				</div>
-				<Button variant="outline" onClick={() => setShowBulkAssign(true)}>
-					<Users className="mr-2 h-4 w-4" />
-					{t("feeClearance.assignments.bulkAssign")}
-				</Button>
+				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => setShowBankImport(true)}>
+						<FileUp className="mr-2 h-4 w-4" />
+						{t("feeClearance.bankImport.button")}
+					</Button>
+					<Button variant="outline" onClick={() => setShowBulkAssign(true)}>
+						<Users className="mr-2 h-4 w-4" />
+						{t("feeClearance.assignments.bulkAssign")}
+					</Button>
+				</div>
 			</div>
 
 			{/* Summary stats */}
@@ -322,11 +331,23 @@ export default function FeeAssignmentsList() {
 					setShowBulkAssign(false);
 				}}
 			/>
+
+			<BankImportDialog
+				open={showBankImport}
+				onOpenChange={setShowBankImport}
+				onSuccess={() => {
+					queryClient.invalidateQueries({
+						queryKey: trpc.feeClearance.listAssignments.queryKey(),
+					});
+				}}
+			/>
 		</div>
 	);
 }
 
 type PreviewResult = RouterOutputs["feeClearance"]["previewBulkAssign"];
+
+type BulkMode = "class" | "program" | "year";
 
 function BulkAssignDialog({
 	open,
@@ -340,12 +361,20 @@ function BulkAssignDialog({
 	onDone: () => void;
 }) {
 	const { t } = useTranslation();
+	const [mode, setMode] = useState<BulkMode>("class");
 	const [yearId, setYearId] = useState("");
 	const [structureId, setStructureId] = useState("");
 	const [classId, setClassId] = useState("");
+	const [programId, setProgramId] = useState("");
 	const [showPreview, setShowPreview] = useState(false);
 
-	const canPreview = !!structureId && !!classId;
+	const canPreview =
+		!!structureId &&
+		(mode === "class"
+			? !!classId
+			: mode === "program"
+				? !!programId
+				: !!yearId);
 
 	const { data: structures } = useQuery(
 		trpc.feeClearance.listStructures.queryOptions({
@@ -356,22 +385,64 @@ function BulkAssignDialog({
 	const { data: classes } = useQuery(
 		trpc.classes.list.queryOptions({ academicYear: yearId || undefined }),
 	);
+	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 
-	const { data: preview, isFetching: previewLoading } = useQuery({
+	// Preview queries per mode
+	const previewClass = useQuery({
 		...trpc.feeClearance.previewBulkAssign.queryOptions({
 			classId,
 			feeStructureId: structureId,
 		}),
-		enabled: showPreview && canPreview,
+		enabled: showPreview && mode === "class" && canPreview,
+	});
+	const previewProgram = useQuery({
+		...trpc.feeClearance.previewBulkAssignProgram.queryOptions({
+			programId,
+			academicYearId: yearId,
+			feeStructureId: structureId,
+		}),
+		enabled: showPreview && mode === "program" && canPreview,
+	});
+	const previewYear = useQuery({
+		...trpc.feeClearance.previewBulkAssignYear.queryOptions({
+			academicYearId: yearId,
+			feeStructureId: structureId,
+		}),
+		enabled: showPreview && mode === "year" && canPreview,
 	});
 
+	const activePreview =
+		mode === "class"
+			? previewClass.data
+			: mode === "program"
+				? previewProgram.data
+				: previewYear.data;
+	const previewLoading =
+		previewClass.isFetching ||
+		previewProgram.isFetching ||
+		previewYear.isFetching;
+
 	const mut = useMutation({
-		mutationFn: () =>
-			trpcClient.feeClearance.bulkAssignClass.mutate({
-				classId,
+		mutationFn: () => {
+			if (mode === "class")
+				return trpcClient.feeClearance.bulkAssignClass.mutate({
+					classId,
+					feeStructureId: structureId,
+					skipExisting: true,
+				});
+			if (mode === "program")
+				return trpcClient.feeClearance.bulkAssignProgram.mutate({
+					programId,
+					academicYearId: yearId,
+					feeStructureId: structureId,
+					skipExisting: true,
+				});
+			return trpcClient.feeClearance.bulkAssignYear.mutate({
+				academicYearId: yearId,
 				feeStructureId: structureId,
 				skipExisting: true,
-			}),
+			});
+		},
 		onSuccess: (result) => {
 			toast.success(
 				t("feeClearance.assignments.bulkAssignSuccess", {
@@ -383,20 +454,11 @@ function BulkAssignDialog({
 		},
 	});
 
-	function handleFieldChange(
-		field: "year" | "structure" | "class",
-		value: string,
-	) {
+	function reset() {
 		setShowPreview(false);
-		if (field === "year") {
-			setYearId(value);
-			setStructureId("");
-			setClassId("");
-		} else if (field === "structure") {
-			setStructureId(value);
-		} else {
-			setClassId(value);
-		}
+		setStructureId("");
+		setClassId("");
+		setProgramId("");
 	}
 
 	return (
@@ -407,11 +469,42 @@ function BulkAssignDialog({
 				</DialogHeader>
 
 				<div className="space-y-4">
+					{/* Mode selector */}
+					<div>
+						<Label>{t("feeClearance.bulkAssign.mode")}</Label>
+						<Select
+							value={mode}
+							onValueChange={(v) => {
+								setMode(v as BulkMode);
+								reset();
+							}}
+						>
+							<SelectTrigger className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="class">
+									{t("feeClearance.bulkAssign.modeClass")}
+								</SelectItem>
+								<SelectItem value="program">
+									{t("feeClearance.bulkAssign.modeProgram")}
+								</SelectItem>
+								<SelectItem value="year">
+									{t("feeClearance.bulkAssign.modeYear")}
+								</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Year selector (all modes) */}
 					<div>
 						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
 						<Select
 							value={yearId}
-							onValueChange={(v) => handleFieldChange("year", v)}
+							onValueChange={(v) => {
+								setYearId(v);
+								reset();
+							}}
 						>
 							<SelectTrigger className="mt-1">
 								<SelectValue />
@@ -425,11 +518,65 @@ function BulkAssignDialog({
 							</SelectContent>
 						</Select>
 					</div>
+
+					{/* Mode-specific scope selector */}
+					{mode === "class" && (
+						<div>
+							<Label>{t("admin.classes.title")}</Label>
+							<Select
+								value={classId}
+								onValueChange={(v) => {
+									setClassId(v);
+									setShowPreview(false);
+								}}
+								disabled={!yearId}
+							>
+								<SelectTrigger className="mt-1">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{classes?.items?.map((c) => (
+										<SelectItem key={c.id} value={c.id}>
+											{c.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{mode === "program" && (
+						<div>
+							<Label>{t("feeClearance.bulkAssign.program")}</Label>
+							<Select
+								value={programId}
+								onValueChange={(v) => {
+									setProgramId(v);
+									setShowPreview(false);
+								}}
+							>
+								<SelectTrigger className="mt-1">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{programs?.items?.map((p) => (
+										<SelectItem key={p.id} value={p.id}>
+											{p.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+
+					{/* Structure selector */}
 					<div>
 						<Label>{t("feeClearance.assignments.fields.structure")}</Label>
 						<Select
 							value={structureId}
-							onValueChange={(v) => handleFieldChange("structure", v)}
+							onValueChange={(v) => {
+								setStructureId(v);
+								setShowPreview(false);
+							}}
 							disabled={!yearId}
 						>
 							<SelectTrigger className="mt-1">
@@ -444,25 +591,6 @@ function BulkAssignDialog({
 							</SelectContent>
 						</Select>
 					</div>
-					<div>
-						<Label>{t("admin.classes.title")}</Label>
-						<Select
-							value={classId}
-							onValueChange={(v) => handleFieldChange("class", v)}
-							disabled={!yearId}
-						>
-							<SelectTrigger className="mt-1">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{classes?.items?.map((c) => (
-									<SelectItem key={c.id} value={c.id}>
-										{c.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
 
 					{/* Preview panel */}
 					{showPreview && (
@@ -470,10 +598,10 @@ function BulkAssignDialog({
 							{previewLoading ? (
 								<div className="flex items-center gap-2 text-muted-foreground text-sm">
 									<Loader2 className="h-4 w-4 animate-spin" />
-									Calcul de l'aperçu…
+									{t("feeClearance.bulkAssign.computing")}
 								</div>
-							) : preview ? (
-								<PreviewPanel preview={preview} />
+							) : activePreview ? (
+								<PreviewPanel preview={activePreview} />
 							) : null}
 						</div>
 					)}
@@ -485,22 +613,24 @@ function BulkAssignDialog({
 					</Button>
 					{!showPreview ? (
 						<Button disabled={!canPreview} onClick={() => setShowPreview(true)}>
-							Aperçu
+							{t("feeClearance.bulkAssign.preview")}
 						</Button>
 					) : (
 						<Button
 							disabled={
 								mut.isPending ||
 								previewLoading ||
-								!preview ||
-								preview.toAssign.length === 0
+								!activePreview ||
+								activePreview.toAssign.length === 0
 							}
 							onClick={() => mut.mutate()}
 						>
 							{mut.isPending && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}
-							Confirmer ({preview?.toAssign.length ?? 0} étudiants)
+							{t("feeClearance.bulkAssign.confirm", {
+								count: activePreview?.toAssign.length ?? 0,
+							})}
 						</Button>
 					)}
 				</DialogFooter>

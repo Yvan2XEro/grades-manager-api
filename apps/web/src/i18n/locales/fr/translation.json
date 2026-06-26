@@ -4167,6 +4167,16 @@
   "feeClearance": {
     "title": "Quitus / Frais",
     "subtitle": "Gérez les barèmes, les paiements des étudiants et les quitus",
+    "bulkAssign": {
+      "mode": "Périmètre",
+      "modeClass": "Par classe",
+      "modeProgram": "Par filière",
+      "modeYear": "Toute l'année académique",
+      "program": "Filière",
+      "computing": "Calcul de l'aperçu…",
+      "preview": "Aperçu",
+      "confirm": "Confirmer ({{count}} étudiant(s))"
+    },
     "structures": {
       "title": "Barèmes de frais",
       "subtitle": "Définissez les frais applicables par année académique et programme",
@@ -4197,11 +4207,32 @@
         "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement."
       }
     },
+    "bankImport": {
+      "button": "Import bancaire",
+      "title": "Import relevé bancaire",
+      "csvLabel": "Données CSV",
+      "csvPlaceholder": "reference,montant,date\nORD-2024-001,150000,2026-01-15\nORD-2024-002,200000,2026-01-15",
+      "csvHint": "Format : reference, montant, date (YYYY-MM-DD) — séparateur virgule, point-virgule ou tabulation",
+      "uploadFile": "Charger un fichier",
+      "rowsParsed": "{{count}} ligne(s) lue(s)",
+      "method": "Mode de paiement",
+      "preview": "Aperçu",
+      "confirm": "Confirmer {{count}} correspondance(s)",
+      "applySuccess": "{{applied}} paiement(s) enregistré(s), {{skipped}} ignoré(s)",
+      "applyError": "Erreur lors de l'import bancaire",
+      "col": {
+        "reference": "Référence",
+        "amount": "Montant",
+        "date": "Date",
+        "student": "Étudiant",
+        "status": "Statut"
+      }
+    },
     "assignments": {
       "title": "Paiements étudiants",
       "subtitle": "Suivez le statut de paiement des frais pour chaque étudiant",
       "assign": "Affecter un étudiant",
-      "bulkAssign": "Affecter toute une classe",
+      "bulkAssign": "Affectation en masse",
       "bulkAssignSuccess": "{{assigned}} affecté(s), {{skipped}} ignoré(s)",
       "exempt": "Exonérer",
       "updateDiscount": "Modifier la remise",

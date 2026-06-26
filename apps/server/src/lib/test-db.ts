@@ -197,6 +197,7 @@ export async function seed() {
 }
 
 const RESET_TABLES = [
+	"fee_assignment_batches",
 	"deliberation_logs",
 	"deliberation_student_results",
 	"deliberation_rules",

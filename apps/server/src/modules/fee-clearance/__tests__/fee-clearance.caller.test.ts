@@ -859,4 +859,125 @@ describe("feeClearance router", () => {
 			});
 		});
 	});
+
+	// ── Bank Import ───────────────────────────────────────────────────────
+
+	describe("bank import", () => {
+		async function setup() {
+			const ctx = await adminWithRealProfile();
+			const caller = createCaller(ctx);
+			const year = await createAcademicYear();
+			const program = await createProgram();
+			const klass = await createClass({
+				program: program.id,
+				academicYear: year.id,
+			});
+			const student = await createStudent({ class: klass.id });
+
+			const structure = await caller.feeClearance.createStructure({
+				academicYearId: year.id,
+				name: "Frais bancaires",
+				totalAmount: 200000,
+				currency: "XAF",
+			});
+
+			const assignment = await caller.feeClearance.assignStudent({
+				studentId: student.id,
+				academicYearId: year.id,
+				feeStructureId: structure.id,
+				discountAmount: 0,
+			});
+
+			const order = await caller.feeClearance.createOrder({
+				feeAssignmentId: assignment.id,
+				amount: 200000,
+				currency: "XAF",
+				installmentIds: [],
+				reference: "BANK-REF-001",
+			});
+
+			return { caller, ctx, year, student, structure, assignment, order };
+		}
+
+		it("preview classifies a matching row as matched", async () => {
+			const { caller, order } = await setup();
+
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 200000, date: "2026-01-15" },
+				],
+			});
+
+			expect(preview.summary.matched).toBe(1);
+			expect(preview.summary.unknownRef).toBe(0);
+			expect(preview.results[0].status).toBe("matched");
+			expect(preview.results[0].orderId).toBe(order.id);
+		});
+
+		it("preview classifies unknown reference as unknown_ref", async () => {
+			const { caller } = await setup();
+
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: "DOES-NOT-EXIST", amount: 50000, date: "2026-01-15" },
+				],
+			});
+
+			expect(preview.summary.unknownRef).toBe(1);
+			expect(preview.results[0].status).toBe("unknown_ref");
+		});
+
+		it("preview classifies amount deviation as amount_mismatch", async () => {
+			const { caller, order } = await setup();
+
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 100000, date: "2026-01-15" },
+				],
+			});
+
+			expect(preview.summary.amountMismatch).toBe(1);
+			expect(preview.results[0].status).toBe("amount_mismatch");
+			expect(preview.results[0].orderAmount).toBe(200000);
+		});
+
+		it("applyBankImport confirms matched orders and marks assignment paid", async () => {
+			const { caller, order, assignment } = await setup();
+
+			const result = await caller.feeClearance.applyBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 200000, date: "2026-01-15" },
+				],
+				paymentMethod: "bank_transfer",
+			});
+
+			expect(result.applied).toBe(1);
+			expect(result.errors.length).toBe(0);
+
+			const updated = await caller.feeClearance.getAssignment({
+				id: assignment.id,
+			});
+			expect(updated.status).toBe("paid");
+		});
+
+		it("applyBankImport then preview marks already-confirmed order as duplicate", async () => {
+			const { caller, order } = await setup();
+
+			await caller.feeClearance.applyBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 200000, date: "2026-01-15" },
+				],
+				paymentMethod: "bank_transfer",
+			});
+
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 200000, date: "2026-01-15" },
+				],
+			});
+
+			expect(preview.summary.duplicate).toBe(1);
+			expect(preview.results[0].status).toBe("duplicate");
+		});
+	});
 });
