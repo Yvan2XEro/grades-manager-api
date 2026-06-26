@@ -129,6 +129,12 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 								gate,
 								{ studentId, academicYearId: yearId },
 							);
+						} else {
+							// Gate explicitly enabled but year unresolvable — block consistent
+							// with the tRPC path (academic-documents.router runDocumentGateCheck).
+							throw new Error(
+								`Fee clearance required for '${gate}': student has no active class enrollment for this academic year.`,
+							);
 						}
 					}
 					const result = await academicDocs.generateDocument(

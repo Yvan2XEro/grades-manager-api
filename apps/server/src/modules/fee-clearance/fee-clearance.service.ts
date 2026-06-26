@@ -71,6 +71,15 @@ export async function createFeeStructure(
 		if (!program) throw notFound("Program not found for this institution");
 	}
 
+	if (input.cycleLevelId) {
+		const cycleLevel = await db.query.cycleLevels.findFirst({
+			where: eq(schema.cycleLevels.id, input.cycleLevelId),
+			with: { cycle: true },
+		});
+		if (!cycleLevel || cycleLevel.cycle.institutionId !== institutionId)
+			throw notFound("Cycle level not found for this institution");
+	}
+
 	return repo.createFeeStructure({
 		institutionId,
 		academicYearId: input.academicYearId,
@@ -425,6 +434,11 @@ export async function recordPayment(
 			code: "BAD_REQUEST",
 			message: "Assignment is already fully paid",
 		});
+	if (paid + input.amount > effective)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Payment amount (${input.amount}) exceeds remaining balance (${effective - paid})`,
+		});
 
 	const payment = await repo.recordPayment({
 		institutionId,
@@ -536,6 +550,11 @@ export async function confirmOrder(
 			code: "BAD_REQUEST",
 			message: `Order is already ${order.status}`,
 		});
+	if (order.expiresAt && new Date(order.expiresAt) < new Date())
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Payment order has expired and can no longer be confirmed",
+		});
 
 	// Re-check remaining balance to guard against concurrent payments/orders.
 	const assignment = await repo.findAssignmentById(
@@ -551,28 +570,43 @@ export async function confirmOrder(
 			message: `Order amount exceeds remaining balance (${remaining}). Another payment may have been recorded concurrently.`,
 		});
 
+	// Update order status and create payment atomically so a partial failure
+	// never leaves an order "confirmed" without a corresponding payment row.
+	const { db } = await import("@/db");
+	const { eq, and } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
 	const now = new Date();
-	await repo.updateOrder(orderId, institutionId, {
-		status: "confirmed",
-		confirmedAt: now,
-		confirmedBy,
-	});
-
-	const payment = await repo.recordPayment({
-		institutionId,
-		feeAssignmentId: order.feeAssignmentId,
-		paymentOrderId: orderId,
-		amount: order.amount,
-		currency: order.currency,
-		paymentDate: input.paymentDate,
-		paymentMethod: input.paymentMethod as never,
-		reference: input.reference ?? null,
-		notes: input.notes ?? null,
-		recordedBy: confirmedBy,
+	const { updatedOrder, payment } = await db.transaction(async (tx) => {
+		const [updatedOrder] = await tx
+			.update(schema.feePaymentOrders)
+			.set({ status: "confirmed", confirmedAt: now, confirmedBy })
+			.where(
+				and(
+					eq(schema.feePaymentOrders.id, orderId),
+					eq(schema.feePaymentOrders.institutionId, institutionId),
+				),
+			)
+			.returning();
+		const [payment] = await tx
+			.insert(schema.feePayments)
+			.values({
+				institutionId,
+				feeAssignmentId: order.feeAssignmentId,
+				paymentOrderId: orderId,
+				amount: order.amount,
+				currency: order.currency,
+				paymentDate: input.paymentDate,
+				paymentMethod: input.paymentMethod as never,
+				reference: input.reference ?? null,
+				notes: input.notes ?? null,
+				recordedBy: confirmedBy,
+			})
+			.returning();
+		return { updatedOrder, payment };
 	});
 
 	await recalculateAssignmentStatus(order.feeAssignmentId, institutionId);
-	return { order: await repo.findOrderById(orderId, institutionId), payment };
+	return { order: updatedOrder, payment };
 }
 
 export async function cancelOrder(orderId: string, institutionId: string) {
