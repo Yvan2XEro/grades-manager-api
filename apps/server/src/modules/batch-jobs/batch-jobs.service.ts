@@ -201,6 +201,17 @@ export async function runJob(jobId: string, institutionId: string) {
 			"info",
 			`Job completed: ${itemsProcessedTotal} items processed`,
 		);
+
+		if (job.createdBy) {
+			const { queueInApp } = await import(
+				"../notifications/notifications.service"
+			);
+			queueInApp(job.createdBy, "batch_job.completed", {
+				jobId: job.id,
+				jobType: job.type,
+				itemsProcessed: itemsProcessedTotal,
+			}).catch(() => {});
+		}
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : String(err);
 		await repo.updateJob(job.id, {
@@ -209,6 +220,17 @@ export async function runJob(jobId: string, institutionId: string) {
 			failedAt: new Date(),
 		});
 		await ctx.log("error", `Job failed: ${msg}`);
+
+		if (job.createdBy) {
+			const { queueInApp } = await import(
+				"../notifications/notifications.service"
+			);
+			queueInApp(job.createdBy, "batch_job.failed", {
+				jobId: job.id,
+				jobType: job.type,
+				error: msg,
+			}).catch(() => {});
+		}
 	}
 
 	return repo.findJobWithLogs(jobId);

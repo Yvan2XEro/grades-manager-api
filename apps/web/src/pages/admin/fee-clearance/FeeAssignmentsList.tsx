@@ -58,6 +58,8 @@ const statusIcons: Record<string, React.ReactNode> = {
 	exempt: <CheckCircle2 className="mr-1 h-3 w-3" />,
 };
 
+const ALL_FILTER_VALUE = "__all__";
+
 export default function FeeAssignmentsList() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -163,9 +165,9 @@ export default function FeeAssignmentsList() {
 					/>
 				</div>
 				<Select
-					value={yearFilter}
+					value={yearFilter || ALL_FILTER_VALUE}
 					onValueChange={(v) => {
-						setYearFilter(v);
+						setYearFilter(v === ALL_FILTER_VALUE ? "" : v);
 						setClassFilter("");
 					}}
 				>
@@ -175,7 +177,7 @@ export default function FeeAssignmentsList() {
 						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">{t("common.all")}</SelectItem>
+						<SelectItem value={ALL_FILTER_VALUE}>{t("common.all")}</SelectItem>
 						{years?.map((y) => (
 							<SelectItem key={y.id} value={y.id}>
 								{y.name}
@@ -184,14 +186,21 @@ export default function FeeAssignmentsList() {
 					</SelectContent>
 				</Select>
 				{classes && classes.length > 0 && (
-					<Select value={classFilter} onValueChange={setClassFilter}>
+					<Select
+						value={classFilter || ALL_FILTER_VALUE}
+						onValueChange={(v) =>
+							setClassFilter(v === ALL_FILTER_VALUE ? "" : v)
+						}
+					>
 						<SelectTrigger className="w-44">
 							<SelectValue
 								placeholder={t("feeClearance.assignments.fields.class")}
 							/>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">{t("common.all")}</SelectItem>
+							<SelectItem value={ALL_FILTER_VALUE}>
+								{t("common.all")}
+							</SelectItem>
 							{classes.map((c) => (
 								<SelectItem key={c.id} value={c.id}>
 									{c.name}
@@ -200,14 +209,19 @@ export default function FeeAssignmentsList() {
 						</SelectContent>
 					</Select>
 				)}
-				<Select value={statusFilter} onValueChange={setStatusFilter}>
+				<Select
+					value={statusFilter || ALL_FILTER_VALUE}
+					onValueChange={(v) =>
+						setStatusFilter(v === ALL_FILTER_VALUE ? "" : v)
+					}
+				>
 					<SelectTrigger className="w-36">
 						<SelectValue
 							placeholder={t("feeClearance.assignments.fields.status")}
 						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">{t("common.all")}</SelectItem>
+						<SelectItem value={ALL_FILTER_VALUE}>{t("common.all")}</SelectItem>
 						{["unpaid", "partial", "paid", "exempt"].map((s) => (
 							<SelectItem key={s} value={s}>
 								{t(`feeClearance.assignments.status.${s}`)}

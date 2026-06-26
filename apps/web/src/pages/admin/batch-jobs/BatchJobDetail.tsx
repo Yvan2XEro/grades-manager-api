@@ -10,10 +10,13 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { trpcClient } from "../../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../../utils/trpc";
+
+type BatchJob = NonNullable<RouterOutputs["batchJobs"]["get"]>;
 
 const stepStatusColors: Record<string, string> = {
 	pending: "bg-muted text-foreground",
@@ -36,8 +39,7 @@ export default function BatchJobDetail() {
 	const queryClient = useQueryClient();
 
 	const jobQuery = useQuery({
-		queryKey: ["batchJob", jobId],
-		queryFn: () => trpcClient.batchJobs.get.query({ jobId: jobId! }),
+		...trpc.batchJobs.get.queryOptions({ jobId: jobId! }),
 		enabled: !!jobId,
 		refetchInterval: (query) => {
 			const status = query.state.data?.status;
@@ -45,12 +47,19 @@ export default function BatchJobDetail() {
 		},
 	});
 
+	const invalidateJob = () =>
+		queryClient.invalidateQueries(
+			trpc.batchJobs.get.queryFilter({ jobId: jobId! }),
+		);
+	const invalidateList = () =>
+		queryClient.invalidateQueries(trpc.batchJobs.list.queryFilter({}));
+
 	const runMutation = useMutation({
 		mutationFn: () => trpcClient.batchJobs.run.mutate({ jobId: jobId! }),
 		onSuccess: () => {
 			toast.success(t("admin.batchJobs.toast.runSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["batchJob", jobId] });
-			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
+			invalidateJob();
+			invalidateList();
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
@@ -59,7 +68,7 @@ export default function BatchJobDetail() {
 		mutationFn: () => trpcClient.batchJobs.cancel.mutate({ jobId: jobId! }),
 		onSuccess: () => {
 			toast.success(t("admin.batchJobs.toast.cancelSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["batchJob", jobId] });
+			invalidateJob();
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
@@ -68,13 +77,13 @@ export default function BatchJobDetail() {
 		mutationFn: () => trpcClient.batchJobs.rollback.mutate({ jobId: jobId! }),
 		onSuccess: () => {
 			toast.success(t("admin.batchJobs.toast.rollbackSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["batchJob", jobId] });
-			queryClient.invalidateQueries({ queryKey: ["batchJobs"] });
+			invalidateJob();
+			invalidateList();
 		},
 		onError: (err) => toast.error((err as Error).message),
 	});
 
-	const job = jobQuery.data;
+	const job: BatchJob | undefined = jobQuery.data ?? undefined;
 
 	if (jobQuery.isLoading) {
 		return (
@@ -88,18 +97,17 @@ export default function BatchJobDetail() {
 		return (
 			<Empty>
 				<EmptyHeader>
-					<EmptyDescription>Job not found</EmptyDescription>
+					<EmptyDescription>
+						{t("admin.batchJobs.detail.notFound", {
+							defaultValue: "Job not found",
+						})}
+					</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
 		);
 	}
 
-	const progress = job.progress as {
-		currentStep: number;
-		totalSteps: number;
-		itemsProcessed: number;
-		itemsTotal: number;
-	} | null;
+	const progress = job.progress;
 
 	return (
 		<div className="space-y-6">

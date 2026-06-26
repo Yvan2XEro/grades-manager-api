@@ -4319,6 +4319,8 @@
       "grade_approved": "Grades approved",
       "grade_rejected": "Grades rejected",
       "deliberation_published": "Results published",
+      "batch_job_completed": "Job completed",
+      "batch_job_failed": "Job failed",
       "generic": "Notification"
     }
   }

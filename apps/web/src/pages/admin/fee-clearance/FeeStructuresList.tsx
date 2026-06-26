@@ -50,6 +50,8 @@ import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
+const ALL_FILTER_VALUE = "__all__";
+
 export default function FeeStructuresList() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -100,14 +102,17 @@ export default function FeeStructuresList() {
 			</div>
 
 			<div className="flex gap-2">
-				<Select value={yearFilter} onValueChange={setYearFilter}>
+				<Select
+					value={yearFilter || ALL_FILTER_VALUE}
+					onValueChange={(v) => setYearFilter(v === ALL_FILTER_VALUE ? "" : v)}
+				>
 					<SelectTrigger className="w-56">
 						<SelectValue
 							placeholder={t("feeClearance.structures.fields.academicYear")}
 						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">{t("common.all")}</SelectItem>
+						<SelectItem value={ALL_FILTER_VALUE}>{t("common.all")}</SelectItem>
 						{years?.map((y) => (
 							<SelectItem key={y.id} value={y.id}>
 								{y.name}

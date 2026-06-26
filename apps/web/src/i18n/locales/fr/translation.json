@@ -4327,6 +4327,8 @@
       "grade_approved": "Notes approuvées",
       "grade_rejected": "Notes refusées",
       "deliberation_published": "Résultats publiés",
+      "batch_job_completed": "Tâche terminée",
+      "batch_job_failed": "Tâche échouée",
       "generic": "Notification"
     }
   }

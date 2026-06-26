@@ -5,6 +5,7 @@ import {
 	CreditCard,
 	GraduationCap,
 	Inbox,
+	ServerCog,
 	XCircle,
 } from "lucide-react";
 import type React from "react";
@@ -49,6 +50,15 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 	"deliberation.published": {
 		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
 		labelKey: "notifications.types.deliberation_published",
+	},
+	"batch_job.completed": {
+		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
+		labelKey: "notifications.types.batch_job_completed",
+	},
+	"batch_job.failed": {
+		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
+		labelKey: "notifications.types.batch_job_failed",
+		subtitleFn: (p) => (p.error ? String(p.error) : ""),
 	},
 };
 

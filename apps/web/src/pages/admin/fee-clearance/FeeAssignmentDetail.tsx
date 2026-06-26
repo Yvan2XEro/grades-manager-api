@@ -53,6 +53,8 @@ import {
 import { toast } from "@/lib/toast";
 import { trpc, trpcClient } from "@/utils/trpc";
 
+const NO_INSTALLMENT_VALUE = "__none__";
+
 const statusVariants: Record<
 	string,
 	"default" | "secondary" | "destructive" | "outline"
@@ -722,16 +724,21 @@ function RecordPaymentDialog({
 						<div>
 							<Label>{t("feeClearance.structures.installments.title")}</Label>
 							<Select
-								value={form.installmentId}
+								value={form.installmentId || NO_INSTALLMENT_VALUE}
 								onValueChange={(v) =>
-									setForm((f) => ({ ...f, installmentId: v }))
+									setForm((f) => ({
+										...f,
+										installmentId: v === NO_INSTALLMENT_VALUE ? "" : v,
+									}))
 								}
 							>
 								<SelectTrigger>
 									<SelectValue placeholder={t("common.optional")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">{t("common.none")}</SelectItem>
+									<SelectItem value={NO_INSTALLMENT_VALUE}>
+										{t("common.none")}
+									</SelectItem>
 									{installments.map((i) => (
 										<SelectItem key={i.id} value={i.id}>
 											{i.label}
