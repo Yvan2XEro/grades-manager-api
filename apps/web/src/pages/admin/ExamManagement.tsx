@@ -46,7 +46,13 @@ import { BulkActionBar } from "../../components/ui/bulk-action-bar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
-import { DialogFooter } from "../../components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../../components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -71,6 +77,7 @@ import {
 	FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -88,6 +95,7 @@ import {
 	TableRow,
 } from "../../components/ui/table";
 import { TableSkeleton } from "../../components/ui/table-skeleton";
+import { Textarea } from "../../components/ui/textarea";
 import { useRowSelection } from "../../hooks/useRowSelection";
 import { trpc, trpcClient } from "../../utils/trpc";
 
@@ -155,6 +163,10 @@ export default function ExamManagement() {
 	const [editingExam, setEditingExam] = useState<Exam | null>(null);
 	const [retakeParentExam, setRetakeParentExam] = useState<Exam | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [rejectTarget, setRejectTarget] = useState<{ examId: string } | null>(
+		null,
+	);
+	const [rejectReason, setRejectReason] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classId, setClassId] = useState<string | null>(null);
@@ -415,11 +427,17 @@ export default function ExamManagement() {
 		mutationFn: async ({
 			examId,
 			status,
+			rejectionReason,
 		}: {
 			examId: string;
 			status: "approved" | "rejected";
+			rejectionReason?: string;
 		}) => {
-			await trpcClient.exams.validate.mutate({ examId, status });
+			await trpcClient.exams.validate.mutate({
+				examId,
+				status,
+				rejectionReason,
+			});
 		},
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["exams"] });
@@ -880,12 +898,10 @@ export default function ExamManagement() {
 																			{t("admin.exams.actions.approve")}
 																		</DropdownMenuItem>
 																		<DropdownMenuItem
-																			onClick={() =>
-																				validateExamMutation.mutate({
-																					examId: exam.id,
-																					status: "rejected",
-																				})
-																			}
+																			onClick={() => {
+																				setRejectTarget({ examId: exam.id });
+																				setRejectReason("");
+																			}}
 																			disabled={validateExamMutation.isPending}
 																			className="text-red-600 focus:text-red-600"
 																		>
@@ -1229,6 +1245,54 @@ export default function ExamManagement() {
 				</Form>
 			</FormModal>
 			<ConfirmDialog />
+
+			{/* Rejection reason dialog */}
+			<Dialog
+				open={!!rejectTarget}
+				onOpenChange={(o) => {
+					if (!o) setRejectTarget(null);
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>{t("admin.exams.actions.reject")}</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-3 py-2">
+						<Label htmlFor="reject-reason">
+							{t("admin.exams.rejectReasonLabel")}
+						</Label>
+						<Textarea
+							id="reject-reason"
+							rows={3}
+							placeholder={t("admin.exams.rejectReasonPlaceholder")}
+							value={rejectReason}
+							onChange={(e) => setRejectReason(e.target.value)}
+						/>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setRejectTarget(null)}>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={!rejectReason.trim() || validateExamMutation.isPending}
+							onClick={() => {
+								if (!rejectTarget) return;
+								validateExamMutation.mutate(
+									{
+										examId: rejectTarget.examId,
+										status: "rejected",
+										rejectionReason: rejectReason.trim(),
+									},
+									{ onSettled: () => setRejectTarget(null) },
+								);
+							}}
+						>
+							{t("admin.exams.actions.reject")}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

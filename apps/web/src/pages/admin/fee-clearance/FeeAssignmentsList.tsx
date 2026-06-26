@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CheckCircle2, Clock, Search, Users, XCircle } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle2,
+	Clock,
+	Loader2,
+	Search,
+	Users,
+	XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -39,7 +47,7 @@ import {
 } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "@/utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 const statusVariants: Record<
 	string,
@@ -318,6 +326,8 @@ export default function FeeAssignmentsList() {
 	);
 }
 
+type PreviewResult = RouterOutputs["feeClearance"]["previewBulkAssign"];
+
 function BulkAssignDialog({
 	open,
 	onOpenChange,
@@ -333,6 +343,9 @@ function BulkAssignDialog({
 	const [yearId, setYearId] = useState("");
 	const [structureId, setStructureId] = useState("");
 	const [classId, setClassId] = useState("");
+	const [showPreview, setShowPreview] = useState(false);
+
+	const canPreview = !!structureId && !!classId;
 
 	const { data: structures } = useQuery(
 		trpc.feeClearance.listStructures.queryOptions({
@@ -344,6 +357,14 @@ function BulkAssignDialog({
 		trpc.classes.list.queryOptions({ academicYear: yearId || undefined }),
 	);
 
+	const { data: preview, isFetching: previewLoading } = useQuery({
+		...trpc.feeClearance.previewBulkAssign.queryOptions({
+			classId,
+			feeStructureId: structureId,
+		}),
+		enabled: showPreview && canPreview,
+	});
+
 	const mut = useMutation({
 		mutationFn: () =>
 			trpcClient.feeClearance.bulkAssignClass.mutate({
@@ -352,29 +373,47 @@ function BulkAssignDialog({
 				skipExisting: true,
 			}),
 		onSuccess: (result) => {
-			toast.success(`${result.assigned} assigned, ${result.skipped} skipped`);
+			toast.success(
+				t("feeClearance.assignments.bulkAssignSuccess", {
+					assigned: result.assigned,
+					skipped: result.skipped,
+				}),
+			);
 			onDone();
 		},
 	});
 
+	function handleFieldChange(
+		field: "year" | "structure" | "class",
+		value: string,
+	) {
+		setShowPreview(false);
+		if (field === "year") {
+			setYearId(value);
+			setStructureId("");
+			setClassId("");
+		} else if (field === "structure") {
+			setStructureId(value);
+		} else {
+			setClassId(value);
+		}
+	}
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
+			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.assignments.bulkAssign")}</DialogTitle>
 				</DialogHeader>
+
 				<div className="space-y-4">
 					<div>
 						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
 						<Select
 							value={yearId}
-							onValueChange={(v) => {
-								setYearId(v);
-								setStructureId("");
-								setClassId("");
-							}}
+							onValueChange={(v) => handleFieldChange("year", v)}
 						>
-							<SelectTrigger>
+							<SelectTrigger className="mt-1">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -390,10 +429,10 @@ function BulkAssignDialog({
 						<Label>{t("feeClearance.assignments.fields.structure")}</Label>
 						<Select
 							value={structureId}
-							onValueChange={setStructureId}
+							onValueChange={(v) => handleFieldChange("structure", v)}
 							disabled={!yearId}
 						>
-							<SelectTrigger>
+							<SelectTrigger className="mt-1">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -409,10 +448,10 @@ function BulkAssignDialog({
 						<Label>{t("admin.classes.title")}</Label>
 						<Select
 							value={classId}
-							onValueChange={setClassId}
+							onValueChange={(v) => handleFieldChange("class", v)}
 							disabled={!yearId}
 						>
-							<SelectTrigger>
+							<SelectTrigger className="mt-1">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -424,19 +463,105 @@ function BulkAssignDialog({
 							</SelectContent>
 						</Select>
 					</div>
+
+					{/* Preview panel */}
+					{showPreview && (
+						<div className="rounded-lg border bg-muted/30 p-3">
+							{previewLoading ? (
+								<div className="flex items-center gap-2 text-muted-foreground text-sm">
+									<Loader2 className="h-4 w-4 animate-spin" />
+									Calcul de l'aperçu…
+								</div>
+							) : preview ? (
+								<PreviewPanel preview={preview} />
+							) : null}
+						</div>
+					)}
 				</div>
-				<DialogFooter>
+
+				<DialogFooter className="gap-2">
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						{t("common.cancel")}
 					</Button>
-					<Button
-						disabled={!structureId || !classId || mut.isPending}
-						onClick={() => mut.mutate()}
-					>
-						{t("feeClearance.assignments.bulkAssign")}
-					</Button>
+					{!showPreview ? (
+						<Button disabled={!canPreview} onClick={() => setShowPreview(true)}>
+							Aperçu
+						</Button>
+					) : (
+						<Button
+							disabled={
+								mut.isPending ||
+								previewLoading ||
+								!preview ||
+								preview.toAssign.length === 0
+							}
+							onClick={() => mut.mutate()}
+						>
+							{mut.isPending && (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							Confirmer ({preview?.toAssign.length ?? 0} étudiants)
+						</Button>
+					)}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
+	);
+}
+
+function PreviewPanel({ preview }: { preview: PreviewResult }) {
+	const hasNew = preview.toAssign.length > 0;
+	const hasSkipped = preview.alreadyAssignedCount > 0;
+
+	return (
+		<div className="space-y-3">
+			<div className="flex items-center gap-4 text-sm">
+				<span className="flex items-center gap-1 text-emerald-700">
+					<CheckCircle2 className="h-3.5 w-3.5" />
+					<strong>{preview.toAssign.length}</strong> à assigner
+				</span>
+				{hasSkipped && (
+					<span className="flex items-center gap-1 text-muted-foreground">
+						<AlertCircle className="h-3.5 w-3.5" />
+						{preview.alreadyAssignedCount} déjà assigné(s) — ignoré(s)
+					</span>
+				)}
+			</div>
+
+			{hasNew && (
+				<div className="max-h-48 overflow-y-auto rounded border bg-background">
+					<table className="w-full text-xs">
+						<thead className="sticky top-0 bg-muted/80">
+							<tr>
+								<th className="px-2 py-1.5 text-left font-medium">Étudiant</th>
+								<th className="px-2 py-1.5 text-left font-medium">Matricule</th>
+								<th className="px-2 py-1.5 text-right font-medium">Montant</th>
+							</tr>
+						</thead>
+						<tbody>
+							{preview.toAssign.map((s) => (
+								<tr key={s.studentId} className="border-t">
+									<td className="px-2 py-1">
+										{s.firstName} {s.lastName}
+									</td>
+									<td className="px-2 py-1 text-muted-foreground">
+										{s.registrationNumber}
+									</td>
+									<td className="px-2 py-1 text-right tabular-nums">
+										{Number(s.amount).toLocaleString()} {s.currency}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+
+			{!hasNew && (
+				<p className="text-muted-foreground text-sm">
+					Tous les étudiants ont déjà une assignation pour cette année.
+				</p>
+			)}
+		</div>
 	);
 }

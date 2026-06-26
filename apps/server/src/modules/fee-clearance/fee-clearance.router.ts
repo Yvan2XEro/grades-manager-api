@@ -29,6 +29,7 @@ import {
 	listFeeStructuresSchema,
 	listOrdersSchema,
 	listPaymentsSchema,
+	previewBulkAssignSchema,
 	recordPaymentSchema,
 	toggleGateSchema,
 	updateDiscountSchema,
@@ -103,6 +104,12 @@ export const feeClearanceRouter = router({
 		.input(assignStudentSchema)
 		.mutation(({ ctx, input }) =>
 			service.assignStudent(ctx.institution.id, ctx.profile?.id ?? null, input),
+		),
+
+	previewBulkAssign: feeManageProcedure
+		.input(previewBulkAssignSchema)
+		.query(({ ctx, input }) =>
+			service.previewBulkAssign(ctx.institution.id, input),
 		),
 
 	bulkAssignClass: feeManageProcedure

@@ -451,6 +451,7 @@ export async function findGatingRule(institutionId: string, gate: FeeGate) {
 export async function findStudentsByClass(classId: string) {
 	return db.query.students.findMany({
 		where: eq(schema.students.class, classId),
+		with: { profile: { columns: { firstName: true, lastName: true } } },
 	});
 }
 

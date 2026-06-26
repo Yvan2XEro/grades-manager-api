@@ -80,6 +80,11 @@ export const bulkAssignClassSchema = z.object({
 	skipExisting: z.boolean().default(true),
 });
 
+export const previewBulkAssignSchema = z.object({
+	classId: z.string(),
+	feeStructureId: z.string(),
+});
+
 export const updateDiscountSchema = z.object({
 	assignmentId: z.string(),
 	discountAmount: z.number().nonnegative(),

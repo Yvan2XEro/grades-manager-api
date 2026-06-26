@@ -289,6 +289,66 @@ export async function assignStudent(
 	});
 }
 
+export async function previewBulkAssign(
+	institutionId: string,
+	input: { classId: string; feeStructureId: string },
+) {
+	const klass = await repo.findClassById(input.classId, institutionId);
+	if (!klass) throw notFound("Class not found");
+
+	const structure = await repo.findFeeStructureById(
+		input.feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+	if (structure.academicYearId !== klass.academicYear)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"Fee structure academic year does not match the class academic year.",
+		});
+
+	const students = await repo.findStudentsByClass(input.classId);
+
+	const toAssign: Array<{
+		studentId: string;
+		firstName: string;
+		lastName: string;
+		registrationNumber: string;
+		amount: string;
+		currency: string;
+	}> = [];
+	const alreadyAssigned: string[] = [];
+
+	for (const student of students) {
+		const existing = await repo.findAssignmentForStudent(
+			student.id,
+			structure.academicYearId,
+			institutionId,
+		);
+		if (existing) {
+			alreadyAssigned.push(student.id);
+		} else {
+			toAssign.push({
+				studentId: student.id,
+				firstName: student.profile?.firstName ?? "",
+				lastName: student.profile?.lastName ?? "",
+				registrationNumber: student.registrationNumber,
+				amount: structure.totalAmount,
+				currency: structure.currency,
+			});
+		}
+	}
+
+	return {
+		toAssign,
+		alreadyAssignedCount: alreadyAssigned.length,
+		totalStudents: students.length,
+		feeStructureName: structure.name,
+		className: klass.name,
+	};
+}
+
 export async function bulkAssignClass(
 	institutionId: string,
 	createdBy: string | null,

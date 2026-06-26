@@ -88,24 +88,41 @@ export async function findConflicts(
 	dayOfWeek: DayOfWeek,
 	startTime: string,
 	endTime: string,
-	room: string | undefined,
-	excludeId?: string,
+	opts: { room?: string; teacherId?: string; excludeId?: string },
 ) {
 	const all = await db.query.courseSessions.findMany({
 		where: and(
 			eq(schema.courseSessions.institutionId, institutionId),
 			eq(schema.courseSessions.dayOfWeek, dayOfWeek),
 		),
-		with: { classCourse: { with: { classRef: true, courseRef: true } } },
+		with: {
+			classCourse: {
+				with: { classRef: true, courseRef: true },
+			},
+		},
 	});
 
-	return all.filter((s) => {
-		if (excludeId && s.id === excludeId) return false;
-		const overlaps = s.startTime < endTime && s.endTime > startTime;
-		if (!overlaps) return false;
-		const roomConflict = room && s.room && s.room === room;
-		return roomConflict;
-	});
+	return all
+		.filter((s) => {
+			if (opts.excludeId && s.id === opts.excludeId) return false;
+			const overlaps = s.startTime < endTime && s.endTime > startTime;
+			if (!overlaps) return false;
+			const roomConflict = opts.room && s.room && s.room === opts.room;
+			const teacherConflict =
+				opts.teacherId && s.classCourse?.teacher === opts.teacherId;
+			return roomConflict || teacherConflict;
+		})
+		.map((s) => ({
+			...s,
+			conflictType: (() => {
+				const roomMatch = opts.room && s.room && s.room === opts.room;
+				const teacherMatch =
+					opts.teacherId && s.classCourse?.teacher === opts.teacherId;
+				if (roomMatch && teacherMatch) return "both" as const;
+				if (roomMatch) return "room" as const;
+				return "teacher" as const;
+			})(),
+		}));
 }
 
 export async function listByClassCourseIds(

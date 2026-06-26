@@ -1249,6 +1249,8 @@
         "reject": "Rejeter",
         "retake": "Rattrapage"
       },
+      "rejectReasonLabel": "Motif du rejet (visible par l'enseignant)",
+      "rejectReasonPlaceholder": "Expliquez pourquoi les notes sont rejetées…",
       "filters": {
         "academicYear": "Année académique",
         "search": "Recherche",
@@ -4200,6 +4202,7 @@
       "subtitle": "Suivez le statut de paiement des frais pour chaque étudiant",
       "assign": "Affecter un étudiant",
       "bulkAssign": "Affecter toute une classe",
+      "bulkAssignSuccess": "{{assigned}} affecté(s), {{skipped}} ignoré(s)",
       "exempt": "Exonérer",
       "updateDiscount": "Modifier la remise",
       "empty": {

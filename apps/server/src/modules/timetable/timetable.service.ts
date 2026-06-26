@@ -2,6 +2,19 @@ import { TRPCError } from "@trpc/server";
 import type { DayOfWeek } from "@/db/schema/app-schema";
 import * as repo from "./timetable.repo";
 
+async function resolveTeacherId(
+	classCourseId: string,
+): Promise<string | undefined> {
+	const { db } = await import("@/db");
+	const { eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+	const cc = await db.query.classCourses.findFirst({
+		where: eq(schema.classCourses.id, classCourseId),
+		columns: { teacher: true },
+	});
+	return cc?.teacher ?? undefined;
+}
+
 export async function createSession(
 	input: {
 		classCourseId: string;
@@ -20,12 +33,14 @@ export async function createSession(
 		});
 	}
 
+	const teacherId = await resolveTeacherId(input.classCourseId);
+
 	const conflicts = await repo.findConflicts(
 		institutionId,
 		input.dayOfWeek,
 		input.startTime,
 		input.endTime,
-		input.room,
+		{ room: input.room, teacherId },
 	);
 
 	const session = await repo.create({
@@ -54,6 +69,12 @@ export async function updateSession(
 
 	const nextStart = input.startTime ?? existing.startTime;
 	const nextEnd = input.endTime ?? existing.endTime;
+	const nextDay = (input.dayOfWeek ?? existing.dayOfWeek) as DayOfWeek;
+	const nextRoom =
+		input.room !== undefined
+			? (input.room ?? undefined)
+			: (existing.room ?? undefined);
+
 	if (nextStart >= nextEnd) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -61,9 +82,20 @@ export async function updateSession(
 		});
 	}
 
+	const teacherId = await resolveTeacherId(existing.classCourseId);
+
 	const { id, ...data } = input;
 	const session = await repo.update(id, data, institutionId);
-	return { session };
+
+	const conflicts = await repo.findConflicts(
+		institutionId,
+		nextDay,
+		nextStart,
+		nextEnd,
+		{ room: nextRoom, teacherId, excludeId: id },
+	);
+
+	return { session, conflicts };
 }
 
 export async function deleteSession(id: string, institutionId: string) {

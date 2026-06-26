@@ -43,10 +43,16 @@ export const lockSchema = z.object({ examId: z.string(), lock: z.boolean() });
 
 export const submitSchema = z.object({ examId: z.string() });
 
-export const validateSchema = z.object({
-	examId: z.string(),
-	status: z.enum(["approved", "rejected"]),
-});
+export const validateSchema = z
+	.object({
+		examId: z.string(),
+		status: z.enum(["approved", "rejected"]),
+		rejectionReason: z.string().min(1).optional(),
+	})
+	.refine((d) => d.status !== "rejected" || !!d.rejectionReason, {
+		message: "rejectionReason is required when status is rejected",
+		path: ["rejectionReason"],
+	});
 
 export const retakeEligibilitySchema = z.object({
 	examId: z.string(),

@@ -2010,6 +2010,8 @@
         "reviewGrades": "Grades",
         "retake": "Retake"
       },
+      "rejectReasonLabel": "Rejection reason (visible to the teacher)",
+      "rejectReasonPlaceholder": "Explain why the grades were rejected…",
       "filters": {
         "academicYear": "Academic year",
         "class": "Class",
@@ -4192,6 +4194,7 @@
       "subtitle": "Track fee payment status for each student",
       "assign": "Assign student",
       "bulkAssign": "Assign entire class",
+      "bulkAssignSuccess": "{{assigned}} assigned, {{skipped}} skipped",
       "exempt": "Mark as exempt",
       "updateDiscount": "Update discount",
       "empty": {

@@ -94,6 +94,7 @@ export const router = createRouter({
 				ctx.profile?.id ?? null,
 				input.status,
 				ctx.institution.id,
+				input.rejectionReason,
 			),
 		),
 	lock: tenantAdminProcedure.input(lockSchema).mutation(({ ctx, input }) =>

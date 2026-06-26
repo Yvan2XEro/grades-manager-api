@@ -58,11 +58,19 @@ export const router = createRouter({
 
 	myStudentTimetable: protectedProcedure
 		.input(z.object({ academicYearId: z.string().optional() }))
-		.query(({ ctx, input }) => {
+		.query(async ({ ctx, input }) => {
 			if (!ctx.profile?.id) return [];
-			const studentId = ctx.profile.id;
+			// ctx.profile.id is domainUser.id; studentCourseEnrollments references students.id
+			const { getStudentByDomainUserId } = await import(
+				"../students/students.service"
+			);
+			const student = await getStudentByDomainUserId(
+				ctx.profile.id,
+				ctx.institution.id,
+			);
+			if (!student) return [];
 			return service.getStudentTimetable(
-				studentId,
+				student.id,
 				ctx.institution.id,
 				input.academicYearId,
 			);
