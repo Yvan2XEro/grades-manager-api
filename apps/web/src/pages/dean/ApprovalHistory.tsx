@@ -25,7 +25,9 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useCursorPagination } from "@/hooks/useCursorPagination";
-import { trpc } from "../../utils/trpc";
+import { type RouterOutputs, trpc } from "../../utils/trpc";
+
+type ExamHistoryItem = RouterOutputs["exams"]["list"]["items"][number];
 
 type HistoryStatus = "approved" | "rejected" | "all";
 
@@ -192,7 +194,7 @@ export default function ApprovalHistory() {
 			) : (
 				<>
 					<div className="space-y-2">
-						{historyExams.map((exam) => {
+						{historyExams.map((exam: ExamHistoryItem) => {
 							const cfg =
 								STATUS_CONFIG[exam.status as keyof typeof STATUS_CONFIG];
 							const examDate = exam.date
@@ -202,15 +204,12 @@ export default function ApprovalHistory() {
 										year: "numeric",
 									})
 								: null;
-							const validatedDate = (exam as any).validatedAt
-								? new Date((exam as any).validatedAt).toLocaleDateString(
-										"fr-FR",
-										{
-											day: "2-digit",
-											month: "short",
-											year: "numeric",
-										},
-									)
+							const validatedDate = exam.validatedAt
+								? new Date(exam.validatedAt).toLocaleDateString("fr-FR", {
+										day: "2-digit",
+										month: "short",
+										year: "numeric",
+									})
 								: null;
 
 							return (
@@ -237,21 +236,21 @@ export default function ApprovalHistory() {
 										</div>
 
 										<div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-muted-foreground text-xs">
-											{(exam as any).courseName && (
+											{exam.courseName && (
 												<span className="flex items-center gap-1">
 													<BookOpen className="h-3 w-3 shrink-0" />
-													{(exam as any).courseName}
-													{(exam as any).courseCode && (
+													{exam.courseName}
+													{exam.courseCode && (
 														<span className="font-mono">
-															({(exam as any).courseCode})
+															({exam.courseCode})
 														</span>
 													)}
 												</span>
 											)}
-											{(exam as any).className && (
+											{exam.className && (
 												<span className="flex items-center gap-1">
 													<Users className="h-3 w-3 shrink-0" />
-													{(exam as any).className}
+													{exam.className}
 												</span>
 											)}
 											{examDate && (
@@ -273,18 +272,17 @@ export default function ApprovalHistory() {
 														})}
 											</p>
 										)}
-										{exam.status === "rejected" &&
-											(exam as any).rejectionReason && (
-												<p className="mt-1.5 rounded-md bg-destructive/8 px-2.5 py-1 text-destructive text-xs">
-													<span className="font-semibold">
-														{t("dean.history.rejectionReason", {
-															defaultValue: "Reason",
-														})}
-														:{" "}
-													</span>
-													{(exam as any).rejectionReason}
-												</p>
-											)}
+										{exam.status === "rejected" && exam.rejectionReason && (
+											<p className="mt-1.5 rounded-md bg-destructive/8 px-2.5 py-1 text-destructive text-xs">
+												<span className="font-semibold">
+													{t("dean.history.rejectionReason", {
+														defaultValue: "Reason",
+													})}
+													:{" "}
+												</span>
+												{exam.rejectionReason}
+											</p>
+										)}
 									</div>
 
 									{cfg && (

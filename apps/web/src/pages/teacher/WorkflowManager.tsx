@@ -22,7 +22,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { trpc, trpcClient } from "../../utils/trpc";
+import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+
+type ExamItem = RouterOutputs["exams"]["list"]["items"][number];
 
 const WorkflowManager = () => {
 	const { t } = useTranslation();
@@ -172,13 +174,11 @@ const WorkflowManager = () => {
 						</p>
 					) : exams.length ? (
 						<div className="space-y-3">
-							{exams.map((exam) => {
+							{exams.map((exam: ExamItem) => {
 								const isRejected = exam.status === "rejected";
 								const isApproved = exam.status === "approved";
 								const isSubmitted = exam.status === "submitted";
-								const rejectionReason = (exam as any).rejectionReason as
-									| string
-									| null;
+								const rejectionReason = exam.rejectionReason;
 								return (
 									<div
 										key={exam.id}
