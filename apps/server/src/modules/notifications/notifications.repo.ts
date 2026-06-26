@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, lt } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -97,6 +97,23 @@ export async function markRead(id: string, recipientId: string) {
 		)
 		.returning();
 	return updated;
+}
+
+export async function findRecentInApp(
+	recipientId: string,
+	type: string,
+	sinceMs: number,
+) {
+	const since = new Date(Date.now() - sinceMs);
+	return db.query.notifications.findFirst({
+		where: and(
+			eq(schema.notifications.recipientId, recipientId),
+			eq(schema.notifications.type, type),
+			eq(schema.notifications.channel, "in-app"),
+			gt(schema.notifications.createdAt, since),
+		),
+		columns: { id: true },
+	});
 }
 
 export async function markAllReadInApp(recipientId: string) {

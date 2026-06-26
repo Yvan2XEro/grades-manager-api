@@ -53,7 +53,11 @@ export async function queueInApp(
 	recipientId: string,
 	type: string,
 	payload: Record<string, unknown>,
+	opts: { dedupeWindowMs?: number } = {},
 ) {
+	const windowMs = opts.dedupeWindowMs ?? 5 * 60 * 1000; // 5 minutes default
+	const existing = await repo.findRecentInApp(recipientId, type, windowMs);
+	if (existing) return existing as { id: string };
 	return repo.createNotification({
 		recipientId,
 		channel: "in-app",
