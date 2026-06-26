@@ -54,6 +54,7 @@ export default function ApprovalHistory() {
 	const [search, setSearch] = useState("");
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [yearFilter, setYearFilter] = useState<string>("all");
+	const [teacherFilter, setTeacherFilter] = useState<string>("all");
 	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
 
 	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
@@ -67,6 +68,10 @@ export default function ApprovalHistory() {
 			? (["approved", "rejected"] as const)
 			: ([statusFilter] as const);
 
+	const teachersQuery = useQuery(
+		trpc.users.list.queryOptions({ roles: ["teacher"] }),
+	);
+
 	const examsQuery = useQuery(
 		trpc.exams.list.queryOptions({
 			limit: PAGE_SIZE,
@@ -75,6 +80,7 @@ export default function ApprovalHistory() {
 			query: search.trim() || undefined,
 			classId: classFilter !== "all" ? classFilter : undefined,
 			academicYearId: yearFilter !== "all" ? yearFilter : undefined,
+			teacherId: teacherFilter !== "all" ? teacherFilter : undefined,
 		}),
 	);
 
@@ -168,6 +174,30 @@ export default function ApprovalHistory() {
 						<SelectItem value="rejected">
 							{t("dean.history.rejected")}
 						</SelectItem>
+					</SelectContent>
+				</Select>
+
+				{/* Teacher filter */}
+				<Select
+					value={teacherFilter}
+					onValueChange={resetAndApply(setTeacherFilter)}
+				>
+					<SelectTrigger className="w-[170px]">
+						<SelectValue
+							placeholder={t("dean.history.teacherFilter", {
+								defaultValue: "All teachers",
+							})}
+						/>
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">
+							{t("dean.history.allTeachers", { defaultValue: "All teachers" })}
+						</SelectItem>
+						{teachersQuery.data?.items?.map((u) => (
+							<SelectItem key={u.id} value={u.id}>
+								{u.firstName} {u.lastName}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 			</div>

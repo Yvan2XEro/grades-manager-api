@@ -66,6 +66,7 @@ export async function list(opts: {
 	ueSemester?: string;
 	status?: string;
 	statuses?: string[];
+	teacherId?: string;
 }) {
 	const limit = opts.limit ?? 50;
 
@@ -93,6 +94,9 @@ export async function list(opts: {
 					schema.teachingUnits.semester,
 					opts.ueSemester as schema.TeachingUnitSemester,
 				)
+			: undefined,
+		opts.teacherId
+			? eq(schema.classCourses.teacher, opts.teacherId)
 			: undefined,
 		opts.query
 			? or(
