@@ -7,7 +7,7 @@ import {
 	gte,
 	ilike,
 	inArray,
-	lte,
+	lt,
 	or,
 } from "drizzle-orm";
 import { db } from "../../db";
@@ -80,7 +80,9 @@ export async function list(opts: {
 			? inArray(schema.exams.classCourse, opts.classCourseIds)
 			: undefined,
 		opts.dateFrom ? gte(schema.exams.date, opts.dateFrom) : undefined,
-		opts.dateTo ? lte(schema.exams.date, opts.dateTo) : undefined,
+		opts.dateTo
+			? lt(schema.exams.date, new Date(opts.dateTo.getTime() + 86_400_000))
+			: undefined,
 		opts.academicYearId
 			? eq(schema.classes.academicYear, opts.academicYearId)
 			: undefined,

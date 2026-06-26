@@ -202,7 +202,7 @@ export async function submitExam(
 		assertTeacherOwnership(classCourse, actor);
 	}
 	const resolved = await resolveDomainUserId(submitterId);
-	if (!["draft", "scheduled"].includes(existing.status)) {
+	if (!["draft", "scheduled", "rejected"].includes(existing.status)) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Exam cannot be submitted in its current status",
@@ -257,14 +257,19 @@ export async function validateExam(
 					status === "approved"
 						? "exam.grade_submission.approved"
 						: "exam.grade_submission.rejected";
-				await notificationsService.queueInApp(classCourse.teacher, notifType, {
-					examId,
-					examName: existing.name,
-					classCourseId: existing.classCourse,
-					...(status === "rejected" && rejectionReason
-						? { rejectionReason }
-						: {}),
-				});
+				await notificationsService.queueInApp(
+					classCourse.teacher,
+					notifType,
+					{
+						examId,
+						examName: existing.name,
+						classCourseId: existing.classCourse,
+						...(status === "rejected" && rejectionReason
+							? { rejectionReason }
+							: {}),
+					},
+					{ dedupeKey: examId },
+				);
 			}
 		} catch {
 			// swallow — notification failure must not fail the approval
