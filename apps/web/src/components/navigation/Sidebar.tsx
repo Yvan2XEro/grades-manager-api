@@ -5,6 +5,7 @@ import {
 	Building,
 	Building2,
 	Calendar,
+	CalendarClock,
 	ClipboardList,
 	CreditCard,
 	FileCog,
@@ -106,6 +107,11 @@ const Sidebar: React.FC = () => {
 						to: "/admin/classes",
 						icon: <Users className={IC} />,
 						labelKey: "navigation.sidebar.admin.classes",
+					},
+					{
+						to: "/admin/timetable",
+						icon: <CalendarClock className={IC} />,
+						labelKey: "navigation.sidebar.admin.timetable",
 					},
 				],
 			},
@@ -212,6 +218,11 @@ const Sidebar: React.FC = () => {
 				labelKey: "navigation.sidebar.teacher.myCourses",
 			},
 			{
+				to: "/teacher/timetable",
+				icon: <CalendarClock className={IC} />,
+				labelKey: "navigation.sidebar.teacher.timetable",
+			},
+			{
 				to: "/teacher/attendance",
 				icon: <ClipboardList className={IC} />,
 				labelKey: "navigation.sidebar.teacher.attendance",
@@ -278,6 +289,11 @@ const Sidebar: React.FC = () => {
 				to: "/student/exams",
 				icon: <Calendar className={IC} />,
 				labelKey: "navigation.sidebar.student.exams",
+			},
+			{
+				to: "/student/timetable",
+				icon: <CalendarClock className={IC} />,
+				labelKey: "navigation.sidebar.student.timetable",
 			},
 			{
 				to: "/student/enrollments",

@@ -1,0 +1,70 @@
+import { z } from "zod";
+import type { DayOfWeek } from "@/db/schema/app-schema";
+import {
+	adminProcedure,
+	router as createRouter,
+	protectedProcedure,
+} from "@/lib/trpc";
+import * as service from "./timetable.service";
+import {
+	createSessionSchema,
+	deleteSessionSchema,
+	listSessionsSchema,
+	updateSessionSchema,
+} from "./timetable.zod";
+
+export const router = createRouter({
+	create: adminProcedure
+		.input(createSessionSchema)
+		.mutation(({ ctx, input }) =>
+			service.createSession(
+				{ ...input, dayOfWeek: input.dayOfWeek as DayOfWeek },
+				ctx.institution.id,
+			),
+		),
+
+	update: adminProcedure
+		.input(updateSessionSchema)
+		.mutation(({ ctx, input }) =>
+			service.updateSession(
+				{ ...input, dayOfWeek: input.dayOfWeek as DayOfWeek | undefined },
+				ctx.institution.id,
+			),
+		),
+
+	delete: adminProcedure
+		.input(deleteSessionSchema)
+		.mutation(({ ctx, input }) =>
+			service.deleteSession(input.id, ctx.institution.id),
+		),
+
+	list: protectedProcedure.input(listSessionsSchema).query(({ ctx, input }) =>
+		service.listSessions(ctx.institution.id, {
+			...input,
+			dayOfWeek: input.dayOfWeek as DayOfWeek | undefined,
+		}),
+	),
+
+	myTeacherTimetable: protectedProcedure
+		.input(z.object({ academicYearId: z.string().optional() }))
+		.query(({ ctx, input }) => {
+			if (!ctx.profile?.id) return [];
+			return service.getTeacherTimetable(
+				ctx.profile.id,
+				ctx.institution.id,
+				input.academicYearId,
+			);
+		}),
+
+	myStudentTimetable: protectedProcedure
+		.input(z.object({ academicYearId: z.string().optional() }))
+		.query(({ ctx, input }) => {
+			if (!ctx.profile?.id) return [];
+			const studentId = ctx.profile.id;
+			return service.getStudentTimetable(
+				studentId,
+				ctx.institution.id,
+				input.academicYearId,
+			);
+		}),
+});

@@ -43,6 +43,7 @@ import PromotionHub from "./pages/admin/PromotionHub";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
 import StudentManagement from "./pages/admin/StudentManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
+import TimetableManagement from "./pages/admin/TimetableManagement";
 import UsersHub from "./pages/admin/UsersHub";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -56,11 +57,13 @@ import CourseEnrollment from "./pages/student/CourseEnrollment";
 import ExamCalendar from "./pages/student/ExamCalendar";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import StudentFeeStatus from "./pages/student/StudentFeeStatus";
+import StudentTimetable from "./pages/student/Timetable";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import GradeExport from "./pages/teacher/GradeExport";
 import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
 import TeacherHub from "./pages/teacher/TeacherHub";
+import TeacherTimetable from "./pages/teacher/Timetable";
 import WorkflowManager from "./pages/teacher/WorkflowManager";
 import type { BusinessRole } from "./store";
 import { roleGuards, useStore } from "./store";
@@ -231,6 +234,7 @@ function App() {
 						<Route path="centers" element={<CenterManagement />} />
 						<Route path="centers/new" element={<CenterDetail />} />
 						<Route path="centers/:centerId" element={<CenterDetail />} />
+						<Route path="timetable" element={<TimetableManagement />} />
 						<Route
 							path="class-document-templates"
 							element={<ClassDocumentTemplates />}
@@ -375,6 +379,7 @@ function App() {
 							element={<GradeSpreadsheet basePath="/teacher" />}
 						/>
 						<Route path="attendance" element={<AttendanceAlerts />} />
+						<Route path="timetable" element={<TeacherTimetable />} />
 						<Route path="workflows" element={<WorkflowManager />} />
 						<Route path="exports" element={<GradeExport />} />
 					</Route>
@@ -405,6 +410,7 @@ function App() {
 					<Route path="/student" element={<DashboardLayout />}>
 						<Route index element={<PerformanceDashboard />} />
 						<Route path="exams" element={<ExamCalendar />} />
+						<Route path="timetable" element={<StudentTimetable />} />
 						<Route path="enrollments" element={<CourseEnrollment />} />
 						<Route path="fees" element={<StudentFeeStatus />} />
 					</Route>

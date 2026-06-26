@@ -3425,3 +3425,66 @@ export const feeGatingRulesRelations = relations(feeGatingRules, ({ one }) => ({
 		references: [domainUsers.id],
 	}),
 }));
+
+// ── Course Timetable ────────────────────────────────────────────────────────
+
+export const daysOfWeek = [
+	"mon",
+	"tue",
+	"wed",
+	"thu",
+	"fri",
+	"sat",
+	"sun",
+] as const;
+export type DayOfWeek = (typeof daysOfWeek)[number];
+
+export const courseSessions = pgTable(
+	"course_sessions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		dayOfWeek: text("day_of_week").notNull().$type<DayOfWeek>(),
+		startTime: text("start_time").notNull(),
+		endTime: text("end_time").notNull(),
+		room: text("room"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_course_sessions_institution").on(t.institutionId),
+		index("idx_course_sessions_class_course").on(t.classCourseId),
+		index("idx_course_sessions_academic_year").on(t.academicYearId),
+		index("idx_course_sessions_day").on(t.institutionId, t.dayOfWeek),
+	],
+);
+
+export type CourseSession = typeof courseSessions.$inferSelect;
+export type NewCourseSession = typeof courseSessions.$inferInsert;
+
+export const courseSessionsRelations = relations(courseSessions, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [courseSessions.institutionId],
+		references: [institutions.id],
+	}),
+	classCourse: one(classCourses, {
+		fields: [courseSessions.classCourseId],
+		references: [classCourses.id],
+	}),
+	academicYear: one(academicYears, {
+		fields: [courseSessions.academicYearId],
+		references: [academicYears.id],
+	}),
+}));

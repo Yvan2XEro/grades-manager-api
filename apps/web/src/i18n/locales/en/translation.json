@@ -933,7 +933,8 @@
         "apiKeys": "API Keys",
         "gradeManagement": "Grade management",
         "promotion": "Year transition",
-        "configuration": "Configuration"
+        "configuration": "Configuration",
+        "timetable": "Timetable"
       },
       "groups": {
         "overview": "Overview",
@@ -952,6 +953,7 @@
         "grades": "Grades",
         "courses": "Courses",
         "attendance": "Attendance alerts",
+        "timetable": "Timetable",
         "workflows": "Workflows",
         "exports": "Exports",
         "myCourses": "My courses"
@@ -966,6 +968,7 @@
       "student": {
         "dashboard": "My performance",
         "exams": "Exam calendar",
+        "timetable": "Timetable",
         "enrollments": "My courses"
       }
     },

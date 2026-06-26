@@ -178,7 +178,8 @@
         "apiKeys": "Clés API",
         "gradeManagement": "Gestion des notes",
         "promotion": "Passage d'annee",
-        "configuration": "Configuration"
+        "configuration": "Configuration",
+        "timetable": "Emploi du temps"
       },
       "groups": {
         "overview": "Vue d'ensemble",
@@ -197,6 +198,7 @@
         "grades": "Notes",
         "courses": "Cours",
         "attendance": "Alertes de présence",
+        "timetable": "Emploi du temps",
         "workflows": "Workflows",
         "exports": "Exports",
         "myCourses": "Mes cours"
@@ -211,6 +213,7 @@
       "student": {
         "dashboard": "Ma performance",
         "exams": "Calendrier examens",
+        "timetable": "Emploi du temps",
         "enrollments": "Mes inscriptions"
       }
     },

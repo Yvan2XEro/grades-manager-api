@@ -10,6 +10,7 @@ import { exportEligibilityRouter } from "@/modules/export-eligibility";
 import { feeClearanceRouter } from "@/modules/fee-clearance";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { gradesRouter } from "@/modules/grades";
+import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
 import { classCoursesRouter } from "../modules/class-courses";
@@ -83,6 +84,7 @@ export const appRouter = router({
 	academicDocuments: academicDocumentsRouter,
 	academicYearTransitions: academicYearTransitionsRouter,
 	feeClearance: feeClearanceRouter,
+	timetable: timetableRouter,
 });
 
 export type AppRouter = typeof appRouter;
