@@ -5,7 +5,6 @@ import {
 	feePaymentProcedure,
 	protectedProcedure,
 	router,
-	tenantAdminProcedure,
 } from "@/lib/trpc";
 import * as service from "./fee-clearance.service";
 import {
@@ -217,7 +216,7 @@ export const feeClearanceRouter = router({
 		service.listGatingRules(ctx.institution.id),
 	),
 
-	toggleGate: tenantAdminProcedure
+	toggleGate: feeConfigProcedure
 		.input(toggleGateSchema)
 		.mutation(({ ctx, input }) =>
 			service.toggleGate(

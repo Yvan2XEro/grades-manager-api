@@ -26,9 +26,7 @@ async function recalculateAssignmentStatus(
 	const effectiveAmount = Number(assignment.effectiveAmount);
 	const newStatus = computeStatus(paidAmount, effectiveAmount);
 	const clearedAt =
-		newStatus === "paid" && !assignment.clearedAt
-			? new Date()
-			: assignment.clearedAt;
+		newStatus === "paid" ? (assignment.clearedAt ?? new Date()) : null;
 
 	await repo.updateAssignment(assignmentId, institutionId, {
 		status: newStatus,
@@ -51,6 +49,28 @@ export async function createFeeStructure(
 		currency: string;
 	},
 ) {
+	const { db } = await import("@/db");
+	const { eq, and } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const year = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, input.academicYearId),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+	if (!year) throw notFound("Academic year not found for this institution");
+
+	if (input.programId) {
+		const program = await db.query.programs.findFirst({
+			where: and(
+				eq(schema.programs.id, input.programId),
+				eq(schema.programs.institutionId, institutionId),
+			),
+		});
+		if (!program) throw notFound("Program not found for this institution");
+	}
+
 	return repo.createFeeStructure({
 		institutionId,
 		academicYearId: input.academicYearId,
@@ -182,6 +202,26 @@ export async function assignStudent(
 		notes?: string;
 	},
 ) {
+	const { db } = await import("@/db");
+	const { eq, and } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.id, input.studentId),
+			eq(schema.students.institutionId, institutionId),
+		),
+	});
+	if (!student) throw notFound("Student not found for this institution");
+
+	const year = await db.query.academicYears.findFirst({
+		where: and(
+			eq(schema.academicYears.id, input.academicYearId),
+			eq(schema.academicYears.institutionId, institutionId),
+		),
+	});
+	if (!year) throw notFound("Academic year not found for this institution");
+
 	const existing = await repo.findAssignmentForStudent(
 		input.studentId,
 		input.academicYearId,
@@ -456,6 +496,14 @@ export async function createOrder(
 			message: "Assignment is already fully paid",
 		});
 
+	const alreadyPaid = await repo.sumPayments(input.feeAssignmentId);
+	const remaining = Number(assignment.effectiveAmount) - alreadyPaid;
+	if (input.amount > remaining)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Order amount (${input.amount}) exceeds remaining balance (${remaining})`,
+		});
+
 	return repo.createOrder({
 		institutionId,
 		feeAssignmentId: input.feeAssignmentId,
@@ -487,6 +535,20 @@ export async function confirmOrder(
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: `Order is already ${order.status}`,
+		});
+
+	// Re-check remaining balance to guard against concurrent payments/orders.
+	const assignment = await repo.findAssignmentById(
+		order.feeAssignmentId,
+		institutionId,
+	);
+	if (!assignment) throw notFound("Fee assignment not found");
+	const alreadyPaid = await repo.sumPayments(order.feeAssignmentId);
+	const remaining = Number(assignment.effectiveAmount) - alreadyPaid;
+	if (Number(order.amount) > remaining)
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Order amount exceeds remaining balance (${remaining}). Another payment may have been recorded concurrently.`,
 		});
 
 	const now = new Date();

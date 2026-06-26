@@ -69,6 +69,10 @@ export default function FeeAssignmentDetail() {
 	const [showPayment, setShowPayment] = useState(false);
 	const [showOrder, setShowOrder] = useState(false);
 	const [confirmOrderId, setConfirmOrderId] = useState<string | null>(null);
+	const [confirmPaymentDate, setConfirmPaymentDate] = useState(() =>
+		new Date().toISOString().slice(0, 10),
+	);
+	const [confirmPaymentMethod, setConfirmPaymentMethod] = useState("cash");
 	const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
 
 	const { data: assignment, isLoading } = useQuery(
@@ -106,8 +110,25 @@ export default function FeeAssignmentDetail() {
 	});
 
 	const confirmOrderMut = useMutation({
-		mutationFn: (orderId: string) =>
-			trpcClient.feeClearance.confirmOrder.mutate({ orderId }),
+		mutationFn: ({
+			orderId,
+			paymentDate,
+			paymentMethod,
+		}: {
+			orderId: string;
+			paymentDate: string;
+			paymentMethod: string;
+		}) =>
+			trpcClient.feeClearance.confirmOrder.mutate({
+				orderId,
+				paymentDate,
+				paymentMethod: paymentMethod as
+					| "cash"
+					| "bank_transfer"
+					| "mobile_money"
+					| "check"
+					| "other",
+			}),
 		onSuccess: () => {
 			toast.success(t("feeClearance.orders.confirmed"));
 			invalidate();
@@ -400,11 +421,57 @@ export default function FeeAssignmentDetail() {
 							{t("feeClearance.orders.confirmDescription")}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
+					<div className="grid gap-3 px-1 py-2">
+						<div className="grid gap-1">
+							<label
+								className="font-medium text-sm"
+								htmlFor="confirm-payment-date"
+							>
+								{t("feeClearance.orders.fields.paymentDate", {
+									defaultValue: "Payment date",
+								})}
+							</label>
+							<input
+								id="confirm-payment-date"
+								type="date"
+								className="rounded-md border px-3 py-1.5 text-sm"
+								value={confirmPaymentDate}
+								onChange={(e) => setConfirmPaymentDate(e.target.value)}
+							/>
+						</div>
+						<div className="grid gap-1">
+							<label
+								className="font-medium text-sm"
+								htmlFor="confirm-payment-method"
+							>
+								{t("feeClearance.orders.fields.paymentMethod", {
+									defaultValue: "Payment method",
+								})}
+							</label>
+							<select
+								id="confirm-payment-method"
+								className="rounded-md border px-3 py-1.5 text-sm"
+								value={confirmPaymentMethod}
+								onChange={(e) => setConfirmPaymentMethod(e.target.value)}
+							>
+								<option value="cash">Cash</option>
+								<option value="bank_transfer">Bank transfer</option>
+								<option value="mobile_money">Mobile money</option>
+								<option value="check">Check</option>
+								<option value="other">Other</option>
+							</select>
+						</div>
+					</div>
 					<AlertDialogFooter>
 						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={() =>
-								confirmOrderId && confirmOrderMut.mutate(confirmOrderId)
+								confirmOrderId &&
+								confirmOrderMut.mutate({
+									orderId: confirmOrderId,
+									paymentDate: confirmPaymentDate,
+									paymentMethod: confirmPaymentMethod,
+								})
 							}
 						>
 							{t("feeClearance.orders.confirm")}

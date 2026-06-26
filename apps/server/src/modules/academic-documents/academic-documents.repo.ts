@@ -230,13 +230,37 @@ export async function loadCenterByProgram(programId: string) {
 }
 
 /**
- * Quick lookup of the academic year a student is currently enrolled in,
- * derived from their assigned class. Used by fee clearance gates.
+ * Resolve the academic year for a gate check.
+ * When a deliberationId is provided, uses that deliberation's academic year
+ * (for historical document generation). Otherwise falls back to the student's
+ * currently assigned class year.
  */
-export async function getStudentAcademicYearId(
+export async function resolveAcademicYearIdForGate(
 	studentId: string,
 	institutionId: string,
+	deliberationId?: string,
 ): Promise<string | null> {
+	if (deliberationId) {
+		const [row] = await db
+			.select({ academicYearId: schema.deliberations.academicYearId })
+			.from(schema.deliberationStudentResults)
+			.innerJoin(
+				schema.deliberations,
+				eq(
+					schema.deliberations.id,
+					schema.deliberationStudentResults.deliberationId,
+				),
+			)
+			.where(
+				and(
+					eq(schema.deliberationStudentResults.studentId, studentId),
+					eq(schema.deliberationStudentResults.deliberationId, deliberationId),
+					eq(schema.deliberations.institutionId, institutionId),
+				),
+			)
+			.limit(1);
+		if (row?.academicYearId) return row.academicYearId;
+	}
 	const [row] = await db
 		.select({ academicYearId: schema.classes.academicYear })
 		.from(schema.students)

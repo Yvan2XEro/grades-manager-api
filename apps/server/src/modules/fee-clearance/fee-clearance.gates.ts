@@ -21,11 +21,9 @@ export async function assertFeeClearance(
 	params: {
 		studentId: string;
 		academicYearId: string;
-		/** Set to true to skip the check even when the gate is enabled. */
-		override?: boolean;
 	},
 ): Promise<void> {
-	if (params.override || ctx.permissions?.canOverrideFeeGates) return;
+	if (ctx.permissions?.canOverrideFeeGates) return;
 
 	// Lazy import so module mock intercepts @/db in test environments.
 	const repo = await import("./fee-clearance.repo");

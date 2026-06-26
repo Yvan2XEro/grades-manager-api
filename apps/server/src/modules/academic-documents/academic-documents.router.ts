@@ -16,6 +16,7 @@ import {
 } from "../exports/themes";
 import { getDefaultThemePayload } from "../exports/themes/presets-payload";
 import { assertFeeClearance } from "../fee-clearance/fee-clearance.gates";
+import { findGatingRule } from "../fee-clearance/fee-clearance.repo";
 import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
@@ -25,6 +26,36 @@ const DOCUMENT_GATES: Partial<Record<zod.DocumentKind, FeeGate>> = {
 	diploma: "diploma",
 	attestation: "document_generation",
 } as const;
+
+async function runDocumentGateCheck(
+	ctx: {
+		institution: { id: string };
+		permissions?: { canOverrideFeeGates?: boolean } | null;
+	},
+	gate: FeeGate,
+	studentId: string,
+	institutionId: string,
+	deliberationId?: string,
+) {
+	const academicYearId = await repo.resolveAcademicYearIdForGate(
+		studentId,
+		institutionId,
+		deliberationId,
+	);
+	if (academicYearId) {
+		await assertFeeClearance(ctx, gate, { studentId, academicYearId });
+		return;
+	}
+	// Can't resolve year — only block if the gate is explicitly enabled.
+	if (ctx.permissions?.canOverrideFeeGates) return;
+	const rule = await findGatingRule(institutionId, gate);
+	if (rule?.isEnabled) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `Fee clearance required for '${gate}': student has no active class enrollment for this academic year.`,
+		});
+	}
+}
 
 // System-default templates created by `seedSystemDefaults`.
 //
@@ -211,16 +242,13 @@ export const academicDocumentsRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const gate = DOCUMENT_GATES[input.kind];
 			if (gate && !input.demoMode) {
-				const academicYearId = await repo.getStudentAcademicYearId(
+				await runDocumentGateCheck(
+					ctx,
+					gate,
 					input.studentId,
 					ctx.institution.id,
+					input.deliberationId,
 				);
-				if (academicYearId) {
-					await assertFeeClearance(ctx, gate, {
-						studentId: input.studentId,
-						academicYearId,
-					});
-				}
 			}
 			const result = await service.generateDocument(ctx.institution.id, input);
 			const ext = input.format === "html" ? "html" : "pdf";
@@ -264,16 +292,13 @@ export const academicDocumentsRouter = router({
 		.query(async ({ ctx, input }) => {
 			const gate = DOCUMENT_GATES[input.kind];
 			if (gate && !input.demoMode) {
-				const academicYearId = await repo.getStudentAcademicYearId(
+				await runDocumentGateCheck(
+					ctx,
+					gate,
 					input.studentId,
 					ctx.institution.id,
+					input.deliberationId,
 				);
-				if (academicYearId) {
-					await assertFeeClearance(ctx, gate, {
-						studentId: input.studentId,
-						academicYearId,
-					});
-				}
 			}
 			const result = await service.generateDocument(ctx.institution.id, {
 				...input,

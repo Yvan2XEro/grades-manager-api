@@ -6,6 +6,11 @@ import type {
 	Institution,
 	InstitutionMetadata,
 } from "../../db/schema/app-schema";
+import {
+	FINANCIAL_CLEARANCE_TEMPLATE,
+	PAYMENT_ORDER_TEMPLATE,
+	PAYMENT_RECEIPT_TEMPLATE,
+} from "./financial-templates";
 
 /**
  * Configuration interface for exports
@@ -219,6 +224,17 @@ export function loadTemplate(
 	variant: TemplateVariant = "standard",
 	establishmentType?: EstablishmentType,
 ): string {
+	// Financial templates are TS string exports (bundled at compile time,
+	// no fs read needed, works in Docker without extra COPY rules).
+	const financialMap: Record<string, string> = {
+		payment_order: PAYMENT_ORDER_TEMPLATE,
+		payment_receipt: PAYMENT_RECEIPT_TEMPLATE,
+		financial_clearance: FINANCIAL_CLEARANCE_TEMPLATE,
+	};
+	if (templateName in financialMap) {
+		return financialMap[templateName]!;
+	}
+
 	const standardMap: Record<string, string> = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
