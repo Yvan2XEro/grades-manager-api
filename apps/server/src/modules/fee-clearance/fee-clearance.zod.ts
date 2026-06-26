@@ -233,6 +233,7 @@ export const applyBankImportSchema = z.object({
 		.enum(feePaymentMethods as unknown as [string, ...string[]])
 		.default("bank_transfer"),
 	notes: z.string().optional(),
+	forceMatchRefs: z.string().array().optional(),
 });
 
 // ── Gating ────────────────────────────────────────────────────────────

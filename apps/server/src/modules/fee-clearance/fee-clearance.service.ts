@@ -1493,19 +1493,27 @@ export async function applyBankImport(
 	institutionId: string,
 	rows: BankRow[],
 	confirmedBy: string,
-	opts: { paymentMethod: string; notes?: string },
+	opts: { paymentMethod: string; notes?: string; forceMatchRefs?: string[] },
 ): Promise<{
 	applied: number;
 	skipped: number;
 	errors: { reference: string; reason: string }[];
 }> {
 	const { results } = await previewBankImport(institutionId, rows);
-	const matched = results.filter((r) => r.status === "matched");
+	const forceSet = new Set(opts.forceMatchRefs ?? []);
+
+	const toApply = results.filter(
+		(r) =>
+			r.status === "matched" ||
+			(r.status === "amount_mismatch" &&
+				r.orderId &&
+				forceSet.has(r.reference)),
+	);
 
 	let applied = 0;
 	const errors: { reference: string; reason: string }[] = [];
 
-	for (const line of matched) {
+	for (const line of toApply) {
 		if (!line.orderId) continue;
 		try {
 			await confirmOrder(line.orderId, institutionId, confirmedBy, {
@@ -1525,7 +1533,7 @@ export async function applyBankImport(
 
 	return {
 		applied,
-		skipped: results.length - matched.length,
+		skipped: results.length - toApply.length,
 		errors,
 	};
 }

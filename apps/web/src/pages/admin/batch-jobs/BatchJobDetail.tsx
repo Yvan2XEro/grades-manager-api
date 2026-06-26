@@ -1,19 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import {
+	AlertTriangle,
 	ArrowLeft,
 	CheckCircle2,
 	Clock,
+	ExternalLink,
 	Loader2,
 	RotateCcw,
 	XCircle,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../../../components/ui/dialog";
 import { type RouterOutputs, trpc, trpcClient } from "../../../utils/trpc";
 
 type BatchJob = NonNullable<RouterOutputs["batchJobs"]["get"]>;
@@ -32,11 +42,16 @@ const logLevelColors: Record<string, string> = {
 	error: "text-red-600",
 };
 
+type ConfirmAction = "cancel" | "rollback";
+
 export default function BatchJobDetail() {
 	const { t } = useTranslation();
 	const { jobId } = useParams<{ jobId: string }>();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
+		null,
+	);
 
 	const jobQuery = useQuery({
 		...trpc.batchJobs.get.queryOptions({ jobId: jobId! }),
@@ -69,18 +84,28 @@ export default function BatchJobDetail() {
 		onSuccess: () => {
 			toast.success(t("admin.batchJobs.toast.cancelSuccess"));
 			invalidateJob();
+			setConfirmAction(null);
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => {
+			toast.error((err as Error).message);
+			setConfirmAction(null);
+		},
 	});
 
 	const rollbackMutation = useMutation({
 		mutationFn: () => trpcClient.batchJobs.rollback.mutate({ jobId: jobId! }),
-		onSuccess: () => {
+		onSuccess: (result) => {
 			toast.success(t("admin.batchJobs.toast.rollbackSuccess"));
 			invalidateJob();
 			invalidateList();
+			setConfirmAction(null);
+			// Navigate to the newly created rollback job
+			if (result?.id) navigate(`/admin/batch-jobs/${result.id}`);
 		},
-		onError: (err) => toast.error((err as Error).message),
+		onError: (err) => {
+			toast.error((err as Error).message);
+			setConfirmAction(null);
+		},
 	});
 
 	const job: BatchJob | undefined = jobQuery.data ?? undefined;
@@ -108,6 +133,13 @@ export default function BatchJobDetail() {
 	}
 
 	const progress = job.progress;
+	const isFailed = job.status === "failed" || job.status === "stale";
+	const canRun = job.status === "previewed";
+	const canCancel =
+		job.status === "pending" ||
+		job.status === "previewed" ||
+		job.status === "running";
+	const canRollback = job.status === "completed";
 
 	return (
 		<div className="space-y-6">
@@ -135,7 +167,7 @@ export default function BatchJobDetail() {
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
-					{job.status === "previewed" && (
+					{canRun && (
 						<Button
 							onClick={() => runMutation.mutate()}
 							disabled={runMutation.isPending}
@@ -146,21 +178,19 @@ export default function BatchJobDetail() {
 							{t("admin.batchJobs.actions.run")}
 						</Button>
 					)}
-					{(job.status === "pending" ||
-						job.status === "previewed" ||
-						job.status === "running") && (
+					{canCancel && (
 						<Button
 							variant="outline"
-							onClick={() => cancelMutation.mutate()}
+							onClick={() => setConfirmAction("cancel")}
 							disabled={cancelMutation.isPending}
 						>
 							{t("admin.batchJobs.actions.cancel")}
 						</Button>
 					)}
-					{job.status === "completed" && (
+					{canRollback && (
 						<Button
 							variant="outline"
-							onClick={() => rollbackMutation.mutate()}
+							onClick={() => setConfirmAction("rollback")}
 							disabled={rollbackMutation.isPending}
 						>
 							<RotateCcw className="mr-2 h-4 w-4" />
@@ -169,6 +199,65 @@ export default function BatchJobDetail() {
 					)}
 				</div>
 			</div>
+
+			{/* Parent / rollback job links */}
+			{(job.parentJobId || job.rollbackJobId) && (
+				<div className="flex flex-wrap gap-3">
+					{job.parentJobId && (
+						<Link
+							to={`/admin/batch-jobs/${job.parentJobId}`}
+							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
+						>
+							<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+							{t("admin.batchJobs.detail.originalJob", {
+								defaultValue: "View original job",
+							})}
+						</Link>
+					)}
+					{job.rollbackJobId && (
+						<Link
+							to={`/admin/batch-jobs/${job.rollbackJobId}`}
+							className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50"
+						>
+							<RotateCcw className="h-3.5 w-3.5 text-muted-foreground" />
+							{t("admin.batchJobs.detail.rollbackJob", {
+								defaultValue: "View rollback job",
+							})}
+						</Link>
+					)}
+				</div>
+			)}
+
+			{/* Failure summary */}
+			{isFailed && (
+				<div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+					<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+					<div className="space-y-1">
+						<p className="font-medium text-red-800 text-sm">
+							{t("admin.batchJobs.detail.failureSummary", {
+								defaultValue:
+									job.status === "stale" ? "Job timed out" : "Job failed",
+							})}
+						</p>
+						{job.error && <p className="text-red-700 text-sm">{job.error}</p>}
+						{job.steps?.some((s) => s.status === "failed") && (
+							<ul className="mt-2 space-y-0.5 text-red-700 text-xs">
+								{job.steps
+									.filter((s) => s.status === "failed")
+									.map((s) => (
+										<li key={s.id}>
+											<span className="font-medium">{s.name}:</span>{" "}
+											{s.error ??
+												t("admin.batchJobs.detail.unknownError", {
+													defaultValue: "Unknown error",
+												})}
+										</li>
+									))}
+							</ul>
+						)}
+					</div>
+				</div>
+			)}
 
 			{/* Status + Progress */}
 			<div className="grid gap-4 md:grid-cols-2">
@@ -180,7 +269,7 @@ export default function BatchJobDetail() {
 						variant={
 							job.status === "completed"
 								? "default"
-								: job.status === "failed" || job.status === "stale"
+								: isFailed
 									? "destructive"
 									: "secondary"
 						}
@@ -190,11 +279,6 @@ export default function BatchJobDetail() {
 							defaultValue: job.status,
 						})}
 					</Badge>
-					{job.error && (
-						<div className="mt-3 rounded-lg bg-red-50 p-3 text-red-700 text-sm">
-							{job.error}
-						</div>
-					)}
 				</div>
 
 				{progress && (
@@ -205,15 +289,20 @@ export default function BatchJobDetail() {
 						<div className="space-y-2">
 							<div className="flex justify-between text-sm">
 								<span className="text-muted-foreground">
-									Step {progress.currentStep}/{progress.totalSteps}
+									{t("admin.batchJobs.detail.step", {
+										current: progress.currentStep,
+										total: progress.totalSteps,
+										defaultValue: `Step ${progress.currentStep}/${progress.totalSteps}`,
+									})}
 								</span>
 								<span className="font-medium">
-									{progress.itemsProcessed}/{progress.itemsTotal} items
+									{progress.itemsProcessed}/{progress.itemsTotal}{" "}
+									{t("admin.batchJobs.detail.items", { defaultValue: "items" })}
 								</span>
 							</div>
 							<div className="h-3 w-full rounded-full bg-gray-200">
 								<div
-									className="h-3 rounded-full bg-primary-600 transition-all"
+									className="h-3 rounded-full bg-primary transition-all"
 									style={{
 										width: `${progress.itemsTotal > 0 ? (progress.itemsProcessed / progress.itemsTotal) * 100 : 0}%`,
 									}}
@@ -251,13 +340,26 @@ export default function BatchJobDetail() {
 								</div>
 								{(step.itemsProcessed ?? 0) > 0 && (
 									<div className="mt-1 flex gap-3 text-muted-foreground text-xs">
-										<span>Processed: {step.itemsProcessed}</span>
+										<span>
+											{t("admin.batchJobs.detail.processed", {
+												count: step.itemsProcessed,
+												defaultValue: `Processed: ${step.itemsProcessed}`,
+											})}
+										</span>
 										{(step.itemsSkipped ?? 0) > 0 && (
-											<span>Skipped: {step.itemsSkipped}</span>
+											<span>
+												{t("admin.batchJobs.detail.skipped", {
+													count: step.itemsSkipped,
+													defaultValue: `Skipped: ${step.itemsSkipped}`,
+												})}
+											</span>
 										)}
 										{(step.itemsFailed ?? 0) > 0 && (
 											<span className="text-red-500">
-												Failed: {step.itemsFailed}
+												{t("admin.batchJobs.detail.failed", {
+													count: step.itemsFailed,
+													defaultValue: `Failed: ${step.itemsFailed}`,
+												})}
 											</span>
 										)}
 									</div>
@@ -312,6 +414,59 @@ export default function BatchJobDetail() {
 					</div>
 				)}
 			</div>
+
+			{/* Confirm cancel / rollback dialog */}
+			<Dialog
+				open={confirmAction !== null}
+				onOpenChange={(open) => {
+					if (!open) setConfirmAction(null);
+				}}
+			>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>
+							{confirmAction === "cancel"
+								? t("admin.batchJobs.confirm.cancelTitle", {
+										defaultValue: "Cancel job?",
+									})
+								: t("admin.batchJobs.confirm.rollbackTitle", {
+										defaultValue: "Rollback job?",
+									})}
+						</DialogTitle>
+					</DialogHeader>
+					<p className="text-muted-foreground text-sm">
+						{confirmAction === "cancel"
+							? t("admin.batchJobs.confirm.cancelMessage", {
+									defaultValue:
+										"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
+								})
+							: t("admin.batchJobs.confirm.rollbackMessage", {
+									defaultValue:
+										"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
+								})}
+					</p>
+					<DialogFooter className="gap-2">
+						<Button variant="outline" onClick={() => setConfirmAction(null)}>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={cancelMutation.isPending || rollbackMutation.isPending}
+							onClick={() => {
+								if (confirmAction === "cancel") cancelMutation.mutate();
+								else rollbackMutation.mutate();
+							}}
+						>
+							{(cancelMutation.isPending || rollbackMutation.isPending) && (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							)}
+							{confirmAction === "cancel"
+								? t("admin.batchJobs.actions.cancel")
+								: t("admin.batchJobs.actions.rollback")}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

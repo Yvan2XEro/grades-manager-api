@@ -9,8 +9,10 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import * as XLSX from "xlsx";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -73,9 +75,9 @@ const STATUS_BADGE: Record<
 	},
 };
 
-function parseCSV(
-	raw: string,
-): { reference: string; amount: number; date: string }[] {
+type ParsedRow = { reference: string; amount: number; date: string };
+
+function parseCSV(raw: string): ParsedRow[] {
 	return raw
 		.split("\n")
 		.map((line) => line.trim())
@@ -102,6 +104,60 @@ function parseCSV(
 		);
 }
 
+function xlsxDateToISO(value: unknown): string {
+	if (value instanceof Date) {
+		return value.toISOString().slice(0, 10);
+	}
+	if (typeof value === "number") {
+		// Excel serial date
+		const d = XLSX.SSF.parse_date_code(value);
+		if (d) {
+			const month = String(d.m).padStart(2, "0");
+			const day = String(d.d).padStart(2, "0");
+			return `${d.y}-${month}-${day}`;
+		}
+	}
+	if (typeof value === "string") {
+		// Try ISO or DD/MM/YYYY
+		const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		if (iso) return value;
+		const fr = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+		if (fr) return `${fr[3]}-${fr[2]}-${fr[1]}`;
+	}
+	return "";
+}
+
+function parseXLSX(buffer: ArrayBuffer): ParsedRow[] {
+	const wb = XLSX.read(buffer, { type: "array", cellDates: true });
+	const ws = wb.Sheets[wb.SheetNames[0]];
+	if (!ws) return [];
+	const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, {
+		header: 1,
+		defval: "",
+	}) as unknown[][];
+
+	return rows
+		.slice(1) // skip header
+		.map((row) => {
+			const reference = String(row[0] ?? "").trim();
+			const rawAmount = row[1];
+			const amount = Number.parseFloat(
+				String(rawAmount ?? "")
+					.trim()
+					.replace(/\s/g, ""),
+			);
+			const date = xlsxDateToISO(row[2]);
+			return { reference, amount, date };
+		})
+		.filter(
+			(r) =>
+				r.reference.length > 0 &&
+				!Number.isNaN(r.amount) &&
+				r.amount > 0 &&
+				/^\d{4}-\d{2}-\d{2}$/.test(r.date),
+		);
+}
+
 interface Props {
 	open: boolean;
 	onOpenChange: (o: boolean) => void;
@@ -117,10 +173,13 @@ export default function BankImportDialog({
 	const fileRef = useRef<HTMLInputElement>(null);
 
 	const [csvText, setCsvText] = useState("");
+	const [parsedRows, setParsedRows] = useState<ParsedRow[] | null>(null);
 	const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
 	const [showPreview, setShowPreview] = useState(false);
+	const [forceMatchRefs, setForceMatchRefs] = useState<Set<string>>(new Set());
 
-	const rows = parseCSV(csvText);
+	// rows: use pre-parsed (XLSX) or parse CSV on-the-fly
+	const rows: ParsedRow[] = parsedRows ?? parseCSV(csvText);
 	const canPreview = rows.length > 0;
 
 	const previewQuery = useQuery({
@@ -133,6 +192,7 @@ export default function BankImportDialog({
 			trpcClient.feeClearance.applyBankImport.mutate({
 				rows,
 				paymentMethod: paymentMethod as never,
+				forceMatchRefs: [...forceMatchRefs],
 			}),
 		onSuccess: (data) => {
 			toast.success(
@@ -149,24 +209,59 @@ export default function BankImportDialog({
 
 	function handleClose() {
 		setCsvText("");
+		setParsedRows(null);
 		setShowPreview(false);
+		setForceMatchRefs(new Set());
 		onOpenChange(false);
 	}
 
 	function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = (ev) => {
-			setCsvText((ev.target?.result as string) ?? "");
-			setShowPreview(false);
-		};
-		reader.readAsText(file);
+
+		const isXlsx =
+			file.name.endsWith(".xlsx") ||
+			file.name.endsWith(".xls") ||
+			file.type ===
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+			file.type === "application/vnd.ms-excel";
+
+		if (isXlsx) {
+			const reader = new FileReader();
+			reader.onload = (ev) => {
+				const buf = ev.target?.result as ArrayBuffer;
+				const rows = parseXLSX(buf);
+				setParsedRows(rows);
+				setCsvText("");
+				setShowPreview(false);
+				setForceMatchRefs(new Set());
+			};
+			reader.readAsArrayBuffer(file);
+		} else {
+			const reader = new FileReader();
+			reader.onload = (ev) => {
+				setParsedRows(null);
+				setCsvText((ev.target?.result as string) ?? "");
+				setShowPreview(false);
+				setForceMatchRefs(new Set());
+			};
+			reader.readAsText(file);
+		}
 		e.target.value = "";
+	}
+
+	function toggleForceMatch(ref: string) {
+		setForceMatchRefs((prev) => {
+			const next = new Set(prev);
+			if (next.has(ref)) next.delete(ref);
+			else next.add(ref);
+			return next;
+		});
 	}
 
 	const preview = previewQuery.data;
 	const matched = preview?.summary.matched ?? 0;
+	const canApply = matched + forceMatchRefs.size > 0;
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
@@ -176,7 +271,7 @@ export default function BankImportDialog({
 				</DialogHeader>
 
 				<div className="space-y-4">
-					{/* CSV input */}
+					{/* File / CSV input */}
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
 							<Label>{t("feeClearance.bankImport.csvLabel")}</Label>
@@ -192,20 +287,43 @@ export default function BankImportDialog({
 							<input
 								ref={fileRef}
 								type="file"
-								accept=".csv,.txt"
+								accept=".csv,.txt,.xlsx,.xls"
 								className="hidden"
 								onChange={handleFileUpload}
 							/>
 						</div>
-						<Textarea
-							rows={5}
-							placeholder={t("feeClearance.bankImport.csvPlaceholder")}
-							value={csvText}
-							onChange={(e) => {
-								setCsvText(e.target.value);
-								setShowPreview(false);
-							}}
-						/>
+						{/* XLSX selected: show pill instead of textarea */}
+						{parsedRows !== null ? (
+							<div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+								<CheckCircle2 className="h-4 w-4 text-green-600" />
+								<span>
+									{t("feeClearance.bankImport.xlsxLoaded", {
+										count: parsedRows.length,
+										defaultValue: `${parsedRows.length} lignes chargées depuis le fichier Excel`,
+									})}
+								</span>
+								<button
+									type="button"
+									className="ml-auto text-muted-foreground hover:text-foreground"
+									onClick={() => {
+										setParsedRows(null);
+										setShowPreview(false);
+									}}
+								>
+									<XCircle className="h-4 w-4" />
+								</button>
+							</div>
+						) : (
+							<Textarea
+								rows={5}
+								placeholder={t("feeClearance.bankImport.csvPlaceholder")}
+								value={csvText}
+								onChange={(e) => {
+									setCsvText(e.target.value);
+									setShowPreview(false);
+								}}
+							/>
+						)}
 						<p className="text-muted-foreground text-xs">
 							{rows.length > 0
 								? t("feeClearance.bankImport.rowsParsed", {
@@ -295,11 +413,13 @@ export default function BankImportDialog({
 													<TableHead>
 														{t("feeClearance.bankImport.col.status")}
 													</TableHead>
+													<TableHead />
 												</TableRow>
 											</TableHeader>
 											<TableBody>
 												{preview.results.map((r, i) => {
 													const cfg = STATUS_BADGE[r.status];
+													const isForced = forceMatchRefs.has(r.reference);
 													return (
 														<TableRow key={`${r.reference}-${i}`}>
 															<TableCell className="font-mono text-xs">
@@ -323,12 +443,35 @@ export default function BankImportDialog({
 															</TableCell>
 															<TableCell>
 																<Badge
-																	variant={cfg.variant}
+																	variant={isForced ? "default" : cfg.variant}
 																	className="gap-1 text-xs"
 																>
-																	{cfg.icon}
-																	{cfg.label}
+																	{isForced ? (
+																		<CheckCircle2 className="h-3 w-3" />
+																	) : (
+																		cfg.icon
+																	)}
+																	{isForced
+																		? t("feeClearance.bankImport.forced", {
+																				defaultValue: "Forcé",
+																			})
+																		: cfg.label}
 																</Badge>
+															</TableCell>
+															<TableCell>
+																{r.status === "amount_mismatch" && (
+																	<label className="flex cursor-pointer items-center gap-1.5 text-xs">
+																		<Checkbox
+																			checked={isForced}
+																			onCheckedChange={() =>
+																				toggleForceMatch(r.reference)
+																			}
+																		/>
+																		{t("feeClearance.bankImport.forceMatch", {
+																			defaultValue: "Forcer",
+																		})}
+																	</label>
+																)}
 															</TableCell>
 														</TableRow>
 													);
@@ -353,16 +496,16 @@ export default function BankImportDialog({
 					) : (
 						<Button
 							disabled={
-								matched === 0 ||
-								applyMutation.isPending ||
-								previewQuery.isLoading
+								!canApply || applyMutation.isPending || previewQuery.isLoading
 							}
 							onClick={() => applyMutation.mutate()}
 						>
 							{applyMutation.isPending && (
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 							)}
-							{t("feeClearance.bankImport.confirm", { count: matched })}
+							{t("feeClearance.bankImport.confirm", {
+								count: matched + forceMatchRefs.size,
+							})}
 						</Button>
 					)}
 				</DialogFooter>

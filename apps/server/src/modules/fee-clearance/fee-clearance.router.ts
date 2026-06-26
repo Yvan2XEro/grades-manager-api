@@ -192,6 +192,7 @@ export const feeClearanceRouter = router({
 				{
 					paymentMethod: input.paymentMethod,
 					notes: input.notes,
+					forceMatchRefs: input.forceMatchRefs,
 				},
 			);
 		}),
