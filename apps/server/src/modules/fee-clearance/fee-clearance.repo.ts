@@ -480,12 +480,14 @@ export async function findStudentsByClass(classId: string) {
 export async function findStudentsByProgram(
 	programId: string,
 	academicYearId: string,
+	institutionId: string,
 ) {
-	// Students enrolled in any class belonging to the program + year
+	// Students enrolled in any class belonging to the program + year within the institution
 	const classes = await db.query.classes.findMany({
 		where: and(
 			eq(schema.classes.program, programId),
 			eq(schema.classes.academicYear, academicYearId),
+			eq(schema.classes.institutionId, institutionId),
 		),
 		columns: { id: true },
 	});
@@ -516,10 +518,16 @@ export async function findStudentsByYear(
 	});
 }
 
-export async function findStudentsByIds(studentIds: string[]) {
+export async function findStudentsByIds(
+	studentIds: string[],
+	institutionId: string,
+) {
 	if (studentIds.length === 0) return [];
 	return db.query.students.findMany({
-		where: inArray(schema.students.id, studentIds),
+		where: and(
+			inArray(schema.students.id, studentIds),
+			eq(schema.students.institutionId, institutionId),
+		),
 		with: { profile: { columns: { firstName: true, lastName: true } } },
 	});
 }

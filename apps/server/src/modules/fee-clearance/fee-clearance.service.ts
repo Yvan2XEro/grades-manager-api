@@ -378,7 +378,19 @@ export async function bulkAssignClass(
 		});
 
 	const students = await repo.findStudentsByClass(input.classId);
-	if (students.length === 0) return { assigned: 0, skipped: 0 };
+	if (students.length === 0) {
+		await repo.createBatchRecord({
+			institutionId,
+			mode: "class",
+			scopeId: input.classId,
+			feeStructureId: structure.id,
+			feeStructureName: structure.name,
+			assignedCount: 0,
+			skippedCount: 0,
+			createdBy: createdBy ?? null,
+		});
+		return { assigned: 0, skipped: 0 };
+	}
 
 	let assigned = 0;
 	let skipped = 0;
@@ -562,6 +574,7 @@ export async function previewBulkAssignProgram(
 	const students = await repo.findStudentsByProgram(
 		input.programId,
 		input.academicYearId,
+		institutionId,
 	);
 	return buildPreviewForStudents(
 		students,
@@ -595,8 +608,8 @@ export async function bulkAssignProgram(
 	const students = await repo.findStudentsByProgram(
 		input.programId,
 		input.academicYearId,
+		institutionId,
 	);
-	if (students.length === 0) return { assigned: 0, skipped: 0 };
 
 	return executeBulkAssign(
 		students,
@@ -662,7 +675,6 @@ export async function bulkAssignYear(
 		input.academicYearId,
 		institutionId,
 	);
-	if (students.length === 0) return { assigned: 0, skipped: 0 };
 
 	return executeBulkAssign(
 		students,
@@ -687,7 +699,10 @@ export async function previewBulkAssignStudents(
 	);
 	if (!structure) throw notFound("Fee structure not found");
 
-	const students = await repo.findStudentsByIds(input.studentIds);
+	const students = await repo.findStudentsByIds(
+		input.studentIds,
+		institutionId,
+	);
 	return buildPreviewForStudents(
 		students,
 		structure,
@@ -711,8 +726,10 @@ export async function bulkAssignStudents(
 	);
 	if (!structure) throw notFound("Fee structure not found");
 
-	const students = await repo.findStudentsByIds(input.studentIds);
-	if (students.length === 0) return { assigned: 0, skipped: 0 };
+	const students = await repo.findStudentsByIds(
+		input.studentIds,
+		institutionId,
+	);
 
 	return executeBulkAssign(
 		students,

@@ -941,6 +941,35 @@ describe("feeClearance router", () => {
 			expect(preview.results[0].orderAmount).toBe(200000);
 		});
 
+		it("applyBankImport with forceMatchRefs applies amount_mismatch row", async () => {
+			const { caller, order, assignment } = await setup();
+
+			// Preview classifies the row as amount_mismatch (wrong amount)
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 100000, date: "2026-01-15" },
+				],
+			});
+			expect(preview.results[0].status).toBe("amount_mismatch");
+
+			// Force-apply the mismatch row via forceMatchRefs
+			const result = await caller.feeClearance.applyBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 100000, date: "2026-01-15" },
+				],
+				paymentMethod: "bank_transfer",
+				forceMatchRefs: [order.reference!],
+			});
+
+			expect(result.applied).toBe(1);
+			expect(result.errors.length).toBe(0);
+
+			const updated = await caller.feeClearance.getAssignment({
+				id: assignment.id,
+			});
+			expect(updated.status).toBe("paid");
+		});
+
 		it("applyBankImport confirms matched orders and marks assignment paid", async () => {
 			const { caller, order, assignment } = await setup();
 
