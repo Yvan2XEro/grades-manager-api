@@ -3118,6 +3118,9 @@
       "sessionType": {
         "normal": "Normale",
         "retake": "Rattrapage"
+      },
+      "rejection": {
+        "label": "Motif du rejet :"
       }
     },
     "courses": {

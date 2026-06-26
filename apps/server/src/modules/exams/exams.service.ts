@@ -9,6 +9,7 @@ import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
 import * as gradesRepo from "../grades/grades.repo";
+import * as notificationsService from "../notifications/notifications.service";
 import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as repo from "./exams.repo";
@@ -233,7 +234,7 @@ export async function validateExam(
 			message: "Exam must be submitted before approval",
 		});
 	}
-	return repo.update(
+	const updated = await repo.update(
 		examId,
 		{
 			status,
@@ -243,6 +244,34 @@ export async function validateExam(
 		},
 		institutionId,
 	);
+
+	// Notify the teacher — fire-and-forget, do not block the response
+	void (async () => {
+		try {
+			const classCourse = await db.query.classCourses.findFirst({
+				where: eq(schema.classCourses.id, existing.classCourse),
+				columns: { teacher: true },
+			});
+			if (classCourse?.teacher) {
+				const notifType =
+					status === "approved"
+						? "exam.grade_submission.approved"
+						: "exam.grade_submission.rejected";
+				await notificationsService.queueInApp(classCourse.teacher, notifType, {
+					examId,
+					examName: existing.name,
+					classCourseId: existing.classCourse,
+					...(status === "rejected" && rejectionReason
+						? { rejectionReason }
+						: {}),
+				});
+			}
+		} catch {
+			// swallow — notification failure must not fail the approval
+		}
+	})();
+
+	return updated;
 }
 
 export async function deleteExam(

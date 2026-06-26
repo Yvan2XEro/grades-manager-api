@@ -2104,6 +2104,9 @@
       "sessionType": {
         "normal": "Normal",
         "retake": "Retake"
+      },
+      "rejection": {
+        "label": "Rejection reason:"
       }
     },
     "examTypes": {
