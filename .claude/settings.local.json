@@ -158,7 +158,14 @@
       "WebFetch(domain:dokploy.com)",
       "Bash(curl -s https://raw.githubusercontent.com/Dokploy/dokploy/canary/openapi.json)",
       "Bash(npx biome *)",
-      "Bash(bunx biome *)"
+      "Bash(bunx biome *)",
+      "Bash(USE_PGLITE=false DATABASE_URL=\"postgresql://gm:xPC2P2X1hfxBqyResfgF@192.168.0.99:54322/gm\" bunx drizzle-kit generate)",
+      "Bash(PGPASSWORD=xPC2P2X1hfxBqyResfgF psql -h 192.168.0.99 -p 54322 -U gm -d gm)",
+      "Bash(USE_PGLITE=true node -e ' *)",
+      "mcp__linear__list_issues",
+      "mcp__linear__list_issue_statuses",
+      "mcp__linear__save_issue",
+      "mcp__linear__list_comments"
     ]
   },
   "enabledMcpjsonServers": [

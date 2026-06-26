@@ -34,3 +34,5 @@ apps/web/presentation-assets/
 # Local-only artifacts (Remotion app, ad-hoc scripts, raw data dumps)
 scripts/
 datas/
+
+*.local.json

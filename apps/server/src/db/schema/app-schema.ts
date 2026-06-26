@@ -2461,6 +2461,9 @@ export const exportTemplateTypes = [
 	"transcript",
 	"attestation",
 	"student_list",
+	"payment_order",
+	"payment_receipt",
+	"financial_clearance",
 ] as const;
 export type ExportTemplateType = (typeof exportTemplateTypes)[number];
 
@@ -2990,3 +2993,433 @@ export const diplomationDocumentsRelations = relations(
 		}),
 	}),
 );
+
+// ---------------------------------------------------------------------------
+// Fee Clearance / Quitus — JVL-5
+// ---------------------------------------------------------------------------
+
+export const feeAssignmentStatuses = [
+	"unpaid",
+	"partial",
+	"paid",
+	"exempt",
+] as const;
+export type FeeAssignmentStatus = (typeof feeAssignmentStatuses)[number];
+
+export const feePaymentMethods = [
+	"cash",
+	"bank_transfer",
+	"mobile_money",
+	"check",
+	"other",
+] as const;
+export type FeePaymentMethod = (typeof feePaymentMethods)[number];
+
+export const feeGates = [
+	"exam_registration",
+	"transcript",
+	"diploma",
+	"reenrollment",
+	"document_generation",
+] as const;
+export type FeeGate = (typeof feeGates)[number];
+
+/** Fee template: total fees due for a given institution / year / optional program. */
+export const feeStructures = pgTable(
+	"fee_structures",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		/** Null = applies to all programs in the institution for this year. */
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "set null",
+		}),
+		/** Null = applies to all levels. */
+		cycleLevelId: text("cycle_level_id").references(() => cycleLevels.id, {
+			onDelete: "set null",
+		}),
+		name: text("name").notNull(),
+		description: text("description"),
+		totalAmount: numeric("total_amount", { precision: 12, scale: 2 })
+			.notNull()
+			.default("0"),
+		currency: text("currency").notNull().default("XAF"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		index("idx_fee_structures_institution_year").on(
+			t.institutionId,
+			t.academicYearId,
+		),
+		index("idx_fee_structures_program").on(t.programId),
+		check("chk_fee_structures_amount", sql`${t.totalAmount} >= 0`),
+	],
+);
+
+/** Installment schedule within a fee structure (1st tranche, 2nd tranche, …). */
+export const feeStructureInstallments = pgTable(
+	"fee_structure_installments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		feeStructureId: text("fee_structure_id")
+			.notNull()
+			.references(() => feeStructures.id, { onDelete: "cascade" }),
+		label: text("label").notNull(),
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		dueDate: date("due_date"),
+		orderIndex: integer("order_index").notNull().default(0),
+	},
+	(t) => [
+		index("idx_fee_installments_structure").on(t.feeStructureId),
+		unique("uq_fee_installments_order").on(t.feeStructureId, t.orderIndex),
+		check("chk_fee_installments_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** Assigns a fee structure to a student for an academic year.
+ *  One row per student per year. Tracks clearance status and quitus date. */
+export const studentFeeAssignments = pgTable(
+	"student_fee_assignments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		feeStructureId: text("fee_structure_id")
+			.notNull()
+			.references(() => feeStructures.id),
+		/** Amount after discount. Set from feeStructure.totalAmount at assignment time. */
+		effectiveAmount: numeric("effective_amount", {
+			precision: 12,
+			scale: 2,
+		}).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		discountAmount: numeric("discount_amount", { precision: 12, scale: 2 })
+			.notNull()
+			.default("0"),
+		discountReason: text("discount_reason"),
+		status: text("status")
+			.$type<FeeAssignmentStatus>()
+			.notNull()
+			.default("unpaid"),
+		/** Set when status transitions to 'paid'. Printed as the quitus date. */
+		clearedAt: timestamp("cleared_at", { withTimezone: true }),
+		notes: text("notes"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdBy: text("created_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_student_fee_assignments_student_year").on(
+			t.institutionId,
+			t.studentId,
+			t.academicYearId,
+		),
+		index("idx_student_fee_assignments_institution_year").on(
+			t.institutionId,
+			t.academicYearId,
+		),
+		index("idx_student_fee_assignments_student").on(t.studentId),
+		index("idx_student_fee_assignments_status").on(t.institutionId, t.status),
+		check(
+			"chk_student_fee_assignments_discount",
+			sql`${t.discountAmount} >= 0 AND ${t.discountAmount} <= ${t.effectiveAmount}`,
+		),
+	],
+);
+
+export const feePaymentOrderStatuses = [
+	"pending",
+	"confirmed",
+	"cancelled",
+] as const;
+export type FeePaymentOrderStatus = (typeof feePaymentOrderStatuses)[number];
+
+/**
+ * A payment order (bon de caisse / quitus) generated before payment is
+ * made. The student takes this document to the cashier or bank.
+ * One order may cover one or several installments.
+ * Status transitions: pending → confirmed | cancelled.
+ */
+export const feePaymentOrders = pgTable(
+	"fee_payment_orders",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		feeAssignmentId: text("fee_assignment_id")
+			.notNull()
+			.references(() => studentFeeAssignments.id, { onDelete: "cascade" }),
+		status: text("status")
+			.$type<FeePaymentOrderStatus>()
+			.notNull()
+			.default("pending"),
+		/** Amount the student intends to pay with this order. */
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		/** Installment IDs covered by this order (empty array = full balance). */
+		installmentIds: jsonb("installment_ids")
+			.$type<string[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
+		/** Human-readable reference printed on the order document. */
+		reference: text("reference"),
+		notes: text("notes"),
+		/** Timestamp when admin/cashier confirmed the payment was received. */
+		confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+		confirmedBy: text("confirmed_by").references(() => domainUsers.id),
+		expiresAt: timestamp("expires_at", { withTimezone: true }),
+		createdBy: text("created_by").references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_payment_orders_assignment").on(t.feeAssignmentId),
+		index("idx_fee_payment_orders_institution_status").on(
+			t.institutionId,
+			t.status,
+		),
+		check("chk_fee_payment_orders_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** A single payment confirmation recorded by admin against a student fee assignment. */
+export const feePayments = pgTable(
+	"fee_payments",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		feeAssignmentId: text("fee_assignment_id")
+			.notNull()
+			.references(() => studentFeeAssignments.id, { onDelete: "cascade" }),
+		/** Optional: links this confirmation to a prior payment order. */
+		paymentOrderId: text("payment_order_id").references(
+			() => feePaymentOrders.id,
+			{ onDelete: "set null" },
+		),
+		/** Optional: which installment this payment satisfies. */
+		installmentId: text("installment_id").references(
+			() => feeStructureInstallments.id,
+			{ onDelete: "set null" },
+		),
+		amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+		currency: text("currency").notNull().default("XAF"),
+		paymentDate: date("payment_date").notNull(),
+		paymentMethod: text("payment_method")
+			.$type<FeePaymentMethod>()
+			.notNull()
+			.default("cash"),
+		/** Bank slip, mobile money transaction ID, check number, etc. */
+		reference: text("reference"),
+		notes: text("notes"),
+		recordedBy: text("recorded_by")
+			.notNull()
+			.references(() => domainUsers.id),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_fee_payments_assignment").on(t.feeAssignmentId),
+		index("idx_fee_payments_institution_date").on(
+			t.institutionId,
+			t.paymentDate,
+		),
+		index("idx_fee_payments_order").on(t.paymentOrderId),
+		check("chk_fee_payments_amount", sql`${t.amount} > 0`),
+	],
+);
+
+/** Per-institution toggle for which academic actions require fee clearance. */
+export const feeGatingRules = pgTable(
+	"fee_gating_rules",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		gate: text("gate").$type<FeeGate>().notNull(),
+		isEnabled: boolean("is_enabled").notNull().default(false),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedBy: text("updated_by").references(() => domainUsers.id),
+	},
+	(t) => [
+		unique("uq_fee_gating_rules_institution_gate").on(t.institutionId, t.gate),
+		index("idx_fee_gating_rules_institution").on(t.institutionId),
+	],
+);
+
+export type FeeStructure = InferSelectModel<typeof feeStructures>;
+export type NewFeeStructure = InferInsertModel<typeof feeStructures>;
+export type FeeStructureInstallment = InferSelectModel<
+	typeof feeStructureInstallments
+>;
+export type NewFeeStructureInstallment = InferInsertModel<
+	typeof feeStructureInstallments
+>;
+export type StudentFeeAssignment = InferSelectModel<
+	typeof studentFeeAssignments
+>;
+export type NewStudentFeeAssignment = InferInsertModel<
+	typeof studentFeeAssignments
+>;
+export type FeePayment = InferSelectModel<typeof feePayments>;
+export type NewFeePayment = InferInsertModel<typeof feePayments>;
+export type FeePaymentOrder = InferSelectModel<typeof feePaymentOrders>;
+export type NewFeePaymentOrder = InferInsertModel<typeof feePaymentOrders>;
+export type FeeGatingRule = InferSelectModel<typeof feeGatingRules>;
+export type NewFeeGatingRule = InferInsertModel<typeof feeGatingRules>;
+
+export const feeStructuresRelations = relations(
+	feeStructures,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [feeStructures.institutionId],
+			references: [institutions.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [feeStructures.academicYearId],
+			references: [academicYears.id],
+		}),
+		program: one(programs, {
+			fields: [feeStructures.programId],
+			references: [programs.id],
+		}),
+		cycleLevel: one(cycleLevels, {
+			fields: [feeStructures.cycleLevelId],
+			references: [cycleLevels.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feeStructures.createdBy],
+			references: [domainUsers.id],
+		}),
+		installments: many(feeStructureInstallments),
+		assignments: many(studentFeeAssignments),
+	}),
+);
+
+export const feeStructureInstallmentsRelations = relations(
+	feeStructureInstallments,
+	({ one, many }) => ({
+		feeStructure: one(feeStructures, {
+			fields: [feeStructureInstallments.feeStructureId],
+			references: [feeStructures.id],
+		}),
+		payments: many(feePayments),
+	}),
+);
+
+export const studentFeeAssignmentsRelations = relations(
+	studentFeeAssignments,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [studentFeeAssignments.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [studentFeeAssignments.studentId],
+			references: [students.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [studentFeeAssignments.academicYearId],
+			references: [academicYears.id],
+		}),
+		feeStructure: one(feeStructures, {
+			fields: [studentFeeAssignments.feeStructureId],
+			references: [feeStructures.id],
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [studentFeeAssignments.createdBy],
+			references: [domainUsers.id],
+		}),
+		payments: many(feePayments),
+		orders: many(feePaymentOrders),
+	}),
+);
+
+export const feePaymentOrdersRelations = relations(
+	feePaymentOrders,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [feePaymentOrders.institutionId],
+			references: [institutions.id],
+		}),
+		feeAssignment: one(studentFeeAssignments, {
+			fields: [feePaymentOrders.feeAssignmentId],
+			references: [studentFeeAssignments.id],
+		}),
+		confirmedByRef: one(domainUsers, {
+			fields: [feePaymentOrders.confirmedBy],
+			references: [domainUsers.id],
+			relationName: "orderConfirmedBy",
+		}),
+		createdByRef: one(domainUsers, {
+			fields: [feePaymentOrders.createdBy],
+			references: [domainUsers.id],
+			relationName: "orderCreatedBy",
+		}),
+		payments: many(feePayments),
+	}),
+);
+
+export const feePaymentsRelations = relations(feePayments, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [feePayments.institutionId],
+		references: [institutions.id],
+	}),
+	feeAssignment: one(studentFeeAssignments, {
+		fields: [feePayments.feeAssignmentId],
+		references: [studentFeeAssignments.id],
+	}),
+	order: one(feePaymentOrders, {
+		fields: [feePayments.paymentOrderId],
+		references: [feePaymentOrders.id],
+	}),
+	installment: one(feeStructureInstallments, {
+		fields: [feePayments.installmentId],
+		references: [feeStructureInstallments.id],
+	}),
+	recordedByRef: one(domainUsers, {
+		fields: [feePayments.recordedBy],
+		references: [domainUsers.id],
+	}),
+}));
+
+export const feeGatingRulesRelations = relations(feeGatingRules, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [feeGatingRules.institutionId],
+		references: [institutions.id],
+	}),
+	updatedByRef: one(domainUsers, {
+		fields: [feeGatingRules.updatedBy],
+		references: [domainUsers.id],
+	}),
+}));

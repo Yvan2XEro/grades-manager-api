@@ -90,3 +90,41 @@ export const tenantAdminProcedure = adminProcedure.use(tenantMiddleware);
 export const tenantSuperAdminProcedure =
 	superAdminProcedure.use(tenantMiddleware);
 export const tenantGradingProcedure = gradingProcedure.use(tenantMiddleware);
+
+// ── Fee-clearance procedures (fine-grained, future-proof) ───────────────
+
+export const feeConfigProcedure = tenantProtectedProcedure.use(
+	({ ctx, next }) => {
+		if (!ctx.permissions?.canConfigureFeeStructures) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions to configure fee structures",
+			});
+		}
+		return next();
+	},
+);
+
+export const feeManageProcedure = tenantProtectedProcedure.use(
+	({ ctx, next }) => {
+		if (!ctx.permissions?.canManageFees) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions to manage student fees",
+			});
+		}
+		return next();
+	},
+);
+
+export const feePaymentProcedure = tenantProtectedProcedure.use(
+	({ ctx, next }) => {
+		if (!ctx.permissions?.canRecordPayments) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions to record payments",
+			});
+		}
+		return next();
+	},
+);

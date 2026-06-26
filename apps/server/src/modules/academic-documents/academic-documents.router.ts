@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import type { ExportTemplateType } from "../../db/schema/app-schema";
+import type { ExportTemplateType, FeeGate } from "../../db/schema/app-schema";
 import {
 	router,
 	tenantAdminProcedure,
@@ -15,8 +15,47 @@ import {
 	type ThemeKind,
 } from "../exports/themes";
 import { getDefaultThemePayload } from "../exports/themes/presets-payload";
+import { assertFeeClearance } from "../fee-clearance/fee-clearance.gates";
+import { findGatingRule } from "../fee-clearance/fee-clearance.repo";
+import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
+
+const DOCUMENT_GATES: Partial<Record<zod.DocumentKind, FeeGate>> = {
+	transcript: "transcript",
+	diploma: "diploma",
+	attestation: "document_generation",
+} as const;
+
+async function runDocumentGateCheck(
+	ctx: {
+		institution: { id: string };
+		permissions?: { canOverrideFeeGates?: boolean } | null;
+	},
+	gate: FeeGate,
+	studentId: string,
+	institutionId: string,
+	deliberationId?: string,
+) {
+	const academicYearId = await repo.resolveAcademicYearIdForGate(
+		studentId,
+		institutionId,
+		deliberationId,
+	);
+	if (academicYearId) {
+		await assertFeeClearance(ctx, gate, { studentId, academicYearId });
+		return;
+	}
+	// Can't resolve year — only block if the gate is explicitly enabled.
+	if (ctx.permissions?.canOverrideFeeGates) return;
+	const rule = await findGatingRule(institutionId, gate);
+	if (rule?.isEnabled) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `Fee clearance required for '${gate}': student has no active class enrollment for this academic year.`,
+		});
+	}
+}
 
 // System-default templates created by `seedSystemDefaults`.
 //
@@ -172,6 +211,28 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 		description:
 			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
 	},
+	// Financial document templates — used by the fee clearance module.
+	{
+		type: "payment_order",
+		variant: "standard",
+		name: "Bon de caisse / Ordre de paiement — Modèle officiel",
+		description:
+			"Document remis à l'étudiant avant paiement. Mentionne le montant dû, la date limite et les coordonnées bancaires.",
+	},
+	{
+		type: "payment_receipt",
+		variant: "standard",
+		name: "Reçu de paiement — Modèle officiel",
+		description:
+			"Reçu officiel émis après confirmation du paiement. Valeur comptable, horodaté et signé.",
+	},
+	{
+		type: "financial_clearance",
+		variant: "standard",
+		name: "Attestation de quitus — Modèle officiel",
+		description:
+			"Attestation certifiant que l'étudiant est à jour de ses frais de scolarité pour l'année académique en cours.",
+	},
 ];
 
 export const academicDocumentsRouter = router({
@@ -179,6 +240,16 @@ export const academicDocumentsRouter = router({
 	generate: tenantGradingProcedure
 		.input(zod.generateDocumentSchema)
 		.mutation(async ({ ctx, input }) => {
+			const gate = DOCUMENT_GATES[input.kind];
+			if (gate && !input.demoMode) {
+				await runDocumentGateCheck(
+					ctx,
+					gate,
+					input.studentId,
+					ctx.institution.id,
+					input.deliberationId,
+				);
+			}
 			const result = await service.generateDocument(ctx.institution.id, input);
 			const ext = input.format === "html" ? "html" : "pdf";
 			return {
@@ -219,6 +290,16 @@ export const academicDocumentsRouter = router({
 	preview: tenantGradingProcedure
 		.input(zod.previewDocumentSchema)
 		.query(async ({ ctx, input }) => {
+			const gate = DOCUMENT_GATES[input.kind];
+			if (gate && !input.demoMode) {
+				await runDocumentGateCheck(
+					ctx,
+					gate,
+					input.studentId,
+					ctx.institution.id,
+					input.deliberationId,
+				);
+			}
 			const result = await service.generateDocument(ctx.institution.id, {
 				...input,
 				format: "html",

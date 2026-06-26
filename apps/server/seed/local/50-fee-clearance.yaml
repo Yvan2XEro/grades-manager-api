@@ -1,0 +1,65 @@
+# Fee Clearance seed data — layer 50
+# Depends on layers 00 (academic years) and 20 (students).
+#
+# Provides:
+#   - 1 annual fee structure for AY-2025
+#   - 2 semester installments
+#   - 3 student assignments in different states (paid, partial, unpaid)
+#   - 1 gate rule blocking transcript for unpaid students
+#   - Example payment order (pending) + 1 confirmed order → payment confirmation
+#
+meta:
+  version: "2025.01"
+  description: Demo fee clearance data
+
+feeStructures:
+  - code: FS-BTS1-2025
+    academicYearName: "2025-2026"
+    programCode: SFM
+    name: Frais scolarité BTS 1 — 2025-2026
+    description: Frais annuels pour les étudiants de première année BTS
+    totalAmount: 300000
+    currency: XAF
+    isActive: true
+    installments:
+      - label: "1ère tranche (octobre)"
+        amount: 150000
+        dueDate: "2025-10-31"
+        orderIndex: 0
+      - label: "2ème tranche (février)"
+        amount: 150000
+        dueDate: "2026-02-28"
+        orderIndex: 1
+
+studentFeeAssignments:
+  # Student fully paid — clearance granted
+  - studentCode: STD-SFM1-001
+    feeStructureCode: FS-BTS1-2025
+    discountAmount: 0
+    notes: Paiement intégral reçu
+    payments:
+      - amount: 300000
+        currency: XAF
+        paymentDate: "2025-10-05"
+        paymentMethod: bank_transfer
+        reference: "SGBC-2025-001"
+        notes: Virement complet
+  # Student partially paid
+  - studentCode: STD-SFM1-002
+    feeStructureCode: FS-BTS1-2025
+    discountAmount: 0
+    notes: Première tranche payée
+    payments:
+      - amount: 150000
+        currency: XAF
+        paymentDate: "2025-10-10"
+        paymentMethod: mobile_money
+        reference: "MTN-2025-777"
+  # Student unpaid
+  - studentCode: STD-SFM1-003
+    feeStructureCode: FS-BTS1-2025
+    discountAmount: 0
+
+feeGatingRules:
+  - gate: transcript
+    isEnabled: true

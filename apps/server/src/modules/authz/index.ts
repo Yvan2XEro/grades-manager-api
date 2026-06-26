@@ -44,6 +44,16 @@ export type PermissionSnapshot = {
 	canManageStudents: boolean;
 	canGrade: boolean;
 	canAccessAnalytics: boolean;
+	/** Configure fee structures and installment plans. */
+	canConfigureFeeStructures: boolean;
+	/** View and manage student fee assignments and discounts. */
+	canManageFees: boolean;
+	/** Record and delete payment confirmations. */
+	canRecordPayments: boolean;
+	/** Confirm/validate payment orders. */
+	canValidatePayments: boolean;
+	/** Override fee clearance gates on sensitive operations. */
+	canOverrideFeeGates: boolean;
 };
 
 export const ADMIN_ROLES: MemberRole[] = [
@@ -85,8 +95,9 @@ export function buildPermissions(
 	role: MemberRole | null | undefined,
 ): PermissionSnapshot {
 	const normalizedRole = role ?? "guest";
-	const canManageCatalog = roleSatisfies(role, ADMIN_ROLES);
-	const canManageStudents = roleSatisfies(role, ADMIN_ROLES);
+	const isAdmin = roleSatisfies(role, ADMIN_ROLES);
+	const canManageCatalog = isAdmin;
+	const canManageStudents = isAdmin;
 	const canGrade = roleSatisfies(role, [
 		"teacher",
 		"grade_editor",
@@ -95,7 +106,7 @@ export function buildPermissions(
 		"super_admin",
 		"owner",
 	]);
-	const canAccessAnalytics = roleSatisfies(role, ADMIN_ROLES);
+	const canAccessAnalytics = isAdmin;
 
 	return {
 		role: normalizedRole,
@@ -103,5 +114,10 @@ export function buildPermissions(
 		canManageStudents,
 		canGrade,
 		canAccessAnalytics,
+		canConfigureFeeStructures: isAdmin,
+		canManageFees: isAdmin,
+		canRecordPayments: isAdmin,
+		canValidatePayments: isAdmin,
+		canOverrideFeeGates: isAdmin,
 	};
 }

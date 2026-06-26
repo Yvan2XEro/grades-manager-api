@@ -3,8 +3,17 @@ import { z } from "zod";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import { getStorageAdapter } from "@/lib/storage";
+import { resolveAcademicYearIdForGate } from "@/modules/academic-documents/academic-documents.repo";
 import * as academicDocs from "@/modules/academic-documents/academic-documents.service";
+import { assertFeeClearance } from "@/modules/fee-clearance/fee-clearance.gates";
+import { findGatingRule } from "@/modules/fee-clearance/fee-clearance.repo";
 import type { BatchJobDefinition, PreviewResult } from "../batch-jobs.types";
+
+const DOCUMENT_KIND_TO_GATE = {
+	transcript: "transcript",
+	diploma: "diploma",
+	attestation: "document_generation",
+} as const satisfies Record<string, import("@/db/schema/app-schema").FeeGate>;
 
 const documentKindSchema = z.enum(["diploma", "transcript", "attestation"]);
 
@@ -100,8 +109,34 @@ export const bulkDocumentGenerationJob: BatchJobDefinition<Params> = {
 			const generated: GeneratedPdf[] = [];
 			let processed = 0;
 			let failed = 0;
+			const gate = DOCUMENT_KIND_TO_GATE[params.kind];
+			const gateEnabled =
+				!params.demoMode && gate
+					? ((await findGatingRule(ctx.institutionId, gate))?.isEnabled ??
+						false)
+					: false;
+
 			for (const studentId of params.studentIds) {
 				try {
+					if (gateEnabled) {
+						const yearId = await resolveAcademicYearIdForGate(
+							studentId,
+							ctx.institutionId,
+						);
+						if (yearId) {
+							await assertFeeClearance(
+								{ institution: { id: ctx.institutionId } },
+								gate,
+								{ studentId, academicYearId: yearId },
+							);
+						} else {
+							// Gate explicitly enabled but year unresolvable — block consistent
+							// with the tRPC path (academic-documents.router runDocumentGateCheck).
+							throw new Error(
+								`Fee clearance required for '${gate}': student has no active class enrollment for this academic year.`,
+							);
+						}
+					}
 					const result = await academicDocs.generateDocument(
 						ctx.institutionId,
 						{

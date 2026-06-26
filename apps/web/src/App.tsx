@@ -26,6 +26,12 @@ import {
 import ExamsHub from "./pages/admin/ExamsHub";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
+import FeeAssignmentDetail from "./pages/admin/fee-clearance/FeeAssignmentDetail";
+import FeeAssignmentsList from "./pages/admin/fee-clearance/FeeAssignmentsList";
+import FeeClearanceHub from "./pages/admin/fee-clearance/FeeClearanceHub";
+import FeeGatingSettings from "./pages/admin/fee-clearance/FeeGatingSettings";
+import FeeStructureDetail from "./pages/admin/fee-clearance/FeeStructureDetail";
+import FeeStructuresList from "./pages/admin/fee-clearance/FeeStructuresList";
 import GradesHub from "./pages/admin/GradesHub";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import InstitutionHub from "./pages/admin/InstitutionHub";
@@ -186,6 +192,14 @@ function App() {
 						<Route path="monitoring" element={<MonitoringDashboard />} />
 						<Route path="batch-jobs" element={<BatchJobsDashboard />} />
 						<Route path="batch-jobs/:jobId" element={<BatchJobDetail />} />
+						<Route path="fee-clearance" element={<FeeClearanceHub />}>
+							<Route index element={<Navigate to="structures" replace />} />
+							<Route path="structures" element={<FeeStructuresList />} />
+							<Route path="structures/:id" element={<FeeStructureDetail />} />
+							<Route path="assignments" element={<FeeAssignmentsList />} />
+							<Route path="assignments/:id" element={<FeeAssignmentDetail />} />
+							<Route path="gating" element={<FeeGatingSettings />} />
+						</Route>
 						<Route path="notifications" element={<NotificationsCenter />} />
 						{/* Deliberations */}
 						<Route path="deliberations" element={<DeliberationsList />} />
