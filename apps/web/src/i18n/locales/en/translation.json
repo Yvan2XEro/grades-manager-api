@@ -4186,6 +4186,7 @@
       },
       "fields": {
         "student": "Student",
+        "class": "Class",
         "structure": "Fee structure",
         "effectiveAmount": "Amount due",
         "paidAmount": "Amount paid",
@@ -4209,6 +4210,7 @@
       "delete": "Delete payment",
       "deleteConfirm": "Delete this payment? The assignment status will be recalculated.",
       "empty": "No payments recorded yet.",
+      "downloadReceipt": "Download receipt",
       "fields": {
         "amount": "Amount",
         "paymentDate": "Payment date",
@@ -4244,12 +4246,16 @@
       "confirmed": "Order confirmed and payment recorded",
       "confirmTitle": "Confirm this order?",
       "confirmDescription": "Confirming will record the payment and update the student's fee status.",
+      "download": "Download payment order",
       "fields": {
+        "reference": "Reference",
         "amount": "Amount",
         "status": "Status",
         "notes": "Notes",
         "createdAt": "Date",
-        "expiresAt": "Expires"
+        "expiresAt": "Expires",
+        "paymentDate": "Payment date",
+        "paymentMethod": "Payment method"
       },
       "status": {
         "pending": "Pending",
@@ -4263,6 +4269,27 @@
       "notCleared": "Not cleared",
       "cleared": "Cleared",
       "clearedOn": "Cleared on {{date}}"
+    },
+    "student": {
+      "title": "My tuition fees",
+      "subtitle": "Your financial status with the institution",
+      "noAssignment": "No fee assignment found for your profile.",
+      "balance": "Remaining balance",
+      "totalDue": "Total due",
+      "paid": "Paid",
+      "academicYear": "Academic year",
+      "pendingOrders": "Pending orders"
+    },
+    "history": {
+      "title": "Financial history",
+      "subtitle": "All payments and orders for this student",
+      "totalDue": "Total due",
+      "totalPaid": "Total paid",
+      "balance": "Remaining balance",
+      "empty": "No assignments found for this student.",
+      "noEvents": "No financial events.",
+      "viewDetail": "Detail",
+      "viewHistory": "Financial history"
     }
   }
 }

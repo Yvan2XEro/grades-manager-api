@@ -32,6 +32,7 @@ import FeeClearanceHub from "./pages/admin/fee-clearance/FeeClearanceHub";
 import FeeGatingSettings from "./pages/admin/fee-clearance/FeeGatingSettings";
 import FeeStructureDetail from "./pages/admin/fee-clearance/FeeStructureDetail";
 import FeeStructuresList from "./pages/admin/fee-clearance/FeeStructuresList";
+import StudentFinancialHistory from "./pages/admin/fee-clearance/StudentFinancialHistory";
 import GradesHub from "./pages/admin/GradesHub";
 import GraduatedStudents from "./pages/admin/GraduatedStudents";
 import InstitutionHub from "./pages/admin/InstitutionHub";
@@ -54,6 +55,7 @@ import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
 import CourseEnrollment from "./pages/student/CourseEnrollment";
 import ExamCalendar from "./pages/student/ExamCalendar";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
+import StudentFeeStatus from "./pages/student/StudentFeeStatus";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import GradeExport from "./pages/teacher/GradeExport";
@@ -198,6 +200,10 @@ function App() {
 							<Route path="structures/:id" element={<FeeStructureDetail />} />
 							<Route path="assignments" element={<FeeAssignmentsList />} />
 							<Route path="assignments/:id" element={<FeeAssignmentDetail />} />
+							<Route
+								path="students/:studentId/history"
+								element={<StudentFinancialHistory />}
+							/>
 							<Route path="gating" element={<FeeGatingSettings />} />
 						</Route>
 						<Route path="notifications" element={<NotificationsCenter />} />
@@ -400,6 +406,7 @@ function App() {
 						<Route index element={<PerformanceDashboard />} />
 						<Route path="exams" element={<ExamCalendar />} />
 						<Route path="enrollments" element={<CourseEnrollment />} />
+						<Route path="fees" element={<StudentFeeStatus />} />
 					</Route>
 
 					{/* Shared Settings */}

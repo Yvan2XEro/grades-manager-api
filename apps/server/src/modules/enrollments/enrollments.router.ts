@@ -3,6 +3,8 @@ import {
 	tenantAdminProcedure,
 	tenantProtectedProcedure,
 } from "@/lib/trpc";
+import { resolveAcademicYearIdForGate } from "@/modules/academic-documents/academic-documents.repo";
+import { assertFeeClearance } from "@/modules/fee-clearance/fee-clearance.gates";
 import * as service from "./enrollments.service";
 import {
 	baseSchema,
@@ -15,9 +17,19 @@ import {
 export const enrollmentsRouter = router({
 	create: tenantAdminProcedure
 		.input(baseSchema)
-		.mutation(({ ctx, input }) =>
-			service.createEnrollment(input, ctx.institution.id),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const yearId = await resolveAcademicYearIdForGate(
+				input.studentId,
+				ctx.institution.id,
+			);
+			if (yearId) {
+				await assertFeeClearance(ctx, "reenrollment", {
+					studentId: input.studentId,
+					academicYearId: yearId,
+				});
+			}
+			return service.createEnrollment(input, ctx.institution.id);
+		}),
 	update: tenantAdminProcedure
 		.input(updateSchema)
 		.mutation(({ ctx, input }) =>

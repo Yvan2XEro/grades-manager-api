@@ -4,6 +4,7 @@ import type { FeeGate } from "@/db/schema/app-schema";
 export interface GateContext {
 	institution: { id: string };
 	permissions?: { canOverrideFeeGates?: boolean } | null;
+	profile?: { id: string } | null;
 }
 
 /**
@@ -13,7 +14,8 @@ export interface GateContext {
  * Call this at the start of any procedure that should be blocked for
  * students with unpaid fees (e.g. transcript generation, exam registration).
  *
- * Admins with `canOverrideFeeGates` bypass the check.
+ * Admins with `canOverrideFeeGates` bypass the check. Pass `overrideNote` to
+ * log an audit trail for the bypass reason.
  */
 export async function assertFeeClearance(
 	ctx: GateContext,
@@ -21,9 +23,17 @@ export async function assertFeeClearance(
 	params: {
 		studentId: string;
 		academicYearId: string;
+		overrideNote?: string;
 	},
 ): Promise<void> {
-	if (ctx.permissions?.canOverrideFeeGates) return;
+	if (ctx.permissions?.canOverrideFeeGates) {
+		if (params.overrideNote) {
+			console.info(
+				`[fee-gate-override] gate=${gate} student=${params.studentId} year=${params.academicYearId} by=${ctx.profile?.id ?? "unknown"} reason="${params.overrideNote}"`,
+			);
+		}
+		return;
+	}
 
 	// Lazy import so module mock intercepts @/db in test environments.
 	const repo = await import("./fee-clearance.repo");

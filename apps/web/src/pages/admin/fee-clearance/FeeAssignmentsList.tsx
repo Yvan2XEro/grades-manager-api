@@ -64,20 +64,36 @@ export default function FeeAssignmentsList() {
 	const queryClient = useQueryClient();
 
 	const [yearFilter, setYearFilter] = useState("");
+	const [classFilter, setClassFilter] = useState("");
 	const [statusFilter, setStatusFilter] = useState("");
 	const [search, setSearch] = useState("");
 	const [showBulkAssign, setShowBulkAssign] = useState(false);
 
 	const { data: years } = useQuery(trpc.academicYears.list.queryOptions());
+	const { data: classes } = useQuery(
+		trpc.classes.list.queryOptions(
+			yearFilter ? { academicYearId: yearFilter } : {},
+		),
+	);
 
 	const { data, isLoading } = useQuery(
 		trpc.feeClearance.listAssignments.queryOptions({
 			academicYearId: yearFilter || undefined,
+			classId: classFilter || undefined,
 			status: statusFilter ? [statusFilter] : undefined,
 			search: search || undefined,
-			limit: 100,
+			limit: 200,
 			offset: 0,
 		}),
+	);
+
+	// Compute status counts from current result set
+	const statusCounts = (data?.items ?? []).reduce(
+		(acc, a) => {
+			acc[a.status] = (acc[a.status] ?? 0) + 1;
+			return acc;
+		},
+		{} as Record<string, number>,
 	);
 
 	const formatAmount = (amount: string | null, currency: string) =>
@@ -109,8 +125,34 @@ export default function FeeAssignmentsList() {
 				</Button>
 			</div>
 
+			{/* Summary stats */}
+			{data && (
+				<div className="grid grid-cols-4 gap-3">
+					{(["unpaid", "partial", "paid", "exempt"] as const).map((s) => (
+						<button
+							key={s}
+							type="button"
+							onClick={() => setStatusFilter(statusFilter === s ? "" : s)}
+							className={`rounded-lg border p-3 text-left transition-colors ${
+								statusFilter === s
+									? "border-primary bg-primary/5"
+									: "hover:bg-muted/50"
+							}`}
+						>
+							<div className="flex items-center gap-1">
+								<Badge variant={statusVariants[s]}>
+									{statusIcons[s]}
+									{t(`feeClearance.assignments.status.${s}`)}
+								</Badge>
+							</div>
+							<p className="mt-1 font-bold text-xl">{statusCounts[s] ?? 0}</p>
+						</button>
+					))}
+				</div>
+			)}
+
 			{/* Filters */}
-			<div className="flex gap-2">
+			<div className="flex flex-wrap gap-2">
 				<div className="relative max-w-xs flex-1">
 					<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
 					<Input
@@ -120,7 +162,13 @@ export default function FeeAssignmentsList() {
 						onChange={(e) => setSearch(e.target.value)}
 					/>
 				</div>
-				<Select value={yearFilter} onValueChange={setYearFilter}>
+				<Select
+					value={yearFilter}
+					onValueChange={(v) => {
+						setYearFilter(v);
+						setClassFilter("");
+					}}
+				>
 					<SelectTrigger className="w-48">
 						<SelectValue
 							placeholder={t("feeClearance.structures.fields.academicYear")}
@@ -135,6 +183,23 @@ export default function FeeAssignmentsList() {
 						))}
 					</SelectContent>
 				</Select>
+				{classes && classes.length > 0 && (
+					<Select value={classFilter} onValueChange={setClassFilter}>
+						<SelectTrigger className="w-44">
+							<SelectValue
+								placeholder={t("feeClearance.assignments.fields.class")}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">{t("common.all")}</SelectItem>
+							{classes.map((c) => (
+								<SelectItem key={c.id} value={c.id}>
+									{c.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
 				<Select value={statusFilter} onValueChange={setStatusFilter}>
 					<SelectTrigger className="w-36">
 						<SelectValue

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { FeeAssignmentStatus, FeeGate } from "@/db/schema/app-schema";
 import {
 	feeConfigProcedure,
@@ -188,6 +189,12 @@ export const feeClearanceRouter = router({
 		.input(listOrdersSchema)
 		.query(({ ctx, input }) => service.listOrders(ctx.institution.id, input)),
 
+	downloadOrder: feeManageProcedure
+		.input(z.object({ orderId: z.string() }))
+		.query(({ ctx, input }) =>
+			service.generateOrderDocument(input.orderId, ctx.institution.id),
+		),
+
 	// ── Payments ───────────────────────────────────────────────────────
 
 	recordPayment: feePaymentProcedure
@@ -208,6 +215,12 @@ export const feeClearanceRouter = router({
 		.input(listPaymentsSchema)
 		.query(({ ctx, input }) =>
 			service.listPayments(input.feeAssignmentId, ctx.institution.id),
+		),
+
+	downloadReceipt: feeManageProcedure
+		.input(z.object({ paymentId: z.string() }))
+		.query(({ ctx, input }) =>
+			service.generateReceiptDocument(input.paymentId, ctx.institution.id),
 		),
 
 	// ── Gating ─────────────────────────────────────────────────────────
@@ -239,7 +252,21 @@ export const feeClearanceRouter = router({
 			);
 		}),
 
+	getStudentFinancialHistory: feeManageProcedure
+		.input(z.object({ studentId: z.string() }))
+		.query(({ ctx, input }) =>
+			service.getStudentFinancialHistory(input.studentId, ctx.institution.id),
+		),
+
 	// ── Student-facing ─────────────────────────────────────────────────
+
+	myFinancialHistory: protectedProcedure.query(({ ctx }) => {
+		if (!ctx.profile?.id) return [];
+		return service.getStudentFinancialHistory(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+	}),
 
 	myStatus: protectedProcedure
 		.input(getMyFeeStatusSchema)

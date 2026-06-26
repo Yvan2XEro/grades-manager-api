@@ -5,6 +5,20 @@ import * as repo from "./fee-clearance.repo";
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
+function generateOrderReference(): string {
+	const now = new Date();
+	const yymm = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, "0")}`;
+	const rand = Math.random().toString(36).toUpperCase().slice(2, 8);
+	return `ORD-${yymm}-${rand}`;
+}
+
+function generateReceiptNumber(): string {
+	const now = new Date();
+	const yymm = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, "0")}`;
+	const rand = Math.random().toString(36).toUpperCase().slice(2, 8);
+	return `RCT-${yymm}-${rand}`;
+}
+
 function computeStatus(
 	paidAmount: number,
 	effectiveAmount: number,
@@ -486,7 +500,7 @@ export async function recordPayment(
 				currency: input.currency,
 				paymentDate: input.paymentDate,
 				paymentMethod: input.paymentMethod as never,
-				reference: input.reference ?? null,
+				reference: input.reference ?? generateReceiptNumber(),
 				notes: input.notes ?? null,
 				recordedBy,
 			})
@@ -559,13 +573,15 @@ export async function createOrder(
 			message: `Order amount (${input.amount}) exceeds remaining balance (${remaining})`,
 		});
 
+	const reference = input.reference ?? generateOrderReference();
+
 	return repo.createOrder({
 		institutionId,
 		feeAssignmentId: input.feeAssignmentId,
 		amount: String(input.amount),
 		currency: input.currency,
 		installmentIds: input.installmentIds,
-		reference: input.reference ?? null,
+		reference,
 		notes: input.notes ?? null,
 		expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
 		createdBy: createdBy ?? null,
@@ -658,7 +674,7 @@ export async function confirmOrder(
 				currency: order.currency,
 				paymentDate: input.paymentDate,
 				paymentMethod: input.paymentMethod as never,
-				reference: input.reference ?? null,
+				reference: input.reference ?? generateReceiptNumber(),
 				notes: input.notes ?? null,
 				recordedBy: confirmedBy,
 			})
@@ -790,4 +806,188 @@ export async function getMyFeeStatus(
 		offset: 0,
 	});
 	return items.filter((a) => a.studentId === studentId);
+}
+
+// ── Document generation ───────────────────────────────────────────────
+
+async function fetchDocumentContext(institutionId: string) {
+	const { db } = await import("@/db");
+	const { eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+	const inst = await db.query.institutions.findFirst({
+		where: eq(schema.institutions.id, institutionId),
+	});
+	return inst ?? null;
+}
+
+function fmtDate(d: Date | string | null | undefined): string {
+	if (!d) return "";
+	return new Date(d).toLocaleDateString("fr-FR", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
+}
+
+export async function generateOrderDocument(
+	orderId: string,
+	institutionId: string,
+): Promise<{ html: string; pdf: string }> {
+	const order = await repo.findOrderById(orderId, institutionId);
+	if (!order) throw notFound("Payment order not found");
+
+	const assignment = await repo.findAssignmentById(
+		order.feeAssignmentId,
+		institutionId,
+	);
+	if (!assignment) throw notFound("Fee assignment not found");
+
+	const institution = await fetchDocumentContext(institutionId);
+	const profile = assignment.student?.profile;
+
+	const context = {
+		institution: {
+			name: institution?.nameFr ?? institution?.nameEn ?? "—",
+			shortName: institution?.shortName ?? null,
+		},
+		student: {
+			fullName: profile
+				? `${profile.lastName ?? ""} ${profile.firstName ?? ""}`.trim()
+				: "—",
+			registrationNumber: assignment.student?.registrationNumber ?? "—",
+		},
+		academicYear: { name: assignment.academicYear?.name ?? "—" },
+		feeStructure: { name: assignment.feeStructure?.name ?? "—" },
+		order: {
+			reference: order.reference ?? "—",
+			amount: Number(order.amount).toLocaleString("fr-FR"),
+			currency: order.currency,
+			createdAt: fmtDate(order.createdAt),
+			expiresAt: order.expiresAt ? fmtDate(order.expiresAt) : null,
+			notes: order.notes ?? null,
+		},
+		assignment: { status: assignment.status },
+	};
+
+	const Handlebars = (await import("handlebars")).default;
+	const { PAYMENT_ORDER_TEMPLATE } = await import(
+		"../exports/financial-templates"
+	);
+	const html = Handlebars.compile(PAYMENT_ORDER_TEMPLATE)(context);
+
+	const { renderPdf } = await import(
+		"../academic-documents/academic-documents.service"
+	);
+	const pdfBuffer = await renderPdf(html, {});
+	return { html, pdf: pdfBuffer.toString("base64") };
+}
+
+export async function generateReceiptDocument(
+	paymentId: string,
+	institutionId: string,
+): Promise<{ html: string; pdf: string }> {
+	const { db } = await import("@/db");
+	const { eq, and } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const payment = await db.query.feePayments.findFirst({
+		where: and(
+			eq(schema.feePayments.id, paymentId),
+			eq(schema.feePayments.institutionId, institutionId),
+		),
+		with: { recordedByRef: true },
+	});
+	if (!payment) throw notFound("Payment not found");
+
+	const assignment = await repo.findAssignmentById(
+		payment.feeAssignmentId,
+		institutionId,
+	);
+	if (!assignment) throw notFound("Fee assignment not found");
+
+	const institution = await fetchDocumentContext(institutionId);
+	const profile = assignment.student?.profile;
+
+	const context = {
+		institution: {
+			name: institution?.nameFr ?? institution?.nameEn ?? "—",
+			shortName: institution?.shortName ?? null,
+		},
+		student: {
+			fullName: profile
+				? `${profile.lastName ?? ""} ${profile.firstName ?? ""}`.trim()
+				: "—",
+			registrationNumber: assignment.student?.registrationNumber ?? "—",
+		},
+		academicYear: { name: assignment.academicYear?.name ?? "—" },
+		feeStructure: { name: assignment.feeStructure?.name ?? "—" },
+		payment: {
+			reference: payment.reference ?? "—",
+			paymentDate: fmtDate(payment.paymentDate),
+			paymentMethod: payment.paymentMethod,
+			amount: Number(payment.amount).toLocaleString("fr-FR"),
+			currency: payment.currency,
+			createdAt: fmtDate(payment.createdAt),
+			recordedByName: payment.recordedByRef
+				? `${payment.recordedByRef.firstName ?? ""} ${payment.recordedByRef.lastName ?? ""}`.trim()
+				: "—",
+		},
+	};
+
+	const Handlebars = (await import("handlebars")).default;
+	const { PAYMENT_RECEIPT_TEMPLATE } = await import(
+		"../exports/financial-templates"
+	);
+	const html = Handlebars.compile(PAYMENT_RECEIPT_TEMPLATE)(context);
+
+	const { renderPdf } = await import(
+		"../academic-documents/academic-documents.service"
+	);
+	const pdfBuffer = await renderPdf(html, {});
+	return { html, pdf: pdfBuffer.toString("base64") };
+}
+
+export async function getStudentFinancialHistory(
+	studentId: string,
+	institutionId: string,
+) {
+	const { db } = await import("@/db");
+	const { eq, and, desc } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	// All assignments for this student in this institution
+	const assignments = await db.query.studentFeeAssignments.findMany({
+		where: and(
+			eq(schema.studentFeeAssignments.studentId, studentId),
+			eq(schema.studentFeeAssignments.institutionId, institutionId),
+		),
+		with: {
+			feeStructure: true,
+			academicYear: true,
+			payments: { orderBy: desc(schema.feePayments.createdAt) },
+			orders: { orderBy: desc(schema.feePaymentOrders.createdAt) },
+		},
+		orderBy: desc(schema.studentFeeAssignments.createdAt),
+	});
+
+	return assignments.map((a) => {
+		const paidAmount = a.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+		return {
+			id: a.id,
+			status: a.status,
+			effectiveAmount: Number(a.effectiveAmount),
+			paidAmount,
+			balance: Number(a.effectiveAmount) - paidAmount,
+			currency: a.currency,
+			clearedAt: a.clearedAt,
+			feeStructure: a.feeStructure
+				? { id: a.feeStructure.id, name: a.feeStructure.name }
+				: null,
+			academicYear: a.academicYear
+				? { id: a.academicYear.id, name: a.academicYear.name }
+				: null,
+			payments: a.payments,
+			orders: a.orders,
+		};
+	});
 }

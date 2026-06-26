@@ -4194,6 +4194,7 @@
       },
       "fields": {
         "student": "Étudiant",
+        "class": "Classe",
         "structure": "Barème",
         "effectiveAmount": "Montant dû",
         "paidAmount": "Montant payé",
@@ -4217,6 +4218,7 @@
       "delete": "Supprimer le paiement",
       "deleteConfirm": "Supprimer ce paiement ? Le statut de l'affectation sera recalculé.",
       "empty": "Aucun paiement enregistré.",
+      "downloadReceipt": "Télécharger le reçu",
       "fields": {
         "amount": "Montant",
         "paymentDate": "Date de paiement",
@@ -4252,12 +4254,16 @@
       "confirmed": "Ordre confirmé et paiement enregistré",
       "confirmTitle": "Confirmer cet ordre ?",
       "confirmDescription": "La confirmation enregistrera le paiement et mettra à jour le statut de l'étudiant.",
+      "download": "Télécharger le bon de caisse",
       "fields": {
+        "reference": "Référence",
         "amount": "Montant",
         "status": "Statut",
         "notes": "Notes",
         "createdAt": "Date",
-        "expiresAt": "Expire le"
+        "expiresAt": "Expire le",
+        "paymentDate": "Date de paiement",
+        "paymentMethod": "Mode de paiement"
       },
       "status": {
         "pending": "En attente",
@@ -4271,6 +4277,27 @@
       "notCleared": "Non soldé",
       "cleared": "Soldé",
       "clearedOn": "Soldé le {{date}}"
+    },
+    "student": {
+      "title": "Mes frais de scolarité",
+      "subtitle": "Votre situation financière vis-à-vis de l'établissement",
+      "noAssignment": "Aucune affectation de frais trouvée pour votre profil.",
+      "balance": "Solde restant",
+      "totalDue": "Total dû",
+      "paid": "Payé",
+      "academicYear": "Année académique",
+      "pendingOrders": "Ordres en attente"
+    },
+    "history": {
+      "title": "Historique financier",
+      "subtitle": "Tous les paiements et ordres de cet étudiant",
+      "totalDue": "Total dû",
+      "totalPaid": "Total payé",
+      "balance": "Solde restant",
+      "empty": "Aucune affectation trouvée pour cet étudiant.",
+      "noEvents": "Aucun événement financier.",
+      "viewDetail": "Détail",
+      "viewHistory": "Historique financier"
     }
   }
 }

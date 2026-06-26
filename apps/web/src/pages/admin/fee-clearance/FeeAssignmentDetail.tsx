@@ -4,6 +4,8 @@ import {
 	ArrowLeft,
 	CheckCircle,
 	ClipboardList,
+	Download,
+	FileText,
 	Plus,
 	Trash2,
 	XCircle,
@@ -74,6 +76,12 @@ export default function FeeAssignmentDetail() {
 	);
 	const [confirmPaymentMethod, setConfirmPaymentMethod] = useState("cash");
 	const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
+	const [downloadingOrderId, setDownloadingOrderId] = useState<string | null>(
+		null,
+	);
+	const [downloadingReceiptId, setDownloadingReceiptId] = useState<
+		string | null
+	>(null);
 
 	const { data: assignment, isLoading } = useQuery(
 		trpc.feeClearance.getAssignment.queryOptions({ id: id! }),
@@ -175,6 +183,45 @@ export default function FeeAssignmentDetail() {
 	const formatAmount = (v: number) =>
 		`${v.toLocaleString()} ${assignment.currency}`;
 
+	function triggerPdfDownload(base64: string, filename: string) {
+		const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+		const blob = new Blob([bytes], { type: "application/pdf" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = filename;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	async function handleDownloadOrder(orderId: string, ref: string | null) {
+		setDownloadingOrderId(orderId);
+		try {
+			const { pdf } = await trpcClient.feeClearance.downloadOrder.query({
+				orderId,
+			});
+			triggerPdfDownload(pdf, `bon-caisse-${ref ?? orderId}.pdf`);
+		} catch {
+			toast.error(t("common.error"));
+		} finally {
+			setDownloadingOrderId(null);
+		}
+	}
+
+	async function handleDownloadReceipt(paymentId: string, ref: string | null) {
+		setDownloadingReceiptId(paymentId);
+		try {
+			const { pdf } = await trpcClient.feeClearance.downloadReceipt.query({
+				paymentId,
+			});
+			triggerPdfDownload(pdf, `recu-${ref ?? paymentId}.pdf`);
+		} catch {
+			toast.error(t("common.error"));
+		} finally {
+			setDownloadingReceiptId(null);
+		}
+	}
+
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-3">
@@ -188,6 +235,19 @@ export default function FeeAssignmentDetail() {
 					</p>
 				</div>
 				<div className="ml-auto flex gap-2">
+					{assignment.student?.id && (
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() =>
+								navigate(
+									`/admin/fee-clearance/students/${assignment.student!.id}/history`,
+								)
+							}
+						>
+							{t("feeClearance.history.viewHistory")}
+						</Button>
+					)}
 					{assignment.status !== "exempt" && assignment.status !== "paid" && (
 						<Button variant="outline" onClick={() => exemptMut.mutate()}>
 							{t("feeClearance.assignments.exempt")}
@@ -271,6 +331,9 @@ export default function FeeAssignmentDetail() {
 								<TableHead>
 									{t("feeClearance.orders.fields.createdAt")}
 								</TableHead>
+								<TableHead>
+									{t("feeClearance.orders.fields.reference")}
+								</TableHead>
 								<TableHead>{t("feeClearance.orders.fields.amount")}</TableHead>
 								<TableHead>{t("feeClearance.orders.fields.status")}</TableHead>
 								<TableHead>{t("feeClearance.orders.fields.notes")}</TableHead>
@@ -282,6 +345,9 @@ export default function FeeAssignmentDetail() {
 								<TableRow key={o.id}>
 									<TableCell>
 										{format(new Date(o.createdAt), "dd/MM/yyyy HH:mm")}
+									</TableCell>
+									<TableCell className="font-mono text-xs">
+										{o.reference ?? "—"}
 									</TableCell>
 									<TableCell className="font-medium">
 										{formatAmount(Number(o.amount))}
@@ -303,24 +369,41 @@ export default function FeeAssignmentDetail() {
 										{o.notes ?? "—"}
 									</TableCell>
 									<TableCell className="text-right">
-										{o.status === "pending" && (
-											<div className="flex justify-end gap-1">
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => setConfirmOrderId(o.id)}
-												>
-													<CheckCircle className="h-4 w-4 text-green-600" />
-												</Button>
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => cancelOrderMut.mutate(o.id)}
-												>
-													<XCircle className="h-4 w-4 text-destructive" />
-												</Button>
-											</div>
-										)}
+										<div className="flex justify-end gap-1">
+											<Button
+												variant="ghost"
+												size="sm"
+												disabled={downloadingOrderId === o.id}
+												onClick={() =>
+													handleDownloadOrder(o.id, o.reference ?? null)
+												}
+												title={t("feeClearance.orders.download")}
+											>
+												{downloadingOrderId === o.id ? (
+													<span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+												) : (
+													<Download className="h-4 w-4" />
+												)}
+											</Button>
+											{o.status === "pending" && (
+												<>
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => setConfirmOrderId(o.id)}
+													>
+														<CheckCircle className="h-4 w-4 text-green-600" />
+													</Button>
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => cancelOrderMut.mutate(o.id)}
+													>
+														<XCircle className="h-4 w-4 text-destructive" />
+													</Button>
+												</>
+											)}
+										</div>
 									</TableCell>
 								</TableRow>
 							))}
@@ -369,13 +452,30 @@ export default function FeeAssignmentDetail() {
 									</TableCell>
 									<TableCell>{p.reference ?? "—"}</TableCell>
 									<TableCell className="text-right">
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => setDeletePaymentId(p.id)}
-										>
-											<Trash2 className="h-4 w-4 text-destructive" />
-										</Button>
+										<div className="flex justify-end gap-1">
+											<Button
+												variant="ghost"
+												size="sm"
+												disabled={downloadingReceiptId === p.id}
+												onClick={() =>
+													handleDownloadReceipt(p.id, p.reference ?? null)
+												}
+												title={t("feeClearance.payments.downloadReceipt")}
+											>
+												{downloadingReceiptId === p.id ? (
+													<span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+												) : (
+													<FileText className="h-4 w-4" />
+												)}
+											</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												onClick={() => setDeletePaymentId(p.id)}
+											>
+												<Trash2 className="h-4 w-4 text-destructive" />
+											</Button>
+										</div>
 									</TableCell>
 								</TableRow>
 							))}
