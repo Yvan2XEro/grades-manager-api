@@ -15,6 +15,7 @@ import {
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
@@ -49,6 +50,8 @@ interface Exam {
 	percentage: number;
 	classCourse: string;
 	isLocked: boolean;
+	status?: string;
+	rejectionReason?: string | null;
 }
 
 interface ClassCourse {
@@ -192,6 +195,28 @@ export default function ExamManagement() {
 		},
 		onError: (error: any) => {
 			toast.error(error.message || t("teacher.exams.toast.deleteError"));
+		},
+	});
+
+	const resubmitMutation = useMutation({
+		mutationFn: async (examId: string) => {
+			await trpcClient.exams.submit.mutate({ examId });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["teacherExams"] });
+			toast.success(
+				t("teacher.exams.toast.resubmitSuccess", {
+					defaultValue: "Exam resubmitted for approval",
+				}),
+			);
+		},
+		onError: (error: any) => {
+			toast.error(
+				error.message ||
+					t("teacher.exams.toast.resubmitError", {
+						defaultValue: "Failed to resubmit exam",
+					}),
+			);
 		},
 	});
 
@@ -358,16 +383,42 @@ export default function ExamManagement() {
 												</div>
 											</td>
 										</tr>
-										{exam.status === "rejected" && exam.rejectionReason && (
+										{exam.status === "rejected" && (
 											<tr key={`${exam.id}-rejection`}>
 												<td colSpan={8} className="pt-0 pb-2">
-													<div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800 text-sm">
+													<div className="flex flex-wrap items-start gap-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-800 text-sm">
 														<XCircle className="mt-0.5 h-4 w-4 shrink-0" />
-														<div>
-															<span className="font-medium">
-																{t("teacher.exams.rejection.label")}
-															</span>{" "}
-															{exam.rejectionReason}
+														<div className="flex-1">
+															{exam.rejectionReason && (
+																<p>
+																	<span className="font-medium">
+																		{t("teacher.exams.rejection.label")}
+																	</span>{" "}
+																	{exam.rejectionReason}
+																</p>
+															)}
+															<div className="mt-2 flex flex-wrap gap-2">
+																<Link
+																	to={`/teacher/grades/${exam.classCourse}`}
+																	className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 text-red-700 text-xs hover:bg-red-200"
+																>
+																	{t("teacher.exams.rejection.fixGrades", {
+																		defaultValue: "Corriger les notes",
+																	})}
+																</Link>
+																<button
+																	type="button"
+																	onClick={() =>
+																		resubmitMutation.mutate(exam.id)
+																	}
+																	disabled={resubmitMutation.isPending}
+																	className="inline-flex items-center gap-1 rounded-md bg-red-700 px-2.5 py-1 text-white text-xs hover:bg-red-800 disabled:opacity-50"
+																>
+																	{t("teacher.exams.rejection.resubmit", {
+																		defaultValue: "Re-soumettre",
+																	})}
+																</button>
+															</div>
 														</div>
 													</div>
 												</td>
