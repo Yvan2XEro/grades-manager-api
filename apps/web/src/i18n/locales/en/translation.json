@@ -3926,6 +3926,14 @@
       "unenroll": "Withdraw",
       "enroll": "Enroll",
       "selected": "{{count}} course(s) selected of {{total}}"
+    },
+    "dashboard": {
+      "title": "My Space",
+      "subtitle": "Overview of your academic and administrative status",
+      "pendingFees": "Tuition fees are pending. Please settle your account to avoid restrictions.",
+      "viewFees": "My Fees",
+      "upcomingExams": "Upcoming Exams",
+      "viewExams": "View Calendar"
     }
   },
   "retakes": {
@@ -4138,7 +4146,8 @@
       "locked": "Locked",
       "draft": "Planned",
       "rejected": "Rejected"
-    }
+    },
+    "noDate": "Date not set"
   },
   "feeClearance": {
     "title": "Fee Clearance",

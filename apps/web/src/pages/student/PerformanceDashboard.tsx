@@ -1,10 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { motion } from "framer-motion";
 import {
+	AlertCircle,
 	Award,
 	BookOpen,
+	Calendar,
+	CheckCircle2,
 	ChevronDown,
+	ChevronRight,
 	ChevronUp,
+	CreditCard,
 	GraduationCap,
 	ShieldCheck,
 	Star,
@@ -12,7 +18,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Spinner } from "@/components/ui/spinner";
 import { staggerContainer, staggerItem } from "@/lib/animations";
@@ -113,6 +121,157 @@ function DeliberationDecisionCard({ decision }: { decision: DecisionResult }) {
 				</p>
 			</div>
 			<Award className={`h-5 w-5 shrink-0 ${iconCls}`} />
+		</div>
+	);
+}
+
+// ─── Fee Clearance Widget ─────────────────────────────────────────────────────
+
+type FeeAssignment = {
+	id: string;
+	status: string;
+	effectiveAmount: number;
+	paidAmount: number;
+	currency: string;
+	academicYear?: { name: string } | null;
+};
+
+function FeeClearanceWidget({ assignments }: { assignments: FeeAssignment[] }) {
+	const { t } = useTranslation();
+	if (!assignments.length) return null;
+
+	const latest = assignments[0];
+	const currency = latest.currency;
+	const balance = latest.effectiveAmount - latest.paidAmount;
+	const isCleared = latest.status === "paid" || latest.status === "exempt";
+
+	return (
+		<div
+			className={`flex items-center gap-3 rounded-xl border p-4 shadow-sm ${
+				isCleared
+					? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
+					: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30"
+			}`}
+		>
+			{isCleared ? (
+				<CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-600" />
+			) : (
+				<AlertCircle className="h-8 w-8 shrink-0 text-amber-600" />
+			)}
+			<div className="min-w-0 flex-1">
+				<p className="font-semibold text-foreground text-sm">
+					{isCleared
+						? t("feeClearance.quitus.cleared")
+						: t("feeClearance.quitus.notCleared")}
+				</p>
+				<p className="text-muted-foreground text-xs">
+					{latest.academicYear?.name}
+					{!isCleared && (
+						<>
+							{" · "}
+							<span className="font-medium text-amber-700">
+								{t("feeClearance.student.balance")} : {balance.toLocaleString()}{" "}
+								{currency}
+							</span>
+						</>
+					)}
+				</p>
+			</div>
+			<Button variant="ghost" size="sm" asChild>
+				<Link to="/student/fees">
+					<CreditCard className="mr-1 h-4 w-4" />
+					{t("student.dashboard.viewFees")}
+					<ChevronRight className="ml-1 h-3 w-3" />
+				</Link>
+			</Button>
+		</div>
+	);
+}
+
+// ─── Upcoming Exams Strip ─────────────────────────────────────────────────────
+
+type UpcomingExam = {
+	id: string;
+	courseName: string;
+	examTypeName: string | null;
+	scheduledAt: string | null;
+	duration: number | null;
+};
+
+function UpcomingExamsStrip({ exams }: { exams: UpcomingExam[] }) {
+	const { t } = useTranslation();
+	if (!exams.length) return null;
+
+	const shown = exams.slice(0, 3);
+
+	function daysLabel(date: string) {
+		const d = new Date(date);
+		const now = new Date();
+		now.setHours(0, 0, 0, 0);
+		d.setHours(0, 0, 0, 0);
+		const diff = Math.round(
+			(d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+		);
+		if (diff === 0) return t("student.exams.today");
+		if (diff === 1) return t("student.exams.tomorrow");
+		if (diff < 0) return format(new Date(date), "dd/MM");
+		return `J-${diff}`;
+	}
+
+	return (
+		<div className="rounded-xl border bg-card p-4 shadow-sm">
+			<div className="mb-3 flex items-center justify-between">
+				<div className="flex items-center gap-2">
+					<Calendar className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+					<span className="font-semibold text-foreground text-sm">
+						{t("student.dashboard.upcomingExams")}
+					</span>
+					<Badge variant="secondary" className="text-xs">
+						{exams.length}
+					</Badge>
+				</div>
+				<Button variant="ghost" size="sm" asChild>
+					<Link to="/student/exams">
+						{t("student.dashboard.viewExams")}
+						<ChevronRight className="ml-1 h-3 w-3" />
+					</Link>
+				</Button>
+			</div>
+			<div className="space-y-2">
+				{shown.map((exam) => (
+					<div
+						key={exam.id}
+						className="flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2"
+					>
+						<div className="min-w-0 flex-1">
+							<p className="truncate font-medium text-foreground text-sm">
+								{exam.courseName}
+							</p>
+							{exam.examTypeName && (
+								<p className="text-muted-foreground text-xs">
+									{exam.examTypeName}
+								</p>
+							)}
+						</div>
+						<div className="shrink-0 text-right">
+							{exam.scheduledAt ? (
+								<>
+									<p className="font-semibold text-violet-700 text-xs dark:text-violet-400">
+										{daysLabel(exam.scheduledAt)}
+									</p>
+									<p className="text-muted-foreground text-xs">
+										{format(new Date(exam.scheduledAt), "dd/MM HH:mm")}
+									</p>
+								</>
+							) : (
+								<p className="text-muted-foreground text-xs">
+									{t("exam.noDate")}
+								</p>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }
@@ -271,9 +430,7 @@ function SummaryCard({
 const PerformanceDashboard = () => {
 	const { t } = useTranslation();
 
-	// students.me uses ctx.profile.id (domain_user_id) server-side — no auth user ID passed
 	const studentQuery = useQuery(trpc.students.me.queryOptions());
-
 	const studentId = studentQuery.data?.id ?? "";
 
 	const transcriptQuery = useQuery({
@@ -295,11 +452,21 @@ const PerformanceDashboard = () => {
 
 	const decisionsQuery = useQuery(trpc.workflows.myDecisions.queryOptions());
 
+	const feeHistoryQuery = useQuery(
+		trpc.feeClearance.myFinancialHistory.queryOptions(),
+	);
+
+	const upcomingExamsQuery = useQuery(
+		trpc.exams.upcomingForStudent.queryOptions(),
+	);
+
 	const student = studentQuery.data;
 	const transcript = transcriptQuery.data;
 	const ledger = ledgerQuery.data;
 	const classInfo = classQuery.data;
 	const latestDecision = decisionsQuery.data?.[0] ?? null;
+	const feeAssignments = feeHistoryQuery.data ?? [];
+	const upcomingExams = (upcomingExamsQuery.data ?? []) as UpcomingExam[];
 
 	const isLoading =
 		studentQuery.isPending ||
@@ -322,13 +489,20 @@ const PerformanceDashboard = () => {
 	const units = transcript?.units ?? [];
 	const validatedUnits = units.filter((u) => u.average >= 10).length;
 
-	// Projection : among UEs with at least one graded course, how many are on track?
 	const gradedUnits = units.filter((u) => u.courses.some((c) => c.average > 0));
 	const onTrackUnits = gradedUnits.filter((u) => u.average >= 10).length;
 	const projectionRate =
 		gradedUnits.length > 0
 			? Math.round((onTrackUnits / gradedUnits.length) * 100)
 			: null;
+
+	// Show fee widget only for the latest assignment
+	const latestFeeAssignment =
+		feeAssignments.length > 0 ? feeAssignments[0] : null;
+	const feeNotCleared =
+		latestFeeAssignment &&
+		latestFeeAssignment.status !== "paid" &&
+		latestFeeAssignment.status !== "exempt";
 
 	return (
 		<div className="space-y-6">
@@ -352,6 +526,22 @@ const PerformanceDashboard = () => {
 					animate="visible"
 					className="space-y-6"
 				>
+					{/* Fee clearance alert — shown at the top when not cleared */}
+					{latestFeeAssignment && (
+						<motion.div variants={staggerItem}>
+							<FeeClearanceWidget
+								assignments={[latestFeeAssignment as FeeAssignment]}
+							/>
+						</motion.div>
+					)}
+
+					{/* Upcoming exams strip */}
+					{upcomingExams.length > 0 && (
+						<motion.div variants={staggerItem}>
+							<UpcomingExamsStrip exams={upcomingExams} />
+						</motion.div>
+					)}
+
 					{/* Summary Cards */}
 					<motion.div
 						variants={staggerItem}
@@ -432,6 +622,24 @@ const PerformanceDashboard = () => {
 					{latestDecision?.finalDecision && (
 						<motion.div variants={staggerItem}>
 							<DeliberationDecisionCard decision={latestDecision} />
+						</motion.div>
+					)}
+
+					{/* Fee clearance not cleared — pending action banner */}
+					{feeNotCleared && (
+						<motion.div
+							variants={staggerItem}
+							className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/20"
+						>
+							<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+							<div className="flex-1 text-amber-800 text-sm dark:text-amber-300">
+								{t("student.dashboard.pendingFees")}
+							</div>
+							<Button variant="outline" size="sm" className="shrink-0" asChild>
+								<Link to="/student/fees">
+									{t("student.dashboard.viewFees")}
+								</Link>
+							</Button>
 						</motion.div>
 					)}
 

@@ -3934,6 +3934,14 @@
       "unenroll": "Se désinscrire",
       "enroll": "S'inscrire",
       "selected": "{{count}} cours sélectionné(s) sur {{total}}"
+    },
+    "dashboard": {
+      "title": "Mon espace",
+      "subtitle": "Vue d ensemble de votre parcours académique et administratif",
+      "pendingFees": "Des frais de scolarité sont en attente de règlement. Régularisez votre situation pour éviter des restrictions.",
+      "viewFees": "Mes frais",
+      "upcomingExams": "Examens à venir",
+      "viewExams": "Voir le calendrier"
     }
   },
   "retakes": {
@@ -4146,7 +4154,8 @@
       "locked": "Verrouillé",
       "draft": "Planifié",
       "rejected": "Rejeté"
-    }
+    },
+    "noDate": "Date non définie"
   },
   "feeClearance": {
     "title": "Quitus / Frais",
