@@ -10,7 +10,7 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import type { DbInstance } from "@/db/type-fix-db";
 import * as schema from "../db/schema/app-schema";
 import * as authSchema from "../db/schema/auth";
-import { adminRoles } from "./auth";
+import { adminRoles } from "./auth-roles";
 import {
 	organizationAccessControl,
 	organizationRoles,

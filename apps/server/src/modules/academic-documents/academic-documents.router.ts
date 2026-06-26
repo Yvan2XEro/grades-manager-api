@@ -172,6 +172,28 @@ const SYSTEM_TEMPLATES: ReadonlyArray<{
 		description:
 			"Variante CENTRE : en-tête institut + données du centre (sans tutelle).",
 	},
+	// Financial document templates — used by the fee clearance module.
+	{
+		type: "payment_order",
+		variant: "standard",
+		name: "Bon de caisse / Ordre de paiement — Modèle officiel",
+		description:
+			"Document remis à l'étudiant avant paiement. Mentionne le montant dû, la date limite et les coordonnées bancaires.",
+	},
+	{
+		type: "payment_receipt",
+		variant: "standard",
+		name: "Reçu de paiement — Modèle officiel",
+		description:
+			"Reçu officiel émis après confirmation du paiement. Valeur comptable, horodaté et signé.",
+	},
+	{
+		type: "financial_clearance",
+		variant: "standard",
+		name: "Attestation de quitus — Modèle officiel",
+		description:
+			"Attestation certifiant que l'étudiant est à jour de ses frais de scolarité pour l'année académique en cours.",
+	},
 ];
 
 export const academicDocumentsRouter = router({

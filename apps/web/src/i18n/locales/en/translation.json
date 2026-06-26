@@ -90,7 +90,16 @@
     "cancel": "Cancel",
     "all": "All",
     "selectAll": "Select all",
-    "selectedCount": "{{count}} selected"
+    "selectedCount": "{{count}} selected",
+    "active": "Active",
+    "inactive": "Inactive",
+    "created": "Created",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "save": "Save",
+    "delete": "Delete",
+    "none": "None",
+    "confirmDelete": "Confirm deletion"
   },
   "teacher": {
     "courses": {
@@ -898,6 +907,7 @@
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Batch Jobs",
+        "feeClearance": "Fee Clearance",
         "students": "Students",
         "studentPromotion": "Student promotion",
         "courses": "Courses",
@@ -4128,6 +4138,131 @@
       "locked": "Locked",
       "draft": "Planned",
       "rejected": "Rejected"
+    }
+  },
+  "feeClearance": {
+    "title": "Fee Clearance",
+    "subtitle": "Manage fee structures, student payments, and clearance status",
+    "structures": {
+      "title": "Fee Structures",
+      "subtitle": "Define the fees applicable per academic year and program",
+      "create": "New structure",
+      "edit": "Edit structure",
+      "delete": "Delete structure",
+      "deleteConfirm": "Delete this fee structure? This action cannot be undone.",
+      "empty": {
+        "title": "No fee structures",
+        "description": "Create a fee structure to start assigning fees to students."
+      },
+      "fields": {
+        "name": "Name",
+        "academicYear": "Academic year",
+        "program": "Program (optional)",
+        "cycleLevel": "Cycle level (optional)",
+        "totalAmount": "Total amount",
+        "currency": "Currency",
+        "description": "Description",
+        "isActive": "Active"
+      },
+      "installments": {
+        "title": "Payment installments",
+        "add": "Add installment",
+        "label": "Label",
+        "amount": "Amount",
+        "dueDate": "Due date",
+        "empty": "No installments defined. Students can pay in one or multiple free-form payments."
+      }
+    },
+    "assignments": {
+      "title": "Student Payments",
+      "subtitle": "Track fee payment status for each student",
+      "assign": "Assign student",
+      "bulkAssign": "Assign entire class",
+      "exempt": "Mark as exempt",
+      "updateDiscount": "Update discount",
+      "empty": {
+        "title": "No assignments",
+        "description": "Assign students to a fee structure to start tracking their payment status."
+      },
+      "fields": {
+        "student": "Student",
+        "structure": "Fee structure",
+        "effectiveAmount": "Amount due",
+        "paidAmount": "Amount paid",
+        "balance": "Balance",
+        "discount": "Discount",
+        "discountReason": "Discount reason",
+        "status": "Status",
+        "clearedAt": "Cleared on",
+        "notes": "Notes"
+      },
+      "status": {
+        "unpaid": "Unpaid",
+        "partial": "Partial",
+        "paid": "Paid",
+        "exempt": "Exempt"
+      }
+    },
+    "payments": {
+      "title": "Payment history",
+      "record": "Record payment",
+      "delete": "Delete payment",
+      "deleteConfirm": "Delete this payment? The assignment status will be recalculated.",
+      "empty": "No payments recorded yet.",
+      "fields": {
+        "amount": "Amount",
+        "paymentDate": "Payment date",
+        "paymentMethod": "Method",
+        "reference": "Reference / receipt number",
+        "notes": "Notes",
+        "recordedBy": "Recorded by"
+      },
+      "methods": {
+        "cash": "Cash",
+        "bank_transfer": "Bank transfer",
+        "mobile_money": "Mobile money",
+        "check": "Check",
+        "other": "Other"
+      }
+    },
+    "gating": {
+      "title": "Academic Gates",
+      "subtitle": "Block specific academic actions for students who have not paid their fees",
+      "gates": {
+        "exam_registration": "Exam registration",
+        "transcript": "Transcript generation",
+        "diploma": "Diploma issuance",
+        "reenrollment": "Re-enrollment",
+        "document_generation": "Document generation"
+      }
+    },
+    "orders": {
+      "title": "Payment orders",
+      "create": "Create order",
+      "generate": "Generate order",
+      "confirm": "Confirm payment",
+      "confirmed": "Order confirmed and payment recorded",
+      "confirmTitle": "Confirm this order?",
+      "confirmDescription": "Confirming will record the payment and update the student's fee status.",
+      "fields": {
+        "amount": "Amount",
+        "status": "Status",
+        "notes": "Notes",
+        "createdAt": "Date",
+        "expiresAt": "Expires"
+      },
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "quitus": {
+      "title": "Quitus / Fee Clearance Certificate",
+      "download": "Download quitus",
+      "notCleared": "Not cleared",
+      "cleared": "Cleared",
+      "clearedOn": "Cleared on {{date}}"
     }
   }
 }

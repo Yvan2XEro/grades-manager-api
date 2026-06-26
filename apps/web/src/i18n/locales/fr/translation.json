@@ -90,7 +90,16 @@
     "cancel": "Annuler",
     "all": "Tous",
     "selectAll": "Tout sélectionner",
-    "selectedCount": "{{count}} sélectionné(s)"
+    "selectedCount": "{{count}} sélectionné(s)",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "created": "Créé",
+    "saved": "Enregistré",
+    "deleted": "Supprimé",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "none": "Aucun",
+    "confirmDelete": "Confirmer la suppression"
   },
   "navigation": {
     "breadcrumbs": {
@@ -144,6 +153,7 @@
         "monitoring": "Monitoring",
         "notifications": "Notifications",
         "batchJobs": "Traitements par lots",
+        "feeClearance": "Quitus / Frais",
         "students": "Etudiants",
         "studentPromotion": "Promotion des etudiants",
         "courses": "Cours",
@@ -4136,6 +4146,131 @@
       "locked": "Verrouillé",
       "draft": "Planifié",
       "rejected": "Rejeté"
+    }
+  },
+  "feeClearance": {
+    "title": "Quitus / Frais",
+    "subtitle": "Gérez les barèmes, les paiements des étudiants et les quitus",
+    "structures": {
+      "title": "Barèmes de frais",
+      "subtitle": "Définissez les frais applicables par année académique et programme",
+      "create": "Nouveau barème",
+      "edit": "Modifier le barème",
+      "delete": "Supprimer le barème",
+      "deleteConfirm": "Supprimer ce barème ? Cette action est irréversible.",
+      "empty": {
+        "title": "Aucun barème",
+        "description": "Créez un barème pour commencer à affecter des frais aux étudiants."
+      },
+      "fields": {
+        "name": "Nom",
+        "academicYear": "Année académique",
+        "program": "Filière (optionnel)",
+        "cycleLevel": "Niveau (optionnel)",
+        "totalAmount": "Montant total",
+        "currency": "Devise",
+        "description": "Description",
+        "isActive": "Actif"
+      },
+      "installments": {
+        "title": "Tranches de paiement",
+        "add": "Ajouter une tranche",
+        "label": "Libellé",
+        "amount": "Montant",
+        "dueDate": "Échéance",
+        "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement."
+      }
+    },
+    "assignments": {
+      "title": "Paiements étudiants",
+      "subtitle": "Suivez le statut de paiement des frais pour chaque étudiant",
+      "assign": "Affecter un étudiant",
+      "bulkAssign": "Affecter toute une classe",
+      "exempt": "Exonérer",
+      "updateDiscount": "Modifier la remise",
+      "empty": {
+        "title": "Aucune affectation",
+        "description": "Affectez des étudiants à un barème pour suivre leur statut de paiement."
+      },
+      "fields": {
+        "student": "Étudiant",
+        "structure": "Barème",
+        "effectiveAmount": "Montant dû",
+        "paidAmount": "Montant payé",
+        "balance": "Solde",
+        "discount": "Remise",
+        "discountReason": "Motif de la remise",
+        "status": "Statut",
+        "clearedAt": "Quitus le",
+        "notes": "Remarques"
+      },
+      "status": {
+        "unpaid": "Non payé",
+        "partial": "Partiel",
+        "paid": "Soldé",
+        "exempt": "Exonéré"
+      }
+    },
+    "payments": {
+      "title": "Historique des paiements",
+      "record": "Enregistrer un paiement",
+      "delete": "Supprimer le paiement",
+      "deleteConfirm": "Supprimer ce paiement ? Le statut de l'affectation sera recalculé.",
+      "empty": "Aucun paiement enregistré.",
+      "fields": {
+        "amount": "Montant",
+        "paymentDate": "Date de paiement",
+        "paymentMethod": "Mode",
+        "reference": "Référence / N° reçu",
+        "notes": "Remarques",
+        "recordedBy": "Enregistré par"
+      },
+      "methods": {
+        "cash": "Espèces",
+        "bank_transfer": "Virement bancaire",
+        "mobile_money": "Mobile money",
+        "check": "Chèque",
+        "other": "Autre"
+      }
+    },
+    "gating": {
+      "title": "Verrous académiques",
+      "subtitle": "Bloquez certaines actions académiques pour les étudiants n'ayant pas réglé leurs frais",
+      "gates": {
+        "exam_registration": "Inscription aux examens",
+        "transcript": "Génération de relevé de notes",
+        "diploma": "Délivrance de diplôme",
+        "reenrollment": "Réinscription",
+        "document_generation": "Génération de documents"
+      }
+    },
+    "orders": {
+      "title": "Ordres de paiement",
+      "create": "Créer un ordre",
+      "generate": "Générer l'ordre",
+      "confirm": "Confirmer le paiement",
+      "confirmed": "Ordre confirmé et paiement enregistré",
+      "confirmTitle": "Confirmer cet ordre ?",
+      "confirmDescription": "La confirmation enregistrera le paiement et mettra à jour le statut de l'étudiant.",
+      "fields": {
+        "amount": "Montant",
+        "status": "Statut",
+        "notes": "Notes",
+        "createdAt": "Date",
+        "expiresAt": "Expire le"
+      },
+      "status": {
+        "pending": "En attente",
+        "confirmed": "Confirmé",
+        "cancelled": "Annulé"
+      }
+    },
+    "quitus": {
+      "title": "Quitus / Attestation de paiement",
+      "download": "Télécharger le quitus",
+      "notCleared": "Non soldé",
+      "cleared": "Soldé",
+      "clearedOn": "Soldé le {{date}}"
     }
   }
 }

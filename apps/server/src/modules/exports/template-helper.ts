@@ -215,20 +215,11 @@ export type TemplateVariant = "standard" | "center";
 export type EstablishmentType = "institution" | "faculty" | "university";
 
 export function loadTemplate(
-	templateName:
-		| "pv"
-		| "evaluation"
-		| "ec"
-		| "ue"
-		| "deliberation"
-		| "diploma"
-		| "transcript"
-		| "attestation"
-		| "student_list",
+	templateName: string,
 	variant: TemplateVariant = "standard",
 	establishmentType?: EstablishmentType,
 ): string {
-	const standardMap = {
+	const standardMap: Record<string, string> = {
 		pv: "pv-template.html",
 		evaluation: "evaluation-publication.html",
 		ec: "ec-publication.html",
@@ -245,11 +236,11 @@ export function loadTemplate(
 	// IPES- and Faculty-specific variants of transcript & attestation. Picked
 	// at seed time depending on the institution.type so each tenant only sees
 	// the model that fits their setup.
-	const ipesMap: Partial<Record<keyof typeof standardMap, string>> = {
+	const ipesMap: Record<string, string> = {
 		transcript: "releve_template_ipes.html",
 		attestation: "attestation_template_ipes.html",
 	};
-	const facultyMap: Partial<Record<keyof typeof standardMap, string>> = {
+	const facultyMap: Record<string, string> = {
 		transcript: "releve_template_faculty.html",
 		attestation: "attestation_template_faculty.html",
 	};
@@ -257,7 +248,7 @@ export function loadTemplate(
 	// Center variants exist for every template kind. Each renders a
 	// center-only header (admin instances + legal texts + authorization order +
 	// center identity) and excludes the institutional tutelle chain.
-	const centerMap: Partial<Record<keyof typeof standardMap, string>> = {
+	const centerMap: Record<string, string> = {
 		diploma: "diploma-template-center.html",
 		transcript: "transcript-template-center.html",
 		attestation: "attestation-template-center.html",
@@ -269,7 +260,7 @@ export function loadTemplate(
 		deliberation: "deliberation-template-center.html",
 	};
 
-	let filename: string;
+	let filename: string | undefined;
 	if (variant === "center" && centerMap[templateName]) {
 		filename = centerMap[templateName]!;
 	} else if (establishmentType === "institution" && ipesMap[templateName]) {
@@ -278,6 +269,10 @@ export function loadTemplate(
 		filename = facultyMap[templateName]!;
 	} else {
 		filename = standardMap[templateName];
+	}
+
+	if (!filename) {
+		return `<!-- No bundled template for type "${templateName}" -->`;
 	}
 
 	const templatePath = join(import.meta.dir, "templates", filename);

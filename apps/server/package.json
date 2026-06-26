@@ -11,6 +11,8 @@
 		"seed:scaffold": "bun run src/scripts/scaffold-seeds.ts",
 		"seed": "bun run src/scripts/seed.ts",
 		"seed:pglite": "USE_PGLITE=true bun run src/scripts/seed.ts",
+		"seed:fee": "bun run src/scripts/seed-fee.ts",
+		"seed:fee:pglite": "USE_PGLITE=true bun run src/scripts/seed-fee.ts",
 		"seed:deliberation-test": "bun run src/scripts/seed-deliberation-test.ts",
 		"seed:deliberation-test:pglite": "USE_PGLITE=true bun run src/scripts/seed-deliberation-test.ts",
 		"backfill:classcourse-semester": "bun run src/scripts/backfill-classcourse-semester.ts",

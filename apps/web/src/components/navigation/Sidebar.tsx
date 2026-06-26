@@ -6,6 +6,7 @@ import {
 	Building2,
 	Calendar,
 	ClipboardList,
+	CreditCard,
 	FileCog,
 	FileSpreadsheet,
 	FileText,
@@ -167,6 +168,11 @@ const Sidebar: React.FC = () => {
 						to: "/admin/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
+					},
+					{
+						to: "/admin/fee-clearance",
+						icon: <CreditCard className={IC} />,
+						labelKey: "navigation.sidebar.admin.feeClearance",
 					},
 					{
 						to: "/admin/notifications",
