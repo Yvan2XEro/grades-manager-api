@@ -683,6 +683,23 @@ export async function confirmOrder(
 	});
 
 	await recalculateAssignmentStatus(order.feeAssignmentId, institutionId);
+
+	// Notify the student in-app (fire-and-forget)
+	const assignment = await repo.findAssignmentById(
+		order.feeAssignmentId,
+		institutionId,
+	);
+	if (assignment?.studentId) {
+		const { queueInApp } = await import(
+			"../notifications/notifications.service"
+		);
+		queueInApp(assignment.studentId, "fee.payment_confirmed", {
+			amount: Number(order.amount),
+			currency: order.currency,
+			reference: payment.reference,
+		}).catch(() => {});
+	}
+
 	return { order: updatedOrder, payment };
 }
 

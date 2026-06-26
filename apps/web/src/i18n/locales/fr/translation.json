@@ -4308,5 +4308,24 @@
       "viewDetail": "Détail",
       "viewHistory": "Historique financier"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markRead": "Lu",
+    "markAllRead": "Tout marquer comme lu",
+    "timeAgo": {
+      "justNow": "À l instant",
+      "minutes": "{{count}} min",
+      "hours": "{{count}} h",
+      "days": "{{count}} j"
+    },
+    "types": {
+      "fee_payment_confirmed": "Paiement confirmé",
+      "grade_approved": "Notes approuvées",
+      "grade_rejected": "Notes refusées",
+      "deliberation_published": "Résultats publiés",
+      "generic": "Notification"
+    }
   }
 }

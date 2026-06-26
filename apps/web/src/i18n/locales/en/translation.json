@@ -4300,5 +4300,24 @@
       "viewDetail": "Detail",
       "viewHistory": "Financial history"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markRead": "Mark read",
+    "markAllRead": "Mark all as read",
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutes": "{{count}} min",
+      "hours": "{{count}} h",
+      "days": "{{count}} d"
+    },
+    "types": {
+      "fee_payment_confirmed": "Payment confirmed",
+      "grade_approved": "Grades approved",
+      "grade_rejected": "Grades rejected",
+      "deliberation_published": "Results published",
+      "generic": "Notification"
+    }
   }
 }

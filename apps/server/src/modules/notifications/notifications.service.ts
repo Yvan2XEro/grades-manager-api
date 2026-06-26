@@ -48,3 +48,35 @@ export async function registerWorkflowAlert(
 		recipientId: recipientId ?? undefined,
 	});
 }
+
+export async function queueInApp(
+	recipientId: string,
+	type: string,
+	payload: Record<string, unknown>,
+) {
+	return repo.createNotification({
+		recipientId,
+		channel: "in-app",
+		type,
+		payload,
+		status: "sent",
+	});
+}
+
+export async function myInAppNotifications(recipientId: string, limit = 30) {
+	return repo.findByRecipient(recipientId, { channel: "in-app", limit });
+}
+
+export async function unreadCount(recipientId: string) {
+	return repo.countUnreadInApp(recipientId);
+}
+
+export async function markRead(id: string, recipientId: string) {
+	const updated = await repo.markRead(id, recipientId);
+	if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
+	return updated;
+}
+
+export async function markAllRead(recipientId: string) {
+	await repo.markAllReadInApp(recipientId);
+}

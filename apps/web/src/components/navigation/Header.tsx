@@ -139,11 +139,7 @@ const Header: React.FC = () => {
 
 	const userInitials =
 		`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.trim() || "?";
-	const canAccessNotifications =
-		user?.role === "administrator" ||
-		user?.role === "dean" ||
-		user?.role === "super_admin" ||
-		user?.role === "owner";
+	const canAccessNotifications = Boolean(user);
 
 	// ⌘K / Ctrl+K global shortcut
 	useEffect(() => {

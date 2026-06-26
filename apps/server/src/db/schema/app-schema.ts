@@ -75,7 +75,7 @@ export const studentCourseEnrollmentStatuses = [
 export type StudentCourseEnrollmentStatus =
 	(typeof studentCourseEnrollmentStatuses)[number];
 
-export const notificationChannels = ["email", "webhook"] as const;
+export const notificationChannels = ["email", "webhook", "in-app"] as const;
 export type NotificationChannel = (typeof notificationChannels)[number];
 
 export const notificationStatuses = ["pending", "sent", "failed"] as const;
@@ -1295,6 +1295,7 @@ export const notifications = pgTable(
 			.notNull()
 			.default("pending"),
 		sentAt: timestamp("sent_at", { withTimezone: true }),
+		readAt: timestamp("read_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

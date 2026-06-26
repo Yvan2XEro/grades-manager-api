@@ -1,4 +1,4 @@
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, isNull, lt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -58,11 +58,56 @@ export async function findPending(limit = 25) {
 	});
 }
 
-export async function findByRecipient(recipientId: string) {
+export async function findByRecipient(
+	recipientId: string,
+	opts?: { channel?: schema.NotificationChannel; limit?: number },
+) {
+	const conditions = [eq(schema.notifications.recipientId, recipientId)];
+	if (opts?.channel) {
+		conditions.push(eq(schema.notifications.channel, opts.channel));
+	}
 	return db.query.notifications.findMany({
-		where: recipientId
-			? eq(schema.notifications.recipientId, recipientId)
-			: undefined,
+		where: and(...conditions),
 		orderBy: (t, { desc }) => [desc(t.createdAt)],
+		limit: opts?.limit ?? 50,
 	});
+}
+
+export async function countUnreadInApp(recipientId: string) {
+	const rows = await db.query.notifications.findMany({
+		where: and(
+			eq(schema.notifications.recipientId, recipientId),
+			eq(schema.notifications.channel, "in-app"),
+			isNull(schema.notifications.readAt),
+		),
+		columns: { id: true },
+	});
+	return rows.length;
+}
+
+export async function markRead(id: string, recipientId: string) {
+	const [updated] = await db
+		.update(schema.notifications)
+		.set({ readAt: new Date() })
+		.where(
+			and(
+				eq(schema.notifications.id, id),
+				eq(schema.notifications.recipientId, recipientId),
+			),
+		)
+		.returning();
+	return updated;
+}
+
+export async function markAllReadInApp(recipientId: string) {
+	await db
+		.update(schema.notifications)
+		.set({ readAt: new Date() })
+		.where(
+			and(
+				eq(schema.notifications.recipientId, recipientId),
+				eq(schema.notifications.channel, "in-app"),
+				isNull(schema.notifications.readAt),
+			),
+		);
 }
