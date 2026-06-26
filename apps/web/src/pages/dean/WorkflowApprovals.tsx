@@ -55,6 +55,7 @@ const WorkflowApprovals = () => {
 	// Filters
 	const [yearFilter, setYearFilter] = useState<string | null>(null);
 	const [classFilter, setClassFilter] = useState<string | null>(null);
+	const [dateFrom, setDateFrom] = useState<string>("");
 
 	const resetFilters = () => {
 		examPagination.reset();
@@ -68,6 +69,7 @@ const WorkflowApprovals = () => {
 			limit: examPagination.pageSize,
 			academicYearId: yearFilter ?? undefined,
 			classId: classFilter ?? undefined,
+			dateFrom: dateFrom ? new Date(dateFrom) : undefined,
 		}),
 	);
 	const notificationsQuery = useQuery(
@@ -174,7 +176,7 @@ const WorkflowApprovals = () => {
 					</h2>
 
 					{/* Filters */}
-					<div className="mt-3 flex flex-wrap gap-2">
+					<div className="mt-3 flex flex-wrap items-center gap-2">
 						<AcademicYearSelect
 							value={yearFilter}
 							onChange={(v) => {
@@ -191,6 +193,18 @@ const WorkflowApprovals = () => {
 								setClassFilter(v);
 								resetFilters();
 							}}
+						/>
+						<input
+							type="date"
+							value={dateFrom}
+							onChange={(e) => {
+								setDateFrom(e.target.value);
+								resetFilters();
+							}}
+							className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+							title={t("dean.workflows.dateFrom", {
+								defaultValue: "Submitted from",
+							})}
 						/>
 					</div>
 

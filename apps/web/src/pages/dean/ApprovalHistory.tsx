@@ -55,6 +55,8 @@ export default function ApprovalHistory() {
 	const [classFilter, setClassFilter] = useState<string>("all");
 	const [yearFilter, setYearFilter] = useState<string>("all");
 	const [teacherFilter, setTeacherFilter] = useState<string>("all");
+	const [dateFrom, setDateFrom] = useState<string>("");
+	const [dateTo, setDateTo] = useState<string>("");
 	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
 
 	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
@@ -81,6 +83,8 @@ export default function ApprovalHistory() {
 			classId: classFilter !== "all" ? classFilter : undefined,
 			academicYearId: yearFilter !== "all" ? yearFilter : undefined,
 			teacherId: teacherFilter !== "all" ? teacherFilter : undefined,
+			dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+			dateTo: dateTo ? new Date(dateTo) : undefined,
 		}),
 	);
 
@@ -200,6 +204,32 @@ export default function ApprovalHistory() {
 						))}
 					</SelectContent>
 				</Select>
+
+				{/* Date range filter */}
+				<div className="flex items-center gap-1.5">
+					<Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+					<input
+						type="date"
+						value={dateFrom}
+						onChange={(e) => {
+							setDateFrom(e.target.value);
+							pagination.reset();
+						}}
+						className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+						title={t("dean.history.dateFrom", { defaultValue: "From" })}
+					/>
+					<span className="text-muted-foreground text-xs">—</span>
+					<input
+						type="date"
+						value={dateTo}
+						onChange={(e) => {
+							setDateTo(e.target.value);
+							pagination.reset();
+						}}
+						className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+						title={t("dean.history.dateTo", { defaultValue: "To" })}
+					/>
+				</div>
 			</div>
 
 			{/* ── List ──────────────────────────────────────────────────────────── */}
