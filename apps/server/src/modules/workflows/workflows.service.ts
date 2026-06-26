@@ -164,6 +164,7 @@ export async function rejectGrades(
 		rejectorId ?? null,
 		"rejected",
 		institutionId,
+		reason,
 	);
 	await notifications.registerWorkflowAlert(
 		"grade_validated",

@@ -273,6 +273,18 @@ export default function ApprovalHistory() {
 														})}
 											</p>
 										)}
+										{exam.status === "rejected" &&
+											(exam as any).rejectionReason && (
+												<p className="mt-1.5 rounded-md bg-destructive/8 px-2.5 py-1 text-destructive text-xs">
+													<span className="font-semibold">
+														{t("dean.history.rejectionReason", {
+															defaultValue: "Reason",
+														})}
+														:{" "}
+													</span>
+													{(exam as any).rejectionReason}
+												</p>
+											)}
 									</div>
 
 									{cfg && (

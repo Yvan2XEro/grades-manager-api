@@ -791,6 +791,7 @@ export const exams = pgTable(
 		),
 		scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
 		validatedAt: timestamp("validated_at", { withTimezone: true }),
+		rejectionReason: text("rejection_reason"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),

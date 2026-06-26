@@ -3656,7 +3656,8 @@
       "toast": {
         "submitted": "Examen soumis",
         "locked": "Examen verrouillé"
-      }
+      },
+      "rejectionReason": "Motif de rejet"
     },
     "gradeAccessGrants": {
       "actions": {
@@ -3875,6 +3876,7 @@
       "emptyHint": "Aucun examen approuvé ou rejeté pour l'instant.",
       "approvedOn": "Approuvé le {{date}}",
       "rejectedOn": "Rejeté le {{date}}",
+      "rejectionReason": "Motif",
       "searchPlaceholder": "Rechercher un examen...",
       "allClasses": "Toutes les classes",
       "allYears": "Toutes les années"

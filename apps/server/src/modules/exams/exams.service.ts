@@ -223,6 +223,7 @@ export async function validateExam(
 	approverId: string | null,
 	status: "approved" | "rejected",
 	institutionId: string,
+	rejectionReason?: string,
 ) {
 	const existing = await requireExam(examId, institutionId);
 	const resolved = await resolveDomainUserId(approverId);
@@ -238,6 +239,7 @@ export async function validateExam(
 			status,
 			validatedBy: resolved,
 			validatedAt: new Date(),
+			rejectionReason: status === "rejected" ? (rejectionReason ?? null) : null,
 		},
 		institutionId,
 	);
