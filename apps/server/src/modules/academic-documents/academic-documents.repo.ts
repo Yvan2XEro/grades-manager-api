@@ -230,6 +230,28 @@ export async function loadCenterByProgram(programId: string) {
 }
 
 /**
+ * Quick lookup of the academic year a student is currently enrolled in,
+ * derived from their assigned class. Used by fee clearance gates.
+ */
+export async function getStudentAcademicYearId(
+	studentId: string,
+	institutionId: string,
+): Promise<string | null> {
+	const [row] = await db
+		.select({ academicYearId: schema.classes.academicYear })
+		.from(schema.students)
+		.innerJoin(schema.classes, eq(schema.classes.id, schema.students.class))
+		.where(
+			and(
+				eq(schema.students.id, studentId),
+				eq(schema.students.institutionId, institutionId),
+			),
+		)
+		.limit(1);
+	return row?.academicYearId ?? null;
+}
+
+/**
  * Roster query: returns students filtered by any combination of classId,
  * programId (via classes.program), academicYearId (via classes.academicYear)
  * or explicit studentIds. All filters are AND-combined; an institutionId

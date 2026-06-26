@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import type { ExportTemplateType } from "../../db/schema/app-schema";
+import type { ExportTemplateType, FeeGate } from "../../db/schema/app-schema";
 import {
 	router,
 	tenantAdminProcedure,
@@ -15,8 +15,16 @@ import {
 	type ThemeKind,
 } from "../exports/themes";
 import { getDefaultThemePayload } from "../exports/themes/presets-payload";
+import { assertFeeClearance } from "../fee-clearance/fee-clearance.gates";
+import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
+
+const DOCUMENT_GATES: Partial<Record<zod.DocumentKind, FeeGate>> = {
+	transcript: "transcript",
+	diploma: "diploma",
+	attestation: "document_generation",
+} as const;
 
 // System-default templates created by `seedSystemDefaults`.
 //
@@ -201,6 +209,19 @@ export const academicDocumentsRouter = router({
 	generate: tenantGradingProcedure
 		.input(zod.generateDocumentSchema)
 		.mutation(async ({ ctx, input }) => {
+			const gate = DOCUMENT_GATES[input.kind];
+			if (gate && !input.demoMode) {
+				const academicYearId = await repo.getStudentAcademicYearId(
+					input.studentId,
+					ctx.institution.id,
+				);
+				if (academicYearId) {
+					await assertFeeClearance(ctx, gate, {
+						studentId: input.studentId,
+						academicYearId,
+					});
+				}
+			}
 			const result = await service.generateDocument(ctx.institution.id, input);
 			const ext = input.format === "html" ? "html" : "pdf";
 			return {
@@ -241,6 +262,19 @@ export const academicDocumentsRouter = router({
 	preview: tenantGradingProcedure
 		.input(zod.previewDocumentSchema)
 		.query(async ({ ctx, input }) => {
+			const gate = DOCUMENT_GATES[input.kind];
+			if (gate && !input.demoMode) {
+				const academicYearId = await repo.getStudentAcademicYearId(
+					input.studentId,
+					ctx.institution.id,
+				);
+				if (academicYearId) {
+					await assertFeeClearance(ctx, gate, {
+						studentId: input.studentId,
+						academicYearId,
+					});
+				}
+			}
 			const result = await service.generateDocument(ctx.institution.id, {
 				...input,
 				format: "html",

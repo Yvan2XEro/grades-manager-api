@@ -40,6 +40,23 @@ const ROOT_PATHS = new Set([
 	"/student",
 ]);
 
+type NavBadgeType = "new" | "updated";
+
+function NavBadge({ type }: { type: NavBadgeType }) {
+	return (
+		<span
+			className={cn(
+				"ml-auto shrink-0 rounded-full border px-1.5 py-px font-semibold text-[9px] uppercase leading-none tracking-wide",
+				type === "new"
+					? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+					: "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400",
+			)}
+		>
+			{type === "new" ? "New" : "Upd"}
+		</span>
+	);
+}
+
 const Sidebar: React.FC = () => {
 	const { user, sidebarOpen, sidebarCollapsed } = useStore();
 	const { t } = useTranslation();
@@ -168,11 +185,13 @@ const Sidebar: React.FC = () => {
 						to: "/admin/batch-jobs",
 						icon: <PlayCircle className={IC} />,
 						labelKey: "navigation.sidebar.admin.batchJobs",
+						badge: "new" as NavBadgeType,
 					},
 					{
 						to: "/admin/fee-clearance",
 						icon: <CreditCard className={IC} />,
 						labelKey: "navigation.sidebar.admin.feeClearance",
+						badge: "new" as NavBadgeType,
 					},
 					{
 						to: "/admin/notifications",
@@ -457,7 +476,10 @@ const Sidebar: React.FC = () => {
 									</div>
 								</TooltipTrigger>
 								<TooltipContent side="right" sideOffset={12}>
-									{t(link.labelKey)}
+									<span className="flex items-center gap-1.5">
+										{t(link.labelKey)}
+										{link.badge && <NavBadge type={link.badge} />}
+									</span>
 								</TooltipContent>
 							</Tooltip>
 						))}
@@ -509,6 +531,7 @@ const Sidebar: React.FC = () => {
 													>
 														{link.icon}
 														<span>{t(link.labelKey)}</span>
+														{link.badge && <NavBadge type={link.badge} />}
 													</NavLink>
 												))}
 											</div>
@@ -531,6 +554,7 @@ const Sidebar: React.FC = () => {
 							>
 								{link.icon}
 								<span>{t(link.labelKey)}</span>
+								{link.badge && <NavBadge type={link.badge} />}
 							</NavLink>
 						))}
 					</div>
