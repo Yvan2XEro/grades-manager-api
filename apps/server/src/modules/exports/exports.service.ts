@@ -7,6 +7,7 @@ import * as schema from "../../db/schema/app-schema";
 import { loadTutelleChain } from "../academic-documents/academic-documents.repo";
 import type { DiplomationExportData } from "../deliberations/deliberations.types";
 import * as eligibility from "../export-eligibility/export-eligibility.service";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import { ExportsRepo } from "./exports.repo";
 import type {
 	BulkExportFilters,
@@ -1068,10 +1069,14 @@ export class ExportsService {
 			{ classId: classId ?? undefined },
 		);
 
+		const scale = await gradeScalesService.getForInstitution(
+			this.institutionId,
+		);
 		const templateData = this.processDeliberationData(
 			diplomationData,
 			config,
 			templateConfig,
+			gradeScalesService.buildMentionLabelMap(scale.mentionRanges),
 		);
 
 		const html = await this.renderTemplate(
@@ -1107,10 +1112,14 @@ export class ExportsService {
 			undefined,
 			{ classId: classId ?? undefined },
 		);
+		const scale = await gradeScalesService.getForInstitution(
+			this.institutionId,
+		);
 		return this.processDeliberationData(
 			diplomationData,
 			config,
 			templateConfig,
+			gradeScalesService.buildMentionLabelMap(scale.mentionRanges),
 		);
 	}
 
@@ -1119,6 +1128,7 @@ export class ExportsService {
 		data: DiplomationExportData,
 		config: ReturnType<typeof loadExportConfig>,
 		_templateConfig: TemplateConfiguration,
+		mentionLabels: Record<string, string> = {},
 	) {
 		const decisionLabels: Record<string, string> = {
 			admitted: "Admis en cl. supérieure",
@@ -1127,14 +1137,6 @@ export class ExportsService {
 			repeat: "Redoublant",
 			excluded: "Exclu",
 			pending: "En attente",
-		};
-
-		const mentionLabels: Record<string, string> = {
-			excellent: "Excellent",
-			tres_bien: "Très Bien",
-			bien: "Bien",
-			assez_bien: "Assez Bien",
-			passable: "Passable",
 		};
 
 		// Collect unique UEs across all students

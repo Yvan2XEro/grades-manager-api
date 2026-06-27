@@ -43,6 +43,13 @@
       "when": 1782541155667,
       "tag": "0005_fine_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782546164014,
+      "tag": "0006_absurd_angel",
+      "breakpoints": true
     }
   ]
 }

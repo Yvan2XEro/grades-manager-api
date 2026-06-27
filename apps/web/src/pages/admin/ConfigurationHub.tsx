@@ -2,6 +2,7 @@ import { useQueryState } from "nuqs";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ExportTemplatesManagement from "./ExportTemplatesManagement";
+import GradeScaleSettings from "./GradeScaleSettings";
 import RegistrationNumberFormats from "./RegistrationNumberFormats";
 import RuleManagement from "./RuleManagement";
 
@@ -14,16 +15,20 @@ export default function ConfigurationHub() {
 		<div className="space-y-6">
 			<PageHeader
 				title="Configuration"
-				description="Formats de matricules, modèles d'exportation et moteur de règles"
+				description="Formats de matricules, barème de notes, modèles d'exportation et moteur de règles"
 			/>
 			<Tabs value={tab ?? "reg-numbers"} onValueChange={setTab}>
 				<TabsList>
 					<TabsTrigger value="reg-numbers">Formats de matricule</TabsTrigger>
+					<TabsTrigger value="grade-scale">Barème de notes</TabsTrigger>
 					<TabsTrigger value="templates">Modèles d'export</TabsTrigger>
 					<TabsTrigger value="rules">Moteur de règles</TabsTrigger>
 				</TabsList>
 				<TabsContent value="reg-numbers" className="mt-4">
 					<RegistrationNumberFormats />
+				</TabsContent>
+				<TabsContent value="grade-scale" className="mt-4">
+					<GradeScaleSettings />
 				</TabsContent>
 				<TabsContent value="templates" className="mt-4">
 					<ExportTemplatesManagement />

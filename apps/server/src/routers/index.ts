@@ -9,6 +9,7 @@ import { examSchedulerRouter } from "@/modules/exam-scheduler/exam-scheduler.rou
 import { exportEligibilityRouter } from "@/modules/export-eligibility";
 import { feeClearanceRouter } from "@/modules/fee-clearance";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
+import { gradeScalesRouter } from "@/modules/grade-scales";
 import { gradesRouter } from "@/modules/grades";
 import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
@@ -78,6 +79,7 @@ export const appRouter = router({
 	batchJobs: batchJobsRouter,
 	deliberations: deliberationsRouter,
 	gradeAccessGrants: gradeAccessGrantsRouter,
+	gradeScales: gradeScalesRouter,
 	diplomationKeys: diplomationKeysRouter,
 	centers: centersRouter,
 	exportEligibility: exportEligibilityRouter,

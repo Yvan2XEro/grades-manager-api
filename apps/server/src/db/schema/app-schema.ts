@@ -3606,3 +3606,85 @@ export const courseSessionsRelations = relations(courseSessions, ({ one }) => ({
 		references: [academicYears.id],
 	}),
 }));
+
+// ── Grade Scales ──────────────────────────────────────────────────────────────
+
+export type MentionRange = {
+	key: string;
+	label: string;
+	labelEn: string;
+	gradeLetter: string;
+	min: number;
+};
+
+export const DEFAULT_MENTION_RANGES: MentionRange[] = [
+	{
+		key: "excellent",
+		label: "Excellent",
+		labelEn: "Excellent",
+		gradeLetter: "A",
+		min: 18,
+	},
+	{
+		key: "tres_bien",
+		label: "Très Bien",
+		labelEn: "Very Good",
+		gradeLetter: "B",
+		min: 16,
+	},
+	{ key: "bien", label: "Bien", labelEn: "Good", gradeLetter: "C", min: 14 },
+	{
+		key: "assez_bien",
+		label: "Assez Bien",
+		labelEn: "Fair",
+		gradeLetter: "D",
+		min: 12,
+	},
+	{
+		key: "passable",
+		label: "Passable",
+		labelEn: "Satisfactory",
+		gradeLetter: "E",
+		min: 10,
+	},
+];
+
+export const gradeScales = pgTable(
+	"grade_scales",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		passThreshold: numeric("pass_threshold", { precision: 5, scale: 2 })
+			.notNull()
+			.default("10"),
+		compensationThreshold: numeric("compensation_threshold", {
+			precision: 5,
+			scale: 2,
+		})
+			.notNull()
+			.default("8"),
+		mentionRanges: jsonb("mention_ranges")
+			.$type<MentionRange[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [unique("grade_scales_institution_unique").on(t.institutionId)],
+);
+
+export type GradeScale = InferSelectModel<typeof gradeScales>;
+export type NewGradeScale = InferInsertModel<typeof gradeScales>;
+
+export const gradeScalesRelations = relations(gradeScales, ({ one }) => ({
+	institution: one(institutions, {
+		fields: [gradeScales.institutionId],
+		references: [institutions.id],
+	}),
+}));

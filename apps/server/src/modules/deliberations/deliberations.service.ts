@@ -14,6 +14,7 @@ import {
 	normalizeExamType,
 	resolveStudentGradesWithRetakes,
 } from "../exports/template-helper";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import type { StudentPromotionFacts } from "../promotion-rules/promotion-rules.types";
 import { getStudentPromotionFacts } from "../promotion-rules/student-facts.service";
 import { evaluateStudent } from "./deliberation-rules-engine";
@@ -39,12 +40,6 @@ import type {
 	UpdateDeliberationInput,
 	UpdateDeliberationRuleInput,
 } from "./deliberations.zod";
-
-const PASSING_GRADE = 10;
-
-// LMD default thresholds
-const DEFAULT_VALIDATION_THRESHOLD = 10; // UE validated if average >= 10
-const DEFAULT_COMPENSATION_BAR = 8; // UE compensable if average >= 8
 
 const MENTION_TO_GRADE: Record<string, string> = {
 	passable: "E",
@@ -345,6 +340,8 @@ export async function compute(
 		delib.type,
 	);
 
+	const gradeScale = await gradeScalesService.getForInstitution(institutionId);
+
 	// Build UE map from class courses
 	const ueMap = new Map<
 		string,
@@ -500,7 +497,7 @@ export async function compute(
 			const isValidated =
 				allCoursesHaveGrades &&
 				ueAverage !== null &&
-				ueAverage >= DEFAULT_VALIDATION_THRESHOLD;
+				ueAverage >= gradeScale.passThreshold;
 
 			let ueDecision: UeDecision;
 			if (!allCoursesHaveGrades) {
@@ -560,13 +557,13 @@ export async function compute(
 		if (
 			allComplete &&
 			generalAverage !== null &&
-			generalAverage >= DEFAULT_VALIDATION_THRESHOLD
+			generalAverage >= gradeScale.passThreshold
 		) {
 			for (const ue of ueResults) {
 				if (
 					ue.decision === "AJ" &&
 					ue.ueAverage !== null &&
-					ue.ueAverage >= DEFAULT_COMPENSATION_BAR
+					ue.ueAverage >= gradeScale.compensationThreshold
 				) {
 					ue.decision = "CMP";
 					ue.isValidated = true;
@@ -655,8 +652,8 @@ export async function compute(
 		const compensableUECount = ueResults.filter(
 			(ue) =>
 				ue.ueAverage !== null &&
-				ue.ueAverage >= 8 &&
-				ue.ueAverage < PASSING_GRADE,
+				ue.ueAverage >= gradeScale.compensationThreshold &&
+				ue.ueAverage < gradeScale.passThreshold,
 		).length;
 
 		const deliberationFacts: DeliberationFacts = {
@@ -689,9 +686,9 @@ export async function compute(
 				autoDecision = "admitted";
 			} else if (
 				generalAverage !== null &&
-				generalAverage >= DEFAULT_VALIDATION_THRESHOLD
+				generalAverage >= gradeScale.passThreshold
 			) {
-				// Average ≥ 10 but at least one UE below compensation bar
+				// Average ≥ passThreshold but at least one UE below compensation bar
 				autoDecision = "compensated";
 			} else {
 				autoDecision = "deferred";
@@ -745,7 +742,10 @@ export async function compute(
 		);
 		if (original) {
 			original.rank = currentRank;
-			original.mention = computeMention(original.generalAverage);
+			original.mention = gradeScalesService.computeMention(
+				original.generalAverage,
+				gradeScale.mentionRanges,
+			) as schema.DeliberationMention | null;
 		}
 	}
 
@@ -1201,16 +1201,6 @@ export async function promoteAdmitted(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function computeMention(average: number | null): DeliberationMention | null {
-	if (average === null) return null;
-	if (average >= 18) return "excellent";
-	if (average >= 16) return "tres_bien";
-	if (average >= 14) return "bien";
-	if (average >= 12) return "assez_bien";
-	if (average >= 10) return "passable";
-	return null;
-}
 
 function computeStats(
 	results: Array<{
