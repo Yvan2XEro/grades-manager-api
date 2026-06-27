@@ -411,21 +411,30 @@ export default function BatchJobDetail() {
 								setLogLevel(v as "all" | "info" | "warn" | "error")
 							}
 						>
-							<SelectTrigger className="h-7 w-[90px] text-xs">
+							<SelectTrigger className="h-7 w-[100px] text-xs">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">
-									{t("common.all", { defaultValue: "All" })}
+									{t("admin.batchJobs.detail.logLevel.all")}
 								</SelectItem>
-								<SelectItem value="info">Info</SelectItem>
-								<SelectItem value="warn">Warn</SelectItem>
-								<SelectItem value="error">Error</SelectItem>
+								<SelectItem value="info">
+									{t("admin.batchJobs.detail.logLevel.info")}
+								</SelectItem>
+								<SelectItem value="warn">
+									{t("admin.batchJobs.detail.logLevel.warn")}
+								</SelectItem>
+								<SelectItem value="error">
+									{t("admin.batchJobs.detail.logLevel.error")}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					)}
 				</div>
 				{(() => {
+					const stepNameMap = Object.fromEntries(
+						(job.steps ?? []).map((s) => [s.id, s.name]),
+					);
 					const filteredLogs = (job.logs ?? []).filter(
 						(l) => logLevel === "all" || l.level === logLevel,
 					);
@@ -435,19 +444,27 @@ export default function BatchJobDetail() {
 						</p>
 					) : (
 						<div className="max-h-96 space-y-1 overflow-y-auto font-mono text-xs">
-							{filteredLogs.map((log) => (
-								<div key={log.id} className="flex gap-2 py-1">
-									<span className="text-muted-foreground/60">
-										{new Date(log.timestamp).toLocaleTimeString()}
-									</span>
-									<span
-										className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}
-									>
-										[{log.level}]
-									</span>
-									<span className="text-foreground">{log.message}</span>
-								</div>
-							))}
+							{filteredLogs.map((log) => {
+								const stepName = log.stepId ? stepNameMap[log.stepId] : null;
+								return (
+									<div key={log.id} className="flex gap-2 py-1">
+										<span className="text-muted-foreground/60">
+											{new Date(log.timestamp).toLocaleTimeString()}
+										</span>
+										<span
+											className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}
+										>
+											[{log.level}]
+										</span>
+										{stepName && (
+											<span className="text-muted-foreground/70">
+												[{t("admin.batchJobs.detail.logStep")}: {stepName}]
+											</span>
+										)}
+										<span className="text-foreground">{log.message}</span>
+									</div>
+								);
+							})}
 						</div>
 					);
 				})()}

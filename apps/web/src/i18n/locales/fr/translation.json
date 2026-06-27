@@ -570,7 +570,14 @@
         "progress": "Progression",
         "error": "Erreur",
         "result": "Résultat",
-        "noLogs": "Aucun journal"
+        "noLogs": "Aucun journal",
+        "logLevel": {
+          "all": "Tous",
+          "info": "Info",
+          "warn": "Avert.",
+          "error": "Erreur"
+        },
+        "logStep": "Étape"
       },
       "toast": {
         "previewSuccess": "Aperçu généré avec succès",
@@ -4370,6 +4377,10 @@
       "batch_job_completed": "Tâche terminée",
       "batch_job_failed": "Tâche échouée",
       "generic": "Notification"
+    },
+    "batchJob": {
+      "completedSubtitle": "{{jobType}} — {{itemsProcessed}} éléments",
+      "failedSubtitle": "{{jobType}} — {{error}}"
     }
   }
 }

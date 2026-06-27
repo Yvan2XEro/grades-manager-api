@@ -1366,7 +1366,14 @@
         "progress": "Progress",
         "error": "Error",
         "result": "Result",
-        "noLogs": "No logs yet"
+        "noLogs": "No logs yet",
+        "logLevel": {
+          "all": "All",
+          "info": "Info",
+          "warn": "Warn",
+          "error": "Error"
+        },
+        "logStep": "Step"
       },
       "toast": {
         "previewSuccess": "Preview generated successfully",
@@ -4362,6 +4369,10 @@
       "batch_job_completed": "Job completed",
       "batch_job_failed": "Job failed",
       "generic": "Notification"
+    },
+    "batchJob": {
+      "completedSubtitle": "{{jobType}} — {{itemsProcessed}} items",
+      "failedSubtitle": "{{jobType}} — {{error}}"
     }
   }
 }

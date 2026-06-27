@@ -30,6 +30,8 @@ export interface JobContext {
 			itemsFailed?: number;
 		},
 	) => Promise<void>;
+	/** Pin or unpin the step ID that subsequent `log()` calls are attributed to. */
+	setCurrentStep: (stepId: string | null) => void;
 }
 
 // ── Step Definition ────────────────────────────────────────────────────

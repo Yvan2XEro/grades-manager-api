@@ -141,6 +141,9 @@ export async function runJob(jobId: string, institutionId: string) {
 
 	try {
 		for (const step of steps) {
+			// Pin this step so all logs inside are attributed to it
+			ctx.setCurrentStep(step.id);
+
 			// Update step status to running
 			await repo.updateStepStatus(step.id, "running" as BatchJobStepStatus);
 
@@ -184,6 +187,9 @@ export async function runJob(jobId: string, institutionId: string) {
 			);
 		}
 
+		// Clear step context before job-level completion logs
+		ctx.setCurrentStep(null);
+
 		// All steps completed
 		await repo.updateJob(job.id, {
 			status: "completed" as BatchJobStatus,
@@ -219,6 +225,8 @@ export async function runJob(jobId: string, institutionId: string) {
 		}
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : String(err);
+		// Clear step context so the failure log is attributed to the job, not the last step
+		ctx.setCurrentStep(null);
 		await repo.updateJob(job.id, {
 			status: "failed" as BatchJobStatus,
 			error: msg,
@@ -383,15 +391,18 @@ export async function markStaleJobs(thresholdMinutes = 10) {
 // ── Internal Helpers ───────────────────────────────────────────────────
 
 function buildJobContext(jobId: string, institutionId: string): JobContext {
-	let currentStepId: string | undefined;
+	let currentStepId: string | null = null;
 
 	return {
 		jobId,
 		institutionId,
+		setCurrentStep(stepId) {
+			currentStepId = stepId;
+		},
 		async log(level, message, data) {
 			await repo.insertLog({
 				jobId,
-				stepId: currentStepId ?? null,
+				stepId: currentStepId,
 				level,
 				message,
 				data: data ?? null,
