@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Plus, Trash2 } from "lucide-react";
+import { Calendar, Download, Plus, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import * as XLSX from "xlsx";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
 import { toast } from "@/lib/toast";
@@ -30,6 +31,7 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
+import { TimetableImportDialog } from "./timetable/TimetableImportDialog";
 
 type Session = RouterOutputs["timetable"]["list"][number];
 type ClassCourse = {
@@ -62,6 +64,7 @@ export default function TimetableManagement() {
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [importOpen, setImportOpen] = useState(false);
 	const [editingSession, setEditingSession] = useState<Session | null>(null);
 	const [form, setForm] = useState(DEFAULT_FORM);
 
@@ -138,6 +141,23 @@ export default function TimetableManagement() {
 		onError: (err) => toast.error(err.message),
 	});
 
+	function handleExport() {
+		const rows = sessions.map((s) => ({
+			classCourseId: s.classCourseId,
+			cours: s.classCourse?.courseRef?.name ?? "",
+			classe: s.classCourse?.classRef?.name ?? "",
+			jour: s.dayOfWeek,
+			debut: s.startTime,
+			fin: s.endTime,
+			salle: s.room ?? "",
+			roomId: s.roomId ?? "",
+		}));
+		const ws = XLSX.utils.json_to_sheet(rows);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, "Emploi du temps");
+		XLSX.writeFile(wb, "emploi-du-temps.xlsx");
+	}
+
 	function openCreate() {
 		setEditingSession(null);
 		setForm(DEFAULT_FORM);
@@ -187,12 +207,31 @@ export default function TimetableManagement() {
 						Gérez les sessions de cours hebdomadaires
 					</p>
 				</div>
-				{classCourseId && academicYearId && (
-					<Button onClick={openCreate} size="sm">
-						<Plus className="mr-2 h-4 w-4" />
-						Ajouter une session
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setImportOpen(true)}
+					>
+						<Upload className="mr-1.5 h-4 w-4" />
+						Importer CSV
 					</Button>
-				)}
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleExport}
+						disabled={sessions.length === 0}
+					>
+						<Download className="mr-1.5 h-4 w-4" />
+						Exporter
+					</Button>
+					{classCourseId && academicYearId && (
+						<Button onClick={openCreate} size="sm">
+							<Plus className="mr-2 h-4 w-4" />
+							Ajouter une session
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<div className="mb-6 flex flex-wrap gap-4">
@@ -367,6 +406,12 @@ export default function TimetableManagement() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<TimetableImportDialog
+				open={importOpen}
+				onOpenChange={setImportOpen}
+				onImported={invalidate}
+			/>
 		</div>
 	);
 }

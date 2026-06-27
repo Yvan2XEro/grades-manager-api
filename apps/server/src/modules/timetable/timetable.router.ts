@@ -9,7 +9,9 @@ import * as service from "./timetable.service";
 import {
 	createSessionSchema,
 	deleteSessionSchema,
+	executeBulkImportSchema,
 	listSessionsSchema,
+	previewBulkImportSchema,
 	updateSessionSchema,
 } from "./timetable.zod";
 
@@ -75,4 +77,20 @@ export const router = createRouter({
 				input.academicYearId,
 			);
 		}),
+
+	previewBulkImport: adminProcedure
+		.input(previewBulkImportSchema)
+		.mutation(({ ctx, input }) =>
+			service.previewBulkImport(input.rows, ctx.institution.id),
+		),
+
+	executeBulkImport: adminProcedure
+		.input(executeBulkImportSchema)
+		.mutation(({ ctx, input }) =>
+			service.executeBulkImport(
+				input.rows,
+				ctx.institution.id,
+				input.skipDuplicates,
+			),
+		),
 });

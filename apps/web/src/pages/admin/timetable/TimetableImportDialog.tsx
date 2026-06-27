@@ -1,0 +1,273 @@
+import { useMutation } from "@tanstack/react-query";
+import Papa from "papaparse";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { toast } from "@/lib/toast";
+import { trpcClient } from "@/utils/trpc";
+
+type ParsedRow = {
+	classCourseId: string;
+	dayOfWeek: string;
+	startTime: string;
+	endTime: string;
+	room?: string;
+	roomId?: string;
+};
+
+type PreviewResult = Awaited<
+	ReturnType<typeof trpcClient.timetable.previewBulkImport.mutate>
+>;
+
+const CSV_TEMPLATE_HEADER =
+	"classCourseId,dayOfWeek,startTime,endTime,room,roomId";
+const CSV_EXAMPLE =
+	"<uuid-class-course>,mon,08:00,10:00,Amphi A,\n<uuid-class-course>,tue,10:00,12:00,Salle 201,";
+
+export function TimetableImportDialog({
+	open,
+	onOpenChange,
+	onImported,
+}: {
+	open: boolean;
+	onOpenChange: (v: boolean) => void;
+	onImported: () => void;
+}) {
+	const { t } = useTranslation();
+	const fileRef = useRef<HTMLInputElement>(null);
+	const [parsed, setParsed] = useState<ParsedRow[]>([]);
+	const [preview, setPreview] = useState<PreviewResult | null>(null);
+	const [skipDuplicates, setSkipDuplicates] = useState(true);
+	const [step, setStep] = useState<"upload" | "preview" | "done">("upload");
+
+	const previewMut = useMutation({
+		mutationFn: (rows: ParsedRow[]) =>
+			trpcClient.timetable.previewBulkImport.mutate({ rows }),
+		onSuccess: (data) => {
+			setPreview(data);
+			setStep("preview");
+		},
+		onError: (e) => toast.error(e.message),
+	});
+
+	const importMut = useMutation({
+		mutationFn: () =>
+			trpcClient.timetable.executeBulkImport.mutate({
+				rows: preview!.valid,
+				skipDuplicates,
+			}),
+		onSuccess: (result) => {
+			toast.success(
+				`Import terminé : ${result.created} sessions créées${result.skipped ? `, ${result.skipped} ignorées` : ""}`,
+			);
+			onImported();
+			handleClose();
+		},
+		onError: (e) => toast.error(e.message),
+	});
+
+	function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		Papa.parse<Record<string, string>>(file, {
+			header: true,
+			skipEmptyLines: true,
+			complete: ({ data }) => {
+				const rows = data.map((r) => ({
+					classCourseId: r.classCourseId ?? "",
+					dayOfWeek: r.dayOfWeek ?? "",
+					startTime: r.startTime ?? "",
+					endTime: r.endTime ?? "",
+					room: r.room || undefined,
+					roomId: r.roomId || undefined,
+				}));
+				setParsed(rows);
+				previewMut.mutate(rows);
+			},
+		});
+	}
+
+	function handleClose() {
+		onOpenChange(false);
+		setParsed([]);
+		setPreview(null);
+		setStep("upload");
+		if (fileRef.current) fileRef.current.value = "";
+	}
+
+	function downloadTemplate() {
+		const blob = new Blob([`${CSV_TEMPLATE_HEADER}\n${CSV_EXAMPLE}`], {
+			type: "text/csv",
+		});
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "timetable-import-template.csv";
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+			<DialogContent className="max-w-2xl">
+				<DialogHeader>
+					<DialogTitle>
+						{t("timetable.import.title", {
+							defaultValue: "Importer un emploi du temps",
+						})}
+					</DialogTitle>
+				</DialogHeader>
+
+				{step === "upload" && (
+					<div className="space-y-4">
+						<p className="text-muted-foreground text-sm">
+							{t("timetable.import.instructions", {
+								defaultValue:
+									"Téléchargez le modèle CSV, remplissez-le, puis importez-le.",
+							})}
+						</p>
+						<Button variant="outline" size="sm" onClick={downloadTemplate}>
+							{t("timetable.import.downloadTemplate", {
+								defaultValue: "Télécharger le modèle CSV",
+							})}
+						</Button>
+						<div className="space-y-1.5">
+							<Label>
+								{t("timetable.import.file", {
+									defaultValue: "Fichier CSV",
+								})}
+							</Label>
+							<input
+								ref={fileRef}
+								type="file"
+								accept=".csv"
+								className="text-sm"
+								onChange={handleFile}
+							/>
+						</div>
+						{previewMut.isPending && (
+							<p className="text-muted-foreground text-sm">Validation…</p>
+						)}
+					</div>
+				)}
+
+				{step === "preview" && preview && (
+					<div className="space-y-4">
+						{/* Summary */}
+						<div className="flex gap-3 text-sm">
+							<Badge variant="default">{preview.valid.length} valides</Badge>
+							{preview.errors.length > 0 && (
+								<Badge variant="destructive">
+									{preview.errors.length} erreurs
+								</Badge>
+							)}
+						</div>
+
+						{/* Errors */}
+						{preview.errors.length > 0 && (
+							<div className="max-h-40 overflow-y-auto rounded-md border">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>Ligne</TableHead>
+											<TableHead>Erreur</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{preview.errors.map((e) => (
+											<TableRow key={e.rowIndex}>
+												<TableCell>{e.rowIndex}</TableCell>
+												<TableCell className="text-destructive text-xs">
+													{e.reason}
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+						)}
+
+						{/* Valid rows preview */}
+						{preview.valid.length > 0 && (
+							<div className="max-h-48 overflow-y-auto rounded-md border">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>Ligne</TableHead>
+											<TableHead>Jour</TableHead>
+											<TableHead>Horaire</TableHead>
+											<TableHead>Salle</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{preview.valid.map((r) => (
+											<TableRow key={r.rowIndex}>
+												<TableCell>{r.rowIndex}</TableCell>
+												<TableCell className="font-medium uppercase">
+													{r.dayOfWeek}
+												</TableCell>
+												<TableCell>
+													{r.startTime}–{r.endTime}
+												</TableCell>
+												<TableCell className="text-muted-foreground">
+													{r.room ?? r.roomId ?? "—"}
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+						)}
+
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="skipDupes"
+								checked={skipDuplicates}
+								onCheckedChange={(v) => setSkipDuplicates(Boolean(v))}
+							/>
+							<Label htmlFor="skipDupes" className="font-normal text-sm">
+								{t("timetable.import.skipDuplicates", {
+									defaultValue: "Ignorer les sessions déjà existantes",
+								})}
+							</Label>
+						</div>
+					</div>
+				)}
+
+				<DialogFooter>
+					<Button variant="outline" onClick={handleClose}>
+						{t("common.cancel")}
+					</Button>
+					{step === "preview" && preview && preview.valid.length > 0 && (
+						<Button
+							disabled={importMut.isPending}
+							onClick={() => importMut.mutate()}
+						>
+							{t("timetable.import.confirm", {
+								defaultValue: `Importer ${preview.valid.length} sessions`,
+							})}
+						</Button>
+					)}
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}

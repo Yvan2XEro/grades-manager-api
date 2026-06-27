@@ -88,7 +88,12 @@ export async function findConflicts(
 	dayOfWeek: DayOfWeek,
 	startTime: string,
 	endTime: string,
-	opts: { room?: string; teacherId?: string; excludeId?: string },
+	opts: {
+		room?: string;
+		roomId?: string;
+		teacherId?: string;
+		excludeId?: string;
+	},
 ) {
 	const all = await db.query.courseSessions.findMany({
 		where: and(
@@ -107,15 +112,19 @@ export async function findConflicts(
 			if (opts.excludeId && s.id === opts.excludeId) return false;
 			const overlaps = s.startTime < endTime && s.endTime > startTime;
 			if (!overlaps) return false;
-			const roomConflict = opts.room && s.room && s.room === opts.room;
+			const roomConflict =
+				(opts.roomId && s.roomId && s.roomId === opts.roomId) ||
+				(!opts.roomId && opts.room && s.room && s.room === opts.room);
 			const teacherConflict =
 				opts.teacherId && s.classCourse?.teacher === opts.teacherId;
-			return roomConflict || teacherConflict;
+			return Boolean(roomConflict) || Boolean(teacherConflict);
 		})
 		.map((s) => ({
 			...s,
 			conflictType: (() => {
-				const roomMatch = opts.room && s.room && s.room === opts.room;
+				const roomMatch =
+					(opts.roomId && s.roomId && s.roomId === opts.roomId) ||
+					(!opts.roomId && opts.room && s.room && s.room === opts.room);
 				const teacherMatch =
 					opts.teacherId && s.classCourse?.teacher === opts.teacherId;
 				if (roomMatch && teacherMatch) return "both" as const;
@@ -123,6 +132,25 @@ export async function findConflicts(
 				return "teacher" as const;
 			})(),
 		}));
+}
+
+export async function findDuplicate(
+	institutionId: string,
+	classCourseId: string,
+	dayOfWeek: DayOfWeek,
+	startTime: string,
+	endTime: string,
+) {
+	return db.query.courseSessions.findFirst({
+		where: and(
+			eq(schema.courseSessions.institutionId, institutionId),
+			eq(schema.courseSessions.classCourseId, classCourseId),
+			eq(schema.courseSessions.dayOfWeek, dayOfWeek),
+			eq(schema.courseSessions.startTime, startTime),
+			eq(schema.courseSessions.endTime, endTime),
+		),
+		columns: { id: true },
+	});
 }
 
 export async function listByClassCourseIds(
