@@ -480,6 +480,25 @@
         "created": "Room created",
         "updated": "Room updated",
         "deleted": "Room deleted"
+      },
+      "description": "Manage rooms and lecture halls per institution",
+      "add": "New room",
+      "edit": "Edit room",
+      "empty": {
+        "title": "No rooms",
+        "description": "Add a room so it can be assigned to course sessions."
+      },
+      "fields": {
+        "code": "Code",
+        "name": "Name",
+        "capacity": "Capacity",
+        "building": "Building",
+        "campus": "Campus"
+      },
+      "placeholders": {
+        "roomName": "Lecture Hall A",
+        "building": "Main building",
+        "campus": "Central campus"
       }
     },
     "attendanceManagement": {

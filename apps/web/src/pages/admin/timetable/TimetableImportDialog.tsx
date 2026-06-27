@@ -53,7 +53,6 @@ export function TimetableImportDialog({
 }) {
 	const { t } = useTranslation();
 	const fileRef = useRef<HTMLInputElement>(null);
-	const [parsed, setParsed] = useState<ParsedRow[]>([]);
 	const [preview, setPreview] = useState<PreviewResult | null>(null);
 	const [skipDuplicates, setSkipDuplicates] = useState(true);
 	const [step, setStep] = useState<"upload" | "preview" | "done">("upload");
@@ -102,7 +101,6 @@ export function TimetableImportDialog({
 					room: r.room || undefined,
 					roomId: r.roomId || undefined,
 				}));
-				setParsed(rows);
 				previewMut.mutate(rows);
 			},
 		});
@@ -110,7 +108,6 @@ export function TimetableImportDialog({
 
 	function handleClose() {
 		onOpenChange(false);
-		setParsed([]);
 		setPreview(null);
 		setStep("upload");
 		if (fileRef.current) fileRef.current.value = "";

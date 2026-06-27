@@ -3757,6 +3757,25 @@
         "created": "Salle créée",
         "updated": "Salle mise à jour",
         "deleted": "Salle supprimée"
+      },
+      "description": "Gérez les salles et amphithéâtres de l'institution",
+      "add": "Nouvelle salle",
+      "edit": "Modifier la salle",
+      "empty": {
+        "title": "Aucune salle",
+        "description": "Ajoutez une salle pour pouvoir l'affecter aux sessions de cours."
+      },
+      "fields": {
+        "code": "Code",
+        "name": "Nom",
+        "capacity": "Capacité",
+        "building": "Bâtiment",
+        "campus": "Campus"
+      },
+      "placeholders": {
+        "roomName": "Amphithéâtre A",
+        "building": "Bâtiment principal",
+        "campus": "Campus central"
       }
     },
     "attendanceManagement": {

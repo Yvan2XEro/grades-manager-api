@@ -99,8 +99,7 @@ export default function AttendanceRates() {
 	}
 
 	const courseLabel =
-		classCourses.find((c) => c.id === classCourseId)?.courseRef?.name ??
-		"Cours";
+		classCourses.find((c) => c.id === classCourseId)?.courseRef?.name ?? "";
 
 	return (
 		<div className="p-6">
@@ -124,7 +123,7 @@ export default function AttendanceRates() {
 			<div className="mb-6 flex flex-wrap gap-4">
 				<div className="w-64">
 					<Label className="mb-1.5 block text-xs">
-						{t("attendanceManagement.filterByYear")}
+						{t("teacher.attendanceManagement.filterByYear")}
 					</Label>
 					<AcademicYearSelect
 						value={academicYearId}
@@ -136,7 +135,7 @@ export default function AttendanceRates() {
 				</div>
 				<div className="w-72">
 					<Label className="mb-1.5 block text-xs">
-						{t("attendanceManagement.filterByCourse")}
+						{t("teacher.attendanceManagement.filterByCourse")}
 					</Label>
 					<Select
 						value={classCourseId ?? ""}
@@ -144,7 +143,7 @@ export default function AttendanceRates() {
 					>
 						<SelectTrigger>
 							<SelectValue
-								placeholder={t("attendanceManagement.filterByCourse")}
+								placeholder={t("teacher.attendanceManagement.filterByCourse")}
 							/>
 						</SelectTrigger>
 						<SelectContent>
@@ -198,16 +197,16 @@ export default function AttendanceRates() {
 										{t("attendanceRates.regNumber")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-green-700">
-										{t("attendanceManagement.status.present")}
+										{t("teacher.attendanceManagement.status.present")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-yellow-700">
-										{t("attendanceManagement.status.late")}
+										{t("teacher.attendanceManagement.status.late")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-red-700">
-										{t("attendanceManagement.status.absent")}
+										{t("teacher.attendanceManagement.status.absent")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-blue-700">
-										{t("attendanceManagement.status.excused")}
+										{t("teacher.attendanceManagement.status.excused")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium">
 										{t("attendanceRates.rate")}

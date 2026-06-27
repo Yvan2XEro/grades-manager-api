@@ -99,7 +99,7 @@ export default function RoomsManagement() {
 	const deleteMut = useMutation({
 		mutationFn: (id: string) => trpcClient.rooms.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success(t("common.deleted", { defaultValue: "Supprimé" }));
+			toast.success(t("common.deleted"));
 			invalidate();
 		},
 		onError: (e) => toast.error(e.message),
@@ -135,19 +135,14 @@ export default function RoomsManagement() {
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
 				<div>
-					<h2 className="font-semibold text-xl">
-						{t("rooms.title", { defaultValue: "Salles et amphithéâtres" })}
-					</h2>
+					<h2 className="font-semibold text-xl">{t("teacher.rooms.title")}</h2>
 					<p className="text-muted-foreground text-sm">
-						{t("rooms.description", {
-							defaultValue:
-								"Gérez les salles disponibles pour la planification des cours.",
-						})}
+						{t("teacher.rooms.description")}
 					</p>
 				</div>
 				<Button onClick={openCreate}>
 					<Plus className="mr-1.5 h-4 w-4" />
-					{t("rooms.add", { defaultValue: "Nouvelle salle" })}
+					{t("teacher.rooms.add")}
 				</Button>
 			</div>
 
@@ -162,38 +157,21 @@ export default function RoomsManagement() {
 					<EmptyHeader>
 						<Building2 className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>
-						{t("rooms.empty.title", { defaultValue: "Aucune salle" })}
-					</EmptyTitle>
+					<EmptyTitle>{t("teacher.rooms.empty.title")}</EmptyTitle>
 					<EmptyDescription>
-						{t("rooms.empty.description", {
-							defaultValue:
-								"Ajoutez des salles pour les affecter aux sessions de cours.",
-						})}
+						{t("teacher.rooms.empty.description")}
 					</EmptyDescription>
 				</Empty>
 			) : (
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>
-								{t("rooms.fields.code", { defaultValue: "Code" })}
-							</TableHead>
-							<TableHead>
-								{t("rooms.fields.name", { defaultValue: "Nom" })}
-							</TableHead>
-							<TableHead>
-								{t("rooms.fields.capacity", { defaultValue: "Capacité" })}
-							</TableHead>
-							<TableHead>
-								{t("rooms.fields.building", { defaultValue: "Bâtiment" })}
-							</TableHead>
-							<TableHead>
-								{t("rooms.fields.campus", { defaultValue: "Campus" })}
-							</TableHead>
-							<TableHead>
-								{t("common.active", { defaultValue: "Actif" })}
-							</TableHead>
+							<TableHead>{t("teacher.rooms.fields.code")}</TableHead>
+							<TableHead>{t("teacher.rooms.fields.name")}</TableHead>
+							<TableHead>{t("teacher.rooms.fields.capacity")}</TableHead>
+							<TableHead>{t("teacher.rooms.fields.building")}</TableHead>
+							<TableHead>{t("teacher.rooms.fields.campus")}</TableHead>
+							<TableHead>{t("common.active")}</TableHead>
 							<TableHead />
 						</TableRow>
 					</TableHeader>
@@ -253,17 +231,13 @@ export default function RoomsManagement() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>
-							{editing
-								? t("rooms.edit", { defaultValue: "Modifier la salle" })
-								: t("rooms.add", { defaultValue: "Nouvelle salle" })}
+							{editing ? t("teacher.rooms.edit") : t("teacher.rooms.add")}
 						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-3">
 						<div className="grid grid-cols-2 gap-3">
 							<div className="space-y-1.5">
-								<Label>
-									{t("rooms.fields.code", { defaultValue: "Code" })} *
-								</Label>
+								<Label>{t("teacher.rooms.fields.code")} *</Label>
 								<Input
 									value={form.code}
 									maxLength={20}
@@ -277,9 +251,7 @@ export default function RoomsManagement() {
 								/>
 							</div>
 							<div className="space-y-1.5">
-								<Label>
-									{t("rooms.fields.capacity", { defaultValue: "Capacité" })}
-								</Label>
+								<Label>{t("teacher.rooms.fields.capacity")}</Label>
 								<Input
 									type="number"
 									min={1}
@@ -292,10 +264,10 @@ export default function RoomsManagement() {
 							</div>
 						</div>
 						<div className="space-y-1.5">
-							<Label>{t("rooms.fields.name", { defaultValue: "Nom" })} *</Label>
+							<Label>{t("teacher.rooms.fields.name")} *</Label>
 							<Input
 								value={form.name}
-								placeholder="Amphithéâtre A"
+								placeholder={t("teacher.rooms.placeholders.roomName")}
 								onChange={(e) =>
 									setForm((f) => ({ ...f, name: e.target.value }))
 								}
@@ -303,24 +275,20 @@ export default function RoomsManagement() {
 						</div>
 						<div className="grid grid-cols-2 gap-3">
 							<div className="space-y-1.5">
-								<Label>
-									{t("rooms.fields.building", { defaultValue: "Bâtiment" })}
-								</Label>
+								<Label>{t("teacher.rooms.fields.building")}</Label>
 								<Input
 									value={form.building}
-									placeholder="Bâtiment principal"
+									placeholder={t("teacher.rooms.placeholders.building")}
 									onChange={(e) =>
 										setForm((f) => ({ ...f, building: e.target.value }))
 									}
 								/>
 							</div>
 							<div className="space-y-1.5">
-								<Label>
-									{t("rooms.fields.campus", { defaultValue: "Campus" })}
-								</Label>
+								<Label>{t("teacher.rooms.fields.campus")}</Label>
 								<Input
 									value={form.campus}
-									placeholder="Campus central"
+									placeholder={t("teacher.rooms.placeholders.campus")}
 									onChange={(e) =>
 										setForm((f) => ({ ...f, campus: e.target.value }))
 									}

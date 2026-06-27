@@ -59,22 +59,22 @@ export default function AttendanceManagement() {
 		{ label: string; color: string; icon: React.ReactNode }
 	> = {
 		present: {
-			label: t("attendanceManagement.status.present"),
+			label: t("teacher.attendanceManagement.status.present"),
 			color: "bg-green-100 text-green-800 hover:bg-green-200",
 			icon: <Check className="h-3.5 w-3.5" />,
 		},
 		absent: {
-			label: t("attendanceManagement.status.absent"),
+			label: t("teacher.attendanceManagement.status.absent"),
 			color: "bg-red-100 text-red-800 hover:bg-red-200",
 			icon: <X className="h-3.5 w-3.5" />,
 		},
 		late: {
-			label: t("attendanceManagement.status.late"),
+			label: t("teacher.attendanceManagement.status.late"),
 			color: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
 			icon: <Clock className="h-3.5 w-3.5" />,
 		},
 		excused: {
-			label: t("attendanceManagement.status.excused"),
+			label: t("teacher.attendanceManagement.status.excused"),
 			color: "bg-blue-100 text-blue-800 hover:bg-blue-200",
 			icon: <ChevronRight className="h-3.5 w-3.5" />,
 		},
@@ -157,7 +157,7 @@ export default function AttendanceManagement() {
 				sessionDate: newSessionDate,
 			}),
 		onSuccess: (session) => {
-			toast.success(t("attendanceManagement.toast.sessionCreated"));
+			toast.success(t("teacher.attendanceManagement.toast.sessionCreated"));
 			setCreateDialogOpen(false);
 			setPendingSelectId(session.id);
 			invalidateSessions();
@@ -172,7 +172,7 @@ export default function AttendanceManagement() {
 				records,
 			}),
 		onSuccess: () => {
-			toast.success(t("attendanceManagement.toast.marked"));
+			toast.success(t("teacher.attendanceManagement.toast.marked"));
 			invalidateDetail();
 			invalidateSessions();
 		},
@@ -207,7 +207,7 @@ export default function AttendanceManagement() {
 				approve: true,
 			}),
 		onSuccess: () => {
-			toast.success(t("attendanceManagement.toast.excused"));
+			toast.success(t("teacher.attendanceManagement.toast.excused"));
 			setExcuseDialogOpen(false);
 			setExcuseReason("");
 			invalidateDetail();
@@ -254,12 +254,12 @@ export default function AttendanceManagement() {
 			<div className="flex w-72 shrink-0 flex-col gap-4 border-r p-4">
 				<div>
 					<h2 className="mb-3 font-semibold text-base">
-						{t("attendanceManagement.title")}
+						{t("teacher.attendanceManagement.title")}
 					</h2>
 					<div className="space-y-3">
 						<div>
 							<Label className="mb-1 block text-xs">
-								{t("attendanceManagement.filterByYear")}
+								{t("teacher.attendanceManagement.filterByYear")}
 							</Label>
 							<AcademicYearSelect
 								value={academicYearId}
@@ -281,7 +281,9 @@ export default function AttendanceManagement() {
 							>
 								<SelectTrigger className="text-xs">
 									<SelectValue
-										placeholder={t("attendanceManagement.filterByCourse")}
+										placeholder={t(
+											"teacher.attendanceManagement.filterByCourse",
+										)}
 									/>
 								</SelectTrigger>
 								<SelectContent>
@@ -309,12 +311,12 @@ export default function AttendanceManagement() {
 							onClick={() => setCreateDialogOpen(true)}
 						>
 							<Plus className="mr-1.5 h-3.5 w-3.5" />
-							{t("attendanceManagement.newSession")}
+							{t("teacher.attendanceManagement.newSession")}
 						</Button>
 						<div className="flex-1 space-y-1 overflow-y-auto">
 							{sessions.length === 0 && !sessionsQuery.isPending && (
 								<p className="py-4 text-center text-muted-foreground text-xs">
-									{t("attendanceManagement.noSession")}
+									{t("teacher.attendanceManagement.noSession")}
 								</p>
 							)}
 							{sessions.map((s) => {
@@ -360,9 +362,11 @@ export default function AttendanceManagement() {
 						<EmptyHeader>
 							<ClipboardList className="h-8 w-8 text-muted-foreground/40" />
 						</EmptyHeader>
-						<EmptyTitle>{t("attendanceManagement.noSession")}</EmptyTitle>
+						<EmptyTitle>
+							{t("teacher.attendanceManagement.noSession")}
+						</EmptyTitle>
 						<EmptyDescription>
-							{t("attendanceManagement.subtitle")}
+							{t("teacher.attendanceManagement.subtitle")}
 						</EmptyDescription>
 					</Empty>
 				) : (
@@ -410,14 +414,14 @@ export default function AttendanceManagement() {
 
 						{roster.length === 0 ? (
 							<p className="text-muted-foreground text-sm">
-								{t("attendanceManagement.noSession")}
+								{t("teacher.attendanceManagement.noSession")}
 							</p>
 						) : (
 							<>
 								{/* Bulk actions */}
 								<div className="mb-4 flex flex-wrap gap-2">
 									<span className="self-center text-muted-foreground text-sm">
-										{t("attendanceManagement.marked")}:
+										{t("teacher.attendanceManagement.marked")}:
 									</span>
 									{(["present", "absent", "late"] as AttendanceStatus[]).map(
 										(s) => (
@@ -446,10 +450,10 @@ export default function AttendanceManagement() {
 												</th>
 												<th className="px-4 py-2 text-left font-medium">N°</th>
 												<th className="px-4 py-2 text-left font-medium">
-													{t("attendanceManagement.status.present")} /…
+													{t("teacher.attendanceManagement.status.present")} /…
 												</th>
 												<th className="px-4 py-2 text-left font-medium">
-													{t("attendanceManagement.excuse")}
+													{t("teacher.attendanceManagement.excuse")}
 												</th>
 											</tr>
 										</thead>
@@ -522,7 +526,7 @@ export default function AttendanceManagement() {
 																			handleOpenExcuse(record.id, studentName)
 																		}
 																	>
-																		{t("attendanceManagement.excuse")}
+																		{t("teacher.attendanceManagement.excuse")}
 																	</Button>
 																)}
 															{record?.excuseReason && (
@@ -530,7 +534,10 @@ export default function AttendanceManagement() {
 																	className="ml-1 text-muted-foreground text-xs"
 																	title={record.excuseReason}
 																>
-																	{t("attendanceManagement.toast.excused")} ✓
+																	{t(
+																		"teacher.attendanceManagement.toast.excused",
+																	)}{" "}
+																	✓
 																</span>
 															)}
 														</td>
@@ -550,11 +557,13 @@ export default function AttendanceManagement() {
 			<Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>
-						<DialogTitle>{t("attendanceManagement.newSession")}</DialogTitle>
+						<DialogTitle>
+							{t("teacher.attendanceManagement.newSession")}
+						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 py-3">
 						<div>
-							<Label>{t("attendanceManagement.createSession")}</Label>
+							<Label>{t("teacher.attendanceManagement.createSession")}</Label>
 							<Input
 								type="date"
 								className="mt-1"
@@ -588,7 +597,9 @@ export default function AttendanceManagement() {
 			<Dialog open={excuseDialogOpen} onOpenChange={setExcuseDialogOpen}>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>
-						<DialogTitle>{t("attendanceManagement.excuse")}</DialogTitle>
+						<DialogTitle>
+							{t("teacher.attendanceManagement.excuse")}
+						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-3 py-3">
 						{excuseTarget && (
@@ -600,7 +611,7 @@ export default function AttendanceManagement() {
 							</p>
 						)}
 						<div>
-							<Label>{t("attendanceManagement.excuseReason")}</Label>
+							<Label>{t("teacher.attendanceManagement.excuseReason")}</Label>
 							<Textarea
 								className="mt-1"
 								placeholder="Maladie, événement familial…"
