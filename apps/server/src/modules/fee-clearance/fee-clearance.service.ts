@@ -997,6 +997,8 @@ export async function confirmOrder(
 		paymentMethod: string;
 		reference?: string;
 		notes?: string;
+		/** Actual amount received (e.g. from bank import). When set, overrides order.amount for the payment record. */
+		amountOverride?: number;
 	},
 ) {
 	const order = await repo.findOrderById(orderId, institutionId);
@@ -1038,10 +1040,11 @@ export async function confirmOrder(
 			.where(eq(schema.feePayments.feeAssignmentId, order.feeAssignmentId));
 		const alreadyPaid = Number(sumRow?.total ?? 0);
 		const remaining = Number(lockedAssignment.effectiveAmount) - alreadyPaid;
-		if (Number(order.amount) > remaining)
+		const paymentAmount = input.amountOverride ?? Number(order.amount);
+		if (paymentAmount > remaining)
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: `Order amount exceeds remaining balance (${remaining}).`,
+				message: `Payment amount (${paymentAmount}) exceeds remaining balance (${remaining}).`,
 			});
 
 		// Transition order status — AND status='pending' guards same-order races.
@@ -1069,7 +1072,7 @@ export async function confirmOrder(
 				institutionId,
 				feeAssignmentId: order.feeAssignmentId,
 				paymentOrderId: orderId,
-				amount: order.amount,
+				amount: String(paymentAmount),
 				currency: order.currency,
 				paymentDate: input.paymentDate,
 				paymentMethod: input.paymentMethod as never,
@@ -1532,12 +1535,29 @@ export async function applyBankImport(
 
 	for (const line of toApply) {
 		if (!line.orderId) continue;
+
+		// Overpayment: bank sent more than the order amount — reject without mutating
+		if (
+			line.status === "amount_mismatch" &&
+			line.orderAmount !== undefined &&
+			line.amount > line.orderAmount
+		) {
+			errors.push({
+				reference: line.reference,
+				reason: `Bank amount (${line.amount}) exceeds order amount (${line.orderAmount}); overpayment cannot be applied automatically.`,
+			});
+			continue;
+		}
+
 		try {
 			await confirmOrder(line.orderId, institutionId, confirmedBy, {
 				paymentDate: line.date,
 				paymentMethod: opts.paymentMethod,
 				reference: line.reference,
 				notes: opts.notes,
+				// Underpayment: record the actual bank amount so balance math stays accurate
+				amountOverride:
+					line.status === "amount_mismatch" ? line.amount : undefined,
 			});
 			applied++;
 		} catch (e) {

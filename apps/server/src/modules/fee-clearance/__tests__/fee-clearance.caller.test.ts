@@ -941,10 +941,9 @@ describe("feeClearance router", () => {
 			expect(preview.results[0].orderAmount).toBe(200000);
 		});
 
-		it("applyBankImport with forceMatchRefs applies amount_mismatch row", async () => {
+		it("underpayment + forceMatchRefs records bank amount and results in partial status", async () => {
 			const { caller, order, assignment } = await setup();
 
-			// Preview classifies the row as amount_mismatch (wrong amount)
 			const preview = await caller.feeClearance.previewBankImport({
 				rows: [
 					{ reference: order.reference!, amount: 100000, date: "2026-01-15" },
@@ -952,7 +951,6 @@ describe("feeClearance router", () => {
 			});
 			expect(preview.results[0].status).toBe("amount_mismatch");
 
-			// Force-apply the mismatch row via forceMatchRefs
 			const result = await caller.feeClearance.applyBankImport({
 				rows: [
 					{ reference: order.reference!, amount: 100000, date: "2026-01-15" },
@@ -967,7 +965,43 @@ describe("feeClearance router", () => {
 			const updated = await caller.feeClearance.getAssignment({
 				id: assignment.id,
 			});
-			expect(updated.status).toBe("paid");
+			// Recorded 100k against a 200k assignment → partial, not paid
+			expect(updated.status).toBe("partial");
+			// Payment amount must be the actual bank amount, not the order amount
+			const payments = updated.payments ?? [];
+			expect(payments.length).toBe(1);
+			expect(Number(payments[0].amount)).toBe(100000);
+		});
+
+		it("overpayment + forceMatchRefs is rejected without mutating the assignment", async () => {
+			const { caller, order, assignment } = await setup();
+
+			// Bank says 250,000 but order is for 200,000 → overpayment
+			const preview = await caller.feeClearance.previewBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 250000, date: "2026-01-15" },
+				],
+			});
+			expect(preview.results[0].status).toBe("amount_mismatch");
+
+			const result = await caller.feeClearance.applyBankImport({
+				rows: [
+					{ reference: order.reference!, amount: 250000, date: "2026-01-15" },
+				],
+				paymentMethod: "bank_transfer",
+				forceMatchRefs: [order.reference!],
+			});
+
+			// Overpayment must be an error, never applied
+			expect(result.applied).toBe(0);
+			expect(result.errors.length).toBe(1);
+			expect(result.errors[0].reference).toBe(order.reference!);
+
+			// Assignment untouched
+			const updated = await caller.feeClearance.getAssignment({
+				id: assignment.id,
+			});
+			expect(updated.status).toBe("unpaid");
 		});
 
 		it("applyBankImport confirms matched orders and marks assignment paid", async () => {
