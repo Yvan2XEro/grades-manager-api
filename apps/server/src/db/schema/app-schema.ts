@@ -809,6 +809,42 @@ export const exams = pgTable(
 	],
 );
 
+export const examAuditEventActions = [
+	"submit",
+	"resubmit",
+	"approve",
+	"reject",
+	"lock",
+] as const;
+export type ExamAuditEventAction = (typeof examAuditEventActions)[number];
+
+export const examAuditEvents = pgTable(
+	"exam_audit_events",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		action: text("action").$type<ExamAuditEventAction>().notNull(),
+		fromStatus: text("from_status").notNull(),
+		toStatus: text("to_status").notNull(),
+		reason: text("reason"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_exam_audit_events_exam").on(t.examId),
+		index("idx_exam_audit_events_institution").on(t.institutionId),
+	],
+);
+
 /** Admission types for students. */
 export const admissionTypes = [
 	"normal",
@@ -2132,7 +2168,22 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
 	}),
 	retakeExams: many(exams, { relationName: "retakeToParent" }),
 	grades: many(grades),
+	auditEvents: many(examAuditEvents),
 }));
+
+export const examAuditEventsRelations = relations(
+	examAuditEvents,
+	({ one }) => ({
+		exam: one(exams, {
+			fields: [examAuditEvents.examId],
+			references: [exams.id],
+		}),
+		actor: one(domainUsers, {
+			fields: [examAuditEvents.actorId],
+			references: [domainUsers.id],
+		}),
+	}),
+);
 
 export const studentsRelations = relations(students, ({ one, many }) => ({
 	classRef: one(classes, {
@@ -2369,6 +2420,8 @@ export type ClassCourse = InferSelectModel<typeof classCourses>;
 export type NewClassCourse = InferInsertModel<typeof classCourses>;
 
 export type Exam = InferSelectModel<typeof exams>;
+export type ExamAuditEvent = InferSelectModel<typeof examAuditEvents>;
+export type NewExamAuditEvent = InferInsertModel<typeof examAuditEvents>;
 export type NewExam = InferInsertModel<typeof exams>;
 
 export type ExamScheduleRun = InferSelectModel<typeof examScheduleRuns>;

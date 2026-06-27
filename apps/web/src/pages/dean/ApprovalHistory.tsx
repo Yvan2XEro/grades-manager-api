@@ -3,8 +3,14 @@ import {
 	BookOpen,
 	Calendar,
 	CheckCircle2,
+	ChevronDown,
+	ChevronUp,
 	ClipboardCheck,
+	History,
+	Lock,
+	RefreshCw,
 	Search,
+	Send,
 	Tag,
 	Users,
 	XCircle,
@@ -28,6 +34,111 @@ import { useCursorPagination } from "@/hooks/useCursorPagination";
 import { type RouterOutputs, trpc } from "../../utils/trpc";
 
 type ExamHistoryItem = RouterOutputs["exams"]["list"]["items"][number];
+type AuditEvent = RouterOutputs["exams"]["getAuditHistory"][number];
+
+const AUDIT_ACTION_CONFIG: Record<
+	string,
+	{ icon: React.ReactNode; labelKey: string; color: string }
+> = {
+	submit: {
+		icon: <Send className="h-3 w-3" />,
+		labelKey: "dean.auditHistory.actions.submit",
+		color: "text-blue-600",
+	},
+	resubmit: {
+		icon: <RefreshCw className="h-3 w-3" />,
+		labelKey: "dean.auditHistory.actions.resubmit",
+		color: "text-blue-600",
+	},
+	approve: {
+		icon: <CheckCircle2 className="h-3 w-3" />,
+		labelKey: "dean.auditHistory.actions.approve",
+		color: "text-emerald-600",
+	},
+	reject: {
+		icon: <XCircle className="h-3 w-3" />,
+		labelKey: "dean.auditHistory.actions.reject",
+		color: "text-destructive",
+	},
+	lock: {
+		icon: <Lock className="h-3 w-3" />,
+		labelKey: "dean.auditHistory.actions.lock",
+		color: "text-muted-foreground",
+	},
+};
+
+function ExamAuditTimeline({ examId }: { examId: string }) {
+	const { t } = useTranslation();
+	const { data: events, isLoading } = useQuery(
+		trpc.exams.getAuditHistory.queryOptions({ id: examId }),
+	);
+
+	if (isLoading) {
+		return (
+			<div className="mt-3 flex items-center gap-2 text-muted-foreground text-xs">
+				<RefreshCw className="h-3 w-3 animate-spin" />
+				{t("common.loading", { defaultValue: "Loading…" })}
+			</div>
+		);
+	}
+
+	if (!events || events.length === 0) {
+		return (
+			<p className="mt-3 text-muted-foreground text-xs italic">
+				{t("dean.auditHistory.empty", { defaultValue: "No events recorded." })}
+			</p>
+		);
+	}
+
+	return (
+		<div className="mt-3 space-y-2 border-t pt-3">
+			<p className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+				<History className="h-3 w-3" />
+				{t("dean.auditHistory.title", { defaultValue: "Audit trail" })}
+			</p>
+			<ol className="relative ml-1.5 space-y-3 border-muted border-l pl-4">
+				{events.map((ev: AuditEvent) => {
+					const cfg = AUDIT_ACTION_CONFIG[ev.action];
+					const actorName = ev.actor
+						? `${ev.actor.firstName} ${ev.actor.lastName}`
+						: t("dean.auditHistory.system", { defaultValue: "System" });
+					return (
+						<li key={ev.id} className="relative">
+							<span className="-left-[1.4rem] absolute flex h-5 w-5 items-center justify-center rounded-full border bg-background">
+								<span className={cfg?.color ?? "text-muted-foreground"}>
+									{cfg?.icon ?? <History className="h-3 w-3" />}
+								</span>
+							</span>
+							<div>
+								<p className="font-medium text-foreground text-xs">
+									{t(cfg?.labelKey ?? ev.action, { defaultValue: ev.action })}{" "}
+									<span className="font-normal text-muted-foreground">
+										{t("dean.auditHistory.by", { defaultValue: "by" })}{" "}
+										{actorName}
+									</span>
+								</p>
+								{ev.reason && (
+									<p className="mt-0.5 rounded bg-destructive/8 px-2 py-0.5 text-[11px] text-destructive">
+										{ev.reason}
+									</p>
+								)}
+								<p className="mt-0.5 text-[10px] text-muted-foreground/70">
+									{new Date(ev.createdAt).toLocaleString("fr-FR", {
+										day: "2-digit",
+										month: "short",
+										year: "numeric",
+										hour: "2-digit",
+										minute: "2-digit",
+									})}
+								</p>
+							</div>
+						</li>
+					);
+				})}
+			</ol>
+		</div>
+	);
+}
 
 type HistoryStatus = "approved" | "rejected" | "all";
 
@@ -57,6 +168,7 @@ export default function ApprovalHistory() {
 	const [teacherFilter, setTeacherFilter] = useState<string>("all");
 	const [dateFrom, setDateFrom] = useState<string>("");
 	const [dateTo, setDateTo] = useState<string>("");
+	const [expandedExamId, setExpandedExamId] = useState<string | null>(null);
 	const pagination = useCursorPagination({ pageSize: PAGE_SIZE });
 
 	const resetAndApply = (setter: (v: string) => void) => (v: string) => {
@@ -342,6 +454,29 @@ export default function ApprovalHistory() {
 												</span>
 												{exam.rejectionReason}
 											</p>
+										)}
+
+										<button
+											type="button"
+											className="mt-2 flex items-center gap-1 text-[11px] text-primary hover:underline"
+											onClick={() =>
+												setExpandedExamId(
+													expandedExamId === exam.id ? null : exam.id,
+												)
+											}
+										>
+											{expandedExamId === exam.id ? (
+												<ChevronUp className="h-3 w-3" />
+											) : (
+												<ChevronDown className="h-3 w-3" />
+											)}
+											{t("dean.auditHistory.toggle", {
+												defaultValue: "Audit trail",
+											})}
+										</button>
+
+										{expandedExamId === exam.id && (
+											<ExamAuditTimeline examId={exam.id} />
 										)}
 									</div>
 

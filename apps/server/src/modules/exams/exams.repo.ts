@@ -2,6 +2,7 @@ import {
 	and,
 	asc,
 	count,
+	desc,
 	eq,
 	gt,
 	gte,
@@ -227,4 +228,30 @@ export async function assignScheduleRun(
 				eq(schema.exams.institutionId, institutionId),
 			),
 		);
+}
+
+// ── Audit events ──────────────────────────────────────────────────────────────
+
+export async function insertAuditEvent(data: schema.NewExamAuditEvent) {
+	const [row] = await db
+		.insert(schema.examAuditEvents)
+		.values(data)
+		.returning();
+	return row;
+}
+
+export async function getAuditEventsForExam(
+	examId: string,
+	institutionId: string,
+) {
+	return db.query.examAuditEvents.findMany({
+		where: and(
+			eq(schema.examAuditEvents.examId, examId),
+			eq(schema.examAuditEvents.institutionId, institutionId),
+		),
+		orderBy: desc(schema.examAuditEvents.createdAt),
+		with: {
+			actor: { columns: { firstName: true, lastName: true } },
+		},
+	});
 }

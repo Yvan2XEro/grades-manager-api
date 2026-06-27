@@ -168,6 +168,13 @@ export const router = createRouter({
 			);
 		}),
 
+	// ── Audit history ──────────────────────────────────────────────────────────
+	getAuditHistory: tenantAdminProcedure
+		.input(idSchema)
+		.query(({ ctx, input }) =>
+			service.getAuditHistory(input.id, ctx.institution.id),
+		),
+
 	// ── Student calendar: upcoming exams for enrolled courses ─────────────────
 	upcomingForStudent: tenantProtectedProcedure.query(({ ctx }) => {
 		if (!ctx.profile) {

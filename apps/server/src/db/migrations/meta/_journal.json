@@ -36,6 +36,13 @@
       "when": 1782506564982,
       "tag": "0004_breezy_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782541155667,
+      "tag": "0005_fine_tinkerer",
+      "breakpoints": true
     }
   ]
 }

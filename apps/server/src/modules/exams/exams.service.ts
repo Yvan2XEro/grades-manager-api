@@ -208,7 +208,7 @@ export async function submitExam(
 			message: "Exam cannot be submitted in its current status",
 		});
 	}
-	return repo.update(
+	const updated = await repo.update(
 		examId,
 		{
 			status: "submitted",
@@ -217,6 +217,17 @@ export async function submitExam(
 		},
 		institutionId,
 	);
+	try {
+		await repo.insertAuditEvent({
+			examId,
+			institutionId,
+			actorId: resolved ?? null,
+			action: existing.status === "rejected" ? "resubmit" : "submit",
+			fromStatus: existing.status,
+			toStatus: "submitted",
+		});
+	} catch {}
+	return updated;
 }
 
 export async function validateExam(
@@ -245,27 +256,33 @@ export async function validateExam(
 		institutionId,
 	);
 
-	// Notify the teacher — fire-and-forget, do not block the response
+	try {
+		await repo.insertAuditEvent({
+			examId,
+			institutionId,
+			actorId: resolved ?? null,
+			action: status === "approved" ? "approve" : "reject",
+			fromStatus: existing.status,
+			toStatus: status,
+			reason: status === "rejected" ? (rejectionReason ?? null) : null,
+		});
+	} catch {}
+
+	// Notify the teacher — canonical type used by all paths; dedupeKey=examId prevents duplicates
 	void (async () => {
 		try {
-			const classCourse = await db.query.classCourses.findFirst({
-				where: eq(schema.classCourses.id, existing.classCourse),
-				columns: { teacher: true },
-			});
-			if (classCourse?.teacher) {
+			if (existing.scheduledBy) {
 				const notifType =
-					status === "approved"
-						? "exam.grade_submission.approved"
-						: "exam.grade_submission.rejected";
+					status === "approved" ? "grade.approved" : "grade.rejected";
 				await notificationsService.queueInApp(
-					classCourse.teacher,
+					existing.scheduledBy,
 					notifType,
 					{
 						examId,
 						examName: existing.name,
 						classCourseId: existing.classCourse,
 						...(status === "rejected" && rejectionReason
-							? { rejectionReason }
+							? { reason: rejectionReason }
 							: {}),
 					},
 					{ dedupeKey: examId },
@@ -367,6 +384,11 @@ export async function getExamById(id: string, institutionId: string) {
 	return requireExam(id, institutionId);
 }
 
+export async function getAuditHistory(examId: string, institutionId: string) {
+	await requireExam(examId, institutionId);
+	return repo.getAuditEventsForExam(examId, institutionId);
+}
+
 export async function listUpcomingExamsForStudent(
 	profileId: string,
 	institutionId: string,
@@ -442,7 +464,28 @@ export async function setLock(
 	// Admin can force-lock from any status — auto-promote to approved to keep
 	// downstream invariants (retake eligibility, grade editing) consistent.
 	const promoteToApproved = lock && existing.status !== "approved" && isAdmin;
-	return repo.setLock(examId, lock, institutionId, { promoteToApproved });
+	const result = await repo.setLock(examId, lock, institutionId, {
+		promoteToApproved,
+	});
+	if (lock) {
+		const auditPayload = {
+			examId,
+			institutionId,
+			actorId: actor?.profileId ?? null,
+			action: "lock" as const,
+			fromStatus: existing.status,
+			toStatus: promoteToApproved ? "approved" : existing.status,
+		};
+		try {
+			await repo.insertAuditEvent(auditPayload);
+		} catch {
+			// actorId FK may fail when profile is not persisted; retry anonymously
+			await repo
+				.insertAuditEvent({ ...auditPayload, actorId: null })
+				.catch(() => {});
+		}
+	}
+	return result;
 }
 
 const DEFAULT_PASSING_GRADE = 10;
