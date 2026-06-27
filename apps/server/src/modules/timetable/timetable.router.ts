@@ -40,7 +40,7 @@ export const router = createRouter({
 			service.deleteSession(input.id, ctx.institution.id),
 		),
 
-	list: protectedProcedure.input(listSessionsSchema).query(({ ctx, input }) =>
+	list: adminProcedure.input(listSessionsSchema).query(({ ctx, input }) =>
 		service.listSessions(ctx.institution.id, {
 			...input,
 			dayOfWeek: input.dayOfWeek as DayOfWeek | undefined,

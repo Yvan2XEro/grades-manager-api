@@ -54,7 +54,7 @@ const DEFAULT_FORM = {
 	dayOfWeek: "mon",
 	startTime: "08:00",
 	endTime: "10:00",
-	room: "",
+	roomId: "" as string,
 };
 
 export default function TimetableManagement() {
@@ -87,6 +87,9 @@ export default function TimetableManagement() {
 		}),
 	);
 
+	const roomsQuery = useQuery(trpc.rooms.list.queryOptions({}));
+	const activeRooms = (roomsQuery.data ?? []).filter((r) => r.isActive);
+
 	const sessions: Session[] = sessionsQuery.data ?? [];
 
 	const invalidate = () => {
@@ -102,16 +105,10 @@ export default function TimetableManagement() {
 		) =>
 			trpcClient.timetable.create.mutate({
 				...data,
-				room: data.room || undefined,
+				roomId: data.roomId || undefined,
 			}),
-		onSuccess: ({ conflicts }) => {
-			if (conflicts.length > 0) {
-				toast.warning(
-					`Session créée avec ${conflicts.length} conflit(s) de salle`,
-				);
-			} else {
-				toast.success("Session créée");
-			}
+		onSuccess: () => {
+			toast.success("Session créée");
 			invalidate();
 			setIsDialogOpen(false);
 		},
@@ -122,7 +119,7 @@ export default function TimetableManagement() {
 		mutationFn: (data: { id: string } & Partial<typeof DEFAULT_FORM>) =>
 			trpcClient.timetable.update.mutate({
 				...data,
-				room: data.room ?? null,
+				roomId: data.roomId ?? null,
 			}),
 		onSuccess: () => {
 			toast.success("Session mise à jour");
@@ -172,7 +169,7 @@ export default function TimetableManagement() {
 			dayOfWeek: s.dayOfWeek,
 			startTime: s.startTime,
 			endTime: s.endTime,
-			room: s.room ?? "",
+			roomId: s.roomId ?? "",
 		});
 		setIsDialogOpen(true);
 	}
@@ -310,9 +307,9 @@ export default function TimetableManagement() {
 											s.dayOfWeek}
 									</Badge>
 									{s.startTime} – {s.endTime}
-									{s.room && (
+									{(s.roomRef?.name ?? s.room) && (
 										<span className="ml-2 text-muted-foreground">
-											({s.room})
+											({s.roomRef?.name ?? s.room})
 										</span>
 									)}
 								</span>
@@ -383,14 +380,27 @@ export default function TimetableManagement() {
 						</div>
 						<div>
 							<Label>Salle (optionnel)</Label>
-							<Input
-								className="mt-1"
-								placeholder="Amphi A, Salle 204…"
-								value={form.room}
-								onChange={(e) =>
-									setForm((f) => ({ ...f, room: e.target.value }))
-								}
-							/>
+							<Select
+								value={form.roomId}
+								onValueChange={(v) => setForm((f) => ({ ...f, roomId: v }))}
+							>
+								<SelectTrigger className="mt-1">
+									<SelectValue placeholder="Aucune salle" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="">Aucune salle</SelectItem>
+									{activeRooms.map((r) => (
+										<SelectItem key={r.id} value={r.id}>
+											{r.name}
+											{r.capacity && (
+												<span className="ml-1 text-muted-foreground text-xs">
+													({r.capacity} places)
+												</span>
+											)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 					<DialogFooter>

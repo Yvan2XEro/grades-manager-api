@@ -2,17 +2,20 @@ import { TRPCError } from "@trpc/server";
 import type { DayOfWeek } from "@/db/schema/app-schema";
 import * as repo from "./timetable.repo";
 
-async function resolveTeacherId(
+async function resolveClassCourseInfo(
 	classCourseId: string,
-): Promise<string | undefined> {
+): Promise<{ teacherId?: string; classId?: string }> {
 	const { db } = await import("@/db");
 	const { eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
 	const cc = await db.query.classCourses.findFirst({
 		where: eq(schema.classCourses.id, classCourseId),
-		columns: { teacher: true },
+		columns: { teacher: true, class: true },
 	});
-	return cc?.teacher ?? undefined;
+	return {
+		teacherId: cc?.teacher ?? undefined,
+		classId: cc?.class ?? undefined,
+	};
 }
 
 async function resolveRoomName(
@@ -77,6 +80,7 @@ export async function createSession(
 		endTime: string;
 		room?: string;
 		roomId?: string;
+		semesterId?: string;
 	},
 	institutionId: string,
 ) {
@@ -87,7 +91,9 @@ export async function createSession(
 		});
 	}
 
-	const teacherId = await resolveTeacherId(input.classCourseId);
+	const { teacherId, classId } = await resolveClassCourseInfo(
+		input.classCourseId,
+	);
 	const roomName = await resolveRoomName(input.roomId, input.room);
 	const capacityWarning = await checkRoomCapacity(
 		input.roomId,
@@ -100,17 +106,25 @@ export async function createSession(
 		input.dayOfWeek,
 		input.startTime,
 		input.endTime,
-		{ room: roomName, roomId: input.roomId, teacherId },
+		{ room: roomName, roomId: input.roomId, teacherId, classId },
 	);
+
+	if (conflicts.length > 0) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: `Scheduling conflict: ${conflicts.map((c) => c.conflictType).join(", ")} overlap detected`,
+		});
+	}
 
 	const session = await repo.create({
 		...input,
 		room: roomName ?? null,
 		roomId: input.roomId ?? null,
+		semesterId: input.semesterId ?? null,
 		institutionId,
 	});
 
-	return { session, conflicts, capacityWarning };
+	return { session, capacityWarning };
 }
 
 export async function updateSession(
@@ -121,6 +135,7 @@ export async function updateSession(
 		endTime?: string;
 		room?: string | null;
 		roomId?: string | null;
+		semesterId?: string | null;
 	},
 	institutionId: string,
 ) {
@@ -147,20 +162,16 @@ export async function updateSession(
 		});
 	}
 
-	const teacherId = await resolveTeacherId(existing.classCourseId);
+	const { teacherId, classId } = await resolveClassCourseInfo(
+		existing.classCourseId,
+	);
 	const capacityWarning = await checkRoomCapacity(
 		nextRoomId ?? undefined,
 		existing.classCourseId,
 		institutionId,
 	);
 
-	const { id, ...data } = input;
-	const session = await repo.update(
-		id,
-		{ ...data, room: resolvedRoom ?? null },
-		institutionId,
-	);
-
+	// Check conflicts BEFORE mutating
 	const conflicts = await repo.findConflicts(
 		institutionId,
 		nextDay,
@@ -170,11 +181,26 @@ export async function updateSession(
 			room: resolvedRoom,
 			roomId: nextRoomId ?? undefined,
 			teacherId,
-			excludeId: id,
+			classId,
+			excludeId: input.id,
 		},
 	);
 
-	return { session, conflicts, capacityWarning };
+	if (conflicts.length > 0) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: `Scheduling conflict: ${conflicts.map((c) => c.conflictType).join(", ")} overlap detected`,
+		});
+	}
+
+	const { id, ...data } = input;
+	const session = await repo.update(
+		id,
+		{ ...data, room: resolvedRoom ?? null },
+		institutionId,
+	);
+
+	return { session, capacityWarning };
 }
 
 export async function deleteSession(id: string, institutionId: string) {
@@ -191,6 +217,7 @@ export async function listSessions(
 	opts: {
 		classCourseId?: string;
 		academicYearId?: string;
+		semesterId?: string;
 		dayOfWeek?: DayOfWeek;
 	},
 ) {
@@ -267,89 +294,66 @@ type ImportRow = {
 	roomId?: string;
 };
 
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const VALID_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+/** Validate a single import row against format rules and DB existence.
+ *  Returns an error string or null if valid. */
+async function validateImportRow(
+	row: ImportRow,
+	institutionId: string,
+): Promise<string | null> {
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	if (!row.classCourseId) return "classCourseId is required";
+	if (!VALID_DAYS.includes(row.dayOfWeek))
+		return `Invalid dayOfWeek "${row.dayOfWeek}". Must be one of: ${VALID_DAYS.join(", ")}`;
+	if (!TIME_PATTERN.test(row.startTime))
+		return `Invalid startTime "${row.startTime}". Use HH:MM format.`;
+	if (!TIME_PATTERN.test(row.endTime))
+		return `Invalid endTime "${row.endTime}". Use HH:MM format.`;
+	if (row.startTime >= row.endTime) return "startTime must be before endTime";
+
+	const cc = await db.query.classCourses.findFirst({
+		where: and(
+			eq(schema.classCourses.id, row.classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+	if (!cc)
+		return `classCourseId "${row.classCourseId}" not found in this institution`;
+
+	if (row.roomId) {
+		const room = await db.query.rooms.findFirst({
+			where: and(
+				eq(schema.rooms.id, row.roomId),
+				eq(schema.rooms.institutionId, institutionId),
+			),
+			columns: { id: true },
+		});
+		if (!room) return `roomId "${row.roomId}" not found in this institution`;
+	}
+
+	return null;
+}
+
 export async function previewBulkImport(
 	rows: ImportRow[],
 	institutionId: string,
 ) {
-	const { db } = await import("@/db");
-	const { and, eq } = await import("drizzle-orm");
-	const schema = await import("@/db/schema/app-schema");
-	const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
-	const validDays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-
 	const valid: (ImportRow & { rowIndex: number })[] = [];
 	const errors: { rowIndex: number; reason: string }[] = [];
 
 	for (let i = 0; i < rows.length; i++) {
-		const row = rows[i];
-		const rowNum = i + 1;
-
-		if (!row.classCourseId) {
-			errors.push({ rowIndex: rowNum, reason: "classCourseId is required" });
-			continue;
+		const error = await validateImportRow(rows[i], institutionId);
+		if (error) {
+			errors.push({ rowIndex: i + 1, reason: error });
+		} else {
+			valid.push({ ...rows[i], rowIndex: i + 1 });
 		}
-		if (!validDays.includes(row.dayOfWeek)) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: `Invalid dayOfWeek "${row.dayOfWeek}". Must be one of: ${validDays.join(", ")}`,
-			});
-			continue;
-		}
-		if (!timePattern.test(row.startTime)) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: `Invalid startTime "${row.startTime}". Use HH:MM format.`,
-			});
-			continue;
-		}
-		if (!timePattern.test(row.endTime)) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: `Invalid endTime "${row.endTime}". Use HH:MM format.`,
-			});
-			continue;
-		}
-		if (row.startTime >= row.endTime) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: "startTime must be before endTime",
-			});
-			continue;
-		}
-
-		const cc = await db.query.classCourses.findFirst({
-			where: and(
-				eq(schema.classCourses.id, row.classCourseId),
-				eq(schema.classCourses.institutionId, institutionId),
-			),
-			columns: { id: true },
-		});
-		if (!cc) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: `classCourseId "${row.classCourseId}" not found in this institution`,
-			});
-			continue;
-		}
-
-		if (row.roomId) {
-			const room = await db.query.rooms.findFirst({
-				where: and(
-					eq(schema.rooms.id, row.roomId),
-					eq(schema.rooms.institutionId, institutionId),
-				),
-				columns: { id: true },
-			});
-			if (!room) {
-				errors.push({
-					rowIndex: rowNum,
-					reason: `roomId "${row.roomId}" not found in this institution`,
-				});
-				continue;
-			}
-		}
-
-		valid.push({ ...row, rowIndex: rowNum });
 	}
 
 	return { valid, errors, totalRows: rows.length };
@@ -360,36 +364,59 @@ export async function executeBulkImport(
 	institutionId: string,
 	skipDuplicates: boolean,
 ) {
-	const daysOfWeek = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 	let created = 0;
 	let skipped = 0;
 	const errors: { rowIndex: number; reason: string }[] = [];
 
 	for (let i = 0; i < rows.length; i++) {
 		const row = rows[i];
-		const day = row.dayOfWeek as DayOfWeek;
+		const rowNum = i + 1;
 
-		if (!daysOfWeek.includes(day)) {
-			errors.push({ rowIndex: i + 1, reason: `Invalid day: ${row.dayOfWeek}` });
+		// Full re-validation (same rules as preview)
+		const validationError = await validateImportRow(row, institutionId);
+		if (validationError) {
+			errors.push({ rowIndex: rowNum, reason: validationError });
 			continue;
 		}
 
-		const existing = await repo.findDuplicate(
+		const day = row.dayOfWeek as DayOfWeek;
+
+		// Duplicate check
+		const duplicate = await repo.findDuplicate(
 			institutionId,
 			row.classCourseId,
 			day,
 			row.startTime,
 			row.endTime,
 		);
-
-		if (existing) {
+		if (duplicate) {
 			if (skipDuplicates) {
 				skipped++;
 				continue;
 			}
 			errors.push({
-				rowIndex: i + 1,
-				reason: `Duplicate session already exists for this class course on ${day} ${row.startTime}–${row.endTime}`,
+				rowIndex: rowNum,
+				reason: `Duplicate session already exists on ${day} ${row.startTime}–${row.endTime}`,
+			});
+			continue;
+		}
+
+		// Conflict check (teacher, room, class)
+		const { teacherId, classId } = await resolveClassCourseInfo(
+			row.classCourseId,
+		);
+		const roomName = await resolveRoomName(row.roomId, row.room);
+		const conflicts = await repo.findConflicts(
+			institutionId,
+			day,
+			row.startTime,
+			row.endTime,
+			{ room: roomName, roomId: row.roomId, teacherId, classId },
+		);
+		if (conflicts.length > 0) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: `Conflict detected: ${conflicts.map((c) => c.conflictType).join(", ")} overlap`,
 			});
 			continue;
 		}
@@ -404,7 +431,7 @@ export async function executeBulkImport(
 			dayOfWeek: day,
 			startTime: row.startTime,
 			endTime: row.endTime,
-			room: row.room ?? null,
+			room: roomName ?? null,
 			roomId: row.roomId ?? null,
 		});
 		created++;

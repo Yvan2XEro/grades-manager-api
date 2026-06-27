@@ -3620,6 +3620,9 @@ export const courseSessions = pgTable(
 		roomId: text("room_id").references(() => rooms.id, {
 			onDelete: "set null",
 		}),
+		semesterId: text("semester_id").references(() => semesters.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -3654,6 +3657,10 @@ export const courseSessionsRelations = relations(courseSessions, ({ one }) => ({
 	roomRef: one(rooms, {
 		fields: [courseSessions.roomId],
 		references: [rooms.id],
+	}),
+	semester: one(semesters, {
+		fields: [courseSessions.semesterId],
+		references: [semesters.id],
 	}),
 }));
 

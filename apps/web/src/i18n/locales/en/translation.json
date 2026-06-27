@@ -392,6 +392,113 @@
       },
       "error": "Could not load alerts"
     },
+    "timetable": {
+      "title": "Timetable",
+      "subtitle": "Manage weekly course sessions",
+      "newSession": "New session",
+      "editSession": "Edit session",
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "day": "Day",
+      "startTime": "Start",
+      "endTime": "End",
+      "room": "Room",
+      "noRoom": "No room",
+      "export": "Export",
+      "import": "Import",
+      "filterByYear": "Filter by year",
+      "filterByCourse": "Filter by course",
+      "conflicts": {
+        "room": "Room conflict",
+        "teacher": "Teacher conflict",
+        "class": "Class conflict"
+      },
+      "import": {
+        "title": "Bulk Import",
+        "description": "Upload a CSV or Excel file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).",
+        "preview": "Preview",
+        "execute": "Import",
+        "skipDuplicates": "Skip duplicates",
+        "validRows": "valid row(s)",
+        "errorRows": "error(s)",
+        "success": "{{count}} session(s) imported",
+        "noErrors": "No errors"
+      },
+      "toast": {
+        "created": "Session created",
+        "updated": "Session updated",
+        "deleted": "Session deleted"
+      }
+    },
+    "rooms": {
+      "title": "Rooms",
+      "subtitle": "Manage classrooms and lecture halls",
+      "newRoom": "New room",
+      "editRoom": "Edit room",
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "code": "Code",
+      "name": "Name",
+      "capacity": "Capacity",
+      "building": "Building",
+      "campus": "Campus",
+      "isActive": "Active",
+      "active": "Active",
+      "inactive": "Inactive",
+      "seats": "seats",
+      "toast": {
+        "created": "Room created",
+        "updated": "Room updated",
+        "deleted": "Room deleted"
+      }
+    },
+    "attendanceManagement": {
+      "title": "Attendance",
+      "subtitle": "Track presence per session",
+      "newSession": "New session",
+      "createSession": "Create session",
+      "deleteSession": "Delete session",
+      "bulkMarkPresent": "Mark all present",
+      "bulkMarkAbsent": "Mark all absent",
+      "bulkMarkLate": "Mark all late",
+      "excuse": "Excuse absence",
+      "excuseReason": "Reason",
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "filterByYear": "Filter by year",
+      "filterByCourse": "Filter by course",
+      "noSession": "No session selected",
+      "status": {
+        "present": "Present",
+        "absent": "Absent",
+        "late": "Late",
+        "excused": "Excused"
+      },
+      "toast": {
+        "sessionCreated": "Session created",
+        "sessionDeleted": "Session deleted",
+        "marked": "Marked",
+        "excused": "Absence excused"
+      }
+    },
+    "attendanceRates": {
+      "title": "Attendance Rates",
+      "subtitle": "Attendance statistics by course",
+      "filterByYear": "Filter by year",
+      "filterByCourse": "Filter by course",
+      "export": "Export",
+      "student": "Student",
+      "attended": "Attended",
+      "effective": "Effective",
+      "rate": "Rate",
+      "eligible": "Eligible",
+      "yes": "Yes",
+      "no": "No"
+    },
     "gradeAccessGrants": {
       "title": "Grade Delegation",
       "subtitle": "Grant institution-wide grade entry access to specific users",

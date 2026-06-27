@@ -11,6 +11,7 @@ export const createSessionSchema = z.object({
 	endTime: z.string().regex(timePattern, "HH:MM format required"),
 	room: z.string().optional(),
 	roomId: z.string().optional(),
+	semesterId: z.string().optional(),
 });
 
 export const updateSessionSchema = z.object({
@@ -20,6 +21,7 @@ export const updateSessionSchema = z.object({
 	endTime: z.string().regex(timePattern).optional(),
 	room: z.string().nullish(),
 	roomId: z.string().nullish(),
+	semesterId: z.string().nullish(),
 });
 
 export const deleteSessionSchema = z.object({ id: z.string().min(1) });
@@ -27,6 +29,7 @@ export const deleteSessionSchema = z.object({ id: z.string().min(1) });
 export const listSessionsSchema = z.object({
 	classCourseId: z.string().optional(),
 	academicYearId: z.string().optional(),
+	semesterId: z.string().optional(),
 	dayOfWeek: z.enum(daysOfWeek as unknown as [string, ...string[]]).optional(),
 });
 

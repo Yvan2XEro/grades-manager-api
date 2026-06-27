@@ -3658,6 +3658,113 @@
       "title": "Alertes de présence",
       "error": "Impossible de charger les alertes"
     },
+    "timetable": {
+      "title": "Emploi du temps",
+      "subtitle": "Gérer les séances de cours hebdomadaires",
+      "newSession": "Nouvelle séance",
+      "editSession": "Modifier la séance",
+      "create": "Créer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "day": "Jour",
+      "startTime": "Début",
+      "endTime": "Fin",
+      "room": "Salle",
+      "noRoom": "Aucune salle",
+      "export": "Exporter",
+      "import": "Importer",
+      "filterByYear": "Filtrer par année",
+      "filterByCourse": "Filtrer par cours",
+      "conflicts": {
+        "room": "Conflit de salle",
+        "teacher": "Conflit d'enseignant",
+        "class": "Conflit de classe"
+      },
+      "importDialog": {
+        "title": "Import en masse",
+        "description": "Téléversez un fichier CSV ou Excel avec les colonnes : classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optionnel).",
+        "preview": "Aperçu",
+        "execute": "Importer",
+        "skipDuplicates": "Ignorer les doublons",
+        "validRows": "ligne(s) valide(s)",
+        "errorRows": "erreur(s)",
+        "success": "{{count}} séance(s) importée(s)",
+        "noErrors": "Aucune erreur"
+      },
+      "toast": {
+        "created": "Séance créée",
+        "updated": "Séance mise à jour",
+        "deleted": "Séance supprimée"
+      }
+    },
+    "rooms": {
+      "title": "Salles",
+      "subtitle": "Gérer les salles de cours et amphithéâtres",
+      "newRoom": "Nouvelle salle",
+      "editRoom": "Modifier la salle",
+      "create": "Créer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "code": "Code",
+      "name": "Nom",
+      "capacity": "Capacité",
+      "building": "Bâtiment",
+      "campus": "Campus",
+      "isActive": "Active",
+      "active": "Active",
+      "inactive": "Inactive",
+      "seats": "places",
+      "toast": {
+        "created": "Salle créée",
+        "updated": "Salle mise à jour",
+        "deleted": "Salle supprimée"
+      }
+    },
+    "attendanceManagement": {
+      "title": "Présences",
+      "subtitle": "Suivi de présence par séance",
+      "newSession": "Nouvelle séance",
+      "createSession": "Créer la séance",
+      "deleteSession": "Supprimer la séance",
+      "bulkMarkPresent": "Tout marquer présent",
+      "bulkMarkAbsent": "Tout marquer absent",
+      "bulkMarkLate": "Tout marquer en retard",
+      "excuse": "Excuser l'absence",
+      "excuseReason": "Motif",
+      "submit": "Valider",
+      "cancel": "Annuler",
+      "filterByYear": "Filtrer par année",
+      "filterByCourse": "Filtrer par cours",
+      "noSession": "Aucune séance sélectionnée",
+      "status": {
+        "present": "Présent",
+        "absent": "Absent",
+        "late": "En retard",
+        "excused": "Excusé"
+      },
+      "toast": {
+        "sessionCreated": "Séance créée",
+        "sessionDeleted": "Séance supprimée",
+        "marked": "Marqué",
+        "excused": "Absence excusée"
+      }
+    },
+    "attendanceRates": {
+      "title": "Taux de présence",
+      "subtitle": "Statistiques de présence par cours",
+      "filterByYear": "Filtrer par année",
+      "filterByCourse": "Filtrer par cours",
+      "export": "Exporter",
+      "student": "Étudiant",
+      "attended": "Présences",
+      "effective": "Effectives",
+      "rate": "Taux",
+      "eligible": "Éligible",
+      "yes": "Oui",
+      "no": "Non"
+    },
     "workflow": {
       "title": "Workflow d'examens",
       "subtitle": "Soumettez les examens pour validation et suivez leur statut.",

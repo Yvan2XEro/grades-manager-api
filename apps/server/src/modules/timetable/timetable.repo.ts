@@ -45,6 +45,7 @@ export async function list(
 	opts: {
 		classCourseId?: string;
 		academicYearId?: string;
+		semesterId?: string;
 		dayOfWeek?: DayOfWeek;
 	} = {},
 ) {
@@ -57,6 +58,8 @@ export async function list(
 		conditions.push(
 			eq(schema.courseSessions.academicYearId, opts.academicYearId),
 		);
+	if (opts.semesterId)
+		conditions.push(eq(schema.courseSessions.semesterId, opts.semesterId));
 	if (opts.dayOfWeek)
 		conditions.push(eq(schema.courseSessions.dayOfWeek, opts.dayOfWeek));
 
@@ -92,6 +95,7 @@ export async function findConflicts(
 		room?: string;
 		roomId?: string;
 		teacherId?: string;
+		classId?: string;
 		excludeId?: string;
 	},
 ) {
@@ -117,7 +121,13 @@ export async function findConflicts(
 				(!opts.roomId && opts.room && s.room && s.room === opts.room);
 			const teacherConflict =
 				opts.teacherId && s.classCourse?.teacher === opts.teacherId;
-			return Boolean(roomConflict) || Boolean(teacherConflict);
+			const classConflict =
+				opts.classId && s.classCourse?.class === opts.classId;
+			return (
+				Boolean(roomConflict) ||
+				Boolean(teacherConflict) ||
+				Boolean(classConflict)
+			);
 		})
 		.map((s) => ({
 			...s,
@@ -127,9 +137,20 @@ export async function findConflicts(
 					(!opts.roomId && opts.room && s.room && s.room === opts.room);
 				const teacherMatch =
 					opts.teacherId && s.classCourse?.teacher === opts.teacherId;
-				if (roomMatch && teacherMatch) return "both" as const;
-				if (roomMatch) return "room" as const;
-				return "teacher" as const;
+				const classMatch =
+					opts.classId && s.classCourse?.class === opts.classId;
+				const types: string[] = [];
+				if (roomMatch) types.push("room");
+				if (teacherMatch) types.push("teacher");
+				if (classMatch) types.push("class");
+				return types.join("+") as
+					| "room"
+					| "teacher"
+					| "class"
+					| "room+teacher"
+					| "room+class"
+					| "teacher+class"
+					| "room+teacher+class";
 			})(),
 		}));
 }
