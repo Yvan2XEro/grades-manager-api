@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ type NotifConfig = {
 	icon: React.ReactNode;
 	labelKey: string;
 	subtitleFn?: (payload: Record<string, unknown>) => string;
+	toFn?: (payload: Record<string, unknown>) => string | undefined;
 };
 
 const NOTIF_CONFIGS: Record<string, NotifConfig> = {
@@ -54,11 +56,13 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 	"batch_job.completed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
 		labelKey: "notifications.types.batch_job_completed",
+		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
 	},
 	"batch_job.failed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
 		labelKey: "notifications.types.batch_job_failed",
 		subtitleFn: (p) => (p.error ? String(p.error) : ""),
+		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
 	},
 };
 
@@ -187,19 +191,12 @@ export const NotificationBell: React.FC = () => {
 							{items.map((item) => {
 								const isUnread = !item.readAt;
 								const cfg = getConfig(item.type);
-								const subtitle = cfg.subtitleFn
-									? cfg.subtitleFn(
-											(item.payload as Record<string, unknown>) ?? {},
-										)
-									: "";
-								return (
-									<li
-										key={item.id}
-										className={cn(
-											"group flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-0 hover:bg-muted/40",
-											isUnread && "bg-primary/3",
-										)}
-									>
+								const payload = (item.payload as Record<string, unknown>) ?? {};
+								const subtitle = cfg.subtitleFn ? cfg.subtitleFn(payload) : "";
+								const to = cfg.toFn ? cfg.toFn(payload) : undefined;
+
+								const innerContent = (
+									<>
 										<div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-background">
 											{cfg.icon}
 										</div>
@@ -225,6 +222,32 @@ export const NotificationBell: React.FC = () => {
 												{timeAgo(item.createdAt, t)}
 											</p>
 										</div>
+									</>
+								);
+
+								return (
+									<li
+										key={item.id}
+										className={cn(
+											"group flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-0 hover:bg-muted/40",
+											isUnread && "bg-primary/3",
+										)}
+									>
+										{to ? (
+											<Link
+												to={to}
+												className="flex min-w-0 flex-1 items-start gap-3"
+												onClick={() => {
+													if (isUnread) markReadMut.mutate(item.id);
+												}}
+											>
+												{innerContent}
+											</Link>
+										) : (
+											<div className="flex min-w-0 flex-1 items-start gap-3">
+												{innerContent}
+											</div>
+										)}
 										{isUnread && (
 											<button
 												type="button"

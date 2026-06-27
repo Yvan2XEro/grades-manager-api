@@ -24,6 +24,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "../../../components/ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../../components/ui/select";
 import { type RouterOutputs, trpc, trpcClient } from "../../../utils/trpc";
 
 type BatchJob = NonNullable<RouterOutputs["batchJobs"]["get"]>;
@@ -52,13 +59,17 @@ export default function BatchJobDetail() {
 	const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
 		null,
 	);
+	const [logLevel, setLogLevel] = useState<"all" | "info" | "warn" | "error">(
+		"all",
+	);
 
+	const ACTIVE_STATUSES = ["pending", "running"];
 	const jobQuery = useQuery({
 		...trpc.batchJobs.get.queryOptions({ jobId: jobId! }),
 		enabled: !!jobId,
 		refetchInterval: (query) => {
 			const status = query.state.data?.status;
-			return status === "running" ? 2000 : false;
+			return ACTIVE_STATUSES.includes(status ?? "") ? 2000 : false;
 		},
 	});
 
@@ -389,30 +400,57 @@ export default function BatchJobDetail() {
 
 			{/* Logs */}
 			<div className="rounded-xl border bg-card p-5 shadow-sm">
-				<h3 className="mb-4 font-medium text-foreground text-sm">
-					{t("admin.batchJobs.detail.logs")}
-				</h3>
-				{(job.logs ?? []).length === 0 ? (
-					<p className="text-muted-foreground text-xs">
-						{t("admin.batchJobs.detail.noLogs")}
-					</p>
-				) : (
-					<div className="max-h-96 space-y-1 overflow-y-auto font-mono text-xs">
-						{(job.logs ?? []).map((log) => (
-							<div key={log.id} className="flex gap-2 py-1">
-								<span className="text-muted-foreground/60">
-									{new Date(log.timestamp).toLocaleTimeString()}
-								</span>
-								<span
-									className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}
-								>
-									[{log.level}]
-								</span>
-								<span className="text-foreground">{log.message}</span>
-							</div>
-						))}
-					</div>
-				)}
+				<div className="mb-4 flex items-center justify-between">
+					<h3 className="font-medium text-foreground text-sm">
+						{t("admin.batchJobs.detail.logs")}
+					</h3>
+					{(job.logs ?? []).length > 0 && (
+						<Select
+							value={logLevel}
+							onValueChange={(v) =>
+								setLogLevel(v as "all" | "info" | "warn" | "error")
+							}
+						>
+							<SelectTrigger className="h-7 w-[90px] text-xs">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									{t("common.all", { defaultValue: "All" })}
+								</SelectItem>
+								<SelectItem value="info">Info</SelectItem>
+								<SelectItem value="warn">Warn</SelectItem>
+								<SelectItem value="error">Error</SelectItem>
+							</SelectContent>
+						</Select>
+					)}
+				</div>
+				{(() => {
+					const filteredLogs = (job.logs ?? []).filter(
+						(l) => logLevel === "all" || l.level === logLevel,
+					);
+					return filteredLogs.length === 0 ? (
+						<p className="text-muted-foreground text-xs">
+							{t("admin.batchJobs.detail.noLogs")}
+						</p>
+					) : (
+						<div className="max-h-96 space-y-1 overflow-y-auto font-mono text-xs">
+							{filteredLogs.map((log) => (
+								<div key={log.id} className="flex gap-2 py-1">
+									<span className="text-muted-foreground/60">
+										{new Date(log.timestamp).toLocaleTimeString()}
+									</span>
+									<span
+										className={`font-medium uppercase ${logLevelColors[log.level] ?? "text-muted-foreground"}`}
+									>
+										[{log.level}]
+									</span>
+									<span className="text-foreground">{log.message}</span>
+								</div>
+							))}
+						</div>
+					);
+				})()}
 			</div>
 
 			{/* Confirm cancel / rollback dialog */}

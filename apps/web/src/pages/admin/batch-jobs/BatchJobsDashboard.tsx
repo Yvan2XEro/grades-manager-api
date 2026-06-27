@@ -87,7 +87,13 @@ export default function BatchJobsDashboard() {
 				limit: 50,
 				offset: 0,
 			}),
-		refetchInterval: 5000,
+		refetchInterval: (query) => {
+			const items = query.state.data?.items ?? [];
+			const hasActive = items.some((j) =>
+				["pending", "previewed", "running"].includes(j.status),
+			);
+			return hasActive ? 3000 : false;
+		},
 	});
 
 	const runMutation = useMutation({
