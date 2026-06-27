@@ -714,6 +714,10 @@ export const classCourses = pgTable(
 		index("idx_class_courses_course_id").on(t.course),
 		index("idx_class_courses_teacher_id").on(t.teacher),
 		index("idx_class_courses_semester_id").on(t.semesterId),
+		check(
+			"chk_class_course_attendance_threshold",
+			sql`${t.attendanceThreshold} IS NULL OR (${t.attendanceThreshold} >= 0 AND ${t.attendanceThreshold} <= 100)`,
+		),
 	],
 );
 
@@ -3870,6 +3874,10 @@ export const attendanceRecords = pgTable(
 		index("idx_attendance_records_institution").on(t.institutionId),
 		index("idx_attendance_records_session").on(t.attendanceSessionId),
 		index("idx_attendance_records_student").on(t.studentId),
+		check(
+			"chk_attendance_record_status",
+			sql`${t.status} IN ('present', 'absent', 'late', 'excused')`,
+		),
 	],
 );
 

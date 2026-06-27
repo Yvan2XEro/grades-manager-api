@@ -177,12 +177,18 @@ export async function listRecordsForStudent(
 export async function getSessionsWithRecordCounts(
 	classCourseId: string,
 	institutionId: string,
+	academicYearId?: string,
 ) {
+	const conditions = [
+		eq(schema.attendanceSessions.classCourseId, classCourseId),
+		eq(schema.attendanceSessions.institutionId, institutionId),
+	];
+	if (academicYearId)
+		conditions.push(
+			eq(schema.attendanceSessions.academicYearId, academicYearId),
+		);
 	return db.query.attendanceSessions.findMany({
-		where: and(
-			eq(schema.attendanceSessions.classCourseId, classCourseId),
-			eq(schema.attendanceSessions.institutionId, institutionId),
-		),
+		where: and(...conditions),
 		with: {
 			records: {
 				columns: { id: true, status: true, studentId: true },
@@ -212,7 +218,8 @@ export async function getRosterForClassCourse(
 	});
 }
 
-/** Upsert a single attendance record (insert or update on conflict). */
+/** Upsert a single attendance record (insert or update on conflict).
+ *  Clears excuse metadata when the status is changed away from "excused". */
 export async function upsertSingleRecord(
 	data: Pick<
 		NewAttendanceRecord,
@@ -223,6 +230,7 @@ export async function upsertSingleRecord(
 		| "markedBy"
 	>,
 ) {
+	const clearExcuse = data.status !== "excused";
 	const [row] = await db
 		.insert(schema.attendanceRecords)
 		.values(data)
@@ -235,6 +243,13 @@ export async function upsertSingleRecord(
 				status: data.status,
 				markedBy: data.markedBy,
 				updatedAt: new Date(),
+				...(clearExcuse
+					? {
+							excuseReason: null,
+							excuseApprovedBy: null,
+							excuseApprovedAt: null,
+						}
+					: {}),
 			},
 		})
 		.returning();

@@ -76,7 +76,10 @@ export function TimetableImportDialog({
 			}),
 		onSuccess: (result) => {
 			toast.success(
-				`Import terminé : ${result.created} sessions créées${result.skipped ? `, ${result.skipped} ignorées` : ""}`,
+				t("teacher.timetable.import.success", {
+					count: result.created,
+					skipped: result.skipped,
+				}),
 			);
 			onImported();
 			handleClose();
@@ -129,32 +132,19 @@ export function TimetableImportDialog({
 		<Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
 			<DialogContent className="max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>
-						{t("timetable.import.title", {
-							defaultValue: "Importer un emploi du temps",
-						})}
-					</DialogTitle>
+					<DialogTitle>{t("teacher.timetable.import.title")}</DialogTitle>
 				</DialogHeader>
 
 				{step === "upload" && (
 					<div className="space-y-4">
 						<p className="text-muted-foreground text-sm">
-							{t("timetable.import.instructions", {
-								defaultValue:
-									"Téléchargez le modèle CSV, remplissez-le, puis importez-le.",
-							})}
+							{t("teacher.timetable.import.description")}
 						</p>
 						<Button variant="outline" size="sm" onClick={downloadTemplate}>
-							{t("timetable.import.downloadTemplate", {
-								defaultValue: "Télécharger le modèle CSV",
-							})}
+							{t("teacher.timetable.import.downloadTemplate")}
 						</Button>
 						<div className="space-y-1.5">
-							<Label>
-								{t("timetable.import.file", {
-									defaultValue: "Fichier CSV",
-								})}
-							</Label>
+							<Label>{t("teacher.timetable.import.file")}</Label>
 							<input
 								ref={fileRef}
 								type="file"
@@ -164,31 +154,34 @@ export function TimetableImportDialog({
 							/>
 						</div>
 						{previewMut.isPending && (
-							<p className="text-muted-foreground text-sm">Validation…</p>
+							<p className="text-muted-foreground text-sm">…</p>
 						)}
 					</div>
 				)}
 
 				{step === "preview" && preview && (
 					<div className="space-y-4">
-						{/* Summary */}
 						<div className="flex gap-3 text-sm">
-							<Badge variant="default">{preview.valid.length} valides</Badge>
+							<Badge variant="default">
+								{preview.valid.length} {t("teacher.timetable.import.validRows")}
+							</Badge>
 							{preview.errors.length > 0 && (
 								<Badge variant="destructive">
-									{preview.errors.length} erreurs
+									{preview.errors.length}{" "}
+									{t("teacher.timetable.import.errorRows")}
 								</Badge>
 							)}
 						</div>
 
-						{/* Errors */}
 						{preview.errors.length > 0 && (
 							<div className="max-h-40 overflow-y-auto rounded-md border">
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>Ligne</TableHead>
-											<TableHead>Erreur</TableHead>
+											<TableHead>{t("teacher.timetable.import.row")}</TableHead>
+											<TableHead>
+												{t("teacher.timetable.import.error")}
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -205,16 +198,17 @@ export function TimetableImportDialog({
 							</div>
 						)}
 
-						{/* Valid rows preview */}
 						{preview.valid.length > 0 && (
 							<div className="max-h-48 overflow-y-auto rounded-md border">
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>Ligne</TableHead>
-											<TableHead>Jour</TableHead>
-											<TableHead>Horaire</TableHead>
-											<TableHead>Salle</TableHead>
+											<TableHead>{t("teacher.timetable.import.row")}</TableHead>
+											<TableHead>{t("teacher.timetable.day")}</TableHead>
+											<TableHead>
+												{t("teacher.timetable.import.schedule")}
+											</TableHead>
+											<TableHead>{t("teacher.timetable.room")}</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
@@ -244,9 +238,7 @@ export function TimetableImportDialog({
 								onCheckedChange={(v) => setSkipDuplicates(Boolean(v))}
 							/>
 							<Label htmlFor="skipDupes" className="font-normal text-sm">
-								{t("timetable.import.skipDuplicates", {
-									defaultValue: "Ignorer les sessions déjà existantes",
-								})}
+								{t("teacher.timetable.import.skipDuplicates")}
 							</Label>
 						</div>
 					</div>
@@ -261,8 +253,8 @@ export function TimetableImportDialog({
 							disabled={importMut.isPending}
 							onClick={() => importMut.mutate()}
 						>
-							{t("timetable.import.confirm", {
-								defaultValue: `Importer ${preview.valid.length} sessions`,
+							{t("teacher.timetable.import.execute", {
+								count: preview.valid.length,
 							})}
 						</Button>
 					)}

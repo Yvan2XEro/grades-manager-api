@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { SemesterSelect } from "@/components/inputs/SemesterSelect";
 import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../components/ui/badge";
@@ -41,20 +42,13 @@ type ClassCourse = {
 	classRef: { name: string } | null;
 };
 
-const DAYS = [
-	{ value: "mon", label: "Lundi" },
-	{ value: "tue", label: "Mardi" },
-	{ value: "wed", label: "Mercredi" },
-	{ value: "thu", label: "Jeudi" },
-	{ value: "fri", label: "Vendredi" },
-	{ value: "sat", label: "Samedi" },
-];
+const NO_ROOM_SENTINEL = "__none__";
 
 const DEFAULT_FORM = {
 	dayOfWeek: "mon",
 	startTime: "08:00",
 	endTime: "10:00",
-	roomId: "" as string,
+	roomId: NO_ROOM_SENTINEL,
 };
 
 export default function TimetableManagement() {
@@ -62,11 +56,21 @@ export default function TimetableManagement() {
 	const queryClient = useQueryClient();
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+	const [semesterId, setSemesterId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
 	const [editingSession, setEditingSession] = useState<Session | null>(null);
 	const [form, setForm] = useState(DEFAULT_FORM);
+
+	const DAYS = [
+		{ value: "mon", label: t("teacher.timetable.days.mon") },
+		{ value: "tue", label: t("teacher.timetable.days.tue") },
+		{ value: "wed", label: t("teacher.timetable.days.wed") },
+		{ value: "thu", label: t("teacher.timetable.days.thu") },
+		{ value: "fri", label: t("teacher.timetable.days.fri") },
+		{ value: "sat", label: t("teacher.timetable.days.sat") },
+	];
 
 	const { data: classCoursesData } = useQuery({
 		queryKey: ["classCourses-for-timetable", academicYearId],
@@ -84,6 +88,7 @@ export default function TimetableManagement() {
 		trpc.timetable.list.queryOptions({
 			...(classCourseId ? { classCourseId } : {}),
 			...(academicYearId ? { academicYearId } : {}),
+			...(semesterId ? { semesterId } : {}),
 		}),
 	);
 
@@ -96,6 +101,18 @@ export default function TimetableManagement() {
 		queryClient.invalidateQueries(trpc.timetable.list.queryFilter({}));
 	};
 
+	function toastCapacityWarning(
+		w: { roomCapacity: number; classSize: number } | null | undefined,
+	) {
+		if (!w) return;
+		toast.warning(
+			t("teacher.timetable.capacityWarning", {
+				classSize: w.classSize,
+				roomCapacity: w.roomCapacity,
+			}),
+		);
+	}
+
 	const createMutation = useMutation({
 		mutationFn: (
 			data: typeof DEFAULT_FORM & {
@@ -105,10 +122,12 @@ export default function TimetableManagement() {
 		) =>
 			trpcClient.timetable.create.mutate({
 				...data,
-				roomId: data.roomId || undefined,
+				roomId: data.roomId === NO_ROOM_SENTINEL ? undefined : data.roomId,
+				semesterId: semesterId ?? undefined,
 			}),
-		onSuccess: () => {
-			toast.success("Session créée");
+		onSuccess: (res) => {
+			toast.success(t("teacher.timetable.toast.created"));
+			toastCapacityWarning(res.capacityWarning);
 			invalidate();
 			setIsDialogOpen(false);
 		},
@@ -119,10 +138,16 @@ export default function TimetableManagement() {
 		mutationFn: (data: { id: string } & Partial<typeof DEFAULT_FORM>) =>
 			trpcClient.timetable.update.mutate({
 				...data,
-				roomId: data.roomId ?? null,
+				roomId:
+					data.roomId === NO_ROOM_SENTINEL
+						? null
+						: data.roomId !== undefined
+							? data.roomId
+							: undefined,
 			}),
-		onSuccess: () => {
-			toast.success("Session mise à jour");
+		onSuccess: (res) => {
+			toast.success(t("teacher.timetable.toast.updated"));
+			toastCapacityWarning(res.capacityWarning);
 			invalidate();
 			setIsDialogOpen(false);
 		},
@@ -132,7 +157,7 @@ export default function TimetableManagement() {
 	const deleteMutation = useMutation({
 		mutationFn: (id: string) => trpcClient.timetable.delete.mutate({ id }),
 		onSuccess: () => {
-			toast.success("Session supprimée");
+			toast.success(t("teacher.timetable.toast.deleted"));
 			invalidate();
 		},
 		onError: (err) => toast.error(err.message),
@@ -141,18 +166,18 @@ export default function TimetableManagement() {
 	function handleExport() {
 		const rows = sessions.map((s) => ({
 			classCourseId: s.classCourseId,
-			cours: s.classCourse?.courseRef?.name ?? "",
-			classe: s.classCourse?.classRef?.name ?? "",
-			jour: s.dayOfWeek,
-			debut: s.startTime,
-			fin: s.endTime,
-			salle: s.room ?? "",
+			[t("teacher.timetable.course")]: s.classCourse?.courseRef?.name ?? "",
+			[t("teacher.timetable.class")]: s.classCourse?.classRef?.name ?? "",
+			dayOfWeek: s.dayOfWeek,
+			startTime: s.startTime,
+			endTime: s.endTime,
+			[t("teacher.timetable.room")]: s.room ?? "",
 			roomId: s.roomId ?? "",
 		}));
 		const ws = XLSX.utils.json_to_sheet(rows);
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Emploi du temps");
-		XLSX.writeFile(wb, "emploi-du-temps.xlsx");
+		XLSX.utils.book_append_sheet(wb, ws, t("teacher.timetable.title"));
+		XLSX.writeFile(wb, "timetable.xlsx");
 	}
 
 	function openCreate() {
@@ -169,7 +194,7 @@ export default function TimetableManagement() {
 			dayOfWeek: s.dayOfWeek,
 			startTime: s.startTime,
 			endTime: s.endTime,
-			roomId: s.roomId ?? "",
+			roomId: s.roomId ?? NO_ROOM_SENTINEL,
 		});
 		setIsDialogOpen(true);
 	}
@@ -199,9 +224,11 @@ export default function TimetableManagement() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-semibold text-xl">Emploi du temps</h1>
+					<h1 className="font-semibold text-xl">
+						{t("teacher.timetable.title")}
+					</h1>
 					<p className="text-muted-foreground text-sm">
-						Gérez les sessions de cours hebdomadaires
+						{t("teacher.timetable.subtitle")}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -211,7 +238,7 @@ export default function TimetableManagement() {
 						onClick={() => setImportOpen(true)}
 					>
 						<Upload className="mr-1.5 h-4 w-4" />
-						Importer CSV
+						{t("teacher.timetable.importCsv")}
 					</Button>
 					<Button
 						variant="outline"
@@ -220,12 +247,12 @@ export default function TimetableManagement() {
 						disabled={sessions.length === 0}
 					>
 						<Download className="mr-1.5 h-4 w-4" />
-						Exporter
+						{t("teacher.timetable.export")}
 					</Button>
 					{classCourseId && academicYearId && (
 						<Button onClick={openCreate} size="sm">
 							<Plus className="mr-2 h-4 w-4" />
-							Ajouter une session
+							{t("teacher.timetable.newSession")}
 						</Button>
 					)}
 				</div>
@@ -233,23 +260,40 @@ export default function TimetableManagement() {
 
 			<div className="mb-6 flex flex-wrap gap-4">
 				<div className="w-64">
-					<Label className="mb-1.5 block text-xs">Année académique</Label>
+					<Label className="mb-1.5 block text-xs">
+						{t("teacher.timetable.filterByYear")}
+					</Label>
 					<AcademicYearSelect
 						value={academicYearId}
 						onChange={(v) => {
 							setAcademicYearId(v);
+							setSemesterId(null);
 							setClassCourseId(null);
 						}}
 					/>
 				</div>
+				{academicYearId && (
+					<div className="w-52">
+						<Label className="mb-1.5 block text-xs">
+							{t("teacher.timetable.filterBySemester")}
+						</Label>
+						<SemesterSelect
+							academicYearId={academicYearId}
+							value={semesterId}
+							onChange={setSemesterId}
+						/>
+					</div>
+				)}
 				<div className="w-72">
-					<Label className="mb-1.5 block text-xs">Cours</Label>
+					<Label className="mb-1.5 block text-xs">
+						{t("teacher.timetable.filterByCourse")}
+					</Label>
 					<Select
 						value={classCourseId ?? ""}
 						onValueChange={(v) => setClassCourseId(v || null)}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Sélectionner un cours" />
+							<SelectValue placeholder={t("teacher.timetable.selectCourse")} />
 						</SelectTrigger>
 						<SelectContent>
 							{classCourses.map((cc) => (
@@ -272,10 +316,9 @@ export default function TimetableManagement() {
 					<EmptyHeader>
 						<Calendar className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>Sélectionnez un cours</EmptyTitle>
+					<EmptyTitle>{t("teacher.timetable.selectCourse")}</EmptyTitle>
 					<EmptyDescription>
-						Choisissez une année académique et un cours pour voir et gérer ses
-						sessions.
+						{t("teacher.timetable.selectCourseDesc")}
 					</EmptyDescription>
 				</Empty>
 			) : sessions.length === 0 && !sessionsQuery.isPending ? (
@@ -283,9 +326,9 @@ export default function TimetableManagement() {
 					<EmptyHeader>
 						<Calendar className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>Aucune session</EmptyTitle>
+					<EmptyTitle>{t("teacher.timetable.noSessions")}</EmptyTitle>
 					<EmptyDescription>
-						Ce cours n'a pas encore de sessions programmées.
+						{t("teacher.timetable.noSessionsDesc")}
 					</EmptyDescription>
 				</Empty>
 			) : (
@@ -332,12 +375,14 @@ export default function TimetableManagement() {
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
 						<DialogTitle>
-							{editingSession ? "Modifier la session" : "Nouvelle session"}
+							{editingSession
+								? t("teacher.timetable.editSession")
+								: t("teacher.timetable.newSession")}
 						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 py-2">
 						<div>
-							<Label>Jour</Label>
+							<Label>{t("teacher.timetable.day")}</Label>
 							<Select
 								value={form.dayOfWeek}
 								onValueChange={(v) => setForm((f) => ({ ...f, dayOfWeek: v }))}
@@ -356,7 +401,7 @@ export default function TimetableManagement() {
 						</div>
 						<div className="grid grid-cols-2 gap-3">
 							<div>
-								<Label>Début</Label>
+								<Label>{t("teacher.timetable.startTime")}</Label>
 								<Input
 									type="time"
 									className="mt-1"
@@ -367,7 +412,7 @@ export default function TimetableManagement() {
 								/>
 							</div>
 							<div>
-								<Label>Fin</Label>
+								<Label>{t("teacher.timetable.endTime")}</Label>
 								<Input
 									type="time"
 									className="mt-1"
@@ -379,22 +424,24 @@ export default function TimetableManagement() {
 							</div>
 						</div>
 						<div>
-							<Label>Salle (optionnel)</Label>
+							<Label>{t("teacher.timetable.room")}</Label>
 							<Select
 								value={form.roomId}
 								onValueChange={(v) => setForm((f) => ({ ...f, roomId: v }))}
 							>
 								<SelectTrigger className="mt-1">
-									<SelectValue placeholder="Aucune salle" />
+									<SelectValue placeholder={t("teacher.timetable.noRoom")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">Aucune salle</SelectItem>
+									<SelectItem value={NO_ROOM_SENTINEL}>
+										{t("teacher.timetable.noRoom")}
+									</SelectItem>
 									{activeRooms.map((r) => (
 										<SelectItem key={r.id} value={r.id}>
 											{r.name}
 											{r.capacity && (
 												<span className="ml-1 text-muted-foreground text-xs">
-													({r.capacity} places)
+													({r.capacity} {t("teacher.rooms.seats")})
 												</span>
 											)}
 										</SelectItem>
@@ -405,13 +452,15 @@ export default function TimetableManagement() {
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-							Annuler
+							{t("teacher.timetable.cancel")}
 						</Button>
 						<Button
 							onClick={handleSubmit}
 							disabled={createMutation.isPending || updateMutation.isPending}
 						>
-							{editingSession ? "Enregistrer" : "Créer"}
+							{editingSession
+								? t("teacher.timetable.save")
+								: t("teacher.timetable.create")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

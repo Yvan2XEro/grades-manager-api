@@ -3,7 +3,6 @@ import {
 	adminProcedure,
 	router as createRouter,
 	gradingProcedure,
-	protectedProcedure,
 } from "@/lib/trpc";
 import * as service from "./attendance.service";
 import {
@@ -28,14 +27,14 @@ export const router = createRouter({
 		),
 
 	/** Get one session with its full roster of records. */
-	getSession: protectedProcedure
+	getSession: gradingProcedure
 		.input(getSessionSchema)
 		.query(({ ctx, input }) =>
 			service.getSession(input.id, ctx.institution.id),
 		),
 
 	/** List sessions (optionally filtered by classCourse, year, date range). */
-	listSessions: protectedProcedure
+	listSessions: gradingProcedure
 		.input(listSessionsSchema)
 		.query(({ ctx, input }) => service.listSessions(ctx.institution.id, input)),
 
@@ -86,7 +85,7 @@ export const router = createRouter({
 		}),
 
 	/** Per-student attendance rates for a class course. */
-	getAttendanceRates: protectedProcedure
+	getAttendanceRates: gradingProcedure
 		.input(attendanceRatesSchema)
 		.query(({ ctx, input }) =>
 			service.getAttendanceRates(
@@ -97,14 +96,14 @@ export const router = createRouter({
 		),
 
 	/** Active student roster for a class course. */
-	getRoster: protectedProcedure
+	getRoster: gradingProcedure
 		.input(z.object({ classCourseId: z.string() }))
 		.query(({ ctx, input }) =>
 			service.getRoster(input.classCourseId, ctx.institution.id),
 		),
 
 	/** Check attendance eligibility for a student in a class course. */
-	checkEligibility: protectedProcedure
+	checkEligibility: gradingProcedure
 		.input(eligibilityCheckSchema)
 		.query(({ ctx, input }) =>
 			service.checkAttendanceEligibility(

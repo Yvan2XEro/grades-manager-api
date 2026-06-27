@@ -48,18 +48,29 @@ export const router = createRouter({
 	),
 
 	myTeacherTimetable: protectedProcedure
-		.input(z.object({ academicYearId: z.string().optional() }))
+		.input(
+			z.object({
+				academicYearId: z.string().optional(),
+				semesterId: z.string().optional(),
+			}),
+		)
 		.query(({ ctx, input }) => {
 			if (!ctx.profile?.id) return [];
 			return service.getTeacherTimetable(
 				ctx.profile.id,
 				ctx.institution.id,
 				input.academicYearId,
+				input.semesterId,
 			);
 		}),
 
 	myStudentTimetable: protectedProcedure
-		.input(z.object({ academicYearId: z.string().optional() }))
+		.input(
+			z.object({
+				academicYearId: z.string().optional(),
+				semesterId: z.string().optional(),
+			}),
+		)
 		.query(async ({ ctx, input }) => {
 			if (!ctx.profile?.id) return [];
 			// ctx.profile.id is domainUser.id; studentCourseEnrollments references students.id
@@ -75,6 +86,7 @@ export const router = createRouter({
 				student.id,
 				ctx.institution.id,
 				input.academicYearId,
+				input.semesterId,
 			);
 		}),
 

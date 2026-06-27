@@ -4,12 +4,16 @@ import * as repo from "./timetable.repo";
 
 async function resolveClassCourseInfo(
 	classCourseId: string,
+	institutionId: string,
 ): Promise<{ teacherId?: string; classId?: string }> {
 	const { db } = await import("@/db");
-	const { eq } = await import("drizzle-orm");
+	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
 	const cc = await db.query.classCourses.findFirst({
-		where: eq(schema.classCourses.id, classCourseId),
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
 		columns: { teacher: true, class: true },
 	});
 	return {
@@ -19,15 +23,20 @@ async function resolveClassCourseInfo(
 }
 
 async function resolveRoomName(
-	roomId?: string,
-	fallback?: string,
+	roomId: string | undefined,
+	fallback: string | undefined,
+	institutionId: string,
 ): Promise<string | undefined> {
 	if (!roomId) return fallback;
 	const { db } = await import("@/db");
-	const { eq } = await import("drizzle-orm");
+	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
 	const room = await db.query.rooms.findFirst({
-		where: eq(schema.rooms.id, roomId),
+		where: and(
+			eq(schema.rooms.id, roomId),
+			eq(schema.rooms.institutionId, institutionId),
+			eq(schema.rooms.isActive, true),
+		),
 		columns: { name: true },
 	});
 	return room?.name ?? fallback;
@@ -44,13 +53,19 @@ async function checkRoomCapacity(
 	const schema = await import("@/db/schema/app-schema");
 
 	const room = await db.query.rooms.findFirst({
-		where: eq(schema.rooms.id, roomId),
+		where: and(
+			eq(schema.rooms.id, roomId),
+			eq(schema.rooms.institutionId, institutionId),
+		),
 		columns: { capacity: true },
 	});
 	if (!room?.capacity) return null;
 
 	const cc = await db.query.classCourses.findFirst({
-		where: eq(schema.classCourses.id, classCourseId),
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
 		columns: { class: true },
 	});
 	if (!cc?.class) return null;
@@ -93,8 +108,13 @@ export async function createSession(
 
 	const { teacherId, classId } = await resolveClassCourseInfo(
 		input.classCourseId,
+		institutionId,
 	);
-	const roomName = await resolveRoomName(input.roomId, input.room);
+	const roomName = await resolveRoomName(
+		input.roomId,
+		input.room,
+		institutionId,
+	);
 	const capacityWarning = await checkRoomCapacity(
 		input.roomId,
 		input.classCourseId,
@@ -106,7 +126,13 @@ export async function createSession(
 		input.dayOfWeek,
 		input.startTime,
 		input.endTime,
-		{ room: roomName, roomId: input.roomId, teacherId, classId },
+		{
+			room: roomName,
+			roomId: input.roomId,
+			teacherId,
+			classId,
+			academicYearId: input.academicYearId,
+		},
 	);
 
 	if (conflicts.length > 0) {
@@ -153,6 +179,7 @@ export async function updateSession(
 	const resolvedRoom = await resolveRoomName(
 		nextRoomId ?? undefined,
 		nextRoomName ?? undefined,
+		institutionId,
 	);
 
 	if (nextStart >= nextEnd) {
@@ -164,6 +191,7 @@ export async function updateSession(
 
 	const { teacherId, classId } = await resolveClassCourseInfo(
 		existing.classCourseId,
+		institutionId,
 	);
 	const capacityWarning = await checkRoomCapacity(
 		nextRoomId ?? undefined,
@@ -171,7 +199,7 @@ export async function updateSession(
 		institutionId,
 	);
 
-	// Check conflicts BEFORE mutating
+	// Check conflicts BEFORE mutating, scoped to the same academic year
 	const conflicts = await repo.findConflicts(
 		institutionId,
 		nextDay,
@@ -183,6 +211,7 @@ export async function updateSession(
 			teacherId,
 			classId,
 			excludeId: input.id,
+			academicYearId: existing.academicYearId,
 		},
 	);
 
@@ -228,6 +257,7 @@ export async function getTeacherTimetable(
 	teacherId: string,
 	institutionId: string,
 	academicYearId?: string,
+	semesterId?: string,
 ) {
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
@@ -250,6 +280,7 @@ export async function getTeacherTimetable(
 	return repo.listByClassCourseIds(
 		filtered.map((cc) => cc.id),
 		institutionId,
+		semesterId,
 	);
 }
 
@@ -257,6 +288,7 @@ export async function getStudentTimetable(
 	studentId: string,
 	institutionId: string,
 	academicYearId?: string,
+	semesterId?: string,
 ) {
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
@@ -280,6 +312,7 @@ export async function getStudentTimetable(
 	return repo.listByClassCourseIds(
 		enrollments.map((e) => e.classCourseId),
 		institutionId,
+		semesterId,
 	);
 }
 
@@ -331,10 +364,12 @@ async function validateImportRow(
 			where: and(
 				eq(schema.rooms.id, row.roomId),
 				eq(schema.rooms.institutionId, institutionId),
+				eq(schema.rooms.isActive, true),
 			),
 			columns: { id: true },
 		});
-		if (!room) return `roomId "${row.roomId}" not found in this institution`;
+		if (!room)
+			return `roomId "${row.roomId}" not found or inactive in this institution`;
 	}
 
 	return null;
@@ -348,12 +383,66 @@ export async function previewBulkImport(
 	const errors: { rowIndex: number; reason: string }[] = [];
 
 	for (let i = 0; i < rows.length; i++) {
-		const error = await validateImportRow(rows[i], institutionId);
-		if (error) {
-			errors.push({ rowIndex: i + 1, reason: error });
-		} else {
-			valid.push({ ...rows[i], rowIndex: i + 1 });
+		const row = rows[i];
+		const rowNum = i + 1;
+
+		// Format + DB existence validation
+		const validationError = await validateImportRow(row, institutionId);
+		if (validationError) {
+			errors.push({ rowIndex: rowNum, reason: validationError });
+			continue;
 		}
+
+		const day = row.dayOfWeek as DayOfWeek;
+
+		// Duplicate check (same as execute)
+		const duplicate = await repo.findDuplicate(
+			institutionId,
+			row.classCourseId,
+			day,
+			row.startTime,
+			row.endTime,
+		);
+		if (duplicate) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: `Duplicate session already exists on ${day} ${row.startTime}–${row.endTime}`,
+			});
+			continue;
+		}
+
+		// Conflict check (same as execute)
+		const { teacherId, classId } = await resolveClassCourseInfo(
+			row.classCourseId,
+			institutionId,
+		);
+		const roomName = await resolveRoomName(row.roomId, row.room, institutionId);
+		const academicYearId = await resolveAcademicYearFromClassCourse(
+			row.classCourseId,
+			institutionId,
+		);
+		const conflicts = await repo.findConflicts(
+			institutionId,
+			day,
+			row.startTime,
+			row.endTime,
+			{
+				room: roomName,
+				roomId: row.roomId,
+				teacherId,
+				classId,
+				academicYearId,
+			},
+		);
+		if (conflicts.length > 0) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: `Conflict detected: ${conflicts.map((c) => c.conflictType).join(", ")} overlap`,
+			});
+			continue;
+		}
+
+		valid.push({ ...row, rowIndex: rowNum });
 	}
 
 	return { valid, errors, totalRows: rows.length };
@@ -380,6 +469,10 @@ export async function executeBulkImport(
 		}
 
 		const day = row.dayOfWeek as DayOfWeek;
+		const academicYearId = await resolveAcademicYearFromClassCourse(
+			row.classCourseId,
+			institutionId,
+		);
 
 		// Duplicate check
 		const duplicate = await repo.findDuplicate(
@@ -401,17 +494,24 @@ export async function executeBulkImport(
 			continue;
 		}
 
-		// Conflict check (teacher, room, class)
+		// Conflict check (teacher, room, class) scoped to academic year
 		const { teacherId, classId } = await resolveClassCourseInfo(
 			row.classCourseId,
+			institutionId,
 		);
-		const roomName = await resolveRoomName(row.roomId, row.room);
+		const roomName = await resolveRoomName(row.roomId, row.room, institutionId);
 		const conflicts = await repo.findConflicts(
 			institutionId,
 			day,
 			row.startTime,
 			row.endTime,
-			{ room: roomName, roomId: row.roomId, teacherId, classId },
+			{
+				room: roomName,
+				roomId: row.roomId,
+				teacherId,
+				classId,
+				academicYearId,
+			},
 		);
 		if (conflicts.length > 0) {
 			errors.push({
@@ -424,10 +524,7 @@ export async function executeBulkImport(
 		await repo.create({
 			institutionId,
 			classCourseId: row.classCourseId,
-			academicYearId: await resolveAcademicYearFromClassCourse(
-				row.classCourseId,
-				institutionId,
-			),
+			academicYearId,
 			dayOfWeek: day,
 			startTime: row.startTime,
 			endTime: row.endTime,

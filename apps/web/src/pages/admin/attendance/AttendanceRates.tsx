@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Download } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import { Button } from "../../../components/ui/button";
@@ -28,6 +29,7 @@ type ClassCourse = {
 };
 
 export default function AttendanceRates() {
+	const { t } = useTranslation();
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 
@@ -80,18 +82,19 @@ export default function AttendanceRates() {
 	function handleExport() {
 		if (!rates) return;
 		const rows = rates.students.map((s) => ({
-			"N° Inscription": studentNumbers.get(s.studentId) ?? s.studentId,
-			Nom: studentNames.get(s.studentId) ?? s.studentId,
-			"Présent(s)": s.present,
-			"Retard(s)": s.late,
-			"Absent(s)": s.absent,
-			"Excusé(s)": s.excused,
-			"Total séances": s.totalSessions,
-			"Taux (%)": s.rate,
+			[t("attendanceRates.regNumber")]:
+				studentNumbers.get(s.studentId) ?? s.studentId,
+			[t("attendanceRates.name")]: studentNames.get(s.studentId) ?? s.studentId,
+			[t("attendanceRates.present")]: s.present,
+			[t("attendanceRates.late")]: s.late,
+			[t("attendanceRates.absent")]: s.absent,
+			[t("attendanceRates.excused")]: s.excused,
+			[t("attendanceRates.totalSessions")]: s.totalSessions,
+			[t("attendanceRates.ratePercent")]: s.rate,
 		}));
 		const ws = XLSX.utils.json_to_sheet(rows);
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Taux de présence");
+		XLSX.utils.book_append_sheet(wb, ws, t("attendanceRates.title"));
 		XLSX.writeFile(wb, "taux-presence.xlsx");
 	}
 
@@ -103,22 +106,26 @@ export default function AttendanceRates() {
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
 				<div>
-					<h1 className="font-semibold text-xl">Taux de présence</h1>
+					<h1 className="font-semibold text-xl">
+						{t("attendanceRates.title")}
+					</h1>
 					<p className="text-muted-foreground text-sm">
-						Rapport par étudiant pour chaque cours
+						{t("attendanceRates.subtitle")}
 					</p>
 				</div>
 				{rates && rates.students.length > 0 && (
 					<Button variant="outline" size="sm" onClick={handleExport}>
 						<Download className="mr-1.5 h-4 w-4" />
-						Exporter Excel
+						{t("attendanceRates.export")}
 					</Button>
 				)}
 			</div>
 
 			<div className="mb-6 flex flex-wrap gap-4">
 				<div className="w-64">
-					<Label className="mb-1.5 block text-xs">Année académique</Label>
+					<Label className="mb-1.5 block text-xs">
+						{t("attendanceManagement.filterByYear")}
+					</Label>
 					<AcademicYearSelect
 						value={academicYearId}
 						onChange={(v) => {
@@ -128,13 +135,17 @@ export default function AttendanceRates() {
 					/>
 				</div>
 				<div className="w-72">
-					<Label className="mb-1.5 block text-xs">Cours</Label>
+					<Label className="mb-1.5 block text-xs">
+						{t("attendanceManagement.filterByCourse")}
+					</Label>
 					<Select
 						value={classCourseId ?? ""}
 						onValueChange={(v) => setClassCourseId(v || null)}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Sélectionner un cours" />
+							<SelectValue
+								placeholder={t("attendanceManagement.filterByCourse")}
+							/>
 						</SelectTrigger>
 						<SelectContent>
 							{classCourses.map((cc) => (
@@ -157,53 +168,54 @@ export default function AttendanceRates() {
 					<EmptyHeader>
 						<BarChart3 className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>Sélectionnez un cours</EmptyTitle>
-					<EmptyDescription>
-						Les taux de présence s'affichent après sélection du cours.
-					</EmptyDescription>
+					<EmptyTitle>{t("attendanceRates.title")}</EmptyTitle>
+					<EmptyDescription>{t("attendanceRates.empty")}</EmptyDescription>
 				</Empty>
 			) : ratesQuery.isPending ? (
-				<p className="text-muted-foreground text-sm">Chargement…</p>
+				<p className="text-muted-foreground text-sm">…</p>
 			) : !rates || rates.students.length === 0 ? (
 				<Empty>
 					<EmptyHeader>
 						<BarChart3 className="h-8 w-8 text-muted-foreground/40" />
 					</EmptyHeader>
-					<EmptyTitle>Aucune donnée</EmptyTitle>
-					<EmptyDescription>
-						Aucune séance de présence enregistrée pour ce cours.
-					</EmptyDescription>
+					<EmptyTitle>{t("attendanceRates.title")}</EmptyTitle>
+					<EmptyDescription>{t("attendanceRates.noData")}</EmptyDescription>
 				</Empty>
 			) : (
 				<>
 					<p className="mb-3 text-muted-foreground text-sm">
-						{courseLabel} — {rates.totalSessions} séance(s) au total
+						{courseLabel} — {rates.totalSessions}{" "}
+						{t("attendanceRates.sessions")}
 					</p>
 					<div className="overflow-hidden rounded-md border">
 						<table className="w-full text-sm">
 							<thead className="bg-muted/50">
 								<tr>
-									<th className="px-4 py-2 text-left font-medium">Étudiant</th>
 									<th className="px-4 py-2 text-left font-medium">
-										N° Inscription
+										{t("attendanceRates.student")}
+									</th>
+									<th className="px-4 py-2 text-left font-medium">
+										{t("attendanceRates.regNumber")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-green-700">
-										Présent
+										{t("attendanceManagement.status.present")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-yellow-700">
-										Retard
+										{t("attendanceManagement.status.late")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-red-700">
-										Absent
+										{t("attendanceManagement.status.absent")}
 									</th>
 									<th className="px-4 py-2 text-center font-medium text-blue-700">
-										Excusé
+										{t("attendanceManagement.status.excused")}
 									</th>
-									<th className="px-4 py-2 text-center font-medium">Taux</th>
+									<th className="px-4 py-2 text-center font-medium">
+										{t("attendanceRates.rate")}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{rates.students
+								{[...rates.students]
 									.sort((a, b) => b.rate - a.rate)
 									.map((s, i) => (
 										<tr

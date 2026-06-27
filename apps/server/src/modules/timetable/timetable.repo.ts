@@ -97,13 +97,20 @@ export async function findConflicts(
 		teacherId?: string;
 		classId?: string;
 		excludeId?: string;
+		academicYearId?: string;
 	},
 ) {
+	const conditions = [
+		eq(schema.courseSessions.institutionId, institutionId),
+		eq(schema.courseSessions.dayOfWeek, dayOfWeek),
+	];
+	if (opts.academicYearId)
+		conditions.push(
+			eq(schema.courseSessions.academicYearId, opts.academicYearId),
+		);
+
 	const all = await db.query.courseSessions.findMany({
-		where: and(
-			eq(schema.courseSessions.institutionId, institutionId),
-			eq(schema.courseSessions.dayOfWeek, dayOfWeek),
-		),
+		where: and(...conditions),
 		with: {
 			classCourse: {
 				with: { classRef: true, courseRef: true },
@@ -177,14 +184,18 @@ export async function findDuplicate(
 export async function listByClassCourseIds(
 	classCourseIds: string[],
 	institutionId: string,
+	semesterId?: string,
 ) {
 	if (classCourseIds.length === 0) return [];
 	const { inArray } = await import("drizzle-orm");
+	const conditions = [
+		eq(schema.courseSessions.institutionId, institutionId),
+		inArray(schema.courseSessions.classCourseId, classCourseIds),
+	];
+	if (semesterId)
+		conditions.push(eq(schema.courseSessions.semesterId, semesterId));
 	return db.query.courseSessions.findMany({
-		where: and(
-			eq(schema.courseSessions.institutionId, institutionId),
-			inArray(schema.courseSessions.classCourseId, classCourseIds),
-		),
+		where: and(...conditions),
 		with: {
 			classCourse: { with: { classRef: true, courseRef: true } },
 		},

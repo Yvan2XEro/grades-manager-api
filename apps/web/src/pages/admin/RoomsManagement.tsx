@@ -206,7 +206,9 @@ export default function RoomsManagement() {
 								<TableCell>{room.name}</TableCell>
 								<TableCell>
 									{room.capacity ? (
-										<Badge variant="outline">{room.capacity} places</Badge>
+										<Badge variant="outline">
+											{room.capacity} {t("teacher.rooms.seats")}
+										</Badge>
 									) : (
 										<span className="text-muted-foreground">—</span>
 									)}

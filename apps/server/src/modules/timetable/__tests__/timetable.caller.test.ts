@@ -96,16 +96,19 @@ describe("timetable router", () => {
 		).rejects.toHaveProperty("code", "CONFLICT");
 	});
 
-	it("blocks teacher double-booking", async () => {
+	it("blocks teacher double-booking within the same academic year", async () => {
 		const admin = createCaller(asAdmin());
 		const cc1 = await createClassCourse();
-		const cc2 = await createClassCourse({ teacher: cc1.teacher });
-		const ay1 = await getAcademicYear(cc1.id);
-		const ay2 = await getAcademicYear(cc2.id);
+		// Same teacher, same class (same academic year) — different course
+		const cc2 = await createClassCourse({
+			teacher: cc1.teacher,
+			class: cc1.class,
+		});
+		const academicYearId = await getAcademicYear(cc1.id);
 
 		await admin.timetable.create({
 			classCourseId: cc1.id,
-			academicYearId: ay1,
+			academicYearId,
 			dayOfWeek: "wed",
 			startTime: "08:00",
 			endTime: "10:00",
@@ -114,7 +117,7 @@ describe("timetable router", () => {
 		await expect(
 			admin.timetable.create({
 				classCourseId: cc2.id,
-				academicYearId: ay2,
+				academicYearId,
 				dayOfWeek: "wed",
 				startTime: "08:30",
 				endTime: "10:30",

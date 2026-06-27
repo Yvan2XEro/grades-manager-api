@@ -407,7 +407,22 @@
       "room": "Room",
       "noRoom": "No room",
       "export": "Export",
-      "import": "Import",
+      "import": {
+        "title": "Import Timetable",
+        "description": "Upload a CSV file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).",
+        "downloadTemplate": "Download CSV template",
+        "file": "CSV file",
+        "preview": "Preview",
+        "execute": "Import {{count}} session(s)",
+        "skipDuplicates": "Skip existing sessions",
+        "validRows": "valid row(s)",
+        "errorRows": "error(s)",
+        "success": "{{count}} session(s) imported",
+        "row": "Row",
+        "error": "Error",
+        "schedule": "Time",
+        "noErrors": "No errors"
+      },
       "filterByYear": "Filter by year",
       "filterByCourse": "Filter by course",
       "conflicts": {
@@ -415,21 +430,32 @@
         "teacher": "Teacher conflict",
         "class": "Class conflict"
       },
-      "import": {
-        "title": "Bulk Import",
-        "description": "Upload a CSV or Excel file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).",
-        "preview": "Preview",
-        "execute": "Import",
-        "skipDuplicates": "Skip duplicates",
-        "validRows": "valid row(s)",
-        "errorRows": "error(s)",
-        "success": "{{count}} session(s) imported",
-        "noErrors": "No errors"
-      },
       "toast": {
         "created": "Session created",
         "updated": "Session updated",
         "deleted": "Session deleted"
+      },
+      "myTitle": "My Timetable",
+      "mySubtitle": "Your weekly course sessions",
+      "studentSubtitle": "Your weekly classes",
+      "studentNoSessionsDesc": "Your weekly classes will appear here once scheduled.",
+      "noSessions": "No sessions",
+      "noSessionsDesc": "No sessions scheduled for this period.",
+      "selectCourse": "Select a course",
+      "selectCourseDesc": "Choose an academic year and a course to view and manage its sessions.",
+      "filterBySemester": "Semester",
+      "importCsv": "Import CSV",
+      "capacityWarning": "Room capacity warning: {{classSize}} students for {{roomCapacity}} seats",
+      "course": "Course",
+      "class": "Class",
+      "days": {
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday",
+        "sun": "Sunday"
       }
     },
     "rooms": {
@@ -4481,5 +4507,18 @@
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} items",
       "failedSubtitle": "{{jobType}} — {{error}}"
     }
+  },
+  "attendanceRates": {
+    "regNumber": "Reg. N°",
+    "sessions": "session(s)",
+    "present": "Present",
+    "late": "Late",
+    "absent": "Absent",
+    "excused": "Excused",
+    "totalSessions": "Total sessions",
+    "ratePercent": "Rate (%)",
+    "name": "Name",
+    "empty": "Select a course to view attendance rates.",
+    "noData": "No attendance sessions recorded for this course."
   }
 }

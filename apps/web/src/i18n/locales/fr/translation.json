@@ -3673,7 +3673,22 @@
       "room": "Salle",
       "noRoom": "Aucune salle",
       "export": "Exporter",
-      "import": "Importer",
+      "import": {
+        "title": "Importer un emploi du temps",
+        "description": "Téléchargez le modèle CSV, remplissez-le, puis importez-le.",
+        "downloadTemplate": "Télécharger le modèle CSV",
+        "file": "Fichier CSV",
+        "preview": "Aperçu",
+        "execute": "Importer {{count}} session(s)",
+        "skipDuplicates": "Ignorer les sessions déjà existantes",
+        "validRows": "valide(s)",
+        "errorRows": "erreur(s)",
+        "success": "{{count}} session(s) créée(s)",
+        "row": "Ligne",
+        "error": "Erreur",
+        "schedule": "Horaire",
+        "noErrors": "Aucune erreur"
+      },
       "filterByYear": "Filtrer par année",
       "filterByCourse": "Filtrer par cours",
       "conflicts": {
@@ -3696,6 +3711,28 @@
         "created": "Séance créée",
         "updated": "Séance mise à jour",
         "deleted": "Séance supprimée"
+      },
+      "myTitle": "Mon emploi du temps",
+      "mySubtitle": "Vos sessions de cours hebdomadaires",
+      "studentSubtitle": "Vos cours de la semaine",
+      "studentNoSessionsDesc": "Vos cours hebdomadaires apparaîtront ici une fois programmés.",
+      "noSessions": "Aucune session",
+      "noSessionsDesc": "Aucune session programmée pour cette période.",
+      "selectCourse": "Sélectionnez un cours",
+      "selectCourseDesc": "Choisissez une année académique et un cours pour voir et gérer ses sessions.",
+      "filterBySemester": "Semestre",
+      "importCsv": "Importer CSV",
+      "capacityWarning": "Attention capacité : {{classSize}} étudiants pour {{roomCapacity}} places",
+      "course": "Cours",
+      "class": "Classe",
+      "days": {
+        "mon": "Lundi",
+        "tue": "Mardi",
+        "wed": "Mercredi",
+        "thu": "Jeudi",
+        "fri": "Vendredi",
+        "sat": "Samedi",
+        "sun": "Dimanche"
       }
     },
     "rooms": {
@@ -4489,5 +4526,18 @@
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} éléments",
       "failedSubtitle": "{{jobType}} — {{error}}"
     }
+  },
+  "attendanceRates": {
+    "regNumber": "N° Inscription",
+    "sessions": "séance(s)",
+    "present": "Présent",
+    "late": "Retard",
+    "absent": "Absent",
+    "excused": "Excusé",
+    "totalSessions": "Total séances",
+    "ratePercent": "Taux (%)",
+    "name": "Nom",
+    "empty": "Sélectionnez un cours pour afficher les taux de présence.",
+    "noData": "Aucune séance de présence enregistrée pour ce cours."
   }
 }
