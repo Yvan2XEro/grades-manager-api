@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import {
 	Table,
@@ -34,6 +35,7 @@ export default function FeeStructureDetail() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const [showAddInstallment, setShowAddInstallment] = useState(false);
+	const [showImpact, setShowImpact] = useState(false);
 
 	const { data: structure, isLoading } = useQuery(
 		trpc.feeClearance.getStructure.queryOptions({ id: id! }),
@@ -200,6 +202,14 @@ export default function FeeStructureDetail() {
 					setShowAddInstallment(false);
 				}}
 			/>
+
+			{/* Impact preview */}
+			<StructureImpactPanel
+				feeStructureId={id!}
+				open={showImpact}
+				onToggle={() => setShowImpact((v) => !v)}
+				currency={structure.currency}
+			/>
 		</div>
 	);
 }
@@ -289,5 +299,143 @@ function AddInstallmentDialog({
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
+	);
+}
+
+function StructureImpactPanel({
+	feeStructureId,
+	open,
+	onToggle,
+	currency: _currency,
+}: {
+	feeStructureId: string;
+	open: boolean;
+	onToggle: () => void;
+	currency: string;
+}) {
+	const { t } = useTranslation();
+
+	const { data, isLoading } = useQuery({
+		...trpc.feeClearance.previewStructureImpact.queryOptions({
+			feeStructureId,
+		}),
+		enabled: open,
+	});
+
+	return (
+		<div className="space-y-3 rounded-lg border p-4">
+			<div className="flex items-center justify-between">
+				<h3 className="font-semibold text-sm">
+					{t("feeClearance.structures.impact.title", {
+						defaultValue: "Impact de la structure",
+					})}
+				</h3>
+				<Button size="sm" variant="outline" onClick={onToggle}>
+					{!open && <Eye className="mr-1.5 h-3.5 w-3.5" />}
+					{open
+						? t("common.hide", { defaultValue: "Masquer" })
+						: t("feeClearance.structures.impact.preview", {
+								defaultValue: "Prévisualiser",
+							})}
+				</Button>
+			</div>
+
+			{open &&
+				(isLoading ? (
+					<div className="flex justify-center py-4">
+						<Spinner />
+					</div>
+				) : !data ? null : (
+					<>
+						<div className="grid grid-cols-3 gap-3 rounded-md bg-muted/40 p-3 text-sm">
+							<div>
+								<p className="text-muted-foreground text-xs">
+									{t("feeClearance.structures.impact.totalStudents", {
+										defaultValue: "Étudiants dans le scope",
+									})}
+								</p>
+								<p className="font-semibold text-lg">
+									{data.totals.totalStudents}
+								</p>
+							</div>
+							<div>
+								<p className="text-muted-foreground text-xs">
+									{t("feeClearance.structures.impact.toAssign", {
+										defaultValue: "À assigner",
+									})}
+								</p>
+								<p className="font-semibold text-emerald-600 text-lg">
+									{data.totals.toAssign}
+								</p>
+							</div>
+							<div>
+								<p className="text-muted-foreground text-xs">
+									{t("feeClearance.structures.impact.alreadyAssigned", {
+										defaultValue: "Déjà assignés",
+									})}
+								</p>
+								<p className="font-semibold text-lg text-muted-foreground">
+									{data.totals.alreadyAssigned}
+								</p>
+							</div>
+						</div>
+
+						{data.classes.length === 0 ? (
+							<p className="text-muted-foreground text-sm">
+								{t("feeClearance.structures.impact.noClasses", {
+									defaultValue:
+										"Aucune classe ne correspond au scope de cette structure.",
+								})}
+							</p>
+						) : (
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>
+											{t("feeClearance.structures.impact.class", {
+												defaultValue: "Classe",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("feeClearance.structures.impact.toAssign", {
+												defaultValue: "À assigner",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("feeClearance.structures.impact.alreadyAssigned", {
+												defaultValue: "Déjà assignés",
+											})}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.total", { defaultValue: "Total" })}
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{data.classes.map((c) => (
+										<TableRow key={c.classId}>
+											<TableCell>
+												<span className="font-medium">{c.className}</span>
+												<span className="ml-1.5 text-muted-foreground text-xs">
+													{c.classCode}
+												</span>
+											</TableCell>
+											<TableCell className="text-right text-emerald-600">
+												{c.toAssign}
+											</TableCell>
+											<TableCell className="text-right text-muted-foreground">
+												{c.alreadyAssigned}
+											</TableCell>
+											<TableCell className="text-right">
+												{c.totalStudents}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						)}
+					</>
+				))}
+		</div>
 	);
 }

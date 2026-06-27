@@ -563,3 +563,24 @@ export async function findClassById(classId: string, institutionId: string) {
 		),
 	});
 }
+
+export async function findClassesByScope(opts: {
+	institutionId: string;
+	academicYearId: string;
+	programId?: string | null;
+	cycleLevelId?: string | null;
+}) {
+	const conditions = [
+		eq(schema.classes.institutionId, opts.institutionId),
+		eq(schema.classes.academicYear, opts.academicYearId),
+	];
+	if (opts.programId)
+		conditions.push(eq(schema.classes.program, opts.programId));
+	if (opts.cycleLevelId)
+		conditions.push(eq(schema.classes.cycleLevelId, opts.cycleLevelId));
+
+	return db.query.classes.findMany({
+		where: and(...conditions),
+		columns: { id: true, name: true, code: true },
+	});
+}

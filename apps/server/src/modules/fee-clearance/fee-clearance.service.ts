@@ -622,6 +622,62 @@ export async function bulkAssignProgram(
 	);
 }
 
+// ── Structure-level impact preview ───────────────────────────────────
+
+export async function previewStructureImpact(
+	feeStructureId: string,
+	institutionId: string,
+) {
+	const structure = await repo.findFeeStructureById(
+		feeStructureId,
+		institutionId,
+	);
+	if (!structure) throw notFound("Fee structure not found");
+
+	const classes = await repo.findClassesByScope({
+		institutionId,
+		academicYearId: structure.academicYearId,
+		programId: structure.programId,
+		cycleLevelId: structure.cycleLevelId,
+	});
+
+	const classPreviews = await Promise.all(
+		classes.map(async (klass) => {
+			const students = await repo.findStudentsByClass(klass.id);
+			let toAssign = 0;
+			let alreadyAssigned = 0;
+			for (const student of students) {
+				const existing = await repo.findAssignmentForStudent(
+					student.id,
+					structure.academicYearId,
+					institutionId,
+				);
+				if (existing) alreadyAssigned++;
+				else toAssign++;
+			}
+			return {
+				classId: klass.id,
+				className: klass.name,
+				classCode: klass.code,
+				totalStudents: students.length,
+				toAssign,
+				alreadyAssigned,
+			};
+		}),
+	);
+
+	const totals = classPreviews.reduce(
+		(acc, c) => ({
+			toAssign: acc.toAssign + c.toAssign,
+			alreadyAssigned: acc.alreadyAssigned + c.alreadyAssigned,
+			totalStudents: acc.totalStudents + c.totalStudents,
+		}),
+		{ toAssign: 0, alreadyAssigned: 0, totalStudents: 0 },
+	);
+
+	return { classes: classPreviews, totals };
+}
+
 // ── Academic year mode ────────────────────────────────────────────────
 
 export async function previewBulkAssignYear(

@@ -39,6 +39,7 @@ import {
 	previewBulkAssignSchema,
 	previewBulkAssignStudentsSchema,
 	previewBulkAssignYearSchema,
+	previewStructureImpactSchema,
 	recordPaymentSchema,
 	toggleGateSchema,
 	updateDiscountSchema,
@@ -157,6 +158,12 @@ export const feeClearanceRouter = router({
 		.input(previewBulkAssignStudentsSchema)
 		.query(({ ctx, input }) =>
 			service.previewBulkAssignStudents(ctx.institution.id, input),
+		),
+
+	previewStructureImpact: feeManageProcedure
+		.input(previewStructureImpactSchema)
+		.query(({ ctx, input }) =>
+			service.previewStructureImpact(input.feeStructureId, ctx.institution.id),
 		),
 
 	bulkAssignStudents: feeManageProcedure
