@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
+import type { TransactionClient } from "../_shared/db-transaction";
 
 export async function create(data: schema.NewExam) {
 	const [item] = await db.insert(schema.exams).values(data).returning();
@@ -23,8 +24,9 @@ export async function update(
 	id: string,
 	data: Partial<schema.NewExam>,
 	institutionId: string,
+	tx?: TransactionClient,
 ) {
-	const [item] = await db
+	const [item] = await (tx ?? db)
 		.update(schema.exams)
 		.set(data)
 		.where(
@@ -195,12 +197,13 @@ export async function setLock(
 	lock: boolean,
 	institutionId: string,
 	options?: { promoteToApproved?: boolean },
+	tx?: TransactionClient,
 ) {
 	const updates: Partial<schema.NewExam> = { isLocked: lock };
 	if (lock && options?.promoteToApproved) {
 		updates.status = "approved";
 	}
-	const [item] = await db
+	const [item] = await (tx ?? db)
 		.update(schema.exams)
 		.set(updates)
 		.where(
@@ -232,8 +235,11 @@ export async function assignScheduleRun(
 
 // ── Audit events ──────────────────────────────────────────────────────────────
 
-export async function insertAuditEvent(data: schema.NewExamAuditEvent) {
-	const [row] = await db
+export async function insertAuditEvent(
+	data: schema.NewExamAuditEvent,
+	tx?: TransactionClient,
+) {
+	const [row] = await (tx ?? db)
 		.insert(schema.examAuditEvents)
 		.values(data)
 		.returning();

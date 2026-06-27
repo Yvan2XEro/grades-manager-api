@@ -633,8 +633,17 @@ describe("exams router", () => {
 	});
 
 	describe("getAuditHistory", () => {
-		it("records submit, approve, and lock events in order", async () => {
-			const admin = createCaller(asAdmin());
+		async function adminWithRealProfile() {
+			const profile = await createDomainUser();
+			return makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			});
+		}
+
+		it("records submit, approve, and lock events with real actor IDs", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
 			const cc = await createClassCourse();
 			const student = await createStudent({ class: cc.class });
 			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
@@ -656,13 +665,21 @@ describe("exams router", () => {
 			expect(history[1].action).toBe("approve");
 			expect(history[2].action).toBe("submit");
 			expect(history[0].fromStatus).toBe("approved");
-			// exam starts as "scheduled" when created via router (admin profile used as schedulerId)
+			// exam starts as "scheduled" because admin profile is used as schedulerId
 			expect(history[2].fromStatus).toBe("scheduled");
 			expect(history[2].toStatus).toBe("submitted");
+			// Real actor must be recorded on every event — not null
+			const actorId = ctx.profile!.id;
+			expect(history[0].actorId).toBe(actorId);
+			expect(history[1].actorId).toBe(actorId);
+			expect(history[2].actorId).toBe(actorId);
+			// Institution scoped
+			expect(history[0].institutionId).toBe(ctx.institution!.id);
 		});
 
-		it("records reject and resubmit events", async () => {
-			const admin = createCaller(asAdmin());
+		it("records reject and resubmit events with real actor", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
 			const cc = await createClassCourse();
 			const student = await createStudent({ class: cc.class });
 			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
@@ -687,6 +704,52 @@ describe("exams router", () => {
 			expect(history[1].action).toBe("reject");
 			expect(history[1].reason).toBe("Missing data");
 			expect(history[2].action).toBe("submit");
+			// Actor recorded on all events
+			expect(history[0].actorId).toBe(ctx.profile!.id);
+			expect(history[1].actorId).toBe(ctx.profile!.id);
+		});
+
+		it("rolls back exam status when audit insert fails (transaction atomicity)", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const cc = await createClassCourse();
+			const student = await createStudent({ class: cc.class });
+			await ensureStudentCourseEnrollment(student.id, cc.id, "active");
+			const exam = await admin.exams.create({
+				name: "Rollback Test",
+				type: "WRITTEN",
+				date: new Date(),
+				percentage: 100,
+				classCourseId: cc.id,
+			});
+
+			const before = await db.query.exams.findFirst({
+				where: eq(schema.exams.id, exam.id),
+			});
+
+			// Simulate a failed transaction: status update + bad audit insert (FK on institutionId)
+			try {
+				await db.transaction(async (tx) => {
+					await tx
+						.update(schema.exams)
+						.set({ status: "submitted" })
+						.where(eq(schema.exams.id, exam.id));
+					await tx.insert(schema.examAuditEvents).values({
+						examId: exam.id,
+						institutionId: "00000000-0000-0000-0000-000000000000", // non-existent FK
+						actorId: null,
+						action: "submit",
+						fromStatus: before!.status,
+						toStatus: "submitted",
+					});
+				});
+			} catch {}
+
+			// Status must be unchanged — the transaction rolled back
+			const after = await db.query.exams.findFirst({
+				where: eq(schema.exams.id, exam.id),
+			});
+			expect(after?.status).toBe(before?.status);
 		});
 	});
 });

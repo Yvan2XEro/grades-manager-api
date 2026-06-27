@@ -208,26 +208,30 @@ export async function submitExam(
 			message: "Exam cannot be submitted in its current status",
 		});
 	}
-	const updated = await repo.update(
-		examId,
-		{
-			status: "submitted",
-			scheduledBy: resolved ?? existing.scheduledBy,
-			scheduledAt: new Date(),
-		},
-		institutionId,
-	);
-	try {
-		await repo.insertAuditEvent({
+	return transaction(async (tx) => {
+		const updated = await repo.update(
 			examId,
+			{
+				status: "submitted",
+				scheduledBy: resolved ?? existing.scheduledBy,
+				scheduledAt: new Date(),
+			},
 			institutionId,
-			actorId: resolved ?? null,
-			action: existing.status === "rejected" ? "resubmit" : "submit",
-			fromStatus: existing.status,
-			toStatus: "submitted",
-		});
-	} catch {}
-	return updated;
+			tx,
+		);
+		await repo.insertAuditEvent(
+			{
+				examId,
+				institutionId,
+				actorId: resolved,
+				action: existing.status === "rejected" ? "resubmit" : "submit",
+				fromStatus: existing.status,
+				toStatus: "submitted",
+			},
+			tx,
+		);
+		return updated;
+	});
 }
 
 export async function validateExam(
@@ -245,28 +249,33 @@ export async function validateExam(
 			message: "Exam must be submitted before approval",
 		});
 	}
-	const updated = await repo.update(
-		examId,
-		{
-			status,
-			validatedBy: resolved,
-			validatedAt: new Date(),
-			rejectionReason: status === "rejected" ? (rejectionReason ?? null) : null,
-		},
-		institutionId,
-	);
-
-	try {
-		await repo.insertAuditEvent({
+	const updated = await transaction(async (tx) => {
+		const upd = await repo.update(
 			examId,
+			{
+				status,
+				validatedBy: resolved,
+				validatedAt: new Date(),
+				rejectionReason:
+					status === "rejected" ? (rejectionReason ?? null) : null,
+			},
 			institutionId,
-			actorId: resolved ?? null,
-			action: status === "approved" ? "approve" : "reject",
-			fromStatus: existing.status,
-			toStatus: status,
-			reason: status === "rejected" ? (rejectionReason ?? null) : null,
-		});
-	} catch {}
+			tx,
+		);
+		await repo.insertAuditEvent(
+			{
+				examId,
+				institutionId,
+				actorId: resolved,
+				action: status === "approved" ? "approve" : "reject",
+				fromStatus: existing.status,
+				toStatus: status,
+				reason: status === "rejected" ? (rejectionReason ?? null) : null,
+			},
+			tx,
+		);
+		return upd;
+	});
 
 	// Notify the teacher — canonical type used by all paths; dedupeKey=examId prevents duplicates
 	void (async () => {
@@ -464,28 +473,30 @@ export async function setLock(
 	// Admin can force-lock from any status — auto-promote to approved to keep
 	// downstream invariants (retake eligibility, grade editing) consistent.
 	const promoteToApproved = lock && existing.status !== "approved" && isAdmin;
-	const result = await repo.setLock(examId, lock, institutionId, {
-		promoteToApproved,
-	});
-	if (lock) {
-		const auditPayload = {
+	const resolvedActor = await resolveDomainUserId(actor?.profileId ?? null);
+	return transaction(async (tx) => {
+		const result = await repo.setLock(
 			examId,
+			lock,
 			institutionId,
-			actorId: actor?.profileId ?? null,
-			action: "lock" as const,
-			fromStatus: existing.status,
-			toStatus: promoteToApproved ? "approved" : existing.status,
-		};
-		try {
-			await repo.insertAuditEvent(auditPayload);
-		} catch {
-			// actorId FK may fail when profile is not persisted; retry anonymously
-			await repo
-				.insertAuditEvent({ ...auditPayload, actorId: null })
-				.catch(() => {});
+			{ promoteToApproved },
+			tx,
+		);
+		if (lock) {
+			await repo.insertAuditEvent(
+				{
+					examId,
+					institutionId,
+					actorId: resolvedActor,
+					action: "lock",
+					fromStatus: existing.status,
+					toStatus: promoteToApproved ? "approved" : existing.status,
+				},
+				tx,
+			);
 		}
-	}
-	return result;
+		return result;
+	});
 }
 
 const DEFAULT_PASSING_GRADE = 10;
