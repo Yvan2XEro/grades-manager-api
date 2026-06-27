@@ -84,15 +84,7 @@ export async function validateGrades(
 		{ examId },
 		approverId,
 	);
-	// Notify the teacher who submitted the exam
-	if (exam.scheduledBy) {
-		notifications
-			.queueInApp(exam.scheduledBy, "grade.approved", {
-				examId,
-				examName: exam.name,
-			})
-			.catch(() => {});
-	}
+	// Teacher notification is handled inside validateExam() with dedupeKey
 	return updated;
 }
 
@@ -171,16 +163,7 @@ export async function rejectGrades(
 		{ examId, rejected: true, reason },
 		rejectorId,
 	);
-	// Notify the teacher who submitted the exam
-	if (exam.scheduledBy) {
-		notifications
-			.queueInApp(exam.scheduledBy, "grade.rejected", {
-				examId,
-				examName: exam.name,
-				reason,
-			})
-			.catch(() => {});
-	}
+	// Teacher notification is handled inside validateExam() with dedupeKey
 	return updated;
 }
 

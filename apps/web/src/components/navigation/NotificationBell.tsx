@@ -23,10 +23,12 @@ import { trpc, trpcClient } from "@/utils/trpc";
 
 // ─── Type → display config ────────────────────────────────────────────────────
 
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
 type NotifConfig = {
 	icon: React.ReactNode;
 	labelKey: string;
-	subtitleFn?: (payload: Record<string, unknown>) => string;
+	subtitleFn?: (payload: Record<string, unknown>, t: TFn) => string;
 	toFn?: (payload: Record<string, unknown>) => string | undefined;
 };
 
@@ -43,11 +45,15 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 		icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />,
 		labelKey: "notifications.types.grade_approved",
 		subtitleFn: (p) => String(p.examName ?? ""),
+		toFn: (p) =>
+			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
 	},
 	"grade.rejected": {
 		icon: <XCircle className="h-3.5 w-3.5 text-destructive" />,
 		labelKey: "notifications.types.grade_rejected",
 		subtitleFn: (p) => (p.reason ? String(p.reason) : String(p.examName ?? "")),
+		toFn: (p) =>
+			p.classCourseId ? `/teacher/grades/${p.classCourseId}` : undefined,
 	},
 	"deliberation.published": {
 		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
@@ -56,12 +62,33 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 	"batch_job.completed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,
 		labelKey: "notifications.types.batch_job_completed",
+		subtitleFn: (p, t) => {
+			const jobType = p.jobType
+				? t(`admin.batchJobs.types.${p.jobType}`, {
+						defaultValue: String(p.jobType),
+					})
+				: "";
+			return t("notifications.batchJob.completedSubtitle", {
+				jobType,
+				itemsProcessed: p.itemsProcessed ?? 0,
+			});
+		},
 		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
 	},
 	"batch_job.failed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-destructive" />,
 		labelKey: "notifications.types.batch_job_failed",
-		subtitleFn: (p) => (p.error ? String(p.error) : ""),
+		subtitleFn: (p, t) => {
+			const jobType = p.jobType
+				? t(`admin.batchJobs.types.${p.jobType}`, {
+						defaultValue: String(p.jobType),
+					})
+				: "";
+			return t("notifications.batchJob.failedSubtitle", {
+				jobType,
+				error: p.error ? String(p.error) : "",
+			});
+		},
 		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
 	},
 };
@@ -192,7 +219,9 @@ export const NotificationBell: React.FC = () => {
 								const isUnread = !item.readAt;
 								const cfg = getConfig(item.type);
 								const payload = (item.payload as Record<string, unknown>) ?? {};
-								const subtitle = cfg.subtitleFn ? cfg.subtitleFn(payload) : "";
+								const subtitle = cfg.subtitleFn
+									? cfg.subtitleFn(payload, t)
+									: "";
 								const to = cfg.toFn ? cfg.toFn(payload) : undefined;
 
 								const innerContent = (
