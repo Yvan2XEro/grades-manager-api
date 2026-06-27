@@ -41,6 +41,7 @@ import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
+import RoomsManagement from "./pages/admin/RoomsManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
 import TimetableManagement from "./pages/admin/TimetableManagement";
@@ -235,6 +236,7 @@ function App() {
 						<Route path="centers/new" element={<CenterDetail />} />
 						<Route path="centers/:centerId" element={<CenterDetail />} />
 						<Route path="timetable" element={<TimetableManagement />} />
+						<Route path="rooms" element={<RoomsManagement />} />
 						<Route
 							path="class-document-templates"
 							element={<ClassDocumentTemplates />}

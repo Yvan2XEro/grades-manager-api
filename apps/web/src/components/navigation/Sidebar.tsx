@@ -113,6 +113,11 @@ const Sidebar: React.FC = () => {
 						icon: <CalendarClock className={IC} />,
 						labelKey: "navigation.sidebar.admin.timetable",
 					},
+					{
+						to: "/admin/rooms",
+						icon: <Building2 className={IC} />,
+						labelKey: "navigation.sidebar.admin.rooms",
+					},
 				],
 			},
 			{

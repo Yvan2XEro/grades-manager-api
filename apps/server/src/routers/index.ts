@@ -11,6 +11,7 @@ import { feeClearanceRouter } from "@/modules/fee-clearance";
 import { gradeAccessGrantsRouter } from "@/modules/grade-access-grants";
 import { gradeScalesRouter } from "@/modules/grade-scales";
 import { gradesRouter } from "@/modules/grades";
+import { roomsRouter } from "@/modules/rooms";
 import { router as timetableRouter } from "@/modules/timetable";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
 import { academicYearsRouter } from "../modules/academic-years";
@@ -87,6 +88,7 @@ export const appRouter = router({
 	academicYearTransitions: academicYearTransitionsRouter,
 	feeClearance: feeClearanceRouter,
 	timetable: timetableRouter,
+	rooms: roomsRouter,
 });
 
 export type AppRouter = typeof appRouter;

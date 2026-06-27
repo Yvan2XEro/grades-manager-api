@@ -3557,6 +3557,47 @@ export const daysOfWeek = [
 ] as const;
 export type DayOfWeek = (typeof daysOfWeek)[number];
 
+// ── Rooms ─────────────────────────────────────────────────────────────────────
+
+export const rooms = pgTable(
+	"rooms",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		code: text("code").notNull(),
+		name: text("name").notNull(),
+		capacity: integer("capacity"),
+		building: text("building"),
+		campus: text("campus"),
+		isActive: boolean("is_active").notNull().default(true),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("rooms_institution_code").on(t.institutionId, t.code),
+		index("idx_rooms_institution").on(t.institutionId),
+	],
+);
+
+export type Room = typeof rooms.$inferSelect;
+export type NewRoom = typeof rooms.$inferInsert;
+
+export const roomsRelations = relations(rooms, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [rooms.institutionId],
+		references: [institutions.id],
+	}),
+	sessions: many(courseSessions),
+}));
+
+// ── Course Sessions ───────────────────────────────────────────────────────────
+
 export const courseSessions = pgTable(
 	"course_sessions",
 	{
@@ -3574,6 +3615,9 @@ export const courseSessions = pgTable(
 		startTime: text("start_time").notNull(),
 		endTime: text("end_time").notNull(),
 		room: text("room"),
+		roomId: text("room_id").references(() => rooms.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -3604,6 +3648,10 @@ export const courseSessionsRelations = relations(courseSessions, ({ one }) => ({
 	academicYear: one(academicYears, {
 		fields: [courseSessions.academicYearId],
 		references: [academicYears.id],
+	}),
+	roomRef: one(rooms, {
+		fields: [courseSessions.roomId],
+		references: [rooms.id],
 	}),
 }));
 

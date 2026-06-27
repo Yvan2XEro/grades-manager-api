@@ -50,6 +50,13 @@
       "when": 1782546164014,
       "tag": "0006_absurd_angel",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782547973107,
+      "tag": "0007_sturdy_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
