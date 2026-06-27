@@ -9,6 +9,8 @@ import { detectOrganizationSlug } from "./lib/organization";
 import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
+import AttendanceManagement from "./pages/admin/attendance/AttendanceManagement";
+import AttendanceRates from "./pages/admin/attendance/AttendanceRates";
 import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
@@ -237,6 +239,8 @@ function App() {
 						<Route path="centers/:centerId" element={<CenterDetail />} />
 						<Route path="timetable" element={<TimetableManagement />} />
 						<Route path="rooms" element={<RoomsManagement />} />
+						<Route path="attendance" element={<AttendanceManagement />} />
+						<Route path="attendance/rates" element={<AttendanceRates />} />
 						<Route
 							path="class-document-templates"
 							element={<ClassDocumentTemplates />}

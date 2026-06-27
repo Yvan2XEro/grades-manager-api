@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	BarChart3,
 	Bell,
 	BookOpen,
 	Building,
@@ -112,11 +113,25 @@ const Sidebar: React.FC = () => {
 						to: "/admin/timetable",
 						icon: <CalendarClock className={IC} />,
 						labelKey: "navigation.sidebar.admin.timetable",
+						badge: "new" as NavBadgeType,
 					},
 					{
 						to: "/admin/rooms",
 						icon: <Building2 className={IC} />,
 						labelKey: "navigation.sidebar.admin.rooms",
+						badge: "new" as NavBadgeType,
+					},
+					{
+						to: "/admin/attendance",
+						icon: <ClipboardList className={IC} />,
+						labelKey: "navigation.sidebar.admin.attendance",
+						badge: "new" as NavBadgeType,
+					},
+					{
+						to: "/admin/attendance/rates",
+						icon: <BarChart3 className={IC} />,
+						labelKey: "navigation.sidebar.admin.attendanceRates",
+						badge: "new" as NavBadgeType,
 					},
 				],
 			},

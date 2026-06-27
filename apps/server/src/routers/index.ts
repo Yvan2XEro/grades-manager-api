@@ -1,5 +1,6 @@
 import { academicDocumentsRouter } from "@/modules/academic-documents";
 import { academicYearTransitionsRouter } from "@/modules/academic-year-transitions";
+import { attendanceRouter } from "@/modules/attendance";
 import { batchJobsRouter, registerAllJobTypes } from "@/modules/batch-jobs";
 import { centersRouter } from "@/modules/centers";
 import { deliberationsRouter } from "@/modules/deliberations";
@@ -89,6 +90,7 @@ export const appRouter = router({
 	feeClearance: feeClearanceRouter,
 	timetable: timetableRouter,
 	rooms: roomsRouter,
+	attendance: attendanceRouter,
 });
 
 export type AppRouter = typeof appRouter;

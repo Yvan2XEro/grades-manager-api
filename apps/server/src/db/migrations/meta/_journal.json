@@ -57,6 +57,20 @@
       "when": 1782547973107,
       "tag": "0007_sturdy_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782548977633,
+      "tag": "0008_absent_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782549408287,
+      "tag": "0009_pink_nebula",
+      "breakpoints": true
     }
   ]
 }

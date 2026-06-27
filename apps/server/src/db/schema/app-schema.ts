@@ -700,6 +700,8 @@ export const classCourses = pgTable(
 		coefficient: numeric("coefficient", { precision: 5, scale: 2 })
 			.notNull()
 			.default("1.00"),
+		/** Minimum attendance rate (0–100) required for exam eligibility. Null = no gate. */
+		attendanceThreshold: integer("attendance_threshold"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -3736,3 +3738,159 @@ export const gradeScalesRelations = relations(gradeScales, ({ one }) => ({
 		references: [institutions.id],
 	}),
 }));
+
+// ── Attendance ────────────────────────────────────────────────────────────────
+
+export const attendanceStatuses = [
+	"present",
+	"absent",
+	"late",
+	"excused",
+] as const;
+export type AttendanceStatus = (typeof attendanceStatuses)[number];
+
+/** One occurrence of a class course on a calendar date (regular or ad-hoc). */
+export const attendanceSessions = pgTable(
+	"attendance_sessions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "cascade" }),
+		courseSessionId: text("course_session_id").references(
+			() => courseSessions.id,
+			{ onDelete: "set null" },
+		),
+		sessionDate: date("session_date").notNull(),
+		notes: text("notes"),
+		createdBy: text("created_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_attendance_session_course_date").on(
+			t.classCourseId,
+			t.sessionDate,
+		),
+		index("idx_attendance_sessions_institution").on(t.institutionId),
+		index("idx_attendance_sessions_class_course").on(t.classCourseId),
+		index("idx_attendance_sessions_academic_year").on(t.academicYearId),
+		index("idx_attendance_sessions_date").on(t.sessionDate),
+	],
+);
+
+export type AttendanceSession = InferSelectModel<typeof attendanceSessions>;
+export type NewAttendanceSession = InferInsertModel<typeof attendanceSessions>;
+
+export const attendanceSessionsRelations = relations(
+	attendanceSessions,
+	({ one, many }) => ({
+		institution: one(institutions, {
+			fields: [attendanceSessions.institutionId],
+			references: [institutions.id],
+		}),
+		classCourse: one(classCourses, {
+			fields: [attendanceSessions.classCourseId],
+			references: [classCourses.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [attendanceSessions.academicYearId],
+			references: [academicYears.id],
+		}),
+		courseSession: one(courseSessions, {
+			fields: [attendanceSessions.courseSessionId],
+			references: [courseSessions.id],
+		}),
+		creator: one(domainUsers, {
+			fields: [attendanceSessions.createdBy],
+			references: [domainUsers.id],
+		}),
+		records: many(attendanceRecords),
+	}),
+);
+
+/** Per-student attendance record for one session. */
+export const attendanceRecords = pgTable(
+	"attendance_records",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		attendanceSessionId: text("attendance_session_id")
+			.notNull()
+			.references(() => attendanceSessions.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		status: text("status")
+			.notNull()
+			.$type<AttendanceStatus>()
+			.default("present"),
+		excuseReason: text("excuse_reason"),
+		excuseApprovedBy: text("excuse_approved_by").references(
+			() => domainUsers.id,
+			{ onDelete: "set null" },
+		),
+		excuseApprovedAt: timestamp("excuse_approved_at", { withTimezone: true }),
+		markedBy: text("marked_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_attendance_record_session_student").on(
+			t.attendanceSessionId,
+			t.studentId,
+		),
+		index("idx_attendance_records_institution").on(t.institutionId),
+		index("idx_attendance_records_session").on(t.attendanceSessionId),
+		index("idx_attendance_records_student").on(t.studentId),
+	],
+);
+
+export type AttendanceRecord = InferSelectModel<typeof attendanceRecords>;
+export type NewAttendanceRecord = InferInsertModel<typeof attendanceRecords>;
+
+export const attendanceRecordsRelations = relations(
+	attendanceRecords,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [attendanceRecords.institutionId],
+			references: [institutions.id],
+		}),
+		attendanceSession: one(attendanceSessions, {
+			fields: [attendanceRecords.attendanceSessionId],
+			references: [attendanceSessions.id],
+		}),
+		student: one(students, {
+			fields: [attendanceRecords.studentId],
+			references: [students.id],
+		}),
+		approvedBy: one(domainUsers, {
+			fields: [attendanceRecords.excuseApprovedBy],
+			references: [domainUsers.id],
+		}),
+		marker: one(domainUsers, {
+			fields: [attendanceRecords.markedBy],
+			references: [domainUsers.id],
+		}),
+	}),
+);
