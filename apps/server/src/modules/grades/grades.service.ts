@@ -3,6 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { notFound } from "../_shared/errors";
+import * as attendanceService from "../attendance/attendance.service";
 import {
 	type ExamEditorActor,
 	ensureActorCanEditExam,
@@ -117,6 +118,19 @@ export async function upsertNote(
 	});
 	ensureExamEditable(exam);
 	await courseEnrollments.ensureStudentRegistered(studentId, exam.classCourse);
+
+	const eligibility = await attendanceService.checkAttendanceEligibility(
+		studentId,
+		exam.classCourse,
+		institutionId,
+	);
+	if (eligibility !== null && !eligibility.eligible) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `Student attendance rate (${eligibility.rate}%) is below the required threshold (${eligibility.threshold}%)`,
+		});
+	}
+
 	try {
 		const saved = await repo.upsert({
 			student: studentId,

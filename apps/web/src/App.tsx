@@ -384,7 +384,8 @@ function App() {
 							path="grades/:courseId/fast"
 							element={<GradeSpreadsheet basePath="/teacher" />}
 						/>
-						<Route path="attendance" element={<AttendanceAlerts />} />
+						<Route path="attendance" element={<AttendanceManagement />} />
+						<Route path="attendance/alerts" element={<AttendanceAlerts />} />
 						<Route path="timetable" element={<TeacherTimetable />} />
 						<Route path="workflows" element={<WorkflowManager />} />
 						<Route path="exports" element={<GradeExport />} />

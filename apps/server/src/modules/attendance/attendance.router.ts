@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
 	adminProcedure,
@@ -18,13 +19,49 @@ import {
 	updateRecordSchema,
 } from "./attendance.zod";
 
+/** Verify the requesting teacher is assigned to the classCourse.
+ *  Admins (canManageCatalog) bypass this check. */
+async function assertTeacherOwnsCourse(
+	classCourseId: string,
+	institutionId: string,
+	profileId: string,
+) {
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+	const cc = await db.query.classCourses.findFirst({
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+		columns: { teacher: true },
+	});
+	if (!cc || cc.teacher !== profileId) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "You are not assigned as teacher for this class course",
+		});
+	}
+}
+
 export const router = createRouter({
 	/** Create (or get) an attendance session for a classCourse on a date. */
 	createSession: gradingProcedure
 		.input(createSessionSchema)
-		.mutation(({ ctx, input }) =>
-			service.createOrGetSession(input, ctx.institution.id, ctx.profile?.id),
-		),
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				await assertTeacherOwnsCourse(
+					input.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.createOrGetSession(
+				input,
+				ctx.institution.id,
+				ctx.profile?.id,
+			);
+		}),
 
 	/** Get one session with its full roster of records. */
 	getSession: gradingProcedure
@@ -48,33 +85,66 @@ export const router = createRouter({
 	/** Replace all records for a session (bulk mark). */
 	bulkMark: gradingProcedure
 		.input(bulkMarkSchema)
-		.mutation(({ ctx, input }) =>
-			service.bulkMark(
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				const session = await service.getSession(
+					input.attendanceSessionId,
+					ctx.institution.id,
+				);
+				await assertTeacherOwnsCourse(
+					session.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.bulkMark(
 				input.attendanceSessionId,
 				input.records,
 				ctx.institution.id,
 				ctx.profile?.id,
-			),
-		),
+			);
+		}),
 
 	/** Update a single student's attendance status. */
 	updateRecord: gradingProcedure
 		.input(updateRecordSchema)
-		.mutation(({ ctx, input }) =>
-			service.updateRecord(
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				const session = await service.getSession(
+					input.attendanceSessionId,
+					ctx.institution.id,
+				);
+				await assertTeacherOwnsCourse(
+					session.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.updateRecord(
 				input.attendanceSessionId,
 				input.studentId,
 				input.status,
 				ctx.institution.id,
 				ctx.profile?.id,
-			),
-		),
+			);
+		}),
 
 	/** Approve/set an excuse reason for an absent or late record. */
 	excuseAbsence: gradingProcedure
 		.input(excuseAbsenceSchema)
-		.mutation(({ ctx, input }) => {
-			if (!ctx.profile?.id) throw new Error("Profile required");
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
+			if (!ctx.permissions.canManageCatalog) {
+				const record = await service.getAttendanceRecordById(
+					input.attendanceRecordId,
+					ctx.institution.id,
+				);
+				await assertTeacherOwnsCourse(
+					record.attendanceSession.classCourseId,
+					ctx.institution.id,
+					ctx.profile.id,
+				);
+			}
 			return service.excuseAbsence(
 				input.attendanceRecordId,
 				input.excuseReason,
@@ -130,7 +200,7 @@ export const router = createRouter({
 					),
 				)
 				.returning({ id: schema.classCourses.id });
-			if (!cc) throw new Error("Class course not found");
+			if (!cc) throw new TRPCError({ code: "NOT_FOUND" });
 			return { success: true };
 		}),
 });

@@ -3791,10 +3791,6 @@ export const attendanceSessions = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_attendance_session_course_date").on(
-			t.classCourseId,
-			t.sessionDate,
-		),
 		index("idx_attendance_sessions_institution").on(t.institutionId),
 		index("idx_attendance_sessions_class_course").on(t.classCourseId),
 		index("idx_attendance_sessions_academic_year").on(t.academicYearId),

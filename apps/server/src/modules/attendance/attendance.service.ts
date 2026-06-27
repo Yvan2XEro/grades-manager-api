@@ -11,11 +11,12 @@ export async function createOrGetSession(
 	institutionId: string,
 	createdBy?: string,
 ) {
-	// Idempotent: return existing session if one already exists for this date
+	// Idempotent: return existing session if one already exists for this date/slot
 	const existing = await repo.findSessionByCourseDateForWrite(
 		input.classCourseId,
 		input.sessionDate,
 		institutionId,
+		input.courseSessionId,
 	);
 	if (existing) return existing;
 
@@ -61,6 +62,26 @@ export async function getSession(id: string, institutionId: string) {
 			message: "Attendance session not found",
 		});
 	return session;
+}
+
+/** Get an attendance record with enough session context to check course ownership. */
+export async function getAttendanceRecordById(
+	id: string,
+	institutionId: string,
+) {
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+	const record = await db.query.attendanceRecords.findFirst({
+		where: and(
+			eq(schema.attendanceRecords.id, id),
+			eq(schema.attendanceRecords.institutionId, institutionId),
+		),
+		with: { attendanceSession: { columns: { classCourseId: true } } },
+	});
+	if (!record)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Record not found" });
+	return record;
 }
 
 export async function listSessions(

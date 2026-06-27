@@ -16,9 +16,14 @@ async function resolveClassCourseInfo(
 		),
 		columns: { teacher: true, class: true },
 	});
+	if (!cc)
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: `Class course ${classCourseId} not found in this institution`,
+		});
 	return {
-		teacherId: cc?.teacher ?? undefined,
-		classId: cc?.class ?? undefined,
+		teacherId: cc.teacher ?? undefined,
+		classId: cc.class ?? undefined,
 	};
 }
 
@@ -39,7 +44,12 @@ async function resolveRoomName(
 		),
 		columns: { name: true },
 	});
-	return room?.name ?? fallback;
+	if (!room)
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: `Room ${roomId} not found or inactive in this institution`,
+		});
+	return room.name;
 }
 
 async function checkRoomCapacity(

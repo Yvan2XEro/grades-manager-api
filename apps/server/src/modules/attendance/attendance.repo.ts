@@ -36,13 +36,23 @@ export async function findSessionByCourseDateForWrite(
 	classCourseId: string,
 	sessionDate: string,
 	institutionId: string,
+	courseSessionId?: string,
 ) {
+	const { isNull } = await import("drizzle-orm");
+	const conditions = courseSessionId
+		? [
+				eq(schema.attendanceSessions.classCourseId, classCourseId),
+				eq(schema.attendanceSessions.courseSessionId, courseSessionId),
+				eq(schema.attendanceSessions.institutionId, institutionId),
+			]
+		: [
+				eq(schema.attendanceSessions.classCourseId, classCourseId),
+				eq(schema.attendanceSessions.sessionDate, sessionDate),
+				eq(schema.attendanceSessions.institutionId, institutionId),
+				isNull(schema.attendanceSessions.courseSessionId),
+			];
 	return db.query.attendanceSessions.findFirst({
-		where: and(
-			eq(schema.attendanceSessions.classCourseId, classCourseId),
-			eq(schema.attendanceSessions.sessionDate, sessionDate),
-			eq(schema.attendanceSessions.institutionId, institutionId),
-		),
+		where: and(...conditions),
 		columns: { id: true },
 	});
 }

@@ -85,6 +85,13 @@
       "when": 1782559963341,
       "tag": "0011_early_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782700000000,
+      "tag": "0012_attendance_session_constraint",
+      "breakpoints": true
     }
   ]
 }
