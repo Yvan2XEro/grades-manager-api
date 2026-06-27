@@ -206,11 +206,16 @@ export async function runJob(jobId: string, institutionId: string) {
 			const { queueInApp } = await import(
 				"../notifications/notifications.service"
 			);
-			queueInApp(job.createdBy, "batch_job.completed", {
-				jobId: job.id,
-				jobType: job.type,
-				itemsProcessed: itemsProcessedTotal,
-			}).catch(() => {});
+			queueInApp(
+				job.createdBy,
+				"batch_job.completed",
+				{
+					jobId: job.id,
+					jobType: job.type,
+					itemsProcessed: itemsProcessedTotal,
+				},
+				{ dedupeKey: job.id },
+			).catch(() => {});
 		}
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : String(err);
@@ -225,11 +230,12 @@ export async function runJob(jobId: string, institutionId: string) {
 			const { queueInApp } = await import(
 				"../notifications/notifications.service"
 			);
-			queueInApp(job.createdBy, "batch_job.failed", {
-				jobId: job.id,
-				jobType: job.type,
-				error: msg,
-			}).catch(() => {});
+			queueInApp(
+				job.createdBy,
+				"batch_job.failed",
+				{ jobId: job.id, jobType: job.type, error: msg },
+				{ dedupeKey: job.id },
+			).catch(() => {});
 		}
 	}
 
