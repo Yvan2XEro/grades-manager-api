@@ -193,7 +193,11 @@ export const router = createRouter({
 			return service.getAttendanceRates(
 				input.classCourseId,
 				ctx.institution.id,
-				input.academicYearId,
+				{
+					academicYearId: input.academicYearId,
+					dateFrom: input.dateFrom,
+					dateTo: input.dateTo,
+				},
 			);
 		}),
 
@@ -230,16 +234,21 @@ export const router = createRouter({
 			);
 		}),
 
-	/** Set or clear the attendance threshold on a class course (admin only). */
+	/** Set or clear the attendance threshold and excused-absence policy on a class course (admin only). */
 	setThreshold: adminProcedure
 		.input(setThresholdSchema)
 		.mutation(async ({ ctx, input }) => {
 			const { db } = await import("@/db");
 			const { and, eq } = await import("drizzle-orm");
 			const schema = await import("@/db/schema/app-schema");
+			const patch: Record<string, unknown> = {
+				attendanceThreshold: input.threshold,
+			};
+			if (input.excusedCountsAsAbsent !== undefined)
+				patch.attendanceExcusedCountsAsAbsent = input.excusedCountsAsAbsent;
 			const [cc] = await db
 				.update(schema.classCourses)
-				.set({ attendanceThreshold: input.threshold })
+				.set(patch)
 				.where(
 					and(
 						eq(schema.classCourses.id, input.classCourseId),
@@ -272,6 +281,60 @@ export const router = createRouter({
 				input.classCourseId,
 				input.studentId,
 				ctx.institution.id,
+				ctx.profile?.id ?? null,
 			),
 		),
+
+	/** Summary of attendance rates across all class courses assigned to the calling teacher.
+	 *  Teachers use this to review their own courses without admin navigation. */
+	myCoursesRates: gradingProcedure
+		.input(z.object({ academicYearId: z.string().optional() }))
+		.query(async ({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
+			const { db } = await import("@/db");
+			const { and, eq } = await import("drizzle-orm");
+			const schema = await import("@/db/schema/app-schema");
+			const courses = await db.query.classCourses.findMany({
+				where: and(
+					eq(schema.classCourses.institutionId, ctx.institution.id),
+					eq(schema.classCourses.teacher, ctx.profile.id),
+				),
+				with: {
+					classRef: { columns: { name: true, academicYear: true } },
+					courseRef: { columns: { name: true, code: true } },
+				},
+				columns: {
+					id: true,
+					attendanceThreshold: true,
+					attendanceExcusedCountsAsAbsent: true,
+				},
+			});
+			const results = await Promise.all(
+				courses.map(async (cc) => {
+					const rates = await service.getAttendanceRates(
+						cc.id,
+						ctx.institution.id,
+						{ academicYearId: input.academicYearId },
+					);
+					const belowThreshold =
+						cc.attendanceThreshold != null
+							? rates.students.filter(
+									(s) => s.rate < (cc.attendanceThreshold as number),
+								).length
+							: 0;
+					return {
+						classCourseId: cc.id,
+						className: cc.classRef?.name ?? null,
+						courseName: cc.courseRef?.name ?? null,
+						courseCode: cc.courseRef?.code ?? null,
+						academicYear: cc.classRef?.academicYear ?? null,
+						totalSessions: rates.totalSessions,
+						threshold: cc.attendanceThreshold,
+						excusedCountsAsAbsent: cc.attendanceExcusedCountsAsAbsent,
+						belowThreshold,
+					};
+				}),
+			);
+			return results;
+		}),
 });

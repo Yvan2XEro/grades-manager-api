@@ -388,6 +388,103 @@ describe("bulk import", () => {
 	});
 });
 
+// ── Duplicate detection scoping by academic year + semester (JVL-49) ─────────
+
+describe("findDuplicate scoping (JVL-49)", () => {
+	it("same slot in different semester is not flagged as duplicate", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+
+		const [sem1] = await db
+			.insert(schema.semesters)
+			.values({
+				code: `S1-${randomUUID().slice(0, 6)}`,
+				name: "Sem 1",
+				orderIndex: 40,
+			})
+			.returning();
+		const [sem2] = await db
+			.insert(schema.semesters)
+			.values({
+				code: `S2-${randomUUID().slice(0, 6)}`,
+				name: "Sem 2",
+				orderIndex: 41,
+			})
+			.returning();
+
+		// Import session in semester 1
+		await admin.timetable.executeBulkImport({
+			rows: [
+				{
+					classCourseId: cc.id,
+					dayOfWeek: "fri",
+					startTime: "08:00",
+					endTime: "10:00",
+					semesterId: sem1.id,
+				},
+			],
+			skipDuplicates: false,
+		});
+
+		// Same slot but semester 2 — must NOT be detected as a duplicate
+		const { valid, errors } = await admin.timetable.previewBulkImport({
+			rows: [
+				{
+					classCourseId: cc.id,
+					dayOfWeek: "fri",
+					startTime: "08:00",
+					endTime: "10:00",
+					semesterId: sem2.id,
+				},
+			],
+		});
+		expect(valid.length).toBe(1);
+		expect(errors.length).toBe(0);
+	});
+
+	it("same slot in same semester is detected as duplicate", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+
+		const [sem] = await db
+			.insert(schema.semesters)
+			.values({
+				code: `S-${randomUUID().slice(0, 6)}`,
+				name: "Sem",
+				orderIndex: 42,
+			})
+			.returning();
+
+		await admin.timetable.executeBulkImport({
+			rows: [
+				{
+					classCourseId: cc.id,
+					dayOfWeek: "sat",
+					startTime: "09:00",
+					endTime: "11:00",
+					semesterId: sem.id,
+				},
+			],
+			skipDuplicates: false,
+		});
+
+		const { valid, errors } = await admin.timetable.previewBulkImport({
+			rows: [
+				{
+					classCourseId: cc.id,
+					dayOfWeek: "sat",
+					startTime: "09:00",
+					endTime: "11:00",
+					semesterId: sem.id,
+				},
+			],
+		});
+		expect(valid.length).toBe(0);
+		expect(errors.length).toBe(1);
+		expect(errors[0].reason).toContain("Duplicate");
+	});
+});
+
 // ── Conflict matrix (JVL-47) ─────────────────────────────────────────────────
 
 describe("conflict matrix", () => {

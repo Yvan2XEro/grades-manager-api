@@ -703,6 +703,13 @@ export const classCourses = pgTable(
 			.default("1.00"),
 		/** Minimum attendance rate (0–100) required for exam eligibility. Null = no gate. */
 		attendanceThreshold: integer("attendance_threshold"),
+		/** When true, excused absences count as absent in the attendance rate calculation.
+		 *  Default false = excused absences are excluded from the denominator (neutral). */
+		attendanceExcusedCountsAsAbsent: boolean(
+			"attendance_excused_counts_as_absent",
+		)
+			.notNull()
+			.default(false),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -3843,6 +3850,38 @@ export const attendanceExemptions = pgTable(
 
 export type AttendanceExemption = InferSelectModel<typeof attendanceExemptions>;
 
+/** Append-only audit trail for every grant/revoke action on attendance exemptions. */
+export const attendanceExemptionLogs = pgTable(
+	"attendance_exemption_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		action: text("action", { enum: ["granted", "revoked"] }).notNull(),
+		reason: text("reason"),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_exemption_log_cc_student").on(t.classCourseId, t.studentId),
+		index("idx_exemption_log_institution").on(t.institutionId),
+	],
+);
+export type AttendanceExemptionLog = InferSelectModel<
+	typeof attendanceExemptionLogs
+>;
+
 export const attendanceSessionsRelations = relations(
 	attendanceSessions,
 	({ one, many }) => ({
@@ -3921,6 +3960,35 @@ export const attendanceRecords = pgTable(
 
 export type AttendanceRecord = InferSelectModel<typeof attendanceRecords>;
 export type NewAttendanceRecord = InferInsertModel<typeof attendanceRecords>;
+
+/** Append-only audit trail for every excuse approval/rejection action. */
+export const attendanceExcuseAuditLogs = pgTable(
+	"attendance_excuse_audit_logs",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		attendanceRecordId: text("attendance_record_id")
+			.notNull()
+			.references(() => attendanceRecords.id, { onDelete: "cascade" }),
+		action: text("action", { enum: ["approved", "rejected"] }).notNull(),
+		reason: text("reason").notNull(),
+		actorId: text("actor_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_excuse_audit_record").on(t.attendanceRecordId),
+		index("idx_excuse_audit_institution").on(t.institutionId),
+	],
+);
+export type AttendanceExcuseAuditLog = InferSelectModel<
+	typeof attendanceExcuseAuditLogs
+>;
 
 export const attendanceRecordsRelations = relations(
 	attendanceRecords,

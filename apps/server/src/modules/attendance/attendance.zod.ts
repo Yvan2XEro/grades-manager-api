@@ -46,6 +46,8 @@ export const excuseAbsenceSchema = z.object({
 export const attendanceRatesSchema = z.object({
 	classCourseId: z.string(),
 	academicYearId: z.string().optional(),
+	dateFrom: z.string().date().optional(),
+	dateTo: z.string().date().optional(),
 });
 
 export const deleteSessionSchema = z.object({
@@ -60,6 +62,7 @@ export const eligibilityCheckSchema = z.object({
 export const setThresholdSchema = z.object({
 	classCourseId: z.string(),
 	threshold: z.number().int().min(0).max(100).nullable(),
+	excusedCountsAsAbsent: z.boolean().optional(),
 });
 
 export const grantExemptionSchema = z.object({

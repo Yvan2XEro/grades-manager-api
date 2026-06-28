@@ -815,6 +815,113 @@ describe("attendance exemption", () => {
 	});
 });
 
+// ── Exemption audit log (JVL-54 immutable trail) ─────────────────────────────
+
+describe("attendance exemption audit log", () => {
+	async function setupBelowThresholdWithAdmin() {
+		const profile = await createDomainUser();
+		const admin = createCaller(
+			makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			}),
+		);
+		const cc = await createClassCourse({ attendanceThreshold: 75 });
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+		const ccFull = await db.query.classCourses.findFirst({
+			where: eq(schema.classCourses.id, cc.id),
+			with: { classRef: { columns: { academicYear: true } } },
+		});
+		const academicYearId = ccFull!.classRef!.academicYear;
+		for (let i = 0; i < 2; i++) {
+			await db.insert(schema.attendanceSessions).values({
+				classCourseId: cc.id,
+				institutionId: cc.institutionId,
+				academicYearId,
+				sessionDate: new Date(Date.now() - (i + 50) * 86400000)
+					.toISOString()
+					.slice(0, 10),
+				isExceptional: true,
+			});
+		}
+		return { admin, cc, student };
+	}
+
+	it("grantExemption writes an immutable log entry", async () => {
+		const { admin, cc, student } = await setupBelowThresholdWithAdmin();
+
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "Medical certificate",
+		});
+
+		const logs = await repo.findExemptionLogs(
+			cc.id,
+			student.id,
+			cc.institutionId,
+		);
+		expect(logs.length).toBe(1);
+		expect(logs[0].action).toBe("granted");
+		expect(logs[0].reason).toBe("Medical certificate");
+	});
+
+	it("revokeExemption appends a revoke log and removes current state", async () => {
+		const { admin, cc, student } = await setupBelowThresholdWithAdmin();
+
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "Initial grant",
+		});
+		await admin.attendance.revokeExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+		});
+
+		const logs = await repo.findExemptionLogs(
+			cc.id,
+			student.id,
+			cc.institutionId,
+		);
+		expect(logs.length).toBe(2);
+		expect(logs[0].action).toBe("granted");
+		expect(logs[1].action).toBe("revoked");
+
+		const current = await repo.findExemption(
+			cc.id,
+			student.id,
+			cc.institutionId,
+		);
+		expect(current).toBeUndefined();
+	});
+
+	it("granting twice preserves full history (two log rows)", async () => {
+		const { admin, cc, student } = await setupBelowThresholdWithAdmin();
+
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "First reason",
+		});
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "Updated reason",
+		});
+
+		const logs = await repo.findExemptionLogs(
+			cc.id,
+			student.id,
+			cc.institutionId,
+		);
+		expect(logs.length).toBe(2);
+		expect(logs[0].reason).toBe("First reason");
+		expect(logs[1].reason).toBe("Updated reason");
+	});
+});
+
 // ── Marking auth (JVL-51) ────────────────────────────────────────────────────
 
 describe("marking auth", () => {

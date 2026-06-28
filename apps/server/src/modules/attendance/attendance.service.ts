@@ -258,6 +258,14 @@ export async function excuseAbsence(
 		},
 		institutionId,
 	);
+	// Append-only audit entry for every excuse decision
+	await repo.insertExcuseAuditLog({
+		institutionId,
+		attendanceRecordId: record.id,
+		action: approve ? "approved" : "rejected",
+		reason: excuseReason,
+		actorId: approvedBy,
+	});
 	return updated;
 }
 
@@ -266,31 +274,32 @@ export async function excuseAbsence(
 export async function getAttendanceRates(
 	classCourseId: string,
 	institutionId: string,
-	academicYearId?: string,
+	opts: { academicYearId?: string; dateFrom?: string; dateTo?: string } = {},
 ) {
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
 
 	const [sessions, roster, cc] = await Promise.all([
-		repo.getSessionsWithRecordCounts(
-			classCourseId,
-			institutionId,
-			academicYearId,
-		),
+		repo.getSessionsWithRecordCounts(classCourseId, institutionId, opts),
 		repo.getRosterForClassCourse(classCourseId, institutionId),
 		db.query.classCourses.findFirst({
 			where: and(
 				eq(schema.classCourses.id, classCourseId),
 				eq(schema.classCourses.institutionId, institutionId),
 			),
-			columns: { attendanceThreshold: true },
+			columns: {
+				attendanceThreshold: true,
+				attendanceExcusedCountsAsAbsent: true,
+			},
 		}),
 	]);
 
 	const threshold = cc?.attendanceThreshold ?? null;
+	const excusedCountsAsAbsent = cc?.attendanceExcusedCountsAsAbsent ?? false;
 	const totalSessions = sessions.length;
-	if (totalSessions === 0) return { totalSessions: 0, students: [], threshold };
+	if (totalSessions === 0)
+		return { totalSessions: 0, students: [], threshold, excusedCountsAsAbsent };
 
 	// Initialise counters for every enrolled student (not just those with records)
 	const studentMap = new Map(
@@ -317,14 +326,18 @@ export async function getAttendanceRates(
 	const students = Array.from(studentMap.entries()).map(
 		([studentId, counts]) => {
 			const attended = counts.present + counts.late;
-			const effective = counts.present + counts.late + counts.absent; // excused excluded
+			const effective =
+				counts.present +
+				counts.late +
+				counts.absent +
+				(excusedCountsAsAbsent ? counts.excused : 0);
 			const rate =
 				effective > 0 ? Math.round((attended / effective) * 100) : 100;
 			return { studentId, ...counts, totalSessions, rate };
 		},
 	);
 
-	return { totalSessions, students, threshold };
+	return { totalSessions, students, threshold, excusedCountsAsAbsent };
 }
 
 /** Fetch the roster of active students for a course. */
@@ -354,12 +367,16 @@ export async function checkAttendanceEligibility(
 			eq(schema.classCourses.id, classCourseId),
 			eq(schema.classCourses.institutionId, institutionId),
 		),
-		columns: { attendanceThreshold: true },
+		columns: {
+			attendanceThreshold: true,
+			attendanceExcusedCountsAsAbsent: true,
+		},
 	});
 
 	// Explicit null check — threshold of 0 is a valid (very strict) gate
 	if (cc?.attendanceThreshold == null) return null;
 	const threshold = cc.attendanceThreshold;
+	const excusedCountsAsAbsent = cc.attendanceExcusedCountsAsAbsent ?? false;
 
 	// Validate student is enrolled in this class course
 	const roster = await repo.getRosterForClassCourse(
@@ -390,7 +407,7 @@ export async function checkAttendanceEligibility(
 			continue;
 		}
 		if (record.status === "present" || record.status === "late") attended++;
-		if (record.status !== "excused") effective++;
+		if (record.status !== "excused" || excusedCountsAsAbsent) effective++;
 	}
 
 	const rate = effective > 0 ? Math.round((attended / effective) * 100) : 100;
@@ -440,8 +457,14 @@ export async function revokeExemption(
 	classCourseId: string,
 	studentId: string,
 	institutionId: string,
+	revokedBy: string | null,
 ) {
-	return repo.revokeExemption(classCourseId, studentId, institutionId);
+	return repo.revokeExemption(
+		classCourseId,
+		studentId,
+		institutionId,
+		revokedBy,
+	);
 }
 
 async function resolveAcademicYearFromClassCourse(

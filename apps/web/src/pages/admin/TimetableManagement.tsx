@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Download, Plus, Trash2, Upload } from "lucide-react";
+import {
+	AlertTriangle,
+	Calendar,
+	Download,
+	Plus,
+	Trash2,
+	Upload,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
@@ -38,6 +45,7 @@ type Session = RouterOutputs["timetable"]["list"][number];
 type ClassCourse = {
 	id: string;
 	code: string;
+	teacher: string | null;
 	courseRef: { name: string } | null;
 	classRef: { name: string } | null;
 };
@@ -57,6 +65,8 @@ export default function TimetableManagement() {
 
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 	const [semesterId, setSemesterId] = useState<string | null>(null);
+	const [classId, setClassId] = useState<string | null>(null);
+	const [teacherId, setTeacherId] = useState<string | null>(null);
 	const [classCourseId, setClassCourseId] = useState<string | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
@@ -73,10 +83,17 @@ export default function TimetableManagement() {
 	];
 
 	const { data: classCoursesData } = useQuery({
-		queryKey: ["classCourses-for-timetable", academicYearId],
+		queryKey: [
+			"classCourses-for-timetable",
+			academicYearId,
+			classId,
+			teacherId,
+		],
 		queryFn: async () => {
 			const { items } = await trpcClient.classCourses.list.query({
 				...(academicYearId ? { academicYearId } : {}),
+				...(classId ? { classId } : {}),
+				...(teacherId ? { teacherId } : {}),
 				limit: 500,
 			});
 			return items as ClassCourse[];
@@ -84,9 +101,33 @@ export default function TimetableManagement() {
 		enabled: true,
 	});
 
+	const { data: classesData } = useQuery({
+		queryKey: ["classes-for-timetable-filter", academicYearId],
+		queryFn: async () => {
+			const { items } = await trpcClient.classes.list.query({
+				...(academicYearId ? { academicYearId } : {}),
+				limit: 500,
+			});
+			return items;
+		},
+	});
+
+	const { data: teachersData } = useQuery({
+		queryKey: ["teachers-for-timetable-filter"],
+		queryFn: async () => {
+			const { items } = await trpcClient.users.list.query({
+				role: "teacher",
+				limit: 500,
+			});
+			return items;
+		},
+	});
+
 	const sessionsQuery = useQuery(
 		trpc.timetable.list.queryOptions({
 			...(classCourseId ? { classCourseId } : {}),
+			...(classId && !classCourseId ? { classId } : {}),
+			...(teacherId && !classCourseId ? { teacherId } : {}),
 			...(academicYearId ? { academicYearId } : {}),
 			...(semesterId ? { semesterId } : {}),
 		}),
@@ -96,6 +137,23 @@ export default function TimetableManagement() {
 	const activeRooms = (roomsQuery.data ?? []).filter((r) => r.isActive);
 
 	const sessions: Session[] = sessionsQuery.data ?? [];
+
+	// Warning: selected classCourse has no teacher assigned
+	const selectedCourse = classCourseId
+		? (classCoursesData ?? []).find((cc) => cc.id === classCourseId)
+		: null;
+	const missingTeacherWarning =
+		selectedCourse !== null &&
+		selectedCourse !== undefined &&
+		!selectedCourse.teacher;
+
+	// Warning: some visible sessions have no room
+	const sessionsWithNoRoom = sessions.filter(
+		(s) => !s.room && !s.roomId,
+	).length;
+	const missingRoomWarning = sessionsWithNoRoom > 0;
+
+	const classCourses = classCoursesData ?? [];
 
 	const invalidate = () => {
 		queryClient.invalidateQueries(trpc.timetable.list.queryFilter({}));
@@ -218,8 +276,6 @@ export default function TimetableManagement() {
 		subLabel: s.classCourse?.classRef?.name,
 	}));
 
-	const classCourses = classCoursesData ?? [];
-
 	return (
 		<div className="p-6">
 			<div className="mb-6 flex items-center justify-between">
@@ -258,7 +314,7 @@ export default function TimetableManagement() {
 				</div>
 			</div>
 
-			<div className="mb-6 flex flex-wrap gap-4">
+			<div className="mb-4 flex flex-wrap gap-4">
 				<div className="w-64">
 					<Label className="mb-1.5 block text-xs">
 						{t("teacher.timetable.filterByYear")}
@@ -268,6 +324,8 @@ export default function TimetableManagement() {
 						onChange={(v) => {
 							setAcademicYearId(v);
 							setSemesterId(null);
+							setClassId(null);
+							setTeacherId(null);
 							setClassCourseId(null);
 						}}
 					/>
@@ -284,6 +342,58 @@ export default function TimetableManagement() {
 						/>
 					</div>
 				)}
+				<div className="w-52">
+					<Label className="mb-1.5 block text-xs">
+						{t("teacher.timetable.filterByClass")}
+					</Label>
+					<Select
+						value={classId ?? ""}
+						onValueChange={(v) => {
+							setClassId(v || null);
+							setClassCourseId(null);
+						}}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder={t("teacher.timetable.allClasses")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">
+								{t("teacher.timetable.allClasses")}
+							</SelectItem>
+							{(classesData ?? []).map((c) => (
+								<SelectItem key={c.id} value={c.id}>
+									{c.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+				<div className="w-52">
+					<Label className="mb-1.5 block text-xs">
+						{t("teacher.timetable.filterByTeacher")}
+					</Label>
+					<Select
+						value={teacherId ?? ""}
+						onValueChange={(v) => {
+							setTeacherId(v || null);
+							setClassCourseId(null);
+						}}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder={t("teacher.timetable.allTeachers")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">
+								{t("teacher.timetable.allTeachers")}
+							</SelectItem>
+							{(teachersData ?? []).map((u) => (
+								<SelectItem key={u.id} value={u.id}>
+									{u.firstName} {u.lastName}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 				<div className="w-72">
 					<Label className="mb-1.5 block text-xs">
 						{t("teacher.timetable.filterByCourse")}
@@ -296,6 +406,9 @@ export default function TimetableManagement() {
 							<SelectValue placeholder={t("teacher.timetable.selectCourse")} />
 						</SelectTrigger>
 						<SelectContent>
+							<SelectItem value="">
+								{t("teacher.timetable.allCourses")}
+							</SelectItem>
 							{classCourses.map((cc) => (
 								<SelectItem key={cc.id} value={cc.id}>
 									{cc.courseRef?.name ?? cc.code}
@@ -310,6 +423,25 @@ export default function TimetableManagement() {
 					</Select>
 				</div>
 			</div>
+
+			{(missingTeacherWarning || missingRoomWarning) && (
+				<div className="mb-4 space-y-2">
+					{missingTeacherWarning && (
+						<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+							<AlertTriangle className="h-4 w-4 shrink-0" />
+							{t("teacher.timetable.warnings.missingTeacher")}
+						</div>
+					)}
+					{missingRoomWarning && (
+						<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+							<AlertTriangle className="h-4 w-4 shrink-0" />
+							{t("teacher.timetable.warnings.missingSessions", {
+								count: sessionsWithNoRoom,
+							})}
+						</div>
+					)}
+				</div>
+			)}
 
 			{!classCourseId ? (
 				<Empty>

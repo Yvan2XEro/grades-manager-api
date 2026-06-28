@@ -3692,10 +3692,19 @@
       },
       "filterByYear": "Filtrer par année",
       "filterByCourse": "Filtrer par cours",
+      "filterByClass": "Filtrer par classe",
+      "filterByTeacher": "Filtrer par enseignant",
+      "allClasses": "Toutes les classes",
+      "allTeachers": "Tous les enseignants",
+      "allCourses": "Tous les cours",
       "conflicts": {
         "room": "Conflit de salle",
         "teacher": "Conflit d'enseignant",
         "class": "Conflit de classe"
+      },
+      "warnings": {
+        "missingTeacher": "Ce cours-classe n'a pas d'enseignant assigné. Veuillez assigner un enseignant avant de planifier.",
+        "missingSessions": "{{count}} séance(s) n'ont pas de salle assignée."
       },
       "importDialog": {
         "title": "Import en masse",

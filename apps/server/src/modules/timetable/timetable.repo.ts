@@ -1,4 +1,4 @@
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import type { DayOfWeek, NewCourseSession } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
@@ -44,6 +44,8 @@ export async function list(
 	institutionId: string,
 	opts: {
 		classCourseId?: string;
+		classId?: string;
+		teacherId?: string;
 		academicYearId?: string;
 		semesterId?: string;
 		dayOfWeek?: DayOfWeek;
@@ -54,6 +56,25 @@ export async function list(
 		conditions.push(
 			eq(schema.courseSessions.classCourseId, opts.classCourseId),
 		);
+	// Resolve classId or teacherId to a list of classCourseIds via a secondary query
+	if (opts.classId || opts.teacherId) {
+		const ccConditions = [eq(schema.classCourses.institutionId, institutionId)];
+		if (opts.classId)
+			ccConditions.push(eq(schema.classCourses.class, opts.classId));
+		if (opts.teacherId)
+			ccConditions.push(eq(schema.classCourses.teacher, opts.teacherId));
+		const ccs = await db.query.classCourses.findMany({
+			where: and(...ccConditions),
+			columns: { id: true },
+		});
+		if (ccs.length === 0) return [];
+		conditions.push(
+			inArray(
+				schema.courseSessions.classCourseId,
+				ccs.map((c) => c.id),
+			),
+		);
+	}
 	if (opts.academicYearId)
 		conditions.push(
 			eq(schema.courseSessions.academicYearId, opts.academicYearId),
@@ -178,15 +199,27 @@ export async function findDuplicate(
 	dayOfWeek: DayOfWeek,
 	startTime: string,
 	endTime: string,
+	academicYearId: string,
+	semesterId?: string | null,
 ) {
+	const conditions = [
+		eq(schema.courseSessions.institutionId, institutionId),
+		eq(schema.courseSessions.classCourseId, classCourseId),
+		eq(schema.courseSessions.dayOfWeek, dayOfWeek),
+		eq(schema.courseSessions.startTime, startTime),
+		eq(schema.courseSessions.endTime, endTime),
+		eq(schema.courseSessions.academicYearId, academicYearId),
+	];
+	// Scope by semester so sessions in different semesters are not treated as duplicates
+	if (semesterId !== undefined) {
+		conditions.push(
+			semesterId === null
+				? isNull(schema.courseSessions.semesterId)
+				: eq(schema.courseSessions.semesterId, semesterId),
+		);
+	}
 	return db.query.courseSessions.findFirst({
-		where: and(
-			eq(schema.courseSessions.institutionId, institutionId),
-			eq(schema.courseSessions.classCourseId, classCourseId),
-			eq(schema.courseSessions.dayOfWeek, dayOfWeek),
-			eq(schema.courseSessions.startTime, startTime),
-			eq(schema.courseSessions.endTime, endTime),
-		),
+		where: and(...conditions),
 		columns: { id: true },
 	});
 }

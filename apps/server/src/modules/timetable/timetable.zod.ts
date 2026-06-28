@@ -28,6 +28,8 @@ export const deleteSessionSchema = z.object({ id: z.string().min(1) });
 
 export const listSessionsSchema = z.object({
 	classCourseId: z.string().optional(),
+	classId: z.string().optional(),
+	teacherId: z.string().optional(),
 	academicYearId: z.string().optional(),
 	semesterId: z.string().optional(),
 	dayOfWeek: z.enum(daysOfWeek as unknown as [string, ...string[]]).optional(),

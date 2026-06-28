@@ -6,7 +6,7 @@ import type {
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 
-// ── Attendance exemption CRUD ────────────────────────────────────────────────
+// ── Attendance exemption CRUD + immutable audit log ──────────────────────────
 
 export async function findExemption(
 	classCourseId: string,
@@ -29,6 +29,15 @@ export async function grantExemption(data: {
 	reason: string;
 	grantedBy: string | null;
 }) {
+	// Append-only log entry is written first — never updated or deleted
+	await db.insert(schema.attendanceExemptionLogs).values({
+		institutionId: data.institutionId,
+		classCourseId: data.classCourseId,
+		studentId: data.studentId,
+		action: "granted",
+		reason: data.reason,
+		actorId: data.grantedBy,
+	});
 	const [row] = await db
 		.insert(schema.attendanceExemptions)
 		.values(data)
@@ -51,7 +60,16 @@ export async function revokeExemption(
 	classCourseId: string,
 	studentId: string,
 	institutionId: string,
+	actorId: string | null,
 ) {
+	// Append-only revoke entry preserves the audit trail
+	await db.insert(schema.attendanceExemptionLogs).values({
+		institutionId,
+		classCourseId,
+		studentId,
+		action: "revoked",
+		actorId,
+	});
 	await db
 		.delete(schema.attendanceExemptions)
 		.where(
@@ -62,6 +80,31 @@ export async function revokeExemption(
 			),
 		);
 	return { success: true };
+}
+
+export async function findExemptionLogs(
+	classCourseId: string,
+	studentId: string,
+	institutionId: string,
+) {
+	return db.query.attendanceExemptionLogs.findMany({
+		where: and(
+			eq(schema.attendanceExemptionLogs.classCourseId, classCourseId),
+			eq(schema.attendanceExemptionLogs.studentId, studentId),
+			eq(schema.attendanceExemptionLogs.institutionId, institutionId),
+		),
+		orderBy: (t, { asc }) => [asc(t.createdAt)],
+	});
+}
+
+export async function insertExcuseAuditLog(data: {
+	institutionId: string;
+	attendanceRecordId: string;
+	action: "approved" | "rejected";
+	reason: string;
+	actorId: string | null;
+}) {
+	await db.insert(schema.attendanceExcuseAuditLogs).values(data);
 }
 
 export async function createSession(data: NewAttendanceSession) {
@@ -254,16 +297,20 @@ export async function listRecordsForStudent(
 export async function getSessionsWithRecordCounts(
 	classCourseId: string,
 	institutionId: string,
-	academicYearId?: string,
+	opts: { academicYearId?: string; dateFrom?: string; dateTo?: string } = {},
 ) {
 	const conditions = [
 		eq(schema.attendanceSessions.classCourseId, classCourseId),
 		eq(schema.attendanceSessions.institutionId, institutionId),
 	];
-	if (academicYearId)
+	if (opts.academicYearId)
 		conditions.push(
-			eq(schema.attendanceSessions.academicYearId, academicYearId),
+			eq(schema.attendanceSessions.academicYearId, opts.academicYearId),
 		);
+	if (opts.dateFrom)
+		conditions.push(gte(schema.attendanceSessions.sessionDate, opts.dateFrom));
+	if (opts.dateTo)
+		conditions.push(lte(schema.attendanceSessions.sessionDate, opts.dateTo));
 	return db.query.attendanceSessions.findMany({
 		where: and(...conditions),
 		with: {

@@ -116,6 +116,38 @@ export async function createSession(
 		});
 	}
 
+	// Validate academicYearId and semesterId belong to this institution
+	{
+		const { db } = await import("@/db");
+		const { and, eq } = await import("drizzle-orm");
+		const schema = await import("@/db/schema/app-schema");
+
+		const ay = await db.query.academicYears.findFirst({
+			where: and(
+				eq(schema.academicYears.id, input.academicYearId),
+				eq(schema.academicYears.institutionId, institutionId),
+			),
+			columns: { id: true },
+		});
+		if (!ay)
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Academic year not found in this institution",
+			});
+
+		if (input.semesterId) {
+			const sem = await db.query.semesters.findFirst({
+				where: eq(schema.semesters.id, input.semesterId),
+				columns: { id: true },
+			});
+			if (!sem)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Semester not found",
+				});
+		}
+	}
+
 	const { teacherId, classId } = await resolveClassCourseInfo(
 		input.classCourseId,
 		institutionId,
@@ -262,6 +294,8 @@ export async function listSessions(
 	institutionId: string,
 	opts: {
 		classCourseId?: string;
+		classId?: string;
+		teacherId?: string;
 		academicYearId?: string;
 		semesterId?: string;
 		dayOfWeek?: DayOfWeek;
@@ -469,22 +503,6 @@ export async function previewBulkImport(
 
 		const day = row.dayOfWeek as DayOfWeek;
 
-		// Duplicate check (same as execute)
-		const duplicate = await repo.findDuplicate(
-			institutionId,
-			row.classCourseId,
-			day,
-			row.startTime,
-			row.endTime,
-		);
-		if (duplicate) {
-			errors.push({
-				rowIndex: rowNum,
-				reason: `Duplicate session already exists on ${day} ${row.startTime}–${row.endTime}`,
-			});
-			continue;
-		}
-
 		const { teacherId, classId } = await resolveClassCourseInfo(
 			row.classCourseId,
 			institutionId,
@@ -494,6 +512,24 @@ export async function previewBulkImport(
 			row.classCourseId,
 			institutionId,
 		);
+
+		// Duplicate check scoped by academic year + semester to avoid false positives
+		const duplicate = await repo.findDuplicate(
+			institutionId,
+			row.classCourseId,
+			day,
+			row.startTime,
+			row.endTime,
+			academicYearId,
+			row.semesterId ?? null,
+		);
+		if (duplicate) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: `Duplicate session already exists on ${day} ${row.startTime}–${row.endTime}`,
+			});
+			continue;
+		}
 
 		// DB conflict check
 		const conflicts = await repo.findConflicts(
@@ -573,13 +609,15 @@ export async function executeBulkImport(
 			institutionId,
 		);
 
-		// Duplicate check
+		// Duplicate check scoped by academic year + semester
 		const duplicate = await repo.findDuplicate(
 			institutionId,
 			row.classCourseId,
 			day,
 			row.startTime,
 			row.endTime,
+			academicYearId,
+			row.semesterId ?? null,
 		);
 		if (duplicate) {
 			if (skipDuplicates) {
