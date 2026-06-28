@@ -333,12 +333,18 @@ export async function getRoster(classCourseId: string, institutionId: string) {
 }
 
 /** Check if a student meets the attendance threshold for a class course.
- *  Returns null when no threshold is configured (gate disabled). */
+ *  Returns null when no threshold is configured (gate disabled).
+ *  Returns { eligible: true, exempted: true } when an admin exemption overrides the gate. */
 export async function checkAttendanceEligibility(
 	studentId: string,
 	classCourseId: string,
 	institutionId: string,
-): Promise<{ eligible: boolean; rate: number; threshold: number } | null> {
+): Promise<{
+	eligible: boolean;
+	rate: number;
+	threshold: number;
+	exempted?: true;
+} | null> {
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
@@ -388,7 +394,54 @@ export async function checkAttendanceEligibility(
 	}
 
 	const rate = effective > 0 ? Math.round((attended / effective) * 100) : 100;
+
+	// Check for admin-granted exemption — bypass gate if present
+	const exemption = await repo.findExemption(
+		classCourseId,
+		studentId,
+		institutionId,
+	);
+	if (exemption)
+		return { eligible: true, rate, threshold, exempted: true as const };
+
 	return { eligible: rate >= threshold, rate, threshold };
+}
+
+/** Grant an attendance exemption so a below-threshold student can still sit exams.
+ *  Only admins can call this. Creates or replaces any existing exemption. */
+export async function grantExemption(
+	classCourseId: string,
+	studentId: string,
+	reason: string,
+	institutionId: string,
+	grantedBy: string | null,
+) {
+	const roster = await repo.getRosterForClassCourse(
+		classCourseId,
+		institutionId,
+	);
+	if (!roster.some((r) => r.studentId === studentId)) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student is not enrolled in this class course",
+		});
+	}
+	return repo.grantExemption({
+		classCourseId,
+		studentId,
+		institutionId,
+		reason,
+		grantedBy,
+	});
+}
+
+/** Revoke a previously-granted attendance exemption. */
+export async function revokeExemption(
+	classCourseId: string,
+	studentId: string,
+	institutionId: string,
+) {
+	return repo.revokeExemption(classCourseId, studentId, institutionId);
 }
 
 async function resolveAcademicYearFromClassCourse(

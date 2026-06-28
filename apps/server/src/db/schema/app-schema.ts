@@ -17,6 +17,7 @@ import {
 	text,
 	timestamp,
 	unique,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type {
 	DeliberationStats,
@@ -3796,11 +3797,51 @@ export const attendanceSessions = pgTable(
 		index("idx_attendance_sessions_class_course").on(t.classCourseId),
 		index("idx_attendance_sessions_academic_year").on(t.academicYearId),
 		index("idx_attendance_sessions_date").on(t.sessionDate),
+		// Partial unique indexes guarantee idempotency and eliminate TOCTOU race conditions.
+		uniqueIndex("uq_atten_session_exceptional")
+			.on(t.classCourseId, t.sessionDate)
+			.where(sql`${t.courseSessionId} IS NULL`),
+		uniqueIndex("uq_atten_session_scheduled")
+			.on(t.classCourseId, t.courseSessionId, t.sessionDate)
+			.where(sql`${t.courseSessionId} IS NOT NULL`),
 	],
 );
 
 export type AttendanceSession = InferSelectModel<typeof attendanceSessions>;
 export type NewAttendanceSession = InferInsertModel<typeof attendanceSessions>;
+
+/** Admin-granted override allowing a below-threshold student to sit exams for a course. */
+export const attendanceExemptions = pgTable(
+	"attendance_exemptions",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		classCourseId: text("class_course_id")
+			.notNull()
+			.references(() => classCourses.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		reason: text("reason").notNull(),
+		grantedBy: text("granted_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		grantedAt: timestamp("granted_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_attendance_exemption").on(t.classCourseId, t.studentId),
+		index("idx_attendance_exemption_institution").on(t.institutionId),
+	],
+);
+
+export type AttendanceExemption = InferSelectModel<typeof attendanceExemptions>;
 
 export const attendanceSessionsRelations = relations(
 	attendanceSessions,

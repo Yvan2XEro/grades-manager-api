@@ -283,6 +283,46 @@ describe("conflict detection semester scoping", () => {
 		});
 		expect(s2.id).toBeDefined();
 	});
+
+	it("JVL-47 regression: annual session (no semesterId) conflicts with semester-scoped session in same slot", async () => {
+		const admin = createCaller(asAdmin());
+		const cc1 = await createClassCourse();
+		const cc2 = await createClassCourse({ class: cc1.class });
+		const room = await createRoom();
+		const academicYearId = await getAcademicYear(cc1.id);
+
+		// Annual session (no semesterId) occupies the room on Thursday 14:00–16:00
+		await admin.timetable.create({
+			classCourseId: cc1.id,
+			academicYearId,
+			dayOfWeek: "thu",
+			startTime: "14:00",
+			endTime: "16:00",
+			roomId: room.id,
+		});
+
+		const [sem] = await db
+			.insert(schema.semesters)
+			.values({
+				code: `S-${randomUUID().slice(0, 6)}`,
+				name: "Sem",
+				orderIndex: 30,
+			})
+			.returning();
+
+		// Semester-scoped session in the same room/slot → must CONFLICT with the annual one
+		await expect(
+			admin.timetable.create({
+				classCourseId: cc2.id,
+				academicYearId,
+				dayOfWeek: "thu",
+				startTime: "14:30",
+				endTime: "15:30",
+				roomId: room.id,
+				semesterId: sem.id,
+			}),
+		).rejects.toHaveProperty("code", "CONFLICT");
+	});
 });
 
 // ── Bulk import (JVL-49) ─────────────────────────────────────────────────────

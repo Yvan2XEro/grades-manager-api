@@ -14,7 +14,9 @@ import {
 	eligibilityCheckSchema,
 	excuseAbsenceSchema,
 	getSessionSchema,
+	grantExemptionSchema,
 	listSessionsSchema,
+	revokeExemptionSchema,
 	setThresholdSchema,
 	updateRecordSchema,
 } from "./attendance.zod";
@@ -248,4 +250,28 @@ export const router = createRouter({
 			if (!cc) throw new TRPCError({ code: "NOT_FOUND" });
 			return { success: true };
 		}),
+
+	/** Grant an attendance exemption so a below-threshold student can sit exams (admin only). */
+	grantExemption: adminProcedure
+		.input(grantExemptionSchema)
+		.mutation(({ ctx, input }) =>
+			service.grantExemption(
+				input.classCourseId,
+				input.studentId,
+				input.reason,
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+			),
+		),
+
+	/** Revoke a previously-granted attendance exemption (admin only). */
+	revokeExemption: adminProcedure
+		.input(revokeExemptionSchema)
+		.mutation(({ ctx, input }) =>
+			service.revokeExemption(
+				input.classCourseId,
+				input.studentId,
+				ctx.institution.id,
+			),
+		),
 });

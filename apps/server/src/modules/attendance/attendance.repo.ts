@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { db } from "@/db";
 import type {
 	NewAttendanceRecord,
@@ -6,12 +6,78 @@ import type {
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 
+// ── Attendance exemption CRUD ────────────────────────────────────────────────
+
+export async function findExemption(
+	classCourseId: string,
+	studentId: string,
+	institutionId: string,
+) {
+	return db.query.attendanceExemptions.findFirst({
+		where: and(
+			eq(schema.attendanceExemptions.classCourseId, classCourseId),
+			eq(schema.attendanceExemptions.studentId, studentId),
+			eq(schema.attendanceExemptions.institutionId, institutionId),
+		),
+	});
+}
+
+export async function grantExemption(data: {
+	classCourseId: string;
+	studentId: string;
+	institutionId: string;
+	reason: string;
+	grantedBy: string | null;
+}) {
+	const [row] = await db
+		.insert(schema.attendanceExemptions)
+		.values(data)
+		.onConflictDoUpdate({
+			target: [
+				schema.attendanceExemptions.classCourseId,
+				schema.attendanceExemptions.studentId,
+			],
+			set: {
+				reason: data.reason,
+				grantedBy: data.grantedBy,
+				grantedAt: new Date(),
+			},
+		})
+		.returning();
+	return row;
+}
+
+export async function revokeExemption(
+	classCourseId: string,
+	studentId: string,
+	institutionId: string,
+) {
+	await db
+		.delete(schema.attendanceExemptions)
+		.where(
+			and(
+				eq(schema.attendanceExemptions.classCourseId, classCourseId),
+				eq(schema.attendanceExemptions.studentId, studentId),
+				eq(schema.attendanceExemptions.institutionId, institutionId),
+			),
+		);
+	return { success: true };
+}
+
 export async function createSession(data: NewAttendanceSession) {
 	const [row] = await db
 		.insert(schema.attendanceSessions)
 		.values(data)
-		.returning();
-	return row;
+		.onConflictDoNothing()
+		.returning({ id: schema.attendanceSessions.id });
+	if (row) return row;
+	// Concurrent insert won the race — re-fetch the winner by the same key
+	return (await findSessionByCourseDateForWrite(
+		data.classCourseId,
+		data.sessionDate,
+		data.institutionId,
+		data.courseSessionId ?? undefined,
+	))!;
 }
 
 export async function findSessionById(id: string, institutionId: string) {
@@ -38,7 +104,6 @@ export async function findSessionByCourseDateForWrite(
 	institutionId: string,
 	courseSessionId?: string,
 ) {
-	const { isNull } = await import("drizzle-orm");
 	const conditions = courseSessionId
 		? [
 				eq(schema.attendanceSessions.classCourseId, classCourseId),

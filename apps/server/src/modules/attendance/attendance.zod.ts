@@ -61,3 +61,14 @@ export const setThresholdSchema = z.object({
 	classCourseId: z.string(),
 	threshold: z.number().int().min(0).max(100).nullable(),
 });
+
+export const grantExemptionSchema = z.object({
+	classCourseId: z.string(),
+	studentId: z.string(),
+	reason: z.string().min(1),
+});
+
+export const revokeExemptionSchema = z.object({
+	classCourseId: z.string(),
+	studentId: z.string(),
+});

@@ -61,6 +61,50 @@ describe("grades router", () => {
 	});
 });
 
+// ── Regression: CSV import gate (JVL-54) ─────────────────────────────────────
+
+describe("importCsv attendance gate regression (JVL-54)", () => {
+	async function makeStudentBelowThresholdForGrades(
+		classCourseId: string,
+		institutionId: string,
+		academicYearId: string,
+	) {
+		for (let i = 0; i < 2; i++) {
+			const date = new Date(Date.now() - (i + 30) * 86400000)
+				.toISOString()
+				.slice(0, 10);
+			await db.insert(schema.attendanceSessions).values({
+				classCourseId,
+				institutionId,
+				academicYearId,
+				sessionDate: date,
+				isExceptional: true,
+			});
+		}
+	}
+
+	it("below-threshold student appears in errors, grade not saved", async () => {
+		const admin = createCaller(asAdmin());
+		const { classCourse, exam, student, academicYear } =
+			await createRecapFixture({ classCourse: { attendanceThreshold: 75 } });
+
+		await makeStudentBelowThresholdForGrades(
+			classCourse.id,
+			classCourse.institutionId,
+			academicYear.id,
+		);
+
+		const csv = `registrationNumber,score\n${student.registrationNumber},15`;
+		const result = await admin.grades.importCsv({ examId: exam.id, csv });
+
+		expect(result.errors.length).toBeGreaterThan(0);
+		expect(
+			result.errors.some((e) => e.includes(student.registrationNumber)),
+		).toBe(true);
+		expect(result.imported).toBe(0);
+	});
+});
+
 // ── Attendance eligibility gate (JVL-54) ─────────────────────────────────────
 
 describe("attendance eligibility gate", () => {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
@@ -10,6 +11,7 @@ import {
 	createStudent,
 	makeTestContext,
 } from "../../../lib/test-utils";
+import * as repo from "../attendance.repo";
 
 const createCaller = (ctx: Context) => appRouter.createCaller(ctx);
 
@@ -635,6 +637,179 @@ describe("excuse scoping", () => {
 				attendanceRecordId: record.id,
 				excuseReason: "Unauthorized excuse",
 				approve: true,
+			}),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+});
+
+// ── Regression: sessionDate in courseSessionId idempotency (JVL-50) ──────────
+
+describe("session idempotency regression (JVL-50)", () => {
+	/** Resolve the academicYearId for a classCourse. */
+	async function getAcademicYearForCc(classCourseId: string) {
+		const cc = await db.query.classCourses.findFirst({
+			where: eq(schema.classCourses.id, classCourseId),
+			with: { classRef: { columns: { academicYear: true } } },
+		});
+		return cc!.classRef!.academicYear;
+	}
+
+	it("courseSessionId branch distinguishes sessions by sessionDate", async () => {
+		const cc = await createClassCourse();
+		const institutionId = cc.institutionId;
+		const academicYearId = await getAcademicYearForCc(cc.id);
+		// Create a real courseSession (timetable slot) so the FK is satisfied
+		const [cs] = await db
+			.insert(schema.courseSessions)
+			.values({
+				classCourseId: cc.id,
+				institutionId,
+				academicYearId,
+				dayOfWeek: "mon",
+				startTime: "08:00",
+				endTime: "09:00",
+			})
+			.returning({ id: schema.courseSessions.id });
+		const courseSessionId = cs.id;
+		// The same recurring slot appears on two different Mondays
+		const [s1] = await db
+			.insert(schema.attendanceSessions)
+			.values({
+				classCourseId: cc.id,
+				institutionId,
+				academicYearId,
+				courseSessionId,
+				sessionDate: "2025-03-03",
+				isExceptional: false,
+			})
+			.returning({ id: schema.attendanceSessions.id });
+		const [s2] = await db
+			.insert(schema.attendanceSessions)
+			.values({
+				classCourseId: cc.id,
+				institutionId,
+				academicYearId,
+				courseSessionId,
+				sessionDate: "2025-03-10",
+				isExceptional: false,
+			})
+			.returning({ id: schema.attendanceSessions.id });
+
+		const found1 = await repo.findSessionByCourseDateForWrite(
+			cc.id,
+			"2025-03-03",
+			institutionId,
+			courseSessionId,
+		);
+		const found2 = await repo.findSessionByCourseDateForWrite(
+			cc.id,
+			"2025-03-10",
+			institutionId,
+			courseSessionId,
+		);
+
+		expect(found1?.id).toBe(s1.id);
+		expect(found2?.id).toBe(s2.id);
+	});
+});
+
+// ── Regression: cross-tenant roster (JVL-51) ─────────────────────────────────
+
+describe("cross-tenant roster regression (JVL-51)", () => {
+	it("getRosterForClassCourse returns empty when institutionId does not match", async () => {
+		const cc = await createClassCourse();
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+
+		// Same classCourseId but wrong institution → should be empty
+		const result = await repo.getRosterForClassCourse(cc.id, randomUUID());
+		expect(result).toHaveLength(0);
+	});
+});
+
+// ── Attendance exemption (JVL-54 override audité) ────────────────────────────
+
+describe("attendance exemption", () => {
+	async function setupBelowThreshold() {
+		const admin = await makeAdmin();
+		const cc = await createClassCourse({ attendanceThreshold: 75 });
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+		const ccFull = await db.query.classCourses.findFirst({
+			where: eq(schema.classCourses.id, cc.id),
+			with: { classRef: { columns: { academicYear: true } } },
+		});
+		const academicYearId = ccFull!.classRef!.academicYear;
+		// 2 sessions, no records → student at 0%
+		for (let i = 0; i < 2; i++) {
+			await db.insert(schema.attendanceSessions).values({
+				classCourseId: cc.id,
+				institutionId: cc.institutionId,
+				academicYearId,
+				sessionDate: new Date(Date.now() - (i + 20) * 86400000)
+					.toISOString()
+					.slice(0, 10),
+				isExceptional: true,
+			});
+		}
+		return { admin, cc, student };
+	}
+
+	it("exemption makes a below-threshold student eligible for exams", async () => {
+		const { admin, cc, student } = await setupBelowThreshold();
+
+		// Not eligible without exemption
+		const before = await admin.attendance.checkEligibility({
+			studentId: student.id,
+			classCourseId: cc.id,
+		});
+		expect(before?.eligible).toBe(false);
+
+		// Grant exemption
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "Medical certificate submitted",
+		});
+
+		// Now eligible with exempted flag
+		const after = await admin.attendance.checkEligibility({
+			studentId: student.id,
+			classCourseId: cc.id,
+		});
+		expect(after?.eligible).toBe(true);
+		expect(after?.exempted).toBe(true);
+	});
+
+	it("revoking exemption restores ineligibility", async () => {
+		const { admin, cc, student } = await setupBelowThreshold();
+
+		await admin.attendance.grantExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+			reason: "Approved",
+		});
+		await admin.attendance.revokeExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+		});
+
+		const result = await admin.attendance.checkEligibility({
+			studentId: student.id,
+			classCourseId: cc.id,
+		});
+		expect(result?.eligible).toBe(false);
+		expect(result?.exempted).toBeUndefined();
+	});
+
+	it("non-admin cannot grant exemptions", async () => {
+		const cc = await createClassCourse();
+		const teacher = createCaller(makeTestContext({ role: "teacher" }));
+		await expect(
+			teacher.attendance.grantExemption({
+				classCourseId: cc.id,
+				studentId: "any",
+				reason: "x",
 			}),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
 	});
