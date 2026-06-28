@@ -70,6 +70,7 @@ export async function list(
 				with: {
 					classRef: true,
 					courseRef: true,
+					teacherRef: { columns: { firstName: true, lastName: true } },
 				},
 			},
 		},
@@ -98,6 +99,7 @@ export async function findConflicts(
 		classId?: string;
 		excludeId?: string;
 		academicYearId?: string;
+		semesterId?: string;
 	},
 ) {
 	const conditions = [
@@ -108,6 +110,8 @@ export async function findConflicts(
 		conditions.push(
 			eq(schema.courseSessions.academicYearId, opts.academicYearId),
 		);
+	if (opts.semesterId)
+		conditions.push(eq(schema.courseSessions.semesterId, opts.semesterId));
 
 	const all = await db.query.courseSessions.findMany({
 		where: and(...conditions),
@@ -197,7 +201,13 @@ export async function listByClassCourseIds(
 	return db.query.courseSessions.findMany({
 		where: and(...conditions),
 		with: {
-			classCourse: { with: { classRef: true, courseRef: true } },
+			classCourse: {
+				with: {
+					classRef: true,
+					courseRef: true,
+					teacherRef: { columns: { firstName: true, lastName: true } },
+				},
+			},
 		},
 		orderBy: (t, { asc }) => [asc(t.dayOfWeek), asc(t.startTime)],
 	});

@@ -103,23 +103,24 @@ export async function deleteSession(id: string, institutionId: string) {
 		);
 }
 
-/** Replace all records for a session in one go (upsert semantics). */
+/** Replace all records for a session atomically (delete + insert in one transaction). */
 export async function upsertRecords(
 	records: NewAttendanceRecord[],
 	institutionId: string,
 	attendanceSessionId: string,
 ) {
-	// Delete existing records for this session first
-	await db
-		.delete(schema.attendanceRecords)
-		.where(
-			and(
-				eq(schema.attendanceRecords.attendanceSessionId, attendanceSessionId),
-				eq(schema.attendanceRecords.institutionId, institutionId),
-			),
-		);
-	if (records.length === 0) return [];
-	return db.insert(schema.attendanceRecords).values(records).returning();
+	return db.transaction(async (tx) => {
+		await tx
+			.delete(schema.attendanceRecords)
+			.where(
+				and(
+					eq(schema.attendanceRecords.attendanceSessionId, attendanceSessionId),
+					eq(schema.attendanceRecords.institutionId, institutionId),
+				),
+			);
+		if (records.length === 0) return [];
+		return tx.insert(schema.attendanceRecords).values(records).returning();
+	});
 }
 
 export async function updateRecord(

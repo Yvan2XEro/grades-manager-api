@@ -271,7 +271,9 @@ export default function AttendanceManagement() {
 							/>
 						</div>
 						<div>
-							<Label className="mb-1 block text-xs">Cours</Label>
+							<Label className="mb-1 block text-xs">
+								{t("teacher.attendanceManagement.course")}
+							</Label>
 							<Select
 								value={classCourseId ?? ""}
 								onValueChange={(v) => {
@@ -336,7 +338,7 @@ export default function AttendanceManagement() {
 										}`}
 									>
 										<div className="font-medium">
-											{new Date(s.sessionDate).toLocaleDateString("fr-FR", {
+											{new Date(s.sessionDate).toLocaleDateString(undefined, {
 												day: "2-digit",
 												month: "short",
 												year: "numeric",
@@ -344,7 +346,10 @@ export default function AttendanceManagement() {
 										</div>
 										{total > 0 && (
 											<div className="text-xs opacity-70">
-												{present}/{total} présents
+												{t("teacher.attendanceManagement.presentCount", {
+													present,
+													total,
+												})}
 											</div>
 										)}
 									</button>
@@ -446,7 +451,7 @@ export default function AttendanceManagement() {
 										<thead className="bg-muted/50">
 											<tr>
 												<th className="px-4 py-2 text-left font-medium">
-													{t("attendanceRates.student")}
+													{t("teacher.attendanceManagement.student")}
 												</th>
 												<th className="px-4 py-2 text-left font-medium">N°</th>
 												<th className="px-4 py-2 text-left font-medium">
@@ -486,7 +491,6 @@ export default function AttendanceManagement() {
 																		"present",
 																		"absent",
 																		"late",
-																		"excused",
 																	] as AttendanceStatus[]
 																).map((s) => (
 																	<button
@@ -577,7 +581,7 @@ export default function AttendanceManagement() {
 							variant="outline"
 							onClick={() => setCreateDialogOpen(false)}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button
 							onClick={() => createSessionMutation.mutate()}
@@ -587,7 +591,7 @@ export default function AttendanceManagement() {
 								createSessionMutation.isPending
 							}
 						>
-							Créer
+							{t("common.create")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -604,7 +608,7 @@ export default function AttendanceManagement() {
 					<div className="space-y-3 py-3">
 						{excuseTarget && (
 							<p className="text-muted-foreground text-sm">
-								{t("attendanceRates.student")}:{" "}
+								{t("teacher.attendanceManagement.student")}:{" "}
 								<span className="font-medium text-foreground">
 									{excuseTarget.studentName}
 								</span>
@@ -614,7 +618,9 @@ export default function AttendanceManagement() {
 							<Label>{t("teacher.attendanceManagement.excuseReason")}</Label>
 							<Textarea
 								className="mt-1"
-								placeholder="Maladie, événement familial…"
+								placeholder={t(
+									"teacher.attendanceManagement.excusePlaceholder",
+								)}
 								value={excuseReason}
 								onChange={(e) => setExcuseReason(e.target.value)}
 								rows={3}
@@ -626,13 +632,13 @@ export default function AttendanceManagement() {
 							variant="outline"
 							onClick={() => setExcuseDialogOpen(false)}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button
 							onClick={() => excuseMutation.mutate()}
 							disabled={!excuseReason.trim() || excuseMutation.isPending}
 						>
-							Valider l'excuse
+							{t("teacher.attendanceManagement.submitExcuse")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

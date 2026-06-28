@@ -4,6 +4,7 @@ export const createSessionSchema = z.object({
 	classCourseId: z.string(),
 	sessionDate: z.string().date(),
 	courseSessionId: z.string().optional(),
+	isExceptional: z.boolean().optional(),
 	notes: z.string().optional(),
 });
 
@@ -23,7 +24,8 @@ export const bulkMarkSchema = z.object({
 	records: z.array(
 		z.object({
 			studentId: z.string(),
-			status: z.enum(["present", "absent", "late", "excused"]),
+			// excused is not allowed here — must go through excuseAbsence
+			status: z.enum(["present", "absent", "late"]),
 		}),
 	),
 });
@@ -31,7 +33,8 @@ export const bulkMarkSchema = z.object({
 export const updateRecordSchema = z.object({
 	attendanceSessionId: z.string(),
 	studentId: z.string(),
-	status: z.enum(["present", "absent", "late", "excused"]),
+	// excused is not allowed here — must go through excuseAbsence
+	status: z.enum(["present", "absent", "late"]),
 });
 
 export const excuseAbsenceSchema = z.object({

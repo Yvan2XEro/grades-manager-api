@@ -3780,6 +3780,7 @@ export const attendanceSessions = pgTable(
 		),
 		sessionDate: date("session_date").notNull(),
 		notes: text("notes"),
+		isExceptional: boolean("is_exceptional").notNull().default(false),
 		createdBy: text("created_by").references(() => domainUsers.id, {
 			onDelete: "set null",
 		}),

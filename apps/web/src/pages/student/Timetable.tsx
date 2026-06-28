@@ -28,15 +28,21 @@ export default function StudentTimetable() {
 
 	const sessions = data ?? [];
 
-	const gridSessions: GridSession[] = sessions.map((s) => ({
-		id: s.id,
-		dayOfWeek: s.dayOfWeek,
-		startTime: s.startTime,
-		endTime: s.endTime,
-		room: s.room,
-		label: s.classCourse?.courseRef?.name ?? s.classCourseId,
-		subLabel: s.classCourse?.classRef?.name,
-	}));
+	const gridSessions: GridSession[] = sessions.map((s) => {
+		const teacher = s.classCourse?.teacherRef;
+		const teacherName = teacher
+			? `${teacher.firstName} ${teacher.lastName}`
+			: undefined;
+		return {
+			id: s.id,
+			dayOfWeek: s.dayOfWeek,
+			startTime: s.startTime,
+			endTime: s.endTime,
+			room: s.room,
+			label: s.classCourse?.courseRef?.name ?? s.classCourseId,
+			subLabel: teacherName ?? s.classCourse?.classRef?.name,
+		};
+	});
 
 	return (
 		<div className="p-6">

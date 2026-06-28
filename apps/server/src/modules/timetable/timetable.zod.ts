@@ -40,6 +40,7 @@ const importRowSchema = z.object({
 	endTime: z.string(),
 	room: z.string().optional(),
 	roomId: z.string().optional(),
+	semesterId: z.string().optional(),
 });
 
 export const previewBulkImportSchema = z.object({

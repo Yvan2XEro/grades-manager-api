@@ -142,13 +142,15 @@ export async function createSession(
 			teacherId,
 			classId,
 			academicYearId: input.academicYearId,
+			semesterId: input.semesterId,
 		},
 	);
 
 	if (conflicts.length > 0) {
+		const ids = conflicts.map((c) => c.id).join(", ");
 		throw new TRPCError({
 			code: "CONFLICT",
-			message: `Scheduling conflict: ${conflicts.map((c) => c.conflictType).join(", ")} overlap detected`,
+			message: `Scheduling conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
 		});
 	}
 
@@ -209,7 +211,10 @@ export async function updateSession(
 		institutionId,
 	);
 
-	// Check conflicts BEFORE mutating, scoped to the same academic year
+	const nextSemesterId =
+		input.semesterId !== undefined ? input.semesterId : existing.semesterId;
+
+	// Check conflicts BEFORE mutating, scoped to the same academic year + semester
 	const conflicts = await repo.findConflicts(
 		institutionId,
 		nextDay,
@@ -222,13 +227,15 @@ export async function updateSession(
 			classId,
 			excludeId: input.id,
 			academicYearId: existing.academicYearId,
+			semesterId: nextSemesterId ?? undefined,
 		},
 	);
 
 	if (conflicts.length > 0) {
+		const ids = conflicts.map((c) => c.id).join(", ");
 		throw new TRPCError({
 			code: "CONFLICT",
-			message: `Scheduling conflict: ${conflicts.map((c) => c.conflictType).join(", ")} overlap detected`,
+			message: `Scheduling conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
 		});
 	}
 
@@ -335,7 +342,51 @@ type ImportRow = {
 	endTime: string;
 	room?: string;
 	roomId?: string;
+	semesterId?: string;
 };
+
+/** Check if a candidate session conflicts with any previously accepted in-batch session. */
+function intraBatchConflict(
+	candidate: {
+		dayOfWeek: string;
+		startTime: string;
+		endTime: string;
+		room?: string;
+		roomId?: string;
+		teacherId?: string;
+		classId?: string;
+		academicYearId: string;
+		semesterId?: string;
+	},
+	batch: Array<typeof candidate & { rowIndex: number }>,
+): number | null {
+	for (const b of batch) {
+		if (b.dayOfWeek !== candidate.dayOfWeek) continue;
+		if (b.academicYearId !== candidate.academicYearId) continue;
+		// Skip if both have a semester and they differ (non-overlapping semesters don't conflict)
+		if (
+			b.semesterId &&
+			candidate.semesterId &&
+			b.semesterId !== candidate.semesterId
+		)
+			continue;
+		if (candidate.startTime >= b.endTime || candidate.endTime <= b.startTime)
+			continue;
+		const roomConflict =
+			(candidate.roomId && b.roomId && candidate.roomId === b.roomId) ||
+			(!candidate.roomId &&
+				candidate.room &&
+				!b.roomId &&
+				b.room &&
+				candidate.room === b.room);
+		const teacherConflict =
+			candidate.teacherId && b.teacherId && candidate.teacherId === b.teacherId;
+		const classConflict =
+			candidate.classId && b.classId && candidate.classId === b.classId;
+		if (roomConflict || teacherConflict || classConflict) return b.rowIndex;
+	}
+	return null;
+}
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const VALID_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -391,6 +442,19 @@ export async function previewBulkImport(
 ) {
 	const valid: (ImportRow & { rowIndex: number })[] = [];
 	const errors: { rowIndex: number; reason: string }[] = [];
+	// Track accepted sessions for intra-batch conflict detection
+	const accepted: Array<{
+		dayOfWeek: string;
+		startTime: string;
+		endTime: string;
+		room?: string;
+		roomId?: string;
+		teacherId?: string;
+		classId?: string;
+		academicYearId: string;
+		semesterId?: string;
+		rowIndex: number;
+	}> = [];
 
 	for (let i = 0; i < rows.length; i++) {
 		const row = rows[i];
@@ -421,7 +485,6 @@ export async function previewBulkImport(
 			continue;
 		}
 
-		// Conflict check (same as execute)
 		const { teacherId, classId } = await resolveClassCourseInfo(
 			row.classCourseId,
 			institutionId,
@@ -431,6 +494,8 @@ export async function previewBulkImport(
 			row.classCourseId,
 			institutionId,
 		);
+
+		// DB conflict check
 		const conflicts = await repo.findConflicts(
 			institutionId,
 			day,
@@ -442,16 +507,40 @@ export async function previewBulkImport(
 				teacherId,
 				classId,
 				academicYearId,
+				semesterId: row.semesterId,
 			},
 		);
 		if (conflicts.length > 0) {
+			const ids = conflicts.map((c) => c.id).join(", ");
 			errors.push({
 				rowIndex: rowNum,
-				reason: `Conflict detected: ${conflicts.map((c) => c.conflictType).join(", ")} overlap`,
+				reason: `Conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
 			});
 			continue;
 		}
 
+		// Intra-batch conflict check
+		const candidate = {
+			dayOfWeek: day,
+			startTime: row.startTime,
+			endTime: row.endTime,
+			room: roomName,
+			roomId: row.roomId,
+			teacherId,
+			classId,
+			academicYearId,
+			semesterId: row.semesterId,
+		};
+		const batchConflictRow = intraBatchConflict(candidate, accepted);
+		if (batchConflictRow !== null) {
+			errors.push({
+				rowIndex: rowNum,
+				reason: `Conflicts with row ${batchConflictRow} in this import batch`,
+			});
+			continue;
+		}
+
+		accepted.push({ ...candidate, rowIndex: rowNum });
 		valid.push({ ...row, rowIndex: rowNum });
 	}
 
@@ -504,7 +593,7 @@ export async function executeBulkImport(
 			continue;
 		}
 
-		// Conflict check (teacher, room, class) scoped to academic year
+		// Conflict check (teacher, room, class) scoped to academic year + semester
 		const { teacherId, classId } = await resolveClassCourseInfo(
 			row.classCourseId,
 			institutionId,
@@ -521,12 +610,14 @@ export async function executeBulkImport(
 				teacherId,
 				classId,
 				academicYearId,
+				semesterId: row.semesterId,
 			},
 		);
 		if (conflicts.length > 0) {
+			const ids = conflicts.map((c) => c.id).join(", ");
 			errors.push({
 				rowIndex: rowNum,
-				reason: `Conflict detected: ${conflicts.map((c) => c.conflictType).join(", ")} overlap`,
+				reason: `Conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
 			});
 			continue;
 		}
@@ -540,6 +631,7 @@ export async function executeBulkImport(
 			endTime: row.endTime,
 			room: roomName ?? null,
 			roomId: row.roomId ?? null,
+			semesterId: row.semesterId ?? null,
 		});
 		created++;
 	}

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "bun:test";
+import { db } from "@/db";
+import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 import {
@@ -56,5 +58,65 @@ describe("grades router", () => {
 				score: 60,
 			}),
 		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+});
+
+// ── Attendance eligibility gate (JVL-54) ─────────────────────────────────────
+
+describe("attendance eligibility gate", () => {
+	/** Insert two sessions for classCourse with no records (student treated as absent → 0%). */
+	async function makeStudentBelowThreshold(
+		classCourseId: string,
+		institutionId: string,
+		academicYearId: string,
+	) {
+		for (let i = 0; i < 2; i++) {
+			const date = new Date(Date.now() - (i + 10) * 86400000)
+				.toISOString()
+				.slice(0, 10);
+			await db.insert(schema.attendanceSessions).values({
+				classCourseId,
+				institutionId,
+				academicYearId,
+				sessionDate: date,
+				isExceptional: true,
+			});
+		}
+	}
+
+	it("upsertNote: blocks when student is below attendance threshold", async () => {
+		const admin = createCaller(asAdmin());
+		const { classCourse, exam, student, academicYear } =
+			await createRecapFixture({ classCourse: { attendanceThreshold: 75 } });
+
+		await makeStudentBelowThreshold(
+			classCourse.id,
+			classCourse.institutionId,
+			academicYear.id,
+		);
+
+		await expect(
+			admin.grades.upsertNote({
+				studentId: student.id,
+				examId: exam.id,
+				score: 60,
+			}),
+		).rejects.toHaveProperty("code", "PRECONDITION_FAILED");
+	});
+
+	it("updateNote: blocks when student is below attendance threshold", async () => {
+		const admin = createCaller(asAdmin());
+		const { classCourse, grade, student, academicYear } =
+			await createRecapFixture({ classCourse: { attendanceThreshold: 75 } });
+
+		await makeStudentBelowThreshold(
+			classCourse.id,
+			classCourse.institutionId,
+			academicYear.id,
+		);
+
+		await expect(
+			admin.grades.updateNote({ id: grade.id, score: 60 }),
+		).rejects.toHaveProperty("code", "PRECONDITION_FAILED");
 	});
 });

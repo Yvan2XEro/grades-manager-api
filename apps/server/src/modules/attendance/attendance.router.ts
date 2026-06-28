@@ -66,14 +66,37 @@ export const router = createRouter({
 	/** Get one session with its full roster of records. */
 	getSession: gradingProcedure
 		.input(getSessionSchema)
-		.query(({ ctx, input }) =>
-			service.getSession(input.id, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			const session = await service.getSession(input.id, ctx.institution.id);
+			if (!ctx.permissions.canManageCatalog) {
+				await assertTeacherOwnsCourse(
+					session.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return session;
+		}),
 
-	/** List sessions (optionally filtered by classCourse, year, date range). */
+	/** List sessions (optionally filtered by classCourse, year, date range).
+	 *  Non-admin callers must supply classCourseId and must own that course. */
 	listSessions: gradingProcedure
 		.input(listSessionsSchema)
-		.query(({ ctx, input }) => service.listSessions(ctx.institution.id, input)),
+		.query(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				if (!input.classCourseId)
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "classCourseId is required for non-admin callers",
+					});
+				await assertTeacherOwnsCourse(
+					input.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.listSessions(ctx.institution.id, input);
+		}),
 
 	/** Delete an attendance session (admin only). */
 	deleteSession: adminProcedure
@@ -157,31 +180,53 @@ export const router = createRouter({
 	/** Per-student attendance rates for a class course. */
 	getAttendanceRates: gradingProcedure
 		.input(attendanceRatesSchema)
-		.query(({ ctx, input }) =>
-			service.getAttendanceRates(
+		.query(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				await assertTeacherOwnsCourse(
+					input.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.getAttendanceRates(
 				input.classCourseId,
 				ctx.institution.id,
 				input.academicYearId,
-			),
-		),
+			);
+		}),
 
 	/** Active student roster for a class course. */
 	getRoster: gradingProcedure
 		.input(z.object({ classCourseId: z.string() }))
-		.query(({ ctx, input }) =>
-			service.getRoster(input.classCourseId, ctx.institution.id),
-		),
+		.query(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				await assertTeacherOwnsCourse(
+					input.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.getRoster(input.classCourseId, ctx.institution.id);
+		}),
 
-	/** Check attendance eligibility for a student in a class course. */
+	/** Check attendance eligibility for a student in a class course.
+	 *  Teachers may only check students enrolled in their own courses. */
 	checkEligibility: gradingProcedure
 		.input(eligibilityCheckSchema)
-		.query(({ ctx, input }) =>
-			service.checkAttendanceEligibility(
+		.query(async ({ ctx, input }) => {
+			if (!ctx.permissions.canManageCatalog) {
+				await assertTeacherOwnsCourse(
+					input.classCourseId,
+					ctx.institution.id,
+					ctx.profile!.id,
+				);
+			}
+			return service.checkAttendanceEligibility(
 				input.studentId,
 				input.classCourseId,
 				ctx.institution.id,
-			),
-		),
+			);
+		}),
 
 	/** Set or clear the attendance threshold on a class course (admin only). */
 	setThreshold: adminProcedure

@@ -99,7 +99,8 @@
     "save": "Save",
     "delete": "Delete",
     "none": "None",
-    "confirmDelete": "Confirm deletion"
+    "confirmDelete": "Confirm deletion",
+    "create": "Create"
   },
   "teacher": {
     "courses": {
@@ -528,7 +529,13 @@
         "sessionDeleted": "Session deleted",
         "marked": "Marked",
         "excused": "Absence excused"
-      }
+      },
+      "course": "Course",
+      "student": "Student",
+      "presentCount": "{{present}}/{{total}} present",
+      "excusePlaceholder": "Illness, family event…",
+      "submitExcuse": "Submit excuse",
+      "marked": "Mark all"
     },
     "attendanceRates": {
       "title": "Attendance Rates",
@@ -4538,6 +4545,8 @@
     "ratePercent": "Rate (%)",
     "name": "Name",
     "empty": "Select a course to view attendance rates.",
-    "noData": "No attendance sessions recorded for this course."
+    "noData": "No attendance sessions recorded for this course.",
+    "title": "Attendance rates",
+    "exportFilename": "attendance-rates.xlsx"
   }
 }

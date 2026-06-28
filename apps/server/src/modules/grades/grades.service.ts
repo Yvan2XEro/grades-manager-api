@@ -176,6 +176,19 @@ export async function updateNote(
 		grade.student,
 		exam.classCourse,
 	);
+
+	const eligibility = await attendanceService.checkAttendanceEligibility(
+		grade.student,
+		exam.classCourse,
+		institutionId,
+	);
+	if (eligibility !== null && !eligibility.eligible) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `Student attendance rate (${eligibility.rate}%) is below the required threshold (${eligibility.threshold}%)`,
+		});
+	}
+
 	const updated = await repo.update(id, score.toString());
 	await logGradeEdit({
 		access,

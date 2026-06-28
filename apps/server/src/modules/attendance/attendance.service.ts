@@ -1,11 +1,19 @@
 import { TRPCError } from "@trpc/server";
 import * as repo from "./attendance.repo";
 
+const DAY_NAMES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+
+function dateToDayOfWeek(dateStr: string): string {
+	const [y, m, d] = dateStr.split("-").map(Number);
+	return DAY_NAMES[new Date(y, m - 1, d).getDay()];
+}
+
 export async function createOrGetSession(
 	input: {
 		classCourseId: string;
 		sessionDate: string;
 		courseSessionId?: string;
+		isExceptional?: boolean;
 		notes?: string;
 	},
 	institutionId: string,
@@ -20,8 +28,8 @@ export async function createOrGetSession(
 	);
 	if (existing) return existing;
 
-	// Validate courseSessionId belongs to the same classCourse + institution
 	if (input.courseSessionId) {
+		// Validate courseSessionId belongs to same classCourse + institution, and date matches its day
 		const { db } = await import("@/db");
 		const { and, eq } = await import("drizzle-orm");
 		const schema = await import("@/db/schema/app-schema");
@@ -31,13 +39,26 @@ export async function createOrGetSession(
 				eq(schema.courseSessions.classCourseId, input.classCourseId),
 				eq(schema.courseSessions.institutionId, institutionId),
 			),
-			columns: { id: true },
+			columns: { id: true, dayOfWeek: true },
 		});
 		if (!cs)
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "courseSessionId does not belong to this classCourse",
 			});
+		const sessionDay = dateToDayOfWeek(input.sessionDate);
+		if (cs.dayOfWeek !== sessionDay)
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `Course session runs on ${cs.dayOfWeek} but attendance date falls on ${sessionDay}`,
+			});
+	} else if (!input.isExceptional) {
+		// Sessions without a timetable slot must be explicitly flagged as exceptional
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"Attendance sessions without a timetable slot must have isExceptional set to true",
+		});
 	}
 
 	// Resolve academicYearId from classCourse
@@ -47,7 +68,11 @@ export async function createOrGetSession(
 	);
 
 	return repo.createSession({
-		...input,
+		classCourseId: input.classCourseId,
+		sessionDate: input.sessionDate,
+		courseSessionId: input.courseSessionId,
+		isExceptional: input.isExceptional ?? false,
+		notes: input.notes,
 		institutionId,
 		academicYearId,
 		createdBy: createdBy ?? null,
@@ -243,17 +268,29 @@ export async function getAttendanceRates(
 	institutionId: string,
 	academicYearId?: string,
 ) {
-	const [sessions, roster] = await Promise.all([
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const [sessions, roster, cc] = await Promise.all([
 		repo.getSessionsWithRecordCounts(
 			classCourseId,
 			institutionId,
 			academicYearId,
 		),
 		repo.getRosterForClassCourse(classCourseId, institutionId),
+		db.query.classCourses.findFirst({
+			where: and(
+				eq(schema.classCourses.id, classCourseId),
+				eq(schema.classCourses.institutionId, institutionId),
+			),
+			columns: { attendanceThreshold: true },
+		}),
 	]);
 
+	const threshold = cc?.attendanceThreshold ?? null;
 	const totalSessions = sessions.length;
-	if (totalSessions === 0) return { totalSessions: 0, students: [] };
+	if (totalSessions === 0) return { totalSessions: 0, students: [], threshold };
 
 	// Initialise counters for every enrolled student (not just those with records)
 	const studentMap = new Map(
@@ -287,7 +324,7 @@ export async function getAttendanceRates(
 		},
 	);
 
-	return { totalSessions, students };
+	return { totalSessions, students, threshold };
 }
 
 /** Fetch the roster of active students for a course. */

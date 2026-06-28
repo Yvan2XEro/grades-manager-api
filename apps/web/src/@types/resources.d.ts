@@ -92,6 +92,16 @@ interface Resources {
 			all: "All";
 			selectAll: "Select all";
 			selectedCount: "{{count}} selected";
+			active: "Active";
+			inactive: "Inactive";
+			created: "Created";
+			saved: "Saved";
+			deleted: "Deleted";
+			save: "Save";
+			delete: "Delete";
+			none: "None";
+			confirmDelete: "Confirm deletion";
+			create: "Create";
 		};
 		teacher: {
 			courses: {
@@ -383,6 +393,164 @@ interface Resources {
 					sent: "Alert queued";
 				};
 				error: "Could not load alerts";
+			};
+			timetable: {
+				title: "Timetable";
+				subtitle: "Manage weekly course sessions";
+				newSession: "New session";
+				editSession: "Edit session";
+				create: "Create";
+				save: "Save";
+				cancel: "Cancel";
+				delete: "Delete";
+				day: "Day";
+				startTime: "Start";
+				endTime: "End";
+				room: "Room";
+				noRoom: "No room";
+				export: "Export";
+				import: {
+					title: "Import Timetable";
+					description: "Upload a CSV file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).";
+					downloadTemplate: "Download CSV template";
+					file: "CSV file";
+					preview: "Preview";
+					execute: "Import {{count}} session(s)";
+					skipDuplicates: "Skip existing sessions";
+					validRows: "valid row(s)";
+					errorRows: "error(s)";
+					success: "{{count}} session(s) imported";
+					row: "Row";
+					error: "Error";
+					schedule: "Time";
+					noErrors: "No errors";
+				};
+				filterByYear: "Filter by year";
+				filterByCourse: "Filter by course";
+				conflicts: {
+					room: "Room conflict";
+					teacher: "Teacher conflict";
+					class: "Class conflict";
+				};
+				toast: {
+					created: "Session created";
+					updated: "Session updated";
+					deleted: "Session deleted";
+				};
+				myTitle: "My Timetable";
+				mySubtitle: "Your weekly course sessions";
+				studentSubtitle: "Your weekly classes";
+				studentNoSessionsDesc: "Your weekly classes will appear here once scheduled.";
+				noSessions: "No sessions";
+				noSessionsDesc: "No sessions scheduled for this period.";
+				selectCourse: "Select a course";
+				selectCourseDesc: "Choose an academic year and a course to view and manage its sessions.";
+				filterBySemester: "Semester";
+				importCsv: "Import CSV";
+				capacityWarning: "Room capacity warning: {{classSize}} students for {{roomCapacity}} seats";
+				course: "Course";
+				class: "Class";
+				days: {
+					mon: "Monday";
+					tue: "Tuesday";
+					wed: "Wednesday";
+					thu: "Thursday";
+					fri: "Friday";
+					sat: "Saturday";
+					sun: "Sunday";
+				};
+			};
+			rooms: {
+				title: "Rooms";
+				subtitle: "Manage classrooms and lecture halls";
+				newRoom: "New room";
+				editRoom: "Edit room";
+				create: "Create";
+				save: "Save";
+				cancel: "Cancel";
+				delete: "Delete";
+				code: "Code";
+				name: "Name";
+				capacity: "Capacity";
+				building: "Building";
+				campus: "Campus";
+				isActive: "Active";
+				active: "Active";
+				inactive: "Inactive";
+				seats: "seats";
+				toast: {
+					created: "Room created";
+					updated: "Room updated";
+					deleted: "Room deleted";
+				};
+				description: "Manage rooms and lecture halls per institution";
+				add: "New room";
+				edit: "Edit room";
+				empty: {
+					title: "No rooms";
+					description: "Add a room so it can be assigned to course sessions.";
+				};
+				fields: {
+					code: "Code";
+					name: "Name";
+					capacity: "Capacity";
+					building: "Building";
+					campus: "Campus";
+				};
+				placeholders: {
+					roomName: "Lecture Hall A";
+					building: "Main building";
+					campus: "Central campus";
+				};
+			};
+			attendanceManagement: {
+				title: "Attendance";
+				subtitle: "Track presence per session";
+				newSession: "New session";
+				createSession: "Create session";
+				deleteSession: "Delete session";
+				bulkMarkPresent: "Mark all present";
+				bulkMarkAbsent: "Mark all absent";
+				bulkMarkLate: "Mark all late";
+				excuse: "Excuse absence";
+				excuseReason: "Reason";
+				submit: "Submit";
+				cancel: "Cancel";
+				filterByYear: "Filter by year";
+				filterByCourse: "Filter by course";
+				noSession: "No session selected";
+				status: {
+					present: "Present";
+					absent: "Absent";
+					late: "Late";
+					excused: "Excused";
+				};
+				toast: {
+					sessionCreated: "Session created";
+					sessionDeleted: "Session deleted";
+					marked: "Marked";
+					excused: "Absence excused";
+				};
+				course: "Course";
+				student: "Student";
+				presentCount: "{{present}}/{{total}} present";
+				excusePlaceholder: "Illness, family event…";
+				submitExcuse: "Submit excuse";
+				marked: "Mark all";
+			};
+			attendanceRates: {
+				title: "Attendance Rates";
+				subtitle: "Attendance statistics by course";
+				filterByYear: "Filter by year";
+				filterByCourse: "Filter by course";
+				export: "Export";
+				student: "Student";
+				attended: "Attended";
+				effective: "Effective";
+				rate: "Rate";
+				eligible: "Eligible";
+				yes: "Yes";
+				no: "No";
 			};
 			gradeAccessGrants: {
 				title: "Grade Delegation";
@@ -845,6 +1013,7 @@ interface Resources {
 					submitted: "Exam submitted";
 					locked: "Exam locked";
 				};
+				rejectionReason: "Rejection reason";
 			};
 		};
 		navigation: {
@@ -899,6 +1068,7 @@ interface Resources {
 					monitoring: "Monitoring";
 					notifications: "Notifications";
 					batchJobs: "Batch Jobs";
+					feeClearance: "Fee Clearance";
 					students: "Students";
 					studentPromotion: "Student promotion";
 					courses: "Courses";
@@ -924,6 +1094,7 @@ interface Resources {
 					gradeManagement: "Grade management";
 					promotion: "Year transition";
 					configuration: "Configuration";
+					timetable: "Timetable";
 				};
 				groups: {
 					overview: "Overview";
@@ -942,6 +1113,7 @@ interface Resources {
 					grades: "Grades";
 					courses: "Courses";
 					attendance: "Attendance alerts";
+					timetable: "Timetable";
 					workflows: "Workflows";
 					exports: "Exports";
 					myCourses: "My courses";
@@ -956,6 +1128,7 @@ interface Resources {
 				student: {
 					dashboard: "My performance";
 					exams: "Exam calendar";
+					timetable: "Timetable";
 					enrollments: "My courses";
 				};
 			};
@@ -1354,6 +1527,13 @@ interface Resources {
 					error: "Error";
 					result: "Result";
 					noLogs: "No logs yet";
+					logLevel: {
+						all: "All";
+						info: "Info";
+						warn: "Warn";
+						error: "Error";
+					};
+					logStep: "Step";
 				};
 				toast: {
 					previewSuccess: "Preview generated successfully";
@@ -1997,6 +2177,8 @@ interface Resources {
 					reviewGrades: "Grades";
 					retake: "Retake";
 				};
+				rejectReasonLabel: "Rejection reason (visible to the teacher)";
+				rejectReasonPlaceholder: "Explain why the grades were rejected…";
 				filters: {
 					academicYear: "Academic year";
 					class: "Class";
@@ -2089,6 +2271,9 @@ interface Resources {
 				sessionType: {
 					normal: "Normal";
 					retake: "Retake";
+				};
+				rejection: {
+					label: "Rejection reason:";
 				};
 			};
 			examTypes: {
@@ -3858,6 +4043,7 @@ interface Resources {
 				emptyHint: "No exams approved or rejected yet.";
 				approvedOn: "Approved on {{date}}";
 				rejectedOn: "Rejected on {{date}}";
+				rejectionReason: "Reason";
 				searchPlaceholder: "Search exams...";
 				allClasses: "All classes";
 				allYears: "All years";
@@ -3917,6 +4103,14 @@ interface Resources {
 				unenroll: "Withdraw";
 				enroll: "Enroll";
 				selected: "{{count}} course(s) selected of {{total}}";
+			};
+			dashboard: {
+				title: "My Space";
+				subtitle: "Overview of your academic and administrative status";
+				pendingFees: "Tuition fees are pending. Please settle your account to avoid restrictions.";
+				viewFees: "My Fees";
+				upcomingExams: "Upcoming Exams";
+				viewExams: "View Calendar";
 			};
 		};
 		retakes: {
@@ -4130,6 +4324,231 @@ interface Resources {
 				draft: "Planned";
 				rejected: "Rejected";
 			};
+			noDate: "Date not set";
+		};
+		feeClearance: {
+			title: "Fee Clearance";
+			subtitle: "Manage fee structures, student payments, and clearance status";
+			bulkAssign: {
+				mode: "Scope";
+				modeClass: "By class";
+				modeProgram: "By program";
+				modeYear: "Whole academic year";
+				program: "Program";
+				computing: "Computing preview…";
+				preview: "Preview";
+				confirm: "Confirm ({{count}} student(s))";
+			};
+			structures: {
+				title: "Fee Structures";
+				subtitle: "Define the fees applicable per academic year and program";
+				create: "New structure";
+				edit: "Edit structure";
+				delete: "Delete structure";
+				deleteConfirm: "Delete this fee structure? This action cannot be undone.";
+				empty: {
+					title: "No fee structures";
+					description: "Create a fee structure to start assigning fees to students.";
+				};
+				fields: {
+					name: "Name";
+					academicYear: "Academic year";
+					program: "Program (optional)";
+					cycleLevel: "Cycle level (optional)";
+					totalAmount: "Total amount";
+					currency: "Currency";
+					description: "Description";
+					isActive: "Active";
+				};
+				installments: {
+					title: "Payment installments";
+					add: "Add installment";
+					label: "Label";
+					amount: "Amount";
+					dueDate: "Due date";
+					empty: "No installments defined. Students can pay in one or multiple free-form payments.";
+				};
+			};
+			bankImport: {
+				button: "Bank import";
+				title: "Bank statement import";
+				csvLabel: "CSV data";
+				csvPlaceholder: "reference,amount,date\nORD-2024-001,150000,2026-01-15\nORD-2024-002,200000,2026-01-15";
+				csvHint: "Format: reference, amount, date (YYYY-MM-DD) — comma, semicolon or tab separator";
+				uploadFile: "Load file";
+				rowsParsed: "{{count}} row(s) parsed";
+				method: "Payment method";
+				preview: "Preview";
+				confirm: "Confirm {{count}} match(es)";
+				applySuccess: "{{applied}} payment(s) recorded, {{skipped}} skipped";
+				applyError: "Bank import failed";
+				col: {
+					reference: "Reference";
+					amount: "Amount";
+					date: "Date";
+					student: "Student";
+					status: "Status";
+				};
+			};
+			assignments: {
+				title: "Student Payments";
+				subtitle: "Track fee payment status for each student";
+				assign: "Assign student";
+				bulkAssign: "Assign entire class";
+				bulkAssignSuccess: "{{assigned}} assigned, {{skipped}} skipped";
+				exempt: "Mark as exempt";
+				updateDiscount: "Update discount";
+				empty: {
+					title: "No assignments";
+					description: "Assign students to a fee structure to start tracking their payment status.";
+				};
+				fields: {
+					student: "Student";
+					class: "Class";
+					structure: "Fee structure";
+					effectiveAmount: "Amount due";
+					paidAmount: "Amount paid";
+					balance: "Balance";
+					discount: "Discount";
+					discountReason: "Discount reason";
+					status: "Status";
+					clearedAt: "Cleared on";
+					notes: "Notes";
+				};
+				status: {
+					unpaid: "Unpaid";
+					partial: "Partial";
+					paid: "Paid";
+					exempt: "Exempt";
+				};
+			};
+			payments: {
+				title: "Payment history";
+				record: "Record payment";
+				delete: "Delete payment";
+				deleteConfirm: "Delete this payment? The assignment status will be recalculated.";
+				empty: "No payments recorded yet.";
+				downloadReceipt: "Download receipt";
+				fields: {
+					amount: "Amount";
+					paymentDate: "Payment date";
+					paymentMethod: "Method";
+					reference: "Reference / receipt number";
+					notes: "Notes";
+					recordedBy: "Recorded by";
+				};
+				methods: {
+					cash: "Cash";
+					bank_transfer: "Bank transfer";
+					mobile_money: "Mobile money";
+					check: "Check";
+					other: "Other";
+				};
+			};
+			gating: {
+				title: "Academic Gates";
+				subtitle: "Block specific academic actions for students who have not paid their fees";
+				gates: {
+					exam_registration: "Exam registration";
+					transcript: "Transcript generation";
+					diploma: "Diploma issuance";
+					reenrollment: "Re-enrollment";
+					document_generation: "Document generation";
+				};
+			};
+			orders: {
+				title: "Payment orders";
+				create: "Create order";
+				generate: "Generate order";
+				confirm: "Confirm payment";
+				confirmed: "Order confirmed and payment recorded";
+				confirmTitle: "Confirm this order?";
+				confirmDescription: "Confirming will record the payment and update the student's fee status.";
+				download: "Download payment order";
+				fields: {
+					reference: "Reference";
+					amount: "Amount";
+					status: "Status";
+					notes: "Notes";
+					createdAt: "Date";
+					expiresAt: "Expires";
+					paymentDate: "Payment date";
+					paymentMethod: "Payment method";
+				};
+				status: {
+					pending: "Pending";
+					confirmed: "Confirmed";
+					cancelled: "Cancelled";
+				};
+			};
+			quitus: {
+				title: "Quitus / Fee Clearance Certificate";
+				download: "Download quitus";
+				notCleared: "Not cleared";
+				cleared: "Cleared";
+				clearedOn: "Cleared on {{date}}";
+			};
+			student: {
+				title: "My tuition fees";
+				subtitle: "Your financial status with the institution";
+				noAssignment: "No fee assignment found for your profile.";
+				balance: "Remaining balance";
+				totalDue: "Total due";
+				paid: "Paid";
+				academicYear: "Academic year";
+				pendingOrders: "Pending orders";
+			};
+			history: {
+				title: "Financial history";
+				subtitle: "All payments and orders for this student";
+				totalDue: "Total due";
+				totalPaid: "Total paid";
+				balance: "Remaining balance";
+				empty: "No assignments found for this student.";
+				noEvents: "No financial events.";
+				viewDetail: "Detail";
+				viewHistory: "Financial history";
+			};
+		};
+		notifications: {
+			title: "Notifications";
+			empty: "No notifications";
+			markRead: "Mark read";
+			markAllRead: "Mark all as read";
+			timeAgo: {
+				justNow: "Just now";
+				minutes: "{{count}} min";
+				hours: "{{count}} h";
+				days: "{{count}} d";
+			};
+			types: {
+				fee_payment_confirmed: "Payment confirmed";
+				grade_approved: "Grades approved";
+				grade_rejected: "Grades rejected";
+				deliberation_published: "Results published";
+				batch_job_completed: "Job completed";
+				batch_job_failed: "Job failed";
+				generic: "Notification";
+			};
+			batchJob: {
+				completedSubtitle: "{{jobType}} — {{itemsProcessed}} items";
+				failedSubtitle: "{{jobType}} — {{error}}";
+			};
+		};
+		attendanceRates: {
+			regNumber: "Reg. N°";
+			sessions: "session(s)";
+			present: "Present";
+			late: "Late";
+			absent: "Absent";
+			excused: "Excused";
+			totalSessions: "Total sessions";
+			ratePercent: "Rate (%)";
+			name: "Name";
+			empty: "Select a course to view attendance rates.";
+			noData: "No attendance sessions recorded for this course.";
+			title: "Attendance rates";
+			exportFilename: "attendance-rates.xlsx";
 		};
 	};
 }

@@ -99,7 +99,8 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "none": "Aucun",
-    "confirmDelete": "Confirmer la suppression"
+    "confirmDelete": "Confirmer la suppression",
+    "create": "Créer"
   },
   "navigation": {
     "breadcrumbs": {
@@ -3805,7 +3806,13 @@
         "sessionDeleted": "Séance supprimée",
         "marked": "Marqué",
         "excused": "Absence excusée"
-      }
+      },
+      "course": "Cours",
+      "student": "Étudiant",
+      "presentCount": "{{present}}/{{total}} présents",
+      "excusePlaceholder": "Maladie, événement familial…",
+      "submitExcuse": "Valider l'excuse",
+      "marked": "Tout marquer"
     },
     "attendanceRates": {
       "title": "Taux de présence",
@@ -4557,6 +4564,8 @@
     "ratePercent": "Taux (%)",
     "name": "Nom",
     "empty": "Sélectionnez un cours pour afficher les taux de présence.",
-    "noData": "Aucune séance de présence enregistrée pour ce cours."
+    "noData": "Aucune séance de présence enregistrée pour ce cours.",
+    "title": "Taux de présence",
+    "exportFilename": "taux-presence.xlsx"
   }
 }

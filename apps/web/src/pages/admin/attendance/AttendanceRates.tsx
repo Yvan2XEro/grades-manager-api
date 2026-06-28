@@ -28,6 +28,14 @@ type ClassCourse = {
 	classRef: { name: string } | null;
 };
 
+function rateColor(rate: number, threshold: number | null): string {
+	const pass = threshold ?? 75;
+	const warn = Math.round(pass * 0.67);
+	if (rate >= pass) return "text-green-700";
+	if (rate >= warn) return "text-yellow-700";
+	return "text-red-700";
+}
+
 export default function AttendanceRates() {
 	const { t } = useTranslation();
 	const [academicYearId, setAcademicYearId] = useState<string | null>(null);
@@ -95,7 +103,7 @@ export default function AttendanceRates() {
 		const ws = XLSX.utils.json_to_sheet(rows);
 		const wb = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(wb, ws, t("attendanceRates.title"));
-		XLSX.writeFile(wb, "taux-presence.xlsx");
+		XLSX.writeFile(wb, t("attendanceRates.exportFilename"));
 	}
 
 	const courseLabel =
@@ -233,13 +241,7 @@ export default function AttendanceRates() {
 											<td className="px-4 py-2 text-center">{s.excused}</td>
 											<td className="px-4 py-2 text-center">
 												<span
-													className={`font-semibold ${
-														s.rate >= 75
-															? "text-green-700"
-															: s.rate >= 50
-																? "text-yellow-700"
-																: "text-red-700"
-													}`}
+													className={`font-semibold ${rateColor(s.rate, rates.threshold)}`}
 												>
 													{s.rate}%
 												</span>

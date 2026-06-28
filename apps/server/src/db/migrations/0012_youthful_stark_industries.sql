@@ -1,0 +1,2 @@
+ALTER TABLE "attendance_sessions" DROP CONSTRAINT "uq_attendance_session_course_date";--> statement-breakpoint
+ALTER TABLE "attendance_sessions" ADD COLUMN "is_exceptional" boolean DEFAULT false NOT NULL;

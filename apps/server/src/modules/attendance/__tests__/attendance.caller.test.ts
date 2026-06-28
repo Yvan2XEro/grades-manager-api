@@ -92,10 +92,12 @@ describe("session management", () => {
 		const s1 = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		const s2 = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		expect(s1.id).toBe(s2.id);
 	});
@@ -119,10 +121,12 @@ describe("session management", () => {
 		await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: YESTERDAY,
+			isExceptional: true,
 		});
 
 		const recent = await admin.attendance.listSessions({
@@ -139,6 +143,7 @@ describe("session management", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		await admin.attendance.deleteSession({ id: session.id });
 		const sessions = await admin.attendance.listSessions({
@@ -160,6 +165,7 @@ describe("bulk mark", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 
 		const result = await admin.attendance.bulkMark({
@@ -179,6 +185,7 @@ describe("bulk mark", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 
 		await expect(
@@ -200,6 +207,7 @@ describe("bulk mark", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 
 		await admin.attendance.bulkMark({
@@ -227,6 +235,7 @@ describe("excuse absence", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		await admin.attendance.updateRecord({
 			attendanceSessionId: session.id,
@@ -279,6 +288,7 @@ describe("excuse absence", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 
 		await admin.attendance.updateRecord({
@@ -319,6 +329,7 @@ describe("attendance rates", () => {
 		await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 
 		const rates = await admin.attendance.getAttendanceRates({
@@ -339,6 +350,7 @@ describe("attendance rates", () => {
 		const session = await admin.attendance.createSession({
 			classCourseId: cc.id,
 			sessionDate: TODAY,
+			isExceptional: true,
 		});
 		await admin.attendance.updateRecord({
 			attendanceSessionId: session.id,
@@ -414,6 +426,7 @@ describe("attendance eligibility", () => {
 			const sess = await admin.attendance.createSession({
 				classCourseId: cc.id,
 				sessionDate: date,
+				isExceptional: true,
 			});
 			if (i < 2) {
 				await admin.attendance.updateRecord({
@@ -447,6 +460,240 @@ describe("attendance eligibility", () => {
 			admin.attendance.checkEligibility({
 				studentId: outsider.id,
 				classCourseId: cc.id,
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+
+	it("checkEligibility: teacher cannot check a course they do not own", async () => {
+		const cc = await createClassCourse();
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.checkEligibility({
+				studentId: "any-student",
+				classCourseId: cc.id,
+			}),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+});
+
+// ── Session model invariants (JVL-50) ────────────────────────────────────────
+
+describe("session model invariants", () => {
+	it("rejects session without courseSessionId when isExceptional is not set", async () => {
+		const admin = await makeAdmin();
+		const cc = await createClassCourse();
+		await expect(
+			admin.attendance.createSession({
+				classCourseId: cc.id,
+				sessionDate: TODAY,
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+
+	it("accepts session without courseSessionId when isExceptional is true", async () => {
+		const admin = await makeAdmin();
+		const cc = await createClassCourse();
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+		expect(session.id).toBeDefined();
+	});
+});
+
+// ── Read scoping (JVL-51) ────────────────────────────────────────────────────
+
+describe("read scoping", () => {
+	it("getSession: teacher cannot read a session from another teacher's course", async () => {
+		const cc = await createClassCourse();
+		const adminProfile = await createDomainUser();
+		const admin = createCaller(
+			makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: adminProfile.id },
+			}),
+		);
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.getSession({ id: session.id }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+
+	it("listSessions: teacher without classCourseId gets FORBIDDEN", async () => {
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(caller.attendance.listSessions({})).rejects.toHaveProperty(
+			"code",
+			"FORBIDDEN",
+		);
+	});
+
+	it("listSessions: teacher cannot list another teacher's course", async () => {
+		const cc = await createClassCourse();
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.listSessions({ classCourseId: cc.id }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+
+	it("getRoster: teacher cannot read roster for another teacher's course", async () => {
+		const cc = await createClassCourse();
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.getRoster({ classCourseId: cc.id }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+
+	it("getAttendanceRates: teacher cannot read rates for another teacher's course", async () => {
+		const cc = await createClassCourse();
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.getAttendanceRates({ classCourseId: cc.id }),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+});
+
+// ── Excuse scoping (JVL-52) ──────────────────────────────────────────────────
+
+describe("excuse scoping", () => {
+	it("teacher cannot excuse a record outside their assigned course", async () => {
+		const cc = await createClassCourse();
+		const adminProfile = await createDomainUser();
+		const admin = createCaller(
+			makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: adminProfile.id },
+			}),
+		);
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+		await admin.attendance.updateRecord({
+			attendanceSessionId: session.id,
+			studentId: student.id,
+			status: "absent",
+		});
+		const detail = await admin.attendance.getSession({ id: session.id });
+		const record = detail.records.find((r) => r.studentId === student.id)!;
+
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.excuseAbsence({
+				attendanceRecordId: record.id,
+				excuseReason: "Unauthorized excuse",
+				approve: true,
+			}),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+});
+
+// ── Marking auth (JVL-51) ────────────────────────────────────────────────────
+
+describe("marking auth", () => {
+	it("bulkMark: teacher cannot mark sessions for another teacher's course", async () => {
+		const cc = await createClassCourse();
+		const profile = await createDomainUser();
+		const session = await createCaller(
+			makeTestContext({
+				role: "administrator",
+				profileOverrides: { id: profile.id },
+			}),
+		).attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+
+		const otherTeacher = await createDomainUser();
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: otherTeacher.id },
+			}),
+		);
+		await expect(
+			caller.attendance.bulkMark({
+				attendanceSessionId: session.id,
+				records: [],
+			}),
+		).rejects.toHaveProperty("code", "FORBIDDEN");
+	});
+
+	it("updateRecord: excused status is rejected — must use excuseAbsence", async () => {
+		const profile = await createDomainUser();
+		const cc = await createClassCourse({ teacher: profile.id });
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+
+		const adminCtx = makeTestContext({
+			role: "administrator",
+			profileOverrides: { id: profile.id },
+		});
+		const admin = createCaller(adminCtx);
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+
+		await expect(
+			admin.attendance.updateRecord({
+				attendanceSessionId: session.id,
+				studentId: student.id,
+				status: "excused" as never,
 			}),
 		).rejects.toHaveProperty("code", "BAD_REQUEST");
 	});
