@@ -43,6 +43,7 @@ export async function findSessionByCourseDateForWrite(
 		? [
 				eq(schema.attendanceSessions.classCourseId, classCourseId),
 				eq(schema.attendanceSessions.courseSessionId, courseSessionId),
+				eq(schema.attendanceSessions.sessionDate, sessionDate),
 				eq(schema.attendanceSessions.institutionId, institutionId),
 			]
 		: [
@@ -209,11 +210,21 @@ export async function getSessionsWithRecordCounts(
 	});
 }
 
-/** Fetch enrolled students for a classCourse to build roster. */
+/** Fetch enrolled students for a classCourse to build roster.
+ *  Validates that classCourseId belongs to institutionId before returning data. */
 export async function getRosterForClassCourse(
 	classCourseId: string,
 	institutionId: string,
 ) {
+	const cc = await db.query.classCourses.findFirst({
+		where: and(
+			eq(schema.classCourses.id, classCourseId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+	if (!cc) return [];
+
 	return db.query.studentCourseEnrollments.findMany({
 		where: and(
 			eq(schema.studentCourseEnrollments.classCourseId, classCourseId),

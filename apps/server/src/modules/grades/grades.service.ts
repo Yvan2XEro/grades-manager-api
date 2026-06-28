@@ -412,6 +412,17 @@ export async function importGradesFromCsv(
 			);
 			continue;
 		}
+		const eligibility = await attendanceService.checkAttendanceEligibility(
+			student.id,
+			exam.classCourse,
+			institutionId,
+		);
+		if (eligibility !== null && !eligibility.eligible) {
+			result.errors.push(
+				`Student ${registrationNumber} is below attendance threshold (${eligibility.rate}% < ${eligibility.threshold}%)`,
+			);
+			continue;
+		}
 		const saved = await repo.upsert({
 			exam: examId,
 			student: student.id,

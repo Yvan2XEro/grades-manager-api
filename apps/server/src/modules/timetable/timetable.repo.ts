@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import type { DayOfWeek, NewCourseSession } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
@@ -111,7 +111,13 @@ export async function findConflicts(
 			eq(schema.courseSessions.academicYearId, opts.academicYearId),
 		);
 	if (opts.semesterId)
-		conditions.push(eq(schema.courseSessions.semesterId, opts.semesterId));
+		// Annual sessions (semesterId=null) span all semesters — they must still conflict.
+		conditions.push(
+			or(
+				isNull(schema.courseSessions.semesterId),
+				eq(schema.courseSessions.semesterId, opts.semesterId),
+			)!,
+		);
 
 	const all = await db.query.courseSessions.findMany({
 		where: and(...conditions),
