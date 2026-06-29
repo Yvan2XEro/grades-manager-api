@@ -427,10 +427,20 @@ interface Resources {
 				};
 				filterByYear: "Filter by year";
 				filterByCourse: "Filter by course";
+				filterByClass: "Filter by class";
+				filterByTeacher: "Filter by teacher";
+				allClasses: "All classes";
+				allTeachers: "All teachers";
+				allCourses: "All courses";
 				conflicts: {
 					room: "Room conflict";
 					teacher: "Teacher conflict";
 					class: "Class conflict";
+				};
+				warnings: {
+					missingTeacher: "This class course has no teacher assigned. Please assign a teacher before scheduling.";
+					missingSessions: "{{count}} session(s) have no room assigned.";
+					noRoomSelected: "No room selected — this session will be saved without a room assignment.";
 				};
 				toast: {
 					created: "Session created";
