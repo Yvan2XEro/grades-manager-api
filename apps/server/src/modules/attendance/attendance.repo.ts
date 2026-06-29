@@ -63,25 +63,8 @@ export async function revokeExemption(
 	institutionId: string,
 	actorId: string | null,
 ): Promise<{ success: boolean; notFound?: true }> {
-	const existing = await db.query.attendanceExemptions.findFirst({
-		where: and(
-			eq(schema.attendanceExemptions.classCourseId, classCourseId),
-			eq(schema.attendanceExemptions.studentId, studentId),
-			eq(schema.attendanceExemptions.institutionId, institutionId),
-		),
-		columns: { id: true },
-	});
-	if (!existing) return { success: false, notFound: true };
-
-	await db.transaction(async (tx) => {
-		await tx.insert(schema.attendanceExemptionLogs).values({
-			institutionId,
-			classCourseId,
-			studentId,
-			action: "revoked",
-			actorId,
-		});
-		await tx
+	return db.transaction(async (tx) => {
+		const deleted = await tx
 			.delete(schema.attendanceExemptions)
 			.where(
 				and(
@@ -89,9 +72,21 @@ export async function revokeExemption(
 					eq(schema.attendanceExemptions.studentId, studentId),
 					eq(schema.attendanceExemptions.institutionId, institutionId),
 				),
-			);
+			)
+			.returning({ id: schema.attendanceExemptions.id });
+
+		if (deleted.length === 0) return { success: false, notFound: true };
+
+		await tx.insert(schema.attendanceExemptionLogs).values({
+			institutionId,
+			classCourseId,
+			studentId,
+			action: "revoked",
+			actorId,
+		});
+
+		return { success: true };
 	});
-	return { success: true };
 }
 
 export async function findExemptionLogs(
