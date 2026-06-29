@@ -241,10 +241,9 @@ describe("room validation", () => {
 describe("conflict detection semester scoping", () => {
 	it("sessions in different semesters do not conflict with each other", async () => {
 		const admin = createCaller(asAdmin());
-		const cc1 = await createClassCourse();
-		const cc2 = await createClassCourse({ class: cc1.class });
-		const academicYearId = await getAcademicYear(cc1.id);
 
+		// Create semesters first, then bind classCourses to them so the
+		// semesterId coherence check passes when creating sessions.
 		const [sem1] = await db
 			.insert(schema.semesters)
 			.values({
@@ -261,6 +260,13 @@ describe("conflict detection semester scoping", () => {
 				orderIndex: 11,
 			})
 			.returning();
+
+		const cc1 = await createClassCourse({ semesterId: sem1.id });
+		const cc2 = await createClassCourse({
+			class: cc1.class,
+			semesterId: sem2.id,
+		});
+		const academicYearId = await getAcademicYear(cc1.id);
 
 		// Create session in semester 1
 		await admin.timetable.create({
@@ -287,11 +293,14 @@ describe("conflict detection semester scoping", () => {
 	it("JVL-47 regression: annual session (no semesterId) conflicts with semester-scoped session in same slot", async () => {
 		const admin = createCaller(asAdmin());
 		const cc1 = await createClassCourse();
+		// cc2 shares the same class; its semesterId will match cc2.semesterId
+		// (used as the semester-scoped session below)
 		const cc2 = await createClassCourse({ class: cc1.class });
 		const room = await createRoom();
 		const academicYearId = await getAcademicYear(cc1.id);
 
-		// Annual session (no semesterId) occupies the room on Thursday 14:00–16:00
+		// Annual session (no semesterId) occupies the room on Thursday 14:00–16:00.
+		// No input.semesterId → coherence check is skipped.
 		await admin.timetable.create({
 			classCourseId: cc1.id,
 			academicYearId,
@@ -301,16 +310,9 @@ describe("conflict detection semester scoping", () => {
 			roomId: room.id,
 		});
 
-		const [sem] = await db
-			.insert(schema.semesters)
-			.values({
-				code: `S-${randomUUID().slice(0, 6)}`,
-				name: "Sem",
-				orderIndex: 30,
-			})
-			.returning();
-
-		// Semester-scoped session in the same room/slot → must CONFLICT with the annual one
+		// Semester-scoped session using cc2's own semesterId → coherence check passes.
+		// The annual session above has semesterId=null which still matches all semesters,
+		// so this must CONFLICT.
 		await expect(
 			admin.timetable.create({
 				classCourseId: cc2.id,
@@ -319,7 +321,7 @@ describe("conflict detection semester scoping", () => {
 				startTime: "14:30",
 				endTime: "15:30",
 				roomId: room.id,
-				semesterId: sem.id,
+				semesterId: cc2.semesterId ?? undefined,
 			}),
 		).rejects.toHaveProperty("code", "CONFLICT");
 	});
@@ -491,7 +493,8 @@ describe("conflict matrix", () => {
 	it("room double-booking is blocked", async () => {
 		const admin = createCaller(asAdmin());
 		const cc1 = await createClassCourse();
-		const cc2 = await createClassCourse();
+		// Same class ensures shared academicYear so the year-coherence check passes
+		const cc2 = await createClassCourse({ class: cc1.class });
 		const room = await createRoom();
 		const academicYearId = await getAcademicYear(cc1.id);
 
@@ -545,7 +548,11 @@ describe("conflict matrix", () => {
 	it("adjacent non-overlapping sessions do not conflict", async () => {
 		const admin = createCaller(asAdmin());
 		const cc1 = await createClassCourse();
-		const cc2 = await createClassCourse({ teacher: cc1.teacher });
+		// Same class (same year) + same teacher so both coherence checks pass
+		const cc2 = await createClassCourse({
+			class: cc1.class,
+			teacher: cc1.teacher,
+		});
 		const academicYearId = await getAcademicYear(cc1.id);
 
 		await admin.timetable.create({
@@ -654,6 +661,100 @@ describe("myStudentTimetable scoping", () => {
 		);
 		const sessions = await callerStudent.timetable.myStudentTimetable({});
 		expect(sessions.some((s) => s.classCourseId === cc.id)).toBe(true);
+	});
+
+	it("rejects create when academicYearId does not match the class's year", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+
+		// Create a second, unrelated academic year
+		const { db: _db } = await import("@/db");
+		const { getTestInstitution } = await import("@/lib/test-context-state");
+		const [wrongYear] = await _db
+			.insert(schema.academicYears)
+			.values({
+				name: `WrongYear-${randomUUID().slice(0, 6)}`,
+				startDate: "2025-01-01",
+				endDate: "2025-12-31",
+				institutionId: getTestInstitution().id,
+			})
+			.returning();
+
+		await expect(
+			admin.timetable.create({
+				classCourseId: cc.id,
+				academicYearId: wrongYear.id,
+				dayOfWeek: "mon",
+				startTime: "08:00",
+				endTime: "10:00",
+			}),
+		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+
+	it("rejects create when semesterId conflicts with classCourse semester", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+		const academicYearId = await getAcademicYear(cc.id);
+
+		// Create a different semester
+		const { db: _db } = await import("@/db");
+		const [differentSemester] = await _db
+			.insert(schema.semesters)
+			.values({
+				code: `SO-${randomUUID().slice(0, 6)}`,
+				name: `Sem-Other-${randomUUID().slice(0, 6)}`,
+				orderIndex: 99,
+			})
+			.returning();
+
+		// Only test if the classCourse actually has a semesterId
+		if (cc.semesterId && cc.semesterId !== differentSemester.id) {
+			await expect(
+				admin.timetable.create({
+					classCourseId: cc.id,
+					academicYearId,
+					dayOfWeek: "tue",
+					startTime: "10:00",
+					endTime: "12:00",
+					semesterId: differentSemester.id,
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		}
+	});
+
+	it("rejects update when new semesterId conflicts with classCourse semester", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+		const academicYearId = await getAcademicYear(cc.id);
+
+		if (!cc.semesterId) return; // skip if no semester constraint
+
+		const session = await admin.timetable.create({
+			classCourseId: cc.id,
+			academicYearId,
+			dayOfWeek: "wed",
+			startTime: "08:00",
+			endTime: "10:00",
+		});
+
+		const { db: _db } = await import("@/db");
+		const [differentSemester] = await _db
+			.insert(schema.semesters)
+			.values({
+				code: `SU-${randomUUID().slice(0, 6)}`,
+				name: `Sem-Update-${randomUUID().slice(0, 6)}`,
+				orderIndex: 98,
+			})
+			.returning();
+
+		if (differentSemester.id !== cc.semesterId) {
+			await expect(
+				admin.timetable.update({
+					id: session.session.id,
+					semesterId: differentSemester.id,
+				}),
+			).rejects.toHaveProperty("code", "BAD_REQUEST");
+		}
 	});
 
 	it("student not enrolled in a course does not see its sessions", async () => {

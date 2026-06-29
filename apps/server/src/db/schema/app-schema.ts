@@ -3969,9 +3969,19 @@ export const attendanceExcuseAuditLogs = pgTable(
 		institutionId: text("institution_id")
 			.notNull()
 			.references(() => institutions.id, { onDelete: "cascade" }),
-		attendanceRecordId: text("attendance_record_id")
-			.notNull()
-			.references(() => attendanceRecords.id, { onDelete: "cascade" }),
+		// Nullable so bulkMark's DELETE+INSERT cycle does not cascade-delete excuse history.
+		// attendanceSessionId + studentId are stable snapshot fields preserved if the record is replaced.
+		attendanceRecordId: text("attendance_record_id").references(
+			() => attendanceRecords.id,
+			{ onDelete: "set null" },
+		),
+		attendanceSessionId: text("attendance_session_id").references(
+			() => attendanceSessions.id,
+			{ onDelete: "set null" },
+		),
+		studentId: text("student_id").references(() => students.id, {
+			onDelete: "set null",
+		}),
 		action: text("action", { enum: ["approved", "rejected"] }).notNull(),
 		reason: text("reason").notNull(),
 		actorId: text("actor_id").references(() => domainUsers.id, {

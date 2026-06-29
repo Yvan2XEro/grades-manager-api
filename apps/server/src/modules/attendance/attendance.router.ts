@@ -309,8 +309,15 @@ export const router = createRouter({
 					attendanceExcusedCountsAsAbsent: true,
 				},
 			});
+			// Post-filter to the requested year; without this, courses from other
+			// academic years would be included with zero-session summaries.
+			const filtered = input.academicYearId
+				? courses.filter(
+						(cc) => cc.classRef?.academicYear === input.academicYearId,
+					)
+				: courses;
 			const results = await Promise.all(
-				courses.map(async (cc) => {
+				filtered.map(async (cc) => {
 					const rates = await service.getAttendanceRates(
 						cc.id,
 						ctx.institution.id,

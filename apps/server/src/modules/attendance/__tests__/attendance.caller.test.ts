@@ -6,6 +6,9 @@ import * as schema from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import { appRouter } from "@/routers";
 import {
+	asAdmin,
+	createAcademicYear,
+	createClass,
 	createClassCourse,
 	createDomainUser,
 	createStudent,
@@ -978,5 +981,138 @@ describe("marking auth", () => {
 				status: "excused" as never,
 			}),
 		).rejects.toHaveProperty("code", "BAD_REQUEST");
+	});
+});
+
+// ── Regression: JVL-52 — excuse audit log survives bulkMark re-mark ──────────
+
+describe("attendance excuse audit cascade regression", () => {
+	it("excuse audit log is preserved when bulkMark replaces attendance records", async () => {
+		// Use a real profile for all callers so the `createdBy` FK on
+		// attendance_sessions doesn't fire.
+		const profile = await createDomainUser();
+		const adminCtx = makeTestContext({
+			role: "administrator",
+			profileOverrides: { id: profile.id },
+		});
+		const admin = createCaller(adminCtx);
+
+		const cc = await createClassCourse({ teacher: profile.id });
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+
+		const session = await admin.attendance.createSession({
+			classCourseId: cc.id,
+			sessionDate: TODAY,
+			isExceptional: true,
+		});
+		await admin.attendance.bulkMark({
+			attendanceSessionId: session.id,
+			records: [{ studentId: student.id, status: "absent" }],
+		});
+
+		const records = await db.query.attendanceRecords.findMany({
+			where: eq(schema.attendanceRecords.attendanceSessionId, session.id),
+		});
+		const absenceRecord = records.find((r) => r.studentId === student.id);
+		if (!absenceRecord) throw new Error("record not found");
+
+		await admin.attendance.excuseAbsence({
+			attendanceRecordId: absenceRecord.id,
+			excuseReason: "Medical",
+			approve: true,
+		});
+
+		const auditBefore = await db.query.attendanceExcuseAuditLogs.findMany({
+			where: eq(
+				schema.attendanceExcuseAuditLogs.attendanceSessionId,
+				session.id,
+			),
+		});
+		expect(auditBefore.length).toBe(1);
+		expect(auditBefore[0].action).toBe("approved");
+
+		// Re-mark replaces records via DELETE+INSERT
+		await admin.attendance.bulkMark({
+			attendanceSessionId: session.id,
+			records: [{ studentId: student.id, status: "present" }],
+		});
+
+		// Audit log must still exist (FK is now SET NULL, not CASCADE)
+		const auditAfter = await db.query.attendanceExcuseAuditLogs.findMany({
+			where: eq(
+				schema.attendanceExcuseAuditLogs.attendanceSessionId,
+				session.id,
+			),
+		});
+		expect(auditAfter.length).toBe(1);
+		expect(auditAfter[0].attendanceRecordId).toBeNull();
+		expect(auditAfter[0].studentId).toBe(student.id);
+	});
+});
+
+// ── Regression: JVL-54 — revokeExemption non-existent → no audit entry ───────
+
+describe("attendance exemption revoke guard", () => {
+	it("revokeExemption on non-existent exemption returns notFound and writes no audit", async () => {
+		const admin = createCaller(asAdmin());
+		const cc = await createClassCourse();
+		const student = await createStudent({ institutionId: cc.institutionId });
+		await enrollStudent(student.id, cc.id);
+
+		const before = await db.query.attendanceExemptionLogs.findMany({
+			where: eq(schema.attendanceExemptionLogs.classCourseId, cc.id),
+		});
+
+		const result = await admin.attendance.revokeExemption({
+			classCourseId: cc.id,
+			studentId: student.id,
+		});
+
+		expect(result.success).toBe(false);
+		expect(result.notFound).toBe(true);
+
+		const after = await db.query.attendanceExemptionLogs.findMany({
+			where: eq(schema.attendanceExemptionLogs.classCourseId, cc.id),
+		});
+		expect(after.length).toBe(before.length);
+	});
+});
+
+// ── Regression: JVL-53 — myCoursesRates filters by academicYearId ─────────────
+
+describe("myCoursesRates academicYearId filter", () => {
+	it("excludes courses from other academic years when academicYearId is supplied", async () => {
+		const profile = await createDomainUser();
+
+		// Create two classes each bound to a different academic year
+		const year1 = await createAcademicYear();
+		const year2 = await createAcademicYear();
+		const class1 = await createClass({ academicYear: year1.id });
+		const class2 = await createClass({ academicYear: year2.id });
+
+		const cc1 = await createClassCourse({
+			class: class1.id,
+			teacher: profile.id,
+		});
+		const cc2 = await createClassCourse({
+			class: class2.id,
+			teacher: profile.id,
+		});
+
+		const caller = createCaller(
+			makeTestContext({
+				role: "teacher",
+				profileOverrides: { id: profile.id },
+			}),
+		);
+
+		const results = await caller.attendance.myCoursesRates({
+			academicYearId: year1.id,
+		});
+
+		const ids = results.map((r) => r.classCourseId);
+		expect(ids).toContain(cc1.id);
+		expect(ids).not.toContain(cc2.id);
 	});
 });

@@ -29,31 +29,32 @@ export async function grantExemption(data: {
 	reason: string;
 	grantedBy: string | null;
 }) {
-	// Append-only log entry is written first — never updated or deleted
-	await db.insert(schema.attendanceExemptionLogs).values({
-		institutionId: data.institutionId,
-		classCourseId: data.classCourseId,
-		studentId: data.studentId,
-		action: "granted",
-		reason: data.reason,
-		actorId: data.grantedBy,
+	return db.transaction(async (tx) => {
+		await tx.insert(schema.attendanceExemptionLogs).values({
+			institutionId: data.institutionId,
+			classCourseId: data.classCourseId,
+			studentId: data.studentId,
+			action: "granted",
+			reason: data.reason,
+			actorId: data.grantedBy,
+		});
+		const [row] = await tx
+			.insert(schema.attendanceExemptions)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					schema.attendanceExemptions.classCourseId,
+					schema.attendanceExemptions.studentId,
+				],
+				set: {
+					reason: data.reason,
+					grantedBy: data.grantedBy,
+					grantedAt: new Date(),
+				},
+			})
+			.returning();
+		return row;
 	});
-	const [row] = await db
-		.insert(schema.attendanceExemptions)
-		.values(data)
-		.onConflictDoUpdate({
-			target: [
-				schema.attendanceExemptions.classCourseId,
-				schema.attendanceExemptions.studentId,
-			],
-			set: {
-				reason: data.reason,
-				grantedBy: data.grantedBy,
-				grantedAt: new Date(),
-			},
-		})
-		.returning();
-	return row;
 }
 
 export async function revokeExemption(
@@ -61,24 +62,35 @@ export async function revokeExemption(
 	studentId: string,
 	institutionId: string,
 	actorId: string | null,
-) {
-	// Append-only revoke entry preserves the audit trail
-	await db.insert(schema.attendanceExemptionLogs).values({
-		institutionId,
-		classCourseId,
-		studentId,
-		action: "revoked",
-		actorId,
+): Promise<{ success: boolean; notFound?: true }> {
+	const existing = await db.query.attendanceExemptions.findFirst({
+		where: and(
+			eq(schema.attendanceExemptions.classCourseId, classCourseId),
+			eq(schema.attendanceExemptions.studentId, studentId),
+			eq(schema.attendanceExemptions.institutionId, institutionId),
+		),
+		columns: { id: true },
 	});
-	await db
-		.delete(schema.attendanceExemptions)
-		.where(
-			and(
-				eq(schema.attendanceExemptions.classCourseId, classCourseId),
-				eq(schema.attendanceExemptions.studentId, studentId),
-				eq(schema.attendanceExemptions.institutionId, institutionId),
-			),
-		);
+	if (!existing) return { success: false, notFound: true };
+
+	await db.transaction(async (tx) => {
+		await tx.insert(schema.attendanceExemptionLogs).values({
+			institutionId,
+			classCourseId,
+			studentId,
+			action: "revoked",
+			actorId,
+		});
+		await tx
+			.delete(schema.attendanceExemptions)
+			.where(
+				and(
+					eq(schema.attendanceExemptions.classCourseId, classCourseId),
+					eq(schema.attendanceExemptions.studentId, studentId),
+					eq(schema.attendanceExemptions.institutionId, institutionId),
+				),
+			);
+	});
 	return { success: true };
 }
 
@@ -97,14 +109,48 @@ export async function findExemptionLogs(
 	});
 }
 
-export async function insertExcuseAuditLog(data: {
+/** Atomically updates an attendance record's excuse fields and inserts the immutable audit event.
+ *  Both operations run in one transaction so an audit row never exists without the state change. */
+export async function excuseAndAudit(data: {
+	attendanceSessionId: string;
+	studentId: string;
 	institutionId: string;
 	attendanceRecordId: string;
+	excuseReason: string;
+	newStatus: "excused" | "absent" | "late";
+	excuseApprovedBy: string | null;
+	excuseApprovedAt: Date | null;
 	action: "approved" | "rejected";
-	reason: string;
-	actorId: string | null;
+	actorId: string;
 }) {
-	await db.insert(schema.attendanceExcuseAuditLogs).values(data);
+	return db.transaction(async (tx) => {
+		const [updated] = await tx
+			.update(schema.attendanceRecords)
+			.set({
+				excuseReason: data.excuseReason,
+				status: data.newStatus,
+				excuseApprovedBy: data.excuseApprovedBy,
+				excuseApprovedAt: data.excuseApprovedAt,
+				updatedAt: new Date(),
+			})
+			.where(
+				and(
+					eq(schema.attendanceRecords.id, data.attendanceRecordId),
+					eq(schema.attendanceRecords.institutionId, data.institutionId),
+				),
+			)
+			.returning();
+		await tx.insert(schema.attendanceExcuseAuditLogs).values({
+			institutionId: data.institutionId,
+			attendanceRecordId: data.attendanceRecordId,
+			attendanceSessionId: data.attendanceSessionId,
+			studentId: data.studentId,
+			action: data.action,
+			reason: data.excuseReason,
+			actorId: data.actorId,
+		});
+		return updated;
+	});
 }
 
 export async function createSession(data: NewAttendanceSession) {

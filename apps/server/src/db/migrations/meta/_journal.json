@@ -113,6 +113,13 @@
       "when": 1782658140002,
       "tag": "0015_slippery_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1782674770935,
+      "tag": "0016_lively_stone_men",
+      "breakpoints": true
     }
   ]
 }

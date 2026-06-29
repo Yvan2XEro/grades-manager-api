@@ -3704,7 +3704,8 @@
       },
       "warnings": {
         "missingTeacher": "Ce cours-classe n'a pas d'enseignant assigné. Veuillez assigner un enseignant avant de planifier.",
-        "missingSessions": "{{count}} séance(s) n'ont pas de salle assignée."
+        "missingSessions": "{{count}} séance(s) n'ont pas de salle assignée.",
+        "noRoomSelected": "Aucune salle sélectionnée — cette séance sera enregistrée sans affectation de salle."
       },
       "importDialog": {
         "title": "Import en masse",

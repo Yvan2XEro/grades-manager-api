@@ -247,26 +247,18 @@ export async function excuseAbsence(
 		});
 	}
 
-	const updated = await repo.updateRecord(
-		record.attendanceSessionId,
-		record.studentId,
-		{
-			excuseReason,
-			status: approve ? "excused" : record.status,
-			excuseApprovedBy: approve ? approvedBy : null,
-			excuseApprovedAt: approve ? new Date() : null,
-		},
-		institutionId,
-	);
-	// Append-only audit entry for every excuse decision
-	await repo.insertExcuseAuditLog({
+	return repo.excuseAndAudit({
+		attendanceSessionId: record.attendanceSessionId,
+		studentId: record.studentId,
 		institutionId,
 		attendanceRecordId: record.id,
+		excuseReason,
+		newStatus: approve ? "excused" : record.status,
+		excuseApprovedBy: approve ? approvedBy : null,
+		excuseApprovedAt: approve ? new Date() : null,
 		action: approve ? "approved" : "rejected",
-		reason: excuseReason,
 		actorId: approvedBy,
 	});
-	return updated;
 }
 
 /** Compute attendance rates per student for a given classCourse.

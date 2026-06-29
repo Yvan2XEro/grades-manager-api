@@ -147,12 +147,6 @@ export default function TimetableManagement() {
 		selectedCourse !== undefined &&
 		!selectedCourse.teacher;
 
-	// Warning: some visible sessions have no room
-	const sessionsWithNoRoom = sessions.filter(
-		(s) => !s.room && !s.roomId,
-	).length;
-	const missingRoomWarning = sessionsWithNoRoom > 0;
-
 	const classCourses = classCoursesData ?? [];
 
 	const invalidate = () => {
@@ -347,9 +341,9 @@ export default function TimetableManagement() {
 						{t("teacher.timetable.filterByClass")}
 					</Label>
 					<Select
-						value={classId ?? ""}
+						value={classId ?? "__all_classes__"}
 						onValueChange={(v) => {
-							setClassId(v || null);
+							setClassId(v === "__all_classes__" ? null : v);
 							setClassCourseId(null);
 						}}
 					>
@@ -357,7 +351,7 @@ export default function TimetableManagement() {
 							<SelectValue placeholder={t("teacher.timetable.allClasses")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="__all_classes__">
 								{t("teacher.timetable.allClasses")}
 							</SelectItem>
 							{(classesData ?? []).map((c) => (
@@ -373,9 +367,9 @@ export default function TimetableManagement() {
 						{t("teacher.timetable.filterByTeacher")}
 					</Label>
 					<Select
-						value={teacherId ?? ""}
+						value={teacherId ?? "__all_teachers__"}
 						onValueChange={(v) => {
-							setTeacherId(v || null);
+							setTeacherId(v === "__all_teachers__" ? null : v);
 							setClassCourseId(null);
 						}}
 					>
@@ -383,7 +377,7 @@ export default function TimetableManagement() {
 							<SelectValue placeholder={t("teacher.timetable.allTeachers")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="__all_teachers__">
 								{t("teacher.timetable.allTeachers")}
 							</SelectItem>
 							{(teachersData ?? []).map((u) => (
@@ -399,14 +393,16 @@ export default function TimetableManagement() {
 						{t("teacher.timetable.filterByCourse")}
 					</Label>
 					<Select
-						value={classCourseId ?? ""}
-						onValueChange={(v) => setClassCourseId(v || null)}
+						value={classCourseId ?? "__all_courses__"}
+						onValueChange={(v) =>
+							setClassCourseId(v === "__all_courses__" ? null : v)
+						}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder={t("teacher.timetable.selectCourse")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">
+							<SelectItem value="__all_courses__">
 								{t("teacher.timetable.allCourses")}
 							</SelectItem>
 							{classCourses.map((cc) => (
@@ -424,26 +420,14 @@ export default function TimetableManagement() {
 				</div>
 			</div>
 
-			{(missingTeacherWarning || missingRoomWarning) && (
-				<div className="mb-4 space-y-2">
-					{missingTeacherWarning && (
-						<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-							<AlertTriangle className="h-4 w-4 shrink-0" />
-							{t("teacher.timetable.warnings.missingTeacher")}
-						</div>
-					)}
-					{missingRoomWarning && (
-						<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-							<AlertTriangle className="h-4 w-4 shrink-0" />
-							{t("teacher.timetable.warnings.missingSessions", {
-								count: sessionsWithNoRoom,
-							})}
-						</div>
-					)}
+			{missingTeacherWarning && (
+				<div className="mb-4 flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+					<AlertTriangle className="h-4 w-4 shrink-0" />
+					{t("teacher.timetable.warnings.missingTeacher")}
 				</div>
 			)}
 
-			{!classCourseId ? (
+			{!classCourseId && !classId && !teacherId ? (
 				<Empty>
 					<EmptyHeader>
 						<Calendar className="h-8 w-8 text-muted-foreground/40" />
@@ -581,6 +565,12 @@ export default function TimetableManagement() {
 								</SelectContent>
 							</Select>
 						</div>
+						{form.roomId === NO_ROOM_SENTINEL && (
+							<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+								<AlertTriangle className="h-4 w-4 shrink-0" />
+								{t("teacher.timetable.warnings.noRoomSelected")}
+							</div>
+						)}
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setIsDialogOpen(false)}>

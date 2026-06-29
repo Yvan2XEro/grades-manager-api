@@ -5,7 +5,12 @@ import * as repo from "./timetable.repo";
 async function resolveClassCourseInfo(
 	classCourseId: string,
 	institutionId: string,
-): Promise<{ teacherId?: string; classId?: string }> {
+): Promise<{
+	teacherId?: string;
+	classId?: string;
+	classAcademicYear?: string;
+	classSemesterId?: string | null;
+}> {
 	const { db } = await import("@/db");
 	const { and, eq } = await import("drizzle-orm");
 	const schema = await import("@/db/schema/app-schema");
@@ -14,7 +19,8 @@ async function resolveClassCourseInfo(
 			eq(schema.classCourses.id, classCourseId),
 			eq(schema.classCourses.institutionId, institutionId),
 		),
-		columns: { teacher: true, class: true },
+		columns: { teacher: true, class: true, semesterId: true },
+		with: { classRef: { columns: { academicYear: true } } },
 	});
 	if (!cc)
 		throw new TRPCError({
@@ -24,6 +30,8 @@ async function resolveClassCourseInfo(
 	return {
 		teacherId: cc.teacher ?? undefined,
 		classId: cc.class ?? undefined,
+		classAcademicYear: cc.classRef?.academicYear ?? undefined,
+		classSemesterId: cc.semesterId,
 	};
 }
 
@@ -148,10 +156,29 @@ export async function createSession(
 		}
 	}
 
-	const { teacherId, classId } = await resolveClassCourseInfo(
-		input.classCourseId,
-		institutionId,
-	);
+	const { teacherId, classId, classAcademicYear, classSemesterId } =
+		await resolveClassCourseInfo(input.classCourseId, institutionId);
+
+	// Reject academic year mismatches: the session must belong to the same year as its class
+	if (classAcademicYear && classAcademicYear !== input.academicYearId) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Academic year mismatch: class course belongs to year "${classAcademicYear}" but session was supplied with "${input.academicYearId}"`,
+		});
+	}
+
+	// If the class course is semester-bound, a supplied semesterId must match
+	if (
+		classSemesterId &&
+		input.semesterId &&
+		classSemesterId !== input.semesterId
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Semester mismatch: class course is bound to semester "${classSemesterId}" but session was supplied with "${input.semesterId}"`,
+		});
+	}
+
 	const roomName = await resolveRoomName(
 		input.roomId,
 		input.room,
@@ -233,10 +260,24 @@ export async function updateSession(
 		});
 	}
 
-	const { teacherId, classId } = await resolveClassCourseInfo(
+	const { teacherId, classId, classSemesterId } = await resolveClassCourseInfo(
 		existing.classCourseId,
 		institutionId,
 	);
+
+	// If the caller changes semesterId and the class course is semester-bound, they must match
+	if (
+		input.semesterId !== undefined &&
+		input.semesterId !== null &&
+		classSemesterId &&
+		classSemesterId !== input.semesterId
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: `Semester mismatch: class course is bound to semester "${classSemesterId}" but update supplied "${input.semesterId}"`,
+		});
+	}
+
 	const capacityWarning = await checkRoomCapacity(
 		nextRoomId ?? undefined,
 		existing.classCourseId,
