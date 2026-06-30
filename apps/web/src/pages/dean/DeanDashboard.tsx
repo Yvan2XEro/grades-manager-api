@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -92,15 +93,17 @@ function RejectExamDialog({
 						{t("dean.approvals.rejectTitle")}
 					</DialogTitle>
 				</DialogHeader>
-				<p className="text-muted-foreground text-sm">
-					<strong>{examName}</strong> — {t("dean.approvals.rejectHint")}
-				</p>
-				<textarea
-					value={reason}
-					onChange={(e) => setReason(e.target.value)}
-					placeholder={t("dean.approvals.rejectPlaceholder")}
-					className="min-h-[80px] w-full resize-none rounded-md border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-				/>
+				<DialogBody>
+					<p className="text-muted-foreground text-sm">
+						<strong>{examName}</strong> — {t("dean.approvals.rejectHint")}
+					</p>
+					<textarea
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						placeholder={t("dean.approvals.rejectPlaceholder")}
+						className="min-h-[80px] w-full resize-none rounded-md border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+					/>
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={onClose}>
 						{t("common.cancel")}

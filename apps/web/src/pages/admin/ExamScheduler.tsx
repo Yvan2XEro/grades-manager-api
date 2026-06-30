@@ -19,6 +19,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import { DatePicker } from "../../components/ui/date-picker";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
@@ -1012,7 +1013,7 @@ export default function ExamScheduler() {
 							{t("admin.examScheduler.history.details.title")}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="px-6 pb-4">
+					<DialogBody>
 						{runDetailsQuery.isLoading ? (
 							<div className="flex items-center justify-center py-8">
 								<Spinner />
@@ -1094,7 +1095,7 @@ export default function ExamScheduler() {
 								</div>
 							</div>
 						)}
-					</div>
+					</DialogBody>
 				</DialogContent>
 			</Dialog>
 		</div>

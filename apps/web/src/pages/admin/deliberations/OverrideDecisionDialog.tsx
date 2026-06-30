@@ -7,6 +7,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -81,7 +82,7 @@ export default function OverrideDecisionDialog({
 					<DialogTitle>{t("admin.deliberations.override.title")}</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					<p className="font-medium text-sm">{studentName}</p>
 
 					<div className="space-y-1">
@@ -120,7 +121,7 @@ export default function OverrideDecisionDialog({
 							rows={3}
 						/>
 					</div>
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>

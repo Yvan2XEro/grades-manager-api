@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -270,7 +271,7 @@ export default function BankImportDialog({
 					<DialogTitle>{t("feeClearance.bankImport.title")}</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					{/* File / CSV input */}
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
@@ -483,7 +484,7 @@ export default function BankImportDialog({
 							) : null}
 						</div>
 					)}
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>

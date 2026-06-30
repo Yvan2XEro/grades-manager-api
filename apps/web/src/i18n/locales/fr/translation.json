@@ -3709,7 +3709,7 @@
       },
       "importDialog": {
         "title": "Import en masse",
-        "description": "Téléversez un fichier CSV ou Excel avec les colonnes : classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optionnel).",
+        "description": "Téléchargez le modèle pour obtenir la liste pré-remplie des cours. Renseignez le jour (mon–dim), l'heure de début et de fin (HH:MM), et optionnellement une salle. Les colonnes courseName et className sont indicatives uniquement.",
         "preview": "Aperçu",
         "execute": "Importer",
         "skipDuplicates": "Ignorer les doublons",
@@ -3744,6 +3744,9 @@
         "fri": "Vendredi",
         "sat": "Samedi",
         "sun": "Dimanche"
+      },
+      "errors": {
+        "endBeforeStart": "L'heure de fin doit être après l'heure de début."
       }
     },
     "rooms": {
@@ -4395,6 +4398,15 @@
         "amount": "Montant",
         "dueDate": "Échéance",
         "empty": "Aucune tranche définie. Les étudiants peuvent payer en une ou plusieurs fois librement."
+      },
+      "impact": {
+        "title": "Aperçu d'impact",
+        "preview": "Prévisualiser l'impact",
+        "totalStudents": "Étudiants dans le scope",
+        "toAssign": "À assigner",
+        "alreadyAssigned": "Déjà affectés cette année",
+        "noClasses": "Aucune classe ne correspond au scope de cette structure.",
+        "class": "Classe"
       }
     },
     "bankImport": {
@@ -4577,5 +4589,15 @@
     "noData": "Aucune séance de présence enregistrée pour ce cours.",
     "title": "Taux de présence",
     "exportFilename": "taux-presence.xlsx"
+  },
+  "timetableHub": {
+    "title": "Emploi du temps & Présences",
+    "description": "Gérez les emplois du temps, les salles, les présences et les taux",
+    "tabs": {
+      "timetable": "Emploi du temps",
+      "rooms": "Salles",
+      "attendance": "Présences",
+      "rates": "Taux"
+    }
   }
 }

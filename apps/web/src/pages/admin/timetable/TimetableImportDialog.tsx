@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -37,19 +38,23 @@ type PreviewResult = Awaited<
 	ReturnType<typeof trpcClient.timetable.previewBulkImport.mutate>
 >;
 
-const CSV_TEMPLATE_HEADER =
-	"classCourseId,dayOfWeek,startTime,endTime,room,roomId";
-const CSV_EXAMPLE =
-	"<uuid-class-course>,mon,08:00,10:00,Amphi A,\n<uuid-class-course>,tue,10:00,12:00,Salle 201,";
+type ClassCourse = {
+	id: string;
+	code: string;
+	courseRef: { name: string } | null;
+	classRef: { name: string } | null;
+};
 
 export function TimetableImportDialog({
 	open,
 	onOpenChange,
 	onImported,
+	classCourses = [],
 }: {
 	open: boolean;
 	onOpenChange: (v: boolean) => void;
 	onImported: () => void;
+	classCourses?: ClassCourse[];
 }) {
 	const { t } = useTranslation();
 	const fileRef = useRef<HTMLInputElement>(null);
@@ -114,9 +119,24 @@ export function TimetableImportDialog({
 	}
 
 	function downloadTemplate() {
-		const blob = new Blob([`${CSV_TEMPLATE_HEADER}\n${CSV_EXAMPLE}`], {
-			type: "text/csv",
-		});
+		const header =
+			"courseName,className,classCourseId,dayOfWeek,startTime,endTime,room";
+		let rows: string;
+		if (classCourses.length > 0) {
+			rows = classCourses
+				.map((cc) => {
+					const course = cc.courseRef?.name ?? cc.code;
+					const klass = cc.classRef?.name ?? "";
+					return `${course},${klass},${cc.id},,,, `;
+				})
+				.join("\n");
+		} else {
+			rows = [
+				"Mathématiques,L1 Info,<id-class-course>,mon,08:00,10:00,Amphi A",
+				"Anglais,L1 Info,<id-class-course>,tue,10:00,12:00,Salle 201",
+			].join("\n");
+		}
+		const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement("a");
 		a.href = url;
@@ -132,115 +152,121 @@ export function TimetableImportDialog({
 					<DialogTitle>{t("teacher.timetable.import.title")}</DialogTitle>
 				</DialogHeader>
 
-				{step === "upload" && (
-					<div className="space-y-4">
-						<p className="text-muted-foreground text-sm">
-							{t("teacher.timetable.import.description")}
-						</p>
-						<Button variant="outline" size="sm" onClick={downloadTemplate}>
-							{t("teacher.timetable.import.downloadTemplate")}
-						</Button>
-						<div className="space-y-1.5">
-							<Label>{t("teacher.timetable.import.file")}</Label>
-							<input
-								ref={fileRef}
-								type="file"
-								accept=".csv"
-								className="text-sm"
-								onChange={handleFile}
-							/>
-						</div>
-						{previewMut.isPending && (
-							<p className="text-muted-foreground text-sm">…</p>
-						)}
-					</div>
-				)}
-
-				{step === "preview" && preview && (
-					<div className="space-y-4">
-						<div className="flex gap-3 text-sm">
-							<Badge variant="default">
-								{preview.valid.length} {t("teacher.timetable.import.validRows")}
-							</Badge>
-							{preview.errors.length > 0 && (
-								<Badge variant="destructive">
-									{preview.errors.length}{" "}
-									{t("teacher.timetable.import.errorRows")}
-								</Badge>
+				<DialogBody className="space-y-4">
+					{step === "upload" && (
+						<div className="space-y-4">
+							<p className="text-muted-foreground text-sm">
+								{t("teacher.timetable.import.description")}
+							</p>
+							<Button variant="outline" size="sm" onClick={downloadTemplate}>
+								{t("teacher.timetable.import.downloadTemplate")}
+							</Button>
+							<div className="space-y-1.5">
+								<Label>{t("teacher.timetable.import.file")}</Label>
+								<input
+									ref={fileRef}
+									type="file"
+									accept=".csv"
+									className="text-sm"
+									onChange={handleFile}
+								/>
+							</div>
+							{previewMut.isPending && (
+								<p className="text-muted-foreground text-sm">…</p>
 							)}
 						</div>
+					)}
 
-						{preview.errors.length > 0 && (
-							<div className="max-h-40 overflow-y-auto rounded-md border">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>{t("teacher.timetable.import.row")}</TableHead>
-											<TableHead>
-												{t("teacher.timetable.import.error")}
-											</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{preview.errors.map((e) => (
-											<TableRow key={e.rowIndex}>
-												<TableCell>{e.rowIndex}</TableCell>
-												<TableCell className="text-destructive text-xs">
-													{e.reason}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
+					{step === "preview" && preview && (
+						<div className="space-y-4">
+							<div className="flex gap-3 text-sm">
+								<Badge variant="default">
+									{preview.valid.length}{" "}
+									{t("teacher.timetable.import.validRows")}
+								</Badge>
+								{preview.errors.length > 0 && (
+									<Badge variant="destructive">
+										{preview.errors.length}{" "}
+										{t("teacher.timetable.import.errorRows")}
+									</Badge>
+								)}
 							</div>
-						)}
 
-						{preview.valid.length > 0 && (
-							<div className="max-h-48 overflow-y-auto rounded-md border">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>{t("teacher.timetable.import.row")}</TableHead>
-											<TableHead>{t("teacher.timetable.day")}</TableHead>
-											<TableHead>
-												{t("teacher.timetable.import.schedule")}
-											</TableHead>
-											<TableHead>{t("teacher.timetable.room")}</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{preview.valid.map((r) => (
-											<TableRow key={r.rowIndex}>
-												<TableCell>{r.rowIndex}</TableCell>
-												<TableCell className="font-medium uppercase">
-													{r.dayOfWeek}
-												</TableCell>
-												<TableCell>
-													{r.startTime}–{r.endTime}
-												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{r.room ?? r.roomId ?? "—"}
-												</TableCell>
+							{preview.errors.length > 0 && (
+								<div className="max-h-40 overflow-y-auto rounded-md border">
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>
+													{t("teacher.timetable.import.row")}
+												</TableHead>
+												<TableHead>
+													{t("teacher.timetable.import.error")}
+												</TableHead>
 											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</div>
-						)}
+										</TableHeader>
+										<TableBody>
+											{preview.errors.map((e) => (
+												<TableRow key={e.rowIndex}>
+													<TableCell>{e.rowIndex}</TableCell>
+													<TableCell className="text-destructive text-xs">
+														{e.reason}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
+							)}
 
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="skipDupes"
-								checked={skipDuplicates}
-								onCheckedChange={(v) => setSkipDuplicates(Boolean(v))}
-							/>
-							<Label htmlFor="skipDupes" className="font-normal text-sm">
-								{t("teacher.timetable.import.skipDuplicates")}
-							</Label>
+							{preview.valid.length > 0 && (
+								<div className="max-h-48 overflow-y-auto rounded-md border">
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>
+													{t("teacher.timetable.import.row")}
+												</TableHead>
+												<TableHead>{t("teacher.timetable.day")}</TableHead>
+												<TableHead>
+													{t("teacher.timetable.import.schedule")}
+												</TableHead>
+												<TableHead>{t("teacher.timetable.room")}</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{preview.valid.map((r) => (
+												<TableRow key={r.rowIndex}>
+													<TableCell>{r.rowIndex}</TableCell>
+													<TableCell className="font-medium uppercase">
+														{r.dayOfWeek}
+													</TableCell>
+													<TableCell>
+														{r.startTime}–{r.endTime}
+													</TableCell>
+													<TableCell className="text-muted-foreground">
+														{r.room ?? r.roomId ?? "—"}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</div>
+							)}
+
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="skipDupes"
+									checked={skipDuplicates}
+									onCheckedChange={(v) => setSkipDuplicates(Boolean(v))}
+								/>
+								<Label htmlFor="skipDupes" className="font-normal text-sm">
+									{t("teacher.timetable.import.skipDuplicates")}
+								</Label>
+							</div>
 						</div>
-					</div>
-				)}
-
+					)}
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>
 						{t("common.cancel")}

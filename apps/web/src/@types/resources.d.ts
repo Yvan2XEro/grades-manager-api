@@ -469,6 +469,9 @@ interface Resources {
 					sat: "Saturday";
 					sun: "Sunday";
 				};
+				errors: {
+					endBeforeStart: "End time must be after start time.";
+				};
 			};
 			rooms: {
 				title: "Rooms";
@@ -4378,6 +4381,15 @@ interface Resources {
 					dueDate: "Due date";
 					empty: "No installments defined. Students can pay in one or multiple free-form payments.";
 				};
+				impact: {
+					title: "Impact preview";
+					preview: "Preview impact";
+					totalStudents: "Students in scope";
+					toAssign: "To assign";
+					alreadyAssigned: "Already assigned this academic year";
+					noClasses: "No classes match the scope of this structure.";
+					class: "Class";
+				};
 			};
 			bankImport: {
 				button: "Bank import";
@@ -4559,6 +4571,16 @@ interface Resources {
 			noData: "No attendance sessions recorded for this course.";
 			title: "Attendance rates";
 			exportFilename: "attendance-rates.xlsx";
+		};
+		timetableHub: {
+			title: "Timetable & Attendance";
+			description: "Manage schedules, rooms, attendance tracking and rates";
+			tabs: {
+				timetable: "Timetable";
+				rooms: "Rooms";
+				attendance: "Attendance";
+				rates: "Rates";
+			};
 		};
 	};
 }

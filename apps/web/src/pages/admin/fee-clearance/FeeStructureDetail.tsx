@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -254,7 +255,7 @@ function AddInstallmentDialog({
 						{t("feeClearance.structures.installments.add")}
 					</DialogTitle>
 				</DialogHeader>
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					<div>
 						<Label>{t("feeClearance.structures.installments.label")}</Label>
 						<Input
@@ -285,7 +286,7 @@ function AddInstallmentDialog({
 							}
 						/>
 					</div>
-				</div>
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						{t("common.cancel")}

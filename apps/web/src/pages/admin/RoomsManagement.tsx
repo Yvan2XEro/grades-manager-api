@@ -1,11 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -17,10 +21,16 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -34,20 +44,34 @@ import { type RouterOutputs, trpc, trpcClient } from "@/utils/trpc";
 
 type Room = RouterOutputs["rooms"]["list"][number];
 
-const EMPTY_FORM = {
-	code: "",
-	name: "",
-	capacity: "",
-	building: "",
-	campus: "",
-};
+const roomSchema = z.object({
+	code: z.string().min(1, "Required").max(20),
+	name: z.string().min(1, "Required"),
+	capacity: z.preprocess(
+		(v) => (v === "" || v === undefined ? undefined : Number(v)),
+		z.number().int().positive().optional(),
+	),
+	building: z.string().optional(),
+	campus: z.string().optional(),
+});
+type RoomForm = z.infer<typeof roomSchema>;
 
 export default function RoomsManagement() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editing, setEditing] = useState<Room | null>(null);
-	const [form, setForm] = useState(EMPTY_FORM);
+
+	const form = useForm<RoomForm>({
+		resolver: zodResolver(roomSchema),
+		defaultValues: {
+			code: "",
+			name: "",
+			capacity: undefined,
+			building: "",
+			campus: "",
+		},
+	});
 
 	const { data: rooms, isLoading } = useQuery(trpc.rooms.list.queryOptions({}));
 
@@ -55,13 +79,13 @@ export default function RoomsManagement() {
 		queryClient.invalidateQueries(trpc.rooms.list.queryFilter({}));
 
 	const createMut = useMutation({
-		mutationFn: () =>
+		mutationFn: (values: RoomForm) =>
 			trpcClient.rooms.create.mutate({
-				code: form.code,
-				name: form.name,
-				capacity: form.capacity ? Number(form.capacity) : undefined,
-				building: form.building || undefined,
-				campus: form.campus || undefined,
+				code: values.code,
+				name: values.name,
+				capacity: values.capacity,
+				building: values.building || undefined,
+				campus: values.campus || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(t("common.saved"));
@@ -72,14 +96,14 @@ export default function RoomsManagement() {
 	});
 
 	const updateMut = useMutation({
-		mutationFn: () =>
+		mutationFn: (values: RoomForm) =>
 			trpcClient.rooms.update.mutate({
 				id: editing!.id,
-				code: form.code,
-				name: form.name,
-				capacity: form.capacity ? Number(form.capacity) : null,
-				building: form.building || null,
-				campus: form.campus || null,
+				code: values.code,
+				name: values.name,
+				capacity: values.capacity ?? null,
+				building: values.building || null,
+				campus: values.campus || null,
 			}),
 		onSuccess: () => {
 			toast.success(t("common.saved"));
@@ -107,16 +131,22 @@ export default function RoomsManagement() {
 
 	function openCreate() {
 		setEditing(null);
-		setForm(EMPTY_FORM);
+		form.reset({
+			code: "",
+			name: "",
+			capacity: undefined,
+			building: "",
+			campus: "",
+		});
 		setDialogOpen(true);
 	}
 
 	function openEdit(room: Room) {
 		setEditing(room);
-		setForm({
+		form.reset({
 			code: room.code,
 			name: room.name,
-			capacity: room.capacity ? String(room.capacity) : "",
+			capacity: room.capacity ?? undefined,
 			building: room.building ?? "",
 			campus: room.campus ?? "",
 		});
@@ -126,7 +156,15 @@ export default function RoomsManagement() {
 	function closeDialog() {
 		setDialogOpen(false);
 		setEditing(null);
-		setForm(EMPTY_FORM);
+		form.reset();
+	}
+
+	function onSubmit(values: RoomForm) {
+		if (editing) {
+			updateMut.mutate(values);
+		} else {
+			createMut.mutate(values);
+		}
 	}
 
 	const isPending = createMut.isPending || updateMut.isPending;
@@ -178,10 +216,8 @@ export default function RoomsManagement() {
 					<TableBody>
 						{rooms.map((room) => (
 							<TableRow key={room.id}>
-								<TableCell className="font-medium font-mono">
-									{room.code}
-								</TableCell>
-								<TableCell>{room.name}</TableCell>
+								<TableCell className="font-mono text-xs">{room.code}</TableCell>
+								<TableCell className="font-medium">{room.name}</TableCell>
 								<TableCell>
 									{room.capacity ? (
 										<Badge variant="outline">
@@ -198,14 +234,18 @@ export default function RoomsManagement() {
 									{room.campus ?? "—"}
 								</TableCell>
 								<TableCell>
-									<Switch
+									<input
+										type="checkbox"
 										checked={room.isActive}
-										onCheckedChange={(v) =>
-											toggleActiveMut.mutate({ id: room.id, isActive: v })
+										onChange={(e) =>
+											toggleActiveMut.mutate({
+												id: room.id,
+												isActive: e.target.checked,
+											})
 										}
 									/>
 								</TableCell>
-								<TableCell className="flex items-center justify-end gap-1">
+								<TableCell className="flex justify-end gap-1">
 									<Button
 										size="icon"
 										variant="ghost"
@@ -234,81 +274,121 @@ export default function RoomsManagement() {
 							{editing ? t("teacher.rooms.edit") : t("teacher.rooms.add")}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-3">
-						<div className="grid grid-cols-2 gap-3">
-							<div className="space-y-1.5">
-								<Label>{t("teacher.rooms.fields.code")} *</Label>
-								<Input
-									value={form.code}
-									maxLength={20}
-									placeholder="AMP-A"
-									onChange={(e) =>
-										setForm((f) => ({
-											...f,
-											code: e.target.value.toUpperCase(),
-										}))
-									}
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)}>
+							<DialogBody className="space-y-3">
+								<div className="grid grid-cols-2 gap-3">
+									<FormField
+										control={form.control}
+										name="code"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("teacher.rooms.fields.code")} *
+												</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														maxLength={20}
+														placeholder="AMP-A"
+														onChange={(e) =>
+															field.onChange(e.target.value.toUpperCase())
+														}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="capacity"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("teacher.rooms.fields.capacity")}
+												</FormLabel>
+												<FormControl>
+													<Input
+														type="number"
+														min={1}
+														placeholder="120"
+														value={field.value ?? ""}
+														onChange={(e) => field.onChange(e.target.value)}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<FormField
+									control={form.control}
+									name="name"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t("teacher.rooms.fields.name")} *</FormLabel>
+											<FormControl>
+												<Input
+													{...field}
+													placeholder={t("teacher.rooms.placeholders.roomName")}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
 								/>
-							</div>
-							<div className="space-y-1.5">
-								<Label>{t("teacher.rooms.fields.capacity")}</Label>
-								<Input
-									type="number"
-									min={1}
-									value={form.capacity}
-									placeholder="120"
-									onChange={(e) =>
-										setForm((f) => ({ ...f, capacity: e.target.value }))
-									}
-								/>
-							</div>
-						</div>
-						<div className="space-y-1.5">
-							<Label>{t("teacher.rooms.fields.name")} *</Label>
-							<Input
-								value={form.name}
-								placeholder={t("teacher.rooms.placeholders.roomName")}
-								onChange={(e) =>
-									setForm((f) => ({ ...f, name: e.target.value }))
-								}
-							/>
-						</div>
-						<div className="grid grid-cols-2 gap-3">
-							<div className="space-y-1.5">
-								<Label>{t("teacher.rooms.fields.building")}</Label>
-								<Input
-									value={form.building}
-									placeholder={t("teacher.rooms.placeholders.building")}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, building: e.target.value }))
-									}
-								/>
-							</div>
-							<div className="space-y-1.5">
-								<Label>{t("teacher.rooms.fields.campus")}</Label>
-								<Input
-									value={form.campus}
-									placeholder={t("teacher.rooms.placeholders.campus")}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, campus: e.target.value }))
-									}
-								/>
-							</div>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button variant="outline" onClick={closeDialog}>
-							{t("common.cancel")}
-						</Button>
-						<Button
-							disabled={!form.code || !form.name || isPending}
-							onClick={() =>
-								editing ? updateMut.mutate() : createMut.mutate()
-							}
-						>
-							{t("common.save")}
-						</Button>
-					</DialogFooter>
+								<div className="grid grid-cols-2 gap-3">
+									<FormField
+										control={form.control}
+										name="building"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("teacher.rooms.fields.building")}
+												</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														placeholder={t(
+															"teacher.rooms.placeholders.building",
+														)}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="campus"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{t("teacher.rooms.fields.campus")}
+												</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														placeholder={t("teacher.rooms.placeholders.campus")}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</DialogBody>
+							<DialogFooter>
+								<Button type="button" variant="outline" onClick={closeDialog}>
+									{t("common.cancel")}
+								</Button>
+								<Button type="submit" disabled={isPending}>
+									{t("common.save")}
+								</Button>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 		</div>

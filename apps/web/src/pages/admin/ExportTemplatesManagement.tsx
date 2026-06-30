@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/context-menu";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -640,7 +641,7 @@ export default function ExportTemplatesManagement() {
 							{t("admin.exportTemplates.form.renameDescription")}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="px-6 pb-4">
+					<DialogBody>
 						<Form {...renameForm}>
 							<form
 								onSubmit={renameForm.handleSubmit(handleRename)}
@@ -682,7 +683,7 @@ export default function ExportTemplatesManagement() {
 								</DialogFooter>
 							</form>
 						</Form>
-					</div>
+					</DialogBody>
 				</DialogContent>
 			</Dialog>
 

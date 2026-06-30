@@ -25,6 +25,7 @@ import { ContextMenuItem } from "@/components/ui/context-menu";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
@@ -1082,7 +1083,7 @@ export default function StudentManagement() {
 								: ""}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-6 px-6 pb-6">
+					<DialogBody className="space-y-6 px-6 pb-6">
 						{ledgerSummaryQuery.isLoading ? (
 							<p className="text-muted-foreground text-xs">
 								{t("admin.students.ledger.loading", {
@@ -1181,7 +1182,7 @@ export default function StudentManagement() {
 								) : null}
 							</>
 						)}
-					</div>
+					</DialogBody>
 				</DialogContent>
 			</Dialog>
 
@@ -1191,7 +1192,7 @@ export default function StudentManagement() {
 						<DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
 					</DialogHeader>
 
-					<div className="px-6 pb-4">
+					<DialogBody className="px-6 pb-4">
 						<Tabs
 							value={activeTab}
 							onValueChange={(value) =>
@@ -2329,7 +2330,7 @@ export default function StudentManagement() {
 								</Form>
 							</TabsContent>
 						</Tabs>
-					</div>
+					</DialogBody>
 				</DialogContent>
 			</Dialog>
 		</div>

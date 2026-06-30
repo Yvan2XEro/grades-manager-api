@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -475,7 +476,7 @@ const WorkflowApprovals = () => {
 							})}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-3">
+					<DialogBody className="space-y-3">
 						<p className="text-muted-foreground text-sm">
 							{t("dean.workflows.rejectDialog.subtitle", {
 								name: rejectTarget?.name ?? "",
@@ -493,7 +494,7 @@ const WorkflowApprovals = () => {
 								placeholder={t("admin.exams.rejectReasonPlaceholder")}
 							/>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter className="gap-2">
 						<Button
 							variant="outline"

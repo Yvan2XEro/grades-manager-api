@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertTriangle,
@@ -8,16 +9,21 @@ import {
 	Upload,
 } from "lucide-react";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
+import { z } from "zod";
 import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { SemesterSelect } from "@/components/inputs/SemesterSelect";
+import { Label } from "@/components/ui/label";
 import { type GridSession, WeeklyGrid } from "@/components/ui/weekly-grid";
 import { toast } from "@/lib/toast";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -30,7 +36,6 @@ import {
 	EmptyTitle,
 } from "../../components/ui/empty";
 import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -38,6 +43,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "../../components/ui/tooltip";
 import { type RouterOutputs, trpc, trpcClient } from "../../utils/trpc";
 import { TimetableImportDialog } from "./timetable/TimetableImportDialog";
 
@@ -52,7 +62,21 @@ type ClassCourse = {
 
 const NO_ROOM_SENTINEL = "__none__";
 
-const DEFAULT_FORM = {
+const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+const sessionSchema = z
+	.object({
+		dayOfWeek: z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+		startTime: z.string().regex(timeRe, "HH:MM required"),
+		endTime: z.string().regex(timeRe, "HH:MM required"),
+		roomId: z.string(),
+	})
+	.refine((d) => d.startTime < d.endTime, {
+		message: "End time must be after start time",
+		path: ["endTime"],
+	});
+type SessionForm = z.infer<typeof sessionSchema>;
+
+const DEFAULT_SESSION: SessionForm = {
 	dayOfWeek: "mon",
 	startTime: "08:00",
 	endTime: "10:00",
@@ -71,7 +95,11 @@ export default function TimetableManagement() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
 	const [editingSession, setEditingSession] = useState<Session | null>(null);
-	const [form, setForm] = useState(DEFAULT_FORM);
+
+	const sessionForm = useForm<SessionForm>({
+		resolver: zodResolver(sessionSchema),
+		defaultValues: DEFAULT_SESSION,
+	});
 
 	const DAYS = [
 		{ value: "mon", label: t("teacher.timetable.days.mon") },
@@ -99,17 +127,6 @@ export default function TimetableManagement() {
 			return items as ClassCourse[];
 		},
 		enabled: true,
-	});
-
-	const { data: classesData } = useQuery({
-		queryKey: ["classes-for-timetable-filter", academicYearId],
-		queryFn: async () => {
-			const { items } = await trpcClient.classes.list.query({
-				...(academicYearId ? { academicYearId } : {}),
-				limit: 500,
-			});
-			return items;
-		},
 	});
 
 	const { data: teachersData } = useQuery({
@@ -167,7 +184,7 @@ export default function TimetableManagement() {
 
 	const createMutation = useMutation({
 		mutationFn: (
-			data: typeof DEFAULT_FORM & {
+			data: SessionForm & {
 				classCourseId: string;
 				academicYearId: string;
 			},
@@ -175,7 +192,7 @@ export default function TimetableManagement() {
 			trpcClient.timetable.create.mutate({
 				...data,
 				roomId: data.roomId === NO_ROOM_SENTINEL ? undefined : data.roomId,
-				semesterId: semesterId ?? undefined,
+				// semesterId intentionally omitted — backend derives it from the classCourse
 			}),
 		onSuccess: (res) => {
 			toast.success(t("teacher.timetable.toast.created"));
@@ -187,15 +204,10 @@ export default function TimetableManagement() {
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: (data: { id: string } & Partial<typeof DEFAULT_FORM>) =>
+		mutationFn: (data: { id: string } & SessionForm) =>
 			trpcClient.timetable.update.mutate({
 				...data,
-				roomId:
-					data.roomId === NO_ROOM_SENTINEL
-						? null
-						: data.roomId !== undefined
-							? data.roomId
-							: undefined,
+				roomId: data.roomId === NO_ROOM_SENTINEL ? null : data.roomId,
 			}),
 		onSuccess: (res) => {
 			toast.success(t("teacher.timetable.toast.updated"));
@@ -234,7 +246,7 @@ export default function TimetableManagement() {
 
 	function openCreate() {
 		setEditingSession(null);
-		setForm(DEFAULT_FORM);
+		sessionForm.reset(DEFAULT_SESSION);
 		setIsDialogOpen(true);
 	}
 
@@ -242,8 +254,8 @@ export default function TimetableManagement() {
 		const s = sessions.find((x) => x.id === session.id);
 		if (!s) return;
 		setEditingSession(s);
-		setForm({
-			dayOfWeek: s.dayOfWeek,
+		sessionForm.reset({
+			dayOfWeek: s.dayOfWeek as SessionForm["dayOfWeek"],
 			startTime: s.startTime,
 			endTime: s.endTime,
 			roomId: s.roomId ?? NO_ROOM_SENTINEL,
@@ -251,12 +263,12 @@ export default function TimetableManagement() {
 		setIsDialogOpen(true);
 	}
 
-	function handleSubmit() {
+	function onSessionSubmit(values: SessionForm) {
 		if (editingSession) {
-			updateMutation.mutate({ id: editingSession.id, ...form });
+			updateMutation.mutate({ id: editingSession.id, ...values });
 		} else {
 			if (!classCourseId || !academicYearId) return;
-			createMutation.mutate({ ...form, classCourseId, academicYearId });
+			createMutation.mutate({ ...values, classCourseId, academicYearId });
 		}
 	}
 
@@ -299,12 +311,25 @@ export default function TimetableManagement() {
 						<Download className="mr-1.5 h-4 w-4" />
 						{t("teacher.timetable.export")}
 					</Button>
-					{classCourseId && academicYearId && (
-						<Button onClick={openCreate} size="sm">
-							<Plus className="mr-2 h-4 w-4" />
-							{t("teacher.timetable.newSession")}
-						</Button>
-					)}
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span>
+								<Button
+									onClick={openCreate}
+									size="sm"
+									disabled={!classCourseId || !academicYearId}
+								>
+									<Plus className="mr-2 h-4 w-4" />
+									{t("teacher.timetable.newSession")}
+								</Button>
+							</span>
+						</TooltipTrigger>
+						{(!classCourseId || !academicYearId) && (
+							<TooltipContent>
+								{t("teacher.timetable.selectCourse")}
+							</TooltipContent>
+						)}
+					</Tooltip>
 				</div>
 			</div>
 
@@ -340,27 +365,14 @@ export default function TimetableManagement() {
 					<Label className="mb-1.5 block text-xs">
 						{t("teacher.timetable.filterByClass")}
 					</Label>
-					<Select
-						value={classId ?? "__all_classes__"}
-						onValueChange={(v) => {
-							setClassId(v === "__all_classes__" ? null : v);
+					<ClassSelect
+						academicYearId={academicYearId}
+						value={classId}
+						onChange={(v) => {
+							setClassId(v);
 							setClassCourseId(null);
 						}}
-					>
-						<SelectTrigger>
-							<SelectValue placeholder={t("teacher.timetable.allClasses")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all_classes__">
-								{t("teacher.timetable.allClasses")}
-							</SelectItem>
-							{(classesData ?? []).map((c) => (
-								<SelectItem key={c.id} value={c.id}>
-									{c.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					/>
 				</div>
 				<div className="w-52">
 					<Label className="mb-1.5 block text-xs">
@@ -496,95 +508,108 @@ export default function TimetableManagement() {
 								: t("teacher.timetable.newSession")}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-4 py-2">
-						<div>
-							<Label>{t("teacher.timetable.day")}</Label>
-							<Select
-								value={form.dayOfWeek}
-								onValueChange={(v) => setForm((f) => ({ ...f, dayOfWeek: v }))}
-							>
-								<SelectTrigger className="mt-1">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{DAYS.map((d) => (
-										<SelectItem key={d.value} value={d.value}>
-											{d.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="grid grid-cols-2 gap-3">
+					<form onSubmit={sessionForm.handleSubmit(onSessionSubmit)}>
+						<DialogBody className="space-y-4">
 							<div>
-								<Label>{t("teacher.timetable.startTime")}</Label>
-								<Input
-									type="time"
-									className="mt-1"
-									value={form.startTime}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, startTime: e.target.value }))
-									}
+								<label className="mb-1 block font-medium text-sm">
+									{t("teacher.timetable.day")}
+								</label>
+								<Controller
+									control={sessionForm.control}
+									name="dayOfWeek"
+									render={({ field }) => (
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{DAYS.map((d) => (
+													<SelectItem key={d.value} value={d.value}>
+														{d.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
 								/>
 							</div>
+							<div className="grid grid-cols-2 gap-3">
+								<div>
+									<label className="mb-1 block font-medium text-sm">
+										{t("teacher.timetable.startTime")}
+									</label>
+									<Input type="time" {...sessionForm.register("startTime")} />
+								</div>
+								<div>
+									<label className="mb-1 block font-medium text-sm">
+										{t("teacher.timetable.endTime")}
+									</label>
+									<Input type="time" {...sessionForm.register("endTime")} />
+									{sessionForm.formState.errors.endTime && (
+										<p className="mt-1 text-destructive text-xs">
+											{sessionForm.formState.errors.endTime.message}
+										</p>
+									)}
+								</div>
+							</div>
 							<div>
-								<Label>{t("teacher.timetable.endTime")}</Label>
-								<Input
-									type="time"
-									className="mt-1"
-									value={form.endTime}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, endTime: e.target.value }))
-									}
+								<label className="mb-1 block font-medium text-sm">
+									{t("teacher.timetable.room")}
+								</label>
+								<Controller
+									control={sessionForm.control}
+									name="roomId"
+									render={({ field }) => (
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={t("teacher.timetable.noRoom")}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value={NO_ROOM_SENTINEL}>
+													{t("teacher.timetable.noRoom")}
+												</SelectItem>
+												{activeRooms.map((r) => (
+													<SelectItem key={r.id} value={r.id}>
+														{r.name}
+														{r.capacity && (
+															<span className="ml-1 text-muted-foreground text-xs">
+																({r.capacity} {t("teacher.rooms.seats")})
+															</span>
+														)}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
 								/>
+								{sessionForm.watch("roomId") === NO_ROOM_SENTINEL && (
+									<p className="mt-1.5 flex items-center gap-1.5 text-amber-600 text-xs dark:text-amber-400">
+										<AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+										{t("teacher.timetable.warnings.noRoomSelected")}
+									</p>
+								)}
 							</div>
-						</div>
-						<div>
-							<Label>{t("teacher.timetable.room")}</Label>
-							<Select
-								value={form.roomId}
-								onValueChange={(v) => setForm((f) => ({ ...f, roomId: v }))}
+						</DialogBody>
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setIsDialogOpen(false)}
 							>
-								<SelectTrigger className="mt-1">
-									<SelectValue placeholder={t("teacher.timetable.noRoom")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value={NO_ROOM_SENTINEL}>
-										{t("teacher.timetable.noRoom")}
-									</SelectItem>
-									{activeRooms.map((r) => (
-										<SelectItem key={r.id} value={r.id}>
-											{r.name}
-											{r.capacity && (
-												<span className="ml-1 text-muted-foreground text-xs">
-													({r.capacity} {t("teacher.rooms.seats")})
-												</span>
-											)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						{form.roomId === NO_ROOM_SENTINEL && (
-							<div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-								<AlertTriangle className="h-4 w-4 shrink-0" />
-								{t("teacher.timetable.warnings.noRoomSelected")}
-							</div>
-						)}
-					</div>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-							{t("teacher.timetable.cancel")}
-						</Button>
-						<Button
-							onClick={handleSubmit}
-							disabled={createMutation.isPending || updateMutation.isPending}
-						>
-							{editingSession
-								? t("teacher.timetable.save")
-								: t("teacher.timetable.create")}
-						</Button>
-					</DialogFooter>
+								{t("teacher.timetable.cancel")}
+							</Button>
+							<Button
+								type="submit"
+								disabled={createMutation.isPending || updateMutation.isPending}
+							>
+								{editingSession
+									? t("teacher.timetable.save")
+									: t("teacher.timetable.create")}
+							</Button>
+						</DialogFooter>
+					</form>
 				</DialogContent>
 			</Dialog>
 
@@ -592,6 +617,7 @@ export default function TimetableManagement() {
 				open={importOpen}
 				onOpenChange={setImportOpen}
 				onImported={invalidate}
+				classCourses={classCourses}
 			/>
 		</div>
 	);

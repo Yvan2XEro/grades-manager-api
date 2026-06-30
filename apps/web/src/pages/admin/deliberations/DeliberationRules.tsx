@@ -16,6 +16,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -382,7 +383,7 @@ export default function DeliberationRules() {
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className="space-y-4 px-6 pb-4">
+					<DialogBody className="space-y-4 px-6 pb-4">
 						<div className="space-y-2">
 							<Label>{t("admin.deliberations.rules.name")}</Label>
 							<Input
@@ -500,7 +501,7 @@ export default function DeliberationRules() {
 								{t("admin.deliberations.rules.rulesetHelp")}
 							</p>
 						</div>
-					</div>
+					</DialogBody>
 
 					<DialogFooter>
 						<Button variant="outline" onClick={closeDialog}>

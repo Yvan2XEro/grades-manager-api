@@ -13,10 +13,13 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
+import { ClassSelect } from "@/components/inputs/ClassSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -82,7 +85,6 @@ export default function FeeAssignmentsList() {
 	const [showBulkAssign, setShowBulkAssign] = useState(false);
 	const [showBankImport, setShowBankImport] = useState(false);
 
-	const { data: years } = useQuery(trpc.academicYears.list.queryOptions());
 	const { data: classes } = useQuery(
 		trpc.classes.list.queryOptions(
 			yearFilter ? { academicYearId: yearFilter } : {},
@@ -181,27 +183,21 @@ export default function FeeAssignmentsList() {
 						onChange={(e) => setSearch(e.target.value)}
 					/>
 				</div>
-				<Select
-					value={yearFilter || ALL_FILTER_VALUE}
-					onValueChange={(v) => {
-						setYearFilter(v === ALL_FILTER_VALUE ? "" : v);
-						setClassFilter("");
-					}}
-				>
-					<SelectTrigger className="w-48">
-						<SelectValue
-							placeholder={t("feeClearance.structures.fields.academicYear")}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value={ALL_FILTER_VALUE}>{t("common.all")}</SelectItem>
-						{years?.map((y) => (
-							<SelectItem key={y.id} value={y.id}>
-								{y.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<div>
+					<label className="mb-1 block text-muted-foreground text-xs">
+						{t("feeClearance.structures.fields.academicYear")}
+					</label>
+					<AcademicYearSelect
+						value={yearFilter || null}
+						onChange={(v) => {
+							setYearFilter(v ?? "");
+							setClassFilter("");
+						}}
+						allowAll
+						autoSelectActive={false}
+						className="w-48"
+					/>
+				</div>
 				{classes && classes.length > 0 && (
 					<Select
 						value={classFilter || ALL_FILTER_VALUE}
@@ -323,7 +319,6 @@ export default function FeeAssignmentsList() {
 			<BulkAssignDialog
 				open={showBulkAssign}
 				onOpenChange={setShowBulkAssign}
-				years={years ?? []}
 				onDone={() => {
 					queryClient.invalidateQueries({
 						queryKey: trpc.feeClearance.listAssignments.queryKey(),
@@ -352,12 +347,10 @@ type BulkMode = "class" | "program" | "year";
 function BulkAssignDialog({
 	open,
 	onOpenChange,
-	years,
 	onDone,
 }: {
 	open: boolean;
 	onOpenChange: (o: boolean) => void;
-	years: Array<{ id: string; name: string }>;
 	onDone: () => void;
 }) {
 	const { t } = useTranslation();
@@ -381,9 +374,6 @@ function BulkAssignDialog({
 			academicYearId: yearId || undefined,
 			isActive: true,
 		}),
-	);
-	const { data: classes } = useQuery(
-		trpc.classes.list.queryOptions({ academicYear: yearId || undefined }),
 	);
 	const { data: programs } = useQuery(trpc.programs.list.queryOptions({}));
 
@@ -468,7 +458,7 @@ function BulkAssignDialog({
 					<DialogTitle>{t("feeClearance.assignments.bulkAssign")}</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					{/* Mode selector */}
 					<div>
 						<Label>{t("feeClearance.bulkAssign.mode")}</Label>
@@ -499,49 +489,29 @@ function BulkAssignDialog({
 					{/* Year selector (all modes) */}
 					<div>
 						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
-						<Select
-							value={yearId}
-							onValueChange={(v) => {
+						<AcademicYearSelect
+							value={yearId || null}
+							onChange={(v) => {
 								setYearId(v);
 								reset();
 							}}
-						>
-							<SelectTrigger className="mt-1">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{years.map((y) => (
-									<SelectItem key={y.id} value={y.id}>
-										{y.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							autoSelectActive
+						/>
 					</div>
 
 					{/* Mode-specific scope selector */}
 					{mode === "class" && (
 						<div>
 							<Label>{t("admin.classes.title")}</Label>
-							<Select
-								value={classId}
-								onValueChange={(v) => {
-									setClassId(v);
+							<ClassSelect
+								academicYearId={yearId || null}
+								value={classId || null}
+								onChange={(v) => {
+									setClassId(v ?? "");
 									setShowPreview(false);
 								}}
 								disabled={!yearId}
-							>
-								<SelectTrigger className="mt-1">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{classes?.items?.map((c) => (
-										<SelectItem key={c.id} value={c.id}>
-											{c.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							/>
 						</div>
 					)}
 					{mode === "program" && (
@@ -605,7 +575,7 @@ function BulkAssignDialog({
 							) : null}
 						</div>
 					)}
-				</div>
+				</DialogBody>
 
 				<DialogFooter className="gap-2">
 					<Button variant="outline" onClick={() => onOpenChange(false)}>

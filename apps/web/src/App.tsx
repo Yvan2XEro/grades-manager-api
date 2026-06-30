@@ -10,7 +10,6 @@ import AccountSettings from "./pages/AccountSettings";
 import AcademicYearManagement from "./pages/admin/AcademicYearManagement";
 import AcademicYearTransitions from "./pages/admin/AcademicYearTransitions";
 import AttendanceManagement from "./pages/admin/attendance/AttendanceManagement";
-import AttendanceRates from "./pages/admin/attendance/AttendanceRates";
 import BulkDocumentGeneration from "./pages/admin/BulkDocumentGeneration";
 import BatchJobDetail from "./pages/admin/batch-jobs/BatchJobDetail";
 import BatchJobsDashboard from "./pages/admin/batch-jobs/BatchJobsDashboard";
@@ -43,10 +42,9 @@ import NotificationsCenter from "./pages/admin/NotificationsCenter";
 import ProgramsHub from "./pages/admin/ProgramsHub";
 import PromotionHub from "./pages/admin/PromotionHub";
 import RegistrationNumberFormatDetail from "./pages/admin/RegistrationNumberFormatDetail";
-import RoomsManagement from "./pages/admin/RoomsManagement";
 import StudentManagement from "./pages/admin/StudentManagement";
 import TeachingUnitDetail from "./pages/admin/TeachingUnitDetail";
-import TimetableManagement from "./pages/admin/TimetableManagement";
+import TimetableHub from "./pages/admin/TimetableHub";
 import UsersHub from "./pages/admin/UsersHub";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Login from "./pages/auth/Login";
@@ -237,10 +235,7 @@ function App() {
 						<Route path="centers" element={<CenterManagement />} />
 						<Route path="centers/new" element={<CenterDetail />} />
 						<Route path="centers/:centerId" element={<CenterDetail />} />
-						<Route path="timetable" element={<TimetableManagement />} />
-						<Route path="rooms" element={<RoomsManagement />} />
-						<Route path="attendance" element={<AttendanceManagement />} />
-						<Route path="attendance/rates" element={<AttendanceRates />} />
+						<Route path="timetable" element={<TimetableHub />} />
 						<Route
 							path="class-document-templates"
 							element={<ClassDocumentTemplates />}

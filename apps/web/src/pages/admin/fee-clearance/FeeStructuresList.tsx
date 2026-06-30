@@ -3,6 +3,7 @@ import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { AcademicYearSelect } from "@/components/inputs/AcademicYearSelect";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -31,13 +33,6 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -60,7 +55,6 @@ export default function FeeStructuresList() {
 	const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 	const [yearFilter, setYearFilter] = useState<string>("");
 
-	const { data: years } = useQuery(trpc.academicYears.list.queryOptions());
 	const { data: structures, isLoading } = useQuery(
 		trpc.feeClearance.listStructures.queryOptions({
 			academicYearId: yearFilter || undefined,
@@ -102,24 +96,18 @@ export default function FeeStructuresList() {
 			</div>
 
 			<div className="flex gap-2">
-				<Select
-					value={yearFilter || ALL_FILTER_VALUE}
-					onValueChange={(v) => setYearFilter(v === ALL_FILTER_VALUE ? "" : v)}
-				>
-					<SelectTrigger className="w-56">
-						<SelectValue
-							placeholder={t("feeClearance.structures.fields.academicYear")}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value={ALL_FILTER_VALUE}>{t("common.all")}</SelectItem>
-						{years?.map((y) => (
-							<SelectItem key={y.id} value={y.id}>
-								{y.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<div>
+					<label className="mb-1 block text-muted-foreground text-xs">
+						{t("feeClearance.structures.fields.academicYear")}
+					</label>
+					<AcademicYearSelect
+						value={yearFilter || null}
+						onChange={(v) => setYearFilter(v ?? "")}
+						allowAll
+						autoSelectActive={false}
+						className="w-56"
+					/>
+				</div>
 			</div>
 
 			{isLoading ? (
@@ -198,7 +186,6 @@ export default function FeeStructuresList() {
 			<CreateStructureDialog
 				open={showCreate}
 				onOpenChange={setShowCreate}
-				years={years ?? []}
 				onCreated={() => {
 					queryClient.invalidateQueries({
 						queryKey: trpc.feeClearance.listStructures.queryKey(),
@@ -235,12 +222,10 @@ export default function FeeStructuresList() {
 function CreateStructureDialog({
 	open,
 	onOpenChange,
-	years,
 	onCreated,
 }: {
 	open: boolean;
 	onOpenChange: (o: boolean) => void;
-	years: Array<{ id: string; name: string }>;
 	onCreated: () => void;
 }) {
 	const { t } = useTranslation();
@@ -280,7 +265,7 @@ function CreateStructureDialog({
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.structures.create")}</DialogTitle>
 				</DialogHeader>
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					<div>
 						<Label>{t("feeClearance.structures.fields.name")}</Label>
 						<Input
@@ -290,23 +275,11 @@ function CreateStructureDialog({
 					</div>
 					<div>
 						<Label>{t("feeClearance.structures.fields.academicYear")}</Label>
-						<Select
-							value={form.academicYearId}
-							onValueChange={(v) =>
-								setForm((f) => ({ ...f, academicYearId: v }))
-							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{years.map((y) => (
-									<SelectItem key={y.id} value={y.id}>
-										{y.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<AcademicYearSelect
+							value={form.academicYearId || null}
+							onChange={(v) => setForm((f) => ({ ...f, academicYearId: v }))}
+							autoSelectActive
+						/>
 					</div>
 					<div className="flex gap-2">
 						<div className="flex-1">
@@ -339,7 +312,7 @@ function CreateStructureDialog({
 							}
 						/>
 					</div>
-				</div>
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						{t("common.cancel")}

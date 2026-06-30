@@ -15,6 +15,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -565,7 +566,7 @@ export default function AttendanceManagement() {
 							{t("teacher.attendanceManagement.newSession")}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-4 py-3">
+					<DialogBody className="space-y-4">
 						<div>
 							<Label>{t("teacher.attendanceManagement.createSession")}</Label>
 							<Input
@@ -575,7 +576,7 @@ export default function AttendanceManagement() {
 								onChange={(e) => setNewSessionDate(e.target.value)}
 							/>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"
@@ -605,7 +606,7 @@ export default function AttendanceManagement() {
 							{t("teacher.attendanceManagement.excuse")}
 						</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-3 py-3">
+					<DialogBody className="space-y-3">
 						{excuseTarget && (
 							<p className="text-muted-foreground text-sm">
 								{t("teacher.attendanceManagement.student")}:{" "}
@@ -626,7 +627,7 @@ export default function AttendanceManagement() {
 								rows={3}
 							/>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"

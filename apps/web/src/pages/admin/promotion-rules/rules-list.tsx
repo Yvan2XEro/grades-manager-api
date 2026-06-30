@@ -7,6 +7,7 @@ import { RuleCard } from "@/components/promotion-rules/rule-card";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -279,52 +280,54 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.create.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleCreateRule} className="space-y-4 px-6 pb-4">
-						<div className="space-y-2">
-							<Label htmlFor="name">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
-							</Label>
-							<Input
-								id="name"
-								name="name"
-								placeholder={t(
-									"admin.promotionRules.rulesList.dialog.form.ruleNamePlaceholder",
-								)}
-								required
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="description">
-								{t("admin.promotionRules.rulesList.dialog.form.description")}
-							</Label>
-							<Textarea
-								id="description"
-								name="description"
-								placeholder={t(
-									"admin.promotionRules.rulesList.dialog.form.descriptionPlaceholder",
-								)}
-								rows={2}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="ruleset">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
-							</Label>
-							<Textarea
-								id="ruleset"
-								name="ruleset"
-								placeholder={t(
-									"admin.promotionRules.rulesList.dialog.form.rulesetPlaceholder",
-								)}
-								rows={12}
-								defaultValue={JSON.stringify(defaultRuleset, null, 2)}
-								className="font-mono text-sm"
-								required
-							/>
-							<p className="text-muted-foreground text-xs">
-								{t("admin.promotionRules.rulesList.dialog.form.rulesetHelp")}
-							</p>
-						</div>
+					<form onSubmit={handleCreateRule}>
+						<DialogBody className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="name">
+									{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+								</Label>
+								<Input
+									id="name"
+									name="name"
+									placeholder={t(
+										"admin.promotionRules.rulesList.dialog.form.ruleNamePlaceholder",
+									)}
+									required
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="description">
+									{t("admin.promotionRules.rulesList.dialog.form.description")}
+								</Label>
+								<Textarea
+									id="description"
+									name="description"
+									placeholder={t(
+										"admin.promotionRules.rulesList.dialog.form.descriptionPlaceholder",
+									)}
+									rows={2}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="ruleset">
+									{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+								</Label>
+								<Textarea
+									id="ruleset"
+									name="ruleset"
+									placeholder={t(
+										"admin.promotionRules.rulesList.dialog.form.rulesetPlaceholder",
+									)}
+									rows={12}
+									defaultValue={JSON.stringify(defaultRuleset, null, 2)}
+									className="font-mono text-sm"
+									required
+								/>
+								<p className="text-muted-foreground text-xs">
+									{t("admin.promotionRules.rulesList.dialog.form.rulesetHelp")}
+								</p>
+							</div>
+						</DialogBody>
 						<DialogFooter>
 							<Button
 								type="button"
@@ -354,41 +357,43 @@ export function RulesListPage() {
 							{t("admin.promotionRules.rulesList.dialog.edit.description")}
 						</DialogDescription>
 					</DialogHeader>
-					<form onSubmit={handleUpdateRule} className="space-y-4 px-6 pb-4">
-						<div className="space-y-2">
-							<Label htmlFor="edit-name">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
-							</Label>
-							<Input
-								id="edit-name"
-								name="name"
-								defaultValue={editingRule?.name}
-								required
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="edit-description">
-								{t("admin.promotionRules.rulesList.dialog.form.description")}
-							</Label>
-							<Textarea
-								id="edit-description"
-								name="description"
-								defaultValue={editingRule?.description || ""}
-								rows={2}
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="edit-ruleset">
-								{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
-							</Label>
-							<Textarea
-								id="edit-ruleset"
-								name="ruleset"
-								defaultValue={JSON.stringify(editingRule?.ruleset, null, 2)}
-								rows={12}
-								className="font-mono text-sm"
-							/>
-						</div>
+					<form onSubmit={handleUpdateRule}>
+						<DialogBody className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="edit-name">
+									{t("admin.promotionRules.rulesList.dialog.form.ruleName")}
+								</Label>
+								<Input
+									id="edit-name"
+									name="name"
+									defaultValue={editingRule?.name}
+									required
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="edit-description">
+									{t("admin.promotionRules.rulesList.dialog.form.description")}
+								</Label>
+								<Textarea
+									id="edit-description"
+									name="description"
+									defaultValue={editingRule?.description || ""}
+									rows={2}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="edit-ruleset">
+									{t("admin.promotionRules.rulesList.dialog.form.ruleset")}
+								</Label>
+								<Textarea
+									id="edit-ruleset"
+									name="ruleset"
+									defaultValue={JSON.stringify(editingRule?.ruleset, null, 2)}
+									rows={12}
+									className="font-mono text-sm"
+								/>
+							</div>
+						</DialogBody>
 						<DialogFooter>
 							<Button
 								type="button"

@@ -48,6 +48,7 @@ import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -1257,7 +1258,7 @@ export default function ExamManagement() {
 					<DialogHeader>
 						<DialogTitle>{t("admin.exams.actions.reject")}</DialogTitle>
 					</DialogHeader>
-					<div className="space-y-3 py-2">
+					<DialogBody className="space-y-3 py-2">
 						<Label htmlFor="reject-reason">
 							{t("admin.exams.rejectReasonLabel")}
 						</Label>
@@ -1268,7 +1269,7 @@ export default function ExamManagement() {
 							value={rejectReason}
 							onChange={(e) => setRejectReason(e.target.value)}
 						/>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setRejectTarget(null)}>
 							{t("common.cancel")}

@@ -8,6 +8,7 @@ import { AcademicYearSelect } from "../../components/inputs/AcademicYearSelect";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -94,7 +95,7 @@ export default function AcademicYearSetupDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="px-6 pb-4">
+				<DialogBody className="px-6 pb-4">
 					{!previewData ? (
 						<div className="space-y-4">
 							<div className="space-y-2">
@@ -138,7 +139,7 @@ export default function AcademicYearSetupDialog({
 							</div>
 						</div>
 					)}
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>

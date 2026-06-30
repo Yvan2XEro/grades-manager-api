@@ -410,7 +410,7 @@
       "export": "Export",
       "import": {
         "title": "Import Timetable",
-        "description": "Upload a CSV file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).",
+        "description": "Download the template to get a pre-filled list of courses. Fill in dayOfWeek (mon–sun), startTime and endTime (HH:MM), and optionally a room name. The courseName and className columns are for reference only.",
         "downloadTemplate": "Download CSV template",
         "file": "CSV file",
         "preview": "Preview",
@@ -467,6 +467,9 @@
         "fri": "Friday",
         "sat": "Saturday",
         "sun": "Sunday"
+      },
+      "errors": {
+        "endBeforeStart": "End time must be after start time."
       }
     },
     "rooms": {
@@ -4376,6 +4379,15 @@
         "amount": "Amount",
         "dueDate": "Due date",
         "empty": "No installments defined. Students can pay in one or multiple free-form payments."
+      },
+      "impact": {
+        "title": "Impact preview",
+        "preview": "Preview impact",
+        "totalStudents": "Students in scope",
+        "toAssign": "To assign",
+        "alreadyAssigned": "Already assigned this academic year",
+        "noClasses": "No classes match the scope of this structure.",
+        "class": "Class"
       }
     },
     "bankImport": {
@@ -4558,5 +4570,15 @@
     "noData": "No attendance sessions recorded for this course.",
     "title": "Attendance rates",
     "exportFilename": "attendance-rates.xlsx"
+  },
+  "timetableHub": {
+    "title": "Timetable & Attendance",
+    "description": "Manage schedules, rooms, attendance tracking and rates",
+    "tabs": {
+      "timetable": "Timetable",
+      "rooms": "Rooms",
+      "attendance": "Attendance",
+      "rates": "Rates"
+    }
   }
 }

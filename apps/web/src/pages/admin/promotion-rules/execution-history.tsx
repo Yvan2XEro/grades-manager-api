@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
@@ -275,7 +276,7 @@ export function ExecutionHistoryPage() {
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="px-6 pb-4">
+					<DialogBody>
 						{executionDetails && (
 							<div className="space-y-6">
 								{/* Summary */}
@@ -420,7 +421,7 @@ export function ExecutionHistoryPage() {
 								</div>
 							</div>
 						)}
-					</div>
+					</DialogBody>
 				</DialogContent>
 			</Dialog>
 		</div>

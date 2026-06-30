@@ -64,6 +64,7 @@ import FormModal from "../../components/modals/FormModal";
 import { Button } from "../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -1816,7 +1817,7 @@ export default function ClassManagement() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 px-6 py-2">
+					<DialogBody className="space-y-4">
 						<div className="space-y-2">
 							<Label>
 								{t("admin.classes.bulkGenerate.yearLabel", {
@@ -1848,7 +1849,7 @@ export default function ClassManagement() {
 								})}
 							</p>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"

@@ -19,6 +19,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -489,17 +490,19 @@ export default function BatchJobDetail() {
 									})}
 						</DialogTitle>
 					</DialogHeader>
-					<p className="text-muted-foreground text-sm">
-						{confirmAction === "cancel"
-							? t("admin.batchJobs.confirm.cancelMessage", {
-									defaultValue:
-										"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
-								})
-							: t("admin.batchJobs.confirm.rollbackMessage", {
-									defaultValue:
-										"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
-								})}
-					</p>
+					<DialogBody>
+						<p className="text-muted-foreground text-sm">
+							{confirmAction === "cancel"
+								? t("admin.batchJobs.confirm.cancelMessage", {
+										defaultValue:
+											"Cancelling will stop the job immediately. Partially processed data will not be reverted.",
+									})
+								: t("admin.batchJobs.confirm.rollbackMessage", {
+										defaultValue:
+											"A new rollback job will be created to undo the changes made by this job. This action cannot itself be undone.",
+									})}
+						</p>
+					</DialogBody>
 					<DialogFooter className="gap-2">
 						<Button variant="outline" onClick={() => setConfirmAction(null)}>
 							{t("common.cancel")}

@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -11,8 +12,10 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import { z } from "zod";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -27,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -609,6 +613,23 @@ export default function FeeAssignmentDetail() {
 	);
 }
 
+const PAYMENT_METHODS = [
+	"cash",
+	"bank_transfer",
+	"mobile_money",
+	"check",
+	"other",
+] as const;
+
+const paymentSchema = z.object({
+	amount: z.coerce.number({ invalid_type_error: "Required" }).positive(),
+	paymentDate: z.string().min(1, "Required"),
+	paymentMethod: z.enum(PAYMENT_METHODS),
+	reference: z.string().optional(),
+	installmentId: z.string().optional(),
+});
+type PaymentForm = z.infer<typeof paymentSchema>;
+
 function RecordPaymentDialog({
 	open,
 	onOpenChange,
@@ -623,44 +644,35 @@ function RecordPaymentDialog({
 	onRecorded: () => void;
 }) {
 	const { t } = useTranslation();
-	const [form, setForm] = useState({
-		amount: "",
-		paymentDate: format(new Date(), "yyyy-MM-dd"),
-		paymentMethod: "cash",
-		reference: "",
-		installmentId: "",
+
+	const form = useForm<PaymentForm>({
+		resolver: zodResolver(paymentSchema),
+		defaultValues: {
+			amount: undefined,
+			paymentDate: format(new Date(), "yyyy-MM-dd"),
+			paymentMethod: "cash",
+			reference: "",
+			installmentId: undefined,
+		},
 	});
 
-	const methods = [
-		"cash",
-		"bank_transfer",
-		"mobile_money",
-		"check",
-		"other",
-	] as const;
-
 	const mut = useMutation({
-		mutationFn: () =>
+		mutationFn: (values: PaymentForm) =>
 			trpcClient.feeClearance.recordPayment.mutate({
 				feeAssignmentId,
-				amount: Number(form.amount),
+				amount: values.amount,
 				currency: "XAF",
-				paymentDate: form.paymentDate,
-				paymentMethod: form.paymentMethod as never,
-				reference: form.reference || undefined,
-				installmentId: form.installmentId || undefined,
+				paymentDate: values.paymentDate,
+				paymentMethod: values.paymentMethod,
+				reference: values.reference || undefined,
+				installmentId: values.installmentId || undefined,
 			}),
 		onSuccess: () => {
 			toast.success(t("common.saved"));
+			form.reset();
 			onRecorded();
-			setForm({
-				amount: "",
-				paymentDate: format(new Date(), "yyyy-MM-dd"),
-				paymentMethod: "cash",
-				reference: "",
-				installmentId: "",
-			});
 		},
+		onError: (e) => toast.error(e.message),
 	});
 
 	return (
@@ -669,97 +681,93 @@ function RecordPaymentDialog({
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.payments.record")}</DialogTitle>
 				</DialogHeader>
-				<div className="space-y-4">
-					<div>
-						<Label>{t("feeClearance.payments.fields.amount")}</Label>
-						<Input
-							type="number"
-							min={1}
-							value={form.amount}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, amount: e.target.value }))
-							}
-						/>
-					</div>
-					<div>
-						<Label>{t("feeClearance.payments.fields.paymentDate")}</Label>
-						<Input
-							type="date"
-							value={form.paymentDate}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, paymentDate: e.target.value }))
-							}
-						/>
-					</div>
-					<div>
-						<Label>{t("feeClearance.payments.fields.paymentMethod")}</Label>
-						<Select
-							value={form.paymentMethod}
-							onValueChange={(v) =>
-								setForm((f) => ({ ...f, paymentMethod: v }))
-							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{methods.map((m) => (
-									<SelectItem key={m} value={m}>
-										{t(`feeClearance.payments.methods.${m}`)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div>
-						<Label>{t("feeClearance.payments.fields.reference")}</Label>
-						<Input
-							value={form.reference}
-							onChange={(e) =>
-								setForm((f) => ({ ...f, reference: e.target.value }))
-							}
-						/>
-					</div>
-					{installments.length > 0 && (
+				<form onSubmit={form.handleSubmit((v) => mut.mutate(v))}>
+					<DialogBody className="space-y-4">
 						<div>
-							<Label>{t("feeClearance.structures.installments.title")}</Label>
-							<Select
-								value={form.installmentId || NO_INSTALLMENT_VALUE}
-								onValueChange={(v) =>
-									setForm((f) => ({
-										...f,
-										installmentId: v === NO_INSTALLMENT_VALUE ? "" : v,
-									}))
-								}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder={t("common.optional")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value={NO_INSTALLMENT_VALUE}>
-										{t("common.none")}
-									</SelectItem>
-									{installments.map((i) => (
-										<SelectItem key={i.id} value={i.id}>
-											{i.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<Label>{t("feeClearance.payments.fields.amount")} *</Label>
+							<Input type="number" min={1} {...form.register("amount")} />
+							{form.formState.errors.amount && (
+								<p className="mt-1 text-destructive text-xs">
+									{form.formState.errors.amount.message}
+								</p>
+							)}
 						</div>
-					)}
-				</div>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						{t("common.cancel")}
-					</Button>
-					<Button
-						disabled={!form.amount || !form.paymentDate || mut.isPending}
-						onClick={() => mut.mutate()}
-					>
-						{t("common.save")}
-					</Button>
-				</DialogFooter>
+						<div>
+							<Label>{t("feeClearance.payments.fields.paymentDate")} *</Label>
+							<Input type="date" {...form.register("paymentDate")} />
+						</div>
+						<div>
+							<Label>{t("feeClearance.payments.fields.paymentMethod")}</Label>
+							<Controller
+								control={form.control}
+								name="paymentMethod"
+								render={({ field }) => (
+									<Select value={field.value} onValueChange={field.onChange}>
+										<SelectTrigger>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{PAYMENT_METHODS.map((m) => (
+												<SelectItem key={m} value={m}>
+													{t(`feeClearance.payments.methods.${m}`)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								)}
+							/>
+						</div>
+						<div>
+							<Label>{t("feeClearance.payments.fields.reference")}</Label>
+							<Input {...form.register("reference")} />
+						</div>
+						{installments.length > 0 && (
+							<div>
+								<Label>{t("feeClearance.structures.installments.title")}</Label>
+								<Controller
+									control={form.control}
+									name="installmentId"
+									render={({ field }) => (
+										<Select
+											value={field.value ?? NO_INSTALLMENT_VALUE}
+											onValueChange={(v) =>
+												field.onChange(
+													v === NO_INSTALLMENT_VALUE ? undefined : v,
+												)
+											}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder={t("common.optional")} />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value={NO_INSTALLMENT_VALUE}>
+													{t("common.none")}
+												</SelectItem>
+												{installments.map((i) => (
+													<SelectItem key={i.id} value={i.id}>
+														{i.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</div>
+						)}
+					</DialogBody>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+						>
+							{t("common.cancel")}
+						</Button>
+						<Button type="submit" disabled={mut.isPending}>
+							{t("common.save")}
+						</Button>
+					</DialogFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);
@@ -812,9 +820,9 @@ function CreateOrderDialog({
 				<DialogHeader>
 					<DialogTitle>{t("feeClearance.orders.create")}</DialogTitle>
 				</DialogHeader>
-				<div className="space-y-4">
+				<DialogBody className="space-y-4">
 					<div>
-						<Label>{t("feeClearance.orders.fields.amount")}</Label>
+						<Label>{t("feeClearance.orders.fields.amount")} *</Label>
 						<Input
 							type="number"
 							min={1}
@@ -860,7 +868,7 @@ function CreateOrderDialog({
 							}
 						/>
 					</div>
-				</div>
+				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						{t("common.cancel")}

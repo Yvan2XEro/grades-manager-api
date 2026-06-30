@@ -29,6 +29,7 @@ import {
 import { ContextMenuItem } from "@/components/ui/context-menu";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -609,7 +610,7 @@ export default function RetakeEligibility() {
 							})}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-4 px-6 py-4">
+					<DialogBody className="space-y-4 px-6 py-4">
 						<div className="space-y-2">
 							<Label>{t("admin.retake.table.student")}</Label>
 							<p className="font-medium">{overrideModal.row?.studentName}</p>
@@ -625,7 +626,7 @@ export default function RetakeEligibility() {
 								placeholder={t("admin.retake.override.reasonPlaceholder")}
 							/>
 						</div>
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={closeOverrideModal}>
 							{t("common.actions.cancel")}

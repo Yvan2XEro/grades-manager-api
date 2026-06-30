@@ -10,6 +10,7 @@ import { Button } from "../../../components/ui/button";
 import { Checkbox } from "../../../components/ui/checkbox";
 import {
 	Dialog,
+	DialogBody,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -227,7 +228,7 @@ export default function CreateDeliberationDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4 px-6 pb-4">
+				<DialogBody className="space-y-4 px-6 pb-4">
 					{/* ── Tabs ── */}
 					<Tabs
 						value={tab}
@@ -475,7 +476,7 @@ export default function CreateDeliberationDialog({
 							</p>
 						</div>
 					</div>
-				</div>
+				</DialogBody>
 
 				<DialogFooter>
 					<Button
