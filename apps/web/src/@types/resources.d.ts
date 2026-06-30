@@ -4151,6 +4151,18 @@ interface Resources {
 				creditsEarned: "Credits earned";
 				validatedUEs: "Validated UEs";
 				teachingUnits: "Teaching units";
+				decisions: "Deliberation results";
+				decisionHistory: "Decision history";
+				latestDecision: "Latest decision";
+				pendingResults: "Results not yet published";
+				pendingResultsHint: "Your deliberation results will appear here once published by the academic committee.";
+				ueBreakdown: "UE breakdown";
+				validated: "Validated";
+				notValidated: "Not validated";
+				credits: "{{count}} credit";
+				creditsPlural: "{{count}} credits";
+				rank: "Rank {{rank}} in the class";
+				mention: "Mention: {{mention}}";
 			};
 			exams: {
 				title: "Exam calendar";
