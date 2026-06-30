@@ -3095,6 +3095,27 @@
 				"running": "En cours",
 				"completed": "Terminé"
 			}
+		},
+		"gradeScale": {
+			"title": "Barème de notes",
+			"description": "Configure le seuil de validation et les mentions utilisés dans les délibérations, relevés de notes et exports.",
+			"scopeLabel": "Appliquer à",
+			"institutionDefault": "Institution (défaut)",
+			"passThreshold": "Seuil de validation (/20)",
+			"compensationThreshold": "Seuil de compensation (/20)",
+			"mentionRanges": "Mentions",
+			"rangeHint": "Chaque mention est attribuée si la moyenne est ≥ au seuil minimum correspondant (ordre décroissant).",
+			"saved": "Barème enregistré.",
+			"key": "Clé",
+			"labelFr": "Label (FR)",
+			"labelEn": "Label (EN)",
+			"letter": "Lettre",
+			"min": "Min (/20)",
+			"preview": "Aperçu",
+			"previewPlaceholder": "Entrer une note",
+			"previewNoMatch": "En dessous du seuil minimum",
+			"overlapError": "Deux mentions partagent le même seuil minimum — corrigez avant d'enregistrer.",
+			"inheritedFromInstitution": "Aucune substitution par programme définie — affichage du barème institution par défaut."
 		}
 	},
 	"teacher": {

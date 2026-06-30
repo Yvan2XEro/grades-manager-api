@@ -4027,6 +4027,27 @@ interface Resources {
 					completed: "Completed";
 				};
 			};
+			gradeScale: {
+				title: "Grade Scale";
+				description: "Configure the validation threshold and mention bands used in deliberations, transcripts, and exports.";
+				scopeLabel: "Apply to";
+				institutionDefault: "Institution default";
+				passThreshold: "Pass threshold (/20)";
+				compensationThreshold: "Compensation threshold (/20)";
+				mentionRanges: "Mention bands";
+				rangeHint: "Each mention is assigned when the average ≥ the minimum threshold (descending order).";
+				saved: "Scale saved.";
+				key: "Key";
+				labelFr: "Label (FR)";
+				labelEn: "Label (EN)";
+				letter: "Letter";
+				min: "Min (/20)";
+				preview: "Preview";
+				previewPlaceholder: "Enter a score";
+				previewNoMatch: "Below lowest threshold";
+				overlapError: "Two mention bands share the same minimum — fix before saving.";
+				inheritedFromInstitution: "No program override defined — displaying institution default.";
+			};
 		};
 		dean: {
 			workflows: {
