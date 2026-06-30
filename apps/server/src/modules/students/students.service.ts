@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import * as schema from "../../db/schema/app-schema";
 import { transaction } from "../_shared/db-transaction";
@@ -409,4 +409,122 @@ export async function admitExternalStudent(
 		},
 		institutionId,
 	);
+}
+
+// ── Academic Timeline ─────────────────────────────────────────────────────────
+
+export type TimelineEventType =
+	| "enrollment"
+	| "deliberation"
+	| "fee_cleared"
+	| "promotion";
+
+export type TimelineEvent = {
+	id: string;
+	type: TimelineEventType;
+	date: string;
+	academicYear: string | null;
+	className: string | null;
+	status?: string | null;
+	admissionType?: string | null;
+	finalDecision?: string | null;
+	generalAverage?: number | null;
+	mention?: string | null;
+};
+
+export async function getStudentTimeline(
+	studentId: string,
+	institutionId: string,
+): Promise<TimelineEvent[]> {
+	const events: TimelineEvent[] = [];
+
+	// ── Enrollments ───────────────────────────────────────────────────────
+	const enrollments = await db.query.enrollments.findMany({
+		where: and(
+			eq(schema.enrollments.studentId, studentId),
+			eq(schema.enrollments.institutionId, institutionId),
+		),
+		with: {
+			classRef: true,
+			academicYear: true,
+		},
+		orderBy: desc(schema.enrollments.enrolledAt),
+	});
+
+	for (const e of enrollments) {
+		events.push({
+			id: `enrollment-${e.id}`,
+			type: "enrollment",
+			date: e.enrolledAt.toISOString(),
+			academicYear: e.academicYear?.name ?? null,
+			className: e.classRef?.name ?? null,
+			status: e.status,
+			admissionType: e.admissionType,
+		});
+		if (
+			e.exitedAt &&
+			(e.status === "completed" ||
+				e.status === "graduated" ||
+				e.status === "withdrawn")
+		) {
+			events.push({
+				id: `enrollment-exit-${e.id}`,
+				type: e.status === "graduated" ? "promotion" : "enrollment",
+				date: e.exitedAt.toISOString(),
+				academicYear: e.academicYear?.name ?? null,
+				className: e.classRef?.name ?? null,
+				status: e.status,
+			});
+		}
+	}
+
+	// ── Deliberation results ──────────────────────────────────────────────
+	const decisions = await db.query.deliberationStudentResults.findMany({
+		where: eq(schema.deliberationStudentResults.studentId, studentId),
+		with: {
+			deliberation: { with: { classRef: true, academicYear: true } },
+		},
+		orderBy: desc(schema.deliberationStudentResults.createdAt),
+	});
+
+	for (const d of decisions) {
+		events.push({
+			id: `deliberation-${d.id}`,
+			type: "deliberation",
+			date: d.createdAt.toISOString(),
+			academicYear: d.deliberation.academicYear?.name ?? null,
+			className: d.deliberation.classRef?.name ?? null,
+			finalDecision: d.finalDecision,
+			generalAverage: d.generalAverage,
+			mention: d.mention,
+		});
+	}
+
+	// ── Fee clearances ────────────────────────────────────────────────────
+	const feeAssignments = await db.query.studentFeeAssignments.findMany({
+		where: and(
+			eq(schema.studentFeeAssignments.studentId, studentId),
+			eq(schema.studentFeeAssignments.institutionId, institutionId),
+		),
+		with: { academicYear: true },
+	});
+
+	for (const a of feeAssignments) {
+		if (a.clearedAt) {
+			events.push({
+				id: `fee-cleared-${a.id}`,
+				type: "fee_cleared",
+				date: a.clearedAt.toISOString(),
+				academicYear: a.academicYear?.name ?? null,
+				className: null,
+				status: "cleared",
+			});
+		}
+	}
+
+	// Sort descending by date
+	events.sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
+	return events;
 }

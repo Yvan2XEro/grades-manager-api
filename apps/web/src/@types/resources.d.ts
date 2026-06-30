@@ -1147,6 +1147,7 @@ interface Resources {
 					exams: "Exam calendar";
 					timetable: "Timetable";
 					enrollments: "My courses";
+					timeline: "Academic Timeline";
 				};
 			};
 			roles: {
@@ -4194,6 +4195,30 @@ interface Resources {
 				viewFees: "My Fees";
 				upcomingExams: "Upcoming Exams";
 				viewExams: "View Calendar";
+			};
+			timeline: {
+				title: "Academic Timeline";
+				description: "Your full academic history — enrollments, decisions, and milestones";
+				empty: "No events yet";
+				emptyHint: "Your academic history will appear here as you progress through your studies.";
+				event: {
+					enrollment: "Enrolled";
+					enrollment_transfer: "Transferred";
+					enrollment_active: "Enrollment active";
+					enrollment_completed: "Year completed";
+					enrollment_withdrawn: "Withdrawn";
+					promotion: "Promoted / Graduated";
+					deliberation: "Deliberation result";
+					fee_cleared: "Financial clearance obtained";
+				};
+				decision: {
+					admitted: "Admitted";
+					compensated: "Admitted (compensated)";
+					deferred: "Deferred";
+					repeat: "Year repeat";
+					excluded: "Excluded";
+					pending: "Pending";
+				};
 			};
 		};
 		retakes: {

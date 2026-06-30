@@ -118,4 +118,14 @@ export const studentsRouter = router({
 		if (!ctx.profile) return null;
 		return service.getStudentByDomainUserId(ctx.profile.id, ctx.institution.id);
 	}),
+
+	myTimeline: tenantProtectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.profile) return [];
+		const student = await service.getStudentByDomainUserId(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+		if (!student) return [];
+		return service.getStudentTimeline(student.id, ctx.institution.id);
+	}),
 });

@@ -218,7 +218,8 @@
 				"dashboard": "Ma performance",
 				"exams": "Calendrier examens",
 				"timetable": "Emploi du temps",
-				"enrollments": "Mes inscriptions"
+				"enrollments": "Mes inscriptions",
+				"timeline": "Historique"
 			}
 		},
 		"roles": {
@@ -4212,6 +4213,30 @@
 			"viewFees": "Mes frais",
 			"upcomingExams": "Examens à venir",
 			"viewExams": "Voir le calendrier"
+		},
+		"timeline": {
+			"title": "Historique académique",
+			"description": "Votre parcours complet — inscriptions, délibérations et jalons",
+			"empty": "Aucun événement",
+			"emptyHint": "Votre historique académique apparaîtra ici au fil de votre parcours.",
+			"event": {
+				"enrollment": "Inscription",
+				"enrollment_transfer": "Transfert",
+				"enrollment_active": "Inscription active",
+				"enrollment_completed": "Année complétée",
+				"enrollment_withdrawn": "Retrait",
+				"promotion": "Promu / Diplômé",
+				"deliberation": "Résultat de délibération",
+				"fee_cleared": "Quitus financier obtenu"
+			},
+			"decision": {
+				"admitted": "Admis",
+				"compensated": "Admis (compensé)",
+				"deferred": "Ajourné",
+				"repeat": "Redoublement",
+				"excluded": "Exclu",
+				"pending": "En cours"
+			}
 		}
 	},
 	"retakes": {
