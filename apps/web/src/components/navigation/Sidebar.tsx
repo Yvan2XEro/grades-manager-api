@@ -309,6 +309,11 @@ const Sidebar: React.FC = () => {
 				labelKey: "navigation.sidebar.student.enrollments",
 			},
 			{
+				to: "/student/documents",
+				icon: <FileText className={IC} />,
+				labelKey: "navigation.sidebar.student.documents",
+			},
+			{
 				to: "/student/timeline",
 				icon: <History className={IC} />,
 				labelKey: "navigation.sidebar.student.timeline",

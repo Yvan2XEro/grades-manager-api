@@ -6,6 +6,7 @@ import {
 	tenantAdminProcedure,
 	tenantGradingProcedure,
 	tenantProcedure,
+	tenantProtectedProcedure,
 } from "../../lib/trpc";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
 import { loadTemplate, type TemplateVariant } from "../exports/template-helper";
@@ -17,6 +18,7 @@ import {
 import { getDefaultThemePayload } from "../exports/themes/presets-payload";
 import { assertFeeClearance } from "../fee-clearance/fee-clearance.gates";
 import { findGatingRule } from "../fee-clearance/fee-clearance.repo";
+import * as studentsRepo from "../students/students.repo";
 import * as repo from "./academic-documents.repo";
 import * as service from "./academic-documents.service";
 import * as zod from "./academic-documents.zod";
@@ -577,4 +579,98 @@ export const academicDocumentsRouter = router({
 			assignmentFailures,
 		};
 	}),
+
+	// ── Student self-service ───────────────────────────────────────────────────
+
+	/** List which document kinds the authenticated student can request. */
+	myAvailableDocuments: tenantProtectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.profile?.id) return [];
+		const student = await studentsRepo.findByDomainUserId(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+		if (!student) return [];
+
+		const STUDENT_KINDS: zod.DocumentKind[] = ["transcript", "attestation"];
+		const results = [];
+
+		for (const kind of STUDENT_KINDS) {
+			const gate = DOCUMENT_GATES[kind];
+			let isGated = false;
+			let isCleared = true;
+
+			if (gate) {
+				const rule = await findGatingRule(ctx.institution.id, gate);
+				if (rule?.isEnabled) {
+					isGated = true;
+					try {
+						const academicYearId = await repo.resolveAcademicYearIdForGate(
+							student.id,
+							ctx.institution.id,
+							undefined,
+						);
+						if (academicYearId) {
+							await assertFeeClearance(ctx, gate, {
+								studentId: student.id,
+								academicYearId,
+							});
+						} else {
+							isCleared = false;
+						}
+					} catch {
+						isCleared = false;
+					}
+				}
+			}
+
+			results.push({
+				kind,
+				isGated,
+				isCleared,
+				canDownload: !isGated || isCleared,
+			});
+		}
+
+		return results;
+	}),
+
+	/** Generate a transcript or attestation PDF for the authenticated student. */
+	myGenerateDocument: tenantProtectedProcedure
+		.input(z.object({ kind: z.enum(["transcript", "attestation"]) }))
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.profile?.id)
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Profile required",
+				});
+
+			const student = await studentsRepo.findByDomainUserId(
+				ctx.profile.id,
+				ctx.institution.id,
+			);
+			if (!student)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Student not found",
+				});
+
+			const gate = DOCUMENT_GATES[input.kind];
+			if (gate) {
+				await runDocumentGateCheck(ctx, gate, student.id, ctx.institution.id);
+			}
+
+			const result = await service.generateDocument(ctx.institution.id, {
+				kind: input.kind,
+				studentId: student.id,
+				format: "pdf",
+				demoMode: false,
+				period: "annual",
+			});
+
+			return {
+				data: result.content,
+				filename: `${input.kind}_${new Date().toISOString().slice(0, 10)}.pdf`,
+				mimeType: result.mimeType,
+			};
+		}),
 });

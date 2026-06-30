@@ -58,6 +58,7 @@ import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
 import NotificationsPage from "./pages/NotificationsPage";
 import AcademicTimeline from "./pages/student/AcademicTimeline";
 import CourseEnrollment from "./pages/student/CourseEnrollment";
+import DocumentsPage from "./pages/student/DocumentsPage";
 import ExamCalendar from "./pages/student/ExamCalendar";
 import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import StudentFeeStatus from "./pages/student/StudentFeeStatus";
@@ -421,6 +422,7 @@ function App() {
 						<Route path="timetable" element={<StudentTimetable />} />
 						<Route path="enrollments" element={<CourseEnrollment />} />
 						<Route path="fees" element={<StudentFeeStatus />} />
+						<Route path="documents" element={<DocumentsPage />} />
 						<Route path="timeline" element={<AcademicTimeline />} />
 					</Route>
 

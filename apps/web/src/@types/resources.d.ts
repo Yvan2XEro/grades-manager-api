@@ -1147,6 +1147,7 @@ interface Resources {
 					exams: "Exam calendar";
 					timetable: "Timetable";
 					enrollments: "My courses";
+					documents: "My documents";
 					timeline: "Academic Timeline";
 				};
 			};
@@ -4207,6 +4208,23 @@ interface Resources {
 				jobCompleted: "Background job completed";
 				jobFailed: "Background job failed";
 				generic: "New notification";
+			};
+			documents: {
+				title: "My documents";
+				description: "Download your academic documents";
+				download: "Download PDF";
+				generating: "Generating...";
+				generateError: "Failed to generate document. Try again or contact administration.";
+				transcript: {
+					title: "Transcript";
+					description: "Official record of your grades and academic results.";
+					blocked: "Financial clearance required to download this document.";
+				};
+				attestation: {
+					title: "Enrollment certificate";
+					description: "Certificate confirming your enrollment for the current academic year.";
+					blocked: "Financial clearance required to download this document.";
+				};
 			};
 			timeline: {
 				title: "Academic Timeline";

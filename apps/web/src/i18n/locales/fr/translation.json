@@ -219,6 +219,7 @@
 				"exams": "Calendrier examens",
 				"timetable": "Emploi du temps",
 				"enrollments": "Mes inscriptions",
+				"documents": "Mes documents",
 				"timeline": "Historique"
 			}
 		},
@@ -4225,6 +4226,23 @@
 			"jobCompleted": "Tâche de fond terminée",
 			"jobFailed": "Tâche de fond échouée",
 			"generic": "Nouvelle notification"
+		},
+		"documents": {
+			"title": "Mes documents",
+			"description": "Téléchargez vos documents académiques",
+			"download": "Télécharger PDF",
+			"generating": "Génération...",
+			"generateError": "Échec de génération. Réessayez ou contactez l administration.",
+			"transcript": {
+				"title": "Relevé de notes",
+				"description": "Relevé officiel de vos notes et résultats académiques.",
+				"blocked": "Quitus financier requis pour télécharger ce document."
+			},
+			"attestation": {
+				"title": "Attestation d inscription",
+				"description": "Attestation confirmant votre inscription pour l année académique en cours.",
+				"blocked": "Quitus financier requis pour télécharger ce document."
+			}
 		},
 		"timeline": {
 			"title": "Historique académique",
