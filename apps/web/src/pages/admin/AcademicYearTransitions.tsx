@@ -42,6 +42,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { StatusStepper } from "@/components/ui/status-stepper";
 import {
 	Table,
 	TableBody,
@@ -226,18 +227,32 @@ export default function AcademicYearTransitionsPage() {
 		}) => {
 			return trpcClient.academicYearTransitions[action].mutate({ id });
 		},
-		onSuccess: async () => {
-			toast.success(t("admin.academicYearTransitions.toast.updated"));
+		onSuccess: async (_data, { action }) => {
+			const msg = {
+				submit: t("admin.academicYearTransitions.toast.submitted"),
+				approve: t("admin.academicYearTransitions.toast.approved"),
+				execute: t("admin.academicYearTransitions.toast.executed"),
+				cancel: t("admin.academicYearTransitions.toast.cancelled"),
+			}[action];
+			toast.success(msg);
 			await invalidateTransitions();
 		},
 		onError: (error) => toast.error(error.message),
 	});
 
 	const selectedSummary = summaryOf(selectedTransition);
+	const TERMINAL = ["completed", "completed_with_errors", "stale", "cancelled"];
+	const duplicatePlan = (transitionsQuery.data?.items ?? []).find(
+		(p) =>
+			p.sourceAcademicYearId === sourceAcademicYearId &&
+			p.targetAcademicYearId === targetAcademicYearId &&
+			!TERMINAL.includes(p.status),
+	);
 	const canCreate = Boolean(
 		sourceAcademicYearId &&
 			targetAcademicYearId &&
-			sourceAcademicYearId !== targetAcademicYearId,
+			sourceAcademicYearId !== targetAcademicYearId &&
+			!duplicatePlan,
 	);
 
 	return (
@@ -367,6 +382,21 @@ export default function AcademicYearTransitionsPage() {
 									</SelectContent>
 								</Select>
 							</div>
+							{duplicatePlan && (
+								<div className="flex items-start gap-2 rounded-md border border-amber-400/40 bg-amber-50 p-3 text-amber-800 text-xs dark:bg-amber-950/30 dark:text-amber-300">
+									<AlertCircle className="mt-0.5 size-3.5 shrink-0" />
+									<span>
+										{t("admin.academicYearTransitions.duplicateWarning")}{" "}
+										<button
+											type="button"
+											className="font-medium underline underline-offset-2 hover:no-underline"
+											onClick={() => setSelectedTransitionId(duplicatePlan.id)}
+										>
+											{t("admin.academicYearTransitions.duplicateWarningLink")}
+										</button>
+									</span>
+								</div>
+							)}
 							<Button
 								className="w-full"
 								disabled={!canCreate || createMutation.isPending}
@@ -695,6 +725,27 @@ function Metric({
 	);
 }
 
+const TRANSITION_STEPS = [
+	{ key: "draft", labelKey: "admin.academicYearTransitions.step.draft" },
+	{
+		key: "pending_approval",
+		labelKey: "admin.academicYearTransitions.step.pendingApproval",
+	},
+	{ key: "approved", labelKey: "admin.academicYearTransitions.step.approved" },
+	{ key: "running", labelKey: "admin.academicYearTransitions.step.running" },
+	{
+		key: "completed",
+		labelKey: "admin.academicYearTransitions.step.completed",
+	},
+] as const;
+
+function stepStatusFor(status: TransitionStatus): string {
+	if (["draft", "ready"].includes(status)) return "draft";
+	if (["completed", "completed_with_errors"].includes(status))
+		return "completed";
+	return status;
+}
+
 function TransitionHeader({
 	transition,
 	summary,
@@ -708,14 +759,84 @@ function TransitionHeader({
 }) {
 	const { t } = useTranslation();
 	const blocked = count(summary, "blocked");
+	const terminal = ["completed", "completed_with_errors", "cancelled", "stale"];
+	const canCancel =
+		!terminal.includes(transition.status) && transition.status !== "running";
+
+	const primaryAction = (() => {
+		if (["draft", "ready"].includes(transition.status)) {
+			const canSubmit = blocked === 0;
+			return (
+				<Button
+					size="sm"
+					onClick={() => onAction("submit")}
+					disabled={isPending || !canSubmit}
+					title={
+						!canSubmit
+							? t("admin.academicYearTransitions.actions.submitBlocked", {
+									count: blocked,
+								})
+							: undefined
+					}
+				>
+					<ShieldCheck className="size-4" />
+					{t("admin.academicYearTransitions.actions.submit")}
+					{!canSubmit && (
+						<Badge variant="destructive" className="ml-1 text-xs">
+							{blocked}
+						</Badge>
+					)}
+				</Button>
+			);
+		}
+		if (transition.status === "pending_approval") {
+			return (
+				<Button
+					size="sm"
+					onClick={() => onAction("approve")}
+					disabled={isPending}
+				>
+					<CheckCircle2 className="size-4" />
+					{t("admin.academicYearTransitions.actions.approve")}
+				</Button>
+			);
+		}
+		if (transition.status === "approved") {
+			return (
+				<Button
+					size="sm"
+					onClick={() => onAction("execute")}
+					disabled={isPending}
+				>
+					<Play className="size-4" />
+					{t("admin.academicYearTransitions.actions.execute")}
+				</Button>
+			);
+		}
+		if (transition.status === "running") {
+			return (
+				<Button size="sm" disabled>
+					<RefreshCcw className="size-4 animate-spin" />
+					{t("admin.academicYearTransitions.actions.running")}
+				</Button>
+			);
+		}
+		return null;
+	})();
+
+	const steps = TRANSITION_STEPS.map((s) => ({
+		key: s.key,
+		label: t(s.labelKey),
+	}));
+
 	return (
-		<div className="rounded-lg border bg-card p-4">
-			<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+		<div className="space-y-4 rounded-lg border bg-card p-4">
+			<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 				<div>
 					<div className="flex flex-wrap items-center gap-2">
 						<h2 className="font-semibold text-lg">
 							{transition.sourceYear?.name ?? "-"}
-							{" -> "}
+							{" → "}
 							{transition.targetYear?.name ?? "-"}
 						</h2>
 						<Badge variant={statusVariant(transition.status)}>
@@ -728,56 +849,30 @@ function TransitionHeader({
 						})}
 					</p>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => onAction("cancel")}
-						disabled={
-							isPending ||
-							[
-								"running",
-								"completed",
-								"completed_with_errors",
-								"cancelled",
-							].includes(transition.status)
-						}
-					>
-						<XCircle className="size-4" />
-						{t("admin.academicYearTransitions.actions.cancel")}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => onAction("submit")}
-						disabled={
-							isPending ||
-							blocked > 0 ||
-							!["draft", "ready"].includes(transition.status)
-						}
-					>
-						<ShieldCheck className="size-4" />
-						{t("admin.academicYearTransitions.actions.submit")}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => onAction("approve")}
-						disabled={isPending || transition.status !== "pending_approval"}
-					>
-						<CheckCircle2 className="size-4" />
-						{t("admin.academicYearTransitions.actions.approve")}
-					</Button>
-					<Button
-						size="sm"
-						onClick={() => onAction("execute")}
-						disabled={isPending || transition.status !== "approved"}
-					>
-						<Play className="size-4" />
-						{t("admin.academicYearTransitions.actions.execute")}
-					</Button>
+				<div className="flex shrink-0 flex-wrap items-center gap-2">
+					{canCancel && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onAction("cancel")}
+							disabled={isPending}
+						>
+							<XCircle className="size-4" />
+							{t("admin.academicYearTransitions.actions.cancel")}
+						</Button>
+					)}
+					{primaryAction}
 				</div>
 			</div>
+			<StatusStepper
+				steps={steps}
+				currentStatus={stepStatusFor(transition.status)}
+				rejectedStatus={
+					["cancelled", "stale"].includes(transition.status)
+						? stepStatusFor(transition.status)
+						: undefined
+				}
+			/>
 		</div>
 	);
 }

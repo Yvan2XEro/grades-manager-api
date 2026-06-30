@@ -2918,7 +2918,9 @@
         "approve": "Approuver",
         "execute": "Executer",
         "cancel": "Annuler",
-        "resolve": "Resoudre le cas"
+        "resolve": "Resoudre le cas",
+        "submitBlocked": "{{count}} étudiant(s) bloqué(s) à résoudre d'abord.",
+        "running": "En cours…"
       },
       "create": {
         "title": "Nouvelle transition",
@@ -3037,7 +3039,20 @@
       "toast": {
         "created": "Plan de transition cree",
         "updated": "Transition mise a jour",
-        "resolved": "Cas de transition resolu"
+        "resolved": "Cas de transition resolu",
+        "submitted": "Plan soumis pour approbation.",
+        "approved": "Plan approuvé — prêt à être exécuté.",
+        "executed": "Exécution démarrée.",
+        "cancelled": "Plan annulé."
+      },
+      "duplicateWarning": "Un plan actif existe déjà pour cette paire d'années.",
+      "duplicateWarningLink": "Voir le plan existant",
+      "step": {
+        "draft": "Brouillon",
+        "pendingApproval": "En attente",
+        "approved": "Approuvé",
+        "running": "En cours",
+        "completed": "Terminé"
       }
     }
   },

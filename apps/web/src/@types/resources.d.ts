@@ -3850,6 +3850,8 @@ interface Resources {
 					execute: "Execute";
 					cancel: "Cancel";
 					resolve: "Resolve item";
+					submitBlocked: "{{count}} blocked student(s) must be resolved first.";
+					running: "Running…";
 				};
 				create: {
 					title: "New transition";
@@ -3969,6 +3971,19 @@ interface Resources {
 					created: "Transition plan created";
 					updated: "Transition updated";
 					resolved: "Transition item resolved";
+					submitted: "Plan submitted for approval.";
+					approved: "Plan approved — ready to execute.";
+					executed: "Execution started.";
+					cancelled: "Plan cancelled.";
+				};
+				duplicateWarning: "An active plan already exists for this year pair.";
+				duplicateWarningLink: "View existing plan";
+				step: {
+					draft: "Draft";
+					pendingApproval: "Pending approval";
+					approved: "Approved";
+					running: "Running";
+					completed: "Completed";
 				};
 			};
 		};

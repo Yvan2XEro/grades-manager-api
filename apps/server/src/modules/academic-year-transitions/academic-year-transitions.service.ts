@@ -1,5 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, ilike, inArray, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	desc,
+	eq,
+	gt,
+	ilike,
+	inArray,
+	notInArray,
+	or,
+} from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 import type {
@@ -171,12 +181,41 @@ export async function readiness(
 	};
 }
 
+const TERMINAL_STATUSES: schema.AcademicYearTransitionStatus[] = [
+	"completed",
+	"completed_with_errors",
+	"stale",
+	"cancelled",
+];
+
 export async function createDraft(
 	input: CreateTransitionInput,
 	institutionId: string,
 	actorId: string,
 ) {
 	await readiness(input, institutionId);
+
+	const existing = await db.query.academicYearTransitions.findFirst({
+		where: and(
+			eq(schema.academicYearTransitions.institutionId, institutionId),
+			eq(
+				schema.academicYearTransitions.sourceAcademicYearId,
+				input.sourceAcademicYearId,
+			),
+			eq(
+				schema.academicYearTransitions.targetAcademicYearId,
+				input.targetAcademicYearId,
+			),
+			notInArray(schema.academicYearTransitions.status, TERMINAL_STATUSES),
+		),
+		columns: { id: true, status: true },
+	});
+	if (existing) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: `An active transition plan already exists for this year pair (id: ${existing.id}, status: ${existing.status}). Cancel or complete it before creating a new one.`,
+		});
+	}
 
 	const scopeCondition =
 		input.classIds.length > 0
