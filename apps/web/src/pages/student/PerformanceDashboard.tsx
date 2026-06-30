@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import {
 	AlertCircle,
 	Award,
+	Bell,
 	BookOpen,
 	Calendar,
 	CheckCircle2,
@@ -14,9 +15,11 @@ import {
 	GraduationCap,
 	History,
 	Hourglass,
+	ServerCog,
 	ShieldCheck,
 	Star,
 	TrendingUp,
+	XCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,6 +30,196 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Spinner } from "@/components/ui/spinner";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { trpc, trpcClient } from "../../utils/trpc";
+
+// ─── Pending Actions Card ─────────────────────────────────────────────────────
+
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+type NotifActionConfig = {
+	icon: React.ReactNode;
+	labelKey: string;
+	subtitleFn?: (payload: Record<string, unknown>, t: TFn) => string;
+	toFn?: (payload: Record<string, unknown>) => string | undefined;
+	priority: "high" | "medium" | "low";
+};
+
+const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
+	"deliberation.published": {
+		icon: <GraduationCap className="h-4 w-4 text-violet-600" />,
+		labelKey: "student.pendingActions.resultsPublished",
+		priority: "high",
+		toFn: () => "/student",
+	},
+	"grade.approved": {
+		icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
+		labelKey: "student.pendingActions.gradesApproved",
+		subtitleFn: (p) => String(p.examName ?? ""),
+		priority: "medium",
+		toFn: () => "/student",
+	},
+	"grade.rejected": {
+		icon: <XCircle className="h-4 w-4 text-destructive" />,
+		labelKey: "student.pendingActions.gradesRejected",
+		subtitleFn: (p) => String(p.examName ?? ""),
+		priority: "high",
+		toFn: () => "/student",
+	},
+	"fee.payment_confirmed": {
+		icon: <CreditCard className="h-4 w-4 text-emerald-600" />,
+		labelKey: "student.pendingActions.paymentConfirmed",
+		subtitleFn: (p) =>
+			p.amount && p.currency
+				? `${Number(p.amount).toLocaleString()} ${p.currency}`
+				: "",
+		priority: "low",
+		toFn: () => "/student/fees",
+	},
+	"batch_job.completed": {
+		icon: <ServerCog className="h-4 w-4 text-emerald-600" />,
+		labelKey: "student.pendingActions.jobCompleted",
+		priority: "low",
+	},
+	"batch_job.failed": {
+		icon: <ServerCog className="h-4 w-4 text-destructive" />,
+		labelKey: "student.pendingActions.jobFailed",
+		priority: "medium",
+	},
+};
+
+function priorityDot(priority: "high" | "medium" | "low") {
+	if (priority === "high") return "bg-red-500";
+	if (priority === "medium") return "bg-amber-500";
+	return "bg-blue-400";
+}
+
+type NotifItem = {
+	id: string;
+	type: string;
+	readAt: string | Date | null;
+	createdAt: string | Date;
+	payload: unknown;
+};
+
+function PendingActionsCard({
+	items,
+	onMarkRead,
+	isMarkingRead,
+}: {
+	items: NotifItem[];
+	onMarkRead: (id: string) => void;
+	isMarkingRead: boolean;
+}) {
+	const { t } = useTranslation();
+	const MAX_SHOWN = 3;
+	const shown = items.slice(0, MAX_SHOWN);
+
+	if (items.length === 0) return null;
+
+	return (
+		<div className="rounded-xl border bg-card shadow-sm">
+			<div className="flex items-center justify-between border-b px-4 py-3">
+				<div className="flex items-center gap-2">
+					<Bell className="h-4 w-4 text-primary" />
+					<span className="font-semibold text-foreground text-sm">
+						{t("student.pendingActions.title")}
+					</span>
+					<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
+						{items.length}
+					</Badge>
+				</div>
+				<Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
+					<Link to="/notifications">
+						{t("student.pendingActions.viewAll")}
+						<ChevronRight className="ml-1 h-3 w-3" />
+					</Link>
+				</Button>
+			</div>
+
+			<ul className="divide-y">
+				{shown.map((item) => {
+					const cfg = NOTIF_ACTION_CONFIGS[item.type];
+					const payload = (item.payload as Record<string, unknown>) ?? {};
+					const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
+					const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
+					const priority = cfg?.priority ?? "low";
+
+					const inner = (
+						<div className="flex min-w-0 flex-1 items-start gap-3">
+							<span
+								className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
+							/>
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
+								{cfg?.icon ?? (
+									<Bell className="h-3.5 w-3.5 text-muted-foreground" />
+								)}
+							</div>
+							<div className="min-w-0 flex-1">
+								<p className="font-medium text-foreground text-xs">
+									{t(
+										(cfg?.labelKey ??
+											"student.pendingActions.generic") as Parameters<
+											typeof t
+										>[0],
+										{
+											defaultValue: item.type
+												.replace(/[._-]/g, " ")
+												.replace(/\b\w/g, (c) => c.toUpperCase()),
+										},
+									)}
+								</p>
+								{subtitle && (
+									<p className="truncate text-[11px] text-muted-foreground">
+										{subtitle}
+									</p>
+								)}
+							</div>
+						</div>
+					);
+
+					return (
+						<li
+							key={item.id}
+							className="group flex items-center gap-2 px-4 py-3"
+						>
+							{to ? (
+								<Link
+									to={to}
+									className="min-w-0 flex-1"
+									onClick={() => onMarkRead(item.id)}
+								>
+									{inner}
+								</Link>
+							) : (
+								<div className="min-w-0 flex-1">{inner}</div>
+							)}
+							<button
+								type="button"
+								className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+								onClick={() => onMarkRead(item.id)}
+								disabled={isMarkingRead}
+							>
+								{t("notifications.markRead")}
+							</button>
+						</li>
+					);
+				})}
+			</ul>
+
+			{items.length > MAX_SHOWN && (
+				<div className="border-t px-4 py-2 text-center">
+					<Link
+						to="/notifications"
+						className="text-muted-foreground text-xs hover:text-foreground hover:underline"
+					>
+						{t("student.pendingActions.moreItems", {
+							count: items.length - MAX_SHOWN,
+						})}
+					</Link>
+				</div>
+			)}
+		</div>
+	);
+}
 
 // ─── Deliberation Decision ────────────────────────────────────────────────────
 
@@ -557,6 +750,7 @@ function SummaryCard({
 
 const PerformanceDashboard = () => {
 	const { t } = useTranslation();
+	const queryClient = useQueryClient();
 
 	const studentQuery = useQuery(trpc.students.me.queryOptions());
 	const studentId = studentQuery.data?.id ?? "";
@@ -588,6 +782,24 @@ const PerformanceDashboard = () => {
 	const upcomingExamsQuery = useQuery(
 		trpc.exams.upcomingForStudent.queryOptions(),
 	);
+
+	const notifQuery = useQuery(
+		trpc.notifications.myNotifications.queryOptions({ limit: 20 }),
+	);
+	const unreadNotifs = (notifQuery.data ?? []).filter(
+		(n) => !n.readAt,
+	) as NotifItem[];
+
+	const markReadMut = useMutation({
+		mutationFn: (id: string) =>
+			trpcClient.notifications.markRead.mutate({ id }),
+		onSuccess: () => {
+			queryClient.invalidateQueries(
+				trpc.notifications.myNotifications.queryKey(),
+			);
+			queryClient.invalidateQueries(trpc.notifications.unreadCount.queryKey());
+		},
+	});
 
 	const student = studentQuery.data;
 	const transcript = transcriptQuery.data;
@@ -657,6 +869,17 @@ const PerformanceDashboard = () => {
 					animate="visible"
 					className="space-y-6"
 				>
+					{/* Pending actions — unread notifications */}
+					{unreadNotifs.length > 0 && (
+						<motion.div variants={staggerItem}>
+							<PendingActionsCard
+								items={unreadNotifs}
+								onMarkRead={(id) => markReadMut.mutate(id)}
+								isMarkingRead={markReadMut.isPending}
+							/>
+						</motion.div>
+					)}
+
 					{/* Fee clearance alert — shown at the top when not cleared */}
 					{latestFeeAssignment && (
 						<motion.div variants={staggerItem}>

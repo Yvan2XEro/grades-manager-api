@@ -4214,6 +4214,18 @@
 			"upcomingExams": "Examens à venir",
 			"viewExams": "Voir le calendrier"
 		},
+		"pendingActions": {
+			"title": "Actions en attente",
+			"viewAll": "Tout voir",
+			"moreItems": "+{{count}} de plus",
+			"resultsPublished": "Résultats de délibération publiés",
+			"gradesApproved": "Feuille de notes approuvée",
+			"gradesRejected": "Feuille de notes refusée",
+			"paymentConfirmed": "Paiement confirmé",
+			"jobCompleted": "Tâche de fond terminée",
+			"jobFailed": "Tâche de fond échouée",
+			"generic": "Nouvelle notification"
+		},
 		"timeline": {
 			"title": "Historique académique",
 			"description": "Votre parcours complet — inscriptions, délibérations et jalons",

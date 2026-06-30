@@ -4196,6 +4196,18 @@ interface Resources {
 				upcomingExams: "Upcoming Exams";
 				viewExams: "View Calendar";
 			};
+			pendingActions: {
+				title: "Pending actions";
+				viewAll: "View all";
+				moreItems: "+{{count}} more";
+				resultsPublished: "Deliberation results published";
+				gradesApproved: "Grade sheet approved";
+				gradesRejected: "Grade sheet rejected";
+				paymentConfirmed: "Payment confirmed";
+				jobCompleted: "Background job completed";
+				jobFailed: "Background job failed";
+				generic: "New notification";
+			};
 			timeline: {
 				title: "Academic Timeline";
 				description: "Your full academic history — enrollments, decisions, and milestones";
