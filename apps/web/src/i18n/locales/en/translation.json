@@ -100,7 +100,9 @@
     "delete": "Delete",
     "none": "None",
     "confirmDelete": "Confirm deletion",
-    "create": "Create"
+    "create": "Create",
+    "yes": "Yes",
+    "no": "No"
   },
   "teacher": {
     "courses": {
@@ -551,18 +553,19 @@
       "marked": "Mark all"
     },
     "attendanceRates": {
-      "title": "Attendance Rates",
-      "subtitle": "Attendance statistics by course",
-      "filterByYear": "Filter by year",
-      "filterByCourse": "Filter by course",
-      "export": "Export",
-      "student": "Student",
-      "attended": "Attended",
-      "effective": "Effective",
-      "rate": "Rate",
-      "eligible": "Eligible",
-      "yes": "Yes",
-      "no": "No"
+      "title": "Attendance rates",
+      "subtitle": "Overview of attendance rates across your courses",
+      "selectYear": "Select an academic year",
+      "selectYearPrompt": "Select an academic year to view attendance rates.",
+      "empty": "No courses found for this academic year.",
+      "columns": {
+        "course": "Course",
+        "class": "Class",
+        "sessions": "Sessions",
+        "threshold": "Threshold",
+        "belowThreshold": "Below threshold",
+        "excusedCountsAsAbsent": "Excused = absent"
+      }
     },
     "gradeAccessGrants": {
       "title": "Grade Delegation",
@@ -1128,7 +1131,8 @@
         "timetable": "Timetable",
         "workflows": "Workflows",
         "exports": "Exports",
-        "myCourses": "My courses"
+        "myCourses": "My courses",
+        "attendanceRates": "Attendance rates"
       },
       "dean": {
         "dashboard": "Dashboard",

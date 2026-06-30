@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	BarChart3,
 	Bell,
 	BookOpen,
 	Building,
@@ -227,6 +228,11 @@ const Sidebar: React.FC = () => {
 				to: "/teacher/attendance",
 				icon: <ClipboardList className={IC} />,
 				labelKey: "navigation.sidebar.teacher.attendance",
+			},
+			{
+				to: "/teacher/attendance/rates",
+				icon: <BarChart3 className={IC} />,
+				labelKey: "navigation.sidebar.teacher.attendanceRates",
 			},
 			{
 				to: "/teacher/exports",

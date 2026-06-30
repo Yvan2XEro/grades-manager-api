@@ -60,6 +60,7 @@ import PerformanceDashboard from "./pages/student/PerformanceDashboard";
 import StudentFeeStatus from "./pages/student/StudentFeeStatus";
 import StudentTimetable from "./pages/student/Timetable";
 import AttendanceAlerts from "./pages/teacher/AttendanceAlerts";
+import AttendanceRates from "./pages/teacher/AttendanceRates";
 import GradeEntry from "./pages/teacher/GradeEntry";
 import GradeExport from "./pages/teacher/GradeExport";
 import GradeSpreadsheet from "./pages/teacher/GradeSpreadsheet";
@@ -381,6 +382,7 @@ function App() {
 						/>
 						<Route path="attendance" element={<AttendanceManagement />} />
 						<Route path="attendance/alerts" element={<AttendanceAlerts />} />
+						<Route path="attendance/rates" element={<AttendanceRates />} />
 						<Route path="timetable" element={<TeacherTimetable />} />
 						<Route path="workflows" element={<WorkflowManager />} />
 						<Route path="exports" element={<GradeExport />} />

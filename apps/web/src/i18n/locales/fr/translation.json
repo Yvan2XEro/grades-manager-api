@@ -100,7 +100,9 @@
     "delete": "Supprimer",
     "none": "Aucun",
     "confirmDelete": "Confirmer la suppression",
-    "create": "Créer"
+    "create": "Créer",
+    "yes": "Oui",
+    "no": "Non"
   },
   "navigation": {
     "breadcrumbs": {
@@ -202,7 +204,8 @@
         "timetable": "Emploi du temps",
         "workflows": "Workflows",
         "exports": "Exports",
-        "myCourses": "Mes cours"
+        "myCourses": "Mes cours",
+        "attendanceRates": "Taux de présence"
       },
       "dean": {
         "dashboard": "Tableau de bord",
@@ -3829,17 +3832,18 @@
     },
     "attendanceRates": {
       "title": "Taux de présence",
-      "subtitle": "Statistiques de présence par cours",
-      "filterByYear": "Filtrer par année",
-      "filterByCourse": "Filtrer par cours",
-      "export": "Exporter",
-      "student": "Étudiant",
-      "attended": "Présences",
-      "effective": "Effectives",
-      "rate": "Taux",
-      "eligible": "Éligible",
-      "yes": "Oui",
-      "no": "Non"
+      "subtitle": "Vue d'ensemble des taux de présence sur vos cours",
+      "selectYear": "Sélectionner une année académique",
+      "selectYearPrompt": "Sélectionnez une année académique pour afficher les taux de présence.",
+      "empty": "Aucun cours trouvé pour cette année académique.",
+      "columns": {
+        "course": "Cours",
+        "class": "Classe",
+        "sessions": "Séances",
+        "threshold": "Seuil",
+        "belowThreshold": "Sous le seuil",
+        "excusedCountsAsAbsent": "Excusé = absent"
+      }
     },
     "workflow": {
       "title": "Workflow d'examens",

@@ -102,6 +102,8 @@ interface Resources {
 			none: "None";
 			confirmDelete: "Confirm deletion";
 			create: "Create";
+			yes: "Yes";
+			no: "No";
 		};
 		teacher: {
 			courses: {
@@ -411,7 +413,7 @@ interface Resources {
 				export: "Export";
 				import: {
 					title: "Import Timetable";
-					description: "Upload a CSV file with columns: classCourseId, dayOfWeek (mon–sun), startTime (HH:MM), endTime (HH:MM), roomId (optional).";
+					description: "Download the template to get a pre-filled list of courses. Fill in dayOfWeek (mon–sun), startTime and endTime (HH:MM), and optionally a room name. The courseName and className columns are for reference only.";
 					downloadTemplate: "Download CSV template";
 					file: "CSV file";
 					preview: "Preview";
@@ -552,18 +554,19 @@ interface Resources {
 				marked: "Mark all";
 			};
 			attendanceRates: {
-				title: "Attendance Rates";
-				subtitle: "Attendance statistics by course";
-				filterByYear: "Filter by year";
-				filterByCourse: "Filter by course";
-				export: "Export";
-				student: "Student";
-				attended: "Attended";
-				effective: "Effective";
-				rate: "Rate";
-				eligible: "Eligible";
-				yes: "Yes";
-				no: "No";
+				title: "Attendance rates";
+				subtitle: "Overview of attendance rates across your courses";
+				selectYear: "Select an academic year";
+				selectYearPrompt: "Select an academic year to view attendance rates.";
+				empty: "No courses found for this academic year.";
+				columns: {
+					course: "Course";
+					class: "Class";
+					sessions: "Sessions";
+					threshold: "Threshold";
+					belowThreshold: "Below threshold";
+					excusedCountsAsAbsent: "Excused = absent";
+				};
 			};
 			gradeAccessGrants: {
 				title: "Grade Delegation";
@@ -1130,6 +1133,7 @@ interface Resources {
 					workflows: "Workflows";
 					exports: "Exports";
 					myCourses: "My courses";
+					attendanceRates: "Attendance rates";
 				};
 				dean: {
 					dashboard: "Dashboard";
