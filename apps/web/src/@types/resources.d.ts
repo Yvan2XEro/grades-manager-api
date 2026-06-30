@@ -4651,6 +4651,13 @@ interface Resources {
 				completedSubtitle: "{{jobType}} — {{itemsProcessed}} items";
 				failedSubtitle: "{{jobType}} — {{error}}";
 			};
+			viewAll: "View all";
+			page: {
+				title: "My notifications";
+				description: "All your recent notifications";
+				unreadOnly: "Unread only";
+				all: "All";
+			};
 		};
 		attendanceRates: {
 			regNumber: "Reg. N°";

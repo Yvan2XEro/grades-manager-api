@@ -55,6 +55,7 @@ import ApprovalHistory from "./pages/dean/ApprovalHistory";
 import CohortDashboard from "./pages/dean/CohortDashboard";
 import DeanDashboard from "./pages/dean/DeanDashboard";
 import WorkflowApprovals from "./pages/dean/WorkflowApprovals";
+import NotificationsPage from "./pages/NotificationsPage";
 import AcademicTimeline from "./pages/student/AcademicTimeline";
 import CourseEnrollment from "./pages/student/CourseEnrollment";
 import ExamCalendar from "./pages/student/ExamCalendar";
@@ -421,6 +422,11 @@ function App() {
 						<Route path="enrollments" element={<CourseEnrollment />} />
 						<Route path="fees" element={<StudentFeeStatus />} />
 						<Route path="timeline" element={<AcademicTimeline />} />
+					</Route>
+
+					{/* Shared Notifications */}
+					<Route path="/notifications" element={<DashboardLayout />}>
+						<Route index element={<NotificationsPage />} />
 					</Route>
 
 					{/* Shared Settings */}

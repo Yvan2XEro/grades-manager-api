@@ -4668,6 +4668,13 @@
 		"batchJob": {
 			"completedSubtitle": "{{jobType}} — {{itemsProcessed}} éléments",
 			"failedSubtitle": "{{jobType}} — {{error}}"
+		},
+		"viewAll": "Voir tout",
+		"page": {
+			"title": "Mes notifications",
+			"description": "Toutes vos notifications récentes",
+			"unreadOnly": "Non lues",
+			"all": "Toutes"
 		}
 	},
 	"attendanceRates": {

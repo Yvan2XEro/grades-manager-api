@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -122,6 +122,7 @@ function timeAgo(
 export const NotificationBell: React.FC = () => {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 
 	const countQuery = useQuery(trpc.notifications.unreadCount.queryOptions());
 	const listQuery = useQuery(
@@ -292,6 +293,18 @@ export const NotificationBell: React.FC = () => {
 							})}
 						</ul>
 					)}
+				</div>
+
+				{/* Footer — view all */}
+				<div className="border-t px-4 py-2">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 w-full text-xs"
+						onClick={() => navigate("/notifications")}
+					>
+						{t("notifications.viewAll")}
+					</Button>
 				</div>
 			</PopoverContent>
 		</Popover>
