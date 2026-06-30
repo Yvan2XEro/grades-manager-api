@@ -163,7 +163,8 @@ export async function createSession(
 	if (classAcademicYear && classAcademicYear !== input.academicYearId) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: `Academic year mismatch: class course belongs to year "${classAcademicYear}" but session was supplied with "${input.academicYearId}"`,
+			message:
+				"The selected course belongs to a different academic year. Please select a course from the current academic year.",
 		});
 	}
 
@@ -175,7 +176,8 @@ export async function createSession(
 	) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: `Semester mismatch: class course is bound to semester "${classSemesterId}" but session was supplied with "${input.semesterId}"`,
+			message:
+				"The selected course belongs to a different semester. Clear the semester filter before creating this session.",
 		});
 	}
 
@@ -206,10 +208,16 @@ export async function createSession(
 	);
 
 	if (conflicts.length > 0) {
-		const ids = conflicts.map((c) => c.id).join(", ");
+		const types = [...new Set(conflicts.map((c) => c.conflictType))];
+		const label =
+			types.includes("teacher") && types.includes("room")
+				? "teacher and room"
+				: types.includes("teacher")
+					? "teacher"
+					: "room";
 		throw new TRPCError({
 			code: "CONFLICT",
-			message: `Scheduling conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
+			message: `Schedule conflict: another session already occupies this time slot for the same ${label} (${conflicts.length} conflict${conflicts.length > 1 ? "s" : ""}).`,
 		});
 	}
 
@@ -274,7 +282,8 @@ export async function updateSession(
 	) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: `Semester mismatch: class course is bound to semester "${classSemesterId}" but update supplied "${input.semesterId}"`,
+			message:
+				"The selected semester does not match the course's semester. Please leave the semester field empty to keep the existing one.",
 		});
 	}
 
@@ -305,10 +314,16 @@ export async function updateSession(
 	);
 
 	if (conflicts.length > 0) {
-		const ids = conflicts.map((c) => c.id).join(", ");
+		const types = [...new Set(conflicts.map((c) => c.conflictType))];
+		const label =
+			types.includes("teacher") && types.includes("room")
+				? "teacher and room"
+				: types.includes("teacher")
+					? "teacher"
+					: "room";
 		throw new TRPCError({
 			code: "CONFLICT",
-			message: `Scheduling conflict (${conflicts.map((c) => c.conflictType).join(", ")}) with session(s): ${ids}`,
+			message: `Schedule conflict: another session already occupies this time slot for the same ${label} (${conflicts.length} conflict${conflicts.length > 1 ? "s" : ""}).`,
 		});
 	}
 

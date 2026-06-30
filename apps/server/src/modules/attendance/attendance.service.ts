@@ -44,20 +44,20 @@ export async function createOrGetSession(
 		if (!cs)
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "courseSessionId does not belong to this classCourse",
+				message: "The selected timetable slot does not belong to this course.",
 			});
 		const sessionDay = dateToDayOfWeek(input.sessionDate);
 		if (cs.dayOfWeek !== sessionDay)
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: `Course session runs on ${cs.dayOfWeek} but attendance date falls on ${sessionDay}`,
+				message:
+					"The selected date does not match the day of the timetable slot. Please choose a date on the correct day.",
 			});
 	} else if (!input.isExceptional) {
-		// Sessions without a timetable slot must be explicitly flagged as exceptional
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message:
-				"Attendance sessions without a timetable slot must have isExceptional set to true",
+				"No timetable slot selected. Either choose an existing slot or enable 'Unscheduled session' to record a one-off attendance.",
 		});
 	}
 

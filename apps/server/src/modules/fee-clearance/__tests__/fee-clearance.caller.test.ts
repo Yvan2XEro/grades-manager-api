@@ -1044,3 +1044,128 @@ describe("feeClearance router", () => {
 		});
 	});
 });
+
+// ── previewStructureImpact ────────────────────────────────────────────────────
+
+describe("previewStructureImpact", () => {
+	it("year-only scope includes all classes in the academic year", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const year = await createAcademicYear();
+
+		const structure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			name: "Year-scoped",
+			totalAmount: 100000,
+			currency: "XAF",
+		});
+
+		const class1 = await createClass({ academicYear: year.id });
+		const class2 = await createClass({ academicYear: year.id });
+		await createStudent({ class: class1.id });
+		await createStudent({ class: class2.id });
+
+		const result = await caller.feeClearance.previewStructureImpact({
+			feeStructureId: structure.id,
+		});
+
+		const classIds = result.classes.map((c) => c.classId);
+		expect(classIds).toContain(class1.id);
+		expect(classIds).toContain(class2.id);
+		expect(result.totals.totalStudents).toBeGreaterThanOrEqual(2);
+		expect(result.totals.toAssign).toBeGreaterThanOrEqual(2);
+	});
+
+	it("program-scoped structure excludes classes from other programs", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const year = await createAcademicYear();
+		const program1 = await createProgram();
+		const program2 = await createProgram();
+
+		const structure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			programId: program1.id,
+			name: "Program-scoped",
+			totalAmount: 100000,
+			currency: "XAF",
+		});
+
+		const classIn = await createClass({
+			academicYear: year.id,
+			program: program1.id,
+		});
+		const classOut = await createClass({
+			academicYear: year.id,
+			program: program2.id,
+		});
+		await createStudent({ class: classIn.id });
+		await createStudent({ class: classOut.id });
+
+		const result = await caller.feeClearance.previewStructureImpact({
+			feeStructureId: structure.id,
+		});
+
+		const classIds = result.classes.map((c) => c.classId);
+		expect(classIds).toContain(classIn.id);
+		expect(classIds).not.toContain(classOut.id);
+	});
+
+	it("distinguishes already-assigned students from students to assign", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const year = await createAcademicYear();
+
+		const structure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			name: "Mixed",
+			totalAmount: 100000,
+			currency: "XAF",
+		});
+
+		const klass = await createClass({ academicYear: year.id });
+		const student1 = await createStudent({ class: klass.id });
+		await createStudent({ class: klass.id });
+
+		await caller.feeClearance.assignStudent({
+			studentId: student1.id,
+			academicYearId: year.id,
+			feeStructureId: structure.id,
+			discountAmount: 0,
+		});
+
+		const result = await caller.feeClearance.previewStructureImpact({
+			feeStructureId: structure.id,
+		});
+
+		const classPreview = result.classes.find((c) => c.classId === klass.id);
+		expect(classPreview).toBeDefined();
+		expect(classPreview!.alreadyAssigned).toBe(1);
+		expect(classPreview!.toAssign).toBe(1);
+		expect(result.totals.alreadyAssigned).toBeGreaterThanOrEqual(1);
+		expect(result.totals.toAssign).toBeGreaterThanOrEqual(1);
+	});
+
+	it("tenant isolation — cannot preview another institution's structure", async () => {
+		const ctx = await adminWithRealProfile();
+		const caller = createCaller(ctx);
+		const year = await createAcademicYear();
+
+		const structure = await caller.feeClearance.createStructure({
+			academicYearId: year.id,
+			name: "Isolated",
+			totalAmount: 100000,
+			currency: "XAF",
+		});
+
+		await setupTestInstitution();
+		const ctxB = await adminWithRealProfile();
+		const callerB = createCaller(ctxB);
+
+		await expect(
+			callerB.feeClearance.previewStructureImpact({
+				feeStructureId: structure.id,
+			}),
+		).rejects.toHaveProperty("code", "NOT_FOUND");
+	});
+});

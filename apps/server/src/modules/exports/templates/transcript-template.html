@@ -273,7 +273,7 @@ th { background-color: {{theme.colors.tableHeaderBg}}; color: {{theme.colors.tab
 							<td colspan="3" class="table-ue-title">{{../name}}</td>
 							<td colspan="2" class="table-ec">{{this.name}}</td>
 							<td>{{formatNumber this.average}}</td>
-							<td class="table-ue-avearage {{#if (gte ../average 10)}}passing{{else if ../../../theme.table.highlightFailures}}failing{{/if}}">{{formatNumber ../average}}</td>
+							<td class="table-ue-avearage {{#if (gte ../average ../../../grading.passing_grade)}}passing{{else if ../../../theme.table.highlightFailures}}failing{{/if}}">{{formatNumber ../average}}</td>
 							<td>{{../credits}}</td>
 						</tr>
 						{{/each}}

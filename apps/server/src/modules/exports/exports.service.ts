@@ -230,13 +230,18 @@ export class ExportsService {
 	 */
 	private async getConfig(): Promise<ReturnType<typeof loadExportConfig>> {
 		try {
-			// Try to load from institution
 			const institution = await this.repo.getInstitution();
 			const { institutionToExportConfig } = await import("./template-helper");
-			this.config = institutionToExportConfig(institution);
+			const { getForInstitution } = await import(
+				"../grade-scales/grade-scales.service"
+			);
+			const gradeScale = await getForInstitution(this.institutionId);
+			this.config = institutionToExportConfig(
+				institution,
+				gradeScale.passThreshold,
+			);
 			return this.config;
 		} catch (error) {
-			// Fallback to JSON file
 			console.warn(
 				"Failed to load institution config, falling back to JSON file:",
 				error,

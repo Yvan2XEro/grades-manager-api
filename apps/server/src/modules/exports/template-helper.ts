@@ -133,6 +133,7 @@ export function institutionToExportConfig(
 	institution: Institution & {
 		parentInstitution?: Institution | null;
 	},
+	gradeScalePassThreshold?: number,
 ): ExportConfig {
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
@@ -173,7 +174,9 @@ export function institutionToExportConfig(
 			appreciations:
 				exportConfig?.grading?.appreciations ?? defaultGrading.appreciations,
 			passing_grade:
-				exportConfig?.grading?.passing_grade ?? defaultGrading.passing_grade,
+				gradeScalePassThreshold ??
+				exportConfig?.grading?.passing_grade ??
+				defaultGrading.passing_grade,
 			scale: exportConfig?.grading?.scale ?? defaultGrading.scale,
 		},
 		signatures: {

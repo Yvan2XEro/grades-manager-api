@@ -8,6 +8,7 @@ import {
 	ensureActorCanEditExam,
 } from "../exam-grade-editors/exam-grade-editors.service";
 import * as examsRepo from "../exams/exams.repo";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import { refreshAfterRetakeGrade } from "../promotion-rules/student-facts.service";
 import * as courseEnrollments from "../student-course-enrollments/student-course-enrollments.service";
 import * as creditLedger from "../student-credit-ledger/student-credit-ledger.service";
@@ -97,10 +98,24 @@ async function recomputeCreditsAfterGradeChange(
 	studentId: string,
 	classCourseId: string,
 ) {
-	const academicYearId = await resolveAcademicYearId(classCourseId);
-	if (academicYearId) {
-		await creditLedger.recomputeForStudent(studentId, academicYearId);
-	}
+	const [row] = await db
+		.select({
+			academicYear: schema.classes.academicYear,
+			institutionId: schema.classes.institutionId,
+		})
+		.from(schema.classCourses)
+		.innerJoin(schema.classes, eq(schema.classCourses.class, schema.classes.id))
+		.where(eq(schema.classCourses.id, classCourseId))
+		.limit(1);
+	if (!row) return;
+	const gradeScale = await gradeScalesService.getForInstitution(
+		row.institutionId,
+	);
+	await creditLedger.recomputeForStudent(
+		studentId,
+		row.academicYear,
+		gradeScale.passThreshold,
+	);
 }
 
 export async function upsertNote(

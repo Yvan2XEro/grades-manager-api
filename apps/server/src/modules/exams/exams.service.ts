@@ -8,6 +8,7 @@ import type { MemberRole } from "../authz";
 import { ADMIN_ROLES, roleSatisfies } from "../authz";
 import * as examGradeEditorsRepo from "../exam-grade-editors/exam-grade-editors.repo";
 import * as gradeAccessRepo from "../grade-access-grants/grade-access-grants.repo";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import * as gradesRepo from "../grades/grades.repo";
 import * as notificationsService from "../notifications/notifications.service";
 import * as courseEnrollmentRepo from "../student-course-enrollments/student-course-enrollments.repo";
@@ -595,10 +596,10 @@ export async function listRetakeEligibility(
 	const institution = await db.query.institutions.findFirst({
 		where: eq(schema.institutions.id, klass.institutionId),
 	});
-	// TODO(INST-SETTINGS): centralize academic policy resolution (passing threshold, retake attempts, etc.)
-	const passingGrade =
-		institution?.metadata?.export_config?.grading?.passing_grade ??
-		DEFAULT_PASSING_GRADE;
+	const gradeScale = await gradeScalesService.getForInstitution(
+		klass.institutionId,
+	);
+	const passingGrade = gradeScale.passThreshold;
 	const roster =
 		await courseEnrollmentRepo.listForClassCourseWithStudentProfile(
 			classCourse.id,

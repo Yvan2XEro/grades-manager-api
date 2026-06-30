@@ -159,3 +159,114 @@ describe("gradeScales router", () => {
 		});
 	});
 });
+
+// ── resolveAcademicPolicy ─────────────────────────────────────────────────────
+
+describe("resolveAcademicPolicy", () => {
+	beforeAll(async () => {
+		await setupTestInstitution();
+	});
+
+	it("isPassing uses configured passThreshold", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+		await caller.gradeScales.upsert({
+			passThreshold: 12,
+			compensationThreshold: 9,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		const policy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+		);
+
+		expect(policy.isPassing(12)).toBe(true);
+		expect(policy.isPassing(11.9)).toBe(false);
+		expect(policy.passThreshold).toBe(12);
+	});
+
+	it("getMentionMeta returns labelEn and gradeLetter from configured ranges", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+		await caller.gradeScales.upsert({
+			passThreshold: 10,
+			compensationThreshold: 8,
+			mentionRanges: [
+				{
+					key: "passable",
+					label: "Passable",
+					labelEn: "Satisfactory",
+					gradeLetter: "E",
+					min: 10,
+				},
+				{
+					key: "bien",
+					label: "Bien",
+					labelEn: "Good",
+					gradeLetter: "C",
+					min: 14,
+				},
+			],
+		});
+
+		const policy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+		);
+
+		expect(policy.getMentionMeta("bien")).toEqual({
+			label: "Bien",
+			labelEn: "Good",
+			gradeLetter: "C",
+		});
+		expect(policy.getMentionMeta("unknown")).toBeNull();
+	});
+
+	it("computeMentionKey returns null below lowest range", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+		await caller.gradeScales.upsert({
+			passThreshold: 10,
+			compensationThreshold: 8,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		const policy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+		);
+
+		expect(policy.computeMentionKey(9.9)).toBeNull();
+		expect(policy.computeMentionKey(10)).toBe("passable");
+	});
+
+	it("tenant isolation — each institution has an independent scale", async () => {
+		const ctxA = asAdmin();
+		const callerA = appRouter.createCaller(ctxA);
+		await callerA.gradeScales.upsert({
+			passThreshold: 12,
+			compensationThreshold: 9,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		await setupTestInstitution();
+		const ctxB = asAdmin();
+
+		const policyA = await gradeScalesService.resolveAcademicPolicy(
+			ctxA.institution.id,
+		);
+		const policyB = await gradeScalesService.resolveAcademicPolicy(
+			ctxB.institution.id,
+		);
+
+		expect(policyA.passThreshold).toBe(12);
+		expect(policyB.passThreshold).toBe(10);
+	});
+
+	it("default behavior unchanged — no scale configured returns threshold=10", async () => {
+		const scale = await gradeScalesService.resolveAcademicPolicy(
+			"non-existent-institution-xyz",
+		);
+		expect(scale.passThreshold).toBe(10);
+		expect(scale.isPassing(10)).toBe(true);
+		expect(scale.isPassing(9.99)).toBe(false);
+	});
+});

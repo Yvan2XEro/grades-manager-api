@@ -890,6 +890,9 @@ export async function exportDiplomation(
 		});
 	}
 
+	const exportGradeScale =
+		await gradeScalesService.getForInstitution(institutionId);
+
 	const results = await repo.findStudentResultsByDeliberationId(input.id);
 
 	// Sort by rank
@@ -981,8 +984,14 @@ export async function exportDiplomation(
 			totalCreditsPossible: r.totalCreditsPossible,
 			finalDecision: r.finalDecision,
 			mention: r.mention,
-			gradeLetter: r.mention ? (MENTION_TO_GRADE[r.mention] ?? null) : null,
-			mentionEn: r.mention ? (MENTION_TO_EN[r.mention] ?? null) : null,
+			gradeLetter: r.mention
+				? (exportGradeScale.mentionRanges.find((mr) => mr.key === r.mention)
+						?.gradeLetter ?? null)
+				: null,
+			mentionEn: r.mention
+				? (exportGradeScale.mentionRanges.find((mr) => mr.key === r.mention)
+						?.labelEn ?? null)
+				: null,
 			ueResults: (r.ueResults as DeliberationUeResult[]) ?? [],
 		})),
 		stats: delib.stats as DeliberationStats | null,

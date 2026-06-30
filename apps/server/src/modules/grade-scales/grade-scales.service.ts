@@ -11,6 +11,14 @@ export type ResolvedScale = {
 	mentionRanges: MentionRange[];
 };
 
+export type AcademicPolicy = ResolvedScale & {
+	isPassing(score: number): boolean;
+	computeMentionKey(score: number | null): string | null;
+	getMentionMeta(
+		key: string,
+	): { label: string; labelEn: string; gradeLetter: string } | null;
+};
+
 const DEFAULT_SCALE: ResolvedScale = {
 	passThreshold: 10,
 	compensationThreshold: 8,
@@ -34,6 +42,27 @@ export async function getForInstitution(
 ): Promise<ResolvedScale> {
 	const row = await repo.findByInstitution(institutionId);
 	return resolveScale(row);
+}
+
+export async function resolveAcademicPolicy(
+	institutionId: string,
+): Promise<AcademicPolicy> {
+	const scale = await getForInstitution(institutionId);
+	return {
+		...scale,
+		isPassing: (score: number) => score >= scale.passThreshold,
+		computeMentionKey: (score: number | null) =>
+			computeMention(score, scale.mentionRanges),
+		getMentionMeta: (key: string) => {
+			const range = scale.mentionRanges.find((r) => r.key === key);
+			if (!range) return null;
+			return {
+				label: range.label,
+				labelEn: range.labelEn,
+				gradeLetter: range.gradeLetter,
+			};
+		},
+	};
 }
 
 export async function getRawForInstitution(institutionId: string) {
