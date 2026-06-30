@@ -1,8 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertCircle, CheckCircle2, Clock, CreditCard } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle2,
+	Clock,
+	CreditCard,
+	Download,
+	FileText,
+	Loader2,
+	Plus,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
@@ -12,7 +23,135 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function downloadBase64Pdf(base64: string, filename: string) {
+	const binary = atob(base64);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+	const blob = new Blob([bytes], { type: "application/pdf" });
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = filename;
+	a.click();
+	URL.revokeObjectURL(url);
+}
+
+// ── Order download button ─────────────────────────────────────────────────────
+
+function DownloadOrderButton({
+	orderId,
+	reference,
+}: {
+	orderId: string;
+	reference: string | null;
+}) {
+	const { t } = useTranslation();
+
+	const downloadQuery = useQuery({
+		...trpc.feeClearance.myDownloadOrder.queryOptions({ orderId }),
+		enabled: false,
+	});
+
+	async function handleDownload() {
+		const result = await trpcClient.feeClearance.myDownloadOrder.query({
+			orderId,
+		});
+		downloadBase64Pdf(result.pdf, `order-${reference ?? orderId}.pdf`);
+	}
+
+	return (
+		<Button
+			variant="ghost"
+			size="sm"
+			onClick={handleDownload}
+			disabled={downloadQuery.isFetching}
+		>
+			{downloadQuery.isFetching ? (
+				<Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+			) : (
+				<Download className="mr-1 h-3.5 w-3.5" />
+			)}
+			{t("feeClearance.orders.download")}
+		</Button>
+	);
+}
+
+// ── Receipt download button ───────────────────────────────────────────────────
+
+function DownloadReceiptButton({
+	paymentId,
+	reference,
+}: {
+	paymentId: string;
+	reference: string | null;
+}) {
+	const { t } = useTranslation();
+
+	async function handleDownload() {
+		const result = await trpcClient.feeClearance.myDownloadReceipt.query({
+			paymentId,
+		});
+		downloadBase64Pdf(result.pdf, `receipt-${reference ?? paymentId}.pdf`);
+	}
+
+	return (
+		<Button variant="ghost" size="sm" onClick={handleDownload}>
+			<Download className="mr-1 h-3.5 w-3.5" />
+			{t("feeClearance.payments.downloadReceipt")}
+		</Button>
+	);
+}
+
+// ── Generate order button ─────────────────────────────────────────────────────
+
+function GenerateOrderButton({
+	assignmentId,
+	balance,
+	currency,
+}: {
+	assignmentId: string;
+	balance: number;
+	currency: string;
+}) {
+	const { t } = useTranslation();
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: () =>
+			trpcClient.feeClearance.myCreateOrder.mutate({
+				feeAssignmentId: assignmentId,
+				amount: balance,
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: trpc.feeClearance.myFinancialHistory.queryKey(),
+			});
+		},
+	});
+
+	return (
+		<Button
+			size="sm"
+			variant="outline"
+			onClick={() => mutation.mutate()}
+			disabled={mutation.isPending || balance <= 0}
+		>
+			{mutation.isPending ? (
+				<Loader2 className="mr-1 h-4 w-4 animate-spin" />
+			) : (
+				<Plus className="mr-1 h-4 w-4" />
+			)}
+			{t("feeClearance.orders.generate")} ({balance.toLocaleString()} {currency}
+			)
+		</Button>
+	);
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function StudentFeeStatus() {
 	const { t } = useTranslation();
@@ -23,7 +162,11 @@ export default function StudentFeeStatus() {
 
 	if (isLoading) {
 		return (
-			<div className="space-y-4">
+			<div className="space-y-6">
+				<PageHeader
+					title={t("feeClearance.student.title")}
+					description={t("feeClearance.student.subtitle")}
+				/>
 				<Skeleton className="h-32 w-full" />
 				<Skeleton className="h-48 w-full" />
 			</div>
@@ -32,13 +175,22 @@ export default function StudentFeeStatus() {
 
 	if (!status?.length) {
 		return (
-			<div className="rounded-lg border p-6 text-center text-muted-foreground">
-				{t("feeClearance.student.noAssignment")}
+			<div className="space-y-6">
+				<PageHeader
+					title={t("feeClearance.student.title")}
+					description={t("feeClearance.student.subtitle")}
+				/>
+				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-10 text-center">
+					<FileText className="h-8 w-8 text-muted-foreground/40" />
+					<p className="text-muted-foreground text-sm">
+						{t("feeClearance.student.noAssignment")}
+					</p>
+				</div>
 			</div>
 		);
 	}
 
-	const allAssignments = status ?? [];
+	const allAssignments = status;
 	const totalDue = allAssignments.reduce((s, a) => s + a.effectiveAmount, 0);
 	const totalPaid = allAssignments.reduce((s, a) => s + a.paidAmount, 0);
 	const currency = allAssignments[0]?.currency ?? "XAF";
@@ -50,25 +202,21 @@ export default function StudentFeeStatus() {
 
 	return (
 		<div className="space-y-6">
-			<div>
-				<h2 className="font-semibold text-xl">
-					{t("feeClearance.student.title")}
-				</h2>
-				<p className="text-muted-foreground text-sm">
-					{t("feeClearance.student.subtitle")}
-				</p>
-			</div>
+			<PageHeader
+				title={t("feeClearance.student.title")}
+				description={t("feeClearance.student.subtitle")}
+			/>
 
 			{/* Overall status card */}
 			<div
-				className={`flex items-center gap-4 rounded-lg border p-4 ${
+				className={`flex items-center gap-4 rounded-xl border p-4 shadow-sm ${
 					overallCleared
-						? "border-green-200 bg-green-50"
-						: "border-amber-200 bg-amber-50"
+						? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
+						: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30"
 				}`}
 			>
 				{overallCleared ? (
-					<CheckCircle2 className="h-8 w-8 shrink-0 text-green-600" />
+					<CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-600" />
 				) : (
 					<AlertCircle className="h-8 w-8 shrink-0 text-amber-600" />
 				)}
@@ -78,17 +226,21 @@ export default function StudentFeeStatus() {
 							? t("feeClearance.quitus.cleared")
 							: t("feeClearance.quitus.notCleared")}
 					</p>
-					<p className="text-sm">
+					<p className="text-muted-foreground text-sm">
 						{t("feeClearance.student.balance")}:{" "}
-						<strong>{fmt(totalDue - totalPaid)}</strong>
+						<strong
+							className={overallCleared ? "text-emerald-600" : "text-amber-700"}
+						>
+							{fmt(totalDue - totalPaid)}
+						</strong>
 					</p>
 				</div>
-				<div className="text-right">
+				<div className="shrink-0 text-right">
 					<p className="text-muted-foreground text-sm">
 						{t("feeClearance.student.totalDue")}
 					</p>
 					<p className="font-bold text-lg">{fmt(totalDue)}</p>
-					<p className="text-green-600 text-sm">
+					<p className="text-emerald-600 text-sm">
 						{t("feeClearance.student.paid")}: {fmt(totalPaid)}
 					</p>
 				</div>
@@ -96,66 +248,101 @@ export default function StudentFeeStatus() {
 
 			{/* Per-assignment breakdown */}
 			{allAssignments.map((a) => {
-				const paid = a.paidAmount;
-				const due = a.effectiveAmount;
-				const balance = due - paid;
+				const balance = a.balance;
 				const pendingOrders =
-					a.orders?.filter((o: { status: string }) => o.status === "pending") ??
-					[];
+					(
+						a.orders as Array<{
+							id: string;
+							status: string;
+							reference: string | null;
+							amount: string;
+							expiresAt: string | null;
+						}>
+					)?.filter((o) => o.status === "pending") ?? [];
+				const confirmedOrders =
+					(
+						a.orders as Array<{
+							id: string;
+							status: string;
+							reference: string | null;
+							amount: string;
+							expiresAt: string | null;
+						}>
+					)?.filter((o) => o.status === "confirmed") ?? [];
+				const canGenerateOrder =
+					balance > 0 && a.status !== "exempt" && a.status !== "paid";
 
 				return (
-					<div key={a.id} className="rounded-lg border">
+					<div
+						key={a.id}
+						className="overflow-hidden rounded-xl border shadow-sm"
+					>
+						{/* Header */}
 						<div className="flex items-center justify-between border-b bg-muted/30 px-4 py-3">
 							<div>
 								<p className="font-semibold">
 									{t("feeClearance.student.academicYear")}:{" "}
 									{a.academicYear?.name ?? "—"}
 								</p>
-								<p className="text-muted-foreground text-sm">
-									{a.feeStructure?.name}
-								</p>
+								{a.feeStructure && (
+									<p className="text-muted-foreground text-sm">
+										{a.feeStructure.name}
+									</p>
+								)}
 							</div>
-							<Badge
-								variant={
-									a.status === "paid"
-										? "default"
-										: a.status === "exempt"
-											? "secondary"
-											: a.status === "partial"
-												? "outline"
-												: "destructive"
-								}
-							>
-								{t(`feeClearance.assignments.status.${a.status}`)}
-							</Badge>
+							<div className="flex items-center gap-2">
+								<Badge
+									variant={
+										a.status === "paid"
+											? "default"
+											: a.status === "exempt"
+												? "secondary"
+												: a.status === "partial"
+													? "outline"
+													: "destructive"
+									}
+								>
+									{t(`feeClearance.assignments.status.${a.status}`)}
+								</Badge>
+								{canGenerateOrder && (
+									<GenerateOrderButton
+										assignmentId={a.id}
+										balance={balance}
+										currency={a.currency}
+									/>
+								)}
+							</div>
 						</div>
 
+						{/* Amounts */}
 						<div className="grid grid-cols-3 gap-4 px-4 py-3 text-sm">
 							<div>
 								<p className="text-muted-foreground">
 									{t("feeClearance.assignments.fields.effectiveAmount")}
 								</p>
-								<p className="font-bold">{fmt(due)}</p>
+								<p className="font-bold">{fmt(a.effectiveAmount)}</p>
 							</div>
 							<div>
 								<p className="text-muted-foreground">
 									{t("feeClearance.assignments.fields.paidAmount")}
 								</p>
-								<p className="font-bold text-green-600">{fmt(paid)}</p>
+								<p className="font-bold text-emerald-600">
+									{fmt(a.paidAmount)}
+								</p>
 							</div>
 							<div>
 								<p className="text-muted-foreground">
 									{t("feeClearance.assignments.fields.balance")}
 								</p>
 								<p
-									className={`font-bold ${balance > 0 ? "text-destructive" : "text-green-600"}`}
+									className={`font-bold ${balance > 0 ? "text-destructive" : "text-emerald-600"}`}
 								>
 									{fmt(balance)}
 								</p>
 							</div>
 						</div>
 
-						{/* Pending payment orders */}
+						{/* Pending orders */}
 						{pendingOrders.length > 0 && (
 							<div className="border-t px-4 py-3">
 								<p className="mb-2 flex items-center gap-1 font-medium text-amber-700 text-sm">
@@ -175,31 +362,31 @@ export default function StudentFeeStatus() {
 											<TableHead>
 												{t("feeClearance.orders.fields.expiresAt")}
 											</TableHead>
+											<TableHead />
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{pendingOrders.map(
-											(o: {
-												id: string;
-												reference: string | null;
-												amount: string;
-												expiresAt: string | null;
-											}) => (
-												<TableRow key={o.id}>
-													<TableCell className="font-mono text-xs">
-														{o.reference ?? "—"}
-													</TableCell>
-													<TableCell className="font-medium">
-														{Number(o.amount).toLocaleString()} {currency}
-													</TableCell>
-													<TableCell>
-														{o.expiresAt
-															? format(new Date(o.expiresAt), "dd/MM/yyyy")
-															: "—"}
-													</TableCell>
-												</TableRow>
-											),
-										)}
+										{pendingOrders.map((o) => (
+											<TableRow key={o.id}>
+												<TableCell className="font-mono text-xs">
+													{o.reference ?? "—"}
+												</TableCell>
+												<TableCell className="font-medium">
+													{Number(o.amount).toLocaleString()} {currency}
+												</TableCell>
+												<TableCell>
+													{o.expiresAt
+														? format(new Date(o.expiresAt), "dd/MM/yyyy")
+														: "—"}
+												</TableCell>
+												<TableCell>
+													<DownloadOrderButton
+														orderId={o.id}
+														reference={o.reference}
+													/>
+												</TableCell>
+											</TableRow>
+										))}
 									</TableBody>
 								</Table>
 							</div>
@@ -208,7 +395,7 @@ export default function StudentFeeStatus() {
 						{/* Confirmed payments */}
 						{a.payments.length > 0 && (
 							<div className="border-t px-4 py-3">
-								<p className="mb-2 flex items-center gap-1 font-medium text-green-700 text-sm">
+								<p className="mb-2 flex items-center gap-1 font-medium text-emerald-700 text-sm">
 									<CreditCard className="h-4 w-4" />
 									{t("feeClearance.payments.title")} ({a.payments.length})
 								</p>
@@ -224,29 +411,43 @@ export default function StudentFeeStatus() {
 											<TableHead>
 												{t("feeClearance.payments.fields.paymentDate")}
 											</TableHead>
+											<TableHead />
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{a.payments.map((p) => (
-											<TableRow key={p.id}>
-												<TableCell className="font-mono text-xs">
-													{p.reference ?? "—"}
-												</TableCell>
-												<TableCell className="font-medium text-green-600">
-													{Number(p.amount).toLocaleString()} {currency}
-												</TableCell>
-												<TableCell>
-													{format(new Date(p.paymentDate), "dd/MM/yyyy")}
-												</TableCell>
-											</TableRow>
-										))}
+										{a.payments.map(
+											(p: {
+												id: string;
+												reference: string | null;
+												amount: string | number;
+												paymentDate: string;
+											}) => (
+												<TableRow key={p.id}>
+													<TableCell className="font-mono text-xs">
+														{p.reference ?? "—"}
+													</TableCell>
+													<TableCell className="font-medium text-emerald-600">
+														{Number(p.amount).toLocaleString()} {currency}
+													</TableCell>
+													<TableCell>
+														{format(new Date(p.paymentDate), "dd/MM/yyyy")}
+													</TableCell>
+													<TableCell>
+														<DownloadReceiptButton
+															paymentId={p.id}
+															reference={p.reference}
+														/>
+													</TableCell>
+												</TableRow>
+											),
+										)}
 									</TableBody>
 								</Table>
 							</div>
 						)}
 
 						{a.clearedAt && (
-							<div className="flex items-center gap-1 border-t px-4 py-2 text-green-600 text-xs">
+							<div className="flex items-center gap-1 border-t px-4 py-2 text-emerald-600 text-xs">
 								<CheckCircle2 className="h-3 w-3" />
 								{t("feeClearance.quitus.clearedOn", {
 									date: format(new Date(a.clearedAt), "dd/MM/yyyy"),

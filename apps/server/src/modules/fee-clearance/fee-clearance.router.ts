@@ -377,4 +377,40 @@ export const feeClearanceRouter = router({
 				input.academicYearId,
 			);
 		}),
+
+	myCreateOrder: protectedProcedure
+		.input(
+			z.object({ feeAssignmentId: z.string(), amount: z.number().positive() }),
+		)
+		.mutation(({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new Error("Profile required");
+			return service.myCreateOrder(
+				ctx.profile.id,
+				ctx.institution.id,
+				input.feeAssignmentId,
+				input.amount,
+			);
+		}),
+
+	myDownloadOrder: protectedProcedure
+		.input(z.object({ orderId: z.string() }))
+		.query(({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new Error("Profile required");
+			return service.myDownloadOrder(
+				ctx.profile.id,
+				input.orderId,
+				ctx.institution.id,
+			);
+		}),
+
+	myDownloadReceipt: protectedProcedure
+		.input(z.object({ paymentId: z.string() }))
+		.query(({ ctx, input }) => {
+			if (!ctx.profile?.id) throw new Error("Profile required");
+			return service.myDownloadReceipt(
+				ctx.profile.id,
+				input.paymentId,
+				ctx.institution.id,
+			);
+		}),
 });

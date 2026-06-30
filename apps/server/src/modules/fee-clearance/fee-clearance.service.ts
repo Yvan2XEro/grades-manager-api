@@ -1467,6 +1467,66 @@ export async function getStudentFinancialHistory(
 	});
 }
 
+// ── Student self-service ──────────────────────────────────────────────
+
+export async function myCreateOrder(
+	profileId: string,
+	institutionId: string,
+	feeAssignmentId: string,
+	amount: number,
+) {
+	const assignment = await repo.findAssignmentById(
+		feeAssignmentId,
+		institutionId,
+	);
+	if (!assignment) throw notFound("Fee assignment not found");
+	if (assignment.student?.profile?.id !== profileId) {
+		throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+	}
+	return createOrder(institutionId, profileId, {
+		feeAssignmentId,
+		amount,
+		currency: assignment.currency,
+		installmentIds: [],
+	});
+}
+
+export async function myDownloadOrder(
+	profileId: string,
+	orderId: string,
+	institutionId: string,
+) {
+	const order = await repo.findOrderById(orderId, institutionId);
+	if (!order) throw notFound("Payment order not found");
+	const assignment = await repo.findAssignmentById(
+		order.feeAssignmentId,
+		institutionId,
+	);
+	if (assignment?.student?.profile?.id !== profileId) {
+		throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+	}
+	return generateOrderDocument(orderId, institutionId);
+}
+
+export async function myDownloadReceipt(
+	profileId: string,
+	paymentId: string,
+	institutionId: string,
+) {
+	const payment = await repo.findPaymentById(paymentId);
+	if (!payment || payment.institutionId !== institutionId) {
+		throw notFound("Payment not found");
+	}
+	const assignment = await repo.findAssignmentById(
+		payment.feeAssignmentId,
+		institutionId,
+	);
+	if (assignment?.student?.profile?.id !== profileId) {
+		throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+	}
+	return generateReceiptDocument(paymentId, institutionId);
+}
+
 // ── Bank Import ───────────────────────────────────────────────────────
 
 type BankRow = { reference: string; amount: number; date: string };
