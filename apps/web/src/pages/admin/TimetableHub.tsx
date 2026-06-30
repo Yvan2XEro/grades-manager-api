@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AttendanceManagement from "./attendance/AttendanceManagement";
 import AttendanceRates from "./attendance/AttendanceRates";
+import ClassAttendanceOverview from "./attendance/ClassAttendanceOverview";
 import RoomsManagement from "./RoomsManagement";
 import TimetableManagement from "./TimetableManagement";
 
@@ -31,6 +32,9 @@ export default function TimetableHub() {
 					<TabsTrigger value="rates">
 						{t("timetableHub.tabs.rates")}
 					</TabsTrigger>
+					<TabsTrigger value="overview">
+						{t("timetableHub.tabs.overview")}
+					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="timetable" className="mt-4">
 					<TimetableManagement />
@@ -43,6 +47,9 @@ export default function TimetableHub() {
 				</TabsContent>
 				<TabsContent value="rates" className="mt-4">
 					<AttendanceRates />
+				</TabsContent>
+				<TabsContent value="overview" className="mt-4">
+					<ClassAttendanceOverview />
 				</TabsContent>
 			</Tabs>
 		</div>

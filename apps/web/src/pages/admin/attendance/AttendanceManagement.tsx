@@ -134,6 +134,13 @@ export default function AttendanceManagement() {
 		enabled: !!selectedSession?.id,
 	});
 
+	const sessionSummaryQuery = useQuery({
+		...trpc.attendance.getSessionSummary.queryOptions({
+			sessionId: selectedSession?.id ?? "",
+		}),
+		enabled: !!selectedSession?.id,
+	});
+
 	const rosterQuery = useQuery({
 		...trpc.attendance.getRoster.queryOptions({
 			classCourseId: classCourseId ?? "",
@@ -418,6 +425,53 @@ export default function AttendanceManagement() {
 							)}
 						</div>
 
+						{/* Session summary stats + absent/late panel */}
+						{sessionSummaryQuery.data && (
+							<div className="mb-4 space-y-2">
+								<div className="grid grid-cols-4 gap-2">
+									{(
+										[
+											"present",
+											"late",
+											"absent",
+											"excused",
+										] as AttendanceStatus[]
+									).map((status) => (
+										<div
+											key={status}
+											className={`rounded-md border px-3 py-2 text-center text-xs ${STATUS_CONFIG[status].color}`}
+										>
+											<div className="font-bold text-lg">
+												{sessionSummaryQuery.data.counts[status]}
+											</div>
+											<div>{STATUS_CONFIG[status].label}</div>
+										</div>
+									))}
+								</div>
+								{sessionSummaryQuery.data.absentOrLate.length > 0 && (
+									<div className="rounded-md border bg-muted/30 px-3 py-2">
+										<p className="mb-1 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+											{t("teacher.attendanceManagement.absentOrLate")}
+										</p>
+										<div className="flex flex-wrap gap-1.5">
+											{sessionSummaryQuery.data.absentOrLate.map((s) => (
+												<Badge
+													key={s.studentId}
+													variant="outline"
+													className={`text-xs ${STATUS_CONFIG[s.status].color}`}
+												>
+													{s.firstName} {s.lastName}
+													{s.registrationNumber
+														? ` (${s.registrationNumber})`
+														: ""}
+												</Badge>
+											))}
+										</div>
+									</div>
+								)}
+							</div>
+						)}
+
 						{roster.length === 0 ? (
 							<p className="text-muted-foreground text-sm">
 								{t("teacher.attendanceManagement.noSession")}
@@ -557,8 +611,6 @@ export default function AttendanceManagement() {
 					</div>
 				)}
 			</div>
-
-			{/* Create session dialog */}
 			<Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>
@@ -597,8 +649,6 @@ export default function AttendanceManagement() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-
-			{/* Excuse dialog */}
 			<Dialog open={excuseDialogOpen} onOpenChange={setExcuseDialogOpen}>
 				<DialogContent className="sm:max-w-sm">
 					<DialogHeader>

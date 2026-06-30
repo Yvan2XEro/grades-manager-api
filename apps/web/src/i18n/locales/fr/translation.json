@@ -3116,6 +3116,20 @@
 			"previewNoMatch": "En dessous du seuil minimum",
 			"overlapError": "Deux mentions partagent le même seuil minimum — corrigez avant d'enregistrer.",
 			"inheritedFromInstitution": "Aucune substitution par programme définie — affichage du barème institution par défaut."
+		},
+		"attendance": {
+			"overview": {
+				"classLabel": "Classe",
+				"classPlaceholder": "Choisir une classe",
+				"emptyTitle": "Sélectionnez une classe et une année",
+				"emptyDescription": "Choisissez une année académique et une classe pour voir les taux de présence de tous les cours.",
+				"noData": "Aucun cours trouvé pour cette classe",
+				"course": "Cours",
+				"code": "Code",
+				"sessions": "Séances",
+				"rate": "Taux",
+				"threshold": "Seuil"
+			}
 		}
 	},
 	"teacher": {
@@ -3905,7 +3919,8 @@
 			"presentCount": "{{present}}/{{total}} présents",
 			"excusePlaceholder": "Maladie, événement familial…",
 			"submitExcuse": "Valider l'excuse",
-			"marked": "Tout marquer"
+			"marked": "Tout marquer",
+			"absentOrLate": "Absents / En retard"
 		},
 		"attendanceRates": {
 			"title": "Taux de présence",
@@ -4750,7 +4765,8 @@
 			"timetable": "Emploi du temps",
 			"rooms": "Salles",
 			"attendance": "Présences",
-			"rates": "Taux"
+			"rates": "Taux",
+			"overview": "Vue par classe"
 		}
 	}
 }

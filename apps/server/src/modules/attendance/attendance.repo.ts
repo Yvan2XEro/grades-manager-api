@@ -435,3 +435,59 @@ export async function upsertSingleRecord(
 export function getAttendanceStatusTypes() {
 	return schema.attendanceStatuses;
 }
+
+/** Return per-status counts and the list of absent/late students for one session. */
+export async function getSessionSummary(
+	attendanceSessionId: string,
+	institutionId: string,
+) {
+	const session = await db.query.attendanceSessions.findFirst({
+		where: and(
+			eq(schema.attendanceSessions.id, attendanceSessionId),
+			eq(schema.attendanceSessions.institutionId, institutionId),
+		),
+		with: {
+			records: {
+				with: {
+					student: {
+						columns: { id: true, registrationNumber: true },
+						with: { profile: { columns: { firstName: true, lastName: true } } },
+					},
+				},
+				columns: { id: true, status: true, studentId: true },
+			},
+		},
+	});
+	return session ?? null;
+}
+
+/** Return one row per classCourse in a class with session counts and rates. */
+export async function getClassAttendanceOverview(
+	classId: string,
+	institutionId: string,
+	academicYearId: string,
+) {
+	const classCourses = await db.query.classCourses.findMany({
+		where: and(
+			eq(schema.classCourses.class, classId),
+			eq(schema.classCourses.institutionId, institutionId),
+		),
+		with: {
+			courseRef: { columns: { name: true } },
+			attendanceSessions: {
+				where: eq(schema.attendanceSessions.academicYearId, academicYearId),
+				with: {
+					records: { columns: { id: true, status: true, studentId: true } },
+				},
+				columns: { id: true },
+			},
+		},
+		columns: {
+			id: true,
+			code: true,
+			attendanceThreshold: true,
+			attendanceExcusedCountsAsAbsent: true,
+		},
+	});
+	return classCourses;
+}

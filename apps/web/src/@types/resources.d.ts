@@ -552,6 +552,7 @@ interface Resources {
 				excusePlaceholder: "Illness, family event…";
 				submitExcuse: "Submit excuse";
 				marked: "Mark all";
+				absentOrLate: "Absent / Late";
 			};
 			attendanceRates: {
 				title: "Attendance rates";
@@ -4048,6 +4049,20 @@ interface Resources {
 				overlapError: "Two mention bands share the same minimum — fix before saving.";
 				inheritedFromInstitution: "No program override defined — displaying institution default.";
 			};
+			attendance: {
+				overview: {
+					classLabel: "Class";
+					classPlaceholder: "Select a class";
+					emptyTitle: "Select a class and year";
+					emptyDescription: "Choose an academic year and class to see attendance rates for all courses.";
+					noData: "No courses found for this class";
+					course: "Course";
+					code: "Code";
+					sessions: "Sessions";
+					rate: "Rate";
+					threshold: "Threshold";
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -4733,6 +4748,7 @@ interface Resources {
 				rooms: "Rooms";
 				attendance: "Attendance";
 				rates: "Rates";
+				overview: "Class Overview";
 			};
 		};
 	};

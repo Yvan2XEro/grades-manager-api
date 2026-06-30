@@ -344,4 +344,38 @@ export const router = createRouter({
 			);
 			return results;
 		}),
+
+	getSessionSummary: gradingProcedure
+		.input(z.object({ sessionId: z.string().uuid() }))
+		.query(async ({ ctx, input }) => {
+			const summary = await service.getSessionSummary(
+				input.sessionId,
+				ctx.institution.id,
+			);
+			if (!summary) throw new TRPCError({ code: "NOT_FOUND" });
+			if (!ctx.permissions.canManageCatalog) {
+				if (!ctx.profile) throw new TRPCError({ code: "UNAUTHORIZED" });
+				await assertTeacherOwnsCourse(
+					summary.classCourseId,
+					ctx.institution.id,
+					ctx.profile.id,
+				);
+			}
+			return summary;
+		}),
+
+	getClassAttendanceOverview: gradingProcedure
+		.input(
+			z.object({
+				classId: z.string().uuid(),
+				academicYearId: z.string().uuid(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			return service.getClassAttendanceOverview(
+				input.classId,
+				ctx.institution.id,
+				input.academicYearId,
+			);
+		}),
 });

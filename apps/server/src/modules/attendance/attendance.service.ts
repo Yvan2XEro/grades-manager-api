@@ -481,3 +481,86 @@ async function resolveAcademicYearFromClassCourse(
 	}
 	return cc.classRef.academicYear;
 }
+
+/** Return per-status counts and the list of absent/late students for a session. */
+export async function getSessionSummary(
+	attendanceSessionId: string,
+	institutionId: string,
+) {
+	const session = await repo.getSessionSummary(
+		attendanceSessionId,
+		institutionId,
+	);
+	if (!session) return null;
+
+	const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+	for (const r of session.records) {
+		counts[r.status as keyof typeof counts]++;
+	}
+
+	const absentOrLate = session.records
+		.filter((r) => r.status === "absent" || r.status === "late")
+		.map((r) => ({
+			studentId: r.studentId,
+			status: r.status as "absent" | "late",
+			registrationNumber: r.student?.registrationNumber ?? null,
+			firstName: r.student?.profile?.firstName ?? null,
+			lastName: r.student?.profile?.lastName ?? null,
+		}));
+
+	return {
+		sessionId: session.id,
+		sessionDate: session.sessionDate,
+		classCourseId: session.classCourseId,
+		totalRecords: session.records.length,
+		counts,
+		absentOrLate,
+	};
+}
+
+/** Return one row per classCourse in a class, with total sessions and rate. */
+export async function getClassAttendanceOverview(
+	classId: string,
+	institutionId: string,
+	academicYearId: string,
+) {
+	const rows = await repo.getClassAttendanceOverview(
+		classId,
+		institutionId,
+		academicYearId,
+	);
+
+	return rows.map((cc) => {
+		const totalSessions = cc.attendanceSessions.length;
+		const excusedCountsAsAbsent = cc.attendanceExcusedCountsAsAbsent ?? false;
+
+		let totalPresent = 0;
+		let totalEffective = 0;
+		for (const s of cc.attendanceSessions) {
+			for (const r of s.records) {
+				const isPresent = r.status === "present" || r.status === "late";
+				const isEffective =
+					r.status === "present" ||
+					r.status === "late" ||
+					r.status === "absent" ||
+					(excusedCountsAsAbsent && r.status === "excused");
+				if (isPresent) totalPresent++;
+				if (isEffective) totalEffective++;
+			}
+		}
+
+		const rate =
+			totalEffective > 0
+				? Math.round((totalPresent / totalEffective) * 100)
+				: null;
+
+		return {
+			classCourseId: cc.id,
+			code: cc.code,
+			courseName: cc.courseRef?.name ?? null,
+			totalSessions,
+			attendanceRate: rate,
+			threshold: cc.attendanceThreshold ?? null,
+		};
+	});
+}

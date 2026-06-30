@@ -2162,6 +2162,7 @@ export const classCoursesRelations = relations(
 		}),
 		exams: many(exams),
 		studentCourseEnrollments: many(studentCourseEnrollments),
+		attendanceSessions: many(attendanceSessions),
 	}),
 );
 
