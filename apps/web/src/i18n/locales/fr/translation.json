@@ -3034,7 +3034,46 @@
       "empty": {
         "noPlans": "Aucun plan de transition.",
         "selectPlan": "Creez ou selectionnez un plan pour commencer la revue.",
-        "noItems": "Aucun etudiant ne correspond aux filtres."
+        "noItems": "Aucun etudiant ne correspond aux filtres.",
+        "notFound": "Plan de transition introuvable."
+      },
+      "tabs": {
+        "students": "Étudiants",
+        "readiness": "Disponibilité",
+        "audit": "Audit"
+      },
+      "readiness": {
+        "comingSoon": "Diagnostics de disponibilité des classes et étudiants — bientôt disponible.",
+        "title": "Disponibilité par classe",
+        "description": "Statut des délibérations et bloqueurs étudiants par classe. Résolvez les problèmes avant de soumettre le plan.",
+        "classesReady": "classes prêtes",
+        "missingDeliberation": "délibération manquante",
+        "blockedStudents": "étudiants bloqués",
+        "class": "Classe",
+        "deliberation": "Délibération",
+        "ready": "Prêts",
+        "blocked": "Bloqués",
+        "total": "Total",
+        "issues": "Bloqueurs actifs",
+        "signed": "Signée",
+        "missing": "Manquante",
+        "empty": "Aucune donnée — le plan n'a pas encore d'éléments."
+      },
+      "audit": {
+        "comingSoon": "Journal d'audit — bientôt disponible.",
+        "title": "Journal d'audit",
+        "description": "Historique chronologique de toutes les actions effectuées sur ce plan de transition.",
+        "empty": "Aucun événement d'audit.",
+        "action": {
+          "created": "Plan créé",
+          "submitted": "Soumis pour approbation",
+          "approved": "Approuvé",
+          "executed": "Exécution démarrée",
+          "completed": "Terminé avec succès",
+          "completed_with_errors": "Terminé avec erreurs",
+          "cancelled": "Annulé",
+          "stale": "Marqué obsolète"
+        }
       },
       "toast": {
         "created": "Plan de transition cree",

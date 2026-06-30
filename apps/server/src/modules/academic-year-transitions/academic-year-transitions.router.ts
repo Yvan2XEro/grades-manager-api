@@ -28,6 +28,16 @@ export const academicYearTransitionsRouter = router({
 	getById: tenantAdminProcedure
 		.input(transitionIdSchema)
 		.query(({ input, ctx }) => service.getById(input.id, ctx.institution.id)),
+	getTransitionReadiness: tenantAdminProcedure
+		.input(transitionIdSchema)
+		.query(({ input, ctx }) =>
+			service.getTransitionReadiness(input.id, ctx.institution.id),
+		),
+	getTransitionAudit: tenantAdminProcedure
+		.input(transitionIdSchema)
+		.query(({ input, ctx }) =>
+			service.getTransitionAudit(input.id, ctx.institution.id),
+		),
 	listItems: tenantAdminProcedure
 		.input(listTransitionItemsSchema)
 		.query(({ input, ctx }) => service.listItems(input, ctx.institution.id)),

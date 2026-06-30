@@ -24,6 +24,7 @@ import {
 	DeliberationRules,
 	DeliberationsList,
 } from "./pages/admin/deliberations";
+import TransitionDetail from "./pages/admin/deliberations/TransitionDetail";
 import ExamsHub from "./pages/admin/ExamsHub";
 import ExportTemplateEditor from "./pages/admin/ExportTemplateEditor";
 import ExportTemplatesManagement from "./pages/admin/ExportTemplatesManagement";
@@ -228,6 +229,7 @@ function App() {
 						<Route path="exams" element={<ExamsHub />} />
 						<Route path="grades" element={<GradesHub />} />
 						<Route path="promotion" element={<AcademicYearTransitions />} />
+						<Route path="promotion/:id" element={<TransitionDetail />} />
 						<Route path="promotion-legacy" element={<PromotionHub />} />
 						<Route path="configuration" element={<ConfigurationHub />} />
 

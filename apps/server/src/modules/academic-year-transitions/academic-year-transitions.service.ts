@@ -802,6 +802,239 @@ export async function execute(
 	return getById(id, institutionId);
 }
 
+export async function getTransitionReadiness(
+	id: string,
+	institutionId: string,
+) {
+	const transition = await findTransition(id, institutionId);
+	if (!transition) notFound("Academic year transition not found");
+
+	// Aggregate items by source class
+	const rows = await db
+		.select({
+			classId: schema.classes.id,
+			className: schema.classes.name,
+			classCode: schema.classes.code,
+			itemStatus: schema.academicYearTransitionItems.status,
+			blockerCode: schema.academicYearTransitionItems.blockerCode,
+		})
+		.from(schema.academicYearTransitionItems)
+		.innerJoin(
+			schema.enrollments,
+			eq(
+				schema.enrollments.id,
+				schema.academicYearTransitionItems.sourceEnrollmentId,
+			),
+		)
+		.innerJoin(
+			schema.classes,
+			eq(schema.classes.id, schema.enrollments.classId),
+		)
+		.where(
+			and(
+				eq(schema.academicYearTransitionItems.transitionId, id),
+				eq(schema.academicYearTransitionItems.institutionId, institutionId),
+			),
+		);
+
+	const classIds = [...new Set(rows.map((r) => r.classId))];
+
+	// Check which classes have a signed annual deliberation in the source year
+	const signedDeliberations =
+		classIds.length === 0
+			? []
+			: await db.query.deliberations.findMany({
+					where: and(
+						eq(schema.deliberations.institutionId, institutionId),
+						eq(
+							schema.deliberations.academicYearId,
+							transition.sourceAcademicYearId,
+						),
+						eq(schema.deliberations.type, "annual"),
+						eq(schema.deliberations.status, "signed"),
+						inArray(schema.deliberations.classId, classIds),
+					),
+					columns: { classId: true },
+				});
+	const signedSet = new Set(signedDeliberations.map((d) => d.classId));
+
+	// Group rows by class
+	const byClass = new Map<
+		string,
+		{
+			classId: string;
+			className: string;
+			classCode: string;
+			ready: number;
+			blocked: number;
+			succeeded: number;
+			failed: number;
+			blockerCodes: Set<string>;
+		}
+	>();
+	for (const row of rows) {
+		let entry = byClass.get(row.classId);
+		if (!entry) {
+			entry = {
+				classId: row.classId,
+				className: row.className,
+				classCode: row.classCode,
+				ready: 0,
+				blocked: 0,
+				succeeded: 0,
+				failed: 0,
+				blockerCodes: new Set(),
+			};
+			byClass.set(row.classId, entry);
+		}
+		if (row.itemStatus === "ready") entry.ready++;
+		else if (row.itemStatus === "blocked") entry.blocked++;
+		else if (row.itemStatus === "succeeded") entry.succeeded++;
+		else if (row.itemStatus === "failed") entry.failed++;
+		if (row.blockerCode) entry.blockerCodes.add(row.blockerCode);
+	}
+
+	const classes = [...byClass.values()].map((entry) => ({
+		classId: entry.classId,
+		className: entry.className,
+		classCode: entry.classCode,
+		hasSignedDeliberation: signedSet.has(entry.classId),
+		studentCounts: {
+			ready: entry.ready,
+			blocked: entry.blocked,
+			succeeded: entry.succeeded,
+			failed: entry.failed,
+			total: entry.ready + entry.blocked + entry.succeeded + entry.failed,
+		},
+		blockerCodes: [...entry.blockerCodes],
+	}));
+
+	return {
+		classes,
+		summary: {
+			classCount: classes.length,
+			readyClasses: classes.filter(
+				(c) => c.hasSignedDeliberation && c.studentCounts.blocked === 0,
+			).length,
+			missingDeliberationCount: classes.filter((c) => !c.hasSignedDeliberation)
+				.length,
+			blockedStudentCount: classes.reduce(
+				(acc, c) => acc + c.studentCounts.blocked,
+				0,
+			),
+		},
+	};
+}
+
+export async function getTransitionAudit(id: string, institutionId: string) {
+	const transition = await findTransition(id, institutionId);
+	if (!transition) notFound("Academic year transition not found");
+
+	const actorIds = [
+		transition.generatedBy,
+		transition.submittedBy,
+		transition.approvedBy,
+		transition.executedBy,
+	].filter((actorId): actorId is string => Boolean(actorId));
+
+	const uniqueIds = [...new Set(actorIds)];
+	const actors =
+		uniqueIds.length === 0
+			? []
+			: await db.query.domainUsers.findMany({
+					where: inArray(schema.domainUsers.id, uniqueIds),
+					columns: { id: true, firstName: true, lastName: true },
+				});
+	const actorById = new Map(actors.map((a) => [a.id, a]));
+
+	function actorName(actorId: string | null | undefined) {
+		if (!actorId) return null;
+		const actor = actorById.get(actorId);
+		if (!actor) return null;
+		return `${actor.firstName} ${actor.lastName}`.trim() || null;
+	}
+
+	type AuditAction =
+		| "created"
+		| "submitted"
+		| "approved"
+		| "executed"
+		| "completed"
+		| "completed_with_errors"
+		| "cancelled"
+		| "stale";
+
+	const events: Array<{
+		action: AuditAction;
+		actorId: string | null;
+		actorName: string | null;
+		at: Date | null;
+	}> = [];
+
+	events.push({
+		action: "created",
+		actorId: transition.generatedBy,
+		actorName: actorName(transition.generatedBy),
+		at: transition.generatedAt,
+	});
+	if (transition.submittedAt) {
+		events.push({
+			action: "submitted",
+			actorId: transition.submittedBy ?? null,
+			actorName: actorName(transition.submittedBy),
+			at: transition.submittedAt,
+		});
+	}
+	if (transition.approvedAt) {
+		events.push({
+			action: "approved",
+			actorId: transition.approvedBy ?? null,
+			actorName: actorName(transition.approvedBy),
+			at: transition.approvedAt,
+		});
+	}
+	if (transition.startedAt) {
+		events.push({
+			action: "executed",
+			actorId: transition.executedBy ?? null,
+			actorName: actorName(transition.executedBy),
+			at: transition.startedAt,
+		});
+	}
+	if (
+		transition.completedAt &&
+		["completed", "completed_with_errors"].includes(transition.status)
+	) {
+		events.push({
+			action: transition.status as "completed" | "completed_with_errors",
+			actorId: null,
+			actorName: null,
+			at: transition.completedAt,
+		});
+	}
+	if (transition.status === "cancelled") {
+		events.push({
+			action: "cancelled",
+			actorId: null,
+			actorName: null,
+			at: transition.updatedAt,
+		});
+	}
+	if (transition.status === "stale") {
+		events.push({
+			action: "stale",
+			actorId: null,
+			actorName: null,
+			at: transition.updatedAt,
+		});
+	}
+
+	return {
+		events,
+		summary: transition.summary as Record<string, number> | null,
+	};
+}
+
 export async function cancel(id: string, institutionId: string) {
 	const transition = await findTransition(id, institutionId);
 	if (!transition) notFound("Academic year transition not found");

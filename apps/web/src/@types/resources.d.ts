@@ -3966,6 +3966,45 @@ interface Resources {
 					noPlans: "No transition plan yet.";
 					selectPlan: "Create or select a transition plan to start reviewing students.";
 					noItems: "No students match the current filters.";
+					notFound: "Transition plan not found.";
+				};
+				tabs: {
+					students: "Students";
+					readiness: "Readiness";
+					audit: "Audit";
+				};
+				readiness: {
+					comingSoon: "Class and student readiness diagnostics — coming soon.";
+					title: "Class readiness";
+					description: "Per-class breakdown of deliberation status and student blockers. Fix issues before submitting the plan.";
+					classesReady: "classes ready";
+					missingDeliberation: "missing deliberation";
+					blockedStudents: "blocked students";
+					class: "Class";
+					deliberation: "Deliberation";
+					ready: "Ready";
+					blocked: "Blocked";
+					total: "Total";
+					issues: "Active blockers";
+					signed: "Signed";
+					missing: "Missing";
+					empty: "No class data — plan has no items yet.";
+				};
+				audit: {
+					comingSoon: "Audit trail — coming soon.";
+					title: "Audit trail";
+					description: "Chronological log of every action taken on this transition plan.";
+					empty: "No audit events yet.";
+					action: {
+						created: "Plan created";
+						submitted: "Submitted for approval";
+						approved: "Approved";
+						executed: "Execution started";
+						completed: "Completed successfully";
+						completed_with_errors: "Completed with errors";
+						cancelled: "Cancelled";
+						stale: "Marked stale";
+					};
 				};
 				toast: {
 					created: "Transition plan created";
