@@ -3725,6 +3725,9 @@ export const gradeScales = pgTable(
 		institutionId: text("institution_id")
 			.notNull()
 			.references(() => institutions.id, { onDelete: "cascade" }),
+		programId: text("program_id").references(() => programs.id, {
+			onDelete: "cascade",
+		}),
 		passThreshold: numeric("pass_threshold", { precision: 5, scale: 2 })
 			.notNull()
 			.default("10"),
@@ -3745,7 +3748,16 @@ export const gradeScales = pgTable(
 			.notNull()
 			.defaultNow(),
 	},
-	(t) => [unique("grade_scales_institution_unique").on(t.institutionId)],
+	(t) => [
+		// One institution-level scale per institution (no program override)
+		uniqueIndex("grade_scales_institution_only_unique")
+			.on(t.institutionId)
+			.where(sql`${t.programId} IS NULL`),
+		// One program-level scale per program within an institution
+		uniqueIndex("grade_scales_program_unique")
+			.on(t.institutionId, t.programId)
+			.where(sql`${t.programId} IS NOT NULL`),
+	],
 );
 
 export type GradeScale = InferSelectModel<typeof gradeScales>;
@@ -3755,6 +3767,10 @@ export const gradeScalesRelations = relations(gradeScales, ({ one }) => ({
 	institution: one(institutions, {
 		fields: [gradeScales.institutionId],
 		references: [institutions.id],
+	}),
+	program: one(programs, {
+		fields: [gradeScales.programId],
+		references: [programs.id],
 	}),
 }));
 

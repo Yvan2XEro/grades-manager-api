@@ -9,6 +9,7 @@ export const mentionRangeSchema = z.object({
 });
 
 export const upsertGradeScaleSchema = z.object({
+	programId: z.string().uuid().nullish(),
 	passThreshold: z.number().min(0).max(20),
 	compensationThreshold: z.number().min(0).max(20),
 	mentionRanges: z

@@ -3,6 +3,7 @@ import { DEFAULT_MENTION_RANGES } from "@/db/schema/app-schema";
 import type { Context } from "@/lib/context";
 import {
 	asAdmin,
+	createProgram,
 	makeTestContext,
 	setupTestInstitution,
 } from "@/lib/test-utils";
@@ -268,5 +269,73 @@ describe("resolveAcademicPolicy", () => {
 		expect(scale.passThreshold).toBe(10);
 		expect(scale.isPassing(10)).toBe(true);
 		expect(scale.isPassing(9.99)).toBe(false);
+	});
+
+	it("program-level scale overrides institution default", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+
+		// Institution-level scale: pass at 10
+		await caller.gradeScales.upsert({
+			passThreshold: 10,
+			compensationThreshold: 8,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		// Program-level scale: pass at 13 (stricter)
+		const program = await createProgram({ institutionId: ctx.institution.id });
+		await caller.gradeScales.upsert({
+			programId: program.id,
+			passThreshold: 13,
+			compensationThreshold: 10,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		const institutionPolicy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+		);
+		const programPolicy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+			program.id,
+		);
+
+		expect(institutionPolicy.passThreshold).toBe(10);
+		expect(programPolicy.passThreshold).toBe(13);
+		expect(programPolicy.isPassing(13)).toBe(true);
+		expect(programPolicy.isPassing(12.9)).toBe(false);
+	});
+
+	it("program-level scale falls back to institution when none defined", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+		await caller.gradeScales.upsert({
+			passThreshold: 11,
+			compensationThreshold: 8,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+		const program = await createProgram({ institutionId: ctx.institution.id });
+
+		// No program-level scale defined → should use institution scale
+		const policy = await gradeScalesService.resolveAcademicPolicy(
+			ctx.institution.id,
+			program.id,
+		);
+		expect(policy.passThreshold).toBe(11);
+	});
+
+	it("router get returns program-level scale when programId provided", async () => {
+		const ctx = asAdmin();
+		const caller = appRouter.createCaller(ctx);
+		const program = await createProgram({ institutionId: ctx.institution.id });
+		await caller.gradeScales.upsert({
+			programId: program.id,
+			passThreshold: 14,
+			compensationThreshold: 11,
+			mentionRanges: DEFAULT_MENTION_RANGES,
+		});
+
+		const raw = await caller.gradeScales.get({ programId: program.id });
+		expect(Number(raw?.passThreshold)).toBe(14);
+		expect(raw?.programId).toBe(program.id);
 	});
 });

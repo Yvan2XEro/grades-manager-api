@@ -39,15 +39,21 @@ function resolveScale(row: GradeScale | undefined): ResolvedScale {
 
 export async function getForInstitution(
 	institutionId: string,
+	programId?: string | null,
 ): Promise<ResolvedScale> {
+	if (programId) {
+		const programRow = await repo.findByProgram(institutionId, programId);
+		if (programRow) return resolveScale(programRow);
+	}
 	const row = await repo.findByInstitution(institutionId);
 	return resolveScale(row);
 }
 
 export async function resolveAcademicPolicy(
 	institutionId: string,
+	programId?: string | null,
 ): Promise<AcademicPolicy> {
-	const scale = await getForInstitution(institutionId);
+	const scale = await getForInstitution(institutionId, programId);
 	return {
 		...scale,
 		isPassing: (score: number) => score >= scale.passThreshold,
@@ -65,7 +71,11 @@ export async function resolveAcademicPolicy(
 	};
 }
 
-export async function getRawForInstitution(institutionId: string) {
+export async function getRawForInstitution(
+	institutionId: string,
+	programId?: string | null,
+) {
+	if (programId) return repo.findByProgram(institutionId, programId);
 	return repo.findByInstitution(institutionId);
 }
 
@@ -75,6 +85,7 @@ export async function upsert(
 		passThreshold: number;
 		compensationThreshold: number;
 		mentionRanges: MentionRange[];
+		programId?: string | null;
 	},
 ) {
 	return repo.upsert(institutionId, data);
