@@ -264,6 +264,33 @@ export async function transition(
 			classId: delib.classId,
 			academicYearId: delib.academicYearId,
 		}).catch(() => {});
+
+		// Notify each student that their deliberation results are available
+		void (async () => {
+			try {
+				const { queueInApp } = await import(
+					"../notifications/notifications.service"
+				);
+				const results = await repo.findStudentResultsByDeliberationId(input.id);
+				for (const r of results) {
+					const recipientId = r.student?.domainUserId;
+					if (!recipientId) continue;
+					await queueInApp(
+						recipientId,
+						"deliberation.published",
+						{
+							deliberationId: input.id,
+							finalDecision: r.finalDecision,
+							classId: delib.classId,
+							academicYearId: delib.academicYearId,
+						},
+						{ dedupeKey: `${input.id}:${recipientId}` },
+					);
+				}
+			} catch {
+				// swallow — notification failure must not fail the transition
+			}
+		})();
 	}
 
 	return updated;
