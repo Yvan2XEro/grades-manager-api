@@ -14,7 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/utils/trpc";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
