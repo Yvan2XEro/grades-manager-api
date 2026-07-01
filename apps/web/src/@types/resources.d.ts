@@ -4063,6 +4063,37 @@ interface Resources {
 					threshold: "Threshold";
 				};
 			};
+			examParticipation: {
+				academicYear: "Academic year";
+				classCourse: "Class course";
+				classCourseLabel: "Select a class course";
+				exam: "Exam";
+				examPlaceholder: "Select an exam";
+				emptyTitle: "Select an exam";
+				emptyDescription: "Choose a class course and exam to view or generate the participation roster.";
+				generate: "Generate Roster";
+				lock: "Lock Roster";
+				locked: "Roster locked";
+				eligible: "eligible";
+				exempted: "exempted";
+				yes: "Eligible";
+				no: "Ineligible";
+				override: "Override";
+				noRosterTitle: "No roster yet";
+				noRosterDescription: 'Click "Generate Roster" to compute eligibility from attendance data.';
+				columns: {
+					student: "Student";
+					regNumber: "Reg. No.";
+					eligible: "Eligible";
+					reason: "Reason";
+					actions: "Actions";
+				};
+				overrideDialog: {
+					title: "Override eligibility";
+					reason: "Reason (optional)";
+					reasonPlaceholder: "Explain the override...";
+				};
+			};
 		};
 		dean: {
 			workflows: {
@@ -4749,6 +4780,16 @@ interface Resources {
 				attendance: "Attendance";
 				rates: "Rates";
 				overview: "Class Overview";
+			};
+		};
+		examsHub: {
+			title: "Exams";
+			description: "Manage exams, exam types, scheduling and participation rosters";
+			tabs: {
+				exams: "Exams";
+				types: "Exam Types";
+				scheduler: "Scheduler";
+				participation: "Participation";
 			};
 		};
 	};

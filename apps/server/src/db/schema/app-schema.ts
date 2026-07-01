@@ -2184,6 +2184,7 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
 	retakeExams: many(exams, { relationName: "retakeToParent" }),
 	grades: many(grades),
 	auditEvents: many(examAuditEvents),
+	participationRosters: many(examParticipationRosters),
 }));
 
 export const examAuditEventsRelations = relations(
@@ -4038,6 +4039,71 @@ export const attendanceRecordsRelations = relations(
 		}),
 		marker: one(domainUsers, {
 			fields: [attendanceRecords.markedBy],
+			references: [domainUsers.id],
+		}),
+	}),
+);
+
+/** Per-exam participation roster: tracks which students are eligible to sit an exam.
+ *  Generated from attendance data; can be overridden by an admin before locking. */
+export const examParticipationRosters = pgTable(
+	"exam_participation_rosters",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		examId: text("exam_id")
+			.notNull()
+			.references(() => exams.id, { onDelete: "cascade" }),
+		studentId: text("student_id")
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		eligible: boolean("eligible").notNull().default(true),
+		/** Human-readable reason for ineligibility or override explanation. */
+		reason: text("reason"),
+		/** True if an attendance exemption was applied when computing eligibility. */
+		exempted: boolean("exempted").notNull().default(false),
+		/** Set when lockExamRoster is called — prevents further overrides. */
+		lockedAt: timestamp("locked_at", { withTimezone: true }),
+		lockedBy: text("locked_by").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("uq_exam_participation_roster").on(t.examId, t.studentId),
+		index("idx_exam_roster_institution").on(t.institutionId),
+		index("idx_exam_roster_exam").on(t.examId),
+	],
+);
+
+export type ExamParticipationRoster = InferSelectModel<
+	typeof examParticipationRosters
+>;
+
+export const examParticipationRostersRelations = relations(
+	examParticipationRosters,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [examParticipationRosters.institutionId],
+			references: [institutions.id],
+		}),
+		exam: one(exams, {
+			fields: [examParticipationRosters.examId],
+			references: [exams.id],
+		}),
+		student: one(students, {
+			fields: [examParticipationRosters.studentId],
+			references: [students.id],
+		}),
+		lockedByUser: one(domainUsers, {
+			fields: [examParticipationRosters.lockedBy],
 			references: [domainUsers.id],
 		}),
 	}),

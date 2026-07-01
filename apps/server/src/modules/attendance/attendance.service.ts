@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import * as repo from "./attendance.repo";
+import * as rosterRepo from "./exam-roster.repo";
 
 const DAY_NAMES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
@@ -563,4 +564,132 @@ export async function getClassAttendanceOverview(
 			threshold: cc.attendanceThreshold ?? null,
 		};
 	});
+}
+
+// ── Exam Participation Roster ─────────────────────────────────────────────────
+
+export async function generateExamRoster(
+	examId: string,
+	institutionId: string,
+) {
+	const { db } = await import("@/db");
+	const { and, eq } = await import("drizzle-orm");
+	const schema = await import("@/db/schema/app-schema");
+
+	const exam = await db.query.exams.findFirst({
+		where: and(
+			eq(schema.exams.id, examId),
+			eq(schema.exams.institutionId, institutionId),
+		),
+		columns: { id: true, classCourse: true },
+	});
+	if (!exam)
+		throw new TRPCError({ code: "NOT_FOUND", message: "Exam not found" });
+
+	const students = await repo.getRosterForClassCourse(
+		exam.classCourse,
+		institutionId,
+	);
+
+	const rows: rosterRepo.UpsertRosterRow[] = await Promise.all(
+		students.map(async (s) => {
+			const eligibility = await checkAttendanceEligibility(
+				s.studentId,
+				exam.classCourse,
+				institutionId,
+			);
+			if (eligibility === null) {
+				return {
+					examId,
+					studentId: s.studentId,
+					institutionId,
+					eligible: true,
+					reason: null,
+					exempted: false,
+				};
+			}
+			return {
+				examId,
+				studentId: s.studentId,
+				institutionId,
+				eligible: eligibility.eligible,
+				reason: eligibility.eligible
+					? null
+					: `Attendance rate ${eligibility.rate}% below threshold ${eligibility.threshold}%`,
+				exempted: !!eligibility.exempted,
+			};
+		}),
+	);
+
+	await rosterRepo.upsertRosterRows(rows);
+	return { generated: rows.length };
+}
+
+export async function lockExamRoster(
+	examId: string,
+	institutionId: string,
+	actorId: string | null,
+) {
+	const exists = await rosterRepo.rosterExists(examId, institutionId);
+	if (!exists) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message:
+				"Roster has not been generated yet. Run generateExamRoster first.",
+		});
+	}
+	const alreadyLocked = await rosterRepo.isRosterLocked(examId, institutionId);
+	if (alreadyLocked) {
+		throw new TRPCError({
+			code: "CONFLICT",
+			message: "Roster is already locked",
+		});
+	}
+	await rosterRepo.lockRosterRows(examId, institutionId, actorId);
+	return { locked: true };
+}
+
+export async function getExamRoster(examId: string, institutionId: string) {
+	return rosterRepo.getRoster(examId, institutionId);
+}
+
+export async function overrideEligibility(
+	examId: string,
+	studentId: string,
+	institutionId: string,
+	eligible: boolean,
+	reason: string | null,
+) {
+	const updated = await rosterRepo.overrideRow(
+		examId,
+		studentId,
+		institutionId,
+		eligible,
+		reason,
+	);
+	if (!updated) {
+		const isLocked = await rosterRepo.isRosterLocked(examId, institutionId);
+		if (isLocked) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Roster is locked — no overrides allowed",
+			});
+		}
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Student not found in roster",
+		});
+	}
+	return { updated: true };
+}
+
+export async function getExamRosterStatus(
+	examId: string,
+	institutionId: string,
+) {
+	const exists = await rosterRepo.rosterExists(examId, institutionId);
+	const locked = exists
+		? await rosterRepo.isRosterLocked(examId, institutionId)
+		: false;
+	return { exists, locked };
 }

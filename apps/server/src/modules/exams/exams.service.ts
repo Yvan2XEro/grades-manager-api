@@ -475,8 +475,22 @@ export async function setLock(
 	// downstream invariants (retake eligibility, grade editing) consistent.
 	const promoteToApproved = lock && existing.status !== "approved" && isAdmin;
 	const resolvedActor = await resolveDomainUserId(actor?.profileId ?? null);
-	return transaction(async (tx) => {
-		const result = await repo.setLock(
+
+	// Warn (but do not block) if a participation roster exists but is not locked.
+	let rosterWarning: string | null = null;
+	if (lock) {
+		const { getExamRosterStatus } = await import(
+			"../attendance/attendance.service"
+		);
+		const rosterStatus = await getExamRosterStatus(examId, institutionId);
+		if (rosterStatus.exists && !rosterStatus.locked) {
+			rosterWarning =
+				"Participation roster exists but has not been locked. Students may sit the exam regardless.";
+		}
+	}
+
+	const result = await transaction(async (tx) => {
+		const r = await repo.setLock(
 			examId,
 			lock,
 			institutionId,
@@ -496,8 +510,9 @@ export async function setLock(
 				tx,
 			);
 		}
-		return result;
+		return r;
 	});
+	return { ...result, rosterWarning };
 }
 
 const DEFAULT_PASSING_GRADE = 10;

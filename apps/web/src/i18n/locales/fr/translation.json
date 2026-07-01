@@ -3130,6 +3130,37 @@
 				"rate": "Taux",
 				"threshold": "Seuil"
 			}
+		},
+		"examParticipation": {
+			"academicYear": "Année académique",
+			"classCourse": "Cours",
+			"classCourseLabel": "Sélectionner un cours",
+			"exam": "Examen",
+			"examPlaceholder": "Sélectionner un examen",
+			"emptyTitle": "Sélectionner un examen",
+			"emptyDescription": "Choisissez un cours et un examen pour afficher ou générer la liste de participation.",
+			"generate": "Générer la liste",
+			"lock": "Verrouiller la liste",
+			"locked": "Liste verrouillée",
+			"eligible": "éligible(s)",
+			"exempted": "exempté",
+			"yes": "Éligible",
+			"no": "Inéligible",
+			"override": "Modifier",
+			"noRosterTitle": "Aucune liste",
+			"noRosterDescription": "Cliquez sur « Générer la liste » pour calculer l'éligibilité à partir des données de présence.",
+			"columns": {
+				"student": "Étudiant",
+				"regNumber": "N° d'immatriculation",
+				"eligible": "Éligible",
+				"reason": "Raison",
+				"actions": "Actions"
+			},
+			"overrideDialog": {
+				"title": "Modifier l'éligibilité",
+				"reason": "Raison (optionnel)",
+				"reasonPlaceholder": "Expliquer la modification..."
+			}
 		}
 	},
 	"teacher": {
@@ -4767,6 +4798,16 @@
 			"attendance": "Présences",
 			"rates": "Taux",
 			"overview": "Vue par classe"
+		}
+	},
+	"examsHub": {
+		"title": "Examens",
+		"description": "Gérez les examens, types d'examen, la programmation et les listes de participation",
+		"tabs": {
+			"exams": "Examens",
+			"types": "Types d'examen",
+			"scheduler": "Programmation",
+			"participation": "Participation"
 		}
 	}
 }

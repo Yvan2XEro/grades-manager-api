@@ -378,4 +378,56 @@ export const router = createRouter({
 				input.academicYearId,
 			);
 		}),
+
+	/** Generate (or regenerate) the participation roster for an exam from attendance data. */
+	generateExamRoster: adminProcedure
+		.input(z.object({ examId: z.string().uuid() }))
+		.mutation(({ ctx, input }) =>
+			service.generateExamRoster(input.examId, ctx.institution.id),
+		),
+
+	/** Lock the participation roster — no further overrides allowed after this. */
+	lockExamRoster: adminProcedure
+		.input(z.object({ examId: z.string().uuid() }))
+		.mutation(({ ctx, input }) =>
+			service.lockExamRoster(
+				input.examId,
+				ctx.institution.id,
+				ctx.profile?.id ?? null,
+			),
+		),
+
+	/** Retrieve the full participation roster for an exam. */
+	getExamRoster: adminProcedure
+		.input(z.object({ examId: z.string().uuid() }))
+		.query(({ ctx, input }) =>
+			service.getExamRoster(input.examId, ctx.institution.id),
+		),
+
+	/** Override a single student's eligibility in an unlocked roster. */
+	overrideEligibility: adminProcedure
+		.input(
+			z.object({
+				examId: z.string().uuid(),
+				studentId: z.string().uuid(),
+				eligible: z.boolean(),
+				reason: z.string().max(500).nullish(),
+			}),
+		)
+		.mutation(({ ctx, input }) =>
+			service.overrideEligibility(
+				input.examId,
+				input.studentId,
+				ctx.institution.id,
+				input.eligible,
+				input.reason ?? null,
+			),
+		),
+
+	/** Get roster existence + lock status for an exam. */
+	getExamRosterStatus: adminProcedure
+		.input(z.object({ examId: z.string().uuid() }))
+		.query(({ ctx, input }) =>
+			service.getExamRosterStatus(input.examId, ctx.institution.id),
+		),
 });

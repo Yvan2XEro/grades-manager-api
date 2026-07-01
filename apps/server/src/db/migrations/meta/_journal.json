@@ -120,6 +120,20 @@
       "when": 1782674770935,
       "tag": "0016_lively_stone_men",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1782856519570,
+      "tag": "0017_smiling_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1782858929856,
+      "tag": "0018_married_azazel",
+      "breakpoints": true
     }
   ]
 }
