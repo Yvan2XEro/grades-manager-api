@@ -5,6 +5,7 @@ import { defaultExportConfig } from "../../config/export-config";
 import type {
 	Institution,
 	InstitutionMetadata,
+	MentionRange,
 } from "../../db/schema/app-schema";
 import {
 	FINANCIAL_CLEARANCE_TEMPLATE,
@@ -129,11 +130,24 @@ export function loadExportConfig(): ExportConfig {
  * Handles optional hierarchyoptional: Institution → Parent Institution (peut être de type faculty)
  * Une institution n'est pas forcément parrainée par une faculté
  */
+/** Convert MentionRange[] from the grade-scale model to the ExportConfig appreciations format. */
+function mentionRangesToAppreciations(
+	ranges: MentionRange[],
+): ExportConfig["grading"]["appreciations"] {
+	const sorted = [...ranges].sort((a, b) => b.min - a.min);
+	return sorted.map((r, i) => ({
+		label: r.label,
+		min: r.min,
+		max: i === 0 ? 20 : Math.round((sorted[i - 1].min - 0.01) * 100) / 100,
+	}));
+}
+
 export function institutionToExportConfig(
 	institution: Institution & {
 		parentInstitution?: Institution | null;
 	},
 	gradeScalePassThreshold?: number,
+	gradeScaleMentionRanges?: MentionRange[],
 ): ExportConfig {
 	const metadata = institution.metadata as InstitutionMetadata;
 	const exportConfig = metadata?.export_config;
@@ -172,7 +186,10 @@ export function institutionToExportConfig(
 		},
 		grading: {
 			appreciations:
-				exportConfig?.grading?.appreciations ?? defaultGrading.appreciations,
+				gradeScaleMentionRanges && gradeScaleMentionRanges.length > 0
+					? mentionRangesToAppreciations(gradeScaleMentionRanges)
+					: (exportConfig?.grading?.appreciations ??
+						defaultGrading.appreciations),
 			passing_grade:
 				gradeScalePassThreshold ??
 				exportConfig?.grading?.passing_grade ??

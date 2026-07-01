@@ -4,7 +4,9 @@ import puppeteer from "puppeteer";
 import type {
 	ExportTemplate,
 	ExportTemplateType,
+	MentionRange,
 } from "../../db/schema/app-schema";
+import { DEFAULT_MENTION_RANGES } from "../../db/schema/app-schema";
 import * as expoTplRepo from "../export-templates/export-templates.repo";
 import { loadTemplate, logoHelper } from "../exports/template-helper";
 import {
@@ -13,6 +15,7 @@ import {
 	resolveTheme,
 	type ThemeKind,
 } from "../exports/themes";
+import * as gradeScalesService from "../grade-scales/grade-scales.service";
 import * as repo from "./academic-documents.repo";
 import type {
 	DocumentKind,
@@ -22,6 +25,16 @@ import type {
 } from "./academic-documents.zod";
 
 // ---------------- Handlebars helpers (registered once) ----------------
+
+function appreciationHelperFromRanges(ranges: MentionRange[]) {
+	return (score: unknown) => {
+		const n = Number(score);
+		if (!Number.isFinite(n)) return "Absent";
+		const sorted = [...ranges].sort((a, b) => b.min - a.min);
+		return sorted.find((r) => n >= r.min)?.label ?? "Insuffisant";
+	};
+}
+
 let helpersRegistered = false;
 function ensureHelpers() {
 	if (helpersRegistered) return;
@@ -55,16 +68,10 @@ function ensureHelpers() {
 			return n.toFixed(d).replace(".", ",");
 		},
 	);
-	Handlebars.registerHelper("getAppreciation", (score: unknown) => {
-		const n = Number(score);
-		if (!Number.isFinite(n)) return "Absent";
-		if (n >= 18) return "Excellent";
-		if (n >= 16) return "Très Bien";
-		if (n >= 14) return "Bien";
-		if (n >= 12) return "Assez Bien";
-		if (n >= 10) return "Passable";
-		return "Insuffisant";
-	});
+	Handlebars.registerHelper(
+		"getAppreciation",
+		appreciationHelperFromRanges(DEFAULT_MENTION_RANGES),
+	);
 	Handlebars.registerHelper("logo", logoHelper);
 	Handlebars.registerHelper("or", (...args: unknown[]) =>
 		args.slice(0, -1).some((v) => Boolean(v)),
@@ -313,7 +320,16 @@ function diplomaTitleFor(
 	};
 }
 
-function mentionLabel(mention: string | null | undefined): string {
+function mentionLabel(
+	mention: string | null | undefined,
+	mentionRanges?: MentionRange[],
+): string {
+	if (!mention) return "—";
+	if (mentionRanges) {
+		const range = mentionRanges.find((r) => r.key === mention);
+		if (range) return range.label;
+	}
+	// Fallback: built-in French labels for the default mention keys.
 	switch (mention) {
 		case "excellent":
 			return "Excellent";
@@ -326,7 +342,7 @@ function mentionLabel(mention: string | null | undefined): string {
 		case "passable":
 			return "Passable";
 		default:
-			return "—";
+			return mention;
 	}
 }
 
@@ -359,6 +375,8 @@ export async function buildRenderData(args: {
 	period?: "semester" | "annual";
 	/** Optional semester filter when period === "semester". */
 	semesterId?: string;
+	/** Grade scale mention ranges — used to resolve mention labels. */
+	mentionRanges?: MentionRange[];
 }): Promise<DocumentRenderData> {
 	const { kind, studentCtx, deliberation, theme, demoMode } = args;
 	const period = args.period ?? "annual";
@@ -404,7 +422,7 @@ export async function buildRenderData(args: {
 		generalAverage: deliberation?.result.generalAverage ?? null,
 		creditsEarned: deliberation?.result.totalCreditsEarned ?? 0,
 		creditsTotal: deliberation?.result.totalCreditsPossible ?? 0,
-		mention: mentionLabel(deliberation?.result.mention),
+		mention: mentionLabel(deliberation?.result.mention, args.mentionRanges),
 		decision: decisionLabel(
 			deliberation?.result.finalDecision ?? deliberation?.result.autoDecision,
 		),
@@ -517,8 +535,8 @@ export async function buildRenderData(args: {
 		SEMESTRE: cls?.semester?.name ?? "",
 		OPTION: cls?.programOption?.name ?? "",
 		OPTION_EN: cls?.programOption?.name ?? "",
-		MENTION: mentionLabel(deliberation?.result.mention),
-		MENTION_EN: mentionLabel(deliberation?.result.mention),
+		MENTION: mentionLabel(deliberation?.result.mention, args.mentionRanges),
+		MENTION_EN: mentionLabel(deliberation?.result.mention, args.mentionRanges),
 		GRADE: deliberation?.result.mention ?? "",
 		TOTAL_CREDITS: deliberation?.result.totalCreditsEarned ?? 0,
 		MOYENNE: deliberation?.result.generalAverage ?? 0,
@@ -665,8 +683,8 @@ export async function buildRenderData(args: {
 			lastName: student.profile.lastName,
 			birthDate: student.profile.dateOfBirth ?? "—",
 			birthPlace: student.profile.placeOfBirth ?? "—",
-			mentionFr: mentionLabel(deliberation?.result.mention),
-			mentionEn: mentionLabel(deliberation?.result.mention),
+			mentionFr: mentionLabel(deliberation?.result.mention, args.mentionRanges),
+			mentionEn: mentionLabel(deliberation?.result.mention, args.mentionRanges),
 			option: cls?.programOption?.name ?? "",
 			optionEn: cls?.programOption?.name ?? "",
 			// DIPLOMATION-shape uppercase keys (used by releve_template.html
@@ -759,9 +777,15 @@ export async function renderPdf(html: string, theme: Record<string, unknown>) {
 export function compileAndRender(
 	templateBody: string,
 	data: DocumentRenderData,
+	mentionRanges?: MentionRange[],
 ) {
 	ensureHelpers();
 	const template = Handlebars.compile(templateBody, { noEscape: false });
+	if (mentionRanges && mentionRanges.length > 0) {
+		return template(data, {
+			helpers: { getAppreciation: appreciationHelperFromRanges(mentionRanges) },
+		});
+	}
 	return template(data);
 }
 
@@ -798,6 +822,11 @@ export async function generateDocument(
 		},
 	);
 
+	const gradeScale = await gradeScalesService.getForInstitution(
+		institutionId,
+		studentCtx.student.classRef?.program?.id,
+	);
+
 	const data = await buildRenderData({
 		kind: input.kind,
 		studentCtx,
@@ -806,9 +835,14 @@ export async function generateDocument(
 		demoMode: input.demoMode,
 		period: input.period,
 		semesterId: input.semesterId,
+		mentionRanges: gradeScale.mentionRanges,
 	});
 
-	const html = compileAndRender(resolved.templateBody, data);
+	const html = compileAndRender(
+		resolved.templateBody,
+		data,
+		gradeScale.mentionRanges,
+	);
 
 	if (input.format === "html") {
 		return { content: html, mimeType: "text/html" as const };
@@ -1042,9 +1076,18 @@ export async function generateStudentList(
 		summary,
 	};
 
+	const listGradeScale = await gradeScalesService.getForInstitution(
+		institutionId,
+		input.programId ?? students[0]?.classRef?.program?.id,
+	);
+
 	let html: string;
 	try {
-		html = compileAndRender(resolved.templateBody, data);
+		html = compileAndRender(
+			resolved.templateBody,
+			data,
+			listGradeScale.mentionRanges,
+		);
 	} catch (err) {
 		console.error(
 			"[generateStudentList] Handlebars compile/render failed",
@@ -1111,6 +1154,9 @@ export async function previewTemplateBody(
 	institutionId: string,
 	input: PreviewDocumentBodyInput,
 ) {
+	const previewGradeScale =
+		await gradeScalesService.getForInstitution(institutionId);
+
 	const data = input.studentId
 		? await (async () => {
 				const ctx = await repo.loadStudentContext(
@@ -1132,6 +1178,7 @@ export async function previewTemplateBody(
 						unknown
 					>,
 					demoMode: input.demoMode,
+					mentionRanges: previewGradeScale.mentionRanges,
 				});
 			})()
 		: await (async () => {
@@ -1232,7 +1279,11 @@ export async function previewTemplateBody(
 	>;
 	data.theme = mergeTheme(baseTheme, input.themeOverrides ?? {});
 
-	return compileAndRender(input.templateBody, data);
+	return compileAndRender(
+		input.templateBody,
+		data,
+		previewGradeScale.mentionRanges,
+	);
 }
 
 function buildSampleRenderData(

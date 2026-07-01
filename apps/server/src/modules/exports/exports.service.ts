@@ -239,6 +239,7 @@ export class ExportsService {
 			this.config = institutionToExportConfig(
 				institution,
 				gradeScale.passThreshold,
+				gradeScale.mentionRanges,
 			);
 			return this.config;
 		} catch (error) {
