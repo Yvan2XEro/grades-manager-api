@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { hashPassword } from "better-auth/crypto";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { parse as parseYaml } from "yaml";
 import { db as appDb } from "../db";
 import type {
@@ -10,6 +10,7 @@ import type {
 	EnrollmentStatus,
 	EnrollmentWindowStatus,
 	Gender,
+	MentionRange,
 	StudentCourseEnrollmentStatus,
 	TeachingUnitSemester,
 } from "../db/schema/app-schema";
@@ -153,6 +154,14 @@ export type FoundationSeed = {
 	/** Default center code applied to programs that omit `centerCode`. Lives on
 	 * the foundation seed so it can be inherited by every academic dataset. */
 	defaultProgramCenterCode?: string;
+	/** Institution-level grade scale. When present, upserts the default grade
+	 * scale for the active institution during seeding. Omit to keep whatever
+	 * scale is already in the database (or rely on the service-layer default). */
+	gradeScale?: {
+		passThreshold: number;
+		compensationThreshold: number;
+		mentionRanges: MentionRange[];
+	};
 };
 
 type ProgramSeed = {
@@ -1202,6 +1211,32 @@ async function seedFoundation(
 	if (data.registrationNumberFormats?.length) {
 		logger.log(
 			`[seed] • Registration formats: ${data.registrationNumberFormats.length}`,
+		);
+	}
+
+	if (data.gradeScale) {
+		const gs = data.gradeScale;
+		await db
+			.insert(schema.gradeScales)
+			.values({
+				institutionId,
+				programId: null,
+				passThreshold: gs.passThreshold.toString(),
+				compensationThreshold: gs.compensationThreshold.toString(),
+				mentionRanges: gs.mentionRanges,
+			})
+			.onConflictDoUpdate({
+				target: [schema.gradeScales.institutionId],
+				targetWhere: isNull(schema.gradeScales.programId),
+				set: {
+					passThreshold: gs.passThreshold.toString(),
+					compensationThreshold: gs.compensationThreshold.toString(),
+					mentionRanges: gs.mentionRanges,
+					updatedAt: new Date(),
+				},
+			});
+		logger.log(
+			`[seed] • Grade scale: passThreshold=${gs.passThreshold}, compensationThreshold=${gs.compensationThreshold}, ${gs.mentionRanges.length} mention ranges`,
 		);
 	}
 

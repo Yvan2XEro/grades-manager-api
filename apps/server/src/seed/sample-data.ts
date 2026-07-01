@@ -282,6 +282,47 @@ const sampleFoundation: FoundationSeed = {
 			organizationSlug: "inses-institution",
 		},
 	],
+	gradeScale: {
+		passThreshold: 10,
+		compensationThreshold: 8,
+		mentionRanges: [
+			{
+				key: "excellent",
+				label: "Excellent",
+				labelEn: "Excellent",
+				gradeLetter: "A",
+				min: 18,
+			},
+			{
+				key: "tres_bien",
+				label: "Très Bien",
+				labelEn: "Very Good",
+				gradeLetter: "B",
+				min: 16,
+			},
+			{
+				key: "bien",
+				label: "Bien",
+				labelEn: "Good",
+				gradeLetter: "C",
+				min: 14,
+			},
+			{
+				key: "assez_bien",
+				label: "Assez Bien",
+				labelEn: "Fair",
+				gradeLetter: "D",
+				min: 12,
+			},
+			{
+				key: "passable",
+				label: "Passable",
+				labelEn: "Satisfactory",
+				gradeLetter: "E",
+				min: 10,
+			},
+		],
+	},
 };
 
 const sampleAcademics: AcademicsSeed = {
