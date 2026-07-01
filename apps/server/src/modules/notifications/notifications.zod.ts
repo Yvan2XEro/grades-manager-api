@@ -10,7 +10,7 @@ export const queueSchema = z.object({
 export const idSchema = z.object({ id: z.string().uuid() });
 
 export const listSchema = z.object({
-	status: z.enum(["pending", "sent", "failed"]).optional(),
+	status: z.enum(["pending", "sent", "failed", "retrying"]).optional(),
 	cursor: z.string().optional(),
 	limit: z.number().min(1).max(100).optional(),
 });

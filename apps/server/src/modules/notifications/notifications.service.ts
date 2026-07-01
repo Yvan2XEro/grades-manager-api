@@ -1,6 +1,30 @@
 import { TRPCError } from "@trpc/server";
 import type * as schema from "@/db/schema/app-schema";
+import { defaultEmailSend, type EmailSendFn } from "@/lib/email";
 import * as repo from "./notifications.repo";
+
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [5 * 60 * 1000, 30 * 60 * 1000] as const;
+
+function calcNextRetryAt(attempt: number): Date | undefined {
+	const delay = RETRY_DELAYS_MS[attempt];
+	if (delay === undefined) return undefined;
+	return new Date(Date.now() + delay);
+}
+
+function buildEmailHtml(
+	type: string,
+	payload: Record<string, unknown>,
+): string {
+	const rows = Object.entries(payload)
+		.filter(([k]) => !k.startsWith("_"))
+		.map(
+			([k, v]) =>
+				`<tr><td style="padding:4px 8px;border:1px solid #ddd">${k}</td><td style="padding:4px 8px;border:1px solid #ddd">${String(v ?? "")}</td></tr>`,
+		)
+		.join("");
+	return `<h3 style="font-family:sans-serif">Notification: ${type}</h3><table style="border-collapse:collapse;font-family:sans-serif;font-size:14px">${rows}</table>`;
+}
 
 export async function queueNotification(
 	data: Omit<schema.NewNotification, "status" | "createdAt">,
@@ -8,15 +32,50 @@ export async function queueNotification(
 	return repo.createNotification({ ...data, status: "pending" });
 }
 
-export async function sendPending(limit = 25) {
-	const pending = await repo.findPending(limit);
-	const delivered = [] as schema.Notification[];
-	for (const notification of pending) {
-		const updated = await repo.updateStatus(notification.id, "sent", {
-			sentAt: new Date(),
-		});
-		if (updated) delivered.push(updated);
+export async function sendPending(
+	limit = 25,
+	emailSend: EmailSendFn = defaultEmailSend,
+) {
+	const ready = await repo.findReadyToSend(limit);
+	const delivered: schema.Notification[] = [];
+
+	for (const notification of ready) {
+		if (notification.channel === "in-app") {
+			// In-app notifications are marked sent at creation; skip here
+			continue;
+		}
+
+		const recipientEmail = notification.recipient?.primaryEmail;
+		if (!recipientEmail) {
+			// No recipient email — mark sent so it's not retried indefinitely
+			const updated = await repo.updateStatus(notification.id, "sent");
+			if (updated) delivered.push(updated);
+			continue;
+		}
+
+		try {
+			const subject = `Notification: ${notification.type}`;
+			const html = buildEmailHtml(
+				notification.type,
+				(notification.payload as Record<string, unknown>) ?? {},
+			);
+			await emailSend(recipientEmail, subject, html);
+			const updated = await repo.updateStatus(notification.id, "sent");
+			if (updated) delivered.push(updated);
+		} catch (err) {
+			const attempt = (notification.attemptCount ?? 0) + 1;
+			const lastError = err instanceof Error ? err.message : String(err);
+			const nextRetryAt = calcNextRetryAt(attempt);
+			const nextStatus: schema.NotificationStatus =
+				attempt >= MAX_ATTEMPTS ? "failed" : "retrying";
+			await repo.updateStatus(notification.id, nextStatus, {
+				attemptCount: attempt,
+				lastError,
+				nextRetryAt: nextRetryAt ?? null,
+			});
+		}
 	}
+
 	return delivered;
 }
 
@@ -29,7 +88,7 @@ export async function list(
 }
 
 export async function acknowledge(id: string) {
-	const updated = await repo.updateStatus(id, "sent", { sentAt: new Date() });
+	const updated = await repo.updateStatus(id, "sent");
 	if (!updated) {
 		throw new TRPCError({ code: "NOT_FOUND" });
 	}

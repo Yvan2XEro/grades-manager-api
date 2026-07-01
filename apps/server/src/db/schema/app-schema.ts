@@ -79,7 +79,12 @@ export type StudentCourseEnrollmentStatus =
 export const notificationChannels = ["email", "webhook", "in-app"] as const;
 export type NotificationChannel = (typeof notificationChannels)[number];
 
-export const notificationStatuses = ["pending", "sent", "failed"] as const;
+export const notificationStatuses = [
+	"pending",
+	"sent",
+	"failed",
+	"retrying",
+] as const;
 export type NotificationStatus = (typeof notificationStatuses)[number];
 
 export const retakeOverrideDecisions = [
@@ -1347,6 +1352,9 @@ export const notifications = pgTable(
 			.default("pending"),
 		sentAt: timestamp("sent_at", { withTimezone: true }),
 		readAt: timestamp("read_at", { withTimezone: true }),
+		attemptCount: integer("attempt_count").notNull().default(0),
+		lastError: text("last_error"),
+		nextRetryAt: timestamp("next_retry_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
