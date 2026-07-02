@@ -321,22 +321,24 @@ export async function getStudentDecision(
 		},
 		orderBy: (t, { desc }) => [desc(t.createdAt)],
 	});
-	return results.map((r) => ({
-		id: r.id,
-		deliberationId: r.deliberationId,
-		academicYear: r.deliberation.academicYear?.name ?? null,
-		className: r.deliberation.classRef?.name ?? null,
-		generalAverage: r.generalAverage,
-		totalCreditsEarned: r.totalCreditsEarned,
-		totalCreditsPossible: r.totalCreditsPossible,
-		finalDecision: r.finalDecision,
-		autoDecision: r.autoDecision,
-		isOverridden: r.isOverridden,
-		mention: r.mention,
-		rank: r.rank,
-		ueResults: r.ueResults,
-		closedAt: r.deliberation.closedAt ?? null,
-	}));
+	return results
+		.filter((r) => r.deliberation.closedAt !== null)
+		.map((r) => ({
+			id: r.id,
+			deliberationId: r.deliberationId,
+			academicYear: r.deliberation.academicYear?.name ?? null,
+			className: r.deliberation.classRef?.name ?? null,
+			generalAverage: r.generalAverage,
+			totalCreditsEarned: r.totalCreditsEarned,
+			totalCreditsPossible: r.totalCreditsPossible,
+			finalDecision: r.finalDecision,
+			autoDecision: r.autoDecision,
+			isOverridden: r.isOverridden,
+			mention: r.mention,
+			rank: r.rank,
+			ueResults: r.ueResults,
+			closedAt: r.deliberation.closedAt,
+		}));
 }
 
 export async function getCohortAnalytics(
