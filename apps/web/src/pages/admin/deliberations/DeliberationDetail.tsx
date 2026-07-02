@@ -407,9 +407,7 @@ export default function DeliberationDetail() {
 							<Button
 								onClick={() =>
 									confirm({
-										title: t("admin.deliberations.confirm.closeTitle", {
-											defaultValue: "Close deliberation?",
-										}),
+										title: t("admin.deliberations.confirm.closeTitle"),
 										message: t("admin.deliberations.confirm.close"),
 										confirmText: t("admin.deliberations.actions.close"),
 										onConfirm: () => transitionMutation.mutate("close"),
@@ -424,6 +422,20 @@ export default function DeliberationDetail() {
 					)}
 					{isClosed && (
 						<>
+							<Button
+								variant="outline"
+								onClick={() =>
+									confirm({
+										title: t("admin.deliberations.confirm.reopenTitle"),
+										message: t("admin.deliberations.confirm.reopen"),
+										confirmText: t("admin.deliberations.actions.reopen"),
+										onConfirm: () => transitionMutation.mutate("reopen"),
+									})
+								}
+								disabled={transitionMutation.isPending}
+							>
+								{t("admin.deliberations.actions.reopen")}
+							</Button>
 							<Button variant="outline" onClick={() => setPromoteOpen(true)}>
 								<UserCheck className="mr-2 h-4 w-4" />
 								{t("admin.deliberations.promote.button")}
@@ -455,9 +467,7 @@ export default function DeliberationDetail() {
 							<Button
 								onClick={() =>
 									confirm({
-										title: t("admin.deliberations.confirm.signTitle", {
-											defaultValue: "Sign deliberation?",
-										}),
+										title: t("admin.deliberations.confirm.signTitle"),
 										message: t("admin.deliberations.confirm.sign"),
 										confirmText: t("admin.deliberations.actions.sign"),
 										onConfirm: () => transitionMutation.mutate("sign"),
@@ -731,22 +741,34 @@ export default function DeliberationDetail() {
 					<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
 				) : (
 					<div className="max-h-64 space-y-1 overflow-y-auto text-sm">
-						{(logsQuery.data?.items ?? []).map((log) => (
-							<div
-								key={log.id}
-								className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted/40"
-							>
-								<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-								<span className="text-muted-foreground">
-									{new Date(log.createdAt).toLocaleString()}
-								</span>
-								<span className="font-medium">
-									{t(`admin.deliberations.logs.${log.action}`, {
-										defaultValue: log.action,
-									})}
-								</span>
-							</div>
-						))}
+						{(logsQuery.data?.items ?? []).map((log) => {
+							const actor = log.actor
+								? `${log.actor.firstName} ${log.actor.lastName}`.trim()
+								: null;
+							return (
+								<div
+									key={log.id}
+									className="flex items-start gap-3 rounded-lg px-2 py-1.5 hover:bg-muted/40"
+								>
+									<CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+									<div className="min-w-0 flex-1">
+										<span className="font-medium">
+											{t(`admin.deliberations.logs.${log.action}`, {
+												defaultValue: log.action,
+											})}
+										</span>
+										{actor && (
+											<span className="ml-1 text-muted-foreground">
+												{t("admin.deliberations.logs.by", { name: actor })}
+											</span>
+										)}
+									</div>
+									<span className="shrink-0 text-muted-foreground text-xs">
+										{new Date(log.createdAt).toLocaleString()}
+									</span>
+								</div>
+							);
+						})}
 						{(logsQuery.data?.items ?? []).length === 0 && (
 							<p className="text-muted-foreground">—</p>
 						)}

@@ -2702,13 +2702,14 @@
 			},
 			"logs": {
 				"title": "Journal d'activité",
+				"by": "par {{name}}",
 				"created": "Délibération créée",
 				"opened": "Délibération ouverte",
 				"computed": "Résultats calculés",
 				"override_decision": "Décision modifiée",
-				"closed": "Délibération clôturée",
+				"closed": "Résultats publiés aux étudiants",
 				"signed": "Délibération signée",
-				"reopened": "Délibération rouverte",
+				"reopened": "Délibération rouverte (résultats masqués)",
 				"exported": "Diplomation exportée",
 				"promoted": "Étudiants promus"
 			},
@@ -2757,11 +2758,13 @@
 			},
 			"confirm": {
 				"delete": "Êtes-vous sûr de vouloir supprimer cette délibération ?",
-				"close": "Clôturer cette délibération ? Les résultats ne seront plus modifiables.",
+				"close": "Clôturer et publier les résultats aux étudiants ? Ils verront immédiatement leur décision de délibération. Les notes seront verrouillées.",
 				"sign": "Signer cette délibération ? Cela la valide officiellement.",
-				"closeTitle": "Clôturer la délibération ?",
+				"reopen": "Réouvrir cette délibération ? Les résultats seront masqués aux étudiants et les notes redeviendront modifiables.",
+				"closeTitle": "Clôturer et publier aux étudiants ?",
 				"signTitle": "Signer la délibération ?",
-				"deleteTitle": "Supprimer la délibération ?"
+				"deleteTitle": "Supprimer la délibération ?",
+				"reopenTitle": "Réouvrir la délibération ?"
 			},
 			"rules": {
 				"title": "Règles de délibération",
