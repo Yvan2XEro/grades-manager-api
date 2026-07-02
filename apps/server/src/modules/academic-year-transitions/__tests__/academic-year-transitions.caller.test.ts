@@ -343,6 +343,11 @@ describe("academicYearTransitions", () => {
 		expect(blocked.items[0]?.student.id).toBe(withoutDeliberation.id);
 		expect(blocked.items[0]?.blockerCode).toBe("missing_signed_deliberation");
 
+		// Cancel the first draft before creating another for the same year pair
+		await caller(fixture.admin).academicYearTransitions.cancel({
+			id: missingDeliberationDraft.id,
+		});
+
 		const decided = await createStudent({ class: fixture.sourceClass.id });
 		const undecided = await createStudent({ class: fixture.sourceClass.id });
 		await createSignedDeliberation(
@@ -748,5 +753,135 @@ describe("academicYearTransitions", () => {
 			),
 		});
 		expect(targetEnrollment).toBeUndefined();
+	});
+
+	it("getTransitionAudit returns created event immediately after draft creation", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const student = await createStudent({ class: fixture.sourceClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: student.id, decision: "admitted" }],
+		);
+
+		const draft = await caller(
+			fixture.admin,
+		).academicYearTransitions.createDraft({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review",
+		});
+
+		const audit = await caller(
+			fixture.admin,
+		).academicYearTransitions.getTransitionAudit({ id: draft.id });
+
+		expect(audit.events).toHaveLength(1);
+		expect(audit.events[0]).toMatchObject({
+			action: "created",
+			actorName: expect.any(String),
+		});
+	});
+
+	it("getTransitionAudit includes override events with student name and reason", async () => {
+		const fixture = await setupTwoLevelTransition();
+
+		// Student with no deliberation → will be blocked
+		await db
+			.delete(schema.classes)
+			.where(eq(schema.classes.id, fixture.repeatClass.id));
+		const student = await createStudent({ class: fixture.sourceClass.id });
+		// No deliberation → student is blocked
+
+		const draft = await caller(
+			fixture.admin,
+		).academicYearTransitions.createDraft({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review",
+		});
+
+		const items = await caller(fixture.admin).academicYearTransitions.listItems(
+			{
+				transitionId: draft.id,
+				limit: 10,
+			},
+		);
+		const blockedItem = items.items.find((i) => i.studentId === student.id);
+		expect(blockedItem).toBeDefined();
+
+		const newRepeatClass = await createClass({
+			program: fixture.program.id,
+			academicYear: fixture.targetYear.id,
+			cycleLevelId: fixture.l1.id,
+			programOptionId: fixture.sourceClass.programOptionId,
+		});
+
+		await caller(fixture.admin).academicYearTransitions.resolveItem({
+			transitionId: draft.id,
+			itemId: blockedItem!.id,
+			outcome: "repeat",
+			targetClassId: newRepeatClass.id,
+			reason: "Approved by academic committee",
+		});
+
+		const audit = await caller(
+			fixture.admin,
+		).academicYearTransitions.getTransitionAudit({ id: draft.id });
+
+		const overrideEvent = audit.events.find((e) => e.action === "override");
+		expect(overrideEvent).toBeDefined();
+		expect(overrideEvent?.studentName).toBeTruthy();
+		expect(overrideEvent?.overrideReason).toBe(
+			"Approved by academic committee",
+		);
+		expect(overrideEvent?.actorName).toBeTruthy();
+		expect(overrideEvent?.finalOutcome).toBe("repeat");
+	});
+
+	it("getTransitionAudit records submitted and approved events in order", async () => {
+		const fixture = await setupTwoLevelTransition();
+		const student = await createStudent({ class: fixture.sourceClass.id });
+		await createSignedDeliberation(
+			fixture.sourceClass.id,
+			fixture.sourceYear.id,
+			fixture.admin.profile!.id,
+			[{ studentId: student.id, decision: "admitted" }],
+		);
+
+		const draft = await caller(
+			fixture.admin,
+		).academicYearTransitions.createDraft({
+			sourceAcademicYearId: fixture.sourceYear.id,
+			targetAcademicYearId: fixture.targetYear.id,
+			classIds: [fixture.sourceClass.id],
+			deferredOutcome: "review",
+		});
+
+		await caller(fixture.admin).academicYearTransitions.submit({
+			id: draft.id,
+		});
+		await caller(fixture.admin).academicYearTransitions.approve({
+			id: draft.id,
+		});
+
+		const audit = await caller(
+			fixture.admin,
+		).academicYearTransitions.getTransitionAudit({ id: draft.id });
+
+		const actions = audit.events.map((e) => e.action);
+		expect(actions).toContain("created");
+		expect(actions).toContain("submitted");
+		expect(actions).toContain("approved");
+		// Chronological order
+		expect(actions.indexOf("created")).toBeLessThan(
+			actions.indexOf("submitted"),
+		);
+		expect(actions.indexOf("submitted")).toBeLessThan(
+			actions.indexOf("approved"),
+		);
 	});
 });

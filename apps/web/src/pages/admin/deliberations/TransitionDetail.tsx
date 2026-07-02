@@ -7,6 +7,7 @@ import {
 	ExternalLink,
 	Filter,
 	GraduationCap,
+	Pencil,
 	Play,
 	RefreshCcw,
 	Search,
@@ -1053,6 +1054,7 @@ export default function TransitionDetail() {
 											"cancelled",
 											"stale",
 										].includes(event.action);
+										const isOverride = event.action === "override";
 										return (
 											<div
 												key={`${event.action}-${idx}`}
@@ -1068,11 +1070,14 @@ export default function TransitionDetail() {
 																"border-amber-500 bg-amber-50 dark:bg-amber-950/50",
 															["cancelled", "stale"].includes(event.action) &&
 																"border-destructive/50 bg-destructive/5",
+															isOverride &&
+																"border-violet-400/60 bg-violet-50 dark:bg-violet-950/30",
 															![
 																"completed",
 																"completed_with_errors",
 																"cancelled",
 																"stale",
+																"override",
 															].includes(event.action) &&
 																"border-muted-foreground/40 bg-muted",
 														)}
@@ -1085,6 +1090,8 @@ export default function TransitionDetail() {
 																event.action,
 															) ? (
 															<XCircle className="size-4 text-destructive" />
+														) : isOverride ? (
+															<Pencil className="size-3.5 text-violet-600" />
 														) : (
 															<div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
 														)}
@@ -1098,6 +1105,16 @@ export default function TransitionDetail() {
 														{t(
 															`admin.academicYearTransitions.audit.action.${event.action}`,
 														)}
+														{isOverride && event.studentName && (
+															<span className="ml-1.5 font-normal text-muted-foreground">
+																— {event.studentName}
+																{event.studentRegistrationNumber && (
+																	<span className="ml-1 text-xs">
+																		({event.studentRegistrationNumber})
+																	</span>
+																)}
+															</span>
+														)}
 													</p>
 													<p className="text-muted-foreground text-xs">
 														{event.actorName ? `${event.actorName} · ` : ""}
@@ -1108,6 +1125,11 @@ export default function TransitionDetail() {
 																}).format(new Date(event.at))
 															: "—"}
 													</p>
+													{isOverride && event.overrideReason && (
+														<p className="mt-1 text-muted-foreground text-xs italic">
+															"{event.overrideReason}"
+														</p>
+													)}
 													{isTerminal &&
 														auditQuery.data.summary &&
 														Object.keys(auditQuery.data.summary).length > 0 && (

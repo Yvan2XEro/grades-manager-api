@@ -309,11 +309,20 @@ export async function studentSelfUnenroll(
 }
 
 export async function getStudentDecision(
-	studentId: string,
+	domainUserId: string,
 	institutionId: string,
 ) {
+	// domainUserId (ctx.profile.id) → student.id (FK in deliberationStudentResults)
+	const student = await db.query.students.findFirst({
+		where: and(
+			eq(schema.students.domainUserId, domainUserId),
+			eq(schema.students.institutionId, institutionId),
+		),
+	});
+	if (!student) return [];
+
 	const results = await db.query.deliberationStudentResults.findMany({
-		where: eq(schema.deliberationStudentResults.studentId, studentId),
+		where: eq(schema.deliberationStudentResults.studentId, student.id),
 		with: {
 			deliberation: {
 				with: { classRef: true, academicYear: true },

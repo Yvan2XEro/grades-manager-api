@@ -982,11 +982,41 @@ export async function getTransitionAudit(id: string, institutionId: string) {
 	const transition = await findTransition(id, institutionId);
 	if (!transition) notFound("Academic year transition not found");
 
+	// Fetch overridden items with student names for per-student override events
+	const overriddenItems = await db
+		.select({
+			id: schema.academicYearTransitionItems.id,
+			overriddenBy: schema.academicYearTransitionItems.overriddenBy,
+			overriddenAt: schema.academicYearTransitionItems.overriddenAt,
+			overrideReason: schema.academicYearTransitionItems.overrideReason,
+			finalOutcome: schema.academicYearTransitionItems.finalOutcome,
+			studentRegistrationNumber: schema.students.registrationNumber,
+			studentFirstName: schema.domainUsers.firstName,
+			studentLastName: schema.domainUsers.lastName,
+		})
+		.from(schema.academicYearTransitionItems)
+		.innerJoin(
+			schema.students,
+			eq(schema.students.id, schema.academicYearTransitionItems.studentId),
+		)
+		.innerJoin(
+			schema.domainUsers,
+			eq(schema.domainUsers.id, schema.students.domainUserId),
+		)
+		.where(
+			and(
+				eq(schema.academicYearTransitionItems.transitionId, id),
+				eq(schema.academicYearTransitionItems.isOverridden, true),
+			),
+		)
+		.orderBy(asc(schema.academicYearTransitionItems.overriddenAt));
+
 	const actorIds = [
 		transition.generatedBy,
 		transition.submittedBy,
 		transition.approvedBy,
 		transition.executedBy,
+		...overriddenItems.map((i) => i.overriddenBy),
 	].filter((actorId): actorId is string => Boolean(actorId));
 
 	const uniqueIds = [...new Set(actorIds)];
@@ -1014,13 +1044,18 @@ export async function getTransitionAudit(id: string, institutionId: string) {
 		| "completed"
 		| "completed_with_errors"
 		| "cancelled"
-		| "stale";
+		| "stale"
+		| "override";
 
 	const events: Array<{
 		action: AuditAction;
 		actorId: string | null;
 		actorName: string | null;
 		at: Date | null;
+		studentName?: string | null;
+		studentRegistrationNumber?: string | null;
+		overrideReason?: string | null;
+		finalOutcome?: string | null;
 	}> = [];
 
 	events.push({
@@ -1080,6 +1115,28 @@ export async function getTransitionAudit(id: string, institutionId: string) {
 			at: transition.updatedAt,
 		});
 	}
+
+	// Per-student override events, interleaved by timestamp
+	for (const item of overriddenItems) {
+		events.push({
+			action: "override",
+			actorId: item.overriddenBy ?? null,
+			actorName: actorName(item.overriddenBy),
+			at: item.overriddenAt ?? null,
+			studentName:
+				`${item.studentLastName} ${item.studentFirstName}`.trim() || null,
+			studentRegistrationNumber: item.studentRegistrationNumber ?? null,
+			overrideReason: item.overrideReason ?? null,
+			finalOutcome: item.finalOutcome ?? null,
+		});
+	}
+
+	// Sort all events chronologically
+	events.sort((a, b) => {
+		const ta = a.at ? new Date(a.at).getTime() : 0;
+		const tb = b.at ? new Date(b.at).getTime() : 0;
+		return ta - tb;
+	});
 
 	return {
 		events,
