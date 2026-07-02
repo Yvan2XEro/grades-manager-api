@@ -4334,6 +4334,16 @@
 				"excluded": "Exclu",
 				"pending": "En cours"
 			}
+		},
+		"enrollment": {
+			"title": "Inscription",
+			"program": "Filière",
+			"class": "Classe",
+			"year": "Année académique",
+			"level": "Niveau",
+			"windowOpen": "La fenêtre d'inscription aux cours est ouverte",
+			"windowOpenHint": "Vous pouvez vous inscrire aux cours pendant la fenêtre d'inscription en cours.",
+			"enroll": "S'inscrire aux cours"
 		}
 	},
 	"retakes": {
@@ -4537,7 +4547,8 @@
 			"pending": "Décision en attente.",
 			"unknown": "Décision inconnue.",
 			"overridden": "Surclassé"
-		}
+		},
+		"publishedAt": "Publié le {{date}}"
 	},
 	"exam": {
 		"status": {

@@ -335,6 +335,7 @@ export async function getStudentDecision(
 		mention: r.mention,
 		rank: r.rank,
 		ueResults: r.ueResults,
+		closedAt: r.deliberation.closedAt ?? null,
 	}));
 }
 

@@ -7,6 +7,7 @@ import {
 	Bell,
 	BookOpen,
 	Calendar,
+	CalendarCheck,
 	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
@@ -282,6 +283,7 @@ type DecisionResult = {
 	mention: string | null;
 	rank: number | null;
 	ueResults: UeResult[];
+	closedAt?: string | Date | null;
 };
 
 function DeliberationDecisionCard({
@@ -362,6 +364,13 @@ function DeliberationDecisionCard({
 								{t("student.performance.rank", { rank: decision.rank })}
 							</span>
 						)}
+						{decision.closedAt && (
+							<span>
+								{t("deliberation.publishedAt", {
+									date: format(new Date(decision.closedAt), "dd/MM/yyyy"),
+								})}
+							</span>
+						)}
 					</div>
 				</div>
 				<Award className={`h-5 w-5 shrink-0 ${iconCls}`} />
@@ -425,6 +434,90 @@ function DeliberationDecisionCard({
 					)}
 				</>
 			)}
+		</div>
+	);
+}
+
+// ─── Enrollment Status Card ───────────────────────────────────────────────────
+
+type ClassInfo = {
+	name: string;
+	programInfo?: { name: string } | null;
+	academicYearInfo?: { name: string } | null;
+	cycleLevel?: { code: string } | null;
+};
+
+function EnrollmentStatusCard({ classInfo }: { classInfo: ClassInfo }) {
+	const { t } = useTranslation();
+	return (
+		<div className="rounded-xl border bg-card p-4 shadow-sm">
+			<div className="mb-3 flex items-center gap-2">
+				<GraduationCap className="h-4 w-4 text-primary" />
+				<span className="font-semibold text-foreground text-sm">
+					{t("student.enrollment.title")}
+				</span>
+			</div>
+			<dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-xs">
+				{classInfo.programInfo?.name && (
+					<>
+						<dt className="text-muted-foreground">
+							{t("student.enrollment.program")}
+						</dt>
+						<dd className="truncate font-medium text-foreground">
+							{classInfo.programInfo.name}
+						</dd>
+					</>
+				)}
+				<dt className="text-muted-foreground">
+					{t("student.enrollment.class")}
+				</dt>
+				<dd className="font-medium text-foreground">{classInfo.name}</dd>
+				{classInfo.academicYearInfo?.name && (
+					<>
+						<dt className="text-muted-foreground">
+							{t("student.enrollment.year")}
+						</dt>
+						<dd className="font-medium text-foreground">
+							{classInfo.academicYearInfo.name}
+						</dd>
+					</>
+				)}
+				{classInfo.cycleLevel?.code && (
+					<>
+						<dt className="text-muted-foreground">
+							{t("student.enrollment.level")}
+						</dt>
+						<dd className="font-medium text-foreground">
+							{classInfo.cycleLevel.code}
+						</dd>
+					</>
+				)}
+			</dl>
+		</div>
+	);
+}
+
+// ─── Enrollment Window Banner ─────────────────────────────────────────────────
+
+function EnrollmentWindowBanner() {
+	const { t } = useTranslation();
+	return (
+		<div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/30">
+			<CalendarCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+			<div className="min-w-0 flex-1">
+				<p className="font-semibold text-emerald-800 text-sm dark:text-emerald-300">
+					{t("student.enrollment.windowOpen")}
+				</p>
+				<p className="mt-0.5 text-emerald-700 text-xs dark:text-emerald-400">
+					{t("student.enrollment.windowOpenHint")}
+				</p>
+			</div>
+			<Button variant="outline" size="sm" className="shrink-0" asChild>
+				<Link to="/student/enrollments">
+					{t("student.enrollment.enroll")}
+					<ChevronRight className="ml-1 h-3 w-3" />
+				</Link>
+			</Button>
 		</div>
 	);
 }
@@ -790,6 +883,13 @@ const PerformanceDashboard = () => {
 		(n) => !n.readAt,
 	) as NotifItem[];
 
+	const enrollmentWindowsQuery = useQuery(
+		trpc.workflows.enrollmentWindows.queryOptions(),
+	);
+	const openWindow = (enrollmentWindowsQuery.data ?? []).find(
+		(w) => w.classId === classId && w.status === "open",
+	);
+
 	const markReadMut = useMutation({
 		mutationFn: (id: string) =>
 			trpcClient.notifications.markRead.mutate({ id }),
@@ -880,6 +980,13 @@ const PerformanceDashboard = () => {
 						</motion.div>
 					)}
 
+					{/* Enrollment window open banner */}
+					{openWindow && (
+						<motion.div variants={staggerItem}>
+							<EnrollmentWindowBanner />
+						</motion.div>
+					)}
+
 					{/* Fee clearance alert — shown at the top when not cleared */}
 					{latestFeeAssignment && (
 						<motion.div variants={staggerItem}>
@@ -935,6 +1042,13 @@ const PerformanceDashboard = () => {
 							color="bg-violet-50 dark:bg-violet-900/20"
 						/>
 					</motion.div>
+
+					{/* Enrollment status card */}
+					{classInfo && (
+						<motion.div variants={staggerItem}>
+							<EnrollmentStatusCard classInfo={classInfo as ClassInfo} />
+						</motion.div>
+					)}
 
 					{/* Credit Progress Bar */}
 					{creditsRequired > 0 && (

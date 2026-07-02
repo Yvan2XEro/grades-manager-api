@@ -4315,6 +4315,16 @@
 				"excluded": "Excluded",
 				"pending": "Pending"
 			}
+		},
+		"enrollment": {
+			"title": "Enrollment",
+			"program": "Program",
+			"class": "Class",
+			"year": "Academic year",
+			"level": "Level",
+			"windowOpen": "Course enrollment is open",
+			"windowOpenHint": "You can register for courses during the current enrollment window.",
+			"enroll": "Register for courses"
 		}
 	},
 	"retakes": {
@@ -4518,7 +4528,8 @@
 			"pending": "Decision pending.",
 			"unknown": "Unknown decision.",
 			"overridden": "Overridden"
-		}
+		},
+		"publishedAt": "Published on {{date}}"
 	},
 	"exam": {
 		"status": {
