@@ -1,5 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AlertCircle, RefreshCcw, UserRoundCheck } from "lucide-react";
+import {
+	AlertCircle,
+	AlertTriangle,
+	CheckCircle2,
+	FileWarning,
+	Lock,
+	RefreshCcw,
+	UserRoundCheck,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -76,6 +84,28 @@ export default function AcademicYearTransitionsPage() {
 		queryKey: ["academic-year-transitions"],
 		queryFn: () => trpcClient.academicYearTransitions.list.query({ limit: 50 }),
 	});
+
+	const readinessQuery = useQuery({
+		queryKey: [
+			"academic-year-transition-preflight",
+			sourceAcademicYearId,
+			targetAcademicYearId,
+			sourceClassId,
+		],
+		queryFn: () =>
+			trpcClient.academicYearTransitions.readiness.query({
+				sourceAcademicYearId,
+				targetAcademicYearId,
+				classIds: sourceClassId === "all" ? [] : [sourceClassId],
+				deferredOutcome,
+			}),
+		enabled: Boolean(
+			sourceAcademicYearId &&
+				targetAcademicYearId &&
+				sourceAcademicYearId !== targetAcademicYearId,
+		),
+	});
+	const readiness = readinessQuery.data;
 
 	const invalidateTransitions = async () => {
 		await queryClient.invalidateQueries({
@@ -239,6 +269,83 @@ export default function AcademicYearTransitionsPage() {
 									</SelectContent>
 								</Select>
 							</div>
+							{/* Pre-flight readiness panel */}
+							{readiness && (
+								<div className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+									<p className="mb-2 font-medium text-foreground text-xs">
+										{t(
+											"admin.academicYearTransitions.readiness.preflightTitle",
+											{ defaultValue: "Diagnostic pré-lancement" },
+										)}
+									</p>
+									{(
+										[
+											{
+												label: t(
+													"admin.academicYearTransitions.readiness.enrollments",
+													{ defaultValue: "Étudiants inscrits" },
+												),
+												value: readiness.enrollmentCount,
+												ok: readiness.enrollmentCount > 0,
+												warn: readiness.enrollmentCount === 0,
+											},
+											{
+												label: t(
+													"admin.academicYearTransitions.readiness.signedDelibs",
+													{ defaultValue: "Délibérations signées" },
+												),
+												value: `${readiness.signedDeliberationCount}/${readiness.classCount}`,
+												ok: readiness.missingDeliberationClassCount === 0,
+												warn: readiness.missingDeliberationClassCount > 0,
+											},
+											{
+												label: t(
+													"admin.academicYearTransitions.readiness.unlockedExams",
+													{ defaultValue: "Examens approuvés non verrouillés" },
+												),
+												value: readiness.unlockedApprovedExamCount,
+												ok: readiness.unlockedApprovedExamCount === 0,
+												warn: readiness.unlockedApprovedExamCount > 0,
+												icon: <Lock className="size-3 shrink-0" />,
+											},
+											{
+												label: t(
+													"admin.academicYearTransitions.readiness.incompleteCourses",
+													{ defaultValue: "Inscriptions cours en cours" },
+												),
+												value: readiness.incompleteStudentCourseCount,
+												ok: readiness.incompleteStudentCourseCount === 0,
+												warn: readiness.incompleteStudentCourseCount > 0,
+												icon: <FileWarning className="size-3 shrink-0" />,
+											},
+										] as const
+									).map((row) => (
+										<div
+											key={row.label}
+											className="flex items-center justify-between gap-2 text-xs"
+										>
+											<span className="flex items-center gap-1 text-muted-foreground">
+												{row.warn ? (
+													<AlertTriangle className="size-3 shrink-0 text-amber-500" />
+												) : (
+													<CheckCircle2 className="size-3 shrink-0 text-emerald-500" />
+												)}
+												{row.label}
+											</span>
+											<span
+												className={
+													row.warn
+														? "font-semibold text-amber-600"
+														: "font-medium text-foreground"
+												}
+											>
+												{row.value}
+											</span>
+										</div>
+									))}
+								</div>
+							)}
+
 							{duplicatePlan && (
 								<div className="flex items-start gap-2 rounded-md border border-amber-400/40 bg-amber-50 p-3 text-amber-800 text-xs dark:bg-amber-950/30 dark:text-amber-300">
 									<AlertCircle className="mt-0.5 size-3.5 shrink-0" />

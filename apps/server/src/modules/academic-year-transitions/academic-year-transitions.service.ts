@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import {
 	and,
 	asc,
+	count,
 	desc,
 	eq,
 	gt,
@@ -168,6 +169,55 @@ export async function readiness(
 				});
 	const signedClasses = new Set(signedDeliberations.map((row) => row.classId));
 
+	// Fetch classCourse IDs for the classes in scope (needed for exam check)
+	const classCourseRows =
+		classIds.length === 0
+			? []
+			: await db
+					.select({ id: schema.classCourses.id })
+					.from(schema.classCourses)
+					.where(inArray(schema.classCourses.class, classIds));
+	const classCourseIds = classCourseRows.map((r) => r.id);
+
+	// Count approved-but-not-locked exams for these classCourses
+	const [examRow] =
+		classCourseIds.length === 0
+			? [{ total: 0 }]
+			: await db
+					.select({ total: count() })
+					.from(schema.exams)
+					.where(
+						and(
+							eq(schema.exams.institutionId, institutionId),
+							inArray(schema.exams.classCourse, classCourseIds),
+							eq(schema.exams.status, "approved"),
+							eq(schema.exams.isLocked, false),
+						),
+					);
+	const unlockedApprovedExamCount = Number(examRow?.total ?? 0);
+
+	// Count student course enrollments still in-progress for source year + classes
+	const [sceRow] =
+		classIds.length === 0
+			? [{ total: 0 }]
+			: await db
+					.select({ total: count() })
+					.from(schema.studentCourseEnrollments)
+					.where(
+						and(
+							eq(
+								schema.studentCourseEnrollments.academicYearId,
+								input.sourceAcademicYearId,
+							),
+							inArray(schema.studentCourseEnrollments.sourceClassId, classIds),
+							inArray(schema.studentCourseEnrollments.status, [
+								"planned",
+								"active",
+							]),
+						),
+					);
+	const incompleteStudentCourseCount = Number(sceRow?.total ?? 0);
+
 	return {
 		sourceYear: source,
 		targetYear: target,
@@ -177,6 +227,8 @@ export async function readiness(
 		missingDeliberationClassCount: classIds.filter(
 			(classId) => !signedClasses.has(classId),
 		).length,
+		unlockedApprovedExamCount,
+		incompleteStudentCourseCount,
 		canGenerate: sourceEnrollments.length > 0,
 	};
 }
