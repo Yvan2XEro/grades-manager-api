@@ -879,7 +879,7 @@ const PerformanceDashboard = () => {
 	const notifQuery = useQuery(
 		trpc.notifications.myNotifications.queryOptions({ limit: 20 }),
 	);
-	const unreadNotifs = (notifQuery.data ?? []).filter(
+	const unreadNotifs = (notifQuery.data?.items ?? []).filter(
 		(n) => !n.readAt,
 	) as NotifItem[];
 

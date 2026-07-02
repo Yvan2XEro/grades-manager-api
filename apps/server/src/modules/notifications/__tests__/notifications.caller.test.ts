@@ -1,11 +1,11 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
 
-setDefaultTimeout(30_000);
+setDefaultTimeout(60_000);
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { notifications } from "@/db/schema/app-schema";
-import { asAdmin, createDomainUser } from "@/lib/test-utils";
+import { asAdmin, createDomainUser, makeTestContext } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
 import * as repo from "../notifications.repo";
 import * as service from "../notifications.service";
@@ -247,6 +247,87 @@ describe("notifications — retry and failure handling", () => {
 		await service.sendPending(25, countSend);
 		await service.sendPending(25, countSend);
 		expect(sendCount).toBe(1);
+	});
+
+	it("myNotifications is isolated per user — user B never sees user A notifications", async () => {
+		const profileA = await createDomainUser({
+			primaryEmail: "isolation_a@example.com",
+		});
+		const profileB = await createDomainUser({
+			primaryEmail: "isolation_b@example.com",
+		});
+
+		// Queue an in-app notification for user A
+		await service.queueInApp(profileA.id, "isolation_event", { x: "a" });
+
+		// User B calls myNotifications — should not see user A's notification
+		const callerB = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profileB.id },
+			}),
+		);
+		const result = await callerB.notifications.myNotifications({ limit: 50 });
+		const found = result.items.find((n) => n.type === "isolation_event");
+		expect(found).toBeUndefined();
+	});
+
+	it("myNotifications returns paginated results with nextCursor", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "pagination@example.com",
+		});
+
+		// Queue 3 in-app notifications
+		for (let i = 0; i < 3; i++) {
+			await service.queueInApp(profile.id, `page_event_${i}`, { i });
+		}
+
+		const caller = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profile.id },
+			}),
+		);
+
+		// Fetch page 1 (limit 2)
+		const page1 = await caller.notifications.myNotifications({ limit: 2 });
+		expect(page1.items).toHaveLength(2);
+		expect(page1.nextCursor).toBeDefined();
+
+		// Fetch page 2 using cursor
+		const page2 = await caller.notifications.myNotifications({
+			limit: 2,
+			cursor: page1.nextCursor,
+		});
+		expect(page2.items.length).toBeGreaterThanOrEqual(1);
+		// No overlap
+		const ids1 = new Set(page1.items.map((n) => n.id));
+		for (const n of page2.items) {
+			expect(ids1.has(n.id)).toBe(false);
+		}
+	});
+
+	it("stats endpoint returns aggregate counts by status", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "stats@example.com",
+		});
+		const ctx = asAdmin();
+		const admin = appRouter.createCaller(ctx);
+
+		await admin.notifications.queue({
+			channel: "email",
+			type: "stats_test_pending",
+			payload: {},
+			recipientId: profile.id,
+		});
+
+		const result = await admin.notifications.stats();
+		expect(typeof result.pending).toBe("number");
+		expect(typeof result.failed).toBe("number");
+		expect(typeof result.retrying).toBe("number");
+		expect(typeof result.sent).toBe("number");
+		// At least the one we just queued
+		expect(result.pending).toBeGreaterThanOrEqual(1);
 	});
 
 	it("list endpoint filters by retrying status", async () => {

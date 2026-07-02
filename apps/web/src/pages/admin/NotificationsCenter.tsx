@@ -1,15 +1,18 @@
 import {
 	useInfiniteQuery,
 	useMutation,
+	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
 import {
+	AlertTriangle,
 	Bell,
 	CheckCircle2,
 	Clock,
 	Filter,
 	Inbox,
 	RefreshCw,
+	RotateCcw,
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -22,11 +25,12 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { trpc, trpcClient } from "../../utils/trpc";
 
-type StatusFilter = "all" | "pending" | "sent" | "failed";
+type StatusFilter = "all" | "pending" | "retrying" | "sent" | "failed";
 
-const STATUS_TABS: { key: StatusFilter }[] = [
+const STATUS_TABS: { key: StatusFilter; label: string }[] = [
 	{ key: "all", label: "Tout" },
 	{ key: "pending", label: "En attente" },
+	{ key: "retrying", label: "En cours de retry" },
 	{ key: "sent", label: "Envoyées" },
 	{ key: "failed", label: "Échouées" },
 ];
@@ -37,6 +41,12 @@ const statusConfig = {
 		labelKey: "admin.notifications.status.pending",
 		badge: "bg-muted text-foreground border-border",
 		dot: "bg-muted-foreground",
+	},
+	retrying: {
+		icon: <RotateCcw className="h-4 w-4" />,
+		labelKey: "admin.notifications.status.retrying",
+		badge: "bg-amber-50 text-amber-700 border-amber-200",
+		dot: "bg-amber-500",
 	},
 	sent: {
 		icon: <CheckCircle2 className="h-4 w-4" />,
@@ -120,11 +130,28 @@ const NotificationsCenter = () => {
 	});
 	const selection = useRowSelection(notifications);
 
+	const statsQuery = useQuery(trpc.notifications.stats.queryOptions());
+	const statsData = statsQuery.data;
+
 	const ackMutation = useMutation({
 		mutationFn: (id: string) =>
 			trpcClient.notifications.acknowledge.mutate({ id }),
 		onSuccess: () => {
 			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+		},
+		onError: (error: Error) => toast.error(error.message),
+	});
+
+	const retryMutation = useMutation({
+		mutationFn: (id: string) => trpcClient.notifications.retry.mutate({ id }),
+		onSuccess: () => {
+			toast.success(
+				t("admin.notifications.toast.retried", {
+					defaultValue: "Notification requeued",
+				}),
+			);
+			queryClient.invalidateQueries(trpc.notifications.list.queryKey());
+			queryClient.invalidateQueries(trpc.notifications.stats.queryKey());
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -180,6 +207,55 @@ const NotificationsCenter = () => {
 					})}
 				</Button>
 			</div>
+
+			{/* Stats bar */}
+			{statsData && (
+				<div className="grid grid-cols-4 gap-3">
+					{(
+						[
+							{
+								key: "pending",
+								label: "En attente",
+								icon: <Clock className="h-4 w-4" />,
+								color: "text-muted-foreground",
+							},
+							{
+								key: "retrying",
+								label: "Retry",
+								icon: <RotateCcw className="h-4 w-4" />,
+								color: "text-amber-600",
+							},
+							{
+								key: "failed",
+								label: "Échouées",
+								icon: <AlertTriangle className="h-4 w-4" />,
+								color: "text-destructive",
+							},
+							{
+								key: "sent",
+								label: "Envoyées",
+								icon: <CheckCircle2 className="h-4 w-4" />,
+								color: "text-primary",
+							},
+						] as const
+					).map(({ key, label, icon, color }) => (
+						<button
+							key={key}
+							type="button"
+							onClick={() => setStatusFilter(key)}
+							className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-muted/40"
+						>
+							<span className={color}>{icon}</span>
+							<div>
+								<p className="font-semibold text-foreground text-lg leading-none">
+									{statsData[key]}
+								</p>
+								<p className="mt-0.5 text-muted-foreground text-xs">{label}</p>
+							</div>
+						</button>
+					))}
+				</div>
+			)}
 
 			{/* Tabs */}
 			<div className="flex items-center gap-1 border-b">
@@ -340,21 +416,37 @@ const NotificationsCenter = () => {
 											)}
 									</div>
 
-									{/* Acknowledge */}
-									{item.status === "pending" && (
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 shrink-0 self-start text-xs opacity-0 transition-opacity group-hover:opacity-100"
-											onClick={() => ackMutation.mutate(item.id)}
-											disabled={ackMutation.isPending}
-										>
-											<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-											{t("admin.notifications.actions.ack", {
-												defaultValue: "Accuser réception",
-											})}
-										</Button>
-									)}
+									{/* Actions */}
+									<div className="flex shrink-0 gap-1 self-start opacity-0 transition-opacity group-hover:opacity-100">
+										{item.status === "pending" && (
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-7 text-xs"
+												onClick={() => ackMutation.mutate(item.id)}
+												disabled={ackMutation.isPending}
+											>
+												<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+												{t("admin.notifications.actions.ack", {
+													defaultValue: "Accuser réception",
+												})}
+											</Button>
+										)}
+										{item.status === "failed" && (
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-7 text-amber-600 text-xs hover:text-amber-700"
+												onClick={() => retryMutation.mutate(item.id)}
+												disabled={retryMutation.isPending}
+											>
+												<RotateCcw className="mr-1 h-3.5 w-3.5" />
+												{t("admin.notifications.actions.retry", {
+													defaultValue: "Relancer",
+												})}
+											</Button>
+										)}
+									</div>
 								</div>
 							);
 						})}

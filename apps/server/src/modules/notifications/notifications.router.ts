@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, protectedProcedure, router } from "@/lib/trpc";
 import * as service from "./notifications.service";
@@ -16,19 +17,32 @@ export const notificationsRouter = router({
 	list: adminProcedure
 		.input(listSchema)
 		.query(({ input }) =>
-			service.list(input.status, input.limit, input.cursor),
+			service.list(input.status, input.limit, input.cursor, input.channel),
 		),
 	flush: adminProcedure.mutation(() => service.sendPending()),
 	acknowledge: adminProcedure
 		.input(idSchema)
 		.mutation(({ input }) => service.acknowledge(input.id)),
+	stats: adminProcedure.query(() => service.stats()),
+	retry: adminProcedure
+		.input(idSchema)
+		.mutation(({ input }) => service.requeue(input.id)),
 
 	// ── Self-service in-app ────────────────────────────────────────────────────
 	myNotifications: protectedProcedure
-		.input(z.object({ limit: z.number().int().min(1).max(50).optional() }))
+		.input(
+			z.object({
+				limit: z.number().int().min(1).max(50).optional(),
+				cursor: z.string().optional(),
+			}),
+		)
 		.query(({ ctx, input }) => {
-			if (!ctx.profile?.id) return [];
-			return service.myInAppNotifications(ctx.profile.id, input.limit);
+			if (!ctx.profile?.id) return { items: [], nextCursor: undefined };
+			return service.myInAppNotifications(
+				ctx.profile.id,
+				input.limit,
+				input.cursor,
+			);
 		}),
 
 	unreadCount: protectedProcedure.query(({ ctx }) => {
@@ -39,7 +53,7 @@ export const notificationsRouter = router({
 	markRead: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(({ ctx, input }) => {
-			if (!ctx.profile?.id) throw new Error("Profile required");
+			if (!ctx.profile?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
 			return service.markRead(input.id, ctx.profile.id);
 		}),
 

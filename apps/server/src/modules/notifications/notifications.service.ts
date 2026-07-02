@@ -93,8 +93,9 @@ export async function list(
 	status?: schema.NotificationStatus,
 	limit?: number,
 	cursor?: string,
+	channel?: schema.NotificationChannel,
 ) {
-	return repo.listNotifications(status, limit ?? 50, cursor);
+	return repo.listNotifications(status, limit ?? 50, cursor, channel);
 }
 
 export async function acknowledge(id: string) {
@@ -143,8 +144,12 @@ export async function queueInApp(
 	});
 }
 
-export async function myInAppNotifications(recipientId: string, limit = 30) {
-	return repo.findByRecipient(recipientId, { channel: "in-app", limit });
+export async function myInAppNotifications(
+	recipientId: string,
+	limit = 30,
+	cursor?: string,
+) {
+	return repo.findMyInApp(recipientId, limit, cursor);
 }
 
 export async function unreadCount(recipientId: string) {
@@ -159,4 +164,16 @@ export async function markRead(id: string, recipientId: string) {
 
 export async function markAllRead(recipientId: string) {
 	await repo.markAllReadInApp(recipientId);
+}
+
+export async function stats() {
+	return repo.getStats();
+}
+
+export async function requeue(id: string) {
+	const updated = await repo.requeueFailed(id);
+	if (!updated) {
+		throw new TRPCError({ code: "NOT_FOUND" });
+	}
+	return updated;
 }

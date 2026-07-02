@@ -1,4 +1,16 @@
-import { and, asc, desc, eq, gt, isNull, lt, lte, or, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	desc,
+	eq,
+	gt,
+	isNull,
+	lt,
+	lte,
+	or,
+	sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema/app-schema";
 
@@ -33,12 +45,16 @@ export async function listNotifications(
 	status?: schema.NotificationStatus,
 	limit = 50,
 	cursor?: string,
+	channel?: schema.NotificationChannel,
 ) {
 	const pageLimit = Math.min(Math.max(limit, 1), 100);
 	const conditions = [];
 
 	if (status) {
 		conditions.push(eq(schema.notifications.status, status));
+	}
+	if (channel) {
+		conditions.push(eq(schema.notifications.channel, channel));
 	}
 	if (cursor) {
 		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
@@ -114,31 +130,43 @@ export async function claimForDelivery(
 	return !!claimed;
 }
 
-export async function findByRecipient(
+export async function findMyInApp(
 	recipientId: string,
-	opts?: { channel?: schema.NotificationChannel; limit?: number },
+	limit: number,
+	cursor?: string,
 ) {
-	const conditions = [eq(schema.notifications.recipientId, recipientId)];
-	if (opts?.channel) {
-		conditions.push(eq(schema.notifications.channel, opts.channel));
+	const conditions = [
+		eq(schema.notifications.recipientId, recipientId),
+		eq(schema.notifications.channel, "in-app"),
+	];
+	if (cursor) {
+		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
 	}
-	return db.query.notifications.findMany({
+	const pageLimit = Math.min(Math.max(limit, 1), 50);
+	const items = await db.query.notifications.findMany({
 		where: and(...conditions),
-		orderBy: (t, { desc }) => [desc(t.createdAt)],
-		limit: opts?.limit ?? 50,
+		orderBy: [desc(schema.notifications.createdAt)],
+		limit: pageLimit,
 	});
+	const nextCursor =
+		items.length === pageLimit
+			? items[items.length - 1].createdAt.toISOString()
+			: undefined;
+	return { items, nextCursor };
 }
 
 export async function countUnreadInApp(recipientId: string) {
-	const rows = await db.query.notifications.findMany({
-		where: and(
-			eq(schema.notifications.recipientId, recipientId),
-			eq(schema.notifications.channel, "in-app"),
-			isNull(schema.notifications.readAt),
-		),
-		columns: { id: true },
-	});
-	return rows.length;
+	const [result] = await db
+		.select({ total: count() })
+		.from(schema.notifications)
+		.where(
+			and(
+				eq(schema.notifications.recipientId, recipientId),
+				eq(schema.notifications.channel, "in-app"),
+				isNull(schema.notifications.readAt),
+			),
+		);
+	return result?.total ?? 0;
 }
 
 export async function markRead(id: string, recipientId: string) {
@@ -190,4 +218,45 @@ export async function markAllReadInApp(recipientId: string) {
 				isNull(schema.notifications.readAt),
 			),
 		);
+}
+
+export async function getStats() {
+	const rows = await db
+		.select({ status: schema.notifications.status, total: count() })
+		.from(schema.notifications)
+		.groupBy(schema.notifications.status);
+	const result: Record<string, number> = {
+		pending: 0,
+		retrying: 0,
+		failed: 0,
+		sent: 0,
+	};
+	for (const row of rows) {
+		result[row.status] = Number(row.total);
+	}
+	return result as {
+		pending: number;
+		retrying: number;
+		failed: number;
+		sent: number;
+	};
+}
+
+export async function requeueFailed(id: string) {
+	const [updated] = await db
+		.update(schema.notifications)
+		.set({
+			status: "pending",
+			attemptCount: 0,
+			lastError: null,
+			nextRetryAt: null,
+		})
+		.where(
+			and(
+				eq(schema.notifications.id, id),
+				eq(schema.notifications.status, "failed"),
+			),
+		)
+		.returning();
+	return updated ?? null;
 }

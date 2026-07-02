@@ -130,7 +130,7 @@ export const NotificationBell: React.FC = () => {
 	);
 
 	const unread = countQuery.data ?? 0;
-	const items = listQuery.data ?? [];
+	const items = listQuery.data?.items ?? [];
 
 	const markReadMut = useMutation({
 		mutationFn: (id: string) =>

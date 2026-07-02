@@ -126,7 +126,7 @@ export default function NotificationsPage() {
 	const countQuery = useQuery(trpc.notifications.unreadCount.queryOptions());
 	const unread = countQuery.data ?? 0;
 
-	const allItems = listQuery.data ?? [];
+	const allItems = listQuery.data?.items ?? [];
 	const items = unreadOnly ? allItems.filter((n) => !n.readAt) : allItems;
 
 	const markReadMut = useMutation({
