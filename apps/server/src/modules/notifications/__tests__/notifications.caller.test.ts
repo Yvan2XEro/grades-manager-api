@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { notifications } from "@/db/schema/app-schema";
 import { asAdmin, createDomainUser } from "@/lib/test-utils";
 import { appRouter } from "@/routers";
+import * as repo from "../notifications.repo";
 import * as service from "../notifications.service";
 
 describe("notifications — retry and failure handling", () => {
@@ -145,6 +146,107 @@ describe("notifications — retry and failure handling", () => {
 		await service.sendPending(25, countingSend);
 		// No additional calls due to the in-app notification
 		expect(emailCallCount).toBe(before);
+	});
+
+	it("backoff order: first retry waits 5 min, second waits 30 min", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "backoff@example.com",
+		});
+		const ctx = asAdmin();
+		const admin = appRouter.createCaller(ctx);
+
+		await admin.notifications.queue({
+			channel: "email",
+			type: "backoff_order_test",
+			payload: {},
+			recipientId: profile.id,
+		});
+
+		const failSend = async () => {
+			throw new Error("err");
+		};
+
+		// First failure → nextRetryAt ≈ 5 min from now
+		const before1 = Date.now();
+		await service.sendPending(25, failSend);
+		const after1 = Date.now();
+
+		const { items: items1 } = await service.list("retrying");
+		const n1 = items1.find((n) => n.type === "backoff_order_test");
+		expect(n1?.attemptCount).toBe(1);
+		const delay1Ms = new Date(n1!.nextRetryAt!).getTime() - before1;
+		// Should be ~5 min (300 000 ms), allow ±5 s tolerance
+		expect(delay1Ms).toBeGreaterThan(295_000);
+		expect(delay1Ms).toBeLessThan(310_000 + (after1 - before1));
+
+		// Force nextRetryAt to past so it can be picked up again
+		await db
+			.update(notifications)
+			.set({ nextRetryAt: new Date(0) })
+			.where(eq(notifications.type, "backoff_order_test"));
+
+		// Second failure → nextRetryAt ≈ 30 min from now
+		const before2 = Date.now();
+		await service.sendPending(25, failSend);
+		const after2 = Date.now();
+
+		const { items: items2 } = await service.list("retrying");
+		const n2 = items2.find((n) => n.type === "backoff_order_test");
+		expect(n2?.attemptCount).toBe(2);
+		const delay2Ms = new Date(n2!.nextRetryAt!).getTime() - before2;
+		// Should be ~30 min (1 800 000 ms), allow ±5 s tolerance
+		expect(delay2Ms).toBeGreaterThan(1_795_000);
+		expect(delay2Ms).toBeLessThan(1_810_000 + (after2 - before2));
+	});
+
+	it("concurrent sendPending calls do not double-deliver the same notification", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "concurrent@example.com",
+		});
+		const ctx = asAdmin();
+		const admin = appRouter.createCaller(ctx);
+
+		await admin.notifications.queue({
+			channel: "email",
+			type: "concurrent_test",
+			payload: {},
+			recipientId: profile.id,
+		});
+
+		// Simulate two workers reading the notification at the same time,
+		// then both attempting to claim it. Only one claim should succeed.
+		const [notif] = await db.query.notifications.findMany({
+			where: eq(notifications.type, "concurrent_test"),
+			limit: 1,
+		});
+
+		const claim1 = await repo.claimForDelivery(
+			notif.id,
+			notif.attemptCount ?? 0,
+		);
+		const claim2 = await repo.claimForDelivery(
+			notif.id,
+			notif.attemptCount ?? 0,
+		);
+
+		// Exactly one claim must succeed
+		expect(claim1 && !claim2).toBe(true);
+
+		// Verify: actual delivery via sendPending (which also claims) should send exactly once
+		let sendCount = 0;
+		// Reset to pending so sendPending can pick it up properly
+		await db
+			.update(notifications)
+			.set({ nextRetryAt: new Date(0) })
+			.where(eq(notifications.id, notif.id));
+
+		const countSend = async () => {
+			sendCount++;
+		};
+		// Two back-to-back calls — second sees future nextRetryAt set by first claim
+		await service.sendPending(25, countSend);
+		await service.sendPending(25, countSend);
+		expect(sendCount).toBe(1);
 	});
 
 	it("list endpoint filters by retrying status", async () => {

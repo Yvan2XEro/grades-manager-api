@@ -7,7 +7,8 @@ const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [5 * 60 * 1000, 30 * 60 * 1000] as const;
 
 function calcNextRetryAt(attempt: number): Date | undefined {
-	const delay = RETRY_DELAYS_MS[attempt];
+	// attempt is 1-indexed: first retry uses index 0 (5 min), second uses index 1 (30 min)
+	const delay = RETRY_DELAYS_MS[attempt - 1];
 	if (delay === undefined) return undefined;
 	return new Date(Date.now() + delay);
 }
@@ -44,6 +45,15 @@ export async function sendPending(
 			// In-app notifications are marked sent at creation; skip here
 			continue;
 		}
+
+		// Atomically claim the notification (optimistic lock on attemptCount).
+		// If another worker already incremented attemptCount, the WHERE won't match and
+		// we skip — prevents double delivery when sendPending is called concurrently.
+		const claimed = await repo.claimForDelivery(
+			notification.id,
+			notification.attemptCount ?? 0,
+		);
+		if (!claimed) continue;
 
 		const recipientEmail = notification.recipient?.primaryEmail;
 		if (!recipientEmail) {

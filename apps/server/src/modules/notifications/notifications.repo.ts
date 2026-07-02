@@ -67,21 +67,51 @@ export async function findPending(limit = 25) {
 /** Returns pending + retrying-but-due notifications with recipient email. */
 export async function findReadyToSend(limit = 25) {
 	const now = new Date();
+	// For both pending and retrying: only pick up when nextRetryAt is null or in the past.
+	// This lets claimForDelivery set a future nextRetryAt to act as a processing lock,
+	// preventing a second worker from picking up a notification already being processed.
+	const readyCondition = or(
+		isNull(schema.notifications.nextRetryAt),
+		lte(schema.notifications.nextRetryAt, now),
+	);
 	return db.query.notifications.findMany({
 		where: or(
-			eq(schema.notifications.status, "pending"),
-			and(
-				eq(schema.notifications.status, "retrying"),
-				or(
-					isNull(schema.notifications.nextRetryAt),
-					lte(schema.notifications.nextRetryAt, now),
-				),
-			),
+			and(eq(schema.notifications.status, "pending"), readyCondition),
+			and(eq(schema.notifications.status, "retrying"), readyCondition),
 		),
 		with: { recipient: { columns: { primaryEmail: true } } },
 		limit,
 		orderBy: [asc(schema.notifications.createdAt)],
 	});
+}
+
+/**
+ * Atomically claims a notification for delivery by setting nextRetryAt to a
+ * near-future "processing window". Guards on both attemptCount (so a second
+ * worker with stale data fails) and nextRetryAt (so a claim already in-flight
+ * blocks a second concurrent claim on the same row).
+ */
+export async function claimForDelivery(
+	id: string,
+	currentAttemptCount: number,
+) {
+	const now = new Date();
+	const [claimed] = await db
+		.update(schema.notifications)
+		.set({ nextRetryAt: new Date(Date.now() + 5 * 60 * 1000) })
+		.where(
+			and(
+				eq(schema.notifications.id, id),
+				eq(schema.notifications.attemptCount, currentAttemptCount),
+				// Not already claimed by another worker (nextRetryAt not set or in the past)
+				or(
+					isNull(schema.notifications.nextRetryAt),
+					lte(schema.notifications.nextRetryAt, now),
+				),
+			),
+		)
+		.returning({ id: schema.notifications.id });
+	return !!claimed;
 }
 
 export async function findByRecipient(
