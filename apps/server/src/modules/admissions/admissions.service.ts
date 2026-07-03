@@ -5,6 +5,18 @@ import { conflict, notFound } from "../_shared/errors";
 import * as repo from "./admissions.repo";
 import type { submitApplicationSchema } from "./admissions.zod";
 
+// Statuses from which an admin can render a final decision.
+const REVIEWABLE_STATUSES: AdmissionApplicationStatus[] = [
+	"submitted",
+	"under_review",
+];
+// Statuses that cannot transition further (terminal states).
+const TERMINAL_STATUSES: AdmissionApplicationStatus[] = [
+	"accepted",
+	"rejected",
+	"waitlisted",
+];
+
 function generateReferenceCode(year: number): string {
 	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 	let suffix = "";
@@ -20,17 +32,52 @@ export async function submitApplication(
 ) {
 	const year = new Date().getFullYear();
 
-	// Re-use existing applicant record if same email in same institution
+	// Validate that programId and academicYearId belong to this institution
+	// (prevents cross-tenant UUID injection).
+	const [program, academicYear] = await Promise.all([
+		repo.requireProgramForInstitution(institutionId, input.programId),
+		repo.requireAcademicYearForInstitution(institutionId, input.academicYearId),
+	]);
+	if (!program) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Program not found for this institution",
+		});
+	}
+	if (!academicYear) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Academic year not found for this institution",
+		});
+	}
+	if (input.classId) {
+		const cls = await repo.requireClassForInstitution(
+			institutionId,
+			input.classId,
+			input.programId,
+			input.academicYearId,
+		);
+		if (!cls) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message:
+					"Class not found or does not match the program/year for this institution",
+			});
+		}
+	}
+
+	// Re-use existing applicant record if same email in same institution.
+	// On concurrent submission the unique constraint on (institution_id, email)
+	// ensures only one row is created; we re-fetch on violation.
 	let applicant = await repo.findExistingApplicant(
 		institutionId,
 		input.applicant.email,
 	);
 
 	if (!applicant) {
-		let referenceCode: string;
-		// Retry up to 5 times on the extremely unlikely collision
+		// Retry up to 5 times on the (extremely unlikely) reference-code collision.
 		for (let attempt = 0; attempt < 5; attempt++) {
-			referenceCode = generateReferenceCode(year);
+			const referenceCode = generateReferenceCode(year);
 			try {
 				applicant = await repo.createApplicant({
 					institutionId,
@@ -38,14 +85,23 @@ export async function submitApplication(
 					referenceCode,
 				});
 				break;
-			} catch {
+			} catch (err: unknown) {
+				const msg = err instanceof Error ? err.message : String(err);
+				if (msg.includes("uq_applicants_institution_email")) {
+					// Concurrent request created the applicant first — re-fetch.
+					applicant = await repo.findExistingApplicant(
+						institutionId,
+						input.applicant.email,
+					);
+					if (applicant) break;
+				}
 				if (attempt === 4)
 					throw new Error("Failed to generate unique reference code");
 			}
 		}
 	}
 
-	// Prevent duplicate open applications for the same year
+	// Prevent duplicate open applications for the same year.
 	const existing = await repo.findPendingApplicationForApplicant(
 		institutionId,
 		applicant!.id,
@@ -118,8 +174,16 @@ export async function reviewApplication(
 	const app = await repo.findApplicationById(institutionId, input.id);
 	if (!app) throw notFound("Application not found");
 
-	if (app.status === "accepted" || app.status === "rejected") {
-		throw conflict("Application has already been decided");
+	if ((TERMINAL_STATUSES as string[]).includes(app.status)) {
+		throw conflict(
+			`Application is already in a terminal state (${app.status}) and cannot be re-decided`,
+		);
+	}
+	if (!(REVIEWABLE_STATUSES as string[]).includes(app.status)) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `Application cannot be reviewed from status "${app.status}"`,
+		});
 	}
 
 	return repo.updateApplicationStatus(institutionId, input.id, {

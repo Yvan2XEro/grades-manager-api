@@ -1,8 +1,15 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
 import Handlebars from "handlebars";
+import { defaultExportConfig } from "@/config/export-config";
 import type { MentionRange } from "@/db/schema/app-schema";
 import { DEFAULT_MENTION_RANGES } from "@/db/schema/app-schema";
-import { mentionRangesToAppreciations } from "../template-helper";
+import {
+	getAppreciation,
+	getObservation,
+	loadTemplate,
+	logoHelper,
+	mentionRangesToAppreciations,
+} from "../template-helper";
 
 setDefaultTimeout(60_000);
 
@@ -133,5 +140,144 @@ describe("grading.appreciations — dynamic template rendering", () => {
 			grading: buildGradingBlock(ranges),
 		});
 		expect(html).toContain(`min="${customTopMin}" max="20"`);
+	});
+});
+
+// ─── Register Handlebars helpers (mirrors academic-documents.service.ts) ─────
+// Helpers are registered once without importing the service (avoids puppeteer).
+let _helpersRegistered = false;
+function ensureRealTemplateHelpers() {
+	if (_helpersRegistered) return;
+	Handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
+	Handlebars.registerHelper(
+		"gt",
+		(a: unknown, b: unknown) => Number(a) > Number(b),
+	);
+	Handlebars.registerHelper(
+		"gte",
+		(a: unknown, b: unknown) => Number(a) >= Number(b),
+	);
+	Handlebars.registerHelper(
+		"lt",
+		(a: unknown, b: unknown) => Number(a) < Number(b),
+	);
+	Handlebars.registerHelper(
+		"lte",
+		(a: unknown, b: unknown) => Number(a) <= Number(b),
+	);
+	Handlebars.registerHelper(
+		"add",
+		(a: unknown, b: unknown) => Number(a) + Number(b),
+	);
+	Handlebars.registerHelper(
+		"subtract",
+		(a: unknown, b: unknown) => Number(a) - Number(b),
+	);
+	Handlebars.registerHelper(
+		"multiply",
+		(a: unknown, b: unknown) => Number(a) * Number(b),
+	);
+	Handlebars.registerHelper("divide", (a: unknown, b: unknown) =>
+		Number(b) === 0 ? 0 : Number(a) / Number(b),
+	);
+	Handlebars.registerHelper("abs", (a: unknown) => Math.abs(Number(a)));
+	Handlebars.registerHelper(
+		"mod",
+		(a: unknown, b: unknown) => Number(a) % Number(b),
+	);
+	Handlebars.registerHelper("upper", (a: unknown) =>
+		String(a ?? "").toUpperCase(),
+	);
+	Handlebars.registerHelper("lower", (a: unknown) =>
+		String(a ?? "").toLowerCase(),
+	);
+	Handlebars.registerHelper(
+		"formatNumber",
+		(value: unknown, decimals: unknown = 2) => {
+			if (value === null || value === undefined || value === "") return "—";
+			const n = Number(value);
+			if (!Number.isFinite(n)) return "—";
+			const d =
+				typeof decimals === "number" && Number.isFinite(decimals)
+					? decimals
+					: 2;
+			return n.toFixed(d).replace(".", ",");
+		},
+	);
+	Handlebars.registerHelper("or", (...args: unknown[]) =>
+		args.slice(0, -1).some((v) => Boolean(v)),
+	);
+	Handlebars.registerHelper("logo", logoHelper);
+	Handlebars.registerHelper("getAppreciation", (score: number) =>
+		getAppreciation(score ?? 0, defaultExportConfig),
+	);
+	Handlebars.registerHelper("getObservation", (score: number | null) =>
+		getObservation(score, defaultExportConfig),
+	);
+	_helpersRegistered = true;
+}
+
+describe("real bundled templates — grading.appreciations wired end-to-end (JVL-42)", () => {
+	it("transcript template renders all default appreciation labels", () => {
+		ensureRealTemplateHelpers();
+		const body = loadTemplate("transcript", "standard", "institution");
+		// Minimal data: only grading block populated; Handlebars treats missing props as empty.
+		const html = Handlebars.compile(body)({
+			grading: buildGradingBlock(DEFAULT_MENTION_RANGES),
+		});
+		for (const r of DEFAULT_MENTION_RANGES) {
+			expect(html).toContain(r.label);
+		}
+	});
+
+	it("enrollment_certificate bundled template compiles without errors", () => {
+		ensureRealTemplateHelpers();
+		const body = loadTemplate(
+			"enrollment_certificate",
+			"standard",
+			"institution",
+		);
+		expect(body).not.toContain("<!-- No bundled template -->");
+		// The certificate template has no appreciation legend, but must compile cleanly.
+		const html = Handlebars.compile(body)({
+			grading: buildGradingBlock(DEFAULT_MENTION_RANGES),
+		});
+		expect(html.trim().length).toBeGreaterThan(100);
+	});
+
+	it("custom mention ranges propagate into the real transcript template", () => {
+		ensureRealTemplateHelpers();
+		const custom: MentionRange[] = [
+			{
+				key: "honneurs",
+				label: "Avec Honneurs",
+				labelEn: "With Honours",
+				gradeLetter: "A",
+				min: 16,
+			},
+			{
+				key: "bien",
+				label: "Bien",
+				labelEn: "Good",
+				gradeLetter: "B",
+				min: 12,
+			},
+			{
+				key: "passable",
+				label: "Passable",
+				labelEn: "Pass",
+				gradeLetter: "C",
+				min: 10,
+			},
+		];
+		const body = loadTemplate("transcript", "standard", "institution");
+		const html = Handlebars.compile(body)({
+			grading: buildGradingBlock(custom),
+		});
+		expect(html).toContain("Avec Honneurs");
+		expect(html).toContain("Passable");
+		// Default labels must NOT appear (proves dynamic substitution)
+		expect(html).not.toContain("Très Bien");
+		expect(html).not.toContain("Excellent");
 	});
 });

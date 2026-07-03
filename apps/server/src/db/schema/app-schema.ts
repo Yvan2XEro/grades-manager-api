@@ -4188,8 +4188,8 @@ export const applicants = pgTable(
 	},
 	(t) => [
 		unique("uq_applicants_reference_code").on(t.referenceCode),
+		unique("uq_applicants_institution_email").on(t.institutionId, t.email),
 		index("idx_applicants_institution").on(t.institutionId),
-		index("idx_applicants_email").on(t.institutionId, t.email),
 	],
 );
 export type Applicant = InferSelectModel<typeof applicants>;

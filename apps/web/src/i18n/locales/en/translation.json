@@ -4281,6 +4281,8 @@
       "generic": "New notification",
       "documentAvailable": "Document available for download",
       "empty": "No pending actions",
+      "sectionActions": "Required actions",
+      "sectionInfo": "Notifications",
       "categories": {
         "academic": "Academic",
         "financial": "Financial",

@@ -156,6 +156,54 @@ describe("admissions.list (admin)", () => {
 	});
 });
 
+describe("admissions.submit — cross-tenant validation", () => {
+	it("rejects programId that does not belong to this institution", async () => {
+		const ctx = makeTestContext();
+		await expect(
+			caller(ctx).admissions.submit({
+				applicant: { ...baseApplicant, email: "cross-tenant-prog@example.com" },
+				programId: "00000000-0000-0000-0000-000000000001",
+				academicYearId,
+			}),
+		).rejects.toThrow();
+	});
+
+	it("rejects academicYearId that does not belong to this institution", async () => {
+		const ctx = makeTestContext();
+		await expect(
+			caller(ctx).admissions.submit({
+				applicant: { ...baseApplicant, email: "cross-tenant-year@example.com" },
+				programId,
+				academicYearId: "00000000-0000-0000-0000-000000000002",
+			}),
+		).rejects.toThrow();
+	});
+});
+
+describe("admissions.review — state machine", () => {
+	it("cannot re-decide a waitlisted application (terminal state)", async () => {
+		const publicCtx = makeTestContext();
+		const { application } = await caller(publicCtx).admissions.submit({
+			applicant: { ...baseApplicant, email: "waitlist-lock@example.com" },
+			programId,
+			academicYearId,
+		});
+
+		const adminCtx = asRealAdmin();
+		await caller(adminCtx).admissions.review({
+			id: application.id,
+			status: "waitlisted",
+		});
+
+		await expect(
+			caller(adminCtx).admissions.review({
+				id: application.id,
+				status: "accepted",
+			}),
+		).rejects.toThrow();
+	});
+});
+
 describe("admissions.review", () => {
 	it("admin can accept an application", async () => {
 		const publicCtx = makeTestContext();

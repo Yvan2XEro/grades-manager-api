@@ -51,6 +51,8 @@ type NotifActionConfig = {
 	toFn?: (payload: Record<string, unknown>) => string | undefined;
 	priority: "high" | "medium" | "low";
 	category: Category;
+	/** action = requires user to do something; info = informational only */
+	kind: "action" | "info";
 };
 
 const CATEGORY_STYLES: Record<
@@ -88,6 +90,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.resultsPublished",
 		priority: "high",
 		category: "academic",
+		kind: "info",
 		toFn: () => "/student",
 	},
 	"grade.approved": {
@@ -96,6 +99,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		subtitleFn: (p) => String(p.examName ?? ""),
 		priority: "medium",
 		category: "academic",
+		kind: "info",
 		toFn: () => "/student",
 	},
 	"grade.rejected": {
@@ -104,6 +108,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		subtitleFn: (p) => String(p.examName ?? ""),
 		priority: "high",
 		category: "academic",
+		kind: "info",
 		toFn: () => "/student",
 	},
 	"fee.payment_confirmed": {
@@ -115,6 +120,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 				: "",
 		priority: "low",
 		category: "financial",
+		kind: "info",
 		toFn: () => "/student/fees",
 	},
 	"payment.pending": {
@@ -122,6 +128,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.paymentPending",
 		priority: "high",
 		category: "financial",
+		kind: "action",
 		toFn: () => "/student/fees",
 	},
 	"enrollment.window_open": {
@@ -129,6 +136,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.enrollmentWindowOpen",
 		priority: "high",
 		category: "enrollment",
+		kind: "action",
 		toFn: () => "/student",
 	},
 	"document.available": {
@@ -137,6 +145,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		subtitleFn: (p) => String(p.documentKind ?? ""),
 		priority: "low",
 		category: "documents",
+		kind: "info",
 		toFn: () => "/student/documents",
 	},
 	"batch_job.completed": {
@@ -144,12 +153,14 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.jobCompleted",
 		priority: "low",
 		category: "system",
+		kind: "info",
 	},
 	"batch_job.failed": {
 		icon: <ServerCog className="h-4 w-4 text-destructive" />,
 		labelKey: "student.pendingActions.jobFailed",
 		priority: "medium",
 		category: "system",
+		kind: "info",
 	},
 };
 
@@ -167,6 +178,89 @@ type NotifItem = {
 	payload: unknown;
 };
 
+function NotifRow({
+	item,
+	onMarkRead,
+	isMarkingRead,
+	t,
+}: {
+	item: NotifItem;
+	onMarkRead: (id: string) => void;
+	isMarkingRead: boolean;
+	t: TFn;
+}) {
+	const cfg = NOTIF_ACTION_CONFIGS[item.type];
+	const payload = (item.payload as Record<string, unknown>) ?? {};
+	const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
+	const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
+	const priority = cfg?.priority ?? "low";
+	const category = cfg?.category ?? "system";
+	const catStyle = CATEGORY_STYLES[category];
+
+	const inner = (
+		<div className="flex min-w-0 flex-1 items-start gap-3">
+			<span
+				className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
+			/>
+			<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
+				{cfg?.icon ?? <Bell className="h-3.5 w-3.5 text-muted-foreground" />}
+			</div>
+			<div className="min-w-0 flex-1">
+				<div className="flex items-center gap-1.5">
+					<p className="font-medium text-foreground text-xs">
+						{t(
+							(cfg?.labelKey ?? "student.pendingActions.generic") as Parameters<
+								typeof t
+							>[0],
+							{
+								defaultValue: item.type
+									.replace(/[._-]/g, " ")
+									.replace(/\b\w/g, (c) => c.toUpperCase()),
+							},
+						)}
+					</p>
+					<span
+						className={`shrink-0 rounded px-1 py-0.5 font-semibold text-[9px] uppercase tracking-wide ${catStyle.className}`}
+					>
+						{t(catStyle.labelKey as Parameters<typeof t>[0], {
+							defaultValue: category,
+						})}
+					</span>
+				</div>
+				{subtitle && (
+					<p className="truncate text-[11px] text-muted-foreground">
+						{subtitle}
+					</p>
+				)}
+			</div>
+		</div>
+	);
+
+	return (
+		<li key={item.id} className="group flex items-center gap-2 px-4 py-3">
+			{to ? (
+				<Link
+					to={to}
+					className="min-w-0 flex-1"
+					onClick={() => onMarkRead(item.id)}
+				>
+					{inner}
+				</Link>
+			) : (
+				<div className="min-w-0 flex-1">{inner}</div>
+			)}
+			<button
+				type="button"
+				className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+				onClick={() => onMarkRead(item.id)}
+				disabled={isMarkingRead}
+			>
+				{t("notifications.markRead")}
+			</button>
+		</li>
+	);
+}
+
 function PendingActionsCard({
 	items,
 	onMarkRead,
@@ -177,8 +271,14 @@ function PendingActionsCard({
 	isMarkingRead: boolean;
 }) {
 	const { t } = useTranslation();
-	const MAX_SHOWN = 3;
-	const shown = items.slice(0, MAX_SHOWN);
+	const MAX_SHOWN = 5;
+
+	const actionItems = items
+		.filter((i) => (NOTIF_ACTION_CONFIGS[i.type]?.kind ?? "info") === "action")
+		.slice(0, MAX_SHOWN);
+	const infoItems = items
+		.filter((i) => (NOTIF_ACTION_CONFIGS[i.type]?.kind ?? "info") === "info")
+		.slice(0, MAX_SHOWN);
 
 	return (
 		<div className="rounded-xl border bg-card shadow-sm">
@@ -210,96 +310,56 @@ function PendingActionsCard({
 					</p>
 				</div>
 			) : (
-				<ul className="divide-y">
-					{shown.map((item) => {
-						const cfg = NOTIF_ACTION_CONFIGS[item.type];
-						const payload = (item.payload as Record<string, unknown>) ?? {};
-						const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
-						const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
-						const priority = cfg?.priority ?? "low";
-						const category = cfg?.category ?? "system";
-						const catStyle = CATEGORY_STYLES[category];
-
-						const inner = (
-							<div className="flex min-w-0 flex-1 items-start gap-3">
-								<span
-									className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
-								/>
-								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
-									{cfg?.icon ?? (
-										<Bell className="h-3.5 w-3.5 text-muted-foreground" />
-									)}
-								</div>
-								<div className="min-w-0 flex-1">
-									<div className="flex items-center gap-1.5">
-										<p className="font-medium text-foreground text-xs">
-											{t(
-												(cfg?.labelKey ??
-													"student.pendingActions.generic") as Parameters<
-													typeof t
-												>[0],
-												{
-													defaultValue: item.type
-														.replace(/[._-]/g, " ")
-														.replace(/\b\w/g, (c) => c.toUpperCase()),
-												},
-											)}
-										</p>
-										<span
-											className={`shrink-0 rounded px-1 py-0.5 font-semibold text-[9px] uppercase tracking-wide ${catStyle.className}`}
-										>
-											{t(catStyle.labelKey as Parameters<typeof t>[0], {
-												defaultValue: category,
-											})}
-										</span>
-									</div>
-									{subtitle && (
-										<p className="truncate text-[11px] text-muted-foreground">
-											{subtitle}
-										</p>
-									)}
-								</div>
-							</div>
-						);
-
-						return (
-							<li
-								key={item.id}
-								className="group flex items-center gap-2 px-4 py-3"
-							>
-								{to ? (
-									<Link
-										to={to}
-										className="min-w-0 flex-1"
-										onClick={() => onMarkRead(item.id)}
-									>
-										{inner}
-									</Link>
-								) : (
-									<div className="min-w-0 flex-1">{inner}</div>
-								)}
-								<button
-									type="button"
-									className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
-									onClick={() => onMarkRead(item.id)}
-									disabled={isMarkingRead}
-								>
-									{t("notifications.markRead")}
-								</button>
-							</li>
-						);
-					})}
-				</ul>
+				<div>
+					{actionItems.length > 0 && (
+						<div>
+							<p className="border-b bg-amber-50 px-4 py-1.5 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:bg-amber-950/20 dark:text-amber-400">
+								{t("student.pendingActions.sectionActions")}
+							</p>
+							<ul className="divide-y">
+								{actionItems.map((item) => (
+									<NotifRow
+										key={item.id}
+										item={item}
+										onMarkRead={onMarkRead}
+										isMarkingRead={isMarkingRead}
+										t={t}
+									/>
+								))}
+							</ul>
+						</div>
+					)}
+					{infoItems.length > 0 && (
+						<div className={actionItems.length > 0 ? "border-t" : ""}>
+							{actionItems.length > 0 && (
+								<p className="border-b bg-muted/40 px-4 py-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wider">
+									{t("student.pendingActions.sectionInfo")}
+								</p>
+							)}
+							<ul className="divide-y">
+								{infoItems.map((item) => (
+									<NotifRow
+										key={item.id}
+										item={item}
+										onMarkRead={onMarkRead}
+										isMarkingRead={isMarkingRead}
+										t={t}
+									/>
+								))}
+							</ul>
+						</div>
+					)}
+				</div>
 			)}
 
-			{items.length > MAX_SHOWN && (
+			{items.length > actionItems.length + infoItems.length && (
 				<div className="border-t px-4 py-2 text-center">
 					<Link
 						to="/notifications"
 						className="text-muted-foreground text-xs hover:text-foreground hover:underline"
 					>
 						{t("student.pendingActions.moreItems", {
-							count: items.length - MAX_SHOWN,
+							count: items.length - actionItems.length - infoItems.length,
 						})}
 					</Link>
 				</div>

@@ -4300,6 +4300,8 @@
       "generic": "Nouvelle notification",
       "documentAvailable": "Document disponible au téléchargement",
       "empty": "Aucune action en attente",
+      "sectionActions": "Actions requises",
+      "sectionInfo": "Informations",
       "categories": {
         "academic": "Académique",
         "financial": "Financier",

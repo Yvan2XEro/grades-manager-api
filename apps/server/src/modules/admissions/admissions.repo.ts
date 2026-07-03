@@ -2,8 +2,10 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import {
 	type AdmissionApplicationStatus,
+	academicYears,
 	admissionApplications,
 	applicants,
+	classes,
 	type NewAdmissionApplication,
 	type NewApplicant,
 	programs,
@@ -128,6 +130,52 @@ export async function findProgramsForInstitution(institutionId: string) {
 	return db.query.programs.findMany({
 		where: eq(programs.institutionId, institutionId),
 		columns: { id: true, name: true, code: true },
+	});
+}
+
+/** Returns the program only if it belongs to `institutionId`. */
+export async function requireProgramForInstitution(
+	institutionId: string,
+	programId: string,
+) {
+	return db.query.programs.findFirst({
+		where: and(
+			eq(programs.id, programId),
+			eq(programs.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+}
+
+/** Returns the academic year only if it belongs to `institutionId`. */
+export async function requireAcademicYearForInstitution(
+	institutionId: string,
+	academicYearId: string,
+) {
+	return db.query.academicYears.findFirst({
+		where: and(
+			eq(academicYears.id, academicYearId),
+			eq(academicYears.institutionId, institutionId),
+		),
+		columns: { id: true },
+	});
+}
+
+/** Returns the class only if it belongs to `institutionId`, the given `programId`, and `academicYearId`. */
+export async function requireClassForInstitution(
+	institutionId: string,
+	classId: string,
+	programId: string,
+	academicYearId: string,
+) {
+	return db.query.classes.findFirst({
+		where: and(
+			eq(classes.id, classId),
+			eq(classes.institutionId, institutionId),
+			eq(classes.program, programId),
+			eq(classes.academicYear, academicYearId),
+		),
+		columns: { id: true },
 	});
 }
 

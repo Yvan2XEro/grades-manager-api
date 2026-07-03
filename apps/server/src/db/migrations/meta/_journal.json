@@ -155,6 +155,13 @@
       "when": 1783088673457,
       "tag": "0021_acoustic_agent_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1783098288422,
+      "tag": "0022_safe_newton_destine",
+      "breakpoints": true
     }
   ]
 }
