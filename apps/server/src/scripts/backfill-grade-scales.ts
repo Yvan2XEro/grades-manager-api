@@ -9,37 +9,33 @@ export async function backfillGradeScales() {
 	});
 
 	if (!institutions.length) {
-		console.log("No institutions found — nothing to backfill.");
+		console.log("[backfill] No institutions found — nothing to backfill.");
 		return;
 	}
 
-	const existing = await db.query.gradeScales.findMany({
-		columns: { institutionId: true },
-	});
-	const alreadyHaveScale = new Set(existing.map((r) => r.institutionId));
+	const instById = Object.fromEntries(institutions.map((i) => [i.id, i.code]));
 
-	const toCreate = institutions.filter(
-		(inst) => !alreadyHaveScale.has(inst.id),
-	);
+	const inserted = await db
+		.insert(schema.gradeScales)
+		.values(
+			institutions.map((inst) => ({
+				institutionId: inst.id,
+				passThreshold: "10",
+				compensationThreshold: "8",
+				mentionRanges: DEFAULT_MENTION_RANGES,
+			})),
+		)
+		.onConflictDoNothing()
+		.returning({ institutionId: schema.gradeScales.institutionId });
 
-	if (!toCreate.length) {
-		return;
-	}
-
-	for (const inst of toCreate) {
-		await db.insert(schema.gradeScales).values({
-			institutionId: inst.id,
-			passThreshold: "10",
-			compensationThreshold: "8",
-			mentionRanges: DEFAULT_MENTION_RANGES,
-		});
+	for (const row of inserted) {
 		console.log(
-			`[backfill] Created default grade scale for institution ${inst.code} (${inst.id})`,
+			`[backfill] Created default grade scale for institution ${instById[row.institutionId]} (${row.institutionId})`,
 		);
 	}
 
 	console.log(
-		`[backfill] Grade scales: created ${toCreate.length}, skipped ${alreadyHaveScale.size} already configured.`,
+		`[backfill] Grade scales: created ${inserted.length}, skipped ${institutions.length - inserted.length} already configured.`,
 	);
 }
 

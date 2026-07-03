@@ -4297,7 +4297,16 @@
       "enrollmentWindowOpen": "Fenêtre d'inscription ouverte",
       "jobCompleted": "Tâche de fond terminée",
       "jobFailed": "Tâche de fond échouée",
-      "generic": "Nouvelle notification"
+      "generic": "Nouvelle notification",
+      "documentAvailable": "Document disponible au téléchargement",
+      "empty": "Aucune action en attente",
+      "categories": {
+        "academic": "Académique",
+        "financial": "Financier",
+        "enrollment": "Inscription",
+        "documents": "Documents",
+        "system": "Système"
+      }
     },
     "documents": {
       "title": "Mes documents",
@@ -4787,7 +4796,8 @@
       "batch_job_failed": "Tâche échouée",
       "generic": "Notification",
       "payment_pending": "Paiement en attente",
-      "enrollment_window_open": "Fenêtre d'inscription ouverte"
+      "enrollment_window_open": "Fenêtre d'inscription ouverte",
+      "document_available": "Document disponible"
     },
     "batchJob": {
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} éléments",

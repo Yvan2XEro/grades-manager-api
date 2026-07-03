@@ -3,6 +3,7 @@ import {
 	Bell,
 	CheckCircle2,
 	CreditCard,
+	FileText,
 	GraduationCap,
 	Inbox,
 	ServerCog,
@@ -99,6 +100,12 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 			});
 		},
 		toFn: (p) => (p.jobId ? `/admin/batch-jobs/${p.jobId}` : undefined),
+	},
+	"document.available": {
+		icon: <FileText className="h-4 w-4 text-sky-600" />,
+		labelKey: "notifications.types.document_available",
+		subtitleFn: (p) => String(p.documentKind ?? ""),
+		toFn: () => "/student/documents",
 	},
 };
 

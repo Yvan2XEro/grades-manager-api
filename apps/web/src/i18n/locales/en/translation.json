@@ -4278,7 +4278,16 @@
       "enrollmentWindowOpen": "Enrollment window open",
       "jobCompleted": "Background job completed",
       "jobFailed": "Background job failed",
-      "generic": "New notification"
+      "generic": "New notification",
+      "documentAvailable": "Document available for download",
+      "empty": "No pending actions",
+      "categories": {
+        "academic": "Academic",
+        "financial": "Financial",
+        "enrollment": "Enrollment",
+        "documents": "Documents",
+        "system": "System"
+      }
     },
     "documents": {
       "title": "My documents",
@@ -4768,7 +4777,8 @@
       "batch_job_failed": "Job failed",
       "generic": "Notification",
       "payment_pending": "Payment pending",
-      "enrollment_window_open": "Enrollment window open"
+      "enrollment_window_open": "Enrollment window open",
+      "document_available": "Document available"
     },
     "batchJob": {
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} items",

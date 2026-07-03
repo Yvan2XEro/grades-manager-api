@@ -675,10 +675,10 @@ export const academicDocumentsRouter = router({
 				period: "annual",
 			});
 
-			// Record download asynchronously — don't block the response
 			const { db } = await import("../../db");
 			const schema = await import("../../db/schema/app-schema");
-			db.insert(schema.documentDownloads)
+			await db
+				.insert(schema.documentDownloads)
 				.values({
 					institutionId: ctx.institution.id,
 					studentId: student.id,

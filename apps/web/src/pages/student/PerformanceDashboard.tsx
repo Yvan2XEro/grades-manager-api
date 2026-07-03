@@ -13,6 +13,7 @@ import {
 	ChevronRight,
 	ChevronUp,
 	CreditCard,
+	FileText,
 	GraduationCap,
 	History,
 	Hourglass,
@@ -36,12 +37,49 @@ import { trpc, trpcClient } from "../../utils/trpc";
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
 
+type Category =
+	| "academic"
+	| "financial"
+	| "enrollment"
+	| "documents"
+	| "system";
+
 type NotifActionConfig = {
 	icon: React.ReactNode;
 	labelKey: string;
 	subtitleFn?: (payload: Record<string, unknown>, t: TFn) => string;
 	toFn?: (payload: Record<string, unknown>) => string | undefined;
 	priority: "high" | "medium" | "low";
+	category: Category;
+};
+
+const CATEGORY_STYLES: Record<
+	Category,
+	{ labelKey: string; className: string }
+> = {
+	academic: {
+		labelKey: "student.pendingActions.categories.academic",
+		className:
+			"bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+	},
+	financial: {
+		labelKey: "student.pendingActions.categories.financial",
+		className:
+			"bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+	},
+	enrollment: {
+		labelKey: "student.pendingActions.categories.enrollment",
+		className:
+			"bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+	},
+	documents: {
+		labelKey: "student.pendingActions.categories.documents",
+		className: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+	},
+	system: {
+		labelKey: "student.pendingActions.categories.system",
+		className: "bg-muted text-muted-foreground",
+	},
 };
 
 const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
@@ -49,6 +87,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		icon: <GraduationCap className="h-4 w-4 text-violet-600" />,
 		labelKey: "student.pendingActions.resultsPublished",
 		priority: "high",
+		category: "academic",
 		toFn: () => "/student",
 	},
 	"grade.approved": {
@@ -56,6 +95,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.gradesApproved",
 		subtitleFn: (p) => String(p.examName ?? ""),
 		priority: "medium",
+		category: "academic",
 		toFn: () => "/student",
 	},
 	"grade.rejected": {
@@ -63,6 +103,7 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		labelKey: "student.pendingActions.gradesRejected",
 		subtitleFn: (p) => String(p.examName ?? ""),
 		priority: "high",
+		category: "academic",
 		toFn: () => "/student",
 	},
 	"fee.payment_confirmed": {
@@ -73,29 +114,42 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 				? `${Number(p.amount).toLocaleString()} ${p.currency}`
 				: "",
 		priority: "low",
+		category: "financial",
 		toFn: () => "/student/fees",
 	},
 	"payment.pending": {
 		icon: <CreditCard className="h-4 w-4 text-amber-500" />,
 		labelKey: "student.pendingActions.paymentPending",
 		priority: "high",
+		category: "financial",
 		toFn: () => "/student/fees",
 	},
 	"enrollment.window_open": {
 		icon: <CalendarCheck className="h-4 w-4 text-emerald-600" />,
 		labelKey: "student.pendingActions.enrollmentWindowOpen",
 		priority: "high",
+		category: "enrollment",
 		toFn: () => "/student",
+	},
+	"document.available": {
+		icon: <FileText className="h-4 w-4 text-sky-600" />,
+		labelKey: "student.pendingActions.documentAvailable",
+		subtitleFn: (p) => String(p.documentKind ?? ""),
+		priority: "low",
+		category: "documents",
+		toFn: () => "/student/documents",
 	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-4 w-4 text-emerald-600" />,
 		labelKey: "student.pendingActions.jobCompleted",
 		priority: "low",
+		category: "system",
 	},
 	"batch_job.failed": {
 		icon: <ServerCog className="h-4 w-4 text-destructive" />,
 		labelKey: "student.pendingActions.jobFailed",
 		priority: "medium",
+		category: "system",
 	},
 };
 
@@ -126,8 +180,6 @@ function PendingActionsCard({
 	const MAX_SHOWN = 3;
 	const shown = items.slice(0, MAX_SHOWN);
 
-	if (items.length === 0) return null;
-
 	return (
 		<div className="rounded-xl border bg-card shadow-sm">
 			<div className="flex items-center justify-between border-b px-4 py-3">
@@ -136,9 +188,11 @@ function PendingActionsCard({
 					<span className="font-semibold text-foreground text-sm">
 						{t("student.pendingActions.title")}
 					</span>
-					<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
-						{items.length}
-					</Badge>
+					{items.length > 0 && (
+						<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
+							{items.length}
+						</Badge>
+					)}
 				</div>
 				<Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
 					<Link to="/notifications">
@@ -148,75 +202,95 @@ function PendingActionsCard({
 				</Button>
 			</div>
 
-			<ul className="divide-y">
-				{shown.map((item) => {
-					const cfg = NOTIF_ACTION_CONFIGS[item.type];
-					const payload = (item.payload as Record<string, unknown>) ?? {};
-					const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
-					const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
-					const priority = cfg?.priority ?? "low";
+			{items.length === 0 ? (
+				<div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
+					<Bell className="h-8 w-8 text-muted-foreground/40" />
+					<p className="text-muted-foreground text-sm">
+						{t("student.pendingActions.empty")}
+					</p>
+				</div>
+			) : (
+				<ul className="divide-y">
+					{shown.map((item) => {
+						const cfg = NOTIF_ACTION_CONFIGS[item.type];
+						const payload = (item.payload as Record<string, unknown>) ?? {};
+						const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
+						const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
+						const priority = cfg?.priority ?? "low";
+						const category = cfg?.category ?? "system";
+						const catStyle = CATEGORY_STYLES[category];
 
-					const inner = (
-						<div className="flex min-w-0 flex-1 items-start gap-3">
-							<span
-								className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
-							/>
-							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
-								{cfg?.icon ?? (
-									<Bell className="h-3.5 w-3.5 text-muted-foreground" />
-								)}
-							</div>
-							<div className="min-w-0 flex-1">
-								<p className="font-medium text-foreground text-xs">
-									{t(
-										(cfg?.labelKey ??
-											"student.pendingActions.generic") as Parameters<
-											typeof t
-										>[0],
-										{
-											defaultValue: item.type
-												.replace(/[._-]/g, " ")
-												.replace(/\b\w/g, (c) => c.toUpperCase()),
-										},
+						const inner = (
+							<div className="flex min-w-0 flex-1 items-start gap-3">
+								<span
+									className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
+								/>
+								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
+									{cfg?.icon ?? (
+										<Bell className="h-3.5 w-3.5 text-muted-foreground" />
 									)}
-								</p>
-								{subtitle && (
-									<p className="truncate text-[11px] text-muted-foreground">
-										{subtitle}
-									</p>
-								)}
+								</div>
+								<div className="min-w-0 flex-1">
+									<div className="flex items-center gap-1.5">
+										<p className="font-medium text-foreground text-xs">
+											{t(
+												(cfg?.labelKey ??
+													"student.pendingActions.generic") as Parameters<
+													typeof t
+												>[0],
+												{
+													defaultValue: item.type
+														.replace(/[._-]/g, " ")
+														.replace(/\b\w/g, (c) => c.toUpperCase()),
+												},
+											)}
+										</p>
+										<span
+											className={`shrink-0 rounded px-1 py-0.5 font-semibold text-[9px] uppercase tracking-wide ${catStyle.className}`}
+										>
+											{t(catStyle.labelKey as Parameters<typeof t>[0], {
+												defaultValue: category,
+											})}
+										</span>
+									</div>
+									{subtitle && (
+										<p className="truncate text-[11px] text-muted-foreground">
+											{subtitle}
+										</p>
+									)}
+								</div>
 							</div>
-						</div>
-					);
+						);
 
-					return (
-						<li
-							key={item.id}
-							className="group flex items-center gap-2 px-4 py-3"
-						>
-							{to ? (
-								<Link
-									to={to}
-									className="min-w-0 flex-1"
-									onClick={() => onMarkRead(item.id)}
-								>
-									{inner}
-								</Link>
-							) : (
-								<div className="min-w-0 flex-1">{inner}</div>
-							)}
-							<button
-								type="button"
-								className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
-								onClick={() => onMarkRead(item.id)}
-								disabled={isMarkingRead}
+						return (
+							<li
+								key={item.id}
+								className="group flex items-center gap-2 px-4 py-3"
 							>
-								{t("notifications.markRead")}
-							</button>
-						</li>
-					);
-				})}
-			</ul>
+								{to ? (
+									<Link
+										to={to}
+										className="min-w-0 flex-1"
+										onClick={() => onMarkRead(item.id)}
+									>
+										{inner}
+									</Link>
+								) : (
+									<div className="min-w-0 flex-1">{inner}</div>
+								)}
+								<button
+									type="button"
+									className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+									onClick={() => onMarkRead(item.id)}
+									disabled={isMarkingRead}
+								>
+									{t("notifications.markRead")}
+								</button>
+							</li>
+						);
+					})}
+				</ul>
+			)}
 
 			{items.length > MAX_SHOWN && (
 				<div className="border-t px-4 py-2 text-center">
