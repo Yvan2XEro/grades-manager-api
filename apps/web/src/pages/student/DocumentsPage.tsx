@@ -1,7 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Download, FileText, GraduationCap, Lock } from "lucide-react";
+import {
+	Clock,
+	Download,
+	FileText,
+	GraduationCap,
+	IdCard,
+	Lock,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,7 +28,7 @@ function downloadBase64Pdf(base64: string, filename: string) {
 	URL.revokeObjectURL(url);
 }
 
-type DocKind = "transcript" | "attestation";
+type DocKind = "transcript" | "attestation" | "enrollment_certificate";
 
 const DOC_CONFIG: Record<
 	DocKind,
@@ -42,6 +50,12 @@ const DOC_CONFIG: Record<
 		labelKey: "student.documents.attestation.title",
 		descKey: "student.documents.attestation.description",
 		blockedKey: "student.documents.attestation.blocked",
+	},
+	enrollment_certificate: {
+		icon: <IdCard className="h-6 w-6 text-sky-600" />,
+		labelKey: "student.documents.enrollment_certificate.title",
+		descKey: "student.documents.enrollment_certificate.description",
+		blockedKey: "student.documents.enrollment_certificate.blocked",
 	},
 };
 
@@ -113,6 +127,60 @@ function DocumentCard({
 	);
 }
 
+function DownloadHistorySection() {
+	const { t } = useTranslation();
+	const historyQuery = useQuery(
+		trpc.academicDocuments.myDownloadHistory.queryOptions(),
+	);
+
+	const rows = historyQuery.data ?? [];
+
+	const kindLabel = (kind: string) => {
+		const key = `student.documents.${kind}.title` as Parameters<typeof t>[0];
+		return t(key, { defaultValue: kind });
+	};
+
+	const formatDate = (iso: string) =>
+		new Date(iso).toLocaleDateString(undefined, {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+
+	if (historyQuery.isPending) {
+		return (
+			<div className="space-y-2">
+				<Skeleton className="h-10 w-full rounded-lg" />
+				<Skeleton className="h-10 w-full rounded-lg" />
+			</div>
+		);
+	}
+
+	if (rows.length === 0) {
+		return (
+			<p className="text-muted-foreground text-sm">
+				{t("student.documents.history.empty")}
+			</p>
+		);
+	}
+
+	return (
+		<ul className="divide-y rounded-xl border bg-card">
+			{rows.map((row) => (
+				<li key={row.id} className="flex items-center gap-3 px-4 py-3">
+					<Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+					<span className="flex-1 text-sm">{kindLabel(row.kind)}</span>
+					<Badge variant="secondary" className="text-xs">
+						{formatDate(row.downloadedAt)}
+					</Badge>
+				</li>
+			))}
+		</ul>
+	);
+}
+
 export default function DocumentsPage() {
 	const { t } = useTranslation();
 
@@ -121,7 +189,7 @@ export default function DocumentsPage() {
 	);
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
 			<PageHeader
 				title={t("student.documents.title")}
 				description={t("student.documents.description")}
@@ -129,6 +197,7 @@ export default function DocumentsPage() {
 
 			{docsQuery.isPending ? (
 				<div className="space-y-3">
+					<Skeleton className="h-24 w-full rounded-xl" />
 					<Skeleton className="h-24 w-full rounded-xl" />
 					<Skeleton className="h-24 w-full rounded-xl" />
 				</div>
@@ -145,6 +214,13 @@ export default function DocumentsPage() {
 					))}
 				</div>
 			)}
+
+			<section className="space-y-3">
+				<h2 className="font-semibold text-sm">
+					{t("student.documents.history.title")}
+				</h2>
+				<DownloadHistorySection />
+			</section>
 		</div>
 	);
 }

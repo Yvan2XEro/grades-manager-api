@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import Handlebars from "handlebars";
 import { defaultExportConfig } from "../../config/export-config";
 import {
@@ -13,6 +11,38 @@ import {
 	PAYMENT_ORDER_TEMPLATE,
 	PAYMENT_RECEIPT_TEMPLATE,
 } from "./financial-templates";
+import {
+	ATTESTATION_TEMPLATE_CENTER,
+	ATTESTATION_TEMPLATE_FACULTY,
+	ATTESTATION_TEMPLATE_IPES,
+	ATTESTATION_TEMPLATE_STANDARD,
+} from "./templates/attestation-templates";
+import {
+	DIPLOMA_TEMPLATE,
+	DIPLOMA_TEMPLATE_CENTER,
+} from "./templates/diploma-templates";
+import {
+	DELIBERATION_TEMPLATE,
+	DELIBERATION_TEMPLATE_CENTER,
+	EC_TEMPLATE,
+	EC_TEMPLATE_CENTER,
+	EVALUATION_TEMPLATE,
+	EVALUATION_TEMPLATE_CENTER,
+	PV_TEMPLATE,
+	PV_TEMPLATE_CENTER,
+	TEACHING_UNIT_TEMPLATE,
+	TEACHING_UNIT_TEMPLATE_CENTER,
+} from "./templates/publication-templates";
+import {
+	STUDENT_LIST_TEMPLATE,
+	STUDENT_LIST_TEMPLATE_CENTER,
+} from "./templates/student-list-templates";
+import {
+	RELEVE_TEMPLATE_FACULTY,
+	RELEVE_TEMPLATE_IPES,
+	RELEVE_TEMPLATE_STANDARD,
+	TRANSCRIPT_TEMPLATE_CENTER,
+} from "./templates/transcript-templates";
 
 /**
  * Configuration interface for exports
@@ -121,7 +151,7 @@ export function loadExportConfig(): ExportConfig {
  * Une institution n'est pas forcément parrainée par une faculté
  */
 /** Convert MentionRange[] from the grade-scale model to the ExportConfig appreciations format. */
-function mentionRangesToAppreciations(
+export function mentionRangesToAppreciations(
 	ranges: MentionRange[],
 ): ExportConfig["grading"]["appreciations"] {
 	const sorted = [...ranges].sort((a, b) => b.min - a.min);
@@ -234,76 +264,65 @@ export function loadTemplate(
 	variant: TemplateVariant = "standard",
 	establishmentType?: EstablishmentType,
 ): string {
-	// Financial templates are TS string exports (bundled at compile time,
-	// no fs read needed, works in Docker without extra COPY rules).
+	// All templates are bundled as TS string exports — no fs reads, no Docker
+	// COPY rules needed.
 	const financialMap: Record<string, string> = {
 		payment_order: PAYMENT_ORDER_TEMPLATE,
 		payment_receipt: PAYMENT_RECEIPT_TEMPLATE,
 		financial_clearance: FINANCIAL_CLEARANCE_TEMPLATE,
 	};
-	if (templateName in financialMap) {
-		return financialMap[templateName]!;
-	}
+	if (templateName in financialMap) return financialMap[templateName]!;
 
 	const standardMap: Record<string, string> = {
-		pv: "pv-template.html",
-		evaluation: "evaluation-publication.html",
-		ec: "ec-publication.html",
-		ue: "teaching-unit-publication.html",
-		deliberation: "deliberation-template.html",
-		diploma: "diploma-template.html",
-		// Generic fallback (kept for backward-compat). The real defaults for
-		// transcript/attestation are split per establishment type below.
-		transcript: "releve_template.html",
-		attestation: "attestation_template.html",
-		student_list: "student-list-template.html",
+		pv: PV_TEMPLATE,
+		evaluation: EVALUATION_TEMPLATE,
+		ec: EC_TEMPLATE,
+		ue: TEACHING_UNIT_TEMPLATE,
+		deliberation: DELIBERATION_TEMPLATE,
+		diploma: DIPLOMA_TEMPLATE,
+		// Generic fallback. Real defaults for transcript/attestation are split
+		// per establishment type below.
+		transcript: RELEVE_TEMPLATE_STANDARD,
+		attestation: ATTESTATION_TEMPLATE_STANDARD,
+		student_list: STUDENT_LIST_TEMPLATE,
 	};
 
-	// IPES- and Faculty-specific variants of transcript & attestation. Picked
-	// at seed time depending on the institution.type so each tenant only sees
-	// the model that fits their setup.
+	// IPES- and Faculty-specific variants. Picked at seed time.
 	const ipesMap: Record<string, string> = {
-		transcript: "releve_template_ipes.html",
-		attestation: "attestation_template_ipes.html",
+		transcript: RELEVE_TEMPLATE_IPES,
+		attestation: ATTESTATION_TEMPLATE_IPES,
 	};
 	const facultyMap: Record<string, string> = {
-		transcript: "releve_template_faculty.html",
-		attestation: "attestation_template_faculty.html",
+		transcript: RELEVE_TEMPLATE_FACULTY,
+		attestation: ATTESTATION_TEMPLATE_FACULTY,
 	};
 
-	// Center variants exist for every template kind. Each renders a
-	// center-only header (admin instances + legal texts + authorization order +
-	// center identity) and excludes the institutional tutelle chain.
+	// Center variants: center-only header, no institutional tutelle chain.
 	const centerMap: Record<string, string> = {
-		diploma: "diploma-template-center.html",
-		transcript: "transcript-template-center.html",
-		attestation: "attestation-template-center.html",
-		student_list: "student-list-template-center.html",
-		pv: "pv-template-center.html",
-		evaluation: "evaluation-publication-center.html",
-		ec: "ec-publication-center.html",
-		ue: "teaching-unit-publication-center.html",
-		deliberation: "deliberation-template-center.html",
+		diploma: DIPLOMA_TEMPLATE_CENTER,
+		transcript: TRANSCRIPT_TEMPLATE_CENTER,
+		attestation: ATTESTATION_TEMPLATE_CENTER,
+		student_list: STUDENT_LIST_TEMPLATE_CENTER,
+		pv: PV_TEMPLATE_CENTER,
+		evaluation: EVALUATION_TEMPLATE_CENTER,
+		ec: EC_TEMPLATE_CENTER,
+		ue: TEACHING_UNIT_TEMPLATE_CENTER,
+		deliberation: DELIBERATION_TEMPLATE_CENTER,
 	};
 
-	let filename: string | undefined;
 	if (variant === "center" && centerMap[templateName]) {
-		filename = centerMap[templateName]!;
-	} else if (establishmentType === "institution" && ipesMap[templateName]) {
-		filename = ipesMap[templateName]!;
-	} else if (establishmentType === "faculty" && facultyMap[templateName]) {
-		filename = facultyMap[templateName]!;
-	} else {
-		filename = standardMap[templateName];
+		return centerMap[templateName]!;
 	}
-
-	if (!filename) {
-		return `<!-- No bundled template for type "${templateName}" -->`;
+	if (establishmentType === "institution" && ipesMap[templateName]) {
+		return ipesMap[templateName]!;
 	}
-
-	const templatePath = join(import.meta.dir, "templates", filename);
-
-	return readFileSync(templatePath, "utf-8");
+	if (establishmentType === "faculty" && facultyMap[templateName]) {
+		return facultyMap[templateName]!;
+	}
+	return (
+		standardMap[templateName] ??
+		`<!-- No bundled template for type "${templateName}" -->`
+	);
 }
 
 /**

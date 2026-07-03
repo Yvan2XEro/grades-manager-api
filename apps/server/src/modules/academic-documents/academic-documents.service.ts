@@ -384,6 +384,8 @@ export async function buildRenderData(args: {
 	semesterId?: string;
 	/** Grade scale mention ranges — used to resolve mention labels. */
 	mentionRanges?: MentionRange[];
+	/** Pass threshold from the institution's grade scale (default 10). */
+	gradeScalePassThreshold?: number;
 }): Promise<DocumentRenderData> {
 	const { kind, studentCtx, deliberation, theme, demoMode } = args;
 	const period = args.period ?? "annual";
@@ -706,6 +708,23 @@ export async function buildRenderData(args: {
 			name: cls?.name ?? "",
 			code: cls?.code ?? "",
 		},
+		grading: (() => {
+			const ranges = [...(args.mentionRanges ?? DEFAULT_MENTION_RANGES)].sort(
+				(a, b) => b.min - a.min,
+			);
+			return {
+				appreciations: ranges.map((r, i) => ({
+					label: r.label,
+					labelEn: r.labelEn,
+					gradeLetter: r.gradeLetter,
+					min: r.min,
+					max:
+						i === 0 ? 20 : Math.round((ranges[i - 1].min - 0.01) * 100) / 100,
+				})),
+				passing_grade: args.gradeScalePassThreshold ?? 10,
+				scale: 20,
+			};
+		})(),
 		summary,
 		semesters,
 	};
@@ -843,6 +862,7 @@ export async function generateDocument(
 		period: input.period,
 		semesterId: input.semesterId,
 		mentionRanges: gradeScale.mentionRanges,
+		gradeScalePassThreshold: gradeScale.passThreshold,
 	});
 
 	const html = compileAndRender(

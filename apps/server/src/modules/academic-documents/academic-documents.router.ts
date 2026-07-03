@@ -591,7 +591,11 @@ export const academicDocumentsRouter = router({
 		);
 		if (!student) return [];
 
-		const STUDENT_KINDS: zod.DocumentKind[] = ["transcript", "attestation"];
+		const STUDENT_KINDS: zod.DocumentKind[] = [
+			"transcript",
+			"attestation",
+			"enrollment_certificate",
+		];
 		const results = [];
 
 		for (const kind of STUDENT_KINDS) {
@@ -634,9 +638,13 @@ export const academicDocumentsRouter = router({
 		return results;
 	}),
 
-	/** Generate a transcript or attestation PDF for the authenticated student. */
+	/** Generate a transcript, attestation, or enrollment certificate PDF for the authenticated student. */
 	myGenerateDocument: tenantProtectedProcedure
-		.input(z.object({ kind: z.enum(["transcript", "attestation"]) }))
+		.input(
+			z.object({
+				kind: z.enum(["transcript", "attestation", "enrollment_certificate"]),
+			}),
+		)
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.profile?.id)
 				throw new TRPCError({
@@ -667,10 +675,56 @@ export const academicDocumentsRouter = router({
 				period: "annual",
 			});
 
+			// Record download asynchronously — don't block the response
+			const { db } = await import("../../db");
+			const schema = await import("../../db/schema/app-schema");
+			db.insert(schema.documentDownloads)
+				.values({
+					institutionId: ctx.institution.id,
+					studentId: student.id,
+					kind: input.kind,
+				})
+				.catch((err) =>
+					console.error("[documentDownloads] insert failed:", err),
+				);
+
 			return {
 				data: result.content,
 				filename: `${input.kind}_${new Date().toISOString().slice(0, 10)}.pdf`,
 				mimeType: result.mimeType,
 			};
 		}),
+
+	/** List the student's own document download history (most recent first). */
+	myDownloadHistory: tenantProtectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.profile?.id) return [];
+
+		const student = await studentsRepo.findByDomainUserId(
+			ctx.profile.id,
+			ctx.institution.id,
+		);
+		if (!student) return [];
+
+		const { db } = await import("../../db");
+		const { documentDownloads } = await import("../../db/schema/app-schema");
+		const { and, eq, desc } = await import("drizzle-orm");
+
+		const rows = await db
+			.select()
+			.from(documentDownloads)
+			.where(
+				and(
+					eq(documentDownloads.institutionId, ctx.institution.id),
+					eq(documentDownloads.studentId, student.id),
+				),
+			)
+			.orderBy(desc(documentDownloads.downloadedAt))
+			.limit(20);
+
+		return rows.map((r) => ({
+			id: r.id,
+			kind: r.kind as zod.DocumentKind,
+			downloadedAt: r.downloadedAt.toISOString(),
+		}));
+	}),
 });

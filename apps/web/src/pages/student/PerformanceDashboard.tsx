@@ -75,6 +75,18 @@ const NOTIF_ACTION_CONFIGS: Record<string, NotifActionConfig> = {
 		priority: "low",
 		toFn: () => "/student/fees",
 	},
+	"payment.pending": {
+		icon: <CreditCard className="h-4 w-4 text-amber-500" />,
+		labelKey: "student.pendingActions.paymentPending",
+		priority: "high",
+		toFn: () => "/student/fees",
+	},
+	"enrollment.window_open": {
+		icon: <CalendarCheck className="h-4 w-4 text-emerald-600" />,
+		labelKey: "student.pendingActions.enrollmentWindowOpen",
+		priority: "high",
+		toFn: () => "/student",
+	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-4 w-4 text-emerald-600" />,
 		labelKey: "student.pendingActions.jobCompleted",

@@ -4117,3 +4117,33 @@ export const examParticipationRostersRelations = relations(
 		}),
 	}),
 );
+
+// ─── Document Downloads ───────────────────────────────────────────────────────
+
+export const documentDownloads = pgTable("document_downloads", {
+	id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+	institutionId: text("institution_id")
+		.notNull()
+		.references(() => institutions.id, { onDelete: "cascade" }),
+	studentId: text("student_id")
+		.notNull()
+		.references(() => students.id, { onDelete: "cascade" }),
+	kind: text("kind").notNull(),
+	downloadedAt: timestamp("downloaded_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+});
+
+export const documentDownloadsRelations = relations(
+	documentDownloads,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [documentDownloads.institutionId],
+			references: [institutions.id],
+		}),
+		student: one(students, {
+			fields: [documentDownloads.studentId],
+			references: [students.id],
+		}),
+	}),
+);

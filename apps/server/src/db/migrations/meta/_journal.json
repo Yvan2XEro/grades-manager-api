@@ -141,6 +141,13 @@
       "when": 1782912515563,
       "tag": "0019_powerful_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783059950060,
+      "tag": "0020_curved_ares",
+      "breakpoints": true
     }
   ]
 }

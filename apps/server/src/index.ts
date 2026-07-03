@@ -20,6 +20,7 @@ import { startBackgroundJobs } from "./lib/jobs";
 import { exportDiplomation } from "./modules/deliberations/deliberations.service";
 import { buildTranscriptExport } from "./modules/exports/transcript-export.service";
 import { appRouter } from "./routers/index";
+import { backfillGradeScales } from "./scripts/backfill-grade-scales";
 
 const app = new Hono();
 
@@ -534,6 +535,10 @@ if (process.env.SERVE_FRONTEND === "true") {
 		});
 	});
 }
+
+await backfillGradeScales().catch((err) =>
+	console.error("[startup] backfillGradeScales failed:", err),
+);
 
 const cleanupJobs = await startBackgroundJobs();
 

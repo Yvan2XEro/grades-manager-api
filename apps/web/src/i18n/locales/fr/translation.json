@@ -4293,6 +4293,8 @@
       "gradesApproved": "Feuille de notes approuvée",
       "gradesRejected": "Feuille de notes refusée",
       "paymentConfirmed": "Paiement confirmé",
+      "paymentPending": "Paiement requis",
+      "enrollmentWindowOpen": "Fenêtre d'inscription ouverte",
       "jobCompleted": "Tâche de fond terminée",
       "jobFailed": "Tâche de fond échouée",
       "generic": "Nouvelle notification"
@@ -4312,6 +4314,15 @@
         "title": "Attestation d inscription",
         "description": "Attestation confirmant votre inscription pour l année académique en cours.",
         "blocked": "Quitus financier requis pour télécharger ce document."
+      },
+      "enrollment_certificate": {
+        "title": "Certificat de scolarité",
+        "description": "Certificat officiel d inscription pour l année académique en cours.",
+        "blocked": "Quitus financier requis pour télécharger ce document."
+      },
+      "history": {
+        "title": "Historique des téléchargements",
+        "empty": "Aucun document téléchargé pour l instant."
       }
     },
     "timeline": {
@@ -4775,7 +4786,8 @@
       "batch_job_completed": "Tâche terminée",
       "batch_job_failed": "Tâche échouée",
       "generic": "Notification",
-      "payment_pending": "Paiement en attente"
+      "payment_pending": "Paiement en attente",
+      "enrollment_window_open": "Fenêtre d'inscription ouverte"
     },
     "batchJob": {
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} éléments",

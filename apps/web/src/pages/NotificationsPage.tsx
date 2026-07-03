@@ -63,6 +63,11 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 		labelKey: "notifications.types.payment_pending",
 		toFn: () => "/student/fees",
 	},
+	"enrollment.window_open": {
+		icon: <GraduationCap className="h-4 w-4 text-emerald-600" />,
+		labelKey: "notifications.types.enrollment_window_open",
+		toFn: () => "/student",
+	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-4 w-4 text-emerald-600" />,
 		labelKey: "notifications.types.batch_job_completed",

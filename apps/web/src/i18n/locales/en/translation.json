@@ -4274,6 +4274,8 @@
       "gradesApproved": "Grade sheet approved",
       "gradesRejected": "Grade sheet rejected",
       "paymentConfirmed": "Payment confirmed",
+      "paymentPending": "Payment required",
+      "enrollmentWindowOpen": "Enrollment window open",
       "jobCompleted": "Background job completed",
       "jobFailed": "Background job failed",
       "generic": "New notification"
@@ -4290,9 +4292,18 @@
         "blocked": "Financial clearance required to download this document."
       },
       "attestation": {
-        "title": "Enrollment certificate",
-        "description": "Certificate confirming your enrollment for the current academic year.",
+        "title": "Enrollment Attestation",
+        "description": "Attestation confirming your enrollment for the current academic year.",
         "blocked": "Financial clearance required to download this document."
+      },
+      "enrollment_certificate": {
+        "title": "Enrollment Certificate",
+        "description": "Official certificate of enrollment (Certificat de scolarité) for the current academic year.",
+        "blocked": "Financial clearance required to download this document."
+      },
+      "history": {
+        "title": "Download history",
+        "empty": "No documents downloaded yet."
       }
     },
     "timeline": {
@@ -4756,7 +4767,8 @@
       "batch_job_completed": "Job completed",
       "batch_job_failed": "Job failed",
       "generic": "Notification",
-      "payment_pending": "Payment pending"
+      "payment_pending": "Payment pending",
+      "enrollment_window_open": "Enrollment window open"
     },
     "batchJob": {
       "completedSubtitle": "{{jobType}} — {{itemsProcessed}} items",
