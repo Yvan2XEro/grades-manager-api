@@ -58,6 +58,12 @@ const NOTIF_CONFIGS: Record<string, NotifConfig> = {
 	"deliberation.published": {
 		icon: <GraduationCap className="h-3.5 w-3.5 text-violet-600" />,
 		labelKey: "notifications.types.deliberation_published",
+		toFn: () => "/student/performance",
+	},
+	"payment.pending": {
+		icon: <CreditCard className="h-3.5 w-3.5 text-amber-500" />,
+		labelKey: "notifications.types.payment_pending",
+		toFn: () => "/student/fees",
 	},
 	"batch_job.completed": {
 		icon: <ServerCog className="h-3.5 w-3.5 text-emerald-600" />,

@@ -2539,6 +2539,7 @@ export const exportTemplateTypes = [
 	"diploma",
 	"transcript",
 	"attestation",
+	"enrollment_certificate",
 	"student_list",
 	"payment_order",
 	"payment_receipt",

@@ -32,13 +32,18 @@ export type DocumentTheme =
 
 export type ThemeKind = Extract<
 	ExportTemplateType,
-	"diploma" | "transcript" | "attestation" | "student_list"
+	| "diploma"
+	| "transcript"
+	| "attestation"
+	| "enrollment_certificate"
+	| "student_list"
 >;
 
 export const documentThemeKinds: ThemeKind[] = [
 	"diploma",
 	"transcript",
 	"attestation",
+	"enrollment_certificate",
 	"student_list",
 ];
 
@@ -50,6 +55,7 @@ const SCHEMAS = {
 	diploma: diplomaThemeSchema,
 	transcript: transcriptThemeSchema,
 	attestation: attestationThemeSchema,
+	enrollment_certificate: attestationThemeSchema,
 	student_list: studentListThemeSchema,
 } as const;
 
@@ -57,6 +63,7 @@ const DEFAULTS = {
 	diploma: diplomaClassicTheme,
 	transcript: transcriptClassicTheme,
 	attestation: attestationClassicTheme,
+	enrollment_certificate: attestationClassicTheme,
 	student_list: studentListClassicTheme,
 } as const;
 
@@ -64,6 +71,7 @@ const PRESETS = {
 	diploma: diplomaThemePresets,
 	transcript: transcriptThemePresets,
 	attestation: attestationThemePresets,
+	enrollment_certificate: attestationThemePresets,
 	student_list: studentListThemePresets,
 } as const;
 

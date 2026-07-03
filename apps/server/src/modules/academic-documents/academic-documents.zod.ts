@@ -4,6 +4,7 @@ export const documentKindSchema = z.enum([
 	"diploma",
 	"transcript",
 	"attestation",
+	"enrollment_certificate",
 	"student_list",
 ]);
 export type DocumentKind = z.infer<typeof documentKindSchema>;

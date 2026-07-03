@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Handlebars from "handlebars";
 import { defaultExportConfig } from "../../config/export-config";
-import type {
-	Institution,
-	InstitutionMetadata,
-	MentionRange,
+import {
+	DEFAULT_MENTION_RANGES,
+	type Institution,
+	type InstitutionMetadata,
+	type MentionRange,
 } from "../../db/schema/app-schema";
 import {
 	FINANCIAL_CLEARANCE_TEMPLATE,
@@ -67,18 +68,7 @@ export interface ExportConfig {
 	};
 }
 
-const defaultGrading: ExportConfig["grading"] = {
-	appreciations: [
-		{ label: "Excellent", min: 18, max: 20 },
-		{ label: "Très Bien", min: 16, max: 17.99 },
-		{ label: "Bien", min: 14, max: 15.99 },
-		{ label: "Assez Bien", min: 12, max: 13.99 },
-		{ label: "Passable", min: 10, max: 11.99 },
-		{ label: "Insuffisant", min: 9, max: 9.99 },
-		{ label: "Faible", min: 8, max: 8.99 },
-		{ label: "Très Faible", min: 6, max: 7.99 },
-		{ label: "Nul", min: 0, max: 5.99 },
-	],
+const defaultGrading = {
 	passing_grade: 10,
 	scale: 20,
 };
@@ -189,7 +179,7 @@ export function institutionToExportConfig(
 				gradeScaleMentionRanges && gradeScaleMentionRanges.length > 0
 					? mentionRangesToAppreciations(gradeScaleMentionRanges)
 					: (exportConfig?.grading?.appreciations ??
-						defaultGrading.appreciations),
+						mentionRangesToAppreciations(DEFAULT_MENTION_RANGES)),
 			passing_grade:
 				gradeScalePassThreshold ??
 				exportConfig?.grading?.passing_grade ??

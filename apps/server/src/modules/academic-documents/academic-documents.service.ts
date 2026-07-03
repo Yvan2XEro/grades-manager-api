@@ -227,6 +227,7 @@ function isThemeKind(type: ExportTemplateType): type is ThemeKind {
 		type === "diploma" ||
 		type === "transcript" ||
 		type === "attestation" ||
+		type === "enrollment_certificate" ||
 		type === "student_list"
 	);
 }
@@ -313,6 +314,12 @@ function diplomaTitleFor(
 					fr: "RELEVÉ DE NOTES ANNUEL",
 					en: "OFFICIAL ANNUAL TRANSCRIPT",
 				};
+	}
+	if (kind === "enrollment_certificate") {
+		return {
+			fr: "CERTIFICAT DE SCOLARITÉ",
+			en: "ENROLLMENT CERTIFICATE",
+		};
 	}
 	return {
 		fr: "ATTESTATION DE RÉUSSITE",
