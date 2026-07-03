@@ -4147,3 +4147,149 @@ export const documentDownloadsRelations = relations(
 		}),
 	}),
 );
+
+// ─── Admissions ───────────────────────────────────────────────────────────────
+
+export const admissionApplicationStatuses = [
+	"draft",
+	"submitted",
+	"under_review",
+	"accepted",
+	"rejected",
+	"waitlisted",
+] as const;
+export type AdmissionApplicationStatus =
+	(typeof admissionApplicationStatuses)[number];
+
+/** A person who has applied for admission — separate from a student profile. */
+export const applicants = pgTable(
+	"applicants",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		firstName: text("first_name").notNull(),
+		lastName: text("last_name").notNull(),
+		email: text("email").notNull(),
+		phone: text("phone"),
+		dateOfBirth: text("date_of_birth"),
+		nationality: text("nationality"),
+		previousDiploma: text("previous_diploma"),
+		previousInstitution: text("previous_institution"),
+		/** Short code (e.g. APP-2026-XXXX) for status lookup without a login. */
+		referenceCode: text("reference_code").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		unique("uq_applicants_reference_code").on(t.referenceCode),
+		index("idx_applicants_institution").on(t.institutionId),
+		index("idx_applicants_email").on(t.institutionId, t.email),
+	],
+);
+export type Applicant = InferSelectModel<typeof applicants>;
+export type NewApplicant = InferInsertModel<typeof applicants>;
+
+/** A single admission dossier linking an applicant to a target program/year. */
+export const admissionApplications = pgTable(
+	"admission_applications",
+	{
+		id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+		institutionId: text("institution_id")
+			.notNull()
+			.references(() => institutions.id, { onDelete: "cascade" }),
+		applicantId: text("applicant_id")
+			.notNull()
+			.references(() => applicants.id, { onDelete: "cascade" }),
+		programId: text("program_id")
+			.notNull()
+			.references(() => programs.id, { onDelete: "restrict" }),
+		classId: text("class_id").references(() => classes.id, {
+			onDelete: "set null",
+		}),
+		academicYearId: text("academic_year_id")
+			.notNull()
+			.references(() => academicYears.id, { onDelete: "restrict" }),
+		status: text("status")
+			.$type<AdmissionApplicationStatus>()
+			.notNull()
+			.default("draft"),
+		personalStatement: text("personal_statement"),
+		reviewNotes: text("review_notes"),
+		reviewedById: text("reviewed_by_id").references(() => domainUsers.id, {
+			onDelete: "set null",
+		}),
+		reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }),
+		convertedStudentId: text("converted_student_id").references(
+			() => students.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+	},
+	(t) => [
+		index("idx_admission_applications_institution").on(t.institutionId),
+		index("idx_admission_applications_applicant").on(t.applicantId),
+		index("idx_admission_applications_program").on(t.programId),
+		index("idx_admission_applications_year").on(t.academicYearId),
+		index("idx_admission_applications_status").on(t.status),
+	],
+);
+export type AdmissionApplication = InferSelectModel<
+	typeof admissionApplications
+>;
+export type NewAdmissionApplication = InferInsertModel<
+	typeof admissionApplications
+>;
+
+export const applicantsRelations = relations(applicants, ({ one, many }) => ({
+	institution: one(institutions, {
+		fields: [applicants.institutionId],
+		references: [institutions.id],
+	}),
+	applications: many(admissionApplications),
+}));
+
+export const admissionApplicationsRelations = relations(
+	admissionApplications,
+	({ one }) => ({
+		institution: one(institutions, {
+			fields: [admissionApplications.institutionId],
+			references: [institutions.id],
+		}),
+		applicant: one(applicants, {
+			fields: [admissionApplications.applicantId],
+			references: [applicants.id],
+		}),
+		program: one(programs, {
+			fields: [admissionApplications.programId],
+			references: [programs.id],
+		}),
+		class: one(classes, {
+			fields: [admissionApplications.classId],
+			references: [classes.id],
+		}),
+		academicYear: one(academicYears, {
+			fields: [admissionApplications.academicYearId],
+			references: [academicYears.id],
+		}),
+		reviewedBy: one(domainUsers, {
+			fields: [admissionApplications.reviewedById],
+			references: [domainUsers.id],
+		}),
+		convertedStudent: one(students, {
+			fields: [admissionApplications.convertedStudentId],
+			references: [students.id],
+		}),
+	}),
+);
