@@ -4283,6 +4283,7 @@
       "empty": "No pending actions",
       "sectionActions": "Required actions",
       "sectionInfo": "Notifications",
+      "act": "Take action",
       "categories": {
         "academic": "Academic",
         "financial": "Financial",

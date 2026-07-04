@@ -178,7 +178,8 @@ type NotifItem = {
 	payload: unknown;
 };
 
-function NotifRow({
+/** Action item — requires user to do something (CTA button style). */
+function ActionRow({
 	item,
 	onMarkRead,
 	isMarkingRead,
@@ -193,42 +194,95 @@ function NotifRow({
 	const payload = (item.payload as Record<string, unknown>) ?? {};
 	const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
 	const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
-	const priority = cfg?.priority ?? "low";
-	const category = cfg?.category ?? "system";
-	const catStyle = CATEGORY_STYLES[category];
+	const label = t(
+		(cfg?.labelKey ?? "student.pendingActions.generic") as Parameters<
+			typeof t
+		>[0],
+		{
+			defaultValue: item.type
+				.replace(/[._-]/g, " ")
+				.replace(/\b\w/g, (c) => c.toUpperCase()),
+		},
+	);
+
+	return (
+		<li className="flex items-center gap-3 bg-amber-50 px-4 py-3 dark:bg-amber-950/20">
+			<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-white dark:border-amber-800 dark:bg-amber-950/50">
+				{cfg?.icon ?? <Bell className="h-4 w-4 text-amber-500" />}
+			</div>
+			<div className="min-w-0 flex-1">
+				<p className="font-semibold text-amber-900 text-xs dark:text-amber-200">
+					{label}
+				</p>
+				{subtitle && (
+					<p className="truncate text-[11px] text-amber-700 dark:text-amber-400">
+						{subtitle}
+					</p>
+				)}
+			</div>
+			{to ? (
+				<Button
+					variant="default"
+					size="sm"
+					className="h-7 shrink-0 bg-amber-600 px-3 text-white text-xs hover:bg-amber-700"
+					asChild
+					onClick={() => onMarkRead(item.id)}
+				>
+					<Link to={to}>
+						{t("student.pendingActions.act")}
+						<ChevronRight className="ml-1 h-3 w-3" />
+					</Link>
+				</Button>
+			) : (
+				<button
+					type="button"
+					className="shrink-0 text-[10px] text-amber-600 hover:underline"
+					onClick={() => onMarkRead(item.id)}
+					disabled={isMarkingRead}
+				>
+					{t("notifications.markRead")}
+				</button>
+			)}
+		</li>
+	);
+}
+
+/** Info item — informational only, no required action. */
+function InfoRow({
+	item,
+	onMarkRead,
+	isMarkingRead,
+	t,
+}: {
+	item: NotifItem;
+	onMarkRead: (id: string) => void;
+	isMarkingRead: boolean;
+	t: TFn;
+}) {
+	const cfg = NOTIF_ACTION_CONFIGS[item.type];
+	const payload = (item.payload as Record<string, unknown>) ?? {};
+	const subtitle = cfg?.subtitleFn ? cfg.subtitleFn(payload, t) : "";
+	const to = cfg?.toFn ? cfg.toFn(payload) : undefined;
+	const label = t(
+		(cfg?.labelKey ?? "student.pendingActions.generic") as Parameters<
+			typeof t
+		>[0],
+		{
+			defaultValue: item.type
+				.replace(/[._-]/g, " ")
+				.replace(/\b\w/g, (c) => c.toUpperCase()),
+		},
+	);
 
 	const inner = (
-		<div className="flex min-w-0 flex-1 items-start gap-3">
-			<span
-				className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priorityDot(priority)}`}
-			/>
-			<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background">
+		<div className="flex min-w-0 flex-1 items-center gap-2.5">
+			<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
 				{cfg?.icon ?? <Bell className="h-3.5 w-3.5 text-muted-foreground" />}
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-1.5">
-					<p className="font-medium text-foreground text-xs">
-						{t(
-							(cfg?.labelKey ?? "student.pendingActions.generic") as Parameters<
-								typeof t
-							>[0],
-							{
-								defaultValue: item.type
-									.replace(/[._-]/g, " ")
-									.replace(/\b\w/g, (c) => c.toUpperCase()),
-							},
-						)}
-					</p>
-					<span
-						className={`shrink-0 rounded px-1 py-0.5 font-semibold text-[9px] uppercase tracking-wide ${catStyle.className}`}
-					>
-						{t(catStyle.labelKey as Parameters<typeof t>[0], {
-							defaultValue: category,
-						})}
-					</span>
-				</div>
+				<p className="truncate text-foreground text-xs">{label}</p>
 				{subtitle && (
-					<p className="truncate text-[11px] text-muted-foreground">
+					<p className="truncate text-[10px] text-muted-foreground">
 						{subtitle}
 					</p>
 				)}
@@ -237,7 +291,7 @@ function NotifRow({
 	);
 
 	return (
-		<li key={item.id} className="group flex items-center gap-2 px-4 py-3">
+		<li className="group flex items-center gap-2 px-4 py-2">
 			{to ? (
 				<Link
 					to={to}
@@ -251,7 +305,7 @@ function NotifRow({
 			)}
 			<button
 				type="button"
-				className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
+				className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-muted-foreground opacity-0 transition-opacity hover:underline group-hover:opacity-100"
 				onClick={() => onMarkRead(item.id)}
 				disabled={isMarkingRead}
 			>
@@ -281,16 +335,17 @@ function PendingActionsCard({
 		.slice(0, MAX_SHOWN);
 
 	return (
-		<div className="rounded-xl border bg-card shadow-sm">
+		<div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+			{/* Header */}
 			<div className="flex items-center justify-between border-b px-4 py-3">
 				<div className="flex items-center gap-2">
 					<Bell className="h-4 w-4 text-primary" />
 					<span className="font-semibold text-foreground text-sm">
 						{t("student.pendingActions.title")}
 					</span>
-					{items.length > 0 && (
-						<Badge className="h-5 bg-primary px-1.5 text-[10px] text-primary-foreground">
-							{items.length}
+					{actionItems.length > 0 && (
+						<Badge className="h-5 bg-amber-500 px-1.5 text-[10px] text-white">
+							{actionItems.length}
 						</Badge>
 					)}
 				</div>
@@ -310,15 +365,16 @@ function PendingActionsCard({
 					</p>
 				</div>
 			) : (
-				<div>
+				<>
+					{/* Actions requises — amber background, CTA buttons */}
 					{actionItems.length > 0 && (
 						<div>
-							<p className="border-b bg-amber-50 px-4 py-1.5 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:bg-amber-950/20 dark:text-amber-400">
-								{t("student.pendingActions.sectionActions")}
+							<p className="border-amber-200 border-b bg-amber-100 px-4 py-1.5 font-bold text-[10px] text-amber-800 uppercase tracking-widest dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+								⚡ {t("student.pendingActions.sectionActions")}
 							</p>
-							<ul className="divide-y">
+							<ul className="divide-y divide-amber-100 dark:divide-amber-900/30">
 								{actionItems.map((item) => (
-									<NotifRow
+									<ActionRow
 										key={item.id}
 										item={item}
 										onMarkRead={onMarkRead}
@@ -329,16 +385,16 @@ function PendingActionsCard({
 							</ul>
 						</div>
 					)}
+
+					{/* Informations — muted, compact */}
 					{infoItems.length > 0 && (
 						<div className={actionItems.length > 0 ? "border-t" : ""}>
-							{actionItems.length > 0 && (
-								<p className="border-b bg-muted/40 px-4 py-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wider">
-									{t("student.pendingActions.sectionInfo")}
-								</p>
-							)}
+							<p className="border-b bg-muted/30 px-4 py-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-widest">
+								{t("student.pendingActions.sectionInfo")}
+							</p>
 							<ul className="divide-y">
 								{infoItems.map((item) => (
-									<NotifRow
+									<InfoRow
 										key={item.id}
 										item={item}
 										onMarkRead={onMarkRead}
@@ -349,7 +405,7 @@ function PendingActionsCard({
 							</ul>
 						</div>
 					)}
-				</div>
+				</>
 			)}
 
 			{items.length > actionItems.length + infoItems.length && (
