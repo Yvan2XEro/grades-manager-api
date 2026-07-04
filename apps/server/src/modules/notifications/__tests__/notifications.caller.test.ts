@@ -307,6 +307,53 @@ describe("notifications — retry and failure handling", () => {
 		}
 	});
 
+	it("cursor is compound (ts|id) — pages do not skip or duplicate items with identical timestamps", async () => {
+		const profile = await createDomainUser({
+			primaryEmail: "cursor-compound@example.com",
+		});
+
+		// Force identical createdAt on all 4 notifications to expose the collision case
+		const sharedTs = new Date("2025-01-01T00:00:00.000Z");
+		const insertedIds: string[] = [];
+		for (let i = 0; i < 4; i++) {
+			const n = await repo.createNotification({
+				recipientId: profile.id,
+				channel: "in-app",
+				type: `compound_test_${i}`,
+				payload: {},
+				status: "pending",
+				createdAt: sharedTs,
+			});
+			insertedIds.push(n.id);
+		}
+
+		const caller = appRouter.createCaller(
+			makeTestContext({
+				role: "student",
+				profileOverrides: { id: profile.id },
+			}),
+		);
+
+		const seen = new Set<string>();
+		let cursor: string | undefined;
+		for (let page = 0; page < 5; page++) {
+			const result = await caller.notifications.myNotifications({
+				limit: 1,
+				cursor,
+			});
+			for (const n of result.items) {
+				expect(seen.has(n.id)).toBe(false); // no duplicates across pages
+				seen.add(n.id);
+			}
+			cursor = result.nextCursor;
+			if (!cursor) break;
+		}
+		// Every inserted notification must appear exactly once
+		for (const id of insertedIds) {
+			expect(seen.has(id)).toBe(true);
+		}
+	});
+
 	it("stats endpoint returns aggregate counts by status", async () => {
 		const profile = await createDomainUser({
 			primaryEmail: "stats@example.com",

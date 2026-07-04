@@ -1,0 +1,3 @@
+ALTER TABLE "deliberations" DROP CONSTRAINT "uq_deliberation_class_semester_year_type";--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_delib_no_semester" ON "deliberations" USING btree ("institution_id","class_id","academic_year_id","type") WHERE "deliberations"."semester_id" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_delib_with_semester" ON "deliberations" USING btree ("institution_id","class_id","semester_id","academic_year_id","type") WHERE "deliberations"."semester_id" IS NOT NULL;

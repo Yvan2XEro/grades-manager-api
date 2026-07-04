@@ -285,6 +285,56 @@ describe("deliberations router", () => {
 	});
 
 	// -----------------------------------------------------------------------
+	// Duplicate guard (JVL-7)
+	// -----------------------------------------------------------------------
+
+	describe("duplicate deliberation guard", () => {
+		it("creating a second annual deliberation for the same class+year throws CONFLICT", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass } = await setupDeliberationFixture();
+
+			await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "annual",
+			});
+
+			// Second create with the same (classId, academicYearId, type) — no semesterId
+			await expect(
+				admin.deliberations.create({
+					classId: klass.id,
+					academicYearId: academicYear.id,
+					type: "annual",
+				}),
+			).rejects.toHaveProperty("code", "CONFLICT");
+		});
+
+		it("two semester deliberations with the same semester throw CONFLICT", async () => {
+			const ctx = await adminWithRealProfile();
+			const admin = createCaller(ctx);
+			const { academicYear, klass, semesterId } =
+				await setupDeliberationFixture();
+
+			await admin.deliberations.create({
+				classId: klass.id,
+				academicYearId: academicYear.id,
+				type: "semester",
+				semesterId,
+			});
+
+			await expect(
+				admin.deliberations.create({
+					classId: klass.id,
+					academicYearId: academicYear.id,
+					type: "semester",
+					semesterId,
+				}),
+			).rejects.toHaveProperty("code", "CONFLICT");
+		});
+	});
+
+	// -----------------------------------------------------------------------
 	// State transitions
 	// -----------------------------------------------------------------------
 

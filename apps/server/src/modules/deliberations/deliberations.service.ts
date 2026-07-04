@@ -8,6 +8,7 @@ import type {
 } from "@/db/schema/app-schema";
 import * as schema from "@/db/schema/app-schema";
 import { dispatchWebhook } from "@/lib/webhook-dispatch";
+import { conflict } from "@/modules/_shared/errors";
 import * as enrollmentsService from "../enrollments/enrollments.service";
 import {
 	type ExamWithRetake,
@@ -102,20 +103,38 @@ export async function create(
 		});
 	}
 
-	const delib = await repo.createDeliberation({
-		institutionId,
-		classId: input.classId,
-		semesterId: input.semesterId ?? null,
-		academicYearId: input.academicYearId,
-		type: input.type as schema.DeliberationType,
-		presidentId: input.presidentId ?? null,
-		juryMembers: input.juryMembers,
-		juryNumber: input.juryNumber ?? null,
-		deliberationDate: input.deliberationDate
-			? new Date(input.deliberationDate)
-			: null,
-		createdBy,
-	});
+	let delib: schema.Deliberation;
+	try {
+		delib = await repo.createDeliberation({
+			institutionId,
+			classId: input.classId,
+			semesterId: input.semesterId ?? null,
+			academicYearId: input.academicYearId,
+			type: input.type as schema.DeliberationType,
+			presidentId: input.presidentId ?? null,
+			juryMembers: input.juryMembers,
+			juryNumber: input.juryNumber ?? null,
+			deliberationDate: input.deliberationDate
+				? new Date(input.deliberationDate)
+				: null,
+			createdBy,
+		});
+	} catch (err: unknown) {
+		// DrizzleQueryError wraps the PGlite error; the PG constraint name is in cause.constraint
+		const pgErr = (err as { cause?: unknown })?.cause ?? err;
+		const constraint = (pgErr as { constraint?: string })?.constraint;
+		if (
+			constraint === "uq_delib_no_semester" ||
+			constraint === "uq_delib_with_semester" ||
+			// fallback: old constraint name in case migration 0023 is not yet applied
+			constraint === "uq_deliberation_class_semester_year_type"
+		) {
+			throw conflict(
+				"A deliberation already exists for this class, academic year, and type",
+			);
+		}
+		throw err;
+	}
 
 	await repo.createLog({
 		deliberationId: delib.id,

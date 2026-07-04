@@ -1734,13 +1734,15 @@ export const deliberations = pgTable(
 			.defaultNow(),
 	},
 	(t) => [
-		unique("uq_deliberation_class_semester_year_type").on(
-			t.institutionId,
-			t.classId,
-			t.semesterId,
-			t.academicYearId,
-			t.type,
-		),
+		// Two partial indexes replace the old single unique constraint.
+		// A UNIQUE on a nullable column (semesterId) treats each NULL as distinct,
+		// so annual deliberations (semesterId IS NULL) were never protected.
+		uniqueIndex("uq_delib_no_semester")
+			.on(t.institutionId, t.classId, t.academicYearId, t.type)
+			.where(sql`${t.semesterId} IS NULL`),
+		uniqueIndex("uq_delib_with_semester")
+			.on(t.institutionId, t.classId, t.semesterId, t.academicYearId, t.type)
+			.where(sql`${t.semesterId} IS NOT NULL`),
 		index("idx_deliberations_institution").on(t.institutionId),
 		index("idx_deliberations_class").on(t.classId),
 		index("idx_deliberations_year").on(t.academicYearId),

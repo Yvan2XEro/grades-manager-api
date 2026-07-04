@@ -41,6 +41,30 @@ export async function updateStatus(
 	return updated;
 }
 
+// Cursor format: "<createdAt ISO>|<id>" — compound key to handle same-timestamp rows.
+function encodeCursor(item: { createdAt: Date; id: string }): string {
+	return `${item.createdAt.toISOString()}|${item.id}`;
+}
+
+function parseCursor(cursor: string): { ts: Date; id: string } | null {
+	const idx = cursor.lastIndexOf("|");
+	if (idx === -1) return null;
+	return { ts: new Date(cursor.slice(0, idx)), id: cursor.slice(idx + 1) };
+}
+
+function cursorCondition(cursor: string) {
+	const parsed = parseCursor(cursor);
+	if (!parsed) return null;
+	// Items strictly older, OR same timestamp but lower id (desc id sort)
+	return or(
+		lt(schema.notifications.createdAt, parsed.ts),
+		and(
+			eq(schema.notifications.createdAt, parsed.ts),
+			lt(schema.notifications.id, parsed.id),
+		),
+	);
+}
+
 export async function listNotifications(
 	status?: schema.NotificationStatus,
 	limit = 50,
@@ -57,19 +81,22 @@ export async function listNotifications(
 		conditions.push(eq(schema.notifications.channel, channel));
 	}
 	if (cursor) {
-		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
+		const cond = cursorCondition(cursor);
+		if (cond) conditions.push(cond);
 	}
 
 	const items = await db.query.notifications.findMany({
 		where: conditions.length > 0 ? and(...conditions) : undefined,
 		limit: pageLimit,
-		orderBy: [desc(schema.notifications.createdAt)],
+		orderBy: [
+			desc(schema.notifications.createdAt),
+			desc(schema.notifications.id),
+		],
 	});
 
+	const last = items[items.length - 1];
 	const nextCursor =
-		items.length === pageLimit
-			? items[items.length - 1].createdAt.toISOString()
-			: undefined;
+		items.length === pageLimit && last ? encodeCursor(last) : undefined;
 	return { items, nextCursor };
 }
 
@@ -140,18 +167,21 @@ export async function findMyInApp(
 		eq(schema.notifications.channel, "in-app"),
 	];
 	if (cursor) {
-		conditions.push(lt(schema.notifications.createdAt, new Date(cursor)));
+		const cond = cursorCondition(cursor);
+		if (cond) conditions.push(cond);
 	}
 	const pageLimit = Math.min(Math.max(limit, 1), 50);
 	const items = await db.query.notifications.findMany({
 		where: and(...conditions),
-		orderBy: [desc(schema.notifications.createdAt)],
+		orderBy: [
+			desc(schema.notifications.createdAt),
+			desc(schema.notifications.id),
+		],
 		limit: pageLimit,
 	});
+	const last = items[items.length - 1];
 	const nextCursor =
-		items.length === pageLimit
-			? items[items.length - 1].createdAt.toISOString()
-			: undefined;
+		items.length === pageLimit && last ? encodeCursor(last) : undefined;
 	return { items, nextCursor };
 }
 
