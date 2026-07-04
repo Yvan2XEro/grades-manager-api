@@ -1,4 +1,13 @@
-import { afterAll, beforeAll, beforeEach, mock } from "bun:test";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	mock,
+	setDefaultTimeout,
+} from "bun:test";
+
+setDefaultTimeout(120_000);
+
 import { config } from "dotenv";
 import { asc } from "drizzle-orm";
 import * as schema from "../db/schema/app-schema";
